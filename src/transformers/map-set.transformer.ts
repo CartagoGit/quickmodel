@@ -43,7 +43,7 @@ export class MapTransformer<K = string, V = unknown>
    * @throws {Error} If the value is not an object or Map
    */
   fromInterface(
-    value: Record<string, V> | { __type: 'Map'; entries: [K, V][] } | Map<K, V>,
+    value: Record<string, V> | { __type: 'Map'; entries: [K, V][] } | Map<K, V> | [K, V][],
     propertyKey: string,
     className: string,
   ): Map<K, V> {
@@ -56,9 +56,14 @@ export class MapTransformer<K = string, V = unknown>
       return new Map((value as { __type: 'Map'; entries: [K, V][] }).entries);
     }
 
+    // Handle array of [key, value] pairs (from backend)
+    if (Array.isArray(value)) {
+      return new Map(value as [K, V][]);
+    }
+
     // Handle legacy plain object format
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-      throw new Error(`${className}.${propertyKey}: Expected object for Map, got ${typeof value}`);
+    if (typeof value !== 'object' || value === null) {
+      throw new Error(`${className}.${propertyKey}: Expected object or array for Map, got ${typeof value}`);
     }
 
     return new Map(Object.entries(value) as Iterable<[K, V]>);

@@ -21,6 +21,7 @@ import type {
 	QModelInstance,
 	QModelInterface,
 	QInterface,
+	QTransform,
 } from './core/interfaces';
 import './transformers/bootstrap'; // Auto-register transformers
 import type {
@@ -52,11 +53,6 @@ type TransformedInterface<
 /**
  * Abstract base class for type-safe models with automatic serialization and mock generation.
  * 
- * **Note about `implements`:** TypeScript does not allow abstract classes to implement 
- * generic interfaces with dynamic types. Therefore, concrete classes extending QModel 
- * should add `implements QInterface<IYourInterface, YourTransforms>` explicitly to 
- * enforce type safety.
- * 
  * QModel is the core class providing a declarative way to define TypeScript models 
  * with automatic JSON serialization/deserialization and type transformations.
  * 
@@ -79,7 +75,7 @@ type TransformedInterface<
  *   age: number;
  * }
  * 
- * class User extends QModel<IUser> implements QInterface<IUser> {
+ * class User extends QModel<IUser> {
  *   @QType() id!: string;
  *   @QType() name!: string;
  *   @QType() age!: number;
@@ -129,8 +125,7 @@ type TransformedInterface<
  * ```
  */
 export abstract class QModel<
-	TInterface extends Record<string, any>,
-	TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}
+	TInterface extends Record<string, any>
 > {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new ModelDeserializer(
@@ -156,7 +151,7 @@ export abstract class QModel<
 	 * const users = User.mock().array(5); // returns User[]
 	 * ```
 	 */
-	static mock<T extends abstract new (...args: any[]) => QModel<any, any>>(
+	static mock<T extends abstract new (...args: any[]) => QModel<any>>(
 		this: T
 	): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;

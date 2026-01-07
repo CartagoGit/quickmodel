@@ -6,6 +6,38 @@
  */
 
 /**
+ * Quick transform helper - merges base interface with transformed properties.
+ * 
+ * Use this with @Quick() decorator for simple type-safe transformations without 
+ * needing to define a separate transform interface.
+ * 
+ * @template T - Base interface (backend data structure)
+ * @template Transforms - Object with only the properties that change types
+ * 
+ * @example
+ * ```typescript
+ * interface IUser {
+ *   id: number;
+ *   name: string;
+ *   createdAt: string;  // Backend sends ISO string
+ *   balance: string;    // Backend sends string
+ * }
+ * 
+ * @Quick()
+ * class User extends QModel<IUser> implements QTransform<IUser, {
+ *   createdAt: Date;
+ *   balance: bigint;
+ * }> {
+ *   declare id: number;
+ *   declare name: string;
+ *   declare createdAt: Date;
+ *   declare balance: bigint;
+ * }
+ * ```
+ */
+export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
+
+/**
  * Helper type for defining type transformations in models.
  * 
  * Allows you to specify which properties have different types in JSON (TInterface)

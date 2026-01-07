@@ -70,6 +70,14 @@ import 'reflect-metadata';
 import { QType } from './qtype.decorator';
 
 const QUICK_DECORATOR_KEY = '__quickModel__';
+const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
+
+/**
+ * Options for @Quick() decorator to specify property types explicitly
+ */
+export interface QuickOptions {
+  [propertyName: string]: any;
+}
 
 /**
  * Class decorator that automatically applies @QType() to all properties.
@@ -80,6 +88,7 @@ const QUICK_DECORATOR_KEY = '__quickModel__';
  * Properties with `!` (definite assignment) will NOT work due to how
  * TypeScript compiles field initialization with `useDefineForClassFields: true`.
  * 
+ * @param typeMap Optional mapping of property names to their target types (Set, Map, etc.)
  * @returns A class decorator function
  * 
  * @example
@@ -89,7 +98,17 @@ const QUICK_DECORATOR_KEY = '__quickModel__';
  * class User extends QModel<IUser> {
  *   declare id: string;       // ✅ Works
  *   declare name: string;     // ✅ Works
- *   declare createdAt: Date;  // ✅ Works
+ *   declare createdAt: Date;  // ✅ Works - autodetected from ISO string
+ * }
+ * ```
+ * 
+ * @example
+ * **✅ With type mapping for Set/Map:**
+ * ```typescript
+ * @Quick({ tags: Set, metadata: Map })
+ * class User extends QModel<IUser> {
+ *   declare tags: Set<string>;           // ✅ Array → Set
+ *   declare metadata: Map<string, any>;  // ✅ Array pairs → Map
  * }
  * ```
  * 
@@ -121,10 +140,15 @@ const QUICK_DECORATOR_KEY = '__quickModel__';
  * 
  * @see {@link QType} for the decorator that works with both syntaxes
  */
-export function Quick(): ClassDecorator {
+export function Quick(typeMap?: QuickOptions): ClassDecorator {
   return function <T extends Function>(target: any): T | void {
     // Mark class as using @Quick() for auto-registration
     Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
+    
+    // Store type map if provided
+    if (typeMap) {
+      Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
+    }
     
     // Wrap constructor to register properties on first instantiation
     const originalConstructor = target;
@@ -136,21 +160,32 @@ export function Quick(): ClassDecorator {
         const data = args[0];
         if (data && typeof data === 'object' && !Array.isArray(data)) {
           const properties = Object.keys(data);
+          const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
           
           for (const propertyKey of properties) {
             // Check if already decorated
             const existingFieldType = Reflect.getMetadata('fieldType', originalConstructor.prototype, propertyKey);
             const existingArrayClass = Reflect.getMetadata('arrayElementClass', originalConstructor.prototype, propertyKey);
             
-            if (existingFieldType === undefined && existingArrayClass === undefined) {
-              // Get the declared type from TypeScript metadata (if available)
-              // Note: design:type is only emitted when property has a decorator
-              const designType = Reflect.getMetadata('design:type', originalConstructor.prototype, propertyKey);
-              
-              if (designType) {
-                // Use TypeScript's emitted metadata
-                // This happens when property has @QType() decorator
-              } else {
+            // Skip if property already has @QType() decorator
+            if (existingFieldType !== undefined || existingArrayClass !== undefined) {
+              continue;
+            }
+            
+            // Get the declared type from TypeScript metadata (if available)
+            // Note: design:type is only emitted when property has a decorator
+            const designType = Reflect.getMetadata('design:type', originalConstructor.prototype, propertyKey);
+            
+            // Check if type is specified in typeMap
+            const mappedType = typeMap[propertyKey];
+            
+            if (mappedType) {
+              // Use explicitly mapped type
+              Reflect.defineMetadata('design:type', mappedType, originalConstructor.prototype, propertyKey);
+            } else if (designType) {
+              // TypeScript metadata available
+              // Transformers will handle the conversion from arrays to Set/Map
+            } else {
                 // No metadata available - need to infer from value
                 // @Quick() doesn't work with declare/! because TypeScript doesn't emit metadata
                 // We need to detect the type from the actual value
@@ -176,11 +211,11 @@ export function Quick(): ClassDecorator {
                   else if (value && typeof value === 'object' && value.__type === 'symbol') {
                     inferredType = Symbol;
                   }
-                  // Map objects with __type marker
+                  // Map objects with __type marker or array of entries
                   else if (value && typeof value === 'object' && value.__type === 'Map') {
                     inferredType = Map;
                   }
-                  // Set objects with __type marker
+                  // Set objects with __type marker or plain array
                   else if (value && typeof value === 'object' && value.__type === 'Set') {
                     inferredType = Set;
                   }
@@ -193,7 +228,6 @@ export function Quick(): ClassDecorator {
               const decorator = QType();
               decorator(originalConstructor.prototype, propertyKey);
             }
-          }
           
           propertiesRegistered = true;
         }

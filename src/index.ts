@@ -38,6 +38,8 @@
 // QModel (SOLID architecture)
 export { QType, QModel } from './quick.model';
 export type { QInterface } from './quick.model';
+export { Quick } from './core/decorators/quick.decorator';
+export type { QTransform } from './core/interfaces/model.interface';
 
 // ============================================================================
 // CORE (Interfaces, Services, Registries, Bases)
