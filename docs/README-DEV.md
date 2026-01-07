@@ -13,9 +13,9 @@ pruebas/
 │
 ├── 🏛️ core/                              # SOLID core
 │   ├── interfaces/                       # Contracts (I, D)
-│   │   ├── transformer.interface.ts      # ITransformer, IValidator
-│   │   ├── serializer.interface.ts       # ISerializer, IDeserializer
-│   │   └── registry.interface.ts         # ITransformerRegistry
+│   │   ├── transformer.interface.ts      # IQTransformer, IQValidator
+│   │   ├── serializer.interface.ts       # IQSerializer, IQDeserializer
+│   │   └── registry.interface.ts         # IQTransformerRegistry
 │   ├── services/                         # Services (S)
 │   │   ├── model-deserializer.service.ts
 │   │   ├── model-serializer.service.ts
@@ -145,9 +145,9 @@ bun run/test-each.ts
 ### Add New Transformer
 
 ```typescript
-// 1. Implement ITransformer
-class URLTransformer implements ITransformer<string, URL> {
-  transform(value: string, context: ITransformContext): URL {
+// 1. Implement IQTransformer
+class URLTransformer implements IQTransformer<string, URL> {
+  transform(value: string, context: IQTransformContext): URL {
     return new URL(value);
   }
 
@@ -160,7 +160,7 @@ class URLTransformer implements ITransformer<string, URL> {
 export const CustomURLField = Symbol('CustomURL');
 
 // 3. Register
-transformerRegistry.register(CustomURLField, new URLTransformer());
+qTransformerRegistry.register(CustomURLField, new URLTransformer());
 
 // 4. Use
 import { QModel, QType } from './quick.model';

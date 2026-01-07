@@ -5,13 +5,13 @@
 
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
-import type { ITransformerRegistry } from '../interfaces';
+import type { IQTransformerRegistry } from '../interfaces';
 import { FIELDS_METADATA_KEY } from '../decorators/field.decorator';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
 export class MockGenerator {
-  constructor(private readonly transformerRegistry: ITransformerRegistry) {}
+  constructor(private readonly qTransformerRegistry: IQTransformerRegistry) {}
 
   /**
    * Generates a mock based on reflect metadata.

@@ -10,7 +10,7 @@
  * @remarks
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles data deserialization
- * - **Dependency Inversion**: Depends on ITransformerRegistry abstraction
+ * - **Dependency Inversion**: Depends on IQTransformerRegistry abstraction
  * 
  * Deserialization process:
  * 1. Creates instance via Object.create (avoids constructor)
@@ -21,7 +21,7 @@
  * 
  * @example
  * ```typescript
- * const deserializer = new ModelDeserializer(transformerRegistry);
+ * const deserializer = new ModelDeserializer(qTransformerRegistry);
  * 
  * class User extends QuickModel<IUser> {
  *   @QType() name!: string;
@@ -45,18 +45,18 @@
  */
 
 import 'reflect-metadata';
-import { IDeserializer, ITransformContext, ITransformerRegistry } from '../interfaces';
+import { IQDeserializer, IQTransformContext, IQTransformerRegistry } from '../interfaces';
 
 export class ModelDeserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
   TModel = any
-> implements IDeserializer<TInterface, TModel> {
+> implements IQDeserializer<TInterface, TModel> {
   /**
    * Creates a model deserializer.
    * 
-   * @param transformerRegistry - Registry containing type transformers
+   * @param qTransformerRegistry - Registry containing type transformers
    */
-  constructor(private readonly transformerRegistry: ITransformerRegistry) {}
+  constructor(private readonly qTransformerRegistry: IQTransformerRegistry) {}
 
   /**
    * Deserializes plain data into a model instance.
@@ -123,7 +123,7 @@ export class ModelDeserializer<
         continue;
       }
 
-      const context: ITransformContext = {
+      const context: IQTransformContext = {
         propertyKey: key,
         className: modelClass.name,
       };
@@ -131,7 +131,7 @@ export class ModelDeserializer<
       // 1. Check for custom transformer via fieldType metadata
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       if (fieldType) {
-        const transformer = this.transformerRegistry.get(fieldType);
+        const transformer = this.qTransformerRegistry.get(fieldType);
         if (transformer) {
           instance[key] = transformer.fromInterface(value, context.propertyKey, context.className);
           continue;
@@ -188,14 +188,14 @@ export class ModelDeserializer<
    * - Nested models: recursive deserialization
    * - Primitives: with type validation
    */
-  private transformByDesignType(value: unknown, designType: Function | undefined, context: ITransformContext): unknown {
+  private transformByDesignType(value: unknown, designType: Function | undefined, context: IQTransformContext): unknown {
     if (!designType) {
       return value;
     }
 
     // Date
     if (designType === Date) {
-      const transformer = this.transformerRegistry.get('date');
+      const transformer = this.qTransformerRegistry.get('date');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -207,7 +207,7 @@ export class ModelDeserializer<
 
     // Map
     if (designType === Map) {
-      const transformer = this.transformerRegistry.get('map');
+      const transformer = this.qTransformerRegistry.get('map');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -219,7 +219,7 @@ export class ModelDeserializer<
 
     // Set
     if (designType === Set) {
-      const transformer = this.transformerRegistry.get('set');
+      const transformer = this.qTransformerRegistry.get('set');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -261,7 +261,7 @@ export class ModelDeserializer<
    * @param context - Transformation context (for error messages)
    * @throws {Error} If value doesn't match expected primitive type
    */
-  private validatePrimitive(value: unknown, designType: Function | undefined, context: ITransformContext): void {
+  private validatePrimitive(value: unknown, designType: Function | undefined, context: IQTransformContext): void {
     if (designType === String && typeof value !== 'string') {
       throw new Error(
         `${context.className}.${context.propertyKey}: Expected string, got ${typeof value}`,

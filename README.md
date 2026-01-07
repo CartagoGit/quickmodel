@@ -233,11 +233,11 @@ class BinaryData extends QModel<IBinaryData> implements QInterface<IBinaryData> 
 ### Add Custom Transformer
 
 ```typescript
-import { ITransformer, ITransformContext, transformerRegistry } from '@cartago-git/quickmodel';
+import { IQTransformer, IQTransformContext, qTransformerRegistry } from '@cartago-git/quickmodel';
 
 // 1. Create transformer
-class URLTransformer implements ITransformer<string, URL> {
-  transform(value: string, context: ITransformContext): URL {
+class URLTransformer implements IQTransformer<string, URL> {
+  transform(value: string, context: IQTransformContext): URL {
     return new URL(value);
   }
 
@@ -250,7 +250,7 @@ class URLTransformer implements ITransformer<string, URL> {
 export const CustomURLField = Symbol('CustomURL');
 
 // 3. Register
-transformerRegistry.register(CustomURLField, new URLTransformer());
+qTransformerRegistry.register(CustomURLField, new URLTransformer());
 
 // 4. Use in models
 import { QModel, QType } from '@cartago-git/quickmodel';
@@ -268,7 +268,7 @@ Este paquete implementa los 5 principios SOLID:
 - **S**ingle Responsibility: Cada servicio/clase tiene una responsabilidad
 - **O**pen/Closed: Extensible vía registry sin modificar código
 - **L**iskov Substitution: Transformers intercambiables
-- **I**nterface Segregation: Interfaces específicas (ITransformer, ISerializer, etc.)
+- **I**nterface Segregation: Interfaces específicas (IQTransformer, IQSerializer, etc.)
 - **D**ependency Inversion: Servicios dependen de abstracciones
 
 [Ver documentación detallada](./SOLID-ARCHITECTURE.md)
@@ -295,8 +295,8 @@ Base class for all models.
 
 ### Registries
 
-- `transformerRegistry` - Global transformer registry
-- `validatorRegistry` - Global validator registry
+- `qTransformerRegistry` - Global transformer registry
+- `qValidatorRegistry` - Global validator registry
 
 ## 🧪 Testing
 

@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for Date type: converts between ISO string and Date object.
@@ -26,7 +26,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * console.log(data.createdAt); // "2024-01-01T00:00:00.000Z"
  * ```
  */
-export class DateTransformer extends BaseTransformer<string, Date> implements IValidator {
+export class DateTransformer extends BaseTransformer<string, Date> implements IQValidator {
   /**
    * Converts a string or Date to Date object.
    * 
@@ -70,7 +70,7 @@ export class DateTransformer extends BaseTransformer<string, Date> implements IV
    * @param _context - Validation context (unused)
    * @returns Validation result
    */
-  validate(value: any, _context: IValidationContext): IValidationResult {
+  validate(value: any, _context: IQValidationContext): IQValidationResult {
     if (value instanceof Date) {
       return { isValid: true };
     }

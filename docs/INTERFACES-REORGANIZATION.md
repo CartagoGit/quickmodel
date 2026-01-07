@@ -18,9 +18,9 @@ src/
 │   ├── interfaces/                    # TODAS las interfaces (públicas e internas)
 │   │   ├── field-symbols.interface.ts # API Pública: Símbolos de campos
 │   │   ├── model.interface.ts         # API Pública: QuickType helper
-│   │   ├── transformer.interface.ts   # Internas: ITransformer, IValidator
-│   │   ├── registry.interface.ts      # Internas: ITransformerRegistry
-│   │   ├── serializer.interface.ts    # Internas: ISerializer, IDeserializer
+│   │   ├── transformer.interface.ts   # Internas: IQTransformer, IQValidator
+│   │   ├── registry.interface.ts      # Internas: IQTransformerRegistry
+│   │   ├── serializer.interface.ts    # Internas: IQSerializer, IQDeserializer
 │   │   └── index.ts
 │   │
 │   ├── registry/                      # Registros del sistema
@@ -72,22 +72,22 @@ Todas las interfaces del core están en una sola carpeta, sin separación artifi
 
 #### transformer.interface.ts (Internas del Sistema)
 
-- `ITransformer<TInput, TOutput>` - Interfaz base para transformadores
-- `IValidator` - Validación de tipos
-- `ITransformContext` - Contexto de transformación
-- `IValidationContext` - Contexto de validación
-- `IValidationResult` - Resultado de validación
+- `IQTransformer<TInput, TOutput>` - Interfaz base para transformadores
+- `IQValidator` - Validación de tipos
+- `IQTransformContext` - Contexto de transformación
+- `IQValidationContext` - Contexto de validación
+- `IQValidationResult` - Resultado de validación
 
 #### registry.interface.ts (Internas del Sistema)
 
 - `TypeKey` - Tipo para claves de registro
-- `ITransformerRegistry` - Registro de transformadores
-- `IValidatorRegistry` - Registro de validadores
+- `IQTransformerRegistry` - Registro de transformadores
+- `IQValidatorRegistry` - Registro de validadores
 
 #### serializer.interface.ts (Internas del Sistema)
 
-- `ISerializer<TModel, TInterface>` - Serialización de modelos
-- `IDeserializer<TInterface, TModel>` - Deserialización de modelos
+- `IQSerializer<TModel, TInterface>` - Serialización de modelos
+- `IQDeserializer<TInterface, TModel>` - Deserialización de modelos
 
 #### simple-model.interface.ts
 

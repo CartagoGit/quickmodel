@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Serialized representation of a RegExp.
@@ -40,7 +40,7 @@ interface IRegExpData {
  */
 export class RegExpTransformer
   extends BaseTransformer<string | IRegExpData, RegExp>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Converts a string or object to RegExp.
@@ -94,7 +94,7 @@ export class RegExpTransformer
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof RegExp) {
       return { isValid: true };
     }

@@ -30,7 +30,7 @@
  * ```
  */
 
-import { IValidator, IValidatorRegistry } from '../interfaces';
+import { IQValidator, IQValidatorRegistry } from '../interfaces';
 
 export class ValidatorRegistry implements IValidatorRegistry {
   private readonly validators = new Map<string | symbol, IValidator>();
@@ -97,4 +97,4 @@ export class ValidatorRegistry implements IValidatorRegistry {
  * @remarks
  * Used throughout the library for consistent validator access.
  */
-export const validatorRegistry = new ValidatorRegistry();
+export const qValidatorRegistry = new ValidatorRegistry();

@@ -23,11 +23,11 @@ import {
   QURL,
   QURLSearchParams,
 } from '../core/interfaces/field-symbols.interface';
-import { ITransformer, IValidator } from '../core/interfaces';
-import { transformerRegistry, validatorRegistry } from '../core/registry';
+import { IQTransformer, IQValidator } from '../core/interfaces';
+import { qTransformerRegistry, qValidatorRegistry } from '../core/registry';
 
 // Helper type for generic transformer (avoids union incompatibilities)
-type AnyTransformer = ITransformer<any, any>;
+type AnyTransformer = IQTransformer<any, any>;
 import { BigIntTransformer } from './bigint.transformer';
 import { ArrayBufferTransformer, DataViewTransformer } from './buffer.transformer';
 import { DateTransformer } from './date.transformer';
@@ -49,10 +49,10 @@ function registerTransformerWithAliases(
   withValidator = true,
 ): void {
   keys.forEach((key) => {
-    transformerRegistry.register(key, transformer);
-    // validatorRegistry only accepts string | symbol, not Function
+    qTransformerRegistry.register(key, transformer);
+    // qValidatorRegistry only accepts string | symbol, not Function
     if (withValidator && 'validate' in transformer && typeof key !== 'function') {
-      validatorRegistry.register(key, transformer as IValidator);
+      qValidatorRegistry.register(key, transformer as IQValidator);
     }
   });
 }

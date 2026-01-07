@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 type PrimitiveType = 'string' | 'number' | 'boolean';
 
@@ -46,7 +46,7 @@ type PrimitiveTypeMap = {
  */
 export class PrimitiveTransformer<T extends PrimitiveType>
   extends BaseTransformer<PrimitiveTypeMap[T], PrimitiveTypeMap[T]>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Creates a transformer for a specific primitive type.
@@ -97,7 +97,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (typeof value === this.expectedType) {
       return { isValid: true };
     }

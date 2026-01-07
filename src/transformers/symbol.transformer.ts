@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for Symbol type: converts between string and symbol.
@@ -27,7 +27,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * console.log(data.id); // "unique-id"
  * ```
  */
-export class SymbolTransformer extends BaseTransformer<string, symbol> implements IValidator {
+export class SymbolTransformer extends BaseTransformer<string, symbol> implements IQValidator {
   /**
    * Converts a string to a global symbol using Symbol.for().
    * 
@@ -73,7 +73,7 @@ export class SymbolTransformer extends BaseTransformer<string, symbol> implement
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (typeof value === 'symbol' || typeof value === 'string') {
       return { isValid: true };
     }

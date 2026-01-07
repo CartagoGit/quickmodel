@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for URL: converts between string and URL object.
@@ -30,7 +30,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * new WebPage({ url: "not-a-valid-url" }); // Error: Invalid URL
  * ```
  */
-export class URLTransformer extends BaseTransformer<string, URL> implements IValidator {
+export class URLTransformer extends BaseTransformer<string, URL> implements IQValidator {
   /**
    * Converts a string to URL object.
    * 
@@ -76,7 +76,7 @@ export class URLTransformer extends BaseTransformer<string, URL> implements IVal
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof URL) {
       return { isValid: true };
     }

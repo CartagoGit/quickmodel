@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for BigInt type: converts between string/number and bigint.
@@ -26,7 +26,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  */
 export class BigIntTransformer
   extends BaseTransformer<string | number, bigint>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Converts a string or number to bigint.
@@ -75,7 +75,7 @@ export class BigIntTransformer
    * @param context - Validation context with property and class information
    * @returns Validation result indicating success or failure
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (typeof value === 'bigint') {
       return { isValid: true };
     }

@@ -3,7 +3,7 @@
  * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
  */
 
-export interface ISerializer<TModel extends Record<string, unknown>, TInterface> {
+export interface IQSerializer<TModel extends Record<string, unknown>, TInterface> {
   /**
    * Serializes a model to its interface representation
    */
@@ -15,7 +15,7 @@ export interface ISerializer<TModel extends Record<string, unknown>, TInterface>
   serializeToJson(model: TModel): string;
 }
 
-export interface IDeserializer<TInterface extends Record<string, unknown>, TModel> {
+export interface IQDeserializer<TInterface extends Record<string, unknown>, TModel> {
   /**
    * Deserializa una interfaz a un modelo
    */

@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for ArrayBuffer: converts between byte array and ArrayBuffer.
@@ -29,7 +29,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  */
 export class ArrayBufferTransformer
   extends BaseTransformer<number[], ArrayBuffer>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Converts a byte array to ArrayBuffer.
@@ -78,7 +78,7 @@ export class ArrayBufferTransformer
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof ArrayBuffer || Array.isArray(value)) {
       return { isValid: true };
     }
@@ -116,7 +116,7 @@ export class ArrayBufferTransformer
  * console.log(json.view); // [0, 255, 128]
  * ```
  */
-export class DataViewTransformer extends BaseTransformer<number[], DataView> implements IValidator {
+export class DataViewTransformer extends BaseTransformer<number[], DataView> implements IQValidator {
   /**
    * Converts a byte array or ArrayBuffer to DataView.
    * 
@@ -168,7 +168,7 @@ export class DataViewTransformer extends BaseTransformer<number[], DataView> imp
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof DataView || value instanceof ArrayBuffer || Array.isArray(value)) {
       return { isValid: true };
     }

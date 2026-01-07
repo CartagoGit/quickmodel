@@ -3,20 +3,20 @@
  * SOLID - Dependency Inversion: Register transformers without coupling implementations
  */
 
-import { ITransformer, IValidator } from './transformer.interface';
+import { IQTransformer, IQValidator } from './transformer.interface';
 
 export type TypeKey = string | symbol | Function;
 
-export interface ITransformerRegistry {
+export interface IQTransformerRegistry {
   /**
    * Registra un transformer para un tipo específico
    */
-  register(typeKey: TypeKey, transformer: ITransformer): void;
+  register(typeKey: TypeKey, transformer: IQTransformer): void;
 
   /**
    * Obtiene un transformer para un tipo específico
    */
-  get(typeKey: TypeKey): ITransformer | undefined;
+  get(typeKey: TypeKey): IQTransformer | undefined;
 
   /**
    * Verifica si existe un transformer para un tipo
@@ -29,16 +29,16 @@ export interface ITransformerRegistry {
   unregister(typeKey: TypeKey): void;
 }
 
-export interface IValidatorRegistry {
+export interface IQValidatorRegistry {
   /**
    * Registra un validador para un tipo específico
    */
-  register(typeKey: TypeKey, validator: IValidator): void;
+  register(typeKey: TypeKey, validator: IQValidator): void;
 
   /**
    * Obtiene un validador para un tipo específico
    */
-  get(typeKey: TypeKey): IValidator | undefined;
+  get(typeKey: TypeKey): IQValidator | undefined;
 
   /**
    * Verifica si existe un validador para un tipo

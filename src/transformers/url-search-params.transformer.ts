@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for URLSearchParams: converts between query string and URLSearchParams object.
@@ -39,7 +39,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  */
 export class URLSearchParamsTransformer
   extends BaseTransformer<string, URLSearchParams>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Converts a query string or object to URLSearchParams.
@@ -103,7 +103,7 @@ export class URLSearchParamsTransformer
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof URLSearchParams) {
       return { isValid: true };
     }

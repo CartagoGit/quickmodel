@@ -3,7 +3,7 @@
  * SOLID - Interface Segregation: Specific interfaces, not generic
  */
 
-export interface ITransformer<TInput = any, TOutput = any> {
+export interface IQTransformer<TInput = any, TOutput = any> {
   /**
    * Transforma desde la interfaz (JSON) hacia el tipo del modelo
    * @param value - Valor desde JSON/Interface
@@ -19,26 +19,26 @@ export interface ITransformer<TInput = any, TOutput = any> {
   toInterface(value: TOutput): TInput;
 }
 
-export interface IValidator {
+export interface IQValidator {
   /**
    * Valida que el valor sea del tipo correcto
    */
-  validate(value: any, context: IValidationContext): IValidationResult;
+  validate(value: any, context: IQValidationContext): IQValidationResult;
 }
 
-export interface ITransformContext {
+export interface IQTransformContext {
   propertyKey: string;
   className: string;
   metadata?: Record<string, any>;
 }
 
-export interface IValidationContext {
+export interface IQValidationContext {
   propertyKey: string;
   className: string;
   value: any;
 }
 
-export interface IValidationResult {
+export interface IQValidationResult {
   isValid: boolean;
   error?: string;
 }

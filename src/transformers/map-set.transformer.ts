@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Transformer for Map type: converts between plain object and Map.
@@ -31,7 +31,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  */
 export class MapTransformer<K = string, V = unknown>
   extends BaseTransformer<Record<string, V>, Map<K, V>>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Converts a plain object to Map.
@@ -75,7 +75,7 @@ export class MapTransformer<K = string, V = unknown>
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof Map) {
       return { isValid: true };
     }
@@ -120,7 +120,7 @@ export class MapTransformer<K = string, V = unknown>
  */
 export class SetTransformer<V = unknown>
   extends BaseTransformer<V[], Set<V>>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Converts an array to Set.
@@ -160,7 +160,7 @@ export class SetTransformer<V = unknown>
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof Set || Array.isArray(value)) {
       return { isValid: true };
     }

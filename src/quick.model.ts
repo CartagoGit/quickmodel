@@ -10,7 +10,7 @@
  */
 
 import 'reflect-metadata';
-import { transformerRegistry } from './core/registry';
+import { qTransformerRegistry } from './core/registry';
 import {
 	ModelDeserializer,
 	ModelSerializer,
@@ -114,13 +114,13 @@ export abstract class QModel<
 > {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new ModelDeserializer(
-		transformerRegistry
+		qTransformerRegistry
 	);
 	private static readonly serializer = new ModelSerializer(
-		transformerRegistry
+		qTransformerRegistry
 	);
 	private static readonly mockGenerator = new MockGenerator(
-		transformerRegistry
+		qTransformerRegistry
 	);
 
 	/**

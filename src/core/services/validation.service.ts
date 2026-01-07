@@ -14,7 +14,7 @@
  * 
  * @example
  * ```typescript
- * const service = new ValidationService(validatorRegistry);
+ * const service = new ValidationService(qValidatorRegistry);
  * 
  * class User extends QuickModel<IUser> {
  *   @QType('date') birthDate!: Date;
@@ -35,15 +35,15 @@
  */
 
 import 'reflect-metadata';
-import { IValidationContext, IValidationResult, IValidatorRegistry } from '../interfaces';
+import { IQValidationContext, IQValidationResult, IQValidatorRegistry } from '../interfaces';
 
 export class ValidationService {
   /**
    * Creates a validation service.
    * 
-   * @param validatorRegistry - Registry containing type validators
+   * @param qValidatorRegistry - Registry containing type validators
    */
-  constructor(private readonly validatorRegistry: IValidatorRegistry) {}
+  constructor(private readonly qValidatorRegistry: IQValidatorRegistry) {}
 
   /**
    * Validates all fields in a model instance.
@@ -57,11 +57,11 @@ export class ValidationService {
    * 1. A `fieldType` metadata entry
    * 2. A corresponding validator in the registry
    */
-  validate(instance: Record<string, unknown>, modelClass: Function): IValidationResult[] {
-    const results: IValidationResult[] = [];
+  validate(instance: Record<string, unknown>, modelClass: Function): IQValidationResult[] {
+    const results: IQValidationResult[] = [];
 
     for (const [key, value] of Object.entries(instance)) {
-      const context: IValidationContext = {
+      const context: IQValidationContext = {
         propertyKey: key,
         className: modelClass.name,
         value,
@@ -69,7 +69,7 @@ export class ValidationService {
 
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       if (fieldType) {
-        const validator = this.validatorRegistry.get(fieldType);
+        const validator = this.qValidatorRegistry.get(fieldType);
         if (validator) {
           const result = validator.validate(value, context);
           if (!result.isValid) {

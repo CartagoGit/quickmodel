@@ -30,7 +30,7 @@ The system is **open for extension, closed for modification**:
 ```typescript
 // ✅ Add new transformer WITHOUT modifying QModel
 const customTransformer = new MyCustomTransformer();
-transformerRegistry.register('custom', customTransformer);
+qTransformerRegistry.register('custom', customTransformer);
 ```
 
 ### **L - Liskov Substitution Principle**
@@ -38,9 +38,9 @@ transformerRegistry.register('custom', customTransformer);
 All transformers are **interchangeable**:
 
 ```typescript
-// Any ITransformer can substitute another
-interface ITransformer<TInput, TOutput> {
-  transform(value: TInput, context: ITransformContext): TOutput;
+// Any IQTransformer can substitute another
+interface IQTransformer<TInput, TOutput> {
+  transform(value: TInput, context: IQTransformContext): TOutput;
   serialize(value: TOutput): TInput;
 }
 ```
@@ -49,19 +49,19 @@ interface ITransformer<TInput, TOutput> {
 
 **Specific and cohesive** interfaces:
 
-- `ITransformer`: Only transformation
-- `IValidator`: Only validation
-- `ISerializer`: Only serialization
-- `IDeserializer`: Only deserialization
-- `ITransformerRegistry`: Only registry management
+- `IQTransformer`: Only transformation
+- `IQValidator`: Only validation
+- `IQSerializer`: Only serialization
+- `IQDeserializer`: Only deserialization
+- `IQTransformerRegistry`: Only registry management
 
 ### **D - Dependency Inversion Principle**
 
 Dependencies on **abstractions, not implementations**:
 
 ```typescript
-// ✅ Depends on ITransformerRegistry (abstraction)
-constructor(private readonly transformerRegistry: ITransformerRegistry) {}
+// ✅ Depends on IQTransformerRegistry (abstraction)
+constructor(private readonly qTransformerRegistry: IQTransformerRegistry) {}
 
 // ❌ NOT depends on TransformerRegistry (concrete implementation)
 ```
@@ -113,29 +113,29 @@ pruebas/
 
 ### 1. **Core Interfaces** (`core/interfaces/`)
 
-#### `ITransformer<TInput, TOutput>`
+#### `IQTransformer<TInput, TOutput>`
 
 ```typescript
-interface ITransformer<TInput, TOutput> {
-  transform(value: TInput, context: ITransformContext): TOutput;
+interface IQTransformer<TInput, TOutput> {
+  transform(value: TInput, context: IQTransformContext): TOutput;
   serialize(value: TOutput): TInput;
 }
 ```
 
-#### `IValidator`
+#### `IQValidator`
 
 ```typescript
-interface IValidator {
-  validate(value: any, context: IValidationContext): IValidationResult;
+interface IQValidator {
+  validate(value: any, context: IQValidationContext): IQValidationResult;
 }
 ```
 
-#### `ITransformerRegistry`
+#### `IQTransformerRegistry`
 
 ```typescript
-interface ITransformerRegistry {
-  register(typeKey: string | symbol, transformer: ITransformer): void;
-  get(typeKey: string | symbol): ITransformer | undefined;
+interface IQTransformerRegistry {
+  register(typeKey: string | symbol, transformer: IQTransformer): void;
+  get(typeKey: string | symbol): IQTransformer | undefined;
   has(typeKey: string | symbol): boolean;
   unregister(typeKey: string | symbol): void;
 }
@@ -146,33 +146,33 @@ interface ITransformerRegistry {
 #### `ModelDeserializer`
 
 - **Responsibility**: Convert plain interfaces → typed models
-- **Injection**: Receives `ITransformerRegistry` as dependency
+- **Injection**: Receives `IQTransformerRegistry` as dependency
 - **Usage**:
 
 ```typescript
-const deserializer = new ModelDeserializer(transformerRegistry);
+const deserializer = new ModelDeserializer(qTransformerRegistry);
 const model = deserializer.deserialize(data, UserModel);
 ```
 
 #### `ModelSerializer`
 
 - **Responsibility**: Convert typed models → plain interfaces
-- **Injection**: Receives `ITransformerRegistry` as dependency
+- **Injection**: Receives `IQTransformerRegistry` as dependency
 - **Usage**:
 
 ```typescript
-const serializer = new ModelSerializer(transformerRegistry);
+const serializer = new ModelSerializer(qTransformerRegistry);
 const interface = serializer.serialize(userModel);
 ```
 
 #### `ValidationService`
 
 - **Responsibility**: Validate models
-- **Injection**: Receives `IValidatorRegistry` as dependency
+- **Injection**: Receives `IQValidatorRegistry` as dependency
 - **Usage**:
 
 ```typescript
-const validator = new ValidationService(validatorRegistry);
+const validator = new ValidationService(qValidatorRegistry);
 const errors = validator.validate(model, UserModel);
 ```
 
@@ -182,21 +182,21 @@ const errors = validator.validate(model, UserModel);
 
 ```typescript
 // Global singleton
-export const transformerRegistry = new TransformerRegistry();
+export const qTransformerRegistry = new TransformerRegistry();
 
 // Register transformers
-transformerRegistry.register('date', new DateTransformer());
-transformerRegistry.register(QBigInt, new BigIntTransformer());
+qTransformerRegistry.register('date', new DateTransformer());
+qTransformerRegistry.register(QBigInt, new BigIntTransformer());
 ```
 
 #### `ValidatorRegistry`
 
 ```typescript
 // Global singleton
-export const validatorRegistry = new ValidatorRegistry();
+export const qValidatorRegistry = new ValidatorRegistry();
 
 // Register validators
-validatorRegistry.register('string', new StringValidator());
+qValidatorRegistry.register('string', new StringValidator());
 ```
 
 ### 4. **QModel** (`quick.model.ts`)
@@ -204,8 +204,8 @@ validatorRegistry.register('string', new StringValidator());
 ```typescript
 export abstract class QModel<TInterface> {
   // Dependency injection (static)
-  private static readonly deserializer = new ModelDeserializer(transformerRegistry);
-  private static readonly serializer = new ModelSerializer(transformerRegistry);
+  private static readonly deserializer = new ModelDeserializer(qTransformerRegistry);
+  private static readonly serializer = new ModelSerializer(qTransformerRegistry);
 
   constructor(data: TInterface) {
     /* ... */
@@ -273,9 +273,9 @@ export abstract class QModel<TInterface> {
 ### Add New Transformer
 
 ```typescript
-// 1. Create transformer (implements ITransformer)
-class UUIDTransformer implements ITransformer<string, UUID> {
-  transform(value: string, context: ITransformContext): UUID {
+// 1. Create transformer (implements IQTransformer)
+class UUIDTransformer implements IQTransformer<string, UUID> {
+  transform(value: string, context: IQTransformContext): UUID {
     return UUID.parse(value);
   }
 
@@ -286,7 +286,7 @@ class UUIDTransformer implements ITransformer<string, UUID> {
 
 // 2. Register
 export const UUIDField = Symbol('UUID');
-transformerRegistry.register(UUIDField, new UUIDTransformer());
+qTransformerRegistry.register(UUIDField, new UUIDTransformer());
 
 // 3. Use in model
 import { QModel, QType } from '@cartago-git/quickmodel';
@@ -300,9 +300,9 @@ class User extends QModel<IUser> implements QInterface<IUser> {
 ### Add New Validator
 
 ```typescript
-// 1. Create validator (implements IValidator)
-class EmailValidator implements IValidator {
-  validate(value: any, context: IValidationContext): IValidationResult {
+// 1. Create validator (implements IQValidator)
+class EmailValidator implements IQValidator {
+  validate(value: any, context: IQValidationContext): IQValidationResult {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (typeof value === 'string' && emailRegex.test(value)) {
       return { isValid: true };
@@ -315,15 +315,15 @@ class EmailValidator implements IValidator {
 }
 
 // 2. Register
-validatorRegistry.register('email', new EmailValidator());
+qValidatorRegistry.register('email', new EmailValidator());
 ```
 
 ### Create Custom Service
 
 ```typescript
 // Implements interfaces, uses dependency injection
-class CustomSerializer implements ISerializer<Model, Interface> {
-  constructor(private readonly registry: ITransformerRegistry) {}
+class CustomSerializer implements IQSerializer<Model, Interface> {
+  constructor(private readonly registry: IQTransformerRegistry) {}
 
   serialize(model: Model): Interface {
     // Custom implementation
@@ -331,7 +331,7 @@ class CustomSerializer implements ISerializer<Model, Interface> {
 }
 
 // Usage with injection
-const customSerializer = new CustomSerializer(transformerRegistry);
+const customSerializer = new CustomSerializer(qTransformerRegistry);
 ```
 
 ---

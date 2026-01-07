@@ -167,7 +167,7 @@ const user2 = User.fromJSON(json);
 import { QBigInt, QRegExp } from '@cartago-git/quickmodel/transformers';
 
 // Only core
-import { transformerRegistry, ITransformer } from '@cartago-git/quickmodel/core';
+import { qTransformerRegistry, IQTransformer } from '@cartago-git/quickmodel/core';
 ```
 
 ## 🔧 Package Development

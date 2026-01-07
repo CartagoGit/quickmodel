@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 type TypedArrayConstructor =
   | Int8ArrayConstructor
@@ -63,7 +63,7 @@ type TypedArray =
  */
 export class TypedArrayTransformer<T extends TypedArray>
   extends BaseTransformer<number[] | string[], T>
-  implements IValidator
+  implements IQValidator
 {
   /**
    * Creates a transformer for a specific TypedArray type.
@@ -148,7 +148,7 @@ export class TypedArrayTransformer<T extends TypedArray>
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof this.ArrayConstructor) {
       return { isValid: true };
     }

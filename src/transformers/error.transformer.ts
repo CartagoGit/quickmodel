@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IValidationContext, IValidationResult, IValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
 
 /**
  * Serialized representation of an Error object.
@@ -44,7 +44,7 @@ interface IErrorData {
  * console.log(data.lastError); // "TypeError: Invalid input"
  * ```
  */
-export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error> implements IValidator {
+export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error> implements IQValidator {
   /**
    * Converts a string or object to Error.
    * 
@@ -97,7 +97,7 @@ export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error
    * @param context - Validation context with property and class information
    * @returns Validation result
    */
-  validate(value: unknown, context: IValidationContext): IValidationResult {
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
     if (value instanceof Error) {
       return { isValid: true };
     }

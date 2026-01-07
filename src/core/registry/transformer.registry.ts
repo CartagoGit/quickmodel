@@ -33,11 +33,11 @@
  * ```
  */
 
-import { ITransformer, ITransformerRegistry } from '../interfaces';
+import { IQTransformer, IQTransformerRegistry } from '../interfaces';
 
 type TypeKey = string | symbol | Function;
 
-export class TransformerRegistry implements ITransformerRegistry {
+export class TransformerRegistry implements IQTransformerRegistry {
   private readonly transformers = new Map<TypeKey, ITransformer>();
 
   /**
@@ -46,7 +46,7 @@ export class TransformerRegistry implements ITransformerRegistry {
    * @param typeKey - The type identifier (constructor, string, or symbol)
    * @param transformer - The transformer instance to register
    */
-  register(typeKey: TypeKey, transformer: ITransformer): void {
+  register(typeKey: TypeKey, transformer: IQTransformer): void {
     this.transformers.set(typeKey, transformer);
   }
 
@@ -56,7 +56,7 @@ export class TransformerRegistry implements ITransformerRegistry {
    * @param typeKey - The type identifier to look up
    * @returns The transformer if found, undefined otherwise
    */
-  get(typeKey: TypeKey): ITransformer | undefined {
+  get(typeKey: TypeKey): IQTransformer | undefined {
     return this.transformers.get(typeKey);
   }
 
@@ -103,4 +103,4 @@ export class TransformerRegistry implements ITransformerRegistry {
  * This singleton is used throughout the library for consistent transformer access.
  * All built-in transformers are automatically registered to this instance.
  */
-export const transformerRegistry = new TransformerRegistry();
+export const qTransformerRegistry = new TransformerRegistry();
