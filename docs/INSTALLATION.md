@@ -35,7 +35,7 @@ Esto generará la carpeta `dist/` con:
 # Ver contenido de dist/
 ls -la dist/
 
-# Debe contener:
+# Should contain:
 # - index.js, index.mjs, index.d.ts
 # - transformers/
 # - core/

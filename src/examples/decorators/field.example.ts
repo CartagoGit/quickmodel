@@ -1,8 +1,8 @@
 /**
- * EJEMPLOS DE USO: Las 3 formas de usar @Field()
+ * USAGE EXAMPLES: The 3 ways to use @Field()
  * 
- * Este archivo demuestra las diferentes maneras de decorar campos
- * con sus ventajas y casos de uso.
+ * This file demonstrates the different ways to decorate fields
+ * with their advantages and use cases.
  */
 
 import { QuickModel } from '../../quick.model';
@@ -21,10 +21,10 @@ import {
 } from '../../core/interfaces/field-symbols.interface';
 
 // ============================================================================
-// FORMA 1: Auto-detección (para tipos básicos y Date, Map, Set)
+// FORM 1: Auto-detection (for basic types and Date, Map, Set)
 // ============================================================================
-// ✅ Ventajas: Menos código, más limpio
-// ❌ Limitaciones: Solo funciona con tipos que TypeScript puede detectar automáticamente
+// ✅ Advantages: Less code, cleaner
+// ❌ Limitations: Only works with types that TypeScript can detect automatically
 
 interface IForma1 {
   name: string;
@@ -36,18 +36,18 @@ interface IForma1 {
 }
 
 class Forma1_AutoDeteccion extends QuickModel<IForma1> {
-  @Field() name!: string;        // Auto-detecta string
-  @Field() age!: number;         // Auto-detecta number
-  @Field() active!: boolean;     // Auto-detecta boolean
-  @Field() createdAt!: Date;     // Auto-detecta Date
-  @Field() tags!: Map<string, number>;  // Auto-detecta Map
-  @Field() roles!: Set<string>;  // Auto-detecta Set
+  @Field() name!: string;        // Auto-detect string
+  @Field() age!: number;         // Auto-detect number
+  @Field() active!: boolean;     // Auto-detect boolean
+  @Field() createdAt!: Date;     // Auto-detect Date
+  @Field() tags!: Map<string, number>;  // Auto-detect Map
+  @Field() roles!: Set<string>;  // Auto-detect Set
 }
 
 // ============================================================================
-// FORMA 2: String Literals (RECOMENDADO ✨)
+// FORM 2: String Literals (RECOMMENDED ✨)
 // ============================================================================
-// ✅ Ventajas: IntelliSense completo, escribes @Field(' y TypeScript sugiere todos los tipos
+// ✅ Advantages: Full IntelliSense, type @Field(' and TypeScript suggests all types
 // ✅ Ventajas: Fácil de recordar, nombres descriptivos
 // ✅ Ventajas: No necesitas importar symbols
 
@@ -92,7 +92,7 @@ class Forma2_StringLiterals extends QuickModel<IForma2> {
   @Field('urlsearchparams')
   queryParams!: URLSearchParams;
   
-  // TypedArrays - también con IntelliSense
+  // TypedArrays - also with IntelliSense
   @Field('int8array')
   signedBytes!: Int8Array;
   
@@ -165,7 +165,7 @@ class Forma3A_Symbols extends QuickModel<IForma3A> {
 // FORMA 3B: Constructores (para tipos con constructor nativo)
 // ============================================================================
 // ✅ Ventajas: Natural, usa el mismo tipo que la propiedad
-// ❌ Limitaciones: No funciona con BigInt, Symbol (no son constructores reutilizables)
+// ❌ Limitations: Does not work with BigInt, Symbol (they are not reusable constructors)
 
 interface IForma3B {
   pattern: RegExp;
@@ -182,7 +182,7 @@ interface IForma3B {
 }
 
 class Forma3B_Constructors extends QuickModel<IForma3B> {
-  // Estos NO funcionan con constructor:
+  // These do NOT work with constructor:
   // @Field(BigInt) balance!: bigint;  // ❌ BigInt() es función de conversión
   // @Field(Symbol) key!: symbol;      // ❌ Symbol() siempre crea nuevo symbol
   // Usa @Field('bigint') o @Field(BigIntField) en su lugar
@@ -301,7 +301,7 @@ class PreferenciaConstructores extends QuickModel<IPreferencia> {
 }
 
 // ============================================================================
-// DEMO: Todas las formas funcionan igual
+// DEMO: All forms work the same
 // ============================================================================
 
 const testData = {
@@ -352,7 +352,7 @@ const model3 = Forma3B_Constructors.fromInterface({
   roles: ['admin'],
 });
 
-console.log('✅ Todas las formas funcionan correctamente!');
+console.log('✅ All forms work correctly!');
 console.log('💡 Recomendación: Usa string literals para mejor IntelliSense');
 
 export {

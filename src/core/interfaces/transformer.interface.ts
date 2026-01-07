@@ -1,6 +1,6 @@
 /**
- * SOLID - Single Responsibility: Cada transformer solo se encarga de UN tipo de transformación
- * SOLID - Interface Segregation: Interfaces específicas, no genéricas
+ * SOLID - Single Responsibility: Each transformer only handles ONE type of transformation
+ * SOLID - Interface Segregation: Specific interfaces, not generic
  */
 
 export interface ITransformer<TInput = any, TOutput = any> {

@@ -1,6 +1,6 @@
 /**
- * Clase para gestionar mocks de un modelo específico
- * Sigue el principio de Single Responsibility: solo se encarga de crear mocks
+ * Class for managing mocks of a specific model.
+ * Follows Single Responsibility Principle: only handles mock creation.
  */
 
 import type { MockGenerator, MockType } from '../services/mock-generator.service';
@@ -17,7 +17,7 @@ export class ModelMock<T> {
   // ============================================================================
 
   /**
-   * Crea un mock con valores vacíos/por defecto
+   * Creates a mock with empty/default values.
    * @example User.mock.empty() // { name: '', age: 0, active: false }
    */
   empty(overrides?: Partial<any>): T {
@@ -26,7 +26,7 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea un mock con valores aleatorios usando faker
+   * Creates a mock with random values using faker.
    * @example User.mock.random() // { name: 'dolor', age: 742, active: true }
    */
   random(overrides?: Partial<any>): T {
@@ -35,7 +35,7 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea un mock con valores de muestra predecibles
+   * Creates a mock with predictable sample values.
    * @example User.mock.sample() // { name: 'sample', age: 42, active: true }
    */
   sample(overrides?: Partial<any>): T {
@@ -44,7 +44,7 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea un mock con valores mínimos (solo campos requeridos)
+   * Creates a mock with minimal values (only required fields).
    */
   minimal(overrides?: Partial<any>): T {
     const data = this.generator.generate(this.modelClass, 'minimal', overrides);
@@ -52,7 +52,7 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea un mock con todos los campos completos
+   * Creates a mock with all fields populated.
    */
   full(overrides?: Partial<any>): T {
     const data = this.generator.generate(this.modelClass, 'full', overrides);
@@ -64,7 +64,7 @@ export class ModelMock<T> {
   // ============================================================================
 
   /**
-   * Crea una interfaz mock con valores vacíos
+   * Creates a mock interface with empty values.
    * @example User.mock.interfaceEmpty() // { name: '', age: 0 }
    */
   interfaceEmpty(overrides?: Partial<any>): ModelData<any> {
@@ -72,7 +72,7 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea una interfaz mock con valores aleatorios
+   * Creates a mock interface with random values.
    * @example User.mock.interfaceRandom() // { name: 'dolor', age: 742 }
    */
   interfaceRandom(overrides?: Partial<any>): ModelData<any> {
@@ -80,21 +80,21 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea una interfaz mock con valores de muestra
+   * Creates a mock interface with sample values.
    */
   interfaceSample(overrides?: Partial<any>): ModelData<any> {
     return this.generator.generate(this.modelClass, 'sample', overrides);
   }
 
   /**
-   * Crea una interfaz mock mínima
+   * Creates a minimal mock interface.
    */
   interfaceMinimal(overrides?: Partial<any>): ModelData<any> {
     return this.generator.generate(this.modelClass, 'minimal', overrides);
   }
 
   /**
-   * Crea una interfaz mock completa
+   * Creates a complete mock interface.
    */
   interfaceFull(overrides?: Partial<any>): ModelData<any> {
     return this.generator.generate(this.modelClass, 'full', overrides);
@@ -105,11 +105,11 @@ export class ModelMock<T> {
   // ============================================================================
 
   /**
-   * Crea un array de instancias mock
-   * @param count Cantidad de mocks a generar
-   * @param type Tipo de mock ('random' por defecto)
-   * @param overrides Función que retorna overrides por índice
-   * @example User.mock.array(5) // 5 usuarios aleatorios
+   * Creates an array of mock instances.
+   * @param count Number of mocks to generate
+   * @param type Mock type ('random' by default)
+   * @param overrides Function that returns overrides by index
+   * @example User.mock.array(5) // 5 random users
    * @example User.mock.array(3, 'sample', (i) => ({ name: `User${i}` }))
    */
   array(
@@ -128,8 +128,8 @@ export class ModelMock<T> {
   }
 
   /**
-   * Crea un array de interfaces mock (objetos planos)
-   * @example User.mock.interfaceArray(5) // Array de 5 interfaces
+   * Creates an array of mock interfaces (plain objects).
+   * @example User.mock.interfaceArray(5) // Array of 5 interfaces
    */
   interfaceArray(
     count: number,

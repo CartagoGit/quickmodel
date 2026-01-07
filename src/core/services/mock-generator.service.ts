@@ -1,6 +1,6 @@
 /**
- * Servicio para generar datos mock de modelos
- * Usa faker para generar datos aleatorios realistas
+ * Service for generating mock data for models.
+ * Uses faker to generate realistic random data.
  */
 
 import 'reflect-metadata';
@@ -14,7 +14,7 @@ export class MockGenerator {
   constructor(private readonly transformerRegistry: ITransformerRegistry) {}
 
   /**
-   * Genera un mock basado en los metadatos de reflect
+   * Generates a mock based on reflect metadata.
    */
   generate<T>(
     modelClass: new (data: any) => T,
@@ -28,7 +28,7 @@ export class MockGenerator {
     const properties = this.getDecoratedProperties(instance);
 
     for (const key of properties) {
-      // Si hay override, usarlo
+      // If override exists, use it
       if (key in overrides) {
         mock[key] = overrides[key];
         continue;
@@ -45,7 +45,7 @@ export class MockGenerator {
   }
 
   /**
-   * Genera un array de mocks
+   * Generates an array of mocks.
    */
   generateArray<T>(
     modelClass: new (data: any) => T,
@@ -62,10 +62,10 @@ export class MockGenerator {
   private getDecoratedProperties(instance: Record<string, unknown>): string[] {
     const properties: Set<string> = new Set();
 
-    // Recorrer la cadena de prototipos
+    // Traverse the prototype chain
     let current = instance;
     while (current && current !== Object.prototype) {
-      // Obtener la lista de propiedades registradas por @Field()
+      // Get the list of properties registered by @Field()
       const registeredFields = Reflect.getMetadata(FIELDS_METADATA_KEY, current) as string[] | undefined;
       
       if (registeredFields) {
@@ -92,17 +92,17 @@ export class MockGenerator {
       return this.generateArray(arrayElementClass, length, type);
     }
 
-    // Modelo anidado
+    // Nested model
     if (arrayElementClass && !fieldType) {
       return this.generate(arrayElementClass, type);
     }
 
-    // Por fieldType (tipos especiales)
+    // By fieldType (special types)
     if (fieldType) {
       return this.generateByFieldType(type, fieldType);
     }
 
-    // Por designType (auto-detección)
+    // By designType (auto-detection)
     if (designType) {
       return this.generateByDesignType(type, designType);
     }
@@ -117,22 +117,22 @@ export class MockGenerator {
       ? fieldType
       : fieldType.name;
 
-    // RegExp (debe ir antes de Symbol porque Symbol(RegExp) contiene ambas palabras)
+    // RegExp (must go before Symbol because Symbol(RegExp) contains both words)
     if (typeStr.includes('RegExp') || typeStr === 'regexp') {
       return this.getDefaultValue(type, 'regexp');
     }
 
-    // Error (debe ir antes de Symbol)
+    // Error (must go before Symbol)
     if (typeStr.includes('Error') || typeStr === 'error') {
       return this.getDefaultValue(type, 'error');
     }
 
-    // BigInt (debe ir antes de Symbol)
+    // BigInt (must go before Symbol)
     if (typeStr.includes('BigInt') || typeStr === 'bigint') {
       return this.getDefaultValue(type, 'bigint');
     }
 
-    // Symbol (debe ir después de los tipos que usan Symbol() como wrapper)
+    // Symbol (must go after types that use Symbol() as wrapper)
     if (typeStr === 'Symbol' || typeStr === 'symbol') {
       return this.getDefaultValue(type, 'symbol');
     }

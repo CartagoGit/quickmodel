@@ -222,7 +222,7 @@ Para obtener el mejor IntelliSense:
 ### Vim / Neovim
 - ✅ Plugin: coc-tsserver o nvim-lspconfig con tsserver
 
-No se requiere configuración especial - el IntelliSense funciona automáticamente con el tipo `FieldTypeString` exportado.
+No special configuration required - IntelliSense works automatically with the exported `FieldTypeString` type.
 
 ## 🚀 Resultado Final
 

@@ -1,6 +1,6 @@
 /**
- * SOLID - Open/Closed: Abierto para extensión, cerrado para modificación
- * SOLID - Dependency Inversion: Registrar transformers sin acoplar implementaciones
+ * SOLID - Open/Closed: Open for extension, closed for modification
+ * SOLID - Dependency Inversion: Register transformers without coupling implementations
  */
 
 import { ITransformer, IValidator } from './transformer.interface';

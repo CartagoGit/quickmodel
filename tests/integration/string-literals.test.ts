@@ -1,5 +1,5 @@
 /**
- * Test para verificar que los string literals funcionan correctamente con IntelliSense
+ * Test to verify that string literals work correctly with IntelliSense
  * 
  * Esto permite usar:
  * @Field('bigint') amount!: bigint;
@@ -144,7 +144,7 @@ describe('String Literals (@Field("type"))', () => {
     view: [5, 6, 7, 8],
   };
 
-  test('Debe deserializar correctamente usando string literals', () => {
+  test('Should deserialize correctly using string literals', () => {
     const model = ModelWithStringLiterals.fromInterface(testData);
 
     // Primitivos
@@ -186,7 +186,7 @@ describe('String Literals (@Field("type"))', () => {
     expect(model.view).toBeInstanceOf(DataView);
   });
 
-  test('Debe serializar correctamente', () => {
+  test('Should serialize correctly', () => {
     const model = ModelWithStringLiterals.fromInterface(testData);
     const serialized = model.toInterface();
     expect(serialized.name).toBe('Test');
@@ -203,7 +203,7 @@ describe('String Literals (@Field("type"))', () => {
     expect(serialized.bigInts).toEqual(['100', '200', '300']);
   });
 
-  test('Debe hacer round-trip correctamente', () => {
+  test('Should perform round-trip correctly', () => {
     const model1 = ModelWithStringLiterals.fromInterface(testData);
     const serialized = model1.toInterface();
     const model2 = ModelWithStringLiterals.fromInterface(serialized);
@@ -217,7 +217,7 @@ describe('String Literals (@Field("type"))', () => {
     expect(Array.from(model2.bigInts)).toEqual(Array.from(model1.bigInts));
   });
 
-  test('Debe funcionar con JSON', () => {
+  test('Should work with JSON', () => {
     const model1 = ModelWithStringLiterals.fromInterface(testData);
     const json = model1.toJSON();
     const model2 = ModelWithStringLiterals.fromJSON(json);

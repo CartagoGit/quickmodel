@@ -369,20 +369,20 @@ try {
 // CATEGORÍA 8: PROMESAS
 // ============================================
 
-console.log('\n═══ 8. TIPOS NO SERIALIZABLES (WeakMap, WeakSet, Promise, Function) ═══\n');
+console.log('\n═══ 8. NON-SERIALIZABLE TYPES (WeakMap, WeakSet, Promise, Function) ═══\n');
 
 console.log(
-  '⚠️  WeakMap: NO SOPORTADO - Las claves son referencias débiles, no se pueden serializar',
+  '⚠️  WeakMap: NOT SUPPORTED - Keys are weak references, cannot be serialized',
 );
-console.log('⚠️  WeakSet: NO SOPORTADO - Referencias débiles, no se pueden serializar');
-console.log('⚠️  Promise: NO SOPORTADO - Estado asíncrono, no se puede serializar');
-console.log('⚠️  Function: NO SOPORTADO - Código ejecutable, no se puede serializar');
-console.log('⚠️  Arrow Function: NO SOPORTADO');
-console.log('⚠️  Async Function: NO SOPORTADO');
-console.log('⚠️  Generator: NO SOPORTADO');
+console.log('⚠️  WeakSet: NOT SUPPORTED - Weak references, cannot be serialized');
+console.log('⚠️  Promise: NOT SUPPORTED - Async state, cannot be serialized');
+console.log('⚠️  Function: NOT SUPPORTED - Executable code, cannot be serialized');
+console.log('⚠️  Arrow Function: NOT SUPPORTED');
+console.log('⚠️  Async Function: NOT SUPPORTED');
+console.log('⚠️  Generator: NOT SUPPORTED');
 console.log('');
 console.log(
-  '   Estos tipos pueden existir en memoria pero no sobreviven a toInterface()/JSON.stringify()',
+  '   These types may exist in memory but do not survive toInterface()/JSON.stringify()',
 );
 console.log(
   '   Son tipos especiales del runtime de JavaScript que no tienen representación serializable.',

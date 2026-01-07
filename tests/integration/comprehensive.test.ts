@@ -341,7 +341,7 @@ try {
   const model5 = CompleteModel.fromInterface(testData);
 
   console.log('🔧 VERIFICANDO MÉTODOS ESTÁTICOS:');
-  console.log(`  ✓ fromInterface funciona: ${model5 instanceof CompleteModel ? '✅' : '❌'}`);
+  console.log(`  ✓ fromInterface works: ${model5 instanceof CompleteModel ? '✅' : '❌'}`);
   console.log(`  ✓ Datos correctos: ${model5.id === 'test-123' && model5.amount === 9007199254740991n ? '✅' : '❌'}\n`);
   passed += 2;
 
@@ -354,10 +354,10 @@ try {
   console.log(`✅ Tests pasados: ${passed}`);
   console.log(`❌ Tests fallidos: ${failed}`);
   console.log(`📊 Total: ${passed + failed}`);
-  console.log(`🎯 Tasa de éxito: ${((passed / (passed + failed)) * 100).toFixed(2)}%\n`);
+  console.log(`🎯 Success rate: ${((passed / (passed + failed)) * 100).toFixed(2)}%\n`);
 
-  console.log('🎉 TODOS LOS TIPOS SOPORTADOS FUNCIONAN CORRECTAMENTE!\n');
-  console.log('📋 TIPOS PROBADOS:');
+  console.log('🎉 ALL SUPPORTED TYPES WORK CORRECTLY!\n');
+  console.log('📋 TESTED TYPES:');
   console.log('   ✓ Primitivos: string, number, boolean, null, undefined');
   console.log('   ✓ Tipos especiales: BigInt, Symbol, RegExp, Error, Date, URL, URLSearchParams');
   console.log('   ✓ TypedArrays: Int8Array, Uint8Array, Float32Array, BigInt64Array, etc.');

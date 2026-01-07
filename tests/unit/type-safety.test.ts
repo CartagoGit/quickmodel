@@ -1,5 +1,5 @@
 /**
- * Test para verificar que el sistema de tipos funciona correctamente
+ * Test to verify that the type system works correctly
  * y que toInterface() retorna el tipo serializado correcto
  */
 
@@ -32,7 +32,7 @@ class TypeSafeModel extends QuickModel<ITypeSafeModel> {
 }
 
 describe('Type Safety', () => {
-  test('toInterface() debe retornar tipos serializados correctos', () => {
+  test('toInterface() should return correct serialized types', () => {
     const model = new TypeSafeModel({
       pattern: /test/gi,
       error: new Error('Test error'),
@@ -58,7 +58,7 @@ describe('Type Safety', () => {
     expect(serialized.tags).toEqual(['tag1', 'tag2']);
   });
 
-  test('fromInterface() debe aceptar datos serializados', () => {
+  test('fromInterface() should accept serialized data', () => {
     const serializedData = {
       pattern: '/test/gi',
       error: 'Error: Test error',
@@ -69,7 +69,7 @@ describe('Type Safety', () => {
 
     const model = TypeSafeModel.fromInterface(serializedData);
 
-    // Los tipos se restauran correctamente
+    // Types are restored correctly
     expect(model.pattern).toBeInstanceOf(RegExp);
     expect(model.error).toBeInstanceOf(Error);
     expect(typeof model.amount).toBe('bigint');
@@ -77,7 +77,7 @@ describe('Type Safety', () => {
     expect(model.tags).toBeInstanceOf(Set);
   });
 
-  test('fromInterface() también debe aceptar datos originales', () => {
+  test('fromInterface() should also accept original data', () => {
     const originalData = {
       pattern: /test/gi,
       error: new Error('Test error'),
@@ -104,13 +104,13 @@ describe('Type Safety', () => {
       tags: new Set(['a', 'b', 'c']),
     });
 
-    // Serializar
+    // Serialize
     const serialized = original.toInterface();
     
-    // Deserializar
+    // Deserialize
     const restored = TypeSafeModel.fromInterface(serialized);
 
-    // Verificar integridad
+    // Verify integrity
     expect(restored.pattern.source).toBe('test');
     expect(restored.pattern.flags).toBe('gi');
     expect(restored.error.message).toBe('Test error');

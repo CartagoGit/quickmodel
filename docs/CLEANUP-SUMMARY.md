@@ -4,7 +4,7 @@
 
 - ❌ `README.old.md` - README antiguo
 - ❌ `base.model.old.ts` - Implementación antigua
-- ❌ `tsconfig.json.bak` - Backup de configuración
+- ❌ `tsconfig.json.bak` - Configuration backup
 - ❌ `test-errors.ts` - Test obsoleto
 
 ## 📁 Archivos Movidos
@@ -76,7 +76,7 @@ pruebas/
 El paquete está completamente limpio y listo para:
 
 ```bash
-# Verificar contenido
+# Verify content
 npm pack --dry-run
 
 # Publicar
@@ -97,7 +97,7 @@ npm publish --access public
 1. ✅ README público optimizado para npm
 2. ✅ README de desarrollo separado
 3. ✅ Archivos obsoletos eliminados
-4. ✅ .npmignore configurado correctamente
+4. ✅ .npmignore configured correctly
 5. ✅ Documentación actualizada
 6. ✅ package.json limpio
 7. ✅ Estructura lista para producción

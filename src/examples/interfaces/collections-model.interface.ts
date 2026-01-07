@@ -22,7 +22,7 @@ export interface ICollectionsModel {
 }
 
 /**
- * Transformaciones aplicadas a ICollectionsModel
+ * Transformations applied to ICollectionsModel
  */
 export type CollectionsModelTransforms = {
   metadata: Map<string, any>;

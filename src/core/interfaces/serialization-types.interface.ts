@@ -1,7 +1,7 @@
 /**
- * Tipos utilitarios para serialización/deserialización type-safe
+ * Utility types for type-safe serialization/deserialization
  * 
- * Estos tipos mapean correctamente los tipos TypeScript a sus representaciones serializadas
+ * These types correctly map TypeScript types to their serialized representations
  */
 
 /**

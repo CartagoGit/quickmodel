@@ -54,7 +54,7 @@ export interface IComplexModel {
 }
 
 /**
- * Transformaciones aplicadas a IComplexModel
+ * Transformations applied to IComplexModel
  */
 export type ComplexModelTransforms = {
   pattern: RegExp;

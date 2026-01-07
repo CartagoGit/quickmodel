@@ -59,7 +59,7 @@ User.mockInterfaceArray(3, 'sample') // 3 objetos predecibles
 
 ```typescript
 describe('UserService', () => {
-  test('debe procesar usuario', () => {
+  test('should process user', () => {
     const user = User.mockSample();
     
     const result = service.process(user);
@@ -67,7 +67,7 @@ describe('UserService', () => {
     expect(result.name).toBe('sample');
   });
   
-  test('debe validar múltiples usuarios', () => {
+  test('should validate multiple users', () => {
     const users = User.mockArray(10);
     
     const valid = users.filter(u => service.validate(u));
@@ -120,7 +120,7 @@ class Company extends QuickModel<ICompany> {
   @Field(User) employees!: User[];
 }
 
-// Genera automáticamente usuarios mock anidados
+// Automatically generates nested mock users
 const company = Company.mockRandom();
 console.log(company.employees.length); // 1-3 usuarios aleatorios
 ```

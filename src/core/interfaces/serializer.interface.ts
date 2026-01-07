@@ -1,6 +1,6 @@
 /**
- * SOLID - Single Responsibility: Separar serialización de la lógica del modelo
- * SOLID - Dependency Inversion: Depender de abstracciones (interfaces)
+ * SOLID - Single Responsibility: Separate serialization from model logic
+ * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
  */
 
 export interface ISerializer<TModel extends Record<string, unknown>, TInterface> {
@@ -22,7 +22,7 @@ export interface IDeserializer<TInterface extends Record<string, unknown>, TMode
   deserialize(data: TInterface, modelClass: new (data: TInterface) => TModel): TModel;
 
   /**
-   * Deserializa desde JSON string
+   * Deserializes from JSON string.
    */
   deserializeFromJson(json: string, modelClass: new (data: any) => TModel): TModel;
 }

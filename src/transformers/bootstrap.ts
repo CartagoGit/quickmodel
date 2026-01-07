@@ -41,7 +41,7 @@ import { URLTransformer } from './url.transformer';
 import { URLSearchParamsTransformer } from './url-search-params.transformer';
 
 /**
- * Helper para registrar un transformer con múltiples aliases
+ * Helper to register a transformer with multiple aliases.
  */
 function registerTransformerWithAliases(
   keys: ReadonlyArray<string | symbol | Function>,
@@ -50,7 +50,7 @@ function registerTransformerWithAliases(
 ): void {
   keys.forEach((key) => {
     transformerRegistry.register(key, transformer);
-    // validatorRegistry solo acepta string | symbol, no Function
+    // validatorRegistry only accepts string | symbol, not Function
     if (withValidator && 'validate' in transformer && typeof key !== 'function') {
       validatorRegistry.register(key, transformer as IValidator);
     }
@@ -58,18 +58,18 @@ function registerTransformerWithAliases(
 }
 
 /**
- * Registrar transformers básicos
+ * Register basic transformers.
  */
 export function registerCoreTransformers(): void {
   // ========================================================================
-  // PRIMITIVOS: string, number, boolean
+  // PRIMITIVES: string, number, boolean
   // ========================================================================
-  // Estos tipos se auto-detectan por design:type, pero los registramos para
-  // permitir uso explícito: @Field('string'), @Field('number'), @Field('boolean')
+  // These types are auto-detected by design:type, but we register them to
+  // allow explicit use: @Field('string'), @Field('number'), @Field('boolean')
   //
-  // Uso en modelos:
-  //   @Field() name!: string;          // Auto-detectado
-  //   @Field('string') name!: string;  // Explícito
+  // Usage in models:
+  //   @Field() name!: string;          // Auto-detected
+  //   @Field('string') name!: string;  // Explicit
   // ========================================================================
   const primitives = ['string', 'number', 'boolean'] as const;
   primitives.forEach((type) => {
@@ -78,28 +78,28 @@ export function registerCoreTransformers(): void {
   });
 
   // ========================================================================
-  // DATE: Fechas con auto-detección y múltiples formas de uso
+  // DATE: Dates with auto-detection and multiple usage forms
   // ========================================================================
-  // Soporta 3 formas de decorar:
-  //   @Field() createdAt!: Date;        // Auto-detectado por design:type
+  // Supports 3 decoration forms:
+  //   @Field() createdAt!: Date;        // Auto-detected by design:type
   //   @Field('date') createdAt!: Date;  // String literal (IntelliSense)
-  //   @Field(Date) createdAt!: Date;    // Constructor nativo
+  //   @Field(Date) createdAt!: Date;    // Native constructor
   //
-  // Serialización: Date → ISO string ("2024-01-01T00:00:00.000Z")
+  // Serialization: Date → ISO string ("2024-01-01T00:00:00.000Z")
   // ========================================================================
   const dateTransformer = new DateTransformer();
   registerTransformerWithAliases(['date', Date], dateTransformer);
 
   // ========================================================================
-  // MAP & SET: Colecciones con auto-detección
+  // MAP & SET: Collections with auto-detection
   // ========================================================================
-  // Soportan 3 formas de decorar:
-  //   @Field() tags!: Map<string, number>;  // Auto-detectado
+  // Support 3 decoration forms:
+  //   @Field() tags!: Map<string, number>;  // Auto-detected
   //   @Field('map') tags!: Map<K, V>;       // String literal
   //   @Field(Map) tags!: Map<K, V>;         // Constructor
   //
-  // Serialización:
-  //   Map<K,V> → Record<K,V> (objeto plano)
+  // Serialization:
+  //   Map<K,V> → Record<K,V> (plain object)
   //   Set<T> → T[] (array)
   // ========================================================================
   const mapTransformer = new MapTransformer();
@@ -108,17 +108,17 @@ export function registerCoreTransformers(): void {
   registerTransformerWithAliases(['set', Set], setTransformer, false);
 
   // ========================================================================
-  // TIPOS ESPECIALES CON CONSTRUCTORES NATIVOS
+  // SPECIAL TYPES WITH NATIVE CONSTRUCTORS
   // ========================================================================
-  // Estos tipos tienen constructores nativos de JavaScript que pueden usarse
-  // directamente en el decorador, además del symbol especial y string literal.
+  // These types have native JavaScript constructors that can be used
+  // directly in the decorator, in addition to the special symbol and string literal.
   //
-  // Soportan 3 formas de decorar:
-  //   @Field(RegExpField) pattern!: RegExp;  // Symbol (forma original)
-  //   @Field(RegExp) pattern!: RegExp;       // Constructor nativo
+  // Support 3 decoration forms:
+  //   @Field(RegExpField) pattern!: RegExp;  // Symbol (original form)
+  //   @Field(RegExp) pattern!: RegExp;       // Native constructor
   //   @Field('regexp') pattern!: RegExp;     // String literal (IntelliSense)
   //
-  // Serialización:
+  // Serialization:
   //   RegExp → string: "/pattern/flags"
   //   Error → string: "ErrorName: message"
   //   URL → string: "https://example.com"
@@ -157,19 +157,19 @@ export function registerCoreTransformers(): void {
   });
 
   // ========================================================================
-  // BIGINT & SYMBOL: Tipos primitivos sin constructor reutilizable
+  // BIGINT & SYMBOL: Primitive types without reusable constructor
   // ========================================================================
-  // Estos tipos NO pueden usar el constructor directamente porque:
-  //   - BigInt() es una función de conversión, no un constructor
-  //   - Symbol() siempre crea un nuevo symbol único
+  // These types CANNOT use the constructor directly because:
+  //   - BigInt() is a conversion function, not a constructor
+  //   - Symbol() always creates a new unique symbol
   //
-  // Soportan 2 formas de decorar:
-  //   @Field(BigIntField) amount!: bigint;  // Symbol (requerido)
+  // Support 2 decoration forms:
+  //   @Field(BigIntField) amount!: bigint;  // Symbol (required)
   //   @Field('bigint') amount!: bigint;     // String literal (IntelliSense)
   //
-  // Serialización:
+  // Serialization:
   //   bigint → string: "9007199254740991"
-  //   symbol → string: "symbolKey" (usando Symbol.for/keyFor)
+  //   symbol → string: "symbolKey" (using Symbol.for/keyFor)
   // ========================================================================
   const bigintTransformer = new BigIntTransformer();
   registerTransformerWithAliases([BigIntField.toString(), 'bigint'], bigintTransformer);
@@ -178,15 +178,15 @@ export function registerCoreTransformers(): void {
   registerTransformerWithAliases([SymbolField.toString(), 'symbol'], symbolTransformer);
 
   // ========================================================================
-  // BUFFERS: ArrayBuffer y DataView
+  // BUFFERS: ArrayBuffer and DataView
   // ========================================================================
-  // Tipos de bajo nivel para manipulación binaria.
+  // Low-level types for binary manipulation.
   //
-  // Soportan 2 formas de decorar:
-  //   @Field(ArrayBufferField) buffer!: ArrayBuffer;  // Symbol (requerido)
+  // Support 2 decoration forms:
+  //   @Field(ArrayBufferField) buffer!: ArrayBuffer;  // Symbol (required)
   //   @Field('arraybuffer') buffer!: ArrayBuffer;     // String literal
   //
-  // Serialización: Buffer → number[] (array de bytes)
+  // Serialization: Buffer → number[] (byte array)
   // ========================================================================
   const bufferTransformers = [
     { field: ArrayBufferField, stringAlias: 'arraybuffer', Transformer: ArrayBufferTransformer },
@@ -199,18 +199,18 @@ export function registerCoreTransformers(): void {
   });
 
   // ========================================================================
-  // TYPED ARRAYS: Arrays tipados para datos numéricos eficientes
+  // TYPED ARRAYS: Typed arrays for efficient numeric data
   // ========================================================================
-  // Arrays optimizados para rendimiento con tipos numéricos específicos.
+  // Optimized arrays for performance with specific numeric types.
   //
-  // Soportan 3 formas de decorar:
-  //   @Field(Int8ArrayField) bytes!: Int8Array;  // Symbol (forma original)
-  //   @Field(Int8Array) bytes!: Int8Array;       // Constructor nativo
+  // Support 3 decoration forms:
+  //   @Field(Int8ArrayField) bytes!: Int8Array;  // Symbol (original form)
+  //   @Field(Int8Array) bytes!: Int8Array;       // Native constructor
   //   @Field('int8array') bytes!: Int8Array;     // String literal (IntelliSense)
   //
-  // Serialización:
+  // Serialization:
   //   Int8Array, Uint8Array, etc. → number[]
-  //   BigInt64Array, BigUint64Array → string[] (bigints como strings)
+  //   BigInt64Array, BigUint64Array → string[] (bigints as strings)
   // ========================================================================
   const typedArrays = [
     { field: Int8ArrayField, stringAlias: 'int8array', ArrayType: Int8Array, isBigInt: false },
@@ -231,5 +231,5 @@ export function registerCoreTransformers(): void {
   });
 }
 
-// Auto-inicializar
+// Auto-initialize
 registerCoreTransformers();

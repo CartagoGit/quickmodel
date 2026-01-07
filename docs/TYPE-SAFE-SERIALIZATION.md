@@ -74,12 +74,12 @@ interface IModelSerialized {
 }
 
 const serialized = model.toInterface() as unknown as IModelSerialized;
-expect(serialized.pattern).toBe('/test/gi'); // ✅ funciona pero feo
+expect(serialized.pattern).toBe('/test/gi'); // ✅ works but ugly
 
 // ✅ AHORA - TypeScript infiere correctamente
 const serialized = model.toInterface();
 // TypeScript SABE que serialized.pattern es string
-expect(serialized.pattern).toBe('/test/gi'); // ✅ funciona y limpio
+expect(serialized.pattern).toBe('/test/gi'); // ✅ works and clean
 ```
 
 ## Beneficios
@@ -125,7 +125,7 @@ const user2 = User.fromInterface({
   amount: 123n,         // bigint
 });
 
-// Ambos funcionan! 🎉
+// Both work! 🎉
 ```
 
 ### 3. **IntelliSense Completo**
@@ -178,7 +178,7 @@ const serialized = model.toInterface();
 Ver `tests/unit/type-safety.test.ts` para ejemplos completos:
 
 ```typescript
-test('toInterface() debe retornar tipos serializados correctos', () => {
+test('toInterface() should return correct serialized types', () => {
   const model = new TypeSafeModel({
     pattern: /test/gi,
     error: new Error('Test error'),

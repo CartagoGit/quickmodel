@@ -2,7 +2,7 @@
 
 ## Resumen de Cambios
 
-Se ha completado una reorganización exhaustiva de todas las interfaces, tipos y enums del proyecto, separándolos en archivos `.interface.ts` dedicados y organizados por funcionalidad lógica.
+A comprehensive reorganization of all interfaces, types and enums in the project has been completed, separating them into dedicated `.interface.ts` files and organized by logical functionality.
 
 **Cambio principal**: Todas las interfaces están en la carpeta `interfaces/`, sin carpetas `public/` o `types/` separadas.
 
@@ -125,10 +125,10 @@ Todos los archivos `.model.ts` re-exportan sus interfaces para mantener compatib
 export type { ISimpleModel, SimpleModelTransforms };
 ```
 
-Esto permite que el código existente siga funcionando:
+This allows existing code to continue working:
 
 ```typescript
-// Ambas formas funcionan
+// Both forms work
 import { ISimpleModel } from './simple.model';
 import { ISimpleModel } from './interfaces/simple-model.interface';
 ```
@@ -186,7 +186,7 @@ import { ISimpleModel } from './interfaces/simple-model.interface';
 ✅ **COMPLETADO**:
 
 1. Todas las interfaces extraídas y organizadas
-2. Build funcionando correctamente
+2. Build working correctly
 3. Tests pasando (2/2)
 4. Carpeta `core/public/` eliminada (movida a `core/interfaces/`)
 5. Archivo `transformers/types.ts` eliminado (deprecated)

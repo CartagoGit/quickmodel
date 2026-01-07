@@ -1,5 +1,5 @@
 /**
- * Test para verificar que el sistema de mocks funciona correctamente
+ * Test to verify that the mock system works correctly.
  */
 
 import { describe, expect, test } from 'bun:test';
@@ -24,8 +24,8 @@ class TestModel extends QuickModel<ITestModel> {
 }
 
 describe('Mock Generator', () => {
-  describe('Métodos mock para instancias', () => {
-    test('empty() debe crear instancia con valores vacíos', () => {
+  describe('Mock methods for instances', () => {
+    test('empty() should create instance with empty values', () => {
       const instance = TestModel.mock().empty() as TestModel;
 
       expect(instance).toBeInstanceOf(TestModel);
@@ -37,7 +37,7 @@ describe('Mock Generator', () => {
       expect(instance.createdAt).toBeInstanceOf(Date);
     });
 
-    test('random() debe crear instancia con valores aleatorios', () => {
+    test('random() should create instance with random values', () => {
       const instance = TestModel.mock().random() as TestModel;
 
       expect(instance).toBeInstanceOf(TestModel);
@@ -51,7 +51,7 @@ describe('Mock Generator', () => {
       expect(instance.createdAt).toBeInstanceOf(Date);
     });
 
-    test('sample() debe crear instancia con valores predecibles', () => {
+    test('sample() should create instance with predictable values', () => {
       const instance = TestModel.mock().sample() as TestModel;
 
       expect(instance).toBeInstanceOf(TestModel);
@@ -63,7 +63,7 @@ describe('Mock Generator', () => {
       expect(instance.createdAt).toBeInstanceOf(Date);
     });
 
-    test('empty() debe aceptar overrides', () => {
+    test('empty() should accept overrides', () => {
       const instance = TestModel.mock().empty({ name: 'Override', age: 99 }) as TestModel;
 
       expect(instance.name).toBe('Override');
@@ -73,7 +73,7 @@ describe('Mock Generator', () => {
   });
 
   describe('array()', () => {
-    test('debe crear array de mocks', () => {
+    test('should create array of mocks', () => {
       const mocks = TestModel.mock().array(5) as TestModel[];
 
       expect(Array.isArray(mocks)).toBe(true);
@@ -82,19 +82,19 @@ describe('Mock Generator', () => {
       expect(mocks[4]).toBeInstanceOf(TestModel);
     });
 
-    test('debe devolver array vacío cuando count es 0', () => {
+    test('should return empty array when count is 0', () => {
       const mocks = TestModel.mock().array(0) as TestModel[];
 
       expect(Array.isArray(mocks)).toBe(true);
       expect(mocks).toHaveLength(0);
     });
 
-    test('debe lanzar error cuando count es negativo', () => {
+    test('should throw error when count is negative', () => {
       expect(() => TestModel.mock().array(-1)).toThrow('Count must be non-negative');
       expect(() => TestModel.mock().array(-5)).toThrow('Count must be non-negative');
     });
 
-    test('debe aceptar tipo específico', () => {
+    test('should accept specific type', () => {
       const mocks = TestModel.mock().array(3, 'sample') as TestModel[];
 
       expect(mocks).toHaveLength(3);
@@ -103,7 +103,7 @@ describe('Mock Generator', () => {
       expect(mocks[2]!.name).toBe('sample');
     });
 
-    test('debe aceptar función de overrides por índice', () => {
+    test('should accept overrides function by index', () => {
       const mocks = TestModel.mock().array(3, 'sample', (i: number) => ({ name: `User${i}` })) as TestModel[];
 
       expect(mocks[0]!.name).toBe('User0');
@@ -112,8 +112,8 @@ describe('Mock Generator', () => {
     });
   });
 
-  describe('Métodos para interfaces (objetos planos)', () => {
-    test('interfaceEmpty() debe crear objeto plano con valores vacíos', () => {
+  describe('Methods for interfaces (plain objects)', () => {
+    test('interfaceEmpty() should create plain object with empty values', () => {
       const data = TestModel.mock().interfaceEmpty() as ITestModel;
 
       expect(data).not.toBeInstanceOf(TestModel);
@@ -123,7 +123,7 @@ describe('Mock Generator', () => {
       expect(data.active).toBe(false);
     });
 
-    test('interfaceRandom() debe crear objeto plano aleatorio', () => {
+    test('interfaceRandom() should create random plain object', () => {
       const data = TestModel.mock().interfaceRandom() as ITestModel;
 
       expect(data).not.toBeInstanceOf(TestModel);
@@ -131,13 +131,13 @@ describe('Mock Generator', () => {
       expect(data.name).not.toBe('');
     });
 
-    test('interfaceSample() debe crear objeto plano con valores predecibles', () => {
+    test('interfaceSample() should create plain object with predictable values', () => {
       const data = TestModel.mock().interfaceSample() as ITestModel;
       expect(data.name).toBe('sample');
       expect(data.age).toBe(42);
     });
 
-    test('interfaceArray() debe crear array de objetos planos', () => {
+    test('interfaceArray() should create array of plain objects', () => {
       const mocks = TestModel.mock().interfaceArray(5) as ITestModel[];
 
       expect(Array.isArray(mocks)).toBe(true);
@@ -146,21 +146,21 @@ describe('Mock Generator', () => {
       expect(typeof mocks[0]).toBe('object');
     });
 
-    test('interfaceArray() debe devolver array vacío cuando count es 0', () => {
+    test('interfaceArray() should return empty array when count is 0', () => {
       const mocks = TestModel.mock().interfaceArray(0) as ITestModel[];
 
       expect(Array.isArray(mocks)).toBe(true);
       expect(mocks).toHaveLength(0);
     });
 
-    test('interfaceArray() debe lanzar error cuando count es negativo', () => {
+    test('interfaceArray() should throw error when count is negative', () => {
       expect(() => TestModel.mock().interfaceArray(-1)).toThrow('Count must be non-negative');
       expect(() => TestModel.mock().interfaceArray(-10)).toThrow('Count must be non-negative');
     });
   });
 
-  describe('Serialización de mocks', () => {
-    test('random().toInterface() debe funcionar correctamente', () => {
+  describe('Mock serialization', () => {
+    test('random().toInterface() should work correctly', () => {
       const instance = TestModel.mock().random() as TestModel;
       const serialized = instance.toInterface();
 
@@ -171,7 +171,7 @@ describe('Mock Generator', () => {
       expect(typeof serialized.createdAt).toBe('string');
     });
 
-    test('fromInterface(interfaceRandom()) debe crear instancia válida', () => {
+    test('fromInterface(interfaceRandom()) should create valid instance', () => {
       const mockData = TestModel.mock().interfaceRandom() as ITestModel;
       const instance = TestModel.fromInterface(mockData);
 

@@ -29,7 +29,7 @@ export interface IBinaryModel {
 }
 
 /**
- * Transformaciones aplicadas a IBinaryModel
+ * Transformations applied to IBinaryModel
  */
 export type BinaryModelTransforms = {
   int8Data: Int8Array;

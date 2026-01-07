@@ -10,7 +10,7 @@
 4. **test-errors.ts** - Test que usa imports antiguos
 
 ### ⚠️ Carpeta _archived/
-Contiene archivos ya archivados, verificar si son necesarios:
+Contains already archived files, check if necessary:
 - base.model.v2.ts
 - racer/vehicle models (del proyecto original deathblitz)
 - Tests antiguos (test-final, test-intrinsic-types, etc.)
@@ -41,8 +41,8 @@ Contiene archivos ya archivados, verificar si son necesarios:
 
 ### 🔍 Revisar:
 - ESTADO-PROYECTO.md - ¿Aún relevante?
-- SOLID-ARCHITECTURE.md - Verificar referencias a BaseModel
-- README.md - Verificar ejemplos
+- SOLID-ARCHITECTURE.md - Verify references to BaseModel
+- README.md - Verify examples
 
 ## 🔧 Código - Estado
 
@@ -71,6 +71,6 @@ Contiene archivos ya archivados, verificar si son necesarios:
 
 4. **Decidir sobre ESTADO-PROYECTO.md**: ¿Mantener o eliminar?
 
-5. **Verificar _archived/**: ¿Mantener archivados o eliminar?
+5. **Verify _archived/**: Keep archived or delete?
 
 6. **Barrels**: **MANTENER** todos los index.ts (son necesarios)

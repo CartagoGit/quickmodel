@@ -17,7 +17,7 @@ Documentación técnica detallada sobre la arquitectura SOLID del sistema:
 
 ### [Installation Guide](INSTALLATION.md)
 
-Guía completa de instalación y configuración:
+Complete installation and configuration guide:
 
 - Instalación del paquete (npm, yarn, pnpm, bun)
 - Configuración de TypeScript

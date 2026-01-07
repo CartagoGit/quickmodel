@@ -1,5 +1,5 @@
 /**
- * Test para verificar que los aliases de constructores funcionan correctamente
+ * Test to verify that constructor aliases work correctly
  * 
  * Esto permite usar tanto:
  * - @Field(RegExp) como @Field(RegExpField)
@@ -119,7 +119,7 @@ describe('Constructor Aliases', () => {
   };
 
   describe('Usando constructores nativos (@Field(RegExp), @Field(Error), etc.)', () => {
-    test('Debe serializar correctamente', () => {
+    test('Should serialize correctly', () => {
       const model = new ModelWithConstructors(testData);
 
       const serialized = model.toInterface();
@@ -132,7 +132,7 @@ describe('Constructor Aliases', () => {
       expect(serialized.bytes2).toEqual([10, 20, 30, 40]);
     });
 
-    test('Debe deserializar correctamente', () => {
+    test('Should deserialize correctly', () => {
       const data = {
         pattern: '/test/gi',
         error: 'Error: Test error',
@@ -165,7 +165,7 @@ describe('Constructor Aliases', () => {
       expect(Array.from(model.bytes2)).toEqual([10, 20, 30, 40]);
     });
 
-    test('Debe hacer round-trip correctamente', () => {
+    test('Should perform round-trip correctly', () => {
       const original = new ModelWithConstructors(testData);
 
       const serialized = original.toInterface();
@@ -181,7 +181,7 @@ describe('Constructor Aliases', () => {
   });
 
   describe('Usando symbols (@Field(RegExpField), @Field(ErrorField), etc.)', () => {
-    test('Debe serializar correctamente', () => {
+    test('Should serialize correctly', () => {
       const model = new ModelWithSymbols(testData);
 
       const serialized = model.toInterface();
@@ -194,7 +194,7 @@ describe('Constructor Aliases', () => {
       expect(serialized.bytes2).toEqual([10, 20, 30, 40]);
     });
 
-    test('Debe deserializar correctamente', () => {
+    test('Should deserialize correctly', () => {
       const data = {
         pattern: '/test/gi',
         error: 'Error: Test error',
@@ -227,7 +227,7 @@ describe('Constructor Aliases', () => {
       expect(Array.from(model.bytes2)).toEqual([10, 20, 30, 40]);
     });
 
-    test('Debe hacer round-trip correctamente', () => {
+    test('Should perform round-trip correctly', () => {
       const original = new ModelWithSymbols(testData);
 
       const serialized = original.toInterface();
@@ -242,8 +242,8 @@ describe('Constructor Aliases', () => {
     });
   });
 
-  describe('Ambos enfoques deben producir el mismo resultado', () => {
-    test('La serialización debe ser idéntica', () => {
+  describe('Both approaches should produce the same result', () => {
+    test('Serialization should be identical', () => {
       const model1 = new ModelWithConstructors(testData);
       const model2 = new ModelWithSymbols(testData);
 
@@ -253,7 +253,7 @@ describe('Constructor Aliases', () => {
       expect(serialized1).toEqual(serialized2);
     });
 
-    test('La deserialización debe ser idéntica', () => {
+    test('Deserialization should be identical', () => {
       const data = {
         pattern: '/test/gi',
         error: 'Error: Test error',

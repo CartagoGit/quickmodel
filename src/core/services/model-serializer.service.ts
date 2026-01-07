@@ -196,7 +196,7 @@ export class ModelSerializer<
       if (value instanceof Float32Array) return Array.from(value);
       if (value instanceof Float64Array) return Array.from(value);
       if (value instanceof Uint8ClampedArray) return Array.from(value);
-      // Nunca debería llegar aquí
+      // Should never reach here
       return [];
     }
 
@@ -212,7 +212,7 @@ export class ModelSerializer<
       return transformer ? transformer.toInterface(value) : Array.from(new Uint8Array(value.buffer));
     }
 
-    // Modelo anidado
+    // Nested model
     if (typeof value === 'object' && value !== null && 'toInterface' in value && typeof value.toInterface === 'function') {
       return value.toInterface();
     }
@@ -237,7 +237,7 @@ export class ModelSerializer<
       return transformer ? transformer.toInterface(value) : Array.from(value);
     }
 
-    // Primitivo
+    // Primitive
     return value;
   }
 }

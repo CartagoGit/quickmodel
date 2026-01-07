@@ -1,6 +1,6 @@
 /**
- * Error personalizado para QuickModel
- * Proporciona información contextual adicional sobre errores de transformación
+ * Custom error for QuickModel.
+ * Provides additional contextual information about transformation errors.
  */
 export class QuickModelError extends Error {
   constructor(
@@ -15,14 +15,14 @@ export class QuickModelError extends Error {
     super(message);
     this.name = 'QuickModelError';
 
-    // Mantener stack trace correcto
+    // Maintain correct stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QuickModelError);
     }
   }
 
   /**
-   * Helper para crear errores de tipo inválido
+   * Helper to create invalid type errors.
    */
   static invalidType(
     className: string,
@@ -43,7 +43,7 @@ export class QuickModelError extends Error {
   }
 
   /**
-   * Helper para crear errores de valor inválido
+   * Helper to create invalid value errors.
    */
   static invalidValue(
     className: string,

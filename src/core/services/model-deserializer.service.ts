@@ -222,7 +222,7 @@ export class ModelDeserializer<
       throw new Error(`${context.className}.${context.propertyKey}: Invalid Set value`);
     }
 
-    // Modelo anidado
+    // Nested model
     if (
       designType !== String &&
       designType !== Number &&

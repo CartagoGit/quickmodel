@@ -26,7 +26,7 @@ export interface ISimpleModel {
 }
 
 /**
- * Transformaciones aplicadas a ISimpleModel
+ * Transformations applied to ISimpleModel
  */
 export type SimpleModelTransforms = {
   largeNumber: bigint;

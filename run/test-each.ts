@@ -2,7 +2,7 @@
 
 /**
  * Ejecuta cada test individual con su propio ejecutable
- * Permite ver el resultado de cada uno por separado
+ * Allows viewing the result of each one separately
  */
 
 import { execSync } from 'child_process';
