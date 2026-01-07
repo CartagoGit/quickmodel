@@ -29,7 +29,7 @@ Esto generará la carpeta `dist/` con:
 - Definiciones TypeScript (.d.ts)
 - Source maps
 
-### 3. Verificar el Build
+### 3. Verify the Build
 
 ```bash
 # Ver contenido de dist/
@@ -175,9 +175,9 @@ import { transformerRegistry, ITransformer } from '@cartago-git/quickmodel/core'
 
 ```
 pruebas/
-├── package.json           # Configuración del paquete npm
-├── tsconfig.json          # Configuración TypeScript
-├── tsup.config.ts         # Configuración del bundler
+├── package.json           # npm package configuration
+├── tsconfig.json          # TypeScript configuration
+├── tsup.config.ts         # Bundler configuration
 ├── index.ts               # Punto de entrada principal
 ├── .npmignore             # Archivos excluidos de npm
 ├── .gitignore             # Archivos excluidos de git
@@ -210,10 +210,10 @@ bun test                 # Tests con Bun
 bun run test:all         # Ejecutar todos los tests
 
 # Validación
-bun run typecheck        # Verificar tipos sin compilar
+bun run typecheck        # Verify types without compiling
 
 # Publicación
-bun run prepublishOnly   # Se ejecuta automáticamente antes de npm publish
+bun run prepublishOnly   # Runs automatically before npm publish
 ```
 
 ## 📝 Actualizar el Paquete
@@ -248,7 +248,7 @@ npm update @cartago-git/quickmodel
 npm install @cartago-git/quickmodel@latest
 ```
 
-## 🔍 Verificar el Paquete
+## 🔍 Verify the Package
 
 ### Antes de Publicar
 
@@ -264,7 +264,7 @@ npm pack
 npm install /path/to/deathblitz-solid-models-1.0.0.tgz
 ```
 
-### Verificar Exports
+### Verify Exports
 
 ```bash
 # Ver exports del paquete
@@ -324,20 +324,20 @@ Solución: Agregar a `tsconfig.json`:
 
 Solución:
 
-1. Verificar que el paquete está en `node_modules/`
-2. Ejecutar `npm install`
-3. Verificar ruta en `package.json`
+1. Verify that the package is in `node_modules/`
+2. Run `npm install`
+3. Verify path in `package.json`
 
-### Build falla
+### Build fails
 
-Solución:
+Solution:
 
 ```bash
-# Limpiar y rebuildar
+# Clean and rebuild
 bun run clean
 bun run build
 
-# Verificar tipos
+# Verify types
 bun run typecheck
 ```
 

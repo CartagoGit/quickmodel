@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Ejecuta cada test individual con su propio ejecutable
+ * Runs each individual test with its own executable
  * Allows viewing the result of each one separately
  */
 
@@ -9,12 +9,12 @@ import { execSync } from 'child_process';
 import { join } from 'path';
 
 console.log('╔══════════════════════════════════════════════════════════════╗');
-console.log('║          EJECUTANDO TESTS INDIVIDUALMENTE                     ║');
+console.log('║          RUNNING TESTS INDIVIDUALLY                         ║');
 console.log('╚══════════════════════════════════════════════════════════════╝\n');
 
 const projectRoot = join(__dirname, '..');
 
-// Encontrar todos los archivos .ts que son ejecutables
+// Find all executable .ts files
 const testFiles = [
   'tests/integration/quick-model.test.ts',
   'tests/integration/all-types.test.ts',
@@ -27,7 +27,7 @@ let failedTests = 0;
 
 for (const file of testFiles) {
   const filePath = join(projectRoot, file);
-  console.log(`\n🚀 Ejecutando: ${file}`);
+  console.log(`\n🚀 Running: ${file}`);
   console.log('═'.repeat(60));
 
   try {
@@ -39,7 +39,7 @@ for (const file of testFiles) {
 
     console.log(output);
     passedTests++;
-    console.log(`✅ COMPLETADO: ${file}`);
+    console.log(`✅ COMPLETED: ${file}`);
   } catch (error: any) {
     failedTests++;
     console.log(error.stdout || error.stderr || error.message);
@@ -50,12 +50,12 @@ for (const file of testFiles) {
   console.log('═'.repeat(60));
 }
 
-// Resumen
+// Summary
 console.log('\n╔══════════════════════════════════════════════════════════════╗');
-console.log('║                      RESUMEN FINAL                            ║');
+console.log('║                      FINAL SUMMARY                             ║');
 console.log('╚══════════════════════════════════════════════════════════════╝');
-console.log(`Total ejecutados: ${totalTests}`);
-console.log(`✅ Exitosos: ${passedTests}`);
-console.log(`❌ Fallidos: ${failedTests}\n`);
+console.log(`Total executed: ${totalTests}`);
+console.log(`✅ Successful: ${passedTests}`);
+console.log(`❌ Failed: ${failedTests}\n`);
 
 process.exit(failedTests > 0 ? 1 : 0);

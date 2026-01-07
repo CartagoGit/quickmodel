@@ -48,8 +48,8 @@ class Forma1_AutoDeteccion extends QuickModel<IForma1> {
 // FORM 2: String Literals (RECOMMENDED ✨)
 // ============================================================================
 // ✅ Advantages: Full IntelliSense, type @Field(' and TypeScript suggests all types
-// ✅ Ventajas: Fácil de recordar, nombres descriptivos
-// ✅ Ventajas: No necesitas importar symbols
+// ✅ Advantages: Easy to remember, descriptive names
+// ✅ Advantages: No need to import symbols
 
 interface IForma2 {
   balance: bigint;
@@ -71,7 +71,7 @@ interface IForma2 {
 }
 
 class Forma2_StringLiterals extends QuickModel<IForma2> {
-  // Tipos especiales - al escribir @Field(' el editor sugiere:
+  // Special types - when typing @Field(' the editor suggests:
   // 'bigint', 'symbol', 'regexp', 'error', 'url', etc.
   
   @Field('bigint')
@@ -105,16 +105,16 @@ class Forma2_StringLiterals extends QuickModel<IForma2> {
   @Field('bigint64array')
   bigInts!: BigInt64Array;
   
-  // Puedes mezclar con auto-detección
+  // You can mix with auto-detection
   @Field() name!: string;
-  @Field('date') createdAt!: Date;  // Explícito aunque se auto-detecta
+  @Field('date') createdAt!: Date;  // Explicit even though it's auto-detected
 }
 
 // ============================================================================
-// FORMA 3A: Symbols (forma original)
+// FORM 3A: Symbols (original form)
 // ============================================================================
-// ✅ Ventajas: Explícito, no hay ambigüedad
-// ❌ Desventajas: Requiere importar los symbols
+// ✅ Advantages: Explicit, no ambiguity
+// ❌ Disadvantages: Requires importing symbols
 
 interface IForma3A {
   balance: bigint;
@@ -162,9 +162,9 @@ class Forma3A_Symbols extends QuickModel<IForma3A> {
 }
 
 // ============================================================================
-// FORMA 3B: Constructores (para tipos con constructor nativo)
+// FORM 3B: Constructors (for types with native constructor)
 // ============================================================================
-// ✅ Ventajas: Natural, usa el mismo tipo que la propiedad
+// ✅ Advantages: Natural, uses the same type as the property
 // ❌ Limitations: Does not work with BigInt, Symbol (they are not reusable constructors)
 
 interface IForma3B {
@@ -183,9 +183,9 @@ interface IForma3B {
 
 class Forma3B_Constructors extends QuickModel<IForma3B> {
   // These do NOT work with constructor:
-  // @Field(BigInt) balance!: bigint;  // ❌ BigInt() es función de conversión
-  // @Field(Symbol) key!: symbol;      // ❌ Symbol() siempre crea nuevo symbol
-  // Usa @Field('bigint') o @Field(BigIntField) en su lugar
+  // @Field(BigInt) balance!: bigint;  // ❌ BigInt() is a conversion function
+  // @Field(Symbol) key!: symbol;      // ❌ Symbol() always creates new symbol
+  // Use @Field('bigint') or @Field(BigIntField) instead
   
   @Field(RegExp)
   pattern!: RegExp;
@@ -222,15 +222,15 @@ class Forma3B_Constructors extends QuickModel<IForma3B> {
 }
 
 // ============================================================================
-// RECOMENDACIONES DE USO
+// USAGE RECOMMENDATIONS
 // ============================================================================
 
 /**
- * CASO 1: Proyecto nuevo
- * → Usa STRING LITERALS (@Field('type')) en todos los casos especiales
- * → Usa auto-detección (@Field()) para primitivos, Date, Map, Set
+ * CASE 1: New project
+ * → Use STRING LITERALS (@Field('type')) for all special cases
+ * → Use auto-detection (@Field()) for primitives, Date, Map, Set
  * 
- * Ventajas: Máximo IntelliSense, fácil de recordar, no necesitas importar symbols
+ * Advantages: Maximum IntelliSense, easy to remember, no need to import symbols
  */
 interface IRecomendacion {
   id: string;
@@ -253,11 +253,11 @@ class RecomendacionProyectoNuevo extends QuickModel<IRecomendacion> {
 }
 
 /**
- * CASO 2: Migración de código existente con Symbols
- * → Mantén los symbols si ya los tienes
- * → Puedes migrar gradualmente a string literals
+ * CASE 2: Migration of existing code with Symbols
+ * → Keep symbols if you already have them
+ * → You can migrate gradually to string literals
  * 
- * Ventajas: No rompe código existente, migración opcional
+ * Advantages: Doesn't break existing code, optional migration
  */
 interface IMigracion {
   oldCode: bigint;
@@ -267,18 +267,18 @@ interface IMigracion {
 }
 
 class MigracionGradual extends QuickModel<IMigracion> {
-  @Field(BigIntField) oldCode!: bigint;     // Código existente
-  @Field('regexp') newCode!: RegExp;        // Nuevo código con strings
+  @Field(BigIntField) oldCode!: bigint;     // Existing code
+  @Field('regexp') newCode!: RegExp;        // New code with strings
   @Field(Int8ArrayField) legacy!: Int8Array;
   @Field('float32array') modern!: Float32Array;
 }
 
 /**
- * CASO 3: Preferencia por constructores nativos
- * → Usa constructores donde sea posible
- * → Usa string literals para BigInt y Symbol (sin constructor)
+ * CASE 3: Preference for native constructors
+ * → Use constructors where possible
+ * → Use string literals for BigInt and Symbol (no constructor)
  * 
- * Ventajas: Natural, el decorador usa el mismo tipo que la propiedad
+ * Advantages: Natural, the decorator uses the same type as the property
  */
 interface IPreferencia {
   pattern: RegExp;
@@ -294,8 +294,8 @@ class PreferenciaConstructores extends QuickModel<IPreferencia> {
   @Field(RegExp) pattern!: RegExp;
   @Field(URL) homepage!: URL;
   @Field(Error) lastError!: Error;
-  @Field('bigint') balance!: bigint;  // No tiene constructor usable
-  @Field('symbol') key!: symbol;      // No tiene constructor usable
+  @Field('bigint') balance!: bigint;  // No usable constructor
+  @Field('symbol') key!: symbol;      // No usable constructor
   @Field(Date) createdAt!: Date;
   @Field(Map) settings!: Map<string, any>;
 }
@@ -310,7 +310,7 @@ const testData = {
   bytes: [1, 2, 3],
 };
 
-// Todas deserializan igual
+// All deserialize the same
 const model1 = Forma2_StringLiterals.fromInterface({
   ...testData,
   name: 'Test',
@@ -353,7 +353,7 @@ const model3 = Forma3B_Constructors.fromInterface({
 });
 
 console.log('✅ All forms work correctly!');
-console.log('💡 Recomendación: Usa string literals para mejor IntelliSense');
+console.log('💡 Recommendation: Use string literals for better IntelliSense');
 
 export {
   Forma1_AutoDeteccion,

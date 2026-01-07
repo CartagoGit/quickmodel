@@ -183,7 +183,7 @@ import { ISimpleModel } from './interfaces/simple-model.interface';
 
 ## Próximos Pasos
 
-✅ **COMPLETADO**:
+✅ **COMPLETED**:
 
 1. Todas las interfaces extraídas y organizadas
 2. Build working correctly

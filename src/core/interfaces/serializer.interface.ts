@@ -5,7 +5,7 @@
 
 export interface ISerializer<TModel extends Record<string, unknown>, TInterface> {
   /**
-   * Serializa un modelo a su representación de interfaz
+   * Serializes a model to its interface representation
    */
   serialize(model: TModel): TInterface;
 

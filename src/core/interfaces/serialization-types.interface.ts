@@ -5,7 +5,7 @@
  */
 
 /**
- * Mapea un tipo TypeScript a su versión serializada
+ * Maps a TypeScript type to its serialized version
  */
 export type Serialized<T> = T extends RegExp
   ? string
@@ -58,7 +58,7 @@ export type Serialized<T> = T extends RegExp
   : T; // primitivos (string, number, boolean, null, undefined)
 
 /**
- * Mapea una interfaz completa a su versión serializada
+ * Maps a complete interface to its serialized version
  */
 export type SerializedInterface<T> = {
   [K in keyof T]: Serialized<T[K]>;
@@ -67,7 +67,7 @@ export type SerializedInterface<T> = {
 /**
  * Mapea un tipo serializado de vuelta a su tipo original
  */
-export type Deserialized<T> = T; // La deserialización se maneja en runtime con transformers
+export type Deserialized<T> = T; // Deserialization handled at runtime with transformers
 
 /**
  * Tipo para datos de entrada en el constructor

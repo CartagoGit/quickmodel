@@ -1,7 +1,7 @@
 /**
  * Test to verify that string literals work correctly with IntelliSense
  * 
- * Esto permite usar:
+ * This allows using:
  * @Field('bigint') amount!: bigint;
  * @Field('regexp') pattern!: RegExp;
  * etc.

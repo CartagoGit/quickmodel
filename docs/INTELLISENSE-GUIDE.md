@@ -208,7 +208,7 @@ Si cambias el nombre de un string literal en el futuro, TypeScript encontrará t
 | `@Field(Constructor)`  | Si prefieres consistencia con el tipo          | ⭐⭐⭐⭐      |
 | `@Field()`             | Solo para tipos auto-detectables              | ⭐⭐⭐⭐      |
 
-## 💻 Configuración del Editor
+## 💻 Editor Configuration
 
 Para obtener el mejor IntelliSense:
 

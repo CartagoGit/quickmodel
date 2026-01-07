@@ -12,9 +12,9 @@ Sistema profesional de serialización/deserialización de modelos TypeScript con
 
 - 🏗️ **Arquitectura SOLID** completa con servicios independientes
 - 🔄 **30+ tipos JavaScript/TypeScript** soportados (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, etc.)
-- 🎯 **Type-Safe Serialization**: `toInterface()` retorna tipos serializados correctos automáticamente
+- 🎯 **Type-Safe Serialization**: `toInterface()` automatically returns correct serialized types
 - 💡 **Inferencia de tipos**: TypeScript sabe que `RegExp → string`, `BigInt → string`, etc.
-- ✨ **3 formas de uso**: Símbolos, Constructores, String literals con IntelliSense
+- ✨ **3 usage forms**: Symbols, Constructors, String literals with IntelliSense
 - 🎭 **Sistema de Mocks**: 6 tipos de mocks + arrays con [@faker-js/faker](https://fakerjs.dev/)
 - ✅ **Validación automática** en runtime
 - 📦 **Modelos anidados** infinitos
@@ -60,7 +60,7 @@ type UserTransforms = {
 class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
   @Field() id!: string;
   @Field() name!: string;
-  // 3 formas equivalentes para tipos especiales:
+  // 3 equivalent forms for special types:
   @Field(BigIntField) balance!: bigint;   // Symbol (forma original)
   // @Field('bigint') balance!: bigint;   // String literal (IntelliSense ✨)
   
@@ -88,7 +88,7 @@ const user = new User({
 console.log(user.balance); // bigint: 999999999999999999n
 console.log(user.createdAt); // Date object
 
-// Serializar a interfaz
+// Serialize to interface
 const data = user.toInterface();
 console.log(data.balance); // string: "999999999999999999"
 console.log(data.createdAt); // string: "2024-01-01T00:00:00.000Z"
@@ -123,9 +123,9 @@ const usersData = User.mockInterfaceArray(50); // Para seeders
 
 ## 🔧 Tipos Soportados
 
-### Formas de Uso del Decorador @Field()
+### @Field() Decorator Usage Forms
 
-Cada tipo soporta **hasta 3 formas equivalentes**:
+Each type supports **up to 3 equivalent forms**:
 
 ```typescript
 interface IModel {
@@ -133,14 +133,14 @@ interface IModel {
 }
 
 class Model extends QuickModel<IModel> {
-  // Ejemplo de las 3 formas para RegExp:
+  // Example of the 3 forms for RegExp:
   @Field(RegExpField)   pattern!: RegExp;  // 1. Symbol (forma original)
   @Field('regexp')      pattern!: RegExp;  // 2. String literal ✨ (IntelliSense)
   @Field(RegExp)        pattern!: RegExp;  // 3. Constructor nativo
 }
 ```
 
-**💡 String Literals con IntelliSense**: Al escribir `@Field('` TypeScript te sugiere automáticamente:
+**💡 String Literals with IntelliSense**: When typing `@Field('` TypeScript automatically suggests:
 ```
 @Field('
   ↓
@@ -301,7 +301,7 @@ bun run test:all
 
 ## 📝 TypeScript Configuration
 
-Este paquete **REQUIERE** decoradores en tu `tsconfig.json`:
+This package **REQUIRES** decorators in your `tsconfig.json`:
 
 ```json
 {

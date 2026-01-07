@@ -22,21 +22,21 @@ import {
 } from '../../src/quick.model';
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║  TEST EXHAUSTIVO: TODOS LOS TIPOS INTRÍNSECOS DE JAVASCRIPT   ║');
+console.log('║  EXHAUSTIVE TEST: ALL JAVASCRIPT INTRINSIC TYPES                ║');
 console.log('╚════════════════════════════════════════════════════════════════╝\n');
 
 // ============================================
-// CATEGORÍA 1: PRIMITIVOS
+// CATEGORY 1: PRIMITIVES
 // ============================================
 
-console.log('═══ 1. PRIMITIVOS ═══\n');
+console.log('═══ 1. PRIMITIVES ═══\n');
 
 interface IPrimitives {
   str: string;
   num: number;
   bool: boolean;
   bigInt: string;
-  sym: string; // Symbol no es serializable en JSON
+  sym: string; // Symbol not serializable in JSON
   nul: null;
   undef: undefined;
 }
@@ -60,13 +60,13 @@ class Primitives
 }
 
 try {
-  const sym = Symbol.for('test'); // Usar Symbol.for para que sea recuperable
+  const sym = Symbol.for('test'); // Use Symbol.for to make it recoverable
   const data = {
     str: 'hello',
     num: 42,
     bool: true,
     bigInt: '9007199254740991',
-    sym: 'test', // String para Symbol.for
+    sym: 'test', // String for Symbol.for
     nul: null,
     undef: undefined,
   };
@@ -93,7 +93,7 @@ try {
 // CATEGORÍA 2: OBJETOS ESTRUCTURADOS
 // ============================================
 
-console.log('\n═══ 2. OBJETOS ESTRUCTURADOS ═══\n');
+console.log('\n═══ 2. STRUCTURED OBJECTS ═══\n');
 
 interface IStructured {
   obj: Record<string, any>;
@@ -144,7 +144,7 @@ try {
 // CATEGORÍA 3: FECHAS Y TIEMPO
 // ============================================
 
-console.log('\n═══ 3. FECHAS Y TIEMPO ═══\n');
+console.log('\n═══ 3. DATES AND TIME ═══\n');
 
 interface IDates {
   date: string;
@@ -165,7 +165,7 @@ try {
 
   const model = new Dates(data);
   console.log('✅ Date:', model.date instanceof Date);
-  console.log('   Método getFullYear():', model.date.getFullYear() === 2024);
+  console.log('   getFullYear() Method:', model.date.getFullYear() === 2024);
 } catch (error: any) {
   console.log('❌ Error:', error.message);
 }
@@ -174,7 +174,7 @@ try {
 // CATEGORÍA 4: EXPRESIONES REGULARES
 // ============================================
 
-console.log('\n═══ 4. EXPRESIONES REGULARES ═══\n');
+console.log('\n═══ 4. REGULAR EXPRESSIONS ═══\n');
 
 interface IRegex {
   regex: string;
@@ -207,10 +207,10 @@ try {
 }
 
 // ============================================
-// CATEGORÍA 5: ERRORES
+// CATEGORY 5: ERRORS
 // ============================================
 
-console.log('\n═══ 5. ERRORES ═══\n');
+console.log('\n═══ 5. ERRORS ═══\n');
 
 interface IErrors {
   error: any;
@@ -327,7 +327,7 @@ try {
 }
 
 // ============================================
-// CATEGORÍA 7: BUFFERS
+// CATEGORY 7: BUFFERS
 // ============================================
 
 console.log('\n═══ 7. BUFFERS ═══\n');
@@ -385,43 +385,43 @@ console.log(
   '   These types may exist in memory but do not survive toInterface()/JSON.stringify()',
 );
 console.log(
-  '   Son tipos especiales del runtime de JavaScript que no tienen representación serializable.',
+  '   They are special JavaScript runtime types that have no serializable representation.',
 );
 
 // ============================================
-// RESUMEN FINAL
+// FINAL SUMMARY
 // ============================================
 
 console.log('\n════════════════════════════════════════════════════════════════\n');
 
-console.log('📊 RESUMEN DE COMPATIBILIDAD:\n');
+console.log('📊 COMPATIBILITY SUMMARY:\n');
 
-console.log('✅ SOPORTADOS AL 100% (con round-trip JSON):');
+console.log('✅ 100% SUPPORTED (with JSON round-trip):');
 console.log('   • string, number, boolean');
-console.log('   • Date (transforma string→Date) con @Field()');
-console.log('   • BigInt (transforma string→bigint) con @Field(BigIntField)');
-console.log('   • Symbol (usa Symbol.for) con @Field(SymbolField)');
-console.log('   • RegExp (source + flags) con @Field(RegExpField)');
-console.log('   • Error (message + stack + name) con @Field(ErrorField)');
-console.log('   • Map (transforma object→Map) con @Field()');
-console.log('   • Set (transforma array→Set) con @Field()');
-console.log('   • TypedArrays (10 tipos) con @Field(Int8ArrayField), etc.');
-console.log('   • ArrayBuffer (array de bytes) con @Field(ArrayBufferField)');
-console.log('   • DataView (array de bytes) con @Field(DataViewField)');
-console.log('   • Array (primitivos y objetos) con @Field()');
-console.log('   • Object plano ({}) con @Field()');
-console.log('   • Modelos anidados con @Field(ModelClass)');
+console.log('   • Date (transforms string→Date) with @Field()');
+console.log('   • BigInt (transforms string→bigint) with @Field(BigIntField)');
+console.log('   • Symbol (uses Symbol.for) with @Field(SymbolField)');
+console.log('   • RegExp (source + flags) with @Field(RegExpField)');
+console.log('   • Error (message + stack + name) with @Field(ErrorField)');
+console.log('   • Map (transforms object→Map) with @Field()');
+console.log('   • Set (transforms array→Set) with @Field()');
+console.log('   • TypedArrays (10 types) with @Field(Int8ArrayField), etc.');
+console.log('   • ArrayBuffer (byte array) with @Field(ArrayBufferField)');
+console.log('   • DataView (byte array) with @Field(DataViewField)');
+console.log('   • Array (primitives and objects) with @Field()');
+console.log('   • Plain Object ({}) with @Field()');
+console.log('   • Nested models with @Field(ModelClass)');
 console.log('   • null, undefined\n');
 
-console.log('⚠️  NO SERIALIZABLES (limitaciones de JavaScript):');
-console.log('   • WeakMap: Referencias débiles no enumerables');
-console.log('   • WeakSet: Referencias débiles no enumerables');
-console.log('   • Promise: Estado asíncrono no serializable');
-console.log('   • Function: Código ejecutable no serializable');
+console.log('⚠️  NOT SERIALIZABLE (JavaScript limitations):');
+console.log('   • WeakMap: Weak references not enumerable');
+console.log('   • WeakSet: Weak references not enumerable');
+console.log('   • Promise: Async state not serializable');
+console.log('   • Function: Executable code not serializable');
 console.log('   • Arrow/Async/Generator: Variantes de Function\n');
 
-console.log('💡 USO:');
-console.log('   • Tipos básicos: @Field()');
+console.log('💡 USAGE:');
+console.log('   • Basic types: @Field()');
 console.log('   • Date, Map, Set: @Field() (auto-detecta via design:type)');
 console.log('   • BigInt: @Field(BigIntField)');
 console.log('   • Symbol: @Field(SymbolField)');

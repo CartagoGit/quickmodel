@@ -5,7 +5,7 @@ import { Address } from './nested.model';
 import { SimpleModel } from './simple.model';
 
 /**
- * Modelo complejo con combinación de todos los tipos
+ * Complex model with combination of all types
  */
 
 // Re-exportar interfaces para compatibilidad

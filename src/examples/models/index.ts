@@ -1,5 +1,5 @@
 /**
- * Exportaciones centralizadas de todos los modelos de ejemplo
+ * Centralized exports of all example models
  */
 
 export * from './binary.model';

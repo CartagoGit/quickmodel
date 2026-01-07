@@ -1,5 +1,5 @@
 /**
- * SOLID - Dependency Inversion: Configuración centralizada de dependencias
+ * SOLID - Dependency Inversion: Centralized dependency configuration
  * SOLID - Open/Closed: Fácil agregar nuevos transformers sin modificar QuickModel
  */
 
@@ -26,7 +26,7 @@ import {
 import { ITransformer, IValidator } from '../core/interfaces';
 import { transformerRegistry, validatorRegistry } from '../core/registry';
 
-// Tipo helper para transformer genérico (evita incompatibilidades de unión)
+// Helper type for generic transformer (avoids union incompatibilities)
 type AnyTransformer = ITransformer<any, any>;
 import { BigIntTransformer } from './bigint.transformer';
 import { ArrayBufferTransformer, DataViewTransformer } from './buffer.transformer';

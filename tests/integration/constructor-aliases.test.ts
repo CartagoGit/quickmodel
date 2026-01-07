@@ -1,7 +1,7 @@
 /**
  * Test to verify that constructor aliases work correctly
  * 
- * Esto permite usar tanto:
+ * This allows using both:
  * - @Field(RegExp) como @Field(RegExpField)
  * - @Field(Error) como @Field(ErrorField)
  * - @Field(URL) como @Field(URLField)

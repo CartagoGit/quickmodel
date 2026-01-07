@@ -27,7 +27,7 @@ const serialized = user.toInterface();
 
 ### 1. Tipo `SerializedInterface<T>`
 
-Creamos un tipo utilitario que mapea automáticamente los tipos a sus versiones serializadas:
+We create a utility type that automatically maps types to their serialized versions:
 
 ```typescript
 // src/core/interfaces/serialization-types.interface.ts
@@ -52,7 +52,7 @@ export type SerializedInterface<T> = {
 
 ### 2. `toInterface()` Type-Safe
 
-Ahora retorna el tipo correcto automáticamente:
+Now returns the correct type automatically:
 
 ```typescript
 // ✅ AHORA - Tipo correcto
@@ -76,7 +76,7 @@ interface IModelSerialized {
 const serialized = model.toInterface() as unknown as IModelSerialized;
 expect(serialized.pattern).toBe('/test/gi'); // ✅ works but ugly
 
-// ✅ AHORA - TypeScript infiere correctamente
+// ✅ NOW - TypeScript infers correctly
 const serialized = model.toInterface();
 // TypeScript SABE que serialized.pattern es string
 expect(serialized.pattern).toBe('/test/gi'); // ✅ works and clean
@@ -100,7 +100,7 @@ class Model extends QuickModel<IModel> {
 const model = new Model({ pattern: /test/, amount: 123n });
 const serialized = model.toInterface();
 
-// TypeScript infiere automáticamente:
+// TypeScript automatically infers:
 // serialized.pattern: string  ✅
 // serialized.amount: string   ✅
 
@@ -206,6 +206,6 @@ test('toInterface() should return correct serialized types', () => {
 
 ## Conclusión
 
-El sistema de tipos ahora es **completamente type-safe** y refleja correctamente la realidad del runtime. No más casts manuales, no más mentiras de tipos. ✨
+The type system is now **completely type-safe** and correctly reflects runtime reality. No more manual casts, no more type lies. ✨
 
 **16 tests, 136 expect() calls, 0 errores** 🎉

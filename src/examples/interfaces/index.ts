@@ -1,6 +1,6 @@
 /**
  * @file index.ts
- * @description Barrel export de todas las interfaces de modelos de ejemplo
+ * @description Barrel export of all example model interfaces
  */
 
 export * from './binary-model.interface';

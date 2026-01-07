@@ -17,7 +17,7 @@ import {
 } from '../../src';
 
 console.log('╔═══════════════════════════════════════════════════════════════════════╗');
-console.log('║           TEST COMPREHENSIVO - TODOS LOS TIPOS SOPORTADOS             ║');
+console.log('║           COMPREHENSIVE TEST - ALL SUPPORTED TYPES                 ║');
 console.log('╚═══════════════════════════════════════════════════════════════════════╝\n');
 
 // ============================================================================
@@ -36,24 +36,24 @@ enum Priority {
 }
 
 // ============================================================================
-// INTERFAZ CON TODOS LOS TIPOS
+// INTERFACE WITH ALL TYPES
 // ============================================================================
 interface ICompleteModel {
-  // Primitivos
+  // Primitives
   id: string;
   count: number;
   active: boolean;
   nothing: null;
   optional?: string;
 
-  // Tipos especiales que requieren transformación
-  amount: string; // BigInt serializado
-  key: string; // Symbol serializado
-  pattern: { source: string; flags: string }; // RegExp serializado
-  errorData: { message: string; stack?: string; name: string }; // Error serializado
-  createdAt: string; // Date serializado
-  homepage: string; // URL serializado
-  queryParams: string; // URLSearchParams serializado
+  // Special types requiring transformation
+  amount: string; // BigInt serialized
+  key: string; // Symbol serialized
+  pattern: { source: string; flags: string }; // RegExp serialized
+  errorData: { message: string; stack?: string; name: string }; // Error serialized
+  createdAt: string; // Date serialized
+  homepage: string; // URL serialized
+  queryParams: string; // URLSearchParams serialized
 
   // TypedArrays
   int8Data: number[];
@@ -105,7 +105,7 @@ type CompleteModelTransforms = {
 };
 
 // ============================================================================
-// MODELO ANIDADO SIMPLE
+// SIMPLE NESTED MODEL
 // ============================================================================
 interface INestedModel {
   name: string;
@@ -118,7 +118,7 @@ class NestedModel extends QuickModel<INestedModel> {
 }
 
 // ============================================================================
-// MODELO COMPLETO
+// COMPLETE MODEL
 // ============================================================================
 class CompleteModel
   extends QuickModel<ICompleteModel>
@@ -162,7 +162,7 @@ class CompleteModel
   // Objetos planos
   @Field() metadata!: { author: string; version: string };
 
-  // Modelo anidado (opcional)
+  // Nested model (optional)
   @Field(NestedModel) nested?: NestedModel | null;
 }
 
@@ -179,7 +179,7 @@ const testData: ICompleteModel = {
 
   // Tipos especiales
   amount: '9007199254740991', // BigInt
-  key: 'testKey', // Symbol serializado (se usa Symbol.for('testKey'))
+  key: 'testKey', // Symbol serialized (uses Symbol.for('testKey'))
   pattern: { source: '^test', flags: 'gi' }, // RegExp
   errorData: { message: 'Test error', name: 'TestError', stack: 'at test()' }, // Error
   createdAt: '2024-01-01T00:00:00.000Z', // Date
@@ -225,11 +225,11 @@ try {
   let passed = 0;
   let failed = 0;
 
-  console.log('🧪 1. CREANDO MODELO COMPLETO...\n');
+  console.log('🧪 1. CREATING COMPLETE MODEL...\n');
   const model = new CompleteModel(testData);
 
   // Test primitivos
-  console.log('📦 PRIMITIVOS:');
+  console.log('📦 PRIMITIVES:');
   console.log(`  ✓ id: ${model.id === 'test-123' ? '✅' : '❌'}`);
   console.log(`  ✓ count: ${model.count === 42 ? '✅' : '❌'}`);
   console.log(`  ✓ active: ${model.active === true ? '✅' : '❌'}`);
@@ -237,8 +237,8 @@ try {
   console.log(`  ✓ optional: ${model.optional === 'presente' ? '✅' : '❌'}\n`);
   passed += 5;
 
-  // Test tipos especiales
-  console.log('🔧 TIPOS ESPECIALES:');
+  // Test special types
+  console.log('🔧 SPECIAL TYPES:');
   console.log(`  ✓ BigInt: ${typeof model.amount === 'bigint' && model.amount === 9007199254740991n ? '✅' : '❌'}`);
   console.log(`  ✓ Symbol: ${typeof model.key === 'symbol' && Symbol.keyFor(model.key) === 'testKey' ? '✅' : '❌'}`);
   console.log(`  ✓ RegExp: ${model.pattern instanceof RegExp && model.pattern.source === '^test' ? '✅' : '❌'}`);
@@ -286,12 +286,12 @@ try {
   passed += 1;
 
   // ============================================================================
-  // SERIALIZACIÓN
+  // SERIALIZATION
   // ============================================================================
   console.log('🧪 2. SERIALIZANDO A INTERFAZ...\n');
   const serialized = model.toInterface();
 
-  console.log('📤 VERIFICANDO SERIALIZACIÓN:');
+  console.log('📤 VERIFYING SERIALIZATION:');
   console.log(`  ✓ BigInt → string: ${typeof serialized.amount === 'string' ? '✅' : '❌'}`);
   console.log(`  ✓ Symbol → string: ${typeof serialized.key === 'string' ? '✅' : '❌'}`);
   console.log(`  ✓ Date → string: ${typeof serialized.createdAt === 'string' ? '✅' : '❌'}`);
@@ -308,17 +308,17 @@ try {
   const serialized2 = model2.toInterface();
   const model3 = new CompleteModel(serialized2);
 
-  console.log('🔄 VERIFICANDO ROUND-TRIP:');
-  console.log(`  ✓ id preservado: ${model3.id === model.id ? '✅' : '❌'}`);
-  console.log(`  ✓ BigInt preservado: ${model3.amount === model.amount ? '✅' : '❌'}`);
-  console.log(`  ✓ Symbol preservado: ${Symbol.keyFor(model3.key) === Symbol.keyFor(model.key) ? '✅' : '❌'}`);
-  console.log(`  ✓ Date preservado: ${model3.createdAt.getTime() === model.createdAt.getTime() ? '✅' : '❌'}`);
-  console.log(`  ✓ URL preservado: ${model3.homepage.href === model.homepage.href ? '✅' : '❌'}`);
-  console.log(`  ✓ URLSearchParams preservado: ${model3.queryParams.toString() === model.queryParams.toString() ? '✅' : '❌'}`);
-  console.log(`  ✓ RegExp preservado: ${model3.pattern.source === model.pattern.source ? '✅' : '❌'}`);
-  console.log(`  ✓ Error preservado: ${model3.errorData.message === model.errorData.message ? '✅' : '❌'}`);
-  console.log(`  ✓ Map preservado: ${model3.settings.get('theme') === model.settings.get('theme') ? '✅' : '❌'}`);
-  console.log(`  ✓ Enum preservado: ${model3.role === model.role && model3.priority === model.priority ? '✅' : '❌'}\n`);
+  console.log('🔄 VERIFYING ROUND-TRIP:');
+  console.log(`  ✓ id preserved: ${model3.id === model.id ? '✅' : '❌'}`);
+  console.log(`  ✓ BigInt preserved: ${model3.amount === model.amount ? '✅' : '❌'}`);
+  console.log(`  ✓ Symbol preserved: ${Symbol.keyFor(model3.key) === Symbol.keyFor(model.key) ? '✅' : '❌'}`);
+  console.log(`  ✓ Date preserved: ${model3.createdAt.getTime() === model.createdAt.getTime() ? '✅' : '❌'}`);
+  console.log(`  ✓ URL preserved: ${model3.homepage.href === model.homepage.href ? '✅' : '❌'}`);
+  console.log(`  ✓ URLSearchParams preserved: ${model3.queryParams.toString() === model.queryParams.toString() ? '✅' : '❌'}`);
+  console.log(`  ✓ RegExp preserved: ${model3.pattern.source === model.pattern.source ? '✅' : '❌'}`);
+  console.log(`  ✓ Error preserved: ${model3.errorData.message === model.errorData.message ? '✅' : '❌'}`);
+  console.log(`  ✓ Map preserved: ${model3.settings.get('theme') === model.settings.get('theme') ? '✅' : '❌'}`);
+  console.log(`  ✓ Enum preserved: ${model3.role === model.role && model3.priority === model.priority ? '✅' : '❌'}\n`);
   passed += 10;
 
   // ============================================================================
@@ -328,44 +328,44 @@ try {
   const json = model.toJSON();
   const model4 = CompleteModel.fromJSON(json);
 
-  console.log('📄 VERIFICANDO JSON ROUND-TRIP:');
-  console.log(`  ✓ JSON válido: ${typeof json === 'string' && JSON.parse(json) ? '✅' : '❌'}`);
-  console.log(`  ✓ fromJSON retorna instancia: ${model4 instanceof CompleteModel ? '✅' : '❌'}`);
-  console.log(`  ✓ Tipos restaurados: ${model4.amount === model.amount && model4.createdAt instanceof Date ? '✅' : '❌'}\n`);
+  console.log('📄 VERIFYING JSON ROUND-TRIP:');
+  console.log(`  ✓ JSON valid: ${typeof json === 'string' && JSON.parse(json) ? '✅' : '❌'}`);
+  console.log(`  ✓ fromJSON returns instance: ${model4 instanceof CompleteModel ? '✅' : '❌'}`);
+  console.log(`  ✓ Types restored: ${model4.amount === model.amount && model4.createdAt instanceof Date ? '✅' : '❌'}\n`);
   passed += 3;
 
   // ============================================================================
-  // MÉTODOS ESTÁTICOS
+  // STATIC METHODS
   // ============================================================================
-  console.log('🧪 5. MÉTODOS ESTÁTICOS...\n');
+  console.log('🧪 5. STATIC METHODS...\n');
   const model5 = CompleteModel.fromInterface(testData);
 
-  console.log('🔧 VERIFICANDO MÉTODOS ESTÁTICOS:');
+  console.log('🔧 VERIFYING STATIC METHODS:');
   console.log(`  ✓ fromInterface works: ${model5 instanceof CompleteModel ? '✅' : '❌'}`);
-  console.log(`  ✓ Datos correctos: ${model5.id === 'test-123' && model5.amount === 9007199254740991n ? '✅' : '❌'}\n`);
+  console.log(`  ✓ Correct data: ${model5.id === 'test-123' && model5.amount === 9007199254740991n ? '✅' : '❌'}\n`);
   passed += 2;
 
   // ============================================================================
-  // RESUMEN
+  // SUMMARY
   // ============================================================================
   console.log('╔═══════════════════════════════════════════════════════════════════════╗');
-  console.log('║                            RESUMEN FINAL                              ║');
+  console.log('║                            FINAL SUMMARY                              ║');
   console.log('╚═══════════════════════════════════════════════════════════════════════╝\n');
-  console.log(`✅ Tests pasados: ${passed}`);
-  console.log(`❌ Tests fallidos: ${failed}`);
+  console.log(`✅ Tests passed: ${passed}`);
+  console.log(`❌ Tests failed: ${failed}`);
   console.log(`📊 Total: ${passed + failed}`);
   console.log(`🎯 Success rate: ${((passed / (passed + failed)) * 100).toFixed(2)}%\n`);
 
   console.log('🎉 ALL SUPPORTED TYPES WORK CORRECTLY!\n');
   console.log('📋 TESTED TYPES:');
-  console.log('   ✓ Primitivos: string, number, boolean, null, undefined');
-  console.log('   ✓ Tipos especiales: BigInt, Symbol, RegExp, Error, Date, URL, URLSearchParams');
+  console.log('   ✓ Primitives: string, number, boolean, null, undefined');
+  console.log('   ✓ Special types: BigInt, Symbol, RegExp, Error, Date, URL, URLSearchParams');
   console.log('   ✓ TypedArrays: Int8Array, Uint8Array, Float32Array, BigInt64Array, etc.');
   console.log('   ✓ Buffers: ArrayBuffer, DataView');
-  console.log('   ✓ Colecciones: Array, Map, Set');
+  console.log('   ✓ Collections: Array, Map, Set');
   console.log('   ✓ Enums: String Enums, Numeric Enums');
-  console.log('   ✓ Objetos: Plain objects, Nested models');
-  console.log('   ✓ Métodos: toInterface(), toJSON(), fromInterface(), fromJSON()');
+  console.log('   ✓ Objects: Plain objects, Nested models');
+  console.log('   ✓ Methods: toInterface(), toJSON(), fromInterface(), fromJSON()');
 } catch (error: any) {
   console.log('\n❌ ERROR EN TESTS:');
   console.log(error.message);

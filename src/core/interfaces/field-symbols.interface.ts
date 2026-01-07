@@ -1,5 +1,5 @@
 /**
- * Símbolos para tipos especiales que requieren transformación
+ * Symbols for special types requiring transformation
  * 
  * Estos símbolos se usan con el decorador @Field() para indicar
  * que un campo necesita un transformer específico.
@@ -60,7 +60,7 @@ export const URLField = Symbol('URL');
 export const URLSearchParamsField = Symbol('URLSearchParams');
 
 /**
- * Tipo unión de todos los símbolos de campo disponibles
+ * Union type of all available field symbols
  */
 export type FieldTypeSymbol =
   | typeof BigIntField

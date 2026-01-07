@@ -1,7 +1,7 @@
 /**
  * @cartago-git/quickmodel
  *
- * Sistema de serialización/deserialización de modelos TypeScript
+ * TypeScript model serialization/deserialization system
  * con arquitectura SOLID
  *
  * @example
@@ -52,7 +52,7 @@ export * from './core';
 export * from './transformers';
 
 // ============================================================================
-// MODELOS DE EJEMPLO (Opcional - para referencia)
+// EXAMPLE MODELS (Optional - for reference)
 // ============================================================================
 
 export * from './examples/models';

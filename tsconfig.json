@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    // Configuración del lenguaje
+    // Language configuration
     "target": "ES2022",
     "module": "ESNext",
     "lib": ["ES2022"],

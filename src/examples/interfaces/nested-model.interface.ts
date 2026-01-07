@@ -6,7 +6,7 @@
 import type { ISimpleModel } from './simple-model.interface';
 
 /**
- * Interfaz para dirección física
+ * Interface for physical address
  */
 export interface IAddress {
   street: string;
@@ -16,7 +16,7 @@ export interface IAddress {
 }
 
 /**
- * Interfaz para información de contacto con dirección anidada
+ * Interface for contact information with nested address
  */
 export interface IContact {
   email: string;
@@ -25,7 +25,7 @@ export interface IContact {
 }
 
 /**
- * Interfaz para modelo con anidación múltiple
+ * Interface for model with multiple nesting
  */
 export interface INestedModel {
   userId: string;

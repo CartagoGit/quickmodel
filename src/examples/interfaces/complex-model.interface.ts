@@ -1,6 +1,6 @@
 /**
  * @file complex-model.interface.ts
- * @description Interfaces y tipos para ComplexModel - combinación de todos los tipos soportados
+ * @description Interfaces and types for ComplexModel - combination of all supported types
  */
 
 import type { IAddress } from './nested-model.interface';
@@ -10,7 +10,7 @@ import type { ISimpleModel } from './simple-model.interface';
  * Interfaz para modelo complejo con todos los tipos soportados
  */
 export interface IComplexModel {
-  // Identificación
+  // Identification
   id: string;
   uuid: string;
 

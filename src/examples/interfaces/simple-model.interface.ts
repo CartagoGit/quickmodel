@@ -1,13 +1,13 @@
 /**
  * @file simple-model.interface.ts
- * @description Interfaces y tipos para SimpleModel - modelo con tipos primitivos, BigInt y Symbol
+ * @description Interfaces and types for SimpleModel - model with primitive types, BigInt and Symbol
  */
 
 /**
- * Interfaz para modelo simple con tipos primitivos
+ * Interface for simple model with primitive types
  */
 export interface ISimpleModel {
-  // Primitivos básicos
+  // Basic primitives
   id: string;
   name: string;
   age: number;
