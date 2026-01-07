@@ -46,21 +46,17 @@ class QuickTestDeclare extends QModel<IQuickTestDeclare> implements QInterface<I
 // ====================
 // MODELS CON @Quick() Y !
 // ====================
-// NOTA: @Quick() con ! NO funciona porque las propiedades no están
-// definidas en el prototype hasta que se asignan valores.
-// @Quick() está diseñado para trabajar con 'declare' ya que registra
-// las propiedades dinámicamente en la primera instanciación.
 
 @Quick()
 class QuickTestBang extends QModel<IQuickTestBang> implements QInterface<IQuickTestBang> {
-  declare id: string;
-  declare name: string;
-  declare createdAt: Date;
-  declare count: bigint;
-  declare key: symbol;
-  declare pattern: RegExp;
-  declare tags: Set<string>;
-  declare metadata: Map<string, string>;
+  id!: string;
+  name!: string;
+  createdAt!: Date;
+  count!: bigint;
+  key!: symbol;
+  pattern!: RegExp;
+  tags!: Set<string>;
+  metadata!: Map<string, string>;
 }
 
 // ====================
