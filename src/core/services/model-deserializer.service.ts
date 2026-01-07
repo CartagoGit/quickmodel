@@ -191,10 +191,11 @@ export class ModelDeserializer<
    * @remarks
    * Inference process:
    * 1. Check if array is empty → return empty array
-   * 2. Analyze first element's properties
-   * 3. Look up model class in registry by property signature
-   * 4. If found → deserialize all elements as that model
-   * 5. If not found → throw error with available signatures
+   * 2. Check first element type (primitives vs objects)
+   * 3. For objects: Analyze EACH element's properties individually
+   * 4. Look up model class for each element by property signature
+   * 5. Deserialize each element with its corresponding model
+   * 6. Supports union types: (User | Tag)[]
    */
   private deserializeArrayWithInference(value: unknown[], context: IQTransformContext): unknown[] {
     // Empty array - no inference needed
@@ -208,7 +209,7 @@ export class ModelDeserializer<
       return [];
     }
 
-    // Get first element to analyze
+    // Get first element to check type
     const firstElement = validItems[0];
     
     // Must be an object to infer
@@ -217,33 +218,63 @@ export class ModelDeserializer<
       return value;
     }
 
-    // Get properties from first element
-    const properties = Object.keys(firstElement);
-    
-    // Try to find matching model class
-    const modelClass = qModelRegistry.findByProperties(properties);
-    
-    if (!modelClass) {
-      // No matching model found - throw descriptive error
-      const signature = properties.sort().join(',');
-      const available = qModelRegistry.getRegisteredSignatures();
-      
-      throw new Error(
-        `${context.className}.${context.propertyKey}: Cannot infer model for array elements. ` +
-        `Object has properties [${signature}] but no registered model matches. ` +
-        `Available signatures: ${available.length > 0 ? available.join(' | ') : 'none'}. ` +
-        `Use @QType(ModelClass) to specify the type explicitly.`
-      );
-    }
+    // Check if all elements are homogeneous (same properties)
+    // This is an optimization for common case
+    const firstProperties = Object.keys(firstElement).sort().join(',');
+    const allHomogeneous = validItems.every((item) => {
+      if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+        return false;
+      }
+      return Object.keys(item).sort().join(',') === firstProperties;
+    });
 
-    // Deserialize all elements using inferred model class
-    return validItems.map((item) => {
-      if (typeof item !== 'object' || Array.isArray(item)) {
+    if (allHomogeneous) {
+      // All elements have same properties - infer once and apply to all
+      const modelClass = qModelRegistry.findByProperties(Object.keys(firstElement));
+      
+      if (!modelClass) {
+        // No matching model found - throw descriptive error
+        const available = qModelRegistry.getRegisteredSignatures();
+        
         throw new Error(
-          `${context.className}.${context.propertyKey}[]: Expected object, got ${typeof item}`
+          `${context.className}.${context.propertyKey}: Cannot infer model for array elements. ` +
+          `Object has properties [${firstProperties}] but no registered model matches. ` +
+          `Available signatures: ${available.length > 0 ? available.join(' | ') : 'none'}. ` +
+          `Use @QType(ModelClass) to specify the type explicitly.`
         );
       }
+
+      // Deserialize all elements using same model class
       type ModelConstructor = new (data: Record<string, unknown>) => unknown;
+      return validItems.map((item) => {
+        return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
+      });
+    }
+
+    // Heterogeneous array - infer type for EACH element individually (union types)
+    type ModelConstructor = new (data: Record<string, unknown>) => unknown;
+    return validItems.map((item, index) => {
+      if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+        throw new Error(
+          `${context.className}.${context.propertyKey}[${index}]: Expected object, got ${typeof item}`
+        );
+      }
+
+      const properties = Object.keys(item);
+      const modelClass = qModelRegistry.findByProperties(properties);
+
+      if (!modelClass) {
+        const signature = properties.sort().join(',');
+        const available = qModelRegistry.getRegisteredSignatures();
+        
+        throw new Error(
+          `${context.className}.${context.propertyKey}[${index}]: Cannot infer model for element. ` +
+          `Object has properties [${signature}] but no registered model matches. ` +
+          `Available signatures: ${available.length > 0 ? available.join(' | ') : 'none'}. ` +
+          `Use @QType(ModelClass) to specify the type explicitly.`
+        );
+      }
+
       return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
     });
   }
