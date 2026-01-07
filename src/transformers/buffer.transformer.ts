@@ -14,7 +14,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class FileModel extends QuickModel<IFileModel> {
- *   @Field() data!: ArrayBuffer;
+ *   @QType() data!: ArrayBuffer;
  * }
  * 
  * const file = new FileModel({
@@ -103,7 +103,7 @@ export class ArrayBufferTransformer
  * @example
  * ```typescript
  * class BinaryData extends QuickModel<IBinaryData> {
- *   @Field() view!: DataView;
+ *   @QType() view!: DataView;
  * }
  * 
  * const data = new BinaryData({

@@ -65,7 +65,7 @@ export class MockGenerator {
     // Traverse the prototype chain
     let current = instance;
     while (current && current !== Object.prototype) {
-      // Get the list of properties registered by @Field()
+      // Get the list of properties registered by @QType()
       const registeredFields = Reflect.getMetadata(FIELDS_METADATA_KEY, current) as string[] | undefined;
       
       if (registeredFields) {

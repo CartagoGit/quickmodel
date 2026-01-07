@@ -17,7 +17,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @Field() metadata!: Map<string, any>;
+ *   @QType() metadata!: Map<string, any>;
  * }
  * 
  * const config = new Config({
@@ -105,7 +105,7 @@ export class MapTransformer<K = string, V = unknown>
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @Field() tags!: Set<string>;
+ *   @QType() tags!: Set<string>;
  * }
  * 
  * const config = new Config({

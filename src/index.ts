@@ -2,11 +2,11 @@
  * @cartago-git/quickmodel
  *
  * TypeScript model serialization/deserialization system
- * con arquitectura SOLID
+ * with SOLID architecture
  *
  * @example
  * ```typescript
- * import { QuickModel, Field, QuickType, BigIntField } from '@cartago-git/quickmodel';
+ * import { QModel, QType, QInterface, QBigInt } from '@cartago-git/quickmodel';
  *
  * interface IUser {
  *   id: string;
@@ -19,10 +19,10 @@
  *   createdAt: Date;
  * };
  *
- * class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
- *   @Field() id!: string;
- *   @Field(BigIntField) balance!: bigint;
- *   @Field() createdAt!: Date;
+ * class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
+ *   @QType() id!: string;
+ *   @QType(QBigInt) balance!: bigint;
+ *   @QType() createdAt!: Date;
  * }
  *
  * const user = new User({ id: '1', balance: '999999', createdAt: '2024-01-01T00:00:00.000Z' });
@@ -32,15 +32,15 @@
  */
 
 // ============================================================================
-// EXPORTS PRINCIPALES
+// MAIN EXPORTS
 // ============================================================================
 
-// QuickModel (SOLID)
-export { Field, QuickModel } from './quick.model';
-export type { QuickType } from './quick.model';
+// QModel (SOLID architecture)
+export { QType, QModel } from './quick.model';
+export type { QInterface } from './quick.model';
 
 // ============================================================================
-// CORE (Interfaces, Servicios, Registries, Bases)
+// CORE (Interfaces, Services, Registries, Bases)
 // ============================================================================
 
 export * from './core';

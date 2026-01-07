@@ -24,9 +24,9 @@
  * const deserializer = new ModelDeserializer(transformerRegistry);
  * 
  * class User extends QuickModel<IUser> {
- *   @Field() name!: string;
- *   @Field('date') birthDate!: Date;
- *   @Field() tags!: Set<string>;
+ *   @QType() name!: string;
+ *   @QType('date') birthDate!: Date;
+ *   @QType() tags!: Set<string>;
  * }
  * 
  * const data = {
@@ -61,7 +61,8 @@ export class ModelDeserializer<
   /**
    * Deserializes plain data into a model instance.
    * 
-   * @template T - The specific interface type
+   * @template TData - The input data type (can be any interface)
+   * @template TResult - The resulting model type
    * @param data - Plain object to deserialize
    * @param modelClass - Model class constructor
    * @returns Fully-typed model instance
@@ -69,8 +70,14 @@ export class ModelDeserializer<
    * @remarks
    * If data is already an instance of the model class, returns it unchanged.
    * Otherwise, creates a new instance and populates it field by field.
+   * 
+   * This method is independent of the class generics to support nested models
+   * with different interface types.
    */
-  deserialize<T extends TInterface>(data: T, modelClass: new (data: T) => TModel): TModel {
+  deserialize<TData extends Record<string, unknown>, TResult = unknown>(
+    data: TData, 
+    modelClass: new (data: TData) => TResult
+  ): TResult {
     // Return existing instance as-is
     if (data instanceof modelClass) {
       return data;
@@ -153,7 +160,7 @@ export class ModelDeserializer<
         
         // If not Array, it's an individual nested model
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          instance[key] = this.deserialize(value, arrayElementClass);
+          instance[key] = this.deserialize(value as Record<string, unknown>, arrayElementClass);
           continue;
         }
       }
@@ -236,8 +243,8 @@ export class ModelDeserializer<
           `${context.className}.${context.propertyKey}: Expected object, got ${typeof value}`,
         );
       }
-      type ModelConstructor = new (data: typeof value) => TModel;
-      return this.deserialize(value, designType as ModelConstructor);
+      type ModelConstructor = new (data: Record<string, unknown>) => unknown;
+      return this.deserialize(value as Record<string, unknown>, designType as ModelConstructor);
     }
 
     // Primitive validation

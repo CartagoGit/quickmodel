@@ -1,8 +1,8 @@
 /**
- * QuickModel - Type-safe serialization and mock generation for TypeScript models
+ * QModel - Type-safe serialization and mock generation for TypeScript models
  * 
  * SOLID Principles Applied:
- * - S (Single Responsibility): QuickModel orchestrates, delegates to specific services
+ * - S (Single Responsibility): QModel orchestrates, delegates to specific services
  * - O (Open/Closed): Open for extension (new transformers), closed for modification
  * - L (Liskov Substitution): All transformers are interchangeable
  * - I (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
@@ -18,8 +18,8 @@ import {
 	MockBuilder
 } from './core/services';
 import type {
-	QuickModelInstance,
-	QuickModelInterface,
+	QModelInstance,
+	QModelInterface,
 } from './core/interfaces';
 import './transformers/bootstrap'; // Auto-register transformers
 import type {
@@ -28,44 +28,87 @@ import type {
 } from './core/interfaces/serialization-types.interface';
 
 // Public exports
-export { Field } from './core/decorators';
-export * from './core/interfaces'; // Field symbols (BigIntField, etc.)
-export type { QuickType } from './core/interfaces';
-export type { MockType } from './core/services';
-export { MockBuilder } from './core/services';
+export { QType } from './core/decorators';
+export * from './core/interfaces'; // Q-prefixed symbols (QBigInt, QRegExp, etc.)
+export type { QInterface } from './core/interfaces';
+export type { MockType as QMockType } from './core/services';
+export { MockBuilder as QMockBuilder } from './core/services';
 
 /**
- * Abstract base class for all models with automatic serialization and type-safe mocking.
+ * Abstract base class for type-safe models with automatic serialization and mock generation.
  * 
- * @template TInterface - The interface type representing the model's data structure
- * @template _TTransforms - Optional type transforms for special field conversions
+ * QModel is the core class providing a declarative way to define TypeScript models 
+ * with automatic JSON serialization/deserialization and type transformations.
+ * 
+ * **SOLID Principles Applied:**
+ * - **S** (Single Responsibility): QModel orchestrates operations, delegates to specialized services
+ * - **O** (Open/Closed): Open for extension via transformers, closed for modification
+ * - **L** (Liskov Substitution): All transformers are interchangeable
+ * - **I** (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
+ * - **D** (Dependency Inversion): Depends on abstractions (ITransformerRegistry), not implementations
+ * 
+ * @template TInterface - The interface type representing the model's JSON structure
+ * @template _TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)
  * 
  * @example
+ * Basic model with primitives
  * ```typescript
  * interface IUser {
  *   id: string;
  *   name: string;
- *   createdAt: Date;
+ *   age: number;
  * }
  * 
- * class User extends QuickModel<IUser> {
- *   \@Field() id!: string;
- *   \@Field() name!: string;
- *   \@Field() createdAt!: Date;
+ * class User extends QModel<IUser> {
+ *   @QType() id!: string;
+ *   @QType() name!: string;
+ *   @QType() age!: number;
  * }
  * 
- * // Create from interface
- * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+ * const user = new User({ id: '1', name: 'John', age: 30 });
+ * const json = user.toJSON(); // Serialized string
+ * const user2 = User.fromJSON(json); // Deserialized instance
+ * ```
  * 
- * // Serialize to plain object
- * const data = user.toInterface(); // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+ * @example
+ * Model with type transformations
+ * ```typescript
+ * interface IAccount {
+ *   id: string;
+ *   balance: string;      // JSON: string
+ *   createdAt: string;    // JSON: ISO date string
+ * }
  * 
- * // Generate mocks
+ * type AccountTransforms = {
+ *   balance: bigint;      // Memory: bigint
+ *   createdAt: Date;      // Memory: Date object
+ * };
+ * 
+ * class Account extends QModel<IAccount, AccountTransforms> 
+ *   implements QInterface<IAccount, AccountTransforms> {
+ *   @QType() id!: string;
+ *   @QType(QBigInt) balance!: bigint;
+ *   @QType() createdAt!: Date;
+ * }
+ * ```
+ * 
+ * @example
+ * Using mock generation
+ * ```typescript
+ * // Generate single mock
  * const mockUser = User.mock().random();
- * const mockUsers = User.mock().array(5);
+ * 
+ * // Generate array of mocks
+ * const mockUsers = User.mock().array(10);
+ * 
+ * // Custom mock builder
+ * const customMock = User.mock()
+ *   .with('name', 'Alice')
+ *   .with('age', 25)
+ *   .build();
  * ```
  */
-export abstract class QuickModel<
+export abstract class QModel<
 	TInterface,
 	_TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}
 > {
@@ -93,23 +136,23 @@ export abstract class QuickModel<
 	 * const users = User.mock().array(5); // returns User[]
 	 * ```
 	 */
-	static mock<T extends abstract new (...args: any[]) => QuickModel<any, any>>(
+	static mock<T extends abstract new (...args: any[]) => QModel<any, any>>(
 		this: T
-	): MockBuilder<QuickModelInstance<T>, QuickModelInterface<T>> {
+	): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
 			...args: any[]
 		) => infer R
 			? R
 			: never;
-		type InterfaceType = InstanceType extends QuickModel<infer I>
+		type InterfaceType = InstanceType extends QModel<infer I>
 			? I
 			: never;
 
 		// @ts-expect-error - TypeScript doesn't allow instantiating abstract classes, but at runtime `this` is the concrete class
 		const ModelClass: new (data: InterfaceType) => InstanceType = this;
 
-		return new MockBuilder(ModelClass, QuickModel.mockGenerator);
+		return new MockBuilder(ModelClass, QModel.mockGenerator);
 	}
 
 	// Temporary property for unprocessed data (removed after initialize)
@@ -117,7 +160,7 @@ export abstract class QuickModel<
 
 	/**
 	 * Constructs a new model instance from interface data or another instance.
-	 * Automatically deserializes complex types (Date, BigInt, etc.) based on @Field decorators.
+	 * Automatically deserializes complex types (Date, BigInt, etc.) based on @QType decorators.
 	 * 
 	 * @param data - Either a plain interface object or another model instance
 	 * 
@@ -160,7 +203,7 @@ export abstract class QuickModel<
 
 		type DataAsInterface = Record<string, unknown>;
 		type ThisConstructor = new (data: DataAsInterface) => this;
-		const deserialized = QuickModel.deserializer.deserialize(
+		const deserialized = QModel.deserializer.deserialize(
 			data as unknown as DataAsInterface,
 			this.constructor as ThisConstructor
 		);
@@ -186,7 +229,7 @@ export abstract class QuickModel<
 	 */
 	toInterface(): SerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
-		return QuickModel.serializer.serialize(
+		return QModel.serializer.serialize(
 			this as unknown as ModelAsRecord
 		) as SerializedInterface<TInterface>;
 	}
@@ -194,7 +237,12 @@ export abstract class QuickModel<
 	/**
 	 * Serializes the model instance to a JSON string.
 	 * 
-	 * @returns A JSON string representation of the model
+	 * Converts the model to a JSON string representation. This is a convenience method
+	 * that combines toInterface() and JSON.stringify().
+	 * 
+	 * **SOLID - Single Responsibility:** Delegates to ModelSerializer service.
+	 * 
+	 * @returns JSON string representation of the model
 	 * 
 	 * @example
 	 * ```typescript
@@ -205,53 +253,82 @@ export abstract class QuickModel<
 	 */
 	toJSON(): string {
 		type ModelAsRecord = Record<string, unknown>;
-		return QuickModel.serializer.serializeToJson(
+		return QModel.serializer.serializeToJson(
 			this as unknown as ModelAsRecord
 		);
 	}
 
 	/**
-	 * Creates a model instance from an interface object or serialized data.
+	 * Creates a model instance from a plain interface object.
 	 * 
-	 * SOLID - Open/Closed: Allows creating instances from interfaces.
-	 * Accepts both serialized data (from toInterface/JSON) and original objects.
+	 * Deserializes a plain JavaScript object into a fully typed model instance,
+	 * applying all type transformations (string → Date, string → BigInt, etc.)
+	 * according to the @QType decorators defined in the model.
+	 * 
+	 * **SOLID - Open/Closed:** Allows creating instances from interfaces without modification.
 	 * 
 	 * @template T - The model class type
-	 * @param data - Interface data (plain object or serialized)
-	 * @returns A new model instance
+	 * @param data - Plain object matching the model's interface structure
+	 * @returns A new, fully typed model instance
 	 * 
 	 * @example
+	 * Basic deserialization
 	 * ```typescript
-	 * const userData = { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' };
+	 * const userData = { 
+	 *   id: '1', 
+	 *   name: 'John', 
+	 *   createdAt: '2024-01-01T00:00:00.000Z' 
+	 * };
+	 * 
 	 * const user = User.fromInterface(userData);
+	 * console.log(user instanceof User); // true
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
+	 * 
+	 * @example
+	 * Deserialization with type transformations
+	 * ```typescript
+	 * const accountData = {
+	 *   id: '123',
+	 *   balance: '999999',  // Will transform to bigint
+	 *   pattern: { source: 'test', flags: 'gi' } // Will transform to RegExp
+	 * };
+	 * 
+	 * const account = Account.fromInterface(accountData);
+	 * console.log(typeof account.balance); // 'bigint'
+	 * console.log(account.pattern instanceof RegExp); // true
+	 * ```
 	 */
-	static fromInterface<T extends QuickModel<any>>(
+	static fromInterface<T extends QModel<any>>(
 		this: new (data: ModelData<any>) => T,
 		data: ModelData<any>
 	): T {
-		return QuickModel.deserializer.deserialize(data, this);
+		return QModel.deserializer.deserialize(data, this);
 	}
 
 	/**
 	 * Creates a model instance from a JSON string.
 	 * 
+	 * Parses a JSON string and deserializes it into a fully typed model instance.
+	 * This is a convenience method that combines JSON.parse() and fromInterface().
+	 * 
 	 * @template T - The model class type
 	 * @param json - JSON string representation of the model
-	 * @returns A new model instance
+	 * @returns A new, fully typed model instance
 	 * 
 	 * @example
 	 * ```typescript
 	 * const json = '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}';
 	 * const user = User.fromJSON(json);
+	 * 
 	 * console.log(user instanceof User); // true
+	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QuickModel<any>>(
+	static fromJSON<T extends QModel<any>>(
 		this: new (data: ModelData<any>) => T,
 		json: string
 	): T {
-		return QuickModel.deserializer.deserializeFromJson(json, this);
+		return QModel.deserializer.deserializeFromJson(json, this);
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * USAGE EXAMPLES: The 3 ways to use @Field()
+ * USAGE EXAMPLES: The 3 ways to use @QType()
  * 
  * This file demonstrates the different ways to decorate fields
  * with their advantages and use cases.
@@ -8,15 +8,15 @@
 import { QuickModel } from '../../quick.model';
 import { Field } from '../../core/decorators/field.decorator';
 import {
-  BigIntField,
-  SymbolField,
-  RegExpField,
-  ErrorField,
+  QBigInt,
+  QSymbol,
+  QRegExp,
+  QError,
   URLField,
   URLSearchParamsField,
-  Int8ArrayField,
-  Uint8ArrayField,
-  Float32ArrayField,
+  QInt8Array,
+  QUint8Array,
+  QFloat32Array,
   BigInt64ArrayField,
 } from '../../core/interfaces/field-symbols.interface';
 
@@ -36,18 +36,18 @@ interface IForma1 {
 }
 
 class Forma1_AutoDeteccion extends QuickModel<IForma1> {
-  @Field() name!: string;        // Auto-detect string
-  @Field() age!: number;         // Auto-detect number
-  @Field() active!: boolean;     // Auto-detect boolean
-  @Field() createdAt!: Date;     // Auto-detect Date
-  @Field() tags!: Map<string, number>;  // Auto-detect Map
-  @Field() roles!: Set<string>;  // Auto-detect Set
+  @QType() name!: string;        // Auto-detect string
+  @QType() age!: number;         // Auto-detect number
+  @QType() active!: boolean;     // Auto-detect boolean
+  @QType() createdAt!: Date;     // Auto-detect Date
+  @QType() tags!: Map<string, number>;  // Auto-detect Map
+  @QType() roles!: Set<string>;  // Auto-detect Set
 }
 
 // ============================================================================
 // FORM 2: String Literals (RECOMMENDED ✨)
 // ============================================================================
-// ✅ Advantages: Full IntelliSense, type @Field(' and TypeScript suggests all types
+// ✅ Advantages: Full IntelliSense, type @QType(' and TypeScript suggests all types
 // ✅ Advantages: Easy to remember, descriptive names
 // ✅ Advantages: No need to import symbols
 
@@ -71,43 +71,43 @@ interface IForma2 {
 }
 
 class Forma2_StringLiterals extends QuickModel<IForma2> {
-  // Special types - when typing @Field(' the editor suggests:
+  // Special types - when typing @QType(' the editor suggests:
   // 'bigint', 'symbol', 'regexp', 'error', 'url', etc.
   
-  @Field('bigint')
+  @QType('bigint')
   balance!: bigint;
   
-  @Field('symbol')
+  @QType('symbol')
   key!: symbol;
   
-  @Field('regexp')
+  @QType('regexp')
   pattern!: RegExp;
   
-  @Field('error')
+  @QType('error')
   lastError!: Error;
   
-  @Field('url')
+  @QType('url')
   homepage!: URL;
   
-  @Field('urlsearchparams')
+  @QType('urlsearchparams')
   queryParams!: URLSearchParams;
   
   // TypedArrays - also with IntelliSense
-  @Field('int8array')
+  @QType('int8array')
   signedBytes!: Int8Array;
   
-  @Field('uint8array')
+  @QType('uint8array')
   unsignedBytes!: Uint8Array;
   
-  @Field('float32array')
+  @QType('float32array')
   floats!: Float32Array;
   
-  @Field('bigint64array')
+  @QType('bigint64array')
   bigInts!: BigInt64Array;
   
   // You can mix with auto-detection
-  @Field() name!: string;
-  @Field('date') createdAt!: Date;  // Explicit even though it's auto-detected
+  @QType() name!: string;
+  @QType('date') createdAt!: Date;  // Explicit even though it's auto-detected
 }
 
 // ============================================================================
@@ -130,34 +130,34 @@ interface IForma3A {
 }
 
 class Forma3A_Symbols extends QuickModel<IForma3A> {
-  @Field(BigIntField)
+  @QType(QBigInt)
   balance!: bigint;
   
-  @Field(SymbolField)
+  @QType(QSymbol)
   key!: symbol;
   
-  @Field(RegExpField)
+  @QType(QRegExp)
   pattern!: RegExp;
   
-  @Field(ErrorField)
+  @QType(QError)
   lastError!: Error;
   
-  @Field(URLField)
+  @QType(URLField)
   homepage!: URL;
   
-  @Field(URLSearchParamsField)
+  @QType(URLSearchParamsField)
   queryParams!: URLSearchParams;
   
-  @Field(Int8ArrayField)
+  @QType(QInt8Array)
   signedBytes!: Int8Array;
   
-  @Field(Uint8ArrayField)
+  @QType(QUint8Array)
   unsignedBytes!: Uint8Array;
   
-  @Field(Float32ArrayField)
+  @QType(QFloat32Array)
   floats!: Float32Array;
   
-  @Field(BigInt64ArrayField)
+  @QType(BigInt64ArrayField)
   bigInts!: BigInt64Array;
 }
 
@@ -183,41 +183,41 @@ interface IForma3B {
 
 class Forma3B_Constructors extends QuickModel<IForma3B> {
   // These do NOT work with constructor:
-  // @Field(BigInt) balance!: bigint;  // ❌ BigInt() is a conversion function
-  // @Field(Symbol) key!: symbol;      // ❌ Symbol() always creates new symbol
-  // Use @Field('bigint') or @Field(BigIntField) instead
+  // @QType(BigInt) balance!: bigint;  // ❌ BigInt() is a conversion function
+  // @QType(Symbol) key!: symbol;      // ❌ Symbol() always creates new symbol
+  // Use @QType('bigint') or @QType(QBigInt) instead
   
-  @Field(RegExp)
+  @QType(RegExp)
   pattern!: RegExp;
   
-  @Field(Error)
+  @QType(Error)
   lastError!: Error;
   
-  @Field(URL)
+  @QType(URL)
   homepage!: URL;
   
-  @Field(URLSearchParams)
+  @QType(URLSearchParams)
   queryParams!: URLSearchParams;
   
-  @Field(Int8Array)
+  @QType(Int8Array)
   signedBytes!: Int8Array;
   
-  @Field(Uint8Array)
+  @QType(Uint8Array)
   unsignedBytes!: Uint8Array;
   
-  @Field(Float32Array)
+  @QType(Float32Array)
   floats!: Float32Array;
   
-  @Field(BigInt64Array)
+  @QType(BigInt64Array)
   bigInts!: BigInt64Array;
   
-  @Field(Date)
+  @QType(Date)
   createdAt!: Date;
   
-  @Field(Map)
+  @QType(Map)
   settings!: Map<string, number>;
   
-  @Field(Set)
+  @QType(Set)
   roles!: Set<string>;
 }
 
@@ -227,8 +227,8 @@ class Forma3B_Constructors extends QuickModel<IForma3B> {
 
 /**
  * CASE 1: New project
- * → Use STRING LITERALS (@Field('type')) for all special cases
- * → Use auto-detection (@Field()) for primitives, Date, Map, Set
+ * → Use STRING LITERALS (@QType('type')) for all special cases
+ * → Use auto-detection (@QType()) for primitives, Date, Map, Set
  * 
  * Advantages: Maximum IntelliSense, easy to remember, no need to import symbols
  */
@@ -243,13 +243,13 @@ interface IRecomendacion {
 }
 
 class RecomendacionProyectoNuevo extends QuickModel<IRecomendacion> {
-  @Field() id!: string;
-  @Field() name!: string;
-  @Field('bigint') balance!: bigint;
-  @Field('regexp') pattern!: RegExp;
-  @Field('int8array') bytes!: Int8Array;
-  @Field() createdAt!: Date;
-  @Field() tags!: Map<string, number>;
+  @QType() id!: string;
+  @QType() name!: string;
+  @QType('bigint') balance!: bigint;
+  @QType('regexp') pattern!: RegExp;
+  @QType('int8array') bytes!: Int8Array;
+  @QType() createdAt!: Date;
+  @QType() tags!: Map<string, number>;
 }
 
 /**
@@ -267,10 +267,10 @@ interface IMigracion {
 }
 
 class MigracionGradual extends QuickModel<IMigracion> {
-  @Field(BigIntField) oldCode!: bigint;     // Existing code
-  @Field('regexp') newCode!: RegExp;        // New code with strings
-  @Field(Int8ArrayField) legacy!: Int8Array;
-  @Field('float32array') modern!: Float32Array;
+  @QType(QBigInt) oldCode!: bigint;     // Existing code
+  @QType('regexp') newCode!: RegExp;        // New code with strings
+  @QType(QInt8Array) legacy!: Int8Array;
+  @QType('float32array') modern!: Float32Array;
 }
 
 /**
@@ -291,13 +291,13 @@ interface IPreferencia {
 }
 
 class PreferenciaConstructores extends QuickModel<IPreferencia> {
-  @Field(RegExp) pattern!: RegExp;
-  @Field(URL) homepage!: URL;
-  @Field(Error) lastError!: Error;
-  @Field('bigint') balance!: bigint;  // No usable constructor
-  @Field('symbol') key!: symbol;      // No usable constructor
-  @Field(Date) createdAt!: Date;
-  @Field(Map) settings!: Map<string, any>;
+  @QType(RegExp) pattern!: RegExp;
+  @QType(URL) homepage!: URL;
+  @QType(Error) lastError!: Error;
+  @QType('bigint') balance!: bigint;  // No usable constructor
+  @QType('symbol') key!: symbol;      // No usable constructor
+  @QType(Date) createdAt!: Date;
+  @QType(Map) settings!: Map<string, any>;
 }
 
 // ============================================================================

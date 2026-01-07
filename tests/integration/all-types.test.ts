@@ -1,24 +1,24 @@
 import 'reflect-metadata';
 import {
-  ArrayBufferField,
-  BigInt64ArrayField,
-  BigIntField,
-  BigUint64ArrayField,
-  DataViewField,
-  ErrorField,
-  Field,
-  Float32ArrayField,
-  Float64ArrayField,
-  Int16ArrayField,
-  Int32ArrayField,
-  Int8ArrayField,
-  QuickModel,
-  QuickType,
-  RegExpField,
-  SymbolField,
-  Uint16ArrayField,
-  Uint32ArrayField,
-  Uint8ArrayField,
+  QArrayBuffer,
+  QBigInt64Array,
+  QBigInt,
+  QBigUint64Array,
+  QDataView,
+  QError,
+  QType,
+  QFloat32Array,
+  QFloat64Array,
+  QInt16Array,
+  QInt32Array,
+  QInt8Array,
+  QModel,
+  QInterface,
+  QRegExp,
+  QSymbol,
+  QUint16Array,
+  QUint32Array,
+  QUint8Array,
 } from '../../src/quick.model';
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
@@ -47,16 +47,16 @@ type PrimitivesTransforms = {
 };
 
 class Primitives
-  extends QuickModel<IPrimitives>
-  implements QuickType<IPrimitives, PrimitivesTransforms>
+  extends QModel<IPrimitives>
+  implements QInterface<IPrimitives, PrimitivesTransforms>
 {
-  @Field() str!: string;
-  @Field() num!: number;
-  @Field() bool!: boolean;
-  @Field(BigIntField) bigInt!: bigint;
-  @Field(SymbolField) sym!: symbol;
-  @Field() nul!: null;
-  @Field() undef!: undefined;
+  @QType() str!: string;
+  @QType() num!: number;
+  @QType() bool!: boolean;
+  @QType(QBigInt) bigInt!: bigint;
+  @QType(QSymbol) sym!: symbol;
+  @QType() nul!: null;
+  @QType() undef!: undefined;
 }
 
 try {
@@ -108,13 +108,13 @@ type StructuredTransforms = {
 };
 
 class Structured
-  extends QuickModel<IStructured>
-  implements QuickType<IStructured, StructuredTransforms>
+  extends QModel<IStructured>
+  implements QInterface<IStructured, StructuredTransforms>
 {
-  @Field() obj!: Record<string, any>;
-  @Field() arr!: number[];
-  @Field() map!: Map<string, number>;
-  @Field() set!: Set<string>;
+  @QType() obj!: Record<string, any>;
+  @QType() arr!: number[];
+  @QType() map!: Map<string, number>;
+  @QType() set!: Set<string>;
 }
 
 try {
@@ -154,8 +154,8 @@ type DatesTransforms = {
   date: Date;
 };
 
-class Dates extends QuickModel<IDates> implements QuickType<IDates, DatesTransforms> {
-  @Field() date!: Date;
+class Dates extends QModel<IDates> implements QInterface<IDates, DatesTransforms> {
+  @QType() date!: Date;
 }
 
 try {
@@ -184,8 +184,8 @@ type RegexTransforms = {
   regex: RegExp;
 };
 
-class Regexes extends QuickModel<IRegex> implements QuickType<IRegex, RegexTransforms> {
-  @Field(RegExpField) regex!: RegExp;
+class Regexes extends QModel<IRegex> implements QInterface<IRegex, RegexTransforms> {
+  @QType(QRegExp) regex!: RegExp;
 }
 
 try {
@@ -224,10 +224,10 @@ type ErrorsTransforms = {
   rangeError: RangeError;
 };
 
-class Errors extends QuickModel<IErrors> implements QuickType<IErrors, ErrorsTransforms> {
-  @Field(ErrorField) error!: Error;
-  @Field(ErrorField) typeError!: TypeError;
-  @Field(ErrorField) rangeError!: RangeError;
+class Errors extends QModel<IErrors> implements QInterface<IErrors, ErrorsTransforms> {
+  @QType(QError) error!: Error;
+  @QType(QError) typeError!: TypeError;
+  @QType(QError) rangeError!: RangeError;
 }
 
 try {
@@ -283,19 +283,19 @@ type TypedArraysTransforms = {
 };
 
 class TypedArrays
-  extends QuickModel<ITypedArrays>
-  implements QuickType<ITypedArrays, TypedArraysTransforms>
+  extends QModel<ITypedArrays>
+  implements QInterface<ITypedArrays, TypedArraysTransforms>
 {
-  @Field(Int8ArrayField) int8!: Int8Array;
-  @Field(Uint8ArrayField) uint8!: Uint8Array;
-  @Field(Int16ArrayField) int16!: Int16Array;
-  @Field(Uint16ArrayField) uint16!: Uint16Array;
-  @Field(Int32ArrayField) int32!: Int32Array;
-  @Field(Uint32ArrayField) uint32!: Uint32Array;
-  @Field(Float32ArrayField) float32!: Float32Array;
-  @Field(Float64ArrayField) float64!: Float64Array;
-  @Field(BigInt64ArrayField) bigInt64!: BigInt64Array;
-  @Field(BigUint64ArrayField) bigUint64!: BigUint64Array;
+  @QType(QInt8Array) int8!: Int8Array;
+  @QType(QUint8Array) uint8!: Uint8Array;
+  @QType(QInt16Array) int16!: Int16Array;
+  @QType(QUint16Array) uint16!: Uint16Array;
+  @QType(QInt32Array) int32!: Int32Array;
+  @QType(QUint32Array) uint32!: Uint32Array;
+  @QType(QFloat32Array) float32!: Float32Array;
+  @QType(QFloat64Array) float64!: Float64Array;
+  @QType(QBigInt64Array) bigInt64!: BigInt64Array;
+  @QType(QBigUint64Array) bigUint64!: BigUint64Array;
 }
 
 try {
@@ -342,9 +342,9 @@ type BuffersTransforms = {
   dataView: DataView;
 };
 
-class Buffers extends QuickModel<IBuffers> implements QuickType<IBuffers, BuffersTransforms> {
-  @Field(ArrayBufferField) arrayBuffer!: ArrayBuffer;
-  @Field(DataViewField) dataView!: DataView;
+class Buffers extends QModel<IBuffers> implements QInterface<IBuffers, BuffersTransforms> {
+  @QType(QArrayBuffer) arrayBuffer!: ArrayBuffer;
+  @QType(QDataView) dataView!: DataView;
 }
 
 try {
@@ -398,19 +398,19 @@ console.log('📊 COMPATIBILITY SUMMARY:\n');
 
 console.log('✅ 100% SUPPORTED (with JSON round-trip):');
 console.log('   • string, number, boolean');
-console.log('   • Date (transforms string→Date) with @Field()');
-console.log('   • BigInt (transforms string→bigint) with @Field(BigIntField)');
-console.log('   • Symbol (uses Symbol.for) with @Field(SymbolField)');
-console.log('   • RegExp (source + flags) with @Field(RegExpField)');
-console.log('   • Error (message + stack + name) with @Field(ErrorField)');
-console.log('   • Map (transforms object→Map) with @Field()');
-console.log('   • Set (transforms array→Set) with @Field()');
-console.log('   • TypedArrays (10 types) with @Field(Int8ArrayField), etc.');
-console.log('   • ArrayBuffer (byte array) with @Field(ArrayBufferField)');
-console.log('   • DataView (byte array) with @Field(DataViewField)');
-console.log('   • Array (primitives and objects) with @Field()');
-console.log('   • Plain Object ({}) with @Field()');
-console.log('   • Nested models with @Field(ModelClass)');
+console.log('   • Date (transforms string→Date) with @QType()');
+console.log('   • BigInt (transforms string→bigint) with @QType(QBigInt)');
+console.log('   • Symbol (uses Symbol.for) with @QType(QSymbol)');
+console.log('   • RegExp (source + flags) with @QType(QRegExp)');
+console.log('   • Error (message + stack + name) with @QType(QError)');
+console.log('   • Map (transforms object→Map) with @QType()');
+console.log('   • Set (transforms array→Set) with @QType()');
+console.log('   • TypedArrays (10 types) with @QType(QInt8Array), etc.');
+console.log('   • ArrayBuffer (byte array) with @QType(ArrayBufferField)');
+console.log('   • DataView (byte array) with @QType(DataViewField)');
+console.log('   • Array (primitives and objects) with @QType()');
+console.log('   • Plain Object ({}) with @QType()');
+console.log('   • Nested models with @QType(ModelClass)');
 console.log('   • null, undefined\n');
 
 console.log('⚠️  NOT SERIALIZABLE (JavaScript limitations):');
@@ -421,14 +421,14 @@ console.log('   • Function: Executable code not serializable');
 console.log('   • Arrow/Async/Generator: Variantes de Function\n');
 
 console.log('💡 USAGE:');
-console.log('   • Basic types: @Field()');
-console.log('   • Date, Map, Set: @Field() (auto-detecta via design:type)');
-console.log('   • BigInt: @Field(BigIntField)');
-console.log('   • Symbol: @Field(SymbolField)');
-console.log('   • RegExp: @Field(RegExpField)');
-console.log('   • Error: @Field(ErrorField)');
-console.log('   • TypedArrays: @Field(Int8ArrayField), @Field(Uint8ArrayField), etc.');
-console.log('   • ArrayBuffer: @Field(ArrayBufferField)');
-console.log('   • DataView: @Field(DataViewField)');
-console.log('   • Modelos anidados: @Field(ModelClass)');
-console.log('   • Arrays de modelos: @Field(ModelClass) ownedVehicles!: Vehicle[];\n');
+console.log('   • Basic types: @QType()');
+console.log('   • Date, Map, Set: @QType() (auto-detecta via design:type)');
+console.log('   • BigInt: @QType(QBigInt)');
+console.log('   • Symbol: @QType(QSymbol)');
+console.log('   • RegExp: @QType(QRegExp)');
+console.log('   • Error: @QType(QError)');
+console.log('   • TypedArrays: @QType(QInt8Array), @QType(QUint8Array), etc.');
+console.log('   • ArrayBuffer: @QType(ArrayBufferField)');
+console.log('   • DataView: @QType(DataViewField)');
+console.log('   • Modelos anidados: @QType(ModelClass)');
+console.log('   • Arrays de modelos: @QType(ModelClass) ownedVehicles!: Vehicle[];\n');

@@ -1,35 +1,71 @@
 /**
- * Tipos públicos para modelos QuickModel
+ * Public types for QModel models.
+ * 
+ * This module provides helper types for defining type transformations
+ * in model classes that extend QModel.
  */
 
 /**
- * Tipo helper para definir transformaciones de tipos en modelos
+ * Helper type for defining type transformations in models.
  * 
- * @template TInterface - Interfaz base del modelo (datos JSON)
- * @template TTransforms - Objeto con las transformaciones de tipos específicos
+ * Allows you to specify which properties have different types in JSON (TInterface)
+ * versus in memory (after transformation). This is essential for types like Date, BigInt,
+ * RegExp, etc. that need serialization/deserialization.
+ * 
+ * @template TInterface - Base model interface representing JSON structure
+ * @template TTransforms - Object mapping property names to their transformed types
  * 
  * @example
+ * Basic usage with type transformations
  * ```typescript
  * interface IUser {
  *   id: string;
- *   balance: string;      // En JSON es string
- *   createdAt: string;    // En JSON es string
+ *   balance: string;      // In JSON: string
+ *   createdAt: string;    // In JSON: ISO date string
  * }
  * 
  * type UserTransforms = {
- *   balance: bigint;      // En memoria es bigint
- *   createdAt: Date;      // En memoria es Date
+ *   balance: bigint;      // In memory: bigint
+ *   createdAt: Date;      // In memory: Date object
  * };
  * 
- * class User extends QuickModel<IUser, UserTransforms> 
- *   implements QuickType<IUser, UserTransforms> {
- *   @Field() id!: string;
- *   @Field(BigIntField) balance!: bigint;
- *   @Field() createdAt!: Date;
+ * class User extends QModel<IUser, UserTransforms> 
+ *   implements QInterface<IUser, UserTransforms> {
+ *   @QType() id!: string;
+ *   @QType(QBigInt) balance!: bigint;
+ *   @QType() createdAt!: Date;
+ * }
+ * ```
+ * 
+ * @example
+ * Multiple type transformations
+ * ```typescript
+ * interface IProduct {
+ *   id: string;
+ *   price: string;        // JSON: string
+ *   regex: object;        // JSON: serialized regex
+ *   updated: string;      // JSON: ISO string
+ * }
+ * 
+ * type ProductTransforms = {
+ *   price: bigint;
+ *   regex: RegExp;
+ *   updated: Date;
+ * };
+ * 
+ * class Product extends QModel<IProduct, ProductTransforms>
+ *   implements QInterface<IProduct, ProductTransforms> {
+ *   @QType() id!: string;
+ *   @QType(QBigInt) price!: bigint;
+ *   @QType(QRegExp) regex!: RegExp;
+ *   @QType() updated!: Date;
  * }
  * ```
  */
-export type QuickType<
+export type QInterface<
   TInterface,
   TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
 > = Omit<TInterface, keyof TTransforms> & TTransforms;
+
+/** @deprecated Use QInterface instead */
+export type QuickType<TInterface, TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}> = QInterface<TInterface, TTransforms>;

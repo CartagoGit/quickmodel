@@ -23,9 +23,9 @@
  * const serializer = new ModelSerializer(transformerRegistry);
  * 
  * class User extends QuickModel<IUser> {
- *   @Field() name!: string;
- *   @Field('date') birthDate!: Date;
- *   @Field() tags!: Set<string>;
+ *   @QType() name!: string;
+ *   @QType('date') birthDate!: Date;
+ *   @QType() tags!: Set<string>;
  * }
  * 
  * const user = new User({

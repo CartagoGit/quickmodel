@@ -24,7 +24,7 @@ interface IRegExpData {
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @Field(RegExpField) emailPattern!: RegExp;
+ *   @QType(QRegExp) emailPattern!: RegExp;
  * }
  * 
  * // From string with slashes

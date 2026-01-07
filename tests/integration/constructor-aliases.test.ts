@@ -1,27 +1,28 @@
 /**
  * Test to verify that constructor aliases work correctly
  * 
- * This allows using both:
- * - @Field(RegExp) como @Field(RegExpField)
- * - @Field(Error) como @Field(ErrorField)
- * - @Field(URL) como @Field(URLField)
+ * This allows using multiple forms:
+ * - @QType(RegExp) same as @QType(QRegExp) same as @QType('regexp')
+ * - @QType(Error) same as @QType(QError) same as @QType('error')
+ * - @QType(URL) same as @QType(QURL) same as @QType('url')
+ * - @QType(Int8Array) same as @QType(QInt8Array) same as @QType('int8array')
  * etc.
  */
 
 import { describe, expect, test } from 'bun:test';
-import { Field } from '../../src/core/decorators/field.decorator';
-import { QuickModel } from '../../src/quick.model';
+import { QType } from '../../src/core/decorators/field.decorator';
+import { QModel } from '../../src/quick.model';
 import {
-  RegExpField,
-  ErrorField,
-  URLField,
-  URLSearchParamsField,
-  Int8ArrayField,
-  Uint8ArrayField,
+  QRegExp,
+  QError,
+  QURL,
+  QURLSearchParams,
+  QInt8Array,
+  QUint8Array,
 } from '../../src/core/interfaces/field-symbols.interface';
 
 // ============================================================================
-// Modelos usando constructores nativos como alias
+// Models using native constructors as aliases
 // ============================================================================
 
 interface IModelWithConstructors {
@@ -42,23 +43,23 @@ interface IModelWithConstructorsSerialized {
   bytes2: number[];
 }
 
-class ModelWithConstructors extends QuickModel<IModelWithConstructors> {
-  @Field(RegExp)
+class ModelWithConstructors extends QModel<IModelWithConstructors> {
+  @QType(RegExp)
   pattern!: RegExp;
 
-  @Field(Error)
+  @QType(Error)
   error!: Error;
 
-  @Field(URL)
+  @QType(URL)
   url!: URL;
 
-  @Field(URLSearchParams)
+  @QType(URLSearchParams)
   params!: URLSearchParams;
 
-  @Field(Int8Array)
+  @QType(Int8Array)
   bytes1!: Int8Array;
 
-  @Field(Uint8Array)
+  @QType(Uint8Array)
   bytes2!: Uint8Array;
 }
 
@@ -84,23 +85,23 @@ interface IModelWithSymbolsSerialized {
   bytes2: number[];
 }
 
-class ModelWithSymbols extends QuickModel<IModelWithSymbols> {
-  @Field(RegExpField)
+class ModelWithSymbols extends QModel<IModelWithSymbols> {
+  @QType(QRegExp)
   pattern!: RegExp;
 
-  @Field(ErrorField)
+  @QType(QError)
   error!: Error;
 
-  @Field(URLField)
+  @QType(QURL)
   url!: URL;
 
-  @Field(URLSearchParamsField)
+  @QType(QURLSearchParams)
   params!: URLSearchParams;
 
-  @Field(Int8ArrayField)
+  @QType(QInt8Array)
   bytes1!: Int8Array;
 
-  @Field(Uint8ArrayField)
+  @QType(QUint8Array)
   bytes2!: Uint8Array;
 }
 
@@ -118,7 +119,7 @@ describe('Constructor Aliases', () => {
     bytes2: new Uint8Array([10, 20, 30, 40]),
   };
 
-  describe('Usando constructores nativos (@Field(RegExp), @Field(Error), etc.)', () => {
+  describe('Usando constructores nativos (@QType(RegExp), @QType(Error), etc.)', () => {
     test('Should serialize correctly', () => {
       const model = new ModelWithConstructors(testData);
 
@@ -180,7 +181,7 @@ describe('Constructor Aliases', () => {
     });
   });
 
-  describe('Usando symbols (@Field(RegExpField), @Field(ErrorField), etc.)', () => {
+  describe('Usando symbols (@QType(QRegExp), @QType(QError), etc.)', () => {
     test('Should serialize correctly', () => {
       const model = new ModelWithSymbols(testData);
 

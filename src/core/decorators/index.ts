@@ -1,5 +1,5 @@
 /**
- * Decoradores del sistema QuickModel
+ * QuickModel decorator system exports
  */
 
-export { Field, type FieldTypeString } from './field.decorator';
+export { QType, type QTypeString } from './field.decorator';

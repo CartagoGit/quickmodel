@@ -14,7 +14,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class Account extends QuickModel<IAccount> {
- *   @Field(BigIntField) balance!: bigint;
+ *   @QType(QBigInt) balance!: bigint;
  * }
  * 
  * const account = new Account({ balance: "9007199254740991" });

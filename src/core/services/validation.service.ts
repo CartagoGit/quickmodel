@@ -17,7 +17,7 @@
  * const service = new ValidationService(validatorRegistry);
  * 
  * class User extends QuickModel<IUser> {
- *   @Field('date') birthDate!: Date;
+ *   @QType('date') birthDate!: Date;
  * }
  * 
  * const user = new User({ birthDate: "invalid" });

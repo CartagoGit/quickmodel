@@ -1,9 +1,15 @@
 /**
- * Test to verify that the mock system works correctly.
+ * Test to verify that the mock generation system works correctly.
+ * 
+ * Tests cover:
+ * - Empty mock generation
+ * - Random mock generation  
+ * - Array mock generation
+ * - Custom mock building
  */
 
 import { describe, expect, test } from 'bun:test';
-import { Field, QuickModel, BigIntField, RegExpField } from '../../src';
+import { QType, QModel, QBigInt, QRegExp } from '../../src';
 
 interface ITestModel {
   name: string;
@@ -14,13 +20,13 @@ interface ITestModel {
   createdAt: Date;
 }
 
-class TestModel extends QuickModel<ITestModel> {
-  @Field() name!: string;
-  @Field() age!: number;
-  @Field() active!: boolean;
-  @Field(BigIntField) amount!: bigint;
-  @Field(RegExpField) pattern!: RegExp;
-  @Field() createdAt!: Date;
+class TestModel extends QModel<ITestModel> {
+  @QType() name!: string;
+  @QType() age!: number;
+  @QType() active!: boolean;
+  @QType(QBigInt) amount!: bigint;
+  @QType(QRegExp) pattern!: RegExp;
+  @QType() createdAt!: Date;
 }
 
 describe('Mock Generator', () => {

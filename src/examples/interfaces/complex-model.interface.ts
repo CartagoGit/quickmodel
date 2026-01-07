@@ -56,7 +56,7 @@ export interface IComplexModel {
 /**
  * Transformations applied to IComplexModel
  */
-export type ComplexModelTransforms = {
+export type IComplexModelTransforms = {
   pattern: RegExp;
   lastError: Error | null;
   bigId: bigint;

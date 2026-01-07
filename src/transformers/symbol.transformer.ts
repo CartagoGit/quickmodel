@@ -15,7 +15,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class Entity extends QuickModel<IEntity> {
- *   @Field(SymbolField) id!: symbol;
+ *   @QType(QSymbol) id!: symbol;
  * }
  * 
  * const entity = new Entity({ id: "unique-id" });

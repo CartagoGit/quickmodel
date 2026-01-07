@@ -1,28 +1,28 @@
 # @cartago-git/quickmodel
 
-Sistema profesional de serialización/deserialización de modelos TypeScript con arquitectura **SOLID**.
+Professional TypeScript model serialization/deserialization system with **SOLID** architecture.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![SOLID](https://img.shields.io/badge/Architecture-SOLID-green.svg)]()
 
-> 📚 **[Ver Índice Completo de Documentación](docs/README.md)**
+> 📚 **[See Complete Documentation Index](docs/README.md)**
 
-## ✨ Características
+## ✨ Features
 
-- 🏗️ **Arquitectura SOLID** completa con servicios independientes
-- 🔄 **30+ tipos JavaScript/TypeScript** soportados (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, etc.)
+- 🏗️ **Complete SOLID Architecture** with independent services
+- 🔄 **30+ JavaScript/TypeScript types** supported (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, etc.)
 - 🎯 **Type-Safe Serialization**: `toInterface()` automatically returns correct serialized types
-- 💡 **Inferencia de tipos**: TypeScript sabe que `RegExp → string`, `BigInt → string`, etc.
-- ✨ **3 usage forms**: Symbols, Constructors, String literals with IntelliSense
-- 🎭 **Sistema de Mocks**: 6 tipos de mocks + arrays con [@faker-js/faker](https://fakerjs.dev/)
-- ✅ **Validación automática** en runtime
-- 📦 **Modelos anidados** infinitos
-- 🔌 **Extensible** vía registry pattern
-- 🧪 **100% testado** con 136+ expect() calls
-- 📚 **Documentación completa**
+- 💡 **Type inference**: TypeScript knows that `RegExp → string`, `BigInt → string`, etc.
+- ✨ **3 usage forms**: Q-Symbols, Constructors, String literals with IntelliSense
+- 🎭 **Mock System**: 6 mock types + arrays with [@faker-js/faker](https://fakerjs.dev/)
+- ✅ **Automatic runtime validation**
+- 📦 **Infinite nested models**
+- 🔌 **Extensible** via registry pattern
+- 🧪 **100% tested** with 136+ expect() calls
+- 📚 **Complete documentation**
 
-## 📦 Instalación
+## 📦 Installation
 
 ```bash
 # npm
@@ -38,18 +38,18 @@ pnpm add @cartago-git/quickmodel
 bun add @cartago-git/quickmodel
 ```
 
-## 🚀 Uso Básico
+## 🚀 Basic Usage
 
-### 1. Definir Modelo
+### 1. Define Model
 
 ```typescript
-import { QuickModel, Field, QuickType, BigIntField } from '@cartago-git/quickmodel';
+import { QModel, QType, QInterface, QBigInt } from '@cartago-git/quickmodel';
 
 interface IUser {
   id: string;
   name: string;
-  balance: string; // BigInt serializado
-  createdAt: string; // Date serializado
+  balance: string; // BigInt serialized
+  createdAt: string; // Date serialized
 }
 
 type UserTransforms = {
@@ -57,27 +57,27 @@ type UserTransforms = {
   createdAt: Date;
 };
 
-class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
-  @Field() id!: string;
-  @Field() name!: string;
+class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
+  @QType() id!: string;
+  @QType() name!: string;
   // 3 equivalent forms for special types:
-  @Field(BigIntField) balance!: bigint;   // Symbol (forma original)
-  // @Field('bigint') balance!: bigint;   // String literal (IntelliSense ✨)
+  @QType(QBigInt) balance!: bigint;   // Q-Symbol (recommended)
+  // @QType('bigint') balance!: bigint;   // String literal (IntelliSense ✨)
   
-  @Field() createdAt!: Date;              // Auto-detectado
-  // @Field('date') createdAt!: Date;     // String literal
-  // @Field(Date) createdAt!: Date;       // Constructor
+  @QType() createdAt!: Date;              // Auto-detected
+  // @QType('date') createdAt!: Date;     // String literal
+  // @QType(Date) createdAt!: Date;       // Constructor
 }
 
-// 💡 Tip: Usa string literals para IntelliSense!
-// Al escribir @Field(' TypeScript te sugerirá todos los tipos disponibles:
+// 💡 Tip: Use string literals for IntelliSense!
+// When writing @QType(' TypeScript will suggest all available types:
 // 'bigint', 'symbol', 'regexp', 'error', 'url', 'int8array', etc.
 ```
 
-### 2. Usar Modelo
+### 2. Use Model
 
 ```typescript
-// Crear desde interfaz
+// Create from interface
 const user = new User({
   id: '123',
   name: 'John Doe',

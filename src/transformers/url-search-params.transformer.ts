@@ -18,7 +18,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class SearchFilter extends QuickModel<ISearchFilter> {
- *   @Field() params!: URLSearchParams;
+ *   @QType() params!: URLSearchParams;
  * }
  * 
  * // From query string

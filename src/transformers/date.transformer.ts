@@ -16,7 +16,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class Event extends QuickModel<IEvent> {
- *   @Field() createdAt!: Date;
+ *   @QType() createdAt!: Date;
  * }
  * 
  * const event = new Event({ createdAt: "2024-01-01T00:00:00.000Z" });

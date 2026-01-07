@@ -25,9 +25,9 @@ type PrimitiveTypeMap = {
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @Field('string') name!: string;
- *   @Field('number') port!: number;
- *   @Field('boolean') enabled!: boolean;
+ *   @QType('string') name!: string;
+ *   @QType('number') port!: number;
+ *   @QType('boolean') enabled!: boolean;
  * }
  * 
  * const config = new Config({

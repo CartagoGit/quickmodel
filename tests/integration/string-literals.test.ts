@@ -1,18 +1,21 @@
 /**
  * Test to verify that string literals work correctly with IntelliSense
  * 
- * This allows using:
- * @Field('bigint') amount!: bigint;
- * @Field('regexp') pattern!: RegExp;
+ * This allows using type-safe string literals instead of symbols:
+ * @QType('bigint') amount!: bigint;
+ * @QType('regexp') pattern!: RegExp;
+ * @QType('int8array') bytes!: Int8Array;
  * etc.
+ * 
+ * Benefits: Shorter syntax, IntelliSense support, no imports needed
  */
 
 import { describe, expect, test } from 'bun:test';
-import { Field } from '../../src/core/decorators/field.decorator';
-import { QuickModel } from '../../src/quick.model';
+import { QType } from '../../src/core/decorators/field.decorator';
+import { QModel } from '../../src/quick.model';
 
 // ============================================================================
-// Modelo usando string literals
+// Model using string literals
 // ============================================================================
 
 interface IModelWithStringLiterals {
@@ -57,64 +60,64 @@ interface IModelWithStringLiteralsSerialized {
   view: number[];
 }
 
-class ModelWithStringLiterals extends QuickModel<IModelWithStringLiterals> {
-  // Primitivos (aunque se auto-detectan, se pueden especificar)
-  @Field('string')
+class ModelWithStringLiterals extends QModel<IModelWithStringLiterals> {
+  // Primitives (auto-detected, but can be explicit)
+  @QType('string')
   name!: string;
 
-  @Field('number')
+  @QType('number')
   count!: number;
 
-  @Field('boolean')
+  @QType('boolean')
   active!: boolean;
 
   // Tipos especiales con string literals
-  @Field('bigint')
+  @QType('bigint')
   amount!: bigint;
 
-  @Field('symbol')
+  @QType('symbol')
   key!: symbol;
 
-  @Field('regexp')
+  @QType('regexp')
   pattern!: RegExp;
 
-  @Field('error')
+  @QType('error')
   error!: Error;
 
-  @Field('date')
+  @QType('date')
   createdAt!: Date;
 
-  @Field('url')
+  @QType('url')
   homepage!: URL;
 
-  @Field('urlsearchparams')
+  @QType('urlsearchparams')
   params!: URLSearchParams;
 
   // TypedArrays
-  @Field('int8array')
+  @QType('int8array')
   bytes1!: Int8Array;
 
-  @Field('uint8array')
+  @QType('uint8array')
   bytes2!: Uint8Array;
 
-  @Field('float32array')
+  @QType('float32array')
   floats!: Float32Array;
 
-  @Field('bigint64array')
+  @QType('bigint64array')
   bigInts!: BigInt64Array;
 
   // Colecciones
-  @Field('map')
+  @QType('map')
   settings!: Map<string, number>;
 
-  @Field('set')
+  @QType('set')
   tags!: Set<string>;
 
   // Buffers
-  @Field('arraybuffer')
+  @QType('arraybuffer')
   buffer!: ArrayBuffer;
 
-  @Field('dataview')
+  @QType('dataview')
   view!: DataView;
 }
 
@@ -122,7 +125,7 @@ class ModelWithStringLiterals extends QuickModel<IModelWithStringLiterals> {
 // Tests
 // ============================================================================
 
-describe('String Literals (@Field("type"))', () => {
+describe('String Literals (@QType("type"))', () => {
   const testData = {
     name: 'Test',
     count: 42,

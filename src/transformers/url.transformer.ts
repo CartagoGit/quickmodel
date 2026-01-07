@@ -14,7 +14,7 @@ import { IValidationContext, IValidationResult, IValidator } from '../core/inter
  * @example
  * ```typescript
  * class WebPage extends QuickModel<IWebPage> {
- *   @Field() url!: URL;
+ *   @QType() url!: URL;
  * }
  * 
  * const page = new WebPage({

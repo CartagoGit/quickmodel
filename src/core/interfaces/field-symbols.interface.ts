@@ -1,83 +1,93 @@
 /**
- * Symbols for special types requiring transformation
+ * Symbols for special types requiring transformation.
  * 
- * Estos símbolos se usan con el decorador @Field() para indicar
- * que un campo necesita un transformer específico.
+ * These symbols are used with the @QType() decorator to indicate
+ * that a field needs a specific transformer.
+ * 
+ * @example
+ * ```typescript
+ * class User extends QModel<IUser> {
+ *   @QType(QBigInt) balance!: bigint;
+ *   @QType(QRegExp) pattern!: RegExp;
+ *   @QType(QSymbol) id!: symbol;
+ * }
+ * ```
  */
 
-/** BigInt: string | number → bigint */
-export const BigIntField = Symbol('BigInt');
+/** BigInt transformation: string | number → bigint */
+export const QBigInt = Symbol('BigInt');
 
-/** RegExp: objeto → RegExp */
-export const RegExpField = Symbol('RegExp');
+/** RegExp transformation: object → RegExp */
+export const QRegExp = Symbol('RegExp');
 
-/** Symbol: string → symbol (usando Symbol.for) */
-export const SymbolField = Symbol('Symbol');
+/** Symbol transformation: string → symbol (using Symbol.for) */
+export const QSymbol = Symbol('Symbol');
 
-/** Error: objeto → Error */
-export const ErrorField = Symbol('Error');
+/** Error transformation: object → Error */
+export const QError = Symbol('Error');
 
-/** Int8Array: number[] → Int8Array */
-export const Int8ArrayField = Symbol('Int8Array');
+/** Int8Array transformation: number[] → Int8Array */
+export const QInt8Array = Symbol('Int8Array');
 
-/** Uint8Array: number[] → Uint8Array */
-export const Uint8ArrayField = Symbol('Uint8Array');
+/** Uint8Array transformation: number[] → Uint8Array */
+export const QUint8Array = Symbol('Uint8Array');
 
-/** Int16Array: number[] → Int16Array */
-export const Int16ArrayField = Symbol('Int16Array');
+/** Int16Array transformation: number[] → Int16Array */
+export const QInt16Array = Symbol('Int16Array');
 
-/** Uint16Array: number[] → Uint16Array */
-export const Uint16ArrayField = Symbol('Uint16Array');
+/** Uint16Array transformation: number[] → Uint16Array */
+export const QUint16Array = Symbol('Uint16Array');
 
-/** Int32Array: number[] → Int32Array */
-export const Int32ArrayField = Symbol('Int32Array');
+/** Int32Array transformation: number[] → Int32Array */
+export const QInt32Array = Symbol('Int32Array');
 
-/** Uint32Array: number[] → Uint32Array */
-export const Uint32ArrayField = Symbol('Uint32Array');
+/** Uint32Array transformation: number[] → Uint32Array */
+export const QUint32Array = Symbol('Uint32Array');
 
-/** Float32Array: number[] → Float32Array */
-export const Float32ArrayField = Symbol('Float32Array');
+/** Float32Array transformation: number[] → Float32Array */
+export const QFloat32Array = Symbol('Float32Array');
 
-/** Float64Array: number[] → Float64Array */
-export const Float64ArrayField = Symbol('Float64Array');
+/** Float64Array transformation: number[] → Float64Array */
+export const QFloat64Array = Symbol('Float64Array');
 
-/** BigInt64Array: string[] → BigInt64Array */
-export const BigInt64ArrayField = Symbol('BigInt64Array');
+/** BigInt64Array transformation: string[] → BigInt64Array */
+export const QBigInt64Array = Symbol('BigInt64Array');
 
-/** BigUint64Array: string[] → BigUint64Array */
-export const BigUint64ArrayField = Symbol('BigUint64Array');
+/** BigUint64Array transformation: string[] → BigUint64Array */
+export const QBigUint64Array = Symbol('BigUint64Array');
 
-/** ArrayBuffer: number[] → ArrayBuffer */
-export const ArrayBufferField = Symbol('ArrayBuffer');
+/** ArrayBuffer transformation: number[] → ArrayBuffer */
+export const QArrayBuffer = Symbol('ArrayBuffer');
 
-/** DataView: number[] → DataView */
-export const DataViewField = Symbol('DataView');
+/** DataView transformation: number[] → DataView */
+export const QDataView = Symbol('DataView');
 
-/** URL: string → URL */
-export const URLField = Symbol('URL');
+/** URL transformation: string → URL */
+export const QURL = Symbol('URL');
 
-/** URLSearchParams: string → URLSearchParams */
-export const URLSearchParamsField = Symbol('URLSearchParams');
+/** URLSearchParams transformation: string | object → URLSearchParams */
+export const QURLSearchParams = Symbol('URLSearchParams');
 
 /**
- * Union type of all available field symbols
+ * Union type of all available field type symbols.
+ * Used for type-safe decorator parameters.
  */
-export type FieldTypeSymbol =
-  | typeof BigIntField
-  | typeof RegExpField
-  | typeof SymbolField
-  | typeof ErrorField
-  | typeof Int8ArrayField
-  | typeof Uint8ArrayField
-  | typeof Int16ArrayField
-  | typeof Uint16ArrayField
-  | typeof Int32ArrayField
-  | typeof Uint32ArrayField
-  | typeof Float32ArrayField
-  | typeof Float64ArrayField
-  | typeof BigInt64ArrayField
-  | typeof BigUint64ArrayField
-  | typeof ArrayBufferField
-  | typeof DataViewField
-  | typeof URLField
-  | typeof URLSearchParamsField;
+export type QFieldSymbol =
+  | typeof QBigInt
+  | typeof QRegExp
+  | typeof QSymbol
+  | typeof QError
+  | typeof QInt8Array
+  | typeof QUint8Array
+  | typeof QInt16Array
+  | typeof QUint16Array
+  | typeof QInt32Array
+  | typeof QUint32Array
+  | typeof QFloat32Array
+  | typeof QFloat64Array
+  | typeof QBigInt64Array
+  | typeof QBigUint64Array
+  | typeof QArrayBuffer
+  | typeof QDataView
+  | typeof QURL
+  | typeof QURLSearchParams;

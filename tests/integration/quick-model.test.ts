@@ -1,6 +1,6 @@
-import { Field, QuickModel, QuickType } from '../../src/quick.model';
+import { QModel, QType, QInterface } from '../../src/quick.model';
 
-console.log('═══ TEST SOLID: Refactored QuickModel ═══\n');
+console.log('═══ TEST: QModel Core Functionality ═══\n');
 
 interface IUser {
   id: string;
@@ -13,11 +13,11 @@ type UserTransforms = {
   createdAt: Date;
 };
 
-class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
-  @Field() id!: string;
-  @Field() name!: string;
-  @Field() age!: number;
-  @Field() createdAt!: Date;
+class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
+  @QType() id!: string;
+  @QType() name!: string;
+  @QType() age!: number;
+  @QType() createdAt!: Date;
 }
 
 try {

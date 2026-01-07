@@ -1,10 +1,17 @@
 /**
  * Test to verify that the type system works correctly
- * y que toInterface() retorna el tipo serializado correcto
+ * and that toInterface() returns the correct serialized type
+ * 
+ * Tests type transformations:
+ * - RegExp → string
+ * - Error → string
+ * - BigInt → string
+ * - Date → string
+ * - Set → array
  */
 
 import { describe, expect, test } from 'bun:test';
-import { Field, QuickModel, RegExpField, ErrorField, BigIntField } from '../../src';
+import { QType, QModel, QRegExp, QError, QBigInt } from '../../src';
 
 interface ITypeSafeModel {
   pattern: RegExp;
@@ -14,20 +21,20 @@ interface ITypeSafeModel {
   tags: Set<string>;
 }
 
-class TypeSafeModel extends QuickModel<ITypeSafeModel> {
-  @Field(RegExpField)
+class TypeSafeModel extends QModel<ITypeSafeModel> {
+  @QType(QRegExp)
   pattern!: RegExp;
 
-  @Field(ErrorField)
+  @QType(QError)
   error!: Error;
 
-  @Field(BigIntField)
+  @QType(QBigInt)
   amount!: bigint;
 
-  @Field()
+  @QType()
   createdAt!: Date;
 
-  @Field()
+  @QType()
   tags!: Set<string>;
 }
 

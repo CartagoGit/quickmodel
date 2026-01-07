@@ -1,19 +1,19 @@
 import {
-  Field,
-  QuickModel,
-  QuickType,
-  BigIntField,
-  SymbolField,
-  RegExpField,
-  ErrorField,
-  Int8ArrayField,
-  Uint8ArrayField,
-  Float32ArrayField,
-  BigInt64ArrayField,
-  ArrayBufferField,
-  DataViewField,
-  URLField,
-  URLSearchParamsField,
+  QModel,
+  QType,
+  QInterface,
+  QBigInt,
+  QSymbol,
+  QRegExp,
+  QError,
+  QInt8Array,
+  QUint8Array,
+  QFloat32Array,
+  QBigInt64Array,
+  QArrayBuffer,
+  QDataView,
+  QURL,
+  QURLSearchParams,
 } from '../../src';
 
 console.log('╔═══════════════════════════════════════════════════════════════════════╗');
@@ -74,13 +74,13 @@ interface ICompleteModel {
   role: string; // UserRole (string enum)
   priority: number; // Priority (numeric enum)
 
-  // Objetos planos
+  // Plain objects
   metadata: {
     author: string;
     version: string;
   };
 
-  // Modelo anidado
+  // Nested model
   nested?: any;
 }
 
@@ -112,58 +112,58 @@ interface INestedModel {
   value: number;
 }
 
-class NestedModel extends QuickModel<INestedModel> {
-  @Field() name!: string;
-  @Field() value!: number;
+class NestedModel extends QModel<INestedModel> {
+  @QType() name!: string;
+  @QType() value!: number;
 }
 
 // ============================================================================
 // COMPLETE MODEL
 // ============================================================================
 class CompleteModel
-  extends QuickModel<ICompleteModel>
-  implements QuickType<ICompleteModel, CompleteModelTransforms>
+  extends QModel<ICompleteModel>
+  implements QInterface<ICompleteModel, CompleteModelTransforms>
 {
-  // Primitivos
-  @Field() id!: string;
-  @Field() count!: number;
-  @Field() active!: boolean;
-  @Field() nothing!: null;
-  @Field() optional?: string;
+  // Primitives
+  @QType() id!: string;
+  @QType() count!: number;
+  @QType() active!: boolean;
+  @QType() nothing!: null;
+  @QType() optional?: string;
 
-  // Tipos especiales
-  @Field(BigIntField) amount!: bigint;
-  @Field(SymbolField) key!: symbol;
-  @Field(RegExpField) pattern!: RegExp;
-  @Field(ErrorField) errorData!: Error;
-  @Field() createdAt!: Date;
-  @Field(URLField) homepage!: URL;
-  @Field(URLSearchParamsField) queryParams!: URLSearchParams;
+  // Special types
+  @QType(QBigInt) amount!: bigint;
+  @QType(QSymbol) key!: symbol;
+  @QType(QRegExp) pattern!: RegExp;
+  @QType(QError) errorData!: Error;
+  @QType() createdAt!: Date;
+  @QType(QURL) homepage!: URL;
+  @QType(QURLSearchParams) queryParams!: URLSearchParams;
 
   // TypedArrays
-  @Field(Int8ArrayField) int8Data!: Int8Array;
-  @Field(Uint8ArrayField) uint8Data!: Uint8Array;
-  @Field(Float32ArrayField) float32Data!: Float32Array;
-  @Field(BigInt64ArrayField) bigInt64Data!: BigInt64Array;
+  @QType(QInt8Array) int8Data!: Int8Array;
+  @QType(QUint8Array) uint8Data!: Uint8Array;
+  @QType(QFloat32Array) float32Data!: Float32Array;
+  @QType(QBigInt64Array) bigInt64Data!: BigInt64Array;
 
   // Buffers
-  @Field(ArrayBufferField) buffer!: ArrayBuffer;
-  @Field(DataViewField) view!: DataView;
+  @QType(QArrayBuffer) buffer!: ArrayBuffer;
+  @QType(QDataView) view!: DataView;
 
-  // Colecciones
-  @Field() tags!: string[];
-  @Field() settings!: Map<string, string>;
-  @Field() items!: Set<string>;
+  // Collections
+  @QType() tags!: string[];
+  @QType() settings!: Map<string, string>;
+  @QType() items!: Set<string>;
 
   // Enums
-  @Field() role!: UserRole;
-  @Field() priority!: Priority;
+  @QType() role!: UserRole;
+  @QType() priority!: Priority;
 
-  // Objetos planos
-  @Field() metadata!: { author: string; version: string };
+  // Plain objects
+  @QType() metadata!: { author: string; version: string };
 
   // Nested model (optional)
-  @Field(NestedModel) nested?: NestedModel | null;
+  @QType(NestedModel) nested?: NestedModel | null;
 }
 
 // ============================================================================

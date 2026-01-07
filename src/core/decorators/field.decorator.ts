@@ -1,27 +1,34 @@
 /**
- * Universal field decorator for QuickModel properties.
+ * Universal @QType() decorator for QModel properties.
  * 
- * SOLID Principles:
- * - Open/Closed: Allows marking fields without modifying QuickModel core
+ * This decorator marks properties that need automatic serialization/deserialization
+ * with type transformation support. It's the cornerstone of QuickModel's type-safe
+ * data transformation system.
+ * 
+ * SOLID Principles Applied:
+ * - Open/Closed: Allows marking fields without modifying QModel core
  * - Interface Segregation: Provides multiple ways to specify field types
+ * - Dependency Inversion: Works with abstract transformer registry
  */
 
 import 'reflect-metadata';
 
 /**
  * Available field types as string literals with IntelliSense support.
- * Allows using @Field('regexp'), @Field('bigint'), etc. with autocomplete.
+ * Allows using @QType('regexp'), @QType('bigint'), etc. with autocomplete.
+ * 
+ * These string literals provide a convenient alternative to symbol-based type hints.
  * 
  * @example
  * ```typescript
- * class User extends QuickModel<IUser> {
- *   @Field('bigint') balance!: bigint;
- *   @Field('regexp') pattern!: RegExp;
- *   @Field('int8array') bytes!: Int8Array;
+ * class User extends QModel<IUser> {
+ *   @QType('bigint') balance!: bigint;
+ *   @QType('regexp') pattern!: RegExp;
+ *   @QType('int8array') bytes!: Int8Array;
  * }
  * ```
  */
-export type FieldTypeString =
+export type QTypeString =
   // Primitives
   | 'string'
   | 'number'
@@ -54,79 +61,84 @@ export type FieldTypeString =
   | 'biguint64array';
 
 /**
- * Metadata key symbol for storing the list of properties decorated with @Field().
- * Used internally by QuickModel to track which properties need serialization/deserialization.
+ * Metadata key symbol for storing the list of properties decorated with @QType().
+ * Used internally by QModel to track which properties need serialization/deserialization.
+ * 
+ * @internal
  */
 export const FIELDS_METADATA_KEY = Symbol('quickmodel:fields');
 
 /**
- * Property decorator for marking QuickModel fields with automatic type handling.
+ * Property decorator for marking QModel fields with automatic type handling.
  * 
- * Supports multiple ways to specify field types:
- * 1. **Auto-detection**: TypeScript's design:type for primitives (string, number, boolean, Date)
- * 2. **String literals**: Type-safe string literals with IntelliSense ('bigint', 'regexp', etc.)
- * 3. **Native constructors**: Direct constructor references (RegExp, Int8Array, etc.)
- * 4. **Symbols**: Original symbol-based approach (BigIntField, RegExpField, etc.)
- * 5. **Model classes**: For nested models and arrays of models
+ * The @QType() decorator supports multiple ways to specify field types, providing
+ * maximum flexibility while maintaining type safety:
+ * 
+ * 1. **Auto-detection**: TypeScript's design:type metadata for basic types
+ * 2. **String literals**: Type-safe string literals with IntelliSense
+ * 3. **Native constructors**: Direct constructor references
+ * 4. **Q-Symbols**: Q-prefixed symbols (QBigInt, QRegExp, etc.)
+ * 5. **Model classes**: For nested models and model arrays
  * 
  * @template T - The property type
  * @param typeOrClass - Optional: Constructor, Symbol, or String literal for the field type
- * @returns A property decorator function
+ * @returns A property decorator function that registers the field with appropriate metadata
  * 
  * @example
  * **Auto-detection** (primitives and Date):
  * ```typescript
- * class User extends QuickModel<IUser> {
- *   @Field() name!: string;          // Auto-detected
- *   @Field() age!: number;            // Auto-detected
- *   @Field() active!: boolean;        // Auto-detected
- *   @Field() createdAt!: Date;        // Auto-detected
+ * class User extends QModel<IUser> {
+ *   @QType() name!: string;          // Auto-detected via design:type
+ *   @QType() age!: number;            // Auto-detected via design:type
+ *   @QType() active!: boolean;        // Auto-detected via design:type
+ *   @QType() createdAt!: Date;        // Auto-detected via design:type
  * }
  * ```
  * 
  * @example
  * **String literals** (with IntelliSense):
  * ```typescript
- * class Account extends QuickModel<IAccount> {
- *   @Field('bigint') balance!: bigint;
- *   @Field('symbol') id!: symbol;
- *   @Field('regexp') pattern!: RegExp;
- *   @Field('int8array') bytes!: Int8Array;
- *   @Field('map') metadata!: Map<string, any>;
+ * class Account extends QModel<IAccount> {
+ *   @QType('bigint') balance!: bigint;
+ *   @QType('symbol') id!: symbol;
+ *   @QType('regexp') pattern!: RegExp;
+ *   @QType('int8array') bytes!: Int8Array;
+ *   @QType('map') metadata!: Map<string, any>;
  * }
  * ```
  * 
  * @example
  * **Native constructors**:
  * ```typescript
- * class Binary extends QuickModel<IBinary> {
- *   @Field(RegExp) pattern!: RegExp;
- *   @Field(Error) lastError!: Error;
- *   @Field(Int8Array) bytes!: Int8Array;
- *   @Field(ArrayBuffer) buffer!: ArrayBuffer;
+ * class Binary extends QModel<IBinary> {
+ *   @QType(RegExp) pattern!: RegExp;
+ *   @QType(Error) lastError!: Error;
+ *   @QType(Int8Array) bytes!: Int8Array;
+ *   @QType(ArrayBuffer) buffer!: ArrayBuffer;
  * }
  * ```
  * 
  * @example
- * **Symbol-based** (original approach):
+ * **Q-Symbol based**:
  * ```typescript
- * class Account extends QuickModel<IAccount> {
- *   @Field(BigIntField) balance!: bigint;
- *   @Field(SymbolField) id!: symbol;
- *   @Field(RegExpField) pattern!: RegExp;
+ * class Account extends QModel<IAccount> {
+ *   @QType(QBigInt) balance!: bigint;
+ *   @QType(QSymbol) id!: symbol;
+ *   @QType(QRegExp) pattern!: RegExp;
+ *   @QType(QInt8Array) data!: Int8Array;
  * }
  * ```
  * 
  * @example
  * **Nested models**:
  * ```typescript
- * class User extends QuickModel<IUser> {
- *   @Field(Address) address!: Address;
- *   @Field(Vehicle) vehicles!: Vehicle[];  // Array of models
+ * class User extends QModel<IUser> {
+ *   @QType(Address) address!: Address;
+ *   @QType(Vehicle) vehicles!: Vehicle[];  // Array of models
  * }
  * ```
  */
-export function Field<T>(typeOrClass?: (new (data: any) => T) | symbol | FieldTypeString): PropertyDecorator {
+export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeString): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol): void {
     // Register the property in the fields list
     const existingFields = (Reflect.getMetadata(FIELDS_METADATA_KEY, target) as Array<string | symbol>) || [];
@@ -138,7 +150,7 @@ export function Field<T>(typeOrClass?: (new (data: any) => T) | symbol | FieldTy
       // String literal ('bigint', 'regexp', 'int8array', etc.)
       Reflect.defineMetadata('fieldType', typeOrClass, target, propertyKey);
     } else if (typeof typeOrClass === 'symbol') {
-      // Type symbol (BigIntField, RegExpField, etc.)
+      // Q-Symbol (QBigInt, QRegExp, etc.)
       const symbolKey = typeOrClass.toString();
       Reflect.defineMetadata('fieldType', symbolKey, target, propertyKey);
     } else if (typeOrClass && typeof typeOrClass === 'function') {
