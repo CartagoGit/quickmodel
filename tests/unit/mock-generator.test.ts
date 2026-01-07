@@ -38,7 +38,7 @@ describe('Mock Generator', () => {
     });
 
     test('random() debe crear instancia con valores aleatorios', () => {
-      const instance = TestModel.mock.random.call(TestModel) as TestModel;
+      const instance = TestModel.mock.random() as TestModel;
 
       expect(instance).toBeInstanceOf(TestModel);
       expect(typeof instance.name).toBe('string');
@@ -161,7 +161,7 @@ describe('Mock Generator', () => {
 
   describe('Serialización de mocks', () => {
     test('random().toInterface() debe funcionar correctamente', () => {
-      const instance = TestModel.mock.random.call(TestModel) as TestModel;
+      const instance = TestModel.mock.random() as TestModel;
       const serialized = instance.toInterface();
 
       expect(typeof serialized.name).toBe('string');
@@ -172,7 +172,7 @@ describe('Mock Generator', () => {
     });
 
     test('fromInterface(interfaceRandom()) debe crear instancia válida', () => {
-      const mockData = TestModel.mock.interfaceRandom.call(TestModel) as ITestModel;
+      const mockData = TestModel.mock.interfaceRandom() as ITestModel;
       const instance = TestModel.fromInterface(mockData);
 
       expect(instance).toBeInstanceOf(TestModel);

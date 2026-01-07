@@ -72,10 +72,21 @@ export type FieldTypeString =
  * }
  * ```
  */
+/**
+ * Símbolo para guardar la lista de propiedades decoradas con @Field()
+ */
+export const FIELDS_METADATA_KEY = Symbol('quickmodel:fields');
+
 export function Field<T>(typeOrClass?: (new (data: any) => T) | symbol | FieldTypeString): any {
   return function (target: any, propertyKey?: string | symbol, _descriptor?: any) {
     // Compatibilidad con decorators legacy (experimentalDecorators: true)
     const key = propertyKey as string | symbol;
+
+    // Registrar la propiedad en la lista de campos
+    const existingFields = Reflect.getMetadata(FIELDS_METADATA_KEY, target) || [];
+    if (!existingFields.includes(key)) {
+      Reflect.defineMetadata(FIELDS_METADATA_KEY, [...existingFields, key], target);
+    }
 
     if (typeof typeOrClass === 'string') {
       // String literal ('bigint', 'regexp', 'int8array', etc.)

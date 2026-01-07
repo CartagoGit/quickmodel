@@ -6,6 +6,7 @@
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
 import type { ITransformerRegistry } from '../interfaces';
+import { FIELDS_METADATA_KEY } from '../decorators/field.decorator';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
@@ -64,22 +65,11 @@ export class MockGenerator {
     // Recorrer la cadena de prototipos
     let current = instance;
     while (current && current !== Object.prototype) {
-      const keys = Reflect.getMetadataKeys(current);
-      for (const key of keys) {
-        if (typeof key === 'string' && key.startsWith('fieldType:')) {
-          properties.add(key.replace('fieldType:', ''));
-        }
-      }
-
-      // También buscar properties directamente
-      const ownKeys = Object.getOwnPropertyNames(current);
-      for (const key of ownKeys) {
-        // Detectar si tiene fieldType o design:type (propiedades decoradas con @Field())
-        const fieldType = Reflect.getMetadata('fieldType', current, key);
-        const designType = Reflect.getMetadata('design:type', current, key);
-        if (fieldType !== undefined || designType !== undefined) {
-          properties.add(key);
-        }
+      // Obtener la lista de propiedades registradas por @Field()
+      const registeredFields = Reflect.getMetadata(FIELDS_METADATA_KEY, current) || [];
+      
+      for (const field of registeredFields) {
+        properties.add(field as string);
       }
 
       current = Object.getPrototypeOf(current);
@@ -125,24 +115,24 @@ export class MockGenerator {
       ? fieldType
       : fieldType.name;
 
-    // BigInt
-    if (typeStr.includes('BigInt') || typeStr === 'bigint') {
-      return this.getDefaultValue(type, 'bigint');
-    }
-
-    // Symbol
-    if (typeStr.includes('Symbol') || typeStr === 'symbol') {
-      return this.getDefaultValue(type, 'symbol');
-    }
-
-    // RegExp
+    // RegExp (debe ir antes de Symbol porque Symbol(RegExp) contiene ambas palabras)
     if (typeStr.includes('RegExp') || typeStr === 'regexp') {
       return this.getDefaultValue(type, 'regexp');
     }
 
-    // Error
+    // Error (debe ir antes de Symbol)
     if (typeStr.includes('Error') || typeStr === 'error') {
       return this.getDefaultValue(type, 'error');
+    }
+
+    // BigInt (debe ir antes de Symbol)
+    if (typeStr.includes('BigInt') || typeStr === 'bigint') {
+      return this.getDefaultValue(type, 'bigint');
+    }
+
+    // Symbol (debe ir después de los tipos que usan Symbol() como wrapper)
+    if (typeStr === 'Symbol' || typeStr === 'symbol') {
+      return this.getDefaultValue(type, 'symbol');
     }
 
     // URL
