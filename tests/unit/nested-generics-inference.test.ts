@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { QModel } from '../../src/quick.model';
-import { QType } from '../../src/core/decorators/field.decorator';
+import { QType } from '../../src/core/decorators/qtype.decorator';
 
 // ========================================
 // GENÉRICOS ANIDADOS: MÚLTIPLES NIVELES

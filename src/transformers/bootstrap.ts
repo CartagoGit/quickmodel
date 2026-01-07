@@ -22,7 +22,7 @@ import {
   QUint8Array,
   QURL,
   QURLSearchParams,
-} from '../core/interfaces/field-symbols.interface';
+} from '../core/interfaces/qtype-symbols.interface';
 import { IQTransformer, IQValidator } from '../core/interfaces';
 import { qTransformerRegistry, qValidatorRegistry } from '../core/registry';
 

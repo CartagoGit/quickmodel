@@ -6,7 +6,7 @@
  */
 
 import { QModel } from '../../../quick.model';
-import { QType } from '../../../core/decorators/field.decorator';
+import { QType } from '../../../core/decorators/qtype.decorator';
 import {
   QBigInt,
   QSymbol,
@@ -18,7 +18,7 @@ import {
   QUint8Array,
   QFloat32Array,
   QBigInt64Array,
-} from '../../../core/interfaces/field-symbols.interface';
+} from '../../../core/interfaces/qtype-symbols.interface';
 
 // ============================================================================
 // FORM 1: Auto-detection (for basic types and Date, Map, Set)

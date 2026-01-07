@@ -1,5 +1,5 @@
-import { QBigInt, QSymbol } from '../../../core/interfaces';
-import { QModel, QType, QInterface } from '../../../quick.model';
+import { QBigInt, QSymbol } from '../../core/interfaces';
+import { QModel, QType, QInterface } from '../../quick.model';
 import type {
 	ISimpleModel,
 	SimpleModelTransforms,

@@ -131,6 +131,7 @@ export class ModelDeserializer<
 
       // 1. Check for custom transformer via fieldType metadata
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
+      
       if (fieldType) {
         const transformer = this.qTransformerRegistry.get(fieldType);
         if (transformer) {

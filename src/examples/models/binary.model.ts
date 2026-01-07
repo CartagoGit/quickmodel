@@ -12,8 +12,8 @@ import {
 	QUint16Array,
 	QUint32Array,
 	QUint8Array,
-} from '../../../core/interfaces';
-import { QModel, QType } from '../../../quick.model';
+} from '../../core/interfaces';
+import { QModel, QType } from '../../quick.model';
 import type {
 	BinaryModelTransforms,
 	IBinaryModel,

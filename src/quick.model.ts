@@ -28,8 +28,9 @@ import type {
 	ModelData,
 } from './core/interfaces/serialization-types.interface';
 
+
 // Public exports
-export { QType } from './core/decorators';
+export { QType, Quick } from './core/decorators';
 export * from './core/interfaces'; // Q-prefixed symbols (QBigInt, QRegExp, etc.)
 export type { QInterface } from './core/interfaces';
 export type { MockType as QMockType } from './core/services';
@@ -220,13 +221,16 @@ export abstract class QModel<
 			return;
 		}
 
+		// Auto-register was already done in constructor, just deserialize
 		type DataAsInterface = Record<string, unknown>;
 		type ThisConstructor = new (data: DataAsInterface) => this;
 		const deserialized = QModel.deserializer.deserialize(
 			data as unknown as DataAsInterface,
 			this.constructor as ThisConstructor
 		);
+		
 		Object.assign(this, deserialized);
+		
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
 	}

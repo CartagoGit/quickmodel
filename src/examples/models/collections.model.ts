@@ -1,4 +1,4 @@
-import { QModel, QType, QInterface } from '../../../quick.model';
+import { QModel, QType, QInterface } from '../../quick.model';
 import type {
   CollectionsModelTransforms,
   ICollectionsModel,

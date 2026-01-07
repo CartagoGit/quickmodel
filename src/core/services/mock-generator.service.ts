@@ -6,7 +6,7 @@
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
 import type { IQTransformerRegistry } from '../interfaces';
-import { FIELDS_METADATA_KEY } from '../decorators/field.decorator';
+import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 

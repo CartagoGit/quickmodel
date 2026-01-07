@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, test } from 'bun:test';
-import { QType } from '../../src/core/decorators/field.decorator';
+import { QType } from '../../src/core/decorators/qtype.decorator';
 import { QModel } from '../../src/quick.model';
 
 // ============================================================================

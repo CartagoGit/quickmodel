@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, test } from 'bun:test';
-import { QType } from '../../src/core/decorators/field.decorator';
+import { QType } from '../../src/core/decorators/qtype.decorator';
 import { QModel } from '../../src/quick.model';
 import {
   QRegExp,
@@ -19,7 +19,7 @@ import {
   QURLSearchParams,
   QInt8Array,
   QUint8Array,
-} from '../../src/core/interfaces/field-symbols.interface';
+} from '../../src/core/interfaces/qtype-symbols.interface';
 
 // ============================================================================
 // Models using native constructors as aliases

@@ -1,4 +1,4 @@
-import { QModel, QType } from '../../../quick.model';
+import { QModel, QType } from '../../quick.model';
 import type { IComplexModel } from '../interfaces/complex-model.interface';
 import { Address } from './nested.model';
 import { SimpleModel } from './simple.model';
