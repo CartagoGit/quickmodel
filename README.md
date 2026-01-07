@@ -15,10 +15,11 @@ Sistema profesional de serialización/deserialización de modelos TypeScript con
 - 🎯 **Type-Safe Serialization**: `toInterface()` retorna tipos serializados correctos automáticamente
 - 💡 **Inferencia de tipos**: TypeScript sabe que `RegExp → string`, `BigInt → string`, etc.
 - ✨ **3 formas de uso**: Símbolos, Constructores, String literals con IntelliSense
+- 🎭 **Sistema de Mocks**: 6 tipos de mocks + arrays con [@faker-js/faker](https://fakerjs.dev/)
 - ✅ **Validación automática** en runtime
 - 📦 **Modelos anidados** infinitos
 - 🔌 **Extensible** vía registry pattern
-- 🧪 **100% testado** con 136 expect() calls
+- 🧪 **100% testado** con 136+ expect() calls
 - 📚 **Documentación completa**
 
 ## 📦 Instalación
@@ -96,6 +97,28 @@ console.log(data.createdAt); // string: "2024-01-01T00:00:00.000Z"
 const json = user.toJSON();
 const user2 = User.fromJSON(json);
 console.log(user2.balance === user.balance); // true
+```
+
+## 🎭 Sistema de Mocks para Testing
+
+```typescript
+// 6 tipos de mocks disponibles
+const user1 = User.mockEmpty();    // Valores vacíos
+const user2 = User.mockRandom();   // Aleatorios con faker
+const user3 = User.mockSample();   // Predecibles para tests
+const user4 = User.mock();         // Alias de mockRandom()
+
+// Arrays de mocks
+const users = User.mockArray(10);  // 10 usuarios aleatorios
+const team = User.mockArray(5, 'sample', (i) => ({ 
+  name: `Dev${i}` 
+}));
+
+// Interfaces mock (objetos planos)
+const userData = User.mockInterface();          // Sin instanciar
+const usersData = User.mockInterfaceArray(50); // Para seeders
+
+// Ver documentación completa: docs/MOCK-GENERATOR.md
 ```
 
 ## 🔧 Tipos Soportados
