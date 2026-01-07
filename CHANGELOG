@@ -1,0 +1,91 @@
+# Changelog
+
+## [1.0.0] - 2026-01-06
+
+### 🎉 Lanzamiento Inicial
+
+**@cartago-git/quickmodel** - Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID.
+
+### ✨ Características Principales
+
+#### Core
+
+- **QuickModel**: Clase base para modelos con transformaciones automáticas
+- **QuickType**: Helper type para inferencia de tipos transformados
+- **@Field()**: Decorador para marcar campos con transformaciones
+- **SOLID Architecture**: Implementación completa de los 5 principios SOLID
+
+#### Tipos Soportados (27 tipos)
+
+- **Primitivos**: string, number, boolean
+- **Fechas**: Date
+- **BigInt**: BigInt
+- **Símbolos**: Symbol
+- **RegExp**: RegExp
+- **Errores**: Error
+- **TypedArrays**: Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array
+- **Buffers**: ArrayBuffer, DataView
+- **Colecciones**: Map, Set
+- **Modelos anidados**: Soporte completo para composición
+
+#### Arquitectura
+
+- **Single Responsibility**: Cada clase tiene una única responsabilidad
+- **Open/Closed**: Extensible sin modificar código existente
+- **Liskov Substitution**: Todos los transformers son intercambiables
+- **Interface Segregation**: Interfaces específicas y cohesivas
+- **Dependency Inversion**: Dependencia de abstracciones, no implementaciones
+
+#### Transformers
+
+- 10 transformers individuales con responsabilidad única
+- Registry pattern para registro extensible
+- Validación automática de tipos
+- Round-trip JSON perfecto (JSON → Modelo → JSON)
+
+#### Developer Experience
+
+- TypeScript estricto con inferencia completa
+- Sin decorador @Model() necesario (auto-inicialización)
+- API simplificada: `QuickModel<Interface, Transforms>`
+- Dual build: CommonJS + ES Modules
+- Type declarations incluidas
+
+### 📦 Distribución
+
+- **Package**: @cartago-git/quickmodel
+- **Formatos**: CJS (.js), ESM (.mjs), TypeScript (.d.ts)
+- **Exports**:
+  - Main: `@cartago-git/quickmodel`
+  - Transformers: `@cartago-git/quickmodel/transformers`
+  - Core: `@cartago-git/quickmodel/core`
+
+### 📚 Documentación
+
+- README.md - Guía rápida
+- SOLID-ARCHITECTURE.md - Arquitectura detallada
+- INSTALLATION.md - Guía de instalación y uso
+- PACKAGE-README.md - Documentación para npm
+- 5 modelos de ejemplo en `models/examples/`
+
+### 🧪 Tests
+
+- Test de tipos básicos
+- Test SOLID básico
+- Test de todos los tipos (27 tipos)
+- Cobertura completa de round-trip JSON
+
+### 🔧 Tooling
+
+- **Build**: tsup para dual output
+- **Runtime**: Bun 1.3.2
+- **TypeScript**: 5.9.3
+- **Decorators**: reflect-metadata 0.2.2
+
+### 📝 Notas
+
+- Decorador `@Model()` eliminado (auto-inicialización en constructor)
+- Clase renombrada de `BaseModel` a `QuickModel`
+- Type helper renombrado de `ModelType` a `QuickType`
+- Soporte para constructores en registry (e.g., `Date`)
+- Fixes para TypeScript strict mode

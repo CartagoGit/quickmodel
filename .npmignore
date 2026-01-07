@@ -1,0 +1,41 @@
+# Código fuente
+*.ts
+!*.d.ts
+
+# Tests
+tests/
+test-*.ts
+run/
+
+# Modelos de ejemplo (fuente)
+models/
+
+# Configs
+tsconfig*.json
+tsup.config.ts
+jest.config.js
+.eslintrc*
+
+# Archives
+_archived/
+*.old.*
+*.bak
+
+# Development
+docs/README.md
+docs/CLEANUP-REPORT.md
+docs/CLEANUP-SUMMARY.md
+docs/README-DEV.md
+docs/INSTALLATION.md
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
