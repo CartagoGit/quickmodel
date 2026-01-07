@@ -35,48 +35,54 @@ export abstract class QuickModel<
    * @example User.mock.array(5) // devuelve User[]
    */
   static get mock() {
-    const ModelClass = this as any;
+    type ThisClass = typeof this;
+    type InstanceType = ThisClass extends abstract new (...args: any[]) => infer R ? R : never;
+    type InterfaceType = InstanceType extends QuickModel<infer T> ? T : never;
+
+    // @ts-expect-error - TypeScript no permite instanciar clases abstractas, pero en runtime `this` es la clase concreta
+    const ModelClass: new (data: InterfaceType) => InstanceType = this;
+
     return {
-      empty: (overrides?: Partial<any>): any => {
+      empty: (overrides?: Partial<InterfaceType>): InstanceType => {
         const data = QuickModel.mockGenerator.generate(ModelClass, 'empty', overrides);
         return new ModelClass(data);
       },
-      random: (overrides?: Partial<any>): any => {
+      random: (overrides?: Partial<InterfaceType>): InstanceType => {
         const data = QuickModel.mockGenerator.generate(ModelClass, 'random', overrides);
         return new ModelClass(data);
       },
-      sample: (overrides?: Partial<any>): any => {
+      sample: (overrides?: Partial<InterfaceType>): InstanceType => {
         const data = QuickModel.mockGenerator.generate(ModelClass, 'sample', overrides);
         return new ModelClass(data);
       },
-      minimal: (overrides?: Partial<any>): any => {
+      minimal: (overrides?: Partial<InterfaceType>): InstanceType => {
         const data = QuickModel.mockGenerator.generate(ModelClass, 'minimal', overrides);
         return new ModelClass(data);
       },
-      full: (overrides?: Partial<any>): any => {
+      full: (overrides?: Partial<InterfaceType>): InstanceType => {
         const data = QuickModel.mockGenerator.generate(ModelClass, 'full', overrides);
         return new ModelClass(data);
       },
-      interfaceEmpty: (overrides?: Partial<any>): any => {
+      interfaceEmpty: (overrides?: Partial<InterfaceType>): InterfaceType => {
         return QuickModel.mockGenerator.generate(ModelClass, 'empty', overrides);
       },
-      interfaceRandom: (overrides?: Partial<any>): any => {
+      interfaceRandom: (overrides?: Partial<InterfaceType>): InterfaceType => {
         return QuickModel.mockGenerator.generate(ModelClass, 'random', overrides);
       },
-      interfaceSample: (overrides?: Partial<any>): any => {
+      interfaceSample: (overrides?: Partial<InterfaceType>): InterfaceType => {
         return QuickModel.mockGenerator.generate(ModelClass, 'sample', overrides);
       },
-      interfaceMinimal: (overrides?: Partial<any>): any => {
+      interfaceMinimal: (overrides?: Partial<InterfaceType>): InterfaceType => {
         return QuickModel.mockGenerator.generate(ModelClass, 'minimal', overrides);
       },
-      interfaceFull: (overrides?: Partial<any>): any => {
+      interfaceFull: (overrides?: Partial<InterfaceType>): InterfaceType => {
         return QuickModel.mockGenerator.generate(ModelClass, 'full', overrides);
       },
       array: (
         count: number,
         type: MockType = 'random',
-        overrides?: (index: number) => Partial<any>
-      ): any[] => {
+        overrides?: (index: number) => Partial<InterfaceType>
+      ): InstanceType[] => {
         if (count < 0) {
           throw new Error(`Count must be non-negative, got ${count}`);
         }
@@ -84,13 +90,13 @@ export abstract class QuickModel<
           return [];
         }
         const dataArray = QuickModel.mockGenerator.generateArray(ModelClass, count, type, overrides);
-        return dataArray.map((data: any) => new ModelClass(data));
+        return dataArray.map(data => new ModelClass(data));
       },
       interfaceArray: (
         count: number,
         type: MockType = 'random',
-        overrides?: (index: number) => Partial<any>
-      ): any[] => {
+        overrides?: (index: number) => Partial<InterfaceType>
+      ): InterfaceType[] => {
         if (count < 0) {
           throw new Error(`Count must be non-negative, got ${count}`);
         }
