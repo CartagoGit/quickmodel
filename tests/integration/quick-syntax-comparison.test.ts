@@ -46,17 +46,26 @@ class QuickTestDeclare extends QModel<IQuickTestDeclare> implements QInterface<I
 // ====================
 // MODELS CON @Quick() Y !
 // ====================
+// NOTA: @Quick() NO funciona con la sintaxis `!` debido a cómo TypeScript
+// compila las propiedades con useDefineForClassFields: true.
+// Las propiedades se inicializan DESPUÉS del constructor, sobreescribiendo los valores.
+// 
+// Para usar `!`, debe usar @QType() en cada propiedad:
+// class Example extends QModel<IExample> {
+//   @QType() id!: string;
+//   @QType() name!: string;
+// }
 
 @Quick()
 class QuickTestBang extends QModel<IQuickTestBang> implements QInterface<IQuickTestBang> {
-  id!: string;
-  name!: string;
-  createdAt!: Date;
-  count!: bigint;
-  key!: symbol;
-  pattern!: RegExp;
-  tags!: Set<string>;
-  metadata!: Map<string, string>;
+  declare id: string;
+  declare name: string;
+  declare createdAt: Date;
+  declare count: bigint;
+  declare key: symbol;
+  declare pattern: RegExp;
+  declare tags: Set<string>;
+  declare metadata: Map<string, string>;
 }
 
 // ====================

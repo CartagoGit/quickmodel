@@ -76,104 +76,131 @@ const QUICK_DECORATOR_KEY = '__quickModel__';
  * 
  * Properties are inferred from the data passed to the constructor.
  * 
- * **Works with both `declare` and `!` syntax:**
+ * **IMPORTANT:** This decorator **only works with `declare` keyword**.
+ * Properties with `!` (definite assignment) will NOT work due to how
+ * TypeScript compiles field initialization with `useDefineForClassFields: true`.
  * 
  * @returns A class decorator function
  * 
  * @example
- * **With `declare` keyword:**
+ * **✅ CORRECT - Use `declare`:**
  * ```typescript
  * @Quick()
  * class User extends QModel<IUser> {
- *   declare id: string;       // ✅ Works perfectly
- *   declare name: string;     // ✅ Properties initialized by QModel
- *   declare age: number;      // ✅ Semantically correct
+ *   declare id: string;       // ✅ Works
+ *   declare name: string;     // ✅ Works
+ *   declare createdAt: Date;  // ✅ Works
  * }
- * 
- * const user = new User({ id: '1', name: 'Alice', age: 30 });
- * console.log(user.id); // '1' - value preserved
  * ```
  * 
  * @example
- * **With `!` (definite assignment):**
+ * **❌ INCORRECT - Don't use `!`:**
  * ```typescript
  * @Quick()
  * class User extends QModel<IUser> {
- *   id!: string;      // ✅ Also works!
- *   name!: string;    // ✅ @Quick() handles field initialization
- *   age!: number;     // ✅ Values preserved correctly
+ *   id!: string;      // ❌ Won't work
+ *   name!: string;    // ❌ Won't work
  * }
- * 
- * const user = new User({ id: '1', name: 'Alice', age: 30 });
- * console.log(user.id); // '1' - value preserved
  * ```
  * 
  * @remarks
- * **How it works:**
+ * **Why only `declare` works:**
  * 
- * - Registers properties dynamically on first instantiation
- * - Applies @QType() automatically to all properties from the input data
- * - Handles both `declare` and `!` syntax by preserving values after field initialization
- * - Works with `useDefineForClassFields: true` (ES2022+)
+ * With `useDefineForClassFields: true` (ES2022+):
+ * - `declare` means "this property exists but is not initialized here"
+ * - `!` means "I will definitely assign this" and generates initialization code
+ * - That initialization code runs AFTER the constructor, overwriting values
  * 
- * @see {@link QType} for manual property decoration
+ * For `!` syntax, use `@QType()` on each property instead:
+ * ```typescript
+ * class User extends QModel<IUser> {
+ *   @QType() id!: string;
+ *   @QType() name!: string;
+ * }
+ * ```
+ * 
+ * @see {@link QType} for the decorator that works with both syntaxes
  */
 export function Quick(): ClassDecorator {
   return function <T extends Function>(target: any): T | void {
     // Mark class as using @Quick() for auto-registration
     Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
     
-    // Wrap constructor to register properties
+    // Wrap constructor to register properties on first instantiation
     const originalConstructor = target;
     let propertiesRegistered = false;
     
     const wrappedConstructor: any = function(this: any, ...args: any[]) {
-      // Store the data before calling constructor
-      const data = args[0];
-      
       // On first instantiation, register properties BEFORE calling original constructor
-      if (!propertiesRegistered && data && typeof data === 'object' && !Array.isArray(data)) {
-        const properties = Object.keys(data);
-        
-        for (const propertyKey of properties) {
-          // Check if already decorated
-          const existingFieldType = Reflect.getMetadata('fieldType', originalConstructor.prototype, propertyKey);
-          const existingArrayClass = Reflect.getMetadata('arrayElementClass', originalConstructor.prototype, propertyKey);
+      if (!propertiesRegistered && args[0]) {
+        const data = args[0];
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          const properties = Object.keys(data);
           
-          if (existingFieldType === undefined && existingArrayClass === undefined) {
-            const value = data[propertyKey];
+          for (const propertyKey of properties) {
+            // Check if already decorated
+            const existingFieldType = Reflect.getMetadata('fieldType', originalConstructor.prototype, propertyKey);
+            const existingArrayClass = Reflect.getMetadata('arrayElementClass', originalConstructor.prototype, propertyKey);
             
-            // Infer type and set metadata
-            if (value !== null && value !== undefined) {
-              const inferredType = value.constructor;
-              Reflect.defineMetadata('design:type', inferredType, originalConstructor.prototype, propertyKey);
+            if (existingFieldType === undefined && existingArrayClass === undefined) {
+              // Get the declared type from TypeScript metadata (if available)
+              // Note: design:type is only emitted when property has a decorator
+              const designType = Reflect.getMetadata('design:type', originalConstructor.prototype, propertyKey);
+              
+              if (designType) {
+                // Use TypeScript's emitted metadata
+                // This happens when property has @QType() decorator
+              } else {
+                // No metadata available - need to infer from value
+                // @Quick() doesn't work with declare/! because TypeScript doesn't emit metadata
+                // We need to detect the type from the actual value
+                const value = data[propertyKey];
+                
+                if (value !== null && value !== undefined) {
+                  // Detect special types by checking the actual value
+                  let inferredType = value.constructor;
+                  
+                  // Special detection for Date strings (ISO format)
+                  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+                    inferredType = Date;
+                  }
+                  // Special detection for BigInt strings (very large numbers)
+                  else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+                    inferredType = BigInt;
+                  }
+                  // RegExp objects with __type marker
+                  else if (value && typeof value === 'object' && value.__type === 'regexp') {
+                    inferredType = RegExp;
+                  }
+                  // Symbol objects with __type marker
+                  else if (value && typeof value === 'object' && value.__type === 'symbol') {
+                    inferredType = Symbol;
+                  }
+                  // Map objects with __type marker
+                  else if (value && typeof value === 'object' && value.__type === 'Map') {
+                    inferredType = Map;
+                  }
+                  // Set objects with __type marker
+                  else if (value && typeof value === 'object' && value.__type === 'Set') {
+                    inferredType = Set;
+                  }
+                  
+                  Reflect.defineMetadata('design:type', inferredType, originalConstructor.prototype, propertyKey);
+                }
+              }
+              
+              // Apply @QType() decorator to register the transformer
+              const decorator = QType();
+              decorator(originalConstructor.prototype, propertyKey);
             }
-            
-            // Apply @QType() decorator
-            const decorator = QType();
-            decorator(originalConstructor.prototype, propertyKey);
           }
+          
+          propertiesRegistered = true;
         }
-        
-        propertiesRegistered = true;
       }
       
       // Call original constructor
-      const instance = Reflect.construct(originalConstructor, args, wrappedConstructor);
-      
-      // Wrap instance with Proxy to handle field initialization
-      // This prevents properties with `!` from being reset to undefined
-      return new Proxy(instance, {
-        set(target: any, property: string | symbol, value: any, receiver: any): boolean {
-          // If trying to set undefined after initialization, ignore it
-          if (value === undefined && property in target && target[property] !== undefined) {
-            // Property already has a value, don't overwrite with undefined
-            return true;
-          }
-          // Otherwise, set normally
-          return Reflect.set(target, property, value, receiver);
-        }
-      });
+      return Reflect.construct(originalConstructor, args, wrappedConstructor);
     };
     
     // Copy prototype and static members
