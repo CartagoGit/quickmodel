@@ -1,4 +1,4 @@
-import { Field, QuickModel } from '../../src/quick.model';
+import { Field, QuickModel, QuickType } from '../../src/quick.model';
 
 console.log('═══ TEST SOLID: QuickModel Refactorizado ═══\n');
 

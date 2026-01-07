@@ -274,8 +274,8 @@ MIT © 2026 Cartago
 
 ## 🔗 Enlaces
 
-- [GitHub Repository](https://github.com/yourusername/quickmodel)
-- [Report Issues](https://github.com/yourusername/quickmodel/issues)
+- [GitHub Repository](https://github.com/CartagoGit/quickmodel)
+- [Report Issues](https://github.com/CartagoGit/quickmodel/issues)
 - [NPM Package](https://www.npmjs.com/package/@cartago-git/quickmodel)
 
 ---

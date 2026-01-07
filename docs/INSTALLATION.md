@@ -100,7 +100,7 @@ npm install @cartago-git/quickmodel
 # En package.json del proyecto
 {
   "dependencies": {
-    "@cartago-git/quickmodel": "github:yourusername/solid-models#main"
+    "@cartago-git/quickmodel": "github:CartagoGit/quickmodel#main"
   }
 }
 ```

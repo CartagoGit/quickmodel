@@ -18,19 +18,19 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./transformers": {
+      "types": "./dist/transformers/index.d.ts",
       "import": "./dist/transformers/index.mjs",
-      "require": "./dist/transformers/index.js",
-      "types": "./dist/transformers/index.d.ts"
+      "require": "./dist/transformers/index.js"
     },
     "./core": {
+      "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.mjs",
-      "require": "./dist/core/index.js",
-      "types": "./dist/core/index.d.ts"
+      "require": "./dist/core/index.js"
     }
   },
   "files": [
@@ -66,10 +66,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/solid-models.git"
+    "url": "https://github.com/CartagoGit/quickmodel.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/solid-models/issues"
+    "url": "https://github.com/CartagoGit/quickmodel/issues"
   },
-  "homepage": "https://github.com/yourusername/solid-models#readme"
+  "homepage": "https://github.com/CartagoGit/quickmodel#readme"
 }
