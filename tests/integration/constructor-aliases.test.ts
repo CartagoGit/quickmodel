@@ -24,7 +24,25 @@ import {
 // Modelos usando constructores nativos como alias
 // ============================================================================
 
-class ModelWithConstructors extends QuickModel {
+interface IModelWithConstructors {
+  pattern: RegExp;
+  error: Error;
+  url: URL;
+  params: URLSearchParams;
+  bytes1: Int8Array;
+  bytes2: Uint8Array;
+}
+
+interface IModelWithConstructorsSerialized {
+  pattern: string;
+  error: string;
+  url: string;
+  params: string;
+  bytes1: number[];
+  bytes2: number[];
+}
+
+class ModelWithConstructors extends QuickModel<IModelWithConstructors> {
   @Field(RegExp)
   pattern!: RegExp;
 
@@ -48,7 +66,25 @@ class ModelWithConstructors extends QuickModel {
 // Modelos usando symbols (forma tradicional)
 // ============================================================================
 
-class ModelWithSymbols extends QuickModel {
+interface IModelWithSymbols {
+  pattern: RegExp;
+  error: Error;
+  url: URL;
+  params: URLSearchParams;
+  bytes1: Int8Array;
+  bytes2: Uint8Array;
+}
+
+interface IModelWithSymbolsSerialized {
+  pattern: string;
+  error: string;
+  url: string;
+  params: string;
+  bytes1: number[];
+  bytes2: number[];
+}
+
+class ModelWithSymbols extends QuickModel<IModelWithSymbols> {
   @Field(RegExpField)
   pattern!: RegExp;
 
@@ -84,9 +120,7 @@ describe('Constructor Aliases', () => {
 
   describe('Usando constructores nativos (@Field(RegExp), @Field(Error), etc.)', () => {
     test('Debe serializar correctamente', () => {
-      const model = new ModelWithConstructors();
-      Object.assign(model, testData);
-      model.initialize();
+      const model = new ModelWithConstructors(testData);
 
       const serialized = model.toInterface();
 
@@ -132,9 +166,7 @@ describe('Constructor Aliases', () => {
     });
 
     test('Debe hacer round-trip correctamente', () => {
-      const original = new ModelWithConstructors();
-      Object.assign(original, testData);
-      original.initialize();
+      const original = new ModelWithConstructors(testData);
 
       const serialized = original.toInterface();
       const restored = ModelWithConstructors.fromInterface(serialized);
@@ -150,9 +182,7 @@ describe('Constructor Aliases', () => {
 
   describe('Usando symbols (@Field(RegExpField), @Field(ErrorField), etc.)', () => {
     test('Debe serializar correctamente', () => {
-      const model = new ModelWithSymbols();
-      Object.assign(model, testData);
-      model.initialize();
+      const model = new ModelWithSymbols(testData);
 
       const serialized = model.toInterface();
 
@@ -198,9 +228,7 @@ describe('Constructor Aliases', () => {
     });
 
     test('Debe hacer round-trip correctamente', () => {
-      const original = new ModelWithSymbols();
-      Object.assign(original, testData);
-      original.initialize();
+      const original = new ModelWithSymbols(testData);
 
       const serialized = original.toInterface();
       const restored = ModelWithSymbols.fromInterface(serialized);
@@ -216,14 +244,8 @@ describe('Constructor Aliases', () => {
 
   describe('Ambos enfoques deben producir el mismo resultado', () => {
     test('La serialización debe ser idéntica', () => {
-      const model1 = new ModelWithConstructors();
-      const model2 = new ModelWithSymbols();
-
-      Object.assign(model1, testData);
-      Object.assign(model2, testData);
-
-      model1.initialize();
-      model2.initialize();
+      const model1 = new ModelWithConstructors(testData);
+      const model2 = new ModelWithSymbols(testData);
 
       const serialized1 = model1.toInterface();
       const serialized2 = model2.toInterface();

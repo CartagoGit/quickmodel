@@ -12,6 +12,7 @@ import 'reflect-metadata';
 import { transformerRegistry } from './core/registry';
 import { ModelDeserializer, ModelSerializer } from './core/services';
 import './transformers/bootstrap'; // Auto-registro de transformers
+import type { SerializedInterface, ModelData } from './core/interfaces/serialization-types.interface';
 
 // Exports públicos
 export { Field } from './core/decorators';
@@ -25,7 +26,10 @@ export abstract class QuickModel<
   private static readonly deserializer = new ModelDeserializer(transformerRegistry);
   private static readonly serializer = new ModelSerializer(transformerRegistry);
 
-  constructor(data: TInterface | any) {
+  // Propiedad temporal para datos no procesados (se elimina después de initialize)
+  private readonly __tempData?: ModelData<TInterface>;
+
+  constructor(data: ModelData<TInterface>) {
     Object.defineProperty(this, '__tempData', {
       value: data,
       writable: false,
@@ -41,7 +45,7 @@ export abstract class QuickModel<
    * SOLID - Single Responsibility: Solo inicializa, delega deserialización
    */
   protected initialize(): void {
-    const data = (this as any).__tempData;
+    const data = this.__tempData;
     if (!data) return;
 
     if (data.constructor === this.constructor) {
@@ -49,16 +53,22 @@ export abstract class QuickModel<
       return;
     }
 
-    const deserialized = QuickModel.deserializer.deserialize(data, this.constructor as any);
+    const deserialized = QuickModel.deserializer.deserialize(
+      data as TInterface,
+      this.constructor as new (data: TInterface) => this
+    );
     Object.assign(this, deserialized);
-    delete (this as any).__tempData;
+    // Eliminar propiedad temporal usando unknown para evitar error de tipo
+    delete (this as unknown as Record<string, unknown>).__tempData;
   }
 
   /**
    * SOLID - Single Responsibility: Delega serialización a ModelSerializer
+   * 
+   * @returns La versión serializada de la instancia (tipos complejos convertidos a primitivos/objetos planos)
    */
-  toInterface(): TInterface {
-    return QuickModel.serializer.serialize(this) as TInterface;
+  toInterface(): SerializedInterface<TInterface> {
+    return QuickModel.serializer.serialize(this) as SerializedInterface<TInterface>;
   }
 
   /**
@@ -70,15 +80,19 @@ export abstract class QuickModel<
 
   /**
    * SOLID - Open/Closed: Permite crear instancias desde interfaces
+   * Acepta tanto datos serializados (de toInterface/JSON) como objetos originales
    */
-  static fromInterface<T>(this: new (data: any) => T, data: any): T {
+  static fromInterface<T extends QuickModel<any>>(
+    this: new (data: ModelData<any>) => T,
+    data: ModelData<any>
+  ): T {
     return QuickModel.deserializer.deserialize(data, this);
   }
 
   /**
    * Crea instancia desde JSON string
    */
-  static fromJSON<T>(this: new (data: any) => T, json: string): T {
+  static fromJSON<T extends QuickModel<any>>(this: new (data: ModelData<any>) => T, json: string): T {
     return QuickModel.deserializer.deserializeFromJson(json, this);
   }
 }

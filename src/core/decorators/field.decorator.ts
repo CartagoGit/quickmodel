@@ -6,26 +6,81 @@
 import 'reflect-metadata';
 
 /**
+ * Tipos disponibles como string literals para IntelliSense
+ * Permite usar @Field('regexp'), @Field('bigint'), etc. con autocompletado
+ */
+export type FieldTypeString =
+  // Primitivos
+  | 'string'
+  | 'number'
+  | 'boolean'
+  // Tipos especiales con constructores
+  | 'date'
+  | 'regexp'
+  | 'error'
+  | 'url'
+  | 'urlsearchparams'
+  // Tipos especiales sin constructor usable
+  | 'bigint'
+  | 'symbol'
+  // Colecciones
+  | 'map'
+  | 'set'
+  // Buffers
+  | 'arraybuffer'
+  | 'dataview'
+  // TypedArrays
+  | 'int8array'
+  | 'uint8array'
+  | 'int16array'
+  | 'uint16array'
+  | 'int32array'
+  | 'uint32array'
+  | 'float32array'
+  | 'float64array'
+  | 'bigint64array'
+  | 'biguint64array';
+
+/**
  * Decorador @Field() para marcar propiedades del modelo
  *
- * @param typeOrClass - Opcional: Constructor de clase para modelos anidados o Symbol para tipos especiales
+ * @param typeOrClass - Opcional: Constructor, Symbol o String literal para el tipo
  *
  * @example
  * ```typescript
  * class User extends QuickModel<IUser> {
- *   @Field() name!: string;                    // Campo básico
- *   @Field(BigIntField) balance!: bigint;       // Campo con tipo especial
- *   @Field(Address) address!: Address;          // Modelo anidado
- *   @Field(Vehicle) vehicles!: Vehicle[];       // Array de modelos
+ *   // Auto-detección
+ *   @Field() name!: string;
+ *   @Field() createdAt!: Date;
+ *   
+ *   // String literal (con IntelliSense)
+ *   @Field('bigint') balance!: bigint;
+ *   @Field('regexp') pattern!: RegExp;
+ *   @Field('int8array') bytes!: Int8Array;
+ *   
+ *   // Constructor nativo
+ *   @Field(RegExp) pattern!: RegExp;
+ *   @Field(Int8Array) bytes!: Int8Array;
+ *   
+ *   // Symbol (forma original)
+ *   @Field(BigIntField) balance!: bigint;
+ *   @Field(RegExpField) pattern!: RegExp;
+ *   
+ *   // Modelos anidados
+ *   @Field(Address) address!: Address;
+ *   @Field(Vehicle) vehicles!: Vehicle[];
  * }
  * ```
  */
-export function Field<T>(typeOrClass?: (new (data: any) => T) | symbol): any {
+export function Field<T>(typeOrClass?: (new (data: any) => T) | symbol | FieldTypeString): any {
   return function (target: any, propertyKey?: string | symbol, _descriptor?: any) {
     // Compatibilidad con decorators legacy (experimentalDecorators: true)
     const key = propertyKey as string | symbol;
 
-    if (typeof typeOrClass === 'symbol') {
+    if (typeof typeOrClass === 'string') {
+      // String literal ('bigint', 'regexp', 'int8array', etc.)
+      Reflect.defineMetadata('fieldType', typeOrClass, target, key);
+    } else if (typeof typeOrClass === 'symbol') {
       // Símbolo de tipo especial (BigIntField, RegExpField, etc.)
       const symbolKey = typeOrClass.toString();
       Reflect.defineMetadata('fieldType', symbolKey, target, key);

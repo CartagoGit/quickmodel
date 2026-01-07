@@ -7,3 +7,4 @@ export * from './model.interface';
 export * from './registry.interface';
 export * from './serializer.interface';
 export * from './transformer.interface';
+export * from './serialization-types.interface';

@@ -2,4 +2,4 @@
  * Decoradores del sistema QuickModel
  */
 
-export { Field } from './field.decorator';
+export { Field, type FieldTypeString } from './field.decorator';

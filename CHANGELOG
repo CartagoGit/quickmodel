@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.0.3] - 2026-01-07
+
+### ✨ IntelliSense Support - String Literals
+
+#### Nueva Característica: Soporte para String Literals con IntelliSense
+Ahora puedes usar **string literals** en `@Field()` con autocompletado de TypeScript:
+
+```typescript
+class Model extends QuickModel {
+  // ✨ Al escribir @Field(' TypeScript sugiere todos los tipos:
+  @Field('bigint') amount!: bigint;      // String literal (recomendado)
+  @Field('regexp') pattern!: RegExp;     // Con IntelliSense
+  @Field('int8array') bytes!: Int8Array; // Autocompletado
+  
+  // También funcionan las formas anteriores:
+  @Field(BigIntField) amount!: bigint;   // Symbol
+  @Field(RegExp) pattern!: RegExp;       // Constructor
+}
+```
+
+**Tipos string literal disponibles**:
+- Primitivos: `'string'`, `'number'`, `'boolean'`
+- Especiales: `'bigint'`, `'symbol'`, `'regexp'`, `'error'`, `'date'`, `'url'`, `'urlsearchparams'`
+- Colecciones: `'map'`, `'set'`
+- TypedArrays: `'int8array'`, `'uint8array'`, `'float32array'`, `'bigint64array'`, etc.
+- Buffers: `'arraybuffer'`, `'dataview'`
+
+#### Mejoras
+- **Tipo `FieldTypeString`**: Union type con todos los string literals para IntelliSense
+- **Decorador @Field()**: Acepta string literals además de symbols y constructores
+- **Bootstrap**: Registra string aliases para todos los tipos
+- **Documentación**: Comentarios explicativos en cada bucle del bootstrap
+
+#### Tests
+- Nuevo test `string-literals.test.ts` con 4 tests verificando el uso con strings
+- Todos los tests (62 totales) pasando al 100%
+
+---
+
 ## [1.0.2] - 2026-01-07
 
 ### 🎯 API Consistency - Constructor Aliases

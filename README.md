@@ -10,13 +10,15 @@ Sistema profesional de serialización/deserialización de modelos TypeScript con
 
 ## ✨ Características
 
-- 🏗️ **Arquitectura SOLID** completa
-- 🔄 **30+ tipos JavaScript/TypeScript** soportados (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, Enums, etc.)
-- 🎯 **Type-safe** con TypeScript estricto
+- 🏗️ **Arquitectura SOLID** completa con servicios independientes
+- 🔄 **30+ tipos JavaScript/TypeScript** soportados (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, etc.)
+- 🎯 **Type-Safe Serialization**: `toInterface()` retorna tipos serializados correctos automáticamente
+- 💡 **Inferencia de tipos**: TypeScript sabe que `RegExp → string`, `BigInt → string`, etc.
+- ✨ **3 formas de uso**: Símbolos, Constructores, String literals con IntelliSense
 - ✅ **Validación automática** en runtime
 - 📦 **Modelos anidados** infinitos
 - 🔌 **Extensible** vía registry pattern
-- 🧪 **100% testado**
+- 🧪 **100% testado** con 136 expect() calls
 - 📚 **Documentación completa**
 
 ## 📦 Instalación
@@ -57,9 +59,18 @@ type UserTransforms = {
 class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
   @Field() id!: string;
   @Field() name!: string;
-  @Field(BigIntField) balance!: bigint;
-  @Field() createdAt!: Date;
+  // 3 formas equivalentes para tipos especiales:
+  @Field(BigIntField) balance!: bigint;   // Symbol (forma original)
+  // @Field('bigint') balance!: bigint;   // String literal (IntelliSense ✨)
+  
+  @Field() createdAt!: Date;              // Auto-detectado
+  // @Field('date') createdAt!: Date;     // String literal
+  // @Field(Date) createdAt!: Date;       // Constructor
 }
+
+// 💡 Tip: Usa string literals para IntelliSense!
+// Al escribir @Field(' TypeScript te sugerirá todos los tipos disponibles:
+// 'bigint', 'symbol', 'regexp', 'error', 'url', 'int8array', etc.
 ```
 
 ### 2. Usar Modelo
@@ -89,31 +100,63 @@ console.log(user2.balance === user.balance); // true
 
 ## 🔧 Tipos Soportados
 
-| Tipo                 | Decorador                                    | Serialización          |
-| -------------------- | -------------------------------------------- | ---------------------- |
-| `string`             | `@Field()`                                   | Directo                |
-| `number`             | `@Field()`                                   | Directo                |
-| `boolean`            | `@Field()`                                   | Directo                |
-| `Date`               | `@Field()`                                   | ISO string             |
-| `BigInt`             | `@Field(BigIntField)`                        | string                 |
-| `Symbol`             | `@Field(SymbolField)`                        | string (Symbol.for)    |
-| `RegExp`             | `@Field(RegExp)` o `@Field(RegExpField)`     | string (`/pattern/flags`) |
-| `Error`              | `@Field(Error)` o `@Field(ErrorField)`       | string (`Name: message`) |
-| `URL`                | `@Field(URL)` o `@Field(URLField)`           | string (href)          |
-| `URLSearchParams`    | `@Field(URLSearchParams)` o `@Field(URLSearchParamsField)` | string |
-| `Map<K,V>`           | `@Field()`                                   | Record<K,V>            |
-| `Set<T>`             | `@Field()`                                   | T[]                    |
-| `Int8Array`          | `@Field(Int8Array)` o `@Field(Int8ArrayField)` | number[]             |
-| `Uint8Array`         | `@Field(Uint8Array)` o `@Field(Uint8ArrayField)` | number[]           |
-| `Float32Array`       | `@Field(Float32Array)` o `@Field(Float32ArrayField)` | number[]         |
-| `BigInt64Array`      | `@Field(BigInt64Array)` o `@Field(BigInt64ArrayField)` | string[]         |
-| `ArrayBuffer`        | `@Field(ArrayBufferField)`                   | number[]               |
-| `DataView`           | `@Field(DataViewField)`                      | number[]               |
-| `Enum` (TypeScript)  | `@Field()`                                   | Directo                |
-| Modelo anidado       | `@Field(ModelClass)`                         | Recursivo              |
-| `Array<Modelo>`      | `@Field(ModelClass)`                         | Array recursivo        |
+### Formas de Uso del Decorador @Field()
 
-> 💡 **Nota**: Los tipos built-in ahora soportan ambas formas: constructor nativo (`@Field(RegExp)`) o symbol especial (`@Field(RegExpField)`). Ambas son equivalentes.
+Cada tipo soporta **hasta 3 formas equivalentes**:
+
+```typescript
+interface IModel {
+  pattern: RegExp;
+}
+
+class Model extends QuickModel<IModel> {
+  // Ejemplo de las 3 formas para RegExp:
+  @Field(RegExpField)   pattern!: RegExp;  // 1. Symbol (forma original)
+  @Field('regexp')      pattern!: RegExp;  // 2. String literal ✨ (IntelliSense)
+  @Field(RegExp)        pattern!: RegExp;  // 3. Constructor nativo
+}
+```
+
+**💡 String Literals con IntelliSense**: Al escribir `@Field('` TypeScript te sugiere automáticamente:
+```
+@Field('
+  ↓
+  'bigint'         - Para bigint
+  'symbol'         - Para symbol
+  'regexp'         - Para RegExp
+  'error'          - Para Error
+  'url'            - Para URL
+  'int8array'      - Para Int8Array
+  'float32array'   - Para Float32Array
+  'bigint64array'  - Para BigInt64Array
+  ... y 30+ tipos más
+```
+
+| Tipo                 | Symbol                   | String Literal ✨     | Constructor         | Serialización          |
+| -------------------- | ------------------------ | -------------------- | ------------------- | ---------------------- |
+| `string`             | -                        | `'string'`           | -                   | Directo                |
+| `number`             | -                        | `'number'`           | -                   | Directo                |
+| `boolean`            | -                        | `'boolean'`          | -                   | Directo                |
+| `Date`               | -                        | `'date'`             | `Date`              | ISO string             |
+| `BigInt`             | `BigIntField`            | `'bigint'`           | -                   | string                 |
+| `Symbol`             | `SymbolField`            | `'symbol'`           | -                   | string (Symbol.for)    |
+| `RegExp`             | `RegExpField`            | `'regexp'`           | `RegExp`            | `/pattern/flags`       |
+| `Error`              | `ErrorField`             | `'error'`            | `Error`             | `Name: message`        |
+| `URL`                | `URLField`               | `'url'`              | `URL`               | href                   |
+| `URLSearchParams`    | `URLSearchParamsField`   | `'urlsearchparams'`  | `URLSearchParams`   | string                 |
+| `Map<K,V>`           | -                        | `'map'`              | `Map`               | Record<K,V>            |
+| `Set<T>`             | -                        | `'set'`              | `Set`               | T[]                    |
+| `Int8Array`          | `Int8ArrayField`         | `'int8array'`        | `Int8Array`         | number[]               |
+| `Uint8Array`         | `Uint8ArrayField`        | `'uint8array'`       | `Uint8Array`        | number[]               |
+| `Float32Array`       | `Float32ArrayField`      | `'float32array'`     | `Float32Array`      | number[]               |
+| `BigInt64Array`      | `BigInt64ArrayField`     | `'bigint64array'`    | `BigInt64Array`     | string[]               |
+| `ArrayBuffer`        | `ArrayBufferField`       | `'arraybuffer'`      | -                   | number[]               |
+| `DataView`           | `DataViewField`          | `'dataview'`         | -                   | number[]               |
+| `Enum` (TypeScript)  | -                        | -                    | -                   | Directo                |
+| Modelo anidado       | -                        | -                    | `ModelClass`        | Recursivo              |
+| `Array<Modelo>`      | -                        | -                    | `ModelClass`        | Array recursivo        |
+
+> 💡 **Recomendación**: Usa **string literals** (`@Field('bigint')`) para obtener IntelliSense con todos los tipos disponibles mientras escribes.
 
 **+10 TypedArrays más** (Int16Array, Uint16Array, Int32Array, Uint32Array, Float64Array, BigInt64Array, BigUint64Array)
 
