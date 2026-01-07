@@ -20,27 +20,20 @@ interface IObjectTransforms {
 // @Quick() detecta automáticamente Date/BigInt
 // Necesita type mapping explícito solo para Set/Map (porque no puede distinguir de Array)
 @Quick({ tags: Set, metadata: Map })
-class QuickWithDeclare
-	extends QModel<IObject>
-	implements QTransform<IObject, IObjectTransforms>
-{
-	declare id: number; // ✅ Validado - TypeScript dará error si pones 'string'
+class QuickWithDeclare implements QTransform<IObject, IObjectTransforms> {
+	declare id: number;
 	declare name: string;
-	declare date: Date; // ✅ Autodetectado + validado
-	declare bignumber: bigint; // ✅ Autodetectado + validado
-	declare tags: Set<string>; // ✅ Transformado + validado
-	declare metadata: Map<string, any>; // ✅ Transformado + validado
+	declare date: Date;
+	declare bignumber: bigint;
+	declare tags: Set<string>;
+	declare metadata: Map<string, any>;
 }
 
-// ❌ OPCIÓN 2: Quick() con `!` - NO FUNCIONA
-// Con useDefineForClassFields: true, los campos con ! se reinicializan después del constructor
-// TypeScript genera código que sobrescribe los valores con undefined
+// ✅ OPCIÓN 2: Quick() con `!` - Ahora debería funcionar
+// Con la nueva estrategia, @Quick() crea la instancia directamente sin heredar
 @Quick({ tags: Set, metadata: Map })
-class QuickWithBang
-	extends QModel<IObject>
-	implements QTransform<IObject, IObjectTransforms>
-{
-	id!: number; // ❌ Se sobrescribe con undefined
+class QuickWithBang implements QTransform<IObject, IObjectTransforms> {
+	id!: number;
 	name!: string;
 	date!: Date;
 	bignumber!: bigint;
@@ -54,10 +47,7 @@ class QuickWithBang
 // - BigInt: números de 15+ dígitos
 // - Map: arrays de pares [[k,v], [k,v]]
 // - Set: arrays con elementos únicos O nombres como "tags", "categories", etc.
-class QTypeDeclare
-	extends QModel<IObject>
-	implements QTransform<IObject, IObjectTransforms>
-{
+class QTypeDeclare extends QModel<IObject> implements QTransform<IObject, IObjectTransforms> {
 	@QType() declare id: number;
 	@QType() declare name: string;
 	@QType() declare date: Date; // Autodetectado por patrón ISO
@@ -66,17 +56,14 @@ class QTypeDeclare
 	@QType() declare metadata: Map<string, any>; // Autodetectado por pares
 }
 
-// ✅ OPCIÓN 4: @QType() con `!` - Control total explícito
-class QTypeBang
-	extends QModel<IObject>
-	implements QTransform<IObject, IObjectTransforms>
-{
+// ✅ OPCIÓN 4: @QType() con `!` - TypeScript emite metadata automáticamente
+class QTypeBang extends QModel<IObject> implements QTransform<IObject, IObjectTransforms> {
 	@QType() id!: number;
 	@QType() name!: string;
-	@QType() date!: Date;
+	@QType() date!: Date; // Metadata emitida por TypeScript
 	@QType() bignumber!: bigint;
-	@QType() tags!: Set<string>;
-	@QType() metadata!: Map<string, any>;
+	@QType() tags!: Set<string>; // Metadata: design:type = Set
+	@QType() metadata!: Map<string, any>; // Metadata: design:type = Map
 }
 
 const baseObj = {

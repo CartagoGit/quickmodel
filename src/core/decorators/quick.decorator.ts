@@ -68,6 +68,8 @@
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
+import { ModelDeserializer } from '../services/model-deserializer.service';
+import { qTransformerRegistry } from '../registry';
 
 const QUICK_DECORATOR_KEY = '__quickModel__';
 const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
@@ -156,31 +158,9 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
       // Create instance without calling constructor
       const instance = Object.create(target.prototype);
       
-      console.log('[__createQuickInstance] Creating instance for', target.name);
-      
-      // Install getters/setters BEFORE deserialization to capture values
-      // This prevents TypeScript's field initialization from overwriting them
-      const storage = new Map<string, any>();
-      
-      for (const propertyKey of Object.keys(data)) {
-        console.log('[__createQuickInstance] Installing getter/setter for', propertyKey);
-        Object.defineProperty(instance, propertyKey, {
-          get() { 
-            const val = storage.get(propertyKey);
-            console.log(`[GETTER] ${propertyKey} =`, val);
-            return val;
-          },
-          set(value) { 
-            console.log(`[SETTER] ${propertyKey} =`, value);
-            // Ignore attempts to set undefined (TypeScript field initialization)
-            if (value !== undefined || !storage.has(propertyKey)) {
-              storage.set(propertyKey, value); 
-            }
-          },
-          enumerable: true,
-          configurable: true  // Allow TypeScript to redefine, but we keep the value in storage
-        });
-      }
+      // Note: This doesn't work with `!` syntax due to TypeScript field initialization
+      // TypeScript generates code that redefines properties AFTER constructor completes
+      // This method is useful for declare syntax or programmatic instance creation
       
       // Register properties if not already done
       const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
@@ -224,85 +204,91 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
     let propertiesRegistered = false;
     
     const wrappedConstructor: any = function(this: any, ...args: any[]) {
-      // On first instantiation, register properties BEFORE calling original constructor
-      if (!propertiesRegistered && args[0]) {
-        const data = args[0];
-        if (data && typeof data === 'object' && !Array.isArray(data)) {
-          const properties = Object.keys(data);
-          const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
-          
-          for (const propertyKey of properties) {
-            // Check if already decorated
-            const existingFieldType = Reflect.getMetadata('fieldType', originalConstructor.prototype, propertyKey);
-            const existingArrayClass = Reflect.getMetadata('arrayElementClass', originalConstructor.prototype, propertyKey);
-            
-            // Skip if property already has @QType() decorator
-            if (existingFieldType !== undefined || existingArrayClass !== undefined) {
-              continue;
-            }
-            
-            // Get the declared type from TypeScript metadata (if available)
-            // Note: design:type is only emitted when property has a decorator
-            const designType = Reflect.getMetadata('design:type', originalConstructor.prototype, propertyKey);
-            
-            // Check if type is specified in typeMap
-            const mappedType = typeMap[propertyKey];
-            
-            if (mappedType) {
-              // Use explicitly mapped type
-              Reflect.defineMetadata('design:type', mappedType, originalConstructor.prototype, propertyKey);
-            } else if (designType) {
-              // TypeScript metadata available
-              // Transformers will handle the conversion from arrays to Set/Map
-            } else {
-                // No metadata available - need to infer from value
-                // @Quick() doesn't work with declare/! because TypeScript doesn't emit metadata
-                // We need to detect the type from the actual value
-                const value = data[propertyKey];
-                
-                if (value !== null && value !== undefined) {
-                  // Detect special types by checking the actual value
-                  let inferredType = value.constructor;
-                  
-                  // Special detection for Date strings (ISO format)
-                  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
-                    inferredType = Date;
-                  }
-                  // Special detection for BigInt strings (very large numbers)
-                  else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
-                    inferredType = BigInt;
-                  }
-                  // RegExp objects with __type marker
-                  else if (value && typeof value === 'object' && value.__type === 'regexp') {
-                    inferredType = RegExp;
-                  }
-                  // Symbol objects with __type marker
-                  else if (value && typeof value === 'object' && value.__type === 'symbol') {
-                    inferredType = Symbol;
-                  }
-                  // Map objects with __type marker or array of entries
-                  else if (value && typeof value === 'object' && value.__type === 'Map') {
-                    inferredType = Map;
-                  }
-                  // Set objects with __type marker or plain array
-                  else if (value && typeof value === 'object' && value.__type === 'Set') {
-                    inferredType = Set;
-                  }
-                  
-                  Reflect.defineMetadata('design:type', inferredType, originalConstructor.prototype, propertyKey);
-                }
-              }
-              
-              // Apply @QType() decorator to register the transformer
-              const decorator = QType();
-              decorator(originalConstructor.prototype, propertyKey);
-            }
-          
-          propertiesRegistered = true;
-        }
+      // Don't call original constructor at all - create and populate instance directly
+      // This bypasses TypeScript's field initialization completely
+      const data = args[0];
+      
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        // Invalid data, call original constructor
+        return Reflect.construct(originalConstructor, args, wrappedConstructor);
       }
       
-      // Call original constructor
+      // Create instance without calling constructor
+      const instance = Object.create(originalConstructor.prototype);
+      
+      // Register properties if not already done
+      if (!propertiesRegistered) {
+        const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
+        const properties = Object.keys(data);
+        
+        for (const propertyKey of properties) {
+          const existingFieldType = Reflect.getMetadata('fieldType', originalConstructor.prototype, propertyKey);
+          const existingArrayClass = Reflect.getMetadata('arrayElementClass', originalConstructor.prototype, propertyKey);
+          
+          if (existingFieldType !== undefined || existingArrayClass !== undefined) {
+            continue;
+          }
+          
+          const mappedType = typeMap[propertyKey];
+          if (mappedType) {
+            Reflect.defineMetadata('design:type', mappedType, originalConstructor.prototype, propertyKey);
+          } else {
+            const value = data[propertyKey];
+            if (value !== null && value !== undefined) {
+              let inferredType = value.constructor;
+              
+              if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+                inferredType = Date;
+              } else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+                inferredType = BigInt;
+              }
+              
+              Reflect.defineMetadata('design:type', inferredType, originalConstructor.prototype, propertyKey);
+            }
+          }
+          
+          const decorator = QType();
+          decorator(originalConstructor.prototype, propertyKey);
+        }
+        
+        propertiesRegistered = true;
+      }
+      
+      // Populate instance directly using deserializer
+      const createQuickInstance = (originalConstructor as any).__createQuickInstance;
+      if (createQuickInstance) {
+        type DataAsInterface = Record<string, unknown>;
+        type ThisConstructor = new (data: DataAsInterface) => any;
+        
+        // Create deserializer with proper registry
+        const deserializer = new ModelDeserializer(qTransformerRegistry);
+        
+        // Deserialize directly - this will create a new instance and populate it
+        const tempInstance = deserializer.deserialize(data as DataAsInterface, originalConstructor as ThisConstructor);
+        
+        // Copy all properties from tempInstance to our instance
+        for (const key of Object.keys(tempInstance)) {
+          (instance as any)[key] = (tempInstance as any)[key];
+        }
+        
+        // Add QModel methods manually
+        instance.initialize = function() {};
+        instance.toInterface = function() {
+          const { ModelSerializer } = require('../services/model-serializer.service');
+          const serializer = new ModelSerializer(qTransformerRegistry);
+          return serializer.serialize(this, this.constructor);
+        };
+        instance.toJSON = function() {
+          return JSON.stringify(this.toInterface());
+        };
+        instance.clone = function() {
+          return new this.constructor(this.toInterface());
+        };
+        
+        return instance;
+      }
+      
+      // Fallback: call original constructor
       return Reflect.construct(originalConstructor, args, wrappedConstructor);
     };
     

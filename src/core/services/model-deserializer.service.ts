@@ -86,8 +86,8 @@ export class ModelDeserializer<
     }
 
     // Check if class has custom instance creation (from @Quick() decorator)
+    // Note: This is primarily for `declare` syntax, won't work with `!`
     const createQuickInstance = (modelClass as any).__createQuickInstance;
-    console.log('[DESERIALIZER] Has __createQuickInstance?', !!createQuickInstance, 'for', modelClass.name);
     const instance = createQuickInstance 
       ? createQuickInstance(data)
       : Object.create(modelClass.prototype);
