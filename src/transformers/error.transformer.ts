@@ -62,7 +62,7 @@ export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error
     // String format: "ErrorName: message"
     if (typeof value === 'string') {
       const match = value.match(/^([^:]+):\s*(.+)$/);
-      if (match) {
+      if (match && match[1] && match[2]) {
         const error = new Error(match[2]);
         error.name = match[1];
         return error;
@@ -75,8 +75,8 @@ export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error
     }
 
     const error = new Error(value.message);
-    if (value.stack) error.stack = value.stack;
-    if (value.name) error.name = value.name;
+    if (value.stack !== undefined) error.stack = value.stack;
+    if (value.name !== undefined) error.name = value.name;
     return error;
   }
 

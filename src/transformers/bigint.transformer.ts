@@ -25,7 +25,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * ```
  */
 export class BigIntTransformer
-  extends BaseTransformer<string | number, bigint>
+  extends BaseTransformer<string | number | { __type: 'bigint'; value: string }, bigint>
   implements IQValidator
 {
   /**

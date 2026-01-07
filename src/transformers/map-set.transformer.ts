@@ -30,7 +30,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * ```
  */
 export class MapTransformer<K = string, V = unknown>
-  extends BaseTransformer<Record<string, V>, Map<K, V>>
+  extends BaseTransformer<Record<string, V> | { __type: 'Map'; entries: [K, V][] }, Map<K, V>>
   implements IQValidator
 {
   /**
@@ -53,7 +53,7 @@ export class MapTransformer<K = string, V = unknown>
 
     // Handle new format with __type marker
     if (typeof value === 'object' && value !== null && '__type' in value && value.__type === 'Map') {
-      return new Map(value.entries);
+      return new Map((value as { __type: 'Map'; entries: [K, V][] }).entries);
     }
 
     // Handle legacy plain object format
@@ -125,7 +125,7 @@ export class MapTransformer<K = string, V = unknown>
  * ```
  */
 export class SetTransformer<V = unknown>
-  extends BaseTransformer<V[], Set<V>>
+  extends BaseTransformer<V[] | { __type: 'Set'; values: V[] }, Set<V>>
   implements IQValidator
 {
   /**

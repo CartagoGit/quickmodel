@@ -95,10 +95,11 @@ class Analytics extends QModel<IAnalytics> implements QInterface<IAnalytics> {
 const analytics = new Analytics({
   id: 'analytics-1',
   tags: new Set(['typescript', 'decorators', 'quickmodel']),
-  metadata: new Map([
+  metadata: new Map<string, any>([
     ['author', 'Alice'],
     ['version', '1.0.0'],
-    ['license', 'MIT']
+    ['license', 'MIT'],
+    ['contributors', ['Bob', 'Charlie']]
   ])
 });
 

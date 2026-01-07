@@ -51,8 +51,8 @@ describe('Type Safety Limitations (documented)', () => {
       id: '1',
       name: 'John',
       age: 30,
-      extraField: 'copied' as any,
-    });
+      extraField: 'copied',
+    } as any);
     
     expect(user.id).toBe('1');
     expect((user as any).extraField).toBe('copied');  // Se copia aunque no esté en la interfaz

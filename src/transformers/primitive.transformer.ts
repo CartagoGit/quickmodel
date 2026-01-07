@@ -77,7 +77,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
       throw new Error(validationResult.error);
     }
 
-    return value;
+    return value as PrimitiveTypeMap[T];
   }
 
   /**

@@ -172,8 +172,10 @@ describe('Mock Generator', () => {
 
       expect(typeof serialized.name).toBe('string');
       expect(typeof serialized.age).toBe('number');
-      expect(typeof serialized.amount).toBe('string');
-      expect(typeof serialized.pattern).toBe('string');
+      expect(typeof serialized.amount).toBe('object'); // Ahora es { __type: 'bigint', value }
+      expect(serialized.amount).toHaveProperty('__type', 'bigint');
+      expect(typeof serialized.pattern).toBe('object'); // Ahora es { __type: 'regexp', source, flags }
+      expect(serialized.pattern).toHaveProperty('__type', 'regexp');
       expect(typeof serialized.createdAt).toBe('string');
     });
 

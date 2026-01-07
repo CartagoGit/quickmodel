@@ -8,7 +8,7 @@
  * Maps a TypeScript type to its serialized version
  */
 export type Serialized<T> = T extends RegExp
-  ? string
+  ? string | { __type: 'regexp'; source: string; flags: string }
   : T extends Error
   ? string
   : T extends Date
@@ -18,9 +18,9 @@ export type Serialized<T> = T extends RegExp
   : T extends URLSearchParams
   ? string
   : T extends bigint
-  ? string
+  ? string | { __type: 'bigint'; value: string }
   : T extends symbol
-  ? string
+  ? string | { __type: 'symbol'; description: string }
   : T extends Int8Array
   ? number[]
   : T extends Uint8Array
@@ -48,9 +48,9 @@ export type Serialized<T> = T extends RegExp
   : T extends DataView
   ? number[]
   : T extends Map<infer K, infer V>
-  ? [Serialized<K>, Serialized<V>][]
+  ? [Serialized<K>, Serialized<V>][] | { __type: 'Map'; entries: [K, V][] }
   : T extends Set<infer U>
-  ? Serialized<U>[]
+  ? Serialized<U>[] | { __type: 'Set'; values: U[] }
   : T extends Array<infer U>
   ? Serialized<U>[]
   : T extends object

@@ -35,7 +35,7 @@ interface IModelWithConstructors {
 }
 
 interface IModelWithConstructorsSerialized {
-  pattern: string;
+  pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
   url: string;
   params: string;
@@ -77,7 +77,7 @@ interface IModelWithSymbols {
 }
 
 interface IModelWithSymbolsSerialized {
-  pattern: string;
+  pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
   url: string;
   params: string;
@@ -125,7 +125,7 @@ describe('Constructor Aliases', () => {
 
       const serialized = model.toInterface();
 
-      expect(serialized.pattern).toBe('/test/gi');
+      expect(serialized.pattern).toMatchObject({ __type: 'regexp', source: 'test', flags: 'gi' });
       expect(serialized.error).toBe('Error: Test error');
       expect(serialized.url).toBe('https://example.com/path?query=value');
       expect(serialized.params).toBe('key1=value1&key2=value2');
@@ -187,7 +187,7 @@ describe('Constructor Aliases', () => {
 
       const serialized = model.toInterface();
 
-      expect(serialized.pattern).toBe('/test/gi');
+      expect(serialized.pattern).toMatchObject({ __type: 'regexp', source: 'test', flags: 'gi' });
       expect(serialized.error).toBe('Error: Test error');
       expect(serialized.url).toBe('https://example.com/path?query=value');
       expect(serialized.params).toBe('key1=value1&key2=value2');

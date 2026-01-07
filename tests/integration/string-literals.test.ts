@@ -43,9 +43,9 @@ interface IModelWithStringLiteralsSerialized {
   name: string;
   count: number;
   active: boolean;
-  amount: string;
-  key: string;
-  pattern: string;
+  amount: string | { __type: 'bigint'; value: string };
+  key: string | { __type: 'symbol'; description: string };
+  pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
   createdAt: string;
   homepage: string;
@@ -195,9 +195,9 @@ describe('String Literals (@QType("type"))', () => {
     expect(serialized.name).toBe('Test');
     expect(serialized.count).toBe(42);
     expect(serialized.active).toBe(true);
-    expect(serialized.amount).toBe('123456789');
-    expect(serialized.key).toBe('testKey');
-    expect(serialized.pattern).toBe('/test/gi');
+    expect(serialized.amount).toMatchObject({ __type: 'bigint', value: '123456789' });
+    expect(serialized.key).toMatchObject({ __type: 'symbol', description: 'testKey' });
+    expect(serialized.pattern).toMatchObject({ __type: 'regexp', source: 'test', flags: 'gi' });
     expect(serialized.error).toBe('Error: Test error');
     expect(serialized.homepage).toBe('https://example.com/');
     expect(serialized.params).toBe('foo=bar&baz=qux');

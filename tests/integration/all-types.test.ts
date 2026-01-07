@@ -18,6 +18,7 @@ import {
   QSymbol,
   QUint16Array,
   QUint32Array,
+  type SerializedInterface,
   QUint8Array,
 } from '../../src/quick.model';
 
@@ -177,7 +178,7 @@ try {
 console.log('\n═══ 4. REGULAR EXPRESSIONS ═══\n');
 
 interface IRegex {
-  regex: string;
+  regex: { __type: 'regexp'; source: string; flags: string } | string;
 }
 
 type RegexTransforms = {
@@ -189,8 +190,8 @@ class Regexes extends QModel<IRegex> implements QInterface<IRegex, RegexTransfor
 }
 
 try {
-  const data = {
-    regex: { source: 'test', flags: 'gi' },
+  const data: SerializedInterface<IRegex> = {
+    regex: { __type: 'regexp' as const, source: 'test', flags: 'gi' },
   };
 
   const model = new Regexes(data);

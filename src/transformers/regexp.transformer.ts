@@ -39,7 +39,7 @@ interface IRegExpData {
  * ```
  */
 export class RegExpTransformer
-  extends BaseTransformer<string | IRegExpData, RegExp>
+  extends BaseTransformer<string | { __type: 'regexp'; source: string; flags: string } | IRegExpData, RegExp>
   implements IQValidator
 {
   /**
