@@ -166,19 +166,29 @@ export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeSt
       // Q-Symbol (QBigInt, QRegExp, etc.)
       const symbolKey = typeOrClass.toString();
       Reflect.defineMetadata('fieldType', symbolKey, target, propertyKey);
+    } else if (typeOrClass === BigInt) {
+      // Special case for BigInt (not a constructor, but a factory function)
+      Reflect.defineMetadata('fieldType', 'bigint', target, propertyKey);
+    } else if (typeOrClass === Set) {
+      // Special case for Set - store as string for transformer lookup
+      Reflect.defineMetadata('fieldType', 'set', target, propertyKey);
+    } else if (typeOrClass === Map) {
+      // Special case for Map - store as string for transformer lookup
+      Reflect.defineMetadata('fieldType', 'map', target, propertyKey);
     } else if (typeOrClass && typeof typeOrClass === 'function') {
       // Check if it's a registered native constructor (RegExp, Error, URL, etc.)
       type NativeConstructor = typeof RegExp | typeof Error | typeof URL | typeof URLSearchParams |
         typeof Int8Array | typeof Uint8Array | typeof Uint8ClampedArray | typeof Int16Array |
         typeof Uint16Array | typeof Int32Array | typeof Uint32Array | typeof Float32Array |
         typeof Float64Array | typeof BigInt64Array | typeof BigUint64Array | typeof ArrayBuffer |
-        typeof DataView;
+        typeof DataView | typeof Set | typeof Map;
 
       const nativeConstructors: NativeConstructor[] = [
         RegExp, Error, URL, URLSearchParams,
         Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array,
         Int32Array, Uint32Array, Float32Array, Float64Array,
-        BigInt64Array, BigUint64Array, ArrayBuffer, DataView
+        BigInt64Array, BigUint64Array, ArrayBuffer, DataView,
+        Set, Map
       ];
       
       const isNativeConstructor = nativeConstructors.some(ctor => ctor === typeOrClass);

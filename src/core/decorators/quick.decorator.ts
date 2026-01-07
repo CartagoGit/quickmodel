@@ -154,6 +154,9 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
     const originalConstructor = target;
     let propertiesRegistered = false;
     
+    // Track values set during construction to restore after field initialization
+    const constructorValues = new WeakMap<any, Map<string, any>>();
+    
     const wrappedConstructor: any = function(this: any, ...args: any[]) {
       // On first instantiation, register properties BEFORE calling original constructor
       if (!propertiesRegistered && args[0]) {
@@ -234,7 +237,29 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
       }
       
       // Call original constructor
-      return Reflect.construct(originalConstructor, args, wrappedConstructor);
+      const instance = Reflect.construct(originalConstructor, args, wrappedConstructor);
+      
+      // For ! syntax: Prevent field initialization from overwriting constructor-set values
+      // This runs after TypeScript's field initialization code
+      if (args[0] && typeof args[0] === 'object') {
+        const data = args[0];
+        // Use setTimeout to run after field initialization completes
+        Promise.resolve().then(() => {
+          for (const [propertyKey, value] of Object.entries(data)) {
+            if (instance[propertyKey] === undefined && value !== undefined) {
+              // Field was reset by TypeScript field initialization, restore it
+              Object.defineProperty(instance, propertyKey, {
+                value: instance.__deserializedValues?.[propertyKey] || value,
+                writable: true,
+                enumerable: true,
+                configurable: true
+              });
+            }
+          }
+        });
+      }
+      
+      return instance;
     };
     
     // Copy prototype and static members

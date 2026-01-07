@@ -16,8 +16,9 @@ interface IObjectTransforms {
 	metadata: Map<string, any>;
 }
 
-// ✅ OPCIÓN 1: @Quick() con validación automática de tipos
-// implements QTransform<...> valida cada propiedad en su lugar
+// ✅ OPCIÓN 1: @Quick() con declare - La más simple
+// @Quick() detecta automáticamente Date/BigInt
+// Necesita type mapping explícito solo para Set/Map (porque no puede distinguir de Array)
 @Quick({ tags: Set, metadata: Map })
 class QuickWithDeclare
 	extends QModel<IObject>
@@ -31,31 +32,38 @@ class QuickWithDeclare
 	declare metadata: Map<string, any>; // ✅ Transformado + validado
 }
 
-// ✅ OPCIÓN 2: Quick() con `!`
+// ❌ OPCIÓN 2: Quick() con `!` - NO FUNCIONA
+// Con useDefineForClassFields: true, los campos con ! se reinicializan después del constructor
+// TypeScript genera código que sobrescribe los valores con undefined
 @Quick({ tags: Set, metadata: Map })
 class QuickWithBang
 	extends QModel<IObject>
 	implements QTransform<IObject, IObjectTransforms>
 {
-	id!: number; // ✅ Validado - TypeScript dará error si pones 'string'
+	id!: number; // ❌ Se sobrescribe con undefined
 	name!: string;
-	date!: Date; // ✅ Autodetectado + validado
-	bignumber!: bigint; // ✅ Autodetectado + validado
-	tags!: Set<string>; // ✅ Transformado + validado
-	metadata!: Map<string, any>; // ✅ Transformado + validado
+	date!: Date;
+	bignumber!: bigint;
+	tags!: Set<string>;
+	metadata!: Map<string, any>;
 }
 
-// ✅ OPCIÓN 3: @QType() con declare - Control total explícito
+// ✅ OPCIÓN 3: @QType() con declare - Autodetección inteligente
+// Con @QType() sin argumentos, detecta automáticamente:
+// - Date: strings ISO
+// - BigInt: números de 15+ dígitos
+// - Map: arrays de pares [[k,v], [k,v]]
+// - Set: arrays con elementos únicos O nombres como "tags", "categories", etc.
 class QTypeDeclare
 	extends QModel<IObject>
 	implements QTransform<IObject, IObjectTransforms>
 {
 	@QType() declare id: number;
 	@QType() declare name: string;
-	@QType() declare date: Date;
-	@QType() declare bignumber: bigint;
-	@QType(Set) declare tags: Set<string>;
-	@QType(Map) declare metadata: Map<string, any>;
+	@QType() declare date: Date; // Autodetectado por patrón ISO
+	@QType() declare bignumber: bigint; // Autodetectado por 15+ dígitos
+	@QType() declare tags: Set<string>; // Autodetectado por nombre "tags"
+	@QType() declare metadata: Map<string, any>; // Autodetectado por pares
 }
 
 // ✅ OPCIÓN 4: @QType() con `!` - Control total explícito

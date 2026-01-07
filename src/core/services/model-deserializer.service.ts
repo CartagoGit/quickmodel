@@ -47,6 +47,7 @@
 import 'reflect-metadata';
 import { IQDeserializer, IQTransformContext, IQTransformer, IQTransformerRegistry } from '../interfaces';
 import { qModelRegistry } from '../registry/model.registry';
+import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
 
 export class ModelDeserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
@@ -169,6 +170,72 @@ export class ModelDeserializer<
 
       // 3. Auto-detection via design:type
       const designType = Reflect.getMetadata('design:type', instance, key);
+      
+      // 4. If property has @QType() decorator but no type metadata (declare without arg),
+      // try to detect type from value
+      const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, instance) || 
+                     Reflect.getMetadata(FIELDS_METADATA_KEY, Object.getPrototypeOf(instance)) || 
+                     [];
+      const isDecoratedWithQType = fields.includes(key);
+      
+      if (isDecoratedWithQType && !designType && !fieldType && value !== null && value !== undefined) {
+        // Smart detection for @QType() without arguments on declare properties
+        
+        // Detect Date strings (ISO format)
+        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+          instance[key] = this.transformByDesignType(value, Date, context);
+          continue;
+        }
+        // Detect BigInt strings (very large numbers)
+        if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+          instance[key] = this.transformByDesignType(value, BigInt, context);
+          continue;
+        }
+        
+        // Improved heuristic for arrays
+        if (Array.isArray(value) && value.length > 0) {
+          // Check if it's a Map: ALL elements are arrays of exactly 2 items
+          const isMapLike = value.every(item => 
+            Array.isArray(item) && item.length === 2
+          );
+          
+          if (isMapLike) {
+            const mapTransformer = this.qTransformerRegistry.get('map');
+            if (mapTransformer) {
+              instance[key] = mapTransformer.fromInterface(value, context.propertyKey, context.className);
+              continue;
+            }
+          }
+          
+          // Check if it's a Set: all elements are unique primitives or property name suggests Set
+          const hasUniqueElements = value.length === new Set(value).size;
+          const propertyNameSuggestsSet = /tags?|categories|items|elements|labels/i.test(key);
+          
+          if (hasUniqueElements || propertyNameSuggestsSet) {
+            const setTransformer = this.qTransformerRegistry.get('set');
+            if (setTransformer) {
+              instance[key] = setTransformer.fromInterface(value, context.propertyKey, context.className);
+              continue;
+            }
+          }
+          
+          // Otherwise, leave as array (might be array of models)
+        }
+      }
+      
+      // 5. Fallback: Try to detect type from value even without @QType()
+      if (!designType && !fieldType && value !== null && value !== undefined) {
+        // Detect Date strings (ISO format)
+        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+          instance[key] = this.transformByDesignType(value, Date, context);
+          continue;
+        }
+        // Detect BigInt strings (very large numbers)
+        if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+          instance[key] = this.transformByDesignType(value, BigInt, context);
+          continue;
+        }
+      }
       
       // Special case: Array without explicit @QType(ModelClass)
       // Try to infer the model class by analyzing the array elements
