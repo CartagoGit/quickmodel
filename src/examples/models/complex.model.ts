@@ -35,9 +35,6 @@ import { SimpleModel } from './simple.model';
  * ```
  */
 
-// Re-export interfaces for convenience
-export type { IComplexModelTransforms as ComplexModelTransforms, IComplexModel };
-
 export class ComplexModel
   extends QModel<IComplexModel>
   implements QInterface<IComplexModel, IComplexModelTransforms>

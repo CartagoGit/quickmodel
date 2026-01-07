@@ -1,13 +1,16 @@
 import { QBigInt, QSymbol } from '../../core/interfaces';
 import { QModel, QType, QInterface } from '../../quick.model';
-import type { ISimpleModel, SimpleModelTransforms } from '../interfaces/simple-model.interface';
+import type {
+	ISimpleModel,
+	SimpleModelTransforms,
+} from '../interfaces/simple-model.interface';
 
 /**
  * Simple model demonstrating basic primitive types and type transformations.
- * 
+ *
  * This example shows how to use @QType() decorator with auto-detection for
  * standard types and explicit type hints for special types like bigint and symbol.
- * 
+ *
  * @example
  * ```typescript
  * const model = new SimpleModel({
@@ -24,20 +27,17 @@ import type { ISimpleModel, SimpleModelTransforms } from '../interfaces/simple-m
  * ```
  */
 
-// Re-export interfaces for convenience
-export type { ISimpleModel, SimpleModelTransforms };
-
 export class SimpleModel
-  extends QModel<ISimpleModel>
-  implements QInterface<ISimpleModel, SimpleModelTransforms>
+	extends QModel<ISimpleModel>
+	implements QInterface<ISimpleModel, SimpleModelTransforms>
 {
-  @QType() id!: string;
-  @QType() name!: string;
-  @QType() age!: number;
-  @QType() isActive!: boolean;
-  @QType() score!: number;
-  @QType() optionalField!: string | null;
-  @QType() maybeUndefined!: number | undefined;
-  @QType(QBigInt) largeNumber!: bigint;
-  @QType(QSymbol) uniqueKey!: symbol;
+	@QType() id!: string;
+	@QType() name!: string;
+	@QType() age!: number;
+	@QType() isActive!: boolean;
+	@QType() score!: number;
+	@QType() optionalField!: string | null;
+	@QType() maybeUndefined!: number | undefined;
+	@QType(QBigInt) largeNumber!: bigint;
+	@QType(QSymbol) uniqueKey!: symbol;
 }

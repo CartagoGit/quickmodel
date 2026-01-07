@@ -1,44 +1,44 @@
-# Arquitectura SOLID - Sistema de Modelos
+# SOLID Architecture - Model System
 
-## 📋 Índice
+## 📋 Table of Contents
 
-1. [Principios SOLID Aplicados](#principios-solid)
-2. [Estructura del Proyecto](#estructura)
-3. [Componentes Principales](#componentes)
-4. [Flujo de Datos](#flujo)
-5. [Extensibilidad](#extensibilidad)
+1. [Applied SOLID Principles](#solid-principles)
+2. [Project Structure](#structure)
+3. [Main Components](#components)
+4. [Data Flow](#flow)
+5. [Extensibility](#extensibility)
 
 ---
 
-## 🎯 Principios SOLID
+## 🎯 SOLID Principles
 
 ### **S - Single Responsibility Principle**
 
-Cada clase tiene una única responsabilidad:
+Each class has a single responsibility:
 
-- `QuickModel`: Orquestación de serialización/deserialización
-- `ModelSerializer`: Solo serializa modelos a interfaces
-- `ModelDeserializer`: Solo deserializa interfaces a modelos
-- `ValidationService`: Solo valida datos
-- `TransformerRegistry`: Solo gestiona registro de transformers
-- `ValidatorRegistry`: Solo gestiona registro de validadores
+- `QModel`: Orchestration of serialization/deserialization
+- `ModelSerializer`: Only serializes models to interfaces
+- `ModelDeserializer`: Only deserializes interfaces to models
+- `ValidationService`: Only validates data
+- `TransformerRegistry`: Only manages transformer registration
+- `ValidatorRegistry`: Only manages validator registration
 
 ### **O - Open/Closed Principle**
 
-El sistema está **abierto para extensión, cerrado para modificación**:
+The system is **open for extension, closed for modification**:
 
 ```typescript
-// ✅ Agregar nuevo transformer SIN modificar QuickModel
+// ✅ Add new transformer WITHOUT modifying QModel
 const customTransformer = new MyCustomTransformer();
 transformerRegistry.register('custom', customTransformer);
 ```
 
 ### **L - Liskov Substitution Principle**
 
-Todos los transformers son **intercambiables**:
+All transformers are **interchangeable**:
 
 ```typescript
-// Cualquier ITransformer puede sustituir a otro
+// Any ITransformer can substitute another
 interface ITransformer<TInput, TOutput> {
   transform(value: TInput, context: ITransformContext): TOutput;
   serialize(value: TOutput): TInput;
@@ -47,44 +47,44 @@ interface ITransformer<TInput, TOutput> {
 
 ### **I - Interface Segregation Principle**
 
-Interfaces **específicas y cohesivas**:
+**Specific and cohesive** interfaces:
 
-- `ITransformer`: Solo transformación
-- `IValidator`: Solo validación
-- `ISerializer`: Solo serialización
-- `IDeserializer`: Solo deserialización
-- `ITransformerRegistry`: Solo gestión de registry
+- `ITransformer`: Only transformation
+- `IValidator`: Only validation
+- `ISerializer`: Only serialization
+- `IDeserializer`: Only deserialization
+- `ITransformerRegistry`: Only registry management
 
 ### **D - Dependency Inversion Principle**
 
-Dependencias en **abstracciones, no implementaciones**:
+Dependencies on **abstractions, not implementations**:
 
 ```typescript
-// ✅ Depende de ITransformerRegistry (abstracción)
+// ✅ Depends on ITransformerRegistry (abstraction)
 constructor(private readonly transformerRegistry: ITransformerRegistry) {}
 
-// ❌ NO depende de TransformerRegistry (implementación concreta)
+// ❌ NOT depends on TransformerRegistry (concrete implementation)
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 pruebas/
-├── core/                          # Núcleo SOLID
-│   ├── interfaces/                # Contratos (Dependency Inversion)
+├── core/                          # SOLID core
+│   ├── interfaces/                # Contracts (Dependency Inversion)
 │   │   ├── transformer.interface.ts
 │   │   ├── serializer.interface.ts
 │   │   └── registry.interface.ts
-│   ├── services/                  # Servicios (Single Responsibility)
+│   ├── services/                  # Services (Single Responsibility)
 │   │   ├── model-deserializer.service.ts
 │   │   ├── model-serializer.service.ts
 │   │   └── validation.service.ts
-│   └── registry/                  # Registros (Open/Closed)
+│   └── registry/                  # Registries (Open/Closed)
 │       ├── transformer.registry.ts
 │       └── validator.registry.ts
-├── transformers/                  # Transformers específicos
+├── transformers/                  # Specific transformers
 │   ├── primitive.transformer.ts   # String, Number, Boolean
 │   ├── date.transformer.ts        # Date
 │   ├── bigint.transformer.ts      # BigInt
@@ -94,24 +94,24 @@ pruebas/
 │   ├── typed-array.transformer.ts # TypedArrays
 │   ├── buffer.transformer.ts      # ArrayBuffer, DataView
 │   ├── map-set.transformer.ts     # Map, Set
-│   └── bootstrap.ts               # Auto-registro
-├── models/examples/               # Modelos de ejemplo
+│   └── bootstrap.ts               # Auto-registration
+├── models/examples/               # Example models
 │   ├── simple.model.ts
 │   ├── collections.model.ts
 │   ├── nested.model.ts
 │   ├── binary.model.ts
 │   └── complex.model.ts
-├── tests/                         # Tests organizados
-│   ├── unit/                      # Tests unitarios por transformer
-│   └── integration/               # Tests de integración
-└── quick.model.ts                 # QuickModel (SOLID)
+├── tests/                         # Organized tests
+│   ├── unit/                      # Unit tests per transformer
+│   └── integration/               # Integration tests
+└── quick.model.ts                 # QModel (SOLID)
 ```
 
 ---
 
-## 🔧 Componentes Principales
+## 🔧 Main Components
 
-### 1. **Interfaces Core** (`core/interfaces/`)
+### 1. **Core Interfaces** (`core/interfaces/`)
 
 #### `ITransformer<TInput, TOutput>`
 
@@ -141,13 +141,13 @@ interface ITransformerRegistry {
 }
 ```
 
-### 2. **Servicios** (`core/services/`)
+### 2. **Services** (`core/services/`)
 
 #### `ModelDeserializer`
 
-- **Responsabilidad**: Convertir interfaces planas → modelos tipados
-- **Inyección**: Recibe `ITransformerRegistry` como dependencia
-- **Uso**:
+- **Responsibility**: Convert plain interfaces → typed models
+- **Injection**: Receives `ITransformerRegistry` as dependency
+- **Usage**:
 
 ```typescript
 const deserializer = new ModelDeserializer(transformerRegistry);
@@ -156,9 +156,9 @@ const model = deserializer.deserialize(data, UserModel);
 
 #### `ModelSerializer`
 
-- **Responsabilidad**: Convertir modelos tipados → interfaces planas
-- **Inyección**: Recibe `ITransformerRegistry` como dependencia
-- **Uso**:
+- **Responsibility**: Convert typed models → plain interfaces
+- **Injection**: Receives `ITransformerRegistry` as dependency
+- **Usage**:
 
 ```typescript
 const serializer = new ModelSerializer(transformerRegistry);
@@ -167,43 +167,43 @@ const interface = serializer.serialize(userModel);
 
 #### `ValidationService`
 
-- **Responsabilidad**: Validar modelos
-- **Inyección**: Recibe `IValidatorRegistry` como dependencia
-- **Uso**:
+- **Responsibility**: Validate models
+- **Injection**: Receives `IValidatorRegistry` as dependency
+- **Usage**:
 
 ```typescript
 const validator = new ValidationService(validatorRegistry);
 const errors = validator.validate(model, UserModel);
 ```
 
-### 3. **Registros** (`core/registry/`)
+### 3. **Registries** (`core/registry/`)
 
 #### `TransformerRegistry`
 
 ```typescript
-// Singleton global
+// Global singleton
 export const transformerRegistry = new TransformerRegistry();
 
-// Registrar transformers
+// Register transformers
 transformerRegistry.register('date', new DateTransformer());
-transformerRegistry.register(BigIntField, new BigIntTransformer());
+transformerRegistry.register(QBigInt, new BigIntTransformer());
 ```
 
 #### `ValidatorRegistry`
 
 ```typescript
-// Singleton global
+// Global singleton
 export const validatorRegistry = new ValidatorRegistry();
 
-// Registrar validadores
+// Register validators
 validatorRegistry.register('string', new StringValidator());
 ```
 
-### 4. **QuickModel** (`quick.model.ts`)
+### 4. **QModel** (`quick.model.ts`)
 
 ```typescript
-export abstract class QuickModel<TInterface> {
-  // Inyección de dependencias (static)
+export abstract class QModel<TInterface> {
+  // Dependency injection (static)
   private static readonly deserializer = new ModelDeserializer(transformerRegistry);
   private static readonly serializer = new ModelSerializer(transformerRegistry);
 
@@ -212,68 +212,68 @@ export abstract class QuickModel<TInterface> {
   }
 
   toInterface(): TInterface {
-    return QuickModel.serializer.serialize(this);
+    return QModel.serializer.serialize(this);
   }
 
   toJSON(): string {
-    return QuickModel.serializer.serializeToJson(this);
+    return QModel.serializer.serializeToJson(this);
   }
 
   static fromInterface<T>(data: any): T {
-    return QuickModel.deserializer.deserialize(data, this);
+    return QModel.deserializer.deserialize(data, this);
   }
 }
 ```
 
 ---
 
-## 🔄 Flujo de Datos
+## 🔄 Data Flow
 
-### Deserialización (Interface → Model)
+### Deserialization (Interface → Model)
 
 ```
-1. Usuario crea modelo:
+1. User creates model:
    new User({ id: '1', createdAt: '2024-01-01' })
 
-2. QuickModel.constructor() guarda data en __tempData
+2. QModel.constructor() saves data in __tempData
 
-3.  decorator llama initialize()
+3.  decorator calls initialize()
 
-4. initialize() delega a ModelDeserializer
+4. initialize() delegates to ModelDeserializer
 
-5. ModelDeserializer itera propiedades:
-   - Lee metadata de @Field()
-   - Busca transformer en registry
-   - Aplica transform() con contexto
+5. ModelDeserializer iterates properties:
+   - Reads metadata from @QType()
+   - Searches transformer in registry
+   - Applies transform() with context
 
-6. Retorna instancia del modelo con tipos correctos:
+6. Returns model instance with correct types:
    { id: '1', createdAt: Date(2024-01-01) }
 ```
 
-### Serialización (Model → Interface)
+### Serialization (Model → Interface)
 
 ```
-1. Usuario llama model.toInterface()
+1. User calls model.toInterface()
 
-2. QuickModel delega a ModelSerializer
+2. QModel delegates to ModelSerializer
 
-3. ModelSerializer itera propiedades:
-   - Detecta tipo del valor
-   - Busca transformer en registry
-   - Aplica serialize()
+3. ModelSerializer iterates properties:
+   - Detects value type
+   - Searches transformer in registry
+   - Applies serialize()
 
-4. Retorna interfaz plana:
+4. Returns plain interface:
    { id: '1', createdAt: '2024-01-01T00:00:00.000Z' }
 ```
 
 ---
 
-## 🔌 Extensibilidad
+## 🔌 Extensibility
 
-### Agregar Nuevo Transformer
+### Add New Transformer
 
 ```typescript
-// 1. Crear transformer (implementa ITransformer)
+// 1. Create transformer (implements ITransformer)
 class UUIDTransformer implements ITransformer<string, UUID> {
   transform(value: string, context: ITransformContext): UUID {
     return UUID.parse(value);
@@ -284,21 +284,23 @@ class UUIDTransformer implements ITransformer<string, UUID> {
   }
 }
 
-// 2. Registrar
+// 2. Register
 export const UUIDField = Symbol('UUID');
 transformerRegistry.register(UUIDField, new UUIDTransformer());
 
-// 3. Usar en modelo
+// 3. Use in model
+import { QModel, QType } from '@cartago-git/quickmodel';
+import type { QInterface } from '@cartago-git/quickmodel';
 
-class User extends QuickModel<IUser> {
-  @Field(UUIDField) id!: UUID;
+class User extends QModel<IUser> implements QInterface<IUser> {
+  @QType(UUIDField) id!: UUID;
 }
 ```
 
-### Agregar Nuevo Validador
+### Add New Validator
 
 ```typescript
-// 1. Crear validador (implementa IValidator)
+// 1. Create validator (implements IValidator)
 class EmailValidator implements IValidator {
   validate(value: any, context: IValidationContext): IValidationResult {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -312,63 +314,63 @@ class EmailValidator implements IValidator {
   }
 }
 
-// 2. Registrar
+// 2. Register
 validatorRegistry.register('email', new EmailValidator());
 ```
 
-### Crear Servicio Personalizado
+### Create Custom Service
 
 ```typescript
-// Implementa interfaces, usa inyección de dependencias
+// Implements interfaces, uses dependency injection
 class CustomSerializer implements ISerializer<Model, Interface> {
   constructor(private readonly registry: ITransformerRegistry) {}
 
   serialize(model: Model): Interface {
-    // Implementación custom
+    // Custom implementation
   }
 }
 
-// Uso con inyección
+// Usage with injection
 const customSerializer = new CustomSerializer(transformerRegistry);
 ```
 
 ---
 
-## ✅ Beneficios de SOLID
+## ✅ SOLID Benefits
 
-### 1. **Mantenibilidad**
+### 1. **Maintainability**
 
-- Cambios aislados: modificar un transformer no afecta otros
-- Código predecible: cada clase hace una cosa
+- Isolated changes: modifying one transformer doesn't affect others
+- Predictable code: each class does one thing
 
-### 2. **Testabilidad**
+### 2. **Testability**
 
-- Tests unitarios: cada transformer se prueba independientemente
-- Mocks fáciles: inyección de dependencias permite mock de registries
+- Unit tests: each transformer is tested independently
+- Easy mocks: dependency injection allows mocking registries
 
-### 3. **Escalabilidad**
+### 3. **Scalability**
 
-- Agregar tipos: solo crear transformer y registrar
-- Sin modificar QuickModel ni servicios existentes
+- Add types: just create transformer and register
+- Without modifying QModel or existing services
 
-### 4. **Reusabilidad**
+### 4. **Reusability**
 
-- Transformers compartidos entre proyectos
-- Servicios desacoplados reutilizables
+- Transformers shared between projects
+- Decoupled reusable services
 
-### 5. **Claridad**
+### 5. **Clarity**
 
-- Responsabilidades explícitas
-- Flujo de datos claro
-- Menos acoplamiento
+- Explicit responsibilities
+- Clear data flow
+- Less coupling
 
 ---
 
-## 🚀 Próximos Pasos
+## 🚀 Next Steps
 
-1. ✅ Refactorizar todos los transformers a nuevas interfaces
-2. ⏳ Crear tests unitarios para cada transformer
-3. ⏳ Crear tests de integración end-to-end
-4. ⏳ Documentar cada transformer individualmente
-5. ⏳ Crear ejemplos de extensión
-6. ⏳ Migrar modelos existentes a nueva arquitectura
+1. ✅ Refactor all transformers to new interfaces
+2. ⏳ Create unit tests for each transformer
+3. ⏳ Create end-to-end integration tests
+4. ⏳ Document each transformer individually
+5. ⏳ Create extension examples
+6. ⏳ Migrate existing models to new architecture

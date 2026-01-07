@@ -1,82 +1,82 @@
 # 🏗️ @cartago-git/quickmodel - Development Guide
 
-> **Nota**: Este es el README para desarrollo. El README público del paquete npm está en [README.md](README.md)
+> **Note**: This is the README for development. The public npm package README is in [README.md](README.md)
 
-Sistema completo de serialización/deserialización de modelos TypeScript siguiendo principios **SOLID**.
+Complete TypeScript model serialization/deserialization system following **SOLID** principles.
 
-## 📋 Estructura del Proyecto
+## 📋 Project Structure
 
 ```
 pruebas/
-├── 📄 README.md                          # Este archivo
-├── 📄 SOLID-ARCHITECTURE.md              # Documentación detallada SOLID
+├── 📄 README.md                          # This file
+├── 📄 SOLID-ARCHITECTURE.md              # Detailed SOLID documentation
 │
-├── 🏛️ core/                              # Núcleo SOLID
-│   ├── interfaces/                       # Contratos (I, D)
+├── 🏛️ core/                              # SOLID core
+│   ├── interfaces/                       # Contracts (I, D)
 │   │   ├── transformer.interface.ts      # ITransformer, IValidator
 │   │   ├── serializer.interface.ts       # ISerializer, IDeserializer
 │   │   └── registry.interface.ts         # ITransformerRegistry
-│   ├── services/                         # Servicios (S)
+│   ├── services/                         # Services (S)
 │   │   ├── model-deserializer.service.ts
 │   │   ├── model-serializer.service.ts
 │   │   └── validation.service.ts
-│   └── registry/                         # Registros (O)
+│   └── registry/                         # Registries (O)
 │       ├── transformer.registry.ts
 │       └── validator.registry.ts
 │
 ├── 🔄 transformers/                      # Transformers (S, L)
-│   ├── types.ts                          # Símbolos de tipos
+│   ├── types.ts                          # Type symbols
 │   ├── primitive.transformer.ts          # String, Number, Boolean
 │   ├── date.transformer.ts               # Date
 │   ├── bigint.transformer.ts             # BigInt
 │   ├── symbol.transformer.ts             # Symbol
 │   ├── regexp.transformer.ts             # RegExp
 │   ├── error.transformer.ts              # Error
-│   ├── typed-array.transformer.ts        # TypedArrays (10 tipos)
+│   ├── typed-array.transformer.ts        # TypedArrays (10 types)
 │   ├── buffer.transformer.ts             # ArrayBuffer, DataView
 │   ├── map-set.transformer.ts            # Map, Set
-│   ├── bootstrap.ts                      # Auto-registro
-│   └── index.ts                          # Exportaciones
+│   ├── bootstrap.ts                      # Auto-registration
+│   └── index.ts                          # Exports
 │
-├── 📦 models/                            # Modelos de ejemplo
+├── 📦 models/                            # Example models
 │   └── examples/
-│       ├── simple.model.ts               # Primitivos + BigInt + Symbol
+│       ├── simple.model.ts               # Primitives + BigInt + Symbol
 │       ├── collections.model.ts          # Arrays, Maps, Sets
-│       ├── nested.model.ts               # Modelos anidados
+│       ├── nested.model.ts               # Nested models
 │       ├── binary.model.ts               # TypedArrays, Buffers
-│       ├── complex.model.ts              # Combinación de todos
+│       ├── complex.model.ts              # Combination of all
 │       └── index.ts
 │
-├── 🧪 tests/                             # Tests organizados
-│   ├── unit/                             # Tests unitarios individuales
-│   └── integration/                      # Tests de integración
+├── 🧪 tests/                             # Organized tests
+│   ├── unit/                             # Individual unit tests
+│   └── integration/                      # Integration tests
 │
-├── 🚀 run/                               # Ejecutables de test
-│   ├── test-all.ts                       # Ejecuta TODOS los tests
-│   ├── test-unit.ts                      # Solo tests unitarios
-│   ├── test-integration.ts               # Solo tests de integración
-│   └── test-each.ts                      # Cada test individual
+├── 🚀 run/                               # Test executables
+│   ├── test-all.ts                       # Runs ALL tests
+│   ├── test-unit.ts                      # Only unit tests
+│   ├── test-integration.ts               # Only integration tests
+│   └── test-each.ts                      # Each individual test
 │
-└── 📦 quick.model.ts                     # QuickModel (SOLID)
+└── 📦 quick.model.ts                     # QModel (SOLID)
 ```
 
-## 🎯 Principios SOLID Aplicados
+## 🎯 Applied SOLID Principles
 
-| Principio                 | Implementación                                        |
-| ------------------------- | ----------------------------------------------------- |
-| **S**ingle Responsibility | Cada clase/servicio tiene UNA responsabilidad         |
-| **O**pen/Closed           | Extensible (nuevos transformers) sin modificar código |
-| **L**iskov Substitution   | Todos los transformers son intercambiables            |
-| **I**nterface Segregation | Interfaces específicas y cohesivas                    |
-| **D**ependency Inversion  | Dependencias en abstracciones, no implementaciones    |
+| Principle                  | Implementation                                      |
+| -------------------------- | --------------------------------------------------- |
+| **S**ingle Responsibility  | Each class/service has ONE responsibility           |
+| **O**pen/Closed            | Extensible (new transformers) without modifying code|
+| **L**iskov Substitution    | All transformers are interchangeable                |
+| **I**nterface Segregation  | Specific and cohesive interfaces                    |
+| **D**ependency Inversion   | Dependencies on abstractions, not implementations   |
 
-## 🚀 Uso Rápido
+## 🚀 Quick Usage
 
-### 1. Crear un Modelo
+### 1. Create a Model
 
 ```typescript
-import { QuickModel, Field, QuickType } from './quick.model';
-import { BigIntField } from './transformers';
+import { QModel, QType, QBigInt } from './quick.model';
+import type { QInterface } from './quick.model';
 
 interface IUser {
   id: string;
@@ -90,62 +90,62 @@ type UserTransforms = {
   createdAt: Date;
 };
 
-class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
-  @Field() id!: string;
-  @Field() name!: string;
-  @Field(BigIntField) balance!: bigint;
-  @Field() createdAt!: Date;
+class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
+  @QType() id!: string;
+  @QType() name!: string;
+  @QType(QBigInt) balance!: bigint;
+  @QType() createdAt!: Date;
 }
 ```
 
-### 2. Tipos Soportados (27 tipos + modelos anidados)
+### 2. Supported Types (27 types + nested models)
 
-| Tipo          | Decorador                   | Ejemplo                |
-| ------------- | --------------------------- | ---------------------- |
-| string        | `@Field()`                  | `name!: string`        |
-| number        | `@Field()`                  | `age!: number`         |
-| boolean       | `@Field()`                  | `active!: boolean`     |
-| Date          | `@Field()`                  | `createdAt!: Date`     |
-| BigInt        | `@Field(BigIntField)`       | `balance!: bigint`     |
-| Symbol        | `@Field(SymbolField)`       | `token!: symbol`       |
-| RegExp        | `@Field(RegExpField)`       | `pattern!: RegExp`     |
-| Error         | `@Field(ErrorField)`        | `lastError!: Error`    |
-| Map           | `@Field()`                  | `metadata!: Map<K, V>` |
-| Set           | `@Field()`                  | `tags!: Set<T>`        |
-| Int8Array     | `@Field(Int8ArrayField)`    | `data!: Int8Array`     |
-| Uint8Array    | `@Field(Uint8ArrayField)`   | `data!: Uint8Array`    |
-| Float32Array  | `@Field(Float32ArrayField)` | `data!: Float32Array`  |
-| ArrayBuffer   | `@Field(ArrayBufferField)`  | `buffer!: ArrayBuffer` |
-| DataView      | `@Field(DataViewField)`     | `view!: DataView`      |
-| Modelo        | `@Field()`                  | `owner!: User`         |
-| Array<Modelo> | `@Field(ModelClass)`        | `users!: User[]`       |
+| Type          | Decorator                  | Example                |
+| ------------- | -------------------------- | ---------------------- |
+| string        | `@QType()`                 | `name!: string`        |
+| number        | `@QType()`                 | `age!: number`         |
+| boolean       | `@QType()`                 | `active!: boolean`     |
+| Date          | `@QType()`                 | `createdAt!: Date`     |
+| BigInt        | `@QType(QBigInt)`          | `balance!: bigint`     |
+| Symbol        | `@QType(QSymbol)`          | `token!: symbol`       |
+| RegExp        | `@QType(QRegExp)`          | `pattern!: RegExp`     |
+| Error         | `@QType(QError)`           | `lastError!: Error`    |
+| Map           | `@QType()`                 | `metadata!: Map<K, V>` |
+| Set           | `@QType()`                 | `tags!: Set<T>`        |
+| Int8Array     | `@QType(QInt8Array)`       | `data!: Int8Array`     |
+| Uint8Array    | `@QType(QUint8Array)`      | `data!: Uint8Array`    |
+| Float32Array  | `@QType(QFloat32Array)`    | `data!: Float32Array`  |
+| ArrayBuffer   | `@QType(QArrayBuffer)`     | `buffer!: ArrayBuffer` |
+| DataView      | `@QType(QDataView)`        | `view!: DataView`      |
+| Model         | `@QType()`                 | `owner!: User`         |
+| Array<Model>  | `@QType(ModelClass)`       | `users!: User[]`       |
 
-## 🧪 Ejecutar Tests
+## 🧪 Run Tests
 
 ```bash
-# Todos los tests
+# All tests
 bun run/test-all.ts
 
-# Solo unitarios
+# Only unit tests
 bun run/test-unit.ts
 
-# Solo integración
+# Only integration
 bun run/test-integration.ts
 
-# Cada test individual
+# Each individual test
 bun run/test-each.ts
 ```
 
-## 📚 Documentación
+## 📚 Documentation
 
-- [SOLID-ARCHITECTURE.md](./SOLID-ARCHITECTURE.md) - Arquitectura detallada SOLID
+- [SOLID-ARCHITECTURE.md](./SOLID-ARCHITECTURE.md) - Detailed SOLID architecture
 
-## 🔌 Extensibilidad
+## 🔌 Extensibility
 
-### Agregar Nuevo Transformer
+### Add New Transformer
 
 ```typescript
-// 1. Implementar ITransformer
+// 1. Implement ITransformer
 class URLTransformer implements ITransformer<string, URL> {
   transform(value: string, context: ITransformContext): URL {
     return new URL(value);
@@ -156,24 +156,26 @@ class URLTransformer implements ITransformer<string, URL> {
   }
 }
 
-// 2. Crear símbolo
-export const URLField = Symbol('URL');
+// 2. Create symbol
+export const CustomURLField = Symbol('CustomURL');
 
-// 3. Registrar
-transformerRegistry.register(URLField, new URLTransformer());
+// 3. Register
+transformerRegistry.register(CustomURLField, new URLTransformer());
 
-// 4. Usar
+// 4. Use
+import { QModel, QType } from './quick.model';
+import type { QInterface } from './quick.model';
 
-class Website extends QuickModel<IWebsite> {
-  @Field(URLField) url!: URL;
+class Website extends QModel<IWebsite> implements QInterface<IWebsite> {
+  @QType(CustomURLField) url!: URL;
 }
 ```
 
-## 📊 Cobertura
+## 📊 Coverage
 
-- ✅ 27 tipos JavaScript serializables
-- ✅ Modelos anidados infinitos
-- ✅ Arrays de cualquier tipo
-- ✅ Validación automática
-- ✅ Round-trip JSON completo
-- ⚠️ No serializables: WeakMap, WeakSet, Promise, Function
+- ✅ 27 serializable JavaScript types
+- ✅ Infinite nested models
+- ✅ Arrays of any type
+- ✅ Automatic validation
+- ✅ Complete JSON round-trip
+- ⚠️ Non-serializable: WeakMap, WeakSet, Promise, Function

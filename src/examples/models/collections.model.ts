@@ -32,9 +32,6 @@ import type {
  * ```
  */
 
-// Re-export interfaces for convenience
-export type { CollectionsModelTransforms, ICollectionsModel };
-
 export class CollectionsModel
   extends QModel<ICollectionsModel>
   implements QInterface<ICollectionsModel, CollectionsModelTransforms>
