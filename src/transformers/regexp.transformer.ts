@@ -60,7 +60,7 @@ export class RegExpTransformer
       return value;
     }
 
-    // Format: {source, flags}
+    // Format: {__type, source, flags} or {source, flags}
     if (typeof value === 'object' && value !== null && 'source' in value) {
       return new RegExp(value.source, value.flags || '');
     }
@@ -78,13 +78,13 @@ export class RegExpTransformer
   }
 
   /**
-   * Converts a RegExp to string representation with slashes.
+   * Converts a RegExp to an object with __type marker for reliable detection.
    * 
    * @param value - The RegExp object to serialize
-   * @returns String in format `/pattern/flags`
+   * @returns Object with __type, source, and flags
    */
-  toInterface(value: RegExp): string {
-    return `/${value.source}/${value.flags}`;
+  toInterface(value: RegExp): { __type: 'regexp'; source: string; flags: string } {
+    return { __type: 'regexp', source: value.source, flags: value.flags };
   }
 
   /**

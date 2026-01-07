@@ -34,16 +34,16 @@ export class MapTransformer<K = string, V = unknown>
   implements IQValidator
 {
   /**
-   * Converts a plain object to Map.
+   * Converts a plain object or __type format to Map.
    * 
-   * @param value - The value to convert (object or Map)
+   * @param value - The value to convert (object, {__type, entries}, or Map)
    * @param propertyKey - The property name (for error messages)
    * @param className - The class name (for error messages)
    * @returns A Map instance
    * @throws {Error} If the value is not an object or Map
    */
   fromInterface(
-    value: Record<string, V> | Map<K, V>,
+    value: Record<string, V> | { __type: 'Map'; entries: [K, V][] } | Map<K, V>,
     propertyKey: string,
     className: string,
   ): Map<K, V> {
@@ -51,6 +51,12 @@ export class MapTransformer<K = string, V = unknown>
       return value;
     }
 
+    // Handle new format with __type marker
+    if (typeof value === 'object' && value !== null && '__type' in value && value.__type === 'Map') {
+      return new Map(value.entries);
+    }
+
+    // Handle legacy plain object format
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
       throw new Error(`${className}.${propertyKey}: Expected object for Map, got ${typeof value}`);
     }
@@ -59,13 +65,13 @@ export class MapTransformer<K = string, V = unknown>
   }
 
   /**
-   * Converts a Map to plain object.
+   * Converts a Map to an object with __type marker for reliable detection.
    * 
    * @param value - The Map to serialize
-   * @returns Plain object with key-value pairs
+   * @returns Object with __type marker and entries array
    */
-  toInterface(value: Map<K, V>): Record<string, V> {
-    return Object.fromEntries(value);
+  toInterface(value: Map<K, V>): { __type: 'Map'; entries: [K, V][] } {
+    return { __type: 'Map', entries: Array.from(value.entries()) };
   }
 
   /**
@@ -123,19 +129,25 @@ export class SetTransformer<V = unknown>
   implements IQValidator
 {
   /**
-   * Converts an array to Set.
+   * Converts an array or __type format to Set.
    * 
-   * @param value - The value to convert (array or Set)
+   * @param value - The value to convert (array, {__type, values}, or Set)
    * @param propertyKey - The property name (for error messages)
    * @param className - The class name (for error messages)
    * @returns A Set instance
    * @throws {Error} If the value is not an array or Set
    */
-  fromInterface(value: V[] | Set<V>, propertyKey: string, className: string): Set<V> {
+  fromInterface(value: V[] | { __type: 'Set'; values: V[] } | Set<V>, propertyKey: string, className: string): Set<V> {
     if (value instanceof Set) {
       return value;
     }
 
+    // Handle new format with __type marker
+    if (typeof value === 'object' && value !== null && !Array.isArray(value) && '__type' in value && value.__type === 'Set') {
+      return new Set(value.values);
+    }
+
+    // Handle legacy plain array format
     if (!Array.isArray(value)) {
       throw new Error(`${className}.${propertyKey}: Expected array for Set, got ${typeof value}`);
     }
@@ -144,13 +156,13 @@ export class SetTransformer<V = unknown>
   }
 
   /**
-   * Converts a Set to array.
+   * Converts a Set to an object with __type marker for reliable detection.
    * 
    * @param value - The Set to serialize
-   * @returns Array containing all Set elements
+   * @returns Object with __type marker and values array
    */
-  toInterface(value: Set<V>): V[] {
-    return Array.from(value);
+  toInterface(value: Set<V>): { __type: 'Set'; values: V[] } {
+    return { __type: 'Set', values: Array.from(value) };
   }
 
   /**

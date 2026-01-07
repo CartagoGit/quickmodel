@@ -45,7 +45,7 @@
  */
 
 import 'reflect-metadata';
-import { IQDeserializer, IQTransformContext, IQTransformerRegistry } from '../interfaces';
+import { IQDeserializer, IQTransformContext, IQTransformer, IQTransformerRegistry } from '../interfaces';
 import { qModelRegistry } from '../registry/model.registry';
 
 export class ModelDeserializer<
@@ -340,6 +340,61 @@ export class ModelDeserializer<
   }
 
   /**
+   * Detects the appropriate transformer based on the value type.
+   * Used when @QType() is called without arguments.
+   * 
+   * @param value - The value to analyze
+   * @returns The detected transformer or undefined
+   */
+  private detectTransformerFromValue(value: unknown): IQTransformer<unknown> | undefined {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+
+    // Check if it's an ISO date string (formato YYYY-MM-DDTHH:mm:ss.sssZ)
+    if (typeof value === 'string') {
+      // ISO 8601 date format - más específico
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(value)) {
+        return this.qTransformerRegistry.get('date');
+      }
+    }
+
+    // Check for Map/Set/RegExp/Symbol/BigInt/Error/Buffer serialized with __type marker
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const obj = value as Record<string, unknown>;
+      // Maneja tanto mayúsculas (Map, Set) como minúsculas (bigint, symbol, regexp)
+      const typeValue = obj.__type;
+      if (typeValue === 'Map') {
+        return this.qTransformerRegistry.get('map');
+      }
+      if (typeValue === 'Set') {
+        return this.qTransformerRegistry.get('set');
+      }
+      if (typeValue === 'regexp') {
+        return this.qTransformerRegistry.get('regexp');
+      }
+      if (typeValue === 'symbol') {
+        return this.qTransformerRegistry.get('symbol');
+      }
+      if (typeValue === 'bigint') {
+        return this.qTransformerRegistry.get('bigint');
+      }
+      if (typeValue === 'Error') {
+        return this.qTransformerRegistry.get('error');
+      }
+      if (typeValue === 'Buffer') {
+        return this.qTransformerRegistry.get('buffer');
+      }
+      // Check for typed arrays
+      if (typeValue && typeof typeValue === 'string' && typeValue.endsWith('Array')) {
+        return this.qTransformerRegistry.get(typeValue.toLowerCase());
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
    * Transforms a value based on its design:type metadata.
    * 
    * @param value - The value to transform
@@ -359,7 +414,12 @@ export class ModelDeserializer<
    * - Primitives: with type validation
    */
   private transformByDesignType(value: unknown, designType: Function | undefined, context: IQTransformContext): unknown {
+    // Si no hay designType (usando declare), intenta detectar del valor
     if (!designType) {
+      const detectedTransformer = this.detectTransformerFromValue(value);
+      if (detectedTransformer) {
+        return detectedTransformer.fromInterface(value, context.propertyKey, context.className);
+      }
       return value;
     }
 

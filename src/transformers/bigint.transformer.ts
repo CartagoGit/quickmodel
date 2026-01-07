@@ -29,17 +29,22 @@ export class BigIntTransformer
   implements IQValidator
 {
   /**
-   * Converts a string or number to bigint.
+   * Converts a string, number, or object with __type to bigint.
    * 
-   * @param value - The value to convert (string, number, or bigint)
+   * @param value - The value to convert (string, number, bigint, or {__type, value})
    * @param propertyKey - The property name (for error messages)
    * @param className - The class name (for error messages)
    * @returns The bigint value
    * @throws {Error} If the value cannot be converted to bigint
    */
-  fromInterface(value: string | number | bigint, propertyKey: string, className: string): bigint {
+  fromInterface(value: string | number | bigint | { __type: 'bigint'; value: string }, propertyKey: string, className: string): bigint {
     if (typeof value === 'bigint') {
       return value;
+    }
+
+    // Handle new format with __type marker
+    if (typeof value === 'object' && value !== null && '__type' in value && value.__type === 'bigint') {
+      return BigInt(value.value);
     }
 
     if (typeof value !== 'string' && typeof value !== 'number') {
@@ -59,13 +64,13 @@ export class BigIntTransformer
   }
 
   /**
-   * Converts a bigint to its string representation.
+   * Converts a bigint to an object with __type marker for reliable detection.
    * 
    * @param value - The bigint value to serialize
-   * @returns String representation of the bigint
+   * @returns Object with __type marker and string value
    */
-  toInterface(value: bigint): string {
-    return value.toString();
+  toInterface(value: bigint): { __type: 'bigint'; value: string } {
+    return { __type: 'bigint', value: value.toString() };
   }
 
   /**

@@ -29,17 +29,22 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  */
 export class SymbolTransformer extends BaseTransformer<string, symbol> implements IQValidator {
   /**
-   * Converts a string to a global symbol using Symbol.for().
+   * Converts a string or object with __type to a global symbol using Symbol.for().
    * 
-   * @param value - The value to convert (string or symbol)
+   * @param value - The value to convert (string, symbol, or {__type, description})
    * @param propertyKey - The property name (for error messages)
    * @param className - The class name (for error messages)
    * @returns A global symbol
    * @throws {Error} If the value is not a string or symbol
    */
-  fromInterface(value: string | symbol, propertyKey: string, className: string): symbol {
+  fromInterface(value: string | symbol | { __type: 'symbol'; description: string }, propertyKey: string, className: string): symbol {
     if (typeof value === 'symbol') {
       return value;
+    }
+
+    // Handle new format with __type marker
+    if (typeof value === 'object' && value !== null && '__type' in value && value.__type === 'symbol') {
+      return Symbol.for(value.description);
     }
 
     if (typeof value !== 'string') {
@@ -52,18 +57,16 @@ export class SymbolTransformer extends BaseTransformer<string, symbol> implement
   }
 
   /**
-   * Converts a symbol to its string key.
+   * Converts a symbol to an object with __type marker for reliable detection.
    * Uses Symbol.keyFor() for global symbols, falls back to toString().
    * 
    * @param value - The symbol to serialize
-   * @returns String representation of the symbol
+   * @returns Object with __type marker and string description
    */
-  toInterface(value: symbol): string {
+  toInterface(value: symbol): { __type: 'symbol'; description: string } {
     const key = Symbol.keyFor(value);
-    if (key === undefined) {
-      return value.toString();
-    }
-    return key;
+    const description = key !== undefined ? key : value.toString();
+    return { __type: 'symbol', description };
   }
 
   /**

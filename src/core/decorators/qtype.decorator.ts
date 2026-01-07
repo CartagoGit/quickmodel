@@ -191,5 +191,7 @@ export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeSt
         Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
       }
     }
+    // Si no se proporciona typeOrClass, confía en design:type (emitido con !)
+    // o en la detección automática del valor
   };
 }

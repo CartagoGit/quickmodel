@@ -23,22 +23,23 @@ interface IUser {
 
 class User extends QModel<IUser> implements QInterface<IUser> {
   @QType()
-  id!: string;
+  declare id: string;
 
   @QType()
-  username!: string;
+  declare username: string;
 
   @QType()
-  email!: string;
+  declare email: string;
 
   @QType()
-  age!: number;
+  declare age: number;
 
   @QType()
-  isActive!: boolean;
+  declare isActive: boolean;
 
-  @QType()
-  createdAt!: Date;
+  // Para tipos complejos como Date, especifica el tipo explícitamente
+  @QType(Date)
+  declare createdAt: Date;
 }
 
 // Crear usuario
@@ -108,14 +109,17 @@ console.log('Datos iguales?:',
 // ============================================
 
 console.log('\n=== @QType() vs @Quick() ===\n');
+console.log('Ambos usan declare para consistencia:');
+console.log('  @Quick(): declare property (automático)');
+console.log('  @QType(): declare property (explícito)');
+console.log('');
 console.log('Ventajas de @QType():');
 console.log('  ✅ Control explícito sobre cada propiedad');
-console.log('  ✅ Compatible con cualquier configuración de TypeScript');
+console.log('  ✅ Especifica el tipo cuando es necesario: @QType(Date)');
 console.log('  ✅ Ideal para modelos pequeños o propiedades selectivas');
 console.log('  ✅ Más verboso pero más claro');
-
-console.log('\nCuándo usar @QType():');
-console.log('  • Cuando no puedes usar decoradores de clase');
+console.log('');
+console.log('Cuándo usar @QType():');
 console.log('  • Cuando quieres control fino sobre cada propiedad');
 console.log('  • Cuando el modelo tiene pocas propiedades');
 console.log('  • Cuando necesitas decorar solo algunas propiedades');
