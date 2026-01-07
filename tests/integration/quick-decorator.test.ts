@@ -53,17 +53,12 @@ describe('@Quick() decorator: Automatic property registration', () => {
     interface IPost {
       id: string;
       title: string;
-      createdAt: string;
-      updatedAt: string;
-    }
-
-    type PostTransforms = {
       createdAt: Date;
       updatedAt: Date;
-    };
+    }
 
     @Quick()
-    class Post extends QModel<IPost, PostTransforms> implements QInterface<IPost, PostTransforms> {
+    class Post extends QModel<IPost> implements QInterface<IPost> {
       declare id: string;
       declare title: string;
       declare createdAt: Date;
@@ -86,20 +81,13 @@ describe('@Quick() decorator: Automatic property registration', () => {
   test('Complex types: BigInt, RegExp, Symbol', () => {
     interface IAccount {
       id: string;
-      balance: string;
-      pattern: object;
-      key: string;
-    }
-
-    type AccountTransforms = {
       balance: bigint;
       pattern: RegExp;
       key: symbol;
-    };
+    }
 
     @Quick()
-    class Account extends QModel<IAccount, AccountTransforms> 
-      implements QInterface<IAccount, AccountTransforms> {
+    class Account extends QModel<IAccount> implements QInterface<IAccount> {
       declare id: string;
       declare balance: bigint;
       declare pattern: RegExp;
@@ -124,17 +112,12 @@ describe('@Quick() decorator: Automatic property registration', () => {
   test('Collections: Map and Set', () => {
     interface IData {
       id: string;
-      metadata: object;
-      tags: unknown[];
-    }
-
-    type DataTransforms = {
       metadata: Map<string, string>;
       tags: Set<string>;
-    };
+    }
 
     @Quick()
-    class Data extends QModel<IData, DataTransforms> implements QInterface<IData, DataTransforms> {
+    class Data extends QModel<IData> implements QInterface<IData> {
       declare id: string;
       declare metadata: Map<string, string>;
       declare tags: Set<string>;
@@ -247,30 +230,24 @@ describe('@Quick() decorator: Automatic property registration', () => {
     expect(cart.items.length).toBe(2);
     
     // Verify items have correct data (even if not Product instances)
-    expect(cart.items[0].productId).toBe('p1');
-    expect(cart.items[0].title).toBe('Laptop');
-    expect(cart.items[0].price).toBe(999);
-    expect(cart.items[1].productId).toBe('p2');
-    expect(cart.items[1].title).toBe('Mouse');
-    expect(cart.items[1].price).toBe(25);
+    expect(cart.items[0]?.productId).toBe('p1');
+    expect(cart.items[0]?.title).toBe('Laptop');
+    expect(cart.items[0]?.price).toBe(999);
+    expect(cart.items[1]?.productId).toBe('p2');
+    expect(cart.items[1]?.title).toBe('Mouse');
+    expect(cart.items[1]?.price).toBe(25);
   });
 
   test('Serialization and deserialization with @Quick()', () => {
     interface IUser {
       id: string;
       name: string;
-      balance: string;
-      createdAt: string;
-    }
-
-    type UserTransforms = {
       balance: bigint;
       createdAt: Date;
-    };
+    }
 
     @Quick()
-    class User extends QModel<IUser, UserTransforms> 
-      implements QInterface<IUser, UserTransforms> {
+    class User extends QModel<IUser> implements QInterface<IUser> {
       declare id: string;
       declare name: string;
       declare balance: bigint;
@@ -301,15 +278,11 @@ describe('@Quick() decorator: Automatic property registration', () => {
     interface IData {
       id: string;
       value: number;
-      date: string;
+      date: Date;
     }
 
-    type DataTransforms = {
-      date: Date;
-    };
-
     @Quick()
-    class Data extends QModel<IData, DataTransforms> implements QInterface<IData, DataTransforms> {
+    class Data extends QModel<IData> implements QInterface<IData> {
       declare id: string;
       declare value: number;
       declare date: Date;

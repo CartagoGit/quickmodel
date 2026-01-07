@@ -78,4 +78,4 @@ class UserManual extends QModel<IUser> implements QInterface<IUser> {
 // ✅ CON @Quick() - Una sola línea de decorador
 // ¡5 propiedades registradas automáticamente!
 
-export { User, IUser };
+export { User };

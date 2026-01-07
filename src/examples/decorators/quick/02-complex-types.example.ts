@@ -117,4 +117,4 @@ console.log('\nDespués de modificar:');
 console.log('Tags:', Array.from(analytics.tags));
 console.log('Metadata:', Object.fromEntries(analytics.metadata));
 
-export { Post, Analytics, IPost, IAnalytics };
+export { Post, Analytics };
