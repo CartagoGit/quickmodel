@@ -150,12 +150,78 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
       Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
     }
     
+    // Add static method for creating instances (used by deserializer)
+    // This allows us to bypass the field initialization problem with `!`
+    (target as any).__createQuickInstance = function(data: any) {
+      // Create instance without calling constructor
+      const instance = Object.create(target.prototype);
+      
+      console.log('[__createQuickInstance] Creating instance for', target.name);
+      
+      // Install getters/setters BEFORE deserialization to capture values
+      // This prevents TypeScript's field initialization from overwriting them
+      const storage = new Map<string, any>();
+      
+      for (const propertyKey of Object.keys(data)) {
+        console.log('[__createQuickInstance] Installing getter/setter for', propertyKey);
+        Object.defineProperty(instance, propertyKey, {
+          get() { 
+            const val = storage.get(propertyKey);
+            console.log(`[GETTER] ${propertyKey} =`, val);
+            return val;
+          },
+          set(value) { 
+            console.log(`[SETTER] ${propertyKey} =`, value);
+            // Ignore attempts to set undefined (TypeScript field initialization)
+            if (value !== undefined || !storage.has(propertyKey)) {
+              storage.set(propertyKey, value); 
+            }
+          },
+          enumerable: true,
+          configurable: true  // Allow TypeScript to redefine, but we keep the value in storage
+        });
+      }
+      
+      // Register properties if not already done
+      const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
+      const properties = Object.keys(data);
+      
+      for (const propertyKey of properties) {
+        const existingFieldType = Reflect.getMetadata('fieldType', target.prototype, propertyKey);
+        const existingArrayClass = Reflect.getMetadata('arrayElementClass', target.prototype, propertyKey);
+        
+        if (existingFieldType !== undefined || existingArrayClass !== undefined) {
+          continue;
+        }
+        
+        const mappedType = typeMap[propertyKey];
+        if (mappedType) {
+          Reflect.defineMetadata('design:type', mappedType, target.prototype, propertyKey);
+        } else {
+          const value = data[propertyKey];
+          if (value !== null && value !== undefined) {
+            let inferredType = value.constructor;
+            
+            if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+              inferredType = Date;
+            } else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+              inferredType = BigInt;
+            }
+            
+            Reflect.defineMetadata('design:type', inferredType, target.prototype, propertyKey);
+          }
+        }
+        
+        const decorator = QType();
+        decorator(target.prototype, propertyKey);
+      }
+      
+      return instance;
+    };
+    
     // Wrap constructor to register properties on first instantiation
     const originalConstructor = target;
     let propertiesRegistered = false;
-    
-    // Track values set during construction to restore after field initialization
-    const constructorValues = new WeakMap<any, Map<string, any>>();
     
     const wrappedConstructor: any = function(this: any, ...args: any[]) {
       // On first instantiation, register properties BEFORE calling original constructor
@@ -237,29 +303,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
       }
       
       // Call original constructor
-      const instance = Reflect.construct(originalConstructor, args, wrappedConstructor);
-      
-      // For ! syntax: Prevent field initialization from overwriting constructor-set values
-      // This runs after TypeScript's field initialization code
-      if (args[0] && typeof args[0] === 'object') {
-        const data = args[0];
-        // Use setTimeout to run after field initialization completes
-        Promise.resolve().then(() => {
-          for (const [propertyKey, value] of Object.entries(data)) {
-            if (instance[propertyKey] === undefined && value !== undefined) {
-              // Field was reset by TypeScript field initialization, restore it
-              Object.defineProperty(instance, propertyKey, {
-                value: instance.__deserializedValues?.[propertyKey] || value,
-                writable: true,
-                enumerable: true,
-                configurable: true
-              });
-            }
-          }
-        });
-      }
-      
-      return instance;
+      return Reflect.construct(originalConstructor, args, wrappedConstructor);
     };
     
     // Copy prototype and static members

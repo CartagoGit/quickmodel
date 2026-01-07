@@ -85,7 +85,13 @@ export class ModelDeserializer<
       return data;
     }
 
-    const instance = Object.create(modelClass.prototype);
+    // Check if class has custom instance creation (from @Quick() decorator)
+    const createQuickInstance = (modelClass as any).__createQuickInstance;
+    console.log('[DESERIALIZER] Has __createQuickInstance?', !!createQuickInstance, 'for', modelClass.name);
+    const instance = createQuickInstance 
+      ? createQuickInstance(data)
+      : Object.create(modelClass.prototype);
+    
     this.populateInstance(instance, data, modelClass);
     return instance;
   }

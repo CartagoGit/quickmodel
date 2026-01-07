@@ -20,8 +20,6 @@ import {
 import type {
 	QModelInstance,
 	QModelInterface,
-	QInterface,
-	QTransform,
 } from './core/interfaces';
 import './transformers/bootstrap'; // Auto-register transformers
 import type {
@@ -36,19 +34,6 @@ export * from './core/interfaces'; // Q-prefixed symbols (QBigInt, QRegExp, etc.
 export type { QInterface } from './core/interfaces';
 export type { MockType as QMockType } from './core/services';
 export { MockBuilder as QMockBuilder } from './core/services';
-
-/**
- * Helper type that merges TInterface with TTransforms.
- * Properties in TTransforms override their corresponding types in TInterface.
- */
-type TransformedInterface<
-	TInterface,
-	TTransforms extends Partial<Record<keyof TInterface, unknown>>
-> = {
-	[K in keyof TInterface]: K extends keyof TTransforms
-		? TTransforms[K]
-		: TInterface[K];
-};
 
 /**
  * Abstract base class for type-safe models with automatic serialization and mock generation.
@@ -224,7 +209,14 @@ export abstract class QModel<
 			this.constructor as ThisConstructor
 		);
 		
-		Object.assign(this, deserialized);
+		// Copy properties from deserialized instance, preserving descriptors
+		// This is critical for @Quick() decorator with `!` syntax
+		for (const key of Object.keys(deserialized)) {
+			const descriptor = Object.getOwnPropertyDescriptor(deserialized, key);
+			if (descriptor) {
+				Object.defineProperty(this, key, descriptor);
+			}
+		}
 		
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
