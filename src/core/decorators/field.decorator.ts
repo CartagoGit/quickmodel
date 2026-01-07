@@ -12,6 +12,7 @@
  */
 
 import 'reflect-metadata';
+import { qModelRegistry } from '../registry/model.registry';
 
 /**
  * Available field types as string literals with IntelliSense support.
@@ -143,7 +144,19 @@ export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeSt
     // Register the property in the fields list
     const existingFields = (Reflect.getMetadata(FIELDS_METADATA_KEY, target) as Array<string | symbol>) || [];
     if (!existingFields.includes(propertyKey)) {
-      Reflect.defineMetadata(FIELDS_METADATA_KEY, [...existingFields, propertyKey], target);
+      const newFields = [...existingFields, propertyKey];
+      Reflect.defineMetadata(FIELDS_METADATA_KEY, newFields, target);
+      
+      // Register model class with its properties for automatic array inference
+      // Only register if this is a string propertyKey (not symbol)
+      if (typeof propertyKey === 'string') {
+        const modelClass = target.constructor;
+        if (modelClass && typeof modelClass === 'function') {
+          // Convert to array of strings
+          const stringFields = newFields.filter((f): f is string => typeof f === 'string');
+          qModelRegistry.register(modelClass, stringFields);
+        }
+      }
     }
 
     if (typeof typeOrClass === 'string') {

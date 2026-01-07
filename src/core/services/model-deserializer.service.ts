@@ -46,6 +46,7 @@
 
 import 'reflect-metadata';
 import { IQDeserializer, IQTransformContext, IQTransformerRegistry } from '../interfaces';
+import { qModelRegistry } from '../registry/model.registry';
 
 export class ModelDeserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
@@ -167,8 +168,84 @@ export class ModelDeserializer<
 
       // 3. Auto-detection via design:type
       const designType = Reflect.getMetadata('design:type', instance, key);
+      
+      // Special case: Array without explicit @QType(ModelClass)
+      // Try to infer the model class by analyzing the array elements
+      if (designType === Array && Array.isArray(value) && !arrayElementClass) {
+        instance[key] = this.deserializeArrayWithInference(value, context);
+        continue;
+      }
+      
       instance[key] = this.transformByDesignType(value, designType, context);
     }
+  }
+
+  /**
+   * Deserializes an array by inferring the model class from element properties.
+   * 
+   * @param value - The array to deserialize
+   * @param context - Transformation context (property name, class name)
+   * @returns Array of deserialized models or original array if inference fails
+   * @throws {Error} If properties don't match any registered model
+   * 
+   * @remarks
+   * Inference process:
+   * 1. Check if array is empty → return empty array
+   * 2. Analyze first element's properties
+   * 3. Look up model class in registry by property signature
+   * 4. If found → deserialize all elements as that model
+   * 5. If not found → throw error with available signatures
+   */
+  private deserializeArrayWithInference(value: unknown[], context: IQTransformContext): unknown[] {
+    // Empty array - no inference needed
+    if (value.length === 0) {
+      return [];
+    }
+
+    // Filter valid items
+    const validItems = value.filter((item) => item !== null && item !== undefined);
+    if (validItems.length === 0) {
+      return [];
+    }
+
+    // Get first element to analyze
+    const firstElement = validItems[0];
+    
+    // Must be an object to infer
+    if (typeof firstElement !== 'object' || Array.isArray(firstElement)) {
+      // Array of primitives or nested arrays - return as-is
+      return value;
+    }
+
+    // Get properties from first element
+    const properties = Object.keys(firstElement);
+    
+    // Try to find matching model class
+    const modelClass = qModelRegistry.findByProperties(properties);
+    
+    if (!modelClass) {
+      // No matching model found - throw descriptive error
+      const signature = properties.sort().join(',');
+      const available = qModelRegistry.getRegisteredSignatures();
+      
+      throw new Error(
+        `${context.className}.${context.propertyKey}: Cannot infer model for array elements. ` +
+        `Object has properties [${signature}] but no registered model matches. ` +
+        `Available signatures: ${available.length > 0 ? available.join(' | ') : 'none'}. ` +
+        `Use @QType(ModelClass) to specify the type explicitly.`
+      );
+    }
+
+    // Deserialize all elements using inferred model class
+    return validItems.map((item) => {
+      if (typeof item !== 'object' || Array.isArray(item)) {
+        throw new Error(
+          `${context.className}.${context.propertyKey}[]: Expected object, got ${typeof item}`
+        );
+      }
+      type ModelConstructor = new (data: Record<string, unknown>) => unknown;
+      return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
+    });
   }
 
   /**

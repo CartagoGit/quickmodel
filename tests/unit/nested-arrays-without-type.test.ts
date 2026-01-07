@@ -1,7 +1,11 @@
 /**
- * Tests for arrays of nested models WITHOUT @QType(ModelClass)
+ * Tests for arrays of nested models WITH auto-inference
  * 
- * Testing what happens when we don't specify the model class in @QType()
+ * Testing automatic type inference when we don't explicitly specify @QType(ModelClass)
+ * 
+ * NEW BEHAVIOR (with auto-inference):
+ * - @QType() employees!: User[] → Automatically infers User from object properties
+ * - No need to specify @QType(User) unless inference fails
  */
 
 import { describe, test, expect } from 'bun:test';
@@ -62,9 +66,9 @@ describe('Arrays WITHOUT @QType(ModelClass)', () => {
     ],
   };
 
-  describe('With @QType() but no Model specified', () => {
+  describe('With @QType() but no Model specified (AUTO-INFERENCE)', () => {
     
-    test('should NOT create User instances (plain objects)', () => {
+    test('should automatically infer User instances from object properties', () => {
       const company = new CompanyNoType(testData);
 
       expect(company.id).toBe('comp-1');
@@ -72,13 +76,14 @@ describe('Arrays WITHOUT @QType(ModelClass)', () => {
       expect(company.employees).toBeInstanceOf(Array);
       expect(company.employees.length).toBe(2);
       
-      // ❌ Should be plain objects, NOT User instances
-      expect(company.employees[0]).not.toBeInstanceOf(User);
-      expect(typeof company.employees[0]).toBe('object');
-      expect(company.employees[0]?.name).toBe('Alice');
+      // ✅ Now automatically creates User instances via inference
+      expect(company.employees[0]).toBeInstanceOf(User);
+      expect(company.employees[0]!.id).toBe('1');
+      expect(company.employees[0]!.name).toBe('Alice');
+      expect(company.employees[0]!.email).toBe('alice@tech.com');
     });
 
-    test('should serialize correctly (plain objects already)', () => {
+    test('should serialize correctly', () => {
       const company = new CompanyNoType(testData);
       const serialized = company.toInterface();
 
