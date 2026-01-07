@@ -1,6 +1,45 @@
 /**
- * SOLID - Single Responsibility: Solo se encarga de serializar modelos
- * SOLID - Dependency Inversion: Depende de ITransformerRegistry (abstracción)
+ * Service for serializing model instances to JSON-compatible format.
+ * 
+ * Converts QuickModel instances and their fields into plain objects suitable
+ * for JSON serialization, using registered transformers for type conversions.
+ * 
+ * @template TModel - The model type (extends Record)
+ * @template TInterface - The serialized interface type
+ * 
+ * @remarks
+ * This class follows SOLID principles:
+ * - **Single Responsibility**: Only handles model serialization
+ * - **Dependency Inversion**: Depends on ITransformerRegistry abstraction
+ * 
+ * Serialization process:
+ * 1. Iterates through all model properties
+ * 2. Looks up transformers for special types (Date, URL, Map, etc.)
+ * 3. Falls back to default serialization if no transformer found
+ * 4. Handles nested models recursively via `toInterface()` method
+ * 
+ * @example
+ * ```typescript
+ * const serializer = new ModelSerializer(transformerRegistry);
+ * 
+ * class User extends QuickModel<IUser> {
+ *   @Field() name!: string;
+ *   @Field('date') birthDate!: Date;
+ *   @Field() tags!: Set<string>;
+ * }
+ * 
+ * const user = new User({
+ *   name: "John",
+ *   birthDate: new Date("2000-01-01"),
+ *   tags: new Set(["admin", "user"])
+ * });
+ * 
+ * const json = serializer.serialize(user);
+ * // { name: "John", birthDate: "2000-01-01T00:00:00.000Z", tags: ["admin", "user"] }
+ * 
+ * const jsonString = serializer.serializeToJson(user);
+ * // JSON string representation
+ * ```
  */
 
 import { ISerializer, ITransformerRegistry } from '../interfaces';
@@ -9,8 +48,23 @@ export class ModelSerializer<
   TModel extends Record<string, unknown> = Record<string, unknown>,
   TInterface = any
 > implements ISerializer<TModel, TInterface> {
+  /**
+   * Creates a model serializer.
+   * 
+   * @param transformerRegistry - Registry containing type transformers
+   */
   constructor(private readonly transformerRegistry: ITransformerRegistry) {}
 
+  /**
+   * Serializes a model instance to plain object.
+   * 
+   * @param model - The model instance to serialize
+   * @returns Plain object suitable for JSON serialization
+   * 
+   * @remarks
+   * Preserves null and undefined values as-is. Uses transformers for special
+   * types, handles nested models automatically.
+   */
   serialize(model: TModel): TInterface {
     const result: Record<string, unknown> = {};
 
@@ -26,10 +80,39 @@ export class ModelSerializer<
     return result as TInterface;
   }
 
+  /**
+   * Serializes a model instance to JSON string.
+   * 
+   * @param model - The model instance to serialize
+   * @returns JSON string representation
+   */
   serializeToJson(model: TModel): string {
     return JSON.stringify(this.serialize(model));
   }
 
+  /**
+   * Serializes a single value based on its type.
+   * 
+   * @param value - The value to serialize
+   * @returns Serialized value suitable for JSON
+   * 
+   * @remarks
+   * Handles special types in priority order:
+   * 1. Date → ISO string
+   * 2. URL → href string
+   * 3. URLSearchParams → query string
+   * 4. BigInt → string
+   * 5. Symbol → string (via Symbol.keyFor)
+   * 6. RegExp → object with source/flags
+   * 7. Error → object with message/stack/name
+   * 8. TypedArrays → number/string arrays
+   * 9. ArrayBuffer/DataView → byte arrays
+   * 10. Nested models → recursive serialization
+   * 11. Arrays → element-wise serialization
+   * 12. Map → object
+   * 13. Set → array
+   * 14. Primitives → as-is
+   */
   private serializeValue(value: unknown): unknown {
     // Date
     if (value instanceof Date) {

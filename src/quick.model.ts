@@ -15,8 +15,7 @@ import {
 	ModelDeserializer,
 	ModelSerializer,
 	MockGenerator,
-	MockBuilder,
-	type MockType,
+	MockBuilder
 } from './core/services';
 import type {
 	QuickModelInstance,
