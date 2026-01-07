@@ -30,7 +30,8 @@ export class URLSearchParamsTransformer
 
     if (typeof value === 'object' && value !== null) {
       try {
-        return new URLSearchParams(value as Record<string, string>);
+        // TypeScript infiere que es Record<string, string> por el guard
+        return new URLSearchParams(value);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         throw new Error(

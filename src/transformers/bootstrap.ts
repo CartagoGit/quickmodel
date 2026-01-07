@@ -25,6 +25,9 @@ import {
 } from '../core/interfaces/field-symbols.interface';
 import { ITransformer, IValidator } from '../core/interfaces';
 import { transformerRegistry, validatorRegistry } from '../core/registry';
+
+// Tipo helper para transformer genérico (evita incompatibilidades de unión)
+type AnyTransformer = ITransformer<any, any>;
 import { BigIntTransformer } from './bigint.transformer';
 import { ArrayBufferTransformer, DataViewTransformer } from './buffer.transformer';
 import { DateTransformer } from './date.transformer';
@@ -41,15 +44,15 @@ import { URLSearchParamsTransformer } from './url-search-params.transformer';
  * Helper para registrar un transformer con múltiples aliases
  */
 function registerTransformerWithAliases(
-  keys: Array<string | symbol | Function>,
-  transformer: ITransformer<any, any>,
+  keys: ReadonlyArray<string | symbol | Function>,
+  transformer: AnyTransformer,
   withValidator = true,
 ): void {
   keys.forEach((key) => {
     transformerRegistry.register(key, transformer);
     // validatorRegistry solo acepta string | symbol, no Function
     if (withValidator && 'validate' in transformer && typeof key !== 'function') {
-      validatorRegistry.register(key as string | symbol, transformer as IValidator);
+      validatorRegistry.register(key, transformer as IValidator);
     }
   });
 }
@@ -149,7 +152,7 @@ export function registerCoreTransformers(): void {
   ];
 
   transformersWithAliases.forEach(({ field, stringAlias, alias, Transformer }) => {
-    const transformer = new Transformer();
+    const transformer: AnyTransformer = new Transformer();
     registerTransformerWithAliases([field.toString(), stringAlias, alias], transformer);
   });
 
@@ -191,7 +194,7 @@ export function registerCoreTransformers(): void {
   ];
 
   bufferTransformers.forEach(({ field, stringAlias, Transformer }) => {
-    const transformer = new Transformer();
+    const transformer: AnyTransformer = new Transformer();
     registerTransformerWithAliases([field.toString(), stringAlias], transformer);
   });
 

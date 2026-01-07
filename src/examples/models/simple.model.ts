@@ -1,6 +1,6 @@
 import { BigIntField, SymbolField } from '../../core/interfaces';
 import { Field, QuickModel, QuickType } from '../../quick.model';
-import type { ISimpleModel, SimpleModelTransforms } from './interfaces/simple-model.interface';
+import type { ISimpleModel, SimpleModelTransforms } from '../interfaces/simple-model.interface';
 
 /**
  * Modelo simple con tipos primitivos

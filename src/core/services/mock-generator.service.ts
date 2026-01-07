@@ -59,17 +59,19 @@ export class MockGenerator {
     });
   }
 
-  private getDecoratedProperties(instance: any): string[] {
+  private getDecoratedProperties(instance: Record<string, unknown>): string[] {
     const properties: Set<string> = new Set();
 
     // Recorrer la cadena de prototipos
     let current = instance;
     while (current && current !== Object.prototype) {
       // Obtener la lista de propiedades registradas por @Field()
-      const registeredFields = Reflect.getMetadata(FIELDS_METADATA_KEY, current) || [];
+      const registeredFields = Reflect.getMetadata(FIELDS_METADATA_KEY, current) as string[] | undefined;
       
-      for (const field of registeredFields) {
-        properties.add(field as string);
+      if (registeredFields) {
+        for (const field of registeredFields) {
+          properties.add(field);
+        }
       }
 
       current = Object.getPrototypeOf(current);

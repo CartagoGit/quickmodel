@@ -135,13 +135,15 @@ export abstract class QuickModel<
       return;
     }
 
+    type DataAsInterface = Record<string, unknown>;
+    type ThisConstructor = new (data: DataAsInterface) => this;
     const deserialized = QuickModel.deserializer.deserialize(
-      data as TInterface,
-      this.constructor as new (data: TInterface) => this
+      data as unknown as DataAsInterface,
+      this.constructor as ThisConstructor
     );
     Object.assign(this, deserialized);
-    // Eliminar propiedad temporal usando unknown para evitar error de tipo
-    delete (this as unknown as Record<string, unknown>).__tempData;
+    // Eliminar propiedad temporal
+    Reflect.deleteProperty(this, '__tempData');
   }
 
   /**
@@ -150,14 +152,16 @@ export abstract class QuickModel<
    * @returns La versión serializada de la instancia (tipos complejos convertidos a primitivos/objetos planos)
    */
   toInterface(): SerializedInterface<TInterface> {
-    return QuickModel.serializer.serialize(this) as SerializedInterface<TInterface>;
+    type ModelAsRecord = Record<string, unknown>;
+    return QuickModel.serializer.serialize(this as unknown as ModelAsRecord) as SerializedInterface<TInterface>;
   }
 
   /**
    * Serializa a JSON string
    */
   toJSON(): string {
-    return QuickModel.serializer.serializeToJson(this);
+    type ModelAsRecord = Record<string, unknown>;
+    return QuickModel.serializer.serializeToJson(this as unknown as ModelAsRecord);
   }
 
   /**

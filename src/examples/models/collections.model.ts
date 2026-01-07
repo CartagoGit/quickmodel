@@ -2,7 +2,7 @@ import { Field, QuickModel, QuickType } from '../../quick.model';
 import type {
   CollectionsModelTransforms,
   ICollectionsModel,
-} from './interfaces/collections-model.interface';
+} from '../interfaces/collections-model.interface';
 
 /**
  * Modelo con colecciones: Arrays, Maps, Sets

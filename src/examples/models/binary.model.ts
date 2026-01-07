@@ -13,7 +13,7 @@ import {
   Uint8ArrayField,
 } from '../../core/interfaces';
 import { Field, QuickModel } from '../../quick.model';
-import type { BinaryModelTransforms, IBinaryModel } from './interfaces/binary-model.interface';
+import type { BinaryModelTransforms, IBinaryModel } from '../interfaces/binary-model.interface';
 
 /**
  * Modelo con datos binarios: TypedArrays, ArrayBuffer, DataView
@@ -36,3 +36,5 @@ export class BinaryModel extends QuickModel<IBinaryModel, BinaryModelTransforms>
   @Field(ArrayBufferField) rawBuffer!: ArrayBuffer;
   @Field(DataViewField) dataView!: DataView;
 }
+
+const algo = BinaryModel.mock.array(3)

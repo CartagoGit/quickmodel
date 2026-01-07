@@ -32,7 +32,8 @@ export class PrimitiveTransformer<T extends PrimitiveType>
       throw new Error(validationResult.error);
     }
 
-    return value as PrimitiveTypeMap[T];
+    // TypeScript garantiza que si la validación pasa, el tipo es correcto
+    return value;
   }
 
   toInterface(value: PrimitiveTypeMap[T]): PrimitiveTypeMap[T] {

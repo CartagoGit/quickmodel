@@ -5,10 +5,10 @@
 
 import { ISerializer, ITransformerRegistry } from '../interfaces';
 
-export class ModelSerializer<TModel = any, TInterface = any> implements ISerializer<
-  TModel,
-  TInterface
-> {
+export class ModelSerializer<
+  TModel extends Record<string, unknown> = Record<string, unknown>,
+  TInterface = any
+> implements ISerializer<TModel, TInterface> {
   constructor(private readonly transformerRegistry: ITransformerRegistry) {}
 
   serialize(model: TModel): TInterface {
@@ -103,7 +103,18 @@ export class ModelSerializer<TModel = any, TInterface = any> implements ISeriali
       if (value instanceof BigInt64Array || value instanceof BigUint64Array) {
         return Array.from(value, (v: bigint) => v.toString());
       }
-      return Array.from(value as any);
+      // TypedArrays tienen iterator pero TypeScript necesita type assertion
+      if (value instanceof Int8Array) return Array.from(value);
+      if (value instanceof Uint8Array) return Array.from(value);
+      if (value instanceof Int16Array) return Array.from(value);
+      if (value instanceof Uint16Array) return Array.from(value);
+      if (value instanceof Int32Array) return Array.from(value);
+      if (value instanceof Uint32Array) return Array.from(value);
+      if (value instanceof Float32Array) return Array.from(value);
+      if (value instanceof Float64Array) return Array.from(value);
+      if (value instanceof Uint8ClampedArray) return Array.from(value);
+      // Nunca debería llegar aquí
+      return [];
     }
 
     // ArrayBuffer
@@ -119,8 +130,8 @@ export class ModelSerializer<TModel = any, TInterface = any> implements ISeriali
     }
 
     // Modelo anidado
-    if (typeof value === 'object' && typeof (value as any).toInterface === 'function') {
-      return (value as any).toInterface();
+    if (typeof value === 'object' && value !== null && 'toInterface' in value && typeof value.toInterface === 'function') {
+      return value.toInterface();
     }
 
     // Array

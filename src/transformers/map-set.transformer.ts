@@ -21,11 +21,11 @@ export class MapTransformer<K = string, V = unknown>
       throw new Error(`${className}.${propertyKey}: Expected object for Map, got ${typeof value}`);
     }
 
-    return new Map(Object.entries(value)) as Map<K, V>;
+    return new Map(Object.entries(value) as Iterable<[K, V]>);
   }
 
   toInterface(value: Map<K, V>): Record<string, V> {
-    return Object.fromEntries(value) as Record<string, V>;
+    return Object.fromEntries(value);
   }
 
   validate(value: unknown, context: IValidationContext): IValidationResult {

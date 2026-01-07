@@ -6,13 +6,13 @@
 import 'reflect-metadata';
 import { IDeserializer, ITransformContext, ITransformerRegistry } from '../interfaces';
 
-export class ModelDeserializer<TInterface = any, TModel = any> implements IDeserializer<
-  TInterface,
-  TModel
-> {
+export class ModelDeserializer<
+  TInterface extends Record<string, unknown> = Record<string, unknown>,
+  TModel = any
+> implements IDeserializer<TInterface, TModel> {
   constructor(private readonly transformerRegistry: ITransformerRegistry) {}
 
-  deserialize(data: TInterface, modelClass: new (data: TInterface) => TModel): TModel {
+  deserialize<T extends TInterface>(data: T, modelClass: new (data: T) => TModel): TModel {
     // Si el data ya es una instancia del modelo, devolverla directamente
     if (data instanceof modelClass) {
       return data;
@@ -20,7 +20,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
 
     const instance = Object.create(modelClass.prototype);
     this.populateInstance(instance, data, modelClass);
-    return instance as TModel;
+    return instance;
   }
 
   deserializeFromJson(json: string, modelClass: new (data: any) => TModel): TModel {
@@ -28,8 +28,8 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
     return this.deserialize(data, modelClass);
   }
 
-  private populateInstance(instance: Record<string, unknown>, data: unknown, modelClass: Function): void {
-    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+  private populateInstance<T extends Record<string, unknown>>(instance: Record<string, unknown>, data: T, modelClass: Function): void {
+    for (const [key, value] of Object.entries(data)) {
       if (value === null || value === undefined) {
         instance[key] = value;
         continue;
@@ -72,7 +72,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
         
         // Si no es Array, es un modelo anidado individual
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          instance[key] = this.deserialize(value as TInterface, arrayElementClass);
+          instance[key] = this.deserialize(value, arrayElementClass);
           continue;
         }
       }
@@ -91,25 +91,37 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
     // Date
     if (designType === Date) {
       const transformer = this.transformerRegistry.get('date');
-      return transformer
-        ? transformer.fromInterface(value, context.propertyKey, context.className)
-        : new Date(value as string | number | Date);
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      if (typeof value === 'string' || typeof value === 'number' || value instanceof Date) {
+        return new Date(value);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Invalid Date value`);
     }
 
     // Map
     if (designType === Map) {
       const transformer = this.transformerRegistry.get('map');
-      return transformer
-        ? transformer.fromInterface(value, context.propertyKey, context.className)
-        : new Map(Object.entries(value as Record<string, unknown>));
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        return new Map(Object.entries(value));
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Invalid Map value`);
     }
 
     // Set
     if (designType === Set) {
       const transformer = this.transformerRegistry.get('set');
-      return transformer
-        ? transformer.fromInterface(value, context.propertyKey, context.className)
-        : new Set(value as unknown[]);
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      if (Array.isArray(value)) {
+        return new Set(value);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Invalid Set value`);
     }
 
     // Modelo anidado
@@ -126,8 +138,8 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
           `${context.className}.${context.propertyKey}: Expected object, got ${typeof value}`,
         );
       }
-      // Type assertion necesaria: designType es un constructor de modelo
-      return this.deserialize(value as TInterface, designType as new (data: TInterface) => TModel);
+      type ModelConstructor = new (data: typeof value) => TModel;
+      return this.deserialize(value, designType as ModelConstructor);
     }
 
     // Validación de primitivos

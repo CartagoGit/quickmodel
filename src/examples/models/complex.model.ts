@@ -1,6 +1,6 @@
 import { BigIntField, ErrorField, RegExpField, SymbolField } from '../../core/interfaces';
 import { Field, QuickModel, QuickType } from '../../quick.model';
-import type { ComplexModelTransforms, IComplexModel } from './interfaces/complex-model.interface';
+import type { ComplexModelTransforms, IComplexModel } from '../interfaces/complex-model.interface';
 import { Address } from './nested.model';
 import { SimpleModel } from './simple.model';
 

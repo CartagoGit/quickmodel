@@ -5,8 +5,8 @@
  * con sus ventajas y casos de uso.
  */
 
-import { QuickModel } from '../src/quick.model';
-import { Field } from '../src/core/decorators/field.decorator';
+import { QuickModel } from '../../quick.model';
+import { Field } from '../../core/decorators/field.decorator';
 import {
   BigIntField,
   SymbolField,
@@ -18,7 +18,7 @@ import {
   Uint8ArrayField,
   Float32ArrayField,
   BigInt64ArrayField,
-} from '../src/core/interfaces/field-symbols.interface';
+} from '../../core/interfaces/field-symbols.interface';
 
 // ============================================================================
 // FORMA 1: Auto-detección (para tipos básicos y Date, Map, Set)

@@ -5,7 +5,7 @@ import type {
   IContact,
   INestedModel,
   NestedModelTransforms,
-} from './interfaces/nested-model.interface';
+} from '../interfaces/nested-model.interface';
 import { SimpleModel } from './simple.model';
 
 /**
