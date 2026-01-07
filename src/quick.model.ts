@@ -54,27 +54,47 @@ export class MockBuilder<TInstance, TInterface> {
 	) {}
 
 	empty(overrides?: Partial<TInterface>): TInstance {
-		const data = this.mockGenerator.generate(this.modelClass, 'empty', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'empty',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
 	random(overrides?: Partial<TInterface>): TInstance {
-		const data = this.mockGenerator.generate(this.modelClass, 'random', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'random',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
 	sample(overrides?: Partial<TInterface>): TInstance {
-		const data = this.mockGenerator.generate(this.modelClass, 'sample', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'sample',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
 	minimal(overrides?: Partial<TInterface>): TInstance {
-		const data = this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'minimal',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
 	full(overrides?: Partial<TInterface>): TInstance {
-		const data = this.mockGenerator.generate(this.modelClass, 'full', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'full',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
@@ -83,15 +103,27 @@ export class MockBuilder<TInstance, TInterface> {
 	}
 
 	interfaceRandom(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'random', overrides);
+		return this.mockGenerator.generate(
+			this.modelClass,
+			'random',
+			overrides
+		);
 	}
 
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'sample', overrides);
+		return this.mockGenerator.generate(
+			this.modelClass,
+			'sample',
+			overrides
+		);
 	}
 
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
+		return this.mockGenerator.generate(
+			this.modelClass,
+			'minimal',
+			overrides
+		);
 	}
 
 	interfaceFull(overrides?: Partial<TInterface>): TInterface {
@@ -138,32 +170,6 @@ export class MockBuilder<TInstance, TInterface> {
 	}
 }
 
-/**
- * Tipo para el objeto mock generado por el getter (deprecated, usar MockBuilder)
- */
-export type MockAPI<TInstance, TInterface> = {
-	empty: (overrides?: Partial<TInterface>) => TInstance;
-	random: (overrides?: Partial<TInterface>) => TInstance;
-	sample: (overrides?: Partial<TInterface>) => TInstance;
-	minimal: (overrides?: Partial<TInterface>) => TInstance;
-	full: (overrides?: Partial<TInterface>) => TInstance;
-	interfaceEmpty: (overrides?: Partial<TInterface>) => TInterface;
-	interfaceRandom: (overrides?: Partial<TInterface>) => TInterface;
-	interfaceSample: (overrides?: Partial<TInterface>) => TInterface;
-	interfaceMinimal: (overrides?: Partial<TInterface>) => TInterface;
-	interfaceFull: (overrides?: Partial<TInterface>) => TInterface;
-	array: (
-		count: number,
-		type?: MockType,
-		overrides?: (index: number) => Partial<TInterface>
-	) => TInstance[];
-	interfaceArray: (
-		count: number,
-		type?: MockType,
-		overrides?: (index: number) => Partial<TInterface>
-	) => TInterface[];
-};
-
 export abstract class QuickModel<
 	TInterface,
 	_TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}
@@ -179,91 +185,30 @@ export abstract class QuickModel<
 		transformerRegistry
 	);
 
-	// /**
-	//  * Sistema de mocks con tipado estricto.
-	//  * Cada clase hija infiere automáticamente sus tipos.
-	//  * @example User.mock().random() // devuelve User
-	//  * @example User.mock().array(5) // devuelve User[]
-	//  */
-	// static mock(): MockBuilder<
-	// 	QuickModelInstance<typeof this>,
-	// 	QuickModelInterface<typeof this>
-	// > {
-	// 	type ThisClass = typeof this;
-	// 	type InstanceType = ThisClass extends abstract new (
-	// 		...args: any[]
-	// 	) => infer R
-	// 		? R
-	// 		: never;
-	// 	type InterfaceType = InstanceType extends QuickModel<infer I>
-	// 		? I
-	// 		: never;
+	/**
+	 * Sistema de mocks con tipado estricto.
+	 * Cada clase hija infiere automáticamente sus tipos.
+	 * @example User.mock().random() // devuelve User
+	 * @example User.mock().array(5) // devuelve User[]
+	 */
+	static mock<T extends abstract new (...args: any[]) => QuickModel<any, any>>(
+		this: T
+	): MockBuilder<QuickModelInstance<T>, QuickModelInterface<T>> {
+		type ThisClass = T;
+		type InstanceType = ThisClass extends abstract new (
+			...args: any[]
+		) => infer R
+			? R
+			: never;
+		type InterfaceType = InstanceType extends QuickModel<infer I>
+			? I
+			: never;
 
-	// 	// @ts-expect-error - TypeScript no permite instanciar clases abstractas, pero en runtime `this` es la clase concreta
-	// 	const ModelClass: new (data: InterfaceType) => InstanceType = this;
+		// @ts-expect-error - TypeScript no permite instanciar clases abstractas, pero en runtime `this` es la clase concreta
+		const ModelClass: new (data: InterfaceType) => InstanceType = this;
 
-	// 	return new MockBuilder(ModelClass, QuickModel.mockGenerator);
-	// }
-
-  static mock<T extends abstract new (...args: any[]) => QuickModel<any, any>>(
-    this: T
-  ): MockAPI<QuickModelInstance<T>, QuickModelInterface<T>> {
-    type ThisClass = T;
-    type InstanceType = ThisClass extends abstract new (
-      ...args: any[]
-    ) => infer R
-      ? R
-      : never;
-    type InterfaceType = InstanceType extends QuickModel<infer I>
-      ? I
-      : never;
-
-    // @ts-expect-error - TypeScript no permite instanciar clases abstractas, pero en runtime `this` es la clase concreta
-    const ModelClass: new (data: InterfaceType) => InstanceType = this;
-
-    const generator = new MockGenerator(transformerRegistry);
-
-    return {
-      empty: (overrides?: Partial<InterfaceType>) =>
-        new ModelClass(generator.generate(ModelClass, 'empty', overrides)),
-      random: (overrides?: Partial<InterfaceType>) =>
-        new ModelClass(generator.generate(ModelClass, 'random', overrides)),
-      sample: (overrides?: Partial<InterfaceType>) =>
-        new ModelClass(generator.generate(ModelClass, 'sample', overrides)),
-      minimal: (overrides?: Partial<InterfaceType>) =>
-        new ModelClass(generator.generate(ModelClass, 'minimal', overrides)),
-      full: (overrides?: Partial<InterfaceType>) =>
-        new ModelClass(generator.generate(ModelClass, 'full', overrides)),
-      interfaceEmpty: (overrides?: Partial<InterfaceType>) =>
-        generator.generate(ModelClass, 'empty', overrides),
-      interfaceRandom: (overrides?: Partial<InterfaceType>) =>
-        generator.generate(ModelClass, 'random', overrides),
-      interfaceSample: (overrides?: Partial<InterfaceType>) =>
-        generator.generate(ModelClass, 'sample', overrides),
-      interfaceMinimal: (overrides?: Partial<InterfaceType>) =>
-        generator.generate(ModelClass, 'minimal', overrides),
-      interfaceFull: (overrides?: Partial<InterfaceType>) =>
-        generator.generate(ModelClass, 'full', overrides),
-      array: (
-        count: number,
-        type: MockType = 'random',
-        overrides?: (index: number) => Partial<InterfaceType>
-      ) =>
-        Array.from({ length: count }, (_, i) =>
-          new ModelClass(
-            generator.generate(ModelClass, type, overrides ? overrides(i) : undefined)
-          )
-        ),
-      interfaceArray: (
-        count: number,
-        type: MockType = 'random',
-        overrides?: (index: number) => Partial<InterfaceType>
-      ) =>
-        Array.from({ length: count }, (_, i) =>
-          generator.generate(ModelClass, type, overrides ? overrides(i) : undefined)
-        ),
-    };
-  }
+		return new MockBuilder(ModelClass, QuickModel.mockGenerator);
+	}
 
 	// Propiedad temporal para datos no procesados (se elimina después de initialize)
 	private readonly __tempData?: ModelData<TInterface>;
