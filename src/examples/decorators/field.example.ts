@@ -5,19 +5,19 @@
  * with their advantages and use cases.
  */
 
-import { QuickModel } from '../../quick.model';
-import { Field } from '../../core/decorators/field.decorator';
+import { QModel } from '../../quick.model';
+import { QType } from '../../core/decorators/field.decorator';
 import {
   QBigInt,
   QSymbol,
   QRegExp,
   QError,
-  URLField,
-  URLSearchParamsField,
+  QURL,
+  QURLSearchParams,
   QInt8Array,
   QUint8Array,
   QFloat32Array,
-  BigInt64ArrayField,
+  QBigInt64Array,
 } from '../../core/interfaces/field-symbols.interface';
 
 // ============================================================================
@@ -35,7 +35,7 @@ interface IForma1 {
   roles: Set<string>;
 }
 
-class Forma1_AutoDeteccion extends QuickModel<IForma1> {
+class Forma1_AutoDeteccion extends QModel<IForma1> {
   @QType() name!: string;        // Auto-detect string
   @QType() age!: number;         // Auto-detect number
   @QType() active!: boolean;     // Auto-detect boolean
@@ -70,7 +70,7 @@ interface IForma2 {
   createdAt: Date;
 }
 
-class Forma2_StringLiterals extends QuickModel<IForma2> {
+class Forma2_StringLiterals extends QModel<IForma2> {
   // Special types - when typing @QType(' the editor suggests:
   // 'bigint', 'symbol', 'regexp', 'error', 'url', etc.
   
@@ -129,7 +129,7 @@ interface IForma3A {
   bigInts: BigInt64Array;
 }
 
-class Forma3A_Symbols extends QuickModel<IForma3A> {
+class Forma3A_Symbols extends QModel<IForma3A> {
   @QType(QBigInt)
   balance!: bigint;
   
@@ -142,10 +142,10 @@ class Forma3A_Symbols extends QuickModel<IForma3A> {
   @QType(QError)
   lastError!: Error;
   
-  @QType(URLField)
+  @QType(QURL)
   homepage!: URL;
   
-  @QType(URLSearchParamsField)
+  @QType(QURLSearchParams)
   queryParams!: URLSearchParams;
   
   @QType(QInt8Array)
@@ -157,7 +157,7 @@ class Forma3A_Symbols extends QuickModel<IForma3A> {
   @QType(QFloat32Array)
   floats!: Float32Array;
   
-  @QType(BigInt64ArrayField)
+  @QType(QBigInt64Array)
   bigInts!: BigInt64Array;
 }
 
@@ -181,7 +181,7 @@ interface IForma3B {
   roles: Set<string>;
 }
 
-class Forma3B_Constructors extends QuickModel<IForma3B> {
+class Forma3B_Constructors extends QModel<IForma3B> {
   // These do NOT work with constructor:
   // @QType(BigInt) balance!: bigint;  // ❌ BigInt() is a conversion function
   // @QType(Symbol) key!: symbol;      // ❌ Symbol() always creates new symbol
@@ -242,7 +242,7 @@ interface IRecomendacion {
   tags: Map<string, number>;
 }
 
-class RecomendacionProyectoNuevo extends QuickModel<IRecomendacion> {
+class NewProjectRecommendation extends QModel<IRecomendacion> {
   @QType() id!: string;
   @QType() name!: string;
   @QType('bigint') balance!: bigint;
@@ -266,7 +266,7 @@ interface IMigracion {
   modern: Float32Array;
 }
 
-class MigracionGradual extends QuickModel<IMigracion> {
+class GradualMigration extends QModel<IMigracion> {
   @QType(QBigInt) oldCode!: bigint;     // Existing code
   @QType('regexp') newCode!: RegExp;        // New code with strings
   @QType(QInt8Array) legacy!: Int8Array;
@@ -290,7 +290,7 @@ interface IPreferencia {
   settings: Map<string, any>;
 }
 
-class PreferenciaConstructores extends QuickModel<IPreferencia> {
+class ConstructorPreference extends QModel<IPreferencia> {
   @QType(RegExp) pattern!: RegExp;
   @QType(URL) homepage!: URL;
   @QType(Error) lastError!: Error;
@@ -360,7 +360,7 @@ export {
   Forma2_StringLiterals,
   Forma3A_Symbols,
   Forma3B_Constructors,
-  RecomendacionProyectoNuevo,
-  MigracionGradual,
-  PreferenciaConstructores,
+  NewProjectRecommendation,
+  GradualMigration,
+  ConstructorPreference,
 };

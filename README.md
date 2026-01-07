@@ -99,136 +99,143 @@ const user2 = User.fromJSON(json);
 console.log(user2.balance === user.balance); // true
 ```
 
-## 🎭 Sistema de Mocks para Testing
+## 🎭 Mock System for Testing
 
 ```typescript
-// 6 tipos de mocks disponibles
-const user1 = User.mockEmpty();    // Valores vacíos
-const user2 = User.mockRandom();   // Aleatorios con faker
-const user3 = User.mockSample();   // Predecibles para tests
-const user4 = User.mock();         // Alias de mockRandom()
+// 6 types of mocks available
+const user1 = User.mockEmpty();    // Empty values
+const user2 = User.mockRandom();   // Random with faker
+const user3 = User.mockSample();   // Predictable for tests
+const user4 = User.mock();         // Alias for mockRandom()
 
-// Arrays de mocks
-const users = User.mockArray(10);  // 10 usuarios aleatorios
+// Mock arrays
+const users = User.mockArray(10);  // 10 random users
 const team = User.mockArray(5, 'sample', (i) => ({ 
   name: `Dev${i}` 
 }));
 
-// Interfaces mock (objetos planos)
-const userData = User.mockInterface();          // Sin instanciar
-const usersData = User.mockInterfaceArray(50); // Para seeders
+// Mock interfaces (plain objects)
+const userData = User.mockInterface();          // Without instantiation
+const usersData = User.mockInterfaceArray(50); // For seeders
 
-// Ver documentación completa: docs/MOCK-GENERATOR.md
+// See full documentation: docs/MOCK-GENERATOR.md
 ```
 
-## 🔧 Tipos Soportados
+## 🔧 Supported Types
 
-### @Field() Decorator Usage Forms
+### @QType() Decorator Usage Forms
 
 Each type supports **up to 3 equivalent forms**:
 
 ```typescript
+import { QModel, QType, QRegExp } from '@cartago-git/quickmodel';
+import type { QInterface } from '@cartago-git/quickmodel';
+
 interface IModel {
   pattern: RegExp;
 }
 
-class Model extends QuickModel<IModel> {
+class Model extends QModel<IModel> implements QInterface<IModel> {
   // Example of the 3 forms for RegExp:
-  @Field(RegExpField)   pattern!: RegExp;  // 1. Symbol (forma original)
-  @Field('regexp')      pattern!: RegExp;  // 2. String literal ✨ (IntelliSense)
-  @Field(RegExp)        pattern!: RegExp;  // 3. Constructor nativo
+  @QType(QRegExp)   pattern!: RegExp;  // 1. Symbol (original form)
+  @QType('regexp')  pattern!: RegExp;  // 2. String literal ✨ (IntelliSense)
+  @QType(RegExp)    pattern!: RegExp;  // 3. Native constructor
 }
 ```
 
-**💡 String Literals with IntelliSense**: When typing `@Field('` TypeScript automatically suggests:
+**💡 String Literals with IntelliSense**: When typing `@QType('` TypeScript automatically suggests:
 ```
-@Field('
+@QType('
   ↓
-  'bigint'         - Para bigint
-  'symbol'         - Para symbol
-  'regexp'         - Para RegExp
-  'error'          - Para Error
-  'url'            - Para URL
-  'int8array'      - Para Int8Array
-  'float32array'   - Para Float32Array
-  'bigint64array'  - Para BigInt64Array
-  ... y 30+ tipos más
+  'bigint'         - For bigint
+  'symbol'         - For symbol
+  'regexp'         - For RegExp
+  'error'          - For Error
+  'url'            - For URL
+  'int8array'      - For Int8Array
+  'float32array'   - For Float32Array
+  'bigint64array'  - For BigInt64Array
+  ... and 30+ more types
 ```
 
-| Tipo                 | Symbol                   | String Literal ✨     | Constructor         | Serialización          |
-| -------------------- | ------------------------ | -------------------- | ------------------- | ---------------------- |
-| `string`             | -                        | `'string'`           | -                   | Directo                |
-| `number`             | -                        | `'number'`           | -                   | Directo                |
-| `boolean`            | -                        | `'boolean'`          | -                   | Directo                |
-| `Date`               | -                        | `'date'`             | `Date`              | ISO string             |
-| `BigInt`             | `BigIntField`            | `'bigint'`           | -                   | string                 |
-| `Symbol`             | `SymbolField`            | `'symbol'`           | -                   | string (Symbol.for)    |
-| `RegExp`             | `RegExpField`            | `'regexp'`           | `RegExp`            | `/pattern/flags`       |
-| `Error`              | `ErrorField`             | `'error'`            | `Error`             | `Name: message`        |
-| `URL`                | `URLField`               | `'url'`              | `URL`               | href                   |
-| `URLSearchParams`    | `URLSearchParamsField`   | `'urlsearchparams'`  | `URLSearchParams`   | string                 |
-| `Map<K,V>`           | -                        | `'map'`              | `Map`               | Record<K,V>            |
-| `Set<T>`             | -                        | `'set'`              | `Set`               | T[]                    |
-| `Int8Array`          | `Int8ArrayField`         | `'int8array'`        | `Int8Array`         | number[]               |
-| `Uint8Array`         | `Uint8ArrayField`        | `'uint8array'`       | `Uint8Array`        | number[]               |
-| `Float32Array`       | `Float32ArrayField`      | `'float32array'`     | `Float32Array`      | number[]               |
-| `BigInt64Array`      | `BigInt64ArrayField`     | `'bigint64array'`    | `BigInt64Array`     | string[]               |
-| `ArrayBuffer`        | `ArrayBufferField`       | `'arraybuffer'`      | -                   | number[]               |
-| `DataView`           | `DataViewField`          | `'dataview'`         | -                   | number[]               |
-| `Enum` (TypeScript)  | -                        | -                    | -                   | Directo                |
-| Modelo anidado       | -                        | -                    | `ModelClass`        | Recursivo              |
-| `Array<Modelo>`      | -                        | -                    | `ModelClass`        | Array recursivo        |
+| Type                 | Symbol                | String Literal ✨     | Constructor         | Serialization         |
+| -------------------- | --------------------- | -------------------- | ------------------- | --------------------- |
+| `string`             | -                     | `'string'`           | -                   | Direct                |
+| `number`             | -                     | `'number'`           | -                   | Direct                |
+| `boolean`            | -                     | `'boolean'`          | -                   | Direct                |
+| `Date`               | -                     | `'date'`             | `Date`              | ISO string            |
+| `BigInt`             | `QBigInt`             | `'bigint'`           | -                   | string                |
+| `Symbol`             | `QSymbol`             | `'symbol'`           | -                   | string (Symbol.for)   |
+| `RegExp`             | `QRegExp`             | `'regexp'`           | `RegExp`            | `/pattern/flags`      |
+| `Error`              | `QError`              | `'error'`            | `Error`             | `Name: message`       |
+| `URL`                | `QURL`                | `'url'`              | `URL`               | href                  |
+| `URLSearchParams`    | `QURLSearchParams`    | `'urlsearchparams'`  | `URLSearchParams`   | string                |
+| `Map<K,V>`           | -                     | `'map'`              | `Map`               | Record<K,V>           |
+| `Set<T>`             | -                     | `'set'`              | `Set`               | T[]                   |
+| `Int8Array`          | `QInt8Array`          | `'int8array'`        | `Int8Array`         | number[]              |
+| `Uint8Array`         | `QUint8Array`         | `'uint8array'`       | `Uint8Array`        | number[]              |
+| `Float32Array`       | `QFloat32Array`       | `'float32array'`     | `Float32Array`      | number[]              |
+| `BigInt64Array`      | `QBigInt64Array`      | `'bigint64array'`    | `BigInt64Array`     | string[]              |
+| `ArrayBuffer`        | `QArrayBuffer`        | `'arraybuffer'`      | -                   | number[]              |
+| `DataView`           | `QDataView`           | `'dataview'`         | -                   | number[]              |
+| `Enum` (TypeScript)  | -                     | -                    | -                   | Direct                |
+| Nested model         | -                     | -                    | `ModelClass`        | Recursive             |
+| `Array<Model>`       | -                     | -                    | `ModelClass`        | Recursive array       |
 
-> 💡 **Recomendación**: Usa **string literals** (`@Field('bigint')`) para obtener IntelliSense con todos los tipos disponibles mientras escribes.
+> 💡 **Recommendation**: Use **string literals** (`@QType('bigint')`) to get IntelliSense with all available types while typing.
 
-**+10 TypedArrays más** (Int16Array, Uint16Array, Int32Array, Uint32Array, Float64Array, BigInt64Array, BigUint64Array)
+**+10 more TypedArrays** (Int16Array, Uint16Array, Int32Array, Uint32Array, Float64Array, BigInt64Array, BigUint64Array)
 
-## 📚 Ejemplos Avanzados
+## 📚 Advanced Examples
 
-### Modelos Anidados
+### Nested Models
 
 ```typescript
-class Address extends QuickModel<IAddress> {
-  @Field() street!: string;
-  @Field() city!: string;
+import { QModel, QType } from '@cartago-git/quickmodel';
+import type { QInterface } from '@cartago-git/quickmodel';
+
+class Address extends QModel<IAddress> implements QInterface<IAddress> {
+  @QType() street!: string;
+  @QType() city!: string;
 }
 
-class Company extends QuickModel<ICompany> {
-  @Field() name!: string;
-  @Field() address!: Address;
-  @Field(Address) offices!: Address[];
+class Company extends QModel<ICompany> implements QInterface<ICompany> {
+  @QType() name!: string;
+  @QType() address!: Address;
+  @QType(Address) offices!: Address[];
 }
 ```
 
-### Colecciones
+### Collections
 
 ```typescript
-class Config extends QuickModel<IConfig> {
-  @Field() tags!: string[];
-  @Field() metadata!: Map<string, any>;
-  @Field() uniqueIds!: Set<number>;
+class Config extends QModel<IConfig> implements QInterface<IConfig> {
+  @QType() tags!: string[];
+  @QType() metadata!: Map<string, any>;
+  @QType() uniqueIds!: Set<number>;
 }
 ```
 
-### Datos Binarios
+### Binary Data
 
 ```typescript
-import { Int8ArrayField, ArrayBufferField } from '@cartago-git/quickmodel';
+import { QModel, QType, QInt8Array, QArrayBuffer } from '@cartago-git/quickmodel';
+import type { QInterface } from '@cartago-git/quickmodel';
 
-class BinaryData extends QuickModel<IBinaryData> {
-  @Field(Int8ArrayField) data!: Int8Array;
-  @Field(ArrayBufferField) buffer!: ArrayBuffer;
+class BinaryData extends QModel<IBinaryData> implements QInterface<IBinaryData> {
+  @QType(QInt8Array) data!: Int8Array;
+  @QType(QArrayBuffer) buffer!: ArrayBuffer;
 }
 ```
 
-## 🔌 Extensibilidad
+## 🔌 Extensibility
 
-### Agregar Transformer Personalizado
+### Add Custom Transformer
 
 ```typescript
 import { ITransformer, ITransformContext, transformerRegistry } from '@cartago-git/quickmodel';
 
-// 1. Crear transformer
+// 1. Create transformer
 class URLTransformer implements ITransformer<string, URL> {
   transform(value: string, context: ITransformContext): URL {
     return new URL(value);
@@ -239,16 +246,18 @@ class URLTransformer implements ITransformer<string, URL> {
   }
 }
 
-// 2. Crear símbolo
-export const URLField = Symbol('URL');
+// 2. Create symbol
+export const CustomURLField = Symbol('CustomURL');
 
-// 3. Registrar
-transformerRegistry.register(URLField, new URLTransformer());
+// 3. Register
+transformerRegistry.register(CustomURLField, new URLTransformer());
 
-// 4. Usar en modelos
+// 4. Use in models
+import { QModel, QType } from '@cartago-git/quickmodel';
+import type { QInterface } from '@cartago-git/quickmodel';
 
-class Website extends QuickModel<IWebsite> {
-  @Field(URLField) url!: URL;
+class Website extends QModel<IWebsite> implements QInterface<IWebsite> {
+  @QType(CustomURLField) url!: URL;
 }
 ```
 
@@ -266,28 +275,28 @@ Este paquete implementa los 5 principios SOLID:
 
 ## 📖 API Reference
 
-### QuickModel<TInterface>
+### QModel<TInterface>
 
-Clase base para todos los modelos.
+Base class for all models.
 
-**Métodos:**
+**Methods:**
 
-- `toInterface(): TInterface` - Serializa a interfaz plana
-- `toJSON(): string` - Serializa a JSON string
-- `static fromInterface<T>(data: any): T` - Crea instancia desde interfaz
-- `static fromJSON<T>(json: string): T` - Crea instancia desde JSON
+- `toInterface(): TInterface` - Serializes to plain interface
+- `toJSON(): string` - Serializes to JSON string
+- `static fromInterface<T>(data: any): T` - Creates instance from interface
+- `static fromJSON<T>(json: string): T` - Creates instance from JSON
 
-### Decoradores
+### Decorators
 
-- `` - Decorador de clase para auto-inicialización
-- `@Field()` - Decorador de campo para tipos auto-detectables
-- `@Field(Symbol)` - Decorador con tipo específico (BigIntField, etc.)
-- `@Field(ModelClass)` - Decorador para arrays de modelos
+- `@QType()` - Field decorator for auto-detectable types
+- `@QType(Symbol)` - Decorator with specific type (QBigInt, etc.)
+- `@QType(ModelClass)` - Decorator for model arrays
+- `@QType('string-literal')` - Decorator with string literal (IntelliSense support)
 
 ### Registries
 
-- `transformerRegistry` - Registry global de transformers
-- `validatorRegistry` - Registry global de validadores
+- `transformerRegistry` - Global transformer registry
+- `validatorRegistry` - Global validator registry
 
 ## 🧪 Testing
 
@@ -313,36 +322,36 @@ This package **REQUIRES** decorators in your `tsconfig.json`:
 }
 ```
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-Las contribuciones son bienvenidas. Por favor:
+Contributions are welcome. Please:
 
-1. Fork el proyecto
-2. Crea tu feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 Licencia
 
 MIT © 2026 Cartago
 
-## � Documentación
+## 📚 Documentation
 
-### Para Usuarios
+### For Users
 
-- **[SOLID Architecture](docs/SOLID-ARCHITECTURE.md)** - Arquitectura detallada del sistema y principios SOLID aplicados
-- **[Installation Guide](docs/INSTALLATION.md)** - Guía completa de instalación, uso en proyectos y publicación
+- **[SOLID Architecture](docs/SOLID-ARCHITECTURE.md)** - Detailed system architecture and applied SOLID principles
+- **[Installation Guide](docs/INSTALLATION.md)** - Complete installation guide, project usage and publishing
 
-### Para Desarrolladores
+### For Developers
 
-- **[Development Guide](docs/README-DEV.md)** - Guía para contribuir al desarrollo del paquete
-- **[Changelog](CHANGELOG)** - Historial de versiones y cambios
+- **[Development Guide](docs/README-DEV.md)** - Guide for contributing to package development
+- **[Changelog](CHANGELOG)** - Version history and changes
 
-### Recursos
+### Resources
 
-- **[Cleanup Summary](docs/CLEANUP-SUMMARY.md)** - Resumen de la última limpieza y organización
-- **[Examples](models/examples/)** - Modelos de ejemplo (SimpleModel, CollectionsModel, NestedModel, BinaryModel, ComplexModel)
+- **[Cleanup Summary](docs/CLEANUP-SUMMARY.md)** - Summary of the last cleanup and organization
+- **[Examples](models/examples/)** - Example models (SimpleModel, CollectionsModel, NestedModel, BinaryModel, ComplexModel)
 
 ## 🔗 Enlaces
 

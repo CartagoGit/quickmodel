@@ -1,28 +1,28 @@
-# Guía de Instalación y Uso del Paquete
+# Installation and Usage Guide
 
-## 📦 Preparación del Paquete
+## 📦 Package Preparation
 
-### 1. Instalar Dependencias
+### 1. Install Dependencies
 
 ```bash
 cd pruebas
 bun install
 ```
 
-### 2. Compilar el Paquete
+### 2. Compile the Package
 
 ```bash
-# Compilar para producción
+# Compile for production
 bun run build
 
-# Desarrollo con watch mode
+# Development with watch mode
 bun run dev
 
-# Verificar tipos
+# Verify types
 bun run typecheck
 ```
 
-Esto generará la carpeta `dist/` con:
+This will generate the `dist/` folder with:
 
 - Archivos CommonJS (.js)
 - Archivos ES Modules (.mjs)
@@ -42,22 +42,22 @@ ls -la dist/
 # - source maps
 ```
 
-## 🚀 Uso en Otros Proyectos
+## 🚀 Usage in Other Projects
 
-### Opción 1: Instalación Local (Recomendado para desarrollo)
+### Option 1: Local Installation (Recommended for development)
 
 ```bash
-# En el proyecto que quiere usar el paquete
+# In the project that wants to use the package
 cd /path/to/your-project
 
-# Instalar desde ruta local
+# Install from local path
 npm install /home/cartago/_projects/games/deathblitz/pruebas
 
-# O con link simbólico (para desarrollo activo)
+# Or with symbolic link (for active development)
 npm link /home/cartago/_projects/games/deathblitz/pruebas
 ```
 
-### Opción 2: package.json con file:
+### Option 2: package.json with file:
 
 ```json
 {
@@ -73,28 +73,28 @@ Luego:
 npm install
 ```
 
-### Opción 3: Publicar a npm (Producción)
+### Option 3: Publish to npm (Production)
 
 ```bash
 cd pruebas
 
-# Login a npm (solo primera vez)
+# Login to npm (only first time)
 npm login
 
-# Publicar como paquete público
+# Publish as public package
 npm publish --access public --access public
 
-# O publicar como paquete privado
+# Or publish as private package
 npm publish
 ```
 
-Luego en otros proyectos:
+Then in other projects:
 
 ```bash
 npm install @cartago-git/quickmodel
 ```
 
-### Opción 4: GitHub como Registry
+### Option 4: GitHub as Registry
 
 ```bash
 # En package.json del proyecto
@@ -105,11 +105,11 @@ npm install @cartago-git/quickmodel
 }
 ```
 
-## 💻 Uso en tu Proyecto
+## 💻 Usage in Your Project
 
-### 1. Configurar TypeScript
+### 1. Configure TypeScript
 
-En tu proyecto, asegúrate de tener estos settings en `tsconfig.json`:
+In your project, make sure to have these settings in `tsconfig.json`:
 
 ```json
 {
@@ -121,11 +121,12 @@ En tu proyecto, asegúrate de tener estos settings en `tsconfig.json`:
 }
 ```
 
-### 2. Importar y Usar
+### 2. Import and Use
 
 ```typescript
-import { QuickModel, Field, QuickType, BigIntField } from '@cartago-git/quickmodel';
-import 'reflect-metadata'; // Importante: importar al inicio de tu app
+import { QModel, QType, QBigInt } from '@cartago-git/quickmodel';
+import type { QInterface } from '@cartago-git/quickmodel';
+import 'reflect-metadata'; // Important: import at the start of your app
 
 interface IUser {
   id: string;
@@ -139,14 +140,14 @@ type UserTransforms = {
   createdAt: Date;
 };
 
-class User extends QuickModel<IUser> implements QuickType<IUser, UserTransforms> {
-  @Field() id!: string;
-  @Field() name!: string;
-  @Field(BigIntField) balance!: bigint;
-  @Field() createdAt!: Date;
+class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
+  @QType() id!: string;
+  @QType() name!: string;
+  @QType(QBigInt) balance!: bigint;
+  @QType() createdAt!: Date;
 }
 
-// Usar
+// Use
 const user = new User({
   id: '1',
   name: 'John',
@@ -159,43 +160,43 @@ const json = user.toJSON();
 const user2 = User.fromJSON(json);
 ```
 
-### 3. Importaciones Específicas
+### 3. Specific Imports
 
 ```typescript
-// Solo transformers
-import { BigIntField, RegExpField } from '@cartago-git/quickmodel/transformers';
+// Only transformers
+import { QBigInt, QRegExp } from '@cartago-git/quickmodel/transformers';
 
-// Solo core
+// Only core
 import { transformerRegistry, ITransformer } from '@cartago-git/quickmodel/core';
 ```
 
-## 🔧 Desarrollo del Paquete
+## 🔧 Package Development
 
-### Estructura de Archivos
+### File Structure
 
 ```
 pruebas/
 ├── package.json           # npm package configuration
 ├── tsconfig.json          # TypeScript configuration
 ├── tsup.config.ts         # Bundler configuration
-├── index.ts               # Punto de entrada principal
-├── .npmignore             # Archivos excluidos de npm
-├── .gitignore             # Archivos excluidos de git
-├── LICENSE                # Licencia MIT
-├── PACKAGE-README.md      # README para npm
+├── index.ts               # Main entry point
+├── .npmignore             # Files excluded from npm
+├── .gitignore             # Files excluded from git
+├── LICENSE                # MIT License
+├── PACKAGE-README.md      # README for npm
 │
-├── dist/                  # Build output (generado)
+├── dist/                  # Build output (generated)
 │   ├── index.js           # CommonJS
 │   ├── index.mjs          # ES Module
 │   ├── index.d.ts         # TypeScript definitions
 │   └── ...
 │
-├── core/                  # Código fuente
+├── core/                  # Source code
 ├── transformers/
 └── models/
 ```
 
-### Scripts Disponibles
+### Available Scripts
 
 ```bash
 # Desarrollo
@@ -216,51 +217,51 @@ bun run typecheck        # Verify types without compiling
 bun run prepublishOnly   # Runs automatically before npm publish
 ```
 
-## 📝 Actualizar el Paquete
+## 📝 Update the Package
 
-### Versionado (Semantic Versioning)
+### Versioning (Semantic Versioning)
 
 ```bash
 # Patch: 1.0.0 -> 1.0.1 (bug fixes)
 npm version patch
 
-# Minor: 1.0.0 -> 1.1.0 (nuevas features)
+# Minor: 1.0.0 -> 1.1.0 (new features)
 npm version minor
 
 # Major: 1.0.0 -> 2.0.0 (breaking changes)
 npm version major
 
-# Luego publicar
+# Then publish
 npm publish
 ```
 
-### En Proyectos que Usan el Paquete
+### In Projects Using the Package
 
 ```bash
-# Si usas instalación local
+# If using local installation
 cd /path/to/your-project
 npm update @cartago-git/quickmodel
 
-# Si está publicado en npm
+# If published to npm
 npm update @cartago-git/quickmodel
 
-# O reinstalar
+# Or reinstall
 npm install @cartago-git/quickmodel@latest
 ```
 
 ## 🔍 Verify the Package
 
-### Antes de Publicar
+### Before Publishing
 
 ```bash
-# Ver qué archivos se incluirán en el paquete
+# See which files will be included in the package
 npm pack --dry-run
 
-# Crear tarball local para probar
+# Create local tarball to test
 npm pack
 
-# Esto crea: deathblitz-solid-models-1.0.0.tgz
-# Instalar en otro proyecto para probar:
+# This creates: deathblitz-solid-models-1.0.0.tgz
+# Install in another project to test:
 npm install /path/to/deathblitz-solid-models-1.0.0.tgz
 ```
 
@@ -274,42 +275,42 @@ node -p "require('@cartago-git/quickmodel')"
 node -p "require('@cartago-git/quickmodel/transformers')"
 ```
 
-## 📦 Ejemplo Completo: Mover a Otro Proyecto
+## 📦 Complete Example: Move to Another Project
 
 ```bash
-# 1. Compilar el paquete
+# 1. Compile the package
 cd /home/cartago/_projects/games/deathblitz/pruebas
 bun install
 bun run build
 
-# 2. Copiar a otro proyecto (opción simple)
+# 2. Copy to another project (simple option)
 cp -r /home/cartago/_projects/games/deathblitz/pruebas /path/to/other-project/packages/solid-models
 
-# 3. O crear link simbólico
+# 3. Or create symbolic link
 cd /path/to/other-project
 mkdir -p packages
 ln -s /home/cartago/_projects/games/deathblitz/pruebas packages/solid-models
 
-# 4. Instalar en el proyecto
+# 4. Install in the project
 cd /path/to/other-project
 npm install ./packages/solid-models
 
-# 5. Usar
-# Ver ejemplo arriba en "Uso en tu Proyecto"
+# 5. Use
+# See example above in "Usage in Your Project"
 ```
 
-## ⚠️ Requisitos
+## ⚠️ Requirements
 
 - **Node.js**: >= 18.0.0
 - **TypeScript**: >= 5.0.0
-- **Decoradores**: Habilitados en tsconfig.json
-- **reflect-metadata**: Instalado (dependencia automática)
+- **Decorators**: Enabled in tsconfig.json
+- **reflect-metadata**: Installed (automatic dependency)
 
 ## 🐛 Troubleshooting
 
 ### Error: "Decorators are not enabled"
 
-Solución: Agregar a `tsconfig.json`:
+Solution: Add to `tsconfig.json`:
 
 ```json
 {
@@ -322,7 +323,7 @@ Solución: Agregar a `tsconfig.json`:
 
 ### Error: "Cannot find module '@cartago-git/quickmodel'"
 
-Solución:
+Solution:
 
 1. Verify that the package is in `node_modules/`
 2. Run `npm install`
@@ -341,10 +342,10 @@ bun run build
 bun run typecheck
 ```
 
-## 📚 Recursos
+## 📚 Resources
 
-- [README Principal](./README.md)
-- [Arquitectura SOLID](./SOLID-ARCHITECTURE.md)
-- [Ejemplos de Modelos](./models/examples/)
+- [Main README](./README.md)
+- [SOLID Architecture](./SOLID-ARCHITECTURE.md)
+- [Model Examples](./models/examples/)
 - [npm docs](https://docs.npmjs.com/)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)

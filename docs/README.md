@@ -1,8 +1,8 @@
-# 📚 Documentación - @cartago-git/quickmodel
+# 📚 Documentation - @cartago-git/quickmodel
 
-Índice completo de la documentación del proyecto.
+Complete documentation index for the project.
 
-## 📖 Para Usuarios
+## 📖 For Users
 
 ### [SOLID Architecture](SOLID-ARCHITECTURE.md)
 
@@ -26,18 +26,18 @@ Complete installation and configuration guide:
 - Publicación del paquete
 - Troubleshooting
 
-## 🛠️ Para Desarrolladores
+## 🛠️ For Developers
 
 ### [Development Guide](README-DEV.md)
 
-Guía para contribuir al desarrollo del paquete:
+Guide for contributing to package development:
 
-- Estructura del proyecto
-- Configuración de desarrollo
-- Arquitectura interna
-- Cómo agregar nuevos transformers
+- Project structure
+- Development setup
+- Internal architecture
+- How to add new transformers
 - Testing
-- Build y publicación
+- Build and publishing
 
 ### [Changelog](../CHANGELOG)
 
@@ -48,39 +48,39 @@ Historial de versiones y cambios:
 - Tipos soportados
 - Breaking changes (si aplica)
 
-## 🧹 Mantenimiento
+## 🧹 Maintenance
 
 ### [Cleanup Summary](CLEANUP-SUMMARY.md)
 
-Resumen de la última limpieza y organización del proyecto:
+Summary of the last project cleanup and organization:
 
-- Archivos eliminados
-- Archivos movidos y renombrados
-- Estructura final
-- Mejoras aplicadas
+- Deleted files
+- Moved and renamed files
+- Final structure
+- Applied improvements
 
 ### [Cleanup Report](CLEANUP-REPORT.md)
 
-Reporte detallado de limpieza:
+Detailed cleanup report:
 
-- Archivos obsoletos detectados
-- Análisis de barrels (index.ts)
-- Estado de la documentación
-- Acciones recomendadas
+- Detected obsolete files
+- Barrel analysis (index.ts)
+- Documentation status
+- Recommended actions
 
-## 🔍 Navegación Rápida
+## 🔍 Quick Navigation
 
-| Documento                                      | Propósito                 | Audiencia          |
-| ---------------------------------------------- | ------------------------- | ------------------ |
-| [SOLID-ARCHITECTURE.md](SOLID-ARCHITECTURE.md) | Arquitectura técnica      | Usuarios avanzados |
-| [INSTALLATION.md](INSTALLATION.md)             | Instalación y setup       | Todos los usuarios |
-| [README-DEV.md](README-DEV.md)                 | Desarrollo y contribución | Colaboradores      |
-| [../CHANGELOG](../CHANGELOG)                   | Historial de cambios      | Todos              |
+| Document                                       | Purpose                | Audience           |
+| ---------------------------------------------- | ---------------------- | ------------------ |
+| [SOLID-ARCHITECTURE.md](SOLID-ARCHITECTURE.md) | Technical architecture | Advanced users     |
+| [INSTALLATION.md](INSTALLATION.md)             | Installation and setup | All users          |
+| [README-DEV.md](README-DEV.md)                 | Development guide      | Contributors       |
+| [../CHANGELOG](../CHANGELOG)                   | Change history         | All                |
 
-- **[../CHANGELOG](../CHANGELOG)** - Historial de cambios
-- **[../models/examples/](../models/examples/)** - Modelos de ejemplo
-- **[../LICENSE](../LICENSE)** - Licencia MIT
+- **[../CHANGELOG](../CHANGELOG)** - Change history
+- **[../models/examples/](../models/examples/)** - Example models
+- **[../LICENSE](../LICENSE)** - MIT License
 
 ---
 
-[← Volver al README principal](../README.md)
+[← Back to main README](../README.md)
