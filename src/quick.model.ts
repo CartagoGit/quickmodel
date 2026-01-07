@@ -1,11 +1,12 @@
 /**
- * SOLID - QuickModel refactorizado siguiendo principios SOLID
- *
- * S - Single Responsibility: QuickModel solo orquesta, delega a servicios específicos
- * O - Open/Closed: Abierto a extensión (nuevos transformers), cerrado a modificación
- * L - Liskov Substitution: Todos los transformers son intercambiables
- * I - Interface Segregation: Interfaces específicas (ISerializer, IDeserializer, etc.)
- * D - Dependency Inversion: Depende de abstracciones (ITransformerRegistry), no de implementaciones
+ * QuickModel - Type-safe serialization and mock generation for TypeScript models
+ * 
+ * SOLID Principles Applied:
+ * - S (Single Responsibility): QuickModel orchestrates, delegates to specific services
+ * - O (Open/Closed): Open for extension (new transformers), closed for modification
+ * - L (Liskov Substitution): All transformers are interchangeable
+ * - I (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
+ * - D (Dependency Inversion): Depends on abstractions (ITransformerRegistry), not implementations
  */
 
 import 'reflect-metadata';
@@ -21,24 +22,55 @@ import type {
 	QuickModelInstance,
 	QuickModelInterface,
 } from './core/interfaces';
-import './transformers/bootstrap'; // Auto-registro de transformers
+import './transformers/bootstrap'; // Auto-register transformers
 import type {
 	SerializedInterface,
 	ModelData,
 } from './core/interfaces/serialization-types.interface';
 
-// Exports públicos
+// Public exports
 export { Field } from './core/decorators';
-export * from './core/interfaces'; // Símbolos de campo (BigIntField, etc.)
+export * from './core/interfaces'; // Field symbols (BigIntField, etc.)
 export type { QuickType } from './core/interfaces';
 export type { MockType } from './core/services';
 export { MockBuilder } from './core/services';
 
+/**
+ * Abstract base class for all models with automatic serialization and type-safe mocking.
+ * 
+ * @template TInterface - The interface type representing the model's data structure
+ * @template _TTransforms - Optional type transforms for special field conversions
+ * 
+ * @example
+ * ```typescript
+ * interface IUser {
+ *   id: string;
+ *   name: string;
+ *   createdAt: Date;
+ * }
+ * 
+ * class User extends QuickModel<IUser> {
+ *   \@Field() id!: string;
+ *   \@Field() name!: string;
+ *   \@Field() createdAt!: Date;
+ * }
+ * 
+ * // Create from interface
+ * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+ * 
+ * // Serialize to plain object
+ * const data = user.toInterface(); // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+ * 
+ * // Generate mocks
+ * const mockUser = User.mock().random();
+ * const mockUsers = User.mock().array(5);
+ * ```
+ */
 export abstract class QuickModel<
 	TInterface,
 	_TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}
 > {
-	// SOLID - Dependency Inversion: Servicios inyectados como dependencias
+	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new ModelDeserializer(
 		transformerRegistry
 	);
@@ -50,10 +82,17 @@ export abstract class QuickModel<
 	);
 
 	/**
-	 * Sistema de mocks con tipado estricto.
-	 * Cada clase hija infiere automáticamente sus tipos.
-	 * @example User.mock().random() // devuelve User
-	 * @example User.mock().array(5) // devuelve User[]
+	 * Creates a type-safe mock builder for generating test data.
+	 * Each derived class automatically infers its correct types.
+	 * 
+	 * @template T - The model class constructor type
+	 * @returns A MockBuilder instance specialized for this model class
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = User.mock().random(); // returns User
+	 * const users = User.mock().array(5); // returns User[]
+	 * ```
 	 */
 	static mock<T extends abstract new (...args: any[]) => QuickModel<any, any>>(
 		this: T
@@ -68,15 +107,30 @@ export abstract class QuickModel<
 			? I
 			: never;
 
-		// @ts-expect-error - TypeScript no permite instanciar clases abstractas, pero en runtime `this` es la clase concreta
+		// @ts-expect-error - TypeScript doesn't allow instantiating abstract classes, but at runtime `this` is the concrete class
 		const ModelClass: new (data: InterfaceType) => InstanceType = this;
 
 		return new MockBuilder(ModelClass, QuickModel.mockGenerator);
 	}
 
-	// Propiedad temporal para datos no procesados (se elimina después de initialize)
+	// Temporary property for unprocessed data (removed after initialize)
 	private readonly __tempData?: ModelData<TInterface>;
 
+	/**
+	 * Constructs a new model instance from interface data or another instance.
+	 * Automatically deserializes complex types (Date, BigInt, etc.) based on @Field decorators.
+	 * 
+	 * @param data - Either a plain interface object or another model instance
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({
+	 *   id: '1',
+	 *   name: 'John',
+	 *   createdAt: new Date() // or '2024-01-01T00:00:00.000Z'
+	 * });
+	 * ```
+	 */
 	constructor(data: ModelData<TInterface>) {
 		Object.defineProperty(this, '__tempData', {
 			value: data,
@@ -85,12 +139,16 @@ export abstract class QuickModel<
 			configurable: true,
 		});
 
-		// Auto-inicializar (antes lo hacía el decorador @Model)
+		// Auto-initialize
 		this.initialize();
 	}
 
 	/**
-	 * SOLID - Single Responsibility: Solo inicializa, delega deserialización
+	 * Initializes the model instance by deserializing the input data.
+	 * 
+	 * SOLID - Single Responsibility: Only initializes, delegates deserialization to service.
+	 * 
+	 * @protected
 	 */
 	protected initialize(): void {
 		const data = this.__tempData;
@@ -108,14 +166,24 @@ export abstract class QuickModel<
 			this.constructor as ThisConstructor
 		);
 		Object.assign(this, deserialized);
-		// Eliminar propiedad temporal
+		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
 	}
 
 	/**
-	 * SOLID - Single Responsibility: Delega serialización a ModelSerializer
-	 *
-	 * @returns La versión serializada de la instancia (tipos complejos convertidos a primitivos/objetos planos)
+	 * Serializes the model instance to a plain interface object.
+	 * Complex types (Date, BigInt, Map, etc.) are converted to JSON-serializable primitives.
+	 * 
+	 * SOLID - Single Responsibility: Delegates serialization to ModelSerializer.
+	 * 
+	 * @returns The serialized version of the instance (complex types converted to primitives/plain objects)
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 * const data = user.toInterface();
+	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+	 * ```
 	 */
 	toInterface(): SerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
@@ -125,7 +193,16 @@ export abstract class QuickModel<
 	}
 
 	/**
-	 * Serializa a JSON string
+	 * Serializes the model instance to a JSON string.
+	 * 
+	 * @returns A JSON string representation of the model
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 * const json = user.toJSON();
+	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
+	 * ```
 	 */
 	toJSON(): string {
 		type ModelAsRecord = Record<string, unknown>;
@@ -135,8 +212,21 @@ export abstract class QuickModel<
 	}
 
 	/**
-	 * SOLID - Open/Closed: Permite crear instancias desde interfaces
-	 * Acepta tanto datos serializados (de toInterface/JSON) como objetos originales
+	 * Creates a model instance from an interface object or serialized data.
+	 * 
+	 * SOLID - Open/Closed: Allows creating instances from interfaces.
+	 * Accepts both serialized data (from toInterface/JSON) and original objects.
+	 * 
+	 * @template T - The model class type
+	 * @param data - Interface data (plain object or serialized)
+	 * @returns A new model instance
+	 * 
+	 * @example
+	 * ```typescript
+	 * const userData = { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' };
+	 * const user = User.fromInterface(userData);
+	 * console.log(user.createdAt instanceof Date); // true
+	 * ```
 	 */
 	static fromInterface<T extends QuickModel<any>>(
 		this: new (data: ModelData<any>) => T,
@@ -146,7 +236,18 @@ export abstract class QuickModel<
 	}
 
 	/**
-	 * Crea instancia desde JSON string
+	 * Creates a model instance from a JSON string.
+	 * 
+	 * @template T - The model class type
+	 * @param json - JSON string representation of the model
+	 * @returns A new model instance
+	 * 
+	 * @example
+	 * ```typescript
+	 * const json = '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}';
+	 * const user = User.fromJSON(json);
+	 * console.log(user instanceof User); // true
+	 * ```
 	 */
 	static fromJSON<T extends QuickModel<any>>(
 		this: new (data: ModelData<any>) => T,
