@@ -6,7 +6,7 @@
  * - O (Open/Closed): Open for extension (new transformers), closed for modification
  * - L (Liskov Substitution): All transformers are interchangeable
  * - I (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
- * - D (Dependency Inversion): Depends on abstractions (ITransformerRegistry), not implementations
+ * - D (Dependency Inversion): Depends on abstractions (IQTransformerRegistry), not implementations
  */
 
 import 'reflect-metadata';
@@ -45,7 +45,7 @@ export { MockBuilder as QMockBuilder } from './core/services';
  * - **O** (Open/Closed): Open for extension via transformers, closed for modification
  * - **L** (Liskov Substitution): All transformers are interchangeable
  * - **I** (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
- * - **D** (Dependency Inversion): Depends on abstractions (ITransformerRegistry), not implementations
+ * - **D** (Dependency Inversion): Depends on abstractions (IQTransformerRegistry), not implementations
  * 
  * @template TInterface - The interface type representing the model's JSON structure
  * @template _TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)

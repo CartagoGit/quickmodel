@@ -7,7 +7,7 @@
  * @remarks
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles model validation
- * - **Dependency Inversion**: Depends on IValidatorRegistry abstraction
+ * - **Dependency Inversion**: Depends on IQValidatorRegistry abstraction
  * 
  * Validation uses reflection metadata to determine field types and find
  * corresponding validators. Only fields with registered validators are validated.

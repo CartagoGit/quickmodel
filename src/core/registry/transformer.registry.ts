@@ -8,7 +8,7 @@
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only manages transformer registration
  * - **Open/Closed**: New transformers can be added without modifying this code
- * - **Dependency Inversion**: Components depend on ITransformerRegistry interface
+ * - **Dependency Inversion**: Components depend on IQTransformerRegistry interface
  * 
  * Transformers can be registered using various key types:
  * - Constructor functions (e.g., `Date`, `URL`)
@@ -38,7 +38,7 @@ import { IQTransformer, IQTransformerRegistry } from '../interfaces';
 type TypeKey = string | symbol | Function;
 
 export class TransformerRegistry implements IQTransformerRegistry {
-  private readonly transformers = new Map<TypeKey, ITransformer>();
+  private readonly transformers = new Map<TypeKey, IQTransformer>();
 
   /**
    * Registers a transformer for a specific type.
@@ -91,7 +91,7 @@ export class TransformerRegistry implements IQTransformerRegistry {
    * 
    * @returns A new Map containing all transformer entries
    */
-  getAll(): Map<TypeKey, ITransformer> {
+  getAll(): Map<TypeKey, IQTransformer> {
     return new Map(this.transformers);
   }
 }
