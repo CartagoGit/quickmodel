@@ -51,9 +51,18 @@ export class TypedArrayTransformer<T extends TypedArray>
     const arrayData = Array.isArray(value) ? value : Object.values(value);
 
     if (this.isBigInt) {
-      const bigIntArray = arrayData.map((v: unknown) =>
-        typeof v === 'bigint' ? v : BigInt(v as string | number),
-      );
+      const bigIntArray = arrayData.map((v: unknown) => {
+        if (typeof v === 'bigint') return v;
+        if (v === null || v === undefined || v === '') return BigInt(0);
+        if (typeof v === 'string' || typeof v === 'number') {
+          try {
+            return BigInt(v);
+          } catch {
+            return BigInt(0);
+          }
+        }
+        return BigInt(0);
+      });
       return new (this.ArrayConstructor as BigInt64ArrayConstructor | BigUint64ArrayConstructor)(
         bigIntArray,
       ) as T;

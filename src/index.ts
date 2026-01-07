@@ -55,4 +55,4 @@ export * from './transformers';
 // MODELOS DE EJEMPLO (Opcional - para referencia)
 // ============================================================================
 
-export * from './models/examples';
+export * from './examples/models';

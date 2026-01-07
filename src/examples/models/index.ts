@@ -5,5 +5,5 @@
 export * from './binary.model';
 export * from './collections.model';
 export * from './complex.model';
-export * from './examples/nested.model';
-export * from './examples/simple.model';
+export * from './nested.model';
+export * from './simple.model';

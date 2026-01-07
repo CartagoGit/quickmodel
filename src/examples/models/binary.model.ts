@@ -12,7 +12,7 @@ import {
   Uint32ArrayField,
   Uint8ArrayField,
 } from '../../core/interfaces';
-import { Field, QuickModel } from '../../quick.model';
+import { Field, QuickModel, type MockAPI } from '../../quick.model';
 import type { BinaryModelTransforms, IBinaryModel } from '../interfaces/binary-model.interface';
 
 /**
@@ -35,6 +35,9 @@ export class BinaryModel extends QuickModel<IBinaryModel, BinaryModelTransforms>
   @Field(Float64ArrayField) float64Data!: Float64Array;
   @Field(ArrayBufferField) rawBuffer!: ArrayBuffer;
   @Field(DataViewField) dataView!: DataView;
+
 }
 
-const algo = BinaryModel.mock.array(3)
+const algo = BinaryModel.mock().array(3)
+const algo2 = BinaryModel.mock().interfaceArray(3)
+const algo3 = BinaryModel.mock().empty()
