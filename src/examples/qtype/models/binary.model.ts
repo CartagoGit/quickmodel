@@ -8,11 +8,12 @@ import {
 	QInt16Array,
 	QInt32Array,
 	QInt8Array,
+	QInterface,
 	QUint16Array,
 	QUint32Array,
 	QUint8Array,
-} from '../../core/interfaces';
-import { QModel, QType } from '../../quick.model';
+} from '../../../core/interfaces';
+import { QModel, QType } from '../../../quick.model';
 import type {
 	BinaryModelTransforms,
 	IBinaryModel,
@@ -43,7 +44,10 @@ import type {
  * ```
  */
 
-export class BinaryModel extends QModel<IBinaryModel, BinaryModelTransforms> {
+export class BinaryModel
+	extends QModel<IBinaryModel, BinaryModelTransforms>
+	implements QInterface<IBinaryModel, BinaryModelTransforms>
+{
 	@QType(QInt8Array) int8Data!: Int8Array;
 	@QType(QInt16Array) int16Data!: Int16Array;
 	@QType(QInt32Array) int32Data!: Int32Array;
@@ -57,3 +61,4 @@ export class BinaryModel extends QModel<IBinaryModel, BinaryModelTransforms> {
 	@QType(QArrayBuffer) rawBuffer!: ArrayBuffer;
 	@QType(QDataView) dataView!: DataView;
 }
+

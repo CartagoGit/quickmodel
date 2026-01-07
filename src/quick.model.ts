@@ -20,6 +20,7 @@ import {
 import type {
 	QModelInstance,
 	QModelInterface,
+	QInterface,
 } from './core/interfaces';
 import './transformers/bootstrap'; // Auto-register transformers
 import type {
@@ -35,7 +36,25 @@ export type { MockType as QMockType } from './core/services';
 export { MockBuilder as QMockBuilder } from './core/services';
 
 /**
+ * Helper type that merges TInterface with TTransforms.
+ * Properties in TTransforms override their corresponding types in TInterface.
+ */
+type TransformedInterface<
+	TInterface,
+	TTransforms extends Partial<Record<keyof TInterface, unknown>>
+> = {
+	[K in keyof TInterface]: K extends keyof TTransforms
+		? TTransforms[K]
+		: TInterface[K];
+};
+
+/**
  * Abstract base class for type-safe models with automatic serialization and mock generation.
+ * 
+ * **Note about `implements`:** TypeScript does not allow abstract classes to implement 
+ * generic interfaces with dynamic types. Therefore, concrete classes extending QModel 
+ * should add `implements QInterface<IYourInterface, YourTransforms>` explicitly to 
+ * enforce type safety.
  * 
  * QModel is the core class providing a declarative way to define TypeScript models 
  * with automatic JSON serialization/deserialization and type transformations.
@@ -48,7 +67,7 @@ export { MockBuilder as QMockBuilder } from './core/services';
  * - **D** (Dependency Inversion): Depends on abstractions (IQTransformerRegistry), not implementations
  * 
  * @template TInterface - The interface type representing the model's JSON structure
- * @template _TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)
+ * @template TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)
  * 
  * @example
  * Basic model with primitives
@@ -59,7 +78,7 @@ export { MockBuilder as QMockBuilder } from './core/services';
  *   age: number;
  * }
  * 
- * class User extends QModel<IUser> {
+ * class User extends QModel<IUser> implements QInterface<IUser> {
  *   @QType() id!: string;
  *   @QType() name!: string;
  *   @QType() age!: number;
@@ -84,10 +103,10 @@ export { MockBuilder as QMockBuilder } from './core/services';
  *   createdAt: Date;      // Memory: Date object
  * };
  * 
- * class Account extends QModel<IAccount, AccountTransforms> 
+ * class Account extends QModel<IAccount, AccountTransforms>
  *   implements QInterface<IAccount, AccountTransforms> {
  *   @QType() id!: string;
- *   @QType(QBigInt) balance!: bigint;
+ *   @QType() balance!: bigint;
  *   @QType() createdAt!: Date;
  * }
  * ```
@@ -109,8 +128,8 @@ export { MockBuilder as QMockBuilder } from './core/services';
  * ```
  */
 export abstract class QModel<
-	TInterface,
-	_TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}
+	TInterface extends Record<string, any>,
+	TTransforms extends Partial<Record<keyof TInterface, unknown>> = {}
 > {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new ModelDeserializer(

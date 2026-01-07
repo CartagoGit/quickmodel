@@ -55,4 +55,4 @@ export * from './transformers';
 // EXAMPLE MODELS (Optional - for reference)
 // ============================================================================
 
-export * from './examples/models';
+export * from './examples/qtype/models';
