@@ -8,3 +8,4 @@ export * from './registry.interface';
 export * from './serializer.interface';
 export * from './transformer.interface';
 export * from './serialization-types.interface';
+export * from './mock-types.interface';
