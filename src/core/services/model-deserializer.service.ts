@@ -203,34 +203,63 @@ export class ModelDeserializer<
       return [];
     }
 
-    // Filter valid items
-    const validItems = value.filter((item) => item !== null && item !== undefined);
-    if (validItems.length === 0) {
-      return [];
-    }
+    // Find first plain object to use for inference
+    // Skip primitives, null, undefined, arrays, and known complex types
+    const firstObject = value.find((item) => {
+      if (item === null || item === undefined) return false;
+      if (typeof item !== 'object') return false;
+      if (Array.isArray(item)) return false;
+      if (
+        item instanceof Date ||
+        item instanceof RegExp ||
+        item instanceof Error ||
+        item instanceof ArrayBuffer ||
+        item instanceof DataView ||
+        item instanceof Map ||
+        item instanceof Set ||
+        ArrayBuffer.isView(item)
+      ) {
+        return false;
+      }
+      return true; // Plain object
+    });
 
-    // Get first element to check type
-    const firstElement = validItems[0];
-    
-    // Must be an object to infer
-    if (typeof firstElement !== 'object' || Array.isArray(firstElement)) {
-      // Array of primitives or nested arrays - return as-is
+    // If no plain objects found, return array as-is
+    if (!firstObject) {
       return value;
     }
 
-    // Check if all elements are homogeneous (same properties)
-    // This is an optimization for common case
-    const firstProperties = Object.keys(firstElement).sort().join(',');
-    const allHomogeneous = validItems.every((item) => {
-      if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+    // Check if all OBJECTS in the array are homogeneous (same properties)
+    // Get all plain objects for analysis
+    const plainObjects = value.filter((item) => {
+      if (item === null || item === undefined) return false;
+      if (typeof item !== 'object') return false;
+      if (Array.isArray(item)) return false;
+      if (
+        item instanceof Date ||
+        item instanceof RegExp ||
+        item instanceof Error ||
+        item instanceof ArrayBuffer ||
+        item instanceof DataView ||
+        item instanceof Map ||
+        item instanceof Set ||
+        ArrayBuffer.isView(item)
+      ) {
         return false;
       }
-      return Object.keys(item).sort().join(',') === firstProperties;
+      return true;
     });
 
+    // Check if all plain objects are homogeneous (same properties)
+    // This is an optimization for common case
+    const firstProperties = Object.keys(firstObject).sort().join(',');
+    const allHomogeneous = plainObjects.every((item) => {
+      return Object.keys(item).sort().join(',') === firstProperties;
+    });
+    
     if (allHomogeneous) {
-      // All elements have same properties - infer once and apply to all
-      const modelClass = qModelRegistry.findByProperties(Object.keys(firstElement));
+      // All objects have same properties - infer once and apply to all objects
+      const modelClass = qModelRegistry.findByProperties(Object.keys(firstObject));
       
       if (!modelClass) {
         // No matching model found - throw descriptive error
@@ -244,27 +273,57 @@ export class ModelDeserializer<
         );
       }
 
-      // Deserialize all elements using same model class
+      // Deserialize all plain objects using same model class, keep others as-is
       type ModelConstructor = new (data: Record<string, unknown>) => unknown;
-      return validItems.map((item) => {
-        return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
+      return value.map((item) => {
+        // Only deserialize plain objects
+        if (plainObjects.includes(item)) {
+          return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
+        }
+        // Keep primitives, Dates, etc. as-is
+        return item;
       });
     }
 
-    // Heterogeneous array - infer type for EACH element individually (union types)
+    // Heterogeneous array - infer type for EACH plain object individually (union types)
+    // Process each element, deserialize plain objects, keep primitives/complex types as-is
     type ModelConstructor = new (data: Record<string, unknown>) => unknown;
-    return validItems.map((item, index) => {
-      if (typeof item !== 'object' || item === null || Array.isArray(item)) {
-        throw new Error(
-          `${context.className}.${context.propertyKey}[${index}]: Expected object, got ${typeof item}`
-        );
+    return value.map((item, index) => {
+      // Null/undefined - keep as-is
+      if (item === null || item === undefined) {
+        return item;
       }
-
+      
+      // Primitives - keep as-is
+      if (typeof item !== 'object') {
+        return item;
+      }
+      
+      // Arrays - keep as-is (nested arrays)
+      if (Array.isArray(item)) {
+        return item;
+      }
+      
+      // Known complex types - keep as-is
+      if (
+        item instanceof Date ||
+        item instanceof RegExp ||
+        item instanceof Error ||
+        item instanceof ArrayBuffer ||
+        item instanceof DataView ||
+        item instanceof Map ||
+        item instanceof Set ||
+        ArrayBuffer.isView(item)
+      ) {
+        return item;
+      }
+      
+      // Plain object - try to infer and deserialize
       const properties = Object.keys(item);
+      const signature = properties.sort().join(',');
       const modelClass = qModelRegistry.findByProperties(properties);
 
       if (!modelClass) {
-        const signature = properties.sort().join(',');
         const available = qModelRegistry.getRegisteredSignatures();
         
         throw new Error(
