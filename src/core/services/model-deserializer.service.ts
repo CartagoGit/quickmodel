@@ -183,6 +183,8 @@ export class ModelDeserializer<
    * @remarks
    * Handles automatic type conversions for common types:
    * - Date: from string/number
+   * - BigInt: from string/number (auto-detected via metadata)
+   * - Symbol: from string (auto-detected via metadata)
    * - Map: from object
    * - Set: from array
    * - Nested models: recursive deserialization
@@ -203,6 +205,36 @@ export class ModelDeserializer<
         return new Date(value);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Invalid Date value`);
+    }
+
+    // BigInt (auto-detected via TypeScript metadata)
+    if (designType === BigInt) {
+      const transformer = this.qTransformerRegistry.get('bigint');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      if (typeof value === 'string' || typeof value === 'number') {
+        return BigInt(value);
+      }
+      if (typeof value === 'bigint') {
+        return value;
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Invalid BigInt value`);
+    }
+
+    // Symbol (auto-detected via TypeScript metadata)
+    if (designType === Symbol) {
+      const transformer = this.qTransformerRegistry.get('symbol');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      if (typeof value === 'string') {
+        return Symbol.for(value);
+      }
+      if (typeof value === 'symbol') {
+        return value;
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Invalid Symbol value`);
     }
 
     // Map
@@ -227,6 +259,123 @@ export class ModelDeserializer<
         return new Set(value);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Invalid Set value`);
+    }
+
+    // RegExp (auto-detected via TypeScript metadata)
+    if (designType === RegExp) {
+      const transformer = this.qTransformerRegistry.get('regexp');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: RegExp requires transformer`);
+    }
+
+    // Error (auto-detected via TypeScript metadata)
+    if (designType === Error) {
+      const transformer = this.qTransformerRegistry.get('error');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Error requires transformer`);
+    }
+
+    // TypedArrays (auto-detected via TypeScript metadata)
+    if (designType === Uint8Array) {
+      const transformer = this.qTransformerRegistry.get('uint8array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Uint8Array requires transformer`);
+    }
+    
+    if (designType === Uint16Array) {
+      const transformer = this.qTransformerRegistry.get('uint16array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Uint16Array requires transformer`);
+    }
+    
+    if (designType === Uint32Array) {
+      const transformer = this.qTransformerRegistry.get('uint32array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Uint32Array requires transformer`);
+    }
+    
+    if (designType === Int8Array) {
+      const transformer = this.qTransformerRegistry.get('int8array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Int8Array requires transformer`);
+    }
+    
+    if (designType === Int16Array) {
+      const transformer = this.qTransformerRegistry.get('int16array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Int16Array requires transformer`);
+    }
+    
+    if (designType === Int32Array) {
+      const transformer = this.qTransformerRegistry.get('int32array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Int32Array requires transformer`);
+    }
+    
+    if (designType === Float32Array) {
+      const transformer = this.qTransformerRegistry.get('float32array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Float32Array requires transformer`);
+    }
+    
+    if (designType === Float64Array) {
+      const transformer = this.qTransformerRegistry.get('float64array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: Float64Array requires transformer`);
+    }
+    
+    if (designType === BigInt64Array) {
+      const transformer = this.qTransformerRegistry.get('bigint64array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: BigInt64Array requires transformer`);
+    }
+    
+    if (designType === BigUint64Array) {
+      const transformer = this.qTransformerRegistry.get('biguint64array');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: BigUint64Array requires transformer`);
+    }
+
+    // ArrayBuffer (auto-detected via TypeScript metadata)
+    if (designType === ArrayBuffer) {
+      const transformer = this.qTransformerRegistry.get('arraybuffer');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: ArrayBuffer requires transformer`);
+    }
+
+    // DataView (auto-detected via TypeScript metadata)
+    if (designType === DataView) {
+      const transformer = this.qTransformerRegistry.get('dataview');
+      if (transformer) {
+        return transformer.fromInterface(value, context.propertyKey, context.className);
+      }
+      throw new Error(`${context.className}.${context.propertyKey}: DataView requires transformer`);
     }
 
     // Nested model

@@ -331,4 +331,52 @@ export abstract class QModel<
 	): T {
 		return QModel.deserializer.deserializeFromJson(json, this);
 	}
+
+	/**
+	 * Creates a deep clone of the model instance.
+	 * 
+	 * Performs a complete deep clone by serializing to interface and deserializing back.
+	 * All nested models and arrays are also cloned, ensuring complete independence
+	 * from the original instance.
+	 * 
+	 * **SOLID - Single Responsibility:** Leverages existing serialization services for cloning.
+	 * 
+	 * @returns A new instance with the same data but completely independent references
+	 * 
+	 * @example
+	 * Simple model cloning
+	 * ```typescript
+	 * const user1 = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 * const user2 = user1.clone();
+	 * 
+	 * console.log(user2).not.toBe(user1); // true (different instances)
+	 * console.log(user2.name === user1.name); // true (same data)
+	 * ```
+	 * 
+	 * @example
+	 * Nested model cloning
+	 * ```typescript
+	 * const company = new Company({
+	 *   id: '1',
+	 *   employees: [
+	 *     { id: '1', name: 'Alice' },
+	 *     { id: '2', name: 'Bob' }
+	 *   ]
+	 * });
+	 * 
+	 * const cloned = company.clone();
+	 * 
+	 * // Different instances
+	 * console.log(cloned).not.toBe(company);
+	 * console.log(cloned.employees).not.toBe(company.employees);
+	 * console.log(cloned.employees[0]).not.toBe(company.employees[0]);
+	 * 
+	 * // Same data
+	 * console.log(cloned.employees[0].name); // 'Alice'
+	 * ```
+	 */
+	clone(): this {
+		const Constructor = this.constructor as typeof QModel;
+		return (Constructor as any).fromInterface(this.toInterface()) as this;
+	}
 }

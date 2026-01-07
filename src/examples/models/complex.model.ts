@@ -37,17 +37,16 @@ import { SimpleModel } from './simple.model';
 
 export class ComplexModel
   extends QModel<IComplexModel>
-  implements QInterface<IComplexModel, IComplexModelTransforms>
 {
   @QType() id!: string;
   @QType() uuid!: string;
   @QType() name!: string;
   @QType() version!: number;
   @QType() enabled!: boolean;
-  @QType(QRegExp) pattern!: RegExp;
-  @QType(QError) lastError!: Error | null;
-  @QType(QBigInt) bigId!: bigint;
-  @QType(QSymbol) token!: symbol;
+  @QType() pattern!: RegExp;
+  @QType() lastError!: Error | null;
+  @QType() bigId!: bigint;
+  @QType() token!: symbol;
   @QType() createdAt!: Date;
   @QType() updatedAt!: Date;
   @QType() deletedAt!: Date | null;
@@ -56,9 +55,47 @@ export class ComplexModel
   @QType() metadata!: Map<string, any>;
   @QType() permissions!: Set<string>;
   @QType() owner!: SimpleModel;
-  @QType(Address) addresses!: Address[];
+  @QType() addresses!: Address[];
   @QType() thumbnail!: Uint8Array;
   @QType() signature!: ArrayBuffer;
   @QType() config!: Record<string, any>;
   @QType() stats!: { views: number; likes: number; shares: number };
 }
+
+const algo = new ComplexModel({
+  id: '123',
+  uuid: 'abc-def-ghi',
+  name: 'Complex Entity',
+  version: 2,
+  enabled: true,
+  pattern: { source: '^test$', flags: 'i' },
+  lastError: { message: 'Error occurred', name: 'CustomError' },
+  bigId: '9007199254740991',
+  token: 'unique-token',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: new Date().toISOString(),
+  deletedAt: null,
+  tags: ['example', 'complex', 'model'],
+  scores: [100, 95, 85],
+  metadata: { key1: 'value1', key2: 42 },
+  permissions: ['read', 'write'],
+  owner: {
+    id: 'owner-1',
+    name: 'Owner Name',
+    age: 40,
+    isActive: true,
+    score: 88.5,
+    optionalField: null,
+    maybeUndefined: undefined,
+    largeNumber: '12345678901234567890',
+    uniqueKey: 'owner-unique-key',
+  }, 
+  addresses: [
+    new Address({ street: '123 Main St', city: 'Anytown', country: 'USA', zipCode: '12345' }),
+    new Address({ street: '456 Side St', city: 'Othertown', country: 'USA', zipCode: '67890' }),
+  ],
+  thumbnail: [137, 80, 78, 71],
+  signature: [16],
+  config: { theme: 'dark', notifications: true },
+  stats: { views: 1000, likes: 150, shares: 25 },
+});
