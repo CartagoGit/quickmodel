@@ -254,7 +254,7 @@ export class ModelDeserializer<
     // This is an optimization for common case
     const firstProperties = Object.keys(firstObject).sort().join(',');
     const allHomogeneous = plainObjects.every((item) => {
-      return Object.keys(item).sort().join(',') === firstProperties;
+      return Object.keys(item as Record<string, unknown>).sort().join(',') === firstProperties;
     });
     
     if (allHomogeneous) {

@@ -3,10 +3,45 @@ import { QModel } from '../../src/quick.model';
 import { QType } from '../../src/core/decorators/field.decorator';
 
 // ========================================
+// INTERFACES
+// ========================================
+
+interface IComplexEntity {
+  id: string;
+  createdAt: Date;
+  amount: bigint;
+  pattern: RegExp;
+  uniqueKey: symbol;
+  lastError: Error | null;
+  buffer: Int8Array;
+  metadata: Map<string, any>;
+  tags: Set<string>;
+}
+
+interface INestedComplexModel {
+  name: string;
+  entities: ComplexEntity[];
+  primaryEntity: ComplexEntity;
+  timestamps: Date[];
+  amounts: bigint[];
+  patterns: RegExp[];
+  buffers: Map<string, Uint8Array>;
+  errorLog: Set<Error>;
+}
+
+interface IMixedUnionModel {
+  id: string;
+  value: string | number | boolean | Date | bigint;
+  items: (string | ComplexEntity | Date)[];
+  optionalEntity: ComplexEntity | null;
+  multiType: Map<string, string | number | RegExp>;
+}
+
+// ========================================
 // MODELOS DE PRUEBA CON TIPOS COMPLEJOS
 // ========================================
 
-class ComplexEntity extends QModel {
+class ComplexEntity extends QModel<IComplexEntity> {
   @QType()
   id!: string;
 
@@ -35,7 +70,7 @@ class ComplexEntity extends QModel {
   tags!: Set<string>;
 }
 
-class NestedComplexModel extends QModel {
+class NestedComplexModel extends QModel<INestedComplexModel> {
   @QType()
   name!: string;
 
@@ -61,7 +96,7 @@ class NestedComplexModel extends QModel {
   errorLog!: Set<Error>;
 }
 
-class MixedUnionModel extends QModel {
+class MixedUnionModel extends QModel<IMixedUnionModel> {
   @QType()
   id!: string;
 
@@ -97,7 +132,7 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
         ['key1', 'value1'],
         ['key2', 42],
         ['key3', true],
-      ]),
+      ] as any),
       tags: new Set(['tag1', 'tag2', 'tag3']),
     });
 
@@ -223,11 +258,11 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
     // Validar entities array
     expect(model.entities).toHaveLength(2);
     expect(model.entities[0]).toBeInstanceOf(ComplexEntity);
-    expect(model.entities[0].id).toBe('e1');
-    expect(model.entities[0].amount).toBe(100n);
+    expect(model.entities[0]!.id).toBe('e1');
+    expect(model.entities[0]!.amount).toBe(100n);
     expect(model.entities[1]).toBeInstanceOf(ComplexEntity);
-    expect(model.entities[1].id).toBe('e2');
-    expect(model.entities[1].lastError?.message).toBe('E2 error');
+    expect(model.entities[1]!.id).toBe('e2');
+    expect(model.entities[1]!.lastError?.message).toBe('E2 error');
 
     // Validar primaryEntity
     expect(model.primaryEntity).toBeInstanceOf(ComplexEntity);
@@ -237,7 +272,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
     // Validar arrays de tipos complejos
     expect(model.timestamps).toHaveLength(3);
     expect(model.timestamps[0]).toBeInstanceOf(Date);
-    expect(model.timestamps[2].toISOString()).toBe('2024-01-03T00:00:00.000Z');
+    expect(model.timestamps[2]!.toISOString()).toBe('2024-01-03T00:00:00.000Z');
 
     expect(model.amounts).toHaveLength(3);
     expect(model.amounts[0]).toBe(100n);
@@ -245,8 +280,8 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 
     expect(model.patterns).toHaveLength(3);
     expect(model.patterns[0]).toBeInstanceOf(RegExp);
-    expect(model.patterns[1].flags).toBe('g');
-    expect(model.patterns[2].flags).toBe('i');
+    expect(model.patterns[1]!.flags).toBe('g');
+    expect(model.patterns[2]!.flags).toBe('i');
 
     // Validar Map de buffers
     expect(model.buffers).toBeInstanceOf(Map);
@@ -260,7 +295,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
     expect(model.errorLog.size).toBe(2);
     const errors = Array.from(model.errorLog);
     expect(errors[0]).toBeInstanceOf(Error);
-    expect(errors[1].message).toBe('Error 2');
+    expect(errors[1]!.message).toBe('Error 2');
   });
 
   test('serializa y deserializa modelo nested complejo completo', () => {
@@ -303,7 +338,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
     expect(deserialized).toBeInstanceOf(NestedComplexModel);
     expect(deserialized.name).toBe('Complete Test');
     expect(deserialized.entities[0]).toBeInstanceOf(ComplexEntity);
-    expect(deserialized.entities[0].amount).toBe(1000n);
+    expect(deserialized.entities[0]!.amount).toBe(1000n);
     expect(deserialized.primaryEntity).toBeInstanceOf(ComplexEntity);
     expect(deserialized.primaryEntity.lastError?.message).toBe('Primary error');
     expect(deserialized.timestamps[0]).toBeInstanceOf(Date);
@@ -448,7 +483,7 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
         ['str', 'string value'],
         ['num', 42],
         ['regex', /pattern/gi],
-      ]),
+      ] as any),
     };
 
     const model = MixedUnionModel.fromInterface(data);
