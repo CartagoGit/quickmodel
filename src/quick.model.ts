@@ -19,7 +19,7 @@ export * from './core/interfaces'; // Símbolos de campo (BigIntField, etc.)
 export type { QuickType } from './core/interfaces';
 export abstract class QuickModel<
   TInterface,
-  _TTransforms extends Partial<Record<keyof TInterface, any>> = {},
+  _TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
 > {
   // SOLID - Dependency Inversion: Servicios inyectados como dependencias
   private static readonly deserializer = new ModelDeserializer(transformerRegistry);

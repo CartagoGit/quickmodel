@@ -28,8 +28,8 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
     return this.deserialize(data, modelClass);
   }
 
-  private populateInstance(instance: any, data: any, modelClass: Function): void {
-    for (const [key, value] of Object.entries(data as any)) {
+  private populateInstance(instance: Record<string, unknown>, data: unknown, modelClass: Function): void {
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       if (value === null || value === undefined) {
         instance[key] = value;
         continue;
@@ -50,20 +50,31 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
         }
       }
 
-      // 2. Verificar si es un array de modelos
+      // 2. Verificar si es un array de modelos o modelo anidado individual
       const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
       if (arrayElementClass) {
-        if (!Array.isArray(value)) {
-          throw new Error(`${context.className}.${key}: Expected array, got ${typeof value}`);
-        }
-        const validItems = value.filter((item) => item !== null && item !== undefined);
-        instance[key] = validItems.map((item) => {
-          if (typeof item !== 'object') {
-            throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
+        const designType = Reflect.getMetadata('design:type', instance, key);
+        
+        // Si el design:type es Array, es un array de modelos
+        if (designType === Array) {
+          if (!Array.isArray(value)) {
+            throw new Error(`${context.className}.${key}: Expected array, got ${typeof value}`);
           }
-          return this.deserialize(item, arrayElementClass);
-        });
-        continue;
+          const validItems = value.filter((item) => item !== null && item !== undefined);
+          instance[key] = validItems.map((item) => {
+            if (typeof item !== 'object') {
+              throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
+            }
+            return this.deserialize(item, arrayElementClass);
+          });
+          continue;
+        }
+        
+        // Si no es Array, es un modelo anidado individual
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          instance[key] = this.deserialize(value as TInterface, arrayElementClass);
+          continue;
+        }
       }
 
       // 3. Auto-detección via design:type
@@ -72,7 +83,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
     }
   }
 
-  private transformByDesignType(value: any, designType: any, context: ITransformContext): any {
+  private transformByDesignType(value: unknown, designType: Function | undefined, context: ITransformContext): unknown {
     if (!designType) {
       return value;
     }
@@ -82,7 +93,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
       const transformer = this.transformerRegistry.get('date');
       return transformer
         ? transformer.fromInterface(value, context.propertyKey, context.className)
-        : new Date(value);
+        : new Date(value as string | number | Date);
     }
 
     // Map
@@ -90,7 +101,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
       const transformer = this.transformerRegistry.get('map');
       return transformer
         ? transformer.fromInterface(value, context.propertyKey, context.className)
-        : new Map(Object.entries(value));
+        : new Map(Object.entries(value as Record<string, unknown>));
     }
 
     // Set
@@ -98,7 +109,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
       const transformer = this.transformerRegistry.get('set');
       return transformer
         ? transformer.fromInterface(value, context.propertyKey, context.className)
-        : new Set(value);
+        : new Set(value as unknown[]);
     }
 
     // Modelo anidado
@@ -115,7 +126,8 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
           `${context.className}.${context.propertyKey}: Expected object, got ${typeof value}`,
         );
       }
-      return this.deserialize(value, designType);
+      // Type assertion necesaria: designType es un constructor de modelo
+      return this.deserialize(value as TInterface, designType as new (data: TInterface) => TModel);
     }
 
     // Validación de primitivos
@@ -124,7 +136,7 @@ export class ModelDeserializer<TInterface = any, TModel = any> implements IDeser
     return value;
   }
 
-  private validatePrimitive(value: any, designType: any, context: ITransformContext): void {
+  private validatePrimitive(value: unknown, designType: Function | undefined, context: ITransformContext): void {
     if (designType === String && typeof value !== 'string') {
       throw new Error(
         `${context.className}.${context.propertyKey}: Expected string, got ${typeof value}`,

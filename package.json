@@ -1,6 +1,6 @@
 {
   "name": "@cartago-git/quickmodel",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID",
   "author": "Cartago",
   "license": "MIT",

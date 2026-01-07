@@ -11,7 +11,7 @@ Sistema profesional de serialización/deserialización de modelos TypeScript con
 ## ✨ Características
 
 - 🏗️ **Arquitectura SOLID** completa
-- 🔄 **27 tipos JavaScript** soportados (Date, BigInt, Symbol, RegExp, Error, TypedArrays, etc.)
+- 🔄 **30+ tipos JavaScript/TypeScript** soportados (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, Enums, etc.)
 - 🎯 **Type-safe** con TypeScript estricto
 - ✅ **Validación automática** en runtime
 - 📦 **Modelos anidados** infinitos
@@ -89,25 +89,31 @@ console.log(user2.balance === user.balance); // true
 
 ## 🔧 Tipos Soportados
 
-| Tipo            | Decorador                   | Serialización          |
-| --------------- | --------------------------- | ---------------------- |
-| `string`        | `@Field()`                  | Directo                |
-| `number`        | `@Field()`                  | Directo                |
-| `boolean`       | `@Field()`                  | Directo                |
-| `Date`          | `@Field()`                  | ISO string             |
-| `BigInt`        | `@Field(BigIntField)`       | string                 |
-| `Symbol`        | `@Field(SymbolField)`       | string (Symbol.for)    |
-| `RegExp`        | `@Field(RegExpField)`       | {source, flags}        |
-| `Error`         | `@Field(ErrorField)`        | {message, stack, name} |
-| `Map<K,V>`      | `@Field()`                  | Record<K,V>            |
-| `Set<T>`        | `@Field()`                  | T[]                    |
-| `Int8Array`     | `@Field(Int8ArrayField)`    | number[]               |
-| `Uint8Array`    | `@Field(Uint8ArrayField)`   | number[]               |
-| `Float32Array`  | `@Field(Float32ArrayField)` | number[]               |
-| `ArrayBuffer`   | `@Field(ArrayBufferField)`  | number[]               |
-| `DataView`      | `@Field(DataViewField)`     | number[]               |
-| Modelo          | `@Field()`                  | Recursivo              |
-| `Array<Modelo>` | `@Field(ModelClass)`        | Array recursivo        |
+| Tipo                 | Decorador                                    | Serialización          |
+| -------------------- | -------------------------------------------- | ---------------------- |
+| `string`             | `@Field()`                                   | Directo                |
+| `number`             | `@Field()`                                   | Directo                |
+| `boolean`            | `@Field()`                                   | Directo                |
+| `Date`               | `@Field()`                                   | ISO string             |
+| `BigInt`             | `@Field(BigIntField)`                        | string                 |
+| `Symbol`             | `@Field(SymbolField)`                        | string (Symbol.for)    |
+| `RegExp`             | `@Field(RegExp)` o `@Field(RegExpField)`     | string (`/pattern/flags`) |
+| `Error`              | `@Field(Error)` o `@Field(ErrorField)`       | string (`Name: message`) |
+| `URL`                | `@Field(URL)` o `@Field(URLField)`           | string (href)          |
+| `URLSearchParams`    | `@Field(URLSearchParams)` o `@Field(URLSearchParamsField)` | string |
+| `Map<K,V>`           | `@Field()`                                   | Record<K,V>            |
+| `Set<T>`             | `@Field()`                                   | T[]                    |
+| `Int8Array`          | `@Field(Int8Array)` o `@Field(Int8ArrayField)` | number[]             |
+| `Uint8Array`         | `@Field(Uint8Array)` o `@Field(Uint8ArrayField)` | number[]           |
+| `Float32Array`       | `@Field(Float32Array)` o `@Field(Float32ArrayField)` | number[]         |
+| `BigInt64Array`      | `@Field(BigInt64Array)` o `@Field(BigInt64ArrayField)` | string[]         |
+| `ArrayBuffer`        | `@Field(ArrayBufferField)`                   | number[]               |
+| `DataView`           | `@Field(DataViewField)`                      | number[]               |
+| `Enum` (TypeScript)  | `@Field()`                                   | Directo                |
+| Modelo anidado       | `@Field(ModelClass)`                         | Recursivo              |
+| `Array<Modelo>`      | `@Field(ModelClass)`                         | Array recursivo        |
+
+> 💡 **Nota**: Los tipos built-in ahora soportan ambas formas: constructor nativo (`@Field(RegExp)`) o symbol especial (`@Field(RegExpField)`). Ambas son equivalentes.
 
 **+10 TypedArrays más** (Int16Array, Uint16Array, Int32Array, Uint32Array, Float64Array, BigInt64Array, BigUint64Array)
 

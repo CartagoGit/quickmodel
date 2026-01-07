@@ -27,6 +27,10 @@ export class ValidatorRegistry implements IValidatorRegistry {
   clear(): void {
     this.validators.clear();
   }
+
+  getAll(): Map<string | symbol, IValidator> {
+    return new Map(this.validators);
+  }
 }
 
 // Singleton global para el registro

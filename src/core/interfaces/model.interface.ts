@@ -31,5 +31,5 @@
  */
 export type QuickType<
   TInterface,
-  TTransforms extends Partial<Record<keyof TInterface, any>> = {},
+  TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
 > = Omit<TInterface, keyof TTransforms> & TTransforms;

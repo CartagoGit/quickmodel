@@ -1,5 +1,67 @@
 # Changelog
 
+## [1.0.2] - 2026-01-07
+
+### 🎯 API Consistency - Constructor Aliases
+
+#### Nueva Característica: Aliases de Constructores Nativos
+Ahora puedes usar tanto los constructores nativos como los symbols especiales en `@Field()`:
+
+```typescript
+// ✅ Ambas formas funcionan:
+@Field(RegExp) pattern!: RegExp;      // Constructor nativo
+@Field(RegExpField) pattern!: RegExp; // Symbol especial
+
+// Aplica a todos los tipos built-in:
+@Field(Error) error!: Error;
+@Field(URL) url!: URL;
+@Field(URLSearchParams) params!: URLSearchParams;
+@Field(Int8Array) bytes!: Int8Array;
+// ... y todos los TypedArrays
+```
+
+#### Mejoras
+- **Decorador @Field()**: Detecta automáticamente constructores nativos registrados
+- **Bootstrap**: Aliases para todos los tipos built-in (RegExp, Error, URL, etc.)
+- **Serializer**: Busca transformers usando constructores directamente
+- **TypedArrayTransformer**: BigInt64Array/BigUint64Array ahora devuelven string[] en toInterface() para JSON
+- **RegExpTransformer**: Cambiado de objeto a string como formato de serialización (`/pattern/flags`)
+- **ErrorTransformer**: Cambiado de objeto a string como formato de serialización (`ErrorName: message`)
+
+#### Tests
+- Nuevo test `constructor-aliases.test.ts` con 8 tests verificando ambos enfoques
+- Todos los tests (54 totales) pasando al 100%
+
+---
+
+## [1.0.1] - 2026-01-07
+
+### 🚀 Mejoras y Nuevos Tipos
+
+#### Nuevos Tipos Soportados
+- **URL**: Soporte para objetos URL con serialización a string (href)
+- **URLSearchParams**: Soporte para parámetros de URL con serialización a string
+- **Enums**: Soporte completo para TypeScript enums (string y numeric)
+- **Modelos anidados**: Mejorada detección entre modelos individuales y arrays de modelos
+
+#### Mejoras de Código
+- Refactorizado bootstrap.ts: Reducción de 145 a 119 líneas (-18%)
+- Eliminada duplicación de código usando estructuras de datos declarativas
+- Mejorados tipos TypeScript: `any` → `unknown` donde corresponde
+- Agregado método `getAll()` a `ValidatorRegistry` para consistencia
+
+#### Tests
+- Nuevo test comprehensivo con 46 tests cubriendo 30+ tipos
+- Todos los tipos verificados con round-trip JSON
+- 100% de éxito en todos los tests
+
+#### Fixes
+- Corregida serialización de BigInt64Array en JSON
+- Mejorada detección de URL y URLSearchParams en serializer
+- Corregida diferenciación entre modelo anidado y array de modelos
+
+### 📊 Total de tipos soportados: 30+
+
 ## [1.0.0] - 2026-01-06
 
 ### 🎉 Lanzamiento Inicial

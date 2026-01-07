@@ -53,6 +53,12 @@ export const ArrayBufferField = Symbol('ArrayBuffer');
 /** DataView: number[] → DataView */
 export const DataViewField = Symbol('DataView');
 
+/** URL: string → URL */
+export const URLField = Symbol('URL');
+
+/** URLSearchParams: string → URLSearchParams */
+export const URLSearchParamsField = Symbol('URLSearchParams');
+
 /**
  * Tipo unión de todos los símbolos de campo disponibles
  */
@@ -72,4 +78,6 @@ export type FieldTypeSymbol =
   | typeof BigInt64ArrayField
   | typeof BigUint64ArrayField
   | typeof ArrayBufferField
-  | typeof DataViewField;
+  | typeof DataViewField
+  | typeof URLField
+  | typeof URLSearchParamsField;

@@ -34,8 +34,9 @@ try {
     id: user.id,
     name: user.name,
     age: user.age,
-    createdAt: user.createdAt instanceof Date,
+    createdAt: user.createdAt,
   });
+  console.log('   createdAt es Date?', user.createdAt instanceof Date);
 
   console.log('\n2. Serializando a interfaz...');
   const serialized = user.toInterface();

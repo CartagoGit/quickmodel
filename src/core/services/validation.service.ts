@@ -9,7 +9,7 @@ import { IValidationContext, IValidationResult, IValidatorRegistry } from '../in
 export class ValidationService {
   constructor(private readonly validatorRegistry: IValidatorRegistry) {}
 
-  validate(instance: any, modelClass: Function): IValidationResult[] {
+  validate(instance: Record<string, unknown>, modelClass: Function): IValidationResult[] {
     const results: IValidationResult[] = [];
 
     for (const [key, value] of Object.entries(instance)) {
@@ -34,7 +34,7 @@ export class ValidationService {
     return results;
   }
 
-  isValid(instance: any, modelClass: Function): boolean {
+  isValid(instance: Record<string, unknown>, modelClass: Function): boolean {
     return this.validate(instance, modelClass).length === 0;
   }
 }

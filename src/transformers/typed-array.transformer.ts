@@ -65,7 +65,11 @@ export class TypedArrayTransformer<T extends TypedArray>
     >)(arrayData) as T;
   }
 
-  toInterface(value: T): number[] {
+  toInterface(value: T): number[] | string[] {
+    // Para BigInt64Array y BigUint64Array, convertir bigints a strings para JSON
+    if (this.isBigInt) {
+      return Array.from(value as Iterable<bigint>, (v) => v.toString());
+    }
     return Array.from(value as Iterable<number>);
   }
 

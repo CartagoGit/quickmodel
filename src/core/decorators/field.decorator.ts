@@ -30,8 +30,24 @@ export function Field<T>(typeOrClass?: (new (data: any) => T) | symbol): any {
       const symbolKey = typeOrClass.toString();
       Reflect.defineMetadata('fieldType', symbolKey, target, key);
     } else if (typeOrClass && typeof typeOrClass === 'function') {
-      // Clase de modelo (para arrays o anidados)
-      Reflect.defineMetadata('arrayElementClass', typeOrClass, target, key);
+      // Verificar si es un constructor nativo registrado (RegExp, Error, URL, etc.)
+      // Los constructores nativos built-in de JS tienen nombres que coinciden con la función
+      const nativeConstructors = [
+        RegExp, Error, URL, URLSearchParams,
+        Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array,
+        Int32Array, Uint32Array, Float32Array, Float64Array,
+        BigInt64Array, BigUint64Array, ArrayBuffer, DataView
+      ];
+      
+      const isNativeConstructor = nativeConstructors.includes(typeOrClass as any);
+      
+      if (isNativeConstructor) {
+        // Guardar como fieldType usando el constructor directamente
+        Reflect.defineMetadata('fieldType', typeOrClass, target, key);
+      } else {
+        // Clase de modelo personalizada (para arrays o anidados)
+        Reflect.defineMetadata('arrayElementClass', typeOrClass, target, key);
+      }
     }
   };
 }

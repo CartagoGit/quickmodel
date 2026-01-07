@@ -8,12 +8,23 @@ interface IErrorData {
 }
 
 /**
- * Transformer para Error: {message, stack, name} <-> Error
+ * Transformer para Error: string | {message, stack, name} <-> Error
  */
-export class ErrorTransformer extends BaseTransformer<IErrorData, Error> implements IValidator {
-  fromInterface(value: IErrorData | Error, propertyKey: string, className: string): Error {
+export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error> implements IValidator {
+  fromInterface(value: string | IErrorData | Error, propertyKey: string, className: string): Error {
     if (value instanceof Error) {
       return value;
+    }
+
+    // Formato string: "ErrorName: message"
+    if (typeof value === 'string') {
+      const match = value.match(/^([^:]+):\s*(.+)$/);
+      if (match) {
+        const error = new Error(match[2]);
+        error.name = match[1];
+        return error;
+      }
+      return new Error(value);
     }
 
     if (typeof value !== 'object' || value === null || !('message' in value)) {
@@ -26,12 +37,8 @@ export class ErrorTransformer extends BaseTransformer<IErrorData, Error> impleme
     return error;
   }
 
-  toInterface(value: Error): IErrorData {
-    return {
-      message: value.message,
-      stack: value.stack,
-      name: value.name,
-    };
+  toInterface(value: Error): string {
+    return `${value.name}: ${value.message}`;
   }
 
   validate(value: unknown, context: IValidationContext): IValidationResult {

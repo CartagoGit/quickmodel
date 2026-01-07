@@ -18,7 +18,7 @@ const projectRoot = join(__dirname, '..');
 const testFiles = [
   'tests/integration/quick-model.test.ts',
   'tests/integration/all-types.test.ts',
-  // Agregar más archivos ejecutables aquí
+  'tests/integration/comprehensive.test.ts',
 ];
 
 let totalTests = 0;

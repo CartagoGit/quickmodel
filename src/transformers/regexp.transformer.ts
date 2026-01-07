@@ -7,10 +7,10 @@ interface IRegExpData {
 }
 
 /**
- * Transformer para RegExp: {source, flags} <-> RegExp
+ * Transformer para RegExp: string | {source, flags} <-> RegExp
  */
 export class RegExpTransformer
-  extends BaseTransformer<IRegExpData | string, RegExp>
+  extends BaseTransformer<string | IRegExpData, RegExp>
   implements IValidator
 {
   fromInterface(
@@ -39,11 +39,8 @@ export class RegExpTransformer
     throw new Error(`${className}.${propertyKey}: Invalid RegExp value`);
   }
 
-  toInterface(value: RegExp): IRegExpData {
-    return {
-      source: value.source,
-      flags: value.flags,
-    };
+  toInterface(value: RegExp): string {
+    return `/${value.source}/${value.flags}`;
   }
 
   validate(value: unknown, context: IValidationContext): IValidationResult {
