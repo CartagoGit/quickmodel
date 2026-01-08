@@ -173,7 +173,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 		});
 
-		const serialized = user.toInterface();
+		const serialized = user.serialize();
 
 		expect(serialized.id).toBe('1');
 		expect(serialized.balance).toEqual({ __type: 'bigint', value: '999' });

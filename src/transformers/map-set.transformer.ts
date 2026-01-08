@@ -25,7 +25,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * });
  * console.log(config.metadata instanceof Map); // true
  * 
- * const data = config.toInterface();
+ * const data = config.serialize();
  * console.log(data.metadata); // { key1: "value1", key2: 123 }
  * ```
  */
@@ -42,7 +42,7 @@ export class MapTransformer<K = string, V = unknown>
    * @returns A Map instance
    * @throws {Error} If the value is not an object or Map
    */
-  fromInterface(
+  deserialize(
     value: Record<string, V> | { __type: 'Map'; entries: [K, V][] } | Map<K, V> | [K, V][],
     propertyKey: string,
     className: string,
@@ -75,7 +75,7 @@ export class MapTransformer<K = string, V = unknown>
    * @param value - The Map to serialize
    * @returns Object with __type marker and entries array
    */
-  toInterface(value: Map<K, V>): { __type: 'Map'; entries: [K, V][] } {
+  serialize(value: Map<K, V>): { __type: 'Map'; entries: [K, V][] } {
     return { __type: 'Map', entries: Array.from(value.entries()) };
   }
 
@@ -125,7 +125,7 @@ export class MapTransformer<K = string, V = unknown>
  * console.log(config.tags instanceof Set); // true
  * console.log(config.tags.size); // 2
  * 
- * const data = config.toInterface();
+ * const data = config.serialize();
  * console.log(Array.isArray(data.tags)); // true
  * ```
  */
@@ -142,7 +142,7 @@ export class SetTransformer<V = unknown>
    * @returns A Set instance
    * @throws {Error} If the value is not an array or Set
    */
-  fromInterface(value: V[] | { __type: 'Set'; values: V[] } | Set<V>, propertyKey: string, className: string): Set<V> {
+  deserialize(value: V[] | { __type: 'Set'; values: V[] } | Set<V>, propertyKey: string, className: string): Set<V> {
     if (value instanceof Set) {
       return value;
     }
@@ -166,7 +166,7 @@ export class SetTransformer<V = unknown>
    * @param value - The Set to serialize
    * @returns Object with __type marker and values array
    */
-  toInterface(value: Set<V>): { __type: 'Set'; values: V[] } {
+  serialize(value: Set<V>): { __type: 'Set'; values: V[] } {
     return { __type: 'Set', values: Array.from(value) };
   }
 

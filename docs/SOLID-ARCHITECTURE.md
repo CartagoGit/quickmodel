@@ -211,7 +211,7 @@ export abstract class QModel<TInterface> {
     /* ... */
   }
 
-  toInterface(): TInterface {
+  serialize(): TInterface {
     return QModel.serializer.serialize(this);
   }
 
@@ -219,7 +219,7 @@ export abstract class QModel<TInterface> {
     return QModel.serializer.serializeToJson(this);
   }
 
-  static fromInterface<T>(data: any): T {
+  static deserialize<T>(data: any): T {
     return QModel.deserializer.deserialize(data, this);
   }
 }
@@ -253,7 +253,7 @@ export abstract class QModel<TInterface> {
 ### Serialization (Model → Interface)
 
 ```
-1. User calls model.toInterface()
+1. User calls model.serialize()
 
 2. QModel delegates to ModelSerializer
 

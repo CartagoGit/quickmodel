@@ -40,7 +40,7 @@ interface IErrorData {
  * });
  * 
  * // Serialization
- * const data = req1.toInterface();
+ * const data = req1.serialize();
  * console.log(data.lastError); // "TypeError: Invalid input"
  * ```
  */
@@ -54,7 +54,7 @@ export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error
    * @returns An Error object
    * @throws {Error} If the value cannot be converted to Error
    */
-  fromInterface(value: string | IErrorData | Error, propertyKey: string, className: string): Error {
+  deserialize(value: string | IErrorData | Error, propertyKey: string, className: string): Error {
     if (value instanceof Error) {
       return value;
     }
@@ -86,7 +86,7 @@ export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error
    * @param value - The Error object to serialize
    * @returns String in format `ErrorName: message`
    */
-  toInterface(value: Error): string {
+  serialize(value: Error): string {
     return `${value.name}: ${value.message}`;
   }
 

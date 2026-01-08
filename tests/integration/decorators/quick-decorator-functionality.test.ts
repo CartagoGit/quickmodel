@@ -39,7 +39,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
     expect(user.active).toBe(true);
 
     // Serialization should work
-    const json = user.toInterface();
+    const json = user.serialize();
     expect(json).toEqual({
       id: '1',
       name: 'Alice',
@@ -330,7 +330,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
     const auto = new UserAuto(data);
 
     // Both should work identically
-    expect(manual.toInterface()).toEqual(auto.toInterface());
+    expect(manual.serialize()).toEqual(auto.serialize());
     expect(manual.toJSON()).toBe(auto.toJSON());
   });
 });

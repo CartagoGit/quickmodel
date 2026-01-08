@@ -34,7 +34,7 @@ interface IRegExpData {
  * const config2 = new Config({ emailPattern: { source: "^test$", flags: "g" } });
  * 
  * // Serialization
- * const data = config1.toInterface();
+ * const data = config1.serialize();
  * console.log(data.emailPattern); // "/^[a-z]+@[a-z]+\\.com$/i"
  * ```
  */
@@ -51,7 +51,7 @@ export class RegExpTransformer
    * @returns The RegExp object
    * @throws {Error} If the value cannot be converted to RegExp
    */
-  fromInterface(
+  deserialize(
     value: IRegExpData | string | RegExp,
     propertyKey: string,
     className: string,
@@ -83,7 +83,7 @@ export class RegExpTransformer
    * @param value - The RegExp object to serialize
    * @returns Object with __type, source, and flags
    */
-  toInterface(value: RegExp): { __type: 'regexp'; source: string; flags: string } {
+  serialize(value: RegExp): { __type: 'regexp'; source: string; flags: string } {
     return { __type: 'regexp', source: value.source, flags: value.flags };
   }
 

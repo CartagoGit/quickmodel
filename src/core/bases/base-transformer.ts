@@ -9,8 +9,8 @@
  * 
  * @remarks
  * All transformers should extend this class and implement the two abstract methods:
- * - `fromInterface`: Deserialize from JSON-compatible format to runtime type
- * - `toInterface`: Serialize from runtime type to JSON-compatible format
+ * - `deserialize`: Deserialize from JSON-compatible format to runtime type
+ * - `serialize`: Serialize from runtime type to JSON-compatible format
  * 
  * This follows the SOLID principles:
  * - Single Responsibility: Each transformer handles one type conversion
@@ -20,11 +20,11 @@
  * @example
  * ```typescript
  * class CustomTransformer extends BaseTransformer<string, CustomType> {
- *   fromInterface(value: string, propertyKey: string, className: string): CustomType {
+ *   deserialize(value: string, propertyKey: string, className: string): CustomType {
  *     return new CustomType(value);
  *   }
  *   
- *   toInterface(value: CustomType): string {
+ *   serialize(value: CustomType): string {
  *     return value.toString();
  *   }
  * }
@@ -46,7 +46,7 @@ export abstract class BaseTransformer<TInput = any, TOutput = any> implements IQ
    * @returns The deserialized runtime value
    * @throws {Error} When transformation fails or value is invalid
    */
-  abstract fromInterface(value: TInput, propertyKey: string, className: string): TOutput;
+  abstract deserialize(value: TInput, propertyKey: string, className: string): TOutput;
 
   /**
    * Serializes from runtime type to JSON-compatible format.
@@ -54,5 +54,5 @@ export abstract class BaseTransformer<TInput = any, TOutput = any> implements IQ
    * @param value - The runtime value to serialize
    * @returns The serialized value suitable for JSON
    */
-  abstract toInterface(value: TOutput): TInput;
+  abstract serialize(value: TOutput): TInput;
 }

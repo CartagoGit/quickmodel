@@ -37,7 +37,7 @@ type PrimitiveTypeMap = {
  * });
  * 
  * // Values are validated but not transformed
- * const json = config.toInterface();
+ * const json = config.serialize();
  * console.log(json); // { name: "server", port: 3000, enabled: true }
  * 
  * // Type mismatch throws error
@@ -66,7 +66,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
    * @returns The same value if validation passes
    * @throws {Error} If the value type doesn't match the expected primitive type
    */
-  fromInterface(value: unknown, propertyKey: string, className: string): PrimitiveTypeMap[T] {
+  deserialize(value: unknown, propertyKey: string, className: string): PrimitiveTypeMap[T] {
     const validationResult = this.validate(value, {
       propertyKey,
       className,
@@ -86,7 +86,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
    * @param value - The value to serialize
    * @returns The same value
    */
-  toInterface(value: PrimitiveTypeMap[T]): PrimitiveTypeMap[T] {
+  serialize(value: PrimitiveTypeMap[T]): PrimitiveTypeMap[T] {
     return value;
   }
 

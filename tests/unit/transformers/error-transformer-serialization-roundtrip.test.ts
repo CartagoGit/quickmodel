@@ -32,7 +32,7 @@ describe('Unit: Error Transformer', () => {
 	});
 
 	test('Should deserialize simple error', () => {
-		const model = ErrorLog.fromInterface({ error: 'Error: Test error' });
+		const model = ErrorLog.deserialize({ error: 'Error: Test error' });
 		
 		expect(model.error).toBeInstanceOf(Error);
 		expect(model.error.message).toBe('Test error');

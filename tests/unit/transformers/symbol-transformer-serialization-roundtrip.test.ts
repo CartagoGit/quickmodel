@@ -33,7 +33,7 @@ describe('Unit: Symbol Transformer', () => {
 	});
 
 	test('Should deserialize symbol', () => {
-		const model = SymbolData.fromInterface({ symbol: 'my-symbol' });
+		const model = SymbolData.deserialize({ symbol: 'my-symbol' });
 		
 		expect(typeof model.symbol).toBe('symbol');
 		expect(Symbol.keyFor(model.symbol)).toBe('my-symbol');

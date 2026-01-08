@@ -188,7 +188,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 			required: 'test'
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 
 		expect(json.value).toBeNull();
 		expect(json.value).not.toBeUndefined();
@@ -201,10 +201,10 @@ describe('Null Safety: Nullable vs Optional', () => {
 			required: 'test'
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 
 		// Undefined typically omitted from JSON
-		// but should be preserved in toInterface()
+		// but should be preserved in serialize()
 		expect('optional' in json).toBe(true);
 		expect(json.optional).toBeUndefined();
 	});
@@ -235,8 +235,8 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			required: 'test'
 		});
 
-		const json = data.toInterface();
-		const restored = Data.fromInterface(json);
+		const json = data.serialize();
+		const restored = Data.deserialize(json);
 
 		expect(restored.value).toBeNull();
 		expect(restored.value).not.toBeUndefined();
@@ -254,8 +254,8 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			bio: null
 		});
 
-		const json = user.toInterface();
-		const restored = User.fromInterface(json);
+		const json = user.serialize();
+		const restored = User.deserialize(json);
 
 		expect(restored.profile?.address?.city).toBeNull();
 	});
@@ -269,8 +269,8 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			] as any
 		});
 
-		const json = timeline.toInterface();
-		const restored = Timeline.fromInterface(json);
+		const json = timeline.serialize();
+		const restored = Timeline.deserialize(json);
 
 		expect(restored.events[0]).toBeInstanceOf(Date);
 		expect(restored.events[1]).toBeNull();

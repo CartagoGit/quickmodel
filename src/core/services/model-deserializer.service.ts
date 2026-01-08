@@ -214,7 +214,7 @@ export class ModelDeserializer<
       if (fieldType) {
         const transformer = this.transformers.get(fieldType);
         if (transformer) {
-          instance[key] = transformer.fromInterface(value, context.propertyKey, context.className);
+          instance[key] = transformer.deserialize(value, context.propertyKey, context.className);
           continue;
         }
       }
@@ -228,7 +228,7 @@ export class ModelDeserializer<
         if (arrayElementClass === Set) {
           const setTransformer = this.transformers.get('set');
           if (setTransformer) {
-            instance[key] = setTransformer.fromInterface(value, context.propertyKey, context.className);
+            instance[key] = setTransformer.deserialize(value, context.propertyKey, context.className);
             continue;
           }
         }
@@ -236,7 +236,7 @@ export class ModelDeserializer<
         if (arrayElementClass === Map) {
           const mapTransformer = this.transformers.get('map');
           if (mapTransformer) {
-            instance[key] = mapTransformer.fromInterface(value, context.propertyKey, context.className);
+            instance[key] = mapTransformer.deserialize(value, context.propertyKey, context.className);
             continue;
           }
         }
@@ -310,7 +310,7 @@ export class ModelDeserializer<
           if (isMapLike) {
             const mapTransformer = this.transformers.get('map');
             if (mapTransformer) {
-              instance[key] = mapTransformer.fromInterface(value, context.propertyKey, context.className);
+              instance[key] = mapTransformer.deserialize(value, context.propertyKey, context.className);
               continue;
             }
           }
@@ -322,7 +322,7 @@ export class ModelDeserializer<
           if (hasUniqueElements || propertyNameSuggestsSet) {
             const setTransformer = this.transformers.get('set');
             if (setTransformer) {
-              instance[key] = setTransformer.fromInterface(value, context.propertyKey, context.className);
+              instance[key] = setTransformer.deserialize(value, context.propertyKey, context.className);
               continue;
             }
           }
@@ -454,10 +454,10 @@ export class ModelDeserializer<
    */
   private transformByDesignType(value: unknown, designType: Function | undefined, context: IQTransformContext): unknown {
     // Check for __type marker FIRST (highest priority)
-    // This allows roundtrip: Model → toInterface() → Model
+    // This allows roundtrip: Model → serialize() → Model
     const detectedTransformer = this.detectTransformerFromValue(value);
     if (detectedTransformer) {
-      return detectedTransformer.fromInterface(value, context.propertyKey, context.className);
+      return detectedTransformer.deserialize(value, context.propertyKey, context.className);
     }
     
     // Si no hay designType (usando declare), return value as-is
@@ -469,7 +469,7 @@ export class ModelDeserializer<
     if (designType === Date) {
       const transformer = this.transformers.get('date');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       if (typeof value === 'string' || typeof value === 'number' || value instanceof Date) {
         return new Date(value);
@@ -481,7 +481,7 @@ export class ModelDeserializer<
     if (designType === BigInt) {
       const transformer = this.transformers.get('bigint');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       if (typeof value === 'string' || typeof value === 'number') {
         return BigInt(value);
@@ -496,7 +496,7 @@ export class ModelDeserializer<
     if (designType === Symbol) {
       const transformer = this.transformers.get('symbol');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       if (typeof value === 'string') {
         return Symbol.for(value);
@@ -511,7 +511,7 @@ export class ModelDeserializer<
     if (designType === Map) {
       const transformer = this.transformers.get('map');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         return new Map(Object.entries(value));
@@ -523,7 +523,7 @@ export class ModelDeserializer<
     if (designType === Set) {
       const transformer = this.transformers.get('set');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       if (Array.isArray(value)) {
         return new Set(value);
@@ -535,7 +535,7 @@ export class ModelDeserializer<
     if (designType === RegExp) {
       const transformer = this.transformers.get('regexp');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: RegExp requires transformer`);
     }
@@ -544,7 +544,7 @@ export class ModelDeserializer<
     if (designType === Error) {
       const transformer = this.transformers.get('error');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Error requires transformer`);
     }
@@ -553,7 +553,7 @@ export class ModelDeserializer<
     if (designType === Uint8Array) {
       const transformer = this.transformers.get('uint8array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Uint8Array requires transformer`);
     }
@@ -561,7 +561,7 @@ export class ModelDeserializer<
     if (designType === Uint16Array) {
       const transformer = this.transformers.get('uint16array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Uint16Array requires transformer`);
     }
@@ -569,7 +569,7 @@ export class ModelDeserializer<
     if (designType === Uint32Array) {
       const transformer = this.transformers.get('uint32array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Uint32Array requires transformer`);
     }
@@ -577,7 +577,7 @@ export class ModelDeserializer<
     if (designType === Int8Array) {
       const transformer = this.transformers.get('int8array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Int8Array requires transformer`);
     }
@@ -585,7 +585,7 @@ export class ModelDeserializer<
     if (designType === Int16Array) {
       const transformer = this.transformers.get('int16array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Int16Array requires transformer`);
     }
@@ -593,7 +593,7 @@ export class ModelDeserializer<
     if (designType === Int32Array) {
       const transformer = this.transformers.get('int32array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Int32Array requires transformer`);
     }
@@ -601,7 +601,7 @@ export class ModelDeserializer<
     if (designType === Float32Array) {
       const transformer = this.transformers.get('float32array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Float32Array requires transformer`);
     }
@@ -609,7 +609,7 @@ export class ModelDeserializer<
     if (designType === Float64Array) {
       const transformer = this.transformers.get('float64array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: Float64Array requires transformer`);
     }
@@ -617,7 +617,7 @@ export class ModelDeserializer<
     if (designType === BigInt64Array) {
       const transformer = this.transformers.get('bigint64array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: BigInt64Array requires transformer`);
     }
@@ -625,7 +625,7 @@ export class ModelDeserializer<
     if (designType === BigUint64Array) {
       const transformer = this.transformers.get('biguint64array');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: BigUint64Array requires transformer`);
     }
@@ -634,7 +634,7 @@ export class ModelDeserializer<
     if (designType === ArrayBuffer) {
       const transformer = this.transformers.get('arraybuffer');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: ArrayBuffer requires transformer`);
     }
@@ -643,7 +643,7 @@ export class ModelDeserializer<
     if (designType === DataView) {
       const transformer = this.transformers.get('dataview');
       if (transformer) {
-        return transformer.fromInterface(value, context.propertyKey, context.className);
+        return transformer.deserialize(value, context.propertyKey, context.className);
       }
       throw new Error(`${context.className}.${context.propertyKey}: DataView requires transformer`);
     }

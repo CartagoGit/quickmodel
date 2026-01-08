@@ -27,7 +27,7 @@ describe('Unit: BigInt Transformer', () => {
 			balance: '999999999999999999',
 		});
 
-		const serialized = account.toInterface();
+		const serialized = account.serialize();
 
 		expect(serialized.balance).toEqual({ __type: 'bigint', value: '999999999999999999' });
 		expect(typeof serialized.balance).toBe('object');
@@ -51,7 +51,7 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(9007199254740992n);
-		expect(account.toInterface().balance).toEqual({ __type: 'bigint', value: huge });
+		expect(account.serialize().balance).toEqual({ __type: 'bigint', value: huge });
 	});
 
 	test('should roundtrip bigint correctly', () => {
@@ -74,7 +74,7 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(0n);
-		expect(account.toInterface().balance).toEqual({ __type: 'bigint', value: '0' });
+		expect(account.serialize().balance).toEqual({ __type: 'bigint', value: '0' });
 	});
 
 	test('should handle negative bigint', () => {
@@ -84,6 +84,6 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(-999999n);
-		expect(account.toInterface().balance).toEqual({ __type: 'bigint', value: '-999999' });
+		expect(account.serialize().balance).toEqual({ __type: 'bigint', value: '-999999' });
 	});
 });

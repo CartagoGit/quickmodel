@@ -136,10 +136,10 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
       tags: new Set(['tag1', 'tag2', 'tag3']),
     });
 
-    const serialized = entity.toInterface();
+    const serialized = entity.serialize();
     console.log('Serialized ComplexEntity:', JSON.stringify(serialized, null, 2));
 
-    const deserialized = ComplexEntity.fromInterface(serialized);
+    const deserialized = ComplexEntity.deserialize(serialized);
 
     // Validaciones
     expect(deserialized).toBeInstanceOf(ComplexEntity);
@@ -253,7 +253,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
       errorLog: new Set([new Error('Error 1'), new Error('Error 2')]),
     };
 
-    const model = NestedComplexModel.fromInterface(data);
+    const model = NestedComplexModel.deserialize(data);
 
     // Validar entities array
     expect(model.entities).toHaveLength(2);
@@ -332,8 +332,8 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
       errorLog: new Set([new Error('Log entry')]),
     });
 
-    const serialized = model.toInterface();
-    const deserialized = NestedComplexModel.fromInterface(serialized);
+    const serialized = model.serialize();
+    const deserialized = NestedComplexModel.deserialize(serialized);
 
     expect(deserialized).toBeInstanceOf(NestedComplexModel);
     expect(deserialized.name).toBe('Complete Test');
@@ -364,7 +364,7 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
     ];
 
     testCases.forEach((data, index) => {
-      const model = MixedUnionModel.fromInterface({
+      const model = MixedUnionModel.deserialize({
         ...data,
         items: [],
         optionalEntity: null,
@@ -416,7 +416,7 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
       multiType: new Map(),
     };
 
-    const model = MixedUnionModel.fromInterface(data);
+    const model = MixedUnionModel.deserialize(data);
 
     expect(model.items).toHaveLength(5);
     expect(typeof model.items[0]).toBe('string');
@@ -456,7 +456,7 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
       multiType: new Map(),
     };
 
-    const modelWithEntity = MixedUnionModel.fromInterface(dataWithEntity);
+    const modelWithEntity = MixedUnionModel.deserialize(dataWithEntity);
     expect(modelWithEntity.optionalEntity).toBeInstanceOf(ComplexEntity);
     expect(modelWithEntity.optionalEntity?.id).toBe('opt-entity');
     expect(modelWithEntity.optionalEntity?.amount).toBe(999n);
@@ -469,7 +469,7 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
       multiType: new Map(),
     };
 
-    const modelWithNull = MixedUnionModel.fromInterface(dataWithNull);
+    const modelWithNull = MixedUnionModel.deserialize(dataWithNull);
     expect(modelWithNull.optionalEntity).toBeNull();
   });
 
@@ -486,7 +486,7 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
       ] as any),
     };
 
-    const model = MixedUnionModel.fromInterface(data);
+    const model = MixedUnionModel.deserialize(data);
 
     expect(model.multiType).toBeInstanceOf(Map);
     expect(model.multiType.size).toBe(3);
@@ -518,7 +518,7 @@ describe('Edge cases: combinaciones extremas', () => {
       tags: new Set(),
     };
 
-    const entity = ComplexEntity.fromInterface(data);
+    const entity = ComplexEntity.deserialize(data);
 
     expect(entity).toBeInstanceOf(ComplexEntity);
     expect(entity.id).toBe('empty');
@@ -550,7 +550,7 @@ describe('Edge cases: combinaciones extremas', () => {
       errorLog: new Set(),
     };
 
-    const model = NestedComplexModel.fromInterface(data);
+    const model = NestedComplexModel.deserialize(data);
 
     expect(model.entities).toEqual([]);
     expect(model.timestamps).toEqual([]);
@@ -578,8 +578,8 @@ describe('Edge cases: combinaciones extremas', () => {
       tags: new Set(Array.from({ length: 50 }, (_, i) => `tag${i}`)),
     });
 
-    const serialized = entity.toInterface();
-    const deserialized = ComplexEntity.fromInterface(serialized);
+    const serialized = entity.serialize();
+    const deserialized = ComplexEntity.deserialize(serialized);
 
     expect(deserialized.buffer.length).toBe(1000);
     expect(deserialized.buffer[999]).toBe(largeBuffer[999]);

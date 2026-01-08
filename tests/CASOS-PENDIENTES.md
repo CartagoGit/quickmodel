@@ -16,7 +16,7 @@ Los siguientes casos están completamente probados en `e2e/auto-conversion-round
 - ✅ Arrays de objetos (con y sin modelos)
 - ✅ TypedArrays (Uint8Array, Float32Array, etc.)
 - ✅ Clonación de instancias
-- ✅ Serialización (toInterface)
+- ✅ Serialización (serialize)
 - ✅ Roundtrip (Model → Interface → Model)
 - ✅ Herencia de modelos
 - ✅ Métodos custom
@@ -157,12 +157,12 @@ class User extends QModel<IUser> {
 }
 
 const user = new User({ id: 1, _password: 'secret' });
-const json = user.toInterface();
+const json = user.serialize();
 // json NO debería contener _password
 ```
 
 **Pruebas necesarias**:
-- ✅ `toInterface()` omite private/protected
+- ✅ `serialize()` omite private/protected
 - ✅ Constructor puede inicializar private/protected
 - ✅ Deserialización respeta visibilidad
 - ✅ `toJSON()` no expone internals
@@ -230,8 +230,8 @@ new Mixed({ items: ['text', 123, new Date(), null] });
 **Ejemplo**:
 ```typescript
 const encryptionTransformer = {
-  fromInterface: (value: string) => decrypt(value),
-  toInterface: (value: string) => encrypt(value)
+  deserialize: (value: string) => decrypt(value),
+  serialize: (value: string) => encrypt(value)
 };
 
 @Quick({
@@ -245,12 +245,12 @@ class User extends QModel<IUser> {
 ```
 
 **Pruebas necesarias**:
-- ✅ Transformer con `fromInterface()` y `toInterface()`
-- ✅ Deserialización usa `fromInterface()`
-- ✅ Serialización usa `toInterface()`
+- ✅ Transformer con `deserialize()` y `serialize()`
+- ✅ Deserialización usa `deserialize()`
+- ✅ Serialización usa `serialize()`
 - ✅ Roundtrip funciona correctamente
 
-**Nota**: Actualmente solo funciones unidireccionales (fromInterface) están soportadas.
+**Nota**: Actualmente solo funciones unidireccionales (deserialize) están soportadas.
 
 ---
 
@@ -401,13 +401,13 @@ class User extends QModel<IUser> {
   }
 }
 
-const json = user.toInterface();
+const json = user.serialize();
 // json NO debería contener fullName
 ```
 
 **Pruebas necesarias**:
 - ✅ Getters funcionan en modelo
-- ✅ `toInterface()` omite getters
+- ✅ `serialize()` omite getters
 - ✅ Getters con transformaciones
 - ✅ Getters con nested models
 
@@ -457,7 +457,7 @@ const proxyUser = new Proxy(user, {
 - ✅ Serialización de Proxies
 - ✅ Deserialización mantiene Proxy
 - ✅ Transformaciones funcionan con Proxy
-- ✅ `toInterface()` atraviesa Proxy
+- ✅ `serialize()` atraviesa Proxy
 
 ---
 
@@ -479,11 +479,11 @@ class User extends QModel<IUser> {
 }
 
 // Necesita soporte async
-await User.fromInterfaceAsync({ avatar: 'https://...' });
+await User.deserializeAsync({ avatar: 'https://...' });
 ```
 
 **Pruebas necesarias**:
-- ✅ `fromInterfaceAsync()` method
+- ✅ `deserializeAsync()` method
 - ✅ Promise-based transformers
 - ✅ Parallel async transformations
 - ✅ Error handling en async
@@ -594,7 +594,7 @@ JSON.stringify(user); // Usa toJSON() custom
 
 **Pruebas necesarias**:
 - ✅ Custom `toJSON()` respetado
-- ✅ Interacción con `toInterface()`
+- ✅ Interacción con `serialize()`
 - ✅ JSON.stringify() usa custom
 - ✅ Conflictos con serializer
 

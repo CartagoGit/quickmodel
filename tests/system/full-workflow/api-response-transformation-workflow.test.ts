@@ -196,7 +196,7 @@ describe('System: API Response Transformation', () => {
 		// STEP 2: Parse and transform each post
 		const postsData = JSON.parse(apiResponseJson);
 		const posts = postsData.map((postData: unknown) =>
-			Post.fromInterface(postData)
+			Post.deserialize(postData)
 		);
 
 		// STEP 3: Verify all posts transformed correctly
@@ -223,7 +223,7 @@ describe('System: API Response Transformation', () => {
 
 	test('Should handle stats with BigInt calculations', () => {
 		// STEP 1: Receive stats from API
-		const stats = Stats.fromInterface(mockApiResponses.stats);
+		const stats = Stats.deserialize(mockApiResponses.stats);
 
 		// STEP 2: Verify BigInt transformation
 		expect(stats.totalViews).toBe(4000n);
@@ -255,9 +255,9 @@ describe('System: API Response Transformation', () => {
 		const parsed = JSON.parse(json);
 
 		// Transform each part
-		const user = User.fromInterface(parsed.user);
-		const posts = parsed.posts.map((p: unknown) => Post.fromInterface(p));
-		const stats = Stats.fromInterface(parsed.stats);
+		const user = User.deserialize(parsed.user);
+		const posts = parsed.posts.map((p: unknown) => Post.deserialize(p));
+		const stats = Stats.deserialize(parsed.stats);
 
 		// Verify everything transformed correctly
 		expect(user.createdAt).toBeInstanceOf(Date);
@@ -272,7 +272,7 @@ describe('System: API Response Transformation', () => {
 
 	test('Should handle API error responses gracefully', () => {
 		// Empty/null responses
-		const emptyUser = User.fromInterface({
+		const emptyUser = User.deserialize({
 			id: 'usr_empty',
 			username: '',
 			email: '',
@@ -289,7 +289,7 @@ describe('System: API Response Transformation', () => {
 		const originalDate = '2024-01-15T10:30:00.000Z';
 		const originalViews = '123456789';
 
-		const post = Post.fromInterface({
+		const post = Post.deserialize({
 			id: 'post_test',
 			title: 'Test',
 			content: 'Test content',
@@ -362,7 +362,7 @@ describe('System: API Response Transformation', () => {
 			}
 		}
 
-		const paginatedResponse = PaginatedPosts.fromInterface({
+		const paginatedResponse = PaginatedPosts.deserialize({
 			data: mockApiResponses.posts,
 			meta: {
 				page: 1,

@@ -10,13 +10,13 @@ export interface IQTransformer<TInput = any, TOutput = any> {
    * @param propertyKey - Nombre de la propiedad
    * @param className - Nombre de la clase
    */
-  fromInterface(value: TInput, propertyKey: string, className: string): TOutput;
+  deserialize(value: TInput, propertyKey: string, className: string): TOutput;
 
   /**
    * Serializa desde el tipo del modelo hacia la interfaz (JSON)
    * @param value - Valor del modelo
    */
-  toInterface(value: TOutput): TInput;
+  serialize(value: TOutput): TInput;
 }
 
 export interface IQValidator {

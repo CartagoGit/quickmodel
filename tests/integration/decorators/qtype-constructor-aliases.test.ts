@@ -123,7 +123,7 @@ describe('Constructor Aliases', () => {
     test('Should serialize correctly', () => {
       const model = new ModelWithConstructors(testData);
 
-      const serialized = model.toInterface();
+      const serialized = model.serialize();
 
       expect(serialized.pattern).toMatchObject({ __type: 'regexp', source: 'test', flags: 'gi' });
       expect(serialized.error).toBe('Error: Test error');
@@ -143,7 +143,7 @@ describe('Constructor Aliases', () => {
         bytes2: [10, 20, 30, 40],
       };
 
-      const model = ModelWithConstructors.fromInterface(data);
+      const model = ModelWithConstructors.deserialize(data);
 
       expect(model.pattern).toBeInstanceOf(RegExp);
       expect(model.pattern.source).toBe('test');
@@ -169,8 +169,8 @@ describe('Constructor Aliases', () => {
     test('Should perform round-trip correctly', () => {
       const original = new ModelWithConstructors(testData);
 
-      const serialized = original.toInterface();
-      const restored = ModelWithConstructors.fromInterface(serialized);
+      const serialized = original.serialize();
+      const restored = ModelWithConstructors.deserialize(serialized);
 
       expect(restored.pattern.toString()).toBe(original.pattern.toString());
       expect(restored.error.message).toBe(original.error.message);
@@ -185,7 +185,7 @@ describe('Constructor Aliases', () => {
     test('Should serialize correctly', () => {
       const model = new ModelWithSymbols(testData);
 
-      const serialized = model.toInterface();
+      const serialized = model.serialize();
 
       expect(serialized.pattern).toMatchObject({ __type: 'regexp', source: 'test', flags: 'gi' });
       expect(serialized.error).toBe('Error: Test error');
@@ -205,7 +205,7 @@ describe('Constructor Aliases', () => {
         bytes2: [10, 20, 30, 40],
       };
 
-      const model = ModelWithSymbols.fromInterface(data);
+      const model = ModelWithSymbols.deserialize(data);
 
       expect(model.pattern).toBeInstanceOf(RegExp);
       expect(model.pattern.source).toBe('test');
@@ -231,8 +231,8 @@ describe('Constructor Aliases', () => {
     test('Should perform round-trip correctly', () => {
       const original = new ModelWithSymbols(testData);
 
-      const serialized = original.toInterface();
-      const restored = ModelWithSymbols.fromInterface(serialized);
+      const serialized = original.serialize();
+      const restored = ModelWithSymbols.deserialize(serialized);
 
       expect(restored.pattern.toString()).toBe(original.pattern.toString());
       expect(restored.error.message).toBe(original.error.message);
@@ -248,8 +248,8 @@ describe('Constructor Aliases', () => {
       const model1 = new ModelWithConstructors(testData);
       const model2 = new ModelWithSymbols(testData);
 
-      const serialized1 = model1.toInterface();
-      const serialized2 = model2.toInterface();
+      const serialized1 = model1.serialize();
+      const serialized2 = model2.serialize();
 
       expect(serialized1).toEqual(serialized2);
     });
@@ -264,8 +264,8 @@ describe('Constructor Aliases', () => {
         bytes2: [10, 20, 30, 40],
       };
 
-      const model1 = ModelWithConstructors.fromInterface(data);
-      const model2 = ModelWithSymbols.fromInterface(data);
+      const model1 = ModelWithConstructors.deserialize(data);
+      const model2 = ModelWithSymbols.deserialize(data);
 
       expect(model1.pattern.toString()).toBe(model2.pattern.toString());
       expect(model1.error.message).toBe(model2.error.message);

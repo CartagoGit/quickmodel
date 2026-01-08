@@ -27,7 +27,7 @@ describe('Unit: Map Transformer', () => {
 	});
 
 	test('Should deserialize empty map', () => {
-		const model = MapData.fromInterface({ map: new Map() });
+		const model = MapData.deserialize({ map: new Map() });
 		
 		expect(model.map).toBeInstanceOf(Map);
 		expect(model.map.size).toBe(0);

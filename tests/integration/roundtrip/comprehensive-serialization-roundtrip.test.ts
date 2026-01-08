@@ -289,7 +289,7 @@ try {
   // SERIALIZATION
   // ============================================================================
   console.log('🧪 2. SERIALIZANDO A INTERFAZ...\n');
-  const serialized = model.toInterface();
+  const serialized = model.serialize();
 
   console.log('📤 VERIFYING SERIALIZATION:');
   console.log(`  ✓ BigInt → string: ${typeof serialized.amount === 'string' ? '✅' : '❌'}`);
@@ -305,7 +305,7 @@ try {
   // ============================================================================
   console.log('🧪 3. ROUND-TRIP TEST (Interface → Model → Interface → Model)...\n');
   const model2 = new CompleteModel(serialized);
-  const serialized2 = model2.toInterface();
+  const serialized2 = model2.serialize();
   const model3 = new CompleteModel(serialized2);
 
   console.log('🔄 VERIFYING ROUND-TRIP:');
@@ -338,10 +338,10 @@ try {
   // STATIC METHODS
   // ============================================================================
   console.log('🧪 5. STATIC METHODS...\n');
-  const model5 = CompleteModel.fromInterface(testData);
+  const model5 = CompleteModel.deserialize(testData);
 
   console.log('🔧 VERIFYING STATIC METHODS:');
-  console.log(`  ✓ fromInterface works: ${model5 instanceof CompleteModel ? '✅' : '❌'}`);
+  console.log(`  ✓ deserialize works: ${model5 instanceof CompleteModel ? '✅' : '❌'}`);
   console.log(`  ✓ Correct data: ${model5.id === 'test-123' && model5.amount === 9007199254740991n ? '✅' : '❌'}\n`);
   passed += 2;
 
@@ -365,7 +365,7 @@ try {
   console.log('   ✓ Collections: Array, Map, Set');
   console.log('   ✓ Enums: String Enums, Numeric Enums');
   console.log('   ✓ Objects: Plain objects, Nested models');
-  console.log('   ✓ Methods: toInterface(), toJSON(), fromInterface(), fromJSON()');
+  console.log('   ✓ Methods: serialize(), toJSON(), deserialize(), fromJSON()');
 } catch (error: any) {
   console.log('\n❌ ERROR EN TESTS:');
   console.log(error.message);

@@ -2,15 +2,15 @@
 
 ## 🎯 Objetivo Completado
 
-Se corrigieron los errores de serialización con `toInterface()` y se creó un test suite comprehensivo usando `bun test`.
+Se corrigieron los errores de serialización con `serialize()` y se creó un test suite comprehensivo usando `bun test`.
 
 ---
 
 ## ✅ Problemas Corregidos
 
-### 1. Serialización con toInterface()
+### 1. Serialización con serialize()
 
-**Problema**: `toInterface()` retornaba objetos vacíos o con propiedades `undefined`.
+**Problema**: `serialize()` retornaba objetos vacíos o con propiedades `undefined`.
 
 **Causa raíz**: El serializer usaba `Object.entries()` que solo ve propiedades enumerables, pero los getters/setters creados por `@QType()` son no-enumerables.
 
@@ -41,7 +41,7 @@ while (proto && proto !== Object.prototype) {
 
 ### 2. Roundtrip con BigInt, Map y Set
 
-**Problema**: Después de `Model → toInterface() → Model`, BigInt, Map y Set no se deserializaban correctamente.
+**Problema**: Después de `Model → serialize() → Model`, BigInt, Map y Set no se deserializaban correctamente.
 
 **Causa raíz**: Los transformers serializan con marcadores `__type`:
 - `bigint` → `{ __type: 'bigint', value: '123' }`
@@ -63,7 +63,7 @@ if (!designType) {
 // Check for __type marker FIRST (highest priority)
 const detectedTransformer = this.detectTransformerFromValue(value);
 if (detectedTransformer) {
-  return detectedTransformer.fromInterface(value, ...);
+  return detectedTransformer.deserialize(value, ...);
 }
 ```
 
@@ -165,7 +165,7 @@ const transformer = this.qTransformerRegistry.get('set') ||
 12. **Clone Functionality** (1 test)
     - Clonación de instancias
 
-13. **toInterface() - Serialización** (5 tests)
+13. **serialize() - Serialización** (5 tests)
     - Conversión a plain object
     - Date → string
     - BigInt → `{ __type, value }`
@@ -304,14 +304,14 @@ Ver detalles completos en `tests/CASOS-PENDIENTES.md`.
    - Errores descriptivos
 
 4. **Async Transformers** ⭐⭐⭐
-   - `fromInterfaceAsync()`
+   - `deserializeAsync()`
    - Transformaciones asíncronas
 
 ---
 
 ## ✨ Conclusión
 
-- ✅ **Serialización corregida**: toInterface() funciona perfectamente
+- ✅ **Serialización corregida**: serialize() funciona perfectamente
 - ✅ **Roundtrip funcional**: Model → Interface → Model preserva tipos
 - ✅ **Test suite completo**: 46 tests cubriendo todos los casos comunes
 - ✅ **Documentación detallada**: Comportamientos y casos pendientes documentados

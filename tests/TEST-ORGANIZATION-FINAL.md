@@ -21,7 +21,7 @@
 - **array-metadata-behavior.test.ts** → Testea: Metadata de arrays y union types
 
 #### serialization/
-- **type-safety-serialization.test.ts** → Testea: Type safety en toInterface() retorna tipos correctos
+- **type-safety-serialization.test.ts** → Testea: Type safety en serialize() retorna tipos correctos
 - **typescript-metadata-reflection.test.ts** → Testea: Sistema de metadata de TypeScript reflect-metadata
 
 #### performance/
@@ -154,7 +154,7 @@ Testean estructuras de datos:
 
 ### 💾 Serialization (Unit) - 2 tests
 Testean el proceso de serialización:
-- Type safety en toInterface()
+- Type safety en serialize()
 - Sistema de metadata de TypeScript
 
 ### ⚡ Performance (Unit) - 1 test
@@ -258,7 +258,7 @@ Estos tests existen pero necesitan ser movidos a sus carpetas correctas:
   - Testea: Transformador BigInt con y sin símbolo QBigInt
   
 - type-safety.test.ts → **tests/unit/serialization/type-safety-serialization.test.ts**
-  - Testea: Que toInterface() retorna tipos serializados correctos
+  - Testea: Que serialize() retorna tipos serializados correctos
   
 - typescript-metadata-test.test.ts → **tests/unit/serialization/typescript-metadata-reflection.test.ts**
   - Testea: Sistema de metadata de TypeScript reflect-metadata
@@ -349,6 +349,6 @@ Testean estructuras de datos:
 
 ### 💾 Serialization (Unit)
 Testean el proceso de serialización:
-- Type safety en toInterface()
+- Type safety en serialize()
 - Sistema de metadata de TypeScript
 - Transformaciones correctas

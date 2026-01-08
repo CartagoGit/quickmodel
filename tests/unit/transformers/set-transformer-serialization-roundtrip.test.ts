@@ -27,7 +27,7 @@ describe('Unit: Set Transformer', () => {
 	});
 
 	test('Should deserialize empty set', () => {
-		const model = SetData.fromInterface({ set: new Set() });
+		const model = SetData.deserialize({ set: new Set() });
 		
 		expect(model.set).toBeInstanceOf(Set);
 		expect(model.set.size).toBe(0);

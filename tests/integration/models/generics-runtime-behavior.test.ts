@@ -213,8 +213,8 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
       metadata: new Map([['lang', 'en'], ['version', '1.0']]),
     });
 
-    const serialized = original.toInterface();
-    const deserialized = StringContainer.fromInterface(serialized);
+    const serialized = original.serialize();
+    const deserialized = StringContainer.deserialize(serialized);
 
     console.log('\n=== SERIALIZACIÓN ===');
     console.log('Original:', original.value);

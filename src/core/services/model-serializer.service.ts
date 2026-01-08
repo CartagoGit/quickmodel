@@ -15,7 +15,7 @@
  * 1. Iterates through all model properties
  * 2. Looks up transformers for special types (Date, URL, Map, etc.)
  * 3. Falls back to default serialization if no transformer found
- * 4. Handles nested models recursively via `toInterface()` method
+ * 4. Handles nested models recursively via `serialize()` method
  * 
  * @example
  * ```typescript
@@ -187,26 +187,26 @@ export class ModelSerializer<
     // Date
     if (value instanceof Date) {
       const transformer = this.transformers.get('date') || this.transformers.get(Date);
-      return transformer ? transformer.toInterface(value) : value.toISOString();
+      return transformer ? transformer.serialize(value) : value.toISOString();
     }
 
     // URL
     if (value instanceof URL) {
       const transformer = this.transformers.get(URL) || this.transformers.get(Symbol('URL').toString());
-      return transformer ? transformer.toInterface(value) : value.href;
+      return transformer ? transformer.serialize(value) : value.href;
     }
 
     // URLSearchParams
     if (value instanceof URLSearchParams) {
       const transformer = this.transformers.get(URLSearchParams) || this.transformers.get(Symbol('URLSearchParams').toString());
-      return transformer ? transformer.toInterface(value) : value.toString();
+      return transformer ? transformer.serialize(value) : value.toString();
     }
 
     // BigInt
     if (typeof value === 'bigint') {
       const transformer = this.transformers.get('bigint');
       if (transformer) {
-        return transformer.toInterface(value);
+        return transformer.serialize(value);
       }
       return value.toString();
     }
@@ -215,7 +215,7 @@ export class ModelSerializer<
     if (typeof value === 'symbol') {
       const transformer = this.transformers.get('symbol');
       return transformer
-        ? transformer.toInterface(value)
+        ? transformer.serialize(value)
         : Symbol.keyFor(value) || value.toString();
     }
 
@@ -223,7 +223,7 @@ export class ModelSerializer<
     if (value instanceof RegExp) {
       const transformer = this.transformers.get(RegExp) || this.transformers.get(Symbol('RegExp').toString());
       return transformer
-        ? transformer.toInterface(value)
+        ? transformer.serialize(value)
         : { source: value.source, flags: value.flags };
     }
 
@@ -231,7 +231,7 @@ export class ModelSerializer<
     if (value instanceof Error) {
       const transformer = this.transformers.get(Error) || this.transformers.get(Symbol('Error').toString());
       return transformer
-        ? transformer.toInterface(value)
+        ? transformer.serialize(value)
         : { message: value.message, stack: value.stack, name: value.name };
     }
 
@@ -251,7 +251,7 @@ export class ModelSerializer<
       else if (value instanceof BigUint64Array) transformer = this.transformers.get(BigUint64Array);
 
       if (transformer) {
-        return transformer.toInterface(value);
+        return transformer.serialize(value);
       }
 
       // Fallback: convertir a array
@@ -276,24 +276,24 @@ export class ModelSerializer<
     // ArrayBuffer
     if (value instanceof ArrayBuffer) {
       const transformer = this.transformers.get(ArrayBuffer) || this.transformers.get(Symbol('ArrayBuffer').toString());
-      return transformer ? transformer.toInterface(value) : Array.from(new Uint8Array(value));
+      return transformer ? transformer.serialize(value) : Array.from(new Uint8Array(value));
     }
 
     // DataView
     if (value instanceof DataView) {
       const transformer = this.transformers.get(DataView) || this.transformers.get(Symbol('DataView').toString());
-      return transformer ? transformer.toInterface(value) : Array.from(new Uint8Array(value.buffer));
+      return transformer ? transformer.serialize(value) : Array.from(new Uint8Array(value.buffer));
     }
 
     // Nested model
-    if (typeof value === 'object' && value !== null && 'toInterface' in value && typeof value.toInterface === 'function') {
-      return value.toInterface();
+    if (typeof value === 'object' && value !== null && 'serialize' in value && typeof value.serialize === 'function') {
+      return value.serialize();
     }
 
     // Array
     if (Array.isArray(value)) {
-      if (value.length > 0 && value[0]?.toInterface) {
-        return value.map((item) => item.toInterface());
+      if (value.length > 0 && value[0]?.serialize) {
+        return value.map((item) => item.serialize());
       }
       return value;
     }
@@ -302,7 +302,7 @@ export class ModelSerializer<
     if (value instanceof Map) {
       const transformer = this.transformers.get('map') || this.transformers.get(Map);
       if (transformer) {
-        return transformer.toInterface(value);
+        return transformer.serialize(value);
       }
       return Object.fromEntries(value);
     }
@@ -311,7 +311,7 @@ export class ModelSerializer<
     if (value instanceof Set) {
       const transformer = this.transformers.get('set') || this.transformers.get(Set);
       if (transformer) {
-        return transformer.toInterface(value);
+        return transformer.serialize(value);
       }
       return Array.from(value);
     }

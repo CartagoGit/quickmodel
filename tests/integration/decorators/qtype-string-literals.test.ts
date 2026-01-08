@@ -148,7 +148,7 @@ describe('String Literals (@QType("type"))', () => {
   };
 
   test('Should deserialize correctly using string literals', () => {
-    const model = ModelWithStringLiterals.fromInterface(testData);
+    const model = ModelWithStringLiterals.deserialize(testData);
 
     // Primitivos
     expect(model.name).toBe('Test');
@@ -190,8 +190,8 @@ describe('String Literals (@QType("type"))', () => {
   });
 
   test('Should serialize correctly', () => {
-    const model = ModelWithStringLiterals.fromInterface(testData);
-    const serialized = model.toInterface();
+    const model = ModelWithStringLiterals.deserialize(testData);
+    const serialized = model.serialize();
     expect(serialized.name).toBe('Test');
     expect(serialized.count).toBe(42);
     expect(serialized.active).toBe(true);
@@ -207,9 +207,9 @@ describe('String Literals (@QType("type"))', () => {
   });
 
   test('Should perform round-trip correctly', () => {
-    const model1 = ModelWithStringLiterals.fromInterface(testData);
-    const serialized = model1.toInterface();
-    const model2 = ModelWithStringLiterals.fromInterface(serialized);
+    const model1 = ModelWithStringLiterals.deserialize(testData);
+    const serialized = model1.serialize();
+    const model2 = ModelWithStringLiterals.deserialize(serialized);
 
     expect(model2.name).toBe(model1.name);
     expect(model2.amount).toBe(model1.amount);
@@ -221,7 +221,7 @@ describe('String Literals (@QType("type"))', () => {
   });
 
   test('Should work with JSON', () => {
-    const model1 = ModelWithStringLiterals.fromInterface(testData);
+    const model1 = ModelWithStringLiterals.deserialize(testData);
     const json = model1.toJSON();
     const model2 = ModelWithStringLiterals.fromJSON(json);
 

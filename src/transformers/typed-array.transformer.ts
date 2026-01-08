@@ -56,7 +56,7 @@ type TypedArray =
  * console.log(audio.samples instanceof Float32Array); // true
  * console.log(audio.largeNumbers instanceof BigInt64Array); // true
  * 
- * const json = audio.toInterface();
+ * const json = audio.serialize();
  * console.log(json.samples); // [0.5, -0.3, 0.8]
  * console.log(json.largeNumbers); // ["9007199254740991", "123456789012345"]
  * ```
@@ -90,7 +90,7 @@ export class TypedArrayTransformer<T extends TypedArray>
    * Accepts arrays or array-like objects (e.g., `{0: 1, 1: 2, 2: 3}`).
    * For BigInt variants, strings are converted to BigInt. Invalid values default to 0n.
    */
-  fromInterface(
+  deserialize(
     value: number[] | string[] | T | Record<number, number>,
     propertyKey: string,
     className: string,
@@ -134,7 +134,7 @@ export class TypedArrayTransformer<T extends TypedArray>
    * @remarks
    * BigInt variants are serialized as string arrays because JSON doesn't support BigInt.
    */
-  toInterface(value: T): number[] | string[] {
+  serialize(value: T): number[] | string[] {
     if (this.isBigInt) {
       return Array.from(value as Iterable<bigint>, (v) => v.toString());
     }

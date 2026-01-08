@@ -160,13 +160,13 @@ describe('Integration: Mock Generator - Real World', () => {
 		});
 
 		const customItems = [
-			OrderItem.mock().random({ name: 'Laptop', quantity: 1, price: '99999' }).toInterface(),
-			OrderItem.mock().random({ name: 'Mouse', quantity: 2, price: '2999' }).toInterface(),
+			OrderItem.mock().random({ name: 'Laptop', quantity: 1, price: '99999' }).serialize(),
+			OrderItem.mock().random({ name: 'Mouse', quantity: 2, price: '2999' }).serialize(),
 		];
 
 		const mock = Order.mock().random({
 			status: 'shipped',
-			shippingAddress: customAddress.toInterface(),
+			shippingAddress: customAddress.serialize(),
 			items: customItems,
 			metadata: {
 				paymentMethod: 'credit-card',
@@ -187,8 +187,8 @@ describe('Integration: Mock Generator - Real World', () => {
 	test('should work with custom methods on mocked data', () => {
 		const mock = Order.mock().random({
 			items: [
-				OrderItem.mock().random({ quantity: 2, price: '1000' }).toInterface(),
-				OrderItem.mock().random({ quantity: 3, price: '2000' }).toInterface(),
+				OrderItem.mock().random({ quantity: 2, price: '1000' }).serialize(),
+				OrderItem.mock().random({ quantity: 3, price: '2000' }).serialize(),
 			],
 		});
 

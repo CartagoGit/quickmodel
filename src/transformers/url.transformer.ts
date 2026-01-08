@@ -23,7 +23,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * console.log(page.url instanceof URL); // true
  * console.log(page.url.hostname); // "example.com"
  * 
- * const json = page.toInterface();
+ * const json = page.serialize();
  * console.log(json.url); // "https://example.com/path?query=value"
  * 
  * // Invalid URL throws error
@@ -40,7 +40,7 @@ export class URLTransformer extends BaseTransformer<string, URL> implements IQVa
    * @returns A URL instance
    * @throws {Error} If the value is not a string or URL, or if the URL format is invalid
    */
-  fromInterface(value: string | URL, propertyKey: string, className: string): URL {
+  deserialize(value: string | URL, propertyKey: string, className: string): URL {
     if (value instanceof URL) {
       return value;
     }
@@ -65,7 +65,7 @@ export class URLTransformer extends BaseTransformer<string, URL> implements IQVa
    * @param value - The URL to serialize
    * @returns Full URL string (href)
    */
-  toInterface(value: URL): string {
+  serialize(value: URL): string {
     return value.href;
   }
 

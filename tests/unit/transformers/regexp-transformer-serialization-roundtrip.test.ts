@@ -33,7 +33,7 @@ describe('Unit: RegExp Transformer', () => {
 	});
 
 	test('Should deserialize simple regexp', () => {
-		const model = Pattern.fromInterface({ pattern: '/hello/g' });
+		const model = Pattern.deserialize({ pattern: '/hello/g' });
 		
 		expect(model.pattern).toBeInstanceOf(RegExp);
 		expect(model.pattern.source).toBe('hello');

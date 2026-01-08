@@ -22,7 +22,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * console.log(typeof entity.id); // 'symbol'
  * console.log(entity.id === Symbol.for("unique-id")); // true
  * 
- * const data = entity.toInterface();
+ * const data = entity.serialize();
  * console.log(typeof data.id); // 'string'
  * console.log(data.id); // "unique-id"
  * ```
@@ -37,7 +37,7 @@ export class SymbolTransformer extends BaseTransformer<string | { __type: 'symbo
    * @returns A global symbol
    * @throws {Error} If the value is not a string or symbol
    */
-  fromInterface(value: string | symbol | { __type: 'symbol'; description: string }, propertyKey: string, className: string): symbol {
+  deserialize(value: string | symbol | { __type: 'symbol'; description: string }, propertyKey: string, className: string): symbol {
     if (typeof value === 'symbol') {
       return value;
     }
@@ -63,7 +63,7 @@ export class SymbolTransformer extends BaseTransformer<string | { __type: 'symbo
    * @param value - The symbol to serialize
    * @returns Object with __type marker and string description
    */
-  toInterface(value: symbol): { __type: 'symbol'; description: string } {
+  serialize(value: symbol): { __type: 'symbol'; description: string } {
     const key = Symbol.keyFor(value);
     const description = key !== undefined ? key : value.toString();
     return { __type: 'symbol', description };

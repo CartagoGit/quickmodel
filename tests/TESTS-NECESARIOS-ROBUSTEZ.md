@@ -76,7 +76,7 @@ describe('Error Handling: Circular References', () => {
     node1.children = [node2];
     
     expect(() => {
-      node1.toInterface();
+      node1.serialize();
     }).toThrow(/Circular reference detected/);
   });
 
@@ -86,7 +86,7 @@ describe('Error Handling: Circular References', () => {
     node1.children = [node2];
     
     expect(() => {
-      node1.toInterface({ maxDepth: 10 });
+      node1.serialize({ maxDepth: 10 });
     }).toThrow(/Max depth.*exceeded/);
   });
 });
@@ -150,7 +150,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 
   test('should preserve null in serialization', () => {
     const data = new Data({ value: null });
-    const json = data.toInterface();
+    const json = data.serialize();
     
     expect(json.value).toBeNull();
     expect(json.value).not.toBeUndefined();
@@ -240,7 +240,7 @@ describe('Transformer Edge Cases: Collections', () => {
     const data = new Data({ metadata: map });
     
     // After roundtrip, keys should be preserved
-    const restored = Data.fromInterface(data.toInterface());
+    const restored = Data.deserialize(data.serialize());
     expect(restored.metadata.get(1)).toBe('one');
   });
 });
@@ -401,7 +401,7 @@ describe('Serialization Integrity: Data Loss Prevention', () => {
     ]);
     
     const data = new Data({ metadata: map });
-    const restored = Data.fromInterface(data.toInterface());
+    const restored = Data.deserialize(data.serialize());
     
     const keys = Array.from(restored.metadata.keys());
     expect(keys).toEqual(['z', 'a', 'm']);
@@ -411,7 +411,7 @@ describe('Serialization Integrity: Data Loss Prevention', () => {
     const set = new Set(['z', 'a', 'm']);
     
     const data = new Data({ tags: set });
-    const restored = Data.fromInterface(data.toInterface());
+    const restored = Data.deserialize(data.serialize());
     
     const values = Array.from(restored.tags.values());
     expect(values).toEqual(['z', 'a', 'm']);
@@ -483,7 +483,7 @@ describe('Performance: Memory Leaks', () => {
     const memBefore = process.memoryUsage().heapUsed;
     
     for (let i = 0; i < 10000; i++) {
-      user.toInterface();
+      user.serialize();
     }
     
     global.gc?.(); // Force garbage collection if available
@@ -717,7 +717,7 @@ describe('Readonly Properties', () => {
     }
     
     const user = new User({ id: 1, name: 'John' });
-    const json = user.toInterface();
+    const json = user.serialize();
     
     expect(json.id).toBe(1);
   });
@@ -731,7 +731,7 @@ describe('Private Properties', () => {
     }
     
     const user = new User({ id: 1, _password: 'secret' });
-    const json = user.toInterface();
+    const json = user.serialize();
     
     expect(json._password).toBeUndefined();
     expect(Object.keys(json)).not.toContain('_password');
@@ -777,7 +777,7 @@ describe('Computed Properties: Getters', () => {
     }
     
     const user = new User({ firstName: 'John', lastName: 'Doe' });
-    const json = user.toInterface();
+    const json = user.serialize();
     
     expect(user.fullName).toBe('John Doe');
     expect(json.fullName).toBeUndefined();
@@ -865,7 +865,7 @@ describe('Weak Collections', () => {
     }
     
     const cache = new Cache({ cache: new WeakMap() });
-    cache.toInterface();
+    cache.serialize();
     
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('WeakMap cannot be serialized')
@@ -879,7 +879,7 @@ describe('Weak Collections', () => {
     }
     
     const cache = new Cache({ id: 1, cache: new WeakMap() });
-    const json = cache.toInterface();
+    const json = cache.serialize();
     
     expect(json.cache).toBeUndefined();
     expect(json.id).toBe(1);

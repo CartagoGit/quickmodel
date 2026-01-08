@@ -125,7 +125,7 @@ describe('Transformer Edge Cases: BigInt', () => {
 			zero: 0n
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 		
 		// Verify serialization format
 		expect(json.huge).toEqual({ __type: 'bigint', value: '999999999999999999999999999999' });
@@ -206,7 +206,7 @@ describe('Transformer Edge Cases: Date', () => {
 			epoch: now
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 		
 		// Verify serialization format
 		expect(json.past).toBe(now.toISOString());
@@ -269,7 +269,7 @@ describe('Transformer Edge Cases: RegExp', () => {
 			flags: regex
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 		
 		// Verify serialization format
 		expect(json.pattern).toEqual({ __type: 'regexp', source: 'test\\d+', flags: 'gi' });
@@ -325,7 +325,7 @@ describe('Transformer Edge Cases: Error', () => {
 			withStack: error
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 		
 		// Verify serialization format (Error serializes as string)
 		expect(typeof json.simple).toBe('string');
@@ -376,7 +376,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 			plain: Symbol.for('test-plain')
 		});
 
-		const json = data.toInterface();
+		const json = data.serialize();
 		
 		// Verify serialization format (Symbol serializes with __type and description)
 		expect(json.keyed).toEqual({ __type: 'symbol', description: 'test-key' });
@@ -452,8 +452,8 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 			small: original
 		});
 
-		const json = data.toInterface();
-		const restored = BufferData.fromInterface(json);
+		const json = data.serialize();
+		const restored = BufferData.deserialize(json);
 
 		const originalView = new Uint8Array(data.empty);
 		const restoredView = new Uint8Array(restored.empty);

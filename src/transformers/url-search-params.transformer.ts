@@ -33,7 +33,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * });
  * console.log(filter2.params instanceof URLSearchParams); // true
  * 
- * const json = filter1.toInterface();
+ * const json = filter1.serialize();
  * console.log(json.params); // "q=typescript&sort=date"
  * ```
  */
@@ -50,7 +50,7 @@ export class URLSearchParamsTransformer
    * @returns A URLSearchParams instance
    * @throws {Error} If the value cannot be converted to URLSearchParams
    */
-  fromInterface(
+  deserialize(
     value: string | URLSearchParams | Record<string, string>,
     propertyKey: string,
     className: string,
@@ -92,7 +92,7 @@ export class URLSearchParamsTransformer
    * @param value - The URLSearchParams to serialize
    * @returns Query string (without leading `?`)
    */
-  toInterface(value: URLSearchParams): string {
+  serialize(value: URLSearchParams): string {
     return value.toString();
   }
 

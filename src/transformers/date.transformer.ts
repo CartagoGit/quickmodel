@@ -22,7 +22,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * const event = new Event({ createdAt: "2024-01-01T00:00:00.000Z" });
  * console.log(event.createdAt instanceof Date); // true
  * 
- * const data = event.toInterface();
+ * const data = event.serialize();
  * console.log(data.createdAt); // "2024-01-01T00:00:00.000Z"
  * ```
  */
@@ -36,7 +36,7 @@ export class DateTransformer extends BaseTransformer<string, Date> implements IQ
    * @returns The Date object
    * @throws {Error} If the value is not a valid date
    */
-  fromInterface(value: string | Date, propertyKey: string, className: string): Date {
+  deserialize(value: string | Date, propertyKey: string, className: string): Date {
     if (value instanceof Date) {
       return value;
     }
@@ -59,7 +59,7 @@ export class DateTransformer extends BaseTransformer<string, Date> implements IQ
    * @param value - The Date object to serialize
    * @returns ISO 8601 formatted string
    */
-  toInterface(value: Date): string {
+  serialize(value: Date): string {
     return value.toISOString();
   }
 

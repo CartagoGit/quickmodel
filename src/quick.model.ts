@@ -111,6 +111,9 @@ export abstract class QModel<
 	private static readonly serializer = new ModelSerializer();
 	private static readonly mockGenerator = new MockGenerator();
 
+	// Store initial state for change tracking and reset
+	private __initData?: SerializedInterface<TInterface>;
+
 	/**
 	 * Creates a type-safe mock builder for generating test data.
 	 * Each derived class automatically infers its correct types.
@@ -228,6 +231,14 @@ export abstract class QModel<
 		
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
+		
+		// Store initial state for change tracking and reset
+		Object.defineProperty(this, '__initData', {
+			value: this.serialize(),
+			writable: false,
+			enumerable: false,
+			configurable: true,
+		});
 	}
 	
 	/**
@@ -278,11 +289,11 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const data = user.toInterface();
+	 * const data = user.serialize();
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 */
-	toInterface(): SerializedInterface<TInterface> {
+	serialize(): SerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serialize(
 			this as unknown as ModelAsRecord
@@ -293,7 +304,7 @@ export abstract class QModel<
 	 * Serializes the model instance to a JSON string.
 	 * 
 	 * Converts the model to a JSON string representation. This is a convenience method
-	 * that combines toInterface() and JSON.stringify().
+	 * that combines serialize() and JSON.stringify().
 	 * 
 	 * **SOLID - Single Responsibility:** Delegates to ModelSerializer service.
 	 * 
@@ -335,7 +346,7 @@ export abstract class QModel<
 	 *   createdAt: '2024-01-01T00:00:00.000Z' 
 	 * };
 	 * 
-	 * const user = User.fromInterface(userData);
+	 * const user = User.deserialize(userData);
 	 * console.log(user instanceof User); // true
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
@@ -349,12 +360,12 @@ export abstract class QModel<
 	 *   pattern: { source: 'test', flags: 'gi' } // Will transform to RegExp
 	 * };
 	 * 
-	 * const account = Account.fromInterface(accountData);
+	 * const account = Account.deserialize(accountData);
 	 * console.log(typeof account.balance); // 'bigint'
 	 * console.log(account.pattern instanceof RegExp); // true
 	 * ```
 	 */
-	static fromInterface<T extends QModel<any>>(
+	static deserialize<T extends QModel<any>>(
 		this: new (data: ModelData<any>) => T,
 		data: ModelData<any>
 	): T {
@@ -365,7 +376,7 @@ export abstract class QModel<
 	 * Creates a model instance from a JSON string.
 	 * 
 	 * Parses a JSON string and deserializes it into a fully typed model instance.
-	 * This is a convenience method that combines JSON.parse() and fromInterface().
+	 * This is a convenience method that combines JSON.parse() and deserialize().
 	 * 
 	 * @template T - The model class type
 	 * @param json - JSON string representation of the model
@@ -426,12 +437,292 @@ export abstract class QModel<
 	 * console.log(cloned.employees).not.toBe(company.employees);
 	 * console.log(cloned.employees[0]).not.toBe(company.employees[0]);
 	 * 
-	 * // Same data
-	 * console.log(cloned.employees[0].name); // 'Alice'
+
+	/**
+	 * Returns the current state as a plain interface object with primitive values.
+	 * 
+	 * This converts all transformed types back to their interface representation:
+	 * - Date → ISO string
+	 * - BigInt → string representation
+	 * - RegExp → string pattern
+	 * - Set → array
+	 * - Map → plain object
+	 * - etc.
+	 * 
+	 * This is the inverse of the transformations applied during construction.
+	 * 
+	 * @returns Plain object with current values in primitive/serializable format
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({
+	 *   id: '1',
+	 *   createdAt: '2024-01-01T00:00:00.000Z'
+	 * });
+	 * 
+	 * user.createdAt = new Date('2024-12-31');
+	 * 
+	 * const current = user.getInterface();
+	 * // { id: '1', createdAt: '2024-12-31T00:00:00.000Z' }
 	 * ```
+	 */
+	getInterface(): SerializedInterface<TInterface> {
+		return this.serialize();
+	}
+
+	/**
+	 * Returns the initial state as it was when the model was constructed.
+	 * 
+	 * This returns the exact interface data used to create the instance,
+	 * with all values in their primitive/serialized format. Useful for:
+	 * - Detecting changes: compare with getInterface()
+	 * - Resetting to original state
+	 * - Undo functionality
+	 * - Audit trails
+	 * 
+	 * @returns Plain object with initial values in primitive format
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({
+	 *   id: '1',
+	 *   name: 'John',
+	 *   createdAt: '2024-01-01T00:00:00.000Z'
+	 * });
+	 * 
+	 * user.name = 'Jane';
+	 * user.createdAt = new Date('2024-12-31');
+	 * 
+	 * const init = user.getInitInterface();
+	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+	 * 
+	 * const current = user.getInterface();
+	 * // { id: '1', name: 'Jane', createdAt: '2024-12-31T00:00:00.000Z' }
+	 * ```
+	 */
+	getInitInterface(): SerializedInterface<TInterface> {
+		return { ...(this.__initData as SerializedInterface<TInterface>) };
+	}
+
+	/**
+	 * Checks if the model has been modified since construction.
+	 * 
+	 * Compares the current state with the initial state to detect changes.
+	 * Performs a deep comparison of all fields.
+	 * 
+	 * @returns true if any field has changed, false otherwise
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', age: 30 });
+	 * 
+	 * console.log(user.hasChanges()); // false
+	 * 
+	 * user.name = 'Jane';
+	 * console.log(user.hasChanges()); // true
+	 * ```
+	 */
+	hasChanges(): boolean {
+		const current = this.getInterface();
+		const initial = this.getInitInterface();
+		return !this.deepEqual(current, initial);
+	}
+
+	/**
+	 * Alias for hasChanges(). Checks if the model is dirty (has unsaved changes).
+	 * 
+	 * @returns true if the model has been modified, false otherwise
+	 */
+	isDirty(): boolean {
+		return this.hasChanges();
+	}
+
+	/**
+	 * Returns an array of field names that have changed since construction.
+	 * 
+	 * Useful for:
+	 * - Partial updates (PATCH requests)
+	 * - Change tracking
+	 * - Audit logs
+	 * - Optimistic UI updates
+	 * 
+	 * @returns Array of field names that differ from initial state
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', age: 30, email: 'john@example.com' });
+	 * 
+	 * user.name = 'Jane';
+	 * user.age = 31;
+	 * 
+	 * console.log(user.getChangedFields()); // ['name', 'age']
+	 * ```
+	 */
+	getChangedFields(): string[] {
+		const current = this.getInterface();
+		const initial = this.getInitInterface();
+		const changes: string[] = [];
+
+		for (const key in current) {
+			if (!this.deepEqual(current[key], initial[key])) {
+				changes.push(key);
+			}
+		}
+
+		return changes;
+	}
+
+	/**
+	 * Returns an object containing only the fields that have changed.
+	 * 
+	 * Perfect for PATCH requests where you only want to send modified fields.
+	 * 
+	 * @returns Object with only changed fields and their current values
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ 
+	 *   id: '1', 
+	 *   name: 'John', 
+	 *   age: 30, 
+	 *   email: 'john@example.com' 
+	 * });
+	 * 
+	 * user.name = 'Jane';
+	 * user.age = 31;
+	 * 
+	 * const changes = user.getChanges();
+	 * // { name: 'Jane', age: 31 }
+	 * 
+	 * // Use for PATCH request
+	 * await api.patch(`/users/${user.id}`, changes);
+	 * ```
+	 */
+	getChanges(): Partial<SerializedInterface<TInterface>> {
+		const current = this.getInterface();
+		const initial = this.getInitInterface();
+		const changes: Partial<SerializedInterface<TInterface>> = {};
+
+		for (const key in current) {
+			if (!this.deepEqual(current[key], initial[key])) {
+				changes[key] = current[key];
+			}
+		}
+
+		return changes;
+	}
+
+	/**
+	 * Resets the model to its initial state.
+	 * 
+	 * Restores all fields to the values they had when the instance was created.
+	 * Useful for:
+	 * - Cancel/undo operations
+	 * - Form reset buttons
+	 * - Reverting failed updates
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', age: 30 });
+	 * 
+	 * user.name = 'Jane';
+	 * user.age = 31;
+	 * 
+	 * console.log(user.name); // 'Jane'
+	 * 
+	 * user.reset();
+	 * 
+	 * console.log(user.name); // 'John'
+	 * console.log(user.age); // 30
+	 * console.log(user.hasChanges()); // false
+	 * ```
+	 */
+	reset(): void {
+		const initial = this.getInitInterface();
+		const Constructor = this.constructor as typeof QModel;
+		const restored = (Constructor as any).deserialize(initial);
+
+		// Copy all properties from restored instance
+		for (const key of Object.keys(restored)) {
+			(this as any)[key] = (restored as any)[key];
+		}
+	}
+
+	/**
+	 * Applies partial updates to the model.
+	 * 
+	 * Merges the provided data with the current state. Only updates fields
+	 * that are present in the patch data. Useful for:
+	 * - Applying server responses from PATCH requests
+	 * - Incremental updates
+	 * - Form partial updates
+	 * 
+	 * @param patch - Partial object with fields to update
+	 * 
+	 * @example
+	 * ```typescript
+	 * const user = new User({ 
+	 *   id: '1', 
+	 *   name: 'John', 
+	 *   age: 30, 
+	 *   email: 'john@example.com' 
+	 * });
+	 * 
+	 * user.patch({ name: 'Jane', age: 31 });
+	 * 
+	 * console.log(user.name); // 'Jane'
+	 * console.log(user.age); // 31
+	 * console.log(user.email); // 'john@example.com' (unchanged)
+	 * ```
+	 */
+	patch(patch: Partial<ModelData<TInterface>>): void {
+		const Constructor = this.constructor as typeof QModel;
+		const current = this.serialize();
+		const merged = { ...current, ...patch };
+		const updated = (Constructor as any).deserialize(merged);
+
+		// Copy all properties from updated instance
+		for (const key of Object.keys(updated)) {
+			(this as any)[key] = (updated as any)[key];
+		}
+	}
+
+	/**
+	 * Deep equality comparison for change detection.
+	 * 
+	 * @private
+	 */
+	private deepEqual(a: any, b: any): boolean {
+		if (a === b) return true;
+		if (a == null || b == null) return false;
+		if (typeof a !== typeof b) return false;
+
+		// Handle arrays
+		if (Array.isArray(a) && Array.isArray(b)) {
+			if (a.length !== b.length) return false;
+			return a.every((val, idx) => this.deepEqual(val, b[idx]));
+		}
+
+		// Handle objects
+		if (typeof a === 'object' && typeof b === 'object') {
+			const keysA = Object.keys(a);
+			const keysB = Object.keys(b);
+			
+			if (keysA.length !== keysB.length) return false;
+			
+			return keysA.every(key => this.deepEqual(a[key], b[key]));
+		}
+
+		return false;
+	}
+
+	/**
+	 * Creates a deep copy of this model instance.
+	 * 
+	 * @returns A new instance with the same data
 	 */
 	clone(): this {
 		const Constructor = this.constructor as typeof QModel;
-		return (Constructor as any).fromInterface(this.toInterface()) as this;
+		return (Constructor as any).deserialize(this.serialize()) as this;
 	}
 }

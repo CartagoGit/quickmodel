@@ -20,7 +20,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * const account = new Account({ balance: "9007199254740991" });
  * console.log(typeof account.balance); // 'bigint'
  * 
- * const data = account.toInterface();
+ * const data = account.serialize();
  * console.log(typeof data.balance); // 'string'
  * ```
  */
@@ -37,7 +37,7 @@ export class BigIntTransformer
    * @returns The bigint value
    * @throws {Error} If the value cannot be converted to bigint
    */
-  fromInterface(value: string | number | bigint | { __type: 'bigint'; value: string }, propertyKey: string, className: string): bigint {
+  deserialize(value: string | number | bigint | { __type: 'bigint'; value: string }, propertyKey: string, className: string): bigint {
     if (typeof value === 'bigint') {
       return value;
     }
@@ -69,7 +69,7 @@ export class BigIntTransformer
    * @param value - The bigint value to serialize
    * @returns Object with __type marker and string value
    */
-  toInterface(value: bigint): { __type: 'bigint'; value: string } {
+  serialize(value: bigint): { __type: 'bigint'; value: string } {
     return { __type: 'bigint', value: value.toString() };
   }
 

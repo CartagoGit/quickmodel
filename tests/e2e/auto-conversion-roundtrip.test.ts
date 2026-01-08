@@ -544,16 +544,16 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 		});
 	});
 
-	describe('13. toInterface() - Serialización', () => {
+	describe('13. serialize() - Serialización', () => {
 		let interfaceData: any;
 
 		// beforeAll(() => {
-		// 	interfaceData = user.toInterface();
+		// 	interfaceData = user.serialize();
 		// });
 
 		test('returns plain object', () => {
 			user = user || new TestUser(testData);
-			interfaceData = user.toInterface();
+			interfaceData = user.serialize();
 			expect(typeof interfaceData).toBe('object');
 			expect(interfaceData.constructor).toBe(Object);
 		});
@@ -586,21 +586,21 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 
 	describe('14. Roundtrip (Model → Interface → Model)', () => {
 		test('dates preserved through roundtrip', () => {
-			const interfaceData = user.toInterface();
+			const interfaceData = user.serialize();
 			const restored = new TestUser(interfaceData);
 			expect(restored.createdAt).toBeInstanceOf(Date);
 			expect(restored.createdAt.getTime()).toBe(user.createdAt.getTime());
 		});
 
 		test('BigInt preserved through roundtrip', () => {
-			const interfaceData = user.toInterface();
+			const interfaceData = user.serialize();
 			const restored = new TestUser(interfaceData);
 			expect(typeof restored.bigNumber).toBe('bigint');
 			expect(restored.bigNumber).toBe(user.bigNumber);
 		});
 
 		test('Set preserved through roundtrip', () => {
-			const interfaceData = user.toInterface();
+			const interfaceData = user.serialize();
 			const restored = new TestUser(interfaceData);
 			expect(restored.tags).toBeInstanceOf(Set);
 			expect(restored.tags.size).toBe(user.tags.size);
@@ -608,7 +608,7 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 		});
 
 		test('Map preserved through roundtrip', () => {
-			const interfaceData = user.toInterface();
+			const interfaceData = user.serialize();
 			const restored = new TestUser(interfaceData);
 			expect(restored.metadata).toBeInstanceOf(Map);
 			expect(restored.metadata.size).toBe(user.metadata.size);
@@ -686,7 +686,7 @@ CASOS A CONSIDERAR:
 
 6. **Transformaciones custom bidireccionales**:
    - Custom transformer que funciona en ambas direcciones
-   - `toInterface()` debe usar custom transformers también
+   - `serialize()` debe usar custom transformers también
 
 7. **WeakMap/WeakSet**:
    - Si son necesarios, cómo serializarlos
@@ -743,7 +743,7 @@ CASOS A CONSIDERAR:
 
 19. **Custom toJSON**:
     - Modelos que definen su propio toJSON()
-    - Interacción con toInterface()
+    - Interacción con serialize()
 
 20. **Metadata pollution**:
     - Muchas clases con decoradores

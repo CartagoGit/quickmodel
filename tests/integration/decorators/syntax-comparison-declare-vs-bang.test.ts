@@ -99,7 +99,7 @@ describe('Syntax Comparison: declare vs !', () => {
 
     test('debe serializar correctamente', () => {
       const instance = new TestDeclare(testData);
-      const serialized = instance.toInterface();
+      const serialized = instance.serialize();
       
       expect(serialized.id).toBe('test-123');
       expect(serialized.name).toBe('Test Item');
@@ -113,7 +113,7 @@ describe('Syntax Comparison: declare vs !', () => {
 
     test('debe deserializar correctamente después de serialización', () => {
       const instance1 = new TestDeclare(testData);
-      const serialized = instance1.toInterface();
+      const serialized = instance1.serialize();
       const instance2 = new TestDeclare(serialized);
       
       expect(instance2.id).toBe('test-123');
@@ -161,7 +161,7 @@ describe('Syntax Comparison: declare vs !', () => {
 
     test('debe serializar correctamente', () => {
       const instance = new TestBang(testData);
-      const serialized = instance.toInterface();
+      const serialized = instance.serialize();
       
       expect(serialized.id).toBe('test-123');
       expect(serialized.name).toBe('Test Item');
@@ -175,7 +175,7 @@ describe('Syntax Comparison: declare vs !', () => {
 
     test('debe deserializar correctamente después de serialización', () => {
       const instance1 = new TestBang(testData);
-      const serialized = instance1.toInterface();
+      const serialized = instance1.serialize();
       const instance2 = new TestBang(serialized);
       
       expect(instance2.id).toBe('test-123');
@@ -201,15 +201,15 @@ describe('Syntax Comparison: declare vs !', () => {
       const instanceDeclare = new TestDeclare(testData);
       const instanceBang = new TestBang(testData);
       
-      const serializedDeclare = instanceDeclare.toInterface();
-      const serializedBang = instanceBang.toInterface();
+      const serializedDeclare = instanceDeclare.serialize();
+      const serializedBang = instanceBang.serialize();
       
       expect(serializedDeclare).toEqual(serializedBang);
     });
 
     test('ambas sintaxis deben ser intercambiables en deserialización', () => {
       const instanceBang = new TestBang(testData);
-      const serialized = instanceBang.toInterface();
+      const serialized = instanceBang.serialize();
       
       // Deserializar el JSON del modelo Bang en modelo Declare
       const instanceDeclare = new TestDeclare(serialized);

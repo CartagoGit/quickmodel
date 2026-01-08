@@ -502,7 +502,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 					configurable: true,
 				});
 
-				Object.defineProperty(instance, 'toInterface', {
+				Object.defineProperty(instance, 'serialize', {
 					value: function () {
 						const {
 							ModelSerializer,
@@ -517,7 +517,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 
 				Object.defineProperty(instance, 'toJSON', {
 					value: function () {
-						return JSON.stringify(this.toInterface());
+						return JSON.stringify(this.serialize());
 					},
 					writable: true,
 					enumerable: false,
@@ -526,7 +526,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 
 				Object.defineProperty(instance, 'clone', {
 					value: function () {
-						const iface = this.toInterface();
+						const iface = this.serialize();
 						// Use wrappedConstructor directly to ensure proper decoration
 						return new wrappedConstructor(iface);
 					},

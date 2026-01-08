@@ -68,7 +68,7 @@ console.log(user.balance);    // bigint: 999999999999999n
 console.log(user.createdAt);  // Date object
 
 // Serialize to JSON-compatible format
-const json = user.toInterface();
+const json = user.serialize();
 ```
 
 ## 📖 Core Concepts

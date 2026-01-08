@@ -39,7 +39,7 @@ try {
   console.log('   createdAt is Date?', user.createdAt instanceof Date);
 
   console.log('\n2. Serializing to interface...');
-  const serialized = user.toInterface();
+  const serialized = user.serialize();
   console.log('✅ Serialized:', serialized);
 
   console.log('\n3. Round-trip test...');
@@ -51,9 +51,9 @@ try {
     createdAt: user2.createdAt.getTime() === user.createdAt.getTime(),
   });
 
-  console.log('\n4. Static method fromInterface...');
-  const user3 = User.fromInterface(userData);
-  console.log('✅ fromInterface:', user3 instanceof User);
+  console.log('\n4. Static method deserialize...');
+  const user3 = User.deserialize(userData);
+  console.log('✅ deserialize:', user3 instanceof User);
 
   console.log('\n5. JSON serialization...');
   const json = user.toJSON();

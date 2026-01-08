@@ -85,7 +85,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
     expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 10k instancias
   });
 
-  test('Performance: Serialización (toInterface)', () => {
+  test('Performance: Serialización (serialize)', () => {
     const users: User[] = [];
     for (let i = 0; i < 1000; i++) {
       users.push(
@@ -101,14 +101,14 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
     const start = performance.now();
     for (const user of users) {
-      user.toInterface();
+      user.serialize();
     }
     const end = performance.now();
 
     const totalTime = end - start;
     const avgTime = totalTime / users.length;
 
-    console.log('\n=== SERIALIZACIÓN (toInterface) ===');
+    console.log('\n=== SERIALIZACIÓN (serialize) ===');
     console.log(`Iteraciones: ${users.length}`);
     console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
     console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
@@ -116,7 +116,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
     expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
   });
 
-  test('Performance: Deserialización (fromInterface)', () => {
+  test('Performance: Deserialización (deserialize)', () => {
     const plainUsers = [];
     for (let i = 0; i < 1000; i++) {
       plainUsers.push({
@@ -130,14 +130,14 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
     const start = performance.now();
     for (const data of plainUsers) {
-      User.fromInterface(data);
+      User.deserialize(data);
     }
     const end = performance.now();
 
     const totalTime = end - start;
     const avgTime = totalTime / plainUsers.length;
 
-    console.log('\n=== DESERIALIZACIÓN (fromInterface) ===');
+    console.log('\n=== DESERIALIZACIÓN (deserialize) ===');
     console.log(`Iteraciones: ${plainUsers.length}`);
     console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
     console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
@@ -493,8 +493,8 @@ describe('Performance: Resumen y conclusiones', () => {
 📊 Benchmarks realizados:
    ✅ Plain objects (baseline)
    ✅ Instancias QModel
-   ✅ Serialización (toInterface)
-   ✅ Deserialización (fromInterface)
+   ✅ Serialización (serialize)
+   ✅ Deserialización (deserialize)
    ✅ Inferencia de arrays (pequeños y grandes)
    ✅ Anidación profunda (4 niveles)
    ✅ Tipos complejos (Date, BigInt, RegExp, Map, Set)

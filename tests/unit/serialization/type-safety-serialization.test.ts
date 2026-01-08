@@ -1,6 +1,6 @@
 /**
  * Test to verify that the type system works correctly
- * and that toInterface() returns the correct serialized type
+ * and that serialize() returns the correct serialized type
  * 
  * Tests type transformations:
  * - RegExp → string
@@ -39,7 +39,7 @@ class TypeSafeModel extends QModel<ITypeSafeModel> {
 }
 
 describe('Type Safety', () => {
-  test('toInterface() should return correct serialized types', () => {
+  test('serialize() should return correct serialized types', () => {
     const model = new TypeSafeModel({
       pattern: /test/gi,
       error: new Error('Test error'),
@@ -48,7 +48,7 @@ describe('Type Safety', () => {
       tags: new Set(['tag1', 'tag2']),
     });
 
-    const serialized = model.toInterface();
+    const serialized = model.serialize();
 
     // TypeScript sabe que estos son objetos con __type o strings
     expect(typeof serialized.pattern).toBe('object'); // Ahora es { __type: 'regexp', source, flags }
@@ -68,7 +68,7 @@ describe('Type Safety', () => {
     expect(serialized.tags).toEqual({ __type: 'Set', values: ['tag1', 'tag2'] });
   });
 
-  test('fromInterface() should accept serialized data', () => {
+  test('deserialize() should accept serialized data', () => {
     const serializedData = {
       pattern: '/test/gi',
       error: 'Error: Test error',
@@ -77,7 +77,7 @@ describe('Type Safety', () => {
       tags: ['tag1', 'tag2'],
     };
 
-    const model = TypeSafeModel.fromInterface(serializedData);
+    const model = TypeSafeModel.deserialize(serializedData);
 
     // Types are restored correctly
     expect(model.pattern).toBeInstanceOf(RegExp);
@@ -87,7 +87,7 @@ describe('Type Safety', () => {
     expect(model.tags).toBeInstanceOf(Set);
   });
 
-  test('fromInterface() should also accept original data', () => {
+  test('deserialize() should also accept original data', () => {
     const originalData = {
       pattern: /test/gi,
       error: new Error('Test error'),
@@ -96,7 +96,7 @@ describe('Type Safety', () => {
       tags: new Set(['tag1', 'tag2']),
     };
 
-    const model = TypeSafeModel.fromInterface(originalData);
+    const model = TypeSafeModel.deserialize(originalData);
 
     expect(model.pattern).toBeInstanceOf(RegExp);
     expect(model.error).toBeInstanceOf(Error);
@@ -115,10 +115,10 @@ describe('Type Safety', () => {
     });
 
     // Serialize
-    const serialized = original.toInterface();
+    const serialized = original.serialize();
     
     // Deserialize
-    const restored = TypeSafeModel.fromInterface(serialized);
+    const restored = TypeSafeModel.deserialize(serialized);
 
     // Verify integrity
     expect(restored.pattern.source).toBe('test');

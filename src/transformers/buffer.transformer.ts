@@ -23,7 +23,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * console.log(file.data instanceof ArrayBuffer); // true
  * console.log(file.data.byteLength); // 5
  * 
- * const json = file.toInterface();
+ * const json = file.serialize();
  * console.log(json.data); // [72, 101, 108, 108, 111]
  * ```
  */
@@ -40,7 +40,7 @@ export class ArrayBufferTransformer
    * @returns An ArrayBuffer instance
    * @throws {Error} If the value is not an array or ArrayBuffer
    */
-  fromInterface(
+  deserialize(
     value: number[] | ArrayBuffer,
     propertyKey: string,
     className: string,
@@ -67,7 +67,7 @@ export class ArrayBufferTransformer
    * @param value - The ArrayBuffer to serialize
    * @returns Array of bytes (0-255)
    */
-  toInterface(value: ArrayBuffer): number[] {
+  serialize(value: ArrayBuffer): number[] {
     return Array.from(new Uint8Array(value));
   }
 
@@ -112,7 +112,7 @@ export class ArrayBufferTransformer
  * console.log(data.view instanceof DataView); // true
  * console.log(data.view.byteLength); // 3
  * 
- * const json = data.toInterface();
+ * const json = data.serialize();
  * console.log(json.view); // [0, 255, 128]
  * ```
  */
@@ -126,7 +126,7 @@ export class DataViewTransformer extends BaseTransformer<number[], DataView> imp
    * @returns A DataView instance
    * @throws {Error} If the value is not an array, DataView, or ArrayBuffer
    */
-  fromInterface(
+  deserialize(
     value: number[] | DataView | ArrayBuffer,
     propertyKey: string,
     className: string,
@@ -157,7 +157,7 @@ export class DataViewTransformer extends BaseTransformer<number[], DataView> imp
    * @param value - The DataView to serialize
    * @returns Array of bytes from the underlying buffer
    */
-  toInterface(value: DataView): number[] {
+  serialize(value: DataView): number[] {
     return Array.from(new Uint8Array(value.buffer));
   }
 

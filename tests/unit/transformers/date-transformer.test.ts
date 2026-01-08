@@ -32,7 +32,7 @@ describe('Unit: Date Transformer', () => {
 			updatedAt: null,
 		});
 
-		const serialized = event.toInterface();
+		const serialized = event.serialize();
 
 		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		expect(typeof serialized.createdAt).toBe('string');
@@ -93,7 +93,7 @@ describe('Unit: Date Transformer', () => {
 		});
 
 		expect(event.createdAt.getMilliseconds()).toBe(999);
-		expect(event.toInterface().createdAt).toContain('.999Z');
+		expect(event.serialize().createdAt).toContain('.999Z');
 	});
 
 	test('should handle timezone information', () => {
@@ -105,7 +105,7 @@ describe('Unit: Date Transformer', () => {
 
 		// Date is always in UTC internally
 		expect(event.createdAt.getUTCHours()).toBe(14);
-		expect(event.toInterface().createdAt).toContain('14:30:00');
+		expect(event.serialize().createdAt).toContain('14:30:00');
 	});
 
 	test('should handle various date formats', () => {
