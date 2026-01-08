@@ -209,13 +209,16 @@ export abstract class QModel<
 			this.constructor as ThisConstructor
 		);
 		
-		// Copy properties from deserialized instance, preserving descriptors
-		// This is critical for @Quick() decorator with `!` syntax
+		// Copy ALL properties from deserialized instance
+		// (includes both transformed properties with @QType and copied properties without @QType)
+		// Use defineProperty to prevent TypeScript's useDefineForClassFields from overwriting
 		for (const key of Object.keys(deserialized)) {
-			const descriptor = Object.getOwnPropertyDescriptor(deserialized, key);
-			if (descriptor) {
-				Object.defineProperty(this, key, descriptor);
-			}
+			Object.defineProperty(this, key, {
+				value: (deserialized as any)[key],
+				writable: true,
+				enumerable: true,
+				configurable: true
+			});
 		}
 		
 		// Remove temporary property

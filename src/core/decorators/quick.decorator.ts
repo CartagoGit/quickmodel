@@ -84,66 +84,52 @@ export interface QuickOptions {
 /**
  * Class decorator that automatically applies @QType() to all properties.
  * 
- * Properties are inferred from the data passed to the constructor.
+ * Properties are registered from the data passed to the constructor.
  * 
- * **IMPORTANT:** This decorator **only works with `declare` keyword**.
- * Properties with `!` (definite assignment) will NOT work due to how
- * TypeScript compiles field initialization with `useDefineForClassFields: true`.
+ * **Auto-detection (ONLY for unambiguous types):**
+ * - **Date**: Automatically detected from ISO 8601 strings
+ * - **BigInt**: Automatically detected from numeric strings with 15+ digits
+ * - **Set/Map**: MUST be specified in type mapping (cannot be distinguished from arrays)
  * 
- * @param typeMap Optional mapping of property names to their target types (Set, Map, etc.)
+ * @param typeMap REQUIRED mapping for Set, Map, and custom class properties
  * @returns A class decorator function
  * 
  * @example
- * **✅ CORRECT - Use `declare`:**
- * ```typescript
- * @Quick()
- * class User extends QModel<IUser> {
- *   declare id: string;       // ✅ Works
- *   declare name: string;     // ✅ Works
- *   declare createdAt: Date;  // ✅ Works - autodetected from ISO string
- * }
- * ```
- * 
- * @example
- * **✅ With type mapping for Set/Map:**
+ * **✅ Correct usage with type mapping:**
  * ```typescript
  * @Quick({ tags: Set, metadata: Map })
  * class User extends QModel<IUser> {
- *   declare tags: Set<string>;           // ✅ Array → Set
- *   declare metadata: Map<string, any>;  // ✅ Array pairs → Map
+ *   declare id: number;
+ *   declare date: Date;              // Auto-detected from ISO string
+ *   declare tags: Set<string>;        // NEEDS type mapping
+ *   declare metadata: Map<string, any>; // NEEDS type mapping
  * }
  * ```
  * 
  * @example
- * **❌ INCORRECT - Don't use `!`:**
+ * **✅ Works with both declare and ! syntax:**
  * ```typescript
- * @Quick()
+ * @Quick({ tags: Set })
  * class User extends QModel<IUser> {
- *   id!: string;      // ❌ Won't work
- *   name!: string;    // ❌ Won't work
+ *   id!: number;         // ✅ Works
+ *   tags!: Set<string>;  // ✅ Works with type mapping
  * }
  * ```
  * 
  * @remarks
- * **Why only `declare` works:**
+ * **Why Set/Map need type mapping:**
  * 
- * With `useDefineForClassFields: true` (ES2022+):
- * - `declare` means "this property exists but is not initialized here"
- * - `!` means "I will definitely assign this" and generates initialization code
- * - That initialization code runs AFTER the constructor, overwriting values
+ * The backend sends both as arrays:
+ * - `tags: ["a", "b"]` → Array or Set? Cannot determine
+ * - `metadata: [["k", "v"]]` → Array or Map? Cannot determine
  * 
- * For `!` syntax, use `@QType()` on each property instead:
- * ```typescript
- * class User extends QModel<IUser> {
- *   @QType() id!: string;
- *   @QType() name!: string;
- * }
- * ```
+ * Without explicit type mapping, the decorator cannot know the developer's intent.
+ * This is a design decision for robustness over "magic" heuristics.
  * 
- * @see {@link QType} for the decorator that works with both syntaxes
+ * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  */
 export function Quick(typeMap?: QuickOptions): ClassDecorator {
-  return function <T extends Function>(target: any): T | void {
+  return function <T extends Function>(target: T): any {
     // Mark class as using @Quick() for auto-registration
     Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
     
@@ -178,13 +164,17 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
         if (mappedType) {
           Reflect.defineMetadata('design:type', mappedType, target.prototype, propertyKey);
         } else {
+          // Only auto-detect unambiguous types: Date and BigInt
           const value = data[propertyKey];
           if (value !== null && value !== undefined) {
             let inferredType = value.constructor;
             
+            // Date detection: ISO 8601 string pattern
             if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
               inferredType = Date;
-            } else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+            }
+            // BigInt detection: 15+ digit numeric string
+            else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
               inferredType = BigInt;
             }
             
@@ -214,7 +204,8 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
       }
       
       // Create instance without calling constructor
-      const instance = Object.create(originalConstructor.prototype);
+      // Use wrappedConstructor prototype so this.constructor === wrappedConstructor
+      const instance = Object.create(wrappedConstructor.prototype);
       
       // Register properties if not already done
       if (!propertiesRegistered) {
@@ -233,13 +224,17 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
           if (mappedType) {
             Reflect.defineMetadata('design:type', mappedType, originalConstructor.prototype, propertyKey);
           } else {
+            // Only auto-detect unambiguous types: Date and BigInt
             const value = data[propertyKey];
             if (value !== null && value !== undefined) {
               let inferredType = value.constructor;
               
+              // Date detection: ISO 8601 string pattern
               if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
                 inferredType = Date;
-              } else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+              }
+              // BigInt detection: 15+ digit numeric string
+              else if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
                 inferredType = BigInt;
               }
               
@@ -271,19 +266,44 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
           (instance as any)[key] = (tempInstance as any)[key];
         }
         
-        // Add QModel methods manually
-        instance.initialize = function() {};
-        instance.toInterface = function() {
-          const { ModelSerializer } = require('../services/model-serializer.service');
-          const serializer = new ModelSerializer(qTransformerRegistry);
-          return serializer.serialize(this, this.constructor);
-        };
-        instance.toJSON = function() {
-          return JSON.stringify(this.toInterface());
-        };
-        instance.clone = function() {
-          return new this.constructor(this.toInterface());
-        };
+        // Add QModel methods manually (non-enumerable to avoid serialization issues)
+        Object.defineProperty(instance, 'initialize', {
+          value: function() {},
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+        
+        Object.defineProperty(instance, 'toInterface', {
+          value: function() {
+            const { ModelSerializer } = require('../services/model-serializer.service');
+            const serializer = new ModelSerializer(qTransformerRegistry);
+            return serializer.serialize(this, this.constructor);
+          },
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+        
+        Object.defineProperty(instance, 'toJSON', {
+          value: function() {
+            return JSON.stringify(this.toInterface());
+          },
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+        
+        Object.defineProperty(instance, 'clone', {
+          value: function() {
+            const iface = this.toInterface();
+            // Use wrappedConstructor directly to ensure proper decoration
+            return new wrappedConstructor(iface);
+          },
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
         
         return instance;
       }
@@ -311,7 +331,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
       configurable: true
     });
     
-    return wrappedConstructor as T;
+    return wrappedConstructor as any;
   };
 }
 

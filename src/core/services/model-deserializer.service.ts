@@ -125,12 +125,24 @@ export class ModelDeserializer<
    * Preserves null/undefined values as-is without transformation.
    */
   private populateInstance<T extends Record<string, unknown>>(instance: Record<string, unknown>, data: T, modelClass: Function): void {
+    // Get list of properties decorated with @QType()
+    const decoratedFields = Reflect.getMetadata(FIELDS_METADATA_KEY, instance) || 
+                            Reflect.getMetadata(FIELDS_METADATA_KEY, Object.getPrototypeOf(instance)) || 
+                            [];
+    
     for (const [key, value] of Object.entries(data)) {
       if (value === null || value === undefined) {
         instance[key] = value;
         continue;
       }
 
+      // If property is NOT decorated with @QType(), copy as-is
+      if (!decoratedFields.includes(key)) {
+        instance[key] = value;
+        continue;
+      }
+
+      // Property IS decorated with @QType() → transform it
       const context: IQTransformContext = {
         propertyKey: key,
         className: modelClass.name,
