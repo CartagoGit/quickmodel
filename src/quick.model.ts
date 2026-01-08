@@ -162,18 +162,22 @@ export abstract class QModel<
 	 * Constructs a new model instance from interface data or another instance.
 	 * Automatically deserializes complex types (Date, BigInt, etc.) based on @QType decorators.
 	 * 
-	 * @param data - Either a plain interface object or another model instance
+	 * @param data - Either a plain interface object or another model instance (for cloning)
 	 * 
 	 * @example
 	 * ```typescript
+	 * // From interface data
 	 * const user = new User({
 	 *   id: '1',
 	 *   name: 'John',
 	 *   createdAt: new Date() // or '2024-01-01T00:00:00.000Z'
 	 * });
+	 * 
+	 * // Clone from another instance
+	 * const clonedUser = new User(user);
 	 * ```
 	 */
-	constructor(data: ModelData<TInterface>) {
+	constructor(data: ModelData<TInterface> | QModel<TInterface>) {
 		Object.defineProperty(this, '__tempData', {
 			value: data,
 			writable: false,

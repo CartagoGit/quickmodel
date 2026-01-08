@@ -68,7 +68,35 @@ export class ModelSerializer<
   serialize(model: TModel): TInterface {
     const result: Record<string, unknown> = {};
 
-    for (const [key, value] of Object.entries(model as Record<string, unknown>)) {
+    // Get all property keys, including those with getters/setters
+    const keys = new Set<string>();
+    
+    // Add own enumerable properties
+    for (const key of Object.keys(model as object)) {
+      keys.add(key);
+    }
+    
+    // Add properties with getters/setters from prototype chain
+    let proto = Object.getPrototypeOf(model);
+    while (proto && proto !== Object.prototype) {
+      for (const key of Object.getOwnPropertyNames(proto)) {
+        const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+        if (descriptor && (descriptor.get || descriptor.set) && key !== 'constructor') {
+          keys.add(key);
+        }
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+    
+    // Serialize all discovered properties
+    for (const key of keys) {
+      // Skip internal properties
+      if (key.startsWith('__') || key.startsWith('_')) {
+        continue;
+      }
+      
+      const value = (model as any)[key];
+      
       if (value === undefined || value === null) {
         result[key] = value;
         continue;
@@ -116,7 +144,7 @@ export class ModelSerializer<
   private serializeValue(value: unknown): unknown {
     // Date
     if (value instanceof Date) {
-      const transformer = this.qTransformerRegistry.get(Date) || this.qTransformerRegistry.get('date');
+      const transformer = this.qTransformerRegistry.get('date') || this.qTransformerRegistry.get(Date);
       return transformer ? transformer.toInterface(value) : value.toISOString();
     }
 
@@ -135,7 +163,10 @@ export class ModelSerializer<
     // BigInt
     if (typeof value === 'bigint') {
       const transformer = this.qTransformerRegistry.get('bigint');
-      return transformer ? transformer.toInterface(value) : value.toString();
+      if (transformer) {
+        return transformer.toInterface(value);
+      }
+      return value.toString();
     }
 
     // Symbol
@@ -227,14 +258,20 @@ export class ModelSerializer<
 
     // Map
     if (value instanceof Map) {
-      const transformer = this.qTransformerRegistry.get('map');
-      return transformer ? transformer.toInterface(value) : Object.fromEntries(value);
+      const transformer = this.qTransformerRegistry.get('map') || this.qTransformerRegistry.get(Map);
+      if (transformer) {
+        return transformer.toInterface(value);
+      }
+      return Object.fromEntries(value);
     }
 
     // Set
     if (value instanceof Set) {
-      const transformer = this.qTransformerRegistry.get('set');
-      return transformer ? transformer.toInterface(value) : Array.from(value);
+      const transformer = this.qTransformerRegistry.get('set') || this.qTransformerRegistry.get(Set);
+      if (transformer) {
+        return transformer.toInterface(value);
+      }
+      return Array.from(value);
     }
 
     // Primitive

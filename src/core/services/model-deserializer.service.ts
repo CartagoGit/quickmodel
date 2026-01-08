@@ -367,15 +367,9 @@ export class ModelDeserializer<
       const modelClass = qModelRegistry.findByProperties(Object.keys(firstObject));
       
       if (!modelClass) {
-        // No matching model found - throw descriptive error
-        const available = qModelRegistry.getRegisteredSignatures();
-        
-        throw new Error(
-          `${context.className}.${context.propertyKey}: Cannot infer model for array elements. ` +
-          `Object has properties [${firstProperties}] but no registered model matches. ` +
-          `Available signatures: ${available.length > 0 ? available.join(' | ') : 'none'}. ` +
-          `Use @QType(ModelClass) to specify the type explicitly.`
-        );
+        // No matching model found - return as plain objects
+        // This is normal for arrays of plain objects without a model
+        return value;
       }
 
       // Deserialize all plain objects using same model class, keep others as-is
@@ -429,14 +423,8 @@ export class ModelDeserializer<
       const modelClass = qModelRegistry.findByProperties(properties);
 
       if (!modelClass) {
-        const available = qModelRegistry.getRegisteredSignatures();
-        
-        throw new Error(
-          `${context.className}.${context.propertyKey}[${index}]: Cannot infer model for element. ` +
-          `Object has properties [${signature}] but no registered model matches. ` +
-          `Available signatures: ${available.length > 0 ? available.join(' | ') : 'none'}. ` +
-          `Use @QType(ModelClass) to specify the type explicitly.`
-        );
+        // No matching model - keep as plain object
+        return item;
       }
 
       return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
@@ -518,12 +506,15 @@ export class ModelDeserializer<
    * - Primitives: with type validation
    */
   private transformByDesignType(value: unknown, designType: Function | undefined, context: IQTransformContext): unknown {
-    // Si no hay designType (usando declare), intenta detectar del valor
+    // Check for __type marker FIRST (highest priority)
+    // This allows roundtrip: Model → toInterface() → Model
+    const detectedTransformer = this.detectTransformerFromValue(value);
+    if (detectedTransformer) {
+      return detectedTransformer.fromInterface(value, context.propertyKey, context.className);
+    }
+    
+    // Si no hay designType (usando declare), return value as-is
     if (!designType) {
-      const detectedTransformer = this.detectTransformerFromValue(value);
-      if (detectedTransformer) {
-        return detectedTransformer.fromInterface(value, context.propertyKey, context.className);
-      }
       return value;
     }
 
