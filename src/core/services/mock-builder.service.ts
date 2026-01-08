@@ -36,8 +36,37 @@ export class MockBuilder<TInstance, TInterface> {
 	private ensureFieldsRegistered(): void {
 		if (!this._fieldsRegistered) {
 			try {
-				// Try to create an instance with empty data to trigger field registration
-				new this.modelClass({} as TInterface);
+				// Create sample data for all properties in the typeMap to trigger registration
+				const typeMap = Reflect.getMetadata('__quickTypeMap__', this.modelClass) || {};
+				const sampleData: Record<string, any> = {};
+				
+				for (const [key, value] of Object.entries(typeMap)) {
+					// Generate appropriate sample data based on type
+					if (value === Date) {
+						sampleData[key] = new Date().toISOString();
+					} else if (value === BigInt) {
+						sampleData[key] = '1';
+					} else if (value === Set) {
+						sampleData[key] = [];
+					} else if (value === Map) {
+						sampleData[key] = {};
+					} else if (value === Symbol) {
+						sampleData[key] = 'Symbol(test)';
+					} else if (value === RegExp) {
+						sampleData[key] = '/test/';
+					} else if (value === Error) {
+						sampleData[key] = { message: 'test' };
+					} else if (typeof value === 'function') {
+						// Nested model or constructor
+						sampleData[key] = {};
+					} else if (Array.isArray(value)) {
+						// Array with element type
+						sampleData[key] = [];
+					}
+				}
+				
+				// Try to create an instance to trigger field registration
+				new this.modelClass(sampleData as TInterface);
 			} catch (e) {
 				// If it fails, that's ok - fields might be already registered
 			}

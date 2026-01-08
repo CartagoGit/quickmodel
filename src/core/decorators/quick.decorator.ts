@@ -69,7 +69,7 @@
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
 import { ModelDeserializer } from '../services/model-deserializer.service';
-import { qTransformerRegistry } from '../registry';
+
 
 const QUICK_DECORATOR_KEY = '__quickModel__';
 const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
@@ -457,13 +457,11 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 			const createQuickInstance = (originalConstructor as any)
 				.__createQuickInstance;
 			if (createQuickInstance) {
-				type DataAsInterface = Record<string, unknown>;
+					type DataAsInterface = Record<string, unknown>;
 				type ThisConstructor = new (data: DataAsInterface) => any;
 
-				// Create deserializer with proper registry
-				const deserializer = new ModelDeserializer(
-					qTransformerRegistry
-				);
+				// Create deserializer
+				const deserializer = new ModelDeserializer();
 
 				// Deserialize directly - this will create a new instance and populate it
 				const tempInstance = deserializer.deserialize(
@@ -509,9 +507,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 						const {
 							ModelSerializer,
 						} = require('../services/model-serializer.service');
-						const serializer = new ModelSerializer(
-							qTransformerRegistry
-						);
+					const serializer = new ModelSerializer();
 						return serializer.serialize(this, this.constructor);
 					},
 					writable: true,

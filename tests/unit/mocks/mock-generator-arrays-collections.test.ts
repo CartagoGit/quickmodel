@@ -165,7 +165,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 
 	test('should allow overriding Set and Map', () => {
 		const customTags = new Set(['tag1', 'tag2', 'tag3']);
-		const customMetadata = new Map([['key1', 'value1'], ['key2', 123]]);
+		const customMetadata = new Map<string, unknown>([['key1', 'value1'], ['key2', 123]]);
 
 		const mock = DataStore.mock().random({
 			tags: customTags,

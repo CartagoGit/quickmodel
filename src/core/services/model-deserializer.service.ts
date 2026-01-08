@@ -10,7 +10,6 @@
  * @remarks
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles data deserialization
- * - **Dependency Inversion**: Depends on IQTransformerRegistry abstraction
  * 
  * Deserialization process:
  * 1. Creates instance via Object.create (avoids constructor)
@@ -21,7 +20,7 @@
  * 
  * @example
  * ```typescript
- * const deserializer = new ModelDeserializer(qTransformerRegistry);
+ * const deserializer = new ModelDeserializer();
  * 
  * class User extends QuickModel<IUser> {
  *   @QType() name!: string;
@@ -45,19 +44,75 @@
  */
 
 import 'reflect-metadata';
-import { IQDeserializer, IQTransformContext, IQTransformer, IQTransformerRegistry } from '../interfaces';
+import { IQDeserializer, IQTransformContext, IQTransformer } from '../interfaces';
 import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
+import { BigIntTransformer } from '../../transformers/bigint.transformer';
+import { DateTransformer } from '../../transformers/date.transformer';
+import { ErrorTransformer } from '../../transformers/error.transformer';
+import { MapTransformer, SetTransformer } from '../../transformers/map-set.transformer';
+import { RegExpTransformer } from '../../transformers/regexp.transformer';
+import { SymbolTransformer } from '../../transformers/symbol.transformer';
+import { ArrayBufferTransformer, DataViewTransformer } from '../../transformers/buffer.transformer';
+import { TypedArrayTransformer } from '../../transformers/typed-array.transformer';
 
 export class ModelDeserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
   TModel = any
 > implements IQDeserializer<TInterface, TModel> {
+  private readonly transformers: Map<string, IQTransformer<any, any>>;
+
   /**
    * Creates a model deserializer.
-   * 
-   * @param qTransformerRegistry - Registry containing type transformers
    */
-  constructor(private readonly qTransformerRegistry: IQTransformerRegistry) {}
+  constructor() {
+    // Initialize transformers
+    this.transformers = new Map();
+    
+    const dateTransformer = new DateTransformer();
+    const bigintTransformer = new BigIntTransformer();
+    const symbolTransformer = new SymbolTransformer();
+    const regexpTransformer = new RegExpTransformer();
+    const errorTransformer = new ErrorTransformer();
+    const mapTransformer = new MapTransformer();
+    const setTransformer = new SetTransformer();
+    const bufferTransformer = new ArrayBufferTransformer();
+    const dataviewTransformer = new DataViewTransformer();
+    
+    // Register by name
+    this.transformers.set('date', dateTransformer);
+    this.transformers.set('bigint', bigintTransformer);
+    this.transformers.set('symbol', symbolTransformer);
+    this.transformers.set('regexp', regexpTransformer);
+    this.transformers.set('error', errorTransformer);
+    this.transformers.set('map', mapTransformer);
+    this.transformers.set('set', setTransformer);
+    this.transformers.set('buffer', bufferTransformer);
+    this.transformers.set('arraybuffer', bufferTransformer);
+    this.transformers.set('dataview', dataviewTransformer);
+    
+    // Register typed arrays
+    const int8Transformer = new TypedArrayTransformer<Int8Array>(Int8Array);
+    const uint8Transformer = new TypedArrayTransformer<Uint8Array>(Uint8Array);
+    const int16Transformer = new TypedArrayTransformer<Int16Array>(Int16Array);
+    const uint16Transformer = new TypedArrayTransformer<Uint16Array>(Uint16Array);
+    const int32Transformer = new TypedArrayTransformer<Int32Array>(Int32Array);
+    const uint32Transformer = new TypedArrayTransformer<Uint32Array>(Uint32Array);
+    const float32Transformer = new TypedArrayTransformer<Float32Array>(Float32Array);
+    const float64Transformer = new TypedArrayTransformer<Float64Array>(Float64Array);
+    const bigint64Transformer = new TypedArrayTransformer<BigInt64Array>(BigInt64Array);
+    const biguint64Transformer = new TypedArrayTransformer<BigUint64Array>(BigUint64Array);
+    
+    this.transformers.set('int8array', int8Transformer);
+    this.transformers.set('uint8array', uint8Transformer);
+    this.transformers.set('int16array', int16Transformer);
+    this.transformers.set('uint16array', uint16Transformer);
+    this.transformers.set('int32array', int32Transformer);
+    this.transformers.set('uint32array', uint32Transformer);
+    this.transformers.set('float32array', float32Transformer);
+    this.transformers.set('float64array', float64Transformer);
+    this.transformers.set('bigint64array', bigint64Transformer);
+    this.transformers.set('biguint64array', biguint64Transformer);
+  }
 
   /**
    * Deserializes plain data into a model instance.
@@ -157,7 +212,7 @@ export class ModelDeserializer<
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       
       if (fieldType) {
-        const transformer = this.qTransformerRegistry.get(fieldType);
+        const transformer = this.transformers.get(fieldType);
         if (transformer) {
           instance[key] = transformer.fromInterface(value, context.propertyKey, context.className);
           continue;
@@ -236,7 +291,7 @@ export class ModelDeserializer<
           );
           
           if (isMapLike) {
-            const mapTransformer = this.qTransformerRegistry.get('map');
+            const mapTransformer = this.transformers.get('map');
             if (mapTransformer) {
               instance[key] = mapTransformer.fromInterface(value, context.propertyKey, context.className);
               continue;
@@ -248,7 +303,7 @@ export class ModelDeserializer<
           const propertyNameSuggestsSet = /tags?|categories|items|elements|labels/i.test(key);
           
           if (hasUniqueElements || propertyNameSuggestsSet) {
-            const setTransformer = this.qTransformerRegistry.get('set');
+            const setTransformer = this.transformers.get('set');
             if (setTransformer) {
               instance[key] = setTransformer.fromInterface(value, context.propertyKey, context.className);
               continue;
@@ -322,7 +377,7 @@ export class ModelDeserializer<
     if (typeof value === 'string') {
       // ISO 8601 date format - más específico
       if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(value)) {
-        return this.qTransformerRegistry.get('date');
+        return this.transformers.get('date');
       }
     }
 
@@ -332,29 +387,29 @@ export class ModelDeserializer<
       // Maneja tanto mayúsculas (Map, Set) como minúsculas (bigint, symbol, regexp)
       const typeValue = obj.__type;
       if (typeValue === 'Map') {
-        return this.qTransformerRegistry.get('map');
+        return this.transformers.get('map');
       }
       if (typeValue === 'Set') {
-        return this.qTransformerRegistry.get('set');
+        return this.transformers.get('set');
       }
       if (typeValue === 'regexp') {
-        return this.qTransformerRegistry.get('regexp');
+        return this.transformers.get('regexp');
       }
       if (typeValue === 'symbol') {
-        return this.qTransformerRegistry.get('symbol');
+        return this.transformers.get('symbol');
       }
       if (typeValue === 'bigint') {
-        return this.qTransformerRegistry.get('bigint');
+        return this.transformers.get('bigint');
       }
       if (typeValue === 'Error') {
-        return this.qTransformerRegistry.get('error');
+        return this.transformers.get('error');
       }
       if (typeValue === 'Buffer') {
-        return this.qTransformerRegistry.get('buffer');
+        return this.transformers.get('buffer');
       }
       // Check for typed arrays
       if (typeValue && typeof typeValue === 'string' && typeValue.endsWith('Array')) {
-        return this.qTransformerRegistry.get(typeValue.toLowerCase());
+        return this.transformers.get(typeValue.toLowerCase());
       }
     }
 
@@ -395,7 +450,7 @@ export class ModelDeserializer<
 
     // Date
     if (designType === Date) {
-      const transformer = this.qTransformerRegistry.get('date');
+      const transformer = this.transformers.get('date');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -407,7 +462,7 @@ export class ModelDeserializer<
 
     // BigInt (auto-detected via TypeScript metadata)
     if (designType === BigInt) {
-      const transformer = this.qTransformerRegistry.get('bigint');
+      const transformer = this.transformers.get('bigint');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -422,7 +477,7 @@ export class ModelDeserializer<
 
     // Symbol (auto-detected via TypeScript metadata)
     if (designType === Symbol) {
-      const transformer = this.qTransformerRegistry.get('symbol');
+      const transformer = this.transformers.get('symbol');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -437,7 +492,7 @@ export class ModelDeserializer<
 
     // Map
     if (designType === Map) {
-      const transformer = this.qTransformerRegistry.get('map');
+      const transformer = this.transformers.get('map');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -449,7 +504,7 @@ export class ModelDeserializer<
 
     // Set
     if (designType === Set) {
-      const transformer = this.qTransformerRegistry.get('set');
+      const transformer = this.transformers.get('set');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -461,7 +516,7 @@ export class ModelDeserializer<
 
     // RegExp (auto-detected via TypeScript metadata)
     if (designType === RegExp) {
-      const transformer = this.qTransformerRegistry.get('regexp');
+      const transformer = this.transformers.get('regexp');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -470,7 +525,7 @@ export class ModelDeserializer<
 
     // Error (auto-detected via TypeScript metadata)
     if (designType === Error) {
-      const transformer = this.qTransformerRegistry.get('error');
+      const transformer = this.transformers.get('error');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -479,7 +534,7 @@ export class ModelDeserializer<
 
     // TypedArrays (auto-detected via TypeScript metadata)
     if (designType === Uint8Array) {
-      const transformer = this.qTransformerRegistry.get('uint8array');
+      const transformer = this.transformers.get('uint8array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -487,7 +542,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Uint16Array) {
-      const transformer = this.qTransformerRegistry.get('uint16array');
+      const transformer = this.transformers.get('uint16array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -495,7 +550,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Uint32Array) {
-      const transformer = this.qTransformerRegistry.get('uint32array');
+      const transformer = this.transformers.get('uint32array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -503,7 +558,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Int8Array) {
-      const transformer = this.qTransformerRegistry.get('int8array');
+      const transformer = this.transformers.get('int8array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -511,7 +566,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Int16Array) {
-      const transformer = this.qTransformerRegistry.get('int16array');
+      const transformer = this.transformers.get('int16array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -519,7 +574,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Int32Array) {
-      const transformer = this.qTransformerRegistry.get('int32array');
+      const transformer = this.transformers.get('int32array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -527,7 +582,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Float32Array) {
-      const transformer = this.qTransformerRegistry.get('float32array');
+      const transformer = this.transformers.get('float32array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -535,7 +590,7 @@ export class ModelDeserializer<
     }
     
     if (designType === Float64Array) {
-      const transformer = this.qTransformerRegistry.get('float64array');
+      const transformer = this.transformers.get('float64array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -543,7 +598,7 @@ export class ModelDeserializer<
     }
     
     if (designType === BigInt64Array) {
-      const transformer = this.qTransformerRegistry.get('bigint64array');
+      const transformer = this.transformers.get('bigint64array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -551,7 +606,7 @@ export class ModelDeserializer<
     }
     
     if (designType === BigUint64Array) {
-      const transformer = this.qTransformerRegistry.get('biguint64array');
+      const transformer = this.transformers.get('biguint64array');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -560,7 +615,7 @@ export class ModelDeserializer<
 
     // ArrayBuffer (auto-detected via TypeScript metadata)
     if (designType === ArrayBuffer) {
-      const transformer = this.qTransformerRegistry.get('arraybuffer');
+      const transformer = this.transformers.get('arraybuffer');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }
@@ -569,7 +624,7 @@ export class ModelDeserializer<
 
     // DataView (auto-detected via TypeScript metadata)
     if (designType === DataView) {
-      const transformer = this.qTransformerRegistry.get('dataview');
+      const transformer = this.transformers.get('dataview');
       if (transformer) {
         return transformer.fromInterface(value, context.propertyKey, context.className);
       }

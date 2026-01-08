@@ -51,4 +51,4 @@ export type QModelInstance<T> = T extends abstract new (
 export type QModelInterface<T> = QModelInstance<T> extends QModel<infer I>
 	? I
 	: never;
-	: never;
+

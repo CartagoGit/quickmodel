@@ -1,26 +1,11 @@
 import 'reflect-metadata';
-import {
-  QArrayBuffer,
-  QBigInt64Array,
-  QBigInt,
-  QBigUint64Array,
-  QDataView,
-  QError,
-  QType,
-  QFloat32Array,
-  QFloat64Array,
-  QInt16Array,
-  QInt32Array,
-  QInt8Array,
-  QModel,
-  QInterface,
-  QRegExp,
-  QSymbol,
-  QUint16Array,
-  QUint32Array,
-  type SerializedInterface,
-  QUint8Array,
-} from '../../src/quick.model';
+import { QModel, QInterface } from '../../../src/quick.model';
+import { Quick } from '../../../src/core/decorators/quick.decorator';
+import { QType } from '../../../src/core/decorators/qtype.decorator';
+// TODO: Este test usa una API antigua que ya no existe
+// Necesita ser actualizado para usar @Quick() y @QType() con las clases transformer actuales
+// import { BigIntTransformer } from '../../../src/transformers/bigint.transformer';
+// etc.
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
 console.log('║  EXHAUSTIVE TEST: ALL JAVASCRIPT INTRINSIC TYPES                ║');

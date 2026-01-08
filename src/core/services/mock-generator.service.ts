@@ -5,13 +5,17 @@
 
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
-import type { IQTransformerRegistry } from '../interfaces';
 import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
+
+const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
 export class MockGenerator {
-  constructor(private readonly qTransformerRegistry: IQTransformerRegistry) {}
+  /**
+   * Creates a new MockGenerator instance.
+   */
+  constructor() {}
 
   /**
    * Generates a mock based on reflect metadata.
@@ -75,6 +79,16 @@ export class MockGenerator {
       }
 
       current = Object.getPrototypeOf(current);
+    }
+
+    // Also check for @Quick() typeMap - if no fields registered, use typeMap keys
+    if (properties.size === 0) {
+      const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, instance.constructor) as Record<string, any> | undefined;
+      if (typeMap) {
+        for (const key of Object.keys(typeMap)) {
+          properties.add(key);
+        }
+      }
     }
 
     return Array.from(properties);

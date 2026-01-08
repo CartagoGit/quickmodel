@@ -6,6 +6,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick, QInterface } from '../../../src';
+import { QType } from '../../../src/core/decorators/qtype.decorator';
 
 describe('Unit: Mock Generator - Transformed Types', () => {
 	interface IEvent {
@@ -31,12 +32,12 @@ describe('Unit: Mock Generator - Transformed Types', () => {
 		pattern: RegExp,
 	})
 	class Event extends QModel<IEvent> implements QInterface<IEvent, IEventTransform> {
-		id!: string;
-		title!: string;
-		createdAt!: Date;
-		updatedAt!: Date | null;
-		attendees!: bigint;
-		pattern!: RegExp;
+		@QType() id!: string;
+		@QType() title!: string;
+		@QType(Date) createdAt!: Date;
+		@QType(Date) updatedAt!: Date | null;
+		@QType(BigInt) attendees!: bigint;
+		@QType(RegExp) pattern!: RegExp;
 	}
 
 	test('should generate mocks with Date types', () => {

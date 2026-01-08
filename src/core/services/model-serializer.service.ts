@@ -10,7 +10,6 @@
  * @remarks
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles model serialization
- * - **Dependency Inversion**: Depends on IQTransformerRegistry abstraction
  * 
  * Serialization process:
  * 1. Iterates through all model properties
@@ -20,7 +19,7 @@
  * 
  * @example
  * ```typescript
- * const serializer = new ModelSerializer(qTransformerRegistry);
+ * const serializer = new ModelSerializer();
  * 
  * class User extends QuickModel<IUser> {
  *   @QType() name!: string;
@@ -42,18 +41,61 @@
  * ```
  */
 
-import { IQSerializer, IQTransformerRegistry } from '../interfaces';
+import { IQSerializer } from '../interfaces';
+import { BigIntTransformer } from '../../transformers/bigint.transformer';
+import { DateTransformer } from '../../transformers/date.transformer';
+import { ErrorTransformer } from '../../transformers/error.transformer';
+import { RegExpTransformer } from '../../transformers/regexp.transformer';
+import { SymbolTransformer } from '../../transformers/symbol.transformer';
+import { TypedArrayTransformer } from '../../transformers/typed-array.transformer';
+import { URLTransformer } from '../../transformers/url.transformer';
+import { URLSearchParamsTransformer } from '../../transformers/url-search-params.transformer';
 
 export class ModelSerializer<
   TModel extends Record<string, unknown> = Record<string, unknown>,
   TInterface = any
 > implements IQSerializer<TModel, TInterface> {
+  private readonly transformers: Map<string | Function, any>;
+
   /**
    * Creates a model serializer.
-   * 
-   * @param qTransformerRegistry - Registry containing type transformers
    */
-  constructor(private readonly qTransformerRegistry: IQTransformerRegistry) {}
+  constructor() {
+    // Initialize transformers
+    this.transformers = new Map();
+    
+    const dateTransformer = new DateTransformer();
+    const bigintTransformer = new BigIntTransformer();
+    const symbolTransformer = new SymbolTransformer();
+    const regexpTransformer = new RegExpTransformer();
+    const errorTransformer = new ErrorTransformer();
+    const urlTransformer = new URLTransformer();
+    const urlSearchParamsTransformer = new URLSearchParamsTransformer();
+    
+    // Register by name and constructor
+    this.transformers.set('date', dateTransformer);
+    this.transformers.set(Date, dateTransformer);
+    this.transformers.set('bigint', bigintTransformer);
+    this.transformers.set('symbol', symbolTransformer);
+    this.transformers.set('regexp', regexpTransformer);
+    this.transformers.set(RegExp, regexpTransformer);
+    this.transformers.set('error', errorTransformer);
+    this.transformers.set(Error, errorTransformer);
+    this.transformers.set(URL, urlTransformer);
+    this.transformers.set(URLSearchParams, urlSearchParamsTransformer);
+    
+    // Register typed arrays
+    this.transformers.set(Int8Array, new TypedArrayTransformer<Int8Array>(Int8Array));
+    this.transformers.set(Uint8Array, new TypedArrayTransformer<Uint8Array>(Uint8Array));
+    this.transformers.set(Int16Array, new TypedArrayTransformer<Int16Array>(Int16Array));
+    this.transformers.set(Uint16Array, new TypedArrayTransformer<Uint16Array>(Uint16Array));
+    this.transformers.set(Int32Array, new TypedArrayTransformer<Int32Array>(Int32Array));
+    this.transformers.set(Uint32Array, new TypedArrayTransformer<Uint32Array>(Uint32Array));
+    this.transformers.set(Float32Array, new TypedArrayTransformer<Float32Array>(Float32Array));
+    this.transformers.set(Float64Array, new TypedArrayTransformer<Float64Array>(Float64Array));
+    this.transformers.set(BigInt64Array, new TypedArrayTransformer<BigInt64Array>(BigInt64Array));
+    this.transformers.set(BigUint64Array, new TypedArrayTransformer<BigUint64Array>(BigUint64Array));
+  }
 
   /**
    * Serializes a model instance to plain object.
@@ -144,25 +186,25 @@ export class ModelSerializer<
   private serializeValue(value: unknown): unknown {
     // Date
     if (value instanceof Date) {
-      const transformer = this.qTransformerRegistry.get('date') || this.qTransformerRegistry.get(Date);
+      const transformer = this.transformers.get('date') || this.transformers.get(Date);
       return transformer ? transformer.toInterface(value) : value.toISOString();
     }
 
     // URL
     if (value instanceof URL) {
-      const transformer = this.qTransformerRegistry.get(URL) || this.qTransformerRegistry.get(Symbol('URL').toString());
+      const transformer = this.transformers.get(URL) || this.transformers.get(Symbol('URL').toString());
       return transformer ? transformer.toInterface(value) : value.href;
     }
 
     // URLSearchParams
     if (value instanceof URLSearchParams) {
-      const transformer = this.qTransformerRegistry.get(URLSearchParams) || this.qTransformerRegistry.get(Symbol('URLSearchParams').toString());
+      const transformer = this.transformers.get(URLSearchParams) || this.transformers.get(Symbol('URLSearchParams').toString());
       return transformer ? transformer.toInterface(value) : value.toString();
     }
 
     // BigInt
     if (typeof value === 'bigint') {
-      const transformer = this.qTransformerRegistry.get('bigint');
+      const transformer = this.transformers.get('bigint');
       if (transformer) {
         return transformer.toInterface(value);
       }
@@ -171,7 +213,7 @@ export class ModelSerializer<
 
     // Symbol
     if (typeof value === 'symbol') {
-      const transformer = this.qTransformerRegistry.get('symbol');
+      const transformer = this.transformers.get('symbol');
       return transformer
         ? transformer.toInterface(value)
         : Symbol.keyFor(value) || value.toString();
@@ -179,7 +221,7 @@ export class ModelSerializer<
 
     // RegExp
     if (value instanceof RegExp) {
-      const transformer = this.qTransformerRegistry.get(RegExp) || this.qTransformerRegistry.get(Symbol('RegExp').toString());
+      const transformer = this.transformers.get(RegExp) || this.transformers.get(Symbol('RegExp').toString());
       return transformer
         ? transformer.toInterface(value)
         : { source: value.source, flags: value.flags };
@@ -187,7 +229,7 @@ export class ModelSerializer<
 
     // Error
     if (value instanceof Error) {
-      const transformer = this.qTransformerRegistry.get(Error) || this.qTransformerRegistry.get(Symbol('Error').toString());
+      const transformer = this.transformers.get(Error) || this.transformers.get(Symbol('Error').toString());
       return transformer
         ? transformer.toInterface(value)
         : { message: value.message, stack: value.stack, name: value.name };
@@ -197,16 +239,16 @@ export class ModelSerializer<
     if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
       // Determinar qué constructor usar para buscar el transformer
       let transformer;
-      if (value instanceof Int8Array) transformer = this.qTransformerRegistry.get(Int8Array);
-      else if (value instanceof Uint8Array) transformer = this.qTransformerRegistry.get(Uint8Array);
-      else if (value instanceof Int16Array) transformer = this.qTransformerRegistry.get(Int16Array);
-      else if (value instanceof Uint16Array) transformer = this.qTransformerRegistry.get(Uint16Array);
-      else if (value instanceof Int32Array) transformer = this.qTransformerRegistry.get(Int32Array);
-      else if (value instanceof Uint32Array) transformer = this.qTransformerRegistry.get(Uint32Array);
-      else if (value instanceof Float32Array) transformer = this.qTransformerRegistry.get(Float32Array);
-      else if (value instanceof Float64Array) transformer = this.qTransformerRegistry.get(Float64Array);
-      else if (value instanceof BigInt64Array) transformer = this.qTransformerRegistry.get(BigInt64Array);
-      else if (value instanceof BigUint64Array) transformer = this.qTransformerRegistry.get(BigUint64Array);
+      if (value instanceof Int8Array) transformer = this.transformers.get(Int8Array);
+      else if (value instanceof Uint8Array) transformer = this.transformers.get(Uint8Array);
+      else if (value instanceof Int16Array) transformer = this.transformers.get(Int16Array);
+      else if (value instanceof Uint16Array) transformer = this.transformers.get(Uint16Array);
+      else if (value instanceof Int32Array) transformer = this.transformers.get(Int32Array);
+      else if (value instanceof Uint32Array) transformer = this.transformers.get(Uint32Array);
+      else if (value instanceof Float32Array) transformer = this.transformers.get(Float32Array);
+      else if (value instanceof Float64Array) transformer = this.transformers.get(Float64Array);
+      else if (value instanceof BigInt64Array) transformer = this.transformers.get(BigInt64Array);
+      else if (value instanceof BigUint64Array) transformer = this.transformers.get(BigUint64Array);
 
       if (transformer) {
         return transformer.toInterface(value);
@@ -233,13 +275,13 @@ export class ModelSerializer<
 
     // ArrayBuffer
     if (value instanceof ArrayBuffer) {
-      const transformer = this.qTransformerRegistry.get(ArrayBuffer) || this.qTransformerRegistry.get(Symbol('ArrayBuffer').toString());
+      const transformer = this.transformers.get(ArrayBuffer) || this.transformers.get(Symbol('ArrayBuffer').toString());
       return transformer ? transformer.toInterface(value) : Array.from(new Uint8Array(value));
     }
 
     // DataView
     if (value instanceof DataView) {
-      const transformer = this.qTransformerRegistry.get(DataView) || this.qTransformerRegistry.get(Symbol('DataView').toString());
+      const transformer = this.transformers.get(DataView) || this.transformers.get(Symbol('DataView').toString());
       return transformer ? transformer.toInterface(value) : Array.from(new Uint8Array(value.buffer));
     }
 
@@ -258,7 +300,7 @@ export class ModelSerializer<
 
     // Map
     if (value instanceof Map) {
-      const transformer = this.qTransformerRegistry.get('map') || this.qTransformerRegistry.get(Map);
+      const transformer = this.transformers.get('map') || this.transformers.get(Map);
       if (transformer) {
         return transformer.toInterface(value);
       }
@@ -267,7 +309,7 @@ export class ModelSerializer<
 
     // Set
     if (value instanceof Set) {
-      const transformer = this.qTransformerRegistry.get('set') || this.qTransformerRegistry.get(Set);
+      const transformer = this.transformers.get('set') || this.transformers.get(Set);
       if (transformer) {
         return transformer.toInterface(value);
       }

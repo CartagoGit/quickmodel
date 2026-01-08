@@ -1,11 +1,12 @@
 /**
  * Unit Test: Mock Generator - Nested Models
- * 
+ *
  * Tests mock generation for models with nested objects and other models
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '../../../src';
+import { QModel, Quick, QInterface } from '@/index';
+import { QType } from '@/core';
 
 describe('Unit: Mock Generator - Nested Models', () => {
 	// Nested models
@@ -16,12 +17,11 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		country: string;
 	}
 
-	@Quick({})
 	class Address extends QModel<IAddress> {
-		street!: string;
-		city!: string;
-		zipCode!: string;
-		country!: string;
+		@QType() street!: string;
+		@QType() city!: string;
+		@QType() zipCode!: string;
+		@QType() country!: string;
 	}
 
 	interface IProfile {
@@ -30,11 +30,10 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		website: string | null;
 	}
 
-	@Quick({})
 	class Profile extends QModel<IProfile> {
-		bio!: string;
-		avatar!: string;
-		website!: string | null;
+		@QType() bio!: string;
+		@QType() avatar!: string;
+		@QType() website!: string | null;
 	}
 
 	interface IUser {
@@ -57,12 +56,15 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		address: Address,
 		profile: Profile,
 	})
-	class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-		id!: string;
-		name!: string;
-		address!: Address;
-		profile!: Profile;
-		metadata!: {
+	class User
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
+		@QType() id!: string;
+		@QType() name!: string;
+		@QType(Address) address!: Address;
+		@QType(Profile) profile!: Profile;
+		@QType() metadata!: {
 			tags: string[];
 			score: number;
 		};
@@ -132,7 +134,7 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		const mocks = User.mock().array(3);
 
 		expect(mocks).toHaveLength(3);
-		mocks.forEach(mock => {
+		mocks.forEach((mock) => {
 			expect(mock.address).toBeInstanceOf(Address);
 			expect(mock.profile).toBeInstanceOf(Profile);
 		});
@@ -151,7 +153,10 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		@Quick({
 			owner: User,
 		})
-		class Company extends QModel<ICompany> implements QInterface<ICompany, ICompanyTransform> {
+		class Company
+			extends QModel<ICompany>
+			implements QInterface<ICompany, ICompanyTransform>
+		{
 			name!: string;
 			owner!: User;
 		}

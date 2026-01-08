@@ -5,7 +5,9 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '../../../src';
+import { QModel } from '@/quick.model';
+import { QType } from '@/core';
+
 
 describe('Unit: Mock Generator - Basic Types', () => {
 	// Simple model with primitives
@@ -17,13 +19,14 @@ describe('Unit: Mock Generator - Basic Types', () => {
 		score: number;
 	}
 
-	@Quick({})
+	// NOTE: @Quick() without typeMap works only when fields are explicitly registered
+	// For mock generation to work, we need @QType() on each field
 	class User extends QModel<IUser> {
-		id!: string;
-		name!: string;
-		age!: number;
-		active!: boolean;
-		score!: number;
+		@QType() id!: string;
+		@QType() name!: string;
+		@QType() age!: number;
+		@QType() active!: boolean;
+		@QType() score!: number;
 	}
 
 	test('should generate empty mock with default values', () => {

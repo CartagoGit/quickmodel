@@ -6,11 +6,9 @@
  * - O (Open/Closed): Open for extension (new transformers), closed for modification
  * - L (Liskov Substitution): All transformers are interchangeable
  * - I (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
- * - D (Dependency Inversion): Depends on abstractions (IQTransformerRegistry), not implementations
  */
 
 import 'reflect-metadata';
-import { qTransformerRegistry } from './core/registry';
 import {
 	ModelDeserializer,
 	ModelSerializer,
@@ -21,7 +19,6 @@ import type {
 	QModelInstance,
 	QModelInterface,
 } from './core/interfaces';
-import './transformers/bootstrap'; // Auto-register transformers
 import type {
 	SerializedInterface,
 	ModelData,
@@ -44,7 +41,6 @@ export type { QInterface } from './core/interfaces';
  * - **O** (Open/Closed): Open for extension via transformers, closed for modification
  * - **L** (Liskov Substitution): All transformers are interchangeable
  * - **I** (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
- * - **D** (Dependency Inversion): Depends on abstractions (IQTransformerRegistry), not implementations
  * 
  * @template TInterface - The interface type representing the model's JSON structure
  * @template TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)
@@ -111,15 +107,9 @@ export abstract class QModel<
 	TInterface extends Record<string, any>
 > {
 	// SOLID - Dependency Inversion: Services injected as dependencies
-	private static readonly deserializer = new ModelDeserializer(
-		qTransformerRegistry
-	);
-	private static readonly serializer = new ModelSerializer(
-		qTransformerRegistry
-	);
-	private static readonly mockGenerator = new MockGenerator(
-		qTransformerRegistry
-	);
+	private static readonly deserializer = new ModelDeserializer();
+	private static readonly serializer = new ModelSerializer();
+	private static readonly mockGenerator = new MockGenerator();
 
 	/**
 	 * Creates a type-safe mock builder for generating test data.
