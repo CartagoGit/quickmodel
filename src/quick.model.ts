@@ -146,6 +146,60 @@ export abstract class QModel<
 		return new MockBuilder(ModelClass, QModel.mockGenerator);
 	}
 
+	/**
+	 * Gets metadata information for all registered fields in this model class.
+	 * Returns a Map with field names as keys and metadata objects containing type and transformer info.
+	 * 
+	 * @returns Map of field metadata with type names and transformer information
+	 * 
+	 * @example
+	 * ```typescript
+	 * const metadata = User.getMetadata();
+	 * metadata.forEach((meta, fieldName) => {
+	 *   console.log(`${fieldName}: type=${meta.type}, transformer=${meta.transformer?.name}`);
+	 * });
+	 * // Output:
+	 * // id: type=String, transformer=undefined
+	 * // createdAt: type=Date, transformer=DateTransformer
+	 * // balance: type=BigInt, transformer=BigIntTransformer
+	 * ```
+	 */
+	static getMetadata(): Map<string, { type: string; transformer: any }> {
+		const result = new Map<string, { type: string; transformer: any }>();
+		const prototype = this.prototype;
+		
+		// Get all registered fields
+		const fields = Reflect.getMetadata('fields', prototype) || [];
+		
+		for (const fieldName of fields) {
+			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
+			const arrayElementClass = Reflect.getMetadata('arrayElementClass', prototype, fieldName);
+			const customTransformer = Reflect.getMetadata('customTransformer', prototype, fieldName);
+			
+			let type = 'unknown';
+			let transformer = null;
+			
+			if (customTransformer) {
+				type = 'Custom';
+				transformer = customTransformer;
+			} else if (arrayElementClass) {
+				type = `Array<${arrayElementClass.name || 'unknown'}>`;
+				// Get transformer for array element type
+				const elementTransformer = QModel.deserializer['getTransformer'](arrayElementClass);
+				transformer = elementTransformer;
+			} else if (fieldType) {
+				type = fieldType.name || fieldType.toString();
+				// Get transformer from registry
+				const fieldTransformer = QModel.deserializer['getTransformer'](fieldType);
+				transformer = fieldTransformer;
+			}
+			
+			result.set(fieldName, { type, transformer });
+		}
+		
+		return result;
+	}
+
 	// Temporary property for unprocessed data (removed after initialize)
 	private readonly __tempData?: ModelData<TInterface>;
 
