@@ -9,16 +9,14 @@
  */
 
 import 'reflect-metadata';
-import {
-	ModelDeserializer,
-	ModelSerializer,
-	MockGenerator,
-	MockBuilder
-} from './core/services';
+import { ModelDeserializer } from './core/services/model-deserializer.service';
+import { ModelSerializer } from './core/services/model-serializer.service';
+import { MockGenerator } from './core/services/mock-generator.service';
+import { MockBuilder } from './core/services/mock-builder.service';
 import type {
 	QModelInstance,
 	QModelInterface,
-} from './core/interfaces';
+} from './core/interfaces/mock-types.interface';
 import type {
 	SerializedInterface,
 	ModelData,
@@ -28,8 +26,8 @@ import { QTYPES_METADATA_KEY } from './core/decorators/qtype.decorator';
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
-export { Quick } from './core/decorators';
-export type { QInterface } from './core/interfaces';
+export { Quick } from './core/decorators/quick.decorator';
+export type { QInterface } from './core/interfaces/model.interface';
 
 /**
  * Abstract base class for type-safe models with automatic serialization and mock generation.
@@ -575,7 +573,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	toInterface(): SerializedInterface<TInterface> {
-		return QModel.serializer.toInterface(this) as SerializedInterface<TInterface>;
+		return QModel.serializer.toInterface(this as any) as SerializedInterface<TInterface>;
 	}
 
 	/**

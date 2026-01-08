@@ -145,7 +145,19 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * ```
  */
 export function QType<T>(
-  typeOrClass?: (new (data: any) => T) | symbol | QTypeString | BigIntConstructor | SymbolConstructor | SetConstructor | MapConstructor
+  typeOrClass?: 
+    | (new (data: any) => T) 
+    | symbol 
+    | QTypeString 
+    | BigIntConstructor 
+    | SymbolConstructor 
+    | SetConstructor 
+    | MapConstructor
+    | DateConstructor
+    | BooleanConstructor
+    | NumberConstructor
+    | StringConstructor
+    | PromiseConstructor
 ): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol): void {
     // Register the property in the fields list
