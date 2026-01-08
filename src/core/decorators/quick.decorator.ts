@@ -102,7 +102,7 @@ export interface QuickOptions {
  * @example
  * **✅ Type mapping with constructors:**
  * ```typescript
- * @Quick({ tags: Set, metadata: Map })
+ * @Quick({ tags: Set, metadata: Map, posts: Post })
  * class User extends QModel<IUser> {
  *   declare id: number;
  *   declare date: Date;              // Auto-detected from ISO string
@@ -268,14 +268,22 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 
 			// Register properties if not already done
 			if (!propertiesRegistered) {
+				// Get the type map directly - it's the object passed to @Quick()
+				// Example: @Quick({ posts: Post, tags: Set })
 				const typeMap =
 					Reflect.getMetadata(
 						QUICK_TYPE_MAP_KEY,
 						originalConstructor
 					) || {};
-				const properties = Object.keys(data);
+				
+				// Combine properties from data AND typeMap
+				// This ensures we process properties even if they're not in the current data
+				const allProperties = new Set([
+					...Object.keys(data),
+					...Object.keys(typeMap)
+				]);
 
-				for (const propertyKey of properties) {
+				for (const propertyKey of allProperties) {
 					const existingFieldType = Reflect.getMetadata(
 						'fieldType',
 						originalConstructor.prototype,
@@ -331,12 +339,45 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 								propertyKey
 							);
 						} else {
-							Reflect.defineMetadata(
+							// Check if property is already an Array type (TypeScript metadata)
+							// OR if the actual value is an array
+							const existingDesignType = Reflect.getMetadata(
 								'design:type',
-								mappedType,
 								originalConstructor.prototype,
 								propertyKey
 							);
+							
+							const valueInData = data[propertyKey];
+							const isArrayValue = Array.isArray(valueInData);
+							
+							if (existingDesignType === Array || isArrayValue) {
+								// Property is Array type, store the element class
+								// e.g., posts: Post[] with typeMap: { posts: Post }
+								// OR data has posts: [...] with typeMap: { posts: Post }
+								Reflect.defineMetadata(
+									'arrayElementClass',
+									mappedType,
+									originalConstructor.prototype,
+									propertyKey
+								);
+								// Set design:type as Array if not already set
+								if (!existingDesignType) {
+									Reflect.defineMetadata(
+										'design:type',
+										Array,
+										originalConstructor.prototype,
+										propertyKey
+									);
+								}
+							} else {
+								// Single object or primitive type
+								Reflect.defineMetadata(
+									'design:type',
+									mappedType,
+									originalConstructor.prototype,
+									propertyKey
+								);
+							}
 						}
 					} else {
 						// Only auto-detect unambiguous types: Date and BigInt
@@ -387,7 +428,7 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 					);
 					for (const key of Object.keys(dummyInstance)) {
 						// Skip if already registered from data
-						if (properties.includes(key)) continue;
+						if (Array.from(allProperties).includes(key)) continue;
 						// Skip internal properties
 						if (key.startsWith('__')) continue;
 

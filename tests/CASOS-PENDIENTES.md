@@ -50,28 +50,32 @@ new User({}).name // undefined
 
 ### Arrays de QModels
 
-**Estado**: Funcional con limitaciones
+**Estado**: ✅ **Completamente funcional**
 
 **Comportamiento actual**:
 - ✅ Arrays de instancias de QModel se mantienen como instancias
-- ⚠️ Arrays de plain objects NO se convierten automáticamente a QModel
+- ✅ Arrays de plain objects SE CONVIERTEN automáticamente a QModel cuando se especifica en typeMap
 - ✅ Las propiedades Date dentro de plain objects SÍ se transforman
 
 **Ejemplo**:
 ```typescript
-@Quick({ typeMap: { posts: Post } })
+@Quick({ posts: Post })
 class User extends QModel<IUser> {
   posts!: Post[];
 }
 
-// No convierte a Post (mantiene plain object)
-new User({ posts: [{ id: 1, title: 'Test' }] })
+// Ahora SÍ convierte a Post automáticamente
+new User({ posts: [{ id: 1, title: 'Test', createdAt: '2024-01-01' }] })
+// posts[0] es una instancia de Post ✅
 
-// Sí mantiene como Post
+// También funciona con instancias directas
 new User({ posts: [new Post({ id: 1, title: 'Test' })] })
 ```
 
-**Nota**: Este comportamiento es razonable - la conversión automática podría ser costosa y sorpresiva.
+**Implementación**: 
+- El decorator `@Quick()` detecta si el valor en data es un array
+- Si el typeMap especifica un tipo para esa propiedad, establece `arrayElementClass`
+- El deserializer usa `arrayElementClass` para convertir cada elemento del array
 
 ## 📋 Casos Pendientes de Implementación/Prueba
 

@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll } from 'bun:test';
-import { QModel } from '../src/quick.model';
-import { Quick } from '../src/core/decorators/quick.decorator';
-import { registerCoreTransformers } from '../src/transformers/bootstrap';
+import { QModel } from '../../src/quick.model';
+import { Quick } from '../../src/core/decorators/quick.decorator';
+import { registerCoreTransformers } from '../../src/transformers/bootstrap';
 
 // ============================================================================
 // SETUP
@@ -120,9 +120,7 @@ interface ITestUser {
 // ============================================================================
 
 @Quick({
-	typeMap: {
-		createdAt: Date,
-	},
+	createdAt: Date,
 })
 class Post extends QModel<IPost> {
 	id!: number;
@@ -131,9 +129,7 @@ class Post extends QModel<IPost> {
 }
 
 @Quick({
-	typeMap: {
-		posts: Post,
-	},
+	posts: Post,
 })
 class TestUser extends QModel<ITestUser> {
 	id!: number;
@@ -179,19 +175,29 @@ class TestUser extends QModel<ITestUser> {
 	defaultProp: string = 'default-value';
 }
 
-class BaseModel extends QModel<{ id: number; createdAt: Date }> {
+interface IBaseModel {
+	id: number;
+	createdAt: Date;
+}
+
+class BaseModel extends QModel<IBaseModel> {
 	id!: number;
 	createdAt!: Date;
 }
 
+interface IExtendedModel extends IBaseModel {
+	name: string;
+	updatedAt: Date;
+}
+
 @Quick({
-	typeMap: {
-		createdAt: Date,
-		updatedAt: Date,
-	},
+	createdAt: Date,
+	updatedAt: Date,
 })
-class ExtendedModel extends BaseModel {
+class ExtendedModel extends QModel<IExtendedModel> {
+	id!: number;
 	name!: string;
+	createdAt!: Date;
 	updatedAt!: Date;
 }
 
@@ -436,16 +442,19 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	});
 
 	describe('8. Arrays de QModels', () => {
-		test('array of Post models', () => {
+		test('array of Post models - automatic conversion', () => {
 			expect(Array.isArray(user.posts)).toBe(true);
 			expect(user.posts.length).toBe(2);
-			// NOTE: Arrays de plain objects se transforman automáticamente si tienen
-			// metadata de modelo registrado. En este caso, como pasamos plain objects
-			// en testData, se mantienen como objects (no se convierten a Post)
-			// Para convertirlos, necesitarías: posts: [new Post({...}), ...]
+			
+			// Ahora SÍ se convierten automáticamente a Post instances
+			expect(user.posts[0]).toBeInstanceOf(Post);
 			expect(user.posts[0]?.id).toBe(1);
 			expect(user.posts[0]?.title).toBe('First Post');
 			expect(user.posts[0]?.createdAt).toBeInstanceOf(Date);
+			
+			expect(user.posts[1]).toBeInstanceOf(Post);
+			expect(user.posts[1]?.id).toBe(2);
+			expect(user.posts[1]?.title).toBe('Second Post');
 		});
 	});
 
@@ -611,7 +620,9 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 		test('extended model inherits base properties', () => {
 			const extended = new ExtendedModel({
 				id: 1,
+				name: 'Test',
 				createdAt: new Date('2024-01-01').toISOString(),
+				updatedAt: new Date('2024-01-02').toISOString(),
 			});
 			expect(extended.id).toBe(1);
 			expect(extended.name).toBe('Test');
