@@ -202,7 +202,7 @@ describe('Auto-inference de arrays de modelos', () => {
     expect(container.profiles[0]).toBeInstanceOf(Profile);
   });
 
-  test('Error descriptivo cuando no se encuentra modelo', () => {
+  test('@QType() sin argumento copia arrays sin transformación', () => {
     interface IUnknown {
       weird: string;
       that: string;
@@ -223,19 +223,13 @@ describe('Auto-inference de arrays de modelos', () => {
       ],
     };
 
-    try {
-      new BadContainer(data);
-      expect(true).toBe(false); // No debería llegar aquí
-    } catch (error: any) {
-      console.log('\n=== ERROR DESCRIPTIVO ===');
-      console.log(error.message);
-      console.log('\n');
-      
-      expect(error.message).toContain('Cannot infer model for array elements');
-      expect(error.message).toContain('match,that,weird');
-      expect(error.message).toContain('Available signatures:');
-      expect(error.message).toContain('Use @QType(ModelClass)');
-    }
+    // Con @QType() sin argumento, el array se copia tal cual
+    const container = new BadContainer(data);
+    expect(container.unknown).toBeArray();
+    expect(container.unknown.length).toBe(1);
+    expect(container.unknown[0].weird).toBe('property');
+    expect(container.unknown[0].that).toBe('doesnt');
+    expect(container.unknown[0].match).toBe('anything');
   });
 
   test('Arrays de primitivos funcionan normalmente', () => {

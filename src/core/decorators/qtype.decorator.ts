@@ -236,6 +236,13 @@ export function QType<T>(
       } else {
         // Custom model class (for arrays or nested models)
         Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
+        
+        // Also set design:type to Array if not already set
+        // This is needed when using 'declare' syntax which doesn't emit design:type
+        const existingDesignType = Reflect.getMetadata('design:type', target, propertyKey);
+        if (!existingDesignType) {
+          Reflect.defineMetadata('design:type', Array, target, propertyKey);
+        }
       }
     }
   };
