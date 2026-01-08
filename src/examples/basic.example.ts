@@ -37,13 +37,14 @@ type IUserTransform = {
 	tags: Set,
 	metadata: Map,
 	symbolic: Symbol,
-	bignumber: BigInt,
-	dates: [Date, undefined, null],
+	dates: (arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
+		arr.map((date) => (typeof date === 'string' ? new Date(date) : date)),
 })
 class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 	// Todas las propiedades son protegidas automáticamente por @Quick()
 	// Funciona con declare, !, y ?
 	id!: number;
+	// name!: string;
 	name!: string;
 	declare surname?: string;
 
@@ -51,7 +52,7 @@ class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 	createdAt!: Date;
 	updatedAt?: Date;
 	bignumber!: bigint;
-	
+
 	// Estos los especificamos en el mapa arriba
 	declare tags: Set<string>;
 	metadata!: Map<string, any>;
@@ -143,7 +144,10 @@ const logTests = (obj: User) => {
 		'dates:',
 		obj.dates,
 		'→ (Date | undefined | null)[]',
-		Array.isArray(obj.dates) && obj.dates.every((d) => d instanceof Date || d === undefined || d === null)
+		Array.isArray(obj.dates) &&
+			obj.dates.every(
+				(d) => d instanceof Date || d === undefined || d === null
+			)
 			? '✅'
 			: '❌'
 	);
@@ -173,4 +177,3 @@ console.log(
 		: '❌ HAY ERRORES'
 );
 console.log('====================================\n');
-

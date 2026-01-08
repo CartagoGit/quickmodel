@@ -147,7 +147,14 @@ export class ModelDeserializer<
         className: modelClass.name,
       };
 
-      // 1. Check for custom transformer via fieldType metadata
+      // 1. Check for custom transformer function from @Quick()
+      const customTransformer = Reflect.getMetadata('customTransformer', instance, key);
+      if (customTransformer && typeof customTransformer === 'function') {
+        instance[key] = customTransformer(value);
+        continue;
+      }
+
+      // 2. Check for custom transformer via fieldType metadata
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       
       if (fieldType) {
@@ -158,7 +165,7 @@ export class ModelDeserializer<
         }
       }
 
-      // 2. Check for array of models or nested model
+      // 3. Check for array of models or nested model
       const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
@@ -198,10 +205,10 @@ export class ModelDeserializer<
         }
       }
 
-      // 3. Auto-detection via design:type
+      // 4. Auto-detection via design:type
       const designType = Reflect.getMetadata('design:type', instance, key);
       
-      // 4. If property has @QType() decorator but no type metadata (declare without arg),
+      // 5. If property has @QType() decorator but no type metadata (declare without arg),
       // try to detect type from value
       const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, instance) || 
                      Reflect.getMetadata(FIELDS_METADATA_KEY, Object.getPrototypeOf(instance)) || 

@@ -76,9 +76,14 @@ const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
 
 /**
  * Options for @Quick() decorator to specify property types explicitly
+ * 
+ * Supports:
+ * - Constructor types: Set, Map, Date, BigInt, Symbol
+ * - Array with element type: [Date, undefined, null]
+ * - Custom transformer functions: (value) => transformedValue
  */
 export interface QuickOptions {
-	[propertyName: string]: any;
+	[propertyName: string]: any | ((value: any) => any);
 }
 
 /**
@@ -91,11 +96,11 @@ export interface QuickOptions {
  * - **BigInt**: Automatically detected from numeric strings with 15+ digits
  * - **Set/Map**: MUST be specified in type mapping (cannot be distinguished from arrays)
  *
- * @param typeMap REQUIRED mapping for Set, Map, and custom class properties
+ * @param typeMap REQUIRED mapping for Set, Map, custom classes, and transformers
  * @returns A class decorator function
  *
  * @example
- * **✅ Correct usage with type mapping:**
+ * **✅ Type mapping with constructors:**
  * ```typescript
  * @Quick({ tags: Set, metadata: Map })
  * class User extends QModel<IUser> {
@@ -103,6 +108,28 @@ export interface QuickOptions {
  *   declare date: Date;              // Auto-detected from ISO string
  *   declare tags: Set<string>;        // NEEDS type mapping
  *   declare metadata: Map<string, any>; // NEEDS type mapping
+ * }
+ * ```
+ *
+ * @example
+ * **✅ Array element types:**
+ * ```typescript
+ * @Quick({ dates: [Date, undefined, null] })
+ * class User extends QModel<IUser> {
+ *   dates?: (Date | undefined | null)[]; // Transforms strings to Date, preserves undefined/null
+ * }
+ * ```
+ *
+ * @example
+ * **✅ Custom transformer functions:**
+ * ```typescript
+ * @Quick({ 
+ *   dates: (arr) => arr.map(d => d ? new Date(d) : d),
+ *   custom: (value) => ({ ...value, transformed: true })
+ * })
+ * class User extends QModel<IUser> {
+ *   dates?: (Date | undefined | null)[];
+ *   custom!: any;
  * }
  * ```
  *
@@ -269,8 +296,25 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 
 					const mappedType = typeMap[propertyKey];
 					if (mappedType) {
+						// Check if it's a custom transformer function
+						if (typeof mappedType === 'function' && !mappedType.prototype) {
+							// Arrow function or regular function used as transformer
+							Reflect.defineMetadata(
+								'customTransformer',
+								mappedType,
+								originalConstructor.prototype,
+								propertyKey
+							);
+							// Mark as no specific type (will use raw value + transformer)
+							Reflect.defineMetadata(
+								'design:type',
+								Object,
+								originalConstructor.prototype,
+								propertyKey
+							);
+						}
 						// Check if it's an array type mapping like [Date, undefined, null]
-						if (Array.isArray(mappedType) && mappedType.length > 0) {
+						else if (Array.isArray(mappedType) && mappedType.length > 0) {
 							// Extract the primary type (first element)
 							const primaryType = mappedType[0];
 							Reflect.defineMetadata(
