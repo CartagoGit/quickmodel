@@ -212,13 +212,9 @@ export abstract class QModel<
 		// Copy ALL properties from deserialized instance
 		// (includes both transformed properties with @QType and copied properties without @QType)
 		// Use defineProperty to prevent TypeScript's useDefineForClassFields from overwriting
+		// Assign all deserialized properties
 		for (const key of Object.keys(deserialized)) {
-			Object.defineProperty(this, key, {
-				value: (deserialized as any)[key],
-				writable: true,
-				enumerable: true,
-				configurable: true
-			});
+			(this as any)[key] = (deserialized as any)[key];
 		}
 		
 		// Remove temporary property

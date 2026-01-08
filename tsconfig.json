@@ -10,7 +10,7 @@
     // Decoradores (REQUERIDO para el sistema)
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "useDefineForClassFields": true,  // Usar estándar moderno ES2022+
+    "useDefineForClassFields": false,  // Desactivado para permitir ! y ? sin @QType()
 
     // Generación de archivos
     "declaration": true,
