@@ -180,5 +180,51 @@ export class DataViewTransformer extends BaseTransformer<number[], DataView> imp
   }
 }
 
+/**
+ * Transformer for SharedArrayBuffer: converts between byte array and SharedArrayBuffer.
+ * 
+ * **Serialization**: `SharedArrayBuffer` → `number[]` (byte array)
+ * **Deserialization**: `number[]` → `SharedArrayBuffer`
+ * 
+ * @remarks
+ * SharedArrayBuffer allows sharing memory between different execution contexts.
+ * Serialized as a byte array for JSON compatibility.
+ */
+export class SharedArrayBufferTransformer extends BaseTransformer<number[], SharedArrayBuffer> implements IQValidator {
+  deserialize(value: number[] | SharedArrayBuffer, propertyKey: string, className: string): SharedArrayBuffer {
+    if (value instanceof SharedArrayBuffer) {
+      return value;
+    }
+
+    if (!Array.isArray(value)) {
+      throw new Error(
+        `${className}.${propertyKey}: SharedArrayBuffer transformer accepts number array or SharedArrayBuffer instance. ` +
+        `Got ${typeof value}`
+      );
+    }
+
+    const buffer = new SharedArrayBuffer(value.length);
+    const view = new Uint8Array(buffer);
+    view.set(value);
+    return buffer;
+  }
+
+  serialize(value: SharedArrayBuffer): number[] {
+    return Array.from(new Uint8Array(value));
+  }
+
+  validate(value: unknown, context: IQValidationContext): IQValidationResult {
+    if (value instanceof SharedArrayBuffer || Array.isArray(value)) {
+      return { isValid: true };
+    }
+
+    return {
+      isValid: false,
+      error: `${context.className}.${context.propertyKey}: Expected SharedArrayBuffer or number[], got ${typeof value}`,
+    };
+  }
+}
+
 export const arrayBufferTransformer = new ArrayBufferTransformer();
 export const dataViewTransformer = new DataViewTransformer();
+export const sharedArrayBufferTransformer = new SharedArrayBufferTransformer();

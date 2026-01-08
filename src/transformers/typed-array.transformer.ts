@@ -179,6 +179,11 @@ export const int8ArrayTransformer = new TypedArrayTransformer<Int8Array>(Int8Arr
 export const uint8ArrayTransformer = new TypedArrayTransformer<Uint8Array>(Uint8Array);
 
 /**
+ * Transformer for Uint8ClampedArray (0 to 255, with clamping).
+ */
+export const uint8ClampedArrayTransformer = new TypedArrayTransformer<Uint8ClampedArray>(Uint8ClampedArray);
+
+/**
  * Transformer for Int16Array (-32768 to 32767).
  */
 export const int16ArrayTransformer = new TypedArrayTransformer<Int16Array>(Int16Array);

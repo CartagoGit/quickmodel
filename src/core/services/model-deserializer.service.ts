@@ -52,8 +52,9 @@ import { ErrorTransformer } from '../../transformers/error.transformer';
 import { MapTransformer, SetTransformer } from '../../transformers/map-set.transformer';
 import { RegExpTransformer } from '../../transformers/regexp.transformer';
 import { SymbolTransformer } from '../../transformers/symbol.transformer';
-import { ArrayBufferTransformer, DataViewTransformer } from '../../transformers/buffer.transformer';
+import { ArrayBufferTransformer, DataViewTransformer, SharedArrayBufferTransformer } from '../../transformers/buffer.transformer';
 import { TypedArrayTransformer } from '../../transformers/typed-array.transformer';
+import { URLTransformer, URLSearchParamsTransformer, TextEncoderTransformer, TextDecoderTransformer } from '../../transformers/web-apis.transformer';
 
 export class ModelDeserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
@@ -93,6 +94,7 @@ export class ModelDeserializer<
     // Register typed arrays
     const int8Transformer = new TypedArrayTransformer<Int8Array>(Int8Array);
     const uint8Transformer = new TypedArrayTransformer<Uint8Array>(Uint8Array);
+    const uint8ClampedTransformer = new TypedArrayTransformer<Uint8ClampedArray>(Uint8ClampedArray);
     const int16Transformer = new TypedArrayTransformer<Int16Array>(Int16Array);
     const uint16Transformer = new TypedArrayTransformer<Uint16Array>(Uint16Array);
     const int32Transformer = new TypedArrayTransformer<Int32Array>(Int32Array);
@@ -104,6 +106,7 @@ export class ModelDeserializer<
     
     this.transformers.set('int8array', int8Transformer);
     this.transformers.set('uint8array', uint8Transformer);
+    this.transformers.set('uint8clampedarray', uint8ClampedTransformer);
     this.transformers.set('int16array', int16Transformer);
     this.transformers.set('uint16array', uint16Transformer);
     this.transformers.set('int32array', int32Transformer);
@@ -112,6 +115,21 @@ export class ModelDeserializer<
     this.transformers.set('float64array', float64Transformer);
     this.transformers.set('bigint64array', bigint64Transformer);
     this.transformers.set('biguint64array', biguint64Transformer);
+    
+    // Register SharedArrayBuffer
+    const sharedArrayBufferTransformer = new SharedArrayBufferTransformer();
+    this.transformers.set('sharedarraybuffer', sharedArrayBufferTransformer);
+    
+    // Register Web APIs
+    const urlTransformer = new URLTransformer();
+    const urlSearchParamsTransformer = new URLSearchParamsTransformer();
+    const textEncoderTransformer = new TextEncoderTransformer();
+    const textDecoderTransformer = new TextDecoderTransformer();
+    
+    this.transformers.set('url', urlTransformer);
+    this.transformers.set('urlsearchparams', urlSearchParamsTransformer);
+    this.transformers.set('textencoder', textEncoderTransformer);
+    this.transformers.set('textdecoder', textDecoderTransformer);
   }
 
   /**

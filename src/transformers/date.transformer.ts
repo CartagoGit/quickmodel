@@ -28,26 +28,32 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  */
 export class DateTransformer extends BaseTransformer<string, Date> implements IQValidator {
   /**
-   * Converts a string or Date to Date object.
+   * Converts a string, number (Unix timestamp), or Date to Date object.
    * 
-   * @param value - The value to convert (string or Date)
+   * @param value - The value to convert (string, number, or Date)
    * @param propertyKey - The property name (for error messages)
    * @param className - The class name (for error messages)
    * @returns The Date object
    * @throws {Error} If the value is not a valid date
    */
-  deserialize(value: string | Date, propertyKey: string, className: string): Date {
+  deserialize(value: string | number | Date, propertyKey: string, className: string): Date {
     if (value instanceof Date) {
       return value;
     }
 
-    if (typeof value !== 'string') {
-      throw new Error(`${className}.${propertyKey}: Expected string or Date, got ${typeof value}`);
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      throw new Error(
+        `${className}.${propertyKey}: Date transformer accepts string (ISO format), ` +
+        `number (Unix timestamp in ms), or Date instance. Got ${typeof value}`
+      );
     }
 
     const date = new Date(value);
     if (isNaN(date.getTime())) {
-      throw new Error(`${className}.${propertyKey}: Invalid date value "${value}"`);
+      throw new Error(
+        `${className}.${propertyKey}: Invalid date value "${value}". ` +
+        `Expected ISO 8601 string (e.g., "2024-01-08T10:30:00Z") or Unix timestamp in milliseconds`
+      );
     }
 
     return date;
