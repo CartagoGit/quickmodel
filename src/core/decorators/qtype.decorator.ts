@@ -170,6 +170,14 @@ export function QType<T>(
     // Si NO se proporciona typeOrClass, crear un getter/setter para prevenir
     // que TypeScript sobreescriba el valor con undefined al usar `!` o `?`
     if (!typeOrClass) {
+      // IMPORTANTE: Verificar si ya existe un getter/setter custom
+      const existingDescriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
+      if (existingDescriptor && (existingDescriptor.get || existingDescriptor.set)) {
+        // Ya existe un getter/setter custom - NO sobrescribir
+        // Solo registrar el campo pero respetar la lógica custom
+        return;
+      }
+      
       const storageKey = `__quickmodel_${String(propertyKey)}`;
       
       // Definir getter/setter que previene la sobreescritura
