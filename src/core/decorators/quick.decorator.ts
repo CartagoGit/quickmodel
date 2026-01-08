@@ -249,25 +249,10 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 		let propertiesRegistered = false;
 
 		const wrappedConstructor: any = function (this: any, ...args: any[]) {
-			// Don't call original constructor at all - create and populate instance directly
-			// This bypasses TypeScript's field initialization completely
 			const data = args[0];
 
-			if (!data || typeof data !== 'object' || Array.isArray(data)) {
-				// Invalid data, call original constructor
-				return Reflect.construct(
-					originalConstructor,
-					args,
-					wrappedConstructor
-				);
-			}
-
-			// Create instance without calling constructor
-			// Use wrappedConstructor prototype so this.constructor === wrappedConstructor
-			const instance = Object.create(wrappedConstructor.prototype);
-
-			// Register properties if not already done
-			if (!propertiesRegistered) {
+			// Register properties BEFORE calling constructor (only once, on first instantiation)
+			if (!propertiesRegistered && data && typeof data === 'object' && !Array.isArray(data)) {
 				// Get the type map directly - it's the object passed to @Quick()
 				// Example: @Quick({ posts: Post, tags: Set })
 				const typeMap =
@@ -451,94 +436,11 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 				} catch (e) {
 					// If creating dummy instance fails, just continue
 				}
+				
+				propertiesRegistered = true;
 			}
 
-			// Populate instance directly using deserializer
-			const createQuickInstance = (originalConstructor as any)
-				.__createQuickInstance;
-			if (createQuickInstance) {
-					type DataAsInterface = Record<string, unknown>;
-				type ThisConstructor = new (data: DataAsInterface) => any;
-
-				// Create deserializer
-				const deserializer = new ModelDeserializer();
-
-				// Deserialize directly - this will create a new instance and populate it
-				const tempInstance = deserializer.deserialize(
-					data as DataAsInterface,
-					originalConstructor as unknown as ThisConstructor
-				);
-
-				// Copy all properties from tempInstance to our instance
-				for (const key of Object.keys(tempInstance)) {
-					(instance as any)[key] = (tempInstance as any)[key];
-				}
-
-				// Restore default values for properties not in data
-				const prototypeKeys = Object.getOwnPropertyNames(
-					originalConstructor.prototype
-				);
-				for (const key of prototypeKeys) {
-					if (key.startsWith('__quickmodel_default_')) {
-						const propName = key.replace('__quickmodel_default_', '');
-						// Only set if value in tempInstance is undefined (not from backend)
-						const currentValue = (tempInstance as any)[propName];
-						if (currentValue === undefined) {
-							const defaultValue = (
-								originalConstructor.prototype as any
-							)[key];
-							// Use the storage key where getter/setter looks for the value
-							const storageKey = `__quickmodel_${propName}`;
-							(instance as any)[storageKey] = defaultValue;
-						}
-					}
-				}
-
-				// Add QModel methods manually (non-enumerable to avoid serialization issues)
-				Object.defineProperty(instance, 'initialize', {
-					value: function () {},
-					writable: true,
-					enumerable: false,
-					configurable: true,
-				});
-
-				Object.defineProperty(instance, 'serialize', {
-					value: function () {
-						const {
-							ModelSerializer,
-						} = require('../services/model-serializer.service');
-					const serializer = new ModelSerializer();
-						return serializer.serialize(this, this.constructor);
-					},
-					writable: true,
-					enumerable: false,
-					configurable: true,
-				});
-
-				Object.defineProperty(instance, 'toJSON', {
-					value: function () {
-						return JSON.stringify(this.serialize());
-					},
-					writable: true,
-					enumerable: false,
-					configurable: true,
-				});
-
-				Object.defineProperty(instance, 'clone', {
-					value: function () {
-						const iface = this.serialize();
-						// Use wrappedConstructor directly to ensure proper decoration
-						return new wrappedConstructor(iface);
-					},
-					writable: true,
-					enumerable: false,
-					configurable: true,
-				});
-
-				return instance;
-			}
-
-			// Fallback: call original constructor
+			// Simply call the original constructor - allows both child and QModel constructors to execute normally
 			return Reflect.construct(
 				originalConstructor,
 				args,
