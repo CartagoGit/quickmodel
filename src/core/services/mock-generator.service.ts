@@ -206,12 +206,12 @@ export class MockGenerator {
       case 'string': return '';
       case 'number': return 0;
       case 'boolean': return false;
-      case 'bigint': return 0n;
+      case 'bigint': return '0'; // Serialized format for transformers
       case 'symbol': return Symbol();
-      case 'date': return new Date(0);
-      case 'regexp': return /(?:)/;
+      case 'date': return new Date(0).toISOString(); // Serialized format
+      case 'regexp': return /(?:)/.toString(); // Serialized format
       case 'error': return new Error();
-      case 'url': return new URL('http://localhost');
+      case 'url': return 'http://localhost'; // Serialized format
       case 'urlsearchparams': return new URLSearchParams();
       case 'array': return [];
       case 'object': return {};
@@ -232,12 +232,12 @@ export class MockGenerator {
       case 'string': return 'sample';
       case 'number': return 42;
       case 'boolean': return true;
-      case 'bigint': return 123n;
+      case 'bigint': return '123'; // Serialized format for transformers
       case 'symbol': return Symbol('sample');
-      case 'date': return new Date('2024-01-01');
-      case 'regexp': return /test/gi;
+      case 'date': return new Date('2024-01-01').toISOString(); // Serialized format
+      case 'regexp': return '/test/gi'; // Serialized format
       case 'error': return new Error('Sample error');
-      case 'url': return new URL('https://example.com');
+      case 'url': return 'https://example.com'; // Serialized format
       case 'urlsearchparams': return new URLSearchParams('key=value');
       case 'array': return ['sample'];
       case 'object': return { sample: true };
@@ -258,16 +258,18 @@ export class MockGenerator {
       case 'string': return faker.lorem.word();
       case 'number': return faker.number.int({ min: 1, max: 1000 });
       case 'boolean': return faker.datatype.boolean();
-      case 'bigint': return BigInt(faker.number.int({ min: 1, max: 999999 }));
+      case 'bigint': return String(faker.number.int({ min: 1, max: 999999 })); // Serialized format
       case 'symbol': return Symbol(faker.lorem.word());
-      case 'date': return faker.date.recent();
+      case 'date': return faker.date.recent().toISOString(); // Serialized format
       case 'regexp': {
         const patterns = ['\\w+', '\\d+', '[a-z]+', '.*'];
         const flags = ['', 'i', 'g', 'gi', 'm'];
-        return new RegExp(faker.helpers.arrayElement(patterns), faker.helpers.arrayElement(flags));
+        const pattern = faker.helpers.arrayElement(patterns);
+        const flag = faker.helpers.arrayElement(flags);
+        return `/${pattern}/${flag}`; // Serialized format
       }
       case 'error': return new Error(faker.lorem.sentence());
-      case 'url': return new URL(faker.internet.url());
+      case 'url': return faker.internet.url(); // Already string
       case 'urlsearchparams': {
         const params = new URLSearchParams();
         params.set(faker.lorem.word(), faker.lorem.word());

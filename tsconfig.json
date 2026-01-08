@@ -1,52 +1,57 @@
 {
-  "compilerOptions": {
-    // Language configuration
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2022"],
-    "types": ["bun", "node"],
-    "moduleResolution": "bundler",
+	"compilerOptions": {
+		// Language configuration
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["ES2022"],
+		"types": ["bun", "node"],
+		"moduleResolution": "bundler",
 
-    // Decoradores (REQUERIDO para el sistema)
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "useDefineForClassFields": false,  // CRÍTICO: false para permitir ! y ? sin decoradores  
+		// Decoradores (REQUERIDO para el sistema)
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"useDefineForClassFields": false, // CRÍTICO: false para permitir ! y ? sin decoradores
 
-    // Generación de archivos
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./",
+		// Generación de archivos
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "./dist",
+		"rootDir": "./",
+		"composite": true,
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["src/*"]
+		},
 
-    // Interoperabilidad
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+		// Interoperabilidad
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
 
-    // Validación estricta
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": false,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
+		// Validación estricta
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"strictPropertyInitialization": false,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
 
-    // Validaciones adicionales
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
+		// Validaciones adicionales
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
 
-    // Avanzado
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": false
-  },
-  "include": ["src/**/*", "tests/**/*", "run/**/*"],
-  "exclude": ["node_modules", "dist", "docs/**/*"]
+		// Avanzado
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": false
+	},
+	"include": ["src/**/*", "tests/**/*", "run/**/*"],
+	"exclude": ["node_modules", "dist", "docs/**/*"]
 }

@@ -15,6 +15,8 @@ import type { MockType } from './mock-generator.service';
  * ```
  */
 export class MockBuilder<TInstance, TInterface> {
+	private _fieldsRegistered = false;
+
 	/**
 	 * Creates a new MockBuilder instance.
 	 * 
@@ -25,6 +27,23 @@ export class MockBuilder<TInstance, TInterface> {
 		private readonly modelClass: new (data: TInterface) => TInstance,
 		private readonly mockGenerator: MockGenerator
 	) {}
+
+	/**
+	 * Ensures fields are registered by creating a dummy instance if needed.
+	 * This is required for @Quick() decorated classes that register fields
+	 * dynamically on first instantiation.
+	 */
+	private ensureFieldsRegistered(): void {
+		if (!this._fieldsRegistered) {
+			try {
+				// Try to create an instance with empty data to trigger field registration
+				new this.modelClass({} as TInterface);
+			} catch (e) {
+				// If it fails, that's ok - fields might be already registered
+			}
+			this._fieldsRegistered = true;
+		}
+	}
 
 	/**
 	 * Generates a model instance with empty/default values.
@@ -38,6 +57,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	empty(overrides?: Partial<TInterface>): TInstance {
+		this.ensureFieldsRegistered();
 		const data = this.mockGenerator.generate(
 			this.modelClass,
 			'empty',
@@ -60,6 +80,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	random(overrides?: Partial<TInterface>): TInstance {
+		this.ensureFieldsRegistered();
 		const data = this.mockGenerator.generate(
 			this.modelClass,
 			'random',
@@ -82,6 +103,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	sample(overrides?: Partial<TInterface>): TInstance {
+		this.ensureFieldsRegistered();
 		const data = this.mockGenerator.generate(
 			this.modelClass,
 			'sample',
@@ -104,6 +126,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	minimal(overrides?: Partial<TInterface>): TInstance {
+		this.ensureFieldsRegistered();
 		const data = this.mockGenerator.generate(
 			this.modelClass,
 			'minimal',
@@ -126,6 +149,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	full(overrides?: Partial<TInterface>): TInstance {
+		this.ensureFieldsRegistered();
 		const data = this.mockGenerator.generate(
 			this.modelClass,
 			'full',
@@ -232,6 +256,7 @@ export class MockBuilder<TInstance, TInterface> {
 		type: MockType = 'random',
 		overrides?: (index: number) => Partial<TInterface>
 	): TInstance[] {
+		this.ensureFieldsRegistered();
 		if (count < 0) {
 			throw new Error(`Count must be non-negative, got ${count}`);
 		}
