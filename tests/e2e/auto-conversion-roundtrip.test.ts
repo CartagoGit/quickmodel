@@ -127,6 +127,16 @@ class Post extends QModel<IPost> {
 
 @Quick({
 	posts: Post,
+	createdAt: Date,
+	updatedAt: Date,
+	birthDate: Date,
+	bigNumber: BigInt,
+	tags: Set,
+	metadata: Map,
+	pattern: RegExp,
+	symbolic: Symbol,
+	scores: Uint8Array,
+	data: Float32Array,
 })
 class TestUser extends QModel<ITestUser> {
 	id!: number;

@@ -28,7 +28,8 @@ describe('Unit: Buffer Transformer', () => {
 		const json = model.toJSON();
 		const parsed = JSON.parse(json);
 		
-		expect(typeof parsed.buffer).toBe('string');
+		// ArrayBuffer serializes to array of bytes directly
+		expect(parsed.buffer).toEqual([1, 2, 3, 4]);
 	});
 
 	test('Should deserialize ArrayBuffer', () => {
