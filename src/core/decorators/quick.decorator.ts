@@ -71,7 +71,6 @@ import { QType } from './qtype.decorator';
 import { ModelDeserializer } from '../services/model-deserializer.service';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
 
-
 const QUICK_DECORATOR_KEY = '__quickModel__';
 const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
 
@@ -87,34 +86,34 @@ type ITransformerFunction = (value: any) => any;
 
 /**
  * All supported type specifications for @Quick() decorator
- * 
+ *
  * Supports:
  * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
  * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
  * - Transformer functions: (value) => transformed value (arrow or regular functions)
  */
-export type ISpec = 
-  | IQTypeAlias          // String literals like 'bigint', 'date', 'regexp'
-  | IConstructor         // Constructors like Date, RegExp, Map, custom classes
-  | ITransformerFunction;
+export type ISpec =
+	| IQTypeAlias // String literals like 'bigint', 'date', 'regexp'
+	| IConstructor // Constructors like Date, RegExp, Map, custom classes
+	| ITransformerFunction;
 
 /**
  * All supported type specifications for @Quick() decorator for arrays
- * 
+ *
  * Supports:
  * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
  * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
  * - Transformer functions: (value) => transformed value (arrow or regular functions)
  * - Array with element type: [Date, undefined, null]
  */
-export type ISpecs = ISpec[] // Array of any Spec
+export type ISpecs = ISpec[]; // Array of any Spec
 
 /**
  * Options for @Quick() decorator to specify property types explicitly
- * 
+ *
  * @example
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   value: 'bigint',           // String literal (autocomplete)
  *   date: Date,                // Constructor
  *   pattern: 'regexp',         // String literal
@@ -124,7 +123,7 @@ export type ISpecs = ISpec[] // Array of any Spec
  * ```
  */
 export interface IQuickOptions {
-  [propertyName: string]: ISpec | ISpecs;
+	[propertyName: string]: ISpec | ISpecs;
 }
 
 /**
@@ -151,11 +150,11 @@ export interface IQuickOptions {
  *   declare metadata: Map<string, any>; // NEEDS type mapping
  * }
  * ```
- * 
+ *
  * @example
  * **✅ String literals para tipos básicos (autocomplete):**
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   value: 'bigint',    // ← IDE autocomplete!
  *   date: 'date',       // ← IDE autocomplete!
  *   pattern: 'regexp',  // ← IDE autocomplete!
@@ -174,23 +173,23 @@ export interface IQuickOptions {
  * @example
  * **✅ Funciones directas (máxima flexibilidad):**
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   // Math methods directos
  *   price: (v) => Math.round(v * 100) / 100,       // Redondea a 2 decimales
  *   count: Math.floor,                              // Redondeo hacia abajo
  *   percentage: (v) => Math.min(100, Math.max(0, v)), // Clamp 0-100
- *   
+ *
  *   // String transformations
  *   name: (s) => s.trim().toUpperCase(),            // Limpia y mayúsculas
  *   slug: (s) => s.toLowerCase().replace(/\s+/g, '-'), // Slugify
- *   
+ *
  *   // Encoding/Decoding
  *   encoded: (s) => Buffer.from(s).toString('base64'),  // Base64 encode
  *   decoded: (s) => Buffer.from(s, 'base64').toString(), // Base64 decode
- *   
+ *
  *   // JSON
  *   metadata: JSON.parse,                           // Parse JSON string
- *   
+ *
  *   // Business logic custom
  *   tax: (price) => price * 0.21,                   // Calcula IVA 21%
  *   total: (p) => (p * 1.21) * 0.9                 // Precio + IVA - 10% desc
@@ -221,7 +220,7 @@ export interface IQuickOptions {
  * @example
  * **✅ Custom transformer functions:**
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   dates: (arr) => arr.map(d => d ? new Date(d) : d),
  *   custom: (value) => ({ ...value, transformed: true })
  * })
@@ -230,11 +229,11 @@ export interface IQuickOptions {
  *   custom!: any;
  * }
  * ```
- * 
+ *
  * @example
  * **✅ Math functions and string literals with parameters:**
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   price: 'round.2',              // Round to 2 decimals
  *   discount: Math.abs,            // Math.abs function directly
  *   total: (v) => Math.round(v * 100) / 100,  // Custom precision
@@ -326,7 +325,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						target.prototype,
 						propertyKey
 					);
-				
+				}
 
 				const decorator = QType();
 				decorator(target.prototype, propertyKey);
@@ -343,7 +342,12 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			const data = args[0];
 
 			// Register properties BEFORE calling constructor (only once, on first instantiation)
-			if (!propertiesRegistered && data && typeof data === 'object' && !Array.isArray(data)) {
+			if (
+				!propertiesRegistered &&
+				data &&
+				typeof data === 'object' &&
+				!Array.isArray(data)
+			) {
 				// Get the type map directly - it's the object passed to @Quick()
 				// Example: @Quick({ posts: Post, tags: Set })
 				const typeMap =
@@ -351,12 +355,12 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						QUICK_TYPE_MAP_KEY,
 						originalConstructor
 					) || {};
-				
+
 				// Combine properties from data AND typeMap
 				// This ensures we process properties even if they're not in the current data
 				const allProperties = new Set([
 					...Object.keys(data),
-					...Object.keys(typeMap)
+					...Object.keys(typeMap),
 				]);
 
 				for (const propertyKey of allProperties) {
@@ -378,56 +382,55 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						continue;
 					}
 
-				const mappedType = typeMap[propertyKey];
-				if (mappedType) {
-					// Simply pass to QType - it handles everything
-					const decorator = QType(mappedType);
-					decorator(originalConstructor.prototype, propertyKey);
-				} else {
-					// No type mapping - use TypeScript metadata as-is
-					const decorator = QType();
-					decorator(originalConstructor.prototype, propertyKey);
-				}
-			}
-		}
-
-		// Post-construction hook: Delete shadowing properties
-				// These properties are not in the data from backend but have values in the class
-				// Create a temporary instance to capture default values
-				try {
-					const dummyInstance = Reflect.construct(
-						originalConstructor,
-						[{}],
-						originalConstructor
-					);
-					for (const key of Object.keys(dummyInstance)) {
-						// Skip if already registered from data
-						if (Array.from(allProperties).includes(key)) continue;
-						// Skip internal properties
-						if (key.startsWith('__')) continue;
-
-						// Apply @QType() to preserve the default value
+					const mappedType = typeMap[propertyKey];
+					if (mappedType) {
+						// Simply pass to QType - it handles everything
+						const decorator = QType(mappedType);
+						decorator(originalConstructor.prototype, propertyKey);
+					} else {
+						// No type mapping - use TypeScript metadata as-is
 						const decorator = QType();
-						decorator(originalConstructor.prototype, key);
-
-						// Store the default value in the prototype
-						Object.defineProperty(
-							originalConstructor.prototype,
-						`__quickmodel_default_${key}`,
-							{
-								value: dummyInstance[key],
-								writable: false,
-								enumerable: false,
-								configurable: false,
-							}
-						);
+						decorator(originalConstructor.prototype, propertyKey);
 					}
-				} catch (e) {
-					// If creating dummy instance fails, just continue
 				}
-				
-				propertiesRegistered = true;
 			}
+
+			// Post-construction hook: Delete shadowing properties
+			// These properties are not in the data from backend but have values in the class
+			// Create a temporary instance to capture default values
+			try {
+				const dummyInstance = Reflect.construct(
+					originalConstructor,
+					[{}],
+					originalConstructor
+				);
+				for (const key of Object.keys(dummyInstance)) {
+					// Skip if already registered from data
+					if (Array.from(allProperties).includes(key)) continue;
+					// Skip internal properties
+					if (key.startsWith('__')) continue;
+
+					// Apply @QType() to preserve the default value
+					const decorator = QType();
+					decorator(originalConstructor.prototype, key);
+
+					// Store the default value in the prototype
+					Object.defineProperty(
+						originalConstructor.prototype,
+						`__quickmodel_default_${key}`,
+						{
+							value: dummyInstance[key],
+							writable: false,
+							enumerable: false,
+							configurable: false,
+						}
+					);
+				}
+			} catch (e) {
+				// If creating dummy instance fails, just continue
+			}
+
+			propertiesRegistered = true;
 
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
 			const instance = Reflect.construct(
@@ -435,16 +438,24 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 				args,
 				wrappedConstructor
 			);
-			
+
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
 			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
-			const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
-			for (const propertyKey of Object.keys(typeMap)) {
+			const quickTypeMap =
+				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) ||
+				{};
+			for (const propertyKey of Object.keys(quickTypeMap)) {
 				// Check if property has a getter in the prototype (from @QType)
-				const protoDescriptor = Object.getOwnPropertyDescriptor(originalConstructor.prototype, propertyKey);
+				const protoDescriptor = Object.getOwnPropertyDescriptor(
+					originalConstructor.prototype,
+					propertyKey
+				);
 				if (protoDescriptor && protoDescriptor.get) {
 					// Check if instance has a real property shadowing the getter
-					const instanceDescriptor = Object.getOwnPropertyDescriptor(instance, propertyKey);
+					const instanceDescriptor = Object.getOwnPropertyDescriptor(
+						instance,
+						propertyKey
+					);
 					if (instanceDescriptor && !instanceDescriptor.get) {
 						// Instance has a real property (from TypeScript initialization), remove it
 						// The getter from prototype will take over
@@ -452,10 +463,9 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 					}
 				}
 			}
-			
+
 			return instance;
 		};
-
 		// Copy prototype and static members
 		wrappedConstructor.prototype = originalConstructor.prototype;
 		Object.setPrototypeOf(wrappedConstructor, originalConstructor);
