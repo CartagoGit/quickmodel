@@ -82,13 +82,16 @@ export class QModelRegistry implements IQModelRegistry {
 
     const signature = this.createSignature(properties);
     
-    // Check for conflicts
+    // Check for conflicts - only warn in debug mode
     const existing = this.registry.get(signature);
     if (existing && existing !== modelClass) {
-      console.warn(
-        `QModelRegistry: Signature "${signature}" is already registered for ${existing.name}. ` +
-        `Overwriting with ${modelClass.name}.`
-      );
+      // Only log in debug mode (set QUICKMODEL_DEBUG=1 to enable)
+      if (process.env.QUICKMODEL_DEBUG === '1') {
+        console.warn(
+          `QModelRegistry: Signature "${signature}" is already registered for ${existing.name}. ` +
+          `Overwriting with ${modelClass.name}.`
+        );
+      }
     }
 
     this.registry.set(signature, modelClass);
