@@ -37,15 +37,20 @@
  * ```
  *
  * @example
- * **Special types still work**:
+ * **Special types need explicit mapping**:
  * ```typescript
- * @Quick()
+ * @Quick({ 
+ *   balance: BigInt,
+ *   pattern: RegExp,
+ *   createdAt: Date,
+ *   metadata: Map
+ * })
  * class Account extends QModel<IAccount> {
  *   id!: string;
- *   balance!: bigint;      // Auto-detected
- *   pattern!: RegExp;      // Auto-detected
- *   createdAt!: Date;      // Auto-detected
- *   metadata!: Map<string, any>;  // Auto-detected
+ *   balance!: bigint;
+ *   pattern!: RegExp;
+ *   createdAt!: Date;
+ *   metadata!: Map<string, any>;
  * }
  * ```
  *
@@ -131,10 +136,9 @@ export interface IQuickOptions {
  *
  * Properties are registered from the data passed to the constructor.
  *
- * **Auto-detection (ONLY for unambiguous types):**
- * - **Date**: Automatically detected from ISO 8601 strings
- * - **BigInt**: Automatically detected from numeric strings with 15+ digits
- * - **Set/Map**: MUST be specified in type mapping (cannot be distinguished from arrays)
+ * **No automatic detection** - All special types must be explicitly declared:
+ * - Date, BigInt, RegExp, Map, Set, etc. MUST be specified in type mapping
+ * - Without explicit declaration, values are used as-is with TypeScript metadata only
  *
  * @param typeMap REQUIRED mapping for Set, Map, custom classes, and transformers
  * @returns A class decorator function
@@ -142,12 +146,19 @@ export interface IQuickOptions {
  * @example
  * **✅ Type mapping with constructors:**
  * ```typescript
- * @Quick({ tags: Set, metadata: Map, posts: Post })
+ * @Quick({ 
+ *   createdAt: Date,
+ *   balance: BigInt,
+ *   tags: Set, 
+ *   metadata: Map, 
+ *   posts: Post 
+ * })
  * class User extends QModel<IUser> {
  *   declare id: number;
- *   declare date: Date;              // Auto-detected from ISO string
- *   declare tags: Set<string>;        // NEEDS type mapping
- *   declare metadata: Map<string, any>; // NEEDS type mapping
+ *   declare createdAt: Date;          // Explicitly mapped
+ *   declare balance: bigint;          // Explicitly mapped
+ *   declare tags: Set<string>;        // Explicitly mapped
+ *   declare metadata: Map<string, any>; // Explicitly mapped
  * }
  * ```
  *
@@ -269,7 +280,7 @@ export interface IQuickOptions {
  * - `metadata: [["k", "v"]]` → Array or Map? Cannot determine
  *
  * Without explicit type mapping, the decorator cannot know the developer's intent.
- * This is a design decision for robustness over "magic" heuristics.
+ * All special types MUST be explicitly declared - no automatic detection.
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  */

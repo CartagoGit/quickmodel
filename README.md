@@ -9,8 +9,8 @@ TypeScript model system with automatic type transformation and SOLID architectur
 
 ## ✨ Key Features
 
-- 🔄 **Automatic Type Transformation** - 30+ JavaScript/TypeScript types (Date, BigInt, Symbol, RegExp, Set, Map, etc.)
-- 🎯 **Simple API** - Use `@Quick({})` decorator to specify transformations
+- 🔄 **Explicit Type Transformation** - Transform 30+ JavaScript/TypeScript types (Date, BigInt, Symbol, RegExp, Set, Map, etc.)
+- 🎯 **Simple API** - Use `@Quick({})` decorator to specify transformations explicitly
 - 💡 **Type-Safe** - Full TypeScript support with interface segregation
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
@@ -26,74 +26,168 @@ npm install @cartago-git/quickmodel
 
 ## 🚀 Quick Start
 
-```typescript
-import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+### Basic Usage Pattern
 
-// Serialization interface (JSON-compatible)
+QuickModel transforms JSON data into TypeScript runtime types. **All special types must be explicitly declared** - no automatic detection.
+
+#### 1️⃣ **Simplest Case** - Primitives only (no transformations)
+
+```typescript
+import { QModel } from '@cartago-git/quickmodel';
+
 interface IUser {
   id: number;
   name: string;
-  balance: string;      // BigInt stored as string
-  createdAt: string;    // Date stored as ISO string
 }
 
-// Runtime interface (actual types in code)
-interface IUserTransform {
-  balance: bigint;
-  createdAt: Date;
+class User extends QModel<IUser> {
+  declare id: number;
+  declare name: string;
 }
 
-// Specify which fields need transformation
+const user = new User({ id: 1, name: 'John' });
+```
+
+#### 2️⃣ **With @Quick()** - Auto-apply QType to all properties
+
+```typescript
+import { QModel, Quick } from '@cartago-git/quickmodel';
+
+interface IUser {
+  id: number;
+  name: string;
+}
+
+@Quick()  // Automatically decorates all properties
+class User extends QModel<IUser> {
+  declare id: number;
+  declare name: string;
+}
+```
+
+#### 3️⃣ **With Type Transformations** - Explicit mapping required
+
+```typescript
+import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+
+// Backend interface (JSON-compatible types)
+interface IUser {
+  id: number;
+  createdAt: string;           // ISO date string from backend
+  balance: string;             // BigInt as string from backend
+  tags: string[];              // Array from backend
+  metadata: [string, any][];   // Map as array from backend
+}
+
+// Specify transformations explicitly
 @Quick({
-  balance: BigInt,
-  createdAt: Date
+  createdAt: Date,    // Transform string → Date
+  balance: BigInt,    // Transform string → bigint
+  tags: Set,          // Transform array → Set
+  metadata: Map       // Transform array → Map
 })
-class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-  id!: number;
-  name!: string;
-  balance!: bigint;      // Runtime type
-  createdAt!: Date;      // Runtime type
+class User extends QModel<IUser> {
+  declare id: number;              // No transformation needed
+  declare createdAt: Date;         // Explicitly mapped
+  declare balance: bigint;         // Explicitly mapped
+  declare tags: Set<string>;       // Explicitly mapped
+  declare metadata: Map<string, any>; // Explicitly mapped
 }
 
-// Use with native types
+// Use with JSON data
 const user = new User({
   id: 1,
-  name: 'John Doe',
-  balance: '999999999999999',            // String from JSON
-  createdAt: '2026-01-08T10:00:00.000Z'  // ISO string
+  createdAt: '2026-01-08T10:00:00.000Z',
+  balance: '999999999999999',
+  tags: ['typescript', 'node'],
+  metadata: [['key1', 'value1'], ['key2', 'value2']]
 });
 
 // Access transformed types
-console.log(user.balance);    // bigint: 999999999999999n
 console.log(user.createdAt);  // Date object
+console.log(user.balance);    // bigint: 999999999999999n
+console.log(user.tags);       // Set<string>
+console.log(user.metadata);   // Map<string, any>
+```
 
-// Serialize to JSON-compatible format
-const json = user.serialize();
+#### 4️⃣ **Type-Safe with QInterface** - Enforce transformation types
+
+```typescript
+import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+
+// Backend interface (JSON types)
+interface IUser {
+  id: number;
+  createdAt: string;
+  balance: string;
+  tags: string[];
+  metadata: [string, any][];
+}
+
+// Transformation interface (runtime types)
+interface IUserTransform {
+  createdAt: Date;
+  balance: bigint;
+  tags: Set<string>;
+  metadata: Map<string, any>;
+}
+
+@Quick({
+  createdAt: Date,
+  balance: BigInt,
+  tags: Set,
+  metadata: Map
+})
+class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+  declare id: number;
+  declare createdAt: Date;          // TypeScript enforces this matches IUserTransform
+  declare balance: bigint;          // TypeScript enforces this matches IUserTransform
+  declare tags: Set<string>;        // TypeScript enforces this matches IUserTransform
+  declare metadata: Map<string, any>; // TypeScript enforces this matches IUserTransform
+}
 ```
 
 ## 📖 Core Concepts
+
+### Explicit Type Mapping
+
+QuickModel **does NOT auto-detect** types from data. All special types must be explicitly declared:
+
+```typescript
+// ❌ WRONG - Date won't be transformed automatically
+@Quick()
+class User extends QModel<IUser> {
+  declare createdAt: Date;  // Will stay as string!
+}
+
+// ✅ CORRECT - Explicit mapping required
+@Quick({ createdAt: Date })
+class User extends QModel<IUser> {
+  declare createdAt: Date;  // Will transform string → Date
+}
+```
 
 ### Two-Interface Pattern
 
 QuickModel uses interface segregation (SOLID principle):
 
-- **`IUser`** - Serialization format (JSON-compatible): `string`, `number`, `boolean`, `object`
+- **`IUser`** - Serialization format (JSON-compatible): `string`, `number`, `boolean`, arrays
 - **`IUserTransform`** - Runtime types: `Date`, `bigint`, `RegExp`, `Set`, `Map`
 
 This allows type-safe serialization while maintaining clean runtime code.
 
-### Supported Types
+### Supported Transformations
 
 **Primitives:**
-- `BigInt` - Large integers
-- `Date` - Dates and timestamps
-- `RegExp` - Regular expressions
+- `BigInt` - Large integers (from string)
+- `Date` - Dates and timestamps (from ISO string)
+- `RegExp` - Regular expressions (from string/object)
 - `Symbol` - Symbols (using Symbol.for)
 - `Error` - Error objects
 
 **Collections:**
-- `Set<T>` - Unique values
-- `Map<K, V>` - Key-value pairs
+- `Set<T>` - Unique values (from array)
+- `Map<K, V>` - Key-value pairs (from array of tuples)
 - `Array<T>` - Arrays with nested transformations
 
 **Binary:**
