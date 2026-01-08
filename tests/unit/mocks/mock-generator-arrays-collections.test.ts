@@ -121,10 +121,10 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 		});
 
 		expect(mock.comments).toHaveLength(2);
-		expect(mock.comments[0].author).toBe('Alice');
-		expect(mock.comments[0].likes).toBe(10);
-		expect(mock.comments[1].author).toBe('Bob');
-		expect(mock.comments[1].likes).toBe(5);
+		expect(mock.comments[0]!.author).toBe('Alice');
+		expect(mock.comments[0]!.likes).toBe(10);
+		expect(mock.comments[1]!.author).toBe('Bob');
+		expect(mock.comments[1]!.likes).toBe(5);
 	});
 
 	// Map and Set

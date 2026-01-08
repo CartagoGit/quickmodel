@@ -178,8 +178,8 @@ describe('Integration: Mock Generator - Real World', () => {
 		expect(mock.status).toBe('shipped');
 		expect(mock.shippingAddress.city).toBe('New York');
 		expect(mock.items).toHaveLength(2);
-		expect(mock.items[0].name).toBe('Laptop');
-		expect(mock.items[1].name).toBe('Mouse');
+		expect(mock.items[0]!.name).toBe('Laptop');
+		expect(mock.items[1]!.name).toBe('Mouse');
 		expect(mock.metadata.trackingNumber).toBe('TRACK123');
 		expect(mock.metadata.notes).toEqual(['Handle with care', 'Fragile']);
 	});
@@ -214,12 +214,12 @@ describe('Integration: Mock Generator - Real World', () => {
 			status: i === 0 ? 'pending' : i === 1 ? 'processing' : 'shipped',
 		}));
 
-		expect(mocks[0].id).toBe('ORDER-0');
-		expect(mocks[0].status).toBe('pending');
-		expect(mocks[1].id).toBe('ORDER-1');
-		expect(mocks[1].status).toBe('processing');
-		expect(mocks[2].id).toBe('ORDER-2');
-		expect(mocks[2].status).toBe('shipped');
+		expect(mocks[0]!.id).toBe('ORDER-0');
+		expect(mocks[0]!.status).toBe('pending');
+		expect(mocks[1]!.id).toBe('ORDER-1');
+		expect(mocks[1]!.status).toBe('processing');
+		expect(mocks[2]!.id).toBe('ORDER-2');
+		expect(mocks[2]!.status).toBe('shipped');
 	});
 
 	test('should serialize and deserialize mocked data correctly', () => {

@@ -83,12 +83,12 @@ describe('Unit: Mock Generator - Basic Types', () => {
 			age: 20 + i 
 		}));
 
-		expect(mocks[0].name).toBe('User0');
-		expect(mocks[0].age).toBe(20);
-		expect(mocks[1].name).toBe('User1');
-		expect(mocks[1].age).toBe(21);
-		expect(mocks[2].name).toBe('User2');
-		expect(mocks[2].age).toBe(22);
+		expect(mocks[0]!.name).toBe('User0');
+		expect(mocks[0]!.age).toBe(20);
+		expect(mocks[1]!.name).toBe('User1');
+		expect(mocks[1]!.age).toBe(21);
+		expect(mocks[2]!.name).toBe('User2');
+		expect(mocks[2]!.age).toBe(22);
 	});
 
 	test('should generate interface (plain object) mocks', () => {

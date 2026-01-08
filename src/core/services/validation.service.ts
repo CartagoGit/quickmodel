@@ -1,20 +1,16 @@
 /**
  * Service for validating model instances.
  * 
- * Validates that all fields in a model instance conform to their declared types
- * by using registered validators from the validator registry.
+ * NOTE: Validation is currently disabled after removing the validator registry system.
+ * This service is kept for future implementation of inline validation.
  * 
  * @remarks
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles model validation
- * - **Dependency Inversion**: Depends on IQValidatorRegistry abstraction
- * 
- * Validation uses reflection metadata to determine field types and find
- * corresponding validators. Only fields with registered validators are validated.
  * 
  * @example
  * ```typescript
- * const service = new ValidationService(qValidatorRegistry);
+ * const service = new ValidationService();
  * 
  * class User extends QuickModel<IUser> {
  *   @QType('date') birthDate!: Date;
@@ -35,15 +31,14 @@
  */
 
 import 'reflect-metadata';
-import { IQValidationContext, IQValidationResult, IQValidatorRegistry } from '../interfaces';
+import { IQValidationContext, IQValidationResult } from '../interfaces';
 
 export class ValidationService {
   /**
    * Creates a validation service.
-   * 
-   * @param qValidatorRegistry - Registry containing type validators
+   * Validation is currently disabled as the validator registry was removed.
    */
-  constructor(private readonly qValidatorRegistry: IQValidatorRegistry) {}
+  constructor() {}
 
   /**
    * Validates all fields in a model instance.
@@ -69,13 +64,15 @@ export class ValidationService {
 
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       if (fieldType) {
-        const validator = this.qValidatorRegistry.get(fieldType);
-        if (validator) {
-          const result = validator.validate(value, context);
-          if (!result.isValid) {
-            results.push(result);
-          }
-        }
+        // Validator registry was removed - validation is currently disabled
+        // TODO: Implement inline validation or restore validator system
+        // const validator = this.qValidatorRegistry.get(fieldType);
+        // if (validator) {
+        //   const result = validator.validate(value, context);
+        //   if (!result.isValid) {
+        //     results.push(result);
+        //   }
+        // }
       }
     }
 

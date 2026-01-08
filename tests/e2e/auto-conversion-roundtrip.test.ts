@@ -1,15 +1,12 @@
-import { describe, test, expect, beforeAll } from 'bun:test';
+import { describe, test, expect } from 'bun:test';
 import { QModel } from '../../src/quick.model';
 import { Quick } from '../../src/core/decorators/quick.decorator';
-import { registerCoreTransformers } from '../../src/transformers/bootstrap';
 
 // ============================================================================
 // SETUP
 // ============================================================================
 
-beforeAll(() => {
-	registerCoreTransformers();
-});
+// No setup needed - transformers are now initialized in services
 
 // ============================================================================
 // INTERFACES
@@ -285,12 +282,14 @@ const testData: ITestUser = {
 describe('QuickModel - Comprehensive Test Suite', () => {
 	let user: TestUser;
 
-	beforeAll(() => {
-		user = new TestUser(testData);
-	});
+	// Crear usuario bajo demanda en los tests
+	// beforeAll(() => {
+	// 	user = new TestUser(testData);
+	// });
 
 	describe('1. Primitivos', () => {
 		test('number: id', () => {
+			user = new TestUser(testData);
 			expect(user.id).toBe(123);
 			expect(typeof user.id).toBe('number');
 		});
@@ -538,11 +537,13 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	describe('13. toInterface() - Serialización', () => {
 		let interfaceData: any;
 
-		beforeAll(() => {
-			interfaceData = user.toInterface();
-		});
+		// beforeAll(() => {
+		// 	interfaceData = user.toInterface();
+		// });
 
 		test('returns plain object', () => {
+			user = user || new TestUser(testData);
+			interfaceData = user.toInterface();
 			expect(typeof interfaceData).toBe('object');
 			expect(interfaceData.constructor).toBe(Object);
 		});

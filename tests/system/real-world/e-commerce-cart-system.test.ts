@@ -192,10 +192,10 @@ describe('System: E-Commerce Cart', () => {
 
 		// STEP 3: Verify cart calculations
 		expect(cart.items.length).toBe(2);
-		expect(cart.items[0].product).toBeInstanceOf(Product);
-		expect(cart.items[0].product.price).toBe(149999n);
-		expect(cart.items[0].getSubtotal()).toBe(149999n);
-		expect(cart.items[1].getSubtotal()).toBe(5998n); // 2 * 2999
+		expect(cart.items[0]!.product).toBeInstanceOf(Product);
+		expect(cart.items[0]!.product.price).toBe(149999n);
+		expect(cart.items[0]!.getSubtotal()).toBe(149999n);
+		expect(cart.items[1]!.getSubtotal()).toBe(5998n); // 2 * 2999
 
 		const total = cart.getTotal();
 		expect(total).toBe(155997n); // 149999 + 5998
@@ -209,7 +209,7 @@ describe('System: E-Commerce Cart', () => {
 		// STEP 5: Retrieve cart from storage
 		const retrievedCart = Cart.fromJSON(cartJson);
 		expect(retrievedCart.getTotal()).toBe(total);
-		expect(retrievedCart.items[0].product).toBeInstanceOf(Product);
+		expect(retrievedCart.items[0]!.product).toBeInstanceOf(Product);
 
 		// STEP 6: Checkout - convert cart to order
 		const order = new Order({
@@ -239,8 +239,8 @@ describe('System: E-Commerce Cart', () => {
 
 		// STEP 8: Verify order items are intact
 		expect(paidOrder.items.length).toBe(2);
-		expect(paidOrder.items[0].product.name).toBe('Gaming Laptop');
-		expect(paidOrder.items[0].product.price).toBe(149999n);
+		expect(paidOrder.items[0]!.product.name).toBe('Gaming Laptop');
+		expect(paidOrder.items[0]!.product.price).toBe(149999n);
 	});
 
 	test('Should handle empty cart', () => {
@@ -284,7 +284,7 @@ describe('System: E-Commerce Cart', () => {
 		expect(cart.getTotal()).toBe(2000n);
 
 		// Simulate quantity update
-		cart.items[0].quantity = 5;
+		cart.items[0]!.quantity = 5;
 		expect(cart.getTotal()).toBe(5000n);
 
 		// Simulate item removal
