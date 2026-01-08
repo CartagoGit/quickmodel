@@ -40,6 +40,45 @@ bun add @cartago-git/quickmodel
 
 ## 🚀 Basic Usage
 
+### Simple Rule
+
+**Properties WITHOUT `@QType()`** → Copied as-is  
+**Properties WITH `@QType(Type)`** → Transformed to specified type
+
+### Two Syntax Options
+
+```typescript
+import { QModel, QType } from '@cartago-git/quickmodel';
+
+interface IUser {
+  id: number;
+  name: string;
+  email: string;
+  balance: string;      // BigInt serialized
+  createdAt: string;    // Date serialized
+}
+
+// ✅ OPTION 1: Use `declare` (no decorator for simple properties)
+class User extends QModel<IUser> {
+  declare id: number;
+  declare name: string;
+  declare email: string;
+  
+  @QType(BigInt) declare balance: bigint;
+  @QType(Date) declare createdAt: Date;
+}
+
+// ✅ OPTION 2: Use `!` or `?` (needs @QType() on all properties)
+class User extends QModel<IUser> {
+  @QType() id!: number;        // No arg = copy as-is
+  @QType() name!: string;
+  @QType() email?: string;
+  
+  @QType(BigInt) balance!: bigint;     // With arg = transform
+  @QType(Date) createdAt!: Date;
+}
+```
+
 ### 1. Define Model
 
 ```typescript

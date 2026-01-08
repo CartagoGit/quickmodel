@@ -163,18 +163,31 @@ export class ModelDeserializer<
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
         
-        // If design:type is Array, it's an array of models
+        // If design:type is Array, it's an array of models OR transformable types
         if (designType === Array) {
           if (!Array.isArray(value)) {
             throw new Error(`${context.className}.${key}: Expected array, got ${typeof value}`);
           }
-          const validItems = value.filter((item) => item !== null && item !== undefined);
-          instance[key] = validItems.map((item) => {
-            if (typeof item !== 'object') {
-              throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
-            }
-            return this.deserialize(item, arrayElementClass);
-          });
+          
+          // Check if arrayElementClass is a primitive/transformable type (Date, BigInt, etc.)
+          const isPrimitiveOrTransformable = [Date, BigInt, Number, String, Boolean].includes(arrayElementClass);
+          
+          if (isPrimitiveOrTransformable) {
+            // Transform each element using transformByDesignType
+            instance[key] = value.map((item) => {
+              if (item === null || item === undefined) return item;
+              return this.transformByDesignType(item, arrayElementClass, context);
+            });
+          } else {
+            // It's an array of complex objects - deserialize recursively
+            const validItems = value.filter((item) => item !== null && item !== undefined);
+            instance[key] = validItems.map((item) => {
+              if (typeof item !== 'object') {
+                throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
+              }
+              return this.deserialize(item, arrayElementClass);
+            });
+          }
           continue;
         }
         

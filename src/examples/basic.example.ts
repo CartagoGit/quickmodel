@@ -1,4 +1,4 @@
-import { QInterface, QModel, QType } from '../quick.model';
+import { QInterface, QModel, QType, Quick } from '../quick.model';
 
 interface IUser {
 	id: number;
@@ -10,6 +10,7 @@ interface IUser {
 	tags: string[]; // Array from backend
 	metadata: [string, any][]; // Array of pairs from backend
 	symbolic: string;
+	dates?: (string | undefined | null)[]; // Array of date strings
 }
 
 type IUserTransform = {
@@ -19,6 +20,7 @@ type IUserTransform = {
 	tags: Set<string>;
 	metadata: Map<string, any>;
 	symbolic: symbol;
+	dates?: (Date | undefined | null)[];
 };
 
 /**
@@ -30,26 +32,39 @@ type IUserTransform = {
  * Funciona con AMBOS: declare y !
  */
 
-// ✅ OPCIÓN 1: Con declare
+// ✅ OPCIÓN CON @Quick() - Protege automáticamente TODAS las propiedades
+@Quick({
+	tags: Set,
+	metadata: Map,
+	symbolic: Symbol,
+	bignumber: BigInt,
+	dates: [Date, undefined, null],
+})
 class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-	// Sin decorador → copia tal cual
-	declare id: number;
+	// Todas las propiedades son protegidas automáticamente por @Quick()
+	// Funciona con declare, !, y ?
+	id!: number;
 	name!: string;
-	surname?: string;
+	declare surname?: string;
 
-	// Con @QType() → transforma
-	@QType(Date) declare createdAt: Date;
-	@QType(Date) declare updatedAt?: Date;
-	@QType(BigInt) declare bignumber: bigint;
-	@QType(Set) declare tags: Set<string>;
-	@QType(Map) metadata!: Map<string, any>;
-	@QType(Symbol) declare symbolic: symbol;
+	// @Quick() detecta Date, BigInt automáticamente
+	createdAt!: Date;
+	updatedAt?: Date;
+	bignumber!: bigint;
+	
+	// Estos los especificamos en el mapa arriba
+	declare tags: Set<string>;
+	metadata!: Map<string, any>;
+	symbolic!: symbol;
+	dates?: (Date | undefined | null)[];
+
+	algo: 'test' = 'test'; // Propiedad normal sin relación con QuickModel
 }
 
 const baseObj: IUser = {
 	id: 1,
 	name: 'Test Algo',
-	surname: undefined,
+	// surname: 'pepote',
 	createdAt: '2024-01-01T00:00:00.000Z',
 	updatedAt: '2024-01-02T00:00:00.000Z',
 	bignumber: '9007199254741991',
@@ -59,9 +74,17 @@ const baseObj: IUser = {
 		['author', 'dev'],
 	], // Array of pairs
 	symbolic: 'my-symbol',
+	dates: [
+		'2024-01-10T00:00:00.000Z',
+		'2024-02-15T00:00:00.000Z',
+		undefined,
+		null,
+	],
 };
 
 const logTests = (obj: User) => {
+	console.log('\n=== RESULTADOS DE LAS PRUEBAS ===');
+	console.log({ obj }, '\n');
 	console.log('\n=== Propiedades SIN @QType() (copiadas tal cual) ===');
 	console.log('id:', obj.id, '→', typeof obj.id, obj.id === 1 ? '✅' : '❌');
 	console.log(
@@ -70,6 +93,13 @@ const logTests = (obj: User) => {
 		'→',
 		typeof obj.name,
 		obj.name === 'Test Algo' ? '✅' : '❌'
+	);
+	console.log(
+		'surname:',
+		obj.surname,
+		'→',
+		typeof obj.surname,
+		obj.surname === 'pepote' || obj.surname === undefined ? '✅' : '❌'
 	);
 
 	console.log('\n=== Propiedades CON @QType() (transformadas) ===');
@@ -109,6 +139,15 @@ const logTests = (obj: User) => {
 		'→ Symbol',
 		typeof obj.symbolic === 'symbol' ? '✅' : '❌'
 	);
+	console.log(
+		'dates:',
+		obj.dates,
+		'→ (Date | undefined | null)[]',
+		Array.isArray(obj.dates) && obj.dates.every((d) => d instanceof Date || d === undefined || d === null)
+			? '✅'
+			: '❌'
+	);
+	console.log('algo (normal):', obj.algo, obj.algo === 'test' ? '✅' : '❌');
 };
 
 console.log('\n====================================');
@@ -123,7 +162,10 @@ const allCorrect =
 	user.createdAt instanceof Date &&
 	typeof user.bignumber === 'bigint' &&
 	user.tags instanceof Set &&
-	user.metadata instanceof Map;
+	user.metadata instanceof Map &&
+	typeof user.symbolic === 'symbol' &&
+	Array.isArray(user.dates) &&
+	user.dates.every((d) => d instanceof Date || d === undefined || d === null);
 
 console.log(
 	allCorrect
@@ -131,3 +173,4 @@ console.log(
 		: '❌ HAY ERRORES'
 );
 console.log('====================================\n');
+

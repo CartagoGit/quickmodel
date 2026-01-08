@@ -181,7 +181,7 @@ export abstract class QModel<
 			configurable: true,
 		});
 
-		// Auto-initialize
+		// Auto-initialize and store deserialized values
 		this.initialize();
 	}
 
@@ -211,14 +211,68 @@ export abstract class QModel<
 		
 		// Copy ALL properties from deserialized instance
 		// (includes both transformed properties with @QType and copied properties without @QType)
-		// Use defineProperty to prevent TypeScript's useDefineForClassFields from overwriting
-		// Assign all deserialized properties
+		
+		// Store deserialized values in a hidden storage to handle Bun bug
+		Object.defineProperty(this, '__qm_values', {
+			value: {} as any,
+			writable: false,
+			enumerable: false,
+			configurable: true,
+		});
+		
 		for (const key of Object.keys(deserialized)) {
-			(this as any)[key] = (deserialized as any)[key];
+			const value = (deserialized as any)[key];
+			const storageKey = `__qm_${key}`;
+			// Asignar al storage que usa el getter/setter
+			(this as any)[storageKey] = value;
+			// También asignar directamente (puede ser sobrescrito por Bun)
+			(this as any)[key] = value;
+			// También guardar backup
+			(this as any).__qm_values[key] = value;
 		}
+		
+		// Instalar getters "lazy" que buscan en backup si la propiedad es undefined
+		this.installLazyGetters(Object.keys(deserialized));
 		
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
+	}
+	
+	/**
+	 * Instala getters que recuperan valores del backup si fueron sobrescritos por Bun
+	 */
+	private installLazyGetters(keys: string[]): void {
+		for (const key of keys) {
+			const descriptor = Object.getOwnPropertyDescriptor(this, key);
+			
+			// Si ya tiene getter (de @QType()), skip
+			if (descriptor && descriptor.get) {
+				continue;
+			}
+			
+			const storageKey = `__qm_${key}`;
+			
+			// Definir getter que busca en múltiples lugares
+			Object.defineProperty(this, key, {
+				get(this: any) {
+					// 1. Intentar del storage específico
+					let val = this[storageKey];
+					if (val !== undefined) return val;
+					
+					// 2. Buscar en el backup
+					val = this.__qm_values?.[key];
+					if (val !== undefined) return val;
+					
+					// 3. Retornar undefined
+					return undefined;
+				},
+				set(this: any, value: any) {
+					this[storageKey] = value;
+				},
+				enumerable: true,
+				configurable: true
+			});
+		}
 	}
 
 	/**

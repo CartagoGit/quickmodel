@@ -72,27 +72,33 @@ export const FIELDS_METADATA_KEY = Symbol('quickmodel:fields');
 /**
  * Property decorator for marking QModel fields with automatic type handling.
  * 
- * The @QType() decorator supports multiple ways to specify field types, providing
- * maximum flexibility while maintaining type safety:
+ * The @QType() decorator supports multiple usage patterns:
  * 
- * 1. **Auto-detection**: TypeScript's design:type metadata for basic types
- * 2. **String literals**: Type-safe string literals with IntelliSense
- * 3. **Native constructors**: Direct constructor references
- * 4. **Q-Symbols**: Q-prefixed symbols (QBigInt, QRegExp, etc.)
- * 5. **Model classes**: For nested models and model arrays
+ * **WITHOUT arguments** (`@QType()`):
+ * - Copies the value as-is without transformation
+ * - Protects properties from TypeScript field initialization when using `!` or `?`
+ * - Equivalent to `declare` but works with `!` syntax
+ * 
+ * **WITH type argument** (`@QType(Type)`):
+ * - Transforms the value to the specified type
+ * - Supports: String literals, Native constructors, Q-Symbols, Model classes
  * 
  * @template T - The property type
  * @param typeOrClass - Optional: Constructor, Symbol, or String literal for the field type
  * @returns A property decorator function that registers the field with appropriate metadata
  * 
  * @example
- * **Auto-detection** (primitives and Date):
+ * **No transformation** (copy as-is with protection):
  * ```typescript
  * class User extends QModel<IUser> {
- *   @QType() name!: string;          // Auto-detected via design:type
- *   @QType() age!: number;            // Auto-detected via design:type
- *   @QType() active!: boolean;        // Auto-detected via design:type
- *   @QType() createdAt!: Date;        // Auto-detected via design:type
+ *   // Option 1: Use declare (no decorator needed)
+ *   declare id: number;
+ *   declare name: string;
+ *   
+ *   // Option 2: Use @QType() without args (allows ! or ?)
+ *   @QType() id!: number;
+ *   @QType() name!: string;
+ *   @QType() email?: string;
  * }
  * ```
  * 
@@ -139,7 +145,9 @@ export const FIELDS_METADATA_KEY = Symbol('quickmodel:fields');
  * }
  * ```
  */
-export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeString): PropertyDecorator {
+export function QType<T>(
+  typeOrClass?: (new (data: any) => T) | symbol | QTypeString | BigIntConstructor | SymbolConstructor | SetConstructor | MapConstructor
+): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol): void {
     // Register the property in the fields list
     const existingFields = (Reflect.getMetadata(FIELDS_METADATA_KEY, target) as Array<string | symbol>) || [];
@@ -157,6 +165,27 @@ export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeSt
           qModelRegistry.register(modelClass, stringFields);
         }
       }
+    }
+
+    // Si NO se proporciona typeOrClass, crear un getter/setter para prevenir
+    // que TypeScript sobreescriba el valor con undefined al usar `!` o `?`
+    if (!typeOrClass) {
+      const storageKey = `__quickmodel_${String(propertyKey)}`;
+      
+      // Definir getter/setter que previene la sobreescritura
+      Object.defineProperty(target, propertyKey, {
+        get(this: any) {
+          return this[storageKey];
+        },
+        set(this: any, value: any) {
+          this[storageKey] = value;
+        },
+        enumerable: true,
+        configurable: true
+      });
+      
+      // No se define metadata de tipo - se copiará tal cual sin transformación
+      return;
     }
 
     if (typeof typeOrClass === 'string') {
@@ -201,7 +230,5 @@ export function QType<T>(typeOrClass?: (new (data: any) => T) | symbol | QTypeSt
         Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
       }
     }
-    // Si no se proporciona typeOrClass, confía en design:type (emitido con !)
-    // o en la detección automática del valor
   };
 }

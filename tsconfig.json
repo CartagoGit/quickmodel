@@ -10,7 +10,7 @@
     // Decoradores (REQUERIDO para el sistema)
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "useDefineForClassFields": false,  // Desactivado para permitir ! y ? sin @QType()
+    "useDefineForClassFields": false,  // CRÍTICO: false para permitir ! y ? sin decoradores  
 
     // Generación de archivos
     "declaration": true,
