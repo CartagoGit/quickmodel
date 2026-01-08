@@ -23,6 +23,7 @@ import type {
 	SerializedInterface,
 	ModelData,
 } from './core/interfaces/serialization-types.interface';
+import { FIELDS_METADATA_KEY } from './core/decorators/qtype.decorator';
 
 
 // Internal exports only (QType is implementation detail)
@@ -168,8 +169,8 @@ export abstract class QModel<
 		const result = new Map<string, { type: string; transformer: any }>();
 		const prototype = this.prototype;
 		
-		// Get all registered fields
-		const fields = Reflect.getMetadata('fields', prototype) || [];
+		// Get all registered fields using the correct symbol
+		const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, prototype) || [];
 		
 		for (const fieldName of fields) {
 			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
@@ -194,7 +195,7 @@ export abstract class QModel<
 				transformer = fieldTransformer;
 			}
 			
-			result.set(fieldName, { type, transformer });
+			result.set(fieldName as string, { type, transformer });
 		}
 		
 		return result;
@@ -493,31 +494,40 @@ export abstract class QModel<
 	 * 
 
 	/**
-	 * Returns the current state as a plain interface object with primitive values.
+	 * Returns the current state in the same format as the constructor input.
 	 * 
-	 * This converts all transformed types back to their interface representation:
-	 * - Date → ISO string
+	 * This method serializes the current values back to the format that was originally
+	 * passed to the constructor, reversing all transformations:
+	 * - Date objects → ISO 8601 strings (as they came in)
 	 * - BigInt → string representation
 	 * - RegExp → string pattern
 	 * - Set → array
 	 * - Map → plain object
-	 * - etc.
 	 * 
-	 * This is the inverse of the transformations applied during construction.
+	 * This is the format suitable for:
+	 * - Sending to backend APIs
+	 * - Comparing with initial state
+	 * - Detecting changes
+	 * - JSON serialization
 	 * 
-	 * @returns Plain object with current values in primitive/serializable format
+	 * @returns Plain object with current values in the same format as constructor input
 	 * 
 	 * @example
 	 * ```typescript
 	 * const user = new User({
 	 *   id: '1',
-	 *   createdAt: '2024-01-01T00:00:00.000Z'
+	 *   name: 'John',
+	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String format (interface)
 	 * });
+	 * 
+	 * // Internally: createdAt is Date object (transformed)
+	 * console.log(user.createdAt instanceof Date); // true
 	 * 
 	 * user.createdAt = new Date('2024-12-31');
 	 * 
+	 * // getInterface() returns in original format (string)
 	 * const current = user.getInterface();
-	 * // { id: '1', createdAt: '2024-12-31T00:00:00.000Z' }
+	 * // { id: '1', name: 'John', createdAt: '2024-12-31T00:00:00.000Z' }
 	 * ```
 	 */
 	getInterface(): SerializedInterface<TInterface> {
@@ -525,33 +535,42 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Returns the initial state as it was when the model was constructed.
+	 * Returns the initial state exactly as it was passed to the constructor.
 	 * 
-	 * This returns the exact interface data used to create the instance,
-	 * with all values in their primitive/serialized format. Useful for:
+	 * This returns a copy of the exact interface data used to create the instance,
+	 * in the same format it was provided (with all values as primitives/strings).
+	 * Useful for:
 	 * - Detecting changes: compare with getInterface()
-	 * - Resetting to original state
-	 * - Undo functionality
-	 * - Audit trails
+	 * - Resetting to original state: restore from this data
+	 * - Undo functionality: revert to initial values
+	 * - Audit trails: track what the original data was
 	 * 
-	 * @returns Plain object with initial values in primitive format
+	 * @returns Plain object with initial values in the same format as constructor input
 	 * 
 	 * @example
 	 * ```typescript
 	 * const user = new User({
 	 *   id: '1',
 	 *   name: 'John',
-	 *   createdAt: '2024-01-01T00:00:00.000Z'
+	 *   age: 30,
+	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String format
 	 * });
 	 * 
+	 * // Modify the instance
 	 * user.name = 'Jane';
+	 * user.age = 31;
 	 * user.createdAt = new Date('2024-12-31');
 	 * 
+	 * // Get initial state (unchanged)
 	 * const init = user.getInitInterface();
-	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+	 * // { id: '1', name: 'John', age: 30, createdAt: '2024-01-01T00:00:00.000Z' }
 	 * 
+	 * // Get current state (modified)
 	 * const current = user.getInterface();
-	 * // { id: '1', name: 'Jane', createdAt: '2024-12-31T00:00:00.000Z' }
+	 * // { id: '1', name: 'Jane', age: 31, createdAt: '2024-12-31T00:00:00.000Z' }
+	 * 
+	 * // Compare to detect changes
+	 * console.log(init.name !== current.name); // true
 	 * ```
 	 */
 	getInitInterface(): SerializedInterface<TInterface> {
