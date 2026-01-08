@@ -1,93 +1,76 @@
 /**
- * Symbols for special types requiring transformation.
- * 
- * These symbols are used with the @QType() decorator to indicate
- * that a field needs a specific transformer.
+ * Type aliases for QuickModel @Quick() decorator
  * 
  * @example
  * ```typescript
- * class User extends QModel<IUser> {
- *   @QType(QBigInt) balance!: bigint;
- *   @QType(QRegExp) pattern!: RegExp;
- *   @QType(QSymbol) id!: symbol;
- * }
+ * @Quick({
+ *   // String literals
+ *   value: 'bigint',
+ *   date: 'date',
+ *   pattern: 'regexp',
+ *   
+ *   // Constructors
+ *   tags: Set,
+ *   metadata: Map,
+ *   error: Error,
+ *   
+ *   // Functions
+ *   price: (v) => Math.round(v * 100) / 100,
+ *   name: (s) => s.trim().toUpperCase()
+ * })
  * ```
  */
 
-/** BigInt transformation: string | number → bigint */
-export const QBigInt = Symbol('BigInt');
-
-/** RegExp transformation: object → RegExp */
-export const QRegExp = Symbol('RegExp');
-
-/** Symbol transformation: string → symbol (using Symbol.for) */
-export const QSymbol = Symbol('Symbol');
-
-/** Error transformation: object → Error */
-export const QError = Symbol('Error');
-
-/** Int8Array transformation: number[] → Int8Array */
-export const QInt8Array = Symbol('Int8Array');
-
-/** Uint8Array transformation: number[] → Uint8Array */
-export const QUint8Array = Symbol('Uint8Array');
-
-/** Int16Array transformation: number[] → Int16Array */
-export const QInt16Array = Symbol('Int16Array');
-
-/** Uint16Array transformation: number[] → Uint16Array */
-export const QUint16Array = Symbol('Uint16Array');
-
-/** Int32Array transformation: number[] → Int32Array */
-export const QInt32Array = Symbol('Int32Array');
-
-/** Uint32Array transformation: number[] → Uint32Array */
-export const QUint32Array = Symbol('Uint32Array');
-
-/** Float32Array transformation: number[] → Float32Array */
-export const QFloat32Array = Symbol('Float32Array');
-
-/** Float64Array transformation: number[] → Float64Array */
-export const QFloat64Array = Symbol('Float64Array');
-
-/** BigInt64Array transformation: string[] → BigInt64Array */
-export const QBigInt64Array = Symbol('BigInt64Array');
-
-/** BigUint64Array transformation: string[] → BigUint64Array */
-export const QBigUint64Array = Symbol('BigUint64Array');
-
-/** ArrayBuffer transformation: number[] → ArrayBuffer */
-export const QArrayBuffer = Symbol('ArrayBuffer');
-
-/** DataView transformation: number[] → DataView */
-export const QDataView = Symbol('DataView');
-
-/** URL transformation: string → URL */
-export const QURL = Symbol('URL');
-
-/** URLSearchParams transformation: string | object → URLSearchParams */
-export const QURLSearchParams = Symbol('URLSearchParams');
-
 /**
- * Union type of all available field type symbols.
- * Used for type-safe decorator parameters.
+ * String literal type aliases for basic type conversions.
+ * Use these with @Quick() for autocomplete support in your IDE.
  */
-export type QFieldSymbol =
-  | typeof QBigInt
-  | typeof QRegExp
-  | typeof QSymbol
-  | typeof QError
-  | typeof QInt8Array
-  | typeof QUint8Array
-  | typeof QInt16Array
-  | typeof QUint16Array
-  | typeof QInt32Array
-  | typeof QUint32Array
-  | typeof QFloat32Array
-  | typeof QFloat64Array
-  | typeof QBigInt64Array
-  | typeof QBigUint64Array
-  | typeof QArrayBuffer
-  | typeof QDataView
-  | typeof QURL
-  | typeof QURLSearchParams;
+export type IQTypeAlias =
+  // Primitivos
+  | 'bigint'
+  | 'symbol'
+  | 'number'
+  | 'string'
+  | 'boolean'
+  | 'null'
+  | 'undefined'
+  
+  // Objetos nativos
+  | 'date'
+  | 'regexp'
+  | 'error'
+  | 'map'
+  | 'set'
+  | 'weakmap'
+  | 'weakset'
+  | 'promise'
+  | 'array'
+  | 'object'
+  
+  // Typed Arrays
+  | 'int8array'
+  | 'uint8array'
+  | 'uint8clampedarray'
+  | 'int16array'
+  | 'uint16array'
+  | 'int32array'
+  | 'uint32array'
+  | 'float32array'
+  | 'float64array'
+  | 'bigint64array'
+  | 'biguint64array'
+  
+  // Buffers
+  | 'arraybuffer'
+  | 'sharedarraybuffer'
+  | 'dataview'
+  
+  // Web APIs
+  | 'url'
+  | 'urlsearchparams'
+  | 'blob'
+  | 'file'
+  | 'formdata'
+  | 'headers'
+  | 'textencoder'
+  | 'textdecoder';

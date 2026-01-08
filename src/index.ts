@@ -4,3 +4,8 @@
 export { QModel } from './quick.model';
 export type { QInterface } from './quick.model';
 export { Quick } from './core/decorators/quick.decorator';
+
+// ============================================================================
+// TRANSFORMATION HELPERS (for @Quick decorator)
+// ============================================================================
+export * from './core/helpers/transform-helpers';

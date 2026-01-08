@@ -185,14 +185,12 @@ export abstract class QModel<
 				transformer = customTransformer;
 			} else if (arrayElementClass) {
 				type = `Array<${arrayElementClass.name || 'unknown'}>`;
-				// Get transformer for array element type
-				const elementTransformer = QModel.deserializer['getTransformer'](arrayElementClass);
-				transformer = elementTransformer;
+				// Get transformer for array element type from deserializer registry
+				transformer = (QModel.deserializer as any).transformers?.get(arrayElementClass);
 			} else if (fieldType) {
 				type = fieldType.name || fieldType.toString();
-				// Get transformer from registry
-				const fieldTransformer = QModel.deserializer['getTransformer'](fieldType);
-				transformer = fieldTransformer;
+				// Get transformer from deserializer registry
+				transformer = (QModel.deserializer as any).transformers?.get(fieldType);
 			}
 			
 			result.set(fieldName as string, { type, transformer });
@@ -270,26 +268,74 @@ export abstract class QModel<
 			configurable: true,
 		});
 		
+		// Get all property keys from deserialized instance (only OWN properties, not getters from prototype)
+		const allKeys = new Set<string>();
+		
+		// Add own enumerable properties (these have actual values)
 		for (const key of Object.keys(deserialized)) {
-			const value = (deserialized as any)[key];
-			const storageKey = `__qm_${key}`;
-			// Asignar al storage que usa el getter/setter
-			(this as any)[storageKey] = value;
-			// También asignar directamente (puede ser sobrescrito por Bun)
-			(this as any)[key] = value;
-			// También guardar backup
-			(this as any).__qm_values[key] = value;
+			allKeys.add(key);
 		}
 		
-		// Instalar getters "lazy" que buscan en backup si la propiedad es undefined
-		this.installLazyGetters(Object.keys(deserialized));
+		for (const key of allKeys) {
+			// Skip internal __initData, __tempData, etc. but NOT __quickmodel_ storage keys
+			if (key.startsWith('__') && !key.startsWith('__quickmodel_')) {
+				continue;
+			}
+			
+			// Skip methods
+			if (typeof (deserialized as any)[key] === 'function') {
+				continue;
+			}
+			
+			const value = (deserialized as any)[key];
+			
+			// Determine storage key - don't duplicate __quickmodel_ prefix
+			let storageKey: string;
+			let propertyKey: string;
+			
+			if (key.startsWith('__quickmodel_')) {
+				// Key is already a storage key, use as-is
+				storageKey = key;
+				// Extract property name by removing prefix
+				propertyKey = key.slice('__quickmodel_'.length);
+			} else {
+				// Regular property, add prefix for storage
+				storageKey = `__quickmodel_${key}`;
+				propertyKey = key;
+			}
+			
+			(this as any)[storageKey] = value;
+			// Store in backup
+			(this as any).__qm_values[propertyKey] = value;
+		}
+		
+		// Install lazy getters only for actual property names (not storage keys)
+		const propertyNames = Array.from(allKeys).filter(k => !k.startsWith('__quickmodel_'));
+		this.installLazyGetters(propertyNames);
 		
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
 		
-		// Store initial state for change tracking and reset
+		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
+		// Use custom clone because structuredClone doesn't support symbols
+		const initDataClone: any = {};
+		for (const key in data) {
+			const value = data[key];
+			// Symbols and functions cannot be cloned, keep reference
+			if (typeof value === 'symbol' || typeof value === 'function') {
+				initDataClone[key] = value;
+			} else {
+				try {
+					initDataClone[key] = structuredClone(value);
+				} catch {
+					// Fallback for non-cloneable values
+					initDataClone[key] = value;
+				}
+			}
+		}
+		
 		Object.defineProperty(this, '__initData', {
-			value: this.serialize(),
+			value: initDataClone,
 			writable: false,
 			enumerable: false,
 			configurable: true,
@@ -308,7 +354,7 @@ export abstract class QModel<
 				continue;
 			}
 			
-			const storageKey = `__qm_${key}`;
+			const storageKey = `__quickmodel_${key}`;
 			
 			// Definir getter que busca en múltiples lugares
 			Object.defineProperty(this, key, {
@@ -529,7 +575,22 @@ export abstract class QModel<
 	 * ```
 	 */
 	toInterface(): SerializedInterface<TInterface> {
-		return this.serialize();
+		return QModel.serializer.toInterface(this) as SerializedInterface<TInterface>;
+	}
+
+	/**
+	 * Alias for toInterface() for backward compatibility
+	 * @deprecated Use toInterface() instead
+	 */
+	getInterface(): SerializedInterface<TInterface> {
+		return this.toInterface();
+	}
+
+	/**
+	 * Returns serialized state suitable for JSON
+	 */
+	serialize(): SerializedInterface<TInterface> {
+		return QModel.serializer.serialize(this) as SerializedInterface<TInterface>;
 	}
 
 	/**

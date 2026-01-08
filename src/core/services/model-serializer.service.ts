@@ -98,16 +98,60 @@ export class ModelSerializer<
   }
 
   /**
-   * Serializes a model instance to plain object.
+   * Serializes a model instance to plain object using transformers.
    * 
    * @param model - The model instance to serialize
-   * @returns Plain object suitable for JSON serialization
+   * @returns Plain object suitable for JSON serialization with transformers applied
    * 
    * @remarks
-   * Preserves null and undefined values as-is. Uses transformers for special
-   * types, handles nested models automatically.
+   * Uses transformers to convert special types (BigInt, Date, RegExp, etc.) to JSON-compatible format.
    */
   serialize(model: TModel): TInterface {
+    const result: Record<string, unknown> = {};
+    const seen = new WeakSet();
+    
+    // Get all property keys
+    const keys = new Set<string>();
+    for (const key of Object.keys(model as object)) {
+      keys.add(key);
+    }
+    
+    let proto = Object.getPrototypeOf(model);
+    while (proto && proto !== Object.prototype) {
+      for (const key of Object.getOwnPropertyNames(proto)) {
+        const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+        if (descriptor && (descriptor.get || descriptor.set) && key !== 'constructor') {
+          keys.add(key);
+        }
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+    
+    // Serialize with transformers
+    for (const key of keys) {
+      if (key.startsWith('__') || key.startsWith('_')) {
+        continue;
+      }
+      
+      const value = (model as any)[key];
+      result[key] = this.serializeValue(value);
+    }
+
+    return result as TInterface;
+  }
+
+  /**
+   * Converts model to interface format, preserving original input types.
+   * 
+   * @param model - The model instance to convert
+   * @returns Plain object with values in their original input format
+   * 
+   * @remarks
+   * Preserves the exact format that was provided in the constructor.
+   * If a Date was provided as ISO string, returns ISO string.
+   * If a BigInt was provided as string, returns string.
+   */
+  toInterface(model: TModel): TInterface {
     const result: Record<string, unknown> = {};
     const seen = new WeakSet(); // Track circular references
     const initData = (model as any).__initData || {};
@@ -190,6 +234,22 @@ export class ModelSerializer<
       return this.serializeValue(currentValue);
     }
 
+    // DATE: Check BEFORE generic string handling
+    // originalValue can be Date instance OR ISO string
+    if (originalValue instanceof Date || 
+        (typeof originalValue === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(originalValue))) {
+      // If currentValue is a Date, convert to ISO string
+      if (typeof currentValue?.toISOString === 'function') {
+        return currentValue.toISOString();
+      }
+      // If currentValue is already a string (no transformation occurred), return as-is
+      if (typeof currentValue === 'string') {
+        return currentValue;
+      }
+      // Fallback: convert to string
+      return String(currentValue);
+    }
+
     // PRIMITIVES: Preserve primitive type
     if (typeof originalValue === 'number') {
       // Includes NaN, Infinity, -Infinity as numbers
@@ -243,14 +303,6 @@ export class ModelSerializer<
       return currentValue.map((item: any, index: number) => 
         this.convertToInterfaceFormat(item, originalValue[index], seen, isProduction, `${propertyKey}[${index}]`)
       );
-    }
-
-    // DATE: Convert to ISO string (interface format)
-    if (originalValue instanceof Date) {
-      if (currentValue instanceof Date) {
-        return currentValue.toISOString();
-      }
-      return String(currentValue);
     }
 
     // REGEXP: Preserve original format

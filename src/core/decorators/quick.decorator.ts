@@ -69,21 +69,53 @@
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
 import { ModelDeserializer } from '../services/model-deserializer.service';
+import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
 
 
 const QUICK_DECORATOR_KEY = '__quickModel__';
 const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
 
 /**
- * Options for @Quick() decorator to specify property types explicitly
+ * Constructor type for class-based type mapping
+ */
+type IConstructor<T = any> = new (...args: any[]) => T;
+
+/**
+ * Transformer function that converts a value
+ */
+type ITransformerFunction = (value: any) => any;
+
+/**
+ * All supported type specifications for @Quick() decorator
  * 
  * Supports:
- * - Constructor types: Set, Map, Date, BigInt, Symbol
+ * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
+ * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
+ * - Transformer functions: (value) => transformed value (arrow or regular functions)
  * - Array with element type: [Date, undefined, null]
- * - Custom transformer functions: (value) => transformedValue
  */
-export interface QuickOptions {
-	[propertyName: string]: any | ((value: any) => any);
+export type IQuickTypeSpec = 
+  | IQTypeAlias          // String literals like 'bigint', 'date', 'regexp'
+  | IConstructor         // Constructors like Date, RegExp, Map, custom classes
+  | ITransformerFunction // Custom transformer functions
+  | any[];               // Array element type specification
+
+/**
+ * Options for @Quick() decorator to specify property types explicitly
+ * 
+ * @example
+ * ```typescript
+ * @Quick({ 
+ *   value: 'bigint',           // String literal (autocomplete)
+ *   date: Date,                // Constructor
+ *   pattern: 'regexp',         // String literal
+ *   tags: Set,                 // Constructor
+ *   custom: (v) => v * 2       // Transformer function
+ * })
+ * ```
+ */
+export interface IQuickOptions {
+  [propertyName: string]: IQuickTypeSpec;
 }
 
 /**
@@ -110,6 +142,63 @@ export interface QuickOptions {
  *   declare metadata: Map<string, any>; // NEEDS type mapping
  * }
  * ```
+ * 
+ * @example
+ * **✅ String literals para tipos básicos (autocomplete):**
+ * ```typescript
+ * @Quick({ 
+ *   value: 'bigint',    // ← IDE autocomplete!
+ *   date: 'date',       // ← IDE autocomplete!
+ *   pattern: 'regexp',  // ← IDE autocomplete!
+ *   tags: 'set',        // ← IDE autocomplete!
+ *   flags: 'map'        // ← IDE autocomplete!
+ * })
+ * class Account extends QModel<IAccount> {
+ *   declare value: bigint;
+ *   declare date: Date;
+ *   declare pattern: RegExp;
+ *   declare tags: Set<string>;
+ *   declare flags: Map<string, boolean>;
+ * }
+ * ```
+ *
+ * @example
+ * **✅ Funciones directas (máxima flexibilidad):**
+ * ```typescript
+ * @Quick({ 
+ *   // Math methods directos
+ *   price: (v) => Math.round(v * 100) / 100,       // Redondea a 2 decimales
+ *   count: Math.floor,                              // Redondeo hacia abajo
+ *   percentage: (v) => Math.min(100, Math.max(0, v)), // Clamp 0-100
+ *   
+ *   // String transformations
+ *   name: (s) => s.trim().toUpperCase(),            // Limpia y mayúsculas
+ *   slug: (s) => s.toLowerCase().replace(/\s+/g, '-'), // Slugify
+ *   
+ *   // Encoding/Decoding
+ *   encoded: (s) => Buffer.from(s).toString('base64'),  // Base64 encode
+ *   decoded: (s) => Buffer.from(s, 'base64').toString(), // Base64 decode
+ *   
+ *   // JSON
+ *   metadata: JSON.parse,                           // Parse JSON string
+ *   
+ *   // Business logic custom
+ *   tax: (price) => price * 0.21,                   // Calcula IVA 21%
+ *   total: (p) => (p * 1.21) * 0.9                 // Precio + IVA - 10% desc
+ * })
+ * class Product extends QModel<IProduct> {
+ *   declare price: number;
+ *   declare count: number;
+ *   declare percentage: number;
+ *   declare name: string;
+ *   declare slug: string;
+ *   declare encoded: string;
+ *   declare decoded: string;
+ *   declare metadata: any;
+ *   declare tax: number;
+ *   declare discounted: number;
+ * }
+ * ```
  *
  * @example
  * **✅ Array element types:**
@@ -130,6 +219,27 @@ export interface QuickOptions {
  * class User extends QModel<IUser> {
  *   dates?: (Date | undefined | null)[];
  *   custom!: any;
+ * }
+ * ```
+ * 
+ * @example
+ * **✅ Math functions and string literals with parameters:**
+ * ```typescript
+ * @Quick({ 
+ *   price: 'round.2',              // Round to 2 decimals
+ *   discount: Math.abs,            // Math.abs function directly
+ *   total: (v) => Math.round(v * 100) / 100,  // Custom precision
+ *   encoded: 'base64.encode',      // Base64 encoding
+ *   slug: 'slugify',               // Convert to URL slug
+ *   hash: 'sha256'                 // SHA-256 hash
+ * })
+ * class Product extends QModel<IProduct> {
+ *   price!: number;
+ *   discount!: number;
+ *   total!: number;
+ *   encoded!: string;
+ *   slug!: string;
+ *   hash!: string;
  * }
  * ```
  *
@@ -287,122 +397,20 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 						continue;
 					}
 
-					const mappedType = typeMap[propertyKey];
-					if (mappedType) {
-						// Check if it's a custom transformer function
-						if (typeof mappedType === 'function' && !mappedType.prototype) {
-							// Arrow function or regular function used as transformer
-							Reflect.defineMetadata(
-								'customTransformer',
-								mappedType,
-								originalConstructor.prototype,
-								propertyKey
-							);
-							// Mark as no specific type (will use raw value + transformer)
-							Reflect.defineMetadata(
-								'design:type',
-								Object,
-								originalConstructor.prototype,
-								propertyKey
-							);
-						}
-						// Check if it's an array type mapping like [Date, undefined, null]
-						else if (Array.isArray(mappedType) && mappedType.length > 0) {
-							// Extract the primary type (first element)
-							const primaryType = mappedType[0];
-							Reflect.defineMetadata(
-								'design:type',
-								Array,
-								originalConstructor.prototype,
-								propertyKey
-							);
-							// Store the element type for array deserialization
-							Reflect.defineMetadata(
-								'arrayElementClass',
-								primaryType,
-								originalConstructor.prototype,
-								propertyKey
-							);
-						} else {
-							// Check if property is already an Array type (TypeScript metadata)
-							// OR if the actual value is an array
-							const existingDesignType = Reflect.getMetadata(
-								'design:type',
-								originalConstructor.prototype,
-								propertyKey
-							);
-							
-							const valueInData = data[propertyKey];
-							const isArrayValue = Array.isArray(valueInData);
-							
-							if (existingDesignType === Array || isArrayValue) {
-								// Property is Array type, store the element class
-								// e.g., posts: Post[] with typeMap: { posts: Post }
-								// OR data has posts: [...] with typeMap: { posts: Post }
-								Reflect.defineMetadata(
-									'arrayElementClass',
-									mappedType,
-									originalConstructor.prototype,
-									propertyKey
-								);
-								// Set design:type as Array if not already set
-								if (!existingDesignType) {
-									Reflect.defineMetadata(
-										'design:type',
-										Array,
-										originalConstructor.prototype,
-										propertyKey
-									);
-								}
-							} else {
-								// Single object or primitive type
-								Reflect.defineMetadata(
-									'design:type',
-									mappedType,
-									originalConstructor.prototype,
-									propertyKey
-								);
-							}
-						}
-					} else {
-						// Only auto-detect unambiguous types: Date and BigInt
-						const value = data[propertyKey];
-						if (value !== null && value !== undefined) {
-							let inferredType = value.constructor;
-
-							// Date detection: ISO 8601 string pattern
-							if (
-								typeof value === 'string' &&
-								/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(
-									value
-								)
-							) {
-								inferredType = Date;
-							}
-							// BigInt detection: 15+ digit numeric string
-							else if (
-								typeof value === 'string' &&
-								/^\d{15,}$/.test(value)
-							) {
-								inferredType = BigInt;
-							}
-
-							Reflect.defineMetadata(
-								'design:type',
-								inferredType,
-								originalConstructor.prototype,
-								propertyKey
-							);
-						}
-					}
-
+				const mappedType = typeMap[propertyKey];
+				if (mappedType) {
+					// Simply pass to QType - it handles everything
+					const decorator = QType(mappedType);
+					decorator(originalConstructor.prototype, propertyKey);
+				} else {
+					// Auto-detect from TypeScript metadata
 					const decorator = QType();
 					decorator(originalConstructor.prototype, propertyKey);
 				}
+			}
+		}
 
-				propertiesRegistered = true;
-
-				// Also preserve properties with default initializers (e.g., algo: 'test' = 'test')
+		// Post-construction hook: Delete shadowing properties
 				// These properties are not in the data from backend but have values in the class
 				// Create a temporary instance to capture default values
 				try {
@@ -441,11 +449,30 @@ export function Quick(typeMap?: QuickOptions): ClassDecorator {
 			}
 
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
-			return Reflect.construct(
+			const instance = Reflect.construct(
 				originalConstructor,
 				args,
 				wrappedConstructor
 			);
+			
+			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
+			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
+			const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
+			for (const propertyKey of Object.keys(typeMap)) {
+				// Check if property has a getter in the prototype (from @QType)
+				const protoDescriptor = Object.getOwnPropertyDescriptor(originalConstructor.prototype, propertyKey);
+				if (protoDescriptor && protoDescriptor.get) {
+					// Check if instance has a real property shadowing the getter
+					const instanceDescriptor = Object.getOwnPropertyDescriptor(instance, propertyKey);
+					if (instanceDescriptor && !instanceDescriptor.get) {
+						// Instance has a real property (from TypeScript initialization), remove it
+						// The getter from prototype will take over
+						delete instance[propertyKey];
+					}
+				}
+			}
+			
+			return instance;
 		};
 
 		// Copy prototype and static members
