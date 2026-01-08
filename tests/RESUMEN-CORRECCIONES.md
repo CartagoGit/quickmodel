@@ -102,7 +102,7 @@ const transformer = this.qTransformerRegistry.get('set') ||
 
 ## 📊 Test Suite Creado
 
-### Archivo: `tests/comprehensive-bun.test.ts`
+### Archivo: `tests/e2e/auto-conversion-roundtrip.test.ts`
 
 **Estadísticas**:
 - **46 tests** en total
@@ -245,7 +245,7 @@ new User({
    - Prioriza detección de `__type` markers
    - Soporta roundtrip correctamente
 
-3. **tests/comprehensive-bun.test.ts** (nuevo)
+3. **tests/e2e/auto-conversion-roundtrip.test.ts** (nuevo)
    - Suite completo de 46 tests
    - Documentación inline de comportamientos
 
@@ -260,13 +260,13 @@ new User({
 
 ```bash
 # Ejecutar todos los tests
-bun test tests/comprehensive-bun.test.ts
+bun test tests/e2e/auto-conversion-roundtrip.test.ts
 
 # Ver output detallado
-bun test tests/comprehensive-bun.test.ts --verbose
+bun test tests/e2e/auto-conversion-roundtrip.test.ts --verbose
 
 # Watch mode
-bun test tests/comprehensive-bun.test.ts --watch
+bun test tests/e2e/auto-conversion-roundtrip.test.ts --watch
 ```
 
 **Resultado esperado**:

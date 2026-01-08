@@ -4,7 +4,7 @@ Este documento lista los casos edge y funcionalidades que deberían ser probadas
 
 ## ✅ Casos Actualmente Cubiertos
 
-Los siguientes casos están completamente probados en `comprehensive-bun.test.ts`:
+Los siguientes casos están completamente probados en `e2e/auto-conversion-roundtrip.test.ts`:
 
 - ✅ Primitivos (number, string, boolean, null, undefined)
 - ✅ Enums (string, numeric, const)
