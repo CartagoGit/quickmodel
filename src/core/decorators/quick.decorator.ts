@@ -392,42 +392,43 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						const decorator = QType();
 						decorator(originalConstructor.prototype, propertyKey);
 					}
-				}
-			}
 
-			// Post-construction hook: Delete shadowing properties
-			// These properties are not in the data from backend but have values in the class
-			// Create a temporary instance to capture default values
-			try {
-				const dummyInstance = Reflect.construct(
-					originalConstructor,
-					[{}],
-					originalConstructor
-				);
-				for (const key of Object.keys(dummyInstance)) {
-					// Skip if already registered from data
-					if (Array.from(allProperties).includes(key)) continue;
-					// Skip internal properties
-					if (key.startsWith('__')) continue;
+					// Post-construction hook: Delete shadowing properties
+					// These properties are not in the data from backend but have values in the class
+					// Create a temporary instance to capture default values
+					try {
+						const dummyInstance = Reflect.construct(
+							originalConstructor,
+							[{}],
+							originalConstructor
+						);
+						for (const key of Object.keys(dummyInstance)) {
+							// Skip if already registered from data
+							if (Array.from(allProperties).includes(key))
+								continue;
+							// Skip internal properties
+							if (key.startsWith('__')) continue;
 
-					// Apply @QType() to preserve the default value
-					const decorator = QType();
-					decorator(originalConstructor.prototype, key);
+							// Apply @QType() to preserve the default value
+							const decorator = QType();
+							decorator(originalConstructor.prototype, key);
 
-					// Store the default value in the prototype
-					Object.defineProperty(
-						originalConstructor.prototype,
-						`__quickmodel_default_${key}`,
-						{
-							value: dummyInstance[key],
-							writable: false,
-							enumerable: false,
-							configurable: false,
+							// Store the default value in the prototype
+							Object.defineProperty(
+								originalConstructor.prototype,
+								`__quickmodel_default_${key}`,
+								{
+									value: dummyInstance[key],
+									writable: false,
+									enumerable: false,
+									configurable: false,
+								}
+							);
 						}
-					);
+					} catch (e) {
+						// If creating dummy instance fails, just continue
+					}
 				}
-			} catch (e) {
-				// If creating dummy instance fails, just continue
 			}
 
 			propertiesRegistered = true;
