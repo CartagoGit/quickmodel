@@ -28,7 +28,7 @@ import type {
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
 export { Quick } from '../decorators';
-import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
+import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 export type { QInterface } from '../interfaces';
 
 /**
@@ -203,7 +203,7 @@ export abstract class QModel<
 		const prototype = this.prototype;
 		
 		// Get all registered fields
-		const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, prototype) || [];
+		const fields = Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
 		
 		for (const fieldName of fields) {
 			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);

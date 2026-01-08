@@ -70,8 +70,22 @@ export class ErrorTransformer extends BaseTransformer<string | IErrorData, Error
       return new Error(value);
     }
 
+    // Object format: must have 'message' property
     if (typeof value !== 'object' || value === null || !('message' in value)) {
-      throw new Error(`${className}.${propertyKey}: Invalid Error value`);
+      throw new Error(
+        `${className}.${propertyKey}: Error transformer ONLY accepts:\\n` +
+        `  - string (e.g., "TypeError: Invalid input" or "Error message")\\n` +
+        `  - object ({ message: string, name?: string, stack?: string })\\n` +
+        `  - Error instance\\n` +
+        `Received: ${typeof value} = ${JSON.stringify(value)}`
+      );
+    }
+
+    if (typeof value.message !== 'string') {
+      throw new Error(
+        `${className}.${propertyKey}: Error object must have 'message' as string.\\n` +
+        `Received: message type = ${typeof value.message}`
+      );
     }
 
     const error = new Error(value.message);

@@ -38,18 +38,31 @@ export class SymbolTransformer extends BaseTransformer<string | { __type: 'symbo
    * @throws {Error} If the value is not a string or symbol
    */
   deserialize(value: string | symbol | { __type: 'symbol'; description: string }, propertyKey: string, className: string): symbol {
+    // Already a symbol - return as-is
     if (typeof value === 'symbol') {
       return value;
     }
 
-    // Handle new format with __type marker
+    // Handle format with __type marker
     if (typeof value === 'object' && value !== null && '__type' in value && value.__type === 'symbol') {
+      if (typeof value.description !== 'string') {
+        throw new Error(
+          `${className}.${propertyKey}: Symbol object must have 'description' as string.\\n` +
+          `Received: description type = ${typeof value.description}`
+        );
+      }
       return Symbol.for(value.description);
     }
 
+    // Must be string for simple description format
     if (typeof value !== 'string') {
       throw new Error(
-        `${className}.${propertyKey}: Expected string for Symbol, got ${typeof value}`,
+        `${className}.${propertyKey}: Symbol transformer ONLY accepts:\\n` +
+        `  - string (symbol description, e.g., \"mySymbol\")\\n` +
+        `  - object ({ __type: \"symbol\", description: \"mySymbol\" })\\n` +
+        `  - symbol instance\\n` +
+        `Note: Uses Symbol.for() to create global symbols.\\n` +
+        `Received: ${typeof value} = ${JSON.stringify(value)}`
       );
     }
 

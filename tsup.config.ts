@@ -15,4 +15,10 @@ export default defineConfig({
   minify: false,
   outDir: 'dist',
   external: ['reflect-metadata'],
+  // Soporte para path aliases (@/*)
+  esbuildOptions(options) {
+    options.alias = {
+      '@': './src'
+    };
+  }
 });

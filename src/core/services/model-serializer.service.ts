@@ -42,14 +42,14 @@
  */
 
 import { IQSerializer } from '../interfaces';
-import { BigIntTransformer } from '../../transformers/bigint.transformer';
-import { DateTransformer } from '../../transformers/date.transformer';
-import { ErrorTransformer } from '../../transformers/error.transformer';
-import { RegExpTransformer } from '../../transformers/regexp.transformer';
-import { SymbolTransformer } from '../../transformers/symbol.transformer';
-import { TypedArrayTransformer } from '../../transformers/typed-array.transformer';
-import { URLTransformer } from '../../transformers/url.transformer';
-import { URLSearchParamsTransformer } from '../../transformers/url-search-params.transformer';
+import { BigIntTransformer } from '@/transformers/bigint.transformer';
+import { DateTransformer } from '@/transformers/date.transformer';
+import { ErrorTransformer } from '@/transformers/error.transformer';
+import { RegExpTransformer } from '@/transformers/regexp.transformer';
+import { SymbolTransformer } from '@/transformers/symbol.transformer';
+import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
+import { URLTransformer } from '@/transformers/url.transformer';
+import { URLSearchParamsTransformer } from '@/transformers/url-search-params.transformer';
 
 export class ModelSerializer<
   TModel extends Record<string, unknown> = Record<string, unknown>,

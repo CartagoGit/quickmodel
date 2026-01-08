@@ -5,7 +5,7 @@
 
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
-import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
+import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 
 const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
 
@@ -70,7 +70,7 @@ export class MockGenerator {
     let current = instance;
     while (current && current !== Object.prototype) {
       // Get the list of properties registered by @QType()
-      const registeredFields = Reflect.getMetadata(FIELDS_METADATA_KEY, current) as string[] | undefined;
+      const registeredFields = Reflect.getMetadata(QTYPES_METADATA_KEY, current) as string[] | undefined;
       
       if (registeredFields) {
         for (const field of registeredFields) {

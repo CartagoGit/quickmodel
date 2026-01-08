@@ -8,23 +8,29 @@ import { BaseTransformer } from '../core/bases/base-transformer';
  */
 export class URLTransformer extends BaseTransformer<string, URL> {
   deserialize(value: string | URL, propertyKey: string, className: string): URL {
+    // Already a URL instance - return as-is
     if (value instanceof URL) {
       return value;
     }
 
+    // Must be string, nothing else
     if (typeof value !== 'string') {
       throw new Error(
-        `${className}.${propertyKey}: URL transformer accepts string (e.g., "https://example.com") ` +
-        `or URL instance. Got ${typeof value}`
+        `${className}.${propertyKey}: URL transformer ONLY accepts:\n` +
+        `  - string (valid URL, e.g., "https://example.com/path?query=1")\n` +
+        `  - URL instance\n` +
+        `Received: ${typeof value} = ${JSON.stringify(value)}`
       );
     }
 
     try {
       return new URL(value);
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
       throw new Error(
-        `${className}.${propertyKey}: Invalid URL value "${value}". ` +
-        `Expected a valid URL string (e.g., "https://example.com/path")`
+        `${className}.${propertyKey}: Invalid URL string "${value}".\n` +
+        `Error: ${errorMsg}\n` +
+        `Expected: Valid URL with protocol (e.g., "https://example.com/path")`
       );
     }
   }
@@ -42,21 +48,27 @@ export class URLTransformer extends BaseTransformer<string, URL> {
  */
 export class URLSearchParamsTransformer extends BaseTransformer<string | Record<string, string>, URLSearchParams> {
   deserialize(value: string | Record<string, string> | URLSearchParams, propertyKey: string, className: string): URLSearchParams {
+    // Already a URLSearchParams instance - return as-is
     if (value instanceof URLSearchParams) {
       return value;
     }
 
+    // Accept string query
     if (typeof value === 'string') {
       return new URLSearchParams(value);
     }
 
+    // Accept plain object (not array, not null)
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       return new URLSearchParams(value as Record<string, string>);
     }
 
     throw new Error(
-      `${className}.${propertyKey}: URLSearchParams transformer accepts string (e.g., "key=value&foo=bar"), ` +
-      `object (e.g., {key: "value"}), or URLSearchParams instance. Got ${typeof value}`
+      `${className}.${propertyKey}: URLSearchParams transformer ONLY accepts:\n` +
+      `  - string (query format, e.g., "key=value&foo=bar")\n` +
+      `  - object (key-value pairs, e.g., { key: "value", foo: "bar" })\n` +
+      `  - URLSearchParams instance\n` +
+      `Received: ${typeof value} = ${JSON.stringify(value)}`
     );
   }
 
@@ -72,18 +84,24 @@ export class URLSearchParamsTransformer extends BaseTransformer<string | Record<
  */
 export class TextEncoderTransformer extends BaseTransformer<Record<string, never>, TextEncoder> {
   deserialize(value: any, propertyKey: string, className: string): TextEncoder {
+    // Already a TextEncoder instance - return as-is
     if (value instanceof TextEncoder) {
       return value;
     }
 
-    // TextEncoder has no constructor arguments, just create new instance
+    // TextEncoder has no state, accept null/undefined/empty object
     if (value === null || value === undefined || (typeof value === 'object' && Object.keys(value).length === 0)) {
       return new TextEncoder();
     }
 
     throw new Error(
-      `${className}.${propertyKey}: TextEncoder transformer accepts null, undefined, ` +
-      `empty object {}, or TextEncoder instance. Got ${typeof value}`
+      `${className}.${propertyKey}: TextEncoder transformer ONLY accepts:\n` +
+      `  - null\n` +
+      `  - undefined\n` +
+      `  - {} (empty object)\n` +
+      `  - TextEncoder instance\n` +
+      `Note: TextEncoder has no configuration, these values just create a new instance.\n` +
+      `Received: ${typeof value} = ${JSON.stringify(value)}`
     );
   }
 
@@ -106,7 +124,7 @@ export class TextDecoderTransformer extends BaseTransformer<string | { encoding:
 
     if (typeof value === 'string') {
       try {
-        return new TextDecoder(value);
+        return new (TextDecoder as any)(value);
       } catch (error) {
         throw new Error(
           `${className}.${propertyKey}: Invalid encoding "${value}". ` +
@@ -118,7 +136,7 @@ export class TextDecoderTransformer extends BaseTransformer<string | { encoding:
     if (typeof value === 'object' && value !== null) {
       const encoding = (value as any).encoding || 'utf-8';
       try {
-        return new TextDecoder(encoding);
+        return new (TextDecoder as any)(encoding);
       } catch (error) {
         throw new Error(
           `${className}.${propertyKey}: Invalid encoding "${encoding}". ` +

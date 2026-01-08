@@ -45,16 +45,16 @@
 
 import 'reflect-metadata';
 import { IQDeserializer, IQTransformContext, IQTransformer } from '../interfaces';
-import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
-import { BigIntTransformer } from '../../transformers/bigint.transformer';
-import { DateTransformer } from '../../transformers/date.transformer';
-import { ErrorTransformer } from '../../transformers/error.transformer';
-import { MapTransformer, SetTransformer } from '../../transformers/map-set.transformer';
-import { RegExpTransformer } from '../../transformers/regexp.transformer';
-import { SymbolTransformer } from '../../transformers/symbol.transformer';
-import { ArrayBufferTransformer, DataViewTransformer, SharedArrayBufferTransformer } from '../../transformers/buffer.transformer';
-import { TypedArrayTransformer } from '../../transformers/typed-array.transformer';
-import { URLTransformer, URLSearchParamsTransformer, TextEncoderTransformer, TextDecoderTransformer } from '../../transformers/web-apis.transformer';
+import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
+import { BigIntTransformer } from '@/transformers/bigint.transformer';
+import { DateTransformer } from '@/transformers/date.transformer';
+import { ErrorTransformer } from '@/transformers/error.transformer';
+import { MapTransformer, SetTransformer } from '@/transformers/map-set.transformer';
+import { RegExpTransformer } from '@/transformers/regexp.transformer';
+import { SymbolTransformer } from '@/transformers/symbol.transformer';
+import { ArrayBufferTransformer, DataViewTransformer, SharedArrayBufferTransformer } from '@/transformers/buffer.transformer';
+import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
+import { URLTransformer, URLSearchParamsTransformer, TextEncoderTransformer, TextDecoderTransformer } from '@/transformers/web-apis.transformer';
 
 export class ModelDeserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
@@ -197,8 +197,8 @@ export class ModelDeserializer<
    */
   private populateInstance<T extends Record<string, unknown>>(instance: Record<string, unknown>, data: T, modelClass: Function): void {
     // Get list of properties decorated with @QType()
-    const decoratedFields = Reflect.getMetadata(FIELDS_METADATA_KEY, instance) || 
-                            Reflect.getMetadata(FIELDS_METADATA_KEY, Object.getPrototypeOf(instance)) || 
+    const decoratedFields = Reflect.getMetadata(QTYPES_METADATA_KEY, instance) || 
+                            Reflect.getMetadata(QTYPES_METADATA_KEY, Object.getPrototypeOf(instance)) || 
                             [];
     
     for (const [key, value] of Object.entries(data)) {
@@ -299,8 +299,8 @@ export class ModelDeserializer<
       
       // 5. If property has @QType() decorator but no type metadata (declare without arg),
       // try to detect type from value
-      const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, instance) || 
-                     Reflect.getMetadata(FIELDS_METADATA_KEY, Object.getPrototypeOf(instance)) || 
+      const fields = Reflect.getMetadata(QTYPES_METADATA_KEY, instance) || 
+                     Reflect.getMetadata(QTYPES_METADATA_KEY, Object.getPrototypeOf(instance)) || 
                      [];
       const isDecoratedWithQType = fields.includes(key);
       

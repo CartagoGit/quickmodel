@@ -37,22 +37,30 @@ export class DateTransformer extends BaseTransformer<string, Date> implements IQ
    * @throws {Error} If the value is not a valid date
    */
   deserialize(value: string | number | Date, propertyKey: string, className: string): Date {
+    // Already a Date instance - return as-is
     if (value instanceof Date) {
       return value;
     }
 
+    // Must be string or number, nothing else
     if (typeof value !== 'string' && typeof value !== 'number') {
       throw new Error(
-        `${className}.${propertyKey}: Date transformer accepts string (ISO format), ` +
-        `number (Unix timestamp in ms), or Date instance. Got ${typeof value}`
+        `${className}.${propertyKey}: Date transformer ONLY accepts:\n` +
+        `  - string (ISO 8601 format, e.g., "2024-01-08T10:30:00Z")\n` +
+        `  - number (Unix timestamp in milliseconds, e.g., 1704710400000)\n` +
+        `  - Date instance\n` +
+        `Received: ${typeof value} = ${JSON.stringify(value)}`
       );
     }
 
     const date = new Date(value);
     if (isNaN(date.getTime())) {
       throw new Error(
-        `${className}.${propertyKey}: Invalid date value "${value}". ` +
-        `Expected ISO 8601 string (e.g., "2024-01-08T10:30:00Z") or Unix timestamp in milliseconds`
+        `${className}.${propertyKey}: Invalid date value. Cannot convert "${value}" to Date.\n` +
+        `Expected:\n` +
+        `  - ISO 8601 string: "2024-01-08T10:30:00.000Z"\n` +
+        `  - Unix timestamp (ms): 1704710400000\n` +
+        `Received: ${typeof value} = ${JSON.stringify(value)}`
       );
     }
 

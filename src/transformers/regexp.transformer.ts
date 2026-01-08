@@ -56,25 +56,70 @@ export class RegExpTransformer
     propertyKey: string,
     className: string,
   ): RegExp {
+    // Already a RegExp instance - return as-is
     if (value instanceof RegExp) {
       return value;
     }
 
     // Format: {__type, source, flags} or {source, flags}
     if (typeof value === 'object' && value !== null && 'source' in value) {
-      return new RegExp(value.source, value.flags || '');
+      if (typeof value.source !== 'string') {
+        throw new Error(
+          `${className}.${propertyKey}: RegExp object must have 'source' as string.\\n` +
+          `Received: source type = ${typeof value.source}`
+        );
+      }
+      try {
+        return new RegExp(value.source, value.flags || '');
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `${className}.${propertyKey}: Invalid RegExp pattern.\\n` +
+          `source: "${value.source}"\\n` +
+          `flags: "${value.flags || ''}"\\n` +
+          `Error: ${errorMsg}`
+        );
+      }
     }
 
-    // Format: "/pattern/flags"
+    // Format: "/pattern/flags" or plain pattern string
     if (typeof value === 'string') {
       const match = value.match(/^\/(.+)\/([gimsuy]*)$/);
       if (match && match[1]) {
-        return new RegExp(match[1], match[2] || '');
+        try {
+          return new RegExp(match[1], match[2] || '');
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          throw new Error(
+            `${className}.${propertyKey}: Invalid RegExp string with slashes.\\n` +
+            `Input: "${value}"\\n` +
+            `Pattern: "${match[1]}"\\n` +
+            `Flags: "${match[2] || ''}"\\n` +
+            `Error: ${errorMsg}`
+          );
+        }
       }
-      return new RegExp(value);
+      // Try as plain pattern (no slashes)
+      try {
+        return new RegExp(value);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `${className}.${propertyKey}: Invalid RegExp pattern.\\n` +
+          `Pattern: "${value}"\\n` +
+          `Error: ${errorMsg}`
+        );
+      }
     }
 
-    throw new Error(`${className}.${propertyKey}: Invalid RegExp value`);
+    throw new Error(
+      `${className}.${propertyKey}: RegExp transformer ONLY accepts:\\n` +
+      `  - string with slashes (e.g., "/[a-z]+/gi")\\n` +
+      `  - plain pattern string (e.g., "[a-z]+")\\n` +
+      `  - object ({ source: "[a-z]+", flags: "gi" })\\n` +
+      `  - RegExp instance\\n` +
+      `Received: ${typeof value} = ${JSON.stringify(value)}`
+    );
   }
 
   /**

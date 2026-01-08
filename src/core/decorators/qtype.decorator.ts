@@ -66,7 +66,7 @@ export type QTypeString =
  * 
  * @internal
  */
-export const FIELDS_METADATA_KEY = Symbol('quickmodel:fields');
+export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
 
 /**
  * Property decorator for marking QModel fields with automatic type handling.
@@ -149,10 +149,10 @@ export function QType<T>(
 ): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol): void {
     // Register the property in the fields list
-    const existingFields = (Reflect.getMetadata(FIELDS_METADATA_KEY, target) as Array<string | symbol>) || [];
+    const existingFields = (Reflect.getMetadata(QTYPES_METADATA_KEY, target) as Array<string | symbol>) || [];
     if (!existingFields.includes(propertyKey)) {
       const newFields = [...existingFields, propertyKey];
-      Reflect.defineMetadata(FIELDS_METADATA_KEY, newFields, target);
+      Reflect.defineMetadata(QTYPES_METADATA_KEY, newFields, target);
     }
 
     // ALWAYS create getter/setter to prevent TypeScript from shadowing with real properties

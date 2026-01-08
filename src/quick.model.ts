@@ -23,7 +23,7 @@ import type {
 	SerializedInterface,
 	ModelData,
 } from './core/interfaces/serialization-types.interface';
-import { FIELDS_METADATA_KEY } from './core/decorators/qtype.decorator';
+import { QTYPES_METADATA_KEY } from './core/decorators/qtype.decorator';
 
 
 // Internal exports only (QType is implementation detail)
@@ -148,7 +148,7 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Gets metadata information for all registered fields in this model class.
+	 * Gets metadata information for all registered qtypes in this model class.
 	 * Returns a Map with field names as keys and metadata objects containing type and transformer info.
 	 * 
 	 * @returns Map of field metadata with type names and transformer information
@@ -169,10 +169,10 @@ export abstract class QModel<
 		const result = new Map<string, { type: string; transformer: any }>();
 		const prototype = this.prototype;
 		
-		// Get all registered fields using the correct symbol
-		const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, prototype) || [];
+		// Get all registered qtypes using the correct symbol
+		const qtypes = Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
 		
-		for (const fieldName of fields) {
+		for (const fieldName of qtypes) {
 			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
 			const arrayElementClass = Reflect.getMetadata('arrayElementClass', prototype, fieldName);
 			const customTransformer = Reflect.getMetadata('customTransformer', prototype, fieldName);
@@ -584,13 +584,6 @@ export abstract class QModel<
 	 */
 	getInterface(): SerializedInterface<TInterface> {
 		return this.toInterface();
-	}
-
-	/**
-	 * Returns serialized state suitable for JSON
-	 */
-	serialize(): SerializedInterface<TInterface> {
-		return QModel.serializer.serialize(this) as SerializedInterface<TInterface>;
 	}
 
 	/**
