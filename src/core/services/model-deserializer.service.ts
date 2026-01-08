@@ -46,7 +46,6 @@
 
 import 'reflect-metadata';
 import { IQDeserializer, IQTransformContext, IQTransformer, IQTransformerRegistry } from '../interfaces';
-import { qModelRegistry } from '../registry/model.registry';
 import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
 
 export class ModelDeserializer<
@@ -286,149 +285,25 @@ export class ModelDeserializer<
   }
 
   /**
-   * Deserializes an array by inferring the model class from element properties.
+   * Deserializes an array without explicit type information.
    * 
    * @param value - The array to deserialize
    * @param context - Transformation context (property name, class name)
-   * @returns Array of deserialized models or original array if inference fails
-   * @throws {Error} If properties don't match any registered model
+   * @returns Original array without transformation
    * 
    * @remarks
-   * Inference process:
-   * 1. Check if array is empty → return empty array
-   * 2. Check first element type (primitives vs objects)
-   * 3. For objects: Analyze EACH element's properties individually
-   * 4. Look up model class for each element by property signature
-   * 5. Deserialize each element with its corresponding model
-   * 6. Supports union types: (User | Tag)[]
+   * Without explicit @QType(ModelClass) or typeMap, arrays are returned as-is.
+   * This prevents ambiguous type inference and requires explicit type specification.
+   * 
+   * For transforming arrays, use:
+   * - @QType(ModelClass) for single type arrays
+   * - @Quick({ items: ModelClass }) for typeMap specification
+   * - Custom transformer functions for heterogeneous arrays
    */
   private deserializeArrayWithInference(value: unknown[], context: IQTransformContext): unknown[] {
-    // Empty array - no inference needed
-    if (value.length === 0) {
-      return [];
-    }
-
-    // Find first plain object to use for inference
-    // Skip primitives, null, undefined, arrays, and known complex types
-    const firstObject = value.find((item) => {
-      if (item === null || item === undefined) return false;
-      if (typeof item !== 'object') return false;
-      if (Array.isArray(item)) return false;
-      if (
-        item instanceof Date ||
-        item instanceof RegExp ||
-        item instanceof Error ||
-        item instanceof ArrayBuffer ||
-        item instanceof DataView ||
-        item instanceof Map ||
-        item instanceof Set ||
-        ArrayBuffer.isView(item)
-      ) {
-        return false;
-      }
-      return true; // Plain object
-    });
-
-    // If no plain objects found, return array as-is
-    if (!firstObject) {
-      return value;
-    }
-
-    // Check if all OBJECTS in the array are homogeneous (same properties)
-    // Get all plain objects for analysis
-    const plainObjects = value.filter((item) => {
-      if (item === null || item === undefined) return false;
-      if (typeof item !== 'object') return false;
-      if (Array.isArray(item)) return false;
-      if (
-        item instanceof Date ||
-        item instanceof RegExp ||
-        item instanceof Error ||
-        item instanceof ArrayBuffer ||
-        item instanceof DataView ||
-        item instanceof Map ||
-        item instanceof Set ||
-        ArrayBuffer.isView(item)
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    // Check if all plain objects are homogeneous (same properties)
-    // This is an optimization for common case
-    const firstProperties = Object.keys(firstObject).sort().join(',');
-    const allHomogeneous = plainObjects.every((item) => {
-      return Object.keys(item as Record<string, unknown>).sort().join(',') === firstProperties;
-    });
-    
-    if (allHomogeneous) {
-      // All objects have same properties - infer once and apply to all objects
-      const modelClass = qModelRegistry.findByProperties(Object.keys(firstObject));
-      
-      if (!modelClass) {
-        // No matching model found - return as plain objects
-        // This is normal for arrays of plain objects without a model
-        return value;
-      }
-
-      // Deserialize all plain objects using same model class, keep others as-is
-      type ModelConstructor = new (data: Record<string, unknown>) => unknown;
-      return value.map((item) => {
-        // Only deserialize plain objects
-        if (plainObjects.includes(item)) {
-          return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
-        }
-        // Keep primitives, Dates, etc. as-is
-        return item;
-      });
-    }
-
-    // Heterogeneous array - infer type for EACH plain object individually (union types)
-    // Process each element, deserialize plain objects, keep primitives/complex types as-is
-    type ModelConstructor = new (data: Record<string, unknown>) => unknown;
-    return value.map((item, index) => {
-      // Null/undefined - keep as-is
-      if (item === null || item === undefined) {
-        return item;
-      }
-      
-      // Primitives - keep as-is
-      if (typeof item !== 'object') {
-        return item;
-      }
-      
-      // Arrays - keep as-is (nested arrays)
-      if (Array.isArray(item)) {
-        return item;
-      }
-      
-      // Known complex types - keep as-is
-      if (
-        item instanceof Date ||
-        item instanceof RegExp ||
-        item instanceof Error ||
-        item instanceof ArrayBuffer ||
-        item instanceof DataView ||
-        item instanceof Map ||
-        item instanceof Set ||
-        ArrayBuffer.isView(item)
-      ) {
-        return item;
-      }
-      
-      // Plain object - try to infer and deserialize
-      const properties = Object.keys(item);
-      const signature = properties.sort().join(',');
-      const modelClass = qModelRegistry.findByProperties(properties);
-
-      if (!modelClass) {
-        // No matching model - keep as plain object
-        return item;
-      }
-
-      return this.deserialize(item as Record<string, unknown>, modelClass as ModelConstructor);
-    });
+    // Without explicit type information, return array as-is
+    // This prevents ambiguous type inference
+    return value;
   }
 
   /**

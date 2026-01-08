@@ -48,9 +48,7 @@ export type QModelInstance<T> = T extends abstract new (
  * const data: UserInterface = { name: 'John' };
  * ```
  */
-export type QModelInterface<T> = QModelInstance<T> extends QModel<
-	infer I,
-	any
->
+export type QModelInterface<T> = QModelInstance<T> extends QModel<infer I>
 	? I
+	: never;
 	: never;
