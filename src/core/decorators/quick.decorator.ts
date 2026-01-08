@@ -92,13 +92,22 @@ type ITransformerFunction = (value: any) => any;
  * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
  * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
  * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Array with element type: [Date, undefined, null]
  */
-export type IQuickTypeSpec = 
+export type ISpec = 
   | IQTypeAlias          // String literals like 'bigint', 'date', 'regexp'
   | IConstructor         // Constructors like Date, RegExp, Map, custom classes
-  | ITransformerFunction // Custom transformer functions
-  | any[];               // Array element type specification
+  | ITransformerFunction;
+
+/**
+ * All supported type specifications for @Quick() decorator for arrays
+ * 
+ * Supports:
+ * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
+ * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
+ * - Transformer functions: (value) => transformed value (arrow or regular functions)
+ * - Array with element type: [Date, undefined, null]
+ */
+export type ISpecs = ISpec[] // Array of any Spec
 
 /**
  * Options for @Quick() decorator to specify property types explicitly
@@ -115,7 +124,7 @@ export type IQuickTypeSpec =
  * ```
  */
 export interface IQuickOptions {
-  [propertyName: string]: IQuickTypeSpec;
+  [propertyName: string]: ISpec | ISpecs;
 }
 
 /**
@@ -265,7 +274,7 @@ export interface IQuickOptions {
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  */
-export function Quick(typeMap?: QuickOptions): ClassDecorator {
+export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 	return function <T extends Function>(target: T): any {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
