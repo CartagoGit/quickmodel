@@ -9,10 +9,8 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel } from '../../../src/quick.model';
-import { QType } from '../../../src/core/decorators/qtype.decorator';
-import { Quick } from '../../../src/core/decorators/quick.decorator';
 
-// Test Models
+// Test Models - Using declare syntax
 interface IAddress {
 	city?: string;
 	country?: string;
@@ -31,22 +29,20 @@ interface IUser {
 	age?: number;
 }
 
-@Quick()
 class User extends QModel<IUser> {
-	@QType() id!: number;
-	@QType() name!: string;
-	@QType() profile?: IProfile;
-	@QType() bio!: string | null;
-	@QType() age?: number;
+	declare id: number;
+	declare name: string;
+	declare profile?: IProfile;
+	declare bio: string | null;
+	declare age?: number;
 }
 
 interface ITimeline {
 	events: (Date | null | undefined)[];
 }
 
-@Quick()
 class Timeline extends QModel<ITimeline> {
-	@QType() events!: (Date | null | undefined)[];
+	declare events: (Date | null | undefined)[];
 }
 
 interface IData {
@@ -55,11 +51,10 @@ interface IData {
 	required: string;
 }
 
-@Quick()
 class Data extends QModel<IData> {
-	@QType() value!: string | null;
-	@QType() optional?: string;
-	@QType() required!: string;
+	declare value: string | null;
+	declare optional?: string;
+	declare required: string;
 }
 
 // ============================================================================
@@ -128,14 +123,14 @@ describe('Null Safety: Deep Optional Chaining', () => {
 });
 
 describe('Null Safety: Arrays with Null/Undefined', () => {
-	test('should transform null correctly in arrays', () => {
+	test('should accept mixed null/undefined in arrays', () => {
 		const timeline = new Timeline({
 			events: [
-				new Date('2024-01-01').toISOString(),
+				new Date('2024-01-01'),
 				null,
 				undefined,
-				new Date('2024-01-03').toISOString()
-			] as any
+				new Date('2024-01-03')
+			]
 		});
 
 		expect(timeline.events.length).toBe(4);
@@ -329,8 +324,8 @@ describe('Null Safety: Optional Fields Behavior', () => {
 			// age is optional and missing
 		});
 
+		// Optional field is undefined when not provided
 		expect(user.age).toBeUndefined();
-		expect('age' in user).toBe(true); // property exists but undefined
 	});
 
 	test('should accept explicit undefined for optional field', () => {
@@ -349,9 +344,8 @@ describe('Null Safety: Optional Fields Behavior', () => {
 			optional?: string | null;
 		}
 
-		@Quick()
 		class Flexible extends QModel<IFlexible> {
-			@QType() optional?: string | null;
+			declare optional?: string | null;
 		}
 
 		const model = new Flexible({

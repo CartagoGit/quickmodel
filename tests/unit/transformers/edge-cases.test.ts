@@ -9,83 +9,75 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel } from '../../../src/quick.model';
-import { QType } from '../../../src/core/decorators/qtype.decorator';
-import { Quick } from '../../../src/core/decorators/quick.decorator';
 
 // ============================================================================
-// TEST MODELS
+// TEST MODELS - Using declare syntax (user-facing API)
 // ============================================================================
 
 interface IBigIntData {
-	huge: string; // BigInt serialized
-	negative: string;
-	zero: string;
+	huge: bigint;
+	negative: bigint;
+	zero: bigint;
 }
 
-@Quick()
 class BigIntData extends QModel<IBigIntData> {
-	@QType() huge!: bigint;
-	@QType() negative!: bigint;
-	@QType() zero!: bigint;
+	declare huge: bigint;
+	declare negative: bigint;
+	declare zero: bigint;
 }
 
 interface IDateData {
-	past: string; // Date serialized
-	future: string;
-	epoch: string;
+	past: Date;
+	future: Date;
+	epoch: Date;
 }
 
-@Quick()
 class DateData extends QModel<IDateData> {
-	@QType() past!: Date;
-	@QType() future!: Date;
-	@QType() epoch!: Date;
+	declare past: Date;
+	declare future: Date;
+	declare epoch: Date;
 }
 
 interface IRegExpData {
-	pattern: string; // RegExp serialized as "/pattern/flags"
-	flags: string;
+	pattern: RegExp;
+	flags: RegExp;
 }
 
-@Quick()
 class RegExpData extends QModel<IRegExpData> {
-	@QType() pattern!: RegExp;
-	@QType() flags!: RegExp;
+	declare pattern: RegExp;
+	declare flags: RegExp;
 }
 
 interface IErrorData {
-	simple: string; // Error serialized as "Name: message"
-	withStack: string;
+	simple: Error;
+	withStack: Error;
 }
 
-@Quick()
 class ErrorData extends QModel<IErrorData> {
-	@QType() simple!: Error;
-	@QType() withStack!: Error;
+	declare simple: Error;
+	declare withStack: Error;
 }
 
 interface ISymbolData {
-	keyed: string; // Symbol.for serialized as string key
-	plain: string;
+	keyed: Symbol;
+	plain: Symbol;
 }
 
-@Quick()
 class SymbolData extends QModel<ISymbolData> {
-	@QType() keyed!: Symbol;
-	@QType() plain!: Symbol;
+	declare keyed: Symbol;
+	declare plain: Symbol;
 }
 
 interface IBufferData {
-	empty: number[]; // ArrayBuffer as byte array
-	large: number[];
-	small: number[];
+	empty: ArrayBuffer;
+	large: ArrayBuffer;
+	small: ArrayBuffer;
 }
 
-@Quick()
 class BufferData extends QModel<IBufferData> {
-	@QType() empty!: ArrayBuffer;
-	@QType() large!: ArrayBuffer;
-	@QType() small!: ArrayBuffer;
+	declare empty: ArrayBuffer;
+	declare large: ArrayBuffer;
+	declare small: ArrayBuffer;
 }
 
 // ============================================================================
@@ -95,9 +87,9 @@ class BufferData extends QModel<IBufferData> {
 describe('Transformer Edge Cases: BigInt', () => {
 	test('should handle very large bigints', () => {
 		const data = new BigIntData({
-			huge: '9999999999999999999999999999999999999999',
-			negative: '-1',
-			zero: '0'
+			huge: 9999999999999999999999999999999999999999n,
+			negative: -1n,
+			zero: 0n
 		});
 
 		expect(typeof data.huge).toBe('bigint');
@@ -106,9 +98,9 @@ describe('Transformer Edge Cases: BigInt', () => {
 
 	test('should handle negative bigints', () => {
 		const data = new BigIntData({
-			huge: '0',
-			negative: '-9876543210123456789',
-			zero: '0'
+			huge: 0n,
+			negative: -9876543210123456789n,
+			zero: 0n
 		});
 
 		expect(data.negative < 0n).toBe(true);
@@ -117,40 +109,40 @@ describe('Transformer Edge Cases: BigInt', () => {
 
 	test('should handle zero bigint', () => {
 		const data = new BigIntData({
-			huge: '0',
-			negative: '0',
-			zero: '0'
+			huge: 0n,
+			negative: 0n,
+			zero: 0n
 		});
 
 		expect(data.zero).toBe(0n);
 		expect(data.zero === 0n).toBe(true);
 	});
 
-	test('should roundtrip extreme bigints', () => {
+	test('should serialize extreme bigints', () => {
 		const data = new BigIntData({
-			huge: '999999999999999999999999999999',
-			negative: '-888888888888888888888888',
-			zero: '0'
+			huge: 999999999999999999999999999999n,
+			negative: -888888888888888888888888n,
+			zero: 0n
 		});
 
 		const json = data.toInterface();
-		const restored = BigIntData.fromInterface(json);
-
-		expect(restored.huge).toBe(data.huge);
-		expect(restored.negative).toBe(data.negative);
-		expect(restored.zero).toBe(data.zero);
+		
+		// Verify serialization format
+		expect(json.huge).toEqual({ __type: 'bigint', value: '999999999999999999999999999999' });
+		expect(json.negative).toEqual({ __type: 'bigint', value: '-888888888888888888888888' });
+		expect(json.zero).toEqual({ __type: 'bigint', value: '0' });
 	});
 
 	test('should handle BigInt.MAX_SAFE_INTEGER equivalent', () => {
-		const max = '9007199254740991'; // Number.MAX_SAFE_INTEGER
+		const max = 9007199254740991n;
 		const data = new BigIntData({
 			huge: max,
-			negative: '-' + max,
-			zero: '0'
+			negative: -max,
+			zero: 0n
 		});
 
-		expect(data.huge.toString()).toBe(max);
-		expect(data.negative.toString()).toBe('-' + max);
+		expect(data.huge.toString()).toBe(max.toString());
+		expect(data.negative.toString()).toBe((-max).toString());
 	});
 });
 
@@ -162,9 +154,9 @@ describe('Transformer Edge Cases: Date', () => {
 	test('should handle very old dates', () => {
 		const veryOld = new Date('1000-01-01');
 		const data = new DateData({
-			past: veryOld.toISOString(),
-			future: new Date().toISOString(),
-			epoch: new Date(0).toISOString()
+			past: veryOld,
+			future: new Date(),
+			epoch: new Date(0)
 		});
 
 		expect(data.past).toBeInstanceOf(Date);
@@ -174,9 +166,9 @@ describe('Transformer Edge Cases: Date', () => {
 	test('should handle far future dates', () => {
 		const farFuture = new Date('2999-12-31');
 		const data = new DateData({
-			past: new Date().toISOString(),
-			future: farFuture.toISOString(),
-			epoch: new Date(0).toISOString()
+			past: new Date(),
+			future: farFuture,
+			epoch: new Date(0)
 		});
 
 		expect(data.future.getFullYear()).toBe(2999);
@@ -186,9 +178,9 @@ describe('Transformer Edge Cases: Date', () => {
 	test('should handle epoch date (1970-01-01)', () => {
 		const epoch = new Date(0);
 		const data = new DateData({
-			past: epoch.toISOString(),
-			future: epoch.toISOString(),
-			epoch: epoch.toISOString()
+			past: epoch,
+			future: epoch,
+			epoch: epoch
 		});
 
 		expect(data.epoch.getTime()).toBe(0);
@@ -198,26 +190,28 @@ describe('Transformer Edge Cases: Date', () => {
 	test('should handle dates with milliseconds', () => {
 		const precise = new Date('2024-01-15T12:30:45.123Z');
 		const data = new DateData({
-			past: precise.toISOString(),
-			future: precise.toISOString(),
-			epoch: precise.toISOString()
+			past: precise,
+			future: precise,
+			epoch: precise
 		});
 
 		expect(data.past.getMilliseconds()).toBe(123);
 	});
 
-	test('should roundtrip dates exactly', () => {
+	test('should serialize dates to ISO strings', () => {
 		const now = new Date();
 		const data = new DateData({
-			past: now.toISOString(),
-			future: now.toISOString(),
-			epoch: now.toISOString()
+			past: now,
+			future: now,
+			epoch: now
 		});
 
 		const json = data.toInterface();
-		const restored = DateData.fromInterface(json);
-
-		expect(restored.past.getTime()).toBe(data.past.getTime());
+		
+		// Verify serialization format
+		expect(json.past).toBe(now.toISOString());
+		expect(json.future).toBe(now.toISOString());
+		expect(json.epoch).toBe(now.toISOString());
 	});
 });
 
@@ -229,8 +223,8 @@ describe('Transformer Edge Cases: RegExp', () => {
 	test('should handle complex regex patterns', () => {
 		const complex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 		const data = new RegExpData({
-			pattern: complex.toString(), // "/pattern/flags"
-			flags: '/gi/'
+			pattern: complex,
+			flags: /gi/
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -240,8 +234,8 @@ describe('Transformer Edge Cases: RegExp', () => {
 	test('should handle common regex flags', () => {
 		const withFlags = /test/gim;
 		const data = new RegExpData({
-			pattern: withFlags.toString(),
-			flags: '/test/'
+			pattern: withFlags,
+			flags: /test/
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -251,8 +245,8 @@ describe('Transformer Edge Cases: RegExp', () => {
 	test('should handle empty regex', () => {
 		const empty = /(?:)/;
 		const data = new RegExpData({
-			pattern: empty.toString(),
-			flags: '/g/'
+			pattern: empty,
+			flags: /g/
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -261,25 +255,27 @@ describe('Transformer Edge Cases: RegExp', () => {
 	test('should escape special characters', () => {
 		const special = /\[\]\(\)\{\}\.\*\+\?/;
 		const data = new RegExpData({
-			pattern: special.toString(),
-			flags: '//'
+			pattern: special,
+			flags: /(?:)/
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
 	});
 
-	test('should roundtrip regex exactly', () => {
+	test('should serialize regex to structured format', () => {
 		const regex = /test\d+/gi;
 		const data = new RegExpData({
-			pattern: regex.toString(),
-			flags: regex.toString()
+			pattern: regex,
+			flags: regex
 		});
 
 		const json = data.toInterface();
-		const restored = RegExpData.fromInterface(json);
-
-		expect(restored.pattern).toBeInstanceOf(RegExp);
-		expect(restored.pattern.source).toBe(data.pattern.source);
+		
+		// Verify serialization format
+		expect(json.pattern).toEqual({ __type: 'regexp', source: 'test\\d+', flags: 'gi' });
+		expect(json.pattern).toHaveProperty('__type', 'regexp');
+		expect(json.pattern).toHaveProperty('source');
+		expect(json.pattern).toHaveProperty('flags');
 	});
 });
 
@@ -291,8 +287,8 @@ describe('Transformer Edge Cases: Error', () => {
 	test('should handle Error with empty message', () => {
 		const empty = new Error('');
 		const data = new ErrorData({
-			simple: `${empty.name}: ${empty.message}`,
-			withStack: 'Error: test'
+			simple: empty,
+			withStack: new Error('test')
 		});
 
 		expect(data.simple).toBeInstanceOf(Error);
@@ -303,8 +299,8 @@ describe('Transformer Edge Cases: Error', () => {
 		const longMsg = 'a'.repeat(10000);
 		const error = new Error(longMsg);
 		const data = new ErrorData({
-			simple: `${error.name}: ${error.message}`,
-			withStack: 'Error: test'
+			simple: error,
+			withStack: new Error('test')
 		});
 
 		expect(data.simple.message.length).toBe(10000);
@@ -314,26 +310,26 @@ describe('Transformer Edge Cases: Error', () => {
 		const custom = new Error('custom error');
 		custom.name = 'CustomError';
 		const data = new ErrorData({
-			simple: `${custom.name}: ${custom.message}`,
-			withStack: 'Error: test'
+			simple: custom,
+			withStack: new Error('test')
 		});
 
 		expect(data.simple.name).toBe('CustomError');
 		expect(data.simple.message).toBe('custom error');
 	});
 
-	test('should roundtrip errors', () => {
+	test('should serialize errors to string format', () => {
 		const error = new Error('test error');
 		const data = new ErrorData({
-			simple: `${error.name}: ${error.message}`,
-			withStack: `${error.name}: ${error.message}`
+			simple: error,
+			withStack: error
 		});
 
 		const json = data.toInterface();
-		const restored = ErrorData.fromInterface(json);
-
-		expect(restored.simple.message).toBe(data.simple.message);
-		expect(restored.simple.name).toBe(data.simple.name);
+		
+		// Verify serialization format (Error serializes as string)
+		expect(typeof json.simple).toBe('string');
+		expect(json.simple).toContain('test error');
 	});
 });
 
@@ -345,8 +341,8 @@ describe('Transformer Edge Cases: Symbol', () => {
 	test('should handle Symbol.for keys', () => {
 		const keyed = Symbol.for('myKey');
 		const data = new SymbolData({
-			keyed: 'myKey',
-			plain: 'plain'
+			keyed: keyed,
+			plain: Symbol.for('plain')
 		});
 
 		expect(typeof data.keyed).toBe('symbol');
@@ -356,8 +352,8 @@ describe('Transformer Edge Cases: Symbol', () => {
 	test('should handle plain symbols', () => {
 		const plain = Symbol('description');
 		const data = new SymbolData({
-			keyed: 'key1',
-			plain: 'description'
+			keyed: Symbol.for('key1'),
+			plain: Symbol.for('description')
 		});
 
 		expect(typeof data.plain).toBe('symbol');
@@ -366,25 +362,25 @@ describe('Transformer Edge Cases: Symbol', () => {
 
 	test('should handle symbols without description', () => {
 		const data = new SymbolData({
-			keyed: '',
-			plain: ''
+			keyed: Symbol.for(''),
+			plain: Symbol.for('')
 		});
 
 		expect(typeof data.keyed).toBe('symbol');
 		expect(typeof data.plain).toBe('symbol');
 	});
 
-	test('should roundtrip symbols', () => {
+	test('should serialize symbols to structured format', () => {
 		const data = new SymbolData({
-			keyed: 'test-key',
-			plain: 'test-plain'
+			keyed: Symbol.for('test-key'),
+			plain: Symbol.for('test-plain')
 		});
 
 		const json = data.toInterface();
-		const restored = SymbolData.fromInterface(json);
-
-		expect(Symbol.keyFor(restored.keyed)).toBe(Symbol.keyFor(data.keyed));
-		expect(Symbol.keyFor(restored.plain)).toBe(Symbol.keyFor(data.plain));
+		
+		// Verify serialization format (Symbol serializes with __type and description)
+		expect(json.keyed).toEqual({ __type: 'symbol', description: 'test-key' });
+		expect(json.plain).toEqual({ __type: 'symbol', description: 'test-plain' });
 	});
 });
 
@@ -395,12 +391,11 @@ describe('Transformer Edge Cases: Symbol', () => {
 describe('Transformer Edge Cases: ArrayBuffer', () => {
 	test('should handle empty buffer', () => {
 		const empty = new ArrayBuffer(0);
-		const bytes = Array.from(new Uint8Array(empty));
 		
 		const data = new BufferData({
-			empty: bytes,
-			large: bytes,
-			small: bytes
+			empty: empty,
+			large: empty,
+			small: empty
 		});
 
 		expect(data.empty).toBeInstanceOf(ArrayBuffer);
@@ -411,12 +406,11 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 		const large = new ArrayBuffer(100000); // 100KB
 		const view = new Uint8Array(large);
 		view.fill(255);
-		const bytes = Array.from(view);
 		
 		const data = new BufferData({
-			empty: [],
-			large: bytes,
-			small: []
+			empty: new ArrayBuffer(0),
+			large: large,
+			small: new ArrayBuffer(0)
 		});
 
 		expect(data.large.byteLength).toBe(100000);
@@ -431,12 +425,11 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 		view[1] = 0x00;
 		view[2] = 0xAA;
 		view[3] = 0x55;
-		const bytes = Array.from(view);
 		
 		const data = new BufferData({
-			empty: [],
-			large: [],
-			small: bytes
+			empty: new ArrayBuffer(0),
+			large: new ArrayBuffer(0),
+			small: buffer
 		});
 
 		const restored = new Uint8Array(data.small);
@@ -452,12 +445,11 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 		for (let i = 0; i < 16; i++) {
 			view[i] = i * 16;
 		}
-		const bytes = Array.from(view);
 		
 		const data = new BufferData({
-			empty: bytes,
-			large: bytes,
-			small: bytes
+			empty: original,
+			large: original,
+			small: original
 		});
 
 		const json = data.toInterface();

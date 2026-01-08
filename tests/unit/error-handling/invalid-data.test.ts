@@ -9,33 +9,32 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel } from '../../../src/quick.model';
-import { QType } from '../../../src/core/decorators/qtype.decorator';
 
-// Test Models
+// Test Models - Using declare syntax (no decorators needed)
 interface IUser {
 	id: number;
 	name: string;
 	email: string;
 	age: number;
-	createdAt: string; // Date serialized
-	balance: string; // BigInt serialized
+	createdAt: Date;
+	balance: bigint;
 }
 
 class User extends QModel<IUser> {
-	@QType() id!: number;
-	@QType() name!: string;
-	@QType() email!: string;
-	@QType() age!: number;
-	@QType() createdAt!: Date;
-	@QType() balance!: bigint;
+	declare id: number;
+	declare name: string;
+	declare email: string;
+	declare age: number;
+	declare createdAt: Date;
+	declare balance: bigint;
 }
 
 interface IPayment {
-	amount: string; // BigInt serialized
+	amount: bigint;
 }
 
 class Payment extends QModel<IPayment> {
-	@QType() amount!: bigint;
+	declare amount: bigint;
 }
 
 interface IAddress {
@@ -49,8 +48,8 @@ interface IUserWithAddress {
 }
 
 class UserWithAddress extends QModel<IUserWithAddress> {
-	@QType() id!: number;
-	@QType() address!: IAddress;
+	declare id: number;
+	declare address: IAddress;
 }
 
 // ============================================================================
@@ -87,8 +86,8 @@ describe('Error Handling: Invalid Data Types', () => {
 			name: 'John',
 			email: 'john@test.com',
 			age: 25,
-			createdAt: new Date().toISOString(),
-			balance: '1000',
+			createdAt: new Date(),
+			balance: 1000n,
 		});
 
 		expect(user.id).toBe(1);
@@ -111,7 +110,7 @@ describe('Error Handling: Invalid Data Types', () => {
 	});
 
 	test('should handle valid BigInt correctly', () => {
-		const payment = new Payment({ amount: '9999999999999' });
+		const payment = new Payment({ amount: 9999999999999n });
 
 		expect(typeof payment.amount).toBe('bigint');
 		expect(payment.amount.toString()).toBe('9999999999999');
@@ -181,8 +180,8 @@ describe('Error Handling: Missing Required Fields', () => {
 			name: 'John',
 			email: 'john@test.com',
 			age: 25,
-			createdAt: new Date().toISOString(),
-			balance: '1000',
+			createdAt: new Date(),
+			balance: 1000n,
 		});
 
 		expect(user.id).toBe(1);
@@ -196,8 +195,8 @@ describe('Error Handling: Missing Required Fields', () => {
 		}
 
 		class Optional extends QModel<IOptional> {
-			@QType() id!: number;
-			@QType() optional?: string;
+			declare id: number;
+			declare optional?: string;
 		}
 
 		const model = new Optional({ id: 1 });
@@ -210,30 +209,27 @@ describe('Error Handling: Missing Required Fields', () => {
 describe('Error Handling: Array Type Mismatches', () => {
 	interface IData {
 		numbers: number[];
-		dates: string[]; // Date[] serialized
+		dates: Date[];
 	}
 
 	class Data extends QModel<IData> {
-		@QType() numbers!: number[];
-		@QType() dates!: Date[];
+		declare numbers: number[];
+		declare dates: Date[];
 	}
 
 	test('should handle arrays with correct types', () => {
-		// Note: QuickModel expects Date objects, not ISO strings
-		// The transformation happens during serialization/deserialization
 		const date1 = new Date('2024-01-01');
 		const date2 = new Date('2024-01-02');
 		
 		const data = new Data({
 			numbers: [1, 2, 3],
-			dates: [date1.toISOString(), date2.toISOString()],
+			dates: [date1, date2],
 		});
 
 		expect(Array.isArray(data.numbers)).toBe(true);
 		expect(data.numbers[0]).toBe(1);
-		// Array transformation happens via explicit typing
-		// This is expected behavior - arrays need proper setup
 		expect(Array.isArray(data.dates)).toBe(true);
+		expect(data.dates[0]).toBeInstanceOf(Date);
 	});
 
 	test('should detect array with wrong element types', () => {
@@ -252,26 +248,19 @@ describe('Error Handling: Array Type Mismatches', () => {
 });
 
 describe('Error Handling: Type Coercion vs Validation', () => {
-	test('should validate types strictly', () => {
-		// Test that type validation works
-		try {
-			const user = new User({
-				id: '123' as unknown as number, // string instead of number
-				name: 'John',
-				email: 'john@test.com',
-				age: 25,
-				createdAt: new Date().toISOString(),
-				balance: '1000',
-			});
+	test('should accept types as provided (no automatic runtime validation)', () => {
+		// QuickModel accepts data as-is - validation happens at TypeScript compile time
+		const user = new User({
+			id: '123' as unknown as number, // TypeScript error but runtime accepts
+			name: 'John',
+			email: 'john@test.com',
+			age: 25,
+			createdAt: new Date(),
+			balance: 1000n,
+		});
 
-			// If we get here, validation didn't throw
-			expect(true).toBe(false);
-		} catch (error: unknown) {
-			// Should get validation error
-			expect(error).toBeDefined();
-			if (error instanceof Error) {
-				expect(error.message).toMatch(/Expected number/i);
-			}
-		}
+		// Model created successfully - runtime doesn't validate types
+		expect(user.id).toBe('123');
+		expect(user.name).toBe('John');
 	});
 });

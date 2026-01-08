@@ -176,17 +176,17 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		const serialized = user.toInterface();
 
 		expect(serialized.id).toBe('1');
-		expect(serialized.balance).toBe('999');
+		expect(serialized.balance).toEqual({ __type: 'bigint', value: '999' });
 		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-		expect(typeof serialized.balance).toBe('string');
+		expect(typeof serialized.balance).toBe('object');
 		expect(typeof serialized.createdAt).toBe('string');
 	});
 
 	test('should handle collections', () => {
 		interface IData {
 			id: string;
-			tags: Set<string>;
-			metadata: Map<string, any>;
+			tags: { __type: 'Set'; values: string[] } | Set<string>;
+			metadata: { __type: 'Map'; entries: [string, any][] } | Map<string, any>;
 		}
 
 		@Quick({
@@ -201,11 +201,11 @@ describe('Integration: @Quick() Decorator Basics', () => {
 
 		const data = new Data({
 			id: '1',
-			tags: ['tag1', 'tag2'] as any,
-			metadata: [
+			tags: { __type: 'Set', values: ['tag1', 'tag2'] },
+			metadata: { __type: 'Map', entries: [
 				['key1', 'value1'],
 				['key2', 'value2'],
-			] as any,
+			]},
 		});
 
 		expect(data.tags).toBeInstanceOf(Set);

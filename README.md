@@ -1,6 +1,6 @@
 # @cartago-git/quickmodel
 
-Professional TypeScript model serialization/deserialization system with **SOLID** architecture.
+Professional TypeScript model system with automatic type transformation and **SOLID** architecture.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
@@ -10,16 +10,14 @@ Professional TypeScript model serialization/deserialization system with **SOLID*
 
 ## ✨ Features
 
+- 🎯 **Simple API**: Use `@Quick({})` decorator and implement interfaces
+- 🔄 **30+ JavaScript/TypeScript types** automatically handled (Date, BigInt, Symbol, RegExp, Error, etc.)
 - 🏗️ **Complete SOLID Architecture** with independent services
-- 🔄 **30+ JavaScript/TypeScript types** supported (Date, BigInt, Symbol, RegExp, Error, URL, TypedArrays, etc.)
-- 🎯 **Type-Safe Serialization**: `toInterface()` automatically returns correct serialized types
-- 💡 **Type inference**: TypeScript knows that `RegExp → string`, `BigInt → string`, etc.
-- ✨ **3 usage forms**: Q-Symbols, Constructors, String literals with IntelliSense
-- 🎭 **Mock System**: 6 mock types + arrays with [@faker-js/faker](https://fakerjs.dev/)
-- ✅ **Automatic runtime validation**
-- 📦 **Infinite nested models**
-- 🔌 **Extensible** via registry pattern
-- 🧪 **100% tested** with 136+ expect() calls
+- 💡 **Type-Safe Serialization**: Automatic conversion to JSON-compatible formats
+- 📦 **Infinite nested models** with automatic transformation
+- 🎭 **Mock System**: Built-in testing utilities with [@faker-js/faker](https://fakerjs.dev/)
+- 🔌 **Extensible** via transformer registry pattern
+- 🧪 **Comprehensive test suite** with 199+ passing tests
 - 📚 **Complete documentation**
 
 ## 📦 Installation
@@ -38,232 +36,215 @@ pnpm add @cartago-git/quickmodel
 bun add @cartago-git/quickmodel
 ```
 
-## 🚀 Basic Usage
+## 🚀 Quick Start
 
-### Simple Rule
-
-**Properties WITHOUT `@QType()`** → Copied as-is  
-**Properties WITH `@QType(Type)`** → Transformed to specified type
-
-### Two Syntax Options
+### Simple Example
 
 ```typescript
-import { QModel, QType } from '@cartago-git/quickmodel';
+import { QModel, Quick, QTransform } from '@cartago-git/quickmodel';
 
+// Define serialization interface (JSON-compatible types)
 interface IUser {
   id: number;
   name: string;
   email: string;
-  balance: string;      // BigInt serialized
-  createdAt: string;    // Date serialized
+  balance: string;      // bigint serializes to string
+  createdAt: string;    // Date serializes to ISO string
 }
 
-// ✅ OPTION 1: Use `declare` (no decorator for simple properties)
-class User extends QModel<IUser> {
-  declare id: number;
-  declare name: string;
-  declare email: string;
-  
-  @QType(BigInt) declare balance: bigint;
-  @QType(Date) declare createdAt: Date;
-}
-
-// ✅ OPTION 2: Use `!` or `?` (needs @QType() on all properties)
-class User extends QModel<IUser> {
-  @QType() id!: number;        // No arg = copy as-is
-  @QType() name!: string;
-  @QType() email?: string;
-  
-  @QType(BigInt) balance!: bigint;     // With arg = transform
-  @QType(Date) createdAt!: Date;
-}
-```
-
-### 1. Define Model
-
-```typescript
-import { QModel, QType, QInterface, QBigInt } from '@cartago-git/quickmodel';
-
-interface IUser {
-  id: string;
+// Define runtime interface (transformed types)
+interface IUserTransform {
+  id: number;
   name: string;
-  balance: string; // BigInt serialized
-  createdAt: string; // Date serialized
-}
-
-type UserTransforms = {
+  email: string;
   balance: bigint;
   createdAt: Date;
-};
-
-class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
-  @QType() id!: string;
-  @QType() name!: string;
-  // 3 equivalent forms for special types:
-  @QType(QBigInt) balance!: bigint;   // Q-Symbol (recommended)
-  // @QType('bigint') balance!: bigint;   // String literal (IntelliSense ✨)
-  
-  @QType() createdAt!: Date;              // Auto-detected
-  // @QType('date') createdAt!: Date;     // String literal
-  // @QType(Date) createdAt!: Date;       // Constructor
 }
 
-// 💡 Tip: Use string literals for IntelliSense!
-// When writing @QType(' TypeScript will suggest all available types:
-// 'bigint', 'symbol', 'regexp', 'error', 'url', 'int8array', etc.
-```
+// Create model specifying which types need transformation
+@Quick({
+  balance: BigInt,
+  createdAt: Date
+})
+class User extends QModel<IUser> implements QTransform<IUser, IUserTransform> {
+  id!: number;
+  name!: string;
+  email!: string;
+  balance!: bigint;      // Runtime type
+  createdAt!: Date;      // Runtime type
+}
 
-### 2. Use Model
-
-```typescript
-// Create from interface
+// Use with native JavaScript/TypeScript types
 const user = new User({
-  id: '123',
+  id: 1,
   name: 'John Doe',
-  balance: '999999999999999999',
-  createdAt: '2024-01-01T00:00:00.000Z',
+  email: 'john@example.com',
+  balance: 999999999999999999n,    // Pass bigint literal
+  createdAt: new Date(),            // Pass Date instance
 });
 
-console.log(user.balance); // bigint: 999999999999999999n
-console.log(user.createdAt); // Date object
+// Access properties - fully typed
+console.log(user.balance);    // bigint: 999999999999999999n
+console.log(user.createdAt);  // Date object
 
-// Serialize to interface
-const data = user.toInterface();
-console.log(data.balance); // string: "999999999999999999"
-console.log(data.createdAt); // string: "2024-01-01T00:00:00.000Z"
-
-// JSON round-trip
-const json = user.toJSON();
-const user2 = User.fromJSON(json);
-console.log(user2.balance === user.balance); // true
+// Serialize to JSON-compatible format
+const json = user.toInterface();
+console.log(json.balance);    // string: "999999999999999999"
+console.log(json.createdAt);  // string: "2026-01-08T..."
 ```
 
-## 🎭 Mock System for Testing
+### Core Principle
 
-```typescript
-// 6 types of mocks available
-const user1 = User.mockEmpty();    // Empty values
-const user2 = User.mockRandom();   // Random with faker
-const user3 = User.mockSample();   // Predictable for tests
-const user4 = User.mock();         // Alias for mockRandom()
+**QuickModel uses two interfaces pattern:**
+- **`IUser`**: Serialization interface (JSON-compatible types: `string`, `number`, etc.)
+- **`IUserTransform`**: Runtime interface (transformed types: `Date`, `bigint`, `RegExp`)
+- **`@Quick({})`**: Specify which properties need transformation
+- **`QTransform<IUser, IUserTransform>`**: Type-safe contract between both interfaces
 
-// Mock arrays
-const users = User.mockArray(10);  // 10 random users
-const team = User.mockArray(5, 'sample', (i) => ({ 
-  name: `Dev${i}` 
-}));
-
-// Mock interfaces (plain objects)
-const userData = User.mockInterface();          // Without instantiation
-const usersData = User.mockInterfaceArray(50); // For seeders
-
-// See full documentation: docs/MOCK-GENERATOR.md
-```
+**Automatic transformations:**
+- Pass native instances when creating models (`new Date()`, `1000n`, `/regex/gi`)
+- Get proper types when accessing properties (Date, bigint, RegExp)
+- Automatic serialization to JSON with `toInterface()`
+- Type-safe with both runtime and compile-time checks
 
 ## 🔧 Supported Types
 
-### @QType() Decorator Usage Forms
+QuickModel automatically handles these JavaScript/TypeScript types:
 
-Each type supports **up to 3 equivalent forms**:
+### Primitives
+- `string`, `number`, `boolean` - Passed through as-is
 
-```typescript
-import { QModel, QType, QRegExp } from '@cartago-git/quickmodel';
-import type { QInterface } from '@cartago-git/quickmodel';
+### Special Types (Automatic Detection)
+- `Date` → ISO string serialization
+- `BigInt` → String serialization  
+- `RegExp` → Structured format with source and flags
+- `Symbol` → Symbol.for() key serialization
+- `Error` → String format with name and message
+- `URL` → href string
+- `URLSearchParams` → Query string
 
-interface IModel {
-  pattern: RegExp;
-}
+### Collections
+- `Array<T>` → Array with transformed elements
+- `Map<K,V>` → Object with __type marker
+- `Set<T>` → Array with __type marker
 
-class Model extends QModel<IModel> implements QInterface<IModel> {
-  // Example of the 3 forms for RegExp:
-  @QType(QRegExp)   pattern!: RegExp;  // 1. Symbol (original form)
-  @QType('regexp')  pattern!: RegExp;  // 2. String literal ✨ (IntelliSense)
-  @QType(RegExp)    pattern!: RegExp;  // 3. Native constructor
-}
-```
+### Binary Data
+- `ArrayBuffer`, `Int8Array`, `Uint8Array`, `Int16Array`, `Uint16Array`
+- `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array`
+- `BigInt64Array`, `BigUint64Array`
+- `DataView`
 
-**💡 String Literals with IntelliSense**: When typing `@QType('` TypeScript automatically suggests:
-```
-@QType('
-  ↓
-  'bigint'         - For bigint
-  'symbol'         - For symbol
-  'regexp'         - For RegExp
-  'error'          - For Error
-  'url'            - For URL
-  'int8array'      - For Int8Array
-  'float32array'   - For Float32Array
-  'bigint64array'  - For BigInt64Array
-  ... and 30+ more types
-```
-
-| Type                 | Symbol                | String Literal ✨     | Constructor         | Serialization         |
-| -------------------- | --------------------- | -------------------- | ------------------- | --------------------- |
-| `string`             | -                     | `'string'`           | -                   | Direct                |
-| `number`             | -                     | `'number'`           | -                   | Direct                |
-| `boolean`            | -                     | `'boolean'`          | -                   | Direct                |
-| `Date`               | -                     | `'date'`             | `Date`              | ISO string            |
-| `BigInt`             | `QBigInt`             | `'bigint'`           | -                   | string                |
-| `Symbol`             | `QSymbol`             | `'symbol'`           | -                   | string (Symbol.for)   |
-| `RegExp`             | `QRegExp`             | `'regexp'`           | `RegExp`            | `/pattern/flags`      |
-| `Error`              | `QError`              | `'error'`            | `Error`             | `Name: message`       |
-| `URL`                | `QURL`                | `'url'`              | `URL`               | href                  |
-| `URLSearchParams`    | `QURLSearchParams`    | `'urlsearchparams'`  | `URLSearchParams`   | string                |
-| `Map<K,V>`           | -                     | `'map'`              | `Map`               | Record<K,V>           |
-| `Set<T>`             | -                     | `'set'`              | `Set`               | T[]                   |
-| `Int8Array`          | `QInt8Array`          | `'int8array'`        | `Int8Array`         | number[]              |
-| `Uint8Array`         | `QUint8Array`         | `'uint8array'`       | `Uint8Array`        | number[]              |
-| `Float32Array`       | `QFloat32Array`       | `'float32array'`     | `Float32Array`      | number[]              |
-| `BigInt64Array`      | `QBigInt64Array`      | `'bigint64array'`    | `BigInt64Array`     | string[]              |
-| `ArrayBuffer`        | `QArrayBuffer`        | `'arraybuffer'`      | -                   | number[]              |
-| `DataView`           | `QDataView`           | `'dataview'`         | -                   | number[]              |
-| `Enum` (TypeScript)  | -                     | -                    | -                   | Direct                |
-| Nested model         | -                     | -                    | `ModelClass`        | Recursive             |
-| `Array<Model>`       | -                     | -                    | `ModelClass`        | Recursive array       |
-
-> 💡 **Recommendation**: Use **string literals** (`@QType('bigint')`) to get IntelliSense with all available types while typing.
-
-**+10 more TypedArrays** (Int16Array, Uint16Array, Int32Array, Uint32Array, Float64Array, BigInt64Array, BigUint64Array)
+### Nested Models
+- Any class extending `QModel` is automatically handled recursively
 
 ## 📚 Advanced Examples
 
 ### Nested Models
 
 ```typescript
-import { QModel, QType } from '@cartago-git/quickmodel';
-import type { QInterface } from '@cartago-git/quickmodel';
+import { QModel, Quick } from '@cartago-git/quickmodel';
 
-class Address extends QModel<IAddress> implements QInterface<IAddress> {
-  @QType() street!: string;
-  @QType() city!: string;
+interface IAddress {
+  street: string;
+  city: string;
+  country: string;
 }
 
-class Company extends QModel<ICompany> implements QInterface<ICompany> {
-  @QType() name!: string;
-  @QType() address!: Address;
-  @QType(Address) offices!: Address[];
+interface IUser {
+  name: string;
+  address: IAddress;
+  createdAt: Date;
 }
+
+interface IUserTransform {
+  name: string;
+  address: IAddress;
+  createdAt: string;
+}
+
+@Quick({})
+class Address extends QModel<IAddress> implements IAddress {
+  street!: string;
+  city!: string;
+  country!: string;
+}
+
+@Quick({})
+class User extends QModel<IUser> implements IUser, IUserTransform {
+  name!: string;
+  address!: Address;
+  createdAt!: Date;
+}
+
+// Use with nested data
+const user = new User({
+  name: 'John',
+  address: new Address({
+    street: '123 Main St',
+    city: 'NYC',
+    country: 'USA'
+  }),
+  createdAt: new Date()
+});
+
+// Automatic nested serialization
+const json = user.toInterface();
+// json.address is a plain object
+// json.createdAt is an ISO string
 ```
 
-### Collections
+### Arrays and Collections
 
 ```typescript
-class Config extends QModel<IConfig> implements QInterface<IConfig> {
-  @QType() tags!: string[];
-  @QType() metadata!: Map<string, any>;
-  @QType() uniqueIds!: Set<number>;
+interface IPost {
+  title: string;
+  tags: string[];
+  dates: Date[];
+  metadata: Map<string, any>;
 }
+
+interface IPostTransform {
+  title: string;
+  tags: string[];
+  dates: string[];
+  metadata: Record<string, any>;
+}
+
+@Quick({})
+class Post extends QModel<IPost> implements IPost, IPostTransform {
+  title!: string;
+  tags!: string[];
+  dates!: Date[];
+  metadata!: Map<string, any>;
+}
+
+const post = new Post({
+  title: 'My Post',
+  tags: ['typescript', 'nodejs'],
+  dates: [new Date('2024-01-01'), new Date('2024-01-02')],
+  metadata: new Map([['views', 100], ['likes', 50]])
+});
 ```
 
 ### Binary Data
 
 ```typescript
-import { QModel, QType, QInt8Array, QArrayBuffer } from '@cartago-git/quickmodel';
-import type { QInterface } from '@cartago-git/quickmodel';
+import { QModel, Quick } from '@cartago-git/quickmodel';
 
-class BinaryData extends QModel<IBinaryData> implements QInterface<IBinaryData> {
-  @QType(QInt8Array) data!: Int8Array;
-  @QType(QArrayBuffer) buffer!: ArrayBuffer;
+interface IBinaryData {
+  data: Int8Array;
+  buffer: ArrayBuffer;
+}
+
+interface IBinaryDataTransform {
+  data: number[];
+  buffer: number[];
+}
+
+@Quick({})
+class BinaryData extends QModel<IBinaryData> implements IBinaryData, IBinaryDataTransform {
+  data!: Int8Array;
+  buffer!: ArrayBuffer;
 }
 ```
 
