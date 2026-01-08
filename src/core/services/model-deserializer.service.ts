@@ -289,61 +289,12 @@ export class ModelDeserializer<
       if (isDecoratedWithQType && !designType && !fieldType && value !== null && value !== undefined) {
         // Smart detection for @QType() without arguments on declare properties
         
-        // Detect Date strings (ISO format)
-        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
-          instance[key] = this.transformByDesignType(value, Date, context);
-          continue;
-        }
-        // Detect BigInt strings (very large numbers)
-        if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
-          instance[key] = this.transformByDesignType(value, BigInt, context);
-          continue;
-        }
-        
-        // Improved heuristic for arrays
-        if (Array.isArray(value) && value.length > 0) {
-          // Check if it's a Map: ALL elements are arrays of exactly 2 items
-          const isMapLike = value.every(item => 
-            Array.isArray(item) && item.length === 2
-          );
-          
-          if (isMapLike) {
-            const mapTransformer = this.transformers.get('map');
-            if (mapTransformer) {
-              instance[key] = mapTransformer.deserialize(value, context.propertyKey, context.className);
-              continue;
-            }
-          }
-          
-          // Check if it's a Set: all elements are unique primitives or property name suggests Set
-          const hasUniqueElements = value.length === new Set(value).size;
-          const propertyNameSuggestsSet = /tags?|categories|items|elements|labels/i.test(key);
-          
-          if (hasUniqueElements || propertyNameSuggestsSet) {
-            const setTransformer = this.transformers.get('set');
-            if (setTransformer) {
-              instance[key] = setTransformer.deserialize(value, context.propertyKey, context.className);
-              continue;
-            }
-          }
-          
-          // Otherwise, leave as array (might be array of models)
-        }
+        // Automatic type detection removed - programmer must explicitly declare transformations
+        // using @Quick({ fieldName: Date }) or @QType() decorators
       }
       
-      // 5. Fallback: Try to detect type from value even without @QType()
-      if (!designType && !fieldType && value !== null && value !== undefined) {
-        // Detect Date strings (ISO format)
-        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
-          instance[key] = this.transformByDesignType(value, Date, context);
-          continue;
-        }
-        // Detect BigInt strings (very large numbers)
-        if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
-          instance[key] = this.transformByDesignType(value, BigInt, context);
-          continue;
-        }
-      }
+      // 5. Fallback: No automatic type detection
+      // Programmer must explicitly declare transformations
       
       // Special case: Array without explicit @QType(ModelClass)
       // Try to infer the model class by analyzing the array elements
@@ -674,6 +625,7 @@ export class ModelDeserializer<
 
   /**
    * Validates that a value matches its expected primitive type.
+   * Allows both primitives and wrapper objects to preserve original format.
    * 
    * @param value - The value to validate
    * @param designType - The expected type constructor
@@ -681,19 +633,19 @@ export class ModelDeserializer<
    * @throws {Error} If value doesn't match expected primitive type
    */
   private validatePrimitive(value: unknown, designType: Function | undefined, context: IQTransformContext): void {
-    if (designType === String && typeof value !== 'string') {
+    if (designType === String && typeof value !== 'string' && !(value instanceof String)) {
       throw new Error(
-        `${context.className}.${context.propertyKey}: Expected string, got ${typeof value}`,
+        `${context.className}.${context.propertyKey}: Expected string or String wrapper, got ${typeof value}`,
       );
     }
-    if (designType === Number && typeof value !== 'number') {
+    if (designType === Number && typeof value !== 'number' && !(value instanceof Number)) {
       throw new Error(
-        `${context.className}.${context.propertyKey}: Expected number, got ${typeof value}`,
+        `${context.className}.${context.propertyKey}: Expected number or Number wrapper, got ${typeof value}`,
       );
     }
-    if (designType === Boolean && typeof value !== 'boolean') {
+    if (designType === Boolean && typeof value !== 'boolean' && !(value instanceof Boolean)) {
       throw new Error(
-        `${context.className}.${context.propertyKey}: Expected boolean, got ${typeof value}`,
+        `${context.className}.${context.propertyKey}: Expected boolean or Boolean wrapper, got ${typeof value}`,
       );
     }
   }

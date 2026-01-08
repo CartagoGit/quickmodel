@@ -23,7 +23,7 @@ class User extends QModel<IUser> implements IUserTransforms {
 }
 
 describe('State Management Methods', () => {
-	describe('getInterface()', () => {
+	describe('toInterface()', () => {
 		test('should return current state in serialized format', () => {
 			const user = new User({
 				id: '1',
@@ -33,7 +33,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z'
 			});
 
-			const iface = user.getInterface();
+			const iface = user.toInterface();
 			
 			expect(iface.id).toBe('1');
 			expect(iface.name).toBe('John');
@@ -54,7 +54,7 @@ describe('State Management Methods', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const iface = user.getInterface();
+			const iface = user.toInterface();
 			
 			expect(iface.name).toBe('Jane');
 			expect(iface.age).toBe(31);
@@ -71,7 +71,7 @@ describe('State Management Methods', () => {
 
 			user.createdAt = new Date('2024-12-31T23:59:59.999Z');
 
-			const iface = user.getInterface();
+			const iface = user.toInterface();
 			
 			expect(typeof iface.createdAt).toBe('string');
 			expect(iface.createdAt).toBe('2024-12-31T23:59:59.999Z');

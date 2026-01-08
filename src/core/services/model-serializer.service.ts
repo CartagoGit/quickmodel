@@ -109,6 +109,9 @@ export class ModelSerializer<
    */
   serialize(model: TModel): TInterface {
     const result: Record<string, unknown> = {};
+    const seen = new WeakSet(); // Track circular references
+    const initData = (model as any).__initData || {};
+    const isProduction = process.env.NODE_ENV === 'production';
 
     // Get all property keys, including those with getters/setters
     const keys = new Set<string>();
@@ -137,17 +140,222 @@ export class ModelSerializer<
         continue;
       }
       
-      const value = (model as any)[key];
+      const currentValue = (model as any)[key];
+      const originalValue = initData[key];
       
-      if (value === undefined || value === null) {
-        result[key] = value;
-        continue;
-      }
-
-      result[key] = this.serializeValue(value);
+      // Convert to interface format, preserving original type
+      result[key] = this.convertToInterfaceFormat(currentValue, originalValue, seen, isProduction, key);
     }
 
     return result as TInterface;
+  }
+
+  /**
+   * Converts a value to interface format, preserving the original type from __initData
+   */
+  private convertToInterfaceFormat(
+    currentValue: any,
+    originalValue: any,
+    seen: WeakSet<object>,
+    isProduction: boolean,
+    propertyKey: string = ''
+  ): any {
+    // Handle null and undefined first
+    if (currentValue === null) return null;
+    if (currentValue === undefined) return undefined;
+    
+    // Check for circular references (only for objects)
+    if (typeof currentValue === 'object' && currentValue !== null) {
+      if (seen.has(currentValue)) {
+        const returnValue = { __circular: true };
+        const errorMsg = `QuickModel Error => [Circular reference] at property '${propertyKey}'`;
+        
+        if (!isProduction) {
+          throw new Error(errorMsg);
+        } else {
+          console.error(errorMsg, returnValue);
+          return returnValue;
+        }
+      }
+      seen.add(currentValue);
+    }
+
+    // If no original value to compare, return currentValue as-is for primitives
+    if (originalValue === undefined) {
+      // For primitives (including symbols), return as-is
+      if (typeof currentValue !== 'object' || currentValue === null) {
+        return currentValue;
+      }
+      // For objects, use default serialization
+      return this.serializeValue(currentValue);
+    }
+
+    // PRIMITIVES: Preserve primitive type
+    if (typeof originalValue === 'number') {
+      // Includes NaN, Infinity, -Infinity as numbers
+      return Number(currentValue);
+    }
+    
+    if (typeof originalValue === 'string') {
+      return String(currentValue);
+    }
+    
+    if (typeof originalValue === 'boolean') {
+      return Boolean(currentValue);
+    }
+    
+    if (typeof originalValue === 'bigint') {
+      return BigInt(currentValue);
+    }
+    
+    if (typeof originalValue === 'symbol') {
+      return typeof currentValue === 'symbol' ? currentValue : Symbol(currentValue);
+    }
+
+    // WRAPPER OBJECTS: Number, String, Boolean objects
+    if (originalValue instanceof Number) {
+      // Extract primitive value if currentValue is also a wrapper
+      const primitiveValue = typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+        ? currentValue.valueOf()
+        : currentValue;
+      return new Number(primitiveValue);
+    }
+    
+    if (originalValue instanceof String) {
+      const primitiveValue = typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+        ? currentValue.valueOf()
+        : currentValue;
+      return new String(primitiveValue);
+    }
+    
+    if (originalValue instanceof Boolean) {
+      const primitiveValue = typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+        ? currentValue.valueOf()
+        : currentValue;
+      return new Boolean(primitiveValue);
+    }
+
+    // ARRAYS: Recursively convert elements
+    if (Array.isArray(originalValue)) {
+      if (!Array.isArray(currentValue)) {
+        return [];
+      }
+      return currentValue.map((item: any, index: number) => 
+        this.convertToInterfaceFormat(item, originalValue[index], seen, isProduction, `${propertyKey}[${index}]`)
+      );
+    }
+
+    // DATE: Convert to ISO string (interface format)
+    if (originalValue instanceof Date) {
+      if (currentValue instanceof Date) {
+        return currentValue.toISOString();
+      }
+      return String(currentValue);
+    }
+
+    // REGEXP: Preserve original format
+    if (originalValue instanceof RegExp) {
+      if (!(currentValue instanceof RegExp)) {
+        return originalValue.toString();
+      }
+      return currentValue.toString();
+    }
+    
+    // RegExp as string pattern
+    if (typeof originalValue === 'string' && currentValue instanceof RegExp) {
+      if (originalValue.startsWith('/')) {
+        return currentValue.toString(); // "/pattern/flags"
+      } else {
+        return currentValue.source; // "pattern"
+      }
+    }
+    
+    // RegExp as object
+    if (originalValue && typeof originalValue === 'object' && 
+        'source' in originalValue && 'flags' in originalValue &&
+        currentValue instanceof RegExp) {
+      return { source: currentValue.source, flags: currentValue.flags };
+    }
+
+    // BIGINT: Preserve original format
+    if (originalValue && typeof originalValue === 'object' && originalValue.__type === 'bigint') {
+      const bigintValue = typeof currentValue === 'bigint' ? currentValue : BigInt(currentValue);
+      return { __type: 'bigint', value: bigintValue.toString() };
+    }
+    
+    if (typeof originalValue === 'string' && typeof currentValue === 'bigint') {
+      return currentValue.toString();
+    }
+
+    // PLAIN OBJECTS: Recursively convert properties
+    if (originalValue && typeof originalValue === 'object') {
+      const result: any = {};
+      
+      // Handle objects without constructor (Object.create(null))
+      if (!originalValue.constructor) {
+        const resultNoProto = Object.create(null);
+        for (const key in currentValue) {
+          resultNoProto[key] = this.convertToInterfaceFormat(
+            currentValue[key],
+            originalValue[key],
+            seen,
+            isProduction,
+            `${propertyKey}.${key}`
+          );
+        }
+        return resultNoProto;
+      }
+      
+      // Plain Object literal
+      if (originalValue.constructor === Object) {
+        // Ensure currentValue is also an object
+        if (typeof currentValue !== 'object' || currentValue === null) {
+          if (!isProduction) {
+            throw new Error(
+              `Cannot convert property "${propertyKey}": original was object but current is ${typeof currentValue}`
+            );
+          }
+          console.error(`Cannot convert property "${propertyKey}": type mismatch`);
+          return currentValue;
+        }
+        
+        for (const key in originalValue) {
+          if (key in currentValue) {
+            result[key] = this.convertToInterfaceFormat(
+              currentValue[key],
+              originalValue[key],
+              seen,
+              isProduction,
+              `${propertyKey}.${key}`
+            );
+          }
+        }
+        return result;
+      }
+      
+      // Objects with custom constructor: try to serialize back
+      // For QModel instances, serialize them
+      if (typeof currentValue?.serialize === 'function') {
+        return currentValue.serialize();
+      }
+      
+      // For other objects, create plain object
+      for (const key in currentValue) {
+        if (typeof currentValue[key] !== 'function') {
+          result[key] = this.convertToInterfaceFormat(
+            currentValue[key],
+            originalValue[key],
+            seen,
+            isProduction,
+            `${propertyKey}.${key}`
+          );
+        }
+      }
+      return result;
+    }
+
+    // Fallback: use default serialization
+    return this.serializeValue(currentValue);
   }
 
   /**

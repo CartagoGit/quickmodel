@@ -14,22 +14,22 @@ import {
 	ModelSerializer,
 	MockGenerator,
 	MockBuilder
-} from './core/services';
+} from '../services';
 import type {
 	QModelInstance,
 	QModelInterface,
-} from './core/interfaces';
+} from '../interfaces';
 import type {
 	SerializedInterface,
 	ModelData,
-} from './core/interfaces/serialization-types.interface';
-import { FIELDS_METADATA_KEY } from './core/decorators/qtype.decorator';
+} from '../interfaces/serialization-types.interface';
 
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
-export { Quick } from './core/decorators';
-export type { QInterface } from './core/interfaces';
+export { Quick } from '../decorators';
+import { FIELDS_METADATA_KEY } from '../decorators/qtype.decorator';
+export type { QInterface } from '../interfaces';
 
 /**
  * Abstract base class for type-safe models with automatic serialization and mock generation.
@@ -147,60 +147,6 @@ export abstract class QModel<
 		return new MockBuilder(ModelClass, QModel.mockGenerator);
 	}
 
-	/**
-	 * Gets metadata information for all registered fields in this model class.
-	 * Returns a Map with field names as keys and metadata objects containing type and transformer info.
-	 * 
-	 * @returns Map of field metadata with type names and transformer information
-	 * 
-	 * @example
-	 * ```typescript
-	 * const metadata = User.getMetadata();
-	 * metadata.forEach((meta, fieldName) => {
-	 *   console.log(`${fieldName}: type=${meta.type}, transformer=${meta.transformer?.name}`);
-	 * });
-	 * // Output:
-	 * // id: type=String, transformer=undefined
-	 * // createdAt: type=Date, transformer=DateTransformer
-	 * // balance: type=BigInt, transformer=BigIntTransformer
-	 * ```
-	 */
-	static getMetadata(): Map<string, { type: string; transformer: any }> {
-		const result = new Map<string, { type: string; transformer: any }>();
-		const prototype = this.prototype;
-		
-		// Get all registered fields using the correct symbol
-		const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, prototype) || [];
-		
-		for (const fieldName of fields) {
-			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
-			const arrayElementClass = Reflect.getMetadata('arrayElementClass', prototype, fieldName);
-			const customTransformer = Reflect.getMetadata('customTransformer', prototype, fieldName);
-			
-			let type = 'unknown';
-			let transformer = null;
-			
-			if (customTransformer) {
-				type = 'Custom';
-				transformer = customTransformer;
-			} else if (arrayElementClass) {
-				type = `Array<${arrayElementClass.name || 'unknown'}>`;
-				// Get transformer for array element type
-				const elementTransformer = QModel.deserializer['getTransformer'](arrayElementClass);
-				transformer = elementTransformer;
-			} else if (fieldType) {
-				type = fieldType.name || fieldType.toString();
-				// Get transformer from registry
-				const fieldTransformer = QModel.deserializer['getTransformer'](fieldType);
-				transformer = fieldTransformer;
-			}
-			
-			result.set(fieldName as string, { type, transformer });
-		}
-		
-		return result;
-	}
-
 	// Temporary property for unprocessed data (removed after initialize)
 	private readonly __tempData?: ModelData<TInterface>;
 
@@ -223,6 +169,9 @@ export abstract class QModel<
 	 * const clonedUser = new User(user);
 	 * ```
 	 */
+	// Internal flag to track initialization
+	private __initialized = false;
+
 	constructor(data: ModelData<TInterface> | QModel<TInterface>) {
 		Object.defineProperty(this, '__tempData', {
 			value: data,
@@ -231,8 +180,55 @@ export abstract class QModel<
 			configurable: true,
 		});
 
-		// Auto-initialize and store deserialized values
+		// Initialize immediately - the lazy getters will handle TypeScript field initialization
 		this.initialize();
+	}
+
+	/**
+	 * Gets metadata information for all fields in this model.
+	 * Returns a Map with field names as keys and metadata objects containing type and transformer info.
+	 * 
+	 * @returns Map of field metadata
+	 * 
+	 * @example
+	 * ```typescript
+	 * const metadata = User.getMetadata();
+	 * metadata.forEach((meta, fieldName) => {
+	 *   console.log(`${fieldName}: type=${meta.type}, transformer=${meta.transformer}`);
+	 * });
+	 * ```
+	 */
+	static getMetadata(): Map<string, { type: string; transformer: any }> {
+		const result = new Map<string, { type: string; transformer: any }>();
+		const prototype = this.prototype;
+		
+		// Get all registered fields
+		const fields = Reflect.getMetadata(FIELDS_METADATA_KEY, prototype) || [];
+		
+		for (const fieldName of fields) {
+			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
+			const arrayElementClass = Reflect.getMetadata('arrayElementClass', prototype, fieldName);
+			const customTransformer = Reflect.getMetadata('customTransformer', prototype, fieldName);
+			
+			let type = fieldType || 'unknown';
+			let transformer = null;
+			
+			if (customTransformer) {
+				transformer = customTransformer;
+			} else if (fieldType) {
+				// Get transformer from registry
+				const transformerRegistry = QModel.transformers;
+				transformer = transformerRegistry.get(fieldType);
+			}
+			
+			if (arrayElementClass) {
+				type = `Array<${arrayElementClass.name || arrayElementClass}>`;
+			}
+			
+			result.set(fieldName as string, { type, transformer });
+		}
+		
+		return result;
 	}
 
 	/**
@@ -243,11 +239,72 @@ export abstract class QModel<
 	 * @protected
 	 */
 	protected initialize(): void {
+		// Avoid double initialization
+		if (this.__initialized) return;
+		this.__initialized = true;
+		
 		const data = this.__tempData;
 		if (!data) return;
 
+		// Check if the decorator pre-deserialized the values (embedded in data)
+		const preDeserialized = (data as any).__quickPreDeserialized;
+		
+		if (preDeserialized && preDeserialized.deserializedValues) {
+			// Use pre-deserialized values from decorator
+			const { originalData, deserializedValues } = preDeserialized;
+			
+			// IMPORTANTE: Usar getOwnPropertyNames para obtener TODAS las propiedades,
+			// incluyendo las no enumerables como __quickmodel_*
+			const allKeys = Object.getOwnPropertyNames(deserializedValues);
+			
+			// Copy ALL properties from deserialized instance (including storage keys)
+			const keysToInstall: string[] = [];
+			
+			for (const key of allKeys) {
+				const value = deserializedValues[key];
+				
+				// Copy property directly
+				(this as any)[key] = value;
+				
+				// Track keys that start with __quickmodel_ for lazy getter installation
+				if (key.startsWith('__quickmodel_') && key !== '__quickmodel_values') {
+					const propName = key.replace('__quickmodel_', '');
+					if (!keysToInstall.includes(propName)) {
+						keysToInstall.push(propName);
+					}
+				}
+			}
+			
+			// Copy symbols
+			for (const sym of Object.getOwnPropertySymbols(deserializedValues)) {
+				(this as any)[sym] = deserializedValues[sym];
+			}
+			
+			// Instalar getters "lazy" que buscan en backup si la propiedad es undefined
+			this.installLazyGetters(keysToInstall);
+			
+			// Store initial data for change tracking
+			Object.defineProperty(this, '__initData', {
+				value: JSON.parse(JSON.stringify(originalData)),
+				writable: false,
+				enumerable: false,
+				configurable: true,
+			});
+			
+			Reflect.deleteProperty(this, '__tempData');
+			return;
+		}
+
 		if (data.constructor === this.constructor) {
 			Object.assign(this, data);
+			// Store initial state for change tracking (BEFORE removing tempData) 
+			Object.defineProperty(this, '__initData', {
+				value: JSON.parse(JSON.stringify(data)), // Deep clone to prevent mutations
+				writable: false,
+				enumerable: false,
+				configurable: true,
+			});
+			Reflect.deleteProperty(this, '__tempData');
 			return;
 		}
 
@@ -263,7 +320,7 @@ export abstract class QModel<
 		// (includes both transformed properties with @QType and copied properties without @QType)
 		
 		// Store deserialized values in a hidden storage to handle Bun bug
-		Object.defineProperty(this, '__qm_values', {
+		Object.defineProperty(this, '__quickmodel_values', {
 			value: {} as any,
 			writable: false,
 			enumerable: false,
@@ -272,28 +329,29 @@ export abstract class QModel<
 		
 		for (const key of Object.keys(deserialized)) {
 			const value = (deserialized as any)[key];
-			const storageKey = `__qm_${key}`;
+			const storageKey = `__quickmodel_${key}`;
 			// Asignar al storage que usa el getter/setter
 			(this as any)[storageKey] = value;
 			// También asignar directamente (puede ser sobrescrito por Bun)
 			(this as any)[key] = value;
 			// También guardar backup
-			(this as any).__qm_values[key] = value;
+			(this as any).__quickmodel_values[key] = value;
 		}
 		
 		// Instalar getters "lazy" que buscan en backup si la propiedad es undefined
 		this.installLazyGetters(Object.keys(deserialized));
 		
-		// Remove temporary property
-		Reflect.deleteProperty(this, '__tempData');
-		
-		// Store initial state for change tracking and reset
+		// Store initial state for change tracking and reset (BEFORE removing tempData)
+		// This is the original data as it came into the constructor
 		Object.defineProperty(this, '__initData', {
-			value: this.serialize(),
+			value: JSON.parse(JSON.stringify(data)), // Deep clone to prevent mutations
 			writable: false,
 			enumerable: false,
 			configurable: true,
 		});
+		
+		// Remove temporary property
+		Reflect.deleteProperty(this, '__tempData');
 	}
 	
 	/**
@@ -308,9 +366,10 @@ export abstract class QModel<
 				continue;
 			}
 			
-			const storageKey = `__qm_${key}`;
+			const storageKey = `__quickmodel_${key}`;
 			
 			// Definir getter que busca en múltiples lugares
+			// IMPORTANTE: configurable: false para que TypeScript no lo sobrescriba
 			Object.defineProperty(this, key, {
 				get(this: any) {
 					// 1. Intentar del storage específico
@@ -318,7 +377,7 @@ export abstract class QModel<
 					if (val !== undefined) return val;
 					
 					// 2. Buscar en el backup
-					val = this.__qm_values?.[key];
+					val = this.__quickmodel_values?.[key];
 					if (val !== undefined) return val;
 					
 					// 3. Retornar undefined
@@ -328,7 +387,7 @@ export abstract class QModel<
 					this[storageKey] = value;
 				},
 				enumerable: true,
-				configurable: true
+				configurable: false  // NO permitir que TypeScript lo sobrescriba
 			});
 		}
 	}
@@ -494,81 +553,168 @@ export abstract class QModel<
 	 * 
 
 	/**
-	 * Converts the current state to interface format (same as constructor input).
+	 * Returns the current state as a plain interface object with primitive values.
 	 * 
-	 * This method converts the current values back to the exact format that was originally
-	 * passed to the constructor, preserving types:
-	 * - Date objects → ISO 8601 strings (as they came in)
-	 * - BigInt → preserves original format (string or object)
-	 * - RegExp → preserves original format (string or object)
-	 * - Numbers → preserves type (including NaN, Infinity)
-	 * - Wrappers → preserves wrapper vs primitive
+	 * This converts all transformed types back to their interface representation:
+	 * - Date → ISO string
+	 * - BigInt → string representation
+	 * - RegExp → string pattern
+	 * - Set → array
+	 * - Map → plain object
+	 * - etc.
 	 * 
-	 * Use cases:
-	 * - Sending to backend APIs
-	 * - Comparing with initial state
-	 * - Detecting changes
-	 * - NOT for JSON (use toJSON() instead)
+	 * This is the inverse of the transformations applied during construction.
 	 * 
-	 * @returns Object with current values in the same format/types as constructor input
+	 * @returns Plain object with current values in primitive/serializable format
 	 * 
 	 * @example
 	 * ```typescript
 	 * const user = new User({
 	 *   id: '1',
-	 *   age: 30,  // number primitive
-	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String format
+	 *   createdAt: '2024-01-01T00:00:00.000Z'
 	 * });
 	 * 
-	 * user.age = NaN;  // Still a number
 	 * user.createdAt = new Date('2024-12-31');
 	 * 
-	 * const current = user.toInterface();
-	 * // { id: '1', age: NaN, createdAt: '2024-12-31T00:00:00.000Z' }
-	 * // age is number (NaN), not string "NaN"
+	 * const current = user.getInterface();
+	 * // { id: '1', createdAt: '2024-12-31T00:00:00.000Z' }
 	 * ```
 	 */
-	toInterface(): SerializedInterface<TInterface> {
-		return this.serialize();
+	getInterface(): SerializedInterface<TInterface> {
+		if (!this.__initData) {
+			return this.serialize();
+		}
+
+		const result: any = {};
+		const metadata = (this.constructor as typeof QModel).getMetadata();
+
+		// Iterate over all keys in the initial data
+		for (const key in this.__initData) {
+			const currentValue = (this as any)[key];
+			const initValue = this.__initData[key];
+			const fieldMetadata = metadata.get(key);
+
+			// If no current value, use initial
+			if (currentValue === undefined || currentValue === null) {
+				result[key] = currentValue;
+				continue;
+			}
+
+			// If we have transformer metadata, use the transformer
+			if (fieldMetadata) {
+				const { type, transformer } = fieldMetadata;
+				
+				if (transformer) {
+					result[key] = transformer.toInterface(currentValue, type);
+					continue;
+				}
+			}
+
+			// Handle objects with serialize method (nested QModels)
+			if (currentValue && typeof currentValue === 'object' && typeof currentValue.serialize === 'function') {
+				result[key] = currentValue.serialize();
+				continue;
+			}
+
+			// Handle objects with getInterface method
+			if (currentValue && typeof currentValue === 'object' && typeof currentValue.getInterface === 'function') {
+				result[key] = currentValue.getInterface();
+				continue;
+			}
+
+			// Handle objects with clone method - create new instance
+			if (currentValue && typeof currentValue === 'object' && typeof currentValue.clone === 'function') {
+				result[key] = currentValue.clone();
+				continue;
+			}
+
+			// Handle arrays
+			if (Array.isArray(currentValue)) {
+				result[key] = currentValue.map(item => {
+					if (item && typeof item === 'object') {
+						if (typeof item.serialize === 'function') return item.serialize();
+						if (typeof item.getInterface === 'function') return item.getInterface();
+						if (typeof item.clone === 'function') return item.clone();
+						// Try to create new instance using constructor
+						const ItemConstructor = item.constructor;
+						if (ItemConstructor && ItemConstructor !== Object) {
+							try {
+								return new ItemConstructor(item);
+							} catch {
+								return { ...item };
+							}
+						}
+						return { ...item };
+					}
+					return item;
+				});
+				continue;
+			}
+
+			// Handle regular objects - check if same type as initial
+			if (currentValue && typeof currentValue === 'object' && initValue && typeof initValue === 'object') {
+				const CurrentConstructor = currentValue.constructor;
+				
+				// If it's a special type (not plain Object), try to create new instance
+				if (CurrentConstructor && CurrentConstructor !== Object) {
+					// Check if same type or instance of
+					if (currentValue instanceof CurrentConstructor) {
+						// Try clone method first
+						if (typeof currentValue.clone === 'function') {
+							result[key] = currentValue.clone();
+							continue;
+						}
+						
+						// Try constructor
+						try {
+							result[key] = new CurrentConstructor(currentValue);
+							continue;
+						} catch {
+							// Fall through to default handling
+						}
+					}
+				}
+				
+				// Default: shallow copy
+				result[key] = { ...currentValue };
+				continue;
+			}
+
+			// Primitive values - use as is
+			result[key] = currentValue;
+		}
+
+		return result;
 	}
 
 	/**
-	 * Returns the initial state exactly as it was passed to the constructor.
+	 * Returns the initial state as it was when the model was constructed.
 	 * 
-	 * This returns a copy of the exact interface data used to create the instance,
-	 * in the same format it was provided (with all values as primitives/strings).
-	 * Useful for:
+	 * This returns the exact interface data used to create the instance,
+	 * with all values in their primitive/serialized format. Useful for:
 	 * - Detecting changes: compare with getInterface()
-	 * - Resetting to original state: restore from this data
-	 * - Undo functionality: revert to initial values
-	 * - Audit trails: track what the original data was
+	 * - Resetting to original state
+	 * - Undo functionality
+	 * - Audit trails
 	 * 
-	 * @returns Plain object with initial values in the same format as constructor input
+	 * @returns Plain object with initial values in primitive format
 	 * 
 	 * @example
 	 * ```typescript
 	 * const user = new User({
 	 *   id: '1',
 	 *   name: 'John',
-	 *   age: 30,
-	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String format
+	 *   createdAt: '2024-01-01T00:00:00.000Z'
 	 * });
 	 * 
-	 * // Modify the instance
 	 * user.name = 'Jane';
-	 * user.age = 31;
 	 * user.createdAt = new Date('2024-12-31');
 	 * 
-	 * // Get initial state (unchanged)
 	 * const init = user.getInitInterface();
-	 * // { id: '1', name: 'John', age: 30, createdAt: '2024-01-01T00:00:00.000Z' }
+	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * 
-	 * // Get current state (modified)
 	 * const current = user.getInterface();
-	 * // { id: '1', name: 'Jane', age: 31, createdAt: '2024-12-31T00:00:00.000Z' }
-	 * 
-	 * // Compare to detect changes
-	 * console.log(init.name !== current.name); // true
+	 * // { id: '1', name: 'Jane', createdAt: '2024-12-31T00:00:00.000Z' }
 	 * ```
 	 */
 	getInitInterface(): SerializedInterface<TInterface> {
@@ -594,7 +740,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	hasChanges(): boolean {
-		const current = this.toInterface();
+		const current = this.getInterface();
 		const initial = this.getInitInterface();
 		return !this.deepEqual(current, initial);
 	}
@@ -630,7 +776,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	getChangedFields(): string[] {
-		const current = this.toInterface();
+		const current = this.getInterface();
 		const initial = this.getInitInterface();
 		const changes: string[] = [];
 
@@ -670,7 +816,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	getChanges(): Partial<SerializedInterface<TInterface>> {
-		const current = this.toInterface();
+		const current = this.getInterface();
 		const initial = this.getInitInterface();
 		const changes: Partial<SerializedInterface<TInterface>> = {};
 
