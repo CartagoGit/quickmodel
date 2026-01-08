@@ -326,35 +326,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						target.prototype,
 						propertyKey
 					);
-				} else {
-					// Only auto-detect unambiguous types: Date and BigInt
-					const value = data[propertyKey];
-					if (value !== null && value !== undefined) {
-						let inferredType = value.constructor;
-
-						// Date detection: ISO 8601 string pattern
-						if (
-							typeof value === 'string' &&
-							/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)
-						) {
-							inferredType = Date;
-						}
-						// BigInt detection: 15+ digit numeric string
-						else if (
-							typeof value === 'string' &&
-							/^\d{15,}$/.test(value)
-						) {
-							inferredType = BigInt;
-						}
-
-						Reflect.defineMetadata(
-							'design:type',
-							inferredType,
-							target.prototype,
-							propertyKey
-						);
-					}
-				}
+				
 
 				const decorator = QType();
 				decorator(target.prototype, propertyKey);
@@ -412,7 +384,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 					const decorator = QType(mappedType);
 					decorator(originalConstructor.prototype, propertyKey);
 				} else {
-					// Auto-detect from TypeScript metadata
+					// No type mapping - use TypeScript metadata as-is
 					const decorator = QType();
 					decorator(originalConstructor.prototype, propertyKey);
 				}
