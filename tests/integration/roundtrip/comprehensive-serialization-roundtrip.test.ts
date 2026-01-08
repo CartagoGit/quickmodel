@@ -14,7 +14,7 @@ import {
   QDataView,
   QURL,
   QURLSearchParams,
-} from '../../src';
+} from '../../../src';
 
 console.log('╔═══════════════════════════════════════════════════════════════════════╗');
 console.log('║           COMPREHENSIVE TEST - ALL SUPPORTED TYPES                 ║');

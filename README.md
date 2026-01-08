@@ -1,384 +1,217 @@
 # @cartago-git/quickmodel
 
-Professional TypeScript model system with automatic type transformation and **SOLID** architecture.
+TypeScript model system with automatic type transformation and SOLID architecture.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![SOLID](https://img.shields.io/badge/Architecture-SOLID-green.svg)]()
 
-> 📚 **[See Complete Documentation Index](docs/README.md)**
+> 📚 **[Complete Documentation](docs/README.md)**
 
-## ✨ Features
+## ✨ Key Features
 
-- 🎯 **Simple API**: Use `@Quick({})` decorator and implement interfaces
-- 🔄 **30+ JavaScript/TypeScript types** automatically handled (Date, BigInt, Symbol, RegExp, Error, etc.)
-- 🏗️ **Complete SOLID Architecture** with independent services
-- 💡 **Type-Safe Serialization**: Automatic conversion to JSON-compatible formats
-- 📦 **Infinite nested models** with automatic transformation
-- 🎭 **Mock System**: Built-in testing utilities with [@faker-js/faker](https://fakerjs.dev/)
-- 🔌 **Extensible** via transformer registry pattern
-- 🧪 **Comprehensive test suite** with 199+ passing tests
-- 📚 **Complete documentation**
+- 🔄 **Automatic Type Transformation** - 30+ JavaScript/TypeScript types (Date, BigInt, Symbol, RegExp, Set, Map, etc.)
+- 🎯 **Simple API** - Use `@Quick({})` decorator to specify transformations
+- 💡 **Type-Safe** - Full TypeScript support with interface segregation
+- 📦 **Nested Models** - Infinite nesting with automatic transformation
+- 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
+- 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
+- 🧪 **Well Tested** - 200+ tests covering all features
 
 ## 📦 Installation
 
 ```bash
-# npm
 npm install @cartago-git/quickmodel
-
-# yarn
-yarn add @cartago-git/quickmodel
-
-# pnpm
-pnpm add @cartago-git/quickmodel
-
-# bun
-bun add @cartago-git/quickmodel
+# or: yarn add / pnpm add / bun add
 ```
 
 ## 🚀 Quick Start
 
-### Simple Example
-
 ```typescript
-import { QModel, Quick, QTransform } from '@cartago-git/quickmodel';
+import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
 
-// Define serialization interface (JSON-compatible types)
+// Serialization interface (JSON-compatible)
 interface IUser {
   id: number;
   name: string;
-  email: string;
-  balance: string;      // bigint serializes to string
-  createdAt: string;    // Date serializes to ISO string
+  balance: string;      // BigInt stored as string
+  createdAt: string;    // Date stored as ISO string
 }
 
-// Define runtime interface (transformed types)
+// Runtime interface (actual types in code)
 interface IUserTransform {
-  id: number;
-  name: string;
-  email: string;
   balance: bigint;
   createdAt: Date;
 }
 
-// Create model specifying which types need transformation
+// Specify which fields need transformation
 @Quick({
   balance: BigInt,
   createdAt: Date
 })
-class User extends QModel<IUser> implements QTransform<IUser, IUserTransform> {
+class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
   id!: number;
   name!: string;
-  email!: string;
   balance!: bigint;      // Runtime type
   createdAt!: Date;      // Runtime type
 }
 
-// Use with native JavaScript/TypeScript types
+// Use with native types
 const user = new User({
   id: 1,
   name: 'John Doe',
-  email: 'john@example.com',
-  balance: 999999999999999999n,    // Pass bigint literal
-  createdAt: new Date(),            // Pass Date instance
+  balance: '999999999999999',            // String from JSON
+  createdAt: '2026-01-08T10:00:00.000Z'  // ISO string
 });
 
-// Access properties - fully typed
-console.log(user.balance);    // bigint: 999999999999999999n
+// Access transformed types
+console.log(user.balance);    // bigint: 999999999999999n
 console.log(user.createdAt);  // Date object
 
 // Serialize to JSON-compatible format
 const json = user.toInterface();
-console.log(json.balance);    // string: "999999999999999999"
-console.log(json.createdAt);  // string: "2026-01-08T..."
 ```
 
-### Core Principle
+## 📖 Core Concepts
 
-**QuickModel uses two interfaces pattern:**
-- **`IUser`**: Serialization interface (JSON-compatible types: `string`, `number`, etc.)
-- **`IUserTransform`**: Runtime interface (transformed types: `Date`, `bigint`, `RegExp`)
-- **`@Quick({})`**: Specify which properties need transformation
-- **`QTransform<IUser, IUserTransform>`**: Type-safe contract between both interfaces
+### Two-Interface Pattern
 
-**Automatic transformations:**
-- Pass native instances when creating models (`new Date()`, `1000n`, `/regex/gi`)
-- Get proper types when accessing properties (Date, bigint, RegExp)
-- Automatic serialization to JSON with `toInterface()`
-- Type-safe with both runtime and compile-time checks
+QuickModel uses interface segregation (SOLID principle):
 
-## 🔧 Supported Types
+- **`IUser`** - Serialization format (JSON-compatible): `string`, `number`, `boolean`, `object`
+- **`IUserTransform`** - Runtime types: `Date`, `bigint`, `RegExp`, `Set`, `Map`
 
-QuickModel automatically handles these JavaScript/TypeScript types:
+This allows type-safe serialization while maintaining clean runtime code.
 
-### Primitives
-- `string`, `number`, `boolean` - Passed through as-is
+### Supported Types
 
-### Special Types (Automatic Detection)
-- `Date` → ISO string serialization
-- `BigInt` → String serialization  
-- `RegExp` → Structured format with source and flags
-- `Symbol` → Symbol.for() key serialization
-- `Error` → String format with name and message
-- `URL` → href string
-- `URLSearchParams` → Query string
+**Primitives:**
+- `BigInt` - Large integers
+- `Date` - Dates and timestamps
+- `RegExp` - Regular expressions
+- `Symbol` - Symbols (using Symbol.for)
+- `Error` - Error objects
 
-### Collections
-- `Array<T>` → Array with transformed elements
-- `Map<K,V>` → Object with __type marker
-- `Set<T>` → Array with __type marker
+**Collections:**
+- `Set<T>` - Unique values
+- `Map<K, V>` - Key-value pairs
+- `Array<T>` - Arrays with nested transformations
 
-### Binary Data
-- `ArrayBuffer`, `Int8Array`, `Uint8Array`, `Int16Array`, `Uint16Array`
-- `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array`
-- `BigInt64Array`, `BigUint64Array`
-- `DataView`
+**Binary:**
+- `ArrayBuffer`, TypedArrays (`Int8Array`, etc.), `DataView`
 
-### Nested Models
-- Any class extending `QModel` is automatically handled recursively
+**Web APIs:**
+- `URL`, `URLSearchParams`
 
-## 📚 Advanced Examples
+### Property Declaration
 
-### Nested Models
+Both styles are supported:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
-
-interface IAddress {
-  street: string;
-  city: string;
-  country: string;
+// Using declare (recommended)
+@Quick({ createdAt: Date })
+class User extends QModel<IUser> {
+  declare id: number;
+  declare createdAt: Date;
 }
 
-interface IUser {
-  name: string;
-  address: IAddress;
-  createdAt: Date;
-}
-
-interface IUserTransform {
-  name: string;
-  address: IAddress;
-  createdAt: string;
-}
-
-@Quick({})
-class Address extends QModel<IAddress> implements IAddress {
-  street!: string;
-  city!: string;
-  country!: string;
-}
-
-@Quick({})
-class User extends QModel<IUser> implements IUser, IUserTransform {
-  name!: string;
-  address!: Address;
+// Using definite assignment (!)
+@Quick({ createdAt: Date })
+class User extends QModel<IUser> {
+  id!: number;
   createdAt!: Date;
 }
-
-// Use with nested data
-const user = new User({
-  name: 'John',
-  address: new Address({
-    street: '123 Main St',
-    city: 'NYC',
-    country: 'USA'
-  }),
-  createdAt: new Date()
-});
-
-// Automatic nested serialization
-const json = user.toInterface();
-// json.address is a plain object
-// json.createdAt is an ISO string
 ```
 
-### Arrays and Collections
+### Collections Example
 
 ```typescript
 interface IPost {
-  title: string;
-  tags: string[];
-  dates: Date[];
-  metadata: Map<string, any>;
+  tags: string[];              // Array → Set
+  metadata: [string, any][];   // Tuples → Map
 }
 
 interface IPostTransform {
-  title: string;
-  tags: string[];
-  dates: string[];
-  metadata: Record<string, any>;
+  tags: Set<string>;
+  metadata: Map<string, any>;
 }
 
-@Quick({})
-class Post extends QModel<IPost> implements IPost, IPostTransform {
-  title!: string;
-  tags!: string[];
-  dates!: Date[];
+@Quick({
+  tags: Set,
+  metadata: Map
+})
+class Post extends QModel<IPost> implements QInterface<IPost, IPostTransform> {
+  id!: string;
+  tags!: Set<string>;
   metadata!: Map<string, any>;
 }
 
 const post = new Post({
-  title: 'My Post',
-  tags: ['typescript', 'nodejs'],
-  dates: [new Date('2024-01-01'), new Date('2024-01-02')],
-  metadata: new Map([['views', 100], ['likes', 50]])
+  id: '1',
+  tags: ['typescript', 'node'],    // Pass array, get Set
+  metadata: [['key', 'value']]      // Pass tuples, get Map
 });
 ```
 
-### Binary Data
+### Nested Models
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
-
-interface IBinaryData {
-  data: Int8Array;
-  buffer: ArrayBuffer;
+@Quick({ birthDate: Date })
+class Profile extends QModel<IProfile> {
+  birthDate!: Date;
+  address!: Address;
 }
 
-interface IBinaryDataTransform {
-  data: number[];
-  buffer: number[];
+@Quick({ profile: Profile })
+class User extends QModel<IUser> {
+  id!: string;
+  profile!: Profile;
 }
 
-@Quick({})
-class BinaryData extends QModel<IBinaryData> implements IBinaryData, IBinaryDataTransform {
-  data!: Int8Array;
-  buffer!: ArrayBuffer;
-}
+const user = new User({
+  id: '1',
+  profile: {
+    birthDate: '1990-01-01',
+    address: { city: 'NYC' }
+  }
+});
 ```
 
-## 🔌 Extensibility
-
-### Add Custom Transformer
+## 🎭 Testing with Mocks
 
 ```typescript
-import { IQTransformer, IQTransformContext, qTransformerRegistry } from '@cartago-git/quickmodel';
+// Generate mock with defaults
+const mockUser = User.mock();
 
-// 1. Create transformer
-class URLTransformer implements IQTransformer<string, URL> {
-  transform(value: string, context: IQTransformContext): URL {
-    return new URL(value);
-  }
+// Override specific fields
+const customUser = User.mock({
+  name: 'Custom Name'
+});
 
-  serialize(value: URL): string {
-    return value.toString();
-  }
-}
-
-// 2. Create symbol
-export const CustomURLField = Symbol('CustomURL');
-
-// 3. Register
-qTransformerRegistry.register(CustomURLField, new URLTransformer());
-
-// 4. Use in models
-import { QModel, QType } from '@cartago-git/quickmodel';
-import type { QInterface } from '@cartago-git/quickmodel';
-
-class Website extends QModel<IWebsite> implements QInterface<IWebsite> {
-  @QType(CustomURLField) url!: URL;
-}
+// Generate array of mocks
+const users = User.mock(5);
 ```
 
-## 🎯 Arquitectura SOLID
+Powered by [@faker-js/faker](https://fakerjs.dev/).
 
-Este paquete implementa los 5 principios SOLID:
+## 🏗️ Architecture (SOLID)
 
-- **S**ingle Responsibility: Cada servicio/clase tiene una responsabilidad
-- **O**pen/Closed: Extensible vía registry sin modificar código
-- **L**iskov Substitution: Transformers intercambiables
-- **I**nterface Segregation: Interfaces específicas (IQTransformer, IQSerializer, etc.)
-- **D**ependency Inversion: Servicios dependen de abstracciones
-
-[Ver documentación detallada](./SOLID-ARCHITECTURE.md)
-
-## 📖 API Reference
-
-### QModel<TInterface>
-
-Base class for all models.
-
-**Methods:**
-
-- `toInterface(): TInterface` - Serializes to plain interface
-- `toJSON(): string` - Serializes to JSON string
-- `static fromInterface<T>(data: any): T` - Creates instance from interface
-- `static fromJSON<T>(json: string): T` - Creates instance from JSON
-
-### Decorators
-
-- `@QType()` - Field decorator for auto-detectable types
-- `@QType(Symbol)` - Decorator with specific type (QBigInt, etc.)
-- `@QType(ModelClass)` - Decorator for model arrays
-- `@QType('string-literal')` - Decorator with string literal (IntelliSense support)
-
-### Registries
-
-- `qTransformerRegistry` - Global transformer registry
-- `qValidatorRegistry` - Global validator registry
-
-## 🧪 Testing
-
-```bash
-# Ejecutar tests
-bun test
-
-# Ejecutar todos los tests
-bun run test:all
-```
-
-## 📝 TypeScript Configuration
-
-This package **REQUIRES** decorators in your `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "useDefineForClassFields": false
-  }
-}
-```
-
-## 🤝 Contributing
-
-Contributions are welcome. Please:
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 Licencia
-
-MIT © 2026 Cartago
+- **Single Responsibility**: Each transformer handles one type
+- **Open/Closed**: Extensible via transformer registry
+- **Liskov Substitution**: Models work like TypeScript classes
+- **Interface Segregation**: Separate serialization/runtime interfaces
+- **Dependency Inversion**: Depends on abstractions
 
 ## 📚 Documentation
 
-### For Users
+- [Installation](docs/INSTALLATION.md)
+- [API Reference](docs/README.md)
+- [Architecture](docs/SOLID-ARCHITECTURE.md)
+- [Development Guide](docs/README-DEV.md)
 
-- **[SOLID Architecture](docs/SOLID-ARCHITECTURE.md)** - Detailed system architecture and applied SOLID principles
-- **[Installation Guide](docs/INSTALLATION.md)** - Complete installation guide, project usage and publishing
+## 📝 License
 
-### For Developers
+MIT © Cartago Git
 
-- **[Development Guide](docs/README-DEV.md)** - Guide for contributing to package development
-- **[Changelog](CHANGELOG)** - Version history and changes
+## 🤝 Contributing
 
-### Resources
-
-- **[Cleanup Summary](docs/CLEANUP-SUMMARY.md)** - Summary of the last cleanup and organization
-- **[Examples](models/examples/)** - Example models (SimpleModel, CollectionsModel, NestedModel, BinaryModel, ComplexModel)
-
-## 🔗 Enlaces
-
-- [GitHub Repository](https://github.com/CartagoGit/quickmodel)
-- [Report Issues](https://github.com/CartagoGit/quickmodel/issues)
-- [NPM Package](https://www.npmjs.com/package/@cartago-git/quickmodel)
-
----
-
-Hecho con ❤️ siguiendo principios SOLID
+Contributions welcome! See [development guide](docs/README-DEV.md).

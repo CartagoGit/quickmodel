@@ -22,81 +22,75 @@ describe('Unit: Symbol Transformer', () => {
 	}
 
 	test('Should serialize symbol with description', () => {
-		const sym = Symbol('test-symbol');
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: 'test-symbol' });
 		
 		const json = model.toJSON();
 		const parsed = JSON.parse(json);
 		
-		expect(typeof parsed.symbol).toBe('string');
-		expect(parsed.symbol).toContain('test-symbol');
+		expect(typeof parsed.symbol).toBe('object');
+		expect(parsed.symbol.__type).toBe('symbol');
+		expect(parsed.symbol.description).toBe('test-symbol');
 	});
 
 	test('Should deserialize symbol', () => {
-		const model = SymbolData.fromInterface({ symbol: 'Symbol(my-symbol)' });
+		const model = SymbolData.fromInterface({ symbol: 'my-symbol' });
 		
 		expect(typeof model.symbol).toBe('symbol');
+		expect(Symbol.keyFor(model.symbol)).toBe('my-symbol');
 	});
 
 	test('Should handle symbol without description', () => {
-		const sym = Symbol();
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: '' });
 		const deserialized = SymbolData.fromJSON(model.toJSON());
 		
 		expect(typeof deserialized.symbol).toBe('symbol');
+		expect(Symbol.keyFor(deserialized.symbol)).toBe('');
 	});
 
 	test('Should preserve symbol description', () => {
 		const description = 'unique-identifier-123';
-		const sym = Symbol(description);
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: description });
 		const deserialized = SymbolData.fromJSON(model.toJSON());
 		
-		expect(deserialized.symbol.description).toBe(description);
+		expect(Symbol.keyFor(deserialized.symbol)).toBe(description);
 	});
 
 	test('Should handle symbol with special characters', () => {
-		const sym = Symbol('symbol-with-!@#$%');
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: 'symbol-with-!@#$%' });
 		const deserialized = SymbolData.fromJSON(model.toJSON());
 		
-		expect(deserialized.symbol.description).toContain('symbol-with-');
+		expect(Symbol.keyFor(deserialized.symbol)).toBe('symbol-with-!@#$%');
 	});
 
-	test('Should create new symbol on each deserialization', () => {
-		const sym = Symbol('test');
-		const model = new SymbolData({ symbol: sym.toString() });
+	test('Should return same global symbol on each deserialization', () => {
+		const model = new SymbolData({ symbol: 'test' });
 		
 		const deserialized1 = SymbolData.fromJSON(model.toJSON());
 		const deserialized2 = SymbolData.fromJSON(model.toJSON());
 		
-		// Symbols are always unique, even with same description
-		expect(deserialized1.symbol).not.toBe(deserialized2.symbol);
-		expect(deserialized1.symbol.description).toBe(deserialized2.symbol.description);
+		// Global symbols (Symbol.for) are the same reference
+		expect(deserialized1.symbol).toBe(deserialized2.symbol);
 	});
 
 	test('Should handle empty description', () => {
-		const sym = Symbol('');
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: '' });
 		const deserialized = SymbolData.fromJSON(model.toJSON());
 		
 		expect(typeof deserialized.symbol).toBe('symbol');
-		expect(deserialized.symbol.description).toBe('');
+		expect(Symbol.keyFor(deserialized.symbol)).toBe('');
 	});
 
 	test('Should handle numeric descriptions', () => {
-		const sym = Symbol('12345');
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: '12345' });
 		const deserialized = SymbolData.fromJSON(model.toJSON());
 		
-		expect(deserialized.symbol.description).toBe('12345');
+		expect(Symbol.keyFor(deserialized.symbol)).toBe('12345');
 	});
 
 	test('Should handle multiword descriptions', () => {
-		const sym = Symbol('this is a long description with spaces');
-		const model = new SymbolData({ symbol: sym.toString() });
+		const model = new SymbolData({ symbol: 'this is a long description with spaces' });
 		const deserialized = SymbolData.fromJSON(model.toJSON());
 		
-		expect(deserialized.symbol.description).toBe('this is a long description with spaces');
+		expect(Symbol.keyFor(deserialized.symbol)).toBe('this is a long description with spaces');
 	});
 });

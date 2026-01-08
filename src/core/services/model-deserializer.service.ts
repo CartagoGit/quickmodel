@@ -224,6 +224,23 @@ export class ModelDeserializer<
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
         
+        // Check if arrayElementClass is actually Set or Map (special collection types)
+        if (arrayElementClass === Set) {
+          const setTransformer = this.transformers.get('set');
+          if (setTransformer) {
+            instance[key] = setTransformer.fromInterface(value, context.propertyKey, context.className);
+            continue;
+          }
+        }
+        
+        if (arrayElementClass === Map) {
+          const mapTransformer = this.transformers.get('map');
+          if (mapTransformer) {
+            instance[key] = mapTransformer.fromInterface(value, context.propertyKey, context.className);
+            continue;
+          }
+        }
+        
         // If design:type is Array, it's an array of models OR transformable types
         if (designType === Array) {
           if (!Array.isArray(value)) {
