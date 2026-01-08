@@ -28,12 +28,10 @@ import type {
 } from './core/interfaces/serialization-types.interface';
 
 
-// Public exports
-export { QType, Quick } from './core/decorators';
-export * from './core/interfaces'; // Q-prefixed symbols (QBigInt, QRegExp, etc.)
+// Internal exports only (QType is implementation detail)
+// Public API uses only @Quick() decorator
+export { Quick } from './core/decorators';
 export type { QInterface } from './core/interfaces';
-export type { MockType as QMockType } from './core/services';
-export { MockBuilder as QMockBuilder } from './core/services';
 
 /**
  * Abstract base class for type-safe models with automatic serialization and mock generation.

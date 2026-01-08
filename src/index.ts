@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { QModel, QType, QInterface, QBigInt } from '@cartago-git/quickmodel';
+ * import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
  *
  * interface IUser {
  *   id: string;
@@ -19,10 +19,14 @@
  *   createdAt: Date;
  * };
  *
+ * @Quick({
+ *   balance: BigInt,
+ *   createdAt: Date
+ * })
  * class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
- *   @QType() id!: string;
- *   @QType(QBigInt) balance!: bigint;
- *   @QType() createdAt!: Date;
+ *   id!: string;
+ *   balance!: bigint;
+ *   createdAt!: Date;
  * }
  *
  * const user = new User({ id: '1', balance: '999999', createdAt: '2024-01-01T00:00:00.000Z' });
@@ -32,23 +36,23 @@
  */
 
 // ============================================================================
-// MAIN EXPORTS
+// MAIN EXPORTS (Public API)
 // ============================================================================
 
-// QModel (SOLID architecture)
-export { QType, QModel } from './quick.model';
+// Core: QModel + Quick decorator
+export { QModel } from './quick.model';
 export type { QInterface } from './quick.model';
 export { Quick } from './core/decorators/quick.decorator';
-export type { QTransform } from './core/interfaces/model.interface';
+
+// Transformer interfaces (for custom transformers)
+export type { 
+  IQTransformer,
+  IQTransformContext,
+  IQSerializedType
+} from './core/interfaces/transformer.interface';
 
 // ============================================================================
-// CORE (Interfaces, Services, Registries, Bases)
-// ============================================================================
-
-export * from './core';
-
-// ============================================================================
-// TRANSFORMERS
+// TRANSFORMERS (Optional - for custom transformation registration)
 // ============================================================================
 
 export * from './transformers';
