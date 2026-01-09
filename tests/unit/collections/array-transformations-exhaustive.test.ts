@@ -137,7 +137,11 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 		test('Date[] with null values', () => {
 			const data = new Data({
-				dates: ['2026-01-01T00:00:00.000Z', null as any, '2026-12-31T23:59:59.999Z'],
+				dates: [
+					'2026-01-01T00:00:00.000Z',
+					null as any,
+					'2026-12-31T23:59:59.999Z',
+				],
 			});
 
 			expect(data.dates[0]).toBeInstanceOf(Date);
@@ -173,7 +177,11 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 		test('bigint[] with large numbers', () => {
 			const data = new Data({
-				bigints: ['9007199254740991', '9007199254740992', '9007199254740993'],
+				bigints: [
+					'9007199254740991',
+					'9007199254740992',
+					'9007199254740993',
+				],
 			});
 
 			expect(data.bigints[0]).toBe(9007199254740991n);
@@ -198,7 +206,11 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 		test('RegExp[] from strings', () => {
 			const data = new Data({
-				patterns: ['^test\\d+$', 'hello.*world', '\\d{4}-\\d{2}-\\d{2}'],
+				patterns: [
+					'^test\\d+$',
+					'hello.*world',
+					'\\d{4}-\\d{2}-\\d{2}',
+				],
 			});
 
 			expect(data.patterns).toHaveLength(3);
@@ -332,7 +344,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.int8arrays).toHaveLength(2);
 			expect(data.int8arrays[0]).toBeInstanceOf(Int8Array);
-			expect(Array.from(data.int8arrays[0])).toEqual([1, 2, 3]);
+			expect(Array.from(data.int8arrays[0]!)).toEqual([1, 2, 3]);
 		});
 
 		test('Uint8Array[] from number arrays', () => {
@@ -346,7 +358,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			});
 
 			expect(data.uint8arrays[0]).toBeInstanceOf(Uint8Array);
-			expect(Array.from(data.uint8arrays[1])).toEqual([40, 50, 60]);
+			expect(Array.from(data.uint8arrays[1]!)).toEqual([40, 50, 60]);
 		});
 
 		test('Float32Array[] from number arrays', () => {
@@ -360,7 +372,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			});
 
 			expect(data.float32arrays[0]).toBeInstanceOf(Float32Array);
-			expect(Array.from(data.float32arrays[0])).toEqual([1.5, 2.5, 3.5]);
+			expect(Array.from(data.float32arrays[0]!)).toEqual([1.5, 2.5, 3.5]);
 		});
 	});
 
@@ -385,8 +397,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.urls).toHaveLength(2);
 			expect(data.urls[0]).toBeInstanceOf(URL);
-			expect(data.urls[0].hostname).toBe('example.com');
-			expect(data.urls[1].pathname).toBe('/path');
+			expect(data.urls[0]!.hostname).toBe('example.com');
+			expect(data.urls[1]!.pathname).toBe('/path');
 		});
 	});
 
@@ -456,8 +468,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(user.posts).toHaveLength(2);
 			expect(user.posts[0]).toBeInstanceOf(Post);
-			expect(user.posts[0].id).toBe(1);
-			expect(user.posts[1].title).toBe('Post 2');
+			expect(user.posts[0]!.id).toBe(1);
+			expect(user.posts[1]!.title).toBe('Post 2');
 		});
 
 		test('Model[] with empty array', () => {
@@ -473,13 +485,17 @@ describe('Array Transformations - Exhaustive Tests', () => {
 		test('Model[] with null values filtered', () => {
 			const user = new User({
 				id: 1,
-				posts: [{ id: 1, title: 'Post 1' }, null as any, { id: 2, title: 'Post 2' }],
+				posts: [
+					{ id: 1, title: 'Post 1' },
+					null as any,
+					{ id: 2, title: 'Post 2' },
+				],
 			});
 
 			// Null values should be filtered out
 			expect(user.posts).toHaveLength(2);
-			expect(user.posts[0].id).toBe(1);
-			expect(user.posts[1].id).toBe(2);
+			expect(user.posts[0]!.id).toBe(1);
+			expect(user.posts[1]!.id).toBe(2);
 		});
 	});
 

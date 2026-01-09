@@ -74,7 +74,10 @@
 import 'reflect-metadata';
 import { QType, QTYPES_METADATA_KEY } from './qtype.decorator';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
-import type { IQuickAdvancedOptions } from '../interfaces/quick-options.interface';
+import type {
+	DiscriminatorConfig,
+	IQuickAdvancedOptions,
+} from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
@@ -420,9 +423,9 @@ export interface IQuickOptions {
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  * @see {@link IQuickAdvancedOptions} for discriminator configuration
  */
-export function Quick(
-	typeMap?: IQuickOptions,
-	advancedOptions?: IQuickAdvancedOptions
+export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
+	typeMap?: TTypeMap,
+	advancedOptions?: IQuickAdvancedOptions<TTypeMap>
 ): ClassDecorator {
 	return function <T extends Function>(target: T): any {
 		// Mark class as using @Quick() for auto-registration

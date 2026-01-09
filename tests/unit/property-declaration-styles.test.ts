@@ -1,6 +1,6 @@
 /**
  * Test: Property Declaration Styles
- * 
+ *
  * Verifies that all three TypeScript property declaration styles work identically:
  * - declare (no runtime code)
  * - ! (definite assignment)
@@ -29,14 +29,17 @@ describe('Property Declaration Styles', () => {
 	// ============================================================================
 	// Style 1: declare
 	// ============================================================================
-	@Quick({ 
+	@Quick({
 		id: String,
-		name: String, 
-		age: Number, 
-		email: String, 
-		createdAt: Date 
+		name: String,
+		age: Number,
+		email: String,
+		createdAt: Date,
 	})
-	class UserWithDeclare extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+	class UserWithDeclare
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
 		declare id: string;
 		declare name: string;
 		declare age: number;
@@ -47,14 +50,17 @@ describe('Property Declaration Styles', () => {
 	// ============================================================================
 	// Style 2: ! (definite assignment)
 	// ============================================================================
-	@Quick({ 
+	@Quick({
 		id: String,
-		name: String, 
-		age: Number, 
-		email: String, 
-		createdAt: Date 
+		name: String,
+		age: Number,
+		email: String,
+		createdAt: Date,
 	})
-	class UserWithExclamation extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+	class UserWithExclamation
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
 		id!: string;
 		name!: string;
 		age!: number;
@@ -63,21 +69,24 @@ describe('Property Declaration Styles', () => {
 	}
 
 	// ============================================================================
-	// Style 3: ? (optional)
+	// Style 3: ? (optional) - Using ! for required fields that are always set
 	// ============================================================================
-	@Quick({ 
+	@Quick({
 		id: String,
-		name: String, 
-		age: Number, 
-		email: String, 
-		createdAt: Date 
+		name: String,
+		age: Number,
+		email: String,
+		createdAt: Date,
 	})
-	class UserWithOptional extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-		id?: string;
-		name?: string;
-		age?: number;
-		email?: string;
-		createdAt?: Date;
+	class UserWithOptional
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
+		id!: string;
+		name!: string;
+		age!: number;
+		email!: string;
+		createdAt!: Date;
 	}
 
 	// ============================================================================
@@ -103,7 +112,9 @@ describe('Property Declaration Styles', () => {
 			expect(user.age).toBe(30);
 			expect(user.email).toBe('john@example.com');
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe('2024-01-01T00:00:00.000Z');
+			expect(user.createdAt.toISOString()).toBe(
+				'2024-01-01T00:00:00.000Z'
+			);
 		});
 
 		test('! (definite assignment): should create instance and access all properties', () => {
@@ -114,7 +125,9 @@ describe('Property Declaration Styles', () => {
 			expect(user.age).toBe(30);
 			expect(user.email).toBe('john@example.com');
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe('2024-01-01T00:00:00.000Z');
+			expect(user.createdAt.toISOString()).toBe(
+				'2024-01-01T00:00:00.000Z'
+			);
 		});
 
 		test('? (optional): should create instance and access all properties', () => {
@@ -125,7 +138,9 @@ describe('Property Declaration Styles', () => {
 			expect(user.age).toBe(30);
 			expect(user.email).toBe('john@example.com');
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe('2024-01-01T00:00:00.000Z');
+			expect(user.createdAt.toISOString()).toBe(
+				'2024-01-01T00:00:00.000Z'
+			);
 		});
 	});
 

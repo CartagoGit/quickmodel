@@ -61,8 +61,16 @@ describe('Debug Ultimate Test', () => {
 			settings: [],
 		});
 
-		const arrayElementClass = Reflect.getMetadata('arrayElementClass', user, 'posts');
-		const arrayNestingDepth = Reflect.getMetadata('arrayNestingDepth', user, 'posts');
+		const arrayElementClass = Reflect.getMetadata(
+			'arrayElementClass',
+			user,
+			'posts'
+		);
+		const arrayNestingDepth = Reflect.getMetadata(
+			'arrayNestingDepth',
+			user,
+			'posts'
+		);
 		const designType = Reflect.getMetadata('design:type', user, 'posts');
 
 		console.log('Metadata for User.posts:');
@@ -95,12 +103,15 @@ describe('Debug Ultimate Test', () => {
 
 		console.log('User.posts:', user.posts);
 		console.log('User.posts[0]:', user.posts[0]);
-		console.log('User.posts[0][0]:', user.posts[0][0]);
-		console.log('Is Post instance?', user.posts[0][0] instanceof Post);
-		console.log('Tags:', user.posts[0][0].tags);
-		console.log('Is Tag instance?', user.posts[0][0].tags[0] instanceof Tag);
+		console.log('User.posts[0][0]:', user.posts[0]![0]);
+		console.log('Is Post instance?', user.posts[0]![0] instanceof Post);
+		console.log('Tags:', user.posts[0]![0]!.tags);
+		console.log(
+			'Is Tag instance?',
+			user.posts[0]![0]!.tags[0] instanceof Tag
+		);
 
-		expect(user.posts[0][0]).toBeInstanceOf(Post);
-		expect(user.posts[0][0].tags[0]).toBeInstanceOf(Tag); // This should fail
+		expect(user.posts[0]![0]).toBeInstanceOf(Post);
+		expect(user.posts[0]![0]!.tags[0]).toBeInstanceOf(Tag); // This should fail
 	});
 });

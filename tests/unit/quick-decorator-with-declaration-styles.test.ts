@@ -1,6 +1,6 @@
 /**
  * Test: @Quick() decorator with different property declaration styles
- * 
+ *
  * Verifies that @Quick() works identically with:
  * - declare (no runtime code)
  * - ! (definite assignment)
@@ -123,7 +123,10 @@ describe('@Quick() with declaration styles', () => {
 			createdAt: Date,
 			tags: Set,
 		})
-		class OrderWithDeclare extends QModel<IOrder> implements QInterface<IOrder, IOrderTransform> {
+		class OrderWithDeclare
+			extends QModel<IOrder>
+			implements QInterface<IOrder, IOrderTransform>
+		{
 			declare id: string;
 			declare total: bigint;
 			declare createdAt: Date;
@@ -135,7 +138,10 @@ describe('@Quick() with declaration styles', () => {
 			createdAt: Date,
 			tags: Set,
 		})
-		class OrderWithExclamation extends QModel<IOrder> implements QInterface<IOrder, IOrderTransform> {
+		class OrderWithExclamation
+			extends QModel<IOrder>
+			implements QInterface<IOrder, IOrderTransform>
+		{
 			id!: string;
 			total!: bigint;
 			createdAt!: Date;
@@ -147,11 +153,14 @@ describe('@Quick() with declaration styles', () => {
 			createdAt: Date,
 			tags: Set,
 		})
-		class OrderWithOptional extends QModel<IOrder> implements QInterface<IOrder, IOrderTransform> {
-			id?: string;
-			total?: bigint;
-			createdAt?: Date;
-			tags?: Set<string>;
+		class OrderWithOptional
+			extends QModel<IOrder>
+			implements QInterface<IOrder, IOrderTransform>
+		{
+			id!: string;
+			total!: bigint;
+			createdAt!: Date;
+			tags!: Set<string>;
 		}
 
 		const orderData = {
@@ -167,14 +176,19 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.id).toBe('order-456');
 			expect(order.total).toBe(123456789012345n);
 			expect(order.createdAt).toBeInstanceOf(Date);
-			expect(order.createdAt.toISOString()).toBe('2024-01-15T10:30:00.000Z');
+			expect(order.createdAt.toISOString()).toBe(
+				'2024-01-15T10:30:00.000Z'
+			);
 			expect(order.tags).toBeInstanceOf(Set);
 			expect(order.tags.has('urgent')).toBe(true);
 			expect(order.tags.has('premium')).toBe(true);
 
 			// Serialize back
 			const serialized = order.serialize();
-			expect(serialized.total).toEqual({ __type: 'bigint', value: '123456789012345' });
+			expect(serialized.total as any).toEqual({
+				__type: 'bigint',
+				value: '123456789012345',
+			});
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 			expect(Array.isArray(serialized.tags)).toBe(true);
 		});
@@ -185,12 +199,17 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.id).toBe('order-456');
 			expect(order.total).toBe(123456789012345n);
 			expect(order.createdAt).toBeInstanceOf(Date);
-			expect(order.createdAt.toISOString()).toBe('2024-01-15T10:30:00.000Z');
+			expect(order.createdAt.toISOString()).toBe(
+				'2024-01-15T10:30:00.000Z'
+			);
 			expect(order.tags).toBeInstanceOf(Set);
 			expect(order.tags.has('urgent')).toBe(true);
 
 			const serialized = order.serialize();
-			expect(serialized.total).toEqual({ __type: 'bigint', value: '123456789012345' });
+			expect(serialized.total as any).toEqual({
+				__type: 'bigint',
+				value: '123456789012345',
+			});
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
 
@@ -203,7 +222,10 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags).toBeInstanceOf(Set);
 
 			const serialized = order.serialize();
-			expect(serialized.total).toEqual({ __type: 'bigint', value: '123456789012345' });
+			expect(serialized.total as any).toEqual({
+				__type: 'bigint',
+				value: '123456789012345',
+			});
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
 	});
@@ -263,9 +285,9 @@ describe('@Quick() with declaration styles', () => {
 
 		@Quick({ address: AddressOptional })
 		class CustomerOptional extends QModel<ICustomer> {
-			name?: string;
-			email?: string;
-			address?: AddressOptional;
+			name!: string;
+			email!: string;
+			address!: AddressOptional;
 		}
 
 		const customerData = {

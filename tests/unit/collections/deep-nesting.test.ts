@@ -478,9 +478,9 @@ describe('Mezcla de arrays y objetos anidados', () => {
 
 			expect(data.singleTypedArrays).toHaveLength(3);
 			expect(data.singleTypedArrays[0]).toBeInstanceOf(Int8Array);
-			expect(Array.from(data.singleTypedArrays[0])).toEqual([1, 2, 3]);
-			expect(Array.from(data.singleTypedArrays[1])).toEqual([4, 5, 6]);
-			expect(Array.from(data.singleTypedArrays[2])).toEqual([7, 8, 9]);
+			expect(Array.from(data.singleTypedArrays[0]!)).toEqual([1, 2, 3]);
+			expect(Array.from(data.singleTypedArrays[1]!)).toEqual([4, 5, 6]);
+			expect(Array.from(data.singleTypedArrays[2]!)).toEqual([7, 8, 9]);
 		});
 	});
 
@@ -587,9 +587,9 @@ describe('Mezcla de arrays y objetos anidados', () => {
 
 			expect(data.nestedSets).toHaveLength(3);
 			expect(data.nestedSets[0]).toBeInstanceOf(Set);
-			expect(data.nestedSets[0].has('a')).toBe(true);
-			expect(data.nestedSets[1].size).toBe(2);
-			expect(data.nestedSets[2].has('f')).toBe(true);
+			expect(data.nestedSets[0]!.has('a')).toBe(true);
+			expect(data.nestedSets[1]!.size).toBe(2);
+			expect(data.nestedSets[2]!.has('f')).toBe(true);
 		});
 
 		test('Map<string, number>[] - arrays de Maps', () => {
@@ -606,8 +606,8 @@ describe('Mezcla de arrays y objetos anidados', () => {
 
 			expect(data.nestedMaps).toHaveLength(2);
 			expect(data.nestedMaps[0]).toBeInstanceOf(Map);
-			expect(data.nestedMaps[0].get('key1')).toBe(1);
-			expect(data.nestedMaps[1].get('key3')).toBe(3);
+			expect(data.nestedMaps[0]!.get('key1')).toBe(1);
+			expect(data.nestedMaps[1]!.get('key3')).toBe(3);
 		});
 	});
 
@@ -664,7 +664,6 @@ describe('Mezcla de arrays y objetos anidados', () => {
 				discriminators: {
 					// Opción 1: Simple - nombre del campo discriminador
 					items: 'type', // Usa data.type para coincidir con nombre de clase
-
 					// Opción 2: Con función personalizada
 					transforms: (data) => {
 						// Si es string con formato ISO date → Date
@@ -731,26 +730,32 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			expect(data.items).toHaveLength(3);
 
 			// Primer item es Content
-			const firstItem = data.items[0];
+			const firstItem = data.items[0]!;
 			expect(firstItem).toBeInstanceOf(Content);
-			expect(firstItem.text).toBe('Content 1');
-			expect(firstItem.metadata).toBeInstanceOf(Metadata);
-			expect(firstItem.metadata.tags).toBeInstanceOf(Set);
-			expect(firstItem.metadata.tags.has('tag1')).toBe(true);
-			expect(firstItem.metadata.dates[0]).toBeInstanceOf(Date);
+			if (firstItem instanceof Content) {
+				expect(firstItem.text).toBe('Content 1');
+				expect(firstItem.metadata).toBeInstanceOf(Metadata);
+				expect(firstItem.metadata.tags).toBeInstanceOf(Set);
+				expect(firstItem.metadata.tags.has('tag1')).toBe(true);
+				expect(firstItem.metadata.dates[0]).toBeInstanceOf(Date);
+			}
 
 			// Segundo item es Metadata (discriminado correctamente)
-			const secondItem = data.items[1];
+			const secondItem = data.items[1]!;
 			expect(secondItem).toBeInstanceOf(Metadata);
-			expect(secondItem.tags).toBeInstanceOf(Set);
-			expect(secondItem.tags.has('tag3')).toBe(true);
-			expect(secondItem.dates).toHaveLength(2);
-			expect(secondItem.dates[1]).toBeInstanceOf(Date);
+			if (secondItem instanceof Metadata) {
+				expect(secondItem.tags).toBeInstanceOf(Set);
+				expect(secondItem.tags.has('tag3')).toBe(true);
+				expect(secondItem.dates).toHaveLength(2);
+				expect(secondItem.dates[1]).toBeInstanceOf(Date);
+			}
 
 			// Tercer item es Content de nuevo
-			const thirdItem = data.items[2];
+			const thirdItem = data.items[2]!;
 			expect(thirdItem).toBeInstanceOf(Content);
-			expect(thirdItem.text).toBe('Content 2');
+			if (thirdItem instanceof Content) {
+				expect(thirdItem.text).toBe('Content 2');
+			}
 
 			// Verificar transforms con función discriminadora
 			expect(data.transforms).toHaveLength(4);
@@ -861,28 +866,31 @@ describe('Mezcla de arrays y objetos anidados', () => {
 
 			// Navegar 5 niveles profundo
 			expect(data.level1).toHaveLength(2);
-			expect(data.level1[0].level2).toHaveLength(1);
-			expect(data.level1[0].level2[0].level3).toHaveLength(1);
-			expect(data.level1[0].level2[0].level3[0].level4).toHaveLength(2);
+			expect(data.level1[0]!.level2).toHaveLength(1);
+			expect(data.level1[0]!.level2[0]!.level3).toHaveLength(1);
+			expect(data.level1[0]!.level2[0]!.level3[0]!.level4).toHaveLength(
+				2
+			);
 			expect(
-				data.level1[0].level2[0].level3[0].level4[0].values
+				data.level1[0]!.level2[0]!.level3[0]!.level4[0]!.values
 			).toHaveLength(2);
 
 			// Verificar transformación en el nivel más profundo
 			expect(
-				typeof data.level1[0].level2[0].level3[0].level4[0].values[0]
+				typeof data.level1[0]!.level2[0]!.level3[0]!.level4[0]!
+					.values[0]
 			).toBe('bigint');
-			expect(data.level1[0].level2[0].level3[0].level4[0].values[0]).toBe(
-				100n
-			);
-			expect(data.level1[0].level2[0].level3[0].level4[1].values[0]).toBe(
-				300n
-			);
+			expect(
+				data.level1[0]!.level2[0]!.level3[0]!.level4[0]!.values[0]
+			).toBe(100n);
+			expect(
+				data.level1[0]!.level2[0]!.level3[0]!.level4[1]!.values[0]
+			).toBe(300n);
 
 			// Segundo branch
-			expect(data.level1[1].level2[0].level3[0].level4[0].values[0]).toBe(
-				999n
-			);
+			expect(
+				data.level1[1]!.level2[0]!.level3[0]!.level4[0]!.values[0]
+			).toBe(999n);
 		});
 	});
 
@@ -923,24 +931,24 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			});
 
 			// Verificar Date[][]
-			expect(data.dates2D[0][0]).toBeInstanceOf(Date);
-			expect(data.dates2D[0][1]).toBeInstanceOf(Date);
-			expect(data.dates2D[1][0]).toBeInstanceOf(Date);
+			expect(data.dates2D[0]![0]).toBeInstanceOf(Date);
+			expect(data.dates2D[0]![1]).toBeInstanceOf(Date);
+			expect(data.dates2D[1]![0]).toBeInstanceOf(Date);
 
 			// Verificar BigInt[][]
-			expect(typeof data.bigints2D[0][0]).toBe('bigint');
-			expect(data.bigints2D[0][0]).toBe(100n);
-			expect(data.bigints2D[1][0]).toBe(999999999999999n);
+			expect(typeof data.bigints2D[0]![0]).toBe('bigint');
+			expect(data.bigints2D[0]![0]).toBe(100n);
+			expect(data.bigints2D[1]![0]).toBe(999999999999999n);
 
 			// Verificar URL[][]
-			expect(data.urls2D[0][0]).toBeInstanceOf(URL);
-			expect(data.urls2D[0][0].href).toBe('https://example.com/');
-			expect(data.urls2D[1][0].href).toBe('https://github.com/');
+			expect(data.urls2D[0]![0]).toBeInstanceOf(URL);
+			expect(data.urls2D[0]![0]!.href).toBe('https://example.com/');
+			expect(data.urls2D[1]![0]!.href).toBe('https://github.com/');
 
 			// Verificar RegExp[][]
-			expect(data.regexps2D[0][0]).toBeInstanceOf(RegExp);
-			expect(data.regexps2D[0][0].test('123')).toBe(true);
-			expect(data.regexps2D[0][1].test('abc')).toBe(true);
+			expect(data.regexps2D[0]![0]).toBeInstanceOf(RegExp);
+			expect(data.regexps2D[0]![0]!.test('123')).toBe(true);
+			expect(data.regexps2D[0]![1]!.test('abc')).toBe(true);
 		});
 	});
 
@@ -1036,7 +1044,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			expect(user.posts[0]).toHaveLength(1);
 
 			// Nivel 3: Post
-			const firstPost = user.posts[0][0];
+			const firstPost = user.posts[0]![0]!;
 			expect(firstPost).toBeInstanceOf(Post);
 			expect(firstPost.title).toBe('Post 1-1');
 			expect(firstPost.metadata).toBeInstanceOf(Map);
@@ -1045,12 +1053,12 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			// Nivel 4a: Tag[] dentro de Post
 			expect(firstPost.tags).toHaveLength(2);
 			expect(firstPost.tags[0]).toBeInstanceOf(Tag);
-			expect(firstPost.tags[0].name).toBe('urgent');
+			expect(firstPost.tags[0]!.name).toBe('urgent');
 
 			// Nivel 5: BigInt dentro de Tag
-			expect(typeof firstPost.tags[0].priority).toBe('bigint');
-			expect(firstPost.tags[0].priority).toBe(999n);
-			expect(firstPost.tags[1].priority).toBe(100n);
+			expect(typeof firstPost.tags[0]!.priority).toBe('bigint');
+			expect(firstPost.tags[0]!.priority).toBe(999n);
+			expect(firstPost.tags[1]!.priority).toBe(100n);
 
 			// Nivel 4b: Date[] dentro de Post
 			expect(firstPost.dates).toHaveLength(2);
@@ -1099,7 +1107,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			});
 
 			expect(data.mixed[0]).toEqual([1, 'a', 2]);
-			expect(data.mixed[1][2]).toBe('c');
+			expect(data.mixed[1]?.[2]).toBe('c');
 		});
 
 		test('arrays con nulls anidados', () => {
@@ -1112,8 +1120,8 @@ describe('Mezcla de arrays y objetos anidados', () => {
 				],
 			});
 
-			expect(data.nulls[0][1]).toBeNull();
-			expect(data.nulls[1][0]).toBeNull();
+			expect(data.nulls[0]?.[1]).toBeNull();
+			expect(data.nulls[1]?.[0]).toBeNull();
 		});
 	});
 });

@@ -39,12 +39,21 @@ describe('Debug Nested Model with Arrays', () => {
 		});
 
 		console.log('\ncontent.metadata:', content.metadata);
-		console.log('content.metadata instanceof Metadata:', content.metadata instanceof Metadata);
+		console.log(
+			'content.metadata instanceof Metadata:',
+			content.metadata instanceof Metadata
+		);
 		console.log('content.metadata.tags:', content.metadata.tags);
-		console.log('content.metadata.tags instanceof Set:', content.metadata.tags instanceof Set);
+		console.log(
+			'content.metadata.tags instanceof Set:',
+			content.metadata.tags instanceof Set
+		);
 		console.log('content.metadata.dates:', content.metadata.dates);
 		console.log('content.metadata.dates[0]:', content.metadata.dates[0]);
-		console.log('content.metadata.dates[0] instanceof Date:', content.metadata.dates[0] instanceof Date);
+		console.log(
+			'content.metadata.dates[0] instanceof Date:',
+			content.metadata.dates[0] instanceof Date
+		);
 
 		expect(content.metadata).toBeInstanceOf(Metadata);
 		expect(content.metadata.tags).toBeInstanceOf(Set);
@@ -72,15 +81,33 @@ describe('Debug Nested Model with Arrays', () => {
 
 		console.log('\ncontainer.items:', container.items);
 		console.log('container.items[0]:', container.items[0]);
-		console.log('container.items[0] instanceof Content:', container.items[0] instanceof Content);
-		console.log('container.items[0].metadata:', container.items[0].metadata);
-		console.log('container.items[0].metadata instanceof Metadata:', container.items[0].metadata instanceof Metadata);
-		console.log('container.items[0].metadata.dates:', container.items[0].metadata.dates);
-		console.log('container.items[0].metadata.dates[0]:', container.items[0].metadata.dates[0]);
-		console.log('Is Date?:', container.items[0].metadata.dates[0] instanceof Date);
+		console.log(
+			'container.items[0] instanceof Content:',
+			container.items[0] instanceof Content
+		);
+		console.log(
+			'container.items[0].metadata:',
+			container.items[0]!.metadata
+		);
+		console.log(
+			'container.items[0].metadata instanceof Metadata:',
+			container.items[0]!.metadata instanceof Metadata
+		);
+		console.log(
+			'container.items[0].metadata.dates:',
+			container.items[0]!.metadata.dates
+		);
+		console.log(
+			'container.items[0].metadata.dates[0]:',
+			container.items[0]!.metadata.dates[0]
+		);
+		console.log(
+			'Is Date?:',
+			container.items[0]!.metadata.dates[0] instanceof Date
+		);
 
 		expect(container.items[0]).toBeInstanceOf(Content);
-		expect(container.items[0].metadata).toBeInstanceOf(Metadata);
-		expect(container.items[0].metadata.dates[0]).toBeInstanceOf(Date);
+		expect(container.items[0]!.metadata).toBeInstanceOf(Metadata);
+		expect(container.items[0]!.metadata.dates[0]).toBeInstanceOf(Date);
 	});
 });

@@ -1,14 +1,14 @@
 /**
  * CRITICAL TESTS: Null & Undefined Safety
- * 
+ *
  * These tests ensure proper handling of null and undefined values
  * in various contexts to prevent runtime errors.
- * 
+ *
  * Priority: ⭐⭐⭐⭐⭐ CRITICAL
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '@/quick.model';
+import { QModel } from '@/index';
 
 // Test Models - Using declare syntax
 interface IAddress {
@@ -67,13 +67,13 @@ describe('Null Safety: Deep Optional Chaining', () => {
 			id: 1,
 			name: 'John',
 			profile: null as any,
-			bio: null
+			bio: null,
 		});
 
 		// Should safely return undefined, not throw
 		expect(user.profile?.address?.city).toBeUndefined();
 		expect(() => {
-			const city = user.profile?.address?.city;
+			user.profile?.address?.city;
 		}).not.toThrow();
 	});
 
@@ -82,9 +82,9 @@ describe('Null Safety: Deep Optional Chaining', () => {
 			id: 1,
 			name: 'John',
 			profile: {
-				address: undefined
+				address: undefined,
 			},
-			bio: null
+			bio: null,
 		});
 
 		expect(user.profile?.address?.city).toBeUndefined();
@@ -94,7 +94,7 @@ describe('Null Safety: Deep Optional Chaining', () => {
 		const user = new User({
 			id: 1,
 			name: 'John',
-			bio: null
+			bio: null,
 		});
 
 		// profile is undefined
@@ -110,11 +110,11 @@ describe('Null Safety: Deep Optional Chaining', () => {
 			profile: {
 				address: {
 					city: 'NYC',
-					country: 'USA'
+					country: 'USA',
 				},
-				phone: '555-1234'
+				phone: '555-1234',
 			},
-			bio: 'Test bio'
+			bio: 'Test bio',
 		});
 
 		expect(user.profile?.address?.city).toBe('NYC');
@@ -129,8 +129,8 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 				new Date('2024-01-01'),
 				null,
 				undefined,
-				new Date('2024-01-03')
-			]
+				new Date('2024-01-03'),
+			],
 		});
 
 		expect(timeline.events.length).toBe(4);
@@ -142,7 +142,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 
 	test('should handle empty array', () => {
 		const timeline = new Timeline({
-			events: []
+			events: [],
 		});
 
 		expect(Array.isArray(timeline.events)).toBe(true);
@@ -151,20 +151,20 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 
 	test('should handle array with all nulls', () => {
 		const timeline = new Timeline({
-			events: [null, null, null] as any
+			events: [null, null, null] as any,
 		});
 
 		expect(timeline.events.length).toBe(3);
-		expect(timeline.events.every(e => e === null)).toBe(true);
+		expect(timeline.events.every((e) => e === null)).toBe(true);
 	});
 
 	test('should handle array with all undefined', () => {
 		const timeline = new Timeline({
-			events: [undefined, undefined] as any
+			events: [undefined, undefined] as any,
 		});
 
 		expect(timeline.events.length).toBe(2);
-		expect(timeline.events.every(e => e === undefined)).toBe(true);
+		expect(timeline.events.every((e) => e === undefined)).toBe(true);
 	});
 });
 
@@ -172,7 +172,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 	test('should distinguish between null and undefined', () => {
 		const data1 = new Data({
 			value: null,
-			required: 'test'
+			required: 'test',
 			// optional is missing
 		});
 
@@ -185,7 +185,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 	test('should preserve null in serialization', () => {
 		const data = new Data({
 			value: null,
-			required: 'test'
+			required: 'test',
 		});
 
 		const json = data.serialize();
@@ -198,7 +198,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 		const data = new Data({
 			value: null,
 			optional: undefined,
-			required: 'test'
+			required: 'test',
 		});
 
 		const json = data.serialize();
@@ -213,13 +213,13 @@ describe('Null Safety: Nullable vs Optional', () => {
 		const data1 = new Data({
 			value: null,
 			optional: undefined, // explicit
-			required: 'test'
+			required: 'test',
 		});
 
 		const data2 = new Data({
 			value: null,
 			// optional missing
-			required: 'test'
+			required: 'test',
 		});
 
 		// Both should be undefined
@@ -232,7 +232,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 	test('should preserve null through roundtrip', () => {
 		const data = new Data({
 			value: null,
-			required: 'test'
+			required: 'test',
 		});
 
 		const json = data.serialize();
@@ -248,10 +248,10 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			name: 'John',
 			profile: {
 				address: {
-					city: null as any
-				}
+					city: null as any,
+				},
 			},
-			bio: null
+			bio: null,
 		});
 
 		const json = user.serialize();
@@ -265,8 +265,8 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			events: [
 				new Date('2024-01-01'),
 				null,
-				new Date('2024-01-03')
-			] as any
+				new Date('2024-01-03'),
+			] as any,
 		});
 
 		const json = timeline.serialize();
@@ -282,7 +282,7 @@ describe('Null Safety: Edge Cases', () => {
 	test('should handle null as entire model data', () => {
 		try {
 			new User(null as any);
-			
+
 			// Might not throw, just log
 			console.warn('⚠️  Null model data accepted without error');
 		} catch (error) {
@@ -293,7 +293,7 @@ describe('Null Safety: Edge Cases', () => {
 	test('should handle undefined as entire model data', () => {
 		try {
 			new User(undefined as any);
-			
+
 			// Might not throw, just log
 			console.warn('⚠️  Undefined model data accepted without error');
 		} catch (error) {
@@ -304,7 +304,7 @@ describe('Null Safety: Edge Cases', () => {
 	test('should handle empty object', () => {
 		try {
 			new User({} as any);
-			
+
 			// Will likely work but fields will be undefined
 			const user = new User({} as any);
 			expect(user.id).toBeUndefined();
@@ -320,7 +320,7 @@ describe('Null Safety: Optional Fields Behavior', () => {
 		const user = new User({
 			id: 1,
 			name: 'John',
-			bio: null
+			bio: null,
 			// age is optional and missing
 		});
 
@@ -333,7 +333,7 @@ describe('Null Safety: Optional Fields Behavior', () => {
 			id: 1,
 			name: 'John',
 			bio: null,
-			age: undefined
+			age: undefined,
 		});
 
 		expect(user.age).toBeUndefined();
@@ -349,7 +349,7 @@ describe('Null Safety: Optional Fields Behavior', () => {
 		}
 
 		const model = new Flexible({
-			optional: null
+			optional: null,
 		});
 
 		expect(model.optional).toBeNull();

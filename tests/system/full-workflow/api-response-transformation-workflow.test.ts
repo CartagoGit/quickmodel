@@ -1,6 +1,6 @@
 /**
  * System Test: API Response Transformation
- * 
+ *
  * Tests complete workflow of receiving API responses,
  * transforming them to models, and sending back to API
  */
@@ -100,7 +100,10 @@ describe('System: API Response Transformation', () => {
 		createdAt: Date,
 		lastLogin: Date,
 	})
-	class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+	class User
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
 		id!: string;
 		username!: string;
 		email!: string;
@@ -124,7 +127,10 @@ describe('System: API Response Transformation', () => {
 		publishedAt: Date,
 		views: BigInt,
 	})
-	class Post extends QModel<IPost> implements QInterface<IPost, IPostTransform> {
+	class Post
+		extends QModel<IPost>
+		implements QInterface<IPost, IPostTransform>
+	{
 		id!: string;
 		title!: string;
 		content!: string;
@@ -149,7 +155,10 @@ describe('System: API Response Transformation', () => {
 		averageViews: BigInt,
 		lastUpdated: Date,
 	})
-	class Stats extends QModel<IStats> implements QInterface<IStats, IStatsTransform> {
+	class Stats
+		extends QModel<IStats>
+		implements QInterface<IStats, IStatsTransform>
+	{
 		totalViews!: bigint;
 		totalPosts!: number;
 		averageViews!: bigint;
@@ -214,7 +223,9 @@ describe('System: API Response Transformation', () => {
 		expect(posts[0].hasTag('intro')).toBe(true);
 
 		// STEP 6: Transform back to API format
-		const serializedPosts = posts.map((post: Post) => JSON.parse(post.toJSON()));
+		const serializedPosts = posts.map((post: Post) =>
+			JSON.parse(post.toJSON())
+		);
 
 		expect(serializedPosts[0].views).toBe('1500');
 		expect(typeof serializedPosts[0].publishedAt).toBe('string');
@@ -252,12 +263,12 @@ describe('System: API Response Transformation', () => {
 		};
 
 		const json = JSON.stringify(complexResponse);
-		const parsed = JSON.parse(json);
+		const _parsed1 = JSON.parse(json);
 
 		// Transform each part
-		const user = User.deserialize(parsed.user);
-		const posts = parsed.posts.map((p: unknown) => Post.deserialize(p));
-		const stats = Stats.deserialize(parsed.stats);
+		const user = User.deserialize(_parsed1.user);
+		const posts = _parsed1.posts.map((p: unknown) => Post.deserialize(p));
+		const stats = Stats.deserialize(_parsed1.stats);
 
 		// Verify everything transformed correctly
 		expect(user.createdAt).toBeInstanceOf(Date);
@@ -346,7 +357,8 @@ describe('System: API Response Transformation', () => {
 		})
 		class PaginatedPosts
 			extends QModel<IPaginatedResponse>
-			implements QInterface<IPaginatedResponse, IPaginatedResponseTransform>
+			implements
+				QInterface<IPaginatedResponse, IPaginatedResponseTransform>
 		{
 			data!: Post[];
 			meta!: {

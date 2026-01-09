@@ -1,6 +1,6 @@
 /**
  * Integration Test: Mock Generator - Real-World Scenarios
- * 
+ *
  * Tests mock generation for complete real-world models
  */
 
@@ -40,7 +40,10 @@ describe('Integration: Mock Generator - Real World', () => {
 	@Quick({
 		price: BigInt,
 	})
-	class OrderItem extends QModel<IOrderItem> implements QInterface<IOrderItem, IOrderItemTransform> {
+	class OrderItem
+		extends QModel<IOrderItem>
+		implements QInterface<IOrderItem, IOrderItemTransform>
+	{
 		productId!: string;
 		name!: string;
 		quantity!: number;
@@ -57,7 +60,12 @@ describe('Integration: Mock Generator - Real World', () => {
 		items: IOrderItem[];
 		shippingAddress: IAddress;
 		billingAddress: IAddress;
-		status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+		status:
+			| 'pending'
+			| 'processing'
+			| 'shipped'
+			| 'delivered'
+			| 'cancelled';
 		total: string; // BigInt
 		createdAt: string;
 		shippedAt: string | null;
@@ -88,13 +96,21 @@ describe('Integration: Mock Generator - Real World', () => {
 		shippedAt: Date,
 		deliveredAt: Date,
 	})
-	class Order extends QModel<IOrder> implements QInterface<IOrder, IOrderTransform> {
+	class Order
+		extends QModel<IOrder>
+		implements QInterface<IOrder, IOrderTransform>
+	{
 		id!: string;
 		userId!: string;
 		items!: OrderItem[];
 		shippingAddress!: Address;
 		billingAddress!: Address;
-		status!: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+		status!:
+			| 'pending'
+			| 'processing'
+			| 'shipped'
+			| 'delivered'
+			| 'cancelled';
 		total!: bigint;
 		createdAt!: Date;
 		shippedAt!: Date | null;
@@ -110,7 +126,10 @@ describe('Integration: Mock Generator - Real World', () => {
 		}
 
 		getTotalAmount(): bigint {
-			return this.items.reduce((sum, item) => sum + item.getSubtotal(), 0n);
+			return this.items.reduce(
+				(sum, item) => sum + item.getSubtotal(),
+				0n
+			);
 		}
 	}
 
@@ -125,7 +144,7 @@ describe('Integration: Mock Generator - Real World', () => {
 		// Check nested arrays
 		expect(Array.isArray(mock.items)).toBe(true);
 		expect(mock.items.length).toBeGreaterThan(0);
-		mock.items.forEach(item => {
+		mock.items.forEach((item) => {
 			expect(item).toBeInstanceOf(OrderItem);
 			expect(typeof item.price).toBe('bigint');
 		});
@@ -136,15 +155,25 @@ describe('Integration: Mock Generator - Real World', () => {
 		expect(typeof mock.shippingAddress.city).toBe('string');
 
 		// Check enums/unions
-		expect(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).toContain(mock.status);
+		expect([
+			'pending',
+			'processing',
+			'shipped',
+			'delivered',
+			'cancelled',
+		]).toContain(mock.status);
 
 		// Check transformed types
 		expect(typeof mock.total).toBe('bigint');
 		expect(mock.createdAt).toBeInstanceOf(Date);
 
 		// Check nullable fields
-		expect(mock.shippedAt === null || mock.shippedAt instanceof Date).toBe(true);
-		expect(mock.deliveredAt === null || mock.deliveredAt instanceof Date).toBe(true);
+		expect(mock.shippedAt === null || mock.shippedAt instanceof Date).toBe(
+			true
+		);
+		expect(
+			mock.deliveredAt === null || mock.deliveredAt instanceof Date
+		).toBe(true);
 
 		// Check nested plain objects
 		expect(typeof mock.metadata).toBe('object');
@@ -160,8 +189,12 @@ describe('Integration: Mock Generator - Real World', () => {
 		});
 
 		const customItems = [
-			OrderItem.mock().random({ name: 'Laptop', quantity: 1, price: '99999' }).serialize(),
-			OrderItem.mock().random({ name: 'Mouse', quantity: 2, price: '2999' }).serialize(),
+			OrderItem.mock()
+				.random({ name: 'Laptop', quantity: 1, price: '99999' })
+				.serialize(),
+			OrderItem.mock()
+				.random({ name: 'Mouse', quantity: 2, price: '2999' })
+				.serialize(),
 		];
 
 		const mock = Order.mock().random({
@@ -187,8 +220,12 @@ describe('Integration: Mock Generator - Real World', () => {
 	test('should work with custom methods on mocked data', () => {
 		const mock = Order.mock().random({
 			items: [
-				OrderItem.mock().random({ quantity: 2, price: '1000' }).serialize(),
-				OrderItem.mock().random({ quantity: 3, price: '2000' }).serialize(),
+				OrderItem.mock()
+					.random({ quantity: 2, price: '1000' })
+					.serialize(),
+				OrderItem.mock()
+					.random({ quantity: 3, price: '2000' })
+					.serialize(),
 			],
 		});
 
@@ -200,7 +237,7 @@ describe('Integration: Mock Generator - Real World', () => {
 		const mocks = Order.mock().array(5);
 
 		expect(mocks).toHaveLength(5);
-		mocks.forEach((mock, index) => {
+		mocks.forEach((mock, _index) => {
 			expect(mock).toBeInstanceOf(Order);
 			expect(mock.items.length).toBeGreaterThan(0);
 			expect(mock.shippingAddress).toBeInstanceOf(Address);
@@ -230,7 +267,9 @@ describe('Integration: Mock Generator - Real World', () => {
 		expect(deserialized).toBeInstanceOf(Order);
 		expect(deserialized.id).toBe(mock.id);
 		expect(deserialized.items.length).toBe(mock.items.length);
-		expect(deserialized.shippingAddress.city).toBe(mock.shippingAddress.city);
+		expect(deserialized.shippingAddress.city).toBe(
+			mock.shippingAddress.city
+		);
 		expect(deserialized.total).toBe(mock.total);
 		expect(deserialized.createdAt.getTime()).toBe(mock.createdAt.getTime());
 	});
