@@ -592,13 +592,6 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		) as SerializedInterface<TInterface>;
 	}
 
-	/**
-	 * Alias for toInterface() for backward compatibility
-	 * @deprecated Use toInterface() instead
-	 */
-	getInterface(): SerializedInterface<TInterface> {
-		return this.toInterface();
-	}
 
 	/**
 	 * Returns the initial state exactly as it was passed to the constructor.
@@ -606,7 +599,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * This returns a copy of the exact interface data used to create the instance,
 	 * in the same format it was provided (with all values as primitives/strings).
 	 * Useful for:
-	 * - Detecting changes: compare with getInterface()
+	 * - Detecting changes: compare with toInterface()
 	 * - Resetting to original state: restore from this data
 	 * - Undo functionality: revert to initial values
 	 * - Audit trails: track what the original data was
@@ -632,7 +625,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // { id: '1', name: 'John', age: 30, createdAt: '2024-01-01T00:00:00.000Z' }
 	 *
 	 * // Get current state (modified)
-	 * const current = user.getInterface();
+	 * const current = user.toInterface();
 	 * // { id: '1', name: 'Jane', age: 31, createdAt: '2024-12-31T00:00:00.000Z' }
 	 *
 	 * // Compare to detect changes

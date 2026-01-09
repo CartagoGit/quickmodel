@@ -1,0 +1,187 @@
+// Custom SCSS for QuickModel Documentation
+
+// Variables
+$primary-color: #42b883;
+$secondary-color: #35495e;
+
+// Typography improvements for code blocks
+.vp-doc {
+	code {
+		font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+	}
+	
+	// Mejorar headers de TypeDoc
+	h1 {
+		padding-bottom: 0.3rem;
+		border-bottom: 1px solid var(--vp-c-divider);
+		
+		code {
+			font-size: 0.9em;
+			background-color: var(--vp-c-bg-soft);
+			padding: 0.2em 0.4em;
+			border-radius: 4px;
+		}
+	}
+	
+	h2 {
+		margin-top: 2rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--vp-c-divider-light);
+		
+		&:first-child {
+			margin-top: 0;
+			padding-top: 0;
+			border-top: none;
+		}
+	}
+	
+	// Mejorar listas de TypeDoc
+	ul {
+		li {
+			&::marker {
+				color: var(--vp-c-brand);
+			}
+			
+			> a {
+				font-weight: 500;
+				
+				&:hover {
+					color: var(--vp-c-brand);
+				}
+			}
+			
+			> code {
+				margin-left: 0.5em;
+				font-size: 0.9em;
+			}
+		}
+	}
+	
+	// Mejorar tablas de TypeDoc
+	table {
+		display: block;
+		overflow-x: auto;
+		border-collapse: collapse;
+		width: 100%;
+		margin: 1.5rem 0;
+		border-radius: 8px;
+		border: 1px solid var(--vp-c-divider);
+		
+		thead {
+			background-color: var(--vp-c-bg-soft);
+			
+			tr {
+				border-bottom: 2px solid var(--vp-c-divider);
+			}
+			
+			th {
+				font-weight: 600;
+				text-align: left;
+				color: var(--vp-c-text-1);
+			}
+		}
+		
+		tbody {
+			tr {
+				border-bottom: 1px solid var(--vp-c-divider-light);
+				
+				&:last-child {
+					border-bottom: none;
+				}
+				
+				&:hover {
+					background-color: var(--vp-c-bg-soft);
+				}
+			}
+		}
+		
+		td, th {
+			padding: 0.75rem 1rem;
+			vertical-align: top;
+			
+			code {
+				white-space: nowrap;
+			}
+			
+			a {
+				font-weight: 500;
+				
+				&:hover {
+					color: var(--vp-c-brand);
+				}
+			}
+		}
+		
+		// Primera columna (nombres) con ancho fijo
+		td:first-child,
+		th:first-child {
+			width: 25%;
+			min-width: 150px;
+			font-weight: 500;
+		}
+	}
+	
+	// Badges para tipos y modificadores
+	.badge {
+		display: inline-block;
+		padding: 0.2em 0.6em;
+		font-size: 0.85em;
+		font-weight: 500;
+		line-height: 1;
+		border-radius: 12px;
+		margin-right: 0.5em;
+		
+		&.type {
+			background-color: var(--vp-c-brand-soft);
+			color: var(--vp-c-brand);
+		}
+		
+		&.modifier {
+			background-color: var(--vp-c-tip-soft);
+			color: var(--vp-c-tip);
+		}
+	}
+	
+	// Bloques de definición (Defined in)
+	blockquote {
+		border-left: 4px solid var(--vp-c-divider);
+		padding-left: 1rem;
+		margin: 1rem 0;
+		color: var(--vp-c-text-2);
+		font-size: 0.95em;
+		
+		p {
+			margin: 0;
+		}
+		
+		code {
+			font-size: 0.9em;
+		}
+	}
+	
+	// Source links
+	a[href*="github.com"] {
+		&::before {
+			content: "📄 ";
+		}
+	}
+}
+
+// Better code highlighting
+.shiki {
+	border-radius: 6px;
+	padding: 1rem;
+	margin: 1rem 0;
+}
+
+// Responsive tables
+@media (max-width: 768px) {
+	.vp-doc table {
+		font-size: 0.9em;
+		
+		td, th {
+			padding: 0.5rem;
+		}
+	}
+}
+

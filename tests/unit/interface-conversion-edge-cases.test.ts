@@ -2,7 +2,7 @@ import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '../../src';
 
 describe('Interface Conversion - Edge Cases', () => {
-	describe('getInterface() with circular references', () => {
+	describe('toInterface() with circular references', () => {
 		interface INode {
 			id: string;
 			name: string;
@@ -29,7 +29,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// This should not throw or hang
 			expect(() => {
-				const iface = node.getInterface();
+				const iface = node.toInterface();
 				// Should complete without hanging
 				expect(iface).toBeDefined();
 			}).not.toThrow();
@@ -52,15 +52,15 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// Should not hang
 			expect(() => {
-				const parentIface = parent.getInterface();
-				const childIface = child.getInterface();
+				const parentIface = parent.toInterface();
+				const childIface = child.toInterface();
 				expect(parentIface).toBeDefined();
 				expect(childIface).toBeDefined();
 			}).not.toThrow();
 		});
 	});
 
-	describe('getInterface() with null/undefined edge cases', () => {
+	describe('toInterface() with null/undefined edge cases', () => {
 		interface IData {
 			id: string;
 			value?: string | null;
@@ -85,7 +85,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				nested: null
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(iface.value).toBeNull();
 			expect(iface.nested).toBeNull();
@@ -98,7 +98,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				nested: undefined
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			// undefined might be omitted or preserved depending on implementation
 			expect(iface.value === undefined || !('value' in iface)).toBe(true);
@@ -112,14 +112,14 @@ describe('Interface Conversion - Edge Cases', () => {
 				}
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(iface.nested).toBeDefined();
 			expect(iface.nested?.prop).toBeNull();
 		});
 	});
 
-	describe('getInterface() with Date edge cases', () => {
+	describe('toInterface() with Date edge cases', () => {
 		interface ITimestamps {
 			id: string;
 			createdAt: string;
@@ -144,7 +144,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				createdAt: '2024-01-01T00:00:00.000Z'
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(typeof iface.createdAt).toBe('string');
 			expect(iface.createdAt).toBe('2024-01-01T00:00:00.000Z');
@@ -159,7 +159,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			// Set invalid date
 			(model as any).createdAt = new Date('invalid');
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			// Should return 'Invalid Date' string or handle gracefully
 			expect(typeof iface.createdAt).toBe('string');
@@ -172,13 +172,13 @@ describe('Interface Conversion - Edge Cases', () => {
 				updatedAt: null
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(iface.updatedAt).toBeNull();
 		});
 	});
 
-	describe('getInterface() with arrays and nested structures', () => {
+	describe('toInterface() with arrays and nested structures', () => {
 		interface IComplex {
 			id: string;
 			tags: string[];
@@ -208,7 +208,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				}
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(Array.isArray(iface.tags)).toBe(true);
 			expect(iface.tags.length).toBe(0);
@@ -229,7 +229,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			model.tags.push('d');
 			model.metadata.values.push(6);
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(iface.tags).toEqual(['a', 'b', 'c', 'd']);
 			expect(iface.metadata.values).toEqual([1, 2, 3, 4, 5, 6]);
@@ -245,7 +245,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				}
 			});
 
-			const iface = model.getInterface();
+			const iface = model.toInterface();
 			
 			expect(iface.tags).toBeDefined();
 			expect(iface.metadata.values).toBeDefined();
@@ -322,7 +322,7 @@ describe('Interface Conversion - Edge Cases', () => {
 		});
 	});
 
-	describe('getInterface() vs getInitInterface() with complex transformations', () => {
+	describe('toInterface() vs getInitInterface() with complex transformations', () => {
 		interface IAccount {
 			id: string;
 			balance: string;
@@ -355,7 +355,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				createdAt: '2024-01-01T00:00:00.000Z'
 			});
 
-			const iface = account.getInterface();
+			const iface = account.toInterface();
 			
 			expect(typeof iface.balance).toBe('string');
 			expect(iface.balance).toBe('999999999999999999');
@@ -370,7 +370,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			account.balance = BigInt('2000');
 
-			const iface = account.getInterface();
+			const iface = account.toInterface();
 			const init = account.getInitInterface();
 			
 			expect(iface.balance).toBe('2000');
@@ -385,7 +385,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				pattern: '^test\\d+$'
 			});
 
-			const iface = account.getInterface();
+			const iface = account.toInterface();
 			
 			expect(typeof iface.pattern).toBe('string');
 			expect(iface.pattern).toBe('^test\\d+$');
@@ -415,7 +415,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// Should not throw
 			expect(() => {
-				const iface = model.getInterface();
+				const iface = model.toInterface();
 				expect(iface).toBeDefined();
 			}).not.toThrow();
 		});
@@ -432,7 +432,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// Should not throw
 			expect(() => {
-				const iface = model.getInterface();
+				const iface = model.toInterface();
 				expect(iface).toBeDefined();
 			}).not.toThrow();
 		});

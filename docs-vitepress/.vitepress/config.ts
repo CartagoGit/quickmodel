@@ -11,7 +11,7 @@ export default defineConfig({
 	themeConfig: {
 		nav: [
 			{ text: 'Guide', link: '/guide/getting-started' },
-			{ text: 'API Reference', link: '/api/' },
+			{ text: 'API Reference', link: '/tsdoc/' },
 			{ text: 'Examples', link: '/examples/' },
 			{ text: 'GitHub', link: 'https://github.com/CartagoGit/quickmodel' }
 		],

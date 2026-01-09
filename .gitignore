@@ -11,6 +11,7 @@ dist/
 
 # VitePress build output (se genera automáticamente en CI/CD)
 docs-vitepress/dist/
+docs-vitepress/tsdoc/
 
 # Tests
 coverage/

@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick } from '../../../src/quick.model';
-import type { QInterface } from '../../../src/core/interfaces';
+import { Quick, QModel, QInterface } from '../../../src';
 
 describe('QModel State Tracking', () => {
 	// Test models
@@ -27,7 +26,7 @@ describe('QModel State Tracking', () => {
 		createdAt!: Date;
 	}
 
-	describe('getInterface() - Current state as primitives', () => {
+	describe('toInterface() - Current state as primitives', () => {
 		test('should return current state with transformed types as primitives', () => {
 			const user = new User({
 				id: '1',
@@ -37,7 +36,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const iface = user.getInterface();
+			const iface = user.toInterface();
 
 			expect(iface.id).toBe('1');
 			expect(iface.name).toBe('John');
@@ -60,7 +59,7 @@ describe('QModel State Tracking', () => {
 			user.age = 31;
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			const iface = user.getInterface();
+			const iface = user.toInterface();
 
 			expect(iface.name).toBe('Jane');
 			expect(iface.age).toBe(31);
@@ -461,7 +460,7 @@ describe('QModel State Tracking', () => {
 			// 4. Simulate successful save - reset baseline
 			// In real app, you'd create new instance from server response
 			const saved = new User({
-				...user.getInterface(),
+				...user.toInterface(),
 			});
 
 			expect(saved.hasChanges()).toBe(false);

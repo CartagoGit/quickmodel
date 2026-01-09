@@ -1,24 +1,16 @@
 {
 	"entryPoints": ["src/index.ts"],
-	"out": "docs-vitepress/public/api",
+	"out": "docs-vitepress/tsdoc",
+	"plugin": ["typedoc-plugin-markdown"],
+	"disableSources": true,
+	"hideGenerator": true,
+	"readme": "none",
+	"entryFileName": "index.md",
 	"exclude": [
 		"**/*.test.ts",
 		"**/*.spec.ts",
 		"src/examples/**",
 		"tests/**"
 	],
-	"skipErrorChecking": true,
-	"plugin": [],
-	"excludePrivate": true,
-	"excludeProtected": false,
-	"excludeExternals": true,
-	"readme": "README.md",
-	"name": "QuickModel API Documentation",
-	"includeVersion": true,
-	"gitRevision": "main",
-	"sort": ["source-order"],
-	"searchInComments": true,
-	"navigationLinks": {
-		"GitHub": "https://github.com/CartagoGit/quickmodel"
-	}
+	"skipErrorChecking": true
 }
