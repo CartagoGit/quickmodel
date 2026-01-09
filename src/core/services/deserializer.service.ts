@@ -242,10 +242,39 @@ export class Deserializer<
       const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
+        const arrayNestingDepth = Reflect.getMetadata('arrayNestingDepth', instance, key);
         
         // Determine if it's REALLY an array type (design:type must be Array)
         // Array.isArray(value) alone is NOT enough - value could be array for Set/Map
         const isArrayType = designType === Array;
+        
+        // 🔥 NEW: If explicit nesting depth is specified ([[Type]], [[[Type]]], etc.)
+        // Use recursive transformation directly
+        if (isArrayType && arrayNestingDepth && arrayNestingDepth >= 2 && Array.isArray(value)) {
+          // Check if it's a transformable type (Date, BigInt, etc.)
+          const transformableTypes = [
+            Date, BigInt, Number, String, Boolean,
+            RegExp, Symbol, Error,
+            URL, URLSearchParams,
+            Int8Array, Uint8Array, Uint8ClampedArray,
+            Int16Array, Uint16Array,
+            Int32Array, Uint32Array,
+            Float32Array, Float64Array,
+            BigInt64Array, BigUint64Array,
+            ArrayBuffer, DataView
+          ];
+          
+          const isPrimitiveOrTransformable = transformableTypes.includes(arrayElementClass);
+          
+          if (isPrimitiveOrTransformable) {
+            // Use recursive transformation for N-level arrays
+            instance[key] = this.transformNestedArray(value, arrayElementClass, context);
+          } else {
+            // Model arrays - use recursive model transformation
+            instance[key] = this.transformNestedModelArray(value, arrayElementClass);
+          }
+          continue;
+        }
         
         // Special handling for arrays of Set/Map
         // If it's an array and element is Set/Map, transform each element

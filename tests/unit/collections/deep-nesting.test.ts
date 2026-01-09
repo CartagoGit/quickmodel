@@ -595,6 +595,390 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 	});
 
 	// ============================================================================
+	// UNION TYPES ANIDADOS - RIZAR EL RIZO 🌀
+	// ============================================================================
+
+	describe('Arrays de union types anidados en múltiples niveles', () => {
+		interface IMetadata {
+			tags: string[];
+			dates: string[];
+		}
+
+		interface IContent {
+			text: string;
+			metadata: IMetadata;
+		}
+
+		interface IComplexData {
+			// Nivel 1: Array de objetos con diferentes estructuras
+			items: (IContent | IMetadata)[];
+			
+			// Nivel 2: Array de arrays mixtos
+			matrix: (string[] | number[])[];
+			
+			// Nivel 3: Array de transformables mezclados
+			transforms: (string | number)[];
+		}
+
+		@Quick({
+			tags: Set,
+			dates: Date,
+		})
+		class Metadata extends QModel<IMetadata> {
+			declare tags: Set<string>;
+			declare dates: Date[];
+		}
+
+		@Quick({ metadata: Metadata })
+		class Content extends QModel<IContent> {
+			declare text: string;
+			declare metadata: Metadata;
+		}
+
+		@Quick({
+			// Union types no son detectables en runtime - usar Content como fallback
+			items: Content,
+			transforms: Date,
+		})
+		class ComplexData extends QModel<IComplexData> {
+			declare items: (Content | Metadata)[];
+			declare matrix: (string[] | number[])[];
+			declare transforms: (Date | bigint)[];
+		}
+
+		test('Arrays mixtos de modelos: Content[] con metadata anidado', () => {
+			const data = new ComplexData({
+				items: [
+					{
+						text: 'Content 1',
+						metadata: {
+							tags: ['tag1', 'tag2'],
+							dates: ['2026-01-01T00:00:00.000Z'],
+						},
+					},
+					{
+						text: 'Content 2',
+						metadata: {
+							tags: ['tag3'],
+							dates: ['2026-01-02T00:00:00.000Z', '2026-01-03T00:00:00.000Z'],
+						},
+					},
+				],
+				matrix: [],
+				transforms: [],
+			});
+
+			expect(data.items).toHaveLength(2);
+			
+			// Primer item: Content con metadata anidado
+			const firstItem = data.items[0] as Content;
+			expect(firstItem).toBeInstanceOf(Content);
+			expect(firstItem.text).toBe('Content 1');
+			expect(firstItem.metadata).toBeInstanceOf(Metadata);
+			expect(firstItem.metadata.tags).toBeInstanceOf(Set);
+			expect(firstItem.metadata.tags.has('tag1')).toBe(true);
+			expect(firstItem.metadata.dates[0]).toBeInstanceOf(Date);
+			
+			// Segundo item: Content con diferente metadata
+			const secondItem = data.items[1] as Content;
+			expect(secondItem).toBeInstanceOf(Content);
+			expect(secondItem.metadata.tags).toBeInstanceOf(Set);
+			expect(secondItem.metadata.tags.has('tag3')).toBe(true);
+			expect(secondItem.metadata.dates).toHaveLength(2);
+			expect(secondItem.metadata.dates[1]).toBeInstanceOf(Date);
+		});
+
+		test('Arrays mixtos: (string[] | number[])[] - diferentes tipos de arrays', () => {
+			const data = new ComplexData({
+				items: [],
+				matrix: [
+					['a', 'b', 'c'],
+					[1, 2, 3],
+					['x', 'y'],
+					[10, 20, 30, 40],
+				],
+				transforms: [],
+			});
+
+			expect(data.matrix).toHaveLength(4);
+			expect(data.matrix[0]).toEqual(['a', 'b', 'c']);
+			expect(data.matrix[1]).toEqual([1, 2, 3]);
+			expect(data.matrix[2]).toEqual(['x', 'y']);
+			expect(data.matrix[3]).toEqual([10, 20, 30, 40]);
+		});
+	});
+
+	describe('Casos extremos: 5+ niveles de anidamiento', () => {
+		interface ILevel4 {
+			values: string[];
+		}
+
+		interface ILevel3 {
+			level4: ILevel4[];
+		}
+
+		interface ILevel2 {
+			level3: ILevel3[];
+		}
+
+		interface ILevel1 {
+			level2: ILevel2[];
+		}
+
+		interface ILevel0 {
+			level1: ILevel1[];
+		}
+
+		@Quick({ values: BigInt })
+		class Level4 extends QModel<ILevel4> {
+			declare values: bigint[];
+		}
+
+		@Quick({ level4: Level4 })
+		class Level3 extends QModel<ILevel3> {
+			declare level4: Level4[];
+		}
+
+		@Quick({ level3: Level3 })
+		class Level2 extends QModel<ILevel2> {
+			declare level3: Level3[];
+		}
+
+		@Quick({ level2: Level2 })
+		class Level1 extends QModel<ILevel1> {
+			declare level2: Level2[];
+		}
+
+		@Quick({ level1: Level1 })
+		class Level0 extends QModel<ILevel0> {
+			declare level1: Level1[];
+		}
+
+		test('5 niveles de profundidad: Level0 → Level1[] → Level2[] → Level3[] → Level4[] → BigInt[]', () => {
+			const data = new Level0({
+				level1: [
+					{
+						level2: [
+							{
+								level3: [
+									{
+										level4: [
+											{ values: ['100', '200'] },
+											{ values: ['300'] },
+										],
+									},
+								],
+							},
+						],
+					},
+					{
+						level2: [
+							{
+								level3: [
+									{
+										level4: [{ values: ['999'] }],
+									},
+								],
+							},
+						],
+					},
+				],
+			});
+
+			// Navegar 5 niveles profundo
+			expect(data.level1).toHaveLength(2);
+			expect(data.level1[0].level2).toHaveLength(1);
+			expect(data.level1[0].level2[0].level3).toHaveLength(1);
+			expect(data.level1[0].level2[0].level3[0].level4).toHaveLength(2);
+			expect(data.level1[0].level2[0].level3[0].level4[0].values).toHaveLength(2);
+			
+			// Verificar transformación en el nivel más profundo
+			expect(typeof data.level1[0].level2[0].level3[0].level4[0].values[0]).toBe('bigint');
+			expect(data.level1[0].level2[0].level3[0].level4[0].values[0]).toBe(100n);
+			expect(data.level1[0].level2[0].level3[0].level4[1].values[0]).toBe(300n);
+			
+			// Segundo branch
+			expect(data.level1[1].level2[0].level3[0].level4[0].values[0]).toBe(999n);
+		});
+	});
+
+	describe('Transformaciones mixtas en arrays anidados', () => {
+		interface IMixedTransforms {
+			// Cada array tiene diferente transformación
+			dates2D: string[][];
+			bigints2D: string[][];
+			urls2D: string[][];
+			regexps2D: string[][];
+		}
+
+		@Quick({
+			dates2D: Date,
+			bigints2D: BigInt,
+			urls2D: URL,
+			regexps2D: RegExp,
+		})
+		class MixedTransforms extends QModel<IMixedTransforms> {
+			declare dates2D: Date[][];
+			declare bigints2D: bigint[][];
+			declare urls2D: URL[][];
+			declare regexps2D: RegExp[][];
+		}
+
+		test('Múltiples transformaciones en arrays 2D simultáneas', () => {
+			const data = new MixedTransforms({
+				dates2D: [
+					['2026-01-01T00:00:00.000Z', '2026-01-02T00:00:00.000Z'],
+					['2026-12-31T23:59:59.999Z'],
+				],
+				bigints2D: [
+					['100', '200', '300'],
+					['999999999999999'],
+				],
+				urls2D: [
+					['https://example.com', 'https://test.com'],
+					['https://github.com'],
+				],
+				regexps2D: [
+					['\\d+', '[a-z]+'],
+					['\\w+'],
+				],
+			});
+
+			// Verificar Date[][]
+			expect(data.dates2D[0][0]).toBeInstanceOf(Date);
+			expect(data.dates2D[0][1]).toBeInstanceOf(Date);
+			expect(data.dates2D[1][0]).toBeInstanceOf(Date);
+
+			// Verificar BigInt[][]
+			expect(typeof data.bigints2D[0][0]).toBe('bigint');
+			expect(data.bigints2D[0][0]).toBe(100n);
+			expect(data.bigints2D[1][0]).toBe(999999999999999n);
+
+			// Verificar URL[][]
+			expect(data.urls2D[0][0]).toBeInstanceOf(URL);
+			expect(data.urls2D[0][0].href).toBe('https://example.com/');
+			expect(data.urls2D[1][0].href).toBe('https://github.com/');
+
+			// Verificar RegExp[][]
+			expect(data.regexps2D[0][0]).toBeInstanceOf(RegExp);
+			expect(data.regexps2D[0][0].test('123')).toBe(true);
+			expect(data.regexps2D[0][1].test('abc')).toBe(true);
+		});
+	});
+
+	describe('Combinaciones extremas: todo junto', () => {
+		interface ITag {
+			name: string;
+			priority: string; // BigInt
+		}
+
+		interface IPost {
+			id: number;
+			title: string;
+			tags: ITag[];
+			dates: string[]; // Date[]
+			metadata: [string, any][]; // Map
+		}
+
+		interface IUser {
+			id: number;
+			name: string;
+			posts: IPost[][];
+			settings: [string, string][]; // Map
+		}
+
+		@Quick({ priority: BigInt })
+		class Tag extends QModel<ITag> {
+			declare name: string;
+			declare priority: bigint;
+		}
+
+		@Quick({
+			tags: Tag,
+			dates: Date,
+			metadata: Map,
+		})
+		class Post extends QModel<IPost> {
+			declare id: number;
+			declare title: string;
+			declare tags: Tag[];
+			declare dates: Date[];
+			declare metadata: Map<string, any>;
+		}
+
+		@Quick({
+			posts: [[Post]], // Explicit nested array syntax for Post[][]
+			settings: Map,
+		})
+		class User extends QModel<IUser> {
+			declare id: number;
+			declare name: string;
+			declare posts: Post[][];
+			declare settings: Map<string, string>;
+		}
+
+		test('Ultimate test: User → Post[][] → (Tag[], Date[], Map) - 6 niveles con todo tipo de transformaciones', () => {
+			const user = new User({
+				id: 1,
+				name: 'Ultimate User',
+				posts: [
+					[
+						{
+							id: 1,
+							title: 'Post 1-1',
+							tags: [
+								{ name: 'urgent', priority: '999' },
+								{ name: 'important', priority: '100' },
+							],
+							dates: ['2026-01-01T00:00:00.000Z', '2026-01-02T00:00:00.000Z'],
+							metadata: [
+								['author', 'John'],
+								['views', 1000],
+							],
+						},
+					],
+				],
+				settings: [
+					['theme', 'dark'],
+					['language', 'es'],
+				],
+			});
+
+			// Nivel 1: User
+			expect(user.id).toBe(1);
+			expect(user.name).toBe('Ultimate User');
+			expect(user.settings).toBeInstanceOf(Map);
+			expect(user.settings.get('theme')).toBe('dark');
+
+			// Nivel 2: Post[][] (arrays de arrays)
+			expect(user.posts).toHaveLength(1);
+			expect(user.posts[0]).toHaveLength(1);
+
+			// Nivel 3: Post
+			const firstPost = user.posts[0][0];
+			expect(firstPost).toBeInstanceOf(Post);
+			expect(firstPost.title).toBe('Post 1-1');
+			expect(firstPost.metadata).toBeInstanceOf(Map);
+			expect(firstPost.metadata.get('author')).toBe('John');
+
+			// Nivel 4a: Tag[] dentro de Post
+			expect(firstPost.tags).toHaveLength(2);
+			expect(firstPost.tags[0]).toBeInstanceOf(Tag);
+			expect(firstPost.tags[0].name).toBe('urgent');
+
+			// Nivel 5: BigInt dentro de Tag
+			expect(typeof firstPost.tags[0].priority).toBe('bigint');
+			expect(firstPost.tags[0].priority).toBe(999n);
+			expect(firstPost.tags[1].priority).toBe(100n);
+
+			// Nivel 4b: Date[] dentro de Post
+			expect(firstPost.dates).toHaveLength(2);
+			expect(firstPost.dates[0]).toBeInstanceOf(Date);
+			expect(firstPost.dates[1]).toBeInstanceOf(Date);
+		});
+	});
+
+	// ============================================================================
 	// CASOS EDGE
 	// ============================================================================
 

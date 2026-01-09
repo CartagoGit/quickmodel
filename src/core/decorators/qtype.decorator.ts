@@ -197,11 +197,39 @@ export function QType<T>(
 		}
 
 		// Check for array syntax: [Type] means array of Type
+		// Recursive syntax: [[Type]] = Type[][], [[[Type]]] = Type[][][], etc.
 		if (Array.isArray(typeOrClass)) {
 			if (typeOrClass.length === 1) {
-				// Syntax: [Date], [Post], [BigInt], etc.
 				const elementType = typeOrClass[0];
 				
+				// Check if it's nested array syntax: [[Type]], [[[Type]]], etc.
+				if (Array.isArray(elementType)) {
+					// Recursive case: [[Type]] → Type[][]
+					// Extract the deepest type and count nesting levels
+					let currentLevel = elementType;
+					let nestingDepth = 1; // We're already at depth 1 from outer array
+					let deepestType = elementType;
+					
+					// Traverse nested arrays to find the actual type
+					while (Array.isArray(currentLevel) && currentLevel.length === 1) {
+						nestingDepth++;
+						deepestType = currentLevel[0];
+						currentLevel = currentLevel[0];
+					}
+					
+					// Set design:type to Array (for the outermost level)
+					Reflect.defineMetadata('design:type', Array, target, propertyKey);
+					
+					// Register the actual element type (not the nested array)
+					Reflect.defineMetadata('arrayElementClass', deepestType, target, propertyKey);
+					
+					// Store nesting depth for deserializer to handle
+					Reflect.defineMetadata('arrayNestingDepth', nestingDepth, target, propertyKey);
+					
+					return;
+				}
+				
+				// Simple array: [Date], [Post], [BigInt], etc.
 				// Set design:type to Array
 				Reflect.defineMetadata('design:type', Array, target, propertyKey);
 				
