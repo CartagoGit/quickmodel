@@ -243,8 +243,9 @@ export class Deserializer<
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
         
-        // Determine if it's an array based on design:type OR the actual value
-        const isArrayType = designType === Array || Array.isArray(value);
+        // Determine if it's REALLY an array type (design:type must be Array)
+        // Array.isArray(value) alone is NOT enough - value could be array for Set/Map
+        const isArrayType = designType === Array;
         
         // Special handling for arrays of Set/Map
         // If it's an array and element is Set/Map, transform each element
@@ -443,6 +444,66 @@ export class Deserializer<
       if (designType === Array && Array.isArray(value) && !arrayElementClass) {
         instance[key] = this.deserializeArrayWithInference(value, context);
         continue;
+      }
+      
+      // 🔥 FIX: If value is an array but designType is NOT Array (e.g., Date, BigInt)
+      // This means we need to transform each element of the array
+      // Example: dates: Date[] where designType = Date (not Array), value = ['2026-01-01', '2026-01-02']
+      if (Array.isArray(value) && designType && designType !== Array && designType !== Object) {
+        // ⚠️ SPECIAL CASE: Set and Map receive whole arrays as input (not element-by-element)
+        // Set(['a', 'b']) transforms whole array → Set, not each element
+        if (designType === Set || designType === Map) {
+          instance[key] = this.transformByDesignType(value, designType, context);
+          continue;
+        }
+        
+        // Check if designType is a transformable type or TypedArray
+        const transformableTypes = [
+          Date, BigInt, Number, String, Boolean,
+          RegExp, Symbol, Error,
+          URL, URLSearchParams,
+          Int8Array, Uint8Array, Uint8ClampedArray,
+          Int16Array, Uint16Array,
+          Int32Array, Uint32Array,
+          Float32Array, Float64Array,
+          BigInt64Array, BigUint64Array,
+          ArrayBuffer, DataView
+        ];
+        
+        const isTransformableType = transformableTypes.includes(designType as any);
+        
+        if (isTransformableType) {
+          // Special case for TypedArrays: they receive whole arrays as input
+          const typedArrayConstructors = [
+            Int8Array, Uint8Array, Uint8ClampedArray,
+            Int16Array, Uint16Array,
+            Int32Array, Uint32Array,
+            Float32Array, Float64Array,
+            BigInt64Array, BigUint64Array
+          ];
+          const isTypedArray = typedArrayConstructors.includes(designType as any);
+          
+          if (isTypedArray && Array.isArray(value[0])) {
+            // TypedArray[]: transform each sub-array
+            instance[key] = value.map((item) => {
+              if (item === null || item === undefined) return item;
+              return this.transformByDesignType(item, designType, context);
+            });
+          } else {
+            // Regular transformable array: transform each element
+            instance[key] = value.map((item) => {
+              if (item === null || item === undefined) return item;
+              
+              // Handle nested arrays recursively
+              if (Array.isArray(item)) {
+                return this.transformNestedArray(item, designType!, context);
+              }
+              
+              return this.transformByDesignType(item, designType, context);
+            });
+          }
+          continue;
+        }
       }
       
       instance[key] = this.transformByDesignType(value, designType, context);
