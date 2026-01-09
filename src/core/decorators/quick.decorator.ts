@@ -404,36 +404,11 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 
 					let mappedType = typeMap[propertyKey];
 					if (mappedType) {
-						// Normalize array syntax:
-						// If design:type is Array OR data value is array, wrap type in array: Type → [Type]
-						const designType = designTypeCache[propertyKey];
-						const dataIsArray = data && Array.isArray(data[propertyKey]);
-						
-						// ⚠️ EXCEPTION: Do NOT auto-wrap Set/Map if NOT explicitly declared as array
-						// TypeScript assigns design:type=Array for Set/Map properties because they serialize as arrays
-						// But this doesn't mean Set[] or Map[] unless explicitly declared with [Set] or [Map] syntax
-						// 
-						// Rules:
-						// - settings: Set → mappedType=Set, design:type=Array → DO NOT wrap (it's a single Set)
-						// - items: [Set] → mappedType=[Set], design:type=Array → Already wrapped, keep as is
-						const isSingleSetOrMap = (mappedType === Set || mappedType === Map);
-						const isAlreadyArraySyntax = Array.isArray(mappedType);
-						
-						// Only wrap if:
-						// 1. design:type indicates array (designType===Array or dataIsArray)
-						// 2. NOT already in array syntax
-						// 3. NOT a single Set/Map (which have design:type=Array by default)
-						if ((designType === Array || (dataIsArray && !designType)) && !isAlreadyArraySyntax && !isSingleSetOrMap) {
-							// Normalize: Date → [Date], Post → [Post], etc.
-							// QType will detect [Type] syntax and handle it as array
-							mappedType = [mappedType];
-						}
-						
-						// Pass to QType - it handles everything including [Type] syntax
-						const decorator = QType(mappedType as any);
-						decorator(originalConstructor.prototype, propertyKey);
-					} else {
-						// No type mapping - check if we have design:type metadata captured
+					// NO auto-detection: Use mappedType exactly as specified
+					// - dates: Date → single Date
+					// - dates: [Date] → Date[] array
+					// - dates: [[Date]] → Date[][] 2D array
+					// User MUST use explicit array syntax [Type] for arrays
 						const designType = designTypeCache[propertyKey];
 						if (designType) {
 							// Use the captured design:type metadata
