@@ -445,7 +445,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			declare posts: Post[];
 		}
 
-		test('Model[] - Syntax: @Quick({ posts: Post })', () => {
+		test('Model[] - Syntax: @Quick({ posts: [Post] })', () => {
 			const user = new User({
 				id: 1,
 				posts: [
@@ -499,8 +499,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			declare id: number;
 		}
 
-		test('Syntax 1: @Quick({ posts: Post })', () => {
-			@Quick({ posts: Post })
+		test('Syntax 1: @Quick({ posts: [Post] })', () => {
+			@Quick({ posts: [Post] })
 			class User1 extends QModel<IUser> {
 				declare id: number;
 				declare posts: Post[];

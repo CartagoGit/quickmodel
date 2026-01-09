@@ -36,7 +36,7 @@ describe('Debug: Trace deserialization flow', () => {
 		posts: IPost[];
 	}
 
-	@Quick({ posts: Post })
+	@Quick({ posts: [Post] })
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare posts: Post[];

@@ -267,7 +267,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare text: string;
 		}
 
-		@Quick({ comments: Comment })
+		@Quick({ comments: [Comment] })
 		class Post extends QModel<IPost> {
 			declare id: number;
 			declare comments: Comment[];
@@ -353,7 +353,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare dates: Date[];
 		}
 
-		@Quick({ posts: Post })
+		@Quick({ posts: [Post] })
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare posts: Post[];
@@ -492,7 +492,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare timestamps: Date[];
 		}
 
-		@Quick({ metrics: Metrics })
+		@Quick({ metrics: [Metrics] })
 		class Report extends QModel<IReport> {
 			declare id: number;
 			declare metrics: Metrics[];
@@ -621,7 +621,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			tags: [Set],
+			tags: Set,
 			dates: [Date],
 		})
 		class Metadata extends QModel<IMetadata> {
@@ -629,7 +629,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare dates: Date[];
 		}
 
-		@Quick({ metadata: Metadata })
+		@Quick({ metadata: [Metadata] })
 		class Content extends QModel<IContent> {
 			declare text: string;
 			declare metadata: Metadata;
@@ -734,22 +734,22 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare values: bigint[];
 		}
 
-		@Quick({ level4: Level4 })
+		@Quick({ level4: [Level4] })
 		class Level3 extends QModel<ILevel3> {
 			declare level4: Level4[];
 		}
 
-		@Quick({ level3: Level3 })
+		@Quick({ level3: [Level3] })
 		class Level2 extends QModel<ILevel2> {
 			declare level3: Level3[];
 		}
 
-		@Quick({ level2: Level2 })
+		@Quick({ level2: [Level2] })
 		class Level1 extends QModel<ILevel1> {
 			declare level2: Level2[];
 		}
 
-		@Quick({ level1: Level1 })
+		@Quick({ level1: [Level1] })
 		class Level0 extends QModel<ILevel0> {
 			declare level1: Level1[];
 		}
