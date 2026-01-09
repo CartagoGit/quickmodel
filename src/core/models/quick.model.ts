@@ -19,7 +19,11 @@ import type {
 	ModelData,
 } from '@/core/interfaces/serialization-types.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
-import { QUICK_DECORATOR_KEY, QUICK_VALUES_KEY } from '../constants/metadata-keys';
+import {
+	QUICK_DECORATOR_KEY,
+	QUICK_VALUES_KEY,
+	QUICK_PROPERTY_KEYS,
+} from '../constants/metadata-keys';
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -264,8 +268,8 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		}
 
 		for (const key of allKeys) {
-			// Skip internal __initData, __tempData, etc. but NOT __quickDecorator__ storage keys
-			if (key.startsWith('__') && !key.startsWith(QUICK_DECORATOR_KEY)) {
+			// Skip internal __initData, __tempData, etc. but NOT __quickmodel_ storage keys
+			if (key.startsWith('__') && !key.startsWith(QUICK_PROPERTY_KEYS)) {
 				continue;
 			}
 
@@ -276,18 +280,18 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 			const value = (deserialized as any)[key];
 
-			// Determine storage key - don't duplicate __quickDecorator__ prefix
+			// Determine storage key - don't duplicate __quickmodel_ prefix
 			let storageKey: string;
 			let propertyKey: string;
 
-			if (key.startsWith(QUICK_DECORATOR_KEY)) {
+			if (key.startsWith(QUICK_PROPERTY_KEYS)) {
 				// Key is already a storage key, use as-is
 				storageKey = key;
 				// Extract property name by removing prefix
-				propertyKey = key.slice(QUICK_DECORATOR_KEY.length);
+				propertyKey = key.slice(QUICK_PROPERTY_KEYS.length);
 			} else {
 				// Regular property, add prefix for storage
-				storageKey = `${QUICK_DECORATOR_KEY}${key}`;
+				storageKey = `${QUICK_PROPERTY_KEYS}${key}`;
 				propertyKey = key;
 			}
 
@@ -297,7 +301,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		}
 
 		// Install lazy getters only for actual property names (not storage keys)
-		const propertyNames = Array.from(allKeys).filter((k) => !k.startsWith(QUICK_DECORATOR_KEY));
+		const propertyNames = Array.from(allKeys).filter((k) => !k.startsWith(QUICK_PROPERTY_KEYS));
 		this.installLazyGetters(propertyNames);
 
 		// Remove temporary property
@@ -341,7 +345,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 				continue;
 			}
 
-			const storageKey = `${QUICK_DECORATOR_KEY}${key}`;
+			const storageKey = `${QUICK_PROPERTY_KEYS}${key}`;
 
 			// Definir getter que busca en múltiples lugares
 			Object.defineProperty(this, key, {

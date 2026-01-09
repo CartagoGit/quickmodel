@@ -21,9 +21,21 @@ export const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
  */
 export const QUICK_DESIGN_TYPES_KEY = '__quickDesignTypes__';
 
-
+/**
+ * Key for the backup storage object that holds property values.
+ * Used in quick.model.ts as a fallback storage: (this as any)[QUICK_VALUES_KEY][propertyKey]
+ */
 export const QUICK_VALUES_KEY = '__quickValues__';
 
+/**
+ * Prefix for storage keys created by @QType() decorator.
+ * Properties are stored as: `${QUICK_PROPERTY_KEYS}${propertyName}`
+ * Example: '__quickmodel_id', '__quickmodel_name'
+ */
 export const QUICK_PROPERTY_KEYS = '__quickPropertyKeys__';
 
-export const QUICK_DEFAULT_KEYS = '__quickDevaultKey__';
+/**
+ * Prefix for default value storage in @Quick() decorator.
+ * Used to store default values for properties with explicit defaults.
+ */
+export const QUICK_DEFAULT_KEYS = '__quickDefaultKey__';
