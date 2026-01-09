@@ -243,8 +243,25 @@ export class Deserializer<
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
         
-        // Check if arrayElementClass is actually Set or Map (special collection types)
-        if (arrayElementClass === Set) {
+        // Determine if it's an array based on design:type OR the actual value
+        const isArrayType = designType === Array || Array.isArray(value);
+        
+        // Special handling for arrays of Set/Map
+        // If it's an array and element is Set/Map, transform each element
+        if (isArrayType && Array.isArray(value) && (arrayElementClass === Set || arrayElementClass === Map)) {
+          const transformerKey = arrayElementClass === Set ? 'set' : 'map';
+          const transformer = this.transformers.get(transformerKey);
+          if (transformer) {
+            instance[key] = value.map((item) => {
+              if (item === null || item === undefined) return item;
+              return transformer.deserialize(item, context.propertyKey, context.className);
+            });
+            continue;
+          }
+        }
+        
+        // Check if arrayElementClass is Set or Map (single value, not array)
+        if (!isArrayType && arrayElementClass === Set) {
           const setTransformer = this.transformers.get('set');
           if (setTransformer) {
             instance[key] = setTransformer.deserialize(value, context.propertyKey, context.className);
@@ -252,7 +269,7 @@ export class Deserializer<
           }
         }
         
-        if (arrayElementClass === Map) {
+        if (!isArrayType && arrayElementClass === Map) {
           const mapTransformer = this.transformers.get('map');
           if (mapTransformer) {
             instance[key] = mapTransformer.deserialize(value, context.propertyKey, context.className);
@@ -260,33 +277,99 @@ export class Deserializer<
           }
         }
         
-        // Determine if it's an array based on design:type OR the actual value
-        const isArrayType = designType === Array || Array.isArray(value);
-        
         // If it's an array type, process as array
         if (isArrayType) {
           if (!Array.isArray(value)) {
             throw new Error(`${context.className}.${key}: Expected array, got ${typeof value}`);
           }
           
-          // Check if arrayElementClass is a primitive/transformable type (Date, BigInt, etc.)
-          const isPrimitiveOrTransformable = [Date, BigInt, Number, String, Boolean].includes(arrayElementClass);
+          // Check if arrayElementClass is a primitive/transformable type
+          // All these types have registered transformers or special handling
+          const transformableTypes = [
+            // Primitives
+            Date, BigInt, Number, String, Boolean,
+            // Special types
+            RegExp, Symbol, Error,
+            // Web APIs
+            URL, URLSearchParams,
+            // TypedArrays
+            Int8Array, Uint8Array, Uint8ClampedArray,
+            Int16Array, Uint16Array,
+            Int32Array, Uint32Array,
+            Float32Array, Float64Array,
+            BigInt64Array, BigUint64Array,
+            // Binary
+            ArrayBuffer, DataView
+          ];
+          
+          const isPrimitiveOrTransformable = transformableTypes.includes(arrayElementClass);
           
           if (isPrimitiveOrTransformable) {
+            // Check if arrayElementClass is a TypedArray constructor
+            const typedArrayConstructors = [
+              Int8Array, Uint8Array, Uint8ClampedArray,
+              Int16Array, Uint16Array,
+              Int32Array, Uint32Array,
+              Float32Array, Float64Array,
+              BigInt64Array, BigUint64Array
+            ];
+            const isTypedArrayElement = typedArrayConstructors.includes(arrayElementClass as any);
+            
             // Transform each element using transformByDesignType
             instance[key] = value.map((item) => {
               if (item === null || item === undefined) return item;
+              
+              // 🔥 SPECIAL CASE: TypedArrays receive WHOLE array as input
+              // Int8Array[] expects: [number[], number[]] → [Int8Array, Int8Array]
+              // NOT: recursion into individual numbers
+              if (isTypedArrayElement && Array.isArray(item)) {
+                return this.transformByDesignType(item, arrayElementClass, context);
+              }
+              
+              // 🔥 RECURSION FIX: If item is array (for non-TypedArray types), recursively process
+              if (Array.isArray(item)) {
+                return item.map((nestedItem) => {
+                  if (nestedItem === null || nestedItem === undefined) return nestedItem;
+                  
+                  // 🔥 Handle deeply nested arrays (3+ levels)
+                  if (Array.isArray(nestedItem)) {
+                    return this.transformNestedArray(nestedItem, arrayElementClass, context);
+                  }
+                  
+                  return this.transformByDesignType(nestedItem, arrayElementClass, context);
+                });
+              }
+              
               return this.transformByDesignType(item, arrayElementClass, context);
             });
           } else {
-            // It's an array of complex objects - deserialize recursively
-            const validItems = value.filter((item) => item !== null && item !== undefined);
-            instance[key] = validItems.map((item) => {
-              if (typeof item !== 'object') {
-                throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
-              }
-              return this.deserialize(item, arrayElementClass);
-            });
+            // It's an array of complex objects (models) - deserialize recursively
+            // ⚠️ Filter out null/undefined for models (models must be objects)
+            instance[key] = value
+              .filter((item) => item !== null && item !== undefined)
+              .map((item) => {
+                // 🔥 RECURSION FIX: If item is array, recursively process nested model array
+                if (Array.isArray(item)) {
+                  return item
+                    .filter((nestedItem) => nestedItem !== null && nestedItem !== undefined)
+                    .map((nestedItem) => {
+                      // 🔥 Handle deeply nested model arrays (3+ levels)
+                      if (Array.isArray(nestedItem)) {
+                        return this.transformNestedModelArray(nestedItem, arrayElementClass);
+                      }
+                      
+                      if (typeof nestedItem !== 'object') {
+                        throw new Error(`${context.className}.${key}[][]: Expected object, got ${typeof nestedItem}`);
+                      }
+                      return this.deserialize(nestedItem as Record<string, unknown>, arrayElementClass);
+                    });
+                }
+                
+                if (typeof item !== 'object') {
+                  throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
+                }
+                return this.deserialize(item, arrayElementClass);
+              });
           }
           continue;
         }
@@ -303,6 +386,19 @@ export class Deserializer<
       
       // 4.5 SPECIAL CASE: If design:type is a custom model class and value is an array,
       // treat it as array of that model (syntax sugar: @Quick({ posts: Post }) for Post[])
+      const nativeTransformableTypes = [
+        String, Number, Boolean,
+        Date, BigInt, RegExp, Symbol, Error,
+        URL, URLSearchParams,
+        Int8Array, Uint8Array, Uint8ClampedArray,
+        Int16Array, Uint16Array,
+        Int32Array, Uint32Array,
+        Float32Array, Float64Array,
+        BigInt64Array, BigUint64Array,
+        ArrayBuffer, DataView,
+        Map, Set, WeakMap, WeakSet
+      ];
+      
       if (
         !arrayElementClass &&
         !fieldType &&
@@ -311,32 +407,7 @@ export class Deserializer<
         typeof designType === 'function' &&
         designType !== Array &&
         designType !== Object &&
-        designType !== String &&
-        designType !== Number &&
-        designType !== Boolean &&
-        // Exclude primitive transformable types - they have their own handling
-        designType !== Date &&
-        designType !== RegExp &&
-        designType !== Map &&
-        designType !== Set &&
-        designType !== BigInt &&
-        designType !== Symbol &&
-        designType !== Error &&
-        designType !== URL &&
-        designType !== URLSearchParams &&
-        designType !== ArrayBuffer &&
-        designType !== Int8Array &&
-        designType !== Uint8Array &&
-        designType !== Uint8ClampedArray &&
-        designType !== Int16Array &&
-        designType !== Uint16Array &&
-        designType !== Int32Array &&
-        designType !== Uint32Array &&
-        designType !== Float32Array &&
-        designType !== Float64Array &&
-        designType !== BigInt64Array &&
-        designType !== BigUint64Array &&
-        designType !== DataView
+        !nativeTransformableTypes.includes(designType)
       ) {
         // It's likely an array of custom models where design:type is the element class
         // Process as array
@@ -671,13 +742,26 @@ export class Deserializer<
     }
 
     // Nested model
+    // Check if it's a native type with transformer vs a custom model
+    const nativeConstructors = [
+      RegExp, Error, URL, URLSearchParams,
+      Int8Array, Uint8Array, Uint8ClampedArray,
+      Int16Array, Uint16Array,
+      Int32Array, Uint32Array,
+      Float32Array, Float64Array,
+      BigInt64Array, BigUint64Array,
+      ArrayBuffer, DataView,
+      Set, Map, WeakSet, WeakMap
+    ];
+    
     if (
       designType !== String &&
       designType !== Number &&
       designType !== Boolean &&
       designType !== Array &&
       designType !== Object &&
-      typeof designType === 'function'
+      typeof designType === 'function' &&
+      !nativeConstructors.includes(designType)
     ) {
       if (typeof value !== 'object' || Array.isArray(value)) {
         throw new Error(
@@ -686,6 +770,42 @@ export class Deserializer<
       }
       type ModelConstructor = new (data: Record<string, unknown>) => unknown;
       return this.deserialize(value as Record<string, unknown>, designType as ModelConstructor);
+    }
+    
+    // For native constructors, try to find and use transformer
+    if (nativeConstructors.includes(designType)) {
+      // Map constructor to transformer key
+      const transformerKeyMap: Record<string, string> = {
+        'RegExp': 'regexp',
+        'Error': 'error',
+        'URL': 'url',
+        'URLSearchParams': 'urlsearchparams',
+        'Int8Array': 'int8array',
+        'Uint8Array': 'uint8array',
+        'Uint8ClampedArray': 'uint8clampedarray',
+        'Int16Array': 'int16array',
+        'Uint16Array': 'uint16array',
+        'Int32Array': 'int32array',
+        'Uint32Array': 'uint32array',
+        'Float32Array': 'float32array',
+        'Float64Array': 'float64array',
+        'BigInt64Array': 'bigint64array',
+        'BigUint64Array': 'biguint64array',
+        'ArrayBuffer': 'arraybuffer',
+        'DataView': 'dataview',
+        'Set': 'set',
+        'Map': 'map',
+        'WeakSet': 'weakset',
+        'WeakMap': 'weakmap',
+      };
+      
+      const transformerKey = transformerKeyMap[designType.name];
+      if (transformerKey) {
+        const transformer = this.transformers.get(transformerKey);
+        if (transformer) {
+          return transformer.deserialize(value, context.propertyKey, context.className);
+        }
+      }
     }
 
     // Primitive validation
@@ -719,5 +839,61 @@ export class Deserializer<
         `${context.className}.${context.propertyKey}: Expected boolean or Boolean wrapper, got ${typeof value}`,
       );
     }
+  }
+
+  /**
+   * Recursively transforms deeply nested arrays of transformable types (Date[][][], BigInt[][], etc.).
+   * Handles N-level nesting.
+   * 
+   * @param nestedArray - The nested array to transform
+   * @param elementClass - The element type constructor (Date, BigInt, etc.)
+   * @param context - Transformation context
+   * @returns Recursively transformed array
+   */
+  private transformNestedArray(
+    nestedArray: unknown[],
+    elementClass: Function,
+    context: IQTransformContext
+  ): unknown[] {
+    return nestedArray.map((item) => {
+      if (item === null || item === undefined) return item;
+      
+      // If still an array, recurse deeper
+      if (Array.isArray(item)) {
+        return this.transformNestedArray(item, elementClass, context);
+      }
+      
+      // Transform leaf element
+      return this.transformByDesignType(item, elementClass, context);
+    });
+  }
+
+  /**
+   * Recursively transforms deeply nested arrays of models (Post[][][], User[][], etc.).
+   * Handles N-level nesting.
+   * ⚠️ Filters out null/undefined values (models must be objects).
+   * 
+   * @param nestedArray - The nested array to transform
+   * @param modelClass - The model type constructor
+   * @returns Recursively transformed array of model instances
+   */
+  private transformNestedModelArray(
+    nestedArray: unknown[],
+    modelClass: Function
+  ): unknown[] {
+    return nestedArray
+      .filter((item) => item !== null && item !== undefined)
+      .map((item) => {
+        // If still an array, recurse deeper
+        if (Array.isArray(item)) {
+          return this.transformNestedModelArray(item, modelClass);
+        }
+        
+        // Transform leaf model
+        if (typeof item !== 'object') {
+          throw new Error(`Expected object in nested model array, got ${typeof item}`);
+        }
+        return this.deserialize(item as Record<string, unknown>, modelClass);
+      });
   }
 }

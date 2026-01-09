@@ -196,6 +196,26 @@ export function QType<T>(
 			return;
 		}
 
+		// Check for array syntax: [Type] means array of Type
+		if (Array.isArray(typeOrClass)) {
+			if (typeOrClass.length === 1) {
+				// Syntax: [Date], [Post], [BigInt], etc.
+				const elementType = typeOrClass[0];
+				
+				// Set design:type to Array
+				Reflect.defineMetadata('design:type', Array, target, propertyKey);
+				
+				// Register the element type as arrayElementClass
+				Reflect.defineMetadata('arrayElementClass', elementType, target, propertyKey);
+				return;
+			} else if (typeOrClass.length > 1) {
+				// Union type array: [Date, null, undefined]
+				// TODO: Handle union types in arrays
+				console.warn(`QType: Union type arrays not fully supported yet: [${typeOrClass.map(t => t?.name || t).join(', ')}]`);
+				return;
+			}
+		}
+
 		if (typeof typeOrClass === 'string') {
 			// String literal ('bigint', 'regexp', 'int8array', etc.)
 			Reflect.defineMetadata('fieldType', typeOrClass, target, propertyKey);

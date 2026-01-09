@@ -679,3 +679,13 @@ Si encuentras otros casos edge que deberían ser probados, por favor:
 ---
 
 **Última actualización**: 2026-01-08
+
+## ⚠️ toInterface() con Custom Transformers
+
+**Problema:** No hay forma de revertir transformaciones custom.
+**Decisión:** One-way only.
+
+## 🔲 Arrays/Objetos Anidados Profundos
+
+- 🔲 Arrays N niveles - IMPLEMENTANDO
+- 🔲 Objetos N niveles - IMPLEMENTANDO
