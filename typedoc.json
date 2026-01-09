@@ -4,9 +4,10 @@
 	"exclude": [
 		"**/*.test.ts",
 		"**/*.spec.ts",
-		"**/examples/**",
-		"**/tests/**"
+		"src/examples/**",
+		"tests/**"
 	],
+	"skipErrorChecking": true,
 	"plugin": [],
 	"excludePrivate": true,
 	"excludeProtected": false,
