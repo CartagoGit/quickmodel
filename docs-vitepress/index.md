@@ -3,14 +3,16 @@ layout: home
 ---
 
 <script setup>
-import { useRouter } from 'vitepress'
+import { useRouter, useData } from 'vitepress'
 import { onMounted } from 'vue'
 
 const router = useRouter()
+const { site } = useData()
 
 onMounted(() => {
   const STORAGE_KEY_LANG = 'vitepress-theme-lang'
   const supportedLangs = ['en', 'es']
+  const base = site.value.base || '/'
   
   // Intentar obtener el idioma guardado en localStorage
   let selectedLang = localStorage.getItem(STORAGE_KEY_LANG)
@@ -31,7 +33,12 @@ onMounted(() => {
     localStorage.setItem(STORAGE_KEY_LANG, selectedLang)
   }
   
-  router.go(`/${selectedLang}/`)
+  // Construir la ruta completa con el base
+  const redirectPath = base === '/' 
+    ? `/${selectedLang}/` 
+    : `${base}${selectedLang}/`
+  
+  router.go(redirectPath)
 })
 </script>
 
