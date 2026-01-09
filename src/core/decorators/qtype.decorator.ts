@@ -235,6 +235,9 @@ export function QType<T>(
 				
 				// Register the element type as arrayElementClass
 				Reflect.defineMetadata('arrayElementClass', elementType, target, propertyKey);
+				
+				// Set nesting depth to 1 for simple arrays
+				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
 				return;
 			} else if (typeOrClass.length > 1) {
 				// Union type array: [Date, null, undefined]

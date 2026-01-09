@@ -550,8 +550,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			nestedSets: Set,
-			nestedMaps: Map,
+			nestedSets: [Set],  // Array of Sets
+			nestedMaps: [Map],  // Array of Maps
 		})
 		class Data extends QModel<IData> {
 			declare nestedSets: Set<string>[];

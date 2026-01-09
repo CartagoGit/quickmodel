@@ -58,7 +58,15 @@ export class MapTransformer<K = string, V = unknown>
 
     // Handle array of [key, value] pairs (from backend)
     if (Array.isArray(value)) {
-      return new Map(value as [K, V][]);
+      try {
+        return new Map(value as [K, V][]);
+      } catch (error) {
+        throw new Error(
+          `MapTransformer.deserialize: Invalid Map data format. ` +
+          `Expected array of [key, value] pairs, got: ${JSON.stringify(value)}. ` +
+          `Error: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
 
     // Handle legacy plain object format

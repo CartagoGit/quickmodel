@@ -276,9 +276,24 @@ export class Deserializer<
           continue;
         }
         
+        // Check if arrayElementClass is Set or Map WITHOUT arrayNestingDepth
+        // This means it's a single Set/Map (not Set[] or Map[])
+        // Priority check: must come BEFORE array of Set/Map check
+        if ((arrayElementClass === Set || arrayElementClass === Map) && !arrayNestingDepth) {
+          const transformerKey = arrayElementClass === Set ? 'set' : 'map';
+          const transformer = this.transformers.get(transformerKey);
+          if (transformer) {
+            instance[key] = transformer.deserialize(value, context.propertyKey, context.className);
+            continue;
+          }
+        }
+        
         // Special handling for arrays of Set/Map
         // If it's an array and element is Set/Map, transform each element
-        if (isArrayType && Array.isArray(value) && (arrayElementClass === Set || arrayElementClass === Map)) {
+        // ⚠️ IMPORTANT: Only if arrayNestingDepth >= 1 (Set[] or Map[], not Set or Map)
+        //  arrayNestingDepth=1 → [Set] = Set[]
+        //  arrayNestingDepth=2 → [[Set]] = Set[][]
+        if (isArrayType && Array.isArray(value) && (arrayElementClass === Set || arrayElementClass === Map) && arrayNestingDepth && arrayNestingDepth >= 1) {
           const transformerKey = arrayElementClass === Set ? 'set' : 'map';
           const transformer = this.transformers.get(transformerKey);
           if (transformer) {
@@ -290,7 +305,7 @@ export class Deserializer<
           }
         }
         
-        // Check if arrayElementClass is Set or Map (single value, not array)
+        // Legacy check: Set/Map without isArrayType (shouldn't happen with new logic)
         if (!isArrayType && arrayElementClass === Set) {
           const setTransformer = this.transformers.get('set');
           if (setTransformer) {

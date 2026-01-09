@@ -409,8 +409,21 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						const designType = designTypeCache[propertyKey];
 						const dataIsArray = data && Array.isArray(data[propertyKey]);
 						
-						// If it's an array type and not already in array syntax, wrap it
-						if ((designType === Array || (dataIsArray && !designType)) && !Array.isArray(mappedType)) {
+						// ⚠️ EXCEPTION: Do NOT auto-wrap Set/Map if NOT explicitly declared as array
+						// TypeScript assigns design:type=Array for Set/Map properties because they serialize as arrays
+						// But this doesn't mean Set[] or Map[] unless explicitly declared with [Set] or [Map] syntax
+						// 
+						// Rules:
+						// - settings: Set → mappedType=Set, design:type=Array → DO NOT wrap (it's a single Set)
+						// - items: [Set] → mappedType=[Set], design:type=Array → Already wrapped, keep as is
+						const isSingleSetOrMap = (mappedType === Set || mappedType === Map);
+						const isAlreadyArraySyntax = Array.isArray(mappedType);
+						
+						// Only wrap if:
+						// 1. design:type indicates array (designType===Array or dataIsArray)
+						// 2. NOT already in array syntax
+						// 3. NOT a single Set/Map (which have design:type=Array by default)
+						if ((designType === Array || (dataIsArray && !designType)) && !isAlreadyArraySyntax && !isSingleSetOrMap) {
 							// Normalize: Date → [Date], Post → [Post], etc.
 							// QType will detect [Type] syntax and handle it as array
 							mappedType = [mappedType];
