@@ -44,6 +44,8 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * versus in memory (after transformation). This is essential for types like Date, BigInt,
  * RegExp, etc. that need serialization/deserialization.
  * 
+ * @group Types
+ * 
  * @template TInterface - Base model interface representing JSON structure
  * @template TTransforms - Object mapping property names to their transformed types
  * 

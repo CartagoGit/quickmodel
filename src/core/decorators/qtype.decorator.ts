@@ -143,6 +143,9 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  *   @QType(Vehicle) vehicles!: Vehicle[];  // Array of models
  * }
  * ```
+ * 
+ * @group Decorators
+ * @decorator `@QType(typeOrClass)`
  */
 export function QType<T>(
   typeOrClass?: 

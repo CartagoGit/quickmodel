@@ -282,6 +282,8 @@ export interface IQuickOptions {
  * Without explicit type mapping, the decorator cannot know the developer's intent.
  * All special types MUST be explicitly declared - no automatic detection.
  *
+ * @group Decorators
+ * @decorator `@Quick(typeMap)`
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  */
 export function Quick(typeMap?: IQuickOptions): ClassDecorator {

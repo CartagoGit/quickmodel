@@ -4,8 +4,11 @@
 	"plugin": ["typedoc-plugin-markdown"],
 	"disableSources": true,
 	"hideGenerator": true,
+	"hidePageHeader": true,
 	"readme": "none",
 	"entryFileName": "index.md",
+	"sort": ["alphabetical"],
+	"groupOrder": ["*"],
 	"exclude": [
 		"**/*.test.ts",
 		"**/*.spec.ts",

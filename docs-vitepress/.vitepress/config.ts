@@ -8,16 +8,24 @@ export default defineConfig({
 	outDir: '../docs-vitepress/dist',
 	ignoreDeadLinks: true,
 	
-	themeConfig: {
-		nav: [
-			{ text: 'Guide', link: '/guide/getting-started' },
-			{ text: 'API Reference', link: '/tsdoc/' },
-			{ text: 'Examples', link: '/examples/' },
-			{ text: 'GitHub', link: 'https://github.com/CartagoGit/quickmodel' }
-		],
-
-		sidebar: {
-			'/guide/': [
+	locales: {
+		root: {
+			label: 'English',
+			lang: 'en',
+			link: '/en/',
+			themeConfig: {
+				outline: {
+					level: [2, 3],
+					label: 'On this page'
+				},
+				nav: [
+					{ text: 'Guide', link: '/en/guide/getting-started' },
+					{ text: 'API Reference', link: '/tsdoc/' },
+					{ text: 'Examples', link: '/en/examples/' },
+					{ text: 'GitHub', link: 'https://github.com/CartagoGit/quickmodel' }
+				],
+				sidebar: {
+					'/en/guide/': [
 				{
 					text: 'Introduction',
 					items: [
@@ -53,8 +61,42 @@ export default defineConfig({
 						{ text: 'Complex Types', link: '/examples/complex-types' }
 					]
 				}
+			],
+			'/tsdoc/': [
+				{
+					text: 'API Reference',
+					items: [
+						{ text: 'Overview', link: '/tsdoc/' },
+						{
+							text: 'Classes',
+							collapsed: false,
+							items: [
+								{ text: 'QModel', link: '/tsdoc/classes/QModel' }
+							]
+						},
+						{
+							text: 'Decorators',
+							collapsed: false,
+							items: [
+								{ text: '@Quick', link: '/tsdoc/functions/Quick' },
+								{ text: '@QType', link: '/tsdoc/functions/QType' }
+							]
+						},
+						{
+							text: 'Types',
+							collapsed: false,
+							items: [
+								{ text: 'QInterface', link: '/tsdoc/type-aliases/QInterface' }
+							]
+						}
+					]
+				}
 			]
 		},
+
+		// Habilitar tabla de contenidos en sidebar derecho
+		sidebarMenuLabel: 'Menu',
+		returnToTopLabel: 'Return to top',
 
 		socialLinks: [
 			{ icon: 'github', link: 'https://github.com/CartagoGit/quickmodel' }
