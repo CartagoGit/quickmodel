@@ -7,7 +7,14 @@
 		// Validación estricta de variables sin usar en tests
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+
+		"rootDir": "./",
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@tests/*": ["./tests/*"]
+		}
 	},
-	"include": ["src/**/*", "tests/**/*"],
-	"exclude": ["node_modules", "dist"]
+	"include": ["tests/**/*", "src/**/*"],
+	"exclude": ["node_modules", "dist", "docs/**/*", "docs-vitepress/**/*"]
 }

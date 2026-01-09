@@ -110,7 +110,7 @@ const currentLang = computed(() => {
 });
 
 const handleLanguageChange = (lang: {
-	code: 'es' | 'en';
+	code: string;
 	label: string;
 	flagSvg: string;
 	link: string;

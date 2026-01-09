@@ -17,11 +17,10 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"outDir": "./dist",
-		"rootDir": "./",
-		"baseUrl": "./",
+		"rootDir": "./src",
+		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"],
-			"@tests/*": ["tests/*"]
+			"@/*": ["src/*"]
 		},
 
 		// Interoperabilidad
@@ -53,11 +52,5 @@
 		"allowJs": false
 	},
 	"include": ["src/**/*"],
-	"exclude": [
-		"node_modules",
-		"dist",
-		"docs/**/*",
-		"tests/**/*",
-		"docs-vitepress/**/*"
-	]
+	"exclude": ["node_modules", "dist", "docs/**/*", "docs-vitepress/**/*"]
 }

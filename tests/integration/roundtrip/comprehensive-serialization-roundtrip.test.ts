@@ -1,20 +1,4 @@
-import {
-  QModel,
-  QType,
-  QInterface,
-  QBigInt,
-  QSymbol,
-  QRegExp,
-  QError,
-  QInt8Array,
-  QUint8Array,
-  QFloat32Array,
-  QBigInt64Array,
-  QArrayBuffer,
-  QDataView,
-  QURL,
-  QURLSearchParams,
-} from '@/index';
+import { QModel, QType, QInterface } from '@/index';
 
 console.log('╔═══════════════════════════════════════════════════════════════════════╗');
 console.log('║           COMPREHENSIVE TEST - ALL SUPPORTED TYPES                 ║');
