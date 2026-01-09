@@ -52,5 +52,12 @@
 		"allowJs": false
 	},
 	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "docs/**/*", "tests/**/*", "run/**/*"]
+	"exclude": [
+		"node_modules",
+		"dist",
+		"docs/**/*",
+		"tests/**/*",
+		"run/**/*",
+		"docs-vitepress/.vitepress/cache/**/*"
+	]
 }
