@@ -25,10 +25,9 @@
 				<a
 					v-for="lang in locales"
 					:key="lang.code"
-					:href="lang.isShared ? undefined : lang.link"
 					class="item"
 					:class="{ active: lang.code === currentLocale }"
-					@click="handleLanguageChange(lang)"
+					@click.prevent="handleLanguageChange(lang)"
 				>
 					<img :src="lang.flagSvg" :alt="lang.label" class="flag-img" />
 					<span class="text">{{ lang.label }}</span>
@@ -40,14 +39,24 @@
 
 <script setup lang="ts">
 import { useData, useRoute } from 'vitepress';
-import { computed, onMounted, nextTick } from 'vue';
+import { computed, onMounted, nextTick, ref } from 'vue';
 import flagES from './flags/es.svg?url';
 import flagGB from './flags/gb.svg?url';
 
 const { site, localeIndex } = useData();
 const route = useRoute();
 
-const currentLocale = computed(() => localeIndex.value);
+// Override para rutas compartidas donde no podemos cambiar localeIndex
+const overrideLocale = ref<string | null>(null);
+
+const currentLocale = computed(() => {
+	// Si hay override (usado en rutas compartidas), usarlo
+	if (overrideLocale.value) {
+		return overrideLocale.value;
+	}
+	return localeIndex.value;
+});
+
 const STORAGE_KEY_LANG = 'vitepress-theme-lang';
 
 // Reposicionar el selector antes del botón de tema cuando se monte
@@ -56,15 +65,15 @@ onMounted(async () => {
 	if (typeof window !== 'undefined') {
 		const switcher = document.querySelector('#language-switcher-mount');
 		const themeButton = document.querySelector('.VPNavBar .VPSwitchAppearance');
-		
+
 		// Remover el selector de traducciones por defecto de VitePress
 		const defaultSwitcher = document.querySelector('.VPNavBar .translations');
-		if (defaultSwitcher && defaultSwitcher.parentElement) {
-			defaultSwitcher.parentElement.removeChild(defaultSwitcher);
+		if (defaultSwitcher?.parentElement) {
+			defaultSwitcher.parentElement?.removeChild(defaultSwitcher);
 		}
-		
+
 		// Reposicionar nuestro selector si ambos elementos existen
-		if (switcher && themeButton && themeButton.parentElement && !themeButton.parentElement.contains(switcher)) {
+		if (switcher && themeButton?.parentElement && !themeButton.parentElement.contains(switcher)) {
 			try {
 				themeButton.parentElement?.insertBefore(switcher, themeButton);
 			} catch (error) {
@@ -76,24 +85,21 @@ onMounted(async () => {
 
 const locales = computed(() => {
 	const currentPath = route.path;
-	
+
 	// Detectar si estamos en una ruta compartida (sin prefijo de idioma)
-	const isSharedRoute = currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//); 
-	
+	const isSharedRoute = currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//);
+
 	return Object.entries(site.value.locales || {}).map(([localeKey, config]) => {
 		const code = localeKey;
-		
+
 		// Si es ruta compartida, mantener el path actual
-		const newPath = isSharedRoute 
-			? currentPath 
-			: currentPath.replace(/\/(en|es)\//, `/${code}/`);
+		const newPath = isSharedRoute ? currentPath : currentPath.replace(/\/(en|es)\//, `/${code}/`);
 
 		return {
 			code,
 			label: config.label?.replace(/🇬🇧|🇪🇸/, '').trim() || code.toUpperCase(),
 			flagSvg: code === 'en' ? flagGB : code === 'es' ? flagES : '',
 			link: newPath,
-			isShared: isSharedRoute,
 		};
 	});
 });
@@ -103,16 +109,28 @@ const currentLang = computed(() => {
 	return lang || locales.value[0];
 });
 
-const handleLanguageChange = (lang: any) => {
+const handleLanguageChange = (lang: {
+	code: 'es' | 'en';
+	label: string;
+	flagSvg: string;
+	link: string;
+}) => {
 	if (typeof window !== 'undefined') {
+		const currentPath = route.path;
+
+		// Detectar si estamos en una ruta compartida (sin prefijo de idioma)
+		const isSharedRoute = currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//);
+
+		// Guardar preferencia
 		localStorage.setItem(STORAGE_KEY_LANG, lang.code);
-		
-		// Si es ruta compartida, solo actualizar el locale sin redirigir
-		if (lang.isShared) {
-			// VitePress manejará el cambio de locale internamente
-			window.location.reload();
+
+		if (isSharedRoute) {
+			// En rutas compartidas, solo actualizar el override local
+			overrideLocale.value = lang.code;
+		} else {
+			// Ruta con idioma (/en/, /es/): navega a la ruta equivalente
+			window.location.href = lang.link;
 		}
-		// Si no es compartida, el href hará la navegación
 	}
 };
 </script>
@@ -195,6 +213,7 @@ const handleLanguageChange = (lang: any) => {
 	font-weight: 500;
 	color: var(--vp-c-text-1);
 	white-space: nowrap;
+	cursor: pointer;
 	transition:
 		background-color 0.25s,
 		color 0.25s;

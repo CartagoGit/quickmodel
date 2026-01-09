@@ -39,7 +39,7 @@
  * @example
  * **Special types need explicit mapping**:
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   balance: BigInt,
  *   pattern: RegExp,
  *   createdAt: Date,
@@ -73,7 +73,6 @@
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-import { ModelDeserializer } from '../services/model-deserializer.service';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
 
 const QUICK_DECORATOR_KEY = '__quickModel__';
@@ -140,18 +139,20 @@ export interface IQuickOptions {
  * - Date, BigInt, RegExp, Map, Set, etc. MUST be specified in type mapping
  * - Without explicit declaration, values are used as-is with TypeScript metadata only
  *
+ * @group Decorators
+ * @decorator `@Quick(typeMap)`
  * @param typeMap REQUIRED mapping for Set, Map, custom classes, and transformers
  * @returns A class decorator function
  *
  * @example
  * **✅ Type mapping with constructors:**
  * ```typescript
- * @Quick({ 
+ * @Quick({
  *   createdAt: Date,
  *   balance: BigInt,
- *   tags: Set, 
- *   metadata: Map, 
- *   posts: Post 
+ *   tags: Set,
+ *   metadata: Map,
+ *   posts: Post
  * })
  * class User extends QModel<IUser> {
  *   declare id: number;
@@ -282,8 +283,6 @@ export interface IQuickOptions {
  * Without explicit type mapping, the decorator cannot know the developer's intent.
  * All special types MUST be explicitly declared - no automatic detection.
  *
- * @group Decorators
- * @decorator `@Quick(typeMap)`
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  */
 export function Quick(typeMap?: IQuickOptions): ClassDecorator {
@@ -307,37 +306,24 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			// This method is useful for declare syntax or programmatic instance creation
 
 			// Register properties if not already done
-			const typeMap =
-				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
+			const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
 			const properties = Object.keys(data);
 
 			for (const propertyKey of properties) {
-				const existingFieldType = Reflect.getMetadata(
-					'fieldType',
-					target.prototype,
-					propertyKey
-				);
+				const existingFieldType = Reflect.getMetadata('fieldType', target.prototype, propertyKey);
 				const existingArrayClass = Reflect.getMetadata(
 					'arrayElementClass',
 					target.prototype,
 					propertyKey
 				);
 
-				if (
-					existingFieldType !== undefined ||
-					existingArrayClass !== undefined
-				) {
+				if (existingFieldType !== undefined || existingArrayClass !== undefined) {
 					continue;
 				}
 
 				const mappedType = typeMap[propertyKey];
 				if (mappedType) {
-					Reflect.defineMetadata(
-						'design:type',
-						mappedType,
-						target.prototype,
-						propertyKey
-					);
+					Reflect.defineMetadata('design:type', mappedType, target.prototype, propertyKey);
 				}
 
 				const decorator = QType();
@@ -355,26 +341,14 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			const data = args[0];
 
 			// Register properties BEFORE calling constructor (only once, on first instantiation)
-			if (
-				!propertiesRegistered &&
-				data &&
-				typeof data === 'object' &&
-				!Array.isArray(data)
-			) {
+			if (!propertiesRegistered && data && typeof data === 'object' && !Array.isArray(data)) {
 				// Get the type map directly - it's the object passed to @Quick()
 				// Example: @Quick({ posts: Post, tags: Set })
-				const typeMap =
-					Reflect.getMetadata(
-						QUICK_TYPE_MAP_KEY,
-						originalConstructor
-					) || {};
+				const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
 
 				// Combine properties from data AND typeMap
 				// This ensures we process properties even if they're not in the current data
-				const allProperties = new Set([
-					...Object.keys(data),
-					...Object.keys(typeMap),
-				]);
+				const allProperties = new Set([...Object.keys(data), ...Object.keys(typeMap)]);
 
 				for (const propertyKey of allProperties) {
 					const existingFieldType = Reflect.getMetadata(
@@ -388,10 +362,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						propertyKey
 					);
 
-					if (
-						existingFieldType !== undefined ||
-						existingArrayClass !== undefined
-					) {
+					if (existingFieldType !== undefined || existingArrayClass !== undefined) {
 						continue;
 					}
 
@@ -410,15 +381,10 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 					// These properties are not in the data from backend but have values in the class
 					// Create a temporary instance to capture default values
 					try {
-						const dummyInstance = Reflect.construct(
-							originalConstructor,
-							[{}],
-							originalConstructor
-						);
+						const dummyInstance = Reflect.construct(originalConstructor, [{}], originalConstructor);
 						for (const key of Object.keys(dummyInstance)) {
 							// Skip if already registered from data
-							if (Array.from(allProperties).includes(key))
-								continue;
+							if (Array.from(allProperties).includes(key)) continue;
 							// Skip internal properties
 							if (key.startsWith('__')) continue;
 
@@ -427,16 +393,12 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 							decorator(originalConstructor.prototype, key);
 
 							// Store the default value in the prototype
-							Object.defineProperty(
-								originalConstructor.prototype,
-								`__quickmodel_default_${key}`,
-								{
-									value: dummyInstance[key],
-									writable: false,
-									enumerable: false,
-									configurable: false,
-								}
-							);
+							Object.defineProperty(originalConstructor.prototype, `__quickmodel_default_${key}`, {
+								value: dummyInstance[key],
+								writable: false,
+								enumerable: false,
+								configurable: false,
+							});
 						}
 					} catch (e) {
 						// If creating dummy instance fails, just continue
@@ -447,17 +409,11 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			propertiesRegistered = true;
 
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
-			const instance = Reflect.construct(
-				originalConstructor,
-				args,
-				wrappedConstructor
-			);
+			const instance = Reflect.construct(originalConstructor, args, wrappedConstructor);
 
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
 			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
-			const quickTypeMap =
-				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) ||
-				{};
+			const quickTypeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
 			for (const propertyKey of Object.keys(quickTypeMap)) {
 				// Check if property has a getter in the prototype (from @QType)
 				const protoDescriptor = Object.getOwnPropertyDescriptor(
@@ -466,10 +422,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 				);
 				if (protoDescriptor && protoDescriptor.get) {
 					// Check if instance has a real property shadowing the getter
-					const instanceDescriptor = Object.getOwnPropertyDescriptor(
-						instance,
-						propertyKey
-					);
+					const instanceDescriptor = Object.getOwnPropertyDescriptor(instance, propertyKey);
 					if (instanceDescriptor && !instanceDescriptor.get) {
 						// Instance has a real property (from TypeScript initialization), remove it
 						// The getter from prototype will take over
@@ -486,10 +439,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 
 		for (const key of Object.getOwnPropertyNames(originalConstructor)) {
 			if (key !== 'prototype' && key !== 'length' && key !== 'name') {
-				const descriptor = Object.getOwnPropertyDescriptor(
-					originalConstructor,
-					key
-				);
+				const descriptor = Object.getOwnPropertyDescriptor(originalConstructor, key);
 				if (descriptor) {
 					Object.defineProperty(wrappedConstructor, key, descriptor);
 				}

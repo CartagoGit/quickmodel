@@ -10,6 +10,10 @@ export default defineConfig({
 
 	// Global theme config (shared across all locales)
 	themeConfig: {
+		outline: {
+			level: [2, 3],
+			label: 'On this page',
+		},
 		socialLinks: [{ icon: 'github', link: 'https://github.com/CartagoGit/quickmodel' }],
 		sidebar: {
 			'/tsdoc/': [
@@ -38,6 +42,9 @@ export default defineConfig({
 					],
 				},
 			],
+		},
+		search: {
+			provider: 'local',
 		},
 	},
 
@@ -159,6 +166,4 @@ export default defineConfig({
 			},
 		},
 	},
-
-
 });

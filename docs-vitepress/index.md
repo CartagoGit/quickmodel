@@ -33,10 +33,8 @@ onMounted(() => {
   }
   
   // Construir la ruta completa con el base
-  const redirectPath = base === '/' 
-    ? `/${selectedLang}/` 
-    : `${base}${selectedLang}/`
-  
+  const redirectPath = 
+    `${base}${selectedLang}/`
   // Usar window.location para navegar
   window.location.href = redirectPath
 })

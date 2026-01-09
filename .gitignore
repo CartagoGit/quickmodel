@@ -38,3 +38,4 @@ Thumbs.db
 *.tmp
 .cache/
 
+docs-vitepress/.vitepress/cache/
