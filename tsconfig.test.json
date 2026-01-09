@@ -6,7 +6,13 @@
 		
 		// Validación estricta de variables sin usar en tests
 		"noUnusedLocals": true,
-		"noUnusedParameters": true
+		"noUnusedParameters": true,
+		
+		// Asegurar que los path aliases funcionen en tests
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["src/*"]
+		}
 	},
 	"include": [
 		"tests/**/*",

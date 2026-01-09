@@ -4,6 +4,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
 type TypedArrayConstructor =
   | Int8ArrayConstructor
   | Uint8ArrayConstructor
+  | Uint8ClampedArrayConstructor
   | Int16ArrayConstructor
   | Uint16ArrayConstructor
   | Int32ArrayConstructor
@@ -16,6 +17,7 @@ type TypedArrayConstructor =
 type TypedArray =
   | Int8Array
   | Uint8Array
+  | Uint8ClampedArray
   | Int16Array
   | Uint16Array
   | Int32Array
