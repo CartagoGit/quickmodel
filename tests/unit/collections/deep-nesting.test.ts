@@ -273,7 +273,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare comments: Comment[];
 		}
 
-		@Quick({ posts: Post })
+		@Quick({ posts: [Post] })
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare posts: Post[];
