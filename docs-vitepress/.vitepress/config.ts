@@ -1,9 +1,11 @@
 import { defineConfig } from 'vitepress';
 
+// https://vitepress.dev/reference/site-config
 export default defineConfig({
 	title: 'QuickModel',
 	description: 'Type-safe serialization library for TypeScript models',
 	base: '/quickmodel/',
+	outDir: '../docs-vitepress/dist',
 	
 	themeConfig: {
 		nav: [

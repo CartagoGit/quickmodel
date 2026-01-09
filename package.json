@@ -1,6 +1,7 @@
 {
   "name": "@cartago-git/quickmodel",
   "version": "1.0.0",
+  "type": "module",
   "description": "Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID",
   "author": "Cartago",
   "license": "MIT",
@@ -52,9 +53,9 @@
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "docs:api": "typedoc",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
+    "docs:dev": "vitepress dev docs-vitepress",
+    "docs:build": "vitepress build docs-vitepress",
+    "docs:preview": "vitepress preview docs-vitepress",
     "release:check": "./scripts/pre-release.sh"
   },
   "dependencies": {

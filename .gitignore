@@ -9,6 +9,9 @@ bun.lockb
 dist/
 *.tsbuildinfo
 
+# VitePress build output (se genera automáticamente en CI/CD)
+docs-vitepress/dist/
+
 # Tests
 coverage/
 

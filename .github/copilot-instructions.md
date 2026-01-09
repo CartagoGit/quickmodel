@@ -19,7 +19,7 @@ Este archivo es un **índice de navegación** para consultar la documentación e
 - Proceso automático con GitHub Actions
 
 ### 💻 Voy a escribir código
-➡️ Consulta: **[../README-DEV.md](../docs/README-DEV.md)**
+➡️ Consulta: **[../docs/README-DEV.md](../docs/README-DEV.md)**
 - Arquitectura SOLID del proyecto
 - Patrones de código
 - Uso de path aliases `@/*`
@@ -27,7 +27,7 @@ Este archivo es un **índice de navegación** para consultar la documentación e
 - NO usar barrel files (index.ts)
 
 ### 🧪 Voy a escribir tests
-➡️ Consulta: **[../README-DEV.md](../docs/README-DEV.md)** (sección Testing)
+➡️ Consulta: **[../docs/README-DEV.md](../docs/README-DEV.md)** (sección Testing)
 - Ejecutar: `bun test`
 - Coverage: `bun run test:coverage`
 - Configuración: tsconfig.test.json
@@ -39,7 +39,7 @@ Este archivo es un **índice de navegación** para consultar la documentación e
 - TypeDoc para API reference
 
 ### 🔧 Voy a modificar la configuración
-➡️ Consulta: **[../README-DEV.md](../docs/README-DEV.md)** (sección Build System)
+➡️ Consulta: **[../docs/README-DEV.md](../docs/README-DEV.md)** (sección Build System)
 - tsconfig.json (compilación source)
 - tsconfig.test.json (compilación tests)
 - tsup.config.ts (bundling)
