@@ -44,7 +44,6 @@ $secondary-color: #35495e;
 .VPHome .VPFeatures {
 	.container {
 		padding: 0;
-		padding-bottom: 2rem;
 	}
 
 	.items {
@@ -287,4 +286,10 @@ $secondary-color: #35495e;
 	display: flex;
 	align-items: center;
 	margin-right: 8px;
+}
+
+// Redirecting page spacing
+.VPHome .vp-doc {
+	padding-top: 3rem;
+	margin-top: 3rem;
 }

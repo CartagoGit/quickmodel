@@ -56,10 +56,20 @@ onMounted(async () => {
 	if (typeof window !== 'undefined') {
 		const switcher = document.querySelector('#language-switcher-mount');
 		const themeButton = document.querySelector('.VPNavBar .VPSwitchAppearance');
-		const defaultSwitcher = document.querySelector('.translations');
-		defaultSwitcher?.remove();
-		if (switcher && themeButton && themeButton.parentElement) {
-			themeButton.parentElement?.insertBefore?.(switcher, themeButton);
+		
+		// Remover el selector de traducciones por defecto de VitePress
+		const defaultSwitcher = document.querySelector('.VPNavBar .translations');
+		if (defaultSwitcher && defaultSwitcher.parentElement) {
+			defaultSwitcher.parentElement.removeChild(defaultSwitcher);
+		}
+		
+		// Reposicionar nuestro selector si ambos elementos existen
+		if (switcher && themeButton && themeButton.parentElement && !themeButton.parentElement.contains(switcher)) {
+			try {
+				themeButton.parentElement?.insertBefore(switcher, themeButton);
+			} catch (error) {
+				console.warn('Could not reposition language switcher:', error);
+			}
 		}
 	}
 });
