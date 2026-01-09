@@ -3,43 +3,43 @@ layout: home
 
 hero:
   name: QuickModel
-  text: Type-safe Serialization for TypeScript
-  tagline: Automatic JSON serialization/deserialization with SOLID architecture
+  text: Serialización Type-safe para TypeScript
+  tagline: Serialización/deserialización JSON automática con arquitectura SOLID
   actions:
     - theme: brand
-      text: Get Started
-      link: /guide/getting-started
+      text: Comenzar
+      link: /es/guide/getting-started
     - theme: alt
-      text: View on GitHub
+      text: Ver en GitHub
       link: https://github.com/CartagoGit/quickmodel
 
 features:
   - icon: 🚀
-    title: Zero Configuration
-    details: Works out of the box with TypeScript decorators. No complex setup required.
+    title: Sin Configuración
+    details: Funciona directamente con decoradores TypeScript. Sin configuración compleja.
   
   - icon: 🔒
     title: Type-Safe
-    details: Full TypeScript support with strict type checking and inference.
+    details: Soporte completo TypeScript con verificación estricta de tipos e inferencia.
   
   - icon: ⚡
-    title: Automatic Transformations
-    details: Handles Date, BigInt, Map, Set, RegExp, and more without manual conversion.
+    title: Transformaciones Automáticas
+    details: Maneja Date, BigInt, Map, Set, RegExp y más sin conversión manual.
   
   - icon: 🎯
-    title: SOLID Architecture
-    details: Clean, extensible design following SOLID principles.
+    title: Arquitectura SOLID
+    details: Diseño limpio y extensible siguiendo principios SOLID.
   
   - icon: 🧪
-    title: Mock Generation
-    details: Built-in mock data generation for testing with faker.js integration.
+    title: Generación de Mocks
+    details: Generación de datos de prueba integrada con faker.js.
   
   - icon: 🔄
-    title: Bidirectional
-    details: Seamless serialization and deserialization with full roundtrip support.
+    title: Bidireccional
+    details: Serialización y deserialización fluida con soporte completo de ida y vuelta.
 ---
 
-## Quick Example
+## Ejemplo Rápido
 
 ```typescript
 import { QModel, Quick } from '@cartago-git/quickmodel';
