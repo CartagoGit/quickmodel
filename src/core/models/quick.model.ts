@@ -268,7 +268,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		}
 
 		for (const key of allKeys) {
-			// Skip internal __initData, __tempData, etc. but NOT __quickmodel_ storage keys
+			// Skip internal __initData, __tempData, etc. but NOT QUICK_PROPERTY_KEYS storage keys
 			if (key.startsWith('__') && !key.startsWith(QUICK_PROPERTY_KEYS)) {
 				continue;
 			}
@@ -280,7 +280,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 			const value = (deserialized as any)[key];
 
-			// Determine storage key - don't duplicate __quickmodel_ prefix
+			// Determine storage key - don't duplicate QUICK_PROPERTY_KEYS prefix
 			let storageKey: string;
 			let propertyKey: string;
 
