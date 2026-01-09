@@ -31,7 +31,7 @@
  */
 
 import 'reflect-metadata';
-import { IQValidationContext, IQValidationResult } from '../interfaces';
+import { IQValidationContext, IQValidationResult } from '../interfaces/transformer.interface';
 
 export class ValidationService {
   /**

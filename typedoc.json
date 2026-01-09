@@ -1,6 +1,12 @@
 {
 	"entryPoints": ["src/index.ts"],
 	"out": "docs-vitepress/public/api",
+	"exclude": [
+		"**/*.test.ts",
+		"**/*.spec.ts",
+		"**/examples/**",
+		"**/tests/**"
+	],
 	"plugin": [],
 	"excludePrivate": true,
 	"excludeProtected": false,

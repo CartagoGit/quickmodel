@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces';
+import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces/transformer.interface';
 
 type PrimitiveType = 'string' | 'number' | 'boolean';
 

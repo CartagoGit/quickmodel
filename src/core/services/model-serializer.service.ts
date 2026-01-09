@@ -41,7 +41,7 @@
  * ```
  */
 
-import { IQSerializer } from '../interfaces';
+import { IQSerializer } from '../interfaces/serializer.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { ErrorTransformer } from '@/transformers/error.transformer';
