@@ -6,7 +6,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel } from '@/quick.model';
-import { QType } from '@/core';
+import { QType } from '@/core/decorators/qtype.decorator';
 
 
 describe('Unit: Mock Generator - Basic Types', () => {
