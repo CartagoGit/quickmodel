@@ -185,3 +185,16 @@ $secondary-color: #35495e;
 	}
 }
 
+// Ocultar selector de idiomas por defecto de VitePress
+.VPNavBar .VPNavBarMenu .VPMenuGroup.translations,
+.VPNavBar .translations {
+	display: none !important;
+}
+
+// Asegurar que el selector personalizado se vea correctamente
+#language-switcher-mount {
+	display: flex;
+	align-items: center;
+	margin-right: 8px;
+}
+

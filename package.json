@@ -54,7 +54,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "docs:api": "typedoc",
     "docs:dev": "bun run docs:api && vitepress dev docs-vitepress",
-    "docs:build": "bun run docs:api && vitepress build docs-vitepress",
+    "docs:build": "rm -rf docs-vitepress/dist && bun run docs:api && vitepress build docs-vitepress",
     "docs:preview": "vitepress preview docs-vitepress",
     "release:check": "./scripts/pre-release.sh"
   },
