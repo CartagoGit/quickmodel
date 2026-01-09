@@ -1,109 +1,110 @@
 {
-  "name": "@cartago-git/quickmodel",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID",
-  "author": "Cartago",
-  "license": "MIT",
-  "keywords": [
-    "typescript",
-    "models",
-    "serialization",
-    "deserialization",
-    "solid",
-    "decorators",
-    "transformers"
-  ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./transformers": {
-      "types": "./dist/transformers/index.d.ts",
-      "import": "./dist/transformers/index.mjs",
-      "require": "./dist/transformers/index.js"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.mjs",
-      "require": "./dist/core/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG"
-  ],
-  "scripts": {
-    "build": "bun run clean && bun test && tsup",
-    "dev": "tsup --watch",
-    "test": "bun test",
-    "test:coverage": "bun test --coverage",
-    "prepublishOnly": "bun run build",
-    "clean": "rm -rf dist",
-    "typecheck": "bun run typecheck:src && bun run typecheck:tests",
-    "typecheck:watch": "concurrently \"bun run typecheck:src:watch\" \"bun run typecheck:tests:watch\"",
-    "typecheck:src": "tsc --noEmit",
-    "typecheck:src:watch": "bun run typecheck:src --watch",
-    "typecheck:tests": "tsc --noEmit -p ./tests/tsconfig.json",
-    "typecheck:tests:watch": "bun run typecheck:tests --watch",
-    "lint": "eslint src tests --ext .ts",
-    "lint:fix": "eslint src tests --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "docs:api": "typedoc",
-    "docs:dev": "bun run docs:api && vitepress dev docs-vitepress",
-    "docs:build": "rm -rf docs-vitepress/dist && bun run docs:api && vitepress build docs-vitepress",
-    "docs:preview": "vitepress preview docs-vitepress",
-    "release:check": "./scripts/pre-release.sh"
-  },
-  "dependencies": {
-    "reflect-metadata": "^0.2.2"
-  },
-  "devDependencies": {
-    "@faker-js/faker": "^10.2.0",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^12.0.2",
-    "@semantic-release/npm": "^13.1.3",
-    "@swc/core": "^1.15.8",
-    "@types/bun": "^1.1.13",
-    "@types/node": "^25.0.3",
-    "@typescript-eslint/eslint-plugin": "^8.52.0",
-    "@typescript-eslint/parser": "^8.52.0",
-    "concurrently": "^9.2.1",
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "nodemon": "^3.1.11",
-    "prettier": "^3.7.4",
-    "sass": "^1.97.2",
-    "semantic-release": "^25.0.2",
-    "tsup": "^8.0.1",
-    "typedoc": "^0.28.15",
-    "typedoc-plugin-markdown": "^4.9.0",
-    "typedoc-vitepress-theme": "^1.1.2",
-    "typescript": "^5.7.2",
-    "vitepress": "^1.6.4"
-  },
-  "peerDependencies": {
-    "typescript": ">=5.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/CartagoGit/quickmodel.git"
-  },
-  "bugs": {
-    "url": "https://github.com/CartagoGit/quickmodel/issues"
-  },
-  "homepage": "https://github.com/CartagoGit/quickmodel#readme"
+	"name": "@cartago-git/quickmodel",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID",
+	"author": "Cartago",
+	"license": "MIT",
+	"keywords": [
+		"typescript",
+		"models",
+		"serialization",
+		"deserialization",
+		"solid",
+		"decorators",
+		"transformers"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		},
+		"./transformers": {
+			"types": "./dist/transformers/index.d.ts",
+			"import": "./dist/transformers/index.mjs",
+			"require": "./dist/transformers/index.js"
+		},
+		"./core": {
+			"types": "./dist/core/index.d.ts",
+			"import": "./dist/core/index.mjs",
+			"require": "./dist/core/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG"
+	],
+	"scripts": {
+		"build": "bun run clean && bun test && tsup",
+		"dev": "tsup --watch",
+		"test": "bun test",
+		"test:coverage": "bun test --coverage",
+		"prepublishOnly": "bun run build",
+		"clean": "rm -rf dist",
+		"typecheck": "bun run typecheck:src && bun run typecheck:tests",
+		"typecheck:watch": "concurrently \"bun run typecheck:src:watch\" \"bun run typecheck:tests:watch\"",
+		"typecheck:src": "tsc --noEmit",
+		"typecheck:src:watch": "bun run typecheck:src --watch",
+		"typecheck:tests": "tsc --noEmit -p ./tests/tsconfig.json",
+		"typecheck:tests:watch": "bun run typecheck:tests --watch",
+		"lint": "eslint src tests --ext .ts",
+		"lint:fix": "eslint src tests --ext .ts --fix",
+		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+		"format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+		"docs:api": "typedoc",
+		"docs:dev": "bun run docs:api && vitepress dev docs-vitepress",
+		"docs:clean": "rm -rf docs-vitepress/dist docs-vitepress/api",
+		"docs:build": "bun run docs:clean && bun run docs:api && vitepress build docs-vitepress",
+		"docs:preview": "vitepress preview docs-vitepress",
+		"release:check": "./scripts/pre-release.sh"
+	},
+	"dependencies": {
+		"reflect-metadata": "^0.2.2"
+	},
+	"devDependencies": {
+		"@faker-js/faker": "^10.2.0",
+		"@semantic-release/changelog": "^6.0.3",
+		"@semantic-release/git": "^10.0.1",
+		"@semantic-release/github": "^12.0.2",
+		"@semantic-release/npm": "^13.1.3",
+		"@swc/core": "^1.15.8",
+		"@types/bun": "^1.1.13",
+		"@types/node": "^25.0.3",
+		"@typescript-eslint/eslint-plugin": "^8.52.0",
+		"@typescript-eslint/parser": "^8.52.0",
+		"concurrently": "^9.2.1",
+		"eslint": "^9.39.2",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.4",
+		"nodemon": "^3.1.11",
+		"prettier": "^3.7.4",
+		"sass": "^1.97.2",
+		"semantic-release": "^25.0.2",
+		"tsup": "^8.0.1",
+		"typedoc": "^0.28.15",
+		"typedoc-plugin-markdown": "^4.9.0",
+		"typedoc-vitepress-theme": "^1.1.2",
+		"typescript": "^5.7.2",
+		"vitepress": "^1.6.4"
+	},
+	"peerDependencies": {
+		"typescript": ">=5.0.0"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/quickmodel.git"
+	},
+	"bugs": {
+		"url": "https://github.com/CartagoGit/quickmodel/issues"
+	},
+	"homepage": "https://github.com/CartagoGit/quickmodel#readme"
 }

@@ -1,14 +1,14 @@
 /**
  * HIGH PRIORITY TESTS: Transformer Edge Cases
- * 
+ *
  * Tests for boundary conditions and edge cases in all transformers
  * to ensure robust handling of extreme values.
- * 
+ *
  * Priority: ⭐⭐⭐⭐ HIGH
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '@/quick.model';
+import { QModel } from '@/core/models/quick.model';
 
 // ============================================================================
 // TEST MODELS - Using declare syntax (user-facing API)
@@ -89,18 +89,20 @@ describe('Transformer Edge Cases: BigInt', () => {
 		const data = new BigIntData({
 			huge: 9999999999999999999999999999999999999999n,
 			negative: -1n,
-			zero: 0n
+			zero: 0n,
 		});
 
 		expect(typeof data.huge).toBe('bigint');
-		expect(data.huge.toString()).toBe('9999999999999999999999999999999999999999');
+		expect(data.huge.toString()).toBe(
+			'9999999999999999999999999999999999999999'
+		);
 	});
 
 	test('should handle negative bigints', () => {
 		const data = new BigIntData({
 			huge: 0n,
 			negative: -9876543210123456789n,
-			zero: 0n
+			zero: 0n,
 		});
 
 		expect(data.negative < 0n).toBe(true);
@@ -111,7 +113,7 @@ describe('Transformer Edge Cases: BigInt', () => {
 		const data = new BigIntData({
 			huge: 0n,
 			negative: 0n,
-			zero: 0n
+			zero: 0n,
 		});
 
 		expect(data.zero).toBe(0n);
@@ -122,14 +124,20 @@ describe('Transformer Edge Cases: BigInt', () => {
 		const data = new BigIntData({
 			huge: 999999999999999999999999999999n,
 			negative: -888888888888888888888888n,
-			zero: 0n
+			zero: 0n,
 		});
 
 		const json = data.serialize();
-		
+
 		// Verify serialization format
-		expect(json.huge).toEqual({ __type: 'bigint', value: '999999999999999999999999999999' });
-		expect(json.negative).toEqual({ __type: 'bigint', value: '-888888888888888888888888' });
+		expect(json.huge).toEqual({
+			__type: 'bigint',
+			value: '999999999999999999999999999999',
+		});
+		expect(json.negative).toEqual({
+			__type: 'bigint',
+			value: '-888888888888888888888888',
+		});
 		expect(json.zero).toEqual({ __type: 'bigint', value: '0' });
 	});
 
@@ -138,7 +146,7 @@ describe('Transformer Edge Cases: BigInt', () => {
 		const data = new BigIntData({
 			huge: max,
 			negative: -max,
-			zero: 0n
+			zero: 0n,
 		});
 
 		expect(data.huge.toString()).toBe(max.toString());
@@ -156,7 +164,7 @@ describe('Transformer Edge Cases: Date', () => {
 		const data = new DateData({
 			past: veryOld,
 			future: new Date(),
-			epoch: new Date(0)
+			epoch: new Date(0),
 		});
 
 		expect(data.past).toBeInstanceOf(Date);
@@ -168,7 +176,7 @@ describe('Transformer Edge Cases: Date', () => {
 		const data = new DateData({
 			past: new Date(),
 			future: farFuture,
-			epoch: new Date(0)
+			epoch: new Date(0),
 		});
 
 		expect(data.future.getFullYear()).toBe(2999);
@@ -180,7 +188,7 @@ describe('Transformer Edge Cases: Date', () => {
 		const data = new DateData({
 			past: epoch,
 			future: epoch,
-			epoch: epoch
+			epoch: epoch,
 		});
 
 		expect(data.epoch.getTime()).toBe(0);
@@ -192,7 +200,7 @@ describe('Transformer Edge Cases: Date', () => {
 		const data = new DateData({
 			past: precise,
 			future: precise,
-			epoch: precise
+			epoch: precise,
 		});
 
 		expect(data.past.getMilliseconds()).toBe(123);
@@ -203,11 +211,11 @@ describe('Transformer Edge Cases: Date', () => {
 		const data = new DateData({
 			past: now,
 			future: now,
-			epoch: now
+			epoch: now,
 		});
 
 		const json = data.serialize();
-		
+
 		// Verify serialization format
 		expect(json.past).toBe(now.toISOString());
 		expect(json.future).toBe(now.toISOString());
@@ -224,7 +232,7 @@ describe('Transformer Edge Cases: RegExp', () => {
 		const complex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 		const data = new RegExpData({
 			pattern: complex,
-			flags: /gi/
+			flags: /gi/,
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -235,7 +243,7 @@ describe('Transformer Edge Cases: RegExp', () => {
 		const withFlags = /test/gim;
 		const data = new RegExpData({
 			pattern: withFlags,
-			flags: /test/
+			flags: /test/,
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -246,7 +254,7 @@ describe('Transformer Edge Cases: RegExp', () => {
 		const empty = /(?:)/;
 		const data = new RegExpData({
 			pattern: empty,
-			flags: /g/
+			flags: /g/,
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -256,7 +264,7 @@ describe('Transformer Edge Cases: RegExp', () => {
 		const special = /\[\]\(\)\{\}\.\*\+\?/;
 		const data = new RegExpData({
 			pattern: special,
-			flags: /(?:)/
+			flags: /(?:)/,
 		});
 
 		expect(data.pattern).toBeInstanceOf(RegExp);
@@ -266,13 +274,17 @@ describe('Transformer Edge Cases: RegExp', () => {
 		const regex = /test\d+/gi;
 		const data = new RegExpData({
 			pattern: regex,
-			flags: regex
+			flags: regex,
 		});
 
 		const json = data.serialize();
-		
+
 		// Verify serialization format
-		expect(json.pattern).toEqual({ __type: 'regexp', source: 'test\\d+', flags: 'gi' });
+		expect(json.pattern).toEqual({
+			__type: 'regexp',
+			source: 'test\\d+',
+			flags: 'gi',
+		});
 		expect(json.pattern).toHaveProperty('__type', 'regexp');
 		expect(json.pattern).toHaveProperty('source');
 		expect(json.pattern).toHaveProperty('flags');
@@ -288,7 +300,7 @@ describe('Transformer Edge Cases: Error', () => {
 		const empty = new Error('');
 		const data = new ErrorData({
 			simple: empty,
-			withStack: new Error('test')
+			withStack: new Error('test'),
 		});
 
 		expect(data.simple).toBeInstanceOf(Error);
@@ -300,7 +312,7 @@ describe('Transformer Edge Cases: Error', () => {
 		const error = new Error(longMsg);
 		const data = new ErrorData({
 			simple: error,
-			withStack: new Error('test')
+			withStack: new Error('test'),
 		});
 
 		expect(data.simple.message.length).toBe(10000);
@@ -311,7 +323,7 @@ describe('Transformer Edge Cases: Error', () => {
 		custom.name = 'CustomError';
 		const data = new ErrorData({
 			simple: custom,
-			withStack: new Error('test')
+			withStack: new Error('test'),
 		});
 
 		expect(data.simple.name).toBe('CustomError');
@@ -322,11 +334,11 @@ describe('Transformer Edge Cases: Error', () => {
 		const error = new Error('test error');
 		const data = new ErrorData({
 			simple: error,
-			withStack: error
+			withStack: error,
 		});
 
 		const json = data.serialize();
-		
+
 		// Verify serialization format (Error serializes as string)
 		expect(typeof json.simple).toBe('string');
 		expect(json.simple).toContain('test error');
@@ -342,7 +354,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 		const keyed = Symbol.for('myKey');
 		const data = new SymbolData({
 			keyed: keyed,
-			plain: Symbol.for('plain')
+			plain: Symbol.for('plain'),
 		});
 
 		expect(typeof data.keyed).toBe('symbol');
@@ -353,7 +365,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 		const plain = Symbol('description');
 		const data = new SymbolData({
 			keyed: Symbol.for('key1'),
-			plain: Symbol.for('description')
+			plain: Symbol.for('description'),
 		});
 
 		expect(typeof data.plain).toBe('symbol');
@@ -363,7 +375,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 	test('should handle symbols without description', () => {
 		const data = new SymbolData({
 			keyed: Symbol.for(''),
-			plain: Symbol.for('')
+			plain: Symbol.for(''),
 		});
 
 		expect(typeof data.keyed).toBe('symbol');
@@ -373,14 +385,20 @@ describe('Transformer Edge Cases: Symbol', () => {
 	test('should serialize symbols to structured format', () => {
 		const data = new SymbolData({
 			keyed: Symbol.for('test-key'),
-			plain: Symbol.for('test-plain')
+			plain: Symbol.for('test-plain'),
 		});
 
 		const json = data.serialize();
-		
+
 		// Verify serialization format (Symbol serializes with __type and description)
-		expect(json.keyed).toEqual({ __type: 'symbol', description: 'test-key' });
-		expect(json.plain).toEqual({ __type: 'symbol', description: 'test-plain' });
+		expect(json.keyed).toEqual({
+			__type: 'symbol',
+			description: 'test-key',
+		});
+		expect(json.plain).toEqual({
+			__type: 'symbol',
+			description: 'test-plain',
+		});
 	});
 });
 
@@ -391,11 +409,11 @@ describe('Transformer Edge Cases: Symbol', () => {
 describe('Transformer Edge Cases: ArrayBuffer', () => {
 	test('should handle empty buffer', () => {
 		const empty = new ArrayBuffer(0);
-		
+
 		const data = new BufferData({
 			empty: empty,
 			large: empty,
-			small: empty
+			small: empty,
 		});
 
 		expect(data.empty).toBeInstanceOf(ArrayBuffer);
@@ -406,11 +424,11 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 		const large = new ArrayBuffer(100000); // 100KB
 		const view = new Uint8Array(large);
 		view.fill(255);
-		
+
 		const data = new BufferData({
 			empty: new ArrayBuffer(0),
 			large: large,
-			small: new ArrayBuffer(0)
+			small: new ArrayBuffer(0),
 		});
 
 		expect(data.large.byteLength).toBe(100000);
@@ -421,21 +439,21 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 	test('should handle buffer with specific bytes', () => {
 		const buffer = new ArrayBuffer(4);
 		const view = new Uint8Array(buffer);
-		view[0] = 0xFF;
+		view[0] = 0xff;
 		view[1] = 0x00;
-		view[2] = 0xAA;
+		view[2] = 0xaa;
 		view[3] = 0x55;
-		
+
 		const data = new BufferData({
 			empty: new ArrayBuffer(0),
 			large: new ArrayBuffer(0),
-			small: buffer
+			small: buffer,
 		});
 
 		const restored = new Uint8Array(data.small);
-		expect(restored[0]).toBe(0xFF);
+		expect(restored[0]).toBe(0xff);
 		expect(restored[1]).toBe(0x00);
-		expect(restored[2]).toBe(0xAA);
+		expect(restored[2]).toBe(0xaa);
 		expect(restored[3]).toBe(0x55);
 	});
 
@@ -445,11 +463,11 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 		for (let i = 0; i < 16; i++) {
 			view[i] = i * 16;
 		}
-		
+
 		const data = new BufferData({
 			empty: original,
 			large: original,
-			small: original
+			small: original,
 		});
 
 		const json = data.serialize();
@@ -457,7 +475,7 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 
 		const originalView = new Uint8Array(data.empty);
 		const restoredView = new Uint8Array(restored.empty);
-		
+
 		for (let i = 0; i < 16; i++) {
 			expect(restoredView[i]).toBe(originalView[i]);
 		}

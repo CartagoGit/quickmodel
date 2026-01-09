@@ -5,9 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, QInterface } from '@/index';
-import { QBigInt } from '@/core/interfaces/qtype-symbols.interface';
-import { QType } from '@/core/decorators/qtype.decorator';
+import { QModel, QInterface, QType } from '@/index';
 
 // ============================================================================
 // Test Models

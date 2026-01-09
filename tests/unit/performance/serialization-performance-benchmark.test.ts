@@ -145,14 +145,9 @@ describe('Performance: Costo de inferencia de arrays', () => {
   }
 
   class Product extends QModel<IProduct> {
-    @QType()
-    productId!: string;
-
-    @QType()
-    title!: string;
-
-    @QType()
-    price!: number;
+    declare productId: string;
+    declare title: string;
+    declare price: number;
   }
 
   interface ICart {
@@ -162,25 +157,15 @@ describe('Performance: Costo de inferencia de arrays', () => {
   }
 
   class Cart extends QModel<ICart> {
-    @QType()
-    cartId!: string;
-
-    @QType() // Sin especificar Product - usa inferencia
-    items!: Product[];
-
-    @QType()
-    total!: number;
+    declare cartId: string;
+    declare items: Product[];
+    declare total: number;
   }
 
   class CartExplicit extends QModel<ICart> {
-    @QType()
-    cartId!: string;
-
-    @QType(Product) // CON especificar Product - sin inferencia
-    items!: Product[];
-
-    @QType()
-    total!: number;
+    declare cartId: string;
+    declare items: Product[];
+    declare total: number;
   }
 
   test('Performance: Array pequeño (10 items) - CON inferencia', () => {
@@ -305,11 +290,8 @@ describe('Performance: Costo de anidación profunda', () => {
   }
 
   class User extends QModel<IUser> {
-    @QType()
-    id!: string;
-
-    @QType()
-    name!: string;
+    declare id: string;
+    declare name: string;
   }
 
   interface IContainer<T> {
@@ -317,8 +299,7 @@ describe('Performance: Costo de anidación profunda', () => {
   }
 
   class Container<T> extends QModel<IContainer<T>> {
-    @QType()
-    items!: T[];
+    declare items: T[];
   }
 
   interface ILevel3<T> {
@@ -326,8 +307,7 @@ describe('Performance: Costo de anidación profunda', () => {
   }
 
   class Level3<T> extends QModel<ILevel3<T>> {
-    @QType()
-    container!: Container<T>;
+    declare container: Container<T>;
   }
 
   interface ILevel2<T> {
@@ -335,8 +315,7 @@ describe('Performance: Costo de anidación profunda', () => {
   }
 
   class Level2<T> extends QModel<ILevel2<T>> {
-    @QType()
-    level3!: Level3<T>;
+    declare level3: Level3<T>;
   }
 
   interface ILevel1<T> {
@@ -344,8 +323,7 @@ describe('Performance: Costo de anidación profunda', () => {
   }
 
   class Level1<T> extends QModel<ILevel1<T>> {
-    @QType()
-    level2!: Level2<T>;
+    declare level2: Level2<T>;
   }
 
   test('Performance: Anidación 4 niveles (10 users)', () => {
@@ -424,23 +402,12 @@ describe('Performance: Tipos complejos', () => {
   }
 
   class ComplexModel extends QModel<IComplexModel> {
-    @QType()
-    id!: string;
-
-    @QType()
-    createdAt!: Date;
-
-    @QType()
-    amount!: bigint;
-
-    @QType()
-    pattern!: RegExp;
-
-    @QType()
-    metadata!: Map<string, string>;
-
-    @QType()
-    tags!: Set<string>;
+    declare id: string;
+    declare createdAt: Date;
+    declare amount: bigint;
+    declare pattern: RegExp;
+    declare metadata: Map<string, string>;
+    declare tags: Set<string>;
   }
 
   test('Performance: Tipos complejos (Date, BigInt, RegExp, Map, Set)', () => {

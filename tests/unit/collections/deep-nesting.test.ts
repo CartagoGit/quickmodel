@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { it } from 'node:test';
 
 describe('Nested Arrays and Objects - Deep Nesting', () => {
 	// ============================================================================
@@ -72,8 +71,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 				],
 			});
 
-			expect(data.level4[0][0][0]).toEqual(['a', 'b']);
-			expect(data.level4[0][0][1][1]).toBe('d');
+expect(data.level4[0]?.[0]?.[0]).toEqual(['a', 'b']);
+		expect(data.level4[0]?.[0]?.[1]?.[1]).toBe('d');
 		});
 	});
 
