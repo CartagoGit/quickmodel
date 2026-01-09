@@ -6,8 +6,7 @@
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
-
-const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
+import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
@@ -38,9 +37,9 @@ export class MockGenerator {
         continue;
       }
 
-      const fieldType = Reflect.getMetadata('fieldType', instance, key);
-      const designType = Reflect.getMetadata('design:type', instance, key);
-      const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
+      const fieldType = Reflect.getMetadata('fieldType', modelClass.prototype, key);
+      const designType = Reflect.getMetadata('design:type', modelClass.prototype, key);
+      const arrayElementClass = Reflect.getMetadata('arrayElementClass', modelClass.prototype, key);
 
       mock[key] = this.generateValue(type, fieldType, designType, arrayElementClass);
     }
@@ -131,60 +130,94 @@ export class MockGenerator {
       ? fieldType
       : fieldType.name;
 
-    // RegExp (must go before Symbol because Symbol(RegExp) contains both words)
-    if (typeStr.includes('RegExp') || typeStr === 'regexp') {
-      return this.getDefaultValue(type, 'regexp');
+    // Normalize to lowercase for comparison
+    const typeStrLower = typeStr.toLowerCase();
+
+    // Primitives (must come first - exact match with QType metadata)
+    if (typeStr === 'string' || typeStr === 'String') {
+      return this.getDefaultValue(type, 'string');
+    }
+    if (typeStr === 'number' || typeStr === 'Number') {
+      return this.getDefaultValue(type, 'number');
+    }
+    if (typeStr === 'boolean' || typeStr === 'Boolean') {
+      return this.getDefaultValue(type, 'boolean');
     }
 
-    // Error (must go before Symbol)
-    if (typeStr.includes('Error') || typeStr === 'error') {
+    // Collections (exact match with QType metadata)
+    if (typeStr === 'set' || typeStr === 'Set') {
+      return this.getDefaultValue(type, 'set');
+    }
+    if (typeStr === 'map' || typeStr === 'Map') {
+      return this.getDefaultValue(type, 'map');
+    }
+
+    // Special types (exact match with QType metadata)
+    if (typeStr === 'date' || typeStr === 'Date') {
+      return this.getDefaultValue(type, 'date');
+    }
+    if (typeStr === 'bigint' || typeStr === 'BigInt') {
+      return this.getDefaultValue(type, 'bigint');
+    }
+    if (typeStr === 'symbol' || typeStr === 'Symbol') {
+      return this.getDefaultValue(type, 'symbol');
+    }
+    if (typeStr === 'regexp' || typeStr === 'RegExp') {
+      return this.getDefaultValue(type, 'regexp');
+    }
+    if (typeStr === 'error' || typeStr === 'Error') {
       return this.getDefaultValue(type, 'error');
     }
 
-    // BigInt (must go before Symbol)
-    if (typeStr.includes('BigInt') || typeStr === 'bigint') {
-      return this.getDefaultValue(type, 'bigint');
-    }
-
-    // Symbol (must go after types that use Symbol() as wrapper)
-    if (typeStr === 'Symbol' || typeStr === 'symbol') {
-      return this.getDefaultValue(type, 'symbol');
-    }
-
-    // URL
-    if (typeStr.includes('URL') || typeStr === 'url') {
+    // Web APIs (exact match with QType metadata)
+    if (typeStr === 'url' || typeStr === 'URL') {
       return this.getDefaultValue(type, 'url');
     }
-
-    // URLSearchParams
-    if (typeStr.includes('URLSearchParams') || typeStr === 'urlsearchparams') {
+    if (typeStr === 'urlsearchparams' || typeStr === 'URLSearchParams') {
       return this.getDefaultValue(type, 'urlsearchparams');
     }
 
-    // TypedArrays
-    if (typeStr.includes('Int8Array') || typeStr === 'int8array') {
-      return this.getDefaultValue(type, 'int8array');
-    }
-    if (typeStr.includes('Uint8Array') || typeStr === 'uint8array') {
-      return this.getDefaultValue(type, 'uint8array');
-    }
-    if (typeStr.includes('Float32Array') || typeStr === 'float32array') {
-      return this.getDefaultValue(type, 'float32array');
-    }
-    if (typeStr.includes('BigInt64Array') || typeStr === 'bigint64array') {
-      return this.getDefaultValue(type, 'bigint64array');
-    }
-
-    // ArrayBuffer
-    if (typeStr.includes('ArrayBuffer') || typeStr === 'arraybuffer') {
+    // Binary types
+    if (typeStr === 'arraybuffer' || typeStr === 'ArrayBuffer') {
       return this.getDefaultValue(type, 'arraybuffer');
     }
-
-    // DataView
-    if (typeStr.includes('DataView') || typeStr === 'dataview') {
+    if (typeStr === 'dataview' || typeStr === 'DataView') {
       return this.getDefaultValue(type, 'dataview');
     }
 
+    // TypedArrays (exact match with QType metadata)
+    if (typeStr === 'int8array' || typeStr === 'Int8Array') {
+      return this.getDefaultValue(type, 'int8array');
+    }
+    if (typeStr === 'uint8array' || typeStr === 'Uint8Array') {
+      return this.getDefaultValue(type, 'uint8array');
+    }
+    if (typeStr === 'int16array' || typeStr === 'Int16Array') {
+      return this.getDefaultValue(type, 'int16array');
+    }
+    if (typeStr === 'uint16array' || typeStr === 'Uint16Array') {
+      return this.getDefaultValue(type, 'uint16array');
+    }
+    if (typeStr === 'int32array' || typeStr === 'Int32Array') {
+      return this.getDefaultValue(type, 'int32array');
+    }
+    if (typeStr === 'uint32array' || typeStr === 'Uint32Array') {
+      return this.getDefaultValue(type, 'uint32array');
+    }
+    if (typeStr === 'float32array' || typeStr === 'Float32Array') {
+      return this.getDefaultValue(type, 'float32array');
+    }
+    if (typeStr === 'float64array' || typeStr === 'Float64Array') {
+      return this.getDefaultValue(type, 'float64array');
+    }
+    if (typeStr === 'bigint64array' || typeStr === 'BigInt64Array') {
+      return this.getDefaultValue(type, 'bigint64array');
+    }
+    if (typeStr === 'biguint64array' || typeStr === 'BigUint64Array') {
+      return this.getDefaultValue(type, 'biguint64array');
+    }
+
+    // Fallback: If no match, default to string
     return this.getDefaultValue(type, 'string');
   }
 
@@ -233,8 +266,14 @@ export class MockGenerator {
       case 'set': return new Set();
       case 'int8array': return new Int8Array(0);
       case 'uint8array': return new Uint8Array(0);
+      case 'int16array': return new Int16Array(0);
+      case 'uint16array': return new Uint16Array(0);
+      case 'int32array': return new Int32Array(0);
+      case 'uint32array': return new Uint32Array(0);
       case 'float32array': return new Float32Array(0);
+      case 'float64array': return new Float64Array(0);
       case 'bigint64array': return new BigInt64Array(0);
+      case 'biguint64array': return new BigUint64Array(0);
       case 'arraybuffer': return new ArrayBuffer(0);
       case 'dataview': return new DataView(new ArrayBuffer(0));
       default: return null;
@@ -259,8 +298,14 @@ export class MockGenerator {
       case 'set': return new Set(['sample']);
       case 'int8array': return new Int8Array([1, 2, 3]);
       case 'uint8array': return new Uint8Array([1, 2, 3]);
+      case 'int16array': return new Int16Array([1, 2, 3]);
+      case 'uint16array': return new Uint16Array([1, 2, 3]);
+      case 'int32array': return new Int32Array([1, 2, 3]);
+      case 'uint32array': return new Uint32Array([1, 2, 3]);
       case 'float32array': return new Float32Array([1.0, 2.0, 3.0]);
+      case 'float64array': return new Float64Array([1.0, 2.0, 3.0]);
       case 'bigint64array': return new BigInt64Array([1n, 2n, 3n]);
+      case 'biguint64array': return new BigUint64Array([1n, 2n, 3n]);
       case 'arraybuffer': return new Uint8Array([1, 2, 3]).buffer;
       case 'dataview': return new DataView(new Uint8Array([1, 2, 3]).buffer);
       default: return null;
@@ -299,8 +344,14 @@ export class MockGenerator {
       case 'set': return new Set([faker.lorem.word(), faker.lorem.word()]);
       case 'int8array': return new Int8Array(Array.from({ length: 3 }, () => faker.number.int({ min: -128, max: 127 })));
       case 'uint8array': return new Uint8Array(Array.from({ length: 3 }, () => faker.number.int({ min: 0, max: 255 })));
+      case 'int16array': return new Int16Array(Array.from({ length: 3 }, () => faker.number.int({ min: -32768, max: 32767 })));
+      case 'uint16array': return new Uint16Array(Array.from({ length: 3 }, () => faker.number.int({ min: 0, max: 65535 })));
+      case 'int32array': return new Int32Array(Array.from({ length: 3 }, () => faker.number.int({ min: -2147483648, max: 2147483647 })));
+      case 'uint32array': return new Uint32Array(Array.from({ length: 3 }, () => faker.number.int({ min: 0, max: 4294967295 })));
       case 'float32array': return new Float32Array(Array.from({ length: 3 }, () => faker.number.float()));
+      case 'float64array': return new Float64Array(Array.from({ length: 3 }, () => faker.number.float()));
       case 'bigint64array': return new BigInt64Array(Array.from({ length: 3 }, () => BigInt(faker.number.int())));
+      case 'biguint64array': return new BigUint64Array(Array.from({ length: 3 }, () => BigInt(faker.number.int({ min: 0 }))));
       case 'arraybuffer': {
         const arr = new Uint8Array(Array.from({ length: 8 }, () => faker.number.int({ min: 0, max: 255 })));
         return arr.buffer;

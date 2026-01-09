@@ -20,7 +20,7 @@
  * 
  * @example
  * ```typescript
- * const deserializer = new ModelDeserializer();
+ * const deserializer = new Deserializer();
  * 
  * class User extends QuickModel<IUser> {
  *   @QType() name!: string;
@@ -57,7 +57,7 @@ import { ArrayBufferTransformer, DataViewTransformer, SharedArrayBufferTransform
 import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import { URLTransformer, URLSearchParamsTransformer, TextEncoderTransformer, TextDecoderTransformer } from '@/transformers/web-apis.transformer';
 
-export class ModelDeserializer<
+export class Deserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
   TModel = any
 > implements IQDeserializer<TInterface, TModel> {

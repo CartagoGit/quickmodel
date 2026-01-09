@@ -114,7 +114,7 @@ src/
 └─────────┬──────────┘
           ↓
 ┌──────────────────────┐
-│ ModelDeserializer    │ → Aplica transformaciones
+│ Deserializer    │ → Aplica transformaciones
 │ Service              │
 └──────────┬───────────┘
            ↓
@@ -209,11 +209,11 @@ export default defineConfig({
 ```typescript
 // ✅ CORRECTO
 import { QModel } from '@/core/models/quick.model';
-import { ModelDeserializer } from '@/core/services/model-deserializer.service';
+import { Deserializer } from '@/core/services/model-deserializer.service';
 
 // ❌ INCORRECTO
 import { QModel } from '../../core/models/quick.model';
-import { ModelDeserializer } from '../services/model-deserializer.service';
+import { Deserializer } from '../services/model-deserializer.service';
 ```
 
 ### NO Barrel Files

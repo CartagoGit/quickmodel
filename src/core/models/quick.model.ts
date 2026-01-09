@@ -9,19 +9,17 @@
  */
 
 import 'reflect-metadata';
-import { ModelDeserializer } from '@/core/services/model-deserializer.service';
-import { ModelSerializer } from '@/core/services/model-serializer.service';
+import { Deserializer } from '@/core/services/deserializer.service';
+import { Serializer } from '@/core/services/serializer.service';
 import { MockGenerator } from '@/core/services/mock-generator.service';
 import { MockBuilder } from '@/core/services/mock-builder.service';
-import type {
-	QModelInstance,
-	QModelInterface,
-} from '@/core/interfaces/mock-types.interface';
+import type { QModelInstance, QModelInterface } from '@/core/interfaces/mock-types.interface';
 import type {
 	SerializedInterface,
 	ModelData,
 } from '@/core/interfaces/serialization-types.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
+import { QUICK_DECORATOR_KEY, QUICK_VALUES_KEY } from '../constants/metadata-keys';
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -103,8 +101,8 @@ export type { QInterface } from '@/core/interfaces/model.interface';
  */
 export abstract class QModel<TInterface extends Record<string, any>> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
-	private static readonly deserializer = new ModelDeserializer();
-	private static readonly serializer = new ModelSerializer();
+	private static readonly deserializer = new Deserializer();
+	private static readonly serializer = new Serializer();
 	private static readonly mockGenerator = new MockGenerator();
 
 	// Store initial state for change tracking and reset
@@ -127,11 +125,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		this: T
 	): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;
-		type InstanceType = ThisClass extends abstract new (
-			...args: any[]
-		) => infer R
-			? R
-			: never;
+		type InstanceType = ThisClass extends abstract new (...args: any[]) => infer R ? R : never;
 		type InterfaceType = InstanceType extends QModel<infer I> ? I : never;
 
 		// @ts-expect-error - TypeScript doesn't allow instantiating abstract classes, but at runtime `this` is the concrete class
@@ -163,25 +157,12 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		const prototype = this.prototype;
 
 		// Get all registered qtypes using the correct symbol
-		const qtypes =
-			Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
+		const qtypes = Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
 
 		for (const fieldName of qtypes) {
-			const fieldType = Reflect.getMetadata(
-				'fieldType',
-				prototype,
-				fieldName
-			);
-			const arrayElementClass = Reflect.getMetadata(
-				'arrayElementClass',
-				prototype,
-				fieldName
-			);
-			const customTransformer = Reflect.getMetadata(
-				'customTransformer',
-				prototype,
-				fieldName
-			);
+			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
+			const arrayElementClass = Reflect.getMetadata('arrayElementClass', prototype, fieldName);
+			const customTransformer = Reflect.getMetadata('customTransformer', prototype, fieldName);
 
 			let type = 'unknown';
 			let transformer = null;
@@ -192,15 +173,11 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 			} else if (arrayElementClass) {
 				type = `Array<${arrayElementClass.name || 'unknown'}>`;
 				// Get transformer for array element type from deserializer registry
-				transformer = (QModel.deserializer as any).transformers?.get(
-					arrayElementClass
-				);
+				transformer = (QModel.deserializer as any).transformers?.get(arrayElementClass);
 			} else if (fieldType) {
 				type = fieldType.name || fieldType.toString();
 				// Get transformer from deserializer registry
-				transformer = (QModel.deserializer as any).transformers?.get(
-					fieldType
-				);
+				transformer = (QModel.deserializer as any).transformers?.get(fieldType);
 			}
 
 			result.set(fieldName as string, { type, transformer });
@@ -271,7 +248,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		// (includes both transformed properties with @QType and copied properties without @QType)
 
 		// Store deserialized values in a hidden storage to handle Bun bug
-		Object.defineProperty(this, '__qm_values', {
+		Object.defineProperty(this, QUICK_VALUES_KEY, {
 			value: {} as any,
 			writable: false,
 			enumerable: false,
@@ -287,8 +264,8 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		}
 
 		for (const key of allKeys) {
-			// Skip internal __initData, __tempData, etc. but NOT __quickmodel_ storage keys
-			if (key.startsWith('__') && !key.startsWith('__quickmodel_')) {
+			// Skip internal __initData, __tempData, etc. but NOT __quickDecorator__ storage keys
+			if (key.startsWith('__') && !key.startsWith(QUICK_DECORATOR_KEY)) {
 				continue;
 			}
 
@@ -299,30 +276,28 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 			const value = (deserialized as any)[key];
 
-			// Determine storage key - don't duplicate __quickmodel_ prefix
+			// Determine storage key - don't duplicate __quickDecorator__ prefix
 			let storageKey: string;
 			let propertyKey: string;
 
-			if (key.startsWith('__quickmodel_')) {
+			if (key.startsWith(QUICK_DECORATOR_KEY)) {
 				// Key is already a storage key, use as-is
 				storageKey = key;
 				// Extract property name by removing prefix
-				propertyKey = key.slice('__quickmodel_'.length);
+				propertyKey = key.slice(QUICK_DECORATOR_KEY.length);
 			} else {
 				// Regular property, add prefix for storage
-				storageKey = `__quickmodel_${key}`;
+				storageKey = `${QUICK_DECORATOR_KEY}${key}`;
 				propertyKey = key;
 			}
 
 			(this as any)[storageKey] = value;
 			// Store in backup
-			(this as any).__qm_values[propertyKey] = value;
+			(this as any)[QUICK_VALUES_KEY][propertyKey] = value;
 		}
 
 		// Install lazy getters only for actual property names (not storage keys)
-		const propertyNames = Array.from(allKeys).filter(
-			(k) => !k.startsWith('__quickmodel_')
-		);
+		const propertyNames = Array.from(allKeys).filter((k) => !k.startsWith(QUICK_DECORATOR_KEY));
 		this.installLazyGetters(propertyNames);
 
 		// Remove temporary property
@@ -366,7 +341,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 				continue;
 			}
 
-			const storageKey = `__quickmodel_${key}`;
+			const storageKey = `${QUICK_DECORATOR_KEY}${key}`;
 
 			// Definir getter que busca en múltiples lugares
 			Object.defineProperty(this, key, {
@@ -376,7 +351,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 					if (val !== undefined) return val;
 
 					// 2. Buscar en el backup
-					val = this.__qm_values?.[key];
+					val = this[QUICK_VALUES_KEY]?.[key];
 					if (val !== undefined) return val;
 
 					// 3. Retornar undefined
@@ -395,7 +370,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * Serializes the model instance to a plain interface object.
 	 * Complex types (Date, BigInt, Map, etc.) are converted to JSON-serializable primitives.
 	 *
-	 * SOLID - Single Responsibility: Delegates serialization to ModelSerializer.
+	 * SOLID - Single Responsibility: Delegates serialization to Serializer.
 	 *
 	 * @returns The serialized version of the instance (complex types converted to primitives/plain objects)
 	 *
@@ -419,7 +394,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * Converts the model to a JSON string representation. This is a convenience method
 	 * that combines serialize() and JSON.stringify().
 	 *
-	 * **SOLID - Single Responsibility:** Delegates to ModelSerializer service.
+	 * **SOLID - Single Responsibility:** Delegates to Serializer service.
 	 *
 	 * @returns JSON string representation of the model
 	 *
@@ -432,9 +407,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 */
 	toJSON(): string {
 		type ModelAsRecord = Record<string, unknown>;
-		return QModel.serializer.serializeToJson(
-			this as unknown as ModelAsRecord
-		);
+		return QModel.serializer.serializeToJson(this as unknown as ModelAsRecord);
 	}
 
 	/**
@@ -504,10 +477,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QModel<any>>(
-		this: new (data: ModelData<any>) => T,
-		json: string
-	): T {
+	static fromJSON<T extends QModel<any>>(this: new (data: ModelData<any>) => T, json: string): T {
 		return QModel.deserializer.deserializeFromJson(json, this);
 	}
 
@@ -586,12 +556,9 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // age is number (NaN), not string "NaN"
 	 * ```
 	 */
-	toInterface(): SerializedInterface<TInterface> {
-		return QModel.serializer.toInterface(
-			this as any
-		) as SerializedInterface<TInterface>;
+	toInterface(): TInterface {
+		return QModel.serializer.toInterface<TInterface>(this as any);
 	}
-
 
 	/**
 	 * Returns the initial state exactly as it was passed to the constructor.

@@ -29,7 +29,13 @@ describe('Property Declaration Styles', () => {
 	// ============================================================================
 	// Style 1: declare
 	// ============================================================================
-	@Quick({ createdAt: Date })
+	@Quick({ 
+		id: String,
+		name: String, 
+		age: Number, 
+		email: String, 
+		createdAt: Date 
+	})
 	class UserWithDeclare extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 		declare id: string;
 		declare name: string;
@@ -41,7 +47,13 @@ describe('Property Declaration Styles', () => {
 	// ============================================================================
 	// Style 2: ! (definite assignment)
 	// ============================================================================
-	@Quick({ createdAt: Date })
+	@Quick({ 
+		id: String,
+		name: String, 
+		age: Number, 
+		email: String, 
+		createdAt: Date 
+	})
 	class UserWithExclamation extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 		id!: string;
 		name!: string;
@@ -53,7 +65,13 @@ describe('Property Declaration Styles', () => {
 	// ============================================================================
 	// Style 3: ? (optional)
 	// ============================================================================
-	@Quick({ createdAt: Date })
+	@Quick({ 
+		id: String,
+		name: String, 
+		age: Number, 
+		email: String, 
+		createdAt: Date 
+	})
 	class UserWithOptional extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 		id?: string;
 		name?: string;

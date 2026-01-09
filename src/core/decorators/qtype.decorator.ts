@@ -12,6 +12,7 @@
  */
 
 import 'reflect-metadata';
+import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
 
 /**
  * Available field types as string literals with IntelliSense support.
@@ -175,7 +176,7 @@ export function QType<T>(
 		// Check if getter/setter already exists
 		const existingDescriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
 		if (!existingDescriptor || (!existingDescriptor.get && !existingDescriptor.set)) {
-			const storageKey = `__quickmodel_${String(propertyKey)}`;
+			const storageKey = `${QUICK_PROPERTY_KEYS}${String(propertyKey)}`;
 
 			// Define getter/setter
 			Object.defineProperty(target, propertyKey, {

@@ -72,11 +72,14 @@
  */
 
 import 'reflect-metadata';
-import { QType } from './qtype.decorator';
+import { QType, QTYPES_METADATA_KEY } from './qtype.decorator';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
-
-const QUICK_DECORATOR_KEY = '__quickModel__';
-const QUICK_TYPE_MAP_KEY = '__quickTypeMap__';
+import {
+	QUICK_DECORATOR_KEY,
+	QUICK_TYPE_MAP_KEY,
+	QUICK_DESIGN_TYPES_KEY,
+	QUICK_DEFAULT_KEYS,
+} from '../constants/metadata-keys';
 
 /**
  * Constructor type for class-based type mapping
@@ -295,6 +298,35 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
 		}
 
+		// CRITICAL: Capture design:type metadata NOW before TypeScript field initialization overwrites it
+		// This metadata is emitted by TypeScript at compile time but only for properties with decorators
+		// Since we're a class decorator applying property decorators dynamically, we need to capture
+		// the original design:type metadata and store it for later use
+		const designTypeCache: Record<string, any> = {};
+		const proto = target.prototype;
+
+		// Scan all properties in the prototype chain to capture design:type metadata
+		let current = proto;
+		while (current && current !== Object.prototype) {
+			const descriptors = Object.getOwnPropertyDescriptors(current);
+			for (const propertyKey of Object.keys(descriptors)) {
+				// Skip already processed properties
+				if (propertyKey in designTypeCache) continue;
+
+				// Try to get design:type metadata (emitted by TypeScript for decorated properties)
+				const designType = Reflect.getMetadata('design:type', current, propertyKey);
+				if (designType) {
+					designTypeCache[propertyKey] = designType;
+				}
+			}
+			current = Object.getPrototypeOf(current);
+		}
+
+		// Store the captured design:type metadata for later use
+		if (Object.keys(designTypeCache).length > 0) {
+			Reflect.defineMetadata(QUICK_DESIGN_TYPES_KEY, designTypeCache, target);
+		}
+
 		// Add static method for creating instances (used by deserializer)
 		// This allows us to bypass the field initialization problem with `!`
 		(target as any).__createQuickInstance = function (data: any) {
@@ -346,6 +378,10 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 				// Example: @Quick({ posts: Post, tags: Set })
 				const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
 
+				// Get the captured design:type metadata
+				const designTypeCache =
+					Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, originalConstructor) || {};
+
 				// Combine properties from data AND typeMap
 				// This ensures we process properties even if they're not in the current data
 				const allProperties = new Set([...Object.keys(data), ...Object.keys(typeMap)]);
@@ -372,10 +408,18 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						const decorator = QType(mappedType);
 						decorator(originalConstructor.prototype, propertyKey);
 					} else {
-						// No type mapping - still register with QType() to create getter/setter
-						// This prevents TypeScript's `property!: Type` from creating real properties
-						const decorator = QType();
-						decorator(originalConstructor.prototype, propertyKey);
+						// No type mapping - check if we have design:type metadata captured
+						const designType = designTypeCache[propertyKey];
+						if (designType) {
+							// Use the captured design:type metadata
+							const decorator = QType(designType);
+							decorator(originalConstructor.prototype, propertyKey);
+						} else {
+							// No type information available - still register with QType() to create getter/setter
+							// This prevents TypeScript's `property!: Type` from creating real properties
+							const decorator = QType();
+							decorator(originalConstructor.prototype, propertyKey);
+						}
 					}
 
 					// Post-construction hook: Delete shadowing properties
@@ -394,7 +438,7 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 							decorator(originalConstructor.prototype, key);
 
 							// Store the default value in the prototype
-							Object.defineProperty(originalConstructor.prototype, `__quickmodel_default_${key}`, {
+							Object.defineProperty(originalConstructor.prototype, `${QUICK_DEFAULT_KEYS}${key}`, {
 								value: dummyInstance[key],
 								writable: false,
 								enumerable: false,
@@ -415,13 +459,13 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
 			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
 			const quickTypeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
-			
+
 			// Check ALL properties in the instance, not just those in quickTypeMap
 			const instanceKeys = Object.keys(instance);
 			for (const propertyKey of instanceKeys) {
 				// Skip internal properties
 				if (propertyKey.startsWith('__')) continue;
-				
+
 				// Check if property has a getter in the prototype (from @QType)
 				const protoDescriptor = Object.getOwnPropertyDescriptor(
 					originalConstructor.prototype,

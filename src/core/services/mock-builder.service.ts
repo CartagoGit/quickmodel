@@ -1,13 +1,14 @@
+import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
 import type { MockGenerator } from './mock-generator.service';
 import type { MockType } from './mock-generator.service';
 
 /**
  * Type-safe mock builder for QuickModel instances.
  * Each instance is specialized for a specific model class, providing strongly-typed mock generation.
- * 
+ *
  * @template TInstance - The model instance type (e.g., `User`)
  * @template TInterface - The interface type (e.g., `IUser`)
- * 
+ *
  * @example
  * ```typescript
  * const mockUser = User.mock().random();
@@ -19,7 +20,7 @@ export class MockBuilder<TInstance, TInterface> {
 
 	/**
 	 * Creates a new MockBuilder instance.
-	 * 
+	 *
 	 * @param modelClass - The model class constructor
 	 * @param mockGenerator - The mock generator service instance
 	 */
@@ -37,9 +38,9 @@ export class MockBuilder<TInstance, TInterface> {
 		if (!this._fieldsRegistered) {
 			try {
 				// Create sample data for all properties in the typeMap to trigger registration
-				const typeMap = Reflect.getMetadata('__quickTypeMap__', this.modelClass) || {};
+				const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, this.modelClass) || {};
 				const sampleData: Record<string, any> = {};
-				
+
 				for (const [key, value] of Object.entries(typeMap)) {
 					// Generate appropriate sample data based on type
 					if (value === Date) {
@@ -64,7 +65,7 @@ export class MockBuilder<TInstance, TInterface> {
 						sampleData[key] = [];
 					}
 				}
-				
+
 				// Try to create an instance to trigger field registration
 				new this.modelClass(sampleData as TInterface);
 			} catch (e) {
@@ -76,10 +77,10 @@ export class MockBuilder<TInstance, TInterface> {
 
 	/**
 	 * Generates a model instance with empty/default values.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override default values
 	 * @returns A new model instance with empty values
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = User.mock().empty({ name: 'John' });
@@ -87,21 +88,17 @@ export class MockBuilder<TInstance, TInterface> {
 	 */
 	empty(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
-			this.modelClass,
-			'empty',
-			overrides
-		);
+		const data = this.mockGenerator.generate(this.modelClass, 'empty', overrides);
 		return new this.modelClass(data);
 	}
 
 	/**
 	 * Generates a model instance with random realistic values.
 	 * Uses faker.js to generate random but realistic data.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override generated values
 	 * @returns A new model instance with random values
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = User.mock().random();
@@ -110,21 +107,17 @@ export class MockBuilder<TInstance, TInterface> {
 	 */
 	random(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
-			this.modelClass,
-			'random',
-			overrides
-		);
+		const data = this.mockGenerator.generate(this.modelClass, 'random', overrides);
 		return new this.modelClass(data);
 	}
 
 	/**
 	 * Generates a model instance with sample/predictable values.
 	 * Always returns the same deterministic data, useful for testing.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override sample values
 	 * @returns A new model instance with sample values
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = User.mock().sample();
@@ -133,21 +126,17 @@ export class MockBuilder<TInstance, TInterface> {
 	 */
 	sample(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
-			this.modelClass,
-			'sample',
-			overrides
-		);
+		const data = this.mockGenerator.generate(this.modelClass, 'sample', overrides);
 		return new this.modelClass(data);
 	}
 
 	/**
 	 * Generates a model instance with minimal required values.
 	 * Only populates required fields, leaving optional fields undefined.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override minimal values
 	 * @returns A new model instance with minimal values
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = User.mock().minimal();
@@ -156,21 +145,17 @@ export class MockBuilder<TInstance, TInterface> {
 	 */
 	minimal(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
-			this.modelClass,
-			'minimal',
-			overrides
-		);
+		const data = this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
 		return new this.modelClass(data);
 	}
 
 	/**
 	 * Generates a model instance with all fields populated.
 	 * Includes both required and optional fields with realistic values.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override full values
 	 * @returns A new model instance with all fields populated
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = User.mock().full();
@@ -179,21 +164,17 @@ export class MockBuilder<TInstance, TInterface> {
 	 */
 	full(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
-			this.modelClass,
-			'full',
-			overrides
-		);
+		const data = this.mockGenerator.generate(this.modelClass, 'full', overrides);
 		return new this.modelClass(data);
 	}
 
 	/**
 	 * Generates a plain interface object with empty/default values (no model instance).
 	 * Returns a plain JavaScript object instead of a model instance.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override default values
 	 * @returns A plain interface object with empty values
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const userData = User.mock().interfaceEmpty();
@@ -206,54 +187,42 @@ export class MockBuilder<TInstance, TInterface> {
 
 	/**
 	 * Generates a plain interface object with random values (no model instance).
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override generated values
 	 * @returns A plain interface object with random values
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const userData = User.mock().interfaceRandom();
 	 * ```
 	 */
 	interfaceRandom(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(
-			this.modelClass,
-			'random',
-			overrides
-		);
+		return this.mockGenerator.generate(this.modelClass, 'random', overrides);
 	}
 
 	/**
 	 * Generates a plain interface object with sample/predictable values.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override sample values
 	 * @returns A plain interface object with sample values
 	 */
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(
-			this.modelClass,
-			'sample',
-			overrides
-		);
+		return this.mockGenerator.generate(this.modelClass, 'sample', overrides);
 	}
 
 	/**
 	 * Generates a plain interface object with minimal required values.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override minimal values
 	 * @returns A plain interface object with minimal values
 	 */
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(
-			this.modelClass,
-			'minimal',
-			overrides
-		);
+		return this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
 	}
 
 	/**
 	 * Generates a plain interface object with all fields populated.
-	 * 
+	 *
 	 * @param overrides - Optional partial data to override full values
 	 * @returns A plain interface object with all fields
 	 */
@@ -263,19 +232,19 @@ export class MockBuilder<TInstance, TInterface> {
 
 	/**
 	 * Generates an array of model instances.
-	 * 
+	 *
 	 * @param count - Number of instances to generate
 	 * @param type - Type of mock data ('empty' | 'random' | 'sample' | 'minimal' | 'full')
 	 * @param overrides - Optional function that receives index and returns overrides for each instance
 	 * @returns Array of model instances
-	 * 
+	 *
 	 * @throws {Error} If count is negative
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Generate 5 random users
 	 * const users = User.mock().array(5);
-	 * 
+	 *
 	 * // Generate 3 users with custom values
 	 * const users = User.mock().array(3, 'random', (i) => ({ name: `User ${i}` }));
 	 * ```
@@ -292,25 +261,20 @@ export class MockBuilder<TInstance, TInterface> {
 		if (count === 0) {
 			return [];
 		}
-		const dataArray = this.mockGenerator.generateArray(
-			this.modelClass,
-			count,
-			type,
-			overrides
-		);
+		const dataArray = this.mockGenerator.generateArray(this.modelClass, count, type, overrides);
 		return dataArray.map((data) => new this.modelClass(data));
 	}
 
 	/**
 	 * Generates an array of plain interface objects (no model instances).
-	 * 
+	 *
 	 * @param count - Number of objects to generate
 	 * @param type - Type of mock data ('empty' | 'random' | 'sample' | 'minimal' | 'full')
 	 * @param overrides - Optional function that receives index and returns overrides for each object
 	 * @returns Array of plain interface objects
-	 * 
+	 *
 	 * @throws {Error} If count is negative
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const usersData = User.mock().interfaceArray(5);
@@ -328,11 +292,6 @@ export class MockBuilder<TInstance, TInterface> {
 		if (count === 0) {
 			return [];
 		}
-		return this.mockGenerator.generateArray(
-			this.modelClass,
-			count,
-			type,
-			overrides
-		);
+		return this.mockGenerator.generateArray(this.modelClass, count, type, overrides);
 	}
 }

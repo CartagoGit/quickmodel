@@ -12,7 +12,7 @@ export default {
 			'nav-bar-content-after': () => h(LanguageSwitcher),
 		});
 	},
-	enhanceApp({ app, router, siteData }) {
+	enhanceApp({ app }) {
 		app.component('LanguageSwitcher', LanguageSwitcher);
 	},
 } satisfies Theme;
