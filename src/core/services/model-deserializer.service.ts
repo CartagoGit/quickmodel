@@ -44,7 +44,8 @@
  */
 
 import 'reflect-metadata';
-import { IQDeserializer, IQTransformContext, IQTransformer } from '../interfaces';
+import { IQDeserializer } from '../interfaces/serializer.interface';
+import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';

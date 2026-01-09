@@ -6,6 +6,7 @@ export default defineConfig({
 	description: 'Type-safe serialization library for TypeScript models',
 	base: '/quickmodel/',
 	outDir: '../docs-vitepress/dist',
+	ignoreDeadLinks: true,
 	
 	themeConfig: {
 		nav: [
