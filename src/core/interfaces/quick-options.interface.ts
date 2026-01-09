@@ -132,19 +132,47 @@ export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
  * @param data - Raw data object to check
  * @returns The constructor that matches the data type (must be one of the declared types)
  *
+ * **IMPORTANT**: Cannot return `undefined` unless explicitly declared in types.
+ * - If `items: [Content, Metadata]` → Must return `Content` or `Metadata`
+ * - If `items: [Content, Metadata, undefined]` → Can return `Content`, `Metadata`, or `undefined`
+ *
  * @example
  * ```typescript
- * // If items: [Content, Metadata], the function MUST return Content or Metadata
- * const guard: TypeGuardFunction<Content | Metadata> = (data) => {
- *   if ('text' in data) return Content;
- *   if ('tags' in data) return Metadata;
- *   return Content;  // fallback - still must be one of the declared types
- * };
+ * // ✅ CORRECT: Always returns one of the declared types
+ * @Quick({ items: [Content, Metadata] }, {
+ *   discriminators: {
+ *     items: (data) => {
+ *       if ('text' in data) return Content;
+ *       if ('tags' in data) return Metadata;
+ *       return Content;  // fallback - must be one of the declared types
+ *     }
+ *   }
+ * })
+ *
+ * // ❌ WRONG: Cannot return undefined unless explicitly declared
+ * @Quick({ items: [Content, Metadata] }, {
+ *   discriminators: {
+ *     items: (data) => {
+ *       if ('text' in data) return Content;
+ *       return undefined;  // ❌ Type error!
+ *     }
+ *   }
+ * })
+ *
+ * // ✅ CORRECT: undefined is explicitly allowed
+ * @Quick({ items: [Content, Metadata, undefined] }, {
+ *   discriminators: {
+ *     items: (data) => {
+ *       if ('text' in data) return Content;
+ *       return undefined;  // ✅ OK because undefined is in the type spec
+ *     }
+ *   }
+ * })
  * ```
  */
 export type TypeGuardFunction<TConstructors> = (
 	data: any
-) => TConstructors | undefined;
+) => TConstructors;
 
 /**
  * Discriminator configuration for a property with union types.

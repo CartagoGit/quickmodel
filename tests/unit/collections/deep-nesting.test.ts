@@ -677,7 +677,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 						if (typeof data === 'string' && /^\d+$/.test(data)) {
 							return BigInt;
 						}
-						return undefined; // Fallback al primer tipo
+						throw new Error('Unknown transform type'); // Fallback al primer tipo
 					},
 				},
 			}
