@@ -10,7 +10,7 @@ export default defineConfig({
 
 	locales: {
 		en: {
-			label: '🇬🇧 English',
+			label: 'English',
 			lang: 'en',
 			themeConfig: {
 				outline: {
@@ -94,9 +94,8 @@ export default defineConfig({
 			},
 		},
 		es: {
-			label: '🇪🇸 Español',
+			label: 'Español',
 			lang: 'es',
-			link: '/es/',
 			themeConfig: {
 				outline: {
 					level: [2, 3],
