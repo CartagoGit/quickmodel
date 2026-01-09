@@ -7,7 +7,7 @@ describe('Debug: Trace deserialization flow', () => {
 		dates: string[];
 	}
 
-	@Quick({ dates: Date })
+	@Quick({ dates: [Date] })
 	class Post extends QModel<IPost> {
 		declare id: number;
 		declare dates: Date[];

@@ -80,11 +80,12 @@ interface IUser {
 }
 
 // Specify transformations explicitly
+// ⚠️ IMPORTANT: Use [Type] syntax for arrays: [Date], [BigInt], etc.
 @Quick({
-  createdAt: Date,    // Transform string → Date
-  balance: BigInt,    // Transform string → bigint
-  tags: Set,          // Transform array → Set
-  metadata: Map       // Transform array → Map
+  createdAt: Date,    // Single Date (not array)
+  balance: BigInt,    // Single BigInt (not array)
+  tags: Set,          // Single Set (receives array of strings)
+  metadata: Map       // Single Map (receives array of tuples)
 })
 class User extends QModel<IUser> {
   declare id: number;              // No transformation needed
@@ -196,30 +197,78 @@ This allows type-safe serialization while maintaining clean runtime code.
 **Web APIs:**
 - `URL`, `URLSearchParams`
 
+### Array Syntax (IMPORTANT)
+
+**Always use explicit array syntax `[Type]` for arrays:**
+
+```typescript
+// ✅ CORRECT - Explicit array syntax
+@Quick({
+  dates: [Date],        // Date[] - array of dates
+  tags: [Set],          // Set[] - array of sets
+  posts: [Post],        // Post[] - array of models
+  matrix: [[Date]]      // Date[][] - 2D array of dates
+})
+class Data extends QModel<IData> {
+  declare dates: Date[];
+  declare tags: Set<string>[];
+  declare posts: Post[];
+  declare matrix: Date[][];
+}
+
+// ❌ WRONG - Ambiguous without brackets
+@Quick({
+  dates: Date,    // This means single Date, not Date[]
+  tags: Set,      // This means single Set, not Set[]
+  posts: Post     // This means single Post, not Post[]
+})
+```
+
+**Why?** Clear distinction between:
+- `tags: Set` → Single Set receiving `['a', 'b', 'c']`
+- `tags: [Set]` → Array of Sets receiving `[['a', 'b'], ['c', 'd']]`
+- `metadata: Map` → Single Map receiving `[['k1', 'v1'], ['k2', 'v2']]`
+- `metadata: [Map]` → Array of Maps receiving `[[['k1', 'v1']], [['k2', 'v2']]]`
+
+### Multi-Dimensional Arrays
+
+Nesting depth is explicit:
+
+```typescript
+@Quick({
+  posts: [Post],      // Post[] - 1D array
+  matrix: [[Post]],   // Post[][] - 2D array
+  cube: [[[Post]]]    // Post[][][] - 3D array
+})
+```
+
 ### Property Declaration
 
 **All three TypeScript property declaration styles work identically:**
 
 ```typescript
 // ✅ Style 1: declare (cleaner, no runtime code)
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date, dates: [Date] })
 class User extends QModel<IUser> {
   declare id: number;
   declare createdAt: Date;
+  declare dates: Date[];
 }
 
 // ✅ Style 2: Definite assignment (!)
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date, dates: [Date] })
 class User extends QModel<IUser> {
   id!: number;
   createdAt!: Date;
+  dates!: Date[];
 }
 
 // ✅ Style 3: Optional (?)
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date, dates: [Date] })
 class User extends QModel<IUser> {
   id?: number;
   createdAt?: Date;
+  dates?: Date[];
 }
 ```
 
@@ -229,30 +278,41 @@ All three styles produce **identical behavior** - choose based on your preferenc
 
 ```typescript
 interface IPost {
-  tags: string[];              // Array → Set
-  metadata: [string, any][];   // Tuples → Map
+  tags: string[];              // Array → Set (single Set)
+  categories: string[][];      // Array → Set[] (array of Sets)
+  metadata: [string, any][];   // Tuples → Map (single Map)
 }
 
 interface IPostTransform {
   tags: Set<string>;
+  categories: Set<string>[];
   metadata: Map<string, any>;
 }
 
+// ⚠️ Note the [Set] syntax for arrays of Sets
 @Quick({
-  tags: Set,
-  metadata: Map
+  tags: Set,           // Single Set
+  categories: [Set],   // Array of Sets - explicit syntax!
+  metadata: Map        // Single Map
 })
 class Post extends QModel<IPost> implements QInterface<IPost, IPostTransform> {
-  declare id: string;          // Any style works: declare, !, or ?
-  declare tags: Set<string>;
-  declare metadata: Map<string, any>;
+  declare id: string;
+  declare tags: Set<string>;           // Single Set
+  declare categories: Set<string>[];   // Array of Sets
+  declare metadata: Map<string, any>;  // Single Map
 }
 
 const post = new Post({
   id: '1',
-  tags: ['typescript', 'node'],    // Pass array, get Set
-  metadata: [['key', 'value']]      // Pass tuples, get Map
+  tags: ['typescript', 'node'],              // Single Set from array
+  categories: [['js', 'ts'], ['node']],      // Array of Sets
+  metadata: [['key', 'value']]               // Single Map from tuples
 });
+
+// Access transformed types
+console.log(post.tags);           // Set { 'typescript', 'node' }
+console.log(post.categories[0]);  // Set { 'js', 'ts' }
+console.log(post.metadata);       // Map { 'key' => 'value' }
 ```
 
 ### Nested Models

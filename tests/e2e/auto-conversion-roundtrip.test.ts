@@ -125,7 +125,7 @@ class Post extends QModel<IPost> {
 }
 
 @Quick({
-	posts: Post,
+	posts: [Post],
 	createdAt: Date,
 	updatedAt: Date,
 	birthDate: Date,

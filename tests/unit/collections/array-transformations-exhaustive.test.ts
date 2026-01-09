@@ -119,7 +119,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			dates: string[];
 		}
 
-		@Quick({ dates: Date })
+		@Quick({ dates: [Date] })
 		class Data extends QModel<IData> {
 			declare dates: Date[];
 		}
@@ -191,7 +191,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			patterns: string[];
 		}
 
-		@Quick({ patterns: RegExp })
+		@Quick({ patterns: [RegExp] })
 		class Data extends QModel<IData> {
 			declare patterns: RegExp[];
 		}
@@ -217,7 +217,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			symbols: string[];
 		}
 
-		@Quick({ symbols: Symbol })
+		@Quick({ symbols: [Symbol] })
 		class Data extends QModel<IData> {
 			declare symbols: symbol[];
 		}
@@ -373,7 +373,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			urls: string[];
 		}
 
-		@Quick({ urls: URL })
+		@Quick({ urls: [URL] })
 		class Data extends QModel<IData> {
 			declare urls: URL[];
 		}
@@ -399,7 +399,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			errors: { message: string; name?: string }[];
 		}
 
-		@Quick({ errors: Error })
+		@Quick({ errors: [Error] })
 		class Data extends QModel<IData> {
 			declare errors: Error[];
 		}

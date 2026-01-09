@@ -341,9 +341,9 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			tags: Set,
+			tags: [Set],
 			comments: Comment,
-			dates: Date,
+			dates: [Date],
 		})
 		class Post extends QModel<IPost> {
 			declare id: number;
@@ -484,8 +484,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			values: BigInt,
-			timestamps: Date,
+			values: [BigInt],
+			timestamps: [Date],
 		})
 		class Metrics extends QModel<IMetrics> {
 			declare values: bigint[];
@@ -621,8 +621,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			tags: Set,
-			dates: Date,
+			tags: [Set],
+			dates: [Date],
 		})
 		class Metadata extends QModel<IMetadata> {
 			declare tags: Set<string>;
@@ -729,7 +729,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			level1: ILevel1[];
 		}
 
-		@Quick({ values: BigInt })
+		@Quick({ values: [BigInt] })
 		class Level4 extends QModel<ILevel4> {
 			declare values: bigint[];
 		}
@@ -812,10 +812,10 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			dates2D: Date,
-			bigints2D: BigInt,
-			urls2D: URL,
-			regexps2D: RegExp,
+			dates2D: [Date],
+			bigints2D: [BigInt],
+			urls2D: [URL],
+			regexps2D: [RegExp],
 		})
 		class MixedTransforms extends QModel<IMixedTransforms> {
 			declare dates2D: Date[][];
@@ -894,8 +894,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			tags: Tag,
-			dates: Date,
+			tags: [Tag],
+			dates: [Date],
 			metadata: Map,
 		})
 		class Post extends QModel<IPost> {

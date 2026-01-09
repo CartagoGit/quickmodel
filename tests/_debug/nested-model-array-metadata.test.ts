@@ -8,7 +8,7 @@ describe('Debug: Metadata for arrays inside nested models', () => {
 		dates: string[]; // Should be Date[]
 	}
 
-	@Quick({ dates: Date })
+	@Quick({ dates: [Date] })
 	class Post extends QModel<IPost> {
 		declare id: number;
 		declare dates: Date[];

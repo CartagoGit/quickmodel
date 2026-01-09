@@ -62,7 +62,7 @@ interface IArraysAndUnions {
 }
 
 @Quick({
-  modelArray: Tag
+  modelArray: [Tag]
 })
 class ArraysAndUnionsModel extends QModel<IArraysAndUnions> {
   declare strArray: string[];
