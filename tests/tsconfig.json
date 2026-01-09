@@ -1,0 +1,21 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		// Tests no necesitan generar archivos
+		"noEmit": true,
+
+		// Validación estricta de variables sin usar en tests
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+
+		"rootDir": "."
+	},
+	"include": ["**/*"],
+	"exclude": [
+		"../node_modules",
+		"../dist",
+		"../docs/**/*",
+		"../docs-vitepress/**/*",
+		"../src/**/*"
+	]
+}

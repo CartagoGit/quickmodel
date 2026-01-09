@@ -20,7 +20,8 @@
 		"rootDir": "./src",
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["src/*"],
+			"@tests/*": ["tests/*"]
 		},
 
 		// Interoperabilidad
@@ -52,5 +53,11 @@
 		"allowJs": false
 	},
 	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "docs/**/*", "docs-vitepress/**/*"]
+	"exclude": [
+		"node_modules",
+		"dist",
+		"docs/**/*",
+		"docs-vitepress/**/*",
+		"tests/**/*"
+	]
 }
