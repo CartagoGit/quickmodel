@@ -629,7 +629,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare dates: Date[];
 		}
 
-		@Quick({ metadata: [Metadata] })
+		@Quick({ metadata: Metadata })
 		class Content extends QModel<IContent> {
 			declare text: string;
 			declare metadata: Metadata;
