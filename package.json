@@ -40,10 +40,9 @@
     "CHANGELOG"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "bun run clean && bun test && tsup",
     "dev": "tsup --watch",
     "test": "bun test",
-    "test:all": "bun run/test-each.ts",
     "prepublishOnly": "bun run build",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
@@ -53,6 +52,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^10.2.0",
+    "@swc/core": "^1.15.8",
     "@types/bun": "^1.1.13",
     "@types/node": "^25.0.3",
     "tsup": "^8.0.1",

@@ -1,0 +1,19 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		// Tests no necesitan generar archivos
+		"noEmit": true,
+		
+		// Validación estricta de variables sin usar en tests
+		"noUnusedLocals": true,
+		"noUnusedParameters": true
+	},
+	"include": [
+		"tests/**/*",
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	]
+}
