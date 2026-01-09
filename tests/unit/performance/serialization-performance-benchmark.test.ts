@@ -29,7 +29,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
     for (let i = 0; i < iterations; i++) {
       // Creating plain object for performance baseline
-      const _user = {
+      void {
         id: `user-${i}`,
         name: `User ${i}`,
         email: `user${i}@test.com`,
@@ -56,7 +56,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
     for (let i = 0; i < iterations; i++) {
       // Creating QModel instance for performance test
-      const _user = new User({
+      void new User({
         id: `user-${i}`,
         name: `User ${i}`,
         email: `user${i}@test.com`,

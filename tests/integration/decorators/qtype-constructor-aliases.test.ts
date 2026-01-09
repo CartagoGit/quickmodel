@@ -26,6 +26,7 @@ interface IModelWithConstructors {
   bytes2: Uint8Array;
 }
 
+/*
 interface _IModelWithConstructorsSerialized {
   pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
@@ -34,6 +35,7 @@ interface _IModelWithConstructorsSerialized {
   bytes1: number[];
   bytes2: number[];
 }
+*/
 
 class ModelWithConstructors extends QModel<IModelWithConstructors> {
   @QType(RegExp)
@@ -68,6 +70,7 @@ interface IModelWithSymbols {
   bytes2: Uint8Array;
 }
 
+/*
 interface _IModelWithSymbolsSerialized {
   pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
@@ -76,6 +79,7 @@ interface _IModelWithSymbolsSerialized {
   bytes1: number[];
   bytes2: number[];
 }
+*/
 
 class ModelWithSymbols extends QModel<IModelWithSymbols> {
   @QType(RegExp)

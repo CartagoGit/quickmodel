@@ -39,6 +39,7 @@ interface IModelWithStringLiterals {
   view: DataView;
 }
 
+/*
 interface _IModelWithStringLiteralsSerialized {
   name: string;
   count: number;
@@ -59,6 +60,7 @@ interface _IModelWithStringLiteralsSerialized {
   buffer: number[];
   view: number[];
 }
+*/
 
 class ModelWithStringLiterals extends QModel<IModelWithStringLiterals> {
   // Primitives (auto-detected, but can be explicit)

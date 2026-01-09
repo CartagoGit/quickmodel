@@ -28,11 +28,13 @@ interface IUser {
   name: string;
 }
 
+/*
 @Quick()
 class _User extends QModel<IUser> {
   declare id: string;
   declare name: string;
 }
+*/
 
 // ============================================================================
 // Test Models

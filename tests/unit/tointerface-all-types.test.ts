@@ -25,16 +25,16 @@ interface AllTypesInterface {
 	boolFalse: boolean;
 
 	// BigInt
-	bigintPrimitive: bigint;
-	bigintZero: bigint;
-	bigintNegative: bigint;
+	bigintPrimitive: bigint | string;
+	bigintZero: bigint | string;
+	bigintNegative: bigint | string;
 	bigintString: string; // BigInt serializado como string
 	bigintObject: { __type: string; value: string }; // BigInt serializado como objeto
 
 	// Symbols
-	symUnique: symbol;
-	symGlobal: symbol;
-	symWellKnown: symbol;
+	symUnique: symbol | { __type: string; description: string };
+	symGlobal: symbol | { __type: string; description: string };
+	symWellKnown: symbol | { __type: string; description: string };
 
 	// Null y Undefined
 	nullValue: null;
@@ -179,9 +179,9 @@ describe('toInterface() - All Types Preservation', () => {
 		bigintNegative: '-999',
 			bigintString: '999999999999999999',
 			bigintObject: { __type: 'bigint', value: '123456789' },
-			symUnique: Symbol('test'),
-			symGlobal: Symbol.for('global'),
-			symWellKnown: Symbol.iterator,
+		symUnique: Symbol('test'),
+		symGlobal: Symbol.for('global'),
+		symWellKnown: Symbol.iterator,
 			nullValue: null,
 			undefinedValue: undefined,
 			arrayMixed: [],
@@ -263,11 +263,11 @@ describe('toInterface() - All Types Preservation', () => {
 			boolPrimitive: true,
 			boolWrapper: new Boolean(false),
 			boolFalse: false,
-			bigintPrimitive: 123n,
-			bigintZero: 0n,
-			bigintNegative: -1n,
-			bigintString: '123',
-			bigintObject: { __type: 'bigint', value: '123' },
+		bigintPrimitive: '123',
+		bigintZero: '0',
+		bigintNegative: '-1',
+		bigintString: '123',
+		bigintObject: { __type: 'bigint', value: '123' },
 			symUnique: Symbol('test'),
 			symGlobal: Symbol.for('global'),
 			symWellKnown: Symbol.iterator,

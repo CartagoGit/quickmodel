@@ -322,9 +322,11 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			posts: IPost[];
 		}
 
+		/*
 		class _Tag extends QModel<ITag> {
 			declare name: string;
 		}
+		*/
 
 		@Quick({ createdAt: Date })
 		class Comment extends QModel<IComment> {

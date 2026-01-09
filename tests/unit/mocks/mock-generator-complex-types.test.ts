@@ -9,11 +9,13 @@ import { QModel, Quick, QInterface } from '@/index';
 
 describe('Unit: Mock Generator - Complex Types', () => {
 	// Enums (TypeScript enums become unions at runtime)
+	/*
 	enum _UserRole {
 		ADMIN = 'admin',
 		USER = 'user',
 		GUEST = 'guest',
 	}
+	*/
 
 	enum Priority {
 		LOW = 1,

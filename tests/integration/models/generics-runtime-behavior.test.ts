@@ -67,6 +67,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
     metadata!: Map<string, string>;
   }
 
+  /*
   class _ModelContainer extends QModel<IModelContainer> {
     @QType()
     value!: SimpleModel;
@@ -74,6 +75,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
     @QType()
     metadata!: Map<string, string>;
   }
+  */
 
   test('En runtime: Los genéricos son borrados (type erasure)', () => {
     // En TypeScript:
