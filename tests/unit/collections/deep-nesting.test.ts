@@ -87,8 +87,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			dates2D: Date,
-			bigints3D: BigInt,
+			dates2D: [[Date]],      // Explicit 2D array syntax
+			bigints3D: [[[BigInt]]], // Explicit 3D array syntax
 		})
 		class Data extends QModel<IData> {
 			declare dates2D: Date[][];
@@ -143,8 +143,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			posts2D: Post,
-			tags3D: Tag,
+			posts2D: [[Post]],  // Explicit 2D array syntax
+			tags3D: [[[Tag]]],  // Explicit 3D array syntax
 		})
 		class Data extends QModel<IData> {
 			declare posts2D: Post[][];
@@ -812,10 +812,10 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			dates2D: [Date],
-			bigints2D: [BigInt],
-			urls2D: [URL],
-			regexps2D: [RegExp],
+			dates2D: [[Date]],       // Explicit 2D array syntax
+			bigints2D: [[BigInt]],   // Explicit 2D array syntax
+			urls2D: [[URL]],         // Explicit 2D array syntax
+			regexps2D: [[RegExp]],   // Explicit 2D array syntax
 		})
 		class MixedTransforms extends QModel<IMixedTransforms> {
 			declare dates2D: Date[][];
