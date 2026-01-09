@@ -904,6 +904,11 @@ export class Deserializer<
       Set, Map, WeakSet, WeakMap
     ];
     
+    // Type guard to check if a value is one of the native constructors
+    const isNativeConstructor = (value: unknown): value is typeof nativeConstructors[number] => {
+      return nativeConstructors.some(ctor => ctor === value);
+    };
+    
     if (
       designType !== String &&
       designType !== Number &&
@@ -911,7 +916,7 @@ export class Deserializer<
       designType !== Array &&
       designType !== Object &&
       typeof designType === 'function' &&
-      !nativeConstructors.includes(designType)
+      !isNativeConstructor(designType)
     ) {
       if (typeof value !== 'object' || Array.isArray(value)) {
         throw new Error(
@@ -923,7 +928,7 @@ export class Deserializer<
     }
     
     // For native constructors, try to find and use transformer
-    if (nativeConstructors.includes(designType as any)) {
+    if (isNativeConstructor(designType)) {
       // Map constructor to transformer key
       const transformerKeyMap: Record<string, string> = {
         'RegExp': 'regexp',
@@ -949,7 +954,12 @@ export class Deserializer<
         'WeakMap': 'weakmap',
       };
       
-      const transformerKey = transformerKeyMap[(designType as any).name];
+      // Type guard: check if designType has name property
+      if (typeof designType !== 'function' || !('name' in designType)) {
+        throw new Error('Invalid native constructor: missing name property');
+      }
+      
+      const transformerKey = transformerKeyMap[(designType as { name: string }).name];
       if (transformerKey) {
         const transformer = this.transformers.get(transformerKey);
         if (transformer) {
@@ -1034,9 +1044,18 @@ export class Deserializer<
       throw new Error('resolveUnionType: No possible types provided');
     }
     
+    // Helper to safely get first type (TypeScript knows it exists after length check)
+    const getFirstType = (): Function => {
+      const firstType = possibleTypes[0];
+      if (!firstType) {
+        throw new Error('resolveUnionType: possibleTypes[0] is undefined');
+      }
+      return firstType;
+    };
+    
     // No discriminator - return first type as fallback
     if (!discriminatorConfig) {
-      return possibleTypes[0];
+      return getFirstType();
     }
     
     // 1. String discriminator: use field value to match
@@ -1045,8 +1064,10 @@ export class Deserializer<
       
       if (fieldValue !== undefined) {
         // Try to match by constructor name (case-insensitive)
-        const matched = possibleTypes.find((ctor: any) => {
-          const ctorName = ctor.name?.toLowerCase();
+        const matched = possibleTypes.find((ctor) => {
+          // Type guard: check if ctor has name property
+          if (typeof ctor !== 'function' || !('name' in ctor)) return false;
+          const ctorName = (ctor as { name: string }).name?.toLowerCase();
           const fieldValueLower = String(fieldValue).toLowerCase();
           return ctorName === fieldValueLower;
         });
@@ -1055,13 +1076,13 @@ export class Deserializer<
       }
       
       // Fallback to first type
-      return possibleTypes[0];
+      return getFirstType();
     }
     
     // 2. Function discriminator: call function with data
     if (typeof discriminatorConfig === 'function') {
       const result = discriminatorConfig(data);
-      return result || possibleTypes[0];
+      return result || getFirstType();
     }
     
     // 3. Object with field + mapping
@@ -1076,8 +1097,10 @@ export class Deserializer<
       
       // Try to match by constructor name
       if (fieldValue !== undefined) {
-        const matched = possibleTypes.find((ctor: any) => {
-          const ctorName = ctor.name?.toLowerCase();
+        const matched = possibleTypes.find((ctor) => {
+          // Type guard: check if ctor has name property
+          if (typeof ctor !== 'function' || !('name' in ctor)) return false;
+          const ctorName = (ctor as { name: string }).name?.toLowerCase();
           const fieldValueLower = String(fieldValue).toLowerCase();
           return ctorName === fieldValueLower;
         });
@@ -1087,7 +1110,7 @@ export class Deserializer<
     }
     
     // Fallback to first type in array
-    return possibleTypes[0];
+    return getFirstType();
   }
 
   /**
