@@ -6,7 +6,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick, QInterface } from '@/index';
-import { QType } from '../@//core/decorators/qtype.decorator';
+import { QType } from '@/core/decorators/qtype.decorator';
 
 describe('Unit: Mock Generator - Transformed Types', () => {
 	interface IEvent {

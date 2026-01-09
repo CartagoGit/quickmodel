@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '../@//quick.model';
+import { QModel } from '@/quick.model';
 
 // ============================================================================
 // TEST MODELS - Using declare syntax (user-facing API)

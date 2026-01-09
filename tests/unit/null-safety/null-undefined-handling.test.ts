@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '../@//quick.model';
+import { QModel } from '@/quick.model';
 
 // Test Models - Using declare syntax
 interface IAddress {
