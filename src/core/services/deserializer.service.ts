@@ -994,11 +994,14 @@ export class Deserializer<
           return this.transformNestedModelArray(item, modelClass);
         }
         
-        // Transform leaf model
+        // Transform leaf model using constructor
+        // IMPORTANT: Use constructor directly to trigger QModel transformations
         if (typeof item !== 'object') {
           throw new Error(`Expected object in nested model array, got ${typeof item}`);
         }
-        return this.deserialize(item as Record<string, unknown>, modelClass);
+        
+        // Use constructor instead of this.deserialize() to ensure nested transformations work
+        return new (modelClass as any)(item);
       });
   }
 }
