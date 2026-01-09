@@ -47,6 +47,8 @@ import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
+import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { ErrorTransformer } from '@/transformers/error.transformer';
@@ -202,6 +204,9 @@ export class Deserializer<
                             Reflect.getMetadata(QTYPES_METADATA_KEY, Object.getPrototypeOf(instance)) || 
                             [];
     
+    // Get discriminator configuration if exists
+    const discriminators = Reflect.getMetadata(QUICK_DISCRIMINATORS_KEY, modelClass);
+    
     for (const [key, value] of Object.entries(data)) {
       if (value === null || value === undefined) {
         instance[key] = value;
@@ -240,6 +245,8 @@ export class Deserializer<
 
       // 3. Check for array of models or nested model
       const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
+      const arrayElementTypes = Reflect.getMetadata('arrayElementTypes', instance, key);
+      
       if (arrayElementClass) {
         const designType = Reflect.getMetadata('design:type', instance, key);
         const arrayNestingDepth = Reflect.getMetadata('arrayNestingDepth', instance, key);
@@ -271,7 +278,16 @@ export class Deserializer<
             instance[key] = this.transformNestedArray(value, arrayElementClass, context);
           } else {
             // Model arrays - use recursive model transformation
-            instance[key] = this.transformNestedModelArray(value, arrayElementClass);
+            // Get possible types: either union types array or single type
+            const possibleTypes = arrayElementTypes || [arrayElementClass];
+            // Get discriminator config for this property if exists
+            const discriminatorConfig = discriminators?.[key];
+            
+            instance[key] = this.transformNestedModelArray(
+              value,
+              possibleTypes,
+              discriminatorConfig
+            );
           }
           continue;
         }
@@ -390,6 +406,9 @@ export class Deserializer<
           } else {
             // It's an array of complex objects (models) - use constructor to trigger transformations
             // ⚠️ Filter out null/undefined for models (models must be objects)
+            // Get discriminator config for this property if exists
+            const discriminatorConfig = discriminators?.[key];
+            
             instance[key] = value
               .filter((item) => item !== null && item !== undefined)
               .map((item) => {
@@ -400,30 +419,54 @@ export class Deserializer<
                     .map((nestedItem) => {
                       // 🔥 Handle deeply nested model arrays (3+ levels)
                       if (Array.isArray(nestedItem)) {
-                        return this.transformNestedModelArray(nestedItem, arrayElementClass);
+                        const possibleTypes = arrayElementTypes || [arrayElementClass];
+                        return this.transformNestedModelArray(
+                          nestedItem,
+                          possibleTypes,
+                          discriminatorConfig
+                        );
                       }
                       
                       if (typeof nestedItem !== 'object') {
                         throw new Error(`${context.className}.${key}[][]: Expected object, got ${typeof nestedItem}`);
                       }
+                      
+                      // Resolve correct type for union types
+                      const possibleTypes = arrayElementTypes || [arrayElementClass];
+                      const resolvedClass = this.resolveUnionType(
+                        nestedItem,
+                        possibleTypes,
+                        discriminatorConfig
+                      );
+                      
                       // Use constructor to ensure nested transformations work
-                      return new (arrayElementClass as any)(nestedItem);
+                      return new (resolvedClass as any)(nestedItem);
                     });
                 }
                 
                 if (typeof item !== 'object') {
                   throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
                 }
+                
+                // Resolve correct type for union types
+                const possibleTypes = arrayElementTypes || [arrayElementClass];
+                const resolvedClass = this.resolveUnionType(
+                  item,
+                  possibleTypes,
+                  discriminatorConfig
+                );
+                
                 // Use constructor instead of deserialize to ensure nested transformations work
-                return new (arrayElementClass as any)(item);
+                return new (resolvedClass as any)(item);
               });
           }
           continue;
         }
         
         // If not Array, it's an individual nested model
+        // Use constructor to ensure nested transformations work
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          instance[key] = this.deserialize(value as Record<string, unknown>, arrayElementClass);
+          instance[key] = new (arrayElementClass as any)(value);
           continue;
         }
       }
@@ -459,11 +502,11 @@ export class Deserializer<
         // It's likely an array of custom models where design:type is the element class
         // Process as array
         const validItems = value.filter((item: unknown) => item !== null && item !== undefined);
-        instance[key] = validItems.map((item: Record<string, unknown>) => {
-          if (typeof item !== 'object') {
+        instance[key] = validItems.map((item: unknown) => {
+          if (typeof item !== 'object' || item === null) {
             throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
           }
-          return this.deserialize(item, designType);
+          return this.deserialize(item as Record<string, unknown>, designType);
         });
         continue;
       }
@@ -880,7 +923,7 @@ export class Deserializer<
     }
     
     // For native constructors, try to find and use transformer
-    if (nativeConstructors.includes(designType)) {
+    if (nativeConstructors.includes(designType as any)) {
       // Map constructor to transformer key
       const transformerKeyMap: Record<string, string> = {
         'RegExp': 'regexp',
@@ -906,7 +949,7 @@ export class Deserializer<
         'WeakMap': 'weakmap',
       };
       
-      const transformerKey = transformerKeyMap[designType.name];
+      const transformerKey = transformerKeyMap[(designType as any).name];
       if (transformerKey) {
         const transformer = this.transformers.get(transformerKey);
         if (transformer) {
@@ -949,6 +992,105 @@ export class Deserializer<
   }
 
   /**
+   * Resolves the correct type constructor for a data object in a union type array.
+   * Uses discriminator configuration and type mapping from @Quick() decorator.
+   * 
+   * @param data - The data object to resolve type for
+   * @param discriminatorConfig - Discriminator configuration (string, function, or object)
+   * @param propertyKey - Property name to get type array from metadata
+   * @param modelClass - Model class to get type mapping from
+   * @returns The correct constructor to use
+   * 
+   * @example
+   * **Simple string discriminator**:
+   * ```typescript
+   * // discriminatorConfig = 'type'
+   * // typeArray from @Quick({ items: [Content, Metadata] })
+   * // data = { type: 'content', text: '...' }
+   * // Returns: Content constructor
+   * ```
+   * 
+   * @example
+   * **Function discriminator**:
+   * ```typescript
+   * // discriminatorConfig = (data) => 'text' in data ? Content : Metadata
+   * // Returns: Content or Metadata based on data structure
+   * ```
+   * 
+   * @example
+   * **Object with mapping**:
+   * ```typescript
+   * // discriminatorConfig = { field: 'type', mapping: { 'content': Content } }
+   * // Returns: Content when data.type === 'content'
+   * ```
+   */
+  private resolveUnionType(
+    data: any,
+    possibleTypes: Function[],
+    discriminatorConfig?: DiscriminatorConfig
+  ): Function {
+    // No types available - throw error
+    if (!possibleTypes || possibleTypes.length === 0) {
+      throw new Error('resolveUnionType: No possible types provided');
+    }
+    
+    // No discriminator - return first type as fallback
+    if (!discriminatorConfig) {
+      return possibleTypes[0];
+    }
+    
+    // 1. String discriminator: use field value to match
+    if (typeof discriminatorConfig === 'string') {
+      const fieldValue = data?.[discriminatorConfig];
+      
+      if (fieldValue !== undefined) {
+        // Try to match by constructor name (case-insensitive)
+        const matched = possibleTypes.find((ctor: any) => {
+          const ctorName = ctor.name?.toLowerCase();
+          const fieldValueLower = String(fieldValue).toLowerCase();
+          return ctorName === fieldValueLower;
+        });
+        
+        if (matched) return matched;
+      }
+      
+      // Fallback to first type
+      return possibleTypes[0];
+    }
+    
+    // 2. Function discriminator: call function with data
+    if (typeof discriminatorConfig === 'function') {
+      const result = discriminatorConfig(data);
+      return result || possibleTypes[0];
+    }
+    
+    // 3. Object with field + mapping
+    if (typeof discriminatorConfig === 'object' && discriminatorConfig.field) {
+      const fieldValue = data?.[discriminatorConfig.field];
+      
+      // Try explicit mapping first
+      if (discriminatorConfig.mapping && fieldValue !== undefined) {
+        const mapped = discriminatorConfig.mapping[fieldValue];
+        if (mapped) return mapped;
+      }
+      
+      // Try to match by constructor name
+      if (fieldValue !== undefined) {
+        const matched = possibleTypes.find((ctor: any) => {
+          const ctorName = ctor.name?.toLowerCase();
+          const fieldValueLower = String(fieldValue).toLowerCase();
+          return ctorName === fieldValueLower;
+        });
+        
+        if (matched) return matched;
+      }
+    }
+    
+    // Fallback to first type in array
+    return possibleTypes[0];
+  }
+
+  /**
    * Recursively transforms deeply nested arrays of transformable types (Date[][][], BigInt[][], etc.).
    * Handles N-level nesting.
    * 
@@ -977,23 +1119,25 @@ export class Deserializer<
 
   /**
    * Recursively transforms deeply nested arrays of models (Post[][][], User[][], etc.).
-   * Handles N-level nesting.
+   * Handles N-level nesting and union types with discriminators.
    * ⚠️ Filters out null/undefined values (models must be objects).
    * 
    * @param nestedArray - The nested array to transform
-   * @param modelClass - The model type constructor
+   * @param possibleTypes - Array of possible type constructors for union types
+   * @param discriminatorConfig - Optional discriminator config for union types
    * @returns Recursively transformed array of model instances
    */
   private transformNestedModelArray(
     nestedArray: unknown[],
-    modelClass: Function
+    possibleTypes: Function[],
+    discriminatorConfig?: DiscriminatorConfig
   ): unknown[] {
     return nestedArray
       .filter((item) => item !== null && item !== undefined)
       .map((item) => {
         // If still an array, recurse deeper
         if (Array.isArray(item)) {
-          return this.transformNestedModelArray(item, modelClass);
+          return this.transformNestedModelArray(item, possibleTypes, discriminatorConfig);
         }
         
         // Transform leaf model using constructor
@@ -1002,8 +1146,12 @@ export class Deserializer<
           throw new Error(`Expected object in nested model array, got ${typeof item}`);
         }
         
+        // Resolve correct type for union types using possibleTypes array
+        const resolvedClass = this.resolveUnionType(item, possibleTypes, discriminatorConfig);
+        
         // Use constructor instead of this.deserialize() to ensure nested transformations work
-        return new (modelClass as any)(item);
+        type ModelConstructor = new (data: Record<string, unknown>) => unknown;
+        return new (resolvedClass as ModelConstructor)(item as Record<string, unknown>);
       });
   }
 }

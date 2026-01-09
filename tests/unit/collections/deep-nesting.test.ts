@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
+import { it } from 'node:test';
 
 describe('Nested Arrays and Objects - Deep Nesting', () => {
 	// ============================================================================
@@ -53,8 +54,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 				level4: [],
 			});
 
-			expect(data.level3[0][0]).toEqual([1, 2]);
-			expect(data.level3[1][1]).toEqual([7, 8]);
+			expect(data.level3[0]?.[0]).toEqual([1, 2]);
+			expect(data.level3[1]?.[1]).toEqual([7, 8]);
 		});
 
 		test('string[][][][] - 4 niveles', () => {
@@ -108,9 +109,9 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			expect(Array.isArray(data.dates2D[0])).toBe(true);
 			
 			// ✅ Ahora funciona con recursión
-			expect(data.dates2D[0][0]).toBeInstanceOf(Date);
-			expect(data.dates2D[0][1]).toBeInstanceOf(Date);
-			expect(data.dates2D[1][0]).toBeInstanceOf(Date);
+			expect(data.dates2D[0]?.[0]).toBeInstanceOf(Date);
+			expect(data.dates2D[0]?.[1]).toBeInstanceOf(Date);
+			expect(data.dates2D[1]?.[0]).toBeInstanceOf(Date);
 		});
 	});
 
@@ -167,9 +168,9 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			expect(Array.isArray(data.posts2D[0])).toBe(true);
 			
 			// Debe transformar modelos en arrays anidados
-			expect(data.posts2D[0][0]).toBeInstanceOf(Post);
-			expect(data.posts2D[0][0].id).toBe(1);
-			expect(data.posts2D[1][0].title).toBe('Post 3');
+			expect(data.posts2D[0]?.[0]).toBeInstanceOf(Post);
+			expect(data.posts2D[0]?.[0]?.id).toBe(1);
+			expect(data.posts2D[1]?.[0]?.title).toBe('Post 3');
 		});
 
 		test('Tag[][][] - 3 niveles de modelos', () => {
@@ -183,9 +184,9 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 				],
 			});
 
-			expect(data.tags3D[0][0][0]).toBeInstanceOf(Tag);
-			expect(data.tags3D[0][0][1].name).toBe('tag2');
-			expect(data.tags3D[0][1][0].name).toBe('tag3');
+			expect(data.tags3D[0]?.[0]?.[0]).toBeInstanceOf(Tag);
+			expect(data.tags3D[0]?.[0]?.[1]?.name).toBe('tag2');
+			expect(data.tags3D[0]?.[1]?.[0]?.name).toBe('tag3');
 		});
 	});
 
@@ -396,27 +397,27 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			expect(userModels).toHaveLength(2);
 
 			// Nivel 2: Array de Posts
-			expect(userModels[0].posts).toHaveLength(1);
-			expect(userModels[0].posts[0]).toBeInstanceOf(Post);
+			expect(userModels[0]?.posts).toHaveLength(1);
+			expect(userModels[0]?.posts[0]).toBeInstanceOf(Post);
 
 			// Nivel 3a: Set de tags
-			expect(userModels[0].posts[0].tags).toBeInstanceOf(Set);
-			expect(userModels[0].posts[0].tags.has('typescript')).toBe(true);
+			expect(userModels[0]?.posts[0]?.tags).toBeInstanceOf(Set);
+			expect(userModels[0]?.posts[0]?.tags.has('typescript')).toBe(true);
 
 			// Nivel 3b: Array de Comments
-			expect(userModels[0].posts[0].comments).toHaveLength(2);
-			expect(userModels[0].posts[0].comments[0]).toBeInstanceOf(Comment);
+			expect(userModels[0]?.posts[0]?.comments).toHaveLength(2);
+			expect(userModels[0]?.posts[0]?.comments[0]).toBeInstanceOf(Comment);
 
 			// Nivel 4: Date en Comment
-			expect(userModels[0].posts[0].comments[0].createdAt).toBeInstanceOf(Date);
+			expect(userModels[0]?.posts[0]?.comments[0]?.createdAt).toBeInstanceOf(Date);
 
 			// Nivel 3c: Array de Dates
-			expect(userModels[0].posts[0].dates).toHaveLength(2);
-			expect(userModels[0].posts[0].dates[0]).toBeInstanceOf(Date);
+			expect(userModels[0]?.posts[0]?.dates).toHaveLength(2);
+			expect(userModels[0]?.posts[0]?.dates[0]).toBeInstanceOf(Date);
 
 			// Segundo usuario
-			expect(userModels[1].posts[0].tags).toBeInstanceOf(Set);
-			expect(userModels[1].posts[0].comments[0].text).toBe('Comment 3');
+			expect(userModels[1]?.posts[0]?.tags).toBeInstanceOf(Set);
+			expect(userModels[1]?.posts[0]?.comments[0]?.text).toBe('Comment 3');
 		});
 	});
 
@@ -450,8 +451,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			});
 
 			expect(data.matrices2D).toHaveLength(2);
-			expect(data.matrices2D[0][0]).toEqual([1, 2]);
-			expect(data.matrices2D[1][1][1]).toBe(8);
+			expect(data.matrices2D[0]?.[0]).toEqual([1, 2]);
+			expect(data.matrices2D[1]?.[1]?.[1]).toBe(8);
 		});
 
 		test('Int8Array[] - arrays de TypedArrays (1 nivel)', () => {
@@ -525,21 +526,21 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			expect(reportModels).toHaveLength(1);
 
 			// Nivel 2: Array de Metrics
-			expect(reportModels[0].metrics).toHaveLength(2);
-			expect(reportModels[0].metrics[0]).toBeInstanceOf(Metrics);
+			expect(reportModels[0]?.metrics).toHaveLength(2);
+			expect(reportModels[0]?.metrics[0]).toBeInstanceOf(Metrics);
 
 			// Nivel 3a: Array de BigInt
-			expect(reportModels[0].metrics[0].values).toHaveLength(3);
-			expect(typeof reportModels[0].metrics[0].values[0]).toBe('bigint');
-			expect(reportModels[0].metrics[0].values[0]).toBe(100n);
+			expect(reportModels[0]?.metrics[0]?.values).toHaveLength(3);
+			expect(typeof reportModels[0]?.metrics[0]?.values[0]).toBe('bigint');
+			expect(reportModels[0]?.metrics[0]?.values[0]).toBe(100n);
 
 			// Nivel 3b: Array de Date
-			expect(reportModels[0].metrics[0].timestamps).toHaveLength(3);
-			expect(reportModels[0].metrics[0].timestamps[0]).toBeInstanceOf(Date);
+			expect(reportModels[0]?.metrics[0]?.timestamps).toHaveLength(3);
+			expect(reportModels[0]?.metrics[0]?.timestamps[0]).toBeInstanceOf(Date);
 
 			// Segundo metrics
-			expect(reportModels[0].metrics[1].values[1]).toBe(500n);
-			expect(reportModels[0].metrics[1].timestamps[0]).toBeInstanceOf(Date);
+			expect(reportModels[0]?.metrics[1]?.values[1]).toBe(500n);
+			expect(reportModels[0]?.metrics[1]?.timestamps[0]).toBeInstanceOf(Date);
 		});
 	});
 
@@ -600,11 +601,13 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 
 	describe('Arrays de union types anidados en múltiples niveles', () => {
 		interface IMetadata {
+			type: 'metadata';  // Discriminator field
 			tags: string[];
 			dates: string[];
 		}
 
 		interface IContent {
+			type: 'content';  // Discriminator field
 			text: string;
 			metadata: IMetadata;
 		}
@@ -636,9 +639,27 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			// Union types no son detectables en runtime - usar Content como fallback
-			items: Content,
-			transforms: Date,
+			// Los tipos ya están definidos aquí - no hace falta repetirlos
+			items: [Content, Metadata],
+			transforms: [Date, BigInt],
+		}, {
+			discriminators: {
+				// Opción 1: Simple - nombre del campo discriminador
+				items: 'type',  // Usa data.type para coincidir con nombre de clase
+				
+				// Opción 2: Con función personalizada
+				transforms: (data) => {
+					// Si es string con formato ISO date → Date
+					if (typeof data === 'string' && /^\d{4}-\d{2}-\d{2}/.test(data)) {
+						return Date;
+					}
+					// Si es string numérico → BigInt  
+					if (typeof data === 'string' && /^\d+$/.test(data)) {
+						return BigInt;
+					}
+					return undefined;  // Fallback al primer tipo
+				}
+			}
 		})
 		class ComplexData extends QModel<IComplexData> {
 			declare items: (Content | Metadata)[];
@@ -646,32 +667,41 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			declare transforms: (Date | bigint)[];
 		}
 
-		test('Arrays mixtos de modelos: Content[] con metadata anidado', () => {
+		test('Union types con discriminador - Content y Metadata mixtos', () => {
 			const data = new ComplexData({
 				items: [
 					{
+						type: 'content',
 						text: 'Content 1',
 						metadata: {
+							type: 'metadata',
 							tags: ['tag1', 'tag2'],
 							dates: ['2026-01-01T00:00:00.000Z'],
 						},
 					},
 					{
+						type: 'metadata',
+						tags: ['tag3'],
+						dates: ['2026-01-02T00:00:00.000Z', '2026-01-03T00:00:00.000Z'],
+					},
+					{
+						type: 'content',
 						text: 'Content 2',
 						metadata: {
-							tags: ['tag3'],
-							dates: ['2026-01-02T00:00:00.000Z', '2026-01-03T00:00:00.000Z'],
+							type: 'metadata',
+							tags: ['tag4'],
+							dates: ['2026-01-04T00:00:00.000Z'],
 						},
 					},
 				],
 				matrix: [],
-				transforms: [],
+				transforms: ['2026-01-01T00:00:00.000Z', '999', '2026-01-02T00:00:00.000Z', '12345'],
 			});
 
-			expect(data.items).toHaveLength(2);
+			expect(data.items).toHaveLength(3);
 			
-			// Primer item: Content con metadata anidado
-			const firstItem = data.items[0] as Content;
+			// Primer item es Content
+			const firstItem = data.items[0];
 			expect(firstItem).toBeInstanceOf(Content);
 			expect(firstItem.text).toBe('Content 1');
 			expect(firstItem.metadata).toBeInstanceOf(Metadata);
@@ -679,13 +709,27 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			expect(firstItem.metadata.tags.has('tag1')).toBe(true);
 			expect(firstItem.metadata.dates[0]).toBeInstanceOf(Date);
 			
-			// Segundo item: Content con diferente metadata
-			const secondItem = data.items[1] as Content;
-			expect(secondItem).toBeInstanceOf(Content);
-			expect(secondItem.metadata.tags).toBeInstanceOf(Set);
-			expect(secondItem.metadata.tags.has('tag3')).toBe(true);
-			expect(secondItem.metadata.dates).toHaveLength(2);
-			expect(secondItem.metadata.dates[1]).toBeInstanceOf(Date);
+			// Segundo item es Metadata (discriminado correctamente)
+			const secondItem = data.items[1];
+			expect(secondItem).toBeInstanceOf(Metadata);
+			expect(secondItem.tags).toBeInstanceOf(Set);
+			expect(secondItem.tags.has('tag3')).toBe(true);
+			expect(secondItem.dates).toHaveLength(2);
+			expect(secondItem.dates[1]).toBeInstanceOf(Date);
+			
+			// Tercer item es Content de nuevo
+			const thirdItem = data.items[2];
+			expect(thirdItem).toBeInstanceOf(Content);
+			expect(thirdItem.text).toBe('Content 2');
+			
+			// Verificar transforms con función discriminadora
+			expect(data.transforms).toHaveLength(4);
+			expect(data.transforms[0]).toBeInstanceOf(Date);      // '2026-01-01...' → Date
+			expect(typeof data.transforms[1]).toBe('bigint');     // '999' → BigInt
+			expect(data.transforms[1]).toBe(999n);
+			expect(data.transforms[2]).toBeInstanceOf(Date);      // '2026-01-02...' → Date
+			expect(typeof data.transforms[3]).toBe('bigint');     // '12345' → BigInt
+			expect(data.transforms[3]).toBe(12345n);
 		});
 
 		test('Arrays mixtos: (string[] | number[])[] - diferentes tipos de arrays', () => {

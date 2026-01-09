@@ -74,11 +74,13 @@
 import 'reflect-metadata';
 import { QType, QTYPES_METADATA_KEY } from './qtype.decorator';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
+import type { IQuickAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_DEFAULT_KEYS,
+	QUICK_DISCRIMINATORS_KEY,
 } from '../constants/metadata-keys';
 
 /**
@@ -276,6 +278,120 @@ export interface IQuickOptions {
  * }
  * ```
  *
+ * @example
+ * **✅ Union types with discriminators (ADVANCED):**
+ * 
+ * When you have arrays that can contain different model types, use discriminators
+ * to tell QuickModel how to distinguish between them at runtime.
+ * 
+ * ```typescript
+ * // Backend interfaces
+ * interface IContent {
+ *   type: 'content';  // Discriminator field
+ *   text: string;
+ * }
+ * 
+ * interface IMetadata {
+ *   type: 'metadata';  // Discriminator field
+ *   tags: string[];
+ * }
+ * 
+ * // Model classes
+ * class Content extends QModel<IContent> { ... }
+ * class Metadata extends QModel<IMetadata> { ... }
+ * 
+ * // Use discriminator to handle union types
+ * @Quick({
+ *   items: [Content, Metadata],  // Declare ALL possible types
+ * }, {
+ *   discriminators: {
+ *     // Option 1: String discriminator (field name)
+ *     // Matches field value with constructor name (case-insensitive)
+ *     items: 'type'  // Uses data.type to determine Content vs Metadata
+ *   }
+ * })
+ * class Data extends QModel<IData> {
+ *   declare items: (Content | Metadata)[];
+ * }
+ * 
+ * // Runtime: data.type === 'content' → instantiates Content
+ * //         data.type === 'metadata' → instantiates Metadata
+ * ```
+ * 
+ * @example
+ * **✅ Union types with custom type guard function:**
+ * 
+ * For complex discrimination logic, use a custom function.
+ * 
+ * **CRITICAL**: The function MUST return one of the types declared in the array.
+ * If you declare 5 types, every code path must return one of those 5 types.
+ * 
+ * ```typescript
+ * @Quick({
+ *   items: [Content, Metadata],  // 2 types declared
+ * }, {
+ *   discriminators: {
+ *     // Custom function: MUST return Content or Metadata (the declared types)
+ *     items: (data) => {
+ *       // Check data structure to determine type
+ *       if ('text' in data) return Content;
+ *       if ('tags' in data) return Metadata;
+ *       
+ *       // Fallback: return first type (Content)
+ *       // NEVER return undefined - always return one of the declared types
+ *       return Content;
+ *     }
+ *   }
+ * })
+ * ```
+ * 
+ * @example
+ * **✅ Union types with 5+ types:**
+ * 
+ * If you declare multiple types, EVERY branch must return one of them.
+ * 
+ * ```typescript
+ * @Quick({
+ *   // Declare ALL 5 possible types
+ *   items: [TypeA, TypeB, TypeC, TypeD, TypeE],
+ * }, {
+ *   discriminators: {
+ *     items: (data) => {
+ *       // Each branch MUST return one of the 5 declared types
+ *       if (data.kind === 'a') return TypeA;
+ *       if (data.kind === 'b') return TypeB;
+ *       if (data.kind === 'c') return TypeC;
+ *       if (data.kind === 'd') return TypeD;
+ *       if (data.kind === 'e') return TypeE;
+ *       
+ *       // Fallback: MUST be one of the declared types
+ *       return TypeA;  // Default to first type
+ *     }
+ *   }
+ * })
+ * ```
+ * 
+ * @example
+ * **✅ Union types with object configuration:**
+ * 
+ * For explicit mapping between discriminator values and types.
+ * 
+ * ```typescript
+ * @Quick({
+ *   items: [Content, Metadata],
+ * }, {
+ *   discriminators: {
+ *     items: {
+ *       field: 'type',  // Field name to check
+ *       mapping: {
+ *         'content': Content,    // Explicit mapping
+ *         'metadata': Metadata
+ *       }
+ *     }
+ *   }
+ * })
+ * ```
+ *
  * @remarks
  * **Why Set/Map need type mapping:**
  *
@@ -285,10 +401,26 @@ export interface IQuickOptions {
  *
  * Without explicit type mapping, the decorator cannot know the developer's intent.
  * All special types MUST be explicitly declared - no automatic detection.
+ * 
+ * **Discriminators for union types:**
+ * 
+ * JavaScript has no runtime type information. When an array can contain different
+ * types (union types), you MUST provide a discriminator to determine the correct
+ * type at runtime:
+ * 
+ * - **String discriminator**: Field name whose value matches constructor name
+ * - **Function discriminator**: Custom logic returning the correct constructor
+ * - **Object discriminator**: Explicit field + mapping configuration
+ * 
+ * Without discriminators, QuickModel uses the first type in the array as fallback.
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
+ * @see {@link IQuickAdvancedOptions} for discriminator configuration
  */
-export function Quick(typeMap?: IQuickOptions): ClassDecorator {
+export function Quick(
+	typeMap?: IQuickOptions,
+	advancedOptions?: IQuickAdvancedOptions
+): ClassDecorator {
 	return function <T extends Function>(target: T): any {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
@@ -296,6 +428,15 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 		// Store type map if provided
 		if (typeMap) {
 			Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
+		}
+
+		// Store discriminators if provided
+		if (advancedOptions?.discriminators) {
+			Reflect.defineMetadata(
+				QUICK_DISCRIMINATORS_KEY,
+				advancedOptions.discriminators,
+				target
+			);
 		}
 
 		// CRITICAL: Capture design:type metadata NOW before TypeScript field initialization overwrites it

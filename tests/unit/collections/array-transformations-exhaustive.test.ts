@@ -132,7 +132,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			expect(data.dates).toHaveLength(2);
 			expect(data.dates[0]).toBeInstanceOf(Date);
 			expect(data.dates[1]).toBeInstanceOf(Date);
-			expect(data.dates[0].getFullYear()).toBe(2026);
+			expect(data.dates[0]?.getFullYear()).toBe(2026);
 		});
 
 		test('Date[] with null values', () => {
@@ -203,8 +203,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.patterns).toHaveLength(3);
 			expect(data.patterns[0]).toBeInstanceOf(RegExp);
-			expect(data.patterns[0].test('test123')).toBe(true);
-			expect(data.patterns[1].test('hello beautiful world')).toBe(true);
+			expect(data.patterns[0]?.test('test123')).toBe(true);
+			expect(data.patterns[1]?.test('hello beautiful world')).toBe(true);
 		});
 	});
 
@@ -293,8 +293,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.maps).toHaveLength(2);
 			expect(data.maps[0]).toBeInstanceOf(Map);
-			expect(data.maps[0].get('key1')).toBe('value1');
-			expect(data.maps[1].get('name')).toBe('John');
+			expect(data.maps[0]?.get('key1')).toBe('value1');
+			expect(data.maps[1]?.get('name')).toBe('John');
 		});
 	});
 
@@ -414,8 +414,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.errors).toHaveLength(2);
 			expect(data.errors[0]).toBeInstanceOf(Error);
-			expect(data.errors[0].message).toBe('Error 1');
-			expect(data.errors[1].message).toBe('Error 2');
+			expect(data.errors[0]?.message).toBe('Error 1');
+			expect(data.errors[1]?.message).toBe('Error 2');
 		});
 	});
 

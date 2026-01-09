@@ -240,9 +240,18 @@ export function QType<T>(
 				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
 				return;
 			} else if (typeOrClass.length > 1) {
-				// Union type array: [Date, null, undefined]
-				// TODO: Handle union types in arrays
-				console.warn(`QType: Union type arrays not fully supported yet: [${typeOrClass.map(t => t?.name || t).join(', ')}]`);
+				// Union type array: [Content, Metadata], [Date, BigInt], etc.
+				// Store ALL types for discriminator to choose from
+				
+				Reflect.defineMetadata('design:type', Array, target, propertyKey);
+				
+				// Store first type as arrayElementClass for backward compatibility
+				Reflect.defineMetadata('arrayElementClass', typeOrClass[0], target, propertyKey);
+				
+				// Store ALL types in arrayElementTypes for union type discrimination
+				Reflect.defineMetadata('arrayElementTypes', typeOrClass, target, propertyKey);
+				
+				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
 				return;
 			}
 		}

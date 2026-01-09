@@ -28,3 +28,13 @@ export { Quick } from './core/decorators/quick.decorator';
  * Property decorator for explicit field type specification (optional)
  */
 export { QType } from './core/decorators/qtype.decorator';
+
+/**
+ * Advanced options types for @Quick() decorator
+ */
+export type { 
+	IQuickAdvancedOptions,
+	DiscriminatorConfig,
+	TypeGuardFunction 
+} from './core/interfaces/quick-options.interface';
+

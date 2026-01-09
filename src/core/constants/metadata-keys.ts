@@ -39,3 +39,9 @@ export const QUICK_PROPERTY_KEYS = '__quickPropertyKeys__';
  * Used to store default values for properties with explicit defaults.
  */
 export const QUICK_DEFAULT_KEYS = '__quickDefaultKey__';
+
+/**
+ * Key for storing discriminator configuration for union types.
+ * Used by @Quick() second parameter to handle polymorphic arrays.
+ */
+export const QUICK_DISCRIMINATORS_KEY = '__quickDiscriminators__';

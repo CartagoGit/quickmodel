@@ -49,11 +49,11 @@ describe('Debug Simple Nested Array', () => {
 		console.log('user.posts:', user.posts);
 		console.log('user.posts[0]:', user.posts[0]);
 		console.log('user.posts[0] instanceof Post:', user.posts[0] instanceof Post);
-		console.log('user.posts[0].comments:', user.posts[0].comments);
-		console.log('user.posts[0].comments[0]:', user.posts[0].comments[0]);
-		console.log('user.posts[0].comments[0] instanceof Comment:', user.posts[0].comments[0] instanceof Comment);
+		console.log('user.posts[0].comments:', user.posts[0]?.comments);
+		console.log('user.posts[0].comments[0]:', user.posts[0]?.comments[0]);
+		console.log('user.posts[0].comments[0] instanceof Comment:', user.posts[0]?.comments[0] instanceof Comment);
 
 		expect(user.posts[0]).toBeInstanceOf(Post);
-		expect(user.posts[0].comments[0]).toBeInstanceOf(Comment);
+		expect(user.posts[0]?.comments[0]).toBeInstanceOf(Comment);
 	});
 });
