@@ -51,6 +51,6 @@
 		"forceConsistentCasingInFileNames": true,
 		"allowJs": false
 	},
-	"include": ["src/**/*", "tests/**/*", "run/**/*"],
-	"exclude": ["node_modules", "dist", "docs/**/*"]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "docs/**/*", "tests/**/*", "run/**/*"]
 }

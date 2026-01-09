@@ -1,4 +1,4 @@
-import type { QModel } from '@/quick.model';
+import type { QModel } from '@/core/models/quick.model';
 
 /**
  * Extracts the instance type from a QModel class constructor.
