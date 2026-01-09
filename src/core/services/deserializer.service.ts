@@ -388,7 +388,7 @@ export class Deserializer<
               return this.transformByDesignType(item, arrayElementClass, context);
             });
           } else {
-            // It's an array of complex objects (models) - deserialize recursively
+            // It's an array of complex objects (models) - use constructor to trigger transformations
             // ⚠️ Filter out null/undefined for models (models must be objects)
             instance[key] = value
               .filter((item) => item !== null && item !== undefined)
@@ -406,14 +406,16 @@ export class Deserializer<
                       if (typeof nestedItem !== 'object') {
                         throw new Error(`${context.className}.${key}[][]: Expected object, got ${typeof nestedItem}`);
                       }
-                      return this.deserialize(nestedItem as Record<string, unknown>, arrayElementClass);
+                      // Use constructor to ensure nested transformations work
+                      return new (arrayElementClass as any)(nestedItem);
                     });
                 }
                 
                 if (typeof item !== 'object') {
                   throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
                 }
-                return this.deserialize(item, arrayElementClass);
+                // Use constructor instead of deserialize to ensure nested transformations work
+                return new (arrayElementClass as any)(item);
               });
           }
           continue;

@@ -341,8 +341,8 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 		}
 
 		@Quick({
-			tags: [Set],
-			comments: Comment,
+			tags: Set,
+			comments: [Comment],
 			dates: [Date],
 		})
 		class Post extends QModel<IPost> {
