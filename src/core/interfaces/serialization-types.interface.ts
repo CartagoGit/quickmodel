@@ -72,5 +72,6 @@ export type Deserialized<T> = T; // Deserialization handled at runtime with tran
 /**
  * Tipo para datos de entrada en el constructor
  * Acepta datos completos, ya sean originales o serializados
+ * Uses Record<string, any> to allow flexibility while maintaining type hints
  */
-export type ModelData<T> = T | SerializedInterface<T>;
+export type ModelData<T> = T | SerializedInterface<T> | Record<string, any>;

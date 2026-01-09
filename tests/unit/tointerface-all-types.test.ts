@@ -25,16 +25,16 @@ interface AllTypesInterface {
 	boolFalse: boolean;
 
 	// BigInt
-	bigintPrimitive: bigint | string;
-	bigintZero: bigint | string;
-	bigintNegative: bigint | string;
+	bigintPrimitive: bigint;
+	bigintZero: bigint;
+	bigintNegative: bigint;
 	bigintString: string; // BigInt serializado como string
 	bigintObject: { __type: string; value: string }; // BigInt serializado como objeto
 
 	// Symbols
-	symUnique: symbol | { __type: string; description: string };
-	symGlobal: symbol | { __type: string; description: string };
-	symWellKnown: symbol | { __type: string; description: string };
+	symUnique: symbol;
+	symGlobal: symbol;
+	symWellKnown: symbol;
 
 	// Null y Undefined
 	nullValue: null;

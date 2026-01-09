@@ -300,9 +300,9 @@ describe('Mezcla de arrays y objetos anidados', () => {
 		expect(user.posts[1]?.comments?.[0]?.text).toBe('Comment 3');
 	});
 	describe('Arrays mixtos con diferentes tipos en cada nivel', () => {
-		interface ITag {
-			name: string;
-		}
+		// interface ITag {
+		// 	name: string;
+		// }
 
 		interface IComment {
 			text: string;

@@ -23,10 +23,10 @@ class Tag extends QModel<ITag> {
   declare name: string;
 }
 
-interface IUser {
-  id: string;
-  name: string;
-}
+// interface IUser {
+//   id: string;
+//   name: string;
+// }
 
 /*
 @Quick()
