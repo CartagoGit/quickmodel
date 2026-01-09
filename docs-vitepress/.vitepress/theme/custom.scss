@@ -5,7 +5,8 @@ $primary-color: #42b883;
 $secondary-color: #35495e;
 
 // Home page layout - features to the right when space available
-.VPHome {
+// Only apply grid to layout: home pages (not doc pages)
+.VPHome:not(.has-sidebar) {
 	@media (min-width: 1280px) {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);

@@ -8,6 +8,39 @@ export default defineConfig({
 	outDir: '../docs-vitepress/dist',
 	ignoreDeadLinks: true,
 
+	// Global theme config (shared across all locales)
+	themeConfig: {
+		socialLinks: [{ icon: 'github', link: 'https://github.com/CartagoGit/quickmodel' }],
+		sidebar: {
+			'/tsdoc/': [
+				{
+					text: 'API Reference',
+					items: [
+						{ text: 'Overview', link: '/tsdoc/' },
+						{
+							text: 'Classes',
+							collapsed: false,
+							items: [{ text: 'QModel', link: '/tsdoc/classes/QModel' }],
+						},
+						{
+							text: 'Decorators',
+							collapsed: false,
+							items: [
+								{ text: '@Quick', link: '/tsdoc/functions/Quick' },
+								{ text: '@QType', link: '/tsdoc/functions/QType' },
+							],
+						},
+						{
+							text: 'Types',
+							collapsed: false,
+							items: [{ text: 'QInterface', link: '/tsdoc/type-aliases/QInterface' }],
+						},
+					],
+				},
+			],
+		},
+	},
+
 	locales: {
 		en: {
 			label: 'English',
@@ -57,32 +90,6 @@ export default defineConfig({
 								{ text: 'Basic Usage', link: '/en/examples/basic' },
 								{ text: 'API Models', link: '/en/examples/api-models' },
 								{ text: 'Complex Types', link: '/en/examples/complex-types' },
-							],
-						},
-					],
-					'/tsdoc/': [
-						{
-							text: 'API Reference',
-							items: [
-								{ text: 'Overview', link: '/tsdoc/' },
-								{
-									text: 'Classes',
-									collapsed: false,
-									items: [{ text: 'QModel', link: '/tsdoc/classes/QModel' }],
-								},
-								{
-									text: 'Decorators',
-									collapsed: false,
-									items: [
-										{ text: '@Quick', link: '/tsdoc/functions/Quick' },
-										{ text: '@QType', link: '/tsdoc/functions/QType' },
-									],
-								},
-								{
-									text: 'Types',
-									collapsed: false,
-									items: [{ text: 'QInterface', link: '/tsdoc/type-aliases/QInterface' }],
-								},
 							],
 						},
 					],
@@ -144,32 +151,6 @@ export default defineConfig({
 							],
 						},
 					],
-					'/tsdoc/': [
-						{
-							text: 'Referencia API',
-							items: [
-								{ text: 'Resumen', link: '/tsdoc/' },
-								{
-									text: 'Clases',
-									collapsed: false,
-									items: [{ text: 'QModel', link: '/tsdoc/classes/QModel' }],
-								},
-								{
-									text: 'Decoradores',
-									collapsed: false,
-									items: [
-										{ text: '@Quick', link: '/tsdoc/functions/Quick' },
-										{ text: '@QType', link: '/tsdoc/functions/QType' },
-									],
-								},
-								{
-									text: 'Tipos',
-									collapsed: false,
-									items: [{ text: 'QInterface', link: '/tsdoc/type-aliases/QInterface' }],
-								},
-							],
-						},
-					],
 				},
 				footer: {
 					message: 'Liberado bajo Licencia MIT.',
@@ -179,7 +160,5 @@ export default defineConfig({
 		},
 	},
 
-	themeConfig: {
-		socialLinks: [{ icon: 'github', link: 'https://github.com/CartagoGit/quickmodel' }],
-	},
+
 });

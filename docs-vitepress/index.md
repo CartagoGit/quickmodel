@@ -3,10 +3,9 @@ layout: home
 ---
 
 <script setup>
-import { useRouter, useData } from 'vitepress'
+import { useData } from 'vitepress'
 import { onMounted } from 'vue'
 
-const router = useRouter()
 const { site } = useData()
 
 onMounted(() => {
@@ -38,7 +37,8 @@ onMounted(() => {
     ? `/${selectedLang}/` 
     : `${base}${selectedLang}/`
   
-  router.go(redirectPath)
+  // Usar window.location para navegar
+  window.location.href = redirectPath
 })
 </script>
 

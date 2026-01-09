@@ -25,10 +25,10 @@
 				<a
 					v-for="lang in locales"
 					:key="lang.code"
-					:href="lang.link"
+					:href="lang.isShared ? undefined : lang.link"
 					class="item"
 					:class="{ active: lang.code === currentLocale }"
-					@click="saveLanguagePreference(lang.code)"
+					@click="handleLanguageChange(lang)"
 				>
 					<img :src="lang.flagSvg" :alt="lang.label" class="flag-img" />
 					<span class="text">{{ lang.label }}</span>
@@ -59,7 +59,7 @@ onMounted(async () => {
 		const defaultSwitcher = document.querySelector('.translations');
 		defaultSwitcher?.remove();
 		if (switcher && themeButton && themeButton.parentElement) {
-			themeButton.parentElement.insertBefore(switcher, themeButton);
+			themeButton.parentElement?.insertBefore?.(switcher, themeButton);
 		}
 	}
 });
@@ -67,18 +67,23 @@ onMounted(async () => {
 const locales = computed(() => {
 	const currentPath = route.path;
 	
+	// Detectar si estamos en una ruta compartida (sin prefijo de idioma)
+	const isSharedRoute = currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//); 
+	
 	return Object.entries(site.value.locales || {}).map(([localeKey, config]) => {
 		const code = localeKey;
 		
-		// Simplemente reemplazar el código de idioma en el path actual
-		// /quickmodel/es/guide/ → /quickmodel/en/guide/
-		const newPath = currentPath.replace(/\/(en|es)\//, `/${code}/`);
+		// Si es ruta compartida, mantener el path actual
+		const newPath = isSharedRoute 
+			? currentPath 
+			: currentPath.replace(/\/(en|es)\//, `/${code}/`);
 
 		return {
 			code,
 			label: config.label?.replace(/🇬🇧|🇪🇸/, '').trim() || code.toUpperCase(),
 			flagSvg: code === 'en' ? flagGB : code === 'es' ? flagES : '',
 			link: newPath,
+			isShared: isSharedRoute,
 		};
 	});
 });
@@ -88,9 +93,16 @@ const currentLang = computed(() => {
 	return lang || locales.value[0];
 });
 
-const saveLanguagePreference = (lang: string) => {
+const handleLanguageChange = (lang: any) => {
 	if (typeof window !== 'undefined') {
-		localStorage.setItem(STORAGE_KEY_LANG, lang);
+		localStorage.setItem(STORAGE_KEY_LANG, lang.code);
+		
+		// Si es ruta compartida, solo actualizar el locale sin redirigir
+		if (lang.isShared) {
+			// VitePress manejará el cambio de locale internamente
+			window.location.reload();
+		}
+		// Si no es compartida, el href hará la navegación
 	}
 };
 </script>
