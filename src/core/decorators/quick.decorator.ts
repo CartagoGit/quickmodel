@@ -372,7 +372,8 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						const decorator = QType(mappedType);
 						decorator(originalConstructor.prototype, propertyKey);
 					} else {
-						// No type mapping - use TypeScript metadata as-is
+						// No type mapping - still register with QType() to create getter/setter
+						// This prevents TypeScript's `property!: Type` from creating real properties
 						const decorator = QType();
 						decorator(originalConstructor.prototype, propertyKey);
 					}
@@ -414,7 +415,13 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
 			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
 			const quickTypeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) || {};
-			for (const propertyKey of Object.keys(quickTypeMap)) {
+			
+			// Check ALL properties in the instance, not just those in quickTypeMap
+			const instanceKeys = Object.keys(instance);
+			for (const propertyKey of instanceKeys) {
+				// Skip internal properties
+				if (propertyKey.startsWith('__')) continue;
+				
 				// Check if property has a getter in the prototype (from @QType)
 				const protoDescriptor = Object.getOwnPropertyDescriptor(
 					originalConstructor.prototype,

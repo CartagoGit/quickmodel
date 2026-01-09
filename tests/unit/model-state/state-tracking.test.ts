@@ -19,11 +19,11 @@ describe('QModel State Tracking', () => {
 		createdAt: Date,
 	})
 	class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-		id!: string;
-		name!: string;
-		age!: number;
-		email!: string;
-		createdAt!: Date;
+		declare id: string;
+		declare name: string;
+		declare age: number;
+		declare email: string;
+		declare createdAt: Date;
 	}
 
 	describe('toInterface() - Current state as primitives', () => {

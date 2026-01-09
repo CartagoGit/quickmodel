@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { QModel } from '../../src/quick.model';
-import { QType } from '../../src/core/decorators/qtype.decorator';
+import { QModel, Quick } from '@/index';
 
 // ========================================
 // BENCHMARKS: RENDIMIENTO DE LA LIBRERÍA
@@ -15,21 +14,13 @@ describe('Performance: Costo de serialización/deserialización', () => {
     active: boolean;
   }
 
+  @Quick()
   class User extends QModel<IUser> {
-    @QType()
-    id!: string;
-
-    @QType()
-    name!: string;
-
-    @QType()
-    email!: string;
-
-    @QType()
-    age!: number;
-
-    @QType()
-    active!: boolean;
+    declare id: string;
+    declare name: string;
+    declare email: string;
+    declare age: number;
+    declare active: boolean;
   }
 
   test('Baseline: Crear objeto plain (sin QModel)', () => {

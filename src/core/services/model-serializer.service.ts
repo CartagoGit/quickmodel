@@ -157,33 +157,9 @@ export class ModelSerializer<
     const initData = (model as any).__initData || {};
     const isProduction = process.env.NODE_ENV === 'production';
 
-    // Get all property keys, including those with getters/setters
-    const keys = new Set<string>();
-    
-    // Add own enumerable properties
-    for (const key of Object.keys(model as object)) {
-      keys.add(key);
-    }
-    
-    // Add properties with getters/setters from prototype chain
-    let proto = Object.getPrototypeOf(model);
-    while (proto && proto !== Object.prototype) {
-      for (const key of Object.getOwnPropertyNames(proto)) {
-        const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-        if (descriptor && (descriptor.get || descriptor.set) && key !== 'constructor') {
-          keys.add(key);
-        }
-      }
-      proto = Object.getPrototypeOf(proto);
-    }
-    
-    // Serialize all discovered properties
-    for (const key of keys) {
-      // Skip internal properties
-      if (key.startsWith('__') || key.startsWith('_')) {
-        continue;
-      }
-      
+    // ONLY iterate over properties that were in the original initData
+    // Return current values, but only for properties that existed initially
+    for (const key of Object.keys(initData)) {
       const currentValue = (model as any)[key];
       const originalValue = initData[key];
       

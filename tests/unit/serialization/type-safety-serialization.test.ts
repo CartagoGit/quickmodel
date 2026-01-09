@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, test } from 'bun:test';
-import { QType, QModel, QRegExp, QError, QBigInt } from '../../src';
+import { QModel, Quick, QInterface } from '@/index';
 
 interface ITypeSafeModel {
   pattern: RegExp;
@@ -21,21 +21,27 @@ interface ITypeSafeModel {
   tags: Set<string>;
 }
 
-class TypeSafeModel extends QModel<ITypeSafeModel> {
-  @QType(QRegExp)
-  pattern!: RegExp;
+interface ITypeSafeModelTransform {
+  pattern: RegExp;
+  error: Error;
+  amount: bigint;
+  createdAt: Date;
+  tags: Set<string>;
+}
 
-  @QType(QError)
-  error!: Error;
-
-  @QType(QBigInt)
-  amount!: bigint;
-
-  @QType()
-  createdAt!: Date;
-
-  @QType()
-  tags!: Set<string>;
+@Quick({
+  pattern: RegExp,
+  error: Error,
+  amount: BigInt,
+  createdAt: Date,
+  tags: Set
+})
+class TypeSafeModel extends QModel<ITypeSafeModel> implements QInterface<ITypeSafeModel, ITypeSafeModelTransform> {
+  declare pattern: RegExp;
+  declare error: Error;
+  declare amount: bigint;
+  declare createdAt: Date;
+  declare tags: Set<string>;
 }
 
 describe('Type Safety', () => {

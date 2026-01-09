@@ -198,23 +198,32 @@ This allows type-safe serialization while maintaining clean runtime code.
 
 ### Property Declaration
 
-Both styles are supported:
+**All three TypeScript property declaration styles work identically:**
 
 ```typescript
-// Using declare (recommended)
+// ✅ Style 1: declare (cleaner, no runtime code)
 @Quick({ createdAt: Date })
 class User extends QModel<IUser> {
   declare id: number;
   declare createdAt: Date;
 }
 
-// Using definite assignment (!)
+// ✅ Style 2: Definite assignment (!)
 @Quick({ createdAt: Date })
 class User extends QModel<IUser> {
   id!: number;
   createdAt!: Date;
 }
+
+// ✅ Style 3: Optional (?)
+@Quick({ createdAt: Date })
+class User extends QModel<IUser> {
+  id?: number;
+  createdAt?: Date;
+}
 ```
+
+All three styles produce **identical behavior** - choose based on your preference or team conventions.
 
 ### Collections Example
 
@@ -234,9 +243,9 @@ interface IPostTransform {
   metadata: Map
 })
 class Post extends QModel<IPost> implements QInterface<IPost, IPostTransform> {
-  id!: string;
-  tags!: Set<string>;
-  metadata!: Map<string, any>;
+  declare id: string;          // Any style works: declare, !, or ?
+  declare tags: Set<string>;
+  declare metadata: Map<string, any>;
 }
 
 const post = new Post({
@@ -251,14 +260,14 @@ const post = new Post({
 ```typescript
 @Quick({ birthDate: Date })
 class Profile extends QModel<IProfile> {
-  birthDate!: Date;
-  address!: Address;
+  declare birthDate: Date;
+  declare address: Address;
 }
 
 @Quick({ profile: Profile })
 class User extends QModel<IUser> {
-  id!: string;
-  profile!: Profile;
+  declare id: string;
+  declare profile: Profile;
 }
 
 const user = new User({

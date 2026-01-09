@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, QType } from '../../src/quick.model';
+import { QModel, Quick } from '@/index';
 
 // ============================================================================
 // Nested Models
@@ -17,9 +17,10 @@ interface ITag {
   name: string;
 }
 
+@Quick()
 class Tag extends QModel<ITag> {
-  @QType() id!: string;
-  @QType() name!: string;
+  declare id: string;
+  declare name: string;
 }
 
 interface IUser {
@@ -27,9 +28,10 @@ interface IUser {
   name: string;
 }
 
+@Quick()
 class User extends QModel<IUser> {
-  @QType() id!: string;
-  @QType() name!: string;
+  declare id: string;
+  declare name: string;
 }
 
 // ============================================================================
@@ -59,20 +61,23 @@ interface IArraysAndUnions {
   mixed: string | number;
 }
 
+@Quick({
+  modelArray: Tag
+})
 class ArraysAndUnionsModel extends QModel<IArraysAndUnions> {
-  @QType() strArray!: string[];
-  @QType() numArray!: number[];
-  @QType() modelArray!: Tag[];
+  declare strArray: string[];
+  declare numArray: number[];
+  declare modelArray: Tag[];
   
-  @QType() role!: Role;
-  @QType() status!: Status;
+  declare role: Role;
+  declare status: Status;
   
-  @QType() literalStr!: 'pepe' | 'maria';
-  @QType() literalNum!: 1 | 2 | 3;
+  declare literalStr: 'pepe' | 'maria';
+  declare literalNum: 1 | 2 | 3;
   
-  @QType() optional?: string;
-  @QType() nullable!: string | null;
-  @QType() mixed!: string | number;
+  declare optional?: string;
+  declare nullable: string | null;
+  declare mixed: string | number;
 }
 
 // ============================================================================
