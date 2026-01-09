@@ -21,7 +21,7 @@ $secondary-color: #35495e;
 			max-width: 100% !important;
 			margin: 0 !important;
 			padding-right: 0 !important;
-			display:flex; 
+			display: flex;
 			align-items: center;
 			height: 100%;
 		}
@@ -83,7 +83,7 @@ $secondary-color: #35495e;
 		@media (min-width: 1280px) {
 			grid-template-columns: repeat(2, 50%);
 			gap: 16px;
-			padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) );
+			padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px));
 		}
 	}
 
@@ -252,6 +252,12 @@ $secondary-color: #35495e;
 	a[href*='github.com'] {
 		&::before {
 			content: '📄 ';
+		}
+	}
+	&.container {
+		@media (min-width: 960px) {
+			padding-bottom: 2rem !important;
+			margin-top: 0 !important;
 		}
 	}
 }
