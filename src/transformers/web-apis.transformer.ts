@@ -105,7 +105,7 @@ export class TextEncoderTransformer extends BaseTransformer<Record<string, never
     );
   }
 
-  serialize(value: TextEncoder): Record<string, never> {
+	serialize(_value: TextEncoder): Record<string, never> {
     return {}; // TextEncoder has no serializable state
   }
 }

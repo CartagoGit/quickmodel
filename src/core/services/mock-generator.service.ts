@@ -131,7 +131,7 @@ export class MockGenerator {
       : fieldType.name;
 
     // Normalize to lowercase for comparison
-    const typeStrLower = typeStr.toLowerCase();
+
 
     // Primitives (must come first - exact match with QType metadata)
     if (typeStr === 'string' || typeStr === 'String') {

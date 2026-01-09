@@ -26,7 +26,7 @@ interface IModelWithConstructors {
   bytes2: Uint8Array;
 }
 
-interface IModelWithConstructorsSerialized {
+interface _IModelWithConstructorsSerialized {
   pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
   url: string;
@@ -68,7 +68,7 @@ interface IModelWithSymbols {
   bytes2: Uint8Array;
 }
 
-interface IModelWithSymbolsSerialized {
+interface _IModelWithSymbolsSerialized {
   pattern: string | { __type: 'regexp'; source: string; flags: string };
   error: string;
   url: string;

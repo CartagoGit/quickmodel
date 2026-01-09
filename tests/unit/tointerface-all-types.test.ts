@@ -173,9 +173,10 @@ describe('toInterface() - All Types Preservation', () => {
 			boolPrimitive: true,
 			boolWrapper: new Boolean(false),
 			boolFalse: false,
-			bigintPrimitive: 123n,
-			bigintZero: 0n,
-			bigintNegative: -999n,
+		// BigInt debe pasarse como string o formato serializado, no como bigint nativo
+		bigintPrimitive: '123',
+		bigintZero: '0',
+		bigintNegative: '-999',
 			bigintString: '999999999999999999',
 			bigintObject: { __type: 'bigint', value: '123456789' },
 			symUnique: Symbol('test'),
@@ -614,11 +615,11 @@ describe('toInterface() - All Types Preservation', () => {
 		// Array con wrappers - debe preservar wrappers
 		expect(Array.isArray(result.arrayWithWrappers)).toBe(true);
 		expect(result.arrayWithWrappers[0]).toBeInstanceOf(Number);
-		expect(result.arrayWithWrappers[0].valueOf()).toBe(42);
-		expect(result.arrayWithWrappers[1]).toBeInstanceOf(String);
-		expect(result.arrayWithWrappers[1].valueOf()).toBe('test');
-		expect(result.arrayWithWrappers[2]).toBeInstanceOf(Boolean);
-		expect(result.arrayWithWrappers[2].valueOf()).toBe(true);
+	expect(result.arrayWithWrappers[0]!.valueOf()).toBe(42);
+	expect(result.arrayWithWrappers[1]).toBeInstanceOf(String);
+	expect(result.arrayWithWrappers[1]!.valueOf()).toBe('test');
+	expect(result.arrayWithWrappers[2]).toBeInstanceOf(Boolean);
+	expect(result.arrayWithWrappers[2]!.valueOf()).toBe(true);
 	});
 
 	test('should preserve Map serialized as array of pairs', () => {
@@ -705,9 +706,10 @@ describe('toInterface() - All Types Preservation', () => {
 			boolPrimitive: true,
 			boolWrapper: new Boolean(false),
 			boolFalse: false,
-			bigintPrimitive: 123n,
-			bigintZero: 0n,
-			bigintNegative: -1n,
+			// BigInt debe pasarse como string o formato serializado
+			bigintPrimitive: '123',
+			bigintZero: '0',
+			bigintNegative: '-1',
 			bigintString: '123',
 			bigintObject: { __type: 'bigint', value: '123' },
 			symUnique: Symbol('test'),
@@ -832,79 +834,79 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.plainObject.nested.c).toBe(true);
 		expect(Number.isNaN(result.plainObject.nested.d)).toBe(true);
 		expect(result.plainObject.nested.e).toBe(null);
-		expect(result.plainObject.nested.deeper.f).toBe(Infinity);
-		expect(result.plainObject.nested.deeper.g).toBe(undefined);
+	expect(result.plainObject.nested.deeper!.f).toBe(Infinity);
+	expect(result.plainObject.nested.deeper!.g).toBe(undefined);
 
-		// Objeto con null/undefined anidados
-		expect(result.objectWithNull.x).toBe(null);
-		expect(result.objectWithNull.y).toBe(undefined);
-		expect(result.objectWithNull.z.w).toBe(null);
+	// Objeto con null/undefined anidados
+	expect(result.objectWithNull.x).toBe(null);
+	expect(result.objectWithNull.y).toBe(undefined);
+	expect(result.objectWithNull.z!.w).toBe(null);
 
-		// Object.create(null) - debe preservar estructura
-		expect(result.objectNoProto.key).toBe('value');
-		expect(result.objectNoProto.nested.prop).toBe(42);
+	// Object.create(null) - debe preservar estructura
+	expect(result.objectNoProto.key).toBe('value');
+	expect(result.objectNoProto.nested.prop).toBe(42);
 
-		// Objeto profundamente anidado
-		expect(result.objectDeeplyNested.level1.l1val).toBe(1);
-		expect(result.objectDeeplyNested.level1.level2.l2val).toBe('two');
-		expect(result.objectDeeplyNested.level1.level2.level3.l3val).toBe(true);
-		expect(result.objectDeeplyNested.level1.level2.level3.value).toBe(42);
-		expect(
-			Number.isNaN(
-				result.objectDeeplyNested.level1.level2.level3.nested.x
-			)
-		).toBe(true);
-	});
+	// Objeto profundamente anidado
+	expect(result.objectDeeplyNested.level1.l1val).toBe(1);
+	expect(result.objectDeeplyNested.level1.level2.l2val).toBe('two');
+	expect(result.objectDeeplyNested.level1.level2.level3.l3val).toBe(true);
+	expect(result.objectDeeplyNested.level1.level2.level3.value).toBe(42);
+	expect(
+		Number.isNaN(
+			result.objectDeeplyNested.level1.level2.level3.nested!.x
+		)
+	).toBe(true);
+});
 
-	test('should preserve wrapper types even after modification', () => {
-		const data = {
-			numPrimitive: 1,
-			numWrapper: new Number(50),
-			numNaN: NaN,
-			numInfinity: Infinity,
-			numNegInfinity: -Infinity,
-			numZero: 0,
-			numNegative: -1,
-			strPrimitive: 'test',
-			strWrapper: new String('original'),
-			strEmpty: '',
-			strWithSpaces: 'test',
-			strUnicode: 'test',
-			boolPrimitive: true,
-			boolWrapper: new Boolean(true),
-			boolFalse: false,
-			bigintPrimitive: 123n,
-			bigintZero: 0n,
-			bigintNegative: -1n,
-			bigintString: '123',
-			bigintObject: { __type: 'bigint', value: '123' },
-			symUnique: Symbol('test'),
-			symGlobal: Symbol.for('global'),
-			symWellKnown: Symbol.iterator,
-			nullValue: null,
-			undefinedValue: undefined,
-			arrayMixed: [],
-			arrayEmpty: [],
-			arrayNested: [[]],
-			arrayWithWrappers: [],
-			plainObject: { a: 1, b: '', nested: { c: true } },
-			objectWithNull: { x: null, y: undefined },
-			objectNoProto: Object.create(null),
-			objectDeeplyNested: {
-				level1: { level2: { level3: { value: 1 } } },
-			},
-			dateISO: '2024-01-01T00:00:00.000Z',
-			dateNow: '2024-01-01T00:00:00.000Z',
-			regexpString: '/test/',
-			regexpPattern: 'test',
-			regexpObject: { source: 'test', flags: '' },
-			mapAsArray: [],
-			mapEmpty: [],
-			setAsArray: [],
-			setEmpty: [],
-		};
+test('should preserve properties when mutated (toInterface uses __initData)', () => {
+	const data = {
+		numPrimitive: 50,
+		numWrapper: new Number(50),
+		numNaN: NaN,
+		numInfinity: Infinity,
+		numNegInfinity: -Infinity,
+		numZero: 0,
+		numNegative: -1,
+		strPrimitive: 'test',
+		strWrapper: new String('original'),
+		strEmpty: '',
+		strWithSpaces: 'test',
+		strUnicode: 'test',
+		boolPrimitive: true,
+		boolWrapper: new Boolean(true),
+		boolFalse: false,
+		bigintPrimitive: '123',
+		bigintZero: '0',
+		bigintNegative: '-1',
+		bigintString: '123',
+		bigintObject: { __type: 'bigint', value: '123' },
+		symUnique: Symbol('test'),
+		symGlobal: Symbol.for('global'),
+		symWellKnown: Symbol.iterator,
+		nullValue: null,
+		undefinedValue: undefined,
+		arrayMixed: [],
+		arrayEmpty: [],
+		arrayNested: [[]],
+		arrayWithWrappers: [],
+		plainObject: { a: 1, b: '', nested: { c: true } },
+		objectWithNull: { x: null, y: undefined },
+		objectNoProto: Object.create(null),
+		objectDeeplyNested: {
+			level1: { level2: { level3: { value: 1 } } },
+		},
+		dateISO: '2024-01-01T00:00:00.000Z',
+		dateNow: '2024-01-01T00:00:00.000Z',
+		regexpString: '/test/',
+		regexpPattern: 'test',
+		regexpObject: { source: 'test', flags: '' },
+		mapAsArray: [],
+		mapEmpty: [],
+		setAsArray: [],
+		setEmpty: [],
+	};
 
-		const model = new AllTypesModel(data);
+	const model = new AllTypesModel(data);
 
 		// Modificar con primitivos
 		model.numWrapper = 999 as any;

@@ -322,7 +322,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			posts: IPost[];
 		}
 
-		class Tag extends QModel<ITag> {
+		class _Tag extends QModel<ITag> {
 			declare name: string;
 		}
 

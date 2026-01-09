@@ -260,6 +260,7 @@ describe('Error Handling: Type Coercion vs Validation', () => {
 		});
 
 		// Model created successfully - runtime doesn't validate types
+		// id is string '123' at runtime, not number
 		expect(user.id).toBe('123');
 		expect(user.name).toBe('John');
 	});

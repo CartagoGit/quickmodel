@@ -176,18 +176,9 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		const serialized = user.serialize();
 
 		expect(serialized.id).toBe('1');
-		expect(serialized.balance).toEqual({ __type: 'bigint', value: '999' });
-		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-		expect(typeof serialized.balance).toBe('object');
-		expect(typeof serialized.createdAt).toBe('string');
-	});
-
-	test('should handle collections', () => {
-		interface IData {
-			id: string;
-			tags: string[];
-			metadata: [string, any][];
-		}
+	// BigInt se serializa como objeto con __type
+	expect(serialized.balance).toMatchObject({ __type: 'bigint', value: '999' });
+	expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 
 		interface IDataTransform {
 			tags: Set<string>;

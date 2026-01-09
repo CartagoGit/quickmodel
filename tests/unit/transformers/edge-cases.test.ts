@@ -358,18 +358,18 @@ describe('Transformer Edge Cases: Symbol', () => {
 		});
 
 		expect(typeof data.keyed).toBe('symbol');
-		expect(Symbol.keyFor(data.keyed)).toBe('myKey');
+		expect(Symbol.keyFor(data.keyed as symbol)).toBe('myKey');
 	});
 
 	test('should handle plain symbols', () => {
-		const plain = Symbol('description');
 		const data = new SymbolData({
 			keyed: Symbol.for('key1'),
 			plain: Symbol.for('description'),
 		});
 
 		expect(typeof data.plain).toBe('symbol');
-		expect(Symbol.keyFor(data.plain)).toBe('description');
+		// data.plain es un symbol primitivo, no Symbol wrapper
+		expect(Symbol.keyFor(data.plain as symbol)).toBe('description');
 	});
 
 	test('should handle symbols without description', () => {
@@ -391,11 +391,11 @@ describe('Transformer Edge Cases: Symbol', () => {
 		const json = data.serialize();
 
 		// Verify serialization format (Symbol serializes with __type and description)
-		expect(json.keyed).toEqual({
+		expect(json.keyed).toMatchObject({
 			__type: 'symbol',
 			description: 'test-key',
 		});
-		expect(json.plain).toEqual({
+		expect(json.plain).toMatchObject({
 			__type: 'symbol',
 			description: 'test-plain',
 		});

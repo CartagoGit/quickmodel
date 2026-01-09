@@ -29,7 +29,7 @@ interface IUser {
 }
 
 @Quick()
-class User extends QModel<IUser> {
+class _User extends QModel<IUser> {
   declare id: string;
   declare name: string;
 }

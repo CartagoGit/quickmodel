@@ -63,8 +63,8 @@ describe('Debug: Trace deserialization flow', () => {
 			firstDateType: user.posts[0]?.dates?.[0]?.constructor?.name,
 		});
 
-		expect(user.posts[0].dates).toHaveLength(1);
-		// This should pass but currently fails
-		expect(user.posts[0].dates[0]).toBeInstanceOf(Date);
+	expect(user.posts[0]!.dates).toHaveLength(1);
+	// This should pass but currently fails
+	expect(user.posts[0]!.dates[0]).toBeInstanceOf(Date);
 	});
 });

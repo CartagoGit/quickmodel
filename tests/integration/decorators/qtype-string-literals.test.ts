@@ -39,7 +39,7 @@ interface IModelWithStringLiterals {
   view: DataView;
 }
 
-interface IModelWithStringLiteralsSerialized {
+interface _IModelWithStringLiteralsSerialized {
   name: string;
   count: number;
   active: boolean;

@@ -94,8 +94,8 @@ export class TypedArrayTransformer<T extends TypedArray>
    */
   deserialize(
     value: number[] | string[] | T | Record<number, number>,
-    propertyKey: string,
-    className: string,
+    _propertyKey: string,
+    _className: string,
   ): T {
     if (value instanceof this.ArrayConstructor) {
       return value as T;

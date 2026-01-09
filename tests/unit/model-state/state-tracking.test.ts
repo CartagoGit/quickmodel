@@ -505,9 +505,6 @@ describe('QModel State Tracking', () => {
 			// Optimistic update
 			user.name = 'Jane';
 
-			// Save initial state for rollback
-			const beforeUpdate = user.getInitInterface();
-
 			// Simulate API call failure
 			const apiCallFailed = true;
 

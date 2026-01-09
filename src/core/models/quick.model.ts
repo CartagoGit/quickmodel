@@ -20,7 +20,6 @@ import type {
 } from '@/core/interfaces/serialization-types.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import {
-	QUICK_DECORATOR_KEY,
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
 } from '../constants/metadata-keys';

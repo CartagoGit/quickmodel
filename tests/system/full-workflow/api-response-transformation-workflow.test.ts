@@ -312,12 +312,7 @@ describe('System: API Response Transformation', () => {
 
 		// First transformation
 		const json1 = post.toJSON();
-		const parsed1 = JSON.parse(json1);
 
-		// Second transformation
-		const post2 = Post.fromJSON(json1);
-		const json2 = post2.toJSON();
-		const parsed2 = JSON.parse(json2);
 
 		// Third transformation
 		const post3 = Post.fromJSON(json2);

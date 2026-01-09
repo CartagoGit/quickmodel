@@ -72,10 +72,9 @@
  */
 
 import 'reflect-metadata';
-import { QType, QTYPES_METADATA_KEY } from './qtype.decorator';
+import { QType } from './qtype.decorator';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
 import type {
-	DiscriminatorConfig,
 	IQuickAdvancedOptions,
 } from '../interfaces/quick-options.interface';
 import {
@@ -555,13 +554,6 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 						originalConstructor
 					) || {};
 
-				// Get the captured design:type metadata
-				const designTypeCache =
-					Reflect.getMetadata(
-						QUICK_DESIGN_TYPES_KEY,
-						originalConstructor
-					) || {};
-
 				// Combine properties from data AND typeMap
 				// This ensures we process properties even if they're not in the current data
 				const allProperties = new Set([
@@ -651,9 +643,6 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
 			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
-			const quickTypeMap =
-				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, originalConstructor) ||
-				{};
 
 			// Check ALL properties in the instance, not just those in quickTypeMap
 			const instanceKeys = Object.keys(instance);

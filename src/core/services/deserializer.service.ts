@@ -47,7 +47,7 @@ import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
-import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import { QUICK_DISCRIMINATORS_KEY } from '../constants/metadata-keys';
 import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -615,7 +615,7 @@ export class Deserializer<
    * - @Quick({ items: ModelClass }) for typeMap specification
    * - Custom transformer functions for heterogeneous arrays
    */
-  private deserializeArrayWithInference(value: unknown[], context: IQTransformContext): unknown[] {
+  private deserializeArrayWithInference(value: unknown[], _context: IQTransformContext): unknown[] {
     // Without explicit type information, return array as-is
     // This prevents ambiguous type inference
     return value;

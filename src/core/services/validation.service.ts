@@ -31,7 +31,7 @@
  */
 
 import 'reflect-metadata';
-import { IQValidationContext, IQValidationResult } from '../interfaces/transformer.interface';
+import { IQValidationResult } from '../interfaces/transformer.interface';
 
 export class ValidationService {
   /**
@@ -52,16 +52,10 @@ export class ValidationService {
    * 1. A `fieldType` metadata entry
    * 2. A corresponding validator in the registry
    */
-  validate(instance: Record<string, unknown>, modelClass: Function): IQValidationResult[] {
+	validate(instance: Record<string, unknown>, _modelClass: Function): IQValidationResult[] {
     const results: IQValidationResult[] = [];
 
-    for (const [key, value] of Object.entries(instance)) {
-      const context: IQValidationContext = {
-        propertyKey: key,
-        className: modelClass.name,
-        value,
-      };
-
+    for (const [key] of Object.entries(instance)) {
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       if (fieldType) {
         // Validator registry was removed - validation is currently disabled

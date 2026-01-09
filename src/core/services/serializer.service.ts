@@ -111,7 +111,6 @@ export class Serializer<
 	 */
 	serialize(model: TModel): TInterface {
 		const result: Record<string, unknown> = {};
-		const seen = new WeakSet();
 
 		// Get all property keys
 		const keys = new Set<string>();

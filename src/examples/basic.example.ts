@@ -1,5 +1,4 @@
 import { QInterface, QModel, Quick } from '@/index';
-import { QType } from '@/core/decorators/qtype.decorator';
 
 // ============================================
 // CLASES ANIDADAS PARA TESTING

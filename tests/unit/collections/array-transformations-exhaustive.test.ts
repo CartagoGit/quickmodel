@@ -508,6 +508,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			id: number;
 		}
 		interface IUser {
+			id: number;
 			posts: IPost[];
 		}
 

@@ -186,11 +186,6 @@ interface IBaseModel {
 	createdAt: Date;
 }
 
-class BaseModel extends QModel<IBaseModel> {
-	id!: number;
-	createdAt!: Date;
-}
-
 interface IExtendedModel extends IBaseModel {
 	name: string;
 	updatedAt: Date;
