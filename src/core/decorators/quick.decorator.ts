@@ -402,8 +402,49 @@ export function Quick(typeMap?: IQuickOptions): ClassDecorator {
 						continue;
 					}
 
-					const mappedType = typeMap[propertyKey];
+					let mappedType = typeMap[propertyKey];
 					if (mappedType) {
+						// Normalize array syntax:
+						// If design:type is Array OR data value is array, and mapped type is a class (not in array),
+						// treat it as array element type
+						const designType = designTypeCache[propertyKey];
+						const dataIsArray = data && Array.isArray(data[propertyKey]);
+						
+						// If no design:type from TypeScript but data is an array, infer it's an array type
+						if ((designType === Array || (dataIsArray && !designType)) && !Array.isArray(mappedType)) {
+							// Check if it's a class constructor (not a primitive or transformer)
+							const isClassConstructor = 
+								typeof mappedType === 'function' &&
+								mappedType.prototype &&
+								mappedType.prototype.constructor === mappedType &&
+								// Exclude native constructors that have special handling
+								mappedType !== Date &&
+								mappedType !== BigInt &&
+								mappedType !== Set &&
+								mappedType !== Map &&
+								mappedType !== RegExp &&
+								mappedType !== Error &&
+								mappedType !== URL &&
+								mappedType !== URLSearchParams &&
+								mappedType !== ArrayBuffer &&
+								mappedType !== Int8Array &&
+								mappedType !== Uint8Array &&
+								mappedType !== Int16Array &&
+								mappedType !== Uint16Array &&
+								mappedType !== Int32Array &&
+								mappedType !== Uint32Array &&
+								mappedType !== Float32Array &&
+								mappedType !== Float64Array &&
+								mappedType !== BigInt64Array &&
+								mappedType !== BigUint64Array;
+							
+							if (isClassConstructor) {
+								// It's a custom model class for an array
+								// Force design:type to be Array so QType knows it's an array
+								Reflect.defineMetadata('design:type', Array, originalConstructor.prototype, propertyKey);
+							}
+						}
+						
 						// Simply pass to QType - it handles everything
 						const decorator = QType(mappedType);
 						decorator(originalConstructor.prototype, propertyKey);

@@ -322,11 +322,20 @@ export function QType<T>(
 
 				if (hasPrototype) {
 					// It's a custom model class (for arrays or nested models)
-					Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
-
-					// Also set design:type to Array if not already set
+					
+					// Check if design:type is Array (meaning it's an array property)
 					const existingDesignType = Reflect.getMetadata('design:type', target, propertyKey);
-					if (!existingDesignType) {
+					
+					// Always register as arrayElementClass (used for both arrays and nested models)
+					Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
+					
+					if (existingDesignType === Array) {
+						// It's an array - keep design:type as Array
+						// Don't override it
+					} else if (!existingDesignType) {
+						// No design:type yet - for nested models, set it to the class
+						// For arrays without design:type, also set to Array
+						// But we can't know for sure, so leave it unset and rely on arrayElementClass + value inspection
 						Reflect.defineMetadata('design:type', Array, target, propertyKey);
 					}
 				} else {

@@ -260,8 +260,11 @@ export class Deserializer<
           }
         }
         
-        // If design:type is Array, it's an array of models OR transformable types
-        if (designType === Array) {
+        // Determine if it's an array based on design:type OR the actual value
+        const isArrayType = designType === Array || Array.isArray(value);
+        
+        // If it's an array type, process as array
+        if (isArrayType) {
           if (!Array.isArray(value)) {
             throw new Error(`${context.className}.${key}: Expected array, got ${typeof value}`);
           }
@@ -297,6 +300,55 @@ export class Deserializer<
 
       // 4. Auto-detection via design:type
       const designType = Reflect.getMetadata('design:type', instance, key);
+      
+      // 4.5 SPECIAL CASE: If design:type is a custom model class and value is an array,
+      // treat it as array of that model (syntax sugar: @Quick({ posts: Post }) for Post[])
+      if (
+        !arrayElementClass &&
+        !fieldType &&
+        Array.isArray(value) &&
+        designType &&
+        typeof designType === 'function' &&
+        designType !== Array &&
+        designType !== Object &&
+        designType !== String &&
+        designType !== Number &&
+        designType !== Boolean &&
+        // Exclude primitive transformable types - they have their own handling
+        designType !== Date &&
+        designType !== RegExp &&
+        designType !== Map &&
+        designType !== Set &&
+        designType !== BigInt &&
+        designType !== Symbol &&
+        designType !== Error &&
+        designType !== URL &&
+        designType !== URLSearchParams &&
+        designType !== ArrayBuffer &&
+        designType !== Int8Array &&
+        designType !== Uint8Array &&
+        designType !== Uint8ClampedArray &&
+        designType !== Int16Array &&
+        designType !== Uint16Array &&
+        designType !== Int32Array &&
+        designType !== Uint32Array &&
+        designType !== Float32Array &&
+        designType !== Float64Array &&
+        designType !== BigInt64Array &&
+        designType !== BigUint64Array &&
+        designType !== DataView
+      ) {
+        // It's likely an array of custom models where design:type is the element class
+        // Process as array
+        const validItems = value.filter((item: unknown) => item !== null && item !== undefined);
+        instance[key] = validItems.map((item: Record<string, unknown>) => {
+          if (typeof item !== 'object') {
+            throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
+          }
+          return this.deserialize(item, designType);
+        });
+        continue;
+      }
       
       // 5. If property has @QType() decorator but no type metadata (declare without arg),
       // try to detect type from value
