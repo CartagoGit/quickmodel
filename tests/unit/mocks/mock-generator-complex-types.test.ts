@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '../../../src';
+import { QModel, Quick, QInterface } from '@/index';
 
 describe('Unit: Mock Generator - Complex Types', () => {
 	// Enums (TypeScript enums become unions at runtime)

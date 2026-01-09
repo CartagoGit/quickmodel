@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { QModel } from '../../src/quick.model';
-import { QType } from '../../src/core/decorators/qtype.decorator';
+import { QModel } from '@/index';
+import { QType } from '@/core/decorators/qtype.decorator';
 
 // ========================================
 // INTERFACES

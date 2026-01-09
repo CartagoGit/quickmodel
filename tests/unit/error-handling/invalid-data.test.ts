@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '../../../src/quick.model';
+import { QModel } from '../@//quick.model';
 
 // Test Models - Using declare syntax (no decorators needed)
 interface IUser {

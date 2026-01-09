@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '../../src/quick.model';
-import { Quick } from '../../src/core/decorators/quick.decorator';
+import { QModel, Quick } from '@/index';
 
 // ============================================================================
 // SETUP

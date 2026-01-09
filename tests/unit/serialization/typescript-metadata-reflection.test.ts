@@ -3,7 +3,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, QType } from '../../src/quick.model';
+import { QModel, QType } from '@/index';
 
 // ============================================================================
 // Test Models

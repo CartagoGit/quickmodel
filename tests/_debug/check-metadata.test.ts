@@ -1,7 +1,7 @@
 import { describe, test } from 'bun:test';
-import { QModel, Quick } from '../../src';
+import { QModel, Quick } from '@/index';
 import 'reflect-metadata';
-import { QUICK_TYPE_MAP_KEY } from '../../src/core/constants/metadata-keys';
+import { QUICK_TYPE_MAP_KEY } from '@/core/constants/metadata-keys';
 
 describe('Debug: Metadata checking', () => {
 	interface IUser {
@@ -35,7 +35,10 @@ describe('Debug: Metadata checking', () => {
 			console.log(`  ${key}: ${fieldType || 'undefined'}`);
 		}
 
-		console.log('\nRegistered fields:', Reflect.getMetadata('quickmodel:fields', proto));
+		console.log(
+			'\nRegistered fields:',
+			Reflect.getMetadata('quickmodel:fields', proto)
+		);
 		console.log('TypeMap:', Reflect.getMetadata(QUICK_TYPE_MAP_KEY, User));
 	});
 });

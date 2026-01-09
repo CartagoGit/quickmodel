@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, QType } from '../../src';
+import { QModel, QType } from '@/index';
 
 // ====================
 // INTERFACES

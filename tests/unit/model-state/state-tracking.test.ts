@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { Quick, QModel, QInterface } from '../../../src';
+import { Quick, QModel, QInterface } from '@/index';
 
 describe('QModel State Tracking', () => {
 	// Test models

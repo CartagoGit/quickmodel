@@ -2,24 +2,16 @@
  * Test to verify that constructor aliases work correctly
  * 
  * This allows using multiple forms:
- * - @QType(RegExp) same as @QType(QRegExp) same as @QType('regexp')
- * - @QType(Error) same as @QType(QError) same as @QType('error')
- * - @QType(URL) same as @QType(QURL) same as @QType('url')
- * - @QType(Int8Array) same as @QType(QInt8Array) same as @QType('int8array')
+ * - @QType(RegExp) same as @QType('regexp')
+ * - @QType(Error) same as @QType('error')
+ * - @QType(URL) same as @QType('url')
+ * - @QType(Int8Array) same as @QType('int8array')
  * etc.
  */
 
 import { describe, expect, test } from 'bun:test';
-import { QType } from '../../src/core/decorators/qtype.decorator';
-import { QModel } from '../../src/quick.model';
-import {
-  QRegExp,
-  QError,
-  QURL,
-  QURLSearchParams,
-  QInt8Array,
-  QUint8Array,
-} from '../../src/core/interfaces/qtype-symbols.interface';
+import { QType } from '@/core/decorators/qtype.decorator';
+import { QModel } from '@/index';
 
 // ============================================================================
 // Models using native constructors as aliases
@@ -86,22 +78,22 @@ interface IModelWithSymbolsSerialized {
 }
 
 class ModelWithSymbols extends QModel<IModelWithSymbols> {
-  @QType(QRegExp)
+  @QType(RegExp)
   pattern!: RegExp;
 
-  @QType(QError)
+  @QType(Error)
   error!: Error;
 
-  @QType(QURL)
+  @QType(URL)
   url!: URL;
 
-  @QType(QURLSearchParams)
+  @QType(URLSearchParams)
   params!: URLSearchParams;
 
-  @QType(QInt8Array)
+  @QType(Int8Array)
   bytes1!: Int8Array;
 
-  @QType(QUint8Array)
+  @QType(Uint8Array)
   bytes2!: Uint8Array;
 }
 

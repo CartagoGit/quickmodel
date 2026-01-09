@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '../../../src';
+import { QModel, Quick, QInterface } from '@/index';
 
 describe('Unit: Error Transformer', () => {
 	interface IErrorLog {

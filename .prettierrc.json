@@ -1,9 +1,27 @@
 {
+	"printWidth": 80,
+	"arrowParens": "always",
+	"bracketSpacing": true,
+	"bracketSameLine": true,
+	"embeddedLanguageFormatting": "auto",
+	"htmlWhitespaceSensitivity": "ignore",
+	"insertPragma": false,
+	"jsxSingleQuote": false,
+	"proseWrap": "preserve",
+	"quoteProps": "as-needed",
+	"requirePragma": false,
 	"semi": true,
-	"trailingComma": "es5",
 	"singleQuote": true,
-	"printWidth": 100,
-	"tabWidth": 2,
+	"tabWidth": 4,
+	"trailingComma": "es5",
 	"useTabs": true,
-	"arrowParens": "always"
+	"singleAttributePerLine": true,
+	"overrides": [
+		{
+			"files": ["*.component.html", "*.html"],
+			"options": {
+				"parser": "angular"
+			}
+		}
+	]
 }

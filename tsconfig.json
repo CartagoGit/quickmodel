@@ -5,7 +5,7 @@
 		"module": "ESNext",
 		"lib": ["ES2022"],
 		"types": ["bun", "node"],
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 
 		// Decoradores (REQUERIDO para el sistema)
 		"experimentalDecorators": true,
@@ -17,10 +17,11 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"outDir": "./dist",
-		"rootDir": "./src",
+		"rootDir": "./",
 		"baseUrl": "./",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["src/*"],
+			"@tests/*": ["tests/*"]
 		},
 
 		// Interoperabilidad
@@ -57,7 +58,6 @@
 		"dist",
 		"docs/**/*",
 		"tests/**/*",
-		"run/**/*",
-		"docs-vitepress/.vitepress/cache/**/*"
+		"docs-vitepress/**/*"
 	]
 }

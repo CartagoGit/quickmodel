@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '../../../src';
+import { QModel, Quick, type QInterface } from '@/index';
 
 describe('Integration: @Quick() Decorator Basics', () => {
 	test('should auto-detect and transform Date types', () => {

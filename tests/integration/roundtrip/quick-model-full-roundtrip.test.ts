@@ -1,4 +1,4 @@
-import { QModel, QType, QInterface } from '../../src/quick.model';
+import { QModel, QType, QInterface } from '@/index';
 
 console.log('═══ TEST: QModel Core Functionality ═══\n');
 

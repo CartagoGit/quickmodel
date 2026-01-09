@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { QModel, Quick, QType, QInterface } from '../../src/quick.model';
+import { QModel, Quick, QType, QInterface } from '@/index';
 
 // ========================================
 // @Quick() DECORATOR: AUTO REGISTRATION

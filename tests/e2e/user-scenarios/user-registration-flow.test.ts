@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '../../../src';
+import { QModel, Quick, type QInterface } from '@/index';
 
 describe('E2E: User Registration Flow', () => {
 	// Step 1: Define interfaces for the complete system

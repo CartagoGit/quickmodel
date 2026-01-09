@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '../../../src';
+import { QModel, Quick, type QInterface } from '@/index';
 
 describe('System: E-Commerce Cart', () => {
 	// Models

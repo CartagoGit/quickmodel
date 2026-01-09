@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick } from '../../src';
+import { QModel, Quick } from '@/index';
 
 describe('Interface Conversion - Edge Cases', () => {
 	describe('toInterface() with circular references', () => {
