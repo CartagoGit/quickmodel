@@ -8,14 +8,13 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 
-		"rootDir": "."
+		"rootDir": "../"
 	},
-	"include": ["**/*"],
+	"include": ["./**/*", "../src/**/*"],
 	"exclude": [
 		"../node_modules",
 		"../dist",
 		"../docs/**/*",
-		"../docs-vitepress/**/*",
-		"../src/**/*"
+		"../docs-vitepress/**/*"
 	]
 }

@@ -100,7 +100,7 @@ type ITransformerFunction = (value: any) => any;
  * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
  * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
  * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays
+ * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
  */
 export type ISpec =
 	| IQTypeAlias // String literals like 'bigint', 'date', 'regexp'
