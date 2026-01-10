@@ -124,17 +124,18 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *    - Explicit and clear
 	 *    - Most common approach
 	 * 
-	 * 2. **ALTERNATIVE (Option B)**: Use `QTransform<T, Transforms>` type helper
+	 * 2. **ALTERNATIVE (Option B)**: Use `QTransform` helper or generic overriding
 	 *    - ONLY if you specifically want to avoid `declare` keyword
-	 *    - Requires passing transform types explicitly
+	 *    - Requires passing type explicitly
 	 *    - Less common, more verbose
-	 *    - Only works with `create()`, not with `new` constructor
 	 *
 	 * **⚠️ CRITICAL: TypeScript CANNOT auto-infer transformations**
 	 * You MUST specify transformed types using ONE of the two approaches above.
 	 * There is no "magic" automatic inference.
 	 *
 	 * @template T - Backend interface type (JSON-serializable types)
+	 * @template TClass - The concrete model class type
+	 * @template TResult - The final return type (defaults to class & interface, but can be overridden)
 	 *
 	 * @param data - Data to initialize the model
 	 * @returns Model instance with type-safe property access
@@ -175,7 +176,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * ```
 	 * 
 	 * @example
-	 * **OPTION B (ALTERNATIVE): Using QTransform<T, Transforms> type helper**
+	 * **OPTION B (ALTERNATIVE): Using QTransform type helper with generic override**
 	 * 
 	 * ⚠️ ONLY use this if you specifically don't want to use `declare` keyword.
 	 * This approach is MORE VERBOSE and ONLY WORKS with `create()`, not with `new`.
@@ -189,15 +190,12 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * }
 	 * 
 	 * @Quick({ createdAt: Date, balance: BigInt })
-	 * class Post extends QModel<IPost> implements QTransform<IPost, {
-	 *   createdAt: Date;   // Specify transformed type here
-	 *   balance: bigint;   // Specify transformed type here
-	 * }> {
-	 *   // No declare needed (but less standard)
+	 * class Post extends QModel<IPost> {
+	 *   // No declare needed
 	 * }
 	 * 
-	 * // Usage requires explicit type parameter
-	 * const post = Post.create<QTransform<IPost, {
+	 * // Pass QTransform as 3rd type parameter to create()
+	 * const post = Post.create<IPost, Post, QTransform<IPost, {
 	 *   createdAt: Date;
 	 *   balance: bigint;
 	 * }>>({ 
@@ -222,20 +220,22 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * | Aspect | Option A: `declare` | Option B: `QTransform` |
 	 * |--------|---------------------|------------------------|
 	 * | **Recommendation** | ✅ RECOMMENDED | ⚠️ ALTERNATIVE |
-	 * | **Syntax complexity** | Simple | More verbose |
+	 * | **Syntax complexity** | Simple | Simple (but manual generic) |
 	 * | **Works with `new`** | ✅ Yes | ❌ No |
-	 * | **Works with `create()`** | ✅ Yes | ✅ Yes |
-	 * | **Standard pattern** | ✅ Yes | ⚠️ Non-standard |
-	 * | **When to use** | Default choice | Only if avoiding `declare` |
+	 * | **Works with `create()`** | ✅ Yes | ✅ Yes (with generic) |
+	 * | **Input Validation** | ✅ Strict | ⚠️ Loose (unless 2nd generic used) |
 	 * 
-	 * **Bottom line:**
-	 * - 99% of cases: Use Option A (`declare`) - it's simpler and more standard
-	 * - 1% of cases: Use Option B (`QTransform`) - only if you have specific reasons to avoid `declare`
+	 * **Option B Usage:**
+	 * `User.create<ResultType>(data)` - Infers loose input type
+	 * `User.create<ResultType, InputType>(data)` - Enforces strict input type
 	 */
-	static create<T extends Record<string, any> = any>(
-		this: new (data: any) => any,
-		data: T
-	): QModel<any> & T {
+	static create<
+		TResult = '__INFER__',
+		TData = any
+	>(
+		this: new (data: TData) => any,
+		data: TData
+	): TResult extends '__INFER__' ? InstanceType<typeof this> : TResult {
 		return new this(data) as any;
 	}
 

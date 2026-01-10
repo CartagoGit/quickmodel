@@ -343,9 +343,9 @@ describe('QModel.create() factory method', () => {
 		});
 	});
 
-	describe('QTransform type helper (Option B - alternative to declare)', () => {
+	describe('QTransform helper with generic overriding (Option B)', () => {
 		
-		test('should work with QTransform for Date transformation', () => {
+		test('should work by passing explicit output type to create()', () => {
 			interface IPost {
 				id: number;
 				title: string;
@@ -353,11 +353,10 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick({ createdAt: Date })
-			class Post extends QModel<IPost> implements QTransform<IPost, {
-				createdAt: Date;  // Runtime type after transformation
-			}> {}
+			class Post extends QModel<IPost> {}
 
-			// Pass QTransform as type parameter
+			// Pass QTransform as 1st type parameter to create()
+            // <TResult>
 			const post = Post.create<QTransform<IPost, {
 				createdAt: Date;
 			}>>({
@@ -384,11 +383,7 @@ describe('QModel.create() factory method', () => {
 				createdAt: Date,
 				tags: Set
 			})
-			class Account extends QModel<IAccount> implements QTransform<IAccount, {
-				balance: bigint;
-				createdAt: Date;
-				tags: Set<string>;
-			}> {}
+			class Account extends QModel<IAccount> {}
 
 			const account = Account.create<QTransform<IAccount, {
 				balance: bigint;
@@ -407,15 +402,13 @@ describe('QModel.create() factory method', () => {
 			expect(account.tags).toBeInstanceOf(Set);
 		});
 
-		test('QTransform should match runtime behavior', () => {
+		test('Generic overriding should match runtime behavior', () => {
 			interface IData {
 				value: string;
 			}
 
 			@Quick({ value: BigInt })
-			class Data extends QModel<IData> implements QTransform<IData, {
-				value: bigint;
-			}> {}
+			class Data extends QModel<IData> {}
 
 			const data = Data.create<QTransform<IData, {
 				value: bigint;
