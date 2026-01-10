@@ -12,13 +12,16 @@ interface IUser {
 	posts: IPost[];
 }
 
+@Quick()
 class Post extends QModel<IPost> {
-	id!: number;
-	title!: string;
+	// Primitivos se auto-detectan en runtime, pero TypeScript necesita los tipos
+	declare id: number;
+	declare title: string;
 }
 
 @Quick({
-	posts: [Post],
+	posts: [Post]
+	// Primitivos (id, title) se auto-detectan, no necesitan dot notation
 })
 class User extends QModel<IUser> {
 	id!: number;
@@ -46,8 +49,19 @@ describe('Debug: Array Metadata Registration', () => {
 		console.log('posts value:', user2.posts);
 		console.log('posts[0] instanceof Post:', user2.posts?.[0] instanceof Post);
 
-		expect(arrayElementClass).toBe(Post);
-		expect(designType).toBe(Array);
-		expect(user2.posts[0]).toBeInstanceOf(Post);
+	console.log('\n=== LAZY GETTER DEMO ===');
+	console.log('ANTES de acceder a .id:');
+	console.log('  post.id (descriptor):', Object.getOwnPropertyDescriptor(user2.posts[0], 'id'));
+	console.log('DESPUÉS de acceder a .id:');
+	const postId = user2.posts[0]!.id;  // ← Trigger lazy getter
+	console.log('  post.id value:', postId);
+	console.log('  post.id (descriptor):', Object.getOwnPropertyDescriptor(user2.posts[0], 'id'));
+	console.log('  post.title value:', user2.posts[0]!.title);  // ← También funciona
+
+	expect(arrayElementClass).toBe(Post);
+	expect(designType).toBe(Array);
+	expect(user2.posts[0]).toBeInstanceOf(Post);
+	expect(user2.posts[0]!.id).toBe(1);           // ✅ Lazy getter funciona
+	expect(user2.posts[0]!.title).toBe('Test');   // ✅ Lazy getter funciona
 	});
 });

@@ -79,7 +79,6 @@ import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
 	QUICK_DESIGN_TYPES_KEY,
-	QUICK_DEFAULT_KEYS,
 	QUICK_DISCRIMINATORS_KEY,
 } from '../constants/metadata-keys';
 
@@ -579,7 +578,7 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 		// This allows us to bypass the field initialization problem with `!`
 		// Properties are already registered by the decorator, so we just create the instance
 		(target as unknown as Record<string, Function>).__createQuickInstance =
-			function (data: Record<string, unknown>) {
+			function (_data: Record<string, unknown>) {
 				// Create instance without calling constructor
 				const instance = Object.create(target.prototype);
 
