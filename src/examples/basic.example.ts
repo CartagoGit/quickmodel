@@ -129,7 +129,7 @@ class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 	declare metadata: Map<string, unknown>;
 	declare symbolic: symbol;
 	declare dates?: (Date | undefined | null)[];
-	
+
 	// New transformation types
 	declare pattern?: RegExp;
 	declare config?: Record<string, unknown>; // Plain object without transformation
@@ -137,7 +137,7 @@ class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 	declare profile?: Profile;
 	declare addresses?: Address[];
 
-	algo: 'test' = 'test'; // Normal property unrelated to QuickModel
+	algo = 'test' as const; // Normal property unrelated to QuickModel
 }
 
 const baseObj: IUser = {
@@ -249,7 +249,7 @@ const logTests = (obj: User) => {
 			: '❌'
 	);
 	console.log('algo (normal):', obj.algo, obj.algo === 'test' ? '✅' : '❌');
-	
+
 	console.log('\n=== New transformation types ===');
 	console.log(
 		'pattern:',
@@ -261,27 +261,37 @@ const logTests = (obj: User) => {
 		'config:',
 		obj.config,
 		'→ Plain Object',
-		obj.config && typeof obj.config === 'object' && obj.config.theme === 'dark' ? '✅' : '❌'
+		obj.config &&
+			typeof obj.config === 'object' &&
+			obj.config.theme === 'dark'
+			? '✅'
+			: '❌'
 	);
 	console.log(
 		'address:',
 		obj.address,
 		'→ Address class',
-		obj.address instanceof Address && obj.address.city === 'Madrid' ? '✅' : '❌'
+		obj.address instanceof Address && obj.address.city === 'Madrid'
+			? '✅'
+			: '❌'
 	);
 	console.log(
 		'profile:',
 		obj.profile,
 		'→ Profile QModel',
-		obj.profile instanceof Profile && obj.profile.joinedAt instanceof Date ? '✅' : '❌'
+		obj.profile instanceof Profile && obj.profile.joinedAt instanceof Date
+			? '✅'
+			: '❌'
 	);
 	console.log(
 		'addresses:',
 		obj.addresses,
 		'→ Address[]',
-		Array.isArray(obj.addresses) && 
-		obj.addresses.length === 2 &&
-		obj.addresses.every(a => a instanceof Address) ? '✅' : '❌'
+		Array.isArray(obj.addresses) &&
+			obj.addresses.length === 2 &&
+			obj.addresses.every((a) => a instanceof Address)
+			? '✅'
+			: '❌'
 	);
 };
 
@@ -301,19 +311,18 @@ const allCorrect =
 	user.metadata instanceof Map &&
 	typeof user.symbolic === 'symbol' &&
 	Array.isArray(user.dates) &&
-	user.dates.every((d) => d instanceof Date || d === undefined || d === null) &&
+	user.dates.every(
+		(d) => d instanceof Date || d === undefined || d === null
+	) &&
 	user.pattern instanceof RegExp &&
 	user.config?.theme === 'dark' &&
 	user.address instanceof Address &&
 	user.profile instanceof Profile &&
 	Array.isArray(user.addresses) &&
 	user.addresses.length === 2 &&
-	user.addresses.every(a => a instanceof Address);
+	user.addresses.every((a) => a instanceof Address);
 
 console.log(
-	allCorrect
-		? '✅ ALL CORRECT - Both options work'
-		: '❌ ERRORS FOUND'
+	allCorrect ? '✅ ALL CORRECT - Both options work' : '❌ ERRORS FOUND'
 );
 console.log('====================================\n');
-

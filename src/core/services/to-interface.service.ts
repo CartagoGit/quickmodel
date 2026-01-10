@@ -81,7 +81,7 @@
 
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
-	TInterface extends Record<string, unknown> = any
+	TInterface extends Record<string, unknown> = any,
 > {
 	/**
 	 * Converts model to interface format, preserving original input types.
@@ -97,12 +97,12 @@ export class ToInterfaceService<
 	 * - If RegExp was provided as RegExp → returns RegExp
 	 *
 	 * This method does NOT serialize to JSON. Use `serialize()` for JSON output.
-	 * 
+	 *
 	 * @param model - The model instance
 	 * @param seen - Optional WeakSet for cycle detection (internal use)
 	 */
 	toInterface<T extends Record<string, unknown> = TInterface>(
-		model: TModel, 
+		model: TModel,
 		seen?: WeakSet<object>
 	): T {
 		const result: Record<string, unknown> = {};
@@ -201,7 +201,9 @@ export class ToInterfaceService<
 					return currentValue.toISOString();
 				} catch {
 					// Invalid Date - return original value if available, otherwise string representation
-					return typeof originalValue === 'string' ? originalValue : String(currentValue);
+					return typeof originalValue === 'string'
+						? originalValue
+						: String(currentValue);
 				}
 			}
 			// If currentValue is already a string (no transformation occurred), return as-is
@@ -221,7 +223,10 @@ export class ToInterfaceService<
 		}
 
 		// RegExp as string pattern
-		if (typeof originalValue === 'string' && currentValue instanceof RegExp) {
+		if (
+			typeof originalValue === 'string' &&
+			currentValue instanceof RegExp
+		) {
 			if (originalValue.startsWith('/')) {
 				return currentValue.toString(); // "/pattern/flags"
 			} else {
@@ -259,14 +264,18 @@ export class ToInterfaceService<
 		}
 
 		if (typeof originalValue === 'symbol') {
-			return typeof currentValue === 'symbol' ? currentValue : Symbol(currentValue);
+			return typeof currentValue === 'symbol'
+				? currentValue
+				: Symbol(currentValue);
 		}
 
 		// 6. WRAPPER OBJECTS: Number, String, Boolean objects
 		if (originalValue instanceof Number) {
 			// Extract primitive value if currentValue is also a wrapper
 			const primitiveValue =
-				typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
 					? currentValue.valueOf()
 					: currentValue;
 			return new Number(primitiveValue);
@@ -274,7 +283,9 @@ export class ToInterfaceService<
 
 		if (originalValue instanceof String) {
 			const primitiveValue =
-				typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
 					? currentValue.valueOf()
 					: currentValue;
 			return new String(primitiveValue);
@@ -282,7 +293,9 @@ export class ToInterfaceService<
 
 		if (originalValue instanceof Boolean) {
 			const primitiveValue =
-				typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
 					? currentValue.valueOf()
 					: currentValue;
 			return new Boolean(primitiveValue);
@@ -305,12 +318,22 @@ export class ToInterfaceService<
 		}
 
 		// 8. BIGINT: Always serialize to string
-		if (originalValue && typeof originalValue === 'object' && originalValue.__type === 'bigint') {
-			const bigintValue = typeof currentValue === 'bigint' ? currentValue : BigInt(currentValue);
+		if (
+			originalValue &&
+			typeof originalValue === 'object' &&
+			originalValue.__type === 'bigint'
+		) {
+			const bigintValue =
+				typeof currentValue === 'bigint'
+					? currentValue
+					: BigInt(currentValue);
 			return bigintValue.toString();
 		}
 
-		if (typeof originalValue === 'string' && typeof currentValue === 'bigint') {
+		if (
+			typeof originalValue === 'string' &&
+			typeof currentValue === 'bigint'
+		) {
 			return currentValue.toString();
 		}
 
@@ -342,7 +365,9 @@ export class ToInterfaceService<
 							`Cannot convert property "${propertyKey}": original was object but current is ${typeof currentValue}`
 						);
 					}
-					console.error(`Cannot convert property "${propertyKey}": type mismatch`);
+					console.error(
+						`Cannot convert property "${propertyKey}": type mismatch`
+					);
 					return currentValue;
 				}
 

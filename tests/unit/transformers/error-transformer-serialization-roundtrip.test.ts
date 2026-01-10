@@ -1,6 +1,6 @@
 /**
  * Unit Test: Error Transformer
- * 
+ *
  * Tests serialization and deserialization of Error objects
  */
 
@@ -17,23 +17,26 @@ describe('Unit: Error Transformer', () => {
 	}
 
 	@Quick({ error: Error })
-	class ErrorLog extends QModel<IErrorLog> implements QInterface<IErrorLog, IErrorLogTransform> {
+	class ErrorLog
+		extends QModel<IErrorLog>
+		implements QInterface<IErrorLog, IErrorLogTransform>
+	{
 		error!: Error;
 	}
 
 	test('Should serialize simple error', () => {
 		const error = new Error('Test error');
 		const model = new ErrorLog({ error: error.toString() });
-		
+
 		const json = model.toJSON();
 		const parsed = JSON.parse(json);
-		
+
 		expect(typeof parsed.error).toBe('string');
 	});
 
 	test('Should deserialize simple error', () => {
 		const model = ErrorLog.deserialize({ error: 'Error: Test error' });
-		
+
 		expect(model.error).toBeInstanceOf(Error);
 		expect(model.error.message).toBe('Test error');
 	});
@@ -42,7 +45,7 @@ describe('Unit: Error Transformer', () => {
 		const error = new Error('Something went wrong');
 		const model = new ErrorLog({ error: error.toString() });
 		const deserialized = ErrorLog.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.error.message).toBe('Something went wrong');
 	});
 
@@ -50,7 +53,7 @@ describe('Unit: Error Transformer', () => {
 		const error = new TypeError('Invalid type');
 		const model = new ErrorLog({ error: error.toString() });
 		const deserialized = ErrorLog.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.error).toBeInstanceOf(Error);
 		expect(deserialized.error.message).toContain('Invalid type');
 	});
@@ -59,7 +62,7 @@ describe('Unit: Error Transformer', () => {
 		const error = new RangeError('Out of range');
 		const model = new ErrorLog({ error: error.toString() });
 		const deserialized = ErrorLog.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.error).toBeInstanceOf(Error);
 		expect(deserialized.error.message).toContain('Out of range');
 	});
@@ -68,7 +71,7 @@ describe('Unit: Error Transformer', () => {
 		const error = new Error('Line 1\nLine 2\nLine 3');
 		const model = new ErrorLog({ error: error.toString() });
 		const deserialized = ErrorLog.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.error.message).toContain('Line 1');
 		expect(deserialized.error.message).toContain('Line 2');
 	});
@@ -77,7 +80,7 @@ describe('Unit: Error Transformer', () => {
 		const error = new Error();
 		const model = new ErrorLog({ error: error.toString() });
 		const deserialized = ErrorLog.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.error).toBeInstanceOf(Error);
 	});
 
@@ -88,11 +91,11 @@ describe('Unit: Error Transformer', () => {
 				this.name = 'CustomError';
 			}
 		}
-		
+
 		const error = new CustomError('Custom error occurred');
 		const model = new ErrorLog({ error: error.toString() });
 		const deserialized = ErrorLog.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.error.message).toContain('Custom error occurred');
 	});
 });

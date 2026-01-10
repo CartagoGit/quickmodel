@@ -1,6 +1,6 @@
 /**
  * Integration Test: @Quick() Decorator - Basic Usage
- * 
+ *
  * Tests the @Quick() decorator with simple type mappings
  */
 
@@ -22,7 +22,10 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		@Quick({
 			createdAt: Date,
 		})
-		class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+		class User
+			extends QModel<IUser>
+			implements QInterface<IUser, IUserTransform>
+		{
 			id!: string;
 			name!: string;
 			createdAt!: Date;
@@ -59,7 +62,10 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			pattern: RegExp,
 			createdAt: Date,
 		})
-		class Account extends QModel<IAccount> implements QInterface<IAccount, IAccountTransform> {
+		class Account
+			extends QModel<IAccount>
+			implements QInterface<IAccount, IAccountTransform>
+		{
 			id!: string;
 			balance!: bigint;
 			pattern!: RegExp;
@@ -94,7 +100,10 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		@Quick({
 			publishedAt: Date,
 		})
-		class Post extends QModel<IPost> implements QInterface<IPost, IPostTransform> {
+		class Post
+			extends QModel<IPost>
+			implements QInterface<IPost, IPostTransform>
+		{
 			id!: string;
 			title!: string;
 			publishedAt!: Date | null;
@@ -161,7 +170,10 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			balance: BigInt,
 			createdAt: Date,
 		})
-		class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+		class User
+			extends QModel<IUser>
+			implements QInterface<IUser, IUserTransform>
+		{
 			id!: string;
 			balance!: bigint;
 			createdAt!: Date;
@@ -176,46 +188,49 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		const serialized = user.serialize();
 
 		expect(serialized.id).toBe('1');
-	// BigInt se serializa como objeto con __type
-	expect(serialized.balance).toBe('999');
-	expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-	expect(typeof serialized.createdAt).toBe('string');
-});
-
-test('should handle collections', () => {
-	interface IData {
-		id: string;
-		tags: string[];
-		metadata: [string, any][];
-	}
-
-	interface IDataTransform {
-		tags: Set<string>;
-		metadata: Map<string, any>;
-	}
-
-	@Quick({
-		tags: Set,
-		metadata: Map,
-	})
-	class Data extends QModel<IData> implements QInterface<IData, IDataTransform> {
-		id!: string;
-		tags!: Set<string>;
-		metadata!: Map<string, any>;
-	}
-
-	const data = new Data({
-		id: '1',
-		tags: ['tag1', 'tag2'],
-		metadata: [
-			['key1', 'value1'],
-			['key2', 'value2'],
-		],
+		// BigInt se serializa como objeto con __type
+		expect(serialized.balance).toBe('999');
+		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+		expect(typeof serialized.createdAt).toBe('string');
 	});
 
-	expect(data.tags).toBeInstanceOf(Set);
-	expect(data.tags.has('tag1')).toBe(true);
-	expect(data.metadata).toBeInstanceOf(Map);
-	expect(data.metadata.get('key1')).toBe('value1');
-});
+	test('should handle collections', () => {
+		interface IData {
+			id: string;
+			tags: string[];
+			metadata: [string, any][];
+		}
+
+		interface IDataTransform {
+			tags: Set<string>;
+			metadata: Map<string, any>;
+		}
+
+		@Quick({
+			tags: Set,
+			metadata: Map,
+		})
+		class Data
+			extends QModel<IData>
+			implements QInterface<IData, IDataTransform>
+		{
+			id!: string;
+			tags!: Set<string>;
+			metadata!: Map<string, any>;
+		}
+
+		const data = new Data({
+			id: '1',
+			tags: ['tag1', 'tag2'],
+			metadata: [
+				['key1', 'value1'],
+				['key2', 'value2'],
+			],
+		});
+
+		expect(data.tags).toBeInstanceOf(Set);
+		expect(data.tags.has('tag1')).toBe(true);
+		expect(data.metadata).toBeInstanceOf(Map);
+		expect(data.metadata.get('key1')).toBe('value1');
+	});
 });

@@ -18,7 +18,10 @@ describe('QModel State Tracking', () => {
 	@Quick({
 		createdAt: Date,
 	})
-	class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+	class User
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
 		declare id: string;
 		declare name: string;
 		declare age: number;
@@ -101,7 +104,7 @@ describe('QModel State Tracking', () => {
 
 			// Different objects (defensive copy)
 			expect(init1).not.toBe(init2);
-			
+
 			// But same values
 			expect(init1).toEqual(init2);
 		});
@@ -322,7 +325,9 @@ describe('QModel State Tracking', () => {
 			user.reset();
 
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe('2024-01-01T00:00:00.000Z');
+			expect(user.createdAt.toISOString()).toBe(
+				'2024-01-01T00:00:00.000Z'
+			);
 		});
 
 		test('should clear dirty flag after reset', () => {
@@ -396,7 +401,9 @@ describe('QModel State Tracking', () => {
 			user.patch({ createdAt: '2024-12-31T00:00:00.000Z' });
 
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe('2024-12-31T00:00:00.000Z');
+			expect(user.createdAt.toISOString()).toBe(
+				'2024-12-31T00:00:00.000Z'
+			);
 		});
 
 		test('should work with API PATCH responses', () => {
@@ -482,7 +489,9 @@ describe('QModel State Tracking', () => {
 			// Show "unsaved changes" warning
 			if (user.hasChanges()) {
 				const changedFields = user.getChangedFields();
-				console.log(`Warning: You have unsaved changes to: ${changedFields.join(', ')}`);
+				console.log(
+					`Warning: You have unsaved changes to: ${changedFields.join(', ')}`
+				);
 			}
 
 			// User clicks cancel

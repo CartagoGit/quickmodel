@@ -15,7 +15,10 @@ import type { MockType } from './mock-generator.service';
  * const mockUsers = User.mock().array(5);
  * ```
  */
-export class MockBuilder<TInstance, TInterface extends Record<string, any> = any> {
+export class MockBuilder<
+	TInstance,
+	TInterface extends Record<string, any> = any,
+> {
 	private _fieldsRegistered = false;
 
 	/**
@@ -38,7 +41,9 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 		if (!this._fieldsRegistered) {
 			try {
 				// Create sample data for all properties in the typeMap to trigger registration
-				const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, this.modelClass) || {};
+				const typeMap =
+					Reflect.getMetadata(QUICK_TYPE_MAP_KEY, this.modelClass) ||
+					{};
 				const sampleData: Record<string, any> = {};
 
 				for (const [key, value] of Object.entries(typeMap)) {
@@ -68,7 +73,7 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 
 				// Try to create an instance to trigger field registration
 				new this.modelClass(sampleData as TInterface);
-			} catch (e) {
+			} catch (_e) {
 				// If it fails, that's ok - fields might be already registered
 			}
 			this._fieldsRegistered = true;
@@ -88,7 +93,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 */
 	empty(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(this.modelClass, 'empty', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'empty',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
@@ -107,7 +116,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 */
 	random(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(this.modelClass, 'random', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'random',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
@@ -126,7 +139,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 */
 	sample(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(this.modelClass, 'sample', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'sample',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
@@ -145,7 +162,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 */
 	minimal(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'minimal',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
@@ -164,7 +185,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 */
 	full(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(this.modelClass, 'full', overrides);
+		const data = this.mockGenerator.generate(
+			this.modelClass,
+			'full',
+			overrides
+		);
 		return new this.modelClass(data);
 	}
 
@@ -197,7 +222,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 * ```
 	 */
 	interfaceRandom(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'random', overrides);
+		return this.mockGenerator.generate(
+			this.modelClass,
+			'random',
+			overrides
+		);
 	}
 
 	/**
@@ -207,7 +236,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 * @returns A plain interface object with sample values
 	 */
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'sample', overrides);
+		return this.mockGenerator.generate(
+			this.modelClass,
+			'sample',
+			overrides
+		);
 	}
 
 	/**
@@ -217,7 +250,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 	 * @returns A plain interface object with minimal values
 	 */
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
+		return this.mockGenerator.generate(
+			this.modelClass,
+			'minimal',
+			overrides
+		);
 	}
 
 	/**
@@ -261,7 +298,12 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 		if (count === 0) {
 			return [];
 		}
-		const dataArray = this.mockGenerator.generateArray(this.modelClass, count, type, overrides);
+		const dataArray = this.mockGenerator.generateArray(
+			this.modelClass,
+			count,
+			type,
+			overrides
+		);
 		return dataArray.map((data) => new this.modelClass(data));
 	}
 
@@ -292,6 +334,11 @@ export class MockBuilder<TInstance, TInterface extends Record<string, any> = any
 		if (count === 0) {
 			return [];
 		}
-		return this.mockGenerator.generateArray(this.modelClass, count, type, overrides);
+		return this.mockGenerator.generateArray(
+			this.modelClass,
+			count,
+			type,
+			overrides
+		);
 	}
 }

@@ -313,17 +313,17 @@ describe('System: API Response Transformation', () => {
 		// First transformation
 		const json1 = post.toJSON();
 
-	// Second transformation
-	const post2 = Post.fromJSON(json1);
-	const json2 = post2.toJSON();
-	const parsed2 = JSON.parse(json2);
+		// Second transformation
+		const post2 = Post.fromJSON(json1);
+		const json2 = post2.toJSON();
+		const parsed2 = JSON.parse(json2);
 
-	// Third transformation  
-	const post3 = Post.fromJSON(json2);
+		// Third transformation
+		const post3 = Post.fromJSON(json2);
 
-	// Verify data integrity
-	expect(post3.publishedAt.toISOString()).toBe(originalDate);
-	expect(post3.views).toBe(123456789n);
+		// Verify data integrity
+		expect(post3.publishedAt.toISOString()).toBe(originalDate);
+		expect(post3.views).toBe(123456789n);
 		expect(parsed2.publishedAt).toBe(originalDate);
 		expect(parsed2.views).toBe(originalViews);
 	});

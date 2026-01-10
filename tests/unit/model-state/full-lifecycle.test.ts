@@ -30,11 +30,11 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			const iface = user.toInterface();
-			
+
 			expect(iface.id).toBe('1');
 			expect(iface.name).toBe('John');
 			expect(iface.age).toBe(30);
@@ -48,14 +48,14 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
 			user.age = 31;
 
 			const iface = user.toInterface();
-			
+
 			expect(iface.name).toBe('Jane');
 			expect(iface.age).toBe(31);
 		});
@@ -66,13 +66,13 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.createdAt = new Date('2024-12-31T23:59:59.999Z');
 
 			const iface = user.toInterface();
-			
+
 			expect(typeof iface.createdAt).toBe('string');
 			expect(iface.createdAt).toBe('2024-12-31T23:59:59.999Z');
 		});
@@ -85,11 +85,11 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			const init = user.getInitInterface();
-			
+
 			expect(init.id).toBe('1');
 			expect(init.name).toBe('John');
 			expect(init.age).toBe(30);
@@ -103,14 +103,14 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
 			user.age = 31;
 
 			const init = user.getInitInterface();
-			
+
 			expect(init.name).toBe('John'); // Still original
 			expect(init.age).toBe(30); // Still original
 		});
@@ -123,7 +123,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			expect(user.hasChanges()).toBe(false);
@@ -135,7 +135,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
@@ -149,7 +149,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
@@ -165,7 +165,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			expect(user.isDirty()).toBe(false);
@@ -185,7 +185,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			expect(user.getChangedFields()).toEqual([]);
@@ -197,14 +197,14 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
 			user.age = 31;
 
 			const changed = user.getChangedFields();
-			
+
 			expect(changed).toContain('name');
 			expect(changed).toContain('age');
 			expect(changed.length).toBe(2);
@@ -218,7 +218,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			expect(user.getChanges()).toEqual({});
@@ -230,14 +230,14 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
 			user.age = 31;
 
 			const changes = user.getChanges();
-			
+
 			expect(changes.name).toBe('Jane');
 			expect(changes.age).toBe(31);
 			expect(changes.id).toBeUndefined();
@@ -250,13 +250,13 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
 
 			const patchData = user.getChanges();
-			
+
 			// Only send changed fields to API
 			expect(Object.keys(patchData).length).toBe(1);
 			expect(patchData.name).toBe('Jane');
@@ -270,7 +270,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
@@ -290,7 +290,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			const originalDate = user.createdAt;
@@ -299,7 +299,9 @@ describe('State Management Methods', () => {
 			user.reset();
 
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe(originalDate.toISOString());
+			expect(user.createdAt.toISOString()).toBe(
+				originalDate.toISOString()
+			);
 		});
 
 		test('should clear dirty flag after reset', () => {
@@ -308,7 +310,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.name = 'Jane';
@@ -327,7 +329,7 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.patch({ name: 'Jane', age: 31 });
@@ -343,13 +345,15 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			user.patch({ createdAt: '2024-12-31T00:00:00.000Z' });
 
 			expect(user.createdAt).toBeInstanceOf(Date);
-			expect(user.createdAt.toISOString()).toBe('2024-12-31T00:00:00.000Z');
+			expect(user.createdAt.toISOString()).toBe(
+				'2024-12-31T00:00:00.000Z'
+			);
 		});
 
 		test('should work with API PATCH responses', () => {
@@ -358,14 +362,14 @@ describe('State Management Methods', () => {
 				name: 'John',
 				age: 30,
 				email: 'john@example.com',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			// Simular respuesta de API después de PATCH
 			const apiResponse = {
 				name: 'Jane',
 				age: 31,
-				updatedAt: '2024-06-15T10:30:00.000Z'
+				updatedAt: '2024-06-15T10:30:00.000Z',
 			};
 
 			user.patch(apiResponse);

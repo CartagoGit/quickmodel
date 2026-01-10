@@ -59,13 +59,13 @@ class ErrorData extends QModel<IErrorData> {
 }
 
 interface ISymbolData {
-	keyed: Symbol;
-	plain: Symbol;
+	keyed: symbol;
+	plain: symbol;
 }
 
 class SymbolData extends QModel<ISymbolData> {
-	declare keyed: Symbol;
-	declare plain: Symbol;
+	declare keyed: symbol;
+	declare plain: symbol;
 }
 
 interface IBufferData {
@@ -352,7 +352,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 		});
 
 		expect(typeof data.keyed).toBe('symbol');
-		expect(Symbol.keyFor(data.keyed as symbol)).toBe('myKey');
+		expect(Symbol.keyFor(data.keyed)).toBe('myKey');
 	});
 
 	test('should handle plain symbols', () => {
@@ -363,7 +363,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 
 		expect(typeof data.plain).toBe('symbol');
 		// data.plain es un symbol primitivo, no Symbol wrapper
-		expect(Symbol.keyFor(data.plain as symbol)).toBe('description');
+		expect(Symbol.keyFor(data.plain)).toBe('description');
 	});
 
 	test('should handle symbols without description', () => {

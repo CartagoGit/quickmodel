@@ -74,7 +74,7 @@ describe('Null Safety: Deep Optional Chaining', () => {
 		// Should safely return undefined, not throw
 		expect(user.profile?.address?.city).toBeUndefined();
 		expect(() => {
-			user.profile?.address?.city;
+			void user.profile?.address?.city;
 		}).not.toThrow();
 	});
 

@@ -89,7 +89,10 @@ import { SymbolTransformer } from '@/transformers/symbol.transformer';
 import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import { URLTransformer } from '@/transformers/url.transformer';
 import { URLSearchParamsTransformer } from '@/transformers/url-search-params.transformer';
-import { MapTransformer, SetTransformer } from '@/transformers/map-set.transformer';
+import {
+	MapTransformer,
+	SetTransformer,
+} from '@/transformers/map-set.transformer';
 import { IQTransformer } from '../interfaces/transformer.interface';
 import { TransformerRegistry } from '../registry/transformer.registry';
 
@@ -97,7 +100,10 @@ export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > implements IQSerializer<TModel, TInterface> {
-	private readonly transformers: Map<string | Function, IQTransformer<unknown, unknown>>;
+	private readonly transformers: Map<
+		string | Function,
+		IQTransformer<unknown, unknown>
+	>;
 
 	/**
 	 * Creates a model serializer.
@@ -133,15 +139,42 @@ export class Serializer<
 		this.transformers.set(Set, setTransformer);
 
 		// Register typed arrays
-		this.transformers.set(Int8Array, new TypedArrayTransformer<Int8Array>(Int8Array));
-		this.transformers.set(Uint8Array, new TypedArrayTransformer<Uint8Array>(Uint8Array));
-		this.transformers.set(Int16Array, new TypedArrayTransformer<Int16Array>(Int16Array));
-		this.transformers.set(Uint16Array, new TypedArrayTransformer<Uint16Array>(Uint16Array));
-		this.transformers.set(Int32Array, new TypedArrayTransformer<Int32Array>(Int32Array));
-		this.transformers.set(Uint32Array, new TypedArrayTransformer<Uint32Array>(Uint32Array));
-		this.transformers.set(Float32Array, new TypedArrayTransformer<Float32Array>(Float32Array));
-		this.transformers.set(Float64Array, new TypedArrayTransformer<Float64Array>(Float64Array));
-		this.transformers.set(BigInt64Array, new TypedArrayTransformer<BigInt64Array>(BigInt64Array, true));
+		this.transformers.set(
+			Int8Array,
+			new TypedArrayTransformer<Int8Array>(Int8Array)
+		);
+		this.transformers.set(
+			Uint8Array,
+			new TypedArrayTransformer<Uint8Array>(Uint8Array)
+		);
+		this.transformers.set(
+			Int16Array,
+			new TypedArrayTransformer<Int16Array>(Int16Array)
+		);
+		this.transformers.set(
+			Uint16Array,
+			new TypedArrayTransformer<Uint16Array>(Uint16Array)
+		);
+		this.transformers.set(
+			Int32Array,
+			new TypedArrayTransformer<Int32Array>(Int32Array)
+		);
+		this.transformers.set(
+			Uint32Array,
+			new TypedArrayTransformer<Uint32Array>(Uint32Array)
+		);
+		this.transformers.set(
+			Float32Array,
+			new TypedArrayTransformer<Float32Array>(Float32Array)
+		);
+		this.transformers.set(
+			Float64Array,
+			new TypedArrayTransformer<Float64Array>(Float64Array)
+		);
+		this.transformers.set(
+			BigInt64Array,
+			new TypedArrayTransformer<BigInt64Array>(BigInt64Array, true)
+		);
 		this.transformers.set(
 			BigUint64Array,
 			new TypedArrayTransformer<BigUint64Array>(BigUint64Array, true)
@@ -181,7 +214,11 @@ export class Serializer<
 		while (proto && proto !== Object.prototype) {
 			for (const key of Object.getOwnPropertyNames(proto)) {
 				const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-				if (descriptor && (descriptor.get || descriptor.set) && key !== 'constructor') {
+				if (
+					descriptor &&
+					(descriptor.get || descriptor.set) &&
+					key !== 'constructor'
+				) {
 					keys.add(key);
 				}
 			}
@@ -237,7 +274,11 @@ export class Serializer<
 	 */
 	private serializeValue(value: unknown, seen?: WeakSet<object>): unknown {
 		// Custom Transformers (Registry)
-		if (value !== null && value !== undefined && typeof value === 'object') {
+		if (
+			value !== null &&
+			value !== undefined &&
+			typeof value === 'object'
+		) {
 			// Try to find transformer by constructor
 			const ctor = (value as any).constructor;
 			if (ctor && TransformerRegistry.has(ctor)) {
@@ -250,14 +291,18 @@ export class Serializer<
 
 		// Date
 		if (value instanceof Date) {
-			const transformer = this.transformers.get('date') || this.transformers.get(Date);
-			return transformer ? transformer.serialize(value) : value.toISOString();
+			const transformer =
+				this.transformers.get('date') || this.transformers.get(Date);
+			return transformer
+				? transformer.serialize(value)
+				: value.toISOString();
 		}
 
 		// URL
 		if (value instanceof URL) {
 			const transformer =
-				this.transformers.get(URL) || this.transformers.get(Symbol('URL').toString());
+				this.transformers.get(URL) ||
+				this.transformers.get(Symbol('URL').toString());
 			return transformer ? transformer.serialize(value) : value.href;
 		}
 
@@ -266,7 +311,9 @@ export class Serializer<
 			const transformer =
 				this.transformers.get(URLSearchParams) ||
 				this.transformers.get(Symbol('URLSearchParams').toString());
-			return transformer ? transformer.serialize(value) : value.toString();
+			return transformer
+				? transformer.serialize(value)
+				: value.toString();
 		}
 
 		// BigInt
@@ -281,13 +328,16 @@ export class Serializer<
 		// Symbol
 		if (typeof value === 'symbol') {
 			const transformer = this.transformers.get('symbol');
-			return transformer ? transformer.serialize(value) : Symbol.keyFor(value) || value.toString();
+			return transformer
+				? transformer.serialize(value)
+				: Symbol.keyFor(value) || value.toString();
 		}
 
 		// RegExp
 		if (value instanceof RegExp) {
 			const transformer =
-				this.transformers.get(RegExp) || this.transformers.get(Symbol('RegExp').toString());
+				this.transformers.get(RegExp) ||
+				this.transformers.get(Symbol('RegExp').toString());
 			return transformer
 				? transformer.serialize(value)
 				: { source: value.source, flags: value.flags };
@@ -296,26 +346,41 @@ export class Serializer<
 		// Error
 		if (value instanceof Error) {
 			const transformer =
-				this.transformers.get(Error) || this.transformers.get(Symbol('Error').toString());
+				this.transformers.get(Error) ||
+				this.transformers.get(Symbol('Error').toString());
 			return transformer
 				? transformer.serialize(value)
-				: { message: value.message, stack: value.stack, name: value.name };
+				: {
+						message: value.message,
+						stack: value.stack,
+						name: value.name,
+					};
 		}
 
 		// TypedArrays
 		if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
 			// Determine which constructor to use to look up the transformer
 			let transformer;
-			if (value instanceof Int8Array) transformer = this.transformers.get(Int8Array);
-			else if (value instanceof Uint8Array) transformer = this.transformers.get(Uint8Array);
-			else if (value instanceof Int16Array) transformer = this.transformers.get(Int16Array);
-			else if (value instanceof Uint16Array) transformer = this.transformers.get(Uint16Array);
-			else if (value instanceof Int32Array) transformer = this.transformers.get(Int32Array);
-			else if (value instanceof Uint32Array) transformer = this.transformers.get(Uint32Array);
-			else if (value instanceof Float32Array) transformer = this.transformers.get(Float32Array);
-			else if (value instanceof Float64Array) transformer = this.transformers.get(Float64Array);
-			else if (value instanceof BigInt64Array) transformer = this.transformers.get(BigInt64Array);
-			else if (value instanceof BigUint64Array) transformer = this.transformers.get(BigUint64Array);
+			if (value instanceof Int8Array)
+				transformer = this.transformers.get(Int8Array);
+			else if (value instanceof Uint8Array)
+				transformer = this.transformers.get(Uint8Array);
+			else if (value instanceof Int16Array)
+				transformer = this.transformers.get(Int16Array);
+			else if (value instanceof Uint16Array)
+				transformer = this.transformers.get(Uint16Array);
+			else if (value instanceof Int32Array)
+				transformer = this.transformers.get(Int32Array);
+			else if (value instanceof Uint32Array)
+				transformer = this.transformers.get(Uint32Array);
+			else if (value instanceof Float32Array)
+				transformer = this.transformers.get(Float32Array);
+			else if (value instanceof Float64Array)
+				transformer = this.transformers.get(Float64Array);
+			else if (value instanceof BigInt64Array)
+				transformer = this.transformers.get(BigInt64Array);
+			else if (value instanceof BigUint64Array)
+				transformer = this.transformers.get(BigUint64Array);
 
 			if (transformer) {
 				return transformer.serialize(value);
@@ -323,7 +388,10 @@ export class Serializer<
 
 			// Fallback: convertir a array
 			// Para BigInt64Array y BigUint64Array, convertir bigints a strings
-			if (value instanceof BigInt64Array || value instanceof BigUint64Array) {
+			if (
+				value instanceof BigInt64Array ||
+				value instanceof BigUint64Array
+			) {
 				return Array.from(value, (v: bigint) => v.toString());
 			}
 			// TypedArrays tienen iterator pero TypeScript necesita type assertion
@@ -345,14 +413,19 @@ export class Serializer<
 			const transformer =
 				this.transformers.get(ArrayBuffer) ||
 				this.transformers.get(Symbol('ArrayBuffer').toString());
-			return transformer ? transformer.serialize(value) : Array.from(new Uint8Array(value));
+			return transformer
+				? transformer.serialize(value)
+				: Array.from(new Uint8Array(value));
 		}
 
 		// DataView
 		if (value instanceof DataView) {
 			const transformer =
-				this.transformers.get(DataView) || this.transformers.get(Symbol('DataView').toString());
-			return transformer ? transformer.serialize(value) : Array.from(new Uint8Array(value.buffer));
+				this.transformers.get(DataView) ||
+				this.transformers.get(Symbol('DataView').toString());
+			return transformer
+				? transformer.serialize(value)
+				: Array.from(new Uint8Array(value.buffer));
 		}
 
 		// Nested model
@@ -374,7 +447,8 @@ export class Serializer<
 
 		// Map
 		if (value instanceof Map) {
-			const transformer = this.transformers.get('map') || this.transformers.get(Map);
+			const transformer =
+				this.transformers.get('map') || this.transformers.get(Map);
 			if (transformer) {
 				return transformer.serialize(value);
 			}
@@ -388,11 +462,14 @@ export class Serializer<
 
 		// Set
 		if (value instanceof Set) {
-			const transformer = this.transformers.get('set') || this.transformers.get(Set);
+			const transformer =
+				this.transformers.get('set') || this.transformers.get(Set);
 			if (transformer) {
 				return transformer.serialize(value);
 			}
-			return Array.from(value).map(item => this.serializeValue(item, seen));
+			return Array.from(value).map((item) =>
+				this.serializeValue(item, seen)
+			);
 		}
 
 		// Plain Object (recursive serialization)
@@ -401,17 +478,21 @@ export class Serializer<
 		if (
 			typeof value === 'object' &&
 			value !== null &&
-			(Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+			(Object.getPrototypeOf(value) === Object.prototype ||
+				Object.getPrototypeOf(value) === null)
 		) {
 			const visited = seen || new WeakSet<object>();
 			if (visited.has(value)) {
 				return { __circular: true };
 			}
 			visited.add(value);
-			
+
 			const result: Record<string, unknown> = {};
 			for (const key of Object.keys(value)) {
-				result[key] = this.serializeValue((value as Record<string, unknown>)[key], visited);
+				result[key] = this.serializeValue(
+					(value as Record<string, unknown>)[key],
+					visited
+				);
 			}
 			return result;
 		}

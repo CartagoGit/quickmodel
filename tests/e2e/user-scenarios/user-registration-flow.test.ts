@@ -1,6 +1,6 @@
 /**
  * E2E Test: Complete User Registration Flow
- * 
+ *
  * Simulates a complete user registration workflow from form data
  * through validation, model creation, serialization, and storage
  */
@@ -72,7 +72,10 @@ describe('E2E: User Registration Flow', () => {
 		'metadata.lastLogin': Date,
 		'metadata.loginCount': BigInt,
 	})
-	class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+	class User
+		extends QModel<IUser>
+		implements QInterface<IUser, IUserTransform>
+	{
 		id!: string;
 		email!: string;
 		username!: string;
@@ -183,7 +186,9 @@ describe('E2E: User Registration Flow', () => {
 		const clonedUser = retrievedUser.clone();
 		expect(clonedUser).not.toBe(retrievedUser);
 		expect(clonedUser.email).toBe(retrievedUser.email);
-		expect(clonedUser.profile.address).not.toBe(retrievedUser.profile.address);
+		expect(clonedUser.profile.address).not.toBe(
+			retrievedUser.profile.address
+		);
 
 		// STEP 11: Simulate login (update metadata)
 		retrievedUser.metadata.lastLogin = new Date();

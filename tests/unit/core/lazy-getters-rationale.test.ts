@@ -5,7 +5,6 @@
 import { describe, test, expect } from 'bun:test';
 
 describe('Sin lazy getters', () => {
-	
 	test('Comparación: Con lazy getters vs Sin lazy getters', () => {
 		console.log('\n=== COMPARACIÓN ===\n');
 
@@ -17,14 +16,18 @@ describe('Sin lazy getters', () => {
 
 			constructor(data: any) {
 				this.__quickValues__ = data;
-				
+
 				// Instalamos lazy getters
 				for (const key of Object.keys(data)) {
 					Object.defineProperty(this, key, {
-						get() { return this.__quickValues__[key]; },
-						set(val) { this.__quickValues__[key] = val; },
+						get() {
+							return this.__quickValues__[key];
+						},
+						set(val) {
+							this.__quickValues__[key] = val;
+						},
 						enumerable: true,
-						configurable: true
+						configurable: true,
 					});
 				}
 			}
@@ -57,8 +60,8 @@ describe('Sin lazy getters', () => {
 
 		// Verificaciones
 		expect(conGetters.id).toBe(1);
-		expect((sinGetters as any).id).toBeUndefined();  // ❌ No hay getter
-		expect(sinGetters.__quickValues__.id).toBe(1);   // ✅ Pero los datos están aquí
+		expect((sinGetters as any).id).toBeUndefined(); // ❌ No hay getter
+		expect(sinGetters.__quickValues__.id).toBe(1); // ✅ Pero los datos están aquí
 	});
 
 	test('Problemas sin lazy getters', () => {
@@ -73,9 +76,14 @@ describe('Sin lazy getters', () => {
 
 		const model = new ModelSinGetters({ id: 1, name: 'Test', age: 25 });
 
-		console.log('❌ Problema 1: No puedes acceder a las propiedades directamente');
+		console.log(
+			'❌ Problema 1: No puedes acceder a las propiedades directamente'
+		);
 		console.log('   model.id:', (model as any).id);
-		console.log('   Deberías usar: model.__quickValues__.id:', model.__quickValues__.id);
+		console.log(
+			'   Deberías usar: model.__quickValues__.id:',
+			model.__quickValues__.id
+		);
 
 		console.log('\n❌ Problema 2: Serialización JSON incompleta');
 		const json = JSON.stringify(model);
@@ -84,33 +92,42 @@ describe('Sin lazy getters', () => {
 
 		console.log('\n❌ Problema 3: Iteración con for..in no funciona');
 		console.log('   for (let key in model):');
-		for (let key in model) {
+		for (const key in model) {
 			console.log(`     ${key}: ${(model as any)[key]}`);
 		}
 		console.log('   (Solo muestra __quickValues__)');
 
-		console.log('\n❌ Problema 4: Object.keys() no devuelve las propiedades');
+		console.log(
+			'\n❌ Problema 4: Object.keys() no devuelve las propiedades'
+		);
 		console.log('   Object.keys(model):', Object.keys(model));
-		console.log('   Deberías usar: Object.keys(model.__quickValues__):', 
-			Object.keys(model.__quickValues__));
+		console.log(
+			'   Deberías usar: Object.keys(model.__quickValues__):',
+			Object.keys(model.__quickValues__)
+		);
 
 		console.log('\n❌ Problema 5: Spreads no funcionan');
 		const spread = { ...model };
 		console.log('   { ...model }:', spread);
 		console.log('   (Solo copia __quickValues__)');
 
-		console.log('\n❌ Problema 6: TypeScript piensa que las propiedades existen');
+		console.log(
+			'\n❌ Problema 6: TypeScript piensa que las propiedades existen'
+		);
 		interface IUser {
 			id: number;
 			name: string;
 		}
 		class UserSinGetters extends ModelSinGetters implements IUser {
-			declare id: number;    // TypeScript: "Esta propiedad existe"
-			declare name: string;  // TypeScript: "Esta propiedad existe"
+			declare id: number; // TypeScript: "Esta propiedad existe"
+			declare name: string; // TypeScript: "Esta propiedad existe"
 		}
 		const user = new UserSinGetters({ id: 1, name: 'John' });
 		// TypeScript permite esto sin errores:
-		console.log('   user.id (TypeScript dice que existe):', (user as any).id);
+		console.log(
+			'   user.id (TypeScript dice que existe):',
+			(user as any).id
+		);
 		console.log('   Pero en runtime es:', typeof (user as any).id);
 	});
 
@@ -123,10 +140,14 @@ describe('Sin lazy getters', () => {
 				this.__quickValues__ = data;
 				for (const key of Object.keys(data)) {
 					Object.defineProperty(this, key, {
-						get() { return this.__quickValues__[key]; },
-						set(val) { this.__quickValues__[key] = val; },
+						get() {
+							return this.__quickValues__[key];
+						},
+						set(val) {
+							this.__quickValues__[key] = val;
+						},
 						enumerable: true,
-						configurable: true
+						configurable: true,
 					});
 				}
 			}
@@ -143,15 +164,17 @@ describe('Sin lazy getters', () => {
 
 		console.log('\n✅ Ventaja 3: Iteración funciona');
 		console.log('   for (let key in model):');
-		for (let key in model) {
+		for (const key in model) {
 			if (!key.startsWith('__')) {
 				console.log(`     ${key}: ${(model as any)[key]}`);
 			}
 		}
 
 		console.log('\n✅ Ventaja 4: Object.keys() correcto');
-		console.log('   Object.keys(model).filter(k => !k.startsWith("__")):',
-			Object.keys(model).filter(k => !k.startsWith('__')));
+		console.log(
+			'   Object.keys(model).filter(k => !k.startsWith("__")):',
+			Object.keys(model).filter((k) => !k.startsWith('__'))
+		);
 
 		console.log('\n✅ Ventaja 5: Spreads funcionan');
 		const spread = { ...model };
@@ -160,18 +183,23 @@ describe('Sin lazy getters', () => {
 
 		console.log('\n✅ Ventaja 6: TypeScript y runtime coinciden');
 		console.log('   model.name existe en TypeScript: ✓');
-		console.log('   model.name existe en runtime:', typeof (model as any).name);
+		console.log(
+			'   model.name existe en runtime:',
+			typeof (model as any).name
+		);
 	});
 
 	test('Alternativa sin getters: Copiar propiedades directamente', () => {
-		console.log('\n\n=== ALTERNATIVA: COPIAR PROPIEDADES DIRECTAMENTE ===\n');
+		console.log(
+			'\n\n=== ALTERNATIVA: COPIAR PROPIEDADES DIRECTAMENTE ===\n'
+		);
 
 		class ModelCopiado {
 			__quickValues__: any = {};
-			
+
 			constructor(data: any) {
 				this.__quickValues__ = data;
-				
+
 				// En vez de getters, copiar valores directamente
 				for (const key of Object.keys(data)) {
 					(this as any)[key] = data[key];

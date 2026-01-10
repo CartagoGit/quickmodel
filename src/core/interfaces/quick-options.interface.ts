@@ -170,9 +170,7 @@ export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
  * })
  * ```
  */
-export type TypeGuardFunction<TConstructors> = (
-	data: any
-) => TConstructors;
+export type TypeGuardFunction<TConstructors> = (data: any) => TConstructors;
 
 /**
  * Discriminator configuration for a property with union types.

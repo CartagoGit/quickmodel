@@ -1,6 +1,6 @@
 /**
  * Unit Test: Buffer Transformer
- * 
+ *
  * Tests serialization and deserialization of Buffer/ArrayBuffer objects
  */
 
@@ -17,17 +17,20 @@ describe('Unit: Buffer Transformer', () => {
 	}
 
 	@Quick({ buffer: ArrayBuffer })
-	class BufferData extends QModel<IBufferData> implements QInterface<IBufferData, IBufferDataTransform> {
+	class BufferData
+		extends QModel<IBufferData>
+		implements QInterface<IBufferData, IBufferDataTransform>
+	{
 		buffer!: ArrayBuffer;
 	}
 
 	test('Should serialize ArrayBuffer', () => {
 		const buffer = new Uint8Array([1, 2, 3, 4]).buffer;
 		const model = new BufferData({ buffer: buffer as any });
-		
+
 		const json = model.toJSON();
 		const parsed = JSON.parse(json);
-		
+
 		// ArrayBuffer serializes to array of bytes directly
 		expect(parsed.buffer).toEqual([1, 2, 3, 4]);
 	});
@@ -36,7 +39,7 @@ describe('Unit: Buffer Transformer', () => {
 		const buffer = new Uint8Array([1, 2, 3, 4]).buffer;
 		const model = new BufferData({ buffer: buffer as any });
 		const deserialized = BufferData.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.buffer).toBeInstanceOf(ArrayBuffer);
 	});
 
@@ -44,7 +47,7 @@ describe('Unit: Buffer Transformer', () => {
 		const original = new Uint8Array([10, 20, 30, 40, 50]);
 		const model = new BufferData({ buffer: original.buffer as any });
 		const deserialized = BufferData.fromJSON(model.toJSON());
-		
+
 		const result = new Uint8Array(deserialized.buffer);
 		expect(Array.from(result)).toEqual([10, 20, 30, 40, 50]);
 	});
@@ -53,7 +56,7 @@ describe('Unit: Buffer Transformer', () => {
 		const buffer = new ArrayBuffer(0);
 		const model = new BufferData({ buffer: buffer as any });
 		const deserialized = BufferData.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.buffer).toBeInstanceOf(ArrayBuffer);
 		expect(deserialized.buffer.byteLength).toBe(0);
 	});
@@ -65,10 +68,10 @@ describe('Unit: Buffer Transformer', () => {
 		for (let i = 0; i < 100; i++) {
 			view[i] = i % 256;
 		}
-		
+
 		const model = new BufferData({ buffer: buffer as any });
 		const deserialized = BufferData.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.buffer.byteLength).toBe(size);
 		const resultView = new Uint8Array(deserialized.buffer);
 		for (let i = 0; i < 100; i++) {
@@ -80,7 +83,7 @@ describe('Unit: Buffer Transformer', () => {
 		const buffer = new Uint8Array([0, 255, 128, 1, 254]).buffer;
 		const model = new BufferData({ buffer: buffer as any });
 		const deserialized = BufferData.fromJSON(model.toJSON());
-		
+
 		const result = new Uint8Array(deserialized.buffer);
 		expect(Array.from(result)).toEqual([0, 255, 128, 1, 254]);
 	});
@@ -89,7 +92,7 @@ describe('Unit: Buffer Transformer', () => {
 		const int16Buffer = new Int16Array([1000, -1000, 500]).buffer;
 		const model = new BufferData({ buffer: int16Buffer as any });
 		const deserialized = BufferData.fromJSON(model.toJSON());
-		
+
 		expect(deserialized.buffer.byteLength).toBe(6); // 3 * 2 bytes
 		const result = new Int16Array(deserialized.buffer);
 		expect(Array.from(result)).toEqual([1000, -1000, 500]);

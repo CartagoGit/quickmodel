@@ -5,7 +5,7 @@ import { QModel, Quick } from '@/index';
 interface AllTypesInterface {
 	// Números
 	numPrimitive: number;
-	numWrapper: Number;
+	numWrapper: number;
 	numNaN: number;
 	numInfinity: number;
 	numNegInfinity: number;
@@ -14,14 +14,14 @@ interface AllTypesInterface {
 
 	// Strings
 	strPrimitive: string;
-	strWrapper: String;
+	strWrapper: string;
 	strEmpty: string;
 	strWithSpaces: string;
 	strUnicode: string;
 
 	// Booleans
 	boolPrimitive: boolean;
-	boolWrapper: Boolean;
+	boolWrapper: boolean;
 	boolFalse: boolean;
 
 	// BigInt
@@ -29,7 +29,7 @@ interface AllTypesInterface {
 	bigintZero: bigint;
 	bigintNegative: bigint;
 	bigintString: string; // BigInt serializado como string
-bigintObject: string; // BigInt serializado como string
+	bigintObject: string; // BigInt serializado como string
 
 	// Symbols
 	symUnique: symbol;
@@ -44,7 +44,7 @@ bigintObject: string; // BigInt serializado como string
 	arrayMixed: Array<number | string | null | undefined | boolean>;
 	arrayEmpty: any[];
 	arrayNested: Array<Array<number>>;
-	arrayWithWrappers: Array<Number | String | Boolean>;
+	arrayWithWrappers: Array<number | string | boolean>;
 
 	// Objetos
 	plainObject: {
@@ -97,7 +97,7 @@ bigintObject: string; // BigInt serializado como string
 @Quick({ dateISO: Date, dateNow: Date })
 class AllTypesModel extends QModel<AllTypesInterface> {
 	declare numPrimitive: number;
-	declare numWrapper: Number;
+	declare numWrapper: number;
 	declare numNaN: number;
 	declare numInfinity: number;
 	declare numNegInfinity: number;
@@ -105,20 +105,20 @@ class AllTypesModel extends QModel<AllTypesInterface> {
 	declare numNegative: number;
 
 	declare strPrimitive: string;
-	declare strWrapper: String;
+	declare strWrapper: string;
 	declare strEmpty: string;
 	declare strWithSpaces: string;
 	declare strUnicode: string;
 
 	declare boolPrimitive: boolean;
-	declare boolWrapper: Boolean;
+	declare boolWrapper: boolean;
 	declare boolFalse: boolean;
 
 	declare bigintPrimitive: bigint;
 	declare bigintZero: bigint;
 	declare bigintNegative: bigint;
 	declare bigintString: string;
-declare bigintObject: string;
+	declare bigintObject: string;
 
 	declare symUnique: symbol;
 	declare symGlobal: symbol;
@@ -130,7 +130,7 @@ declare bigintObject: string;
 	declare arrayMixed: Array<number | string | null | undefined | boolean>;
 	declare arrayEmpty: any[];
 	declare arrayNested: Array<Array<number>>;
-	declare arrayWithWrappers: Array<Number | String | Boolean>;
+	declare arrayWithWrappers: Array<number | string | boolean>;
 
 	declare plainObject: { a: number; b: string; nested: { c: boolean } };
 	declare objectWithNull: { x: null; y: undefined };
@@ -173,15 +173,15 @@ describe('toInterface() - All Types Preservation', () => {
 			boolPrimitive: true,
 			boolWrapper: new Boolean(false),
 			boolFalse: false,
-		// BigInt debe pasarse como string o formato serializado, no como bigint nativo
-		bigintPrimitive: '123',
-		bigintZero: '0',
-		bigintNegative: '-999',
+			// BigInt debe pasarse como string o formato serializado, no como bigint nativo
+			bigintPrimitive: '123',
+			bigintZero: '0',
+			bigintNegative: '-999',
 			bigintString: '999999999999999999',
 			bigintObject: { __type: 'bigint', value: '123456789' },
-		symUnique: Symbol('test'),
-		symGlobal: Symbol.for('global'),
-		symWellKnown: Symbol.iterator,
+			symUnique: Symbol('test'),
+			symGlobal: Symbol.for('global'),
+			symWellKnown: Symbol.iterator,
 			nullValue: null,
 			undefinedValue: undefined,
 			arrayMixed: [],
@@ -263,11 +263,11 @@ describe('toInterface() - All Types Preservation', () => {
 			boolPrimitive: true,
 			boolWrapper: new Boolean(false),
 			boolFalse: false,
-		bigintPrimitive: '123',
-		bigintZero: '0',
-		bigintNegative: '-1',
-		bigintString: '123',
-		bigintObject: { __type: 'bigint', value: '123' },
+			bigintPrimitive: '123',
+			bigintZero: '0',
+			bigintNegative: '-1',
+			bigintString: '123',
+			bigintObject: { __type: 'bigint', value: '123' },
 			symUnique: Symbol('test'),
 			symGlobal: Symbol.for('global'),
 			symWellKnown: Symbol.iterator,
@@ -612,11 +612,11 @@ describe('toInterface() - All Types Preservation', () => {
 		// Array con wrappers - debe preservar wrappers
 		expect(Array.isArray(result.arrayWithWrappers)).toBe(true);
 		expect(result.arrayWithWrappers[0]).toBeInstanceOf(Number);
-	expect(result.arrayWithWrappers[0]!.valueOf()).toBe(42);
-	expect(result.arrayWithWrappers[1]).toBeInstanceOf(String);
-	expect(result.arrayWithWrappers[1]!.valueOf()).toBe('test');
-	expect(result.arrayWithWrappers[2]).toBeInstanceOf(Boolean);
-	expect(result.arrayWithWrappers[2]!.valueOf()).toBe(true);
+		expect(result.arrayWithWrappers[0]!.valueOf()).toBe(42);
+		expect(result.arrayWithWrappers[1]).toBeInstanceOf(String);
+		expect(result.arrayWithWrappers[1]!.valueOf()).toBe('test');
+		expect(result.arrayWithWrappers[2]).toBeInstanceOf(Boolean);
+		expect(result.arrayWithWrappers[2]!.valueOf()).toBe(true);
 	});
 
 	test('should preserve Map serialized as array of pairs', () => {
@@ -831,79 +831,79 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.plainObject.nested.c).toBe(true);
 		expect(Number.isNaN(result.plainObject.nested.d)).toBe(true);
 		expect(result.plainObject.nested.e).toBe(null);
-	expect(result.plainObject.nested.deeper!.f).toBe(Infinity);
-	expect(result.plainObject.nested.deeper!.g).toBe(undefined);
+		expect(result.plainObject.nested.deeper!.f).toBe(Infinity);
+		expect(result.plainObject.nested.deeper!.g).toBe(undefined);
 
-	// Objeto con null/undefined anidados
-	expect(result.objectWithNull.x).toBe(null);
-	expect(result.objectWithNull.y).toBe(undefined);
-	expect(result.objectWithNull.z!.w).toBe(null);
+		// Objeto con null/undefined anidados
+		expect(result.objectWithNull.x).toBe(null);
+		expect(result.objectWithNull.y).toBe(undefined);
+		expect(result.objectWithNull.z!.w).toBe(null);
 
-	// Object.create(null) - debe preservar estructura
-	expect(result.objectNoProto.key).toBe('value');
-	expect(result.objectNoProto.nested.prop).toBe(42);
+		// Object.create(null) - debe preservar estructura
+		expect(result.objectNoProto.key).toBe('value');
+		expect(result.objectNoProto.nested.prop).toBe(42);
 
-	// Objeto profundamente anidado
-	expect(result.objectDeeplyNested.level1.l1val).toBe(1);
-	expect(result.objectDeeplyNested.level1.level2.l2val).toBe('two');
-	expect(result.objectDeeplyNested.level1.level2.level3.l3val).toBe(true);
-	expect(result.objectDeeplyNested.level1.level2.level3.value).toBe(42);
-	expect(
-		Number.isNaN(
-			result.objectDeeplyNested.level1.level2.level3.nested!.x
-		)
-	).toBe(true);
-});
+		// Objeto profundamente anidado
+		expect(result.objectDeeplyNested.level1.l1val).toBe(1);
+		expect(result.objectDeeplyNested.level1.level2.l2val).toBe('two');
+		expect(result.objectDeeplyNested.level1.level2.level3.l3val).toBe(true);
+		expect(result.objectDeeplyNested.level1.level2.level3.value).toBe(42);
+		expect(
+			Number.isNaN(
+				result.objectDeeplyNested.level1.level2.level3.nested!.x
+			)
+		).toBe(true);
+	});
 
-test('should preserve properties when mutated (toInterface uses __initData)', () => {
-	const data = {
-		numPrimitive: 50,
-		numWrapper: new Number(50),
-		numNaN: NaN,
-		numInfinity: Infinity,
-		numNegInfinity: -Infinity,
-		numZero: 0,
-		numNegative: -1,
-		strPrimitive: 'test',
-		strWrapper: new String('original'),
-		strEmpty: '',
-		strWithSpaces: 'test',
-		strUnicode: 'test',
-		boolPrimitive: true,
-		boolWrapper: new Boolean(true),
-		boolFalse: false,
-		bigintPrimitive: '123',
-		bigintZero: '0',
-		bigintNegative: '-1',
-		bigintString: '123',
-		bigintObject: { __type: 'bigint', value: '123' },
-		symUnique: Symbol('test'),
-		symGlobal: Symbol.for('global'),
-		symWellKnown: Symbol.iterator,
-		nullValue: null,
-		undefinedValue: undefined,
-		arrayMixed: [],
-		arrayEmpty: [],
-		arrayNested: [[]],
-		arrayWithWrappers: [],
-		plainObject: { a: 1, b: '', nested: { c: true } },
-		objectWithNull: { x: null, y: undefined },
-		objectNoProto: Object.create(null),
-		objectDeeplyNested: {
-			level1: { level2: { level3: { value: 1 } } },
-		},
-		dateISO: '2024-01-01T00:00:00.000Z',
-		dateNow: '2024-01-01T00:00:00.000Z',
-		regexpString: '/test/',
-		regexpPattern: 'test',
-		regexpObject: { source: 'test', flags: '' },
-		mapAsArray: [],
-		mapEmpty: [],
-		setAsArray: [],
-		setEmpty: [],
-	};
+	test('should preserve properties when mutated (toInterface uses __initData)', () => {
+		const data = {
+			numPrimitive: 50,
+			numWrapper: new Number(50),
+			numNaN: NaN,
+			numInfinity: Infinity,
+			numNegInfinity: -Infinity,
+			numZero: 0,
+			numNegative: -1,
+			strPrimitive: 'test',
+			strWrapper: new String('original'),
+			strEmpty: '',
+			strWithSpaces: 'test',
+			strUnicode: 'test',
+			boolPrimitive: true,
+			boolWrapper: new Boolean(true),
+			boolFalse: false,
+			bigintPrimitive: '123',
+			bigintZero: '0',
+			bigintNegative: '-1',
+			bigintString: '123',
+			bigintObject: { __type: 'bigint', value: '123' },
+			symUnique: Symbol('test'),
+			symGlobal: Symbol.for('global'),
+			symWellKnown: Symbol.iterator,
+			nullValue: null,
+			undefinedValue: undefined,
+			arrayMixed: [],
+			arrayEmpty: [],
+			arrayNested: [[]],
+			arrayWithWrappers: [],
+			plainObject: { a: 1, b: '', nested: { c: true } },
+			objectWithNull: { x: null, y: undefined },
+			objectNoProto: Object.create(null),
+			objectDeeplyNested: {
+				level1: { level2: { level3: { value: 1 } } },
+			},
+			dateISO: '2024-01-01T00:00:00.000Z',
+			dateNow: '2024-01-01T00:00:00.000Z',
+			regexpString: '/test/',
+			regexpPattern: 'test',
+			regexpObject: { source: 'test', flags: '' },
+			mapAsArray: [],
+			mapEmpty: [],
+			setAsArray: [],
+			setEmpty: [],
+		};
 
-	const model = new AllTypesModel(data);
+		const model = new AllTypesModel(data);
 
 		// Modificar con primitivos
 		model.numWrapper = 999 as any;

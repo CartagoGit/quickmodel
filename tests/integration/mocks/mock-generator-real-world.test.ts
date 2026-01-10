@@ -147,9 +147,16 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	test('should generate complete order mock with all nested structures', () => {
-		const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
-		const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-		
+		const statuses = [
+			'pending',
+			'processing',
+			'shipped',
+			'delivered',
+			'cancelled',
+		] as const;
+		const randomStatus =
+			statuses[Math.floor(Math.random() * statuses.length)];
+
 		const mock = Order.mock().random({
 			status: randomStatus,
 			metadata: {

@@ -1,6 +1,6 @@
 /**
  * Test: Clases externas sin @Quick()
- * 
+ *
  * Verifica cómo QuickModel maneja clases que no tienen el decorador @Quick()
  * (típicamente clases de librerías externas)
  */
@@ -49,7 +49,7 @@ describe('External classes without @Quick()', () => {
 
 	test('Should handle single external class without @Quick()', () => {
 		@Quick({
-			user: ExternalUser
+			user: ExternalUser,
 		})
 		class Profile extends QModel<IProfile> {
 			userId!: number;
@@ -61,23 +61,29 @@ describe('External classes without @Quick()', () => {
 			user: {
 				id: 100,
 				name: 'John Doe',
-				email: 'john@example.com'
-			}
+				email: 'john@example.com',
+			},
 		});
 
 		console.log('\n=== Single External Class ===');
 		console.log('profile.user:', profile.user);
-		console.log('profile.user instanceof ExternalUser:', profile.user instanceof ExternalUser);
+		console.log(
+			'profile.user instanceof ExternalUser:',
+			profile.user instanceof ExternalUser
+		);
 		console.log('profile.user.id:', profile.user?.id);
 		console.log('profile.user.name:', profile.user?.name);
-		
+
 		if (profile.user instanceof ExternalUser) {
-			console.log('profile.user.getDisplayName():', profile.user.getDisplayName());
+			console.log(
+				'profile.user.getDisplayName():',
+				profile.user.getDisplayName()
+			);
 		}
 
 		// Verificar si se instancia correctamente
 		expect(profile.userId).toBe(1);
-		
+
 		// ¿Qué pasa con la clase externa?
 		// Opción 1: ¿Se instancia como ExternalUser?
 		// Opción 2: ¿Se queda como objeto plano?
@@ -85,7 +91,7 @@ describe('External classes without @Quick()', () => {
 
 	test('Should handle array of external classes without @Quick()', () => {
 		@Quick({
-			members: [ExternalUser]
+			members: [ExternalUser],
 		})
 		class Team extends QModel<ITeam> {
 			id!: number;
@@ -96,25 +102,28 @@ describe('External classes without @Quick()', () => {
 			id: 1,
 			members: [
 				{ id: 1, name: 'Alice', email: 'alice@example.com' },
-				{ id: 2, name: 'Bob', email: 'bob@example.com' }
-			]
+				{ id: 2, name: 'Bob', email: 'bob@example.com' },
+			],
 		});
 
 		console.log('\n=== Array of External Classes ===');
 		console.log('team.members:', team.members);
 		console.log('team.members.length:', team.members?.length);
 		console.log('team.members[0]:', team.members?.[0]);
-		console.log('team.members[0] instanceof ExternalUser:', team.members?.[0] instanceof ExternalUser);
+		console.log(
+			'team.members[0] instanceof ExternalUser:',
+			team.members?.[0] instanceof ExternalUser
+		);
 
 		expect(team.id).toBe(1);
-		
+
 		// ¿Los miembros se instancian como ExternalUser?
 	});
 
 	test('Should handle nested external classes', () => {
 		@Quick({
 			user: ExternalUser,
-			address: ExternalAddress
+			address: ExternalAddress,
 		})
 		class Profile extends QModel<IProfile> {
 			userId!: number;
@@ -127,18 +136,24 @@ describe('External classes without @Quick()', () => {
 			user: {
 				id: 100,
 				name: 'John',
-				email: 'john@example.com'
+				email: 'john@example.com',
 			},
 			address: {
 				street: '123 Main St',
 				city: 'NYC',
-				zipCode: '10001'
-			}
+				zipCode: '10001',
+			},
 		});
 
 		console.log('\n=== Nested External Classes ===');
-		console.log('profile.user instanceof ExternalUser:', profile.user instanceof ExternalUser);
-		console.log('profile.address instanceof ExternalAddress:', profile.address instanceof ExternalAddress);
+		console.log(
+			'profile.user instanceof ExternalUser:',
+			profile.user instanceof ExternalUser
+		);
+		console.log(
+			'profile.address instanceof ExternalAddress:',
+			profile.address instanceof ExternalAddress
+		);
 		console.log('profile.user:', profile.user);
 		console.log('profile.address:', profile.address);
 
@@ -150,7 +165,7 @@ describe('External classes without @Quick()', () => {
 		@Quick({
 			user: ExternalUser,
 			'user.id': Number,
-			'user.name': String
+			'user.name': String,
 		})
 		class Profile extends QModel<IProfile> {
 			userId!: number;
@@ -162,13 +177,16 @@ describe('External classes without @Quick()', () => {
 			user: {
 				id: 100,
 				name: 'John Doe',
-				email: 'john@example.com'
-			}
+				email: 'john@example.com',
+			},
 		});
 
 		console.log('\n=== External Class with Dot Notation ===');
 		console.log('profile.user:', profile.user);
-		console.log('profile.user instanceof ExternalUser:', profile.user instanceof ExternalUser);
+		console.log(
+			'profile.user instanceof ExternalUser:',
+			profile.user instanceof ExternalUser
+		);
 
 		expect(profile.userId).toBe(1);
 	});
@@ -186,14 +204,17 @@ describe('External classes without @Quick()', () => {
 			user: {
 				id: 100,
 				name: 'John',
-				email: 'john@example.com'
-			}
+				email: 'john@example.com',
+			},
 		});
 
 		console.log('\n=== Plain Object (no type) ===');
 		console.log('profile.user:', profile.user);
 		console.log('typeof profile.user:', typeof profile.user);
-		console.log('profile.user constructor:', profile.user?.constructor?.name);
+		console.log(
+			'profile.user constructor:',
+			profile.user?.constructor?.name
+		);
 
 		expect(profile.userId).toBe(1);
 		expect(typeof profile.user).toBe('object');

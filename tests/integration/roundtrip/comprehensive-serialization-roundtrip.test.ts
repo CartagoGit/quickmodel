@@ -213,7 +213,7 @@ const testData: ICompleteModel = {
 // ============================================================================
 try {
 	let passed = 0;
-	let failed = 0;
+	const failed = 0;
 
 	console.log('🧪 1. CREATING COMPLETE MODEL...\n');
 	const model = new CompleteModel(testData);

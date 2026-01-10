@@ -11,7 +11,7 @@ export default {
 	Layout: () => {
 		return h(DefaultTheme.Layout, null, {
 			'nav-bar-content-after': () => h(LanguageSwitcher),
-			'doc-footer-before': () => h(CustomFooter),
+			'layout-bottom': () => h(CustomFooter),
 		});
 	},
 	enhanceApp({ app }) {

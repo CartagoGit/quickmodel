@@ -1,6 +1,6 @@
 /**
  * Utility types for type-safe serialization/deserialization
- * 
+ *
  * These types correctly map TypeScript types to their serialized representations
  */
 
@@ -8,60 +8,87 @@
  * Maps a TypeScript type to its serialized version
  */
 export type Serialized<T> = T extends RegExp
-  ? string | { __type: 'regexp'; source: string; flags: string }
-  : T extends Error
-  ? string
-  : T extends Date
-  ? string
-  : T extends URL
-  ? string
-  : T extends URLSearchParams
-  ? string
-  : T extends bigint
-  ? string | { __type: 'bigint'; value: string }
-  : T extends symbol
-  ? string | { __type: 'symbol'; description: string }
-  : T extends Int8Array
-  ? number[]
-  : T extends Uint8Array
-  ? number[]
-  : T extends Uint8ClampedArray
-  ? number[]
-  : T extends Int16Array
-  ? number[]
-  : T extends Uint16Array
-  ? number[]
-  : T extends Int32Array
-  ? number[]
-  : T extends Uint32Array
-  ? number[]
-  : T extends Float32Array
-  ? number[]
-  : T extends Float64Array
-  ? number[]
-  : T extends BigInt64Array
-  ? string[]
-  : T extends BigUint64Array
-  ? string[]
-  : T extends ArrayBuffer
-  ? number[]
-  : T extends DataView
-  ? number[]
-  : T extends Map<infer K, infer V>
-  ? [Serialized<K>, Serialized<V>][] | { __type: 'Map'; entries: [K, V][] }
-  : T extends Set<infer U>
-  ? Serialized<U>[] | { __type: 'Set'; values: U[] }
-  : T extends Array<infer U>
-  ? Serialized<U>[]
-  : T extends object
-  ? { [K in keyof T]: Serialized<T[K]> }
-  : T; // primitivos (string, number, boolean, null, undefined)
+	? string | { __type: 'regexp'; source: string; flags: string }
+	: T extends Error
+		? string
+		: T extends Date
+			? string
+			: T extends URL
+				? string
+				: T extends URLSearchParams
+					? string
+					: T extends bigint
+						? string | { __type: 'bigint'; value: string }
+						: T extends symbol
+							? string | { __type: 'symbol'; description: string }
+							: T extends Int8Array
+								? number[]
+								: T extends Uint8Array
+									? number[]
+									: T extends Uint8ClampedArray
+										? number[]
+										: T extends Int16Array
+											? number[]
+											: T extends Uint16Array
+												? number[]
+												: T extends Int32Array
+													? number[]
+													: T extends Uint32Array
+														? number[]
+														: T extends Float32Array
+															? number[]
+															: T extends Float64Array
+																? number[]
+																: T extends BigInt64Array
+																	? string[]
+																	: T extends BigUint64Array
+																		? string[]
+																		: T extends ArrayBuffer
+																			? number[]
+																			: T extends DataView
+																				? number[]
+																				: T extends Map<
+																							infer K,
+																							infer V
+																					  >
+																					?
+																							| [
+																									Serialized<K>,
+																									Serialized<V>,
+																							  ][]
+																							| {
+																									__type: 'Map';
+																									entries: [
+																										K,
+																										V,
+																									][];
+																							  }
+																					: T extends Set<
+																								infer U
+																						  >
+																						?
+																								| Serialized<U>[]
+																								| {
+																										__type: 'Set';
+																										values: U[];
+																								  }
+																						: T extends Array<
+																									infer U
+																							  >
+																							? Serialized<U>[]
+																							: T extends object
+																								? {
+																										[K in keyof T]: Serialized<
+																											T[K]
+																										>;
+																									}
+																								: T; // primitivos (string, number, boolean, null, undefined)
 
 /**
  * Maps a complete interface to its serialized version
  */
 export type SerializedInterface<T> = {
-  [K in keyof T]: Serialized<T[K]>;
+	[K in keyof T]: Serialized<T[K]>;
 };
 
 /**

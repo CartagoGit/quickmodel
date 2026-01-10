@@ -1,6 +1,6 @@
 /**
  * Unit Test: Mock Generator - Complex Types and Edge Cases
- * 
+ *
  * Tests mock generation for unions, enums, optionals, and edge cases
  */
 
@@ -44,7 +44,10 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		assignee: 'string',
 		dueDate: Date,
 	})
-	class Task extends QModel<ITask> implements QInterface<ITask, ITaskTransform> {
+	class Task
+		extends QModel<ITask>
+		implements QInterface<ITask, ITaskTransform>
+	{
 		id!: string;
 		title!: string;
 		priority!: Priority;
@@ -57,16 +60,20 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		// MockGenerator produces generic numbers. We use override to simulate enum selection logic if desired,
 		// or accepts that random numbers might not match strict enum values unless forced.
 		const mock = Task.mock().random({
-			priority: Priority.HIGH
+			priority: Priority.HIGH,
 		});
 
-		expect(mock.priority).toBeOneOf([Priority.LOW, Priority.MEDIUM, Priority.HIGH]);
+		expect(mock.priority).toBeOneOf([
+			Priority.LOW,
+			Priority.MEDIUM,
+			Priority.HIGH,
+		]);
 		expect([1, 2, 3]).toContain(mock.priority);
 	});
 
 	test('should generate mocks with string literal unions', () => {
 		const mock = Task.mock().random({
-			status: 'in-progress'
+			status: 'in-progress',
 		});
 
 		expect(['pending', 'in-progress', 'done']).toContain(mock.status);
@@ -76,8 +83,12 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		const mock = Task.mock().random();
 
 		// assignee will be generated as string (from metadata)
-		expect(mock.assignee === null || typeof mock.assignee === 'string').toBe(true);
-		expect(mock.dueDate === null || mock.dueDate instanceof Date).toBe(true);
+		expect(
+			mock.assignee === null || typeof mock.assignee === 'string'
+		).toBe(true);
+		expect(mock.dueDate === null || mock.dueDate instanceof Date).toBe(
+			true
+		);
 	});
 
 	test('should generate empty mocks with null for nullable fields', () => {
@@ -86,7 +97,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		// We override here to test functionality.
 		const mock = Task.mock().empty({
 			assignee: null,
-			dueDate: null
+			dueDate: null,
 		});
 
 		expect(mock.assignee).toBe(null);
@@ -127,7 +138,10 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		method: 'string',
 		details: 'object',
 	})
-	class Payment extends QModel<IPayment> implements QInterface<IPayment, IPaymentTransform> {
+	class Payment
+		extends QModel<IPayment>
+		implements QInterface<IPayment, IPaymentTransform>
+	{
 		id!: string;
 		amount!: bigint;
 		method!: 'card' | 'paypal' | 'crypto';
@@ -143,7 +157,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		// We override here to satisfy strict specific values
 		const mock = Payment.mock().random({
 			method: 'card',
-			details: {}
+			details: {},
 		});
 
 		expect(typeof mock.details).toBe('object');
@@ -185,7 +199,8 @@ describe('Unit: Mock Generator - Complex Types', () => {
 
 		const isString = typeof mock.content === 'string';
 		const isArray = Array.isArray(mock.content);
-		const isObject = typeof mock.content === 'object' && !Array.isArray(mock.content);
+		const isObject =
+			typeof mock.content === 'object' && !Array.isArray(mock.content);
 
 		expect(isString || isArray || isObject).toBe(true);
 	});
@@ -197,8 +212,8 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		const mockArray = Document.mock().random({ content: ['a', 'b'] });
 		expect(mockArray.content).toEqual(['a', 'b']);
 
-		const mockObject = Document.mock().random({ 
-			content: { text: 'hello', format: 'md' } 
+		const mockObject = Document.mock().random({
+			content: { text: 'hello', format: 'md' },
 		});
 		expect(mockObject.content).toEqual({ text: 'hello', format: 'md' });
 	});
@@ -220,7 +235,10 @@ describe('Unit: Mock Generator - Complex Types', () => {
 		price: BigInt,
 		createdAt: Date,
 	})
-	class Product extends QModel<IProduct> implements QInterface<IProduct, IProductTransform> {
+	class Product
+		extends QModel<IProduct>
+		implements QInterface<IProduct, IProductTransform>
+	{
 		id!: string;
 		name!: string;
 		price!: bigint;

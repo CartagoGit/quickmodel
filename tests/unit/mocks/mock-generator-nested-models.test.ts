@@ -93,8 +93,8 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		const mock = User.mock().random({
 			metadata: {
 				tags: ['tag1'],
-				score: 10
-			}
+				score: 10,
+			},
 		});
 
 		expect(typeof mock.metadata).toBe('object');

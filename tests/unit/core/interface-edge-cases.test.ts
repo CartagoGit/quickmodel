@@ -21,7 +21,7 @@ describe('Interface Conversion - Edge Cases', () => {
 		test('should handle self-referencing objects without infinite loop', () => {
 			const node = new Node({
 				id: '1',
-				name: 'Root'
+				name: 'Root',
 			});
 
 			// Create circular reference
@@ -38,12 +38,12 @@ describe('Interface Conversion - Edge Cases', () => {
 		test('should handle parent-child circular references', () => {
 			const parent = new Node({
 				id: '1',
-				name: 'Parent'
+				name: 'Parent',
 			});
 
 			const child = new Node({
 				id: '2',
-				name: 'Child'
+				name: 'Child',
 			});
 
 			// Create circular reference
@@ -82,11 +82,11 @@ describe('Interface Conversion - Edge Cases', () => {
 			const model = new DataModel({
 				id: '1',
 				value: null,
-				nested: null
+				nested: null,
 			});
 
 			const iface = model.toInterface();
-			
+
 			expect(iface.value).toBeNull();
 			expect(iface.nested).toBeNull();
 		});
@@ -95,11 +95,11 @@ describe('Interface Conversion - Edge Cases', () => {
 			const model = new DataModel({
 				id: '1',
 				value: undefined,
-				nested: undefined
+				nested: undefined,
 			});
 
 			const iface = model.toInterface();
-			
+
 			// undefined might be omitted or preserved depending on implementation
 			expect(iface.value === undefined || !('value' in iface)).toBe(true);
 		});
@@ -108,12 +108,12 @@ describe('Interface Conversion - Edge Cases', () => {
 			const model = new DataModel({
 				id: '1',
 				nested: {
-					prop: null
-				}
+					prop: null,
+				},
 			});
 
 			const iface = model.toInterface();
-			
+
 			expect(iface.nested).toBeDefined();
 			expect(iface.nested?.prop).toBeNull();
 		});
@@ -132,7 +132,10 @@ describe('Interface Conversion - Edge Cases', () => {
 		}
 
 		@Quick({ createdAt: Date, updatedAt: Date })
-		class Timestamped extends QModel<ITimestamps> implements ITimestampsTransforms {
+		class Timestamped
+			extends QModel<ITimestamps>
+			implements ITimestampsTransforms
+		{
 			declare id: string;
 			declare createdAt: Date;
 			declare updatedAt?: Date | null;
@@ -141,11 +144,11 @@ describe('Interface Conversion - Edge Cases', () => {
 		test('should convert Date to ISO string', () => {
 			const model = new Timestamped({
 				id: '1',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			const iface = model.toInterface();
-			
+
 			expect(typeof iface.createdAt).toBe('string');
 			expect(iface.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		});
@@ -153,14 +156,14 @@ describe('Interface Conversion - Edge Cases', () => {
 		test('should handle invalid Date gracefully', () => {
 			const model = new Timestamped({
 				id: '1',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			// Set invalid date
 			(model as any).createdAt = new Date('invalid');
 
 			const iface = model.toInterface();
-			
+
 			// Should return 'Invalid Date' string or handle gracefully
 			expect(typeof iface.createdAt).toBe('string');
 		});
@@ -169,11 +172,11 @@ describe('Interface Conversion - Edge Cases', () => {
 			const model = new Timestamped({
 				id: '1',
 				createdAt: '2024-01-01T00:00:00.000Z',
-				updatedAt: null
+				updatedAt: null,
 			});
 
 			const iface = model.toInterface();
-			
+
 			expect(iface.updatedAt).toBeNull();
 		});
 	});
@@ -204,12 +207,12 @@ describe('Interface Conversion - Edge Cases', () => {
 				tags: [],
 				metadata: {
 					key: 'test',
-					values: []
-				}
+					values: [],
+				},
 			});
 
 			const iface = model.toInterface();
-			
+
 			expect(Array.isArray(iface.tags)).toBe(true);
 			expect(iface.tags.length).toBe(0);
 			expect(Array.isArray(iface.metadata.values)).toBe(true);
@@ -222,15 +225,15 @@ describe('Interface Conversion - Edge Cases', () => {
 				tags: ['a', 'b', 'c'],
 				metadata: {
 					key: 'test',
-					values: [1, 2, 3, 4, 5]
-				}
+					values: [1, 2, 3, 4, 5],
+				},
 			});
 
 			model.tags.push('d');
 			model.metadata.values.push(6);
 
 			const iface = model.toInterface();
-			
+
 			expect(iface.tags).toEqual(['a', 'b', 'c', 'd']);
 			expect(iface.metadata.values).toEqual([1, 2, 3, 4, 5, 6]);
 		});
@@ -241,12 +244,12 @@ describe('Interface Conversion - Edge Cases', () => {
 				tags: ['a', null as any, 'b', undefined as any, 'c'],
 				metadata: {
 					key: 'test',
-					values: [1, null as any, 3]
-				}
+					values: [1, null as any, 3],
+				},
 			});
 
 			const iface = model.toInterface();
-			
+
 			expect(iface.tags).toBeDefined();
 			expect(iface.metadata.values).toBeDefined();
 		});
@@ -270,7 +273,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			const user = new User({
 				id: '1',
 				name: 'John',
-				age: 30
+				age: 30,
 			});
 
 			const init1 = user.getInitInterface();
@@ -286,7 +289,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			const user = new User({
 				id: '1',
 				name: 'John',
-				age: 30
+				age: 30,
 			});
 
 			const init = user.getInitInterface();
@@ -303,7 +306,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			const user = new User({
 				id: '1',
 				name: 'John',
-				age: 30
+				age: 30,
 			});
 
 			const init1 = user.getInitInterface();
@@ -336,10 +339,10 @@ describe('Interface Conversion - Edge Cases', () => {
 			pattern?: RegExp;
 		}
 
-		@Quick({ 
+		@Quick({
 			balance: BigInt,
 			createdAt: Date,
-			pattern: RegExp
+			pattern: RegExp,
 		})
 		class Account extends QModel<IAccount> implements IAccountTransforms {
 			declare id: string;
@@ -352,11 +355,11 @@ describe('Interface Conversion - Edge Cases', () => {
 			const account = new Account({
 				id: '1',
 				balance: '999999999999999999',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			const iface = account.toInterface();
-			
+
 			expect(typeof iface.balance).toBe('string');
 			expect(iface.balance).toBe('999999999999999999');
 		});
@@ -365,14 +368,14 @@ describe('Interface Conversion - Edge Cases', () => {
 			const account = new Account({
 				id: '1',
 				balance: '1000',
-				createdAt: '2024-01-01T00:00:00.000Z'
+				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
 			account.balance = BigInt('2000');
 
 			const iface = account.toInterface();
 			const init = account.getInitInterface();
-			
+
 			expect(iface.balance).toBe('2000');
 			expect(init.balance).toBe('1000');
 		});
@@ -382,11 +385,11 @@ describe('Interface Conversion - Edge Cases', () => {
 				id: '1',
 				balance: '1000',
 				createdAt: '2024-01-01T00:00:00.000Z',
-				pattern: '^test\\d+$'
+				pattern: '^test\\d+$',
 			});
 
 			const iface = account.toInterface();
-			
+
 			expect(typeof iface.pattern).toBe('string');
 			expect(iface.pattern).toBe('^test\\d+$');
 		});
@@ -409,8 +412,8 @@ describe('Interface Conversion - Edge Cases', () => {
 				id: '1',
 				data: {
 					value: 'test',
-					fn: () => 'function'
-				}
+					fn: () => 'function',
+				},
 			});
 
 			// Should not throw
@@ -426,8 +429,8 @@ describe('Interface Conversion - Edge Cases', () => {
 				id: '1',
 				data: {
 					[sym]: 'value',
-					normal: 'prop'
-				}
+					normal: 'prop',
+				},
 			});
 
 			// Should not throw

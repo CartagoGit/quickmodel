@@ -45,7 +45,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 		// MockGenerator produces strings for generic arrays by default if only 'Array' type is known
 		// We override here to test that it accepts overrides correctly for specific types
 		const mock = Post.mock().random({
-			ratings: [1, 2, 3, 4, 5]
+			ratings: [1, 2, 3, 4, 5],
 		});
 
 		expect(Array.isArray(mock.ratings)).toBe(true);

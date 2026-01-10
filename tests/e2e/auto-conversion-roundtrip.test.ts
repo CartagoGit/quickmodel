@@ -22,7 +22,7 @@ enum Status {
 	INACTIVE = 0,
 }
 
-const UserType = {
+const _UserType = {
 	PREMIUM: 'premium',
 	FREE: 'free',
 } as const;
@@ -448,13 +448,13 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 		test('array of Post models - automatic conversion', () => {
 			expect(Array.isArray(user.posts)).toBe(true);
 			expect(user.posts.length).toBe(2);
-			
+
 			// Ahora SÍ se convierten automáticamente a Post instances
 			expect(user.posts[0]).toBeInstanceOf(Post);
 			expect(user.posts[0]?.id).toBe(1);
 			expect(user.posts[0]?.title).toBe('First Post');
 			expect(user.posts[0]?.createdAt).toBeInstanceOf(Date);
-			
+
 			expect(user.posts[1]).toBeInstanceOf(Post);
 			expect(user.posts[1]?.id).toBe(2);
 			expect(user.posts[1]?.title).toBe('Second Post');
@@ -566,7 +566,9 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			// Set should serialize to a format that can roundtrip
 			// Either array or object with __type
 			const isArray = Array.isArray(interfaceData.tags);
-			const isObjectWithType = typeof interfaceData.tags === 'object' && interfaceData.tags.__type === 'Set';
+			const isObjectWithType =
+				typeof interfaceData.tags === 'object' &&
+				interfaceData.tags.__type === 'Set';
 			expect(isArray || isObjectWithType).toBe(true);
 		});
 

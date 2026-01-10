@@ -1,12 +1,11 @@
 /**
  * Unit Test: Mock Generator - Basic Types
- * 
+ *
  * Tests mock generation for basic primitive types and simple models
  */
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-
 
 describe('Unit: Mock Generator - Basic Types', () => {
 	// Simple model with primitives
@@ -82,9 +81,9 @@ describe('Unit: Mock Generator - Basic Types', () => {
 	});
 
 	test('should generate array with indexed overrides', () => {
-		const mocks = User.mock().array(3, 'random', (i) => ({ 
+		const mocks = User.mock().array(3, 'random', (i) => ({
 			name: `User${i}`,
-			age: 20 + i 
+			age: 20 + i,
 		}));
 
 		expect(mocks[0]!.name).toBe('User0');
@@ -112,6 +111,8 @@ describe('Unit: Mock Generator - Basic Types', () => {
 	});
 
 	test('should throw error for negative array count', () => {
-		expect(() => User.mock().array(-1)).toThrow('Count must be non-negative');
+		expect(() => User.mock().array(-1)).toThrow(
+			'Count must be non-negative'
+		);
 	});
 });

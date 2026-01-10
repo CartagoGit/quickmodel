@@ -41,7 +41,7 @@
 		"CHANGELOG"
 	],
 	"scripts": {
-		"build": "bun run clean && bun test && tsup",
+		"build": "bun run clean && bun run lint && bun run typecheck && bun test && tsup",
 		"dev": "tsup --watch",
 		"test": "bun test",
 		"test:coverage": "bun test --coverage",
@@ -53,8 +53,8 @@
 		"typecheck:src:watch": "bun run typecheck:src --watch",
 		"typecheck:tests": "tsc --noEmit -p ./tests/tsconfig.json",
 		"typecheck:tests:watch": "bun run typecheck:tests --watch",
-		"lint": "eslint src tests --ext .ts",
-		"lint:fix": "eslint src tests --ext .ts --fix",
+		"lint": "eslint src tests",
+		"lint:fix": "eslint src tests --fix",
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"docs:api": "typedoc",
@@ -91,6 +91,7 @@
 		"typedoc-plugin-markdown": "^4.9.0",
 		"typedoc-vitepress-theme": "^1.1.2",
 		"typescript": "^5.7.2",
+		"typescript-eslint": "^8.52.0",
 		"vitepress": "^1.6.4"
 	},
 	"peerDependencies": {

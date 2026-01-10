@@ -85,7 +85,7 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * - Supports: String literals, Native constructors, Q-Symbols, Model classes
  *
  * @group Decorators
- * @decorator `@QType(typeOrClass)`
+ * Syntax: `@QType(typeOrClass)`
  * @template T - The property type
  * @param typeOrClass - Optional: Constructor, Symbol, or String literal for the field type
  * @returns A property decorator function that registers the field with appropriate metadata
@@ -169,7 +169,7 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  *
  */
 // Define strict types for native constructors to avoid 'any'
-type INativeFactory =
+export type INativeFactory =
 	| BigIntConstructor
 	| SymbolConstructor
 	| DateConstructor
@@ -493,25 +493,25 @@ export function QType<T>(
 				Reflect.defineMetadata(
 					'arrayElementClass',
 					typeOrClass,
-						target,
-						propertyKey
-					);
-					Reflect.defineMetadata(
-						'design:type',
-						typeOrClass,
-						target,
-						propertyKey
-					);
-				} else {
-					// It's a transformer function (Math.round, btoa, arrow function, etc.)
-					// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2
-					Reflect.defineMetadata(
-						'customTransformer',
-						typeOrClass,
-						target,
-						propertyKey
-					);
-				}
+					target,
+					propertyKey
+				);
+				Reflect.defineMetadata(
+					'design:type',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+			} else {
+				// It's a transformer function (Math.round, btoa, arrow function, etc.)
+				// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2
+				Reflect.defineMetadata(
+					'customTransformer',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+			}
 		}
 	};
 }

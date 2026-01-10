@@ -27,7 +27,7 @@ interface IUser {
 	id: Number,
 	age: Number,
 	name: String,
-	email: String
+	email: String,
 })
 class User extends QModel<IUser> {
 	declare id: number;

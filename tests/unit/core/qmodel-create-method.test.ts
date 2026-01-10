@@ -1,6 +1,6 @@
 /**
  * Tests for QModel.create() factory method
- * 
+ *
  * Tests the static create() method that provides automatic type-safety
  * without needing explicit property declarations
  */
@@ -9,9 +9,7 @@ import { describe, test, expect } from 'bun:test';
 import { QModel, Quick, QTransform } from '@/index';
 
 describe('QModel.create() factory method', () => {
-	
 	describe('Basic usage', () => {
-		
 		test('should create instance with automatic type-safety', () => {
 			interface IUser {
 				id: number;
@@ -26,10 +24,10 @@ describe('QModel.create() factory method', () => {
 				declare email: string;
 			}
 
-			const user = User.create({ 
-				id: 1, 
+			const user = User.create({
+				id: 1,
 				name: 'Alice',
-				email: 'alice@example.com'
+				email: 'alice@example.com',
 			});
 
 			expect(user.id).toBe(1);
@@ -58,7 +56,6 @@ describe('QModel.create() factory method', () => {
 	});
 
 	describe('Type transformations', () => {
-		
 		test('should transform Date types', () => {
 			interface IPost {
 				id: number;
@@ -76,7 +73,7 @@ describe('QModel.create() factory method', () => {
 			const post = Post.create({
 				id: 1,
 				title: 'Hello World',
-				createdAt: '2026-01-10T00:00:00.000Z'
+				createdAt: '2026-01-10T00:00:00.000Z',
 			});
 
 			expect(post.id).toBe(1);
@@ -99,7 +96,7 @@ describe('QModel.create() factory method', () => {
 
 			const account = Account.create({
 				id: 'ACC-1',
-				balance: '999999999999999'
+				balance: '999999999999999',
 			});
 
 			expect(account.id).toBe('ACC-1');
@@ -115,7 +112,7 @@ describe('QModel.create() factory method', () => {
 
 			@Quick({
 				tags: Set,
-				metadata: Map
+				metadata: Map,
 			})
 			class Data extends QModel<IData> {
 				declare tags: Set<string>;
@@ -124,13 +121,16 @@ describe('QModel.create() factory method', () => {
 
 			const data = Data.create({
 				tags: ['typescript', 'node'],
-				metadata: [['key1', 'value1'], ['key2', 'value2']]
+				metadata: [
+					['key1', 'value1'],
+					['key2', 'value2'],
+				],
 			});
 
 			expect(data.tags).toBeInstanceOf(Set);
 			expect(data.tags.size).toBe(2);
 			expect(data.tags.has('typescript')).toBe(true);
-			
+
 			expect(data.metadata).toBeInstanceOf(Map);
 			expect(data.metadata.size).toBe(2);
 			expect(data.metadata.get('key1')).toBe('value1');
@@ -138,7 +138,6 @@ describe('QModel.create() factory method', () => {
 	});
 
 	describe('Nested models', () => {
-		
 		test('should transform nested models', () => {
 			interface IAddress {
 				street: string;
@@ -166,8 +165,8 @@ describe('QModel.create() factory method', () => {
 				bio: 'Developer',
 				address: {
 					street: '123 Main St',
-					city: 'NYC'
-				}
+					city: 'NYC',
+				},
 			});
 
 			expect(profile.bio).toBe('Developer');
@@ -203,8 +202,8 @@ describe('QModel.create() factory method', () => {
 				title: 'My Post',
 				comments: [
 					{ text: 'Great!', author: 'Alice' },
-					{ text: 'Thanks!', author: 'Bob' }
-				]
+					{ text: 'Thanks!', author: 'Bob' },
+				],
 			});
 
 			expect(post.title).toBe('My Post');
@@ -217,7 +216,6 @@ describe('QModel.create() factory method', () => {
 	});
 
 	describe('Methods and functionality', () => {
-		
 		test('should work with custom methods', () => {
 			interface IProduct {
 				name: string;
@@ -228,7 +226,7 @@ describe('QModel.create() factory method', () => {
 			class Product extends QModel<IProduct> {
 				declare name: string;
 				declare price: number;
-				
+
 				getFormattedPrice(): string {
 					return `$${this.price.toFixed(2)}`;
 				}
@@ -258,11 +256,11 @@ describe('QModel.create() factory method', () => {
 				declare total: number;
 			}
 
-			const order = Order.create({ orderId: 'ORD-1', total: 250.50 });
+			const order = Order.create({ orderId: 'ORD-1', total: 250.5 });
 			const plain = order.toInterface();
 
 			expect(plain.orderId).toBe('ORD-1');
-			expect(plain.total).toBe(250.50);
+			expect(plain.total).toBe(250.5);
 			expect(plain).not.toBeInstanceOf(Order);
 		});
 
@@ -288,7 +286,6 @@ describe('QModel.create() factory method', () => {
 	});
 
 	describe('Complex scenarios', () => {
-		
 		test('should handle optional properties', () => {
 			interface IConfig {
 				name: string;
@@ -302,11 +299,14 @@ describe('QModel.create() factory method', () => {
 			}
 
 			const config1 = Config.create({ name: 'setting' } as IConfig);
-			const config2 = Config.create({ name: 'setting', value: 42 } as IConfig);
+			const config2 = Config.create({
+				name: 'setting',
+				value: 42,
+			} as IConfig);
 
 			expect(config1.name).toBe('setting');
 			expect(config1.value).toBeUndefined();
-			
+
 			expect(config2.name).toBe('setting');
 			expect(config2.value).toBe(42);
 		});
@@ -325,7 +325,7 @@ describe('QModel.create() factory method', () => {
 
 			const data = Data.create({
 				numbers: [1, 2, 3],
-				strings: ['a', 'b', 'c']
+				strings: ['a', 'b', 'c'],
 			});
 
 			expect(data.numbers).toEqual([1, 2, 3]);
@@ -345,7 +345,7 @@ describe('QModel.create() factory method', () => {
 				createdAt: Date,
 				updatedAt: Date,
 				balance: BigInt,
-				tags: Set
+				tags: Set,
 			})
 			class Record extends QModel<IRecord> {
 				declare id: string;
@@ -360,7 +360,7 @@ describe('QModel.create() factory method', () => {
 				createdAt: '2026-01-01T00:00:00.000Z',
 				updatedAt: '2026-01-10T00:00:00.000Z',
 				balance: '123456789',
-				tags: ['important', 'verified']
+				tags: ['important', 'verified'],
 			});
 
 			expect(record.id).toBe('REC-1');
@@ -373,25 +373,31 @@ describe('QModel.create() factory method', () => {
 	});
 
 	describe('QTransform helper with generic overriding (Option B)', () => {
-		
 		test('should work by passing explicit output type to create()', () => {
 			interface IPost {
 				id: number;
 				title: string;
-				createdAt: string;  // Backend sends string
+				createdAt: string; // Backend sends string
 			}
 
 			@Quick({ createdAt: Date })
 			class Post extends QModel<IPost> {}
 
 			// Pass QTransform as 1st type parameter to create()
-            // <TResult>
-			const post = Post.create<IPost, Post, QTransform<IPost, {
-				createdAt: Date;
-			}>>({
+			// <TResult>
+			const post = Post.create<
+				IPost,
+				Post,
+				QTransform<
+					IPost,
+					{
+						createdAt: Date;
+					}
+				>
+			>({
 				id: 1,
 				title: 'My Post',
-				createdAt: '2026-01-10T00:00:00.000Z'
+				createdAt: '2026-01-10T00:00:00.000Z',
 			});
 
 			// TypeScript knows createdAt is Date (not string)
@@ -402,27 +408,34 @@ describe('QModel.create() factory method', () => {
 		test('should work with QTransform for multiple transformations', () => {
 			interface IAccount {
 				id: string;
-				balance: string;     // Backend sends string
-				createdAt: string;   // Backend sends string
-				tags: string[];      // Backend sends array
+				balance: string; // Backend sends string
+				createdAt: string; // Backend sends string
+				tags: string[]; // Backend sends array
 			}
 
 			@Quick({
 				balance: BigInt,
 				createdAt: Date,
-				tags: Set
+				tags: Set,
 			})
 			class Account extends QModel<IAccount> {}
 
-			const account = Account.create<IAccount, Account, QTransform<IAccount, {
-				balance: bigint;
-				createdAt: Date;
-				tags: Set<string>;
-			}>>({
+			const account = Account.create<
+				IAccount,
+				Account,
+				QTransform<
+					IAccount,
+					{
+						balance: bigint;
+						createdAt: Date;
+						tags: Set<string>;
+					}
+				>
+			>({
 				id: 'ACC-1',
 				balance: '999999999999999',
 				createdAt: '2026-01-10T00:00:00.000Z',
-				tags: ['vip', 'verified']
+				tags: ['vip', 'verified'],
 			});
 
 			// All types are correctly inferred via QTransform
@@ -439,10 +452,17 @@ describe('QModel.create() factory method', () => {
 			@Quick({ value: BigInt })
 			class Data extends QModel<IData> {}
 
-			const data = Data.create<IData, Data, QTransform<IData, {
-				value: bigint;
-			}>>({
-				value: '12345'
+			const data = Data.create<
+				IData,
+				Data,
+				QTransform<
+					IData,
+					{
+						value: bigint;
+					}
+				>
+			>({
+				value: '12345',
 			});
 
 			// Type-safe: TypeScript knows it's bigint
@@ -452,7 +472,6 @@ describe('QModel.create() factory method', () => {
 	});
 
 	describe('Comparison with constructor', () => {
-		
 		test('create() and new constructor should behave identically', () => {
 			interface IUser {
 				id: number;
@@ -469,7 +488,7 @@ describe('QModel.create() factory method', () => {
 			class UserWithCreate extends QModel<IUser> {}
 
 			const data = { id: 1, name: 'Alice' };
-			
+
 			const user1 = new UserWithDeclare(data);
 			const user2 = UserWithCreate.create(data);
 

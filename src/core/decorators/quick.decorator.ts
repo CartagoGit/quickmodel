@@ -90,7 +90,7 @@ type IConstructor<T = unknown> = new (...args: any[]) => T;
 /**
  * Transformer function that converts a value
  */
-type ITransformerFunction = ((value: any) => any);
+type ITransformerFunction = (value: any) => any;
 
 /**
  * Native constructors and factories supported by QuickModel
@@ -184,7 +184,7 @@ export type ISpecs = ISpec[]; // Array of any Spec
  * }
  * ```
  *
- * @see {@link DOT-NOTATION.md} for complete guide on nested transformations
+ * @see [Dot Notation Guide](../../../docs/DOT-NOTATION.md) for complete guide on nested transformations
  */
 export interface IQuickOptions {
 	[propertyName: string]: ISpec | ISpecs;
@@ -200,7 +200,7 @@ export interface IQuickOptions {
  * - Without explicit declaration, values are used as-is with TypeScript metadata only
  *
  * @group Decorators
- * @decorator `@Quick(typeMap)`
+ * Syntax: `@Quick(typeMap)`
  * @param typeMap REQUIRED mapping for Set, Map, custom classes, and transformers
  * @returns A class decorator function
  *
@@ -303,7 +303,7 @@ export interface IQuickOptions {
  * ```
  *
  * @example
- * **✅ Dot notation for nested properties (see {@link DOT-NOTATION.md}):**
+ * **✅ Dot notation for nested properties (see [Dot Notation Guide](../../../docs/DOT-NOTATION.md)):**
  * ```typescript
  * // Option 1: Decorate nested class (recommended for reusable models)
  * @Quick({ price: BigInt, createdAt: Date })
@@ -704,8 +704,8 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 			// runs after QModel initialization, overwriting the deserialized data.
 			// This method compares the backup storage (from data) with the current value (from default)
 			// and restores the backup if they differ.
-			if (typeof (instance as any).__forceHydration === 'function') {
-				(instance as any).__forceHydration();
+			if (typeof instance.__forceHydration === 'function') {
+				instance.__forceHydration();
 			}
 
 			return instance;
@@ -738,9 +738,9 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 			QUICK_DISCRIMINATORS_KEY,
 			QUICK_TYPE_MAP_KEY,
 			QUICK_DESIGN_TYPES_KEY,
-			QUICK_DECORATOR_KEY
+			QUICK_DECORATOR_KEY,
 		];
-		
+
 		for (const key of keysToCopy) {
 			const value = Reflect.getMetadata(key, originalConstructor);
 			if (value !== undefined) {
