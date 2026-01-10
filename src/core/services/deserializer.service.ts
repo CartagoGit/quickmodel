@@ -1120,6 +1120,12 @@ export class Deserializer<
    * // discriminatorConfig = { field: 'type', mapping: { 'content': Content } }
    * // Returns: Content when data.type === 'content'
    * ```
+   * 
+   * **Resolution Logic:**
+   * 1. **Instance Check**: If `data` is already an instance of one of `possibleTypes` (e.g. `Date`), returns that type.
+   * 2. **Primitive Check**: If `data` is a primitive (`string`, `number`, `boolean`, `bigint`) and that type is in `possibleTypes`, returns it.
+   * 3. **Discriminator**: Uses the discriminator config if provided.
+   * 4. **Fallback**: Returns the first type in `possibleTypes`.
    */
   private resolveUnionType(
     data: any,

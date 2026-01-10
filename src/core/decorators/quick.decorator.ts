@@ -15,11 +15,11 @@
  * **Without @Quick()** (verbose):
  * ```typescript
  * class User extends QModel<IUser> {
- *   @QType() id!: string;
- *   @QType() name!: string;
- *   @QType() email!: string;
- *   @QType() age!: number;
- *   @QType() createdAt!: Date;
+ *   @QType() declare id: string;
+ *   @QType() declare name: string;
+ *   @QType() declare email: string;
+ *   @QType() declare age: number;
+ *   @QType() declare createdAt: Date;
  * }
  * ```
  *
@@ -28,11 +28,11 @@
  * ```typescript
  * @Quick()
  * class User extends QModel<IUser> {
- *   id!: string;
- *   name!: string;
- *   email!: string;
- *   age!: number;
- *   createdAt!: Date;
+ *   declare id: string;
+ *   declare name: string;
+ *   declare email: string;
+ *   declare age: number;
+ *   declare createdAt: Date;
  * }
  * ```
  *
@@ -46,11 +46,11 @@
  *   metadata: Map
  * })
  * class Account extends QModel<IAccount> {
- *   id!: string;
- *   balance!: bigint;
- *   pattern!: RegExp;
- *   createdAt!: Date;
- *   metadata!: Map<string, any>;
+ *   declare id: string;
+ *   declare balance: bigint;
+ *   declare pattern: RegExp;
+ *   declare createdAt: Date;
+ *   declare metadata: Map<string, any>;
  * }
  * ```
  *
@@ -59,14 +59,14 @@
  * ```typescript
  * @Quick()
  * class Product extends QModel<IProduct> {
- *   id!: string;           // Auto from @Quick()
- *   name!: string;         // Auto from @Quick()
+ *   declare id: string;           // Auto from @Quick()
+ *   declare name: string;         // Auto from @Quick()
  *
  *   @QType(Category)       // Explicit for nested model
- *   category!: Category;
+ *   declare category: Category;
  *
  *   @QType(Tag)           // Explicit for array of models
- *   tags!: Tag[];
+ *   declare tags: Tag[];
  * }
  * ```
  */

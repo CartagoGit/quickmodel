@@ -44,9 +44,9 @@ interface ICartItem {
   createdAt: Date
 })
 class Product extends QModel<IProduct> {
-  id!: string;
-  price!: bigint;
-  createdAt!: Date;
+  declare id: string;
+  declare price: bigint;
+  declare createdAt: Date;
 }
 
 @Quick({
@@ -54,9 +54,9 @@ class Product extends QModel<IProduct> {
   addedAt: Date
 })
 class CartItem extends QModel<ICartItem> {
-  product!: Product;
-  quantity!: number;
-  addedAt!: Date;
+  declare product: Product;
+  declare quantity: number;
+  declare addedAt: Date;
 }
 
 // Opción 2: Con Dot Notation (todo en un lugar)
@@ -67,9 +67,9 @@ class CartItem extends QModel<ICartItem> {
   addedAt: Date
 })
 class CartItem extends QModel<ICartItem> {
-  product!: Product;
-  quantity!: number;
-  addedAt!: Date;
+  declare product: Product;
+  declare quantity: number;
+  declare addedAt: Date;
 }
 ```
 
@@ -88,7 +88,7 @@ import { ExternalModel } from 'external-library';
   'model.amount': BigInt
 })
 class MyModel extends QModel<IMyModel> {
-  model!: ExternalModel;
+  declare model: ExternalModel;
 }
 ```
 

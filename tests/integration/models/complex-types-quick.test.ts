@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { QType } from '@/core/decorators/qtype.decorator';
 
 // ---------------------------------------------------------------------
 // DEFINICIÓN DE MODELOS (Replicando complex-types-combinations.test.ts pero con @Quick)

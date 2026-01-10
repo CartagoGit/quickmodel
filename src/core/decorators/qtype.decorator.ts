@@ -91,13 +91,48 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * @returns A property decorator function that registers the field with appropriate metadata
  *
  * @example
- * **No transformation** (copy as-is with protection):
+ * **No transformation** (copy as-is):
  * ```typescript
  * class User extends QModel<IUser> {
  *   // Option 1: Use declare (no decorator needed)
  *   declare id: number;
  *   declare name: string;
  *
+ *   // Option 2: Use @QType() for explicit metadata
+ *   @QType() declare email: string;
+ * }
+ * ```
+ *
+ * @example
+ * **Type transformation** (converts values):
+ * ```typescript
+ * class Account extends QModel<IAccount> {
+ *   // String/Number -> BigInt
+ *   @QType(BigInt) declare balance: bigint;
+ *
+ *   // String -> Date
+ *   @QType(Date) declare createdAt: Date;
+ *
+ *   // String -> RegExp
+ *   @QType(RegExp) declare pattern: RegExp;
+ * }
+ * ```
+ *
+ * @example
+ * **Nested Models & Collections**:
+ * ```typescript
+ * class User extends QModel<IUser> {
+ *   // Nested model
+ *   @QType(Address) declare address: Address;
+ *
+ *   // Array of models (MUST use array syntax)
+ *   @QType([Post]) declare posts: Post[];
+ *
+ *   // Array of dates
+ *   @QType([Date]) declare logDates: Date[];
+ * }
+ * ```
+ */
  *   // Option 2: Use @QType() without args (allows ! or ?)
  *   @QType() id!: number;
  *   @QType() name!: string;

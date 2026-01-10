@@ -31,76 +31,40 @@ export { Quick } from '@/core/decorators/quick.decorator';
 export type { QInterface, QTransform } from '@/core/interfaces/model.interface';
 
 /**
- * Abstract base class for type-safe models with automatic serialization and mock generation.
+ * Base abstract class for type-safe models with automatic serialization and type transformation.
  *
- * QModel is the core class providing a declarative way to define TypeScript models
- * with automatic JSON serialization/deserialization and type transformations.
+ * `QModel` is the heart of the library. It provides a declarative way to define TypeScript models
+ * that automatically handle the conversion between serialized formats (JSON) and runtime types.
  *
- * **SOLID Principles Applied:**
- * - **S** (Single Responsibility): QModel orchestrates operations, delegates to specialized services
- * - **O** (Open/Closed): Open for extension via transformers, closed for modification
- * - **L** (Liskov Substitution): All transformers are interchangeable
- * - **I** (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
+ * **Key Features:**
+ * - 🔄 **Type Transformation**: Convert strings to Date, BigInt, RegExp, etc.
+ * - 📦 **Serialization**: Safe `toJSON()` and `deserialize()` methods.
+ * - 🎭 **Mocking**: Built-in mock generator using Faker.js.
+ * - 🔍 **Validation**: Integrity checks for required properties.
  *
- * @template TInterface - The interface type representing the model's JSON structure
- * @template TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)
+ * **Design Principles (SOLID):**
+ * - **Single Responsibility (SRP)**: Delegates logic to dedicated services (Serializer, Deserializer).
+ * - **Open/Closed (OCP)**: Extensible via custom transformers without core modification.
+ * - **Dependency Inversion (DIP)**: Depends on abstractions, not concrete implementations.
+ *
+ * @template TInterface - The interface representing the serialized JSON structure (e.g., `string` for dates)
  *
  * @example
- * Basic model with primitives
+ * **Basic Usage**
  * ```typescript
  * interface IUser {
  *   id: string;
- *   name: string;
- *   age: number;
+ *   createdAt: string; // ISO Date string
  * }
  *
+ * @Quick({ createdAt: Date })
  * class User extends QModel<IUser> {
- *   @QType() id!: string;
- *   @QType() name!: string;
- *   @QType() age!: number;
+ *   declare id: string;
+ *   declare createdAt: Date; // Transformed to Date object
  * }
  *
- * const user = new User({ id: '1', name: 'John', age: 30 });
- * const json = user.toJSON(); // Serialized string
- * const user2 = User.fromJSON(json); // Deserialized instance
- * ```
- *
- * @example
- * Model with type transformations
- * ```typescript
- * interface IAccount {
- *   id: string;
- *   balance: string;      // JSON: string
- *   createdAt: string;    // JSON: ISO date string
- * }
- *
- * type AccountTransforms = {
- *   balance: bigint;      // Memory: bigint
- *   createdAt: Date;      // Memory: Date object
- * };
- *
- * class Account extends QModel<IAccount, AccountTransforms>
- *   implements QInterface<IAccount, AccountTransforms> {
- *   @QType() id!: string;
- *   @QType() balance!: bigint;
- *   @QType() createdAt!: Date;
- * }
- * ```
- *
- * @example
- * Using mock generation
- * ```typescript
- * // Generate single mock
- * const mockUser = User.mock().random();
- *
- * // Generate array of mocks
- * const mockUsers = User.mock().array(10);
- *
- * // Custom mock builder
- * const customMock = User.mock()
- *   .with('name', 'Alice')
- *   .with('age', 25)
- *   .build();
+ * const user = User.create({ id: '1', createdAt: '2024-01-01' });
+ * console.log(user.createdAt instanceof Date); // true
  * ```
  */
 export abstract class QModel<TInterface extends Record<string, any>> {
