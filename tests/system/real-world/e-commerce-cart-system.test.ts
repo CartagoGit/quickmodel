@@ -1,6 +1,6 @@
 /**
  * System Test: E-Commerce Shopping Cart
- * 
+ *
  * Tests a complete e-commerce cart system with products, orders,
  * and payment processing workflow
  */
@@ -70,7 +70,10 @@ describe('System: E-Commerce Cart', () => {
 		price: BigInt,
 		createdAt: Date,
 	})
-	class Product extends QModel<IProduct> implements QInterface<IProduct, IProductTransform> {
+	class Product
+		extends QModel<IProduct>
+		implements QInterface<IProduct, IProductTransform>
+	{
 		id!: string;
 		name!: string;
 		price!: bigint;
@@ -92,7 +95,10 @@ describe('System: E-Commerce Cart', () => {
 		'product.createdAt': Date,
 		addedAt: Date,
 	})
-	class CartItem extends QModel<ICartItem> implements QInterface<ICartItem, ICartItemTransform> {
+	class CartItem
+		extends QModel<ICartItem>
+		implements QInterface<ICartItem, ICartItemTransform>
+	{
 		product!: Product;
 		quantity!: number;
 		addedAt!: Date;
@@ -103,11 +109,14 @@ describe('System: E-Commerce Cart', () => {
 	}
 
 	@Quick({
-		items: CartItem,
+		items: [CartItem], // ✅ CORRECTO - array syntax
 		createdAt: Date,
 		updatedAt: Date,
 	})
-	class Cart extends QModel<ICart> implements QInterface<ICart, ICartTransform> {
+	class Cart
+		extends QModel<ICart>
+		implements QInterface<ICart, ICartTransform>
+	{
 		id!: string;
 		userId!: string;
 		items!: CartItem[];
@@ -131,12 +140,15 @@ describe('System: E-Commerce Cart', () => {
 	}
 
 	@Quick({
-		items: CartItem,
+		items: [CartItem], // ✅ CORRECTO - array syntax
 		total: BigInt,
 		createdAt: Date,
 		paidAt: Date,
 	})
-	class Order extends QModel<IOrder> implements QInterface<IOrder, IOrderTransform> {
+	class Order
+		extends QModel<IOrder>
+		implements QInterface<IOrder, IOrderTransform>
+	{
 		id!: string;
 		userId!: string;
 		items!: CartItem[];

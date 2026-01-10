@@ -350,7 +350,7 @@ describe('System: API Response Transformation', () => {
 		}
 
 		@Quick({
-			data: Post,
+			data: [Post],
 			'meta.total': BigInt,
 			'meta.lastFetch': Date,
 		})

@@ -159,7 +159,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			bigints: string[];
 		}
 
-		@Quick({ bigints: BigInt })
+		@Quick({ bigints: [BigInt] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare bigints: bigint[];
 		}
@@ -255,7 +255,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			sets: string[][];
 		}
 
-		@Quick({ sets: Set })
+		@Quick({ sets: [Set] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare sets: Set<string>[];
 		}
@@ -284,7 +284,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			maps: [string, any][][];
 		}
 
-		@Quick({ maps: Map })
+		@Quick({ maps: [Map] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare maps: Map<string, any>[];
 		}
@@ -322,9 +322,9 @@ describe('Array Transformations - Exhaustive Tests', () => {
 		}
 
 		@Quick({
-			int8arrays: Int8Array,
-			uint8arrays: Uint8Array,
-			float32arrays: Float32Array,
+			int8arrays: [Int8Array], // ✅ CORRECTO - array syntax
+			uint8arrays: [Uint8Array], // ✅ CORRECTO - array syntax
+			float32arrays: [Float32Array], // ✅ CORRECTO - array syntax
 		})
 		class Data extends QModel<IData> {
 			declare int8arrays: Int8Array[];
@@ -451,7 +451,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			declare title: string;
 		}
 
-		@Quick({ posts: Post })
+		@Quick({ posts: [Post] }) // ✅ CORRECTO - array syntax
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare posts: Post[];

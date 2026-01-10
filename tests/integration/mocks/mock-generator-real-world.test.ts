@@ -88,7 +88,7 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	@Quick({
-		items: OrderItem,
+		items: [OrderItem], // ✅ CORRECTO - array syntax
 		shippingAddress: Address,
 		billingAddress: Address,
 		total: BigInt,
