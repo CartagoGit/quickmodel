@@ -494,9 +494,14 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 			// Register properties if not already done
 			const typeMap =
 				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
-			const properties = Object.keys(data);
+			
+			// Combine properties from data AND typeMap
+			const allProperties = new Set([
+				...Object.keys(data),
+				...Object.keys(typeMap),
+			]);
 
-			for (const propertyKey of properties) {
+			for (const propertyKey of allProperties) {
 				const existingFieldType = Reflect.getMetadata(
 					'fieldType',
 					target.prototype,
@@ -516,16 +521,11 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 				}
 
 				const mappedType = typeMap[propertyKey];
-				if (mappedType) {
-					Reflect.defineMetadata(
-						'design:type',
-						mappedType,
-						target.prototype,
-						propertyKey
-					);
-				}
-
-				const decorator = QType();
+				
+				// Pass the mapped type to QType
+				// mappedType can be: Date, [Date], Set, [Set], Post, [Post], etc.
+				// console.log(`[Quick] Registering ${propertyKey} with type:`, mappedType);
+				const decorator = QType(mappedType);
 				decorator(target.prototype, propertyKey);
 			}
 
@@ -582,22 +582,8 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 
 					let mappedType = typeMap[propertyKey];
 					if (mappedType) {
-						// 🔥 AUTO-DETECTION: If VALUE in data is array and mappedType is NOT already array syntax
-						// Automatically wrap in array syntax [Type]
-						// Example: bigints: BigInt + data.bigints = ['123'] → auto-convert to [BigInt]
-						const dataValue = data[propertyKey];
-						
-						if (
-							Array.isArray(dataValue) && 
-							!Array.isArray(mappedType) && 
-							mappedType !== Array
-						) {
-							// Data value is array but mappedType is single type → wrap it
-							mappedType = [mappedType];
-						}
-
 						// Pass the mapped type to QType
-						// mappedType can be: Date, [Date], [[Date]], Post, [Post], etc.
+						// mappedType can be: Date, [Date], [[Date]], Post, [Post], Set, [Set], etc.
 						const decorator = QType(mappedType);
 						decorator(originalConstructor.prototype, propertyKey);
 
