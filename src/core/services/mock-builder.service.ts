@@ -15,7 +15,7 @@ import type { MockType } from './mock-generator.service';
  * const mockUsers = User.mock().array(5);
  * ```
  */
-export class MockBuilder<TInstance, TInterface> {
+export class MockBuilder<TInstance, TInterface extends Record<string, any> = any> {
 	private _fieldsRegistered = false;
 
 	/**
@@ -182,7 +182,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	interfaceEmpty(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'empty', overrides as Partial<Record<string, unknown>>) as unknown as TInterface;
+		return this.mockGenerator.generate(this.modelClass, 'empty', overrides);
 	}
 
 	/**
@@ -197,7 +197,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * ```
 	 */
 	interfaceRandom(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'random', overrides as Partial<Record<string, unknown>>) as unknown as TInterface;
+		return this.mockGenerator.generate(this.modelClass, 'random', overrides);
 	}
 
 	/**
@@ -207,7 +207,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * @returns A plain interface object with sample values
 	 */
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'sample', overrides as Partial<Record<string, unknown>>) as unknown as TInterface;
+		return this.mockGenerator.generate(this.modelClass, 'sample', overrides);
 	}
 
 	/**
@@ -217,7 +217,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * @returns A plain interface object with minimal values
 	 */
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'minimal', overrides as Partial<Record<string, unknown>>) as unknown as TInterface;
+		return this.mockGenerator.generate(this.modelClass, 'minimal', overrides);
 	}
 
 	/**
@@ -227,7 +227,7 @@ export class MockBuilder<TInstance, TInterface> {
 	 * @returns A plain interface object with all fields
 	 */
 	interfaceFull(overrides?: Partial<TInterface>): TInterface {
-		return this.mockGenerator.generate(this.modelClass, 'full', overrides as Partial<Record<string, unknown>>) as unknown as TInterface;
+		return this.mockGenerator.generate(this.modelClass, 'full', overrides);
 	}
 
 	/**
