@@ -291,7 +291,7 @@ export class Serializer<
 
 		// TypedArrays
 		if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
-			// Determinar qué constructor usar para buscar el transformer
+			// Determine which constructor to use to look up the transformer
 			let transformer;
 			if (value instanceof Int8Array) transformer = this.transformers.get(Int8Array);
 			else if (value instanceof Uint8Array) transformer = this.transformers.get(Uint8Array);

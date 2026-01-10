@@ -1,26 +1,40 @@
 import { QInterface, QModel, Quick } from '@/index';
 
 // ============================================
-// CLASES ANIDADAS PARA TESTING
+// NESTED CLASSES FOR TESTING
 // ============================================
 
-// Clase simple sin QModel
+// Simple class without QModel
 class Address {
+	public street: string;
+	public city: string;
+	public zip: string;
+
 	constructor(
-		public street: string,
-		public city: string,
-		public zip: string
-	) {}
+		streetOrObj: string | { street: string; city: string; zip: string },
+		city?: string,
+		zip?: string
+	) {
+		if (typeof streetOrObj === 'object') {
+			this.street = streetOrObj.street;
+			this.city = streetOrObj.city;
+			this.zip = streetOrObj.zip;
+		} else {
+			this.street = streetOrObj;
+			this.city = city!;
+			this.zip = zip!;
+		}
+	}
 }
 
-// Clase que extiende QModel (nested model)
+// Class extending QModel (nested model)
 interface IProfile {
 	bio: string;
 	website?: string;
 	joinedAt: string;
 }
 
-@Quick({ createdAt: Date }) // Necesita @Quick() para auto-detectar Date
+@Quick({ createdAt: Date }) // Needs @Quick() to auto-detect Date
 class Profile extends QModel<IProfile> {
 	declare bio: string;
 	declare website?: string;
@@ -28,7 +42,7 @@ class Profile extends QModel<IProfile> {
 }
 
 // ============================================
-// INTERFACES Y TIPOS
+// INTERFACES AND TYPES
 // ============================================
 
 interface IUser {
@@ -43,7 +57,7 @@ interface IUser {
 	symbolic: string;
 	dates?: (string | undefined | null)[]; // Array of date strings
 	pattern?: string; // RegExp as string from backend
-	config?: Record<string, unknown>; // Plain object (sin clase)
+	config?: Record<string, unknown>; // Plain object (no class)
 	address?: {
 		// Nested plain object
 		street: string;
@@ -67,23 +81,23 @@ type IUserTransform = {
 	metadata: Map<string, unknown>;
 	symbolic: symbol;
 	dates?: (Date | undefined | null)[];
-	pattern?: RegExp; // Transformado a RegExp
-	config?: Record<string, unknown>; // Plain object se mantiene igual
-	address?: Address; // Transformado a clase Address
-	profile?: Profile; // Transformado a QModel Profile
-	addresses?: Address[]; // Array transformado a clases Address
+	pattern?: RegExp; // Transformed to RegExp
+	config?: Record<string, unknown>; // Plain object remains the same
+	address?: Address; // Transformed to Address class
+	profile?: Profile; // Transformed to QModel Profile
+	addresses?: Address[]; // Array transformed to Address classes
 };
 
 /**
  * REGLA SIMPLE de QuickModel:
  *
- * - Sin @QType() → la propiedad se COPIA TAL CUAL desde el backend
- * - Con @QType(Type) → la propiedad se TRANSFORMA al tipo especificado
+ * - Without @QType() → property is COPIED AS-IS from backend
+ * - With @QType(Type) → property is TRANSFORMED to specified type
  *
- * Funciona con AMBOS: declare y !
+ * Works with BOTH: declare and !
  */
 
-// ✅ OPCIÓN CON @Quick() - Protege automáticamente TODAS las propiedades
+// ✅ OPTION WITH @Quick() - Automatically protects ALL properties
 @Quick({
 	createdAt: Date,
 	updatedAt: Date,
@@ -93,37 +107,37 @@ type IUserTransform = {
 	symbolic: Symbol,
 	dates: (arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
 		arr?.map((date) => (typeof date === 'string' ? new Date(date) : date)),
-	pattern: RegExp, // RegExp desde string
+	pattern: RegExp, // RegExp from string
 	address: Address, // Plain object → Address class
 	profile: Profile, // Plain object → Profile QModel
-	addresses: [Address], // Array de plain objects → Array de Address classes
+	addresses: [Address], // Array of plain objects → Array of Address classes
 })
 class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-	// Todas las propiedades son protegidas automáticamente por @Quick()
-	// Funciona con declare, !, y ?
+	// All properties are automatically protected by @Quick()
+	// Works with declare, !, and ?
 	declare id: number;
 	declare name: string;
 	declare surname: string;
 
-	// @Quick() detecta Date, BigInt automáticamente
+	// @Quick() detects Date, BigInt explicitly from decorator config
 	declare createdAt: Date;
 	declare updatedAt?: Date;
 	declare bignumber: bigint;
 
-	// Estos los especificamos en el mapa arriba
+	// Specified in the map above
 	declare tags: Set<string>;
 	declare metadata: Map<string, unknown>;
 	declare symbolic: symbol;
 	declare dates?: (Date | undefined | null)[];
 	
-	// Nuevos tipos de transformación
+	// New transformation types
 	declare pattern?: RegExp;
-	declare config?: Record<string, unknown>; // Plain object sin transformación
+	declare config?: Record<string, unknown>; // Plain object without transformation
 	declare address?: Address;
 	declare profile?: Profile;
 	declare addresses?: Address[];
 
-	algo: 'test' = 'test'; // Propiedad normal sin relación con QuickModel
+	algo: 'test' = 'test'; // Normal property unrelated to QuickModel
 }
 
 const baseObj: IUser = {
@@ -145,7 +159,7 @@ const baseObj: IUser = {
 		undefined,
 		null,
 	],
-	pattern: '^test.*$', // RegExp como string
+	pattern: '^test.*$', // RegExp as string
 	config: { theme: 'dark', lang: 'es' }, // Plain object
 	address: {
 		// Nested plain object
@@ -167,9 +181,9 @@ const baseObj: IUser = {
 };
 
 const logTests = (obj: User) => {
-	console.log('\n=== RESULTADOS DE LAS PRUEBAS ===');
+	console.log('\n=== TEST RESULTS ===');
 	console.log({ obj }, '\n');
-	console.log('\n=== Propiedades SIN @QType() (copiadas tal cual) ===');
+	console.log('\n=== Properties WITHOUT @QType() (copied as-is) ===');
 	console.log('id:', obj.id, '→', typeof obj.id, obj.id === 1 ? '✅' : '❌');
 	console.log(
 		'name:',
@@ -186,7 +200,7 @@ const logTests = (obj: User) => {
 		obj.surname === 'Doe' ? '✅' : '❌'
 	);
 
-	console.log('\n=== Propiedades CON @QType() (transformadas) ===');
+	console.log('\n=== Properties WITH @QType() (transformed) ===');
 	console.log(
 		'createdAt:',
 		obj.createdAt,
@@ -236,7 +250,7 @@ const logTests = (obj: User) => {
 	);
 	console.log('algo (normal):', obj.algo, obj.algo === 'test' ? '✅' : '❌');
 	
-	console.log('\n=== Nuevos tipos de transformación ===');
+	console.log('\n=== New transformation types ===');
 	console.log(
 		'pattern:',
 		obj.pattern,
@@ -298,8 +312,8 @@ const allCorrect =
 
 console.log(
 	allCorrect
-		? '✅ TODO CORRECTO - Ambas opciones funcionan'
-		: '❌ HAY ERRORES'
+		? '✅ ALL CORRECT - Both options work'
+		: '❌ ERRORS FOUND'
 );
 console.log('====================================\n');
 

@@ -419,7 +419,7 @@ export function QType<T>(
 			if (mathMethods.includes(typeOrClass as any)) {
 				// It's a Math method - store as transformer
 				Reflect.defineMetadata(
-					'fieldTransformer',
+					'customTransformer',
 					typeOrClass,
 					target,
 					propertyKey
@@ -466,7 +466,7 @@ export function QType<T>(
 			if (funcStr.includes('=>') || funcStr.startsWith('function')) {
 				// It's a transformer function - store the function itself
 				Reflect.defineMetadata(
-					'fieldTransformer',
+					'customTransformer',
 					typeOrClass,
 					target,
 					propertyKey
@@ -500,7 +500,7 @@ export function QType<T>(
 					// It's a transformer function (Math.round, btoa, arrow function, etc.)
 					// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2
 					Reflect.defineMetadata(
-						'fieldTransformer',
+						'customTransformer',
 						typeOrClass,
 						target,
 						propertyKey

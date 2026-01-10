@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '@/index';
+import { QModel, Quick } from '@/index';
 
 // Test Models - Using declare syntax
 interface IAddress {
@@ -41,6 +41,7 @@ interface ITimeline {
 	events: (Date | null | undefined)[];
 }
 
+@Quick({ events: [Date] })
 class Timeline extends QModel<ITimeline> {
 	declare events: (Date | null | undefined)[];
 }

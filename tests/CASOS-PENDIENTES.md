@@ -25,28 +25,37 @@ Los siguientes casos están completamente probados en `e2e/auto-conversion-round
 
 ### Default Values
 
-**Estado**: Parcialmente funcional
+**Estado**: ✅ COMPLETAMENTE CORREGIDO
 
 **Comportamiento actual**:
-- ✅ Propiedades con valores explícitos mantienen esos valores
-- ⚠️ Propiedades `undefined` explícito NO restauran el default
-- ⚠️ Propiedades ausentes NO restauran el default
+- ✅ Propiedades con valores explícitos en el constructor son respetadas
+- ✅ Valores por defecto no sobrescriben los datos pasados al constructor
+- ✅ Propiedades ausentes usan el valor por defecto
 
-**Ejemplo**:
-```typescript
-class User extends QModel<IUser> {
-  name: string = 'Anonymous';
-}
+**Tests**: 
+- `tests/unit/core/default-values.test.ts`
 
-// Funciona
-new User({ name: 'John' }).name // 'John'
+### Circular References
 
-// No funciona (debería ser 'Anonymous')
-new User({ name: undefined }).name // undefined
-new User({}).name // undefined
-```
+**Estado**: ✅ COMPLETAMENTE CORREGIDO
 
-**Posible solución**: Detectar cuando una propiedad es `undefined` o ausente y restaurar el valor default guardado en la dummy instance.
+**Comportamiento**:
+- ✅ Serialización detecta ciclos y emite `{ "__circular": true }`
+- ✅ toInterface no entra en bucle infinito
+
+**Tests**:
+- `tests/unit/serialization/circular-references-repro.test.ts`
+
+### Validation
+
+**Estado**: ✅ IMPLEMENTADO (Configured)
+
+**Comportamiento**:
+- ✅ Primitivos (number, string, boolean) son validados si están configurados en `@Quick` o `@QType`
+- ⚠️ Campos no decorados siguen siendo permisivos (TypeScript erasure)
+
+**Tests**:
+- `tests/unit/error-handling/invalid-data.test.ts`
 
 ### Arrays de QModels
 

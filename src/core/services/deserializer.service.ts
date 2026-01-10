@@ -47,7 +47,7 @@ import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
 import { QTYPES_METADATA_KEY, type QTypeString } from '../decorators/qtype.decorator';
-import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY, QUICK_DESIGN_TYPES_KEY } from '../constants/metadata-keys';
 import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -212,6 +212,26 @@ export class Deserializer<
   }
 
   /**
+   * Validates that a value matches the expected primitive type constructor.
+   * Throws if mismatch found for Number, String or Boolean.
+   */
+  private validatePrimitiveType(key: string, value: any, expectedType: any, className: string): void {
+      if (expectedType === Number) {
+          if (typeof value !== 'number') {
+              throw new Error(`${className}.${key}: Expected number, got ${typeof value}`);
+          }
+      } else if (expectedType === String) {
+          if (typeof value !== 'string') {
+              throw new Error(`${className}.${key}: Expected string, got ${typeof value}`);
+          }
+      } else if (expectedType === Boolean) {
+            if (typeof value !== 'boolean') {
+              throw new Error(`${className}.${key}: Expected boolean, got ${typeof value}`);
+          }
+      }
+  }
+
+  /**
    * Deserializes a JSON string into a model instance.
    * 
    * @param json - JSON string to parse and deserialize
@@ -248,14 +268,23 @@ export class Deserializer<
     // Get discriminator configuration if exists
     const discriminators = Reflect.getMetadata(QUICK_DISCRIMINATORS_KEY, modelClass);
     
+    // Get design:type metadata (captured by @Quick) for validation of non-decorated fields
+    const designTypes = Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
+
     for (const [key, value] of Object.entries(data)) {
       if (value === null || value === undefined) {
         instance[key] = value;
         continue;
       }
       
-      // If property is NOT decorated with @QType(), copy as-is
+      // If property is NOT decorated with @QType(), copy as-is (but validate type first)
       if (!decoratedFields.includes(key)) {
+        // Validation: Check if value matches the design type (primitives only)
+        const expectedType = designTypes[key];
+        if (expectedType) {
+            this.validatePrimitiveType(key, value, expectedType, modelClass.name);
+        }
+
         instance[key] = value;
         continue;
       }
@@ -762,7 +791,7 @@ export class Deserializer<
 
     // Check if it's an ISO date string (formato YYYY-MM-DDTHH:mm:ss.sssZ)
     if (typeof value === 'string') {
-      // ISO 8601 date format - más específico
+      // ISO 8601 date format - more specific
       if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(value)) {
         return this.transformers.get('date');
       }
@@ -771,7 +800,7 @@ export class Deserializer<
     // Check for Map/Set/RegExp/Symbol/BigInt/Error/Buffer serialized with __type marker
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       const obj = value as Record<string, unknown>;
-      // Maneja tanto mayúsculas (Map, Set) como minúsculas (bigint, symbol, regexp)
+      // Handles both uppercase (Map, Set) and lowercase (bigint, symbol, regexp)
       const typeValue = obj.__type;
       if (typeValue === 'Map') {
         return this.transformers.get('map');

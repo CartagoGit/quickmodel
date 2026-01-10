@@ -22,7 +22,12 @@ interface IUser {
 
 @Quick({
 	createdAt: Date,
-	balance: BigInt
+	balance: BigInt,
+	// Add primitive types to enable validation
+	id: Number,
+	age: Number,
+	name: String,
+	email: String
 })
 class User extends QModel<IUser> {
 	declare id: number;
@@ -37,6 +42,7 @@ interface IPayment {
 	amount: bigint;
 }
 
+@Quick({ amount: BigInt })
 class Payment extends QModel<IPayment> {
 	declare amount: bigint;
 }
@@ -51,8 +57,11 @@ interface IUserWithAddress {
 	address: IAddress;
 }
 
+@Quick({ id: Number })
 class UserWithAddress extends QModel<IUserWithAddress> {
 	declare id: number;
+	// Address validation requires nested model or Object validator?
+	// For now let's focus on simple types
 	declare address: IAddress;
 }
 
@@ -62,7 +71,7 @@ class UserWithAddress extends QModel<IUserWithAddress> {
 
 describe('Error Handling: Invalid Data Types', () => {
 	test('should throw descriptive error when string passed for number', () => {
-		try {
+		expect(() => {
 			new User({
 				id: 'not a number' as unknown as number,
 				name: 'John',
@@ -71,17 +80,7 @@ describe('Error Handling: Invalid Data Types', () => {
 				createdAt: new Date().toISOString(),
 				balance: '1000',
 			});
-
-			// If we get here, test should fail
-			expect(true).toBe(false);
-		} catch (error: unknown) {
-			// Should get an error
-			expect(error).toBeDefined();
-			// Error should mention the field and type mismatch
-			if (error instanceof Error) {
-				console.log('Error caught:', error.message);
-			}
-		}
+		}).toThrow(/Expected number|must be a number/i);
 	});
 
 	test('should handle valid data correctly', () => {
@@ -252,20 +251,18 @@ describe('Error Handling: Array Type Mismatches', () => {
 });
 
 describe('Error Handling: Type Coercion vs Validation', () => {
-	test('should accept types as provided (no automatic runtime validation)', () => {
-		// QuickModel accepts data as-is - validation happens at TypeScript compile time
-		const user = new User({
-			id: '123' as unknown as number, // TypeScript error but runtime accepts
-			name: 'John',
-			email: 'john@test.com',
-			age: 25,
-			createdAt: new Date(),
-			balance: 1000n,
-		});
-
-		// Model created successfully - runtime doesn't validate types
-		// id is string '123' at runtime, not number (as declared in TypeScript)
-		expect(user.id as unknown).toBe('123');
-		expect(user.name).toBe('John');
+	test('should validate types when configured (runtime validation)', () => {
+		// QuickModel NOW enforces types if they are configured via @Quick
+		// This provides robust runtime validation requested in robustness requirements.
+		expect(() => {
+			new User({
+				id: '123' as unknown as number, // String '123' is invalid for Number type
+				name: 'John',
+				email: 'john@test.com',
+				age: 25,
+				createdAt: new Date(),
+				balance: 1000n,
+			});
+		}).toThrow(/Expected number|must be a number/i);
 	});
 });

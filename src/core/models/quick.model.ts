@@ -438,31 +438,60 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	}
 
 	/**
-	 * Instala getters que recuperan valores del backup si fueron sobrescritos por Bun
+	 * INTERNAL: Workaround for TypeScript/ES2022 class initialization order.
+	 *
+	 * When using `class User extends QModel { name = 'Default' }`, the property initializer
+	 * runs AFTER super() (QModel constructor), overwriting the deserialized value.
+	 *
+	 * This method is called by the @Quick decorator wrapper to restore values from the
+	 * backup storage, effectively making "input data wins over default initializers".
+	 *
+	 * @internal
+	 */
+	public __forceHydration(): void {
+		// Only run if we have backup values
+		if (!this[QUICK_VALUES_KEY]) return;
+
+		for (const key of Object.keys(this[QUICK_VALUES_KEY])) {
+			// Compare current value (might be default) with backup (deserialized data)
+			// ACCESS DIRECTLY VIA PROPERTY NAME to check effective value (handles getters/shadowed props)
+			const currentValue = (this as any)[key];
+			const backupValue = this[QUICK_VALUES_KEY][key];
+
+			// If different, likely overwritten by default initializer
+			if (currentValue !== backupValue) {
+				// Restore from backup (triggers setter which updates storage)
+				(this as any)[key] = backupValue;
+			}
+		}
+	}
+
+	/**
+	 * Installs getters that retrieve values from backup storage if overwritten by Bun/compiler.
 	 */
 	private installLazyGetters(keys: string[]): void {
 		for (const key of keys) {
 			const descriptor = Object.getOwnPropertyDescriptor(this, key);
 
-			// Si ya tiene getter (de @QType()), skip
+			// If it already has a getter (from @QType()), skip
 			if (descriptor && descriptor.get) {
 				continue;
 			}
 
 			const storageKey = `${QUICK_PROPERTY_KEYS}${key}`;
 
-			// Definir getter que busca en múltiples lugares
+			// Define getter that searches in multiple locations
 			Object.defineProperty(this, key, {
 				get(this: any) {
-					// 1. Intentar del storage específico
+					// 1. Try from specific storage
 					let val = this[storageKey];
 					if (val !== undefined) return val;
 
-					// 2. Buscar en el backup
+					// 2. Search in backup
 					val = this[QUICK_VALUES_KEY]?.[key];
 					if (val !== undefined) return val;
 
-					// 3. Retornar undefined
+					// 3. Return undefined
 					return undefined;
 				},
 				set(this: any, value: any) {

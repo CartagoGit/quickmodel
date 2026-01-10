@@ -224,7 +224,7 @@ export interface IQuickOptions {
  * ```
  *
  * @example
- * **✅ String literals para tipos básicos (autocomplete):**
+ * **✅ String literals for basic types (autocomplete):**
  * ```typescript
  * @Quick({
  *   value: 'bigint',    // ← IDE autocomplete!
@@ -243,16 +243,16 @@ export interface IQuickOptions {
  * ```
  *
  * @example
- * **✅ Funciones directas (máxima flexibilidad):**
+ * **✅ Direct functions (maximum flexibility):**
  * ```typescript
  * @Quick({
- *   // Math methods directos
- *   price: (v) => Math.round(v * 100) / 100,       // Redondea a 2 decimales
- *   count: Math.floor,                              // Redondeo hacia abajo
+ *   // Direct Math methods
+ *   price: (v) => Math.round(v * 100) / 100,       // Round to 2 decimals
+ *   count: Math.floor,                              // Floor
  *   percentage: (v) => Math.min(100, Math.max(0, v)), // Clamp 0-100
  *
  *   // String transformations
- *   name: (s) => s.trim().toUpperCase(),            // Limpia y mayúsculas
+ *   name: (s) => s.trim().toUpperCase(),            // Trim and uppercase
  *   slug: (s) => s.toLowerCase().replace(/\s+/g, '-'), // Slugify
  *
  *   // Encoding/Decoding
@@ -697,6 +697,15 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 						delete instance[propertyKey];
 					}
 				}
+			}
+
+			// INTERNAL WORKAROUND: Fix for "Default Value Overwrite" bug
+			// When using `class User extends QModel { name = 'Default' }`, the property initializer
+			// runs after QModel initialization, overwriting the deserialized data.
+			// This method compares the backup storage (from data) with the current value (from default)
+			// and restores the backup if they differ.
+			if (typeof (instance as any).__forceHydration === 'function') {
+				(instance as any).__forceHydration();
 			}
 
 			return instance;
