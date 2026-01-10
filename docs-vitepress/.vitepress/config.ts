@@ -14,11 +14,22 @@ export default defineConfig({
 			level: [2, 3],
 			label: 'On this page',
 		},
+		nav: [
+			{ text: 'Guide', link: '/en/guide/getting-started' },
+			{ text: 'API Reference', link: '/tsdoc/' },
+			{ text: 'Examples', link: '/en/examples/' },
+		],
 		socialLinks: [
 			{
 				icon: 'github',
 				link: 'https://github.com/CartagoGit/quickmodel',
 			},
+			{
+				icon: 'linkedin',
+				link: 'https://www.linkedin.com/in/mario-cabrero-volarich/',
+			},
+			{ icon: 'docker', link: 'https://hub.docker.com/u/cartagodocker' },
+			{ icon: 'npm', link: 'https://www.npmjs.com/~cartago-git' },
 		],
 		sidebar: {
 			'/tsdoc/': [

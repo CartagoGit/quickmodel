@@ -3,6 +3,7 @@ import { h } from 'vue';
 import type { Theme } from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
 import LanguageSwitcher from './LanguageSwitcher.vue';
+import CustomFooter from './CustomFooter.vue';
 import './custom.scss';
 
 export default {
@@ -10,9 +11,11 @@ export default {
 	Layout: () => {
 		return h(DefaultTheme.Layout, null, {
 			'nav-bar-content-after': () => h(LanguageSwitcher),
+			'doc-footer-before': () => h(CustomFooter),
 		});
 	},
 	enhanceApp({ app }) {
 		app.component('LanguageSwitcher', LanguageSwitcher);
+		app.component('CustomFooter', CustomFooter);
 	},
 } satisfies Theme;

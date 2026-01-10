@@ -48,6 +48,7 @@ import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
 import { QTYPES_METADATA_KEY, type QTypeString } from '../decorators/qtype.decorator';
 import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY, QUICK_DESIGN_TYPES_KEY } from '../constants/metadata-keys';
+import { TransformerRegistry } from '../registry/transformer.registry';
 import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -80,6 +81,13 @@ export class Deserializer<
    * @internal
    */
   public getTransformer(key: TransformerKey): IQTransformer<unknown, unknown> | undefined {
+    // 1. Check global registry first (allows overriding defaults)
+    const customTransformer = TransformerRegistry.get(key);
+    if (customTransformer) {
+        return customTransformer;
+    }
+
+    // 2. Check local defaults
     let lookupKey: string | undefined;
 
     if (typeof key === 'string') {
@@ -201,6 +209,16 @@ export class Deserializer<
       return data;
     }
 
+    // Check if there is a custom transformer registered for this class
+    // This allows intercepting the instantiation process entirely
+    if (TransformerRegistry.has(modelClass)) {
+        const transformer = TransformerRegistry.get(modelClass);
+        if (transformer) {
+            // Use 'root' as context since we are at the top level of this specific deserialization
+            return transformer.deserialize(data, 'root', modelClass.name) as unknown as TResult;
+        }
+    }
+
     // Check if class has custom instance creation (from @Quick() decorator)
     const createQuickInstance = (modelClass as any).__createQuickInstance;
     const instance = createQuickInstance 
@@ -306,7 +324,7 @@ export class Deserializer<
       const fieldType = Reflect.getMetadata('fieldType', instance, key);
       
       if (fieldType) {
-        const transformer = this.transformers.get(fieldType);
+        const transformer = this.getTransformer(fieldType);
         if (transformer) {
           instance[key] = transformer.deserialize(value, context.propertyKey, context.className);
           continue;
@@ -315,6 +333,17 @@ export class Deserializer<
 
       // 3. Check for array of models or nested model
       let arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
+
+      // Check if the nested model class has a registered transformer
+      // This allows overriding the default "nested model" behavior (new Class(data)) with a custom transformer
+      if (arrayElementClass && !Array.isArray(value) && TransformerRegistry.has(arrayElementClass)) {
+        const transformer = this.getTransformer(arrayElementClass);
+        if (transformer) {
+            instance[key] = transformer.deserialize(value, context.propertyKey, context.className);
+            continue;
+        }
+      }
+      
       let arrayElementTypes = Reflect.getMetadata('arrayElementTypes', instance, key);
       
       // FALLBACK: If arrayElementClass is missing, try to resolve from Quick TypeMap

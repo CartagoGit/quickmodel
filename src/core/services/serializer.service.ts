@@ -91,6 +91,7 @@ import { URLTransformer } from '@/transformers/url.transformer';
 import { URLSearchParamsTransformer } from '@/transformers/url-search-params.transformer';
 import { MapTransformer, SetTransformer } from '@/transformers/map-set.transformer';
 import { IQTransformer } from '../interfaces/transformer.interface';
+import { TransformerRegistry } from '../registry/transformer.registry';
 
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -235,6 +236,18 @@ export class Serializer<
 	 * 14. Primitives → as-is
 	 */
 	private serializeValue(value: unknown, seen?: WeakSet<object>): unknown {
+		// Custom Transformers (Registry)
+		if (value !== null && value !== undefined && typeof value === 'object') {
+			// Try to find transformer by constructor
+			const ctor = (value as any).constructor;
+			if (ctor && TransformerRegistry.has(ctor)) {
+				const transformer = TransformerRegistry.get(ctor);
+				if (transformer) {
+					return transformer.serialize(value);
+				}
+			}
+		}
+
 		// Date
 		if (value instanceof Date) {
 			const transformer = this.transformers.get('date') || this.transformers.get(Date);
