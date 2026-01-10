@@ -167,7 +167,9 @@ export function QType<T>(
 	return function (target: any, propertyKey: string | symbol): void {
 		// Register the property in the fields list
 		const existingFields =
-			(Reflect.getMetadata(QTYPES_METADATA_KEY, target) as Array<string | symbol>) || [];
+			(Reflect.getMetadata(QTYPES_METADATA_KEY, target) as Array<
+				string | symbol
+			>) || [];
 		if (!existingFields.includes(propertyKey)) {
 			const newFields = [...existingFields, propertyKey];
 			Reflect.defineMetadata(QTYPES_METADATA_KEY, newFields, target);
@@ -175,8 +177,14 @@ export function QType<T>(
 
 		// ALWAYS create getter/setter to prevent TypeScript from shadowing with real properties
 		// Check if getter/setter already exists
-		const existingDescriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
-		if (!existingDescriptor || (!existingDescriptor.get && !existingDescriptor.set)) {
+		const existingDescriptor = Object.getOwnPropertyDescriptor(
+			target,
+			propertyKey
+		);
+		if (
+			!existingDescriptor ||
+			(!existingDescriptor.get && !existingDescriptor.set)
+		) {
 			const storageKey = `${QUICK_PROPERTY_KEYS}${String(propertyKey)}`;
 
 			// Define getter/setter
@@ -202,7 +210,7 @@ export function QType<T>(
 		if (Array.isArray(typeOrClass)) {
 			if (typeOrClass.length === 1) {
 				const elementType = typeOrClass[0];
-				
+
 				// Check if it's nested array syntax: [[Type]], [[[Type]]], etc.
 				if (Array.isArray(elementType)) {
 					// Recursive case: [[Type]] → Type[][]
@@ -210,56 +218,114 @@ export function QType<T>(
 					let currentLevel = elementType;
 					let nestingDepth = 1; // We're already at depth 1 from outer array
 					let deepestType = elementType;
-					
+
 					// Traverse nested arrays to find the actual type
-					while (Array.isArray(currentLevel) && currentLevel.length === 1) {
+					while (
+						Array.isArray(currentLevel) &&
+						currentLevel.length === 1
+					) {
 						nestingDepth++;
 						deepestType = currentLevel[0];
 						currentLevel = currentLevel[0];
 					}
-					
+
 					// Set design:type to Array (for the outermost level)
-					Reflect.defineMetadata('design:type', Array, target, propertyKey);
-					
+					Reflect.defineMetadata(
+						'design:type',
+						Array,
+						target,
+						propertyKey
+					);
+
 					// Register the actual element type (not the nested array)
-					Reflect.defineMetadata('arrayElementClass', deepestType, target, propertyKey);
-					
+					Reflect.defineMetadata(
+						'arrayElementClass',
+						deepestType,
+						target,
+						propertyKey
+					);
+
 					// Store nesting depth for deserializer to handle
-					Reflect.defineMetadata('arrayNestingDepth', nestingDepth, target, propertyKey);
-					
+					Reflect.defineMetadata(
+						'arrayNestingDepth',
+						nestingDepth,
+						target,
+						propertyKey
+					);
+
 					return;
 				}
-				
+
 				// Simple array: [Date], [Post], [BigInt], etc.
 				// Set design:type to Array
-				Reflect.defineMetadata('design:type', Array, target, propertyKey);
-				
+				Reflect.defineMetadata(
+					'design:type',
+					Array,
+					target,
+					propertyKey
+				);
+
 				// Register the element type as arrayElementClass
-				Reflect.defineMetadata('arrayElementClass', elementType, target, propertyKey);
-				
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					elementType,
+					target,
+					propertyKey
+				);
+
 				// Set nesting depth to 1 for simple arrays
-				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
+				Reflect.defineMetadata(
+					'arrayNestingDepth',
+					1,
+					target,
+					propertyKey
+				);
 				return;
 			} else if (typeOrClass.length > 1) {
 				// Union type array: [Content, Metadata], [Date, BigInt], etc.
 				// Store ALL types for discriminator to choose from
-				
-				Reflect.defineMetadata('design:type', Array, target, propertyKey);
-				
+
+				Reflect.defineMetadata(
+					'design:type',
+					Array,
+					target,
+					propertyKey
+				);
+
 				// Store first type as arrayElementClass for backward compatibility
-				Reflect.defineMetadata('arrayElementClass', typeOrClass[0], target, propertyKey);
-				
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					typeOrClass[0],
+					target,
+					propertyKey
+				);
+
 				// Store ALL types in arrayElementTypes for union type discrimination
-				Reflect.defineMetadata('arrayElementTypes', typeOrClass, target, propertyKey);
-				
-				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
+				Reflect.defineMetadata(
+					'arrayElementTypes',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+
+				Reflect.defineMetadata(
+					'arrayNestingDepth',
+					1,
+					target,
+					propertyKey
+				);
 				return;
 			}
 		}
 
 		if (typeof typeOrClass === 'string') {
 			// String literal ('bigint', 'regexp', 'int8array', etc.)
-			Reflect.defineMetadata('fieldType', typeOrClass, target, propertyKey);
+			Reflect.defineMetadata(
+				'fieldType',
+				typeOrClass,
+				target,
+				propertyKey
+			);
 		} else if (typeOrClass === BigInt) {
 			// Special case for BigInt (not a constructor, but a factory function)
 			Reflect.defineMetadata('fieldType', 'bigint', target, propertyKey);
@@ -315,7 +381,33 @@ export function QType<T>(
 
 			if (mathMethods.includes(typeOrClass as any)) {
 				// It's a Math method - store as transformer
-				Reflect.defineMetadata('fieldTransformer', typeOrClass, target, propertyKey);
+				Reflect.defineMetadata(
+					'fieldTransformer',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+				return;
+			}
+
+			// CRITICAL: Check for wrapped constructors from @Quick() BEFORE checking funcStr
+			// Wrapped constructors start with 'function' but should be treated as classes, not transformers
+			const isQuickWrapped = '__createQuickInstance' in typeOrClass;
+
+			if (isQuickWrapped) {
+				// It's a wrapped constructor from @Quick() - treat as nested model
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+				Reflect.defineMetadata(
+					'design:type',
+					typeOrClass,
+					target,
+					propertyKey
+				);
 				return;
 			}
 
@@ -323,7 +415,12 @@ export function QType<T>(
 			const funcStr = typeOrClass.toString();
 			if (funcStr.includes('=>') || funcStr.startsWith('function')) {
 				// It's a transformer function - store the function itself
-				Reflect.defineMetadata('fieldTransformer', typeOrClass, target, propertyKey);
+				Reflect.defineMetadata(
+					'fieldTransformer',
+					typeOrClass,
+					target,
+					propertyKey
+				);
 				return;
 			}
 
@@ -371,27 +468,50 @@ export function QType<T>(
 				Map,
 			];
 
-			const isNativeConstructor = nativeConstructors.some((ctor) => ctor === typeOrClass);
+			const isNativeConstructor = nativeConstructors.some(
+				(ctor) => ctor === typeOrClass
+			);
 
 			if (isNativeConstructor) {
 				// Store as fieldType using the constructor directly
-				Reflect.defineMetadata('fieldType', typeOrClass, target, propertyKey);
+				Reflect.defineMetadata(
+					'fieldType',
+					typeOrClass,
+					target,
+					propertyKey
+				);
 			} else {
 				// Check if it's a constructor (has prototype property) vs a plain function
 				const hasPrototype =
-					typeOrClass.prototype && typeOrClass.prototype.constructor === typeOrClass;
+					typeOrClass.prototype &&
+					typeOrClass.prototype.constructor === typeOrClass;
 
 				if (hasPrototype) {
 					// It's a custom model class - for nested models (single object)
 					// Arrays MUST use explicit [Type] syntax
-					
+
 					// For single type (NOT array syntax), register as nested model
-					Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
-					Reflect.defineMetadata('design:type', typeOrClass, target, propertyKey);
+					Reflect.defineMetadata(
+						'arrayElementClass',
+						typeOrClass,
+						target,
+						propertyKey
+					);
+					Reflect.defineMetadata(
+						'design:type',
+						typeOrClass,
+						target,
+						propertyKey
+					);
 				} else {
 					// It's a transformer function (Math.round, btoa, arrow function, etc.)
 					// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2
-					Reflect.defineMetadata('fieldTransformer', typeOrClass, target, propertyKey);
+					Reflect.defineMetadata(
+						'fieldTransformer',
+						typeOrClass,
+						target,
+						propertyKey
+					);
 				}
 			}
 		}

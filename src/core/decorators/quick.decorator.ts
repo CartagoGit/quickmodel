@@ -74,9 +74,7 @@
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
-import type {
-	IQuickAdvancedOptions,
-} from '../interfaces/quick-options.interface';
+import type { IQuickAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
@@ -586,10 +584,10 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 						// Automatically wrap in array syntax [Type]
 						// Example: bigints: BigInt + data.bigints = ['123'] → auto-convert to [BigInt]
 						const dataValue = data[propertyKey];
-						
+
 						if (
-							Array.isArray(dataValue) && 
-							!Array.isArray(mappedType) && 
+							Array.isArray(dataValue) &&
+							!Array.isArray(mappedType) &&
 							mappedType !== Array
 						) {
 							// Data value is array but mappedType is single type → wrap it
