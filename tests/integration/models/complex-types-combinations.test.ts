@@ -74,25 +74,25 @@ class NestedComplexModel extends QModel<INestedComplexModel> {
   @QType()
   name!: string;
 
-  @QType()
+  @QType([ComplexEntity])
   entities!: ComplexEntity[];
 
-  @QType()
+  @QType(ComplexEntity)
   primaryEntity!: ComplexEntity;
 
-  @QType()
+  @QType([Date])
   timestamps!: Date[];
 
-  @QType()
+  @QType([BigInt])
   amounts!: bigint[];
 
-  @QType()
+  @QType([RegExp])
   patterns!: RegExp[];
 
-  @QType()
+  @QType(Map)
   buffers!: Map<string, Uint8Array>;
 
-  @QType()
+  @QType(Set)
   errorLog!: Set<Error>;
 }
 
@@ -103,13 +103,13 @@ class MixedUnionModel extends QModel<IMixedUnionModel> {
   @QType()
   value!: string | number | boolean | Date | bigint;
 
-  @QType()
+  @QType([ComplexEntity, Date, String])
   items!: (string | ComplexEntity | Date)[];
 
-  @QType()
+  @QType(ComplexEntity)
   optionalEntity!: ComplexEntity | null;
 
-  @QType()
+  @QType(Map)
   multiType!: Map<string, string | number | RegExp>;
 }
 

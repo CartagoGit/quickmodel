@@ -1139,6 +1139,25 @@ export class Deserializer<
       }
       return firstType;
     };
+
+    // -1. Exact instance check (if data is already an instance of one of the types)
+    // This allows passing already instantiated objects (like Dates) in mixed arrays
+    if (data !== null && data !== undefined) {
+      const exactMatch = possibleTypes.find((type) => 
+        type !== String && 
+        type !== Number && 
+        type !== Boolean && 
+        type !== BigInt && 
+        data instanceof (type as any)
+      );
+      if (exactMatch) return exactMatch;
+    }
+
+    // 0. Primitive type auto-detection (works without discriminator)
+    if (typeof data === 'string' && possibleTypes.includes(String)) return String;
+    if (typeof data === 'number' && possibleTypes.includes(Number)) return Number;
+    if (typeof data === 'boolean' && possibleTypes.includes(Boolean)) return Boolean;
+    if (typeof data === 'bigint' && possibleTypes.includes(BigInt)) return BigInt; // BigInt primitive
     
     // No discriminator - return first type as fallback
     if (!discriminatorConfig) {
@@ -1253,6 +1272,11 @@ export class Deserializer<
         // Resolve correct type for union types using possibleTypes array
         const resolvedClass = this.resolveUnionType(item, possibleTypes, discriminatorConfig);
         
+        // Handle Primitives (return primitive value, not object wrapper)
+        if (resolvedClass === String) return String(item);
+        if (resolvedClass === Number) return Number(item);
+        if (resolvedClass === Boolean) return Boolean(item);
+
         // Handle BigInt specially (not constructible via new)
         if (resolvedClass === BigInt) {
           return BigInt(item as string | number | boolean);
