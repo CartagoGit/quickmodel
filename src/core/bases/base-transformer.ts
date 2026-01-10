@@ -33,7 +33,7 @@
 
 import { IQTransformer } from '../interfaces/transformer.interface';
 
-export abstract class BaseTransformer<TInput = any, TOutput = any> implements IQTransformer<
+export abstract class BaseTransformer<TInput = unknown, TOutput = unknown> implements IQTransformer<
   TInput,
   TOutput
 > {

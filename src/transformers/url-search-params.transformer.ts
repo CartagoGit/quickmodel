@@ -18,7 +18,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class SearchFilter extends QuickModel<ISearchFilter> {
- *   @QType() params!: URLSearchParams;
+ *   @QType() declare params: URLSearchParams;
  * }
  * 
  * // From query string

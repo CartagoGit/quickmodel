@@ -47,8 +47,8 @@ type TypedArray =
  * @example
  * ```typescript
  * class AudioData extends QuickModel<IAudioData> {
- *   @QType() samples!: Float32Array;
- *   @QType() largeNumbers!: BigInt64Array;
+ *   @QType() declare samples: Float32Array;
+ *   @QType() declare largeNumbers: BigInt64Array;
  * }
  * 
  * const audio = new AudioData({

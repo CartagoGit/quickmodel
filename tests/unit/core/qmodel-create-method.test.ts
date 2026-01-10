@@ -20,7 +20,11 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick()
-			class User extends QModel<IUser> {}
+			class User extends QModel<IUser> {
+				declare id: number;
+				declare name: string;
+				declare email: string;
+			}
 
 			const user = User.create({ 
 				id: 1, 
@@ -40,7 +44,10 @@ describe('QModel.create() factory method', () => {
 				age: number;
 			}
 
-			class Person extends QModel<IPerson> {}
+			class Person extends QModel<IPerson> {
+				declare name: string;
+				declare age: number;
+			}
 
 			const person = Person.create({ name: 'Bob', age: 30 });
 
@@ -61,6 +68,8 @@ describe('QModel.create() factory method', () => {
 
 			@Quick({ createdAt: Date })
 			class Post extends QModel<IPost> {
+				declare id: number;
+				declare title: string;
 				declare createdAt: Date;
 			}
 
@@ -84,6 +93,7 @@ describe('QModel.create() factory method', () => {
 
 			@Quick({ balance: BigInt })
 			class Account extends QModel<IAccount> {
+				declare id: string;
 				declare balance: bigint;
 			}
 
@@ -141,10 +151,14 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick()
-			class Address extends QModel<IAddress> {}
+			class Address extends QModel<IAddress> {
+				declare street: string;
+				declare city: string;
+			}
 
 			@Quick({ address: Address })
 			class Profile extends QModel<IProfile> {
+				declare bio: string;
 				declare address: Address;
 			}
 
@@ -174,10 +188,14 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick()
-			class Comment extends QModel<IComment> {}
+			class Comment extends QModel<IComment> {
+				declare text: string;
+				declare author: string;
+			}
 
 			@Quick({ comments: [Comment] })
 			class BlogPost extends QModel<IBlogPost> {
+				declare title: string;
 				declare comments: Comment[];
 			}
 
@@ -235,7 +253,10 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick()
-			class Order extends QModel<IOrder> {}
+			class Order extends QModel<IOrder> {
+				declare orderId: string;
+				declare total: number;
+			}
 
 			const order = Order.create({ orderId: 'ORD-1', total: 250.50 });
 			const plain = order.toInterface();
@@ -252,7 +273,10 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick()
-			class Item extends QModel<IItem> {}
+			class Item extends QModel<IItem> {
+				declare code: string;
+				declare quantity: number;
+			}
 
 			const item = Item.create({ code: 'ITEM-1', quantity: 10 });
 			const json = item.toJSON();
@@ -273,6 +297,7 @@ describe('QModel.create() factory method', () => {
 
 			@Quick()
 			class Config extends QModel<IConfig> {
+				declare name: string;
 				declare value?: number;
 			}
 
@@ -293,7 +318,10 @@ describe('QModel.create() factory method', () => {
 			}
 
 			@Quick()
-			class Data extends QModel<IData> {}
+			class Data extends QModel<IData> {
+				declare numbers: number[];
+				declare strings: string[];
+			}
 
 			const data = Data.create({
 				numbers: [1, 2, 3],
@@ -320,6 +348,7 @@ describe('QModel.create() factory method', () => {
 				tags: Set
 			})
 			class Record extends QModel<IRecord> {
+				declare id: string;
 				declare createdAt: Date;
 				declare updatedAt: Date;
 				declare balance: bigint;
@@ -357,7 +386,7 @@ describe('QModel.create() factory method', () => {
 
 			// Pass QTransform as 1st type parameter to create()
             // <TResult>
-			const post = Post.create<QTransform<IPost, {
+			const post = Post.create<IPost, Post, QTransform<IPost, {
 				createdAt: Date;
 			}>>({
 				id: 1,
@@ -385,7 +414,7 @@ describe('QModel.create() factory method', () => {
 			})
 			class Account extends QModel<IAccount> {}
 
-			const account = Account.create<QTransform<IAccount, {
+			const account = Account.create<IAccount, Account, QTransform<IAccount, {
 				balance: bigint;
 				createdAt: Date;
 				tags: Set<string>;
@@ -410,7 +439,7 @@ describe('QModel.create() factory method', () => {
 			@Quick({ value: BigInt })
 			class Data extends QModel<IData> {}
 
-			const data = Data.create<QTransform<IData, {
+			const data = Data.create<IData, Data, QTransform<IData, {
 				value: bigint;
 			}>>({
 				value: '12345'
@@ -444,8 +473,8 @@ describe('QModel.create() factory method', () => {
 			const user1 = new UserWithDeclare(data);
 			const user2 = UserWithCreate.create(data);
 
-			expect(user1.id).toBe(user2.id);
-			expect(user1.name).toBe(user2.name);
+			expect(user1.id).toBe((user2 as any).id);
+			expect(user1.name).toBe((user2 as any).name);
 			expect(user1.toInterface()).toEqual(user2.toInterface());
 		});
 	});

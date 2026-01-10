@@ -46,7 +46,7 @@
 import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
-import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
+import { QTYPES_METADATA_KEY, type QTypeString } from '../decorators/qtype.decorator';
 import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
 import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
@@ -59,11 +59,43 @@ import { ArrayBufferTransformer, DataViewTransformer, SharedArrayBufferTransform
 import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import { URLTransformer, URLSearchParamsTransformer, TextEncoderTransformer, TextDecoderTransformer } from '@/transformers/web-apis.transformer';
 
+/**
+ * Valid keys to identify a transformer.
+ * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), or a string name.
+ */
+export type TransformerKey = QTypeString | { name: string } | string;
+
 export class Deserializer<
   TInterface extends Record<string, unknown> = Record<string, unknown>,
-  TModel = any
+  TModel = unknown
 > implements IQDeserializer<TInterface, TModel> {
-  private readonly transformers: Map<string, IQTransformer<any, any>>;
+  private readonly transformers: Map<string, IQTransformer<unknown, unknown>>;
+
+  /**
+   * Gets a registered transformer by key or constructor name.
+   * 
+   * @param key - The key to look up (string literal, constructor, or class name)
+   * @returns The registered transformer or undefined if not found
+   * @internal
+   */
+  public getTransformer(key: TransformerKey): IQTransformer<unknown, unknown> | undefined {
+    let lookupKey: string | undefined;
+
+    if (typeof key === 'string') {
+        lookupKey = key.toLowerCase();
+    } else if (typeof key === 'function' && (key as any).name) {
+        lookupKey = (key as any).name.toLowerCase();
+    } else if (typeof key === 'object' && key !== null && 'name' in key) {
+        // Handle object with name property (like a class constructor viewed as object)
+        lookupKey = (key as { name: string }).name.toLowerCase();
+    }
+
+    if (lookupKey && this.transformers.has(lookupKey)) {
+        return this.transformers.get(lookupKey);
+    }
+
+    return undefined;
+  }
 
   /**
    * Creates a model deserializer.
@@ -178,7 +210,7 @@ export class Deserializer<
    * @returns Fully-typed model instance
    * @throws {SyntaxError} If JSON parsing fails
    */
-  deserializeFromJson(json: string, modelClass: new (data: any) => TModel): TModel {
+  deserializeFromJson<TResult = TModel>(json: string, modelClass: new (data: any) => TResult): TResult {
     const data = JSON.parse(json);
     return this.deserialize(data, modelClass);
   }
@@ -620,20 +652,21 @@ export class Deserializer<
    * Applies transformations for properties defined with dot notation.
    * e.g. @Quick({ 'profile.birthDate': Date })
    */
-  private applyDotNotationTransform(instance: any, path: string, modelClass: Function): void {
+  private applyDotNotationTransform(instance: Record<string, any>, path: string, modelClass: Function): void {
       const parts = path.split('.');
       let current = instance;
       
       // Navigate to parent object
       for (let i = 0; i < parts.length - 1; i++) {
           const part = parts[i];
-          if (current[part] === undefined || current[part] === null) {
+          if (!part || current[part] === undefined || current[part] === null) {
               return; // Path doesn't exist, skip
           }
           current = current[part];
       }
       
       const lastKey = parts[parts.length - 1];
+      if (!lastKey) return;
       const value = current[lastKey];
       
       if (value === undefined || value === null) return;
@@ -646,7 +679,7 @@ export class Deserializer<
       // 1. Check custom fieldType (Date, BigInt, RegExp, etc.)
       const fieldType = Reflect.getMetadata('fieldType', instance, path);
       if (fieldType) {
-        const transformer = this.transformers.get(fieldType);
+        const transformer = this.getTransformer(fieldType);
         if (transformer) {
             current[lastKey] = transformer.deserialize(value, path, context.className);
             return;
@@ -659,7 +692,7 @@ export class Deserializer<
       if (arrayElementClass) {
          if (Array.isArray(value)) {
              // Handle array transformation
-             const transformableTypes = [
+             const transformableTypes: unknown[] = [
                 Date, BigInt, Number, String, Boolean,
                 RegExp, Symbol, Error,
                 URL, URLSearchParams,
@@ -671,7 +704,7 @@ export class Deserializer<
                 ArrayBuffer, DataView
              ];
              
-             if (transformableTypes.includes(arrayElementClass as any)) {
+             if (transformableTypes.includes(arrayElementClass as unknown)) {
                  current[lastKey] = this.transformNestedArray(value, arrayElementClass, context);
              } else {
                  // Model Array

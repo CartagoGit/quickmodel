@@ -24,5 +24,5 @@ export interface IQDeserializer<TInterface extends Record<string, unknown>, TMod
   /**
    * Deserializes from JSON string.
    */
-  deserializeFromJson(json: string, modelClass: new (data: any) => TModel): TModel;
+  deserializeFromJson(json: string, modelClass: new (data: unknown) => TModel): TModel;
 }

@@ -17,7 +17,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @QType() metadata!: Map<string, any>;
+ *   @QType() declare metadata: Map<string, unknown>;
  * }
  * 
  * const config = new Config({
@@ -124,7 +124,7 @@ export class MapTransformer<K = string, V = unknown>
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @QType() tags!: Set<string>;
+ *   @QType() declare tags: Set<string>;
  * }
  * 
  * const config = new Config({

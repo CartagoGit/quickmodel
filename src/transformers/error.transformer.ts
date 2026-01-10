@@ -26,7 +26,7 @@ interface IErrorData {
  * @example
  * ```typescript
  * class Request extends QuickModel<IRequest> {
- *   @QType(QError) lastError!: Error;
+ *   @QType(QError) declare lastError: Error;
  * }
  * 
  * // From string

@@ -14,7 +14,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class FileModel extends QuickModel<IFileModel> {
- *   @QType() data!: ArrayBuffer;
+ *   @QType() declare data: ArrayBuffer;
  * }
  * 
  * const file = new FileModel({
@@ -103,7 +103,7 @@ export class ArrayBufferTransformer
  * @example
  * ```typescript
  * class BinaryData extends QuickModel<IBinaryData> {
- *   @QType() view!: DataView;
+ *   @QType() declare view: DataView;
  * }
  * 
  * const data = new BinaryData({

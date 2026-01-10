@@ -41,21 +41,6 @@ class ComplexEntityQuick extends QModel<IComplexEntity> {
 }
 
 // 2. Modelo anidado (Nested)
-interface INestedComplexModel {
-  primaryEntity: IComplexEntity;
-  timestamps: Date[];
-  amounts: bigint[];
-  patterns: RegExp[];
-  buffers: Map<string, Uint8Array>; // Map single value (not used as array of maps in test logic apparently?) 
-  // Original test defines: @QType(Map) buffers!: Map<string, Uint8Array>;
-  // This implies buffers is a single Map.
-  errorLog: Error[]; // Original: @QType(Set) errorLog!: Set<Error>; -> Wait, interface mismatch in original?
-}
-
-// Let's check original interface in complex-types-combinations.test.ts
-// It seems original has:
-// errorLog: Set<Error>;
-
 interface INestedComplexModelQuick {
   primaryEntity: IComplexEntity;
   timestamps: Date[];

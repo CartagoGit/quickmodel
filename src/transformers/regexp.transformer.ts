@@ -24,7 +24,7 @@ interface IRegExpData {
  * @example
  * ```typescript
  * class Config extends QuickModel<IConfig> {
- *   @QType(QRegExp) emailPattern!: RegExp;
+ *   @QType(QRegExp) declare emailPattern: RegExp;
  * }
  * 
  * // From string with slashes
@@ -39,7 +39,10 @@ interface IRegExpData {
  * ```
  */
 export class RegExpTransformer
-  extends BaseTransformer<string | { __type: 'regexp'; source: string; flags: string } | IRegExpData, RegExp>
+  extends BaseTransformer<
+    string | RegExp | { __type: 'regexp'; source: string; flags: string } | IRegExpData,
+    RegExp
+  >
   implements IQValidator
 {
   /**

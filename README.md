@@ -479,3 +479,12 @@ MIT © Cartago Git
 ## 🤝 Contributing
 
 Contributions welcome! See [development guide](docs/README-DEV.md).
+
+## 👤 Author
+
+**Mario Cabrero Volarich**
+- GitHub: [@CartagoGit](https://github.com/CartagoGit)
+
+## 📝 License
+
+MIT © Cartago Git

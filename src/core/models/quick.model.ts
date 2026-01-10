@@ -76,6 +76,13 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 	// Store initial state for change tracking and reset
 	private __initData?: SerializedInterface<TInterface>;
+	
+	/**
+	 * Internal property storage for transformed values.
+	 * Explicitly defined to avoid 'any' usage and dynamic assignment.
+	 * @internal
+	 */
+	protected [QUICK_VALUES_KEY]: Record<string, unknown> = {};
 
 	/**
 	 * Factory method to create model instances with type-safe access to all properties.
@@ -189,18 +196,24 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * | **Works with `create()`** | ✅ Yes | ✅ Yes (with generic) |
 	 * | **Input Validation** | ✅ Strict | ⚠️ Loose (unless 2nd generic used) |
 	 * 
-	 * **Option B Usage:**
-	 * `User.create<ResultType>(data)` - Infers loose input type
-	 * `User.create<ResultType, InputType>(data)` - Enforces strict input type
+	 * **Example Usage Details:**
+	 *
+	 * | Usage Pattern | Input (Data) | Output (Instance) |
+	 * |---------------|--------------|-------------------|
+	 * | `User.create(data)` | `IUser` | `User` (requires `declare`) |
+	 * | `User.create<User>(data)` | Loose | `User` |
+	 * | `User.create<QTransform<...>>(data)` | Loose | Transformed Type |
+	 *
+	 * @see {@link QModel} for main class documentation
 	 */
 	static create<
-		TResult = '__INFER__',
-		TData = any
-	>(
-		this: new (data: TData) => any,
-		data: TData
-	): TResult extends '__INFER__' ? InstanceType<typeof this> : TResult {
-		return new this(data) as any;
+		T extends Record<string, any> = Record<string, any>,
+		TClass extends QModel<T> = any,
+		TResult = TClass
+	>(this: new (data: T) => TClass, data: T): TResult {
+		// Use generics to cast 'this' to the constructor type
+		const Constructor = this as unknown as new (data: T) => TClass;
+		return new Constructor(data) as unknown as TResult;
 	}
 
 	/**
@@ -268,11 +281,11 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 			} else if (arrayElementClass) {
 				type = `Array<${arrayElementClass.name || 'unknown'}>`;
 				// Get transformer for array element type from deserializer registry
-				transformer = (QModel.deserializer as any).transformers?.get(arrayElementClass);
+				transformer = QModel.deserializer.getTransformer(arrayElementClass);
 			} else if (fieldType) {
 				type = fieldType.name || fieldType.toString();
 				// Get transformer from deserializer registry
-				transformer = (QModel.deserializer as any).transformers?.get(fieldType);
+				transformer = QModel.deserializer.getTransformer(fieldType);
 			}
 
 			result.set(fieldName as string, { type, transformer });
@@ -333,9 +346,9 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
 		// IMPORTANT: Must be done BEFORE deserialization to preserve original types
-		const initDataClone: any = {};
+		const initDataClone: Record<string, unknown> = {};
 		for (const key in data) {
-			const value = data[key];
+			const value = (data as Record<string, unknown>)[key];
 			// Symbols and functions cannot be cloned, keep reference
 			if (typeof value === 'symbol' || typeof value === 'function') {
 				initDataClone[key] = value;
@@ -369,7 +382,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 		// Store deserialized values in a hidden storage to handle Bun bug
 		Object.defineProperty(this, QUICK_VALUES_KEY, {
-			value: {} as any,
+			value: {},
 			writable: false,
 			enumerable: false,
 			configurable: true,
@@ -394,7 +407,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 				continue;
 			}
 
-			const value = (deserialized as any)[key];
+			const value = (deserialized as Record<string, unknown>)[key];
 
 			// Determine storage key - don't duplicate QUICK_PROPERTY_KEYS prefix
 			let storageKey: string;
@@ -411,9 +424,9 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 				propertyKey = key;
 			}
 
-			(this as any)[storageKey] = value;
+			(this as Record<string, unknown>)[storageKey] = value;
 			// Store in backup
-			(this as any)[QUICK_VALUES_KEY][propertyKey] = value;
+			this[QUICK_VALUES_KEY][propertyKey] = value;
 		}
 
 		// Install lazy getters only for actual property names (not storage keys)

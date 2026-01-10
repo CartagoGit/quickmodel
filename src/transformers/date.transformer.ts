@@ -16,7 +16,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class Event extends QuickModel<IEvent> {
- *   @QType() createdAt!: Date;
+ *   @QType() declare createdAt: Date;
  * }
  * 
  * const event = new Event({ createdAt: "2024-01-01T00:00:00.000Z" });
@@ -26,7 +26,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * console.log(data.createdAt); // "2024-01-01T00:00:00.000Z"
  * ```
  */
-export class DateTransformer extends BaseTransformer<string, Date> implements IQValidator {
+export class DateTransformer extends BaseTransformer<string | number | Date, Date> implements IQValidator {
   /**
    * Converts a string, number (Unix timestamp), or Date to Date object.
    * 

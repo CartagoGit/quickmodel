@@ -21,7 +21,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class Account extends QuickModel<IAccount> {
- *   @QType(QBigInt) balance!: bigint;
+ *   @QType(QBigInt) declare balance: bigint;
  * }
  * 
  * const account = new Account({ balance: "9007199254740991" });

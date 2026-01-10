@@ -50,7 +50,7 @@
  *   declare balance: bigint;
  *   declare pattern: RegExp;
  *   declare createdAt: Date;
- *   declare metadata: Map<string, any>;
+ *   declare metadata: Map<string, unknown>;
  * }
  * ```
  *
@@ -85,12 +85,28 @@ import {
 /**
  * Constructor type for class-based type mapping
  */
-type IConstructor<T = any> = new (...args: any[]) => T;
+type IConstructor<T = unknown> = new (...args: any[]) => T;
 
 /**
  * Transformer function that converts a value
  */
-type ITransformerFunction = (value: any) => any;
+type ITransformerFunction = ((value: any) => any);
+
+/**
+ * Native constructors and factories supported by QuickModel
+ */
+type INativeFactory =
+	| BigIntConstructor
+	| SymbolConstructor
+	| DateConstructor
+	| RegExpConstructor
+	| MapConstructor
+	| SetConstructor
+	| StringConstructor
+	| NumberConstructor
+	| BooleanConstructor
+	| ArrayBufferConstructor
+	| DataViewConstructor;
 
 /**
  * All supported type specifications for @Quick() decorator
@@ -103,7 +119,8 @@ type ITransformerFunction = (value: any) => any;
  */
 export type ISpec =
 	| IQTypeAlias // String literals like 'bigint', 'date', 'regexp'
-	| IConstructor // Constructors like Date, RegExp, Map, custom classes
+	| IConstructor // Custom classes
+	| INativeFactory // Built-in types (Date, BigInt, etc)
 	| ITransformerFunction
 	| ISpec[]; // Array with element type like [Date], [[Date]], [[[Date]]]
 

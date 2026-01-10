@@ -133,22 +133,15 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * }
  * ```
  *
- *   // Option 2: Use @QType() without args (allows ! or ?)
- *   @QType() id!: number;
- *   @QType() name!: string;
- *   @QType() email?: string;
- * }
- * ```
- *
  * @example
  * **String literals** (with IntelliSense):
  * ```typescript
  * class Account extends QModel<IAccount> {
- *   @QType('bigint') balance!: bigint;
- *   @QType('symbol') id!: symbol;
- *   @QType('regexp') pattern!: RegExp;
- *   @QType('int8array') bytes!: Int8Array;
- *   @QType('map') metadata!: Map<string, any>;
+ *   @QType('bigint') declare balance: bigint;
+ *   @QType('symbol') declare id: symbol;
+ *   @QType('regexp') declare pattern: RegExp;
+ *   @QType('int8array') declare bytes: Int8Array;
+ *   @QType('map') declare metadata: Map<string, unknown>;
  * }
  * ```
  *
@@ -156,10 +149,10 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **Native constructors**:
  * ```typescript
  * class Binary extends QModel<IBinary> {
- *   @QType(RegExp) pattern!: RegExp;
- *   @QType(Error) lastError!: Error;
- *   @QType(Int8Array) bytes!: Int8Array;
- *   @QType(ArrayBuffer) buffer!: ArrayBuffer;
+ *   @QType(RegExp) declare pattern: RegExp;
+ *   @QType(Error) declare lastError: Error;
+ *   @QType(Int8Array) declare bytes: Int8Array;
+ *   @QType(ArrayBuffer) declare buffer: ArrayBuffer;
  * }
  * ```
  *
@@ -167,40 +160,48 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **Q-Symbol based**:
  * ```typescript
  * class Account extends QModel<IAccount> {
- *   @QType(QBigInt) balance!: bigint;
- *   @QType(QSymbol) id!: symbol;
- *   @QType(QRegExp) pattern!: RegExp;
- *   @QType(QInt8Array) data!: Int8Array;
- * }
- * ```
- *
- * @example
- * **Nested models**:
- * ```typescript
- * class User extends QModel<IUser> {
- *   @QType(Address) address!: Address;      // Single nested model
- *   @QType([Vehicle]) vehicles!: Vehicle[]; // Array of models - explicit syntax
+ *   @QType(QBigInt) declare balance: bigint;
+ *   @QType(QSymbol) declare id: symbol;
+ *   @QType(QRegExp) declare pattern: RegExp;
+ *   @QType(QInt8Array) declare data: Int8Array;
  * }
  * ```
  *
  */
+// Define strict types for native constructors to avoid 'any'
+type INativeFactory =
+	| BigIntConstructor
+	| SymbolConstructor
+	| DateConstructor
+	| RegExpConstructor
+	| MapConstructor
+	| SetConstructor
+	| StringConstructor
+	| NumberConstructor
+	| BooleanConstructor
+	| ArrayBufferConstructor
+	| DataViewConstructor
+	| Int8ArrayConstructor
+	| Uint8ArrayConstructor
+	| Uint8ClampedArrayConstructor
+	| Int16ArrayConstructor
+	| Uint16ArrayConstructor
+	| Int32ArrayConstructor
+	| Uint32ArrayConstructor
+	| Float32ArrayConstructor
+	| Float64ArrayConstructor
+	| ErrorConstructor;
+
 export function QType<T>(
 	typeOrClass?:
-		| (new (data: any) => T)
+		| (new (data: any) => T) // Constructor relaxed to 'any' argument to allow various signatures
 		| symbol
 		| QTypeString
-		| BigIntConstructor
-		| SymbolConstructor
-		| SetConstructor
-		| MapConstructor
-		| DateConstructor
-		| BooleanConstructor
-		| NumberConstructor
-		| StringConstructor
+		| INativeFactory
 		| PromiseConstructor
-		| Array<any> // Support array syntax: [Type], [[Type]], etc.
+		| Array<unknown> // Support array syntax: [Type], [[Type]], etc.
 ): PropertyDecorator {
-	return function (target: any, propertyKey: string | symbol): void {
+	return function (target: object, propertyKey: string | symbol): void {
 		// Register the property in the fields list
 		const existingFields =
 			(Reflect.getMetadata(QTYPES_METADATA_KEY, target) as Array<

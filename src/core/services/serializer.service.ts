@@ -90,12 +90,13 @@ import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import { URLTransformer } from '@/transformers/url.transformer';
 import { URLSearchParamsTransformer } from '@/transformers/url-search-params.transformer';
 import { MapTransformer, SetTransformer } from '@/transformers/map-set.transformer';
+import { IQTransformer } from '../interfaces/transformer.interface';
 
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
-	TInterface extends Record<string, unknown> = any,
+	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > implements IQSerializer<TModel, TInterface> {
-	private readonly transformers: Map<string | Function, any>;
+	private readonly transformers: Map<string | Function, IQTransformer<unknown, unknown>>;
 
 	/**
 	 * Creates a model serializer.

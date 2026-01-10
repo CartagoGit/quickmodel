@@ -14,7 +14,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class WebPage extends QuickModel<IWebPage> {
- *   @QType() url!: URL;
+ *   @QType() declare url: URL;
  * }
  * 
  * const page = new WebPage({

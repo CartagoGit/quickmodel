@@ -15,7 +15,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * @example
  * ```typescript
  * class Entity extends QuickModel<IEntity> {
- *   @QType(QSymbol) id!: symbol;
+ *   @QType(QSymbol) declare id: symbol;
  * }
  * 
  * const entity = new Entity({ id: "unique-id" });
@@ -27,7 +27,7 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * console.log(data.id); // "unique-id"
  * ```
  */
-export class SymbolTransformer extends BaseTransformer<string | { __type: 'symbol'; description: string }, symbol> implements IQValidator {
+export class SymbolTransformer extends BaseTransformer<string | symbol | { __type: 'symbol'; description: string }, symbol> implements IQValidator {
   /**
    * Converts a string or object with __type to a global symbol using Symbol.for().
    * 

@@ -20,11 +20,11 @@ interface IProfile {
 	joinedAt: string;
 }
 
-@Quick({}) // Necesita @Quick() para auto-detectar Date
+@Quick({ createdAt: Date }) // Necesita @Quick() para auto-detectar Date
 class Profile extends QModel<IProfile> {
-	bio!: string;
-	website?: string;
-	joinedAt!: Date;
+	declare bio: string;
+	declare website?: string;
+	declare joinedAt: Date;
 }
 
 // ============================================
@@ -39,11 +39,11 @@ interface IUser {
 	updatedAt?: string;
 	bignumber: string;
 	tags: string[]; // Array from backend
-	metadata: [string, any][]; // Array of pairs from backend
+	metadata: [string, unknown][]; // Array of pairs from backend
 	symbolic: string;
 	dates?: (string | undefined | null)[]; // Array of date strings
 	pattern?: string; // RegExp as string from backend
-	config?: Record<string, any>; // Plain object (sin clase)
+	config?: Record<string, unknown>; // Plain object (sin clase)
 	address?: {
 		// Nested plain object
 		street: string;
@@ -64,11 +64,11 @@ type IUserTransform = {
 	updatedAt?: Date;
 	bignumber: bigint;
 	tags: Set<string>;
-	metadata: Map<string, any>;
+	metadata: Map<string, unknown>;
 	symbolic: symbol;
 	dates?: (Date | undefined | null)[];
 	pattern?: RegExp; // Transformado a RegExp
-	config?: Record<string, any>; // Plain object se mantiene igual
+	config?: Record<string, unknown>; // Plain object se mantiene igual
 	address?: Address; // Transformado a clase Address
 	profile?: Profile; // Transformado a QModel Profile
 	addresses?: Address[]; // Array transformado a clases Address
@@ -85,11 +85,14 @@ type IUserTransform = {
 
 // ✅ OPCIÓN CON @Quick() - Protege automáticamente TODAS las propiedades
 @Quick({
+	createdAt: Date,
+	updatedAt: Date,
+	bignumber: BigInt,
 	tags: Set,
 	metadata: Map,
 	symbolic: Symbol,
 	dates: (arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
-		arr.map((date) => (typeof date === 'string' ? new Date(date) : date)),
+		arr?.map((date) => (typeof date === 'string' ? new Date(date) : date)),
 	pattern: RegExp, // RegExp desde string
 	address: Address, // Plain object → Address class
 	profile: Profile, // Plain object → Profile QModel
@@ -98,27 +101,27 @@ type IUserTransform = {
 class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 	// Todas las propiedades son protegidas automáticamente por @Quick()
 	// Funciona con declare, !, y ?
-	id!: number;
-	name!: string;
+	declare id: number;
+	declare name: string;
 	declare surname: string;
 
 	// @Quick() detecta Date, BigInt automáticamente
-	createdAt!: Date;
-	updatedAt?: Date;
-	bignumber!: bigint;
+	declare createdAt: Date;
+	declare updatedAt?: Date;
+	declare bignumber: bigint;
 
 	// Estos los especificamos en el mapa arriba
 	declare tags: Set<string>;
-	metadata!: Map<string, any>;
-	symbolic!: symbol;
-	dates?: (Date | undefined | null)[];
+	declare metadata: Map<string, unknown>;
+	declare symbolic: symbol;
+	declare dates?: (Date | undefined | null)[];
 	
 	// Nuevos tipos de transformación
-	pattern?: RegExp;
-	config?: Record<string, any>; // Plain object sin transformación
-	address?: Address;
-	profile?: Profile;
-	addresses?: Address[];
+	declare pattern?: RegExp;
+	declare config?: Record<string, unknown>; // Plain object sin transformación
+	declare address?: Address;
+	declare profile?: Profile;
+	declare addresses?: Address[];
 
 	algo: 'test' = 'test'; // Propiedad normal sin relación con QuickModel
 }
