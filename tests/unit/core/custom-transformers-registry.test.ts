@@ -30,11 +30,11 @@ interface IMoneyJSON {
 }
 
 class MoneyTransformer implements IQTransformer<Money, IMoneyJSON> {
-	deserialize(_value: IMoneyJSON): Money {
+	deserialize(value: IMoneyJSON): Money {
 		return new Money(value.amount, value.currency + '_TRANSFORMED');
 	}
 
-	serialize(_value: Money): IMoneyJSON {
+	serialize(value: Money): IMoneyJSON {
 		return {
 			amount: value.amount,
 			currency: value.currency,

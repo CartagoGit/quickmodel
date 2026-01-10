@@ -72,10 +72,7 @@ export type {
 // Registry (For advanced custom transformers)
 export { TransformerRegistry } from './core/registry/transformer.registry';
 export type { TransformerKey } from './core/registry/transformer.registry';
-export type {
-	ITransformer,
-	IQTransformer,
-} from './core/interfaces/transformer.interface';
+export type { IQTransformer } from './core/interfaces/transformer.interface';
 
 /**
  * Advanced options types for @Quick() decorator

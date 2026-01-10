@@ -3,10 +3,11 @@ layout: home
 ---
 
 <script setup>
-import { useData } from 'vitepress'
+import { useData, useRouter } from 'vitepress'
 import { onMounted } from 'vue'
 
 const { site } = useData()
+const router = useRouter()
 
 onMounted(() => {
   const STORAGE_KEY_LANG = 'vitepress-theme-lang'
@@ -33,10 +34,10 @@ onMounted(() => {
   }
   
   // Construir la ruta completa con el base
-  const redirectPath = 
-    `${base}${selectedLang}/`
-  // Usar window.location para navegar
-  window.location.href = redirectPath
+  const redirectPath = `${base}${selectedLang}/`
+  
+  // Usar el router de Vue para navegación SPA (sin recarga)
+  router.go(redirectPath)
 })
 </script>
 

@@ -22,7 +22,8 @@ enum Status {
 	INACTIVE = 0,
 }
 
-const _UserType = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const UserType = {
 	PREMIUM: 'premium',
 	FREE: 'free',
 } as const;

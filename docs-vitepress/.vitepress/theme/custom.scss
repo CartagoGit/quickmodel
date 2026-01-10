@@ -83,7 +83,9 @@ $secondary-color: #35495e;
 		@media (min-width: 1280px) {
 			grid-template-columns: repeat(2, 50%);
 			gap: 16px;
-			padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px));
+			padding-top: calc(
+				var(--vp-nav-height) + var(--vp-layout-top-height, 0px)
+			);
 		}
 	}
 
@@ -298,4 +300,14 @@ $secondary-color: #35495e;
 .VPHome .vp-doc {
 	padding-top: 3rem;
 	margin-top: 3rem;
+}
+
+// Hide default VitePress logo since we're using custom logo component
+.VPNavBar .VPNavBarTitle {
+	display: none;
+}
+
+// Show our custom logo
+.VPNavBar .custom-logo {
+	display: flex;
 }
