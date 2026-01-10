@@ -184,6 +184,11 @@ export class MockGenerator {
     if (typeStr === 'boolean' || typeStr === 'Boolean') {
       return this.getDefaultValue(type, 'boolean');
     }
+    
+    // Object (explicit in Quick config)
+    if (typeStr === 'object' || typeStr === 'Object') {
+      return this.getDefaultValue(type, 'object');
+    }
 
     // Collections (exact match with QType metadata)
     if (typeStr === 'array' || typeStr === 'Array') {

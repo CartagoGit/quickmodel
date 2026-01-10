@@ -246,7 +246,10 @@ describe('@Quick() decorator: Automatic property registration', () => {
       createdAt: Date;
     }
 
-    @Quick()
+    @Quick({
+      balance: BigInt,
+      createdAt: Date
+    })
     class User extends QModel<IUser> implements QInterface<IUser> {
       declare id: string;
       declare name: string;

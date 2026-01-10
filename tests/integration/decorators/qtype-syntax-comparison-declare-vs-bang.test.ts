@@ -35,7 +35,7 @@ class TestDeclare extends QModel<ITestDeclare> {
   @QType() declare id: string;
   @QType() declare name: string;
   @QType() declare createdAt: Date;
-  @QType() declare count: bigint;
+  @QType(BigInt) declare count: bigint;
   @QType() declare key: symbol;
   @QType() declare pattern: RegExp;
   @QType() declare tags: Set<string>;

@@ -258,7 +258,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
     }
 
     class TaskList extends QModel<IGenericList<ITask>> {
-      @QType() // ✅ Solo @QType(), SIN especificar Task
+      @QType([Task]) // ✅ Explicit type required because generic T is erased
       items!: Task[];
 
       @QType()

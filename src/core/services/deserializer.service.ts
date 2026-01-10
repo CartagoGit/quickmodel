@@ -314,10 +314,6 @@ export class Deserializer<
           
           const isPrimitiveOrTransformable = transformableTypes.includes(arrayElementClass);
           
-          if (key === 'transforms') {
-             console.log('[DEBUG] transforms key detected. isPrim:', isPrimitiveOrTransformable, 'hasDisc:', !!discriminators?.[key]);
-          }
-
           // Only use simple recursive transformation if NO discriminator is present
           // If there is a discriminator, we must use the polymorphic logic in the else block
           if (isPrimitiveOrTransformable && !discriminators?.[key]) {

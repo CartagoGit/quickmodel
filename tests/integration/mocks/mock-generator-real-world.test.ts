@@ -151,7 +151,12 @@ describe('Integration: Mock Generator - Real World', () => {
 		const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 		
 		const mock = Order.mock().random({
-			status: randomStatus
+			status: randomStatus,
+			metadata: {
+				paymentMethod: 'Credit Card',
+				trackingNumber: 'TRK-123456',
+				notes: ['Test note'],
+			},
 		});
 
 		// Check main instance
