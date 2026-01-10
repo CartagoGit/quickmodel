@@ -206,7 +206,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
     class Cart extends QModel<ICart> implements QInterface<ICart> {
       declare cartId: string;
       
-      @QType(Product) // ⚠️ Explicit @QType() still required for arrays
+      @QType([Product]) // ⚠️ Explicit @QType() still required for arrays
       declare items: Product[];
       
       declare total: number;

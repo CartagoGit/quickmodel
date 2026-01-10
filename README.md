@@ -339,6 +339,36 @@ const user = new User({
 });
 ```
 
+### Dot Notation for Nested Properties
+
+QuickModel supports **dot notation** to specify transformations for nested properties without decorating the nested class:
+
+```typescript
+// Option 1: Decorate nested class (recommended for reusable models)
+@Quick({ price: BigInt, createdAt: Date })
+class Product extends QModel<IProduct> {
+  price!: bigint;
+  createdAt!: Date;
+}
+
+@Quick({ product: Product })
+class CartItem extends QModel<ICartItem> {
+  product!: Product;  // Product already decorated
+}
+
+// Option 2: Use dot notation (useful for third-party classes or context-specific transforms)
+@Quick({
+  product: Product,
+  'product.price': BigInt,      // ← Dot notation
+  'product.createdAt': Date     // ← Dot notation
+})
+class CartItem extends QModel<ICartItem> {
+  product!: Product;  // All transformations in one place
+}
+```
+
+📖 **[Complete Dot Notation Guide](docs/DOT-NOTATION.md)** - Learn when and how to use nested transformations
+
 ## 🎭 Testing with Mocks
 
 ```typescript

@@ -123,7 +123,12 @@ export type ISpecs = ISpec[]; // Array of any Spec
 /**
  * Options for @Quick() decorator to specify property types explicitly
  *
+ * Supports **dot notation** for nested property transformations.
+ * Use dot notation to specify transformations for nested properties without
+ * decorating the nested class itself.
+ *
  * @example
+ * **Basic type mapping:**
  * ```typescript
  * @Quick({
  *   value: 'bigint',           // String literal (autocomplete)
@@ -133,6 +138,37 @@ export type ISpecs = ISpec[]; // Array of any Spec
  *   custom: (v) => v * 2       // Transformer function
  * })
  * ```
+ *
+ * @example
+ * **Dot notation for nested properties:**
+ * ```typescript
+ * @Quick({
+ *   product: Product,              // Transform to Product instance
+ *   'product.price': BigInt,       // Transform nested product.price
+ *   'product.createdAt': Date,     // Transform nested product.createdAt
+ *   addedAt: Date
+ * })
+ * class CartItem extends QModel<ICartItem> {
+ *   product!: Product;
+ *   quantity!: number;
+ *   addedAt!: Date;
+ * }
+ * ```
+ *
+ * @example
+ * **Deep nesting with dot notation:**
+ * ```typescript
+ * @Quick({
+ *   'user.profile.settings.theme': String,
+ *   'user.profile.lastLogin': Date,
+ *   'user.stats.points': BigInt
+ * })
+ * class Account extends QModel<IAccount> {
+ *   user!: any;
+ * }
+ * ```
+ *
+ * @see {@link DOT-NOTATION.md} for complete guide on nested transformations
  */
 export interface IQuickOptions {
 	[propertyName: string]: ISpec | ISpecs;
@@ -247,6 +283,35 @@ export interface IQuickOptions {
  * class User extends QModel<IUser> {
  *   dates?: (Date | undefined | null)[];
  *   custom!: any;
+ * }
+ * ```
+ *
+ * @example
+ * **✅ Dot notation for nested properties (see {@link DOT-NOTATION.md}):**
+ * ```typescript
+ * // Option 1: Decorate nested class (recommended for reusable models)
+ * @Quick({ price: BigInt, createdAt: Date })
+ * class Product extends QModel<IProduct> {
+ *   price!: bigint;
+ *   createdAt!: Date;
+ * }
+ *
+ * @Quick({ product: Product, addedAt: Date })
+ * class CartItem extends QModel<ICartItem> {
+ *   product!: Product;  // Product already has transformations
+ *   addedAt!: Date;
+ * }
+ *
+ * // Option 2: Use dot notation (useful for third-party or context-specific transforms)
+ * @Quick({
+ *   product: Product,
+ *   'product.price': BigInt,      // Nested transformation
+ *   'product.createdAt': Date,    // Nested transformation
+ *   addedAt: Date
+ * })
+ * class CartItem extends QModel<ICartItem> {
+ *   product!: Product;  // All transformations in one place
+ *   addedAt!: Date;
  * }
  * ```
  *

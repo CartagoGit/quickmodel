@@ -18,7 +18,7 @@ class Post extends QModel<IPost> {
 }
 
 @Quick({
-	posts: Post,
+	posts: [Post],
 })
 class User extends QModel<IUser> {
 	id!: number;

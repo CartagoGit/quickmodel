@@ -91,6 +91,7 @@ describe('System: E-Commerce Cart', () => {
 	}
 
 	@Quick({
+		product: Product,
 		'product.price': BigInt,
 		'product.createdAt': Date,
 		addedAt: Date,

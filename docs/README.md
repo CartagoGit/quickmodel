@@ -9,6 +9,7 @@ Documentación completa del proyecto QuickModel.
 - **[Installation Guide](INSTALLATION.md)** - Guía de instalación y configuración inicial
 - **[API Reference](https://cartagogit.github.io/quickmodel/)** - Referencia completa de la API (generada con TypeDoc)
 - **[User Guide](https://cartagogit.github.io/quickmodel/guide/getting-started)** - Tutoriales y ejemplos (VitePress)
+- **[Dot Notation Guide](DOT-NOTATION.md)** - Guía completa de transformaciones anidadas con dot notation
 
 ### Para Desarrolladores
 
