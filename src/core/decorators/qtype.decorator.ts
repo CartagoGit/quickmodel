@@ -382,26 +382,12 @@ export function QType<T>(
 					typeOrClass.prototype && typeOrClass.prototype.constructor === typeOrClass;
 
 				if (hasPrototype) {
-					// It's a custom model class - for NESTED MODELS only (single object)
+					// It's a custom model class - for nested models (single object)
 					// Arrays MUST use explicit [Type] syntax
 					
-					// Check if design:type is Array (meaning user declared it as array)
-					const existingDesignType = Reflect.getMetadata('design:type', target, propertyKey);
-					
-					if (existingDesignType === Array) {
-						// User declared property as Array but used @QType(Type) instead of @QType([Type])
-						// This is WRONG - arrays require explicit syntax
-						// DO NOT register arrayElementClass - let it fail silently (no transformation)
-						console.warn(
-							`⚠️ @QType(${typeOrClass.name}) on array property '${String(propertyKey)}' - ` +
-							`use @QType([${typeOrClass.name}]) for arrays`
-						);
-					} else {
-						// It's a nested model (single object, not array)
-						Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
-						// Set design:type to the class for nested models
-						Reflect.defineMetadata('design:type', typeOrClass, target, propertyKey);
-					}
+					// For single type (NOT array syntax), register as nested model
+					Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
+					Reflect.defineMetadata('design:type', typeOrClass, target, propertyKey);
 				} else {
 					// It's a transformer function (Math.round, btoa, arrow function, etc.)
 					// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2

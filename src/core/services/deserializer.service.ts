@@ -928,9 +928,11 @@ export class Deserializer<
       !isNativeConstructor(designType)
     ) {
       if (typeof value !== 'object' || Array.isArray(value)) {
-        throw new Error(
-          `${context.className}.${context.propertyKey}: Expected object, got ${typeof value}`,
-        );
+        const errorMsg = Array.isArray(value)
+          ? `${context.className}.${context.propertyKey}: Expected object, got array. ` +
+            `Did you forget to use @QType([${designType.name}]) for arrays?`
+          : `${context.className}.${context.propertyKey}: Expected object, got ${typeof value}`;
+        throw new Error(errorMsg);
       }
       type ModelConstructor = new (data: Record<string, unknown>) => unknown;
       return this.deserialize(value as Record<string, unknown>, designType as ModelConstructor);

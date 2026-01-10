@@ -547,7 +547,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			expect(user.posts[0]).toBeInstanceOf(Post);
 		});
 
-		test('❌ WRONG: @QType(Post) without array syntax should NOT instantiate models', () => {
+		test('❌ WRONG: @QType(Post) without array syntax should throw error', () => {
 			class User3 extends QModel<IUser> {
 				declare id: number;
 
@@ -555,17 +555,13 @@ describe('Array Transformations - Exhaustive Tests', () => {
 				declare posts: Post[];
 			}
 
-			const user = new User3({
-				id: 1,
-				posts: [{ id: 1 }, { id: 2 }],
-			});
-
-			// Should NOT instantiate Post objects (plain objects remain)
-			expect(user.posts[0]).not.toBeInstanceOf(Post);
-			expect(user.posts[0]).toMatchObject({ id: 1 });
-			expect(typeof user.posts[0]).toBe('object');
-			// Verify it's a plain object, not a Post instance
-			expect(user.posts[0]?.constructor.name).toBe('Object');
+			// Should throw error when trying to instantiate with array data
+			expect(() => {
+				new User3({
+					id: 1,
+					posts: [{ id: 1 }, { id: 2 }],
+				});
+			}).toThrow(/Expected object, got array.*@QType\(\[Post\]\)/);
 		});
 	});
 
