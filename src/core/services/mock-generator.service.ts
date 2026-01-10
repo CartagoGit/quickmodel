@@ -40,6 +40,15 @@ export class MockGenerator {
       const fieldType = Reflect.getMetadata('fieldType', modelClass.prototype, key);
       const designType = Reflect.getMetadata('design:type', modelClass.prototype, key);
       const arrayElementClass = Reflect.getMetadata('arrayElementClass', modelClass.prototype, key);
+      
+      if (key === 'tags') {
+          console.log(`DEBUG PROP ${key}:`, {
+            fieldType,
+            designType: designType?.name,
+            arrayElementClass: arrayElementClass?.name, 
+            isArrayElementClassArray: arrayElementClass === Array
+          });
+      }
 
       mock[key] = this.generateValue(type, fieldType, designType, arrayElementClass);
     }
@@ -99,6 +108,13 @@ export class MockGenerator {
     designType: Function | undefined,
     arrayElementClass: any
   ): unknown {
+    if (arrayElementClass === Array) { // Debugging
+         console.log(
+             'DEBUG GENERATE VALUE', 
+             { type, fieldType, designType: designType?.name, arrayElementClass: arrayElementClass?.name }
+         );
+    }
+
     // Array de modelos
     if (arrayElementClass && designType === Array) {
       // Special case: generic Array class (e.g. @Quick({ tags: Array }))
