@@ -64,13 +64,13 @@ export class BigIntTransformer
   }
 
   /**
-   * Converts a bigint to an object with __type marker for reliable detection.
+   * Converts a bigint to a string for JSON serialization.
    * 
    * @param value - The bigint value to serialize
-   * @returns Object with __type marker and string value
+   * @returns String representation of the bigint
    */
-  serialize(value: bigint): { __type: 'bigint'; value: string } {
-    return { __type: 'bigint', value: value.toString() };
+  serialize(value: bigint): string {
+    return value.toString();
   }
 
   /**

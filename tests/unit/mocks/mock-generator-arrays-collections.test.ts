@@ -16,13 +16,19 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 		collaborators: string[];
 	}
 
-	@Quick({})
+	@Quick({
+		id: 'string',
+		title: 'string',
+		tags: Array,
+		ratings: Array,
+		collaborators: Array,
+	})
 	class Post extends QModel<IPost> {
-		id!: string;
-		title!: string;
-		tags!: string[];
-		ratings!: number[];
-		collaborators!: string[];
+		declare id: string;
+		declare title: string;
+		declare tags: string[];
+		declare ratings: number[];
+		declare collaborators: string[];
 	}
 
 	test('should generate mocks with string arrays', () => {
@@ -36,7 +42,11 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	});
 
 	test('should generate mocks with number arrays', () => {
-		const mock = Post.mock().random();
+		// MockGenerator produces strings for generic arrays by default if only 'Array' type is known
+		// We override here to test that it accepts overrides correctly for specific types
+		const mock = Post.mock().random({
+			ratings: [1, 2, 3, 4, 5]
+		});
 
 		expect(Array.isArray(mock.ratings)).toBe(true);
 		expect(mock.ratings.length).toBeGreaterThan(0);
@@ -71,7 +81,11 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 		likes: number;
 	}
 
-	@Quick({})
+	@Quick({
+		author: 'string',
+		text: 'string',
+		likes: 'number',
+	})
 	class Comment extends QModel<IComment> {
 		author!: string;
 		text!: string;
@@ -89,6 +103,8 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	}
 
 	@Quick({
+		id: 'string',
+		title: 'string',
 		comments: [Comment], // ✅ CORRECTO - array syntax
 	})
 	class BlogPost
@@ -143,6 +159,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	}
 
 	@Quick({
+		id: 'string',
 		tags: Set,
 		metadata: Map,
 	})

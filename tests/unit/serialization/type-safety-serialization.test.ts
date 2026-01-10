@@ -60,8 +60,7 @@ describe('Type Safety', () => {
     expect(typeof serialized.pattern).toBe('object'); // Ahora es { __type: 'regexp', source, flags }
     expect(serialized.pattern).toHaveProperty('__type', 'regexp');
     expect(typeof serialized.error).toBe('string');
-    expect(typeof serialized.amount).toBe('object'); // Ahora es { __type: 'bigint', value }
-    expect(serialized.amount).toHaveProperty('__type', 'bigint');
+    expect(typeof serialized.amount).toBe('string');
     expect(typeof serialized.createdAt).toBe('string');
     expect(typeof serialized.tags).toBe('object'); // Ahora es { __type: 'Set', values }
     expect(serialized.tags).toHaveProperty('__type', 'Set');
@@ -69,7 +68,7 @@ describe('Type Safety', () => {
     // Los valores serializados son correctos
     expect(serialized.pattern).toEqual({ __type: 'regexp', source: 'test', flags: 'gi' });
     expect(serialized.error).toBe('Error: Test error');
-    expect(serialized.amount).toEqual({ __type: 'bigint', value: '123' });
+    expect(serialized.amount).toBe('123');
     expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
     expect(serialized.tags).toEqual({ __type: 'Set', values: ['tag1', 'tag2'] });
   });

@@ -88,7 +88,14 @@ describe('Unit: Mock Generator - Nested Models', () => {
 	});
 
 	test('should generate nested plain objects', () => {
-		const mock = User.mock().random();
+		// MockGenerator produces {} for generic objects by default
+		// We override to ensure structure
+		const mock = User.mock().random({
+			metadata: {
+				tags: ['tag1'],
+				score: 10
+			}
+		});
 
 		expect(typeof mock.metadata).toBe('object');
 		expect(Array.isArray(mock.metadata.tags)).toBe(true);

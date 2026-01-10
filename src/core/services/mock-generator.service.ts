@@ -145,6 +145,9 @@ export class MockGenerator {
     }
 
     // Collections (exact match with QType metadata)
+    if (typeStr === 'array' || typeStr === 'Array') {
+      return this.getDefaultValue(type, 'array');
+    }
     if (typeStr === 'set' || typeStr === 'Set') {
       return this.getDefaultValue(type, 'set');
     }

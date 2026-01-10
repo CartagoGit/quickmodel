@@ -18,7 +18,13 @@ describe('Unit: Mock Generator - Basic Types', () => {
 		score: number;
 	}
 
-	@Quick()
+	@Quick({
+		id: 'string',
+		name: 'string',
+		age: 'number',
+		active: 'boolean',
+		score: 'number',
+	})
 	class User extends QModel<IUser> {
 		declare id: string;
 		declare name: string;
