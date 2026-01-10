@@ -365,6 +365,21 @@ export class Serializer<
 			return Array.from(value);
 		}
 
+		// Plain Object (recursive serialization)
+		// This enables proper serialization of nested plain objects that might contain
+		// complex types (e.g. from dot notation transforms like 'stats.points': BigInt)
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			(Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+		) {
+			const result: Record<string, unknown> = {};
+			for (const key of Object.keys(value)) {
+				result[key] = this.serializeValue((value as Record<string, unknown>)[key]);
+			}
+			return result;
+		}
+
 		// Primitive
 		return value;
 	}

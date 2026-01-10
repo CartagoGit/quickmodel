@@ -606,6 +606,82 @@ export class Deserializer<
       
       instance[key] = this.transformByDesignType(value, designType, context);
     }
+
+    // Handle Dot Notation properties
+    // These are properties decorated like 'nested.prop': Type
+    const dotNotationFields = decoratedFields.filter((f: any) => typeof f === 'string' && f.includes('.'));
+    
+    for (const dotKey of dotNotationFields) {
+      this.applyDotNotationTransform(instance, dotKey as string, modelClass);
+    }
+  }
+
+  /**
+   * Applies transformations for properties defined with dot notation.
+   * e.g. @Quick({ 'profile.birthDate': Date })
+   */
+  private applyDotNotationTransform(instance: any, path: string, modelClass: Function): void {
+      const parts = path.split('.');
+      let current = instance;
+      
+      // Navigate to parent object
+      for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          if (current[part] === undefined || current[part] === null) {
+              return; // Path doesn't exist, skip
+          }
+          current = current[part];
+      }
+      
+      const lastKey = parts[parts.length - 1];
+      const value = current[lastKey];
+      
+      if (value === undefined || value === null) return;
+      
+      const context: IQTransformContext = {
+        propertyKey: path,
+        className: modelClass.name
+      };
+      
+      // 1. Check custom fieldType (Date, BigInt, RegExp, etc.)
+      const fieldType = Reflect.getMetadata('fieldType', instance, path);
+      if (fieldType) {
+        const transformer = this.transformers.get(fieldType);
+        if (transformer) {
+            current[lastKey] = transformer.deserialize(value, path, context.className);
+            return;
+        }
+      }
+      
+      // 2. Check for nested models/arrays
+      const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, path);
+      
+      if (arrayElementClass) {
+         if (Array.isArray(value)) {
+             // Handle array transformation
+             const transformableTypes = [
+                Date, BigInt, Number, String, Boolean,
+                RegExp, Symbol, Error,
+                URL, URLSearchParams,
+                Int8Array, Uint8Array, Uint8ClampedArray,
+                Int16Array, Uint16Array,
+                Int32Array, Uint32Array,
+                Float32Array, Float64Array,
+                BigInt64Array, BigUint64Array,
+                ArrayBuffer, DataView
+             ];
+             
+             if (transformableTypes.includes(arrayElementClass as any)) {
+                 current[lastKey] = this.transformNestedArray(value, arrayElementClass, context);
+             } else {
+                 // Model Array
+                 current[lastKey] = this.transformNestedModelArray(value, [arrayElementClass], undefined);
+             }
+         } else if (typeof value === 'object') {
+             // Nested Model (Single)
+             current[lastKey] = this.deserialize(value, arrayElementClass);
+         }
+      }
   }
 
   /**

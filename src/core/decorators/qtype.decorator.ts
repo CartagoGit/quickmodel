@@ -13,6 +13,7 @@
 
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
+import { NATIVE_TYPE_MAP } from '../constants/native-types';
 
 /**
  * Available field types as string literals with IntelliSense support.
@@ -411,6 +412,19 @@ export function QType<T>(
 				return;
 			}
 
+			// Check if it's a registered native constructor (RegExp, Error, URL, etc.)
+			// We MUST check this BEFORE checking for function transformers, because native constructors
+			// are functions (e.g. RegExp.toString() starts with "function") but must be treated as types.
+			if (NATIVE_TYPE_MAP.has(typeOrClass)) {
+				Reflect.defineMetadata(
+					'fieldType',
+					NATIVE_TYPE_MAP.get(typeOrClass),
+					target,
+					propertyKey
+				);
+				return;
+			}
+
 			// Check if it's an arrow function or regular function transformer
 			const funcStr = typeOrClass.toString();
 			if (funcStr.includes('=>') || funcStr.startsWith('function')) {
@@ -424,76 +438,19 @@ export function QType<T>(
 				return;
 			}
 
-			// Check if it's a registered native constructor (RegExp, Error, URL, etc.)
-			type INativeConstructor =
-				| typeof RegExp
-				| typeof Error
-				| typeof URL
-				| typeof URLSearchParams
-				| typeof Int8Array
-				| typeof Uint8Array
-				| typeof Uint8ClampedArray
-				| typeof Int16Array
-				| typeof Uint16Array
-				| typeof Int32Array
-				| typeof Uint32Array
-				| typeof Float32Array
-				| typeof Float64Array
-				| typeof BigInt64Array
-				| typeof BigUint64Array
-				| typeof ArrayBuffer
-				| typeof DataView
-				| typeof Set
-				| typeof Map;
+			// Check if it's a constructor (has prototype property) vs a plain function
+			const hasPrototype =
+				typeOrClass.prototype &&
+				typeOrClass.prototype.constructor === typeOrClass;
 
-			const nativeConstructors: INativeConstructor[] = [
-				RegExp,
-				Error,
-				URL,
-				URLSearchParams,
-				Int8Array,
-				Uint8Array,
-				Uint8ClampedArray,
-				Int16Array,
-				Uint16Array,
-				Int32Array,
-				Uint32Array,
-				Float32Array,
-				Float64Array,
-				BigInt64Array,
-				BigUint64Array,
-				ArrayBuffer,
-				DataView,
-				Set,
-				Map,
-			];
+			if (hasPrototype) {
+				// It's a custom model class - for nested models (single object)
+				// Arrays MUST use explicit [Type] syntax
 
-			const isNativeConstructor = nativeConstructors.some(
-				(ctor) => ctor === typeOrClass
-			);
-
-			if (isNativeConstructor) {
-				// Store as fieldType using the constructor directly
+				// For single type (NOT array syntax), register as nested model
 				Reflect.defineMetadata(
-					'fieldType',
+					'arrayElementClass',
 					typeOrClass,
-					target,
-					propertyKey
-				);
-			} else {
-				// Check if it's a constructor (has prototype property) vs a plain function
-				const hasPrototype =
-					typeOrClass.prototype &&
-					typeOrClass.prototype.constructor === typeOrClass;
-
-				if (hasPrototype) {
-					// It's a custom model class - for nested models (single object)
-					// Arrays MUST use explicit [Type] syntax
-
-					// For single type (NOT array syntax), register as nested model
-					Reflect.defineMetadata(
-						'arrayElementClass',
-						typeOrClass,
 						target,
 						propertyKey
 					);
@@ -513,7 +470,6 @@ export function QType<T>(
 						propertyKey
 					);
 				}
-			}
 		}
 	};
 }
