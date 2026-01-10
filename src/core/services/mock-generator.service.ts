@@ -37,17 +37,44 @@ export class MockGenerator {
         continue;
       }
 
-      const fieldType = Reflect.getMetadata('fieldType', modelClass.prototype, key);
-      const designType = Reflect.getMetadata('design:type', modelClass.prototype, key);
-      const arrayElementClass = Reflect.getMetadata('arrayElementClass', modelClass.prototype, key);
+      let fieldType = Reflect.getMetadata('fieldType', modelClass.prototype, key);
+      let designType = Reflect.getMetadata('design:type', modelClass.prototype, key);
+      let arrayElementClass = Reflect.getMetadata('arrayElementClass', modelClass.prototype, key);
       
-      if (key === 'tags') {
-          console.log(`DEBUG PROP ${key}:`, {
-            fieldType,
-            designType: designType?.name,
-            arrayElementClass: arrayElementClass?.name, 
-            isArrayElementClassArray: arrayElementClass === Array
-          });
+      // FALLBACK: If metadata is missing but property is in Quick TypeMap, try to resolve it from there
+      if (!fieldType && !designType && !arrayElementClass) {
+        const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, modelClass);
+        if (typeMap && typeMap[key]) {
+            const mappedType = typeMap[key];
+            
+            // Case 1: mappedType is Array constructor: @Quick({ tags: Array })
+            if (mappedType === Array) {
+                arrayElementClass = Array;
+                designType = Array;
+            } 
+            // Case 2: mappedType is array syntax: @Quick({ tags: [String] })
+            else if (Array.isArray(mappedType)) {
+                 designType = Array;
+                 if (mappedType.length > 0) {
+                     arrayElementClass = mappedType[0];
+                 }
+            }
+            // Case 3: mappedType is constructor: @Quick({ date: Date })
+            else if (typeof mappedType === 'function') {
+                 // Check common types
+                 const name = mappedType.name.toLowerCase();
+                 if (['date', 'regexp', 'set', 'map', 'bigint'].includes(name)) {
+                     fieldType = name;
+                 } else {
+                     // Assume custom model or other class
+                     fieldType = mappedType;
+                 }
+            }
+            // Case 4: mappedType is string: @Quick({ val: 'bigint' })
+            else if (typeof mappedType === 'string') {
+                fieldType = mappedType;
+            }
+        }
       }
 
       mock[key] = this.generateValue(type, fieldType, designType, arrayElementClass);
@@ -108,13 +135,6 @@ export class MockGenerator {
     designType: Function | undefined,
     arrayElementClass: any
   ): unknown {
-    if (arrayElementClass === Array) { // Debugging
-         console.log(
-             'DEBUG GENERATE VALUE', 
-             { type, fieldType, designType: designType?.name, arrayElementClass: arrayElementClass?.name }
-         );
-    }
-
     // Array de modelos
     if (arrayElementClass && designType === Array) {
       // Special case: generic Array class (e.g. @Quick({ tags: Array }))

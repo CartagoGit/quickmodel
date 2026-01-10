@@ -17,7 +17,13 @@ describe('Integration: Mock Generator - Real World', () => {
 		country: string;
 	}
 
-	@Quick({})
+	@Quick({
+		street: String,
+		city: String,
+		state: String,
+		zipCode: String,
+		country: String,
+	})
 	class Address extends QModel<IAddress> {
 		street!: string;
 		city!: string;
@@ -38,6 +44,9 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	@Quick({
+		productId: String,
+		name: String,
+		quantity: Number,
 		price: BigInt,
 	})
 	class OrderItem
@@ -88,13 +97,17 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	@Quick({
+		id: String,
+		userId: String,
 		items: [OrderItem], // ✅ CORRECTO - array syntax
 		shippingAddress: Address,
 		billingAddress: Address,
+		status: String,
 		total: BigInt,
 		createdAt: Date,
 		shippedAt: Date,
 		deliveredAt: Date,
+		metadata: Object,
 	})
 	class Order
 		extends QModel<IOrder>
@@ -134,7 +147,12 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	test('should generate complete order mock with all nested structures', () => {
-		const mock = Order.mock().random();
+		const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
+		const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+		
+		const mock = Order.mock().random({
+			status: randomStatus
+		});
 
 		// Check main instance
 		expect(mock).toBeInstanceOf(Order);

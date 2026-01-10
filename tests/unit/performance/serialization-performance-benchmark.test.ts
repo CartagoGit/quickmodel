@@ -146,6 +146,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
     price: number;
   }
 
+  @Quick()
   class Product extends QModel<IProduct> {
     declare productId: string;
     declare title: string;
@@ -158,12 +159,14 @@ describe('Performance: Costo de inferencia de arrays', () => {
     total: number;
   }
 
+  @Quick({ items: [Product] })
   class Cart extends QModel<ICart> {
     declare cartId: string;
     declare items: Product[];
     declare total: number;
   }
 
+  @Quick({ items: [Product] })
   class CartExplicit extends QModel<ICart> {
     declare cartId: string;
     declare items: Product[];

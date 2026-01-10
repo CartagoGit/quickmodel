@@ -47,7 +47,7 @@ import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformContext, IQTransformer } from '../interfaces/transformer.interface';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
-import { QUICK_DISCRIMINATORS_KEY } from '../constants/metadata-keys';
+import { QUICK_DISCRIMINATORS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
 import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -206,11 +206,23 @@ export class Deserializer<
     
     // Get discriminator configuration if exists
     const discriminators = Reflect.getMetadata(QUICK_DISCRIMINATORS_KEY, modelClass);
+    if (discriminators) {
+      console.log('[DEBUG] populateInstance: Found discriminators for', modelClass.name, Object.keys(discriminators));
+    } else {
+      // console.log('[DEBUG] populateInstance: No discriminators for', modelClass.name);
+    }
     
     for (const [key, value] of Object.entries(data)) {
       if (value === null || value === undefined) {
         instance[key] = value;
         continue;
+      }
+      
+      if (key === 'transforms') {
+         const dt = Reflect.getMetadata('design:type', instance, key);
+         const aec = Reflect.getMetadata('arrayElementClass', instance, key);
+         const tm = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, modelClass);
+         console.log('[DEBUG] Processing transforms key. designType:', dt?.name, 'arrayElementClass:', aec?.name, 'typeMap:', tm?.[key]);
       }
 
       // If property is NOT decorated with @QType(), copy as-is
@@ -244,11 +256,52 @@ export class Deserializer<
       }
 
       // 3. Check for array of models or nested model
-      const arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
-      const arrayElementTypes = Reflect.getMetadata('arrayElementTypes', instance, key);
+      let arrayElementClass = Reflect.getMetadata('arrayElementClass', instance, key);
+      let arrayElementTypes = Reflect.getMetadata('arrayElementTypes', instance, key);
+      
+      // FALLBACK: If arrayElementClass is missing, try to resolve from Quick TypeMap
+      // This handles cases where metadata might not be correctly registered on the instance or prototype chain
+      if (!arrayElementClass) {
+        const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, modelClass);
+        if (typeMap && typeMap[key]) {
+          const mappedType = typeMap[key];
+          
+          // Case: Array syntax @Quick({ items: [Model] })
+          if (Array.isArray(mappedType) && mappedType.length > 0) {
+            arrayElementClass = mappedType[0];
+            
+            // Handle union types array: [Model1, Model2]
+            if (mappedType.length > 1) {
+              arrayElementTypes = mappedType;
+            }
+          }
+          // Case: Single model @Quick({ item: Model })
+          else if (typeof mappedType === 'function') {
+            const hasPrototype = mappedType.prototype && mappedType.prototype.constructor === mappedType;
+            // Only treat as model/nested class if it's not a known native type in type map
+            // We use name check as heuristic since we can't easily access NATIVE_TYPE_MAP here without circular deps
+            const name = mappedType.name.toLowerCase();
+            const isKnownNative = ['date', 'regexp', 'set', 'map', 'bigint', 'url', 'error', 'symbol', 'arraybuffer', 'dataview'].includes(name) || name.includes('array');
+            
+            if (hasPrototype && !isKnownNative) {
+               arrayElementClass = mappedType;
+            }
+          }
+        }
+      }
       
       if (arrayElementClass) {
-        const designType = Reflect.getMetadata('design:type', instance, key);
+        // If we recovered arrayElementClass from fallback, force design:type to Array if it was missing/wrong
+        let designType = Reflect.getMetadata('design:type', instance, key);
+        
+        // If we found it via fallback (TypeMap) as an array, treat it as Array
+        if (!designType) {
+           const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, modelClass);
+           if (typeMap && Array.isArray(typeMap[key])) {
+             designType = Array;
+           }
+        }
+
         const arrayNestingDepth = Reflect.getMetadata('arrayNestingDepth', instance, key);
         
         // Determine if it's REALLY an array type (design:type must be Array)
@@ -273,7 +326,13 @@ export class Deserializer<
           
           const isPrimitiveOrTransformable = transformableTypes.includes(arrayElementClass);
           
-          if (isPrimitiveOrTransformable) {
+          if (key === 'transforms') {
+             console.log('[DEBUG] transforms key detected. isPrim:', isPrimitiveOrTransformable, 'hasDisc:', !!discriminators?.[key]);
+          }
+
+          // Only use simple recursive transformation if NO discriminator is present
+          // If there is a discriminator, we must use the polymorphic logic in the else block
+          if (isPrimitiveOrTransformable && !discriminators?.[key]) {
             // Use recursive transformation for N-level arrays
             instance[key] = this.transformNestedArray(value, arrayElementClass, context);
           } else {
@@ -1250,15 +1309,14 @@ export class Deserializer<
           return this.transformNestedModelArray(item, possibleTypes, discriminatorConfig);
         }
         
-        // Transform leaf model using constructor
-        // IMPORTANT: Use constructor directly to trigger QModel transformations
-        if (typeof item !== 'object') {
-          throw new Error(`Expected object in nested model array, got ${typeof item}`);
-        }
-        
         // Resolve correct type for union types using possibleTypes array
         const resolvedClass = this.resolveUnionType(item, possibleTypes, discriminatorConfig);
         
+        // Handle BigInt specially (not constructible via new)
+        if (resolvedClass === BigInt) {
+          return BigInt(item as string | number | boolean);
+        }
+
         // Use constructor instead of this.deserialize() to ensure nested transformations work
         type ModelConstructor = new (data: Record<string, unknown>) => unknown;
         return new (resolvedClass as ModelConstructor)(item as Record<string, unknown>);

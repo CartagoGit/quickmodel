@@ -706,6 +706,22 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 			configurable: true,
 		});
 
+		// Copy metadata from original to wrapped constructor
+		// This is CRITICAL because reflect-metadata stores metadata by object identity
+		const keysToCopy = [
+			QUICK_DISCRIMINATORS_KEY,
+			QUICK_TYPE_MAP_KEY,
+			QUICK_DESIGN_TYPES_KEY,
+			QUICK_DECORATOR_KEY
+		];
+		
+		for (const key of keysToCopy) {
+			const value = Reflect.getMetadata(key, originalConstructor);
+			if (value !== undefined) {
+				Reflect.defineMetadata(key, value, wrappedConstructor);
+			}
+		}
+
 		return wrappedConstructor as T;
 	};
 }
