@@ -28,7 +28,7 @@ import {
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';
-export type { QInterface } from '@/core/interfaces/model.interface';
+export type { QInterface, QTransform } from '@/core/interfaces/model.interface';
 
 /**
  * Abstract base class for type-safe models with automatic serialization and mock generation.
@@ -112,6 +112,132 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 	// Store initial state for change tracking and reset
 	private __initData?: SerializedInterface<TInterface>;
+
+	/**
+	 * Factory method to create model instances with type-safe access to all properties.
+	 * 
+	 * **IMPORTANT: This method provides TWO different approaches for type-safety:**
+	 * 
+	 * 1. **RECOMMENDED (Option A)**: Use `declare` keyword in your class
+	 *    - Standard TypeScript pattern
+	 *    - Works with both `new` constructor and `create()` method
+	 *    - Explicit and clear
+	 *    - Most common approach
+	 * 
+	 * 2. **ALTERNATIVE (Option B)**: Use `QTransform<T, Transforms>` type helper
+	 *    - ONLY if you specifically want to avoid `declare` keyword
+	 *    - Requires passing transform types explicitly
+	 *    - Less common, more verbose
+	 *    - Only works with `create()`, not with `new` constructor
+	 *
+	 * **⚠️ CRITICAL: TypeScript CANNOT auto-infer transformations**
+	 * You MUST specify transformed types using ONE of the two approaches above.
+	 * There is no "magic" automatic inference.
+	 *
+	 * @template T - Backend interface type (JSON-serializable types)
+	 *
+	 * @param data - Data to initialize the model
+	 * @returns Model instance with type-safe property access
+	 *
+	 * @example
+	 * **OPTION A (RECOMMENDED): Using `declare` keyword**
+	 * ```typescript
+	 * interface IPost {
+	 *   id: number;
+	 *   title: string;
+	 *   createdAt: string;  // Backend sends ISO string
+	 *   balance: string;    // Backend sends string
+	 * }
+	 * 
+	 * @Quick({ createdAt: Date, balance: BigInt })
+	 * class Post extends QModel<IPost> {
+	 *   declare id: number;        // ← Explicit declaration
+	 *   declare title: string;     // ← Explicit declaration
+	 *   declare createdAt: Date;   // ← Runtime type (transformed)
+	 *   declare balance: bigint;   // ← Runtime type (transformed)
+	 * }
+	 * 
+	 * // Usage is simple and clean
+	 * const post = Post.create({ 
+	 *   id: 1,
+	 *   title: 'My Post',
+	 *   createdAt: '2026-01-10T00:00:00.000Z',
+	 *   balance: '999999999999999'
+	 * });
+	 * 
+	 * post.id         // ✅ number (type-safe)
+	 * post.title      // ✅ string (type-safe)
+	 * post.createdAt  // ✅ Date (type-safe, transformed)
+	 * post.balance    // ✅ bigint (type-safe, transformed)
+	 * 
+	 * // Also works with `new` constructor
+	 * const post2 = new Post({ ... });  // ✅ Same type-safety
+	 * ```
+	 * 
+	 * @example
+	 * **OPTION B (ALTERNATIVE): Using QTransform<T, Transforms> type helper**
+	 * 
+	 * ⚠️ ONLY use this if you specifically don't want to use `declare` keyword.
+	 * This approach is MORE VERBOSE and ONLY WORKS with `create()`, not with `new`.
+	 * 
+	 * ```typescript
+	 * interface IPost {
+	 *   id: number;
+	 *   title: string;
+	 *   createdAt: string;  // Backend: ISO string
+	 *   balance: string;    // Backend: string
+	 * }
+	 * 
+	 * @Quick({ createdAt: Date, balance: BigInt })
+	 * class Post extends QModel<IPost> implements QTransform<IPost, {
+	 *   createdAt: Date;   // Specify transformed type here
+	 *   balance: bigint;   // Specify transformed type here
+	 * }> {
+	 *   // No declare needed (but less standard)
+	 * }
+	 * 
+	 * // Usage requires explicit type parameter
+	 * const post = Post.create<QTransform<IPost, {
+	 *   createdAt: Date;
+	 *   balance: bigint;
+	 * }>>({ 
+	 *   id: 1,
+	 *   title: 'My Post',
+	 *   createdAt: '2026-01-10T00:00:00.000Z',
+	 *   balance: '999999999999999'
+	 * });
+	 * 
+	 * post.id         // ✅ number (type-safe)
+	 * post.title      // ✅ string (type-safe)
+	 * post.createdAt  // ✅ Date (type-safe via QTransform)
+	 * post.balance    // ✅ bigint (type-safe via QTransform)
+	 * 
+	 * // ❌ Does NOT work with `new` constructor
+	 * const post2 = new Post({ ... });  // ❌ No type-safety for transforms
+	 * ```
+	 * 
+	 * @remarks
+	 * **When to use each approach:**
+	 * 
+	 * | Aspect | Option A: `declare` | Option B: `QTransform` |
+	 * |--------|---------------------|------------------------|
+	 * | **Recommendation** | ✅ RECOMMENDED | ⚠️ ALTERNATIVE |
+	 * | **Syntax complexity** | Simple | More verbose |
+	 * | **Works with `new`** | ✅ Yes | ❌ No |
+	 * | **Works with `create()`** | ✅ Yes | ✅ Yes |
+	 * | **Standard pattern** | ✅ Yes | ⚠️ Non-standard |
+	 * | **When to use** | Default choice | Only if avoiding `declare` |
+	 * 
+	 * **Bottom line:**
+	 * - 99% of cases: Use Option A (`declare`) - it's simpler and more standard
+	 * - 1% of cases: Use Option B (`QTransform`) - only if you have specific reasons to avoid `declare`
+	 */
+	static create<T extends Record<string, any> = any>(
+		this: new (data: any) => any,
+		data: T
+	): QModel<any> & T {
+		return new this(data) as any;
+	}
 
 	/**
 	 * Creates a type-safe mock builder for generating test data.

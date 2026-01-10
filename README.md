@@ -148,6 +148,128 @@ class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 }
 ```
 
+#### 5️⃣ **Use `create()` for Type-Safety**
+
+El método estático `create()` ofrece **DOS formas diferentes** de manejar transformaciones de tipos:
+
+---
+
+**✅ Opción A: Usar `declare` (RECOMENDADO - 99% de los casos)**
+
+```typescript
+import { QModel, Quick } from '@cartago-git/quickmodel';
+
+interface IUser {
+  id: number;
+  createdAt: string;  // Backend: ISO string
+  balance: string;    // Backend: string
+}
+
+@Quick({ createdAt: Date, balance: BigInt })
+class User extends QModel<IUser> {
+  declare id: number;
+  declare createdAt: Date;    // ← Tipo runtime explícito
+  declare balance: bigint;    // ← Tipo runtime explícito
+}
+
+const user = User.create({ 
+  id: 1, 
+  createdAt: '2026-01-08T10:00:00.000Z',
+  balance: '999999999999999'
+});
+
+user.id         // ✅ number (type-safe)
+user.createdAt  // ✅ Date (type-safe, transformed)
+user.balance    // ✅ bigint (type-safe, transformed)
+
+// También funciona con `new` constructor
+const user2 = new User({ ... });  // ✅ Mismo type-safety
+```
+
+**Ventajas de `declare`:**
+- ✅ Patrón estándar de TypeScript
+- ✅ Funciona con `new` constructor y `create()`
+- ✅ Sintaxis simple y clara
+- ✅ Declaraciones explícitas visibles en el código
+
+---
+
+**⚠️ Opción B: Usar `QTransform<T, Transforms>` (ALTERNATIVA - 1% de los casos)**
+
+**SOLO usa esto si tienes razones específicas para evitar `declare`.**
+
+```typescript
+import { QModel, Quick, QTransform } from '@cartago-git/quickmodel';
+
+interface IUser {
+  id: number;
+  createdAt: string;  // Backend: ISO string
+  balance: string;    // Backend: string
+}
+
+@Quick({ createdAt: Date, balance: BigInt })
+class User extends QModel<IUser> implements QTransform<IUser, {
+  createdAt: Date;    // ← Especificar tipo transformado aquí
+  balance: bigint;    // ← Especificar tipo transformado aquí
+}> {
+  // Sin declare (menos estándar)
+}
+
+// Pasar QTransform como parámetro de tipo
+const user = User.create<QTransform<IUser, {
+  createdAt: Date;
+  balance: bigint;
+}>>({ 
+  id: 1, 
+  createdAt: '2026-01-08T10:00:00.000Z',
+  balance: '999999999999999'
+});
+
+user.id         // ✅ number (type-safe)
+user.createdAt  // ✅ Date (type-safe via QTransform)
+user.balance    // ✅ bigint (type-safe via QTransform)
+
+// ❌ NO funciona con `new` constructor
+const user2 = new User({ ... });  // ❌ Sin type-safety para transforms
+```
+
+**Desventajas de `QTransform`:**
+- ⚠️ Más verboso (duplicas los tipos)
+- ❌ NO funciona con `new` constructor
+- ⚠️ Patrón no estándar
+- ⚠️ Solo funciona con `create()`
+
+---
+
+**📊 Comparación:**
+
+| Aspecto | Opción A: `declare` | Opción B: `QTransform` |
+|---------|---------------------|------------------------|
+| **Recomendación** | ✅ RECOMENDADO | ⚠️ ALTERNATIVA |
+| **Complejidad** | Simple | Más verboso |
+| **Funciona con `new`** | ✅ Sí | ❌ No |
+| **Funciona con `create()`** | ✅ Sí | ✅ Sí |
+| **Patrón estándar** | ✅ Sí | ⚠️ No |
+| **Cuándo usar** | Por defecto | Solo si evitas `declare` |
+
+**⚠️ IMPORTANTE:**
+- ❌ **TypeScript NO puede inferir** transformaciones automáticamente
+- ✅ **DEBES especificar** los tipos transformados con una de las dos opciones
+- ✅ **Usa `declare`** en el 99% de los casos - es más simple y estándar  
+user.email      // ✅ TypeScript: string
+user.createdAt  // ✅ TypeScript: Date (transformed)
+```
+
+**When to use `create()`:**
+- ✅ You want concise code (no property declarations)
+- ✅ Your interface already defines all types
+- ✅ You prefer DRY (Don't Repeat Yourself)
+
+**When to use `declare`:**
+- ✅ You prefer explicit property declarations
+- ✅ You want standard constructor usage (`new`)
+- ✅ You need property visibility in IDE
+
 ## 📖 Core Concepts
 
 ### Explicit Type Mapping

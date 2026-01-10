@@ -17,7 +17,7 @@ export { QModel } from './core/models/quick.model';
 /**
  * Type helper for model interfaces
  */
-export type { QInterface } from './core/models/quick.model';
+export type { QInterface, QTransform } from './core/models/quick.model';
 
 /**
  * Class decorator for automatic property type mapping
