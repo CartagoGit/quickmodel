@@ -1,4 +1,9 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import {
+	IQValidationContext,
+	IQValidationResult,
+	IQValidator,
+} from '../core/interfaces/transformer.interface';
 
 /**
  * Transformer for URL type: converts between string and URL object.
@@ -6,7 +11,10 @@ import { BaseTransformer } from '../core/bases/base-transformer';
  * **Serialization**: `URL` → `string`
  * **Deserialization**: `string` → `URL`
  */
-export class URLTransformer extends BaseTransformer<string, URL> {
+export class URLTransformer
+	extends BaseTransformer<string, URL>
+	implements IQValidator
+{
 	deserialize(
 		value: string | URL,
 		propertyKey: string,
@@ -43,6 +51,29 @@ export class URLTransformer extends BaseTransformer<string, URL> {
 	serialize(value: URL): string {
 		return value.toString();
 	}
+
+	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+		if (value instanceof URL) {
+			return { isValid: true };
+		}
+
+		if (typeof value === 'string') {
+			try {
+				new URL(value);
+				return { isValid: true };
+			} catch {
+				return {
+					isValid: false,
+					error: `${context.className}.${context.propertyKey}: Invalid URL value "${value}"`,
+				};
+			}
+		}
+
+		return {
+			isValid: false,
+			error: `${context.className}.${context.propertyKey}: Expected string/URL, got ${typeof value}`,
+		};
+	}
 }
 
 /**
@@ -51,10 +82,10 @@ export class URLTransformer extends BaseTransformer<string, URL> {
  * **Serialization**: `URLSearchParams` → `string`
  * **Deserialization**: `string | object` → `URLSearchParams`
  */
-export class URLSearchParamsTransformer extends BaseTransformer<
-	string | Record<string, string>,
-	URLSearchParams
-> {
+export class URLSearchParamsTransformer
+	extends BaseTransformer<string | Record<string, string>, URLSearchParams>
+	implements IQValidator
+{
 	deserialize(
 		value: string | Record<string, string> | URLSearchParams,
 		propertyKey: string,
@@ -90,6 +121,25 @@ export class URLSearchParamsTransformer extends BaseTransformer<
 
 	serialize(value: URLSearchParams): string {
 		return value.toString();
+	}
+
+	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+		if (value instanceof URLSearchParams) {
+			return { isValid: true };
+		}
+
+		if (typeof value === 'string') {
+			return { isValid: true };
+		}
+
+		if (typeof value === 'object' && value !== null) {
+			return { isValid: true };
+		}
+
+		return {
+			isValid: false,
+			error: `${context.className}.${context.propertyKey}: Expected string/object/URLSearchParams, got ${typeof value}`,
+		};
 	}
 }
 

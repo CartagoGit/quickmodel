@@ -19,7 +19,7 @@ const handleClick = (e: Event) => {
 
 <template>
 	<a
-		class="VPNavBarTitle"
+		class="VPNavBarTitle custom-logo"
 		:href="homeLink"
 		@click="handleClick">
 		<span class="title">{{ site.title }}</span>

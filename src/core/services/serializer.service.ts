@@ -87,8 +87,10 @@ import { ErrorTransformer } from '@/transformers/error.transformer';
 import { RegExpTransformer } from '@/transformers/regexp.transformer';
 import { SymbolTransformer } from '@/transformers/symbol.transformer';
 import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
-import { URLTransformer } from '@/transformers/url.transformer';
-import { URLSearchParamsTransformer } from '@/transformers/url-search-params.transformer';
+import {
+	URLTransformer,
+	URLSearchParamsTransformer,
+} from '@/transformers/web-apis.transformer';
 import {
 	MapTransformer,
 	SetTransformer,
