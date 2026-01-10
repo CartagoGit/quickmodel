@@ -19,23 +19,26 @@ export class MockGenerator {
   /**
    * Generates a mock based on reflect metadata.
    */
-  generate<T>(
-    modelClass: new (data: any) => T,
+  generate<TModel, TData extends Record<string, any> = any>(
+    modelClass: new (data: TData) => TModel,
     type: MockType = 'random',
-    overrides: Partial<any> = {}
-  ): any {
+    overrides: Partial<TData> = {}
+  ): TData {
     const instance = Object.create(modelClass.prototype);
     const mock: Record<string, unknown> = {};
 
     // Obtener todas las propiedades con metadata
     const properties = this.getDecoratedProperties(instance);
+    // Explicit typing for key to satisfy index signature requirements
+    const overrideData = overrides as Record<string, unknown>;
 
     for (const key of properties) {
       // If override exists, use it
-      if (key in overrides) {
-        mock[key] = overrides[key];
+      if (key in overrideData) {
+        mock[key] = overrideData[key];
         continue;
       }
+
 
       let fieldType = Reflect.getMetadata('fieldType', modelClass.prototype, key);
       let designType = Reflect.getMetadata('design:type', modelClass.prototype, key);
@@ -80,18 +83,18 @@ export class MockGenerator {
       mock[key] = this.generateValue(type, fieldType, designType, arrayElementClass);
     }
 
-    return { ...mock, ...overrides };
+    return { ...mock, ...overrideData } as unknown as TData;
   }
 
   /**
    * Generates an array of mocks.
    */
-  generateArray<T>(
-    modelClass: new (data: any) => T,
+  generateArray<TModel, TData extends Record<string, any> = any>(
+    modelClass: new (data: TData) => TModel,
     count: number,
     type: MockType = 'random',
-    overrides?: (index: number) => Partial<any>
-  ): any[] {
+    overrides?: (index: number) => Partial<TData>
+  ): TData[] {
     return Array.from({ length: count }, (_, index) => {
       const itemOverrides = overrides ? overrides(index) : {};
       return this.generate(modelClass, type, itemOverrides);
@@ -131,9 +134,9 @@ export class MockGenerator {
 
   private generateValue(
     type: MockType,
-    fieldType: any,
+    fieldType: unknown,
     designType: Function | undefined,
-    arrayElementClass: any
+    arrayElementClass: unknown
   ): unknown {
     // Array de modelos
     if (arrayElementClass && designType === Array) {
@@ -143,17 +146,17 @@ export class MockGenerator {
       }
 
       const length = type === 'minimal' ? 1 : type === 'empty' ? 0 : faker.number.int({ min: 1, max: 3 });
-      return this.generateArray(arrayElementClass, length, type);
+      return this.generateArray(arrayElementClass as new (data: any) => unknown, length, type);
     }
 
     // Nested model
     if (arrayElementClass && !fieldType) {
-      return this.generate(arrayElementClass, type);
+      return this.generate(arrayElementClass as new (data: any) => unknown, type);
     }
-
+    
     // By fieldType (special types)
     if (fieldType) {
-      return this.generateByFieldType(type, fieldType);
+      return this.generateByFieldType(type, fieldType as string | symbol | Function);
     }
 
     // By designType (auto-detection)

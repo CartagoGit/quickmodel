@@ -58,6 +58,7 @@ import { SymbolTransformer } from '@/transformers/symbol.transformer';
 import { ArrayBufferTransformer, DataViewTransformer, SharedArrayBufferTransformer } from '@/transformers/buffer.transformer';
 import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import { URLTransformer, URLSearchParamsTransformer, TextEncoderTransformer, TextDecoderTransformer } from '@/transformers/web-apis.transformer';
+import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
 
 /**
  * Valid keys to identify a transformer.
@@ -113,6 +114,10 @@ export class Deserializer<
     const setTransformer = new SetTransformer();
     const bufferTransformer = new ArrayBufferTransformer();
     const dataviewTransformer = new DataViewTransformer();
+
+	const stringTransformer = new PrimitiveTransformer('string');
+	const numberTransformer = new PrimitiveTransformer('number');
+	const booleanTransformer = new PrimitiveTransformer('boolean');
     
     // Register by name
     this.transformers.set('date', dateTransformer);
@@ -125,6 +130,10 @@ export class Deserializer<
     this.transformers.set('buffer', bufferTransformer);
     this.transformers.set('arraybuffer', bufferTransformer);
     this.transformers.set('dataview', dataviewTransformer);
+
+	this.transformers.set('string', stringTransformer);
+	this.transformers.set('number', numberTransformer);
+	this.transformers.set('boolean', booleanTransformer);
     
     // Register typed arrays
     const int8Transformer = new TypedArrayTransformer<Int8Array>(Int8Array);

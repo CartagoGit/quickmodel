@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '@/index';
+import { QModel, Quick } from '@/index';
 
 // Test Models - Using declare syntax (no decorators needed)
 interface IUser {
@@ -20,6 +20,10 @@ interface IUser {
 	balance: bigint;
 }
 
+@Quick({
+	createdAt: Date,
+	balance: BigInt
+})
 class User extends QModel<IUser> {
 	declare id: number;
 	declare name: string;
@@ -97,7 +101,7 @@ describe('Error Handling: Invalid Data Types', () => {
 
 	test('should detect invalid BigInt string', () => {
 		try {
-			new Payment({ amount: 'not-a-bigint' as unknown as string });
+			new Payment({ amount: 'not-a-bigint' });
 
 			// If no error, record that validation is needed
 			console.warn('⚠️  No validation error thrown for invalid BigInt');
@@ -220,7 +224,7 @@ describe('Error Handling: Array Type Mismatches', () => {
 	test('should handle arrays with correct types', () => {
 		const date1 = new Date('2024-01-01');
 		const date2 = new Date('2024-01-02');
-		
+
 		const data = new Data({
 			numbers: [1, 2, 3],
 			dates: [date1, date2],
@@ -261,7 +265,7 @@ describe('Error Handling: Type Coercion vs Validation', () => {
 
 		// Model created successfully - runtime doesn't validate types
 		// id is string '123' at runtime, not number (as declared in TypeScript)
-	expect(user.id as unknown).toBe('123');
+		expect(user.id as unknown).toBe('123');
 		expect(user.name).toBe('John');
 	});
 });
