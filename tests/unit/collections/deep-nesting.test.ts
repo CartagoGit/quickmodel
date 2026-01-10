@@ -668,7 +668,6 @@ describe('Mezcla de arrays y objetos anidados', () => {
 					items: 'type', // Usa data.type para coincidir con nombre de clase
 					// Opción 2: Con función personalizada
 					transforms: (data) => {
-						console.log('[DEBUG] Discriminator data:', data, typeof data);
 						// Si es string con formato ISO date → Date
 						if (
 							typeof data === 'string' &&

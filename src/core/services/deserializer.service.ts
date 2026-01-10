@@ -206,11 +206,6 @@ export class Deserializer<
     
     // Get discriminator configuration if exists
     const discriminators = Reflect.getMetadata(QUICK_DISCRIMINATORS_KEY, modelClass);
-    if (discriminators) {
-      console.log('[DEBUG] populateInstance: Found discriminators for', modelClass.name, Object.keys(discriminators));
-    } else {
-      // console.log('[DEBUG] populateInstance: No discriminators for', modelClass.name);
-    }
     
     for (const [key, value] of Object.entries(data)) {
       if (value === null || value === undefined) {
@@ -218,13 +213,6 @@ export class Deserializer<
         continue;
       }
       
-      if (key === 'transforms') {
-         const dt = Reflect.getMetadata('design:type', instance, key);
-         const aec = Reflect.getMetadata('arrayElementClass', instance, key);
-         const tm = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, modelClass);
-         console.log('[DEBUG] Processing transforms key. designType:', dt?.name, 'arrayElementClass:', aec?.name, 'typeMap:', tm?.[key]);
-      }
-
       // If property is NOT decorated with @QType(), copy as-is
       if (!decoratedFields.includes(key)) {
         instance[key] = value;
@@ -423,8 +411,9 @@ export class Deserializer<
           ];
           
           const isPrimitiveOrTransformable = transformableTypes.includes(arrayElementClass);
+          const hasDiscriminator = !!discriminators?.[key];
           
-          if (isPrimitiveOrTransformable) {
+          if (isPrimitiveOrTransformable && !hasDiscriminator) {
             // Check if arrayElementClass is a TypedArray constructor
             const typedArrayConstructors = [
               Int8Array, Uint8Array, Uint8ClampedArray,
@@ -463,61 +452,17 @@ export class Deserializer<
               return this.transformByDesignType(item, arrayElementClass, context);
             });
           } else {
-            // It's an array of complex objects (models) - use constructor to trigger transformations
-            // ⚠️ Filter out null/undefined for models (models must be objects)
+            // It's an array of complex objects (models) OR polymorphic primitives - use constructor
+            // Get possible types: either union types array or single type
+            const possibleTypes = arrayElementTypes || [arrayElementClass];
             // Get discriminator config for this property if exists
             const discriminatorConfig = discriminators?.[key];
             
-            instance[key] = value
-              .filter((item) => item !== null && item !== undefined)
-              .map((item) => {
-                // 🔥 RECURSION FIX: If item is array, recursively process nested model array
-                if (Array.isArray(item)) {
-                  return item
-                    .filter((nestedItem) => nestedItem !== null && nestedItem !== undefined)
-                    .map((nestedItem) => {
-                      // 🔥 Handle deeply nested model arrays (3+ levels)
-                      if (Array.isArray(nestedItem)) {
-                        const possibleTypes = arrayElementTypes || [arrayElementClass];
-                        return this.transformNestedModelArray(
-                          nestedItem,
-                          possibleTypes,
-                          discriminatorConfig
-                        );
-                      }
-                      
-                      if (typeof nestedItem !== 'object') {
-                        throw new Error(`${context.className}.${key}[][]: Expected object, got ${typeof nestedItem}`);
-                      }
-                      
-                      // Resolve correct type for union types
-                      const possibleTypes = arrayElementTypes || [arrayElementClass];
-                      const resolvedClass = this.resolveUnionType(
-                        nestedItem,
-                        possibleTypes,
-                        discriminatorConfig
-                      );
-                      
-                      // Use constructor to ensure nested transformations work
-                      return new (resolvedClass as any)(nestedItem);
-                    });
-                }
-                
-                if (typeof item !== 'object') {
-                  throw new Error(`${context.className}.${key}[]: Expected object, got ${typeof item}`);
-                }
-                
-                // Resolve correct type for union types
-                const possibleTypes = arrayElementTypes || [arrayElementClass];
-                const resolvedClass = this.resolveUnionType(
-                  item,
-                  possibleTypes,
-                  discriminatorConfig
-                );
-                
-                // Use constructor instead of deserialize to ensure nested transformations work
-                return new (resolvedClass as any)(item);
-              });
+            instance[key] = this.transformNestedModelArray(
+              value,
+              possibleTypes,
+              discriminatorConfig
+            );
           }
           continue;
         }
