@@ -11,6 +11,7 @@
 import 'reflect-metadata';
 import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
+import { ToInterfaceService } from '@/core/services/to-interface.service';
 import { MockGenerator } from '@/core/services/mock-generator.service';
 import { MockBuilder } from '@/core/services/mock-builder.service';
 import type { QModelInstance, QModelInterface } from '@/core/interfaces/mock-types.interface';
@@ -106,6 +107,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();
+	private static readonly toInterfaceService = new ToInterfaceService();
 	private static readonly mockGenerator = new MockGenerator();
 
 	// Store initial state for change tracking and reset
@@ -239,6 +241,31 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 			return;
 		}
 
+		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
+		// IMPORTANT: Must be done BEFORE deserialization to preserve original types
+		const initDataClone: any = {};
+		for (const key in data) {
+			const value = data[key];
+			// Symbols and functions cannot be cloned, keep reference
+			if (typeof value === 'symbol' || typeof value === 'function') {
+				initDataClone[key] = value;
+			} else {
+				try {
+					initDataClone[key] = structuredClone(value);
+				} catch {
+					// Fallback for non-cloneable values
+					initDataClone[key] = value;
+				}
+			}
+		}
+
+		Object.defineProperty(this, '__initData', {
+			value: initDataClone,
+			writable: false,
+			enumerable: false,
+			configurable: true,
+		});
+
 		// Auto-register was already done in constructor, just deserialize
 		type DataAsInterface = Record<string, unknown>;
 		type ThisConstructor = new (data: DataAsInterface) => this;
@@ -305,31 +332,6 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
-
-		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
-		// Use custom clone because structuredClone doesn't support symbols
-		const initDataClone: any = {};
-		for (const key in data) {
-			const value = data[key];
-			// Symbols and functions cannot be cloned, keep reference
-			if (typeof value === 'symbol' || typeof value === 'function') {
-				initDataClone[key] = value;
-			} else {
-				try {
-					initDataClone[key] = structuredClone(value);
-				} catch {
-					// Fallback for non-cloneable values
-					initDataClone[key] = value;
-				}
-			}
-		}
-
-		Object.defineProperty(this, '__initData', {
-			value: initDataClone,
-			writable: false,
-			enumerable: false,
-			configurable: true,
-		});
 	}
 
 	/**
@@ -525,42 +527,72 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * 
 
 	/**
-	 * Converts the current state to interface format (same as constructor input).
+	 * Converts the current state to interface format (preserving original input types).
 	 * 
-	 * This method converts the current values back to the exact format that was originally
-	 * passed to the constructor, preserving types:
-	 * - Date objects → ISO 8601 strings (as they came in)
-	 * - BigInt → preserves original format (string or object)
-	 * - RegExp → preserves original format (string or object)
-	 * - Numbers → preserves type (including NaN, Infinity)
-	 * - Wrappers → preserves wrapper vs primitive
+	 * **IMPORTANT:** This does NOT serialize to JSON. It preserves the EXACT format from constructor input.
 	 * 
-	 * Use cases:
-	 * - Sending to backend APIs
-	 * - Comparing with initial state
-	 * - Detecting changes
-	 * - NOT for JSON (use toJSON() instead)
+	 * **Key differences:**
+	 * - `toInterface()` → Preserves ORIGINAL input format (string stays string, RegExp stays RegExp)
+	 * - `serialize()` → Converts to JSON-compatible format (Date → ISO string, RegExp → object, etc.)
+	 * - `toJSON()` → Same as serialize() but returns JSON string
 	 * 
-	 * @returns Object with current values in the same format/types as constructor input
+	 * **How it works:**
+	 * - Reads `__initData` (stored BEFORE transformations)
+	 * - Compares original type vs current type
+	 * - Returns value in ORIGINAL format:
+	 *   - If input was string `'2024-01-01'` → returns string (NOT Date object)
+	 *   - If input was string `'999999'` → returns string (NOT bigint)
+	 *   - If input was RegExp `/test/` → returns RegExp (NOT string)
+	 *   - If input was string `'^test$'` → returns string (NOT RegExp)
+	 * 
+	 * **Use cases:**
+	 * - Change detection: `model.toInterface() vs model.getInitInterface()`
+	 * - Form reset: restore original values
+	 * - API responses: return data in same format as received
+	 * - State comparison: check modifications
+	 * 
+	 * @returns Object with current values in ORIGINAL input format (NOT JSON serialized)
 	 * 
 	 * @example
+	 * **Example 1: Date as string input**
 	 * ```typescript
 	 * const user = new User({
-	 *   id: '1',
-	 *   age: 30,  // number primitive
-	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String format
+	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String input
 	 * });
 	 * 
-	 * user.age = NaN;  // Still a number
-	 * user.createdAt = new Date('2024-12-31');
+	 * user.createdAt;        // Date object (transformed)
+	 * user.toInterface();    // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
+	 * user.serialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
+	 * ```
 	 * 
-	 * const current = user.toInterface();
-	 * // { id: '1', age: NaN, createdAt: '2024-12-31T00:00:00.000Z' }
-	 * // age is number (NaN), not string "NaN"
+	 * @example
+	 * **Example 2: BigInt as string input**
+	 * ```typescript
+	 * const account = new Account({
+	 *   balance: '999999999999999'  // String input
+	 * });
+	 * 
+	 * account.balance;       // 999999999999999n (bigint transformed)
+	 * account.toInterface(); // { balance: '999999999999999' } - STRING preserved
+	 * account.serialize();   // { balance: '999999999999999' } - string for JSON
+	 * ```
+	 * 
+	 * @example
+	 * **Example 3: RegExp input formats**
+	 * ```typescript
+	 * // Case A: String pattern input
+	 * const model1 = new Model({ pattern: '^test$' });
+	 * model1.pattern;        // /^test$/ (RegExp transformed)
+	 * model1.toInterface();  // { pattern: '^test$' } - STRING preserved
+	 * 
+	 * // Case B: RegExp object input
+	 * const model2 = new Model({ pattern: /^test$/ });
+	 * model2.pattern;        // /^test$/ (RegExp)
+	 * model2.toInterface();  // { pattern: /^test$/ } - REGEXP preserved
 	 * ```
 	 */
 	toInterface(): TInterface {
-		return QModel.serializer.toInterface<TInterface>(this as any);
+		return QModel.toInterfaceService.toInterface<TInterface>(this as any);
 	}
 
 	/**
