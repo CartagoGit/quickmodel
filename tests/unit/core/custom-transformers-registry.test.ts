@@ -30,11 +30,11 @@ interface IMoneyJSON {
 }
 
 class MoneyTransformer implements IQTransformer<Money, IMoneyJSON> {
-	deserialize( _value: IMoneyJSON): Money {
+	deserialize(_value: IMoneyJSON): Money {
 		return new Money(value.amount, value.currency + '_TRANSFORMED');
 	}
 
-	serialize( _value: Money): IMoneyJSON {
+	serialize(_value: Money): IMoneyJSON {
 		return {
 			amount: value.amount,
 			currency: value.currency,
@@ -106,10 +106,10 @@ describe('Feature: Custom Transformers via Registry', () => {
 	test('should override default transformer if registered (Date override)', () => {
 		// Example: Override Date transformer to always return year 2000
 		class FixedDateTransformer implements IQTransformer<string, Date> {
-			deserialize( _value: string): Date {
+			deserialize(_value: string): Date {
 				return new Date('2000-01-01T00:00:00.000Z');
 			}
-			serialize( _value: Date): string {
+			serialize(_value: Date): string {
 				return '2000-01-01T00:00:00.000Z';
 			}
 		}

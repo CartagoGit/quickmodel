@@ -142,7 +142,7 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 		});
 
 		test('debe instanciar correctamente desde estructura serializada (__type)', () => {
-			// @ts-expect-error - simulamos que entra el objeto serializado
+			// @ts-expect-error: Simulating runtime error - simulamos que entra el objeto serializado
 			const instance = new TestDeclare(serializedInputData);
 
 			expect(instance.key).toBe(Symbol.for('test-key'));
@@ -190,7 +190,7 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 		});
 
 		test('debe instanciar correctamente desde estructura serializada (__type)', () => {
-			// @ts-expect-error
+			// @ts-expect-error: Simulating runtime error
 			const instance = new TestBang(serializedInputData);
 
 			expect(instance.key).toBe(Symbol.for('test-key'));
@@ -208,7 +208,7 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 			};
 
 			expect(() => {
-				// @ts-expect-error
+				// @ts-expect-error: Simulating runtime error
 				new TestDeclare(invalidData);
 			}).toThrow(/Symbol transformer ONLY accepts/);
 		});
@@ -223,7 +223,7 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 
 			// RegExp Transformer lanza error cuando no encaja con string ni objeto valido
 			expect(() => {
-				// @ts-expect-error
+				// @ts-expect-error: Simulating runtime error
 				new TestDeclare(invalidData);
 			}).toThrow(/RegExp transformer ONLY accepts/);
 		});
@@ -235,7 +235,7 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 			};
 
 			expect(() => {
-				// @ts-expect-error
+				// @ts-expect-error: Simulating runtime error
 				new TestDeclare(invalidData);
 			}).toThrow(/Expected.*got number/); // Ajustar regex según implementación
 		});

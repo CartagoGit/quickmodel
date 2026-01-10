@@ -29,7 +29,7 @@ export class URLTransformer extends BaseTransformer<string, URL> {
 
 		try {
 			return new URL(value);
-		} catch (_error) {
+		} catch (error) {
 			const errorMsg =
 				error instanceof Error ? error.message : String(error);
 			throw new Error(
@@ -159,7 +159,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 		if (typeof value === 'string') {
 			try {
 				return new (TextDecoder as any)(value);
-			} catch (_error) {
+			} catch (error) {
 				throw new Error(
 					`${className}.${propertyKey}: Invalid encoding "${value}". ` +
 						`Valid encodings include: utf-8, utf-16, iso-8859-1, etc.`
@@ -171,7 +171,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 			const encoding = (value as any).encoding || 'utf-8';
 			try {
 				return new (TextDecoder as any)(encoding);
-			} catch (_error) {
+			} catch (error) {
 				throw new Error(
 					`${className}.${propertyKey}: Invalid encoding "${encoding}". ` +
 						`Valid encodings include: utf-8, utf-16, iso-8859-1, etc.`
