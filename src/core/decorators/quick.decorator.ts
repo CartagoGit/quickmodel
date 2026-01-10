@@ -582,13 +582,21 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 
 					let mappedType = typeMap[propertyKey];
 					if (mappedType) {
-						// NO auto-detection: Use mappedType exactly as specified
-						// - dates: Date → single Date
-						// - dates: [Date] → Date[] array
-						// - dates: [[Date]] → Date[][] 2D array
-						// User MUST use explicit array syntax [Type] for arrays
+						// 🔥 AUTO-DETECTION: If VALUE in data is array and mappedType is NOT already array syntax
+						// Automatically wrap in array syntax [Type]
+						// Example: bigints: BigInt + data.bigints = ['123'] → auto-convert to [BigInt]
+						const dataValue = data[propertyKey];
+						
+						if (
+							Array.isArray(dataValue) && 
+							!Array.isArray(mappedType) && 
+							mappedType !== Array
+						) {
+							// Data value is array but mappedType is single type → wrap it
+							mappedType = [mappedType];
+						}
 
-						// Pass the mapped type directly to QType
+						// Pass the mapped type to QType
 						// mappedType can be: Date, [Date], [[Date]], Post, [Post], etc.
 						const decorator = QType(mappedType);
 						decorator(originalConstructor.prototype, propertyKey);

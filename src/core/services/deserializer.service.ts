@@ -474,8 +474,16 @@ export class Deserializer<
       // 4. Auto-detection via design:type
       const designType = Reflect.getMetadata('design:type', instance, key);
       
-      // 4.5 SPECIAL CASE: If design:type is a custom model class and value is an array,
-      // treat it as array of that model (syntax sugar: @Quick({ posts: Post }) for Post[])
+      // 4.1 SPECIAL CHECK: If design:type is Array but NO arrayElementClass,
+      // user likely used @QType(Type) instead of @QType([Type]) - skip transformation
+      if (designType === Array && !arrayElementClass) {
+        // Plain array without element type - copy as-is
+        instance[key] = value;
+        continue;
+      }
+      
+      // 4.5 SPECIAL CASE: If data is an array and @Quick() maps to single type,
+      // auto-wrap as [Type] for convenience (e.g., @Quick({ posts: Post }) with array data → [Post])
       const nativeTransformableTypes = [
         String, Number, Boolean,
         Date, BigInt, RegExp, Symbol, Error,

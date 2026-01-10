@@ -142,8 +142,8 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **Nested models**:
  * ```typescript
  * class User extends QModel<IUser> {
- *   @QType(Address) address!: Address;
- *   @QType(Vehicle) vehicles!: Vehicle[];  // Array of models
+ *   @QType(Address) address!: Address;      // Single nested model
+ *   @QType([Vehicle]) vehicles!: Vehicle[]; // Array of models - explicit syntax
  * }
  * ```
  *
@@ -162,6 +162,7 @@ export function QType<T>(
 		| NumberConstructor
 		| StringConstructor
 		| PromiseConstructor
+		| Array<any> // Support array syntax: [Type], [[Type]], etc.
 ): PropertyDecorator {
 	return function (target: any, propertyKey: string | symbol): void {
 		// Register the property in the fields list
@@ -381,22 +382,25 @@ export function QType<T>(
 					typeOrClass.prototype && typeOrClass.prototype.constructor === typeOrClass;
 
 				if (hasPrototype) {
-					// It's a custom model class (for arrays or nested models)
+					// It's a custom model class - for NESTED MODELS only (single object)
+					// Arrays MUST use explicit [Type] syntax
 					
-					// Check if design:type is Array (meaning it's an array property)
+					// Check if design:type is Array (meaning user declared it as array)
 					const existingDesignType = Reflect.getMetadata('design:type', target, propertyKey);
 					
-					// Always register as arrayElementClass (used for both arrays and nested models)
-					Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
-					
 					if (existingDesignType === Array) {
-						// It's an array - keep design:type as Array
-						// Don't override it
-					} else if (!existingDesignType) {
-						// No design:type yet - for nested models, set it to the class
-						// For arrays without design:type, also set to Array
-						// But we can't know for sure, so leave it unset and rely on arrayElementClass + value inspection
-						Reflect.defineMetadata('design:type', Array, target, propertyKey);
+						// User declared property as Array but used @QType(Type) instead of @QType([Type])
+						// This is WRONG - arrays require explicit syntax
+						// DO NOT register arrayElementClass - let it fail silently (no transformation)
+						console.warn(
+							`⚠️ @QType(${typeOrClass.name}) on array property '${String(propertyKey)}' - ` +
+							`use @QType([${typeOrClass.name}]) for arrays`
+						);
+					} else {
+						// It's a nested model (single object, not array)
+						Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
+						// Set design:type to the class for nested models
+						Reflect.defineMetadata('design:type', typeOrClass, target, propertyKey);
 					}
 				} else {
 					// It's a transformer function (Math.round, btoa, arrow function, etc.)
