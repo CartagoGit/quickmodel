@@ -190,7 +190,10 @@ describe('@Quick() with declaration styles', () => {
 				value: '123456789012345',
 			});
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(Array.isArray(serialized.tags)).toBe(true);
+			expect(serialized.tags).toMatchObject({
+				__type: 'Set',
+				values: ['urgent', 'premium'],
+			});
 		});
 
 		test('!: should transform types correctly', () => {

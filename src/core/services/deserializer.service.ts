@@ -562,7 +562,7 @@ export class Deserializer<
         const isTransformableType = transformableTypes.includes(designType as any);
         
         if (isTransformableType) {
-          // Special case for TypedArrays: they receive whole arrays as input
+          // Special case for TypedArrays, ArrayBuffer, and DataView: they receive whole arrays as input
           const typedArrayConstructors = [
             Int8Array, Uint8Array, Uint8ClampedArray,
             Int16Array, Uint16Array,
@@ -571,13 +571,14 @@ export class Deserializer<
             BigInt64Array, BigUint64Array
           ];
           const isTypedArray = typedArrayConstructors.includes(designType as any);
+          const isArrayBuffer = designType === ArrayBuffer;
+          const isDataView = designType === DataView;
           
-          if (isTypedArray && Array.isArray(value[0])) {
-            // TypedArray[]: transform each sub-array
-            instance[key] = value.map((item) => {
-              if (item === null || item === undefined) return item;
-              return this.transformByDesignType(item, designType, context);
-            });
+          if (isTypedArray || isArrayBuffer || isDataView) {
+            // TypedArray/ArrayBuffer/DataView receives whole array as input (not element-by-element)
+            // bytes1: Int8Array with value [1, 2, -3, -4] → pass entire array to transformer
+            // buffer: ArrayBuffer with value [1, 2, 3] → pass entire array to transformer
+            instance[key] = this.transformByDesignType(value, designType, context);
           } else {
             // Regular transformable array: transform each element
             instance[key] = value.map((item) => {

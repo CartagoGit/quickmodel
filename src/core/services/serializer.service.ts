@@ -50,6 +50,7 @@ import { SymbolTransformer } from '@/transformers/symbol.transformer';
 import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import { URLTransformer } from '@/transformers/url.transformer';
 import { URLSearchParamsTransformer } from '@/transformers/url-search-params.transformer';
+import { MapTransformer, SetTransformer } from '@/transformers/map-set.transformer';
 
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -71,6 +72,8 @@ export class Serializer<
 		const errorTransformer = new ErrorTransformer();
 		const urlTransformer = new URLTransformer();
 		const urlSearchParamsTransformer = new URLSearchParamsTransformer();
+		const mapTransformer = new MapTransformer();
+		const setTransformer = new SetTransformer();
 
 		// Register by name and constructor
 		this.transformers.set('date', dateTransformer);
@@ -83,6 +86,10 @@ export class Serializer<
 		this.transformers.set(Error, errorTransformer);
 		this.transformers.set(URL, urlTransformer);
 		this.transformers.set(URLSearchParams, urlSearchParamsTransformer);
+		this.transformers.set('map', mapTransformer);
+		this.transformers.set(Map, mapTransformer);
+		this.transformers.set('set', setTransformer);
+		this.transformers.set(Set, setTransformer);
 
 		// Register typed arrays
 		this.transformers.set(Int8Array, new TypedArrayTransformer<Int8Array>(Int8Array));
@@ -93,10 +100,10 @@ export class Serializer<
 		this.transformers.set(Uint32Array, new TypedArrayTransformer<Uint32Array>(Uint32Array));
 		this.transformers.set(Float32Array, new TypedArrayTransformer<Float32Array>(Float32Array));
 		this.transformers.set(Float64Array, new TypedArrayTransformer<Float64Array>(Float64Array));
-		this.transformers.set(BigInt64Array, new TypedArrayTransformer<BigInt64Array>(BigInt64Array));
+		this.transformers.set(BigInt64Array, new TypedArrayTransformer<BigInt64Array>(BigInt64Array, true));
 		this.transformers.set(
 			BigUint64Array,
-			new TypedArrayTransformer<BigUint64Array>(BigUint64Array)
+			new TypedArrayTransformer<BigUint64Array>(BigUint64Array, true)
 		);
 	}
 
