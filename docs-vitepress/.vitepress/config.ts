@@ -14,7 +14,12 @@ export default defineConfig({
 			level: [2, 3],
 			label: 'On this page',
 		},
-		socialLinks: [{ icon: 'github', link: 'https://github.com/CartagoGit/quickmodel' }],
+		socialLinks: [
+			{
+				icon: 'github',
+				link: 'https://github.com/CartagoGit/quickmodel',
+			},
+		],
 		sidebar: {
 			'/tsdoc/': [
 				{
@@ -24,20 +29,36 @@ export default defineConfig({
 						{
 							text: 'Classes',
 							collapsed: false,
-							items: [{ text: 'QModel', link: '/tsdoc/classes/QModel' }],
+							items: [
+								{
+									text: 'QModel',
+									link: '/tsdoc/classes/QModel',
+								},
+							],
 						},
 						{
 							text: 'Decorators',
 							collapsed: false,
 							items: [
-								{ text: '@Quick', link: '/tsdoc/functions/Quick' },
-								{ text: '@QType', link: '/tsdoc/functions/QType' },
+								{
+									text: '@Quick',
+									link: '/tsdoc/functions/Quick',
+								},
+								{
+									text: '@QType',
+									link: '/tsdoc/functions/QType',
+								},
 							],
 						},
 						{
 							text: 'Types',
 							collapsed: false,
-							items: [{ text: 'QInterface', link: '/tsdoc/type-aliases/QInterface' }],
+							items: [
+								{
+									text: 'QInterface',
+									link: '/tsdoc/type-aliases/QInterface',
+								},
+							],
 						},
 					],
 				},
@@ -67,26 +88,53 @@ export default defineConfig({
 						{
 							text: 'Introduction',
 							items: [
-								{ text: 'Getting Started', link: '/en/guide/getting-started' },
-								{ text: 'Installation', link: '/en/guide/installation' },
-								{ text: 'Quick Start', link: '/en/guide/quick-start' },
+								{
+									text: 'Getting Started',
+									link: '/en/guide/getting-started',
+								},
+								{
+									text: 'Installation',
+									link: '/en/guide/installation',
+								},
+								{
+									text: 'Quick Start',
+									link: '/en/guide/quick-start',
+								},
 							],
 						},
 						{
 							text: 'Core Concepts',
 							items: [
 								{ text: 'QModel', link: '/en/guide/qmodel' },
-								{ text: '@Quick Decorator', link: '/en/guide/quick-decorator' },
-								{ text: 'Transformers', link: '/en/guide/transformers' },
-								{ text: 'Serialization', link: '/en/guide/serialization' },
+								{
+									text: '@Quick Decorator',
+									link: '/en/guide/quick-decorator',
+								},
+								{
+									text: 'Transformers',
+									link: '/en/guide/transformers',
+								},
+								{
+									text: 'Serialization',
+									link: '/en/guide/serialization',
+								},
 							],
 						},
 						{
 							text: 'Advanced',
 							items: [
-								{ text: 'Custom Transformers', link: '/en/guide/custom-transformers' },
-								{ text: 'Nested Models', link: '/en/guide/nested-models' },
-								{ text: 'Mock Generation', link: '/en/guide/mocks' },
+								{
+									text: 'Custom Transformers',
+									link: '/en/guide/custom-transformers',
+								},
+								{
+									text: 'Nested Models',
+									link: '/en/guide/nested-models',
+								},
+								{
+									text: 'Mock Generation',
+									link: '/en/guide/mocks',
+								},
 							],
 						},
 					],
@@ -94,16 +142,26 @@ export default defineConfig({
 						{
 							text: 'Examples',
 							items: [
-								{ text: 'Basic Usage', link: '/en/examples/basic' },
-								{ text: 'API Models', link: '/en/examples/api-models' },
-								{ text: 'Complex Types', link: '/en/examples/complex-types' },
+								{
+									text: 'Basic Usage',
+									link: '/en/examples/basic',
+								},
+								{
+									text: 'API Models',
+									link: '/en/examples/api-models',
+								},
+								{
+									text: 'Complex Types',
+									link: '/en/examples/complex-types',
+								},
 							],
 						},
 					],
 				},
 				footer: {
 					message: 'Released under the MIT License.',
-					copyright: 'Copyright © 2026 Cartago',
+					copyright:
+						'Copyright © 2026 <a href="https://www.linkedin.com/in/mario-cabrero-volarich/" target="_blank" rel="noopener">Mario Cabrero Volarich</a>',
 				},
 			},
 		},
@@ -125,26 +183,53 @@ export default defineConfig({
 						{
 							text: 'Introducción',
 							items: [
-								{ text: 'Comenzando', link: '/es/guide/getting-started' },
-								{ text: 'Instalación', link: '/es/guide/installation' },
-								{ text: 'Inicio Rápido', link: '/es/guide/quick-start' },
+								{
+									text: 'Comenzando',
+									link: '/es/guide/getting-started',
+								},
+								{
+									text: 'Instalación',
+									link: '/es/guide/installation',
+								},
+								{
+									text: 'Inicio Rápido',
+									link: '/es/guide/quick-start',
+								},
 							],
 						},
 						{
 							text: 'Conceptos Básicos',
 							items: [
 								{ text: 'QModel', link: '/es/guide/qmodel' },
-								{ text: 'Decorador @Quick', link: '/es/guide/quick-decorator' },
-								{ text: 'Transformadores', link: '/es/guide/transformers' },
-								{ text: 'Serialización', link: '/es/guide/serialization' },
+								{
+									text: 'Decorador @Quick',
+									link: '/es/guide/quick-decorator',
+								},
+								{
+									text: 'Transformadores',
+									link: '/es/guide/transformers',
+								},
+								{
+									text: 'Serialización',
+									link: '/es/guide/serialization',
+								},
 							],
 						},
 						{
 							text: 'Avanzado',
 							items: [
-								{ text: 'Transformadores Personalizados', link: '/es/guide/custom-transformers' },
-								{ text: 'Modelos Anidados', link: '/es/guide/nested-models' },
-								{ text: 'Generación de Mocks', link: '/es/guide/mocks' },
+								{
+									text: 'Transformadores Personalizados',
+									link: '/es/guide/custom-transformers',
+								},
+								{
+									text: 'Modelos Anidados',
+									link: '/es/guide/nested-models',
+								},
+								{
+									text: 'Generación de Mocks',
+									link: '/es/guide/mocks',
+								},
 							],
 						},
 					],
@@ -152,16 +237,26 @@ export default defineConfig({
 						{
 							text: 'Ejemplos',
 							items: [
-								{ text: 'Uso Básico', link: '/es/examples/basic' },
-								{ text: 'Modelos de API', link: '/es/examples/api-models' },
-								{ text: 'Tipos Complejos', link: '/es/examples/complex-types' },
+								{
+									text: 'Uso Básico',
+									link: '/es/examples/basic',
+								},
+								{
+									text: 'Modelos de API',
+									link: '/es/examples/api-models',
+								},
+								{
+									text: 'Tipos Complejos',
+									link: '/es/examples/complex-types',
+								},
 							],
 						},
 					],
 				},
 				footer: {
 					message: 'Liberado bajo Licencia MIT.',
-					copyright: 'Copyright © 2026 Cartago',
+					copyright:
+						'Copyright © 2026 <a href="https://www.linkedin.com/in/mario-cabrero-volarich/" target="_blank" rel="noopener">Mario Cabrero Volarich</a>',
 				},
 			},
 		},

@@ -179,6 +179,7 @@ type INativeFactory =
 	| StringConstructor
 	| NumberConstructor
 	| BooleanConstructor
+	| ArrayConstructor
 	| ArrayBufferConstructor
 	| DataViewConstructor
 	| Int8ArrayConstructor
@@ -363,6 +364,11 @@ export function QType<T>(
 				target,
 				propertyKey
 			);
+		} else if (typeOrClass === Array) {
+			// Special case for Array constructor (e.g. @QType(Array) or @Quick({ tags: Array }))
+			// Treat as generic array
+			Reflect.defineMetadata('fieldType', 'array', target, propertyKey);
+			Reflect.defineMetadata('design:type', Array, target, propertyKey);
 		} else if (typeOrClass === BigInt) {
 			// Special case for BigInt (not a constructor, but a factory function)
 			Reflect.defineMetadata('fieldType', 'bigint', target, propertyKey);
