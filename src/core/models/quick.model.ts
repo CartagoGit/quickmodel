@@ -489,10 +489,11 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 */
-	serialize(): SerializedInterface<TInterface> {
+	serialize(seen?: WeakSet<object>): SerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serialize(
-			this as unknown as ModelAsRecord
+			this as unknown as ModelAsRecord,
+			seen
 		) as SerializedInterface<TInterface>;
 	}
 
@@ -694,8 +695,8 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * model2.toInterface();  // { pattern: /^test$/ } - REGEXP preserved
 	 * ```
 	 */
-	toInterface(): TInterface {
-		return QModel.toInterfaceService.toInterface<TInterface>(this as any);
+	toInterface(seen?: WeakSet<object>): TInterface {
+		return QModel.toInterfaceService.toInterface<TInterface>(this as any, seen);
 	}
 
 	/**

@@ -6,8 +6,10 @@
 export interface IQSerializer<TModel extends Record<string, unknown>, TInterface> {
   /**
    * Serializes a model to its interface representation
+   * @param model - The model to serialize
+   * @param seen - Optional WeakSet to track circular references
    */
-  serialize(model: TModel): TInterface;
+  serialize(model: TModel, seen?: WeakSet<object>): TInterface;
 
   /**
    * Serializa a JSON string

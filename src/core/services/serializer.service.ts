@@ -151,13 +151,24 @@ export class Serializer<
 	 * Serializes a model instance to plain object using transformers.
 	 *
 	 * @param model - The model instance to serialize
+	 * @param seen - Optional WeakSet to track circular references
 	 * @returns Plain object suitable for JSON serialization with transformers applied
 	 *
 	 * @remarks
 	 * Uses transformers to convert special types (BigInt, Date, RegExp, etc.) to JSON-compatible format.
 	 */
-	serialize(model: TModel): TInterface {
+	serialize(model: TModel, seen?: WeakSet<object>): TInterface {
 		const result: Record<string, unknown> = {};
+
+		// Cycle detection
+		const visited = seen || new WeakSet<object>();
+		if (visited.has(model)) {
+			// Circular reference detected
+			// We return a special marker that is JSON compatible but informative
+			return { __circular: true } as unknown as TInterface;
+			// Or we could throw, but returning a safe value is often better for logging
+		}
+		visited.add(model);
 
 		// Get all property keys
 		const keys = new Set<string>();
@@ -183,7 +194,7 @@ export class Serializer<
 			}
 
 			const value = (model as any)[key];
-			result[key] = this.serializeValue(value);
+			result[key] = this.serializeValue(value, visited);
 		}
 
 		return result as TInterface;
@@ -203,6 +214,7 @@ export class Serializer<
 	 * Serializes a single value based on its type.
 	 *
 	 * @param value - The value to serialize
+	 * @param seen - WeakSet to track circular references
 	 * @returns Serialized value suitable for JSON
 	 *
 	 * @remarks
@@ -222,7 +234,7 @@ export class Serializer<
 	 * 13. Set → array
 	 * 14. Primitives → as-is
 	 */
-	private serializeValue(value: unknown): unknown {
+	private serializeValue(value: unknown, seen?: WeakSet<object>): unknown {
 		// Date
 		if (value instanceof Date) {
 			const transformer = this.transformers.get('date') || this.transformers.get(Date);
@@ -337,15 +349,14 @@ export class Serializer<
 			'serialize' in value &&
 			typeof value.serialize === 'function'
 		) {
-			return value.serialize();
+			const visited = seen || new WeakSet<object>();
+			// No need to check visited here because value.serialize(seen) will check it
+			return (value as any).serialize(visited);
 		}
 
 		// Array
 		if (Array.isArray(value)) {
-			if (value.length > 0 && value[0]?.serialize) {
-				return value.map((item) => item.serialize());
-			}
-			return value;
+			return value.map((item) => this.serializeValue(item, seen));
 		}
 
 		// Map
@@ -354,7 +365,12 @@ export class Serializer<
 			if (transformer) {
 				return transformer.serialize(value);
 			}
-			return Object.fromEntries(value);
+			// If no transformer, serialize entries recursively
+			const result: Record<string, unknown> = {};
+			for (const [k, v] of value) {
+				result[String(k)] = this.serializeValue(v, seen);
+			}
+			return result;
 		}
 
 		// Set
@@ -363,7 +379,7 @@ export class Serializer<
 			if (transformer) {
 				return transformer.serialize(value);
 			}
-			return Array.from(value);
+			return Array.from(value).map(item => this.serializeValue(item, seen));
 		}
 
 		// Plain Object (recursive serialization)
@@ -374,9 +390,15 @@ export class Serializer<
 			value !== null &&
 			(Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
 		) {
+			const visited = seen || new WeakSet<object>();
+			if (visited.has(value)) {
+				return { __circular: true };
+			}
+			visited.add(value);
+			
 			const result: Record<string, unknown> = {};
 			for (const key of Object.keys(value)) {
-				result[key] = this.serializeValue((value as Record<string, unknown>)[key]);
+				result[key] = this.serializeValue((value as Record<string, unknown>)[key], visited);
 			}
 			return result;
 		}

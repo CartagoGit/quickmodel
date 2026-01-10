@@ -97,10 +97,16 @@ export class ToInterfaceService<
 	 * - If RegExp was provided as RegExp → returns RegExp
 	 *
 	 * This method does NOT serialize to JSON. Use `serialize()` for JSON output.
+	 * 
+	 * @param model - The model instance
+	 * @param seen - Optional WeakSet for cycle detection (internal use)
 	 */
-	toInterface<T extends Record<string, unknown> = TInterface>(model: TModel): T {
+	toInterface<T extends Record<string, unknown> = TInterface>(
+		model: TModel, 
+		seen?: WeakSet<object>
+	): T {
 		const result: Record<string, unknown> = {};
-		const seen = new WeakSet(); // Track circular references
+		const visited = seen || new WeakSet<object>(); // Track circular references
 		const initData = (model as any).__initData || {};
 		const isProduction = process.env.NODE_ENV === 'production';
 
@@ -114,7 +120,7 @@ export class ToInterfaceService<
 			result[key] = this.convertToInterfaceFormat(
 				currentValue,
 				originalValue,
-				seen,
+				visited,
 				isProduction,
 				key
 			);
@@ -357,7 +363,8 @@ export class ToInterfaceService<
 			// Objects with custom constructor: try to call toInterface
 			// For QModel instances, call toInterface() recursively
 			if (typeof currentValue?.toInterface === 'function') {
-				return currentValue.toInterface();
+				// Pass the 'seen' set to prevent infinite loops in recursive models
+				return currentValue.toInterface(seen);
 			}
 
 			// For other objects, create plain object
