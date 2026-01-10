@@ -424,13 +424,44 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 	typeMap?: TTypeMap,
 	advancedOptions?: IQuickAdvancedOptions<TTypeMap>
 ): ClassDecorator {
-	return function <T extends Function>(target: T): any {
+	return function <T extends Function>(target: T): T {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
 
 		// Store type map if provided
 		if (typeMap) {
 			Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
+
+			// 🔥 REGISTER PROPERTIES IMMEDIATELY (not on first instantiation)
+			// This eliminates race conditions and makes behavior predictable
+			for (const [propertyKey, mappedType] of Object.entries(typeMap)) {
+				// Check if property already has metadata registered (e.g., from @QType())
+				const existingFieldType = Reflect.getMetadata(
+					'fieldType',
+					target.prototype,
+					propertyKey
+				);
+				const existingArrayClass = Reflect.getMetadata(
+					'arrayElementClass',
+					target.prototype,
+					propertyKey
+				);
+
+				if (
+					existingFieldType !== undefined ||
+					existingArrayClass !== undefined
+				) {
+					// Property already registered, skip
+					continue;
+				}
+
+				// Register the property using QType decorator
+				// Type assertion: ISpec | ISpecs is compatible with QType parameter
+				const decorator = QType(
+					mappedType as Parameters<typeof QType>[0]
+				);
+				decorator(target.prototype, propertyKey);
+			}
 		}
 
 		// Store discriminators if provided
@@ -481,85 +512,51 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 
 		// Add static method for creating instances (used by deserializer)
 		// This allows us to bypass the field initialization problem with `!`
-		(target as any).__createQuickInstance = function (data: any) {
-			// Create instance without calling constructor
-			const instance = Object.create(target.prototype);
+		// Properties are already registered by the decorator, so we just create the instance
+		(target as unknown as Record<string, Function>).__createQuickInstance =
+			function (data: Record<string, unknown>) {
+				// Create instance without calling constructor
+				const instance = Object.create(target.prototype);
 
-			// Note: This doesn't work with `!` syntax due to TypeScript field initialization
-			// TypeScript generates code that redefines properties AFTER constructor completes
-			// This method is useful for declare syntax or programmatic instance creation
+				// Properties are already registered by the decorator
+				// Just return the instance for the deserializer to populate
+				return instance;
+			};
 
-			// Register properties if not already done
-			const typeMap =
-				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
-			const properties = Object.keys(data);
-
-			for (const propertyKey of properties) {
-				const existingFieldType = Reflect.getMetadata(
-					'fieldType',
-					target.prototype,
-					propertyKey
-				);
-				const existingArrayClass = Reflect.getMetadata(
-					'arrayElementClass',
-					target.prototype,
-					propertyKey
-				);
-
-				if (
-					existingFieldType !== undefined ||
-					existingArrayClass !== undefined
-				) {
-					continue;
-				}
-
-				const mappedType = typeMap[propertyKey];
-				if (mappedType) {
-					Reflect.defineMetadata(
-						'design:type',
-						mappedType,
-						target.prototype,
-						propertyKey
-					);
-				}
-
-				const decorator = QType();
-				decorator(target.prototype, propertyKey);
-			}
-
-			return instance;
-		};
-
-		// Wrap constructor to register properties on first instantiation
+		// Wrap constructor to handle TypeScript field initialization shadowing
+		// AND register properties not specified in typeMap (for @Quick() without typeMap)
 		const originalConstructor = target;
 		let propertiesRegistered = false;
 
-		const wrappedConstructor: any = function (this: any, ...args: any[]) {
+		const wrappedConstructor: Function = function (
+			this: Record<string, unknown>,
+			...args: unknown[]
+		) {
 			const data = args[0];
 
-			// Register properties BEFORE calling constructor (only once, on first instantiation)
+			// Register properties NOT in typeMap on first instantiation
+			// This allows @Quick() without typeMap to work with primitives
 			if (
 				!propertiesRegistered &&
 				data &&
 				typeof data === 'object' &&
 				!Array.isArray(data)
 			) {
-				// Get the type map directly - it's the object passed to @Quick()
-				// Example: @Quick({ posts: Post, tags: Set })
-				const typeMap =
+				const typeMapFromMetadata =
 					Reflect.getMetadata(
 						QUICK_TYPE_MAP_KEY,
 						originalConstructor
 					) || {};
+				const dataProperties = Object.keys(data);
 
-				// Combine properties from data AND typeMap
-				// This ensures we process properties even if they're not in the current data
-				const allProperties = new Set([
-					...Object.keys(data),
-					...Object.keys(typeMap),
-				]);
+				// Only register properties that are NOT already in typeMap
+				for (const propertyKey of dataProperties) {
+					// Skip if already registered (from typeMap in decorator)
+					if (propertyKey in typeMapFromMetadata) {
+						continue;
+					}
 
-				for (const propertyKey of allProperties) {
+					// Check if property already has metadata
 					const existingFieldType = Reflect.getMetadata(
 						'fieldType',
 						originalConstructor.prototype,
@@ -578,63 +575,9 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 						continue;
 					}
 
-					let mappedType = typeMap[propertyKey];
-					if (mappedType) {
-						// 🔥 AUTO-DETECTION: If VALUE in data is array and mappedType is NOT already array syntax
-						// Automatically wrap in array syntax [Type]
-						// Example: bigints: BigInt + data.bigints = ['123'] → auto-convert to [BigInt]
-						const dataValue = data[propertyKey];
-
-						if (
-							Array.isArray(dataValue) &&
-							!Array.isArray(mappedType) &&
-							mappedType !== Array
-						) {
-							// Data value is array but mappedType is single type → wrap it
-							mappedType = [mappedType];
-						}
-
-						// Pass the mapped type to QType
-						// mappedType can be: Date, [Date], [[Date]], Post, [Post], etc.
-						const decorator = QType(mappedType);
-						decorator(originalConstructor.prototype, propertyKey);
-
-						// Post-construction hook: Delete shadowing properties
-						// These properties are not in the data from backend but have values in the class
-						// Create a temporary instance to capture default values
-						try {
-							const dummyInstance = Reflect.construct(
-								originalConstructor,
-								[{}],
-								originalConstructor
-							);
-							for (const key of Object.keys(dummyInstance)) {
-								// Skip if already registered from data
-								if (Array.from(allProperties).includes(key))
-									continue;
-								// Skip internal properties
-								if (key.startsWith('__')) continue;
-
-								// Apply @QType() to preserve the default value
-								const decorator = QType();
-								decorator(originalConstructor.prototype, key);
-
-								// Store the default value in the prototype
-								Object.defineProperty(
-									originalConstructor.prototype,
-									`${QUICK_DEFAULT_KEYS}${key}`,
-									{
-										value: dummyInstance[key],
-										writable: false,
-										enumerable: false,
-										configurable: false,
-									}
-								);
-							}
-						} catch (e) {
-							// If creating dummy instance fails, just continue
-						}
-					}
+					// Register property without type (for primitives)
+					const decorator = QType();
+					decorator(originalConstructor.prototype, propertyKey);
 				}
 			}
 
@@ -699,7 +642,7 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 			configurable: true,
 		});
 
-		return wrappedConstructor as any;
+		return wrappedConstructor as T;
 	};
 }
 
