@@ -132,7 +132,7 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  *   @QType([Date]) declare logDates: Date[];
  * }
  * ```
- */
+ *
  *   // Option 2: Use @QType() without args (allows ! or ?)
  *   @QType() id!: number;
  *   @QType() name!: string;
