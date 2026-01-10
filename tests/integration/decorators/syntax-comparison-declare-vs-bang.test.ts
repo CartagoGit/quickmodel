@@ -9,7 +9,7 @@ interface ITestDeclare {
   id: string;
   name: string;
   createdAt: Date | string;
-  count: bigint | { __type: 'bigint'; value: string };
+  count: bigint | string;
   key: symbol | { __type: 'symbol'; description: string };
   pattern: RegExp | { __type: 'regexp'; source: string; flags: string };
   tags: Set<string> | { __type: 'Set'; values: string[] };
@@ -20,7 +20,7 @@ interface ITestBang {
   id: string;
   name: string;
   createdAt: Date | string;
-  count: bigint | { __type: 'bigint'; value: string };
+  count: bigint | string;
   key: symbol | { __type: 'symbol'; description: string };
   pattern: RegExp | { __type: 'regexp'; source: string; flags: string };
   tags: Set<string> | { __type: 'Set'; values: string[] };
@@ -104,7 +104,7 @@ describe('Syntax Comparison: declare vs !', () => {
       expect(serialized.id).toBe('test-123');
       expect(serialized.name).toBe('Test Item');
       expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-      expect(serialized.count).toEqual({ __type: 'bigint', value: '9999' });
+      expect(serialized.count).toBe('9999');
       expect(serialized.key).toEqual({ __type: 'symbol', description: 'test-key' });
       expect(serialized.pattern).toEqual({ __type: 'regexp', source: '^test$', flags: 'gi' });
       expect(serialized.tags).toEqual({ __type: 'Set', values: ['typescript', 'testing'] });
@@ -166,7 +166,7 @@ describe('Syntax Comparison: declare vs !', () => {
       expect(serialized.id).toBe('test-123');
       expect(serialized.name).toBe('Test Item');
       expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-      expect(serialized.count).toEqual({ __type: 'bigint', value: '9999' });
+      expect(serialized.count).toBe('9999');
       expect(serialized.key).toEqual({ __type: 'symbol', description: 'test-key' });
       expect(serialized.pattern).toEqual({ __type: 'regexp', source: '^test$', flags: 'gi' });
       expect(serialized.tags).toEqual({ __type: 'Set', values: ['typescript', 'testing'] });

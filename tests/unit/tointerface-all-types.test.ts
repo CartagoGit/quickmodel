@@ -29,7 +29,7 @@ interface AllTypesInterface {
 	bigintZero: bigint;
 	bigintNegative: bigint;
 	bigintString: string; // BigInt serializado como string
-	bigintObject: { __type: string; value: string }; // BigInt serializado como objeto
+bigintObject: string; // BigInt serializado como string
 
 	// Symbols
 	symUnique: symbol;
@@ -118,7 +118,7 @@ class AllTypesModel extends QModel<AllTypesInterface> {
 	declare bigintZero: bigint;
 	declare bigintNegative: bigint;
 	declare bigintString: string;
-	declare bigintObject: { __type: string; value: string };
+declare bigintObject: string;
 
 	declare symUnique: symbol;
 	declare symGlobal: symbol;
@@ -390,12 +390,9 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.bigintString).toBe('999999999999999999999');
 		expect(typeof result.bigintString).toBe('string');
 
-		// BigInt como objeto - debe preservarse como objeto
-		expect(result.bigintObject).toEqual({
-			__type: 'bigint',
-			value: '123456789012345678901234567890',
-		});
-		expect(typeof result.bigintObject).toBe('object');
+		// BigInt como objeto - debe convertirse a string flat
+		expect(result.bigintObject).toBe('123456789012345678901234567890');
+		expect(typeof result.bigintObject).toBe('string');
 	});
 
 	test('should preserve Date objects as ISO strings', () => {

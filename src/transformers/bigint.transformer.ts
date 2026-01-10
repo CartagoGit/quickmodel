@@ -8,8 +8,15 @@ import { IQValidationContext, IQValidationResult, IQValidator } from '../core/in
  * **Deserialization**: `string | number` → `bigint`
  * 
  * @remarks
- * BigInt values cannot be directly serialized to JSON, so they are converted to strings.
- * Both string and number inputs are accepted during deserialization for flexibility.
+ * BigInt values are serialized as plain strings to ensure maximum compatibility with JSON APIs.
+ * 
+ * **⚠️ IMPORTANT - TYPE SAFETY**:
+ * Since BigInts are serialized as strings, you **MUST** explicitly declare the field with
+ * `@Quick({ field: BigInt })` or `@QType(BigInt)` to ensure it deserializes back to a BigInt.
+ * 
+ * If you put a BigInt into an `any` field or an untyped array, it will serialize to a string
+ * but deserialize back as a string (losing the BigInt type) because the schema doesn't know
+ * it should be converted back.
  * 
  * @example
  * ```typescript

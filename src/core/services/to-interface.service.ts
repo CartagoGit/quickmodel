@@ -298,10 +298,10 @@ export class ToInterfaceService<
 			);
 		}
 
-		// 8. BIGINT: Preserve original format
+		// 8. BIGINT: Always serialize to string
 		if (originalValue && typeof originalValue === 'object' && originalValue.__type === 'bigint') {
 			const bigintValue = typeof currentValue === 'bigint' ? currentValue : BigInt(currentValue);
-			return { __type: 'bigint', value: bigintValue.toString() };
+			return bigintValue.toString();
 		}
 
 		if (typeof originalValue === 'string' && typeof currentValue === 'bigint') {

@@ -130,15 +130,9 @@ describe('Transformer Edge Cases: BigInt', () => {
 		const json = data.serialize();
 
 		// Verify serialization format
-		expect(json.huge).toEqual({
-			__type: 'bigint',
-			value: '999999999999999999999999999999',
-		});
-		expect(json.negative).toEqual({
-			__type: 'bigint',
-			value: '-888888888888888888888888',
-		});
-		expect(json.zero).toEqual({ __type: 'bigint', value: '0' });
+		expect(json.huge).toBe('999999999999999999999999999999');
+		expect(json.negative).toBe('-888888888888888888888888');
+		expect(json.zero).toBe('0');
 	});
 
 	test('should handle BigInt.MAX_SAFE_INTEGER equivalent', () => {

@@ -101,6 +101,11 @@ export class MockGenerator {
   ): unknown {
     // Array de modelos
     if (arrayElementClass && designType === Array) {
+      // Special case: generic Array class (e.g. @Quick({ tags: Array }))
+      if (arrayElementClass === Array) {
+        return this.getDefaultValue(type, 'array');
+      }
+
       const length = type === 'minimal' ? 1 : type === 'empty' ? 0 : faker.number.int({ min: 1, max: 3 });
       return this.generateArray(arrayElementClass, length, type);
     }

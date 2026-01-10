@@ -177,7 +177,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 
 		expect(serialized.id).toBe('1');
 	// BigInt se serializa como objeto con __type
-	expect(serialized.balance).toMatchObject({ __type: 'bigint', value: '999' });
+	expect(serialized.balance).toBe('999');
 	expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 	expect(typeof serialized.createdAt).toBe('string');
 });

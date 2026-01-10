@@ -197,7 +197,7 @@ describe('String Literals (@QType("type"))', () => {
     expect(serialized.name).toBe('Test');
     expect(serialized.count).toBe(42);
     expect(serialized.active).toBe(true);
-    expect(serialized.amount).toMatchObject({ __type: 'bigint', value: '123456789' });
+    expect(serialized.amount).toBe('123456789');
     expect(serialized.key).toMatchObject({ __type: 'symbol', description: 'testKey' });
     expect(serialized.pattern).toMatchObject({ __type: 'regexp', source: 'test', flags: 'gi' });
     expect(serialized.error).toBe('Error: Test error');

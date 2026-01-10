@@ -557,10 +557,9 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			expect(interfaceData.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		});
 
-		test('BigInt transformed to object with __type', () => {
-			expect(typeof interfaceData.bigNumber).toBe('object');
-			expect(interfaceData.bigNumber.__type).toBe('bigint');
-			expect(interfaceData.bigNumber.value).toBe('9007199254740991');
+		test('BigInt transformed to string', () => {
+			expect(typeof interfaceData.bigNumber).toBe('string');
+			expect(interfaceData.bigNumber).toBe('9007199254740991');
 		});
 
 		test('Set serializes to array format', () => {
