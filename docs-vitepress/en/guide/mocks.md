@@ -71,6 +71,28 @@ The mock generator is smart enough to guess context from property names.
 })
 ```
 
+### Custom Transformers & Mocking
+
+::: warning CUSTOM TRANSFORMERS
+If you use **Custom Transformers** to handle input (Deserialization), QuickModel **cannot** guess how to generate data for them.
+
+**You MUST providing a custom `mocker`**:
+
+```typescript
+@Quick({
+  // Transformer expects uppercase
+  sku: (val) => String(val).toUpperCase()
+}, {
+  mockers: {
+    // Explicitly generate compatible mock data
+    sku: () => 'ITEM-123'
+  }
+})
+```
+
+If you forget this, QuickModel will warn you at runtime and generate a default value that might be invalid for your app logic.
+:::
+
 ## Advanced Usage
 
 ### Nested Models
@@ -136,4 +158,45 @@ async function seedKeywords() {
 // fixtures.ts
 export const mockAdmin = User.mock().random({ role: 'admin' });
 export const mockGuest = User.mock().random({ role: 'guest' });
+```
+
+---
+
+## Mock Builder API Reference
+
+The `.mock()` method returns a `QMockBuilder` with a fluent API.
+
+### Model Instance Generation
+
+Returns actual instances of your class (`instanceof User` will be true).
+
+| Method                                | Description                                                                            | Signature                                                      |
+| :------------------------------------ | :------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| **`random(overrides?)`**              | Generates 1 instance with **random** realistic data (Faker).                           | `(overrides?: Partial<T>) => T`                                |
+| **`empty(overrides?)`**               | Generates 1 instance with **empty/null** values.                                       | `(overrides?: Partial<T>) => T`                                |
+| **`minimal(overrides?)`**             | Generates 1 instance with only **required** fields populated.                          | `(overrides?: Partial<T>) => T`                                |
+| **`full(overrides?)`**                | Generates 1 instance with **all** fields (req + optional) populated.                   | `(overrides?: Partial<T>) => T`                                |
+| **`sample(overrides?)`**              | Generates 1 instance with **deterministic/static** sample data.                        | `(overrides?: Partial<T>) => T`                                |
+| **`array(count, type?, overrides?)`** | Generates `count` instances. `type` defaults to `'random'`. `overrides` is a callback. | `(n: number, type?: MoackType, fn?: (i) => Partial<T>) => T[]` |
+
+```typescript
+// Array with custom overrides per item
+User.mock().array(5, 'random', (index) => ({
+	name: `User ${index}`,
+}));
+```
+
+### Plain Interface Generation
+
+Returns plain JavaScript objects (POJOs), **not** class instances. Useful for API response mocking where you don't want class methods.
+
+| Method                            | Description                    |
+| :-------------------------------- | :----------------------------- |
+| **`interfaceRandom(overrides?)`** | Plain object with random data. |
+| **`interfaceEmpty(overrides?)`**  | Plain object with empty data.  |
+| **`interfaceArray(count, ...)`**  | Array of plain objects.        |
+
+```typescript
+// Returns { name: "..." } instead of User { name: "..." }
+const userJson = User.mock().interfaceRandom();
 ```

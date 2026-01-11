@@ -84,130 +84,16 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
+import type {
+	IConstructor,
+	INativeFactory,
+	ISpec,
+	ISpecs,
+	QOptions,
+} from '../interfaces/quick.interface';
 
-/**
- * Constructor type for class-based type mapping
- */
-type IConstructor<T = any> = new (...args: any[]) => T;
-
-/**
- * Transformer function that converts a value
- */
-type ITransformerFunction = (value: unknown) => unknown;
-
-/**
- * Native constructors and factories supported by QuickModel
- */
-type INativeFactory =
-	| BigIntConstructor
-	| SymbolConstructor
-	| DateConstructor
-	| RegExpConstructor
-	| MapConstructor
-	| SetConstructor
-	| StringConstructor
-	| NumberConstructor
-	| BooleanConstructor
-	| ArrayBufferConstructor
-	| SharedArrayBufferConstructor
-	| DataViewConstructor
-	| ErrorConstructor
-	| Int8ArrayConstructor
-	| Uint8ArrayConstructor
-	| Uint8ClampedArrayConstructor
-	| Int16ArrayConstructor
-	| Uint16ArrayConstructor
-	| Int32ArrayConstructor
-	| Uint32ArrayConstructor
-	| Float32ArrayConstructor
-	| Float64ArrayConstructor
-	| { new (...args: any[]): URL; prototype: URL }
-	| { new (...args: any[]): URLSearchParams; prototype: URLSearchParams }
-	| { new (...args: any[]): TextEncoder; prototype: TextEncoder }
-	| { new (...args: any[]): TextDecoder; prototype: TextDecoder };
-
-/**
- * All supported type specifications for @Quick() decorator
- *
- * Supports:
- * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
- * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
- * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
- */
-export type ISpec =
-	| QAlias // String literals like 'bigint', 'date', 'regexp'
-	| IConstructor // Custom classes
-	| INativeFactory // Built-in types (Date, BigInt, etc)
-	| ITransformerFunction
-	| ISpec[] // Array with element type like [Date], [[Date]], [[[Date]]]
-	| (string & {}); // Allow any string (custom transformers) but preserve autocomplete for QAlias
-
-/**
- * All supported type specifications for @Quick() decorator for arrays
- *
- * Supports:
- * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
- * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
- * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Array with element type: [Date], [[Date]], [[[Date]]]
- * - Array of any Spec: ISpec[]
- */
-export type ISpecs = ISpec[]; // Array of any Spec
-
-/**
- * Options for @Quick() decorator to specify property types explicitly
- *
- * Supports **dot notation** for nested property transformations.
- * Use dot notation to specify transformations for nested properties without
- * decorating the nested class itself.
- *
- * @example
- * **Basic type mapping:**
- * ```typescript
- * @Quick({
- *   value: 'bigint',           // String literal (autocomplete)
- *   date: Date,                // Constructor
- *   pattern: 'regexp',         // String literal
- *   tags: Set,                 // Constructor
- *   custom: (v) => v * 2       // Transformer function
- * })
- * ```
- *
- * @example
- * **Dot notation for nested properties:**
- * ```typescript
- * @Quick({
- *   product: Product,              // Transform to Product instance
- *   'product.price': BigInt,       // Transform nested product.price
- *   'product.createdAt': Date,     // Transform nested product.createdAt
- *   addedAt: Date
- * })
- * class CartItem extends QModel<ICartItem> {
- *   product!: Product;
- *   quantity!: number;
- *   addedAt!: Date;
- * }
- * ```
- *
- * @example
- * **Deep nesting with dot notation:**
- * ```typescript
- * @Quick({
- *   'user.profile.settings.theme': String,
- *   'user.profile.lastLogin': Date,
- *   'user.stats.points': BigInt
- * })
- * class Account extends QModel<IAccount> {
- *   user!: any;
- * }
- * ```
- *
- * @see [Dot Notation Guide](../../../docs/DOT-NOTATION.md) for complete guide on nested transformations
- */
-export interface QOptions {
-	[propertyName: string]: ISpec | ISpecs;
-}
+// Re-export common types for backward compatibility or direct usage
+export type { QOptions } from '../interfaces/quick.interface';
 
 /**
  * Class decorator that automatically applies @QType() to all properties.

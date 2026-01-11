@@ -71,6 +71,28 @@ El generador de mocks es lo suficientemente inteligente como para adivinar el co
 })
 ```
 
+### Transformadores Personalizados y Mocks
+
+::: warning TRANSFORMADORES PERSONALIZADOS
+Si usas **Transformadores Personalizados** para manejar la entrada (Deserialización), QuickModel **no puede** adivinar cómo generar datos para ellos.
+
+**DEBES proporcionar un `mocker` personalizado**:
+
+```typescript
+@Quick({
+  // El transformador espera mayúsculas
+  sku: (val) => String(val).toUpperCase()
+}, {
+  mockers: {
+    // Generar explícitamente datos compatibles
+    sku: () => 'ITEM-123'
+  }
+})
+```
+
+Si olvidas esto, QuickModel te avisará en tiempo de ejecución y generará un valor por defecto que podría ser inválido para tu lógica.
+:::
+
 ## Uso Avanzado
 
 ### Modelos Anidados
@@ -136,4 +158,45 @@ async function seedKeywords() {
 // fixtures.ts
 export const mockAdmin = User.mock().random({ role: 'admin' });
 export const mockGuest = User.mock().random({ role: 'guest' });
+```
+
+---
+
+## Referencia API Mock Builder
+
+El método `.mock()` devuelve un `QMockBuilder` con una API fluida.
+
+### Generación de Instancias (Modelos)
+
+Devuelve instancias reales de tu clase (`instanceof User` será true).
+
+| Método                                | Descripción                                                                              | Firma                                                          |
+| :------------------------------------ | :--------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| **`random(overrides?)`**              | Genera 1 instancia con datos **aleatorios** realistas (Faker).                           | `(overrides?: Partial<T>) => T`                                |
+| **`empty(overrides?)`**               | Genera 1 instancia con valores **vacíos/nulos**.                                         | `(overrides?: Partial<T>) => T`                                |
+| **`minimal(overrides?)`**             | Genera 1 instancia solo con campos **obligatorios**.                                     | `(overrides?: Partial<T>) => T`                                |
+| **`full(overrides?)`**                | Genera 1 instancia con **todos** los campos (req + opcionales).                          | `(overrides?: Partial<T>) => T`                                |
+| **`sample(overrides?)`**              | Genera 1 instancia con datos de muestra **deterministas/estáticos**.                     | `(overrides?: Partial<T>) => T`                                |
+| **`array(count, type?, overrides?)`** | Genera `count` instancias. `type` por defecto es `'random'`. `overrides` es un callback. | `(n: number, type?: MoackType, fn?: (i) => Partial<T>) => T[]` |
+
+```typescript
+// Array con overrides personalizados por ítem
+User.mock().array(5, 'random', (index) => ({
+	name: `Usuario ${index}`,
+}));
+```
+
+### Generación de Interfaces Planas
+
+Devuelve objetos JavaScript planos (POJOs), **no** instancias de clase. Útil para mockear respuestas de API donde no quieres métodos de clase.
+
+| Método                            | Descripción                        |
+| :-------------------------------- | :--------------------------------- |
+| **`interfaceRandom(overrides?)`** | Objeto plano con datos aleatorios. |
+| **`interfaceEmpty(overrides?)`**  | Objeto plano con datos vacíos.     |
+| **`interfaceArray(count, ...)`**  | Array de objetos planos.           |
+
+```typescript
+// Devuelve { name: "..." } en lugar de User { name: "..." }
+const userJson = User.mock().interfaceRandom();
 ```
