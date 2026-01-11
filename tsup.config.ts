@@ -1,24 +1,26 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    'core/index': 'src/core/index.ts',
-    'transformers/index': 'src/transformers/index.ts'
-  },
-  format: ['cjs', 'esm'],
-  dts: true,
-  splitting: false,
-  sourcemap: true,
-  clean: true,
-  treeshake: true,
-  minify: false,
-  outDir: 'dist',
-  external: ['reflect-metadata'],
-  // Soporte para path aliases (@/*)
-  esbuildOptions(options) {
-    options.alias = {
-      '@': './src'
-    };
-  }
+	entry: {
+		index: 'src/index.ts',
+		types: 'src/types.ts',
+		advanced: 'src/advanced.ts',
+		'core/index': 'src/core/index.ts',
+		'transformers/index': 'src/transformers/index.ts',
+	},
+	format: ['cjs', 'esm'],
+	dts: true,
+	splitting: false,
+	sourcemap: true,
+	clean: true,
+	treeshake: true,
+	minify: false,
+	outDir: 'dist',
+	external: ['reflect-metadata'],
+	// Soporte para path aliases (@/*)
+	esbuildOptions(options) {
+		options.alias = {
+			'@': './src',
+		};
+	},
 });

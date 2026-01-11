@@ -1,5 +1,5 @@
 {
-	"entryPoints": ["src/index.ts"],
+	"entryPoints": ["src/index.ts", "src/types.ts", "src/advanced.ts"],
 	"out": "docs-vitepress/tsdoc",
 	"plugin": ["typedoc-plugin-markdown"],
 	"disableSources": true,
@@ -9,11 +9,6 @@
 	"entryFileName": "index.md",
 	"sort": ["alphabetical"],
 	"groupOrder": ["*"],
-	"exclude": [
-		"**/*.test.ts",
-		"**/*.spec.ts",
-		"src/examples/**",
-		"tests/**"
-	],
+	"exclude": ["**/*.test.ts", "**/*.spec.ts", "src/examples/**", "tests/**"],
 	"skipErrorChecking": true
 }

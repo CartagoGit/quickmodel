@@ -23,6 +23,16 @@
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.js"
 		},
+		"./types": {
+			"types": "./dist/types.d.ts",
+			"import": "./dist/types.mjs",
+			"require": "./dist/types.js"
+		},
+		"./advanced": {
+			"types": "./dist/advanced.d.ts",
+			"import": "./dist/advanced.mjs",
+			"require": "./dist/advanced.js"
+		},
 		"./transformers": {
 			"types": "./dist/transformers/index.d.ts",
 			"import": "./dist/transformers/index.mjs",

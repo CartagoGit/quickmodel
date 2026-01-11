@@ -86,47 +86,22 @@ new User({ posts: [new Post({ id: 1, title: 'Test' })] })
 - Si el typeMap especifica un tipo para esa propiedad, establece `arrayElementClass`
 - El deserializer usa `arrayElementClass` para convertir cada elemento del array
 
+### Private/Protected Properties
+
+**Estado**: ✅ COMPLETAMENTE CORREGIDO
+
+**Comportamiento**:
+- ✅ Propiedades privadas (`_`) y doble privadas (`__`) se omiten en `serialize()` y `toJSON()` por defecto.
+- ✅ Propiedades `__` siempre se consideran internas y se omiten.
+- ✅ Opciones `includeUnderscore` y `includeDoubleUnderscore` permiten forzar su inclusión.
+- ✅ Constructor permite inicializar propiedades privadas.
+
+**Tests**:
+- `tests/unit/serialization/private-properties.test.ts`
+
 ## 📋 Casos Pendientes de Implementación/Prueba
 
-### 1. Referencias Circulares ⭐⭐⭐
-
-**Prioridad**: Alta
-
-**Descripción**: Objetos que se referencian mutuamente causan stack overflow.
-
-**Ejemplo**:
-```typescript
-interface INode {
-  value: number;
-  parent?: INode;
-  children: INode[];
-}
-
-class Node extends QModel<INode> {
-  value!: number;
-  parent?: Node;
-  children!: Node[];
-}
-
-const parent = new Node({ value: 1, children: [] });
-const child = new Node({ value: 2, parent, children: [] });
-parent.children.push(child); // 💥 Circular reference
-```
-
-**Pruebas necesarias**:
-- ✅ Detección de referencias circulares
-- ✅ Serialización sin stack overflow
-- ✅ Deserialización con referencias preservadas
-- ✅ toJSON() maneja ciclos correctamente
-
-**Estrategias**:
-- WeakSet para tracking de objetos visitados
-- Reemplazar ciclos con referencias simbólicas
-- Opción `maxDepth` en serialización
-
----
-
-### 2. Propiedades Readonly ⭐⭐
+### 1. Propiedades Readonly ⭐⭐
 
 **Prioridad**: Media
 
@@ -151,34 +126,7 @@ user.id = 2; // ¿Debería lanzar error?
 
 ---
 
-### 3. Propiedades Private/Protected ⭐⭐
-
-**Prioridad**: Media
-
-**Descripción**: Propiedades privadas no deberían serializarse.
-
-**Ejemplo**:
-```typescript
-class User extends QModel<IUser> {
-  id!: number;
-  private _password!: string;
-  protected _internal!: string;
-}
-
-const user = new User({ id: 1, _password: 'secret' });
-const json = user.serialize();
-// json NO debería contener _password
-```
-
-**Pruebas necesarias**:
-- ✅ `serialize()` omite private/protected
-- ✅ Constructor puede inicializar private/protected
-- ✅ Deserialización respeta visibilidad
-- ✅ `toJSON()` no expone internals
-
----
-
-### 4. Partial Updates (PATCH) ⭐⭐⭐
+### 2. Partial Updates (PATCH) ⭐⭐⭐
 
 **Prioridad**: Alta
 
@@ -203,7 +151,7 @@ user.update({ name: 'Jane' });
 
 ---
 
-### 5. Arrays Heterogéneos ⭐
+### 3. Arrays Heterogéneos ⭐
 
 **Prioridad**: Baja
 
@@ -230,7 +178,7 @@ new Mixed({ items: ['text', 123, new Date(), null] });
 
 ---
 
-### 6. Transformaciones Bidireccionales Custom ⭐⭐
+### 4. Transformaciones Bidireccionales Custom ⭐⭐
 
 **Prioridad**: Media
 
