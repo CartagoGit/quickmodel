@@ -13,7 +13,11 @@
 
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
-import { NATIVE_TYPE_MAP } from '../constants/native-types';
+import {
+	type INativeConstructor,
+	NATIVE_TYPE_MAP,
+} from '../constants/native-types';
+import type { QTypeOptions } from '../interfaces/qtype-options.interface';
 import type { QAlias } from '../types/q-alias.type';
 
 /**
@@ -32,7 +36,8 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **WITHOUT arguments** (`@QType()`):
  * - Copies the value as-is without transformation
  * - Protects properties from TypeScript field initialization when using `!` or `?`
- * - Equivalent to `declare` but works with `!` syntax
+ * - **IMPORTANT**: When used WITHOUT `@Quick` on the class, you **MUST** use `declare` (e.g. `declare name: string`).
+ *   Using `!` (e.g. `name!: string`) will cause TypeScript to emit an initializer that overwrites the decorator's logic.
  *
  * **WITH type argument** (`@QType(Type)`):
  * - Transforms the value to the specified type
@@ -183,60 +188,13 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **Why use @QType?**
  * TypeScript types are erased at runtime. Without this decorator (or @Quick), the library cannot know that `createdAt` should be transformed into a `Date` object, or that `balance` should be a `BigInt`.
  */
-// Define strict types for native constructors to avoid 'any'
-export type INativeFactory =
-	| BigIntConstructor
-	| SymbolConstructor
-	| DateConstructor
-	| RegExpConstructor
-	| MapConstructor
-	| SetConstructor
-	| StringConstructor
-	| NumberConstructor
-	| BooleanConstructor
-	| ArrayConstructor
-	| ArrayBufferConstructor
-	| DataViewConstructor
-	| Int8ArrayConstructor
-	| Uint8ArrayConstructor
-	| Uint8ClampedArrayConstructor
-	| Int16ArrayConstructor
-	| Uint16ArrayConstructor
-	| Int32ArrayConstructor
-	| Uint32ArrayConstructor
-	| Float32ArrayConstructor
-	| Float64ArrayConstructor
-	| ErrorConstructor;
-
-/**
- * Options for QType decorator to handle advanced scenarios per property.
- */
-export interface QTypeOptions {
-	/**
-	 * Custom transformer function (Input -> Model).
-	 * Overrides default deserialization logic for this property.
-	 */
-	transformer?: (value: unknown) => unknown;
-
-	/**
-	 * Custom serializer function (Model -> Output/Interface).
-	 * Overrides default toInterface preservation logic.
-	 */
-	serializer?: (value: unknown) => unknown;
-
-	/**
-	 * Custom mocker function (Test -> Model).
-	 * Overrides default mock generation logic.
-	 */
-	mocker?: () => unknown;
-}
 
 export function QType<T>(
 	typeOrClass?:
 		| (new (...args: any[]) => T) // Constructor relaxed to 'any' argument to allow various signatures
 		| symbol
 		| QAlias
-		| INativeFactory
+		| INativeConstructor
 		| PromiseConstructor
 		| Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
 	options?: QTypeOptions

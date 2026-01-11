@@ -18,7 +18,7 @@ export { QModel } from './core/models/quick.model';
 export { Quick } from './core/decorators/quick.decorator';
 
 export { QType } from './core/decorators/qtype.decorator';
-export type { QTypeOptions } from './core/decorators/qtype.decorator';
+export type { QTypeOptions } from './core/interfaces/qtype-options.interface';
 
 // ============================================================================
 // PUBLIC API - Type Helper Utilities
@@ -40,6 +40,13 @@ export type {
 	QAdvancedOptions,
 	QDiscriminatorConfig,
 } from './core/interfaces/quick-options.interface';
+
+export type {
+	QTransformerFn,
+	QSerializerFn,
+	QMockerFn,
+} from './core/interfaces/transform-options.interface';
+
 
 /**
  * Supported string aliases for types (e.g. 'date', 'bigint', 'regexp')

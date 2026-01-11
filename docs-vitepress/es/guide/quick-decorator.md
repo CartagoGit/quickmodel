@@ -61,6 +61,32 @@ Puedes pasar un segundo objeto de opciones a `@Quick` para un control avanzado:
 class MyModel extends QModel<IMyInterface> { ... }
 ```
 
+### Referencia de Opciones:
+
+- **`strict`**: (Boolean) Solo permite propiedades definidas en el decorador.
+- **[`transformers`](#1-transformadores-personalizados-deserializacion)**: Lógica de deserialización personalizada.
+- **[`serializers`](#2-serializadores-personalizados)**: Lógica de serialización personalizada.
+- **[`mockers`](#3-mocks-personalizados)**: Generación de mocks personalizada.
+- **[`discriminators`](#4-discriminadores-polimorfismo)**: Manejo de tipos polimórficos.
+
+### Modificadores de Propiedad (`!` vs `declare`)
+
+Debido a que `@Quick()` envuelve el constructor de tu clase, maneja automáticamente la inicialización de propiedades.
+
+- ✅ **`!` (Asignación Definitiva)**: Seguro de usar. El decorador soluciona automáticamente el problema de "sobrescritura con undefined".
+- ✅ **`?` (Opcional)**: Seguro de usar.
+- ✅ **`declare`**: Seguro de usar (y estrictamente requerido si usas `@QType` _sin_ `@Quick`).
+
+```typescript
+@Quick({ name: String })
+class User extends QModel<IUser> {
+	// Todos válidos con @Quick
+	name!: string; // inicializado por el decorador
+	age?: number; // opcional
+	declare email: string; // solo metadatos
+}
+```
+
 ### 1. Transformadores Personalizados (Deserialización)
 
 Sobrescribe la lógica de deserialización por defecto (JSON -> Modelo) para propiedades específicas.
@@ -180,6 +206,17 @@ Puedes pasar una **función** a cualquier propiedad. Esta función actúa como u
   config: JSON.parse
 })
 ```
+
+::: warning FLUJO INCOMPLETO
+Los transformadores personalizados solo manejan la **Entrada** (Deserialización).
+
+Si los usas, **QuickModel no puede saber automáticamente** cómo:
+
+1.  **Serializar** los datos de vuelta a su formato original (simplemente devolverá el valor transformado).
+2.  **Generar Mocks** correctamente (generará un valor por defecto que podría no satisfacer tu transformador).
+
+**DEBES definir explícitamente [`serializers`](#2-serializadores-personalizados) y [`mockers`](#3-mocks-personalizados) si necesitas esas funcionalidades.**
+:::
 
 ### ¿Cómo hago operaciones matemáticas?
 

@@ -1,3 +1,9 @@
+import type {
+	QMockerFn,
+	QSerializerFn,
+	QTransformerFn,
+} from './transform-options.interface';
+
 /**
  * Options for @Quick() decorator to handle advanced scenarios.
  *
@@ -288,6 +294,7 @@ export type QDiscriminatorConfig<
  * })
  * ```
  */
+
 export interface QAdvancedOptions<
 	TTypeMap extends Record<string, unknown> = Record<string, unknown>,
 > {
@@ -336,7 +343,7 @@ export interface QAdvancedOptions<
 	 * ```
 	 */
 	transformers?: {
-		[K in keyof TTypeMap]?: (value: unknown) => unknown;
+		[K in keyof TTypeMap]?: QTransformerFn;
 	};
 
 	/**
@@ -363,7 +370,7 @@ export interface QAdvancedOptions<
 	 * ```
 	 */
 	serializers?: {
-		[K in keyof TTypeMap]?: (value: unknown) => unknown;
+		[K in keyof TTypeMap]?: QSerializerFn;
 	};
 
 	/**
@@ -386,7 +393,7 @@ export interface QAdvancedOptions<
 	 * ```
 	 */
 	mockers?: {
-		[K in keyof TTypeMap]?: () => unknown;
+		[K in keyof TTypeMap]?: QMockerFn;
 	};
 }
 

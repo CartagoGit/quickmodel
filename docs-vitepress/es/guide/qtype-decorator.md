@@ -52,17 +52,25 @@ Esto asegura que TypeScript emita los metadatos de tipo pero **no** genere códi
 **NO uses `!` (Aserción de Asignación Definitiva) ni `=` (Inicializadores).**
 
 ```typescript
+// ❌ MAL: ¡Sin `@Quick`, esto falla!
+// El operador '!' (con useDefineForClassFields: true) crea un inicializador de propiedad
+// que corre DESPUÉS del decorador, sobrescribiendo tu getter con 'undefined'.
 class User extends QModel<IUser> {
-	// ❌ MAL: El operador '!' (con useDefineForClassFields: true) crea
-	// un inicializador de propiedad que se ejecuta DESPUÉS del decorador.
-	// Efectivamente, sobrescribe constantemente tus datos con 'undefined'.
-	@QType(String)
-	name!: string;
+  @QType(String)
+  name!: string;
+}
 
-	// ❌ MAL: Los inicializadores se ejecutan DESPUÉS de que se crea el modelo.
-	// Esto sobrescribe los datos deserializados con "Default".
-	@QType(String)
-	status = 'Default';
+// ✅ BIEN: ¡Si usas `@Quick` en la clase, esto se arregla automáticamente!
+@Quick()
+class User extends QModel<IUser> {
+  @QType(String)
+  name!: string; // Funciona porque @Quick limpia la instancia
+}
+
+// ❌ MAL: Los inicializadores se ejecutan DESPUÉS de que se crea el modelo.
+// Esto sobrescribe los datos deserializados con "Default".
+@QType(String)
+status = 'Default';
 }
 ```
 

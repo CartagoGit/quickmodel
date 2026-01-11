@@ -214,6 +214,10 @@ export interface QOptions {
  *
  * Properties are registered from the data passed to the constructor.
  *
+ * **Property Modifiers (`!` vs `declare`)**:
+ * - ✅ **`!` (Definite Assignment)**: Safe to use. `@Quick` wraps the constructor and handles initialization, preventing "undefined" overwrites.
+ * - ✅ **`declare`**: Also safe to use.
+ *
  * **No automatic detection** - All special types must be explicitly declared:
  * - Date, BigInt, RegExp, Map, Set, etc. MUST be specified in type mapping
  * - Without explicit declaration, values are used as-is with TypeScript metadata only

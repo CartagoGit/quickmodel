@@ -6,7 +6,10 @@
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
-import { QUICK_OPTIONS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import {
+	QUICK_OPTIONS_KEY,
+	QUICK_TYPE_MAP_KEY,
+} from '../constants/metadata-keys';
 import { QAdvancedOptions } from '../interfaces/quick-options.interface';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
@@ -37,10 +40,8 @@ export class MockGenerator {
 		const overrideData = overrides as Record<string, unknown>;
 
 		// Get advanced options (for mockers)
-		const options: QAdvancedOptions = Reflect.getMetadata(
-			QUICK_OPTIONS_KEY,
-			modelClass
-		) || {};
+		const options: QAdvancedOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
 
 		for (const key of properties) {
 			// If override exists, use it
@@ -68,6 +69,29 @@ export class MockGenerator {
 			if (customMocker && typeof customMocker === 'function') {
 				mock[key] = customMocker();
 				continue;
+			}
+
+			// 🔥 CHECK 3: Validation Warning - Missing Mocker for Custom Transformer
+			// If a custom transformer is present but NO mocker is defined, warn the user.
+			// The library cannot know how to mock the input expected by the transformer.
+			const customTransformer =
+				(options.transformers && options.transformers[key]) ||
+				Reflect.getMetadata(
+					'customTransformer',
+					modelClass.prototype,
+					key
+				);
+
+			if (customTransformer) {
+				console.warn(
+					`[QuickModel] Warning: Property '${String(
+						key
+					)}' in model '${
+						modelClass.name
+					}' has a Custom Transformer but NO Custom Mocker. ` +
+						`Generated mock data might not satisfy the transformer's expectations. ` +
+						`Please add a 'mocker' in @Quick options or @QType options.`
+				);
 			}
 
 			let fieldType = Reflect.getMetadata(

@@ -60,6 +60,32 @@ You can pass a second options object to `@Quick` for advanced control:
 class MyModel extends QModel<IMyInterface> { ... }
 ```
 
+### Options Reference:
+
+- **`strict`**: (Boolean) Only allows properties defined in the decorator.
+- **[`transformers`](#1-custom-transformers-deserialization)**: Custom deserialization logic.
+- **[`serializers`](#2-custom-serializers)**: Custom serialization logic.
+- **[`mockers`](#3-custom-mockers)**: Custom mock generation.
+- **[`discriminators`](#4-discriminators-polymorphism)**: Polymorphic type handling.
+
+### Property Modifiers (`!` vs `declare`)
+
+Because `@Quick()` wraps your class constructor, it automatically handles property initialization.
+
+- ✅ **`!` (Definite Assignment)**: Safe to use. The decorator fixes the "undefined overwrite" issue automatically.
+- ✅ **`?` (Optional)**: Safe to use.
+- ✅ **`declare`**: Safe to use (and strictly required if using `@QType` _without_ `@Quick`).
+
+```typescript
+@Quick({ name: String })
+class User extends QModel<IUser> {
+	// All valid with @Quick
+	name!: string; // initialized by decorator
+	age?: number; // optional
+	declare email: string; // metadata only
+}
+```
+
 ---
 
 ## Advanced Options
@@ -197,6 +223,17 @@ You can pass a **function** to any property. This function acts as a **Deseriali
   config: JSON.parse
 })
 ```
+
+::: warning IMCOMPLETE FLOW
+Custom transformers only handle **Input** (Deserialization).
+
+If you use them, **QuickModel cannot automatically know** how to:
+
+1.  **Serialize** the data back to its original format (it will just output the transformed value).
+2.  **Mock** the data correctly (it will generate a default value that might not satisfy your transformer).
+
+**You MUST explicitly define [`serializers`](#2-custom-serializers) and [`mockers`](#3-custom-mockers) if you need those features.**
+:::
 
 ### How do I math?
 

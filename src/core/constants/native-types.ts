@@ -5,6 +5,10 @@
 
 // Native constructor types
 export type INativeConstructor =
+	| typeof String
+	| typeof Number
+	| typeof Boolean
+	| typeof Array
 	| typeof Date
 	| typeof BigInt
 	| typeof Symbol
