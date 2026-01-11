@@ -204,7 +204,7 @@ describe('System: API Response Transformation', () => {
 
 		// STEP 2: Parse and transform each post
 		const postsData = JSON.parse(apiResponseJson);
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const posts = postsData.map((postData: any) =>
 			Post.deserialize(postData)
 		);
@@ -267,12 +267,12 @@ describe('System: API Response Transformation', () => {
 		const _parsed1 = JSON.parse(json);
 
 		// Transform each part
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const user = User.deserialize(_parsed1.user as any);
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
+		const user = User.deserialize(_parsed1.user);
+		 
 		const posts = _parsed1.posts.map((p: any) => Post.deserialize(p));
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const stats = Stats.deserialize(_parsed1.stats as any);
+		 
+		const stats = Stats.deserialize(_parsed1.stats);
 
 		// Verify everything transformed correctly
 		expect(user.createdAt).toBeInstanceOf(Date);

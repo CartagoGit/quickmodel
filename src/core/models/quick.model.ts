@@ -1076,6 +1076,6 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	clone(): this {
 		const Constructor = this
 			.constructor as unknown as IModelConstructor<this>;
-		return Constructor.deserialize(this.serialize()) as this;
+		return Constructor.deserialize(this.serialize());
 	}
 }

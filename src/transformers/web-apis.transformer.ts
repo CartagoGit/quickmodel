@@ -245,7 +245,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 
 		if (typeof value === 'string') {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				return new TextDecoder(value as any);
 			} catch (_error) {
 				throw new QModelError(
@@ -265,7 +265,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 			const encoding =
 				(value as { encoding?: string }).encoding || 'utf-8';
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				return new TextDecoder(encoding as any);
 			} catch (_error) {
 				throw new QModelError(

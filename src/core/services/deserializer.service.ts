@@ -1886,7 +1886,7 @@ export class Deserializer<
 
 		// 2. Function discriminator: call function with data
 		if (typeof QDiscriminatorConfig === 'function') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			const result = (QDiscriminatorConfig as any)(data);
 			return (result as Function) || getFirstType();
 		}
