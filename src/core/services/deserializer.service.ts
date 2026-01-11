@@ -1876,8 +1876,9 @@ export class Deserializer<
 
 		// 2. Function discriminator: call function with data
 		if (typeof discriminatorConfig === 'function') {
-			const result = discriminatorConfig(data);
-			return result || getFirstType();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const result = (discriminatorConfig as any)(data);
+			return (result as Function) || getFirstType();
 		}
 
 		// 3. Object with field + mapping
@@ -1891,7 +1892,8 @@ export class Deserializer<
 
 			// Try explicit mapping first
 			if (discriminatorConfig.mapping && fieldValue !== undefined) {
-				const mapped = discriminatorConfig.mapping[fieldValue];
+				const mapped =
+					discriminatorConfig.mapping[fieldValue as string | number];
 				if (mapped) return mapped;
 			}
 

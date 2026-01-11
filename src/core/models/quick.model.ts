@@ -629,9 +629,9 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * console.log(account.pattern instanceof RegExp); // true
 	 * ```
 	 */
-	static deserialize<T extends QModel<Record<string, unknown>>>(
-		this: new (data: ModelData<Record<string, unknown>>) => T,
-		data: ModelData<Record<string, unknown>>
+	static deserialize<T extends QModel<AnyRecord>>(
+		this: new (data: ModelData<AnyRecord>) => T,
+		data: ModelData<AnyRecord>
 	): T {
 		return QModel.deserializer.deserialize(data, this);
 	}
@@ -655,8 +655,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QModel<Record<string, unknown>>>(
-		this: new (data: ModelData<Record<string, unknown>>) => T,
+	static fromJSON<T extends QModel<AnyRecord>>(
+		this: new (data: ModelData<AnyRecord>) => T,
 		json: string
 	): T {
 		return QModel.deserializer.deserializeFromJson(json, this);
