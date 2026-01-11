@@ -69,61 +69,6 @@ QuickModel soporta una amplia gama de tipos y alias de cadena.
 > [!TIP]
 > Para una **lista completa** de todos los alias soportados (incluyendo Web APIs, Datos Binarios, etc.), consulta la [Referencia de Alias](./aliases.md).
 
-### Primitivos
-
-### Primitivos
-
-Mapear primitivos explícitamente asegura la coerción de tipos (ej: string `"123"` se convierte en number `123`).
-
-| Tipo        | Sintaxis                | Descripción                                                          |
-| :---------- | :---------------------- | :------------------------------------------------------------------- |
-| **String**  | `String` / `'string'`   | Convierte valor a string.                                            |
-| **Number**  | `Number` / `'number'`   | Convierte valor a number.                                            |
-| **Boolean** | `Boolean` / `'boolean'` | Convierte valor a boolean.                                           |
-| **BigInt**  | `BigInt` / `'bigint'`   | **Crucial:** Transforma enteros string ("900...") a `BigInt` nativo. |
-| **Symbol**  | `Symbol` / `'symbol'`   | Crea un símbolo único.                                               |
-
-### Fechas y Tiempo
-
-El manejo nativo de `Date` es una de las características más útiles.
-
-| Tipo     | Sintaxis          | Entrada (JSON)           | Salida (Modelo) |
-| :------- | :---------------- | :----------------------- | :-------------- |
-| **Date** | `Date` / `'date'` | `"2024-01-01T12:00:00Z"` | `new Date(...)` |
-
-### Colecciones
-
-Transforma automáticamente arrays de datos en Colecciones ES6 eficientes.
-
-| Tipo        | Sintaxis        | Entrada (JSON)     | Salida (Modelo)                  |
-| :---------- | :-------------- | :----------------- | :------------------------------- |
-| **Set**     | `Set` / `'set'` | `["a", "b", "a"]`  | `Set {"a", "b"}` (Des-duplicado) |
-| **Map**     | `Map` / `'map'` | `[["key", "val"]]` | `Map { "key" => "val" }`         |
-| **WeakMap** | `WeakMap`       | `[[obj, val]]`     | `WeakMap`                        |
-| **WeakSet** | `WeakSet`       | `[obj1, obj2]`     | `WeakSet`                        |
-
-### Datos Binarios & Buffers
-
-Maneja datos binarios directamente, perfecto para subida de archivos o criptografía.
-
-| Tipo             | Sintaxis                                         |
-| :--------------- | :----------------------------------------------- |
-| **ArrayBuffer**  | `ArrayBuffer` / `'arraybuffer'`                  |
-| **Uint8Array**   | `Uint8Array` / `'uint8array'`                    |
-| **Float32Array** | `Float32Array` / `'float32array'`                |
-| **DataView**     | `DataView` / `'dataview'`                        |
-| **TypedArrays**  | `Int8Array`, `Int16Array`, `BigInt64Array`, etc. |
-
-### Tipos Estructurales
-
-| Tipo       | Sintaxis              | Descripción                                               |
-| :--------- | :-------------------- | :-------------------------------------------------------- |
-| **RegExp** | `RegExp` / `'regexp'` | Convierte string regex (`"/^test$/i"`) a objeto `RegExp`. |
-| **URL**    | `URL` / `'url'`       | Convierte string URL a objeto `URL`.                      |
-| **Error**  | `Error` / `'error'`   | Reconstruye objetos `Error`.                              |
-
----
-
 ## Recetario: Escenarios Comunes (Cookbook)
 
 ### ¿Cómo manejo Arrays?

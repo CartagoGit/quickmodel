@@ -31,26 +31,40 @@ console.log(admin.role); // 'admin'
 
 QuickModel infiere automáticamente datos falsos apropiados basados en tus definiciones de tipos:
 
-| Tipo                    | Mock Generado                                                        |
-| :---------------------- | :------------------------------------------------------------------- |
-| `String` / `'string'`   | String aleatorio / Contexto inferido ('email', 'name', 'uuid', etc.) |
-| `Number` / `'number'`   | Número aleatorio                                                     |
-| `Boolean` / `'boolean'` | Booleano aleatorio                                                   |
-| `Date` / `'date'`       | Fecha reciente aleatoria                                             |
-| `BigInt` / `'bigint'`   | Entero grande aleatorio                                              |
-| `RegExp` / `'regexp'`   | Patrón regex aleatorio                                               |
-| `Symbol` / `'symbol'`   | Símbolo aleatorio                                                    |
-| `URL` / `'url'`         | URL aleatoria                                                        |
-| `Error` / `'error'`     | Objeto Error aleatorio                                               |
-| `Map` / `'map'`         | Map con entradas aleatorias                                          |
-| `Set` / `'set'`         | Set con valores aleatorios                                           |
-| Tipos `Buffer`          | `ArrayBuffer`, `DataView`, `Uint8Array`, `Float32Array`, etc.        |
+QuickModel soporta la generación de mocks para todos los tipos estándar, incluyendo Primitivos, Fechas, Colecciones y datos Binarios.
 
-### ¿Por qué tengo que especificar los tipos?
+> [!TIP]
+> Para una lista completa de tipos soportados y alias, consulta la **[Referencia de Alias](./aliases.md)**.
 
-Te preguntarás: _"Si ya declaré `name: string`, ¿por qué necesito `@Quick({ name: String })`?"_
+**Ejemplo:**
 
-**Respuesta:** Los tipos de TypeScript (`: string`) se **eliminan** al compilar a JavaScript. En tiempo de ejecución, la librería no puede ver tus definiciones de tipos de TypeScript. El decorador `@Quick` (o `@QType`) proporciona los **metadatos en tiempo de ejecución** necesarios para que la librería sepa cómo generar mocks y deserializar datos.
+| Tipo                  | Mock Generado    |
+| :-------------------- | :--------------- |
+| `String` / `'string'` | `"Hola Mundo!"`  |
+| `Date` / `'date'`     | `2024-01-01T...` |
+
+### Tipos Implícitos vs Explícitos
+
+**Implícito (Inferido):**
+En la mayoría de los casos, **¡no necesitas hacer nada!** QuickModel lee automáticamente los metadatos de TypeScript emitidos por los decoradores.
+
+```typescript
+@Quick({}) // Usa metadatos implícitamente
+class User extends QModel<IUser> {
+	@QType() // Dispara la emisión de metadatos
+	declare name: string; // Inferido como String
+}
+```
+
+**Explícito (Opcional):**
+Puedes especificar tipos explícitamente si quieres **sobrescribir** el comportamiento por defecto o si estás en un entorno donde no se emiten metadatos.
+
+```typescript
+@Quick({
+  name: String, // Explícito
+  age: 'number' // Alias explícito
+})
+```
 
 ### Inferencia Inteligente
 

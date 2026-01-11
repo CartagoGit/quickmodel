@@ -6,7 +6,8 @@
 import 'reflect-metadata';
 import { faker } from '@faker-js/faker';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
-import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import { QUICK_OPTIONS_KEY, QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import { QAdvancedOptions } from '../interfaces/quick-options.interface';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
@@ -35,10 +36,26 @@ export class MockGenerator {
 		// Explicit typing for key to satisfy index signature requirements
 		const overrideData = overrides as Record<string, unknown>;
 
+		// Get advanced options (for mockers)
+		const options: QAdvancedOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			modelClass
+		) || {};
+
 		for (const key of properties) {
 			// If override exists, use it
 			if (key in overrideData) {
 				mock[key] = overrideData[key];
+				continue;
+			}
+
+			// 🔥 CHECK: Custom mocker from options (High Priority)
+			if (
+				options.mockers &&
+				key in options.mockers &&
+				typeof options.mockers[key] === 'function'
+			) {
+				mock[key] = options.mockers[key]!();
 				continue;
 			}
 

@@ -69,61 +69,6 @@ QuickModel supports a vast array of types and string aliases.
 > [!TIP]
 > For a **complete list** of all supported string aliases (including Web APIs, Binary Data, etc.), see the [Aliases Reference](./aliases.md).
 
-### Primitives
-
-### Primitives
-
-Explicitly mapping primitives ensures coercions (e.g., `"123"` string becomes `123` number).
-
-| Type        | Syntax                  | Description                                                            |
-| :---------- | :---------------------- | :--------------------------------------------------------------------- |
-| **String**  | `String` / `'string'`   | Casts value to string.                                                 |
-| **Number**  | `Number` / `'number'`   | Casts value to number.                                                 |
-| **Boolean** | `Boolean` / `'boolean'` | Casts value to boolean.                                                |
-| **BigInt**  | `BigInt` / `'bigint'`   | **Crucial:** Transforms string integers ("900...") to native `BigInt`. |
-| **Symbol**  | `Symbol` / `'symbol'`   | Creates a unique symbol.                                               |
-
-### Dates & Time
-
-Native `Date` handling is one of the most useful features.
-
-| Type     | Syntax            | Input (JSON)             | Output (Model)  |
-| :------- | :---------------- | :----------------------- | :-------------- |
-| **Date** | `Date` / `'date'` | `"2024-01-01T12:00:00Z"` | `new Date(...)` |
-
-### Collections
-
-Automatically transform arrays of data into efficient ES6 Collections.
-
-| Type        | Syntax          | Input (JSON)       | Output (Model)                   |
-| :---------- | :-------------- | :----------------- | :------------------------------- |
-| **Set**     | `Set` / `'set'` | `["a", "b", "a"]`  | `Set {"a", "b"}` (De-duplicated) |
-| **Map**     | `Map` / `'map'` | `[["key", "val"]]` | `Map { "key" => "val" }`         |
-| **WeakMap** | `WeakMap`       | `[[obj, val]]`     | `WeakMap`                        |
-| **WeakSet** | `WeakSet`       | `[obj1, obj2]`     | `WeakSet`                        |
-
-### Binary Data & Buffers
-
-Handle binary data directly, perfect for file uploads or crypto.
-
-| Type             | Syntax                                           |
-| :--------------- | :----------------------------------------------- |
-| **ArrayBuffer**  | `ArrayBuffer` / `'arraybuffer'`                  |
-| **Uint8Array**   | `Uint8Array` / `'uint8array'`                    |
-| **Float32Array** | `Float32Array` / `'float32array'`                |
-| **DataView**     | `DataView` / `'dataview'`                        |
-| **TypedArrays**  | `Int8Array`, `Int16Array`, `BigInt64Array`, etc. |
-
-### Structural Types
-
-| Type       | Syntax                | Description                                               |
-| :--------- | :-------------------- | :-------------------------------------------------------- |
-| **RegExp** | `RegExp` / `'regexp'` | Converts string regex (`"/^test$/i"`) to `RegExp` object. |
-| **URL**    | `URL` / `'url'`       | Converts URL string to `URL` object.                      |
-| **Error**  | `Error` / `'error'`   | Reconstructs `Error` objects.                             |
-
----
-
 ## Cookbook: Common Scenarios
 
 ### How do I handle Arrays?

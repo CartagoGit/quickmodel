@@ -365,5 +365,28 @@ export interface QAdvancedOptions<
 	serializers?: {
 		[K in keyof TTypeMap]?: (value: unknown) => unknown;
 	};
+
+	/**
+	 * Custom mock generators for specific properties.
+	 *
+	 * Allows defining how to generate mock data for specific fields.
+	 * Critical when using custom transformers where the default mock generation
+	 * (which infers from type) might produce invalid/incompatible data.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   sku: (val) => `ITEM-${val}` // Custom transformer
+	 * }, {
+	 *   mockers: {
+	 *     // Generate valid SKU base for the transformer
+	 *     sku: () => faker.string.alphanumeric(8) 
+	 *   }
+	 * })
+	 * ```
+	 */
+	mockers?: {
+		[K in keyof TTypeMap]?: () => unknown;
+	};
 }
 

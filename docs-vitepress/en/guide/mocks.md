@@ -31,26 +31,40 @@ console.log(admin.role); // 'admin'
 
 QuickModel automatically infers appropriate fake data based on your type definitions:
 
-| Type                    | Generated Mock                                                        |
-| :---------------------- | :-------------------------------------------------------------------- |
-| `String` / `'string'`   | Random string / Auto-inferred context ('email', 'name', 'uuid', etc.) |
-| `Number` / `'number'`   | Random number                                                         |
-| `Boolean` / `'boolean'` | Random boolean                                                        |
-| `Date` / `'date'`       | Random recent date                                                    |
-| `BigInt` / `'bigint'`   | Random large integer                                                  |
-| `RegExp` / `'regexp'`   | Random regex pattern                                                  |
-| `Symbol` / `'symbol'`   | Random symbol                                                         |
-| `URL` / `'url'`         | Random URL                                                            |
-| `Error` / `'error'`     | Random Error object                                                   |
-| `Map` / `'map'`         | Map with random entries                                               |
-| `Set` / `'set'`         | Set with random values                                                |
-| `Buffer` Types          | `ArrayBuffer`, `DataView`, `Uint8Array`, `Float32Array`, etc.         |
+QuickModel supports generating mocks for all standard types, including Primitives, Dates, Collections, and Binary data.
 
-### Why do I need to specify types?
+> [!TIP]
+> For a full list of supported types and aliases, see the **[Aliases Reference](./aliases.md)**.
 
-You might ask: _"If I already declared `name: string`, why do I need `@Quick({ name: String })`?"_
+**Example:**
 
-**Answer:** TypeScript types (`: string`) are **erased** when compiled to JavaScript. At runtime, the library cannot see your TypeScript type definitions. The `@Quick` decorator (or `@QType`) provides the necessary **runtime metadata** so the library knows how to generate mocks and deserialize data.
+| Type                  | Generated Mock   |
+| :-------------------- | :--------------- |
+| `String` / `'string'` | `"Hello World!"` |
+| `Date` / `'date'`     | `2024-01-01T...` |
+
+### Implicit vs Explicit Types
+
+**Implicit (Inferred):**
+In most cases, **you don't need to do anything!** QuickModel automatically reads the TypeScript metadata emitted by the decorators.
+
+```typescript
+@Quick({}) // Implicitly uses metadata
+class User extends QModel<IUser> {
+	@QType() // Triggers metadata emission
+	declare name: string; // Inferred as String
+}
+```
+
+**Explicit (Optional):**
+You can specify types explicitly if you want to **override** the default behavior or if you are in an environment where metadata is not emitted.
+
+```typescript
+@Quick({
+  name: String, // Explicit
+  age: 'number' // Explicit alias
+})
+```
 
 ### Smart Inference
 

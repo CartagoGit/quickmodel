@@ -137,6 +137,37 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 		expect(output.stamp).toBe(1000);
 	});
 
+	test('should support custom mockers to generate data designed for transformers', () => {
+		interface IProduct {
+			sku: string;
+		}
+
+		@Quick(
+			{
+				// Transformer makes sku consistent
+				sku: (val: any) => `ITEM-${val}`,
+			},
+			{
+				mockers: {
+					// Mocker generates the raw ID
+					sku: () => '1234',
+				},
+			}
+		)
+		class Product extends QModel<IProduct> {
+			declare sku: string;
+		}
+
+		// 1. Generate Mock
+		const mockInstance = Product.mock().random();
+
+		// The mock should be 'ITEM-1234' because:
+		// 1. Mocker returns '1234'
+		// 2. new Product({ sku: '1234' }) is called
+		// 3. Transformer runs: 'ITEM-1234'
+		expect(mockInstance.sku).toBe('ITEM-1234');
+	});
+
 	test('custom transformer should take precedence over known types (Date)', () => {
 		interface ILog {
 			date: string;
