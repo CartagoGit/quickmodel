@@ -119,18 +119,20 @@ describe('Constructor Aliases', () => {
 		test('Should serialize correctly', () => {
 			const model = new ModelWithConstructors(testData);
 
-			const serialized = model.serialize();
+			const IQSerialized = model.serialize();
 
-			expect(serialized.pattern).toMatchObject({
+			expect(IQSerialized.pattern).toMatchObject({
 				__type: 'regexp',
 				source: 'test',
 				flags: 'gi',
 			});
-			expect(serialized.error).toBe('Error: Test error');
-			expect(serialized.url).toBe('https://example.com/path?query=value');
-			expect(serialized.params).toBe('key1=value1&key2=value2');
-			expect(serialized.bytes1).toEqual([1, 2, -3, -4]);
-			expect(serialized.bytes2).toEqual([10, 20, 30, 40]);
+			expect(IQSerialized.error).toBe('Error: Test error');
+			expect(IQSerialized.url).toBe(
+				'https://example.com/path?query=value'
+			);
+			expect(IQSerialized.params).toBe('key1=value1&key2=value2');
+			expect(IQSerialized.bytes1).toEqual([1, 2, -3, -4]);
+			expect(IQSerialized.bytes2).toEqual([10, 20, 30, 40]);
 		});
 
 		test('Should deserialize correctly', () => {
@@ -169,8 +171,8 @@ describe('Constructor Aliases', () => {
 		test('Should perform round-trip correctly', () => {
 			const original = new ModelWithConstructors(testData);
 
-			const serialized = original.serialize();
-			const restored = ModelWithConstructors.deserialize(serialized);
+			const IQSerialized = original.serialize();
+			const restored = ModelWithConstructors.deserialize(IQSerialized);
 
 			expect(restored.pattern.toString()).toBe(
 				original.pattern.toString()
@@ -191,18 +193,20 @@ describe('Constructor Aliases', () => {
 		test('Should serialize correctly', () => {
 			const model = new ModelWithSymbols(testData);
 
-			const serialized = model.serialize();
+			const IQSerialized = model.serialize();
 
-			expect(serialized.pattern).toMatchObject({
+			expect(IQSerialized.pattern).toMatchObject({
 				__type: 'regexp',
 				source: 'test',
 				flags: 'gi',
 			});
-			expect(serialized.error).toBe('Error: Test error');
-			expect(serialized.url).toBe('https://example.com/path?query=value');
-			expect(serialized.params).toBe('key1=value1&key2=value2');
-			expect(serialized.bytes1).toEqual([1, 2, -3, -4]);
-			expect(serialized.bytes2).toEqual([10, 20, 30, 40]);
+			expect(IQSerialized.error).toBe('Error: Test error');
+			expect(IQSerialized.url).toBe(
+				'https://example.com/path?query=value'
+			);
+			expect(IQSerialized.params).toBe('key1=value1&key2=value2');
+			expect(IQSerialized.bytes1).toEqual([1, 2, -3, -4]);
+			expect(IQSerialized.bytes2).toEqual([10, 20, 30, 40]);
 		});
 
 		test('Should deserialize correctly', () => {
@@ -241,8 +245,8 @@ describe('Constructor Aliases', () => {
 		test('Should perform round-trip correctly', () => {
 			const original = new ModelWithSymbols(testData);
 
-			const serialized = original.serialize();
-			const restored = ModelWithSymbols.deserialize(serialized);
+			const IQSerialized = original.serialize();
+			const restored = ModelWithSymbols.deserialize(IQSerialized);
 
 			expect(restored.pattern.toString()).toBe(
 				original.pattern.toString()

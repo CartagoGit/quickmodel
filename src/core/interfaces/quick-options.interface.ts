@@ -1,7 +1,7 @@
 import type {
-	QMockerFn,
-	QSerializerFn,
-	QTransformerFn,
+	IQMockerFn,
+	IQSerializerFn,
+	IQTransformerFn,
 } from './transform-options.interface';
 
 /**
@@ -12,20 +12,20 @@ import type {
  */
 
 /**
- * Extract constructor types from ISpec or ISpecs.
+ * Extract constructor types from IQSpec or IQSpecs.
  *
  * This helper type extracts all constructor types from a spec definition,
  * which can be used to type discriminator functions properly.
  *
  * @example
  * ```typescript
- * type Spec1 = typeof Date;             // ExtractConstructors<Spec1> = DateConstructor
- * type Spec2 = [typeof Date, typeof BigInt];  // ExtractConstructors<Spec2> = DateConstructor | BigIntConstructor
- * type Spec3 = (v: any) => any;         // ExtractConstructors<Spec3> = (v: any) => any (passthrough for functions)
- * type Spec4 = 'bigint';                // ExtractConstructors<Spec4> = 'bigint' (passthrough for string literals)
+ * type Spec1 = typeof Date;             // IQExtractConstructors<Spec1> = DateConstructor
+ * type Spec2 = [typeof Date, typeof BigInt];  // IQExtractConstructors<Spec2> = DateConstructor | BigIntConstructor
+ * type Spec3 = (v: any) => any;         // IQExtractConstructors<Spec3> = (v: any) => any (passthrough for functions)
+ * type Spec4 = 'bigint';                // IQExtractConstructors<Spec4> = 'bigint' (passthrough for string literals)
  * ```
  */
-export type ExtractConstructors<TSpec> = TSpec extends readonly unknown[]
+export type IQExtractConstructors<TSpec> = TSpec extends readonly unknown[]
 	? TSpec[number]
 	: TSpec;
 
@@ -34,11 +34,11 @@ export type ExtractConstructors<TSpec> = TSpec extends readonly unknown[]
  *
  * @example
  * ```typescript
- * type Instance1 = ExtractInstanceType<typeof Date>;  // Date
- * type Instance2 = ExtractInstanceType<DateConstructor>;  // Date
+ * type Instance1 = IQExtractInstanceType<typeof Date>;  // Date
+ * type Instance2 = IQExtractInstanceType<DateConstructor>;  // Date
  * ```
  */
-export type ExtractInstanceType<T> = T extends new (
+export type IQExtractInstanceType<T> = T extends new (
 	...args: unknown[]
 ) => infer R
 	? R
@@ -70,10 +70,10 @@ export type UnionToIntersection<U> = (
  * type Content = { type: 'content'; text: string; };
  * type Metadata = { type: 'metadata'; tags: string[]; };
  *
- * type Common = ExtractCommonKeys<T> =
+ * type Common = IQExtractCommonKeys<T> =
  * ```
  */
-export type ExtractCommonKeys<T> =
+export type IQExtractCommonKeys<T> =
 	// Get all possible keys from the union
 	keyof T extends infer K
 		? K extends keyof T
@@ -98,15 +98,15 @@ export type ExtractCommonKeys<T> =
  * @example
  * ```typescript
  * class Content extends QModel<IContent> { ... }
- * type Interface = ExtractQModelInterface<Content>;  // IContent
+ * type Interface = IQExtractIQModelInterface<Content>;  // IContent
  * ```
  */
-export type ExtractQModelInterface<T> = T extends { toInterface(): infer I }
+export type IQExtractIQModelInterface<T> = T extends { toInterface(): infer I }
 	? I
 	: T;
 
 /**
- * Extract common keys from constructors in an ISpec.
+ * Extract common keys from constructors in an IQSpec.
  *
  * For arrays of constructors, extracts keys that exist in all instance types.
  * For QModel classes, extracts keys from the interface type, not the class instance.
@@ -117,24 +117,23 @@ export type ExtractQModelInterface<T> = T extends { toInterface(): infer I }
  * // With QModel classes
  * class Content extends QModel<IContent> { ... }
  * class Metadata extends QModel<IMetadata> { ... }
- * type Keys1 = ExtractValidDiscriminatorKeys<[typeof Content, typeof Metadata]>;  // 'type'
+ * type Keys1 = IQExtractValidDiscriminatorKeys<[typeof Content, typeof Metadata]>;  // 'type'
  *
  * // With regular constructors
- * type Keys2 = ExtractValidDiscriminatorKeys<typeof Date>;  // keyof Date
+ * type Keys2 = IQExtractValidDiscriminatorKeys<typeof Date>;  // keyof Date
  * ```
  */
-export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
-	...args: unknown[]
-) => unknown)[]
-	? // Array of constructors → extract common keys from interface types
-		ExtractCommonKeys<
-			ExtractQModelInterface<ExtractInstanceType<TSpec[number]>>
-		>
-	: TSpec extends new (...args: unknown[]) => unknown
-		? // Single constructor → all keys from interface type
-			keyof ExtractQModelInterface<ExtractInstanceType<TSpec>>
-		: // Not a constructor → string (no validation)
-			string;
+export type IQExtractValidDiscriminatorKeys<TSpec> =
+	TSpec extends readonly (new (...args: unknown[]) => unknown)[]
+		? // Array of constructors → extract common keys from interface types
+			IQExtractCommonKeys<
+				IQExtractIQModelInterface<IQExtractInstanceType<TSpec[number]>>
+			>
+		: TSpec extends new (...args: unknown[]) => unknown
+			? // Single constructor → all keys from interface type
+				keyof IQExtractIQModelInterface<IQExtractInstanceType<TSpec>>
+			: // Not a constructor → string (no validation)
+				string;
 
 /**
  * Type guard function for custom discriminator logic.
@@ -182,7 +181,9 @@ export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
  * })
  * ```
  */
-export type TypeGuardFunction<TConstructors> = (data: unknown) => TConstructors;
+export type IQTypeGuardFunction<TConstructors> = (
+	data: unknown
+) => TConstructors;
 
 /**
  * Discriminator configuration for a property with union types.
@@ -221,12 +222,12 @@ export type TypeGuardFunction<TConstructors> = (data: unknown) => TConstructors;
  * ```
  * @group Types
  */
-export type QDiscriminatorConfig<
+export type IQDiscriminatorConfig<
 	TConstructors = unknown,
 	TValidKeys extends string = string,
 > =
 	| TValidKeys // Field name (validated against common keys)
-	| TypeGuardFunction<TConstructors> // Custom function with proper typing
+	| IQTypeGuardFunction<TConstructors> // Custom function with proper typing
 	| {
 			/** Field name to use as discriminator (validated against common keys) */
 			field: TValidKeys;
@@ -295,7 +296,7 @@ export type QDiscriminatorConfig<
  * ```
  */
 
-export interface QAdvancedOptions<
+export interface IQAdvancedOptions<
 	TTypeMap extends Record<string, unknown> = Record<string, unknown>,
 > {
 	/**
@@ -311,9 +312,9 @@ export interface QAdvancedOptions<
 	 * - **object**: Full configuration with field and mapping
 	 */
 	discriminators?: {
-		[K in keyof TTypeMap]?: QDiscriminatorConfig<
-			ExtractConstructors<TTypeMap[K]>,
-			ExtractValidDiscriminatorKeys<TTypeMap[K]> & string
+		[K in keyof TTypeMap]?: IQDiscriminatorConfig<
+			IQExtractConstructors<TTypeMap[K]>,
+			IQExtractValidDiscriminatorKeys<TTypeMap[K]> & string
 		>;
 	};
 
@@ -343,7 +344,7 @@ export interface QAdvancedOptions<
 	 * ```
 	 */
 	transformers?: {
-		[K in keyof TTypeMap]?: QTransformerFn;
+		[K in keyof TTypeMap]?: IQTransformerFn;
 	};
 
 	/**
@@ -370,7 +371,7 @@ export interface QAdvancedOptions<
 	 * ```
 	 */
 	serializers?: {
-		[K in keyof TTypeMap]?: QSerializerFn;
+		[K in keyof TTypeMap]?: IQSerializerFn;
 	};
 
 	/**
@@ -393,6 +394,6 @@ export interface QAdvancedOptions<
 	 * ```
 	 */
 	mockers?: {
-		[K in keyof TTypeMap]?: QMockerFn;
+		[K in keyof TTypeMap]?: IQMockerFn;
 	};
 }

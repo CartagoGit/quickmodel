@@ -10,13 +10,13 @@ import {
 	QUICK_OPTIONS_KEY,
 	QUICK_TYPE_MAP_KEY,
 } from '../constants/metadata-keys';
-import { QAdvancedOptions } from '../interfaces/quick-options.interface';
+import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
-export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
+export type IQMockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
-export class MockGenerator {
+export class QMockGenerator {
 	/**
-	 * Creates a new MockGenerator instance.
+	 * Creates a new QMockGenerator instance.
 	 */
 	constructor() {}
 
@@ -28,7 +28,7 @@ export class MockGenerator {
 		TData extends Record<string, unknown> = Record<string, unknown>,
 	>(
 		modelClass: new (data: TData) => TModel,
-		type: MockType = 'random',
+		type: IQMockType = 'random',
 		overrides: Partial<TData> = {}
 	): TData {
 		const instance = Object.create(modelClass.prototype);
@@ -40,7 +40,7 @@ export class MockGenerator {
 		const overrideData = overrides as Record<string, unknown>;
 
 		// Get advanced options (for mockers)
-		const options: QAdvancedOptions =
+		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
 
 		for (const key of properties) {
@@ -173,7 +173,7 @@ export class MockGenerator {
 	>(
 		modelClass: new (data: TData) => TModel,
 		count: number,
-		type: MockType = 'random',
+		type: IQMockType = 'random',
 		overrides?: (index: number) => Partial<TData>
 	): TData[] {
 		return Array.from({ length: count }, (_, index) => {
@@ -222,7 +222,7 @@ export class MockGenerator {
 	}
 
 	private generateValue(
-		type: MockType,
+		type: IQMockType,
 		fieldType: unknown,
 		designType: Function | undefined,
 		arrayElementClass: unknown
@@ -276,7 +276,7 @@ export class MockGenerator {
 	}
 
 	private generateByFieldType(
-		type: MockType,
+		type: IQMockType,
 		fieldType: symbol | string | Function
 	): unknown {
 		const typeStr =
@@ -385,7 +385,7 @@ export class MockGenerator {
 	}
 
 	private generateByDesignType(
-		type: MockType,
+		type: IQMockType,
 		designType: Function
 	): unknown {
 		const typeName = designType.name;
@@ -403,7 +403,7 @@ export class MockGenerator {
 		return this.getDefaultValue(type, 'string');
 	}
 
-	private getDefaultValue(type: MockType, jsType: string): unknown {
+	private getDefaultValue(type: IQMockType, jsType: string): unknown {
 		if (type === 'empty') {
 			return this.getEmptyValue(jsType);
 		}
@@ -424,17 +424,17 @@ export class MockGenerator {
 			case 'boolean':
 				return false;
 			case 'bigint':
-				return '0'; // Serialized format for transformers
+				return '0'; // IQSerialized format for transformers
 			case 'symbol':
 				return Symbol();
 			case 'date':
-				return new Date(0).toISOString(); // Serialized format
+				return new Date(0).toISOString(); // IQSerialized format
 			case 'regexp':
-				return /(?:)/.toString(); // Serialized format
+				return /(?:)/.toString(); // IQSerialized format
 			case 'error':
 				return new Error();
 			case 'url':
-				return 'http://localhost'; // Serialized format
+				return 'http://localhost'; // IQSerialized format
 			case 'urlsearchparams':
 				return new URLSearchParams();
 			case 'array':
@@ -483,17 +483,17 @@ export class MockGenerator {
 			case 'boolean':
 				return true;
 			case 'bigint':
-				return '123'; // Serialized format for transformers
+				return '123'; // IQSerialized format for transformers
 			case 'symbol':
 				return Symbol('sample');
 			case 'date':
-				return new Date('2024-01-01').toISOString(); // Serialized format
+				return new Date('2024-01-01').toISOString(); // IQSerialized format
 			case 'regexp':
-				return '/test/gi'; // Serialized format
+				return '/test/gi'; // IQSerialized format
 			case 'error':
 				return new Error('Sample error');
 			case 'url':
-				return 'https://example.com'; // Serialized format
+				return 'https://example.com'; // IQSerialized format
 			case 'urlsearchparams':
 				return new URLSearchParams('key=value');
 			case 'array':
@@ -501,10 +501,10 @@ export class MockGenerator {
 			case 'object':
 				return { sample: true };
 			case 'map':
-				// Serialized Map is Array of entries
+				// IQSerialized Map is Array of entries
 				return [['key', 'value']];
 			case 'set':
-				// Serialized Set is Array
+				// IQSerialized Set is Array
 				return ['sample'];
 			case 'int8array':
 				return new Int8Array([1, 2, 3]);
@@ -544,17 +544,17 @@ export class MockGenerator {
 			case 'boolean':
 				return faker.datatype.boolean();
 			case 'bigint':
-				return String(faker.number.int({ min: 1, max: 999999 })); // Serialized format
+				return String(faker.number.int({ min: 1, max: 999999 })); // IQSerialized format
 			case 'symbol':
 				return Symbol(faker.lorem.word());
 			case 'date':
-				return faker.date.recent().toISOString(); // Serialized format
+				return faker.date.recent().toISOString(); // IQSerialized format
 			case 'regexp': {
 				const patterns = ['\\w+', '\\d+', '[a-z]+', '.*'];
 				const flags = ['', 'i', 'g', 'gi', 'm'];
 				const pattern = faker.helpers.arrayElement(patterns);
 				const flag = faker.helpers.arrayElement(flags);
-				return `/${pattern}/${flag}`; // Serialized format
+				return `/${pattern}/${flag}`; // IQSerialized format
 			}
 			case 'error':
 				return new Error(faker.lorem.sentence());
@@ -573,14 +573,14 @@ export class MockGenerator {
 			case 'object':
 				return { [faker.lorem.word()]: faker.lorem.word() };
 			case 'map': {
-				// Serialized Map is Array of entries
+				// IQSerialized Map is Array of entries
 				return [
 					[faker.lorem.word(), faker.lorem.word()],
 					[faker.lorem.word(), faker.lorem.word()],
 				];
 			}
 			case 'set':
-				// Serialized Set is Array
+				// IQSerialized Set is Array
 				return [faker.lorem.word(), faker.lorem.word()];
 			case 'int8array':
 				return new Int8Array(

@@ -90,8 +90,8 @@ class MixedUnionModelQuick extends QModel<IMixedUnionModel> {
 	// The test expects primitives to work. Date/BigInt in union might be tricky without explicit metadata.
 	// Original test relied on `value` having no specific transformer, so it depended on runtime type... wait.
 	// If `value` is `@QType()`, it gets `design:type` as Object (because of union).
-	// If serialized data is string/number/bool, it works.
-	// If it is Date/BigInt serialized as string, without explicit type, it stays string.
+	// If IQSerialized data is string/number/bool, it works.
+	// If it is Date/BigInt IQSerialized as string, without explicit type, it stays string.
 	// Let's see the original test expectations for `value`.
 	declare value: string | number | boolean | Date | bigint;
 
@@ -217,7 +217,7 @@ describe('Complex Types Combinations (Using @Quick)', () => {
 						metadata: [],
 						tags: [],
 					},
-					// Note: In original test, it passed `new Date(...)`. Here we assume serialized form.
+					// Note: In original test, it passed `new Date(...)`. Here we assume IQSerialized form.
 					// If we pass '2024-02-15', resolveUnionType sees it as String primitive.
 					// If we want it to be Date, we relies on structure or position.
 					// Or we pass object-like date if transformers support it? No.

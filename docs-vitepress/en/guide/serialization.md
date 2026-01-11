@@ -34,7 +34,10 @@ interface IUserTransform {
 	tags: Set,
 	metadata: Map,
 })
-class User extends QModel<IUser> implements QImplements<IUser, IUserTransform> {
+class User
+	extends QModel<IUser>
+	implements IQImplements<IUser, IUserTransform>
+{
 	declare id: number;
 	declare name: string;
 	declare createdAt: Date;
@@ -192,7 +195,7 @@ console.log(json.params); // { page: '1', limit: '10' }
 
 ## Nested Models
 
-Nested models are recursively serialized:
+Nested models are recursively IQSerialized:
 
 ```typescript
 @Quick({ birthDate: Date })
@@ -227,7 +230,7 @@ const json = user.toJSON();
 
 ## Arrays of Models
 
-Arrays are serialized element by element:
+Arrays are IQSerialized element by element:
 
 ```typescript
 @Quick({ price: BigInt })
@@ -400,7 +403,7 @@ function processUser(user: User) {
 }
 ```
 
-### 2. Cache Serialized Data
+### 2. Cache IQSerialized Data
 
 If you serialize the same model multiple times:
 

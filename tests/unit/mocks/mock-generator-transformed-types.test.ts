@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 import { QType } from '@/core/decorators/qtype.decorator';
 
 describe('Unit: Mock Generator - Transformed Types', () => {
@@ -33,7 +33,7 @@ describe('Unit: Mock Generator - Transformed Types', () => {
 	})
 	class Event
 		extends QModel<IEvent>
-		implements QImplements<IEvent, IEventTransform>
+		implements IQImplements<IEvent, IEventTransform>
 	{
 		@QType() id!: string;
 		@QType() title!: string;

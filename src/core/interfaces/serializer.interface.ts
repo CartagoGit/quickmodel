@@ -3,7 +3,7 @@
  * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
  */
 
-export interface ISerializationOptions {
+export interface IQSerializationOptions {
 	/**
 	 * Include properties starting with a single underscore `_` (e.g., `_id`, `_value`)
 	 * These are often used for private/protected conventions or special API fields like HAL `_links`.
@@ -32,13 +32,13 @@ export interface IQSerializer<
 	serialize(
 		model: TModel,
 		seen?: WeakSet<object>,
-		options?: ISerializationOptions
+		options?: IQSerializationOptions
 	): TInterface;
 
 	/**
 	 * Serializa a JSON string
 	 */
-	serializeToJson(model: TModel, options?: ISerializationOptions): string;
+	serializeToJson(model: TModel, options?: IQSerializationOptions): string;
 }
 
 export interface IQDeserializer<

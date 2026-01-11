@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Unit: Error Transformer', () => {
 	interface IErrorLog {
@@ -19,7 +19,7 @@ describe('Unit: Error Transformer', () => {
 	@Quick({ error: Error })
 	class ErrorLog
 		extends QModel<IErrorLog>
-		implements QImplements<IErrorLog, IErrorLogTransform>
+		implements IQImplements<IErrorLog, IErrorLogTransform>
 	{
 		error!: Error;
 	}

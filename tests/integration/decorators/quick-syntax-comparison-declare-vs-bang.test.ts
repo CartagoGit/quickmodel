@@ -157,21 +157,21 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 
 		test('debe serializar correctamente', () => {
 			const instance = new TestDeclare(testData);
-			const serialized = instance.serialize();
+			const IQSerialized = instance.serialize();
 
-			expect(serialized.key).toEqual({
+			expect(IQSerialized.key).toEqual({
 				__type: 'symbol',
 				description: 'test-key',
 			});
-			expect(serialized.pattern).toEqual({
+			expect(IQSerialized.pattern).toEqual({
 				__type: 'regexp',
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['typescript', 'testing']);
+			expect(Array.isArray(IQSerialized.tags)).toBe(true);
+			expect(IQSerialized.tags).toEqual(['typescript', 'testing']);
 
-			expect(serialized.metadata).toEqual({
+			expect(IQSerialized.metadata).toEqual({
 				author: 'John',
 				version: '1.0',
 			});

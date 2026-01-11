@@ -1,13 +1,13 @@
 import { IQTransformer } from '../interfaces/transformer.interface';
-import type { QAlias } from '../types/q-alias.type';
+import type { IQAlias } from '../types/q-alias.type';
 
 /**
  * Valid keys to identify a transformer.
  * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), a string name,
  * or a custom transformer object implementing IQTransformer.
  */
-export type TransformerKey =
-	| QAlias
+export type IQTransformerKey =
+	| IQAlias
 	| { name: string }
 	| string
 	| IQTransformer<any, any>;
@@ -16,7 +16,7 @@ export type TransformerKey =
  * Global registry for transformers.
  * Allows users to register custom transformers that will be available to all specific services (Deserializer, Serializer).
  */
-export class TransformerRegistry {
+export class QTransformerRegistry {
 	private static transformers = new Map<
 		string,
 		IQTransformer<unknown, unknown>
@@ -30,12 +30,12 @@ export class TransformerRegistry {
 	 *
 	 * @example
 	 * ```typescript
-	 * class MoneyTransformer implements ITransformer<Money, string> { ... }
-	 * TransformerRegistry.register(Money, new MoneyTransformer());
+	 * class MoneyTransformer implements IQTransformer<Money, string> { ... }
+	 * QTransformerRegistry.register(Money, new MoneyTransformer());
 	 * ```
 	 */
 	public static register(
-		key: TransformerKey,
+		key: IQTransformerKey,
 		transformer: IQTransformer<unknown, unknown>
 	): void {
 		const lookupKey = this.normalizeKey(key);
@@ -51,7 +51,7 @@ export class TransformerRegistry {
 	 * @returns The transformer or undefined
 	 */
 	public static get(
-		key: TransformerKey
+		key: IQTransformerKey
 	): IQTransformer<unknown, unknown> | undefined {
 		const lookupKey = this.normalizeKey(key);
 		if (lookupKey && this.transformers.has(lookupKey)) {
@@ -63,7 +63,7 @@ export class TransformerRegistry {
 	/**
 	 * Checks if a transformer is registered.
 	 */
-	public static has(key: TransformerKey): boolean {
+	public static has(key: IQTransformerKey): boolean {
 		const lookupKey = this.normalizeKey(key);
 		return !!lookupKey && this.transformers.has(lookupKey);
 	}
@@ -71,7 +71,7 @@ export class TransformerRegistry {
 	/**
 	 * Normalizes the key to a lowercase string.
 	 */
-	private static normalizeKey(key: TransformerKey): string | undefined {
+	private static normalizeKey(key: IQTransformerKey): string | undefined {
 		if (typeof key === 'string') {
 			return key.toLowerCase();
 		} else if (

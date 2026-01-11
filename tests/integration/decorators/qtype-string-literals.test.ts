@@ -193,32 +193,32 @@ describe('String Literals (@QType("type"))', () => {
 
 	test('Should serialize correctly', () => {
 		const model = ModelWithStringLiterals.deserialize(testData);
-		const serialized = model.serialize();
-		expect(serialized.name).toBe('Test');
-		expect(serialized.count).toBe(42);
-		expect(serialized.active).toBe(true);
-		expect(serialized.amount).toBe('123456789');
-		expect(serialized.key).toMatchObject({
+		const IQSerialized = model.serialize();
+		expect(IQSerialized.name).toBe('Test');
+		expect(IQSerialized.count).toBe(42);
+		expect(IQSerialized.active).toBe(true);
+		expect(IQSerialized.amount).toBe('123456789');
+		expect(IQSerialized.key).toMatchObject({
 			__type: 'symbol',
 			description: 'testKey',
 		});
-		expect(serialized.pattern).toMatchObject({
+		expect(IQSerialized.pattern).toMatchObject({
 			__type: 'regexp',
 			source: 'test',
 			flags: 'gi',
 		});
-		expect(serialized.error).toBe('Error: Test error');
-		expect(serialized.homepage).toBe('https://example.com/');
-		expect(serialized.params).toBe('foo=bar&baz=qux');
-		expect(serialized.bytes1).toEqual([-1, 0, 1]);
-		expect(serialized.bytes2).toEqual([10, 20, 30]);
-		expect(serialized.bigInts).toEqual(['100', '200', '300']);
+		expect(IQSerialized.error).toBe('Error: Test error');
+		expect(IQSerialized.homepage).toBe('https://example.com/');
+		expect(IQSerialized.params).toBe('foo=bar&baz=qux');
+		expect(IQSerialized.bytes1).toEqual([-1, 0, 1]);
+		expect(IQSerialized.bytes2).toEqual([10, 20, 30]);
+		expect(IQSerialized.bigInts).toEqual(['100', '200', '300']);
 	});
 
 	test('Should perform round-trip correctly', () => {
 		const model1 = ModelWithStringLiterals.deserialize(testData);
-		const serialized = model1.serialize();
-		const model2 = ModelWithStringLiterals.deserialize(serialized);
+		const IQSerialized = model1.serialize();
+		const model2 = ModelWithStringLiterals.deserialize(IQSerialized);
 
 		expect(model2.name).toBe(model1.name);
 		expect(model2.amount).toBe(model1.amount);

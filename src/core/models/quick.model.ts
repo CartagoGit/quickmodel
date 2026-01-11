@@ -11,22 +11,22 @@
 import 'reflect-metadata';
 import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
-import type { ISerializationOptions } from '@/core/interfaces/serializer.interface';
+import type { IQSerializationOptions } from '@/core/interfaces/serializer.interface';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
-import { MockGenerator } from '@/core/services/mock-generator.service';
+import { QMockGenerator } from '@/core/services/mock-generator.service';
 import { ValidationService } from '@/core/services/validation.service';
 import { QQMockBuilder } from '@/core/services/mock-builder.service';
 import type {
-	QModelInstance,
-	QModelInterface,
+	IQModelInstance,
+	IQModelInterface,
 } from '@/core/interfaces/mock-types.interface';
 import type {
-	SerializedInterface,
-	ModelData,
+	IQSerializedInterface,
+	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
 import type { IQValidationResult } from '@/core/interfaces/transformer.interface';
 import type {
-	AnyRecord,
+	IQAnyRecord,
 	IModelConstructor,
 } from '@/core/interfaces/model.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
@@ -40,15 +40,15 @@ import { deepFreeze } from '@/core/helpers/transform-helpers';
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';
 export type {
-	QImplements,
-	QTransform,
+	IQImplements,
+	IQTransform,
 } from '@/core/interfaces/model.interface';
 
 /**
  * Base abstract class for type-safe models with automatic serialization and type transformation.
  *
  * `QModel` is the heart of the library. It provides a declarative way to define TypeScript models
- * that automatically handle the conversion between serialized formats (JSON) and runtime types.
+ * that automatically handle the conversion between IQSerialized formats (JSON) and runtime types.
  *
  * **Key Features:**
  * - 🔄 **Type Transformation**: Convert strings to Date, BigInt, RegExp, etc.
@@ -61,7 +61,7 @@ export type {
  * - **Open/Closed (OCP)**: Extensible via custom transformers without core modification.
  * - **Dependency Inversion (DIP)**: Depends on abstractions, not concrete implementations.
  *
- * @template TInterface - The interface representing the serialized JSON structure (e.g., `string` for dates)
+ * @template TInterface - The interface representing the IQSerialized JSON structure (e.g., `string` for dates)
  *
  * @example
  * **Basic Usage**
@@ -81,16 +81,16 @@ export type {
  * console.log(user.createdAt instanceof Date); // true
  * ```
  */
-export abstract class QModel<TInterface extends AnyRecord> {
+export abstract class QModel<TInterface extends IQAnyRecord> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();
 	private static readonly toInterfaceService = new ToInterfaceService();
-	private static readonly mockGenerator = new MockGenerator();
+	private static readonly QMockGenerator = new QMockGenerator();
 	private static readonly validation = new ValidationService();
 
 	// Store initial state for change tracking and reset
-	private __initData?: SerializedInterface<TInterface>;
+	private __initData?: IQSerializedInterface<TInterface>;
 
 	/**
 	 * Internal property storage for transformed values.
@@ -110,7 +110,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 *    - Explicit and clear
 	 *    - Most common approach
 	 *
-	 * 2. **ALTERNATIVE (Option B)**: Use `QTransform` helper or generic overriding
+	 * 2. **ALTERNATIVE (Option B)**: Use `IQTransform` helper or generic overriding
 	 *    - ONLY if you specifically want to avoid `declare` keyword
 	 *    - Requires passing type explicitly
 	 *    - Less common, more verbose
@@ -162,7 +162,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * ```
 	 *
 	 * @example
-	 * **OPTION B (ALTERNATIVE): Using QTransform type helper with generic override**
+	 * **OPTION B (ALTERNATIVE): Using IQTransform type helper with generic override**
 	 *
 	 * ⚠️ ONLY use this if you specifically don't want to use `declare` keyword.
 	 * This approach is MORE VERBOSE and ONLY WORKS with `create()`, not with `new`.
@@ -180,8 +180,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 *   // No declare needed
 	 * }
 	 *
-	 * // Pass QTransform as 3rd type parameter to create()
-	 * const post = Post.create<IPost, Post, QTransform<IPost, {
+	 * // Pass IQTransform as 3rd type parameter to create()
+	 * const post = Post.create<IPost, Post, IQTransform<IPost, {
 	 *   createdAt: Date;
 	 *   balance: bigint;
 	 * }>>({
@@ -193,8 +193,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 *
 	 * post.id         // ✅ number (type-safe)
 	 * post.title      // ✅ string (type-safe)
-	 * post.createdAt  // ✅ Date (type-safe via QTransform)
-	 * post.balance    // ✅ bigint (type-safe via QTransform)
+	 * post.createdAt  // ✅ Date (type-safe via IQTransform)
+	 * post.balance    // ✅ bigint (type-safe via IQTransform)
 	 *
 	 * // ❌ Does NOT work with `new` constructor
 	 * const post2 = new Post({ ... });  // ❌ No type-safety for transforms
@@ -203,7 +203,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * @remarks
 	 * **When to use each approach:**
 	 *
-	 * | Aspect | Option A: `declare` | Option B: `QTransform` |
+	 * | Aspect | Option A: `declare` | Option B: `IQTransform` |
 	 * |--------|---------------------|------------------------|
 	 * | **Recommendation** | ✅ RECOMMENDED | ⚠️ ALTERNATIVE |
 	 * | **Syntax complexity** | Simple | Simple (but manual generic) |
@@ -217,12 +217,12 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * |---------------|--------------|-------------------|
 	 * | `User.create(data)` | `IUser` | `User` (requires `declare`) |
 	 * | `User.create<User>(data)` | Loose | `User` |
-	 * | `User.create<QTransform<...>>(data)` | Loose | Transformed Type |
+	 * | `User.create<IQTransform<...>>(data)` | Loose | Transformed Type |
 	 *
 	 * @see {@link QModel} for main class documentation
 	 */
 	static create<
-		T extends AnyRecord = AnyRecord,
+		T extends IQAnyRecord = IQAnyRecord,
 		TClass extends QModel<T> = QModel<T>,
 		TResult = TClass,
 	>(this: new (data: T) => TClass, data: T): TResult {
@@ -245,7 +245,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * ```
 	 */
 	static createReadonly<
-		T extends AnyRecord = AnyRecord,
+		T extends IQAnyRecord = IQAnyRecord,
 		TClass extends QModel<T> = QModel<T>,
 		TResult = TClass,
 	>(this: new (data: T) => TClass, data: T): Readonly<TResult> {
@@ -268,9 +268,9 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * const users = User.mock().array(5); // returns User[]
 	 * ```
 	 */
-	static mock<T extends abstract new (...args: any[]) => QModel<AnyRecord>>(
+	static mock<T extends abstract new (...args: any[]) => QModel<IQAnyRecord>>(
 		this: T
-	): QQMockBuilder<QModelInstance<T>, QModelInterface<T>> {
+	): QQMockBuilder<IQModelInstance<T>, IQModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
 			...args: unknown[]
@@ -283,8 +283,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 
 		return new QQMockBuilder(
 			ModelClass,
-			QModel.mockGenerator
-		) as unknown as QQMockBuilder<QModelInstance<T>, QModelInterface<T>>;
+			QModel.QMockGenerator
+		) as unknown as QQMockBuilder<IQModelInstance<T>, IQModelInterface<T>>;
 	}
 
 	/**
@@ -357,7 +357,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	}
 
 	// Temporary property for unprocessed data (removed after initialize)
-	private readonly __tempData?: ModelData<TInterface>;
+	private readonly __tempData?: IQModelData<TInterface>;
 
 	/**
 	 * Constructs a new model instance from interface data or another instance.
@@ -378,7 +378,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * const clonedUser = new User(user);
 	 * ```
 	 */
-	constructor(data: ModelData<TInterface> | QModel<TInterface>) {
+	constructor(data: IQModelData<TInterface> | QModel<TInterface>) {
 		Object.defineProperty(this, '__tempData', {
 			value: data,
 			writable: false,
@@ -581,7 +581,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 *
 	 * SOLID - Single Responsibility: Delegates serialization to Serializer.
 	 *
-	 * @returns The serialized version of the instance (complex types converted to primitives/plain objects)
+	 * @returns The IQSerialized version of the instance (complex types converted to primitives/plain objects)
 	 *
 	 * @example
 	 * ```typescript
@@ -592,14 +592,14 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 */
 	serialize(
 		seen?: WeakSet<object>,
-		options?: ISerializationOptions
-	): SerializedInterface<TInterface> {
+		options?: IQSerializationOptions
+	): IQSerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serialize(
 			this as unknown as ModelAsRecord,
 			seen,
 			options
-		) as SerializedInterface<TInterface>;
+		) as IQSerializedInterface<TInterface>;
 	}
 
 	/**
@@ -619,7 +619,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
 	 * ```
 	 */
-	toJSON(_key?: string, options?: ISerializationOptions): string {
+	toJSON(_key?: string, options?: IQSerializationOptions): string {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serializeToJson(
 			this as unknown as ModelAsRecord,
@@ -689,9 +689,9 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * console.log(account.pattern instanceof RegExp); // true
 	 * ```
 	 */
-	static deserialize<T extends QModel<AnyRecord>>(
-		this: new (data: ModelData<AnyRecord>) => T,
-		data: ModelData<AnyRecord>
+	static deserialize<T extends QModel<IQAnyRecord>>(
+		this: new (data: IQModelData<IQAnyRecord>) => T,
+		data: IQModelData<IQAnyRecord>
 	): T {
 		return QModel.deserializer.deserialize(data, this);
 	}
@@ -715,8 +715,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QModel<AnyRecord>>(
-		this: new (data: ModelData<AnyRecord>) => T,
+	static fromJSON<T extends QModel<IQAnyRecord>>(
+		this: new (data: IQModelData<IQAnyRecord>) => T,
 		json: string
 	): T {
 		return QModel.deserializer.deserializeFromJson(json, this);
@@ -787,7 +787,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * - API responses: return data in same format as received
 	 * - State comparison: check modifications
 	 * 
-	 * @returns Object with current values in ORIGINAL input format (NOT JSON serialized)
+	 * @returns Object with current values in ORIGINAL input format (NOT JSON IQSerialized)
 	 * 
 	 * @example
 	 * **Example 1: Date as string input**
@@ -873,8 +873,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * console.log(init.name !== current.name); // true
 	 * ```
 	 */
-	getInitInterface(): SerializedInterface<TInterface> {
-		return { ...(this.__initData as SerializedInterface<TInterface>) };
+	getInitInterface(): IQSerializedInterface<TInterface> {
+		return { ...(this.__initData as IQSerializedInterface<TInterface>) };
 	}
 
 	/**
@@ -971,10 +971,10 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * await api.patch(`/users/${user.id}`, changes);
 	 * ```
 	 */
-	getChanges(): Partial<SerializedInterface<TInterface>> {
+	getChanges(): Partial<IQSerializedInterface<TInterface>> {
 		const current = this.toInterface();
 		const initial = this.getInitInterface();
-		const changes: Partial<SerializedInterface<TInterface>> = {};
+		const changes: Partial<IQSerializedInterface<TInterface>> = {};
 
 		for (const key in current) {
 			if (!this.deepEqual(current[key], initial[key])) {
@@ -1019,8 +1019,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 
 		// Copy all properties from restored instance
 		for (const key of Object.keys(restored)) {
-			(this as unknown as AnyRecord)[key] = (
-				restored as unknown as AnyRecord
+			(this as unknown as IQAnyRecord)[key] = (
+				restored as unknown as IQAnyRecord
 			)[key];
 		}
 	}
@@ -1052,7 +1052,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * console.log(user.email); // 'john@example.com' (unchanged)
 	 * ```
 	 */
-	patch(patch: Partial<ModelData<TInterface>>): void {
+	patch(patch: Partial<IQModelData<TInterface>>): void {
 		const Constructor = this.constructor as unknown as IModelConstructor<
 			QModel<TInterface>
 		>;
@@ -1062,8 +1062,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 
 		// Copy all properties from updated instance
 		for (const key of Object.keys(updated)) {
-			(this as unknown as AnyRecord)[key] = (
-				updated as unknown as AnyRecord
+			(this as unknown as IQAnyRecord)[key] = (
+				updated as unknown as IQAnyRecord
 			)[key];
 		}
 	}

@@ -7,7 +7,7 @@ import {
 } from '../core/interfaces/transformer.interface';
 
 /**
- * Serialized representation of an Error object.
+ * IQSerialized representation of an Error object.
  */
 interface IErrorData {
 	message: string;

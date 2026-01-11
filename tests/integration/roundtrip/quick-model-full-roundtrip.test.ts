@@ -1,4 +1,4 @@
-import { QModel, QImplements } from '@/index';
+import { QModel, IQImplements } from '@/index';
 import { QType } from '@/utils';
 
 console.log('═══ TEST: QModel Core Functionality ═══\n');
@@ -14,7 +14,10 @@ type UserTransforms = {
 	createdAt: Date;
 };
 
-class User extends QModel<IUser> implements QImplements<IUser, UserTransforms> {
+class User
+	extends QModel<IUser>
+	implements IQImplements<IUser, UserTransforms>
+{
 	@QType() id!: string;
 	@QType() name!: string;
 	@QType() age!: number;
@@ -40,11 +43,11 @@ try {
 	console.log('   createdAt is Date?', user.createdAt instanceof Date);
 
 	console.log('\n2. Serializing to interface...');
-	const serialized = user.serialize();
-	console.log('✅ Serialized:', serialized);
+	const IQSerialized = user.serialize();
+	console.log('✅ IQSerialized:', IQSerialized);
 
 	console.log('\n3. Round-trip test...');
-	const user2 = new User(serialized);
+	const user2 = new User(IQSerialized);
 	console.log('✅ Round-trip successful:', {
 		id: user2.id === user.id,
 		name: user2.name === user.name,

@@ -10,7 +10,7 @@ import { QModel, Quick } from '@/index';
 describe('Unit: BigInt Transformer', () => {
 	interface IAccount {
 		id: string;
-		balance: string; // Serialized as plain string
+		balance: string; // IQSerialized as plain string
 	}
 
 	@Quick({
@@ -27,10 +27,10 @@ describe('Unit: BigInt Transformer', () => {
 			balance: '999999999999999999',
 		});
 
-		const serialized = account.serialize();
+		const IQSerialized = account.serialize();
 
-		expect(serialized.balance).toBe('999999999999999999');
-		expect(typeof serialized.balance).toBe('string');
+		expect(IQSerialized.balance).toBe('999999999999999999');
+		expect(typeof IQSerialized.balance).toBe('string');
 	});
 
 	test('should deserialize string to bigint', () => {

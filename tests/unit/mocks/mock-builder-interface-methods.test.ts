@@ -33,8 +33,8 @@ describe('MockBuilder Interface Methods', () => {
 		expect(empty).not.toBeInstanceOf(User);
 		expect(typeof empty).toBe('object');
 		// Primitives likely defaults
-		expect(empty.name).toBe(''); // MockGenerator defaults string to ''
-		expect(empty.age).toBe(0); // MockGenerator defaults number to 0
+		expect(empty.name).toBe(''); // QMockGenerator defaults string to ''
+		expect(empty.age).toBe(0); // QMockGenerator defaults number to 0
 	});
 
 	test('interfaceRandom() should return plain object with random values', () => {
@@ -45,7 +45,7 @@ describe('MockBuilder Interface Methods', () => {
 		expect(typeof random.name).toBe('string');
 		expect(typeof random.age).toBe('number');
 
-		// Important: interface methods return TInterface (serialized format)
+		// Important: interface methods return TInterface (IQSerialized format)
 		// so createdAt should be string, not Date
 		expect(typeof random.createdAt).toBe('string');
 		expect(Array.isArray(random.tags)).toBe(true);
@@ -82,7 +82,7 @@ describe('MockBuilder Interface Methods', () => {
 
 		expect(minimal).not.toBeInstanceOf(OptionalModel);
 		expect(minimal.req).toBeDefined();
-		// NOTE: Currently MockGenerator cannot detect optionality from @Quick/declare
+		// NOTE: Currently QMockGenerator cannot detect optionality from @Quick/declare
 		// so it generates values for all known properties.
 		// expect(minimal.opt).toBeUndefined();
 		expect(minimal.opt).toBeDefined();

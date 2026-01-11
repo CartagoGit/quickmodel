@@ -99,12 +99,12 @@ export default defineConfig({
 							collapsed: false,
 							items: [
 								{
-									text: 'QAdvancedOptions',
-									link: '/tsdoc/interfaces/QAdvancedOptions',
+									text: 'IQAdvancedOptions',
+									link: '/tsdoc/interfaces/IQAdvancedOptions',
 								},
 								{
-									text: 'QOptions',
-									link: '/tsdoc/interfaces/QOptions',
+									text: 'IQOptions',
+									link: '/tsdoc/interfaces/IQOptions',
 								},
 							],
 						},
@@ -113,20 +113,20 @@ export default defineConfig({
 							collapsed: false,
 							items: [
 								{
-									text: 'QAlias',
-									link: '/tsdoc/type-aliases/QAlias',
+									text: 'IQAlias',
+									link: '/tsdoc/type-aliases/IQAlias',
 								},
 								{
-									text: 'QDiscriminatorConfig',
-									link: '/tsdoc/type-aliases/QDiscriminatorConfig',
+									text: 'IQDiscriminatorConfig',
+									link: '/tsdoc/type-aliases/IQDiscriminatorConfig',
 								},
 								{
-									text: 'QImplements',
-									link: '/tsdoc/type-aliases/QImplements',
+									text: 'IQImplements',
+									link: '/tsdoc/type-aliases/IQImplements',
 								},
 								{
-									text: 'QTransform',
-									link: '/tsdoc/type-aliases/QTransform',
+									text: 'IQTransform',
+									link: '/tsdoc/type-aliases/IQTransform',
 								},
 							],
 						},

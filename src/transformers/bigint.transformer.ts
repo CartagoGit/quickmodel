@@ -13,10 +13,10 @@ import {
  * **Deserialization**: `string | number` → `bigint`
  *
  * @remarks
- * BigInt values are serialized as plain strings to ensure maximum compatibility with JSON APIs.
+ * BigInt values are IQSerialized as plain strings to ensure maximum compatibility with JSON APIs.
  *
  * **⚠️ IMPORTANT - TYPE SAFETY**:
- * Since BigInts are serialized as strings, you **MUST** explicitly declare the field with
+ * Since BigInts are IQSerialized as strings, you **MUST** explicitly declare the field with
  * `@Quick({ field: BigInt })` to ensure it deserializes back to a BigInt.
  *
  * If you put a BigInt into an `any` field or an untyped array, it will serialize to a string

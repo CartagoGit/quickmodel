@@ -18,7 +18,7 @@ describe('Robustness: Custom Transformer Objects in TypeMap', () => {
 	// @Quick type map expects Constructor or String/Symbol
 	// It's defined as `spec: IQuickPropertySpec<any>` which is `TConstructor | [TConstructor] | ...`
 
-	// TypeScript might complain if the types don't match IConstructor.
+	// TypeScript might complain if the types don't match IQConstructor.
 	// Let's see if it works at runtime first.
 
 	interface ISecret {

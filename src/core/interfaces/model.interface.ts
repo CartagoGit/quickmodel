@@ -8,7 +8,7 @@
  * in several files where really is needed any type.
  */
 
-export type AnyRecord = Record<string, any>;
+export type IQAnyRecord = Record<string, any>;
 
 /**
  * Interface representing a concrete QModel constructor
@@ -38,7 +38,7 @@ export interface IModelConstructor<TModel> {
  * }
  *
  * @Quick()
- * class User extends QModel<IUser> implements QTransform<IUser, {
+ * class User extends QModel<IUser> implements IQTransform<IUser, {
  *   createdAt: Date;
  *   balance: bigint;
  * }> {
@@ -50,7 +50,7 @@ export interface IModelConstructor<TModel> {
  * ```
  * @group Types
  */
-export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
+export type IQTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
 
 /**
  * Helper type for defining type transformations in models.
@@ -79,7 +79,7 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * };
  *
  * class User extends QModel<IUser, UserTransforms>
- *   implements QImplements<IUser, UserTransforms> {
+ *   implements IQImplements<IUser, UserTransforms> {
  *   declare id: string;
  *   declare balance: bigint;
  *   declare createdAt: Date;
@@ -92,7 +92,7 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * interface IProduct {
  *   id: string;
  *   price: string;        // JSON: string
- *   regex: object;        // JSON: serialized regex
+ *   regex: object;        // JSON: IQSerialized regex
  *   updated: string;      // JSON: ISO string
  * }
  *
@@ -103,7 +103,7 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * };
  *
  * class Product extends QModel<IProduct, ProductTransforms>
- *   implements QImplements<IProduct, ProductTransforms> {
+ *   implements IQImplements<IProduct, ProductTransforms> {
  *   declare id: string;
  *   declare price: bigint;
  *   declare regex: RegExp;
@@ -111,14 +111,15 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * }
  * ```
  */
-export type QImplements<
+export type IQImplements<
 	TInterface,
-	TTransforms extends Partial<Record<keyof TInterface, unknown>> | AnyRecord =
-		{},
+	TTransforms extends
+		| Partial<Record<keyof TInterface, unknown>>
+		| IQAnyRecord = {},
 > = Omit<TInterface, keyof TTransforms> & TTransforms;
 
-/** @deprecated Use QImplements instead */
+/** @deprecated Use IQImplements instead */
 export type QuickType<
 	TInterface,
 	TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
-> = QImplements<TInterface, TTransforms>;
+> = IQImplements<TInterface, TTransforms>;

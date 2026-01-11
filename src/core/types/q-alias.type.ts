@@ -32,7 +32,7 @@
  *
  * @group Types
  */
-export type QAlias =
+export type IQAlias =
 	// Primitives
 	| 'bigint'
 	| 'symbol'

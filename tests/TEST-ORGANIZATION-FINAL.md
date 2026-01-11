@@ -201,7 +201,7 @@ Testean rendimiento:
 - ✅ **0 tests en raíz de unit/**
 - ✅ **0 tests en raíz de integration/**
 - ✅ **100% de tests tienen nombres descriptivos**
-- ✅ **Estructura de QImplements<I, ITransform> corregida en todos los tests nuevos**
+- ✅ **Estructura de IQImplements<I, ITransform> corregida en todos los tests nuevos**
 
 ### 🔷 UNIT TESTS (tests/unit/)
 

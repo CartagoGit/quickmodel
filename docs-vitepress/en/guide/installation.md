@@ -68,13 +68,13 @@ QuickModel uses a modular import structure to keep your project clean:
     ```typescript
     import { QModel, Quick } from '@cartago-git/quickmodel';
     ```
-- **Type Definitions**: Interfaces and helper types (`SerializedInterface`, `ISpec`, etc.)
+- **Type Definitions**: Interfaces and helper types (`IQSerializedInterface`, `IQSpec`, etc.)
     ```typescript
-    import type { SerializedInterface } from '@cartago-git/quickmodel/types';
+    import type { IQSerializedInterface } from '@cartago-git/quickmodel/types';
     ```
-- **Advanced Utilities**: Runtime utilities for power users (`MockGenerator`)
+- **Advanced Utilities**: Runtime utilities for power users (`QMockGenerator`)
     ```typescript
-    import { MockGenerator } from '@cartago-git/quickmodel/advanced';
+    import { QMockGenerator } from '@cartago-git/quickmodel/advanced';
     ```
 
 ## Verify Installation

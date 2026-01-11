@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Unit: Symbol Transformer', () => {
 	interface ISymbolData {
@@ -19,7 +19,7 @@ describe('Unit: Symbol Transformer', () => {
 	@Quick({ symbol: Symbol })
 	class SymbolData
 		extends QModel<ISymbolData>
-		implements QImplements<ISymbolData, ISymbolDataTransform>
+		implements IQImplements<ISymbolData, ISymbolDataTransform>
 	{
 		symbol!: symbol;
 	}

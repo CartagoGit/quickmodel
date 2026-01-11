@@ -57,12 +57,12 @@ import {
 	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
 import {
-	TransformerRegistry,
-	type TransformerKey,
+	QTransformerRegistry,
+	type IQTransformerKey,
 } from '../registry/transformer.registry';
 import type {
-	QDiscriminatorConfig,
-	QAdvancedOptions,
+	IQDiscriminatorConfig,
+	IQAdvancedOptions,
 } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -102,7 +102,7 @@ export class Deserializer<
 	 * @internal
 	 */
 	public getTransformer(
-		key: TransformerKey
+		key: IQTransformerKey
 	): IQTransformer<unknown, unknown> | undefined {
 		// 0. Check if key is a Transformer Object (Direct injection)
 		if (
@@ -115,7 +115,7 @@ export class Deserializer<
 		}
 
 		// 1. Check global registry first (allows overriding defaults)
-		const customTransformer = TransformerRegistry.get(key);
+		const customTransformer = QTransformerRegistry.get(key);
 		if (customTransformer) {
 			return customTransformer;
 		}
@@ -266,8 +266,8 @@ export class Deserializer<
 
 		// Check if there is a custom transformer registered for this class
 		// This allows intercepting the instantiation process entirely
-		if (TransformerRegistry.has(modelClass)) {
-			const transformer = TransformerRegistry.get(modelClass);
+		if (QTransformerRegistry.has(modelClass)) {
+			const transformer = QTransformerRegistry.get(modelClass);
 			if (transformer) {
 				// Use 'root' as context since we are at the top level of this specific deserialization
 				return transformer.deserialize(
@@ -402,7 +402,7 @@ export class Deserializer<
 			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
 
 		// Get strict mode configuration
-		const options: QAdvancedOptions =
+		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
 		const isStrict = options.strict === true;
 
@@ -514,7 +514,7 @@ export class Deserializer<
 			if (
 				arrayElementClass &&
 				!Array.isArray(value) &&
-				TransformerRegistry.has(arrayElementClass)
+				QTransformerRegistry.has(arrayElementClass)
 			) {
 				const transformer = this.getTransformer(arrayElementClass);
 				if (transformer) {
@@ -664,12 +664,12 @@ export class Deserializer<
 							arrayElementClass,
 						];
 						// Get discriminator config for this property if exists
-						const QDiscriminatorConfig = discriminators?.[key];
+						const IQDiscriminatorConfig = discriminators?.[key];
 
 						instance[key] = this.transformNestedModelArray(
 							value,
 							possibleTypes,
-							QDiscriminatorConfig
+							IQDiscriminatorConfig
 						);
 					}
 					continue;
@@ -682,9 +682,9 @@ export class Deserializer<
 					(arrayElementClass === Set || arrayElementClass === Map) &&
 					!arrayNestingDepth
 				) {
-					const transformerKey =
+					const IQTransformerKey =
 						arrayElementClass === Set ? 'set' : 'map';
-					const transformer = this.transformers.get(transformerKey);
+					const transformer = this.transformers.get(IQTransformerKey);
 					if (transformer) {
 						instance[key] = transformer.deserialize(
 							value,
@@ -707,9 +707,9 @@ export class Deserializer<
 					arrayNestingDepth &&
 					arrayNestingDepth >= 1
 				) {
-					const transformerKey =
+					const IQTransformerKey =
 						arrayElementClass === Set ? 'set' : 'map';
-					const transformer = this.transformers.get(transformerKey);
+					const transformer = this.transformers.get(IQTransformerKey);
 					if (transformer) {
 						instance[key] = value.map((item) => {
 							if (item === null || item === undefined)
@@ -867,12 +867,12 @@ export class Deserializer<
 							arrayElementClass,
 						];
 						// Get discriminator config for this property if exists
-						const QDiscriminatorConfig = discriminators?.[key];
+						const IQDiscriminatorConfig = discriminators?.[key];
 
 						instance[key] = this.transformNestedModelArray(
 							value,
 							possibleTypes,
-							QDiscriminatorConfig
+							IQDiscriminatorConfig
 						);
 					}
 					continue;
@@ -1293,7 +1293,7 @@ export class Deserializer<
 			}
 		}
 
-		// Check for Map/Set/RegExp/Symbol/BigInt/Error/Buffer serialized with __type marker
+		// Check for Map/Set/RegExp/Symbol/BigInt/Error/Buffer IQSerialized with __type marker
 		if (
 			typeof value === 'object' &&
 			value !== null &&
@@ -1747,7 +1747,7 @@ export class Deserializer<
 		// For native constructors, try to find and use transformer
 		if (isNativeConstructor(designType)) {
 			// Map constructor to transformer key
-			const transformerKeyMap: Record<string, string> = {
+			const IQTransformerKeyMap: Record<string, string> = {
 				RegExp: 'regexp',
 				Error: 'error',
 				URL: 'url',
@@ -1778,10 +1778,10 @@ export class Deserializer<
 				);
 			}
 
-			const transformerKey =
-				transformerKeyMap[(designType as { name: string }).name];
-			if (transformerKey) {
-				const transformer = this.transformers.get(transformerKey);
+			const IQTransformerKey =
+				IQTransformerKeyMap[(designType as { name: string }).name];
+			if (IQTransformerKey) {
+				const transformer = this.transformers.get(IQTransformerKey);
 				if (transformer) {
 					return transformer.deserialize(
 						value,
@@ -1846,7 +1846,7 @@ export class Deserializer<
 	 * Uses discriminator configuration and type mapping from @Quick() decorator.
 	 *
 	 * @param data - The data object to resolve type for
-	 * @param QDiscriminatorConfig - Discriminator configuration (string, function, or object)
+	 * @param IQDiscriminatorConfig - Discriminator configuration (string, function, or object)
 	 * @param propertyKey - Property name to get type array from metadata
 	 * @param modelClass - Model class to get type mapping from
 	 * @returns The correct constructor to use
@@ -1854,7 +1854,7 @@ export class Deserializer<
 	 * @example
 	 * **Simple string discriminator**:
 	 * ```typescript
-	 * // QDiscriminatorConfig = 'type'
+	 * // IQDiscriminatorConfig = 'type'
 	 * // typeArray from @Quick({ items: [Content, Metadata] })
 	 * // data = { type: 'content', text: '...' }
 	 * // Returns: Content constructor
@@ -1863,14 +1863,14 @@ export class Deserializer<
 	 * @example
 	 * **Function discriminator**:
 	 * ```typescript
-	 * // QDiscriminatorConfig = (data) => 'text' in data ? Content : Metadata
+	 * // IQDiscriminatorConfig = (data) => 'text' in data ? Content : Metadata
 	 * // Returns: Content or Metadata based on data structure
 	 * ```
 	 *
 	 * @example
 	 * **Object with mapping**:
 	 * ```typescript
-	 * // QDiscriminatorConfig = { field: 'type', mapping: { 'content': Content } }
+	 * // IQDiscriminatorConfig = { field: 'type', mapping: { 'content': Content } }
 	 * // Returns: Content when data.type === 'content'
 	 * ```
 	 *
@@ -1883,7 +1883,7 @@ export class Deserializer<
 	private resolveUnionType(
 		data: unknown,
 		possibleTypes: Function[],
-		QDiscriminatorConfig?: QDiscriminatorConfig
+		IQDiscriminatorConfig?: IQDiscriminatorConfig
 	): Function {
 		// No types available - throw error
 		if (!possibleTypes || possibleTypes.length === 0) {
@@ -1927,14 +1927,14 @@ export class Deserializer<
 			return BigInt; // BigInt primitive
 
 		// No discriminator - return first type as fallback
-		if (!QDiscriminatorConfig) {
+		if (!IQDiscriminatorConfig) {
 			return getFirstType();
 		}
 
 		// 1. String discriminator: use field value to match
-		if (typeof QDiscriminatorConfig === 'string') {
+		if (typeof IQDiscriminatorConfig === 'string') {
 			const fieldValue = (data as Record<string, unknown>)?.[
-				QDiscriminatorConfig
+				IQDiscriminatorConfig
 			];
 
 			if (fieldValue !== undefined) {
@@ -1958,24 +1958,26 @@ export class Deserializer<
 		}
 
 		// 2. Function discriminator: call function with data
-		if (typeof QDiscriminatorConfig === 'function') {
-			const result = (QDiscriminatorConfig as any)(data);
+		if (typeof IQDiscriminatorConfig === 'function') {
+			const result = (IQDiscriminatorConfig as any)(data);
 			return (result as Function) || getFirstType();
 		}
 
 		// 3. Object with field + mapping
 		if (
-			typeof QDiscriminatorConfig === 'object' &&
-			QDiscriminatorConfig.field
+			typeof IQDiscriminatorConfig === 'object' &&
+			IQDiscriminatorConfig.field
 		) {
 			const fieldValue = (data as Record<string, unknown>)?.[
-				QDiscriminatorConfig.field
+				IQDiscriminatorConfig.field
 			];
 
 			// Try explicit mapping first
-			if (QDiscriminatorConfig.mapping && fieldValue !== undefined) {
+			if (IQDiscriminatorConfig.mapping && fieldValue !== undefined) {
 				const mapped =
-					QDiscriminatorConfig.mapping[fieldValue as string | number];
+					IQDiscriminatorConfig.mapping[
+						fieldValue as string | number
+					];
 				if (mapped) return mapped as Function;
 			}
 
@@ -2034,13 +2036,13 @@ export class Deserializer<
 	 *
 	 * @param nestedArray - The nested array to transform
 	 * @param possibleTypes - Array of possible type constructors for union types
-	 * @param QDiscriminatorConfig - Optional discriminator config for union types
+	 * @param IQDiscriminatorConfig - Optional discriminator config for union types
 	 * @returns Recursively transformed array of model instances
 	 */
 	private transformNestedModelArray(
 		nestedArray: unknown[],
 		possibleTypes: Function[],
-		QDiscriminatorConfig?: QDiscriminatorConfig
+		IQDiscriminatorConfig?: IQDiscriminatorConfig
 	): unknown[] {
 		return nestedArray
 			.filter((item) => item !== null && item !== undefined)
@@ -2050,7 +2052,7 @@ export class Deserializer<
 					return this.transformNestedModelArray(
 						item,
 						possibleTypes,
-						QDiscriminatorConfig
+						IQDiscriminatorConfig
 					);
 				}
 
@@ -2058,7 +2060,7 @@ export class Deserializer<
 				const resolvedClass = this.resolveUnionType(
 					item,
 					possibleTypes,
-					QDiscriminatorConfig
+					IQDiscriminatorConfig
 				);
 
 				// Handle Primitives (return primitive value, not object wrapper)

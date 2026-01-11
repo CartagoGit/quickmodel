@@ -1,24 +1,24 @@
-import type { INativeConstructor } from '../constants/native-types';
-import type { QAlias } from '../types/q-alias.type';
+import type { IQNativeConstructor } from '../constants/native-types';
+import type { IQAlias } from '../types/q-alias.type';
 
 /**
  * Constructor type for class-based type mapping
  */
-export type IConstructor<T = any> = new (...args: any[]) => T;
+export type IQConstructor<T = any> = new (...args: any[]) => T;
 
 /**
  * Transformer function that converts a value
  */
-export type ITransformerFunction = (value: unknown) => unknown;
+export type IQTransformerFunction = (value: unknown) => unknown;
 
 /**
  * Single type specification supported by QuickModel (without transformers).
  * Represents a type that can be transformed via class, native constructor, or alias.
  */
-export type QTypeSpec<T = any> =
-	| IConstructor<T>
-	| INativeConstructor
-	| QAlias
+export type IQTypeSpec<T = any> =
+	| IQConstructor<T>
+	| IQNativeConstructor
+	| IQAlias
 	| symbol
 	| PromiseConstructor;
 
@@ -32,22 +32,22 @@ export type QTypeSpec<T = any> =
  * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
  * - Custom transformers
  */
-export type ISpec =
-	| QTypeSpec // Classes, natives, aliases
-	| ITransformerFunction // Custom transformer function
-	| ISpec[] // Array with element type like [Date], [[Date]]
-	| (string & {}); // Allow any string (custom transformers) but preserve autocomplete for QAlias
+export type IQSpec =
+	| IQTypeSpec // Classes, natives, aliases
+	| IQTransformerFunction // Custom transformer function
+	| IQSpec[] // Array with element type like [Date], [[Date]]
+	| (string & {}); // Allow any string (custom transformers) but preserve autocomplete for IQAlias
 
 /**
  * All supported type specifications for @Quick() decorator for arrays
  */
-export type ISpecs = ISpec[]; // Array of any Spec
+export type IQSpecs = IQSpec[]; // Array of any Spec
 
 /**
  * Options for @Quick() decorator to specify property types explicitly
  *
  * Supports **dot notation** for nested property transformations.
  */
-export interface QOptions {
-	[propertyName: string]: ISpec | ISpecs;
+export interface IQOptions {
+	[propertyName: string]: IQSpec | IQSpecs;
 }

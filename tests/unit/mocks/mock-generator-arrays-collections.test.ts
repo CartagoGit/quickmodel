@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Unit: Mock Generator - Arrays and Collections', () => {
 	interface IPost {
@@ -42,7 +42,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	});
 
 	test('should generate mocks with number arrays', () => {
-		// MockGenerator produces strings for generic arrays by default if only 'Array' type is known
+		// QMockGenerator produces strings for generic arrays by default if only 'Array' type is known
 		// We override here to test that it accepts overrides correctly for specific types
 		const mock = Post.mock().random({
 			ratings: [1, 2, 3, 4, 5],
@@ -109,7 +109,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	})
 	class BlogPost
 		extends QModel<IBlogPost>
-		implements QImplements<IBlogPost, IBlogPostTransform>
+		implements IQImplements<IBlogPost, IBlogPostTransform>
 	{
 		id!: string;
 		title!: string;
@@ -165,7 +165,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	})
 	class DataStore
 		extends QModel<IDataStore>
-		implements QImplements<IDataStore, IDataStoreTransform>
+		implements IQImplements<IDataStore, IDataStoreTransform>
 	{
 		id!: string;
 		tags!: Set<string>;

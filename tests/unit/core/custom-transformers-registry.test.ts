@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { TransformerRegistry } from '@/core/registry/transformer.registry';
+import { QTransformerRegistry } from '@/core/registry/transformer.registry';
 import { IQTransformer } from '@/core/interfaces/transformer.interface';
 
 // --- Setup: Custom Type & Transformer ---
@@ -61,7 +61,7 @@ class Product extends QModel<IProduct> {
 describe('Feature: Custom Transformers via Registry', () => {
 	beforeEach(() => {
 		// Clear registry to ensure test isolation
-		TransformerRegistry.clear();
+		QTransformerRegistry.clear();
 	});
 
 	test('should use Nested Model logic if not registered (default behavior)', () => {
@@ -81,7 +81,7 @@ describe('Feature: Custom Transformers via Registry', () => {
 
 	test('should use Custom Transformer when registered', () => {
 		// Register the transformer
-		TransformerRegistry.register(Money, new MoneyTransformer());
+		QTransformerRegistry.register(Money, new MoneyTransformer());
 
 		const data = {
 			name: 'Laptop',
@@ -117,7 +117,7 @@ describe('Feature: Custom Transformers via Registry', () => {
 
 		// Register override for Date. Both 'date' string and Date constructor should work.
 		// We use Date constructor to match what user would likely do.
-		TransformerRegistry.register(Date, new FixedDateTransformer());
+		QTransformerRegistry.register(Date, new FixedDateTransformer());
 
 		@Quick({ date: Date })
 		class Event extends QModel<{ date: string }> {
@@ -129,6 +129,6 @@ describe('Feature: Custom Transformers via Registry', () => {
 		expect(event.date.toISOString()).toBe('2000-01-01T00:00:00.000Z');
 
 		// Cleanup
-		TransformerRegistry.clear();
+		QTransformerRegistry.clear();
 	});
 });

@@ -136,13 +136,13 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 			tags: new Set(['tag1', 'tag2', 'tag3']),
 		});
 
-		const serialized = entity.serialize();
+		const IQSerialized = entity.serialize();
 		console.log(
-			'Serialized ComplexEntity:',
-			JSON.stringify(serialized, null, 2)
+			'IQSerialized ComplexEntity:',
+			JSON.stringify(IQSerialized, null, 2)
 		);
 
-		const deserialized = ComplexEntity.deserialize(serialized);
+		const deserialized = ComplexEntity.deserialize(IQSerialized);
 
 		// Validaciones
 		expect(deserialized).toBeInstanceOf(ComplexEntity);
@@ -339,8 +339,8 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 			errorLog: new Set([new Error('Log entry')]),
 		});
 
-		const serialized = model.serialize();
-		const deserialized = NestedComplexModel.deserialize(serialized);
+		const IQSerialized = model.serialize();
+		const deserialized = NestedComplexModel.deserialize(IQSerialized);
 
 		expect(deserialized).toBeInstanceOf(NestedComplexModel);
 		expect(deserialized.name).toBe('Complete Test');
@@ -612,8 +612,8 @@ describe('Edge cases: combinaciones extremas', () => {
 			tags: new Set(Array.from({ length: 50 }, (_, i) => `tag${i}`)),
 		});
 
-		const serialized = entity.serialize();
-		const deserialized = ComplexEntity.deserialize(serialized);
+		const IQSerialized = entity.serialize();
+		const deserialized = ComplexEntity.deserialize(IQSerialized);
 
 		expect(deserialized.buffer.length).toBe(1000);
 		expect(deserialized.buffer[999]).toBe(largeBuffer[999]);

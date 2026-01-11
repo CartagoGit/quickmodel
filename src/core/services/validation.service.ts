@@ -34,8 +34,8 @@ import {
 	IQTransformer,
 } from '../interfaces/transformer.interface';
 import {
-	TransformerRegistry,
-	type TransformerKey,
+	QTransformerRegistry,
+	type IQTransformerKey,
 } from '../registry/transformer.registry';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -154,10 +154,10 @@ export class ValidationService {
 	 * Gets the transformer (custom or default) for a given key.
 	 */
 	public getTransformer(
-		key: TransformerKey
+		key: IQTransformerKey
 	): IQTransformer<unknown, unknown> | undefined {
 		// 1. Check global registry first (allows overriding defaults)
-		const customTransformer = TransformerRegistry.get(key);
+		const customTransformer = QTransformerRegistry.get(key);
 		if (customTransformer) {
 			return customTransformer;
 		}

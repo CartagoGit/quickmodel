@@ -80,7 +80,7 @@
  */
 
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
-import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
+import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -116,7 +116,7 @@ export class ToInterfaceService<
 		const isProduction = process.env.NODE_ENV === 'production';
 
 		// Retrieve advanced options (custom serializers)
-		const options: QAdvancedOptions =
+		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, model.constructor) || {};
 
 		// ONLY iterate over properties that were in the original initData

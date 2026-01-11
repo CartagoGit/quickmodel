@@ -1,6 +1,6 @@
-# QAlias Reference
+# IQAlias Reference
 
-QuickModel supports a wide range of **string aliases** (QAlias) to specify types in a concise way. These aliases are used within `@Quick` and `@QType` decorators.
+QuickModel supports a wide range of **string aliases** (IQAlias) to specify types in a concise way. These aliases are used within `@Quick` and `@QType` decorators.
 
 Using aliases provides excellent **IntelliSense** support and keeps your code clean by avoiding unnecessary imports of global constructors.
 
@@ -20,7 +20,7 @@ These aliases ensure that values are coerced into their respective primitive typ
 
 ## Native Objects
 
-Standard JavaScript objects that require transformation from serialized (JSON) formats.
+Standard JavaScript objects that require transformation from IQSerialized (JSON) formats.
 
 | Alias               | Result            | Description                                                                 |
 | :------------------ | :---------------- | :-------------------------------------------------------------------------- |

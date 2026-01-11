@@ -1,4 +1,4 @@
-import { QImplements, QModel, Quick } from '@/index';
+import { IQImplements, QModel, Quick } from '@/index';
 
 // ============================================
 // NESTED CLASSES FOR TESTING
@@ -112,7 +112,10 @@ type IUserTransform = {
 	profile: Profile as unknown as any, // Plain object → Profile QModel
 	addresses: [Address] as unknown as any, // Array of plain objects → Array of Address classes
 })
-class User extends QModel<IUser> implements QImplements<IUser, IUserTransform> {
+class User
+	extends QModel<IUser>
+	implements IQImplements<IUser, IUserTransform>
+{
 	// All properties are automatically protected by @Quick()
 	// Works with declare, !, and ?
 	declare id: number;

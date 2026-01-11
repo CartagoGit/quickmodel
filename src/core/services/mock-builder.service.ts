@@ -1,6 +1,6 @@
 import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
-import type { MockGenerator } from './mock-generator.service';
-import type { MockType } from './mock-generator.service';
+import type { QMockGenerator } from './mock-generator.service';
+import type { IQMockType } from './mock-generator.service';
 
 /**
  * Type-safe mock builder for QuickModel instances.
@@ -25,11 +25,11 @@ export class QQMockBuilder<
 	 * Creates a new QMockBuilder instance.
 	 *
 	 * @param modelClass - The model class constructor
-	 * @param mockGenerator - The mock generator service instance
+	 * @param QMockGenerator - The mock generator service instance
 	 */
 	constructor(
 		private readonly modelClass: new (data: TInterface) => TInstance,
-		private readonly mockGenerator: MockGenerator
+		private readonly QMockGenerator: QMockGenerator
 	) {}
 
 	/**
@@ -93,7 +93,7 @@ export class QQMockBuilder<
 	 */
 	empty(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
+		const data = this.QMockGenerator.generate(
 			this.modelClass,
 			'empty',
 			overrides
@@ -116,7 +116,7 @@ export class QQMockBuilder<
 	 */
 	random(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
+		const data = this.QMockGenerator.generate(
 			this.modelClass,
 			'random',
 			overrides
@@ -139,7 +139,7 @@ export class QQMockBuilder<
 	 */
 	sample(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
+		const data = this.QMockGenerator.generate(
 			this.modelClass,
 			'sample',
 			overrides
@@ -162,7 +162,7 @@ export class QQMockBuilder<
 	 */
 	minimal(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
+		const data = this.QMockGenerator.generate(
 			this.modelClass,
 			'minimal',
 			overrides
@@ -185,7 +185,7 @@ export class QQMockBuilder<
 	 */
 	full(overrides?: Partial<TInterface>): TInstance {
 		this.ensureFieldsRegistered();
-		const data = this.mockGenerator.generate(
+		const data = this.QMockGenerator.generate(
 			this.modelClass,
 			'full',
 			overrides
@@ -208,7 +208,11 @@ export class QQMockBuilder<
 	 */
 	interfaceEmpty(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
-		return this.mockGenerator.generate(this.modelClass, 'empty', overrides);
+		return this.QMockGenerator.generate(
+			this.modelClass,
+			'empty',
+			overrides
+		);
 	}
 
 	/**
@@ -224,7 +228,7 @@ export class QQMockBuilder<
 	 */
 	interfaceRandom(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
-		return this.mockGenerator.generate(
+		return this.QMockGenerator.generate(
 			this.modelClass,
 			'random',
 			overrides
@@ -239,7 +243,7 @@ export class QQMockBuilder<
 	 */
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
-		return this.mockGenerator.generate(
+		return this.QMockGenerator.generate(
 			this.modelClass,
 			'sample',
 			overrides
@@ -254,7 +258,7 @@ export class QQMockBuilder<
 	 */
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
-		return this.mockGenerator.generate(
+		return this.QMockGenerator.generate(
 			this.modelClass,
 			'minimal',
 			overrides
@@ -269,7 +273,7 @@ export class QQMockBuilder<
 	 */
 	interfaceFull(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
-		return this.mockGenerator.generate(this.modelClass, 'full', overrides);
+		return this.QMockGenerator.generate(this.modelClass, 'full', overrides);
 	}
 
 	/**
@@ -293,7 +297,7 @@ export class QQMockBuilder<
 	 */
 	array(
 		count: number,
-		type: MockType = 'random',
+		type: IQMockType = 'random',
 		overrides?: (index: number) => Partial<TInterface>
 	): TInstance[] {
 		this.ensureFieldsRegistered();
@@ -303,7 +307,7 @@ export class QQMockBuilder<
 		if (count === 0) {
 			return [];
 		}
-		const dataArray = this.mockGenerator.generateArray(
+		const dataArray = this.QMockGenerator.generateArray(
 			this.modelClass,
 			count,
 			type,
@@ -330,7 +334,7 @@ export class QQMockBuilder<
 	 */
 	interfaceArray(
 		count: number,
-		type: MockType = 'random',
+		type: IQMockType = 'random',
 		overrides?: (index: number) => Partial<TInterface>
 	): TInterface[] {
 		this.ensureFieldsRegistered();
@@ -340,7 +344,7 @@ export class QQMockBuilder<
 		if (count === 0) {
 			return [];
 		}
-		return this.mockGenerator.generateArray(
+		return this.QMockGenerator.generateArray(
 			this.modelClass,
 			count,
 			type,

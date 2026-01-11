@@ -34,7 +34,10 @@ interface IUserTransform {
 	tags: Set,
 	metadata: Map,
 })
-class User extends QModel<IUser> implements QImplements<IUser, IUserTransform> {
+class User
+	extends QModel<IUser>
+	implements IQImplements<IUser, IUserTransform>
+{
 	declare id: number;
 	declare name: string;
 	declare createdAt: Date;

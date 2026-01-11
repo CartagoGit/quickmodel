@@ -101,7 +101,7 @@ describe('Robustness: Partial Updates (PATCH)', () => {
 		// patch.address is { city: 'LA' }
 		// The spread { ...current } is SHALLOW merge on the root.
 		// So current.address (object) will be REPLACED by patch.address (object).
-		// Wait, serialize() returns serialized data.
+		// Wait, serialize() returns IQSerialized data.
 
 		profile.patch({
 			address: { city: 'LA' } as any, // Missing zip!

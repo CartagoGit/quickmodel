@@ -108,25 +108,25 @@ describe('Syntax Comparison: declare vs !', () => {
 
 		test('debe serializar correctamente', () => {
 			const instance = new TestDeclare(testData);
-			const serialized = instance.serialize();
+			const IQSerialized = instance.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('Test Item');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(serialized.count).toBe('9999');
-			expect(serialized.key).toEqual({
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('Test Item');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			expect(IQSerialized.count).toBe('9999');
+			expect(IQSerialized.key).toEqual({
 				__type: 'symbol',
 				description: 'test-key',
 			});
-			expect(serialized.pattern).toEqual({
+			expect(IQSerialized.pattern).toEqual({
 				__type: 'regexp',
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['typescript', 'testing']);
+			expect(Array.isArray(IQSerialized.tags)).toBe(true);
+			expect(IQSerialized.tags).toEqual(['typescript', 'testing']);
 
-			expect(serialized.metadata).toEqual({
+			expect(IQSerialized.metadata).toEqual({
 				author: 'John',
 				version: '1.0',
 			});
@@ -134,8 +134,8 @@ describe('Syntax Comparison: declare vs !', () => {
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new TestDeclare(testData);
-			const serialized = instance1.serialize();
-			const instance2 = new TestDeclare(serialized);
+			const IQSerialized = instance1.serialize();
+			const instance2 = new TestDeclare(IQSerialized);
 
 			expect(instance2.id).toBe('test-123');
 			expect(instance2.name).toBe('Test Item');
@@ -186,25 +186,25 @@ describe('Syntax Comparison: declare vs !', () => {
 
 		test('debe serializar correctamente', () => {
 			const instance = new TestBang(testData);
-			const serialized = instance.serialize();
+			const IQSerialized = instance.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('Test Item');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(serialized.count).toBe('9999');
-			expect(serialized.key).toEqual({
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('Test Item');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			expect(IQSerialized.count).toBe('9999');
+			expect(IQSerialized.key).toEqual({
 				__type: 'symbol',
 				description: 'test-key',
 			});
-			expect(serialized.pattern).toEqual({
+			expect(IQSerialized.pattern).toEqual({
 				__type: 'regexp',
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['typescript', 'testing']);
+			expect(Array.isArray(IQSerialized.tags)).toBe(true);
+			expect(IQSerialized.tags).toEqual(['typescript', 'testing']);
 
-			expect(serialized.metadata).toEqual({
+			expect(IQSerialized.metadata).toEqual({
 				author: 'John',
 				version: '1.0',
 			});
@@ -212,8 +212,8 @@ describe('Syntax Comparison: declare vs !', () => {
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new TestBang(testData);
-			const serialized = instance1.serialize();
-			const instance2 = new TestBang(serialized);
+			const IQSerialized = instance1.serialize();
+			const instance2 = new TestBang(IQSerialized);
 
 			expect(instance2.id).toBe('test-123');
 			expect(instance2.name).toBe('Test Item');
@@ -248,10 +248,10 @@ describe('Syntax Comparison: declare vs !', () => {
 
 		test('ambas sintaxis deben ser intercambiables en deserialización', () => {
 			const instanceBang = new TestBang(testData);
-			const serialized = instanceBang.serialize();
+			const IQSerialized = instanceBang.serialize();
 
 			// Deserializar el JSON del modelo Bang en modelo Declare
-			const instanceDeclare = new TestDeclare(serialized);
+			const instanceDeclare = new TestDeclare(IQSerialized);
 
 			expect(instanceDeclare.id).toBe(instanceBang.id);
 			expect(instanceDeclare.createdAt.getTime()).toBe(

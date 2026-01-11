@@ -8,46 +8,46 @@
  */
 
 // Core Interfaces
-export type { AnyRecord } from './core/interfaces/model.interface';
+export type { IQAnyRecord } from './core/interfaces/model.interface';
 export type {
-	TypeGuardFunction,
-	ExtractConstructors,
-	ExtractValidDiscriminatorKeys,
-	ExtractCommonKeys,
-	ExtractQModelInterface,
-	ExtractInstanceType,
+	IQTypeGuardFunction,
+	IQExtractConstructors,
+	IQExtractValidDiscriminatorKeys,
+	IQExtractCommonKeys,
+	IQExtractIQModelInterface,
+	IQExtractInstanceType,
 } from './core/interfaces/quick-options.interface';
 export type {
-	QTypeSpec,
-	IConstructor,
-	ISpec,
-	ISpecs,
-	ITransformerFunction,
+	IQTypeSpec,
+	IQConstructor,
+	IQSpec,
+	IQSpecs,
+	IQTransformerFunction,
 } from './core/interfaces/quick.interface';
-export type { INativeConstructor } from './core/constants/native-types';
+export type { IQNativeConstructor } from './core/constants/native-types';
 
 // Serialization Types
 export type {
-	SerializedInterface,
-	ModelData,
-	Serialized,
+	IQSerializedInterface,
+	IQModelData,
+	IQSerialized,
 } from './core/interfaces/serialization-types.interface';
 
 // Validation Types
 export type {
 	IQValidationResult,
-	IQTransformer as ITransformer,
+	IQTransformer as IQTransformer,
 } from './core/interfaces/transformer.interface';
 
 // Mock Types
 export type {
-	QModelInstance,
-	QModelInterface,
+	IQModelInstance,
+	IQModelInterface,
 } from './core/interfaces/mock-types.interface';
 
 // Options
-export type { ISerializationOptions } from './core/interfaces/serializer.interface';
-export type { MockType } from './core/services/mock-generator.service';
+export type { IQSerializationOptions } from './core/interfaces/serializer.interface';
+export type { IQMockType } from './core/services/mock-generator.service';
 
 // Transform Options
-export type { QPropertyOptions } from './core/interfaces/transform-options.interface';
+export type { IQPropertyOptions } from './core/interfaces/transform-options.interface';

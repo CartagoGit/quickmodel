@@ -7,7 +7,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { QTransform } from '@/utils';
+import { IQTransform } from '@/utils';
 
 describe('QModel.create() factory method', () => {
 	describe('Basic usage', () => {
@@ -373,7 +373,7 @@ describe('QModel.create() factory method', () => {
 		});
 	});
 
-	describe('QTransform helper with generic overriding (Option B)', () => {
+	describe('IQTransform helper with generic overriding (Option B)', () => {
 		test('should work by passing explicit output type to create()', () => {
 			interface IPost {
 				id: number;
@@ -384,12 +384,12 @@ describe('QModel.create() factory method', () => {
 			@Quick({ createdAt: Date })
 			class Post extends QModel<IPost> {}
 
-			// Pass QTransform as 1st type parameter to create()
+			// Pass IQTransform as 1st type parameter to create()
 			// <TResult>
 			const post = Post.create<
 				IPost,
 				Post,
-				QTransform<
+				IQTransform<
 					IPost,
 					{
 						createdAt: Date;
@@ -406,7 +406,7 @@ describe('QModel.create() factory method', () => {
 			expect(post.createdAt.getFullYear()).toBe(2026);
 		});
 
-		test('should work with QTransform for multiple transformations', () => {
+		test('should work with IQTransform for multiple transformations', () => {
 			interface IAccount {
 				id: string;
 				balance: string; // Backend sends string
@@ -424,7 +424,7 @@ describe('QModel.create() factory method', () => {
 			const account = Account.create<
 				IAccount,
 				Account,
-				QTransform<
+				IQTransform<
 					IAccount,
 					{
 						balance: bigint;
@@ -439,7 +439,7 @@ describe('QModel.create() factory method', () => {
 				tags: ['vip', 'verified'],
 			});
 
-			// All types are correctly inferred via QTransform
+			// All types are correctly inferred via IQTransform
 			expect(typeof account.balance).toBe('bigint');
 			expect(account.createdAt).toBeInstanceOf(Date);
 			expect(account.tags).toBeInstanceOf(Set);
@@ -456,7 +456,7 @@ describe('QModel.create() factory method', () => {
 			const data = Data.create<
 				IData,
 				Data,
-				QTransform<
+				IQTransform<
 					IData,
 					{
 						value: bigint;

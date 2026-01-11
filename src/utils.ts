@@ -4,23 +4,23 @@
  */
 
 export { QType } from './core/decorators/qtype.decorator';
-export type { QTypeOptions } from './core/interfaces/qtype-options.interface';
+export type { IQTypeOptions } from './core/interfaces/qtype-options.interface';
 
 export { QModelError } from './core/errors/quickmodel.error';
 export { QQMockBuilder as QMockBuilder } from './core/services/mock-builder.service';
 
-export type { QOptions } from './core/decorators/quick.decorator';
+export type { IQOptions } from './core/decorators/quick.decorator';
 export type {
-	QAdvancedOptions,
-	QDiscriminatorConfig,
+	IQAdvancedOptions,
+	IQDiscriminatorConfig,
 } from './core/interfaces/quick-options.interface';
 
 export type {
-	QTransformerFn,
-	QSerializerFn,
-	QMockerFn,
+	IQTransformerFn,
+	IQSerializerFn,
+	IQMockerFn,
 } from './core/interfaces/transform-options.interface';
 
-export type { QAlias } from './core/types/q-alias.type';
+export type { IQAlias } from './core/types/q-alias.type';
 
-export type { QTransform } from './core/interfaces/model.interface';
+export type { IQTransform } from './core/interfaces/model.interface';

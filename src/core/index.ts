@@ -13,7 +13,7 @@ export * from './interfaces/model.interface';
 export * from './interfaces/serializer.interface';
 
 // Registry
-export { TransformerRegistry } from './registry/transformer.registry';
+export { QTransformerRegistry } from './registry/transformer.registry';
 
 // Bases
 export { BaseTransformer } from './bases/base-transformer';

@@ -4,7 +4,7 @@
  */
 
 // Native constructor types
-export type INativeConstructor =
+export type IQNativeConstructor =
 	| typeof String
 	| typeof Number
 	| typeof Boolean

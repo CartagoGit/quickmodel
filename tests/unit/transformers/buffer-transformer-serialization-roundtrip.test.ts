@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Unit: Buffer Transformer', () => {
 	interface IBufferData {
@@ -19,7 +19,7 @@ describe('Unit: Buffer Transformer', () => {
 	@Quick({ buffer: ArrayBuffer })
 	class BufferData
 		extends QModel<IBufferData>
-		implements QImplements<IBufferData, IBufferDataTransform>
+		implements IQImplements<IBufferData, IBufferDataTransform>
 	{
 		buffer!: ArrayBuffer;
 	}

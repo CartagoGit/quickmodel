@@ -112,7 +112,7 @@ export class ArrayBufferTransformer
  *
  * @remarks
  * DataView provides a low-level interface for reading/writing multiple number types.
- * The underlying buffer is serialized as a byte array.
+ * The underlying buffer is IQSerialized as a byte array.
  *
  * @example
  * ```typescript
@@ -218,7 +218,7 @@ export class DataViewTransformer
  *
  * @remarks
  * SharedArrayBuffer allows sharing memory between different execution contexts.
- * Serialized as a byte array for JSON compatibility.
+ * IQSerialized as a byte array for JSON compatibility.
  */
 export class SharedArrayBufferTransformer
 	extends BaseTransformer<number[], SharedArrayBuffer>

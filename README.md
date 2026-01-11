@@ -72,7 +72,7 @@ class User extends QModel<IUser> {
 #### 3️⃣ **With Type Transformations** - Explicit mapping required
 
 ```typescript
-import { QModel, Quick, QImplements } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQImplements } from '@cartago-git/quickmodel';
 
 // Backend interface (JSON-compatible types)
 interface IUser {
@@ -118,10 +118,10 @@ console.log(user.tags); // Set<string>
 console.log(user.metadata); // Map<string, any>
 ```
 
-#### 4️⃣ **Type-Safe with QImplements** - Enforce transformation types
+#### 4️⃣ **Type-Safe with IQImplements** - Enforce transformation types
 
 ```typescript
-import { QModel, Quick, QImplements } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQImplements } from '@cartago-git/quickmodel';
 
 // Backend interface (JSON types)
 interface IUser {
@@ -146,7 +146,10 @@ interface IUserTransform {
 	tags: Set,
 	metadata: Map,
 })
-class User extends QModel<IUser> implements QImplements<IUser, IUserTransform> {
+class User
+	extends QModel<IUser>
+	implements IQImplements<IUser, IUserTransform>
+{
 	declare id: number;
 	declare createdAt: Date; // TypeScript enforces this matches IUserTransform
 	declare balance: bigint; // TypeScript enforces this matches IUserTransform
@@ -183,12 +186,12 @@ const user = User.create({ id: 1, createdAt: '2026-01-01' });
 user.createdAt; // ✅ Date
 ```
 
-**Option B: Using `QTransform` (Alternative)**
+**Option B: Using `IQTransform` (Alternative)**
 
-If you prefer NOT to use `declare` properties (e.g. to keep classes smaller), you can use the `QTransform` helper to manually specify the transformed type in the `create()` call.
+If you prefer NOT to use `declare` properties (e.g. to keep classes smaller), you can use the `IQTransform` helper to manually specify the transformed type in the `create()` call.
 
 ```typescript
-import { QModel, Quick, QTransform } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQTransform } from '@cartago-git/quickmodel';
 
 interface IUser {
 	id: number;
@@ -204,12 +207,12 @@ class User extends QModel<IUser> {
 }
 
 // 2. Pass transformation type to create()
-const user = User.create<QTransform<IUser, UserTransforms>>({
+const user = User.create<IQTransform<IUser, UserTransforms>>({
 	id: 1,
 	createdAt: '2026-01-08',
 });
 
-user.createdAt; // ✅ Date (inferred via QTransform)
+user.createdAt; // ✅ Date (inferred via IQTransform)
 ```
 
 user.email // ✅ TypeScript: string
@@ -380,7 +383,10 @@ interface IPostTransform {
 	categories: [Set], // Array of Sets - explicit syntax!
 	metadata: Map, // Single Map
 })
-class Post extends QModel<IPost> implements QImplements<IPost, IPostTransform> {
+class Post
+	extends QModel<IPost>
+	implements IQImplements<IPost, IPostTransform>
+{
 	declare id: string;
 	declare tags: Set<string>; // Single Set
 	declare categories: Set<string>[]; // Array of Sets
@@ -459,7 +465,7 @@ class CartItem extends QModel<ICartItem> {
 QuickModel includes built-in protections for robust serialization:
 
 - **Circular Reference Protection**: `toJSON()` calls safely handle circular references in Objects, Arrays, Maps, and Sets by returning a `{ __circular: true }` marker instead of crashing.
-- **Deep Serialization**: Collections like `Map` and `Set` are serialized recursively, ensuring that nested complex types (like `BigInt` or `Date`) are properly converted to their JSON-compatible formats.
+- **Deep Serialization**: Collections like `Map` and `Set` are IQSerialized recursively, ensuring that nested complex types (like `BigInt` or `Date`) are properly converted to their JSON-compatible formats.
 - **Internal Property Protection**: Properties starting with `__` are automatically excluded from serialization to prevent leaking internal state.
 
 ## ✅ Validation

@@ -15,6 +15,7 @@ Se corrigieron los errores de serialización con `serialize()` y se creó un tes
 **Causa raíz**: El serializer usaba `Object.entries()` que solo ve propiedades enumerables, pero los getters/setters creados por `@QType()` son no-enumerables.
 
 **Solución**:
+
 ```typescript
 // Antes (solo propiedades enumerables)
 for (const [key, value] of Object.entries(model)) { ... }
@@ -44,6 +45,7 @@ while (proto && proto !== Object.prototype) {
 **Problema**: Después de `Model → serialize() → Model`, BigInt, Map y Set no se deserializaban correctamente.
 
 **Causa raíz**: Los transformers serializan con marcadores `__type`:
+
 - `bigint` → `{ __type: 'bigint', value: '123' }`
 - `Set` → `{ __type: 'Set', values: [...] }`
 - `Map` → `{ __type: 'Map', entries: [...] }`
@@ -79,22 +81,26 @@ if (detectedTransformer) {
 
 ```typescript
 // Date
-const transformer = this.qTransformerRegistry.get('date') || 
-                    this.qTransformerRegistry.get(Date);
+const transformer =
+	this.qQTransformerRegistry.get('date') ||
+	this.qQTransformerRegistry.get(Date);
 
 // BigInt
-const transformer = this.qTransformerRegistry.get('bigint');
+const transformer = this.qQTransformerRegistry.get('bigint');
 
 // Map
-const transformer = this.qTransformerRegistry.get('map') || 
-                    this.qTransformerRegistry.get(Map);
+const transformer =
+	this.qQTransformerRegistry.get('map') ||
+	this.qQTransformerRegistry.get(Map);
 
 // Set
-const transformer = this.qTransformerRegistry.get('set') || 
-                    this.qTransformerRegistry.get(Set);
+const transformer =
+	this.qQTransformerRegistry.get('set') ||
+	this.qQTransformerRegistry.get(Set);
 ```
 
-**Archivos**: 
+**Archivos**:
+
 - `src/core/services/model-serializer.service.ts`
 - `src/transformers/bootstrap.ts` (verifica registros)
 
@@ -105,6 +111,7 @@ const transformer = this.qTransformerRegistry.get('set') ||
 ### Archivo: `tests/e2e/auto-conversion-roundtrip.test.ts`
 
 **Estadísticas**:
+
 - **46 tests** en total
 - **17 categorías** de pruebas
 - **111 expect() calls**
@@ -113,46 +120,46 @@ const transformer = this.qTransformerRegistry.get('set') ||
 ### Categorías Probadas:
 
 1. **Primitivos** (6 tests)
-   - number, string, boolean
-   - null, undefined
-   - Manejo de valores opcionales
+    - number, string, boolean
+    - null, undefined
+    - Manejo de valores opcionales
 
 2. **Enums** (3 tests)
-   - String enums
-   - Numeric enums  
-   - Const enums
+    - String enums
+    - Numeric enums
+    - Const enums
 
 3. **Dates y BigInt** (4 tests)
-   - Date transformations
-   - BigInt transformations
-   - Null handling
+    - Date transformations
+    - BigInt transformations
+    - Null handling
 
 4. **Colecciones** (3 tests)
-   - Set<T>
-   - Map<K,V>
-   - Array<T>
+    - Set<T>
+    - Map<K,V>
+    - Array<T>
 
 5. **Tipos Especiales** (4 tests)
-   - RegExp
-   - Symbol
-   - Buffer
-   - Error
+    - RegExp
+    - Symbol
+    - Buffer
+    - Error
 
 6. **Objetos Plain** (2 tests)
-   - Plain objects sin modelo
-   - Record<string, any>
+    - Plain objects sin modelo
+    - Record<string, any>
 
 7. **Nested Models** (3 tests)
-   - Class instances
-   - Interface objects
-   - Arrays de instancias
+    - Class instances
+    - Interface objects
+    - Arrays de instancias
 
 8. **Arrays de QModels** (1 test)
-   - Arrays con transformación automática de Dates
+    - Arrays con transformación automática de Dates
 
 9. **Tipos Complejos** (2 tests)
-   - Objetos anidados
-   - Union arrays `(Date | null | undefined)[]`
+    - Objetos anidados
+    - Union arrays `(Date | null | undefined)[]`
 
 10. **TypedArrays** (2 tests)
     - Uint8Array
@@ -196,19 +203,21 @@ const transformer = this.qTransformerRegistry.get('set') ||
 ### Default Values
 
 **Comportamiento actual**:
+
 - ✅ Valores explícitos se mantienen
 - ⚠️ `undefined` explícito NO restaura default
 - ⚠️ Campos ausentes NO restauran default
 
 **Ejemplo**:
+
 ```typescript
 class User extends QModel<IUser> {
-  name: string = 'Anonymous';
+	name: string = 'Anonymous';
 }
 
-new User({ name: 'John' }).name      // ✅ 'John'
-new User({ name: undefined }).name   // ⚠️ undefined (no 'Anonymous')
-new User({}).name                     // ⚠️ undefined (no 'Anonymous')
+new User({ name: 'John' }).name; // ✅ 'John'
+new User({ name: undefined }).name; // ⚠️ undefined (no 'Anonymous')
+new User({}).name; // ⚠️ undefined (no 'Anonymous')
 ```
 
 **Workaround**: Establecer defaults manualmente si el valor es undefined.
@@ -216,20 +225,22 @@ new User({}).name                     // ⚠️ undefined (no 'Anonymous')
 ### Arrays de QModels
 
 **Comportamiento actual**:
+
 - ✅ Plain objects con Date se transforman
 - ⚠️ Plain objects NO se convierten a QModel instances automáticamente
 
 **Ejemplo**:
+
 ```typescript
 @Quick({ typeMap: { posts: Post } })
 class User extends QModel<IUser> {
-  posts!: Post[];
+	posts!: Post[];
 }
 
 // Las fechas SÍ se transforman, pero el objeto NO se convierte a Post
-new User({ 
-  posts: [{ id: 1, title: 'Test', createdAt: '2024-01-01' }] 
-})
+new User({
+	posts: [{ id: 1, title: 'Test', createdAt: '2024-01-01' }],
+});
 // posts[0] es un plain object con createdAt como Date
 ```
 
@@ -238,21 +249,21 @@ new User({
 ## 📁 Archivos Modificados
 
 1. **src/core/services/model-serializer.service.ts**
-   - Detecta getters/setters en serialización
-   - Busca transformers por claves correctas
+    - Detecta getters/setters en serialización
+    - Busca transformers por claves correctas
 
 2. **src/core/services/model-deserializer.service.ts**
-   - Prioriza detección de `__type` markers
-   - Soporta roundtrip correctamente
+    - Prioriza detección de `__type` markers
+    - Soporta roundtrip correctamente
 
 3. **tests/e2e/auto-conversion-roundtrip.test.ts** (nuevo)
-   - Suite completo de 46 tests
-   - Documentación inline de comportamientos
+    - Suite completo de 46 tests
+    - Documentación inline de comportamientos
 
 4. **tests/CASOS-PENDIENTES.md** (nuevo)
-   - 20 casos edge documentados
-   - Prioridades asignadas
-   - Ejemplos de código
+    - 20 casos edge documentados
+    - Prioridades asignadas
+    - Ejemplos de código
 
 ---
 
@@ -270,6 +281,7 @@ bun test tests/e2e/auto-conversion-roundtrip.test.ts --watch
 ```
 
 **Resultado esperado**:
+
 ```
 ✓ QuickModel - Comprehensive Test Suite
   ✓ 1. Primitivos (6 tests)
@@ -292,20 +304,20 @@ Ver detalles completos en `tests/CASOS-PENDIENTES.md`.
 ### Top 4 Casos Críticos:
 
 1. **Referencias Circulares** ⭐⭐⭐
-   - Detectar y manejar ciclos
-   - Prevenir stack overflow
+    - Detectar y manejar ciclos
+    - Prevenir stack overflow
 
 2. **Partial Updates (PATCH)** ⭐⭐⭐
-   - Método `update()` / `patch()`
-   - Solo actualizar campos proporcionados
+    - Método `update()` / `patch()`
+    - Solo actualizar campos proporcionados
 
 3. **Invalid Data Handling** ⭐⭐⭐
-   - Modo strict vs permissive
-   - Errores descriptivos
+    - Modo strict vs permissive
+    - Errores descriptivos
 
 4. **Async Transformers** ⭐⭐⭐
-   - `deserializeAsync()`
-   - Transformaciones asíncronas
+    - `deserializeAsync()`
+    - Transformaciones asíncronas
 
 ---
 

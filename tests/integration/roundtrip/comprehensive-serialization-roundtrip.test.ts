@@ -1,4 +1,4 @@
-import { QModel, QImplements } from '@/index';
+import { QModel, IQImplements } from '@/index';
 import { QType } from '@/utils';
 
 console.log(
@@ -38,13 +38,13 @@ interface ICompleteModel {
 	optional?: string;
 
 	// Special types requiring transformation
-	amount: string; // BigInt serialized
-	key: string; // Symbol serialized
-	pattern: { source: string; flags: string }; // RegExp serialized
-	errorData: { message: string; stack?: string; name: string }; // Error serialized
-	createdAt: string; // Date serialized
-	homepage: string; // URL serialized
-	queryParams: string; // URLSearchParams serialized
+	amount: string; // BigInt IQSerialized
+	key: string; // Symbol IQSerialized
+	pattern: { source: string; flags: string }; // RegExp IQSerialized
+	errorData: { message: string; stack?: string; name: string }; // Error IQSerialized
+	createdAt: string; // Date IQSerialized
+	homepage: string; // URL IQSerialized
+	queryParams: string; // URLSearchParams IQSerialized
 
 	// TypedArrays
 	int8Data: number[];
@@ -113,7 +113,7 @@ class NestedModel extends QModel<INestedModel> {
 // ============================================================================
 class CompleteModel
 	extends QModel<ICompleteModel>
-	implements QImplements<ICompleteModel, CompleteModelTransforms>
+	implements IQImplements<ICompleteModel, CompleteModelTransforms>
 {
 	// Primitives
 	@QType() id!: string;
@@ -170,7 +170,7 @@ const testData: ICompleteModel = {
 
 	// Tipos especiales
 	amount: '9007199254740991', // BigInt
-	key: 'testKey', // Symbol serialized (uses Symbol.for('testKey'))
+	key: 'testKey', // Symbol IQSerialized (uses Symbol.for('testKey'))
 	pattern: { source: '^test', flags: 'gi' }, // RegExp
 	errorData: { message: 'Test error', name: 'TestError', stack: 'at test()' }, // Error
 	createdAt: '2024-01-01T00:00:00.000Z', // Date
@@ -320,26 +320,26 @@ try {
 	// SERIALIZATION
 	// ============================================================================
 	console.log('🧪 2. SERIALIZANDO A INTERFAZ...\n');
-	const serialized = model.serialize();
+	const IQSerialized = model.serialize();
 
 	console.log('📤 VERIFYING SERIALIZATION:');
 	console.log(
-		`  ✓ BigInt → string: ${typeof serialized.amount === 'string' ? '✅' : '❌'}`
+		`  ✓ BigInt → string: ${typeof IQSerialized.amount === 'string' ? '✅' : '❌'}`
 	);
 	console.log(
-		`  ✓ Symbol → string: ${typeof serialized.key === 'string' ? '✅' : '❌'}`
+		`  ✓ Symbol → string: ${typeof IQSerialized.key === 'string' ? '✅' : '❌'}`
 	);
 	console.log(
-		`  ✓ Date → string: ${typeof serialized.createdAt === 'string' ? '✅' : '❌'}`
+		`  ✓ Date → string: ${typeof IQSerialized.createdAt === 'string' ? '✅' : '❌'}`
 	);
 	console.log(
-		`  ✓ URL → string: ${typeof serialized.homepage === 'string' && serialized.homepage.includes('https') ? '✅' : '❌'}`
+		`  ✓ URL → string: ${typeof IQSerialized.homepage === 'string' && IQSerialized.homepage.includes('https') ? '✅' : '❌'}`
 	);
 	console.log(
-		`  ✓ Map → object: ${typeof serialized.settings === 'object' && !Array.isArray(serialized.settings) ? '✅' : '❌'}`
+		`  ✓ Map → object: ${typeof IQSerialized.settings === 'object' && !Array.isArray(IQSerialized.settings) ? '✅' : '❌'}`
 	);
 	console.log(
-		`  ✓ Set → array: ${Array.isArray(serialized.items) ? '✅' : '❌'}\n`
+		`  ✓ Set → array: ${Array.isArray(IQSerialized.items) ? '✅' : '❌'}\n`
 	);
 	passed += 6;
 
@@ -349,7 +349,7 @@ try {
 	console.log(
 		'🧪 3. ROUND-TRIP TEST (Interface → Model → Interface → Model)...\n'
 	);
-	const model2 = new CompleteModel(serialized);
+	const model2 = new CompleteModel(IQSerialized);
 	const serialized2 = model2.serialize();
 	const model3 = new CompleteModel(serialized2);
 

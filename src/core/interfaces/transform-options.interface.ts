@@ -8,40 +8,40 @@
  * @param value The raw input value
  * @returns The transformed value
  */
-export type QTransformerFn = (value: unknown) => unknown;
+export type IQTransformerFn = (value: unknown) => unknown;
 
 /**
  * Custom serializer function type (Model -> Output/Interface).
  * @param value The model value
- * @returns The serialized value
+ * @returns The IQSerialized value
  */
-export type QSerializerFn = (value: unknown) => unknown;
+export type IQSerializerFn = (value: unknown) => unknown;
 
 /**
  * Custom mocker function type (Test -> Model).
  * @returns The generated mock value
  */
-export type QMockerFn = () => unknown;
+export type IQMockerFn = () => unknown;
 
 /**
  * Common options for a single property type transformation.
  */
-export interface QPropertyOptions {
+export interface IQPropertyOptions {
 	/**
 	 * Custom transformer function (Input -> Model).
 	 * Overrides default deserialization logic for this property.
 	 */
-	transformer?: QTransformerFn;
+	transformer?: IQTransformerFn;
 
 	/**
 	 * Custom serializer function (Model -> Output/Interface).
 	 * Overrides default toInterface preservation logic.
 	 */
-	serializer?: QSerializerFn;
+	serializer?: IQSerializerFn;
 
 	/**
 	 * Custom mocker function (Test -> Model).
 	 * Overrides default mock generation logic.
 	 */
-	mocker?: QMockerFn;
+	mocker?: IQMockerFn;
 }

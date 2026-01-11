@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 // ====================
 // INTERFACES
@@ -49,7 +49,7 @@ const quickConfig = {
 @Quick(quickConfig)
 class QuickTestDeclare
 	extends QModel<IQuickTestDeclare>
-	implements QImplements<IQuickTestDeclare>
+	implements IQImplements<IQuickTestDeclare>
 {
 	declare id: string;
 	declare name: string;
@@ -77,7 +77,7 @@ class QuickTestDeclare
 @Quick(quickConfig)
 class QuickTestBang
 	extends QModel<IQuickTestBang>
-	implements QImplements<IQuickTestBang>
+	implements IQImplements<IQuickTestBang>
 {
 	// Aunque se llama Bang, aquí usamos declare para que el test pase
 	// ya que ! con @Quick() tiene problemas conocidos documentados arriba.
@@ -137,25 +137,25 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 		});
 		test('debe serializar correctamente', () => {
 			const instance = new QuickTestDeclare(testData);
-			const serialized = instance.serialize();
+			const IQSerialized = instance.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('Test Item');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(serialized.count).toBe('9999');
-			expect(serialized.key).toEqual({
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('Test Item');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			expect(IQSerialized.count).toBe('9999');
+			expect(IQSerialized.key).toEqual({
 				__type: 'symbol',
 				description: 'test-key',
 			});
-			expect(serialized.pattern).toEqual({
+			expect(IQSerialized.pattern).toEqual({
 				__type: 'regexp',
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['typescript', 'testing']);
+			expect(Array.isArray(IQSerialized.tags)).toBe(true);
+			expect(IQSerialized.tags).toEqual(['typescript', 'testing']);
 
-			expect(serialized.metadata).toEqual({
+			expect(IQSerialized.metadata).toEqual({
 				author: 'John',
 				version: '1.0',
 			});
@@ -163,8 +163,8 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new QuickTestDeclare(testData);
-			const serialized = instance1.serialize();
-			const instance2 = new QuickTestDeclare(serialized);
+			const IQSerialized = instance1.serialize();
+			const instance2 = new QuickTestDeclare(IQSerialized);
 
 			expect(instance2.id).toBe('test-123');
 			expect(instance2.name).toBe('Test Item');
@@ -215,25 +215,25 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('debe serializar correctamente', () => {
 			const instance = new QuickTestBang(testData);
-			const serialized = instance.serialize();
+			const IQSerialized = instance.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('Test Item');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(serialized.count).toBe('9999');
-			expect(serialized.key).toEqual({
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('Test Item');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			expect(IQSerialized.count).toBe('9999');
+			expect(IQSerialized.key).toEqual({
 				__type: 'symbol',
 				description: 'test-key',
 			});
-			expect(serialized.pattern).toEqual({
+			expect(IQSerialized.pattern).toEqual({
 				__type: 'regexp',
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['typescript', 'testing']);
+			expect(Array.isArray(IQSerialized.tags)).toBe(true);
+			expect(IQSerialized.tags).toEqual(['typescript', 'testing']);
 
-			expect(serialized.metadata).toEqual({
+			expect(IQSerialized.metadata).toEqual({
 				author: 'John',
 				version: '1.0',
 			});
@@ -241,8 +241,8 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new QuickTestBang(testData);
-			const serialized = instance1.serialize();
-			const instance2 = new QuickTestBang(serialized);
+			const IQSerialized = instance1.serialize();
+			const instance2 = new QuickTestBang(IQSerialized);
 
 			expect(instance2.id).toBe('test-123');
 			expect(instance2.name).toBe('Test Item');
@@ -277,10 +277,10 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('ambas sintaxis deben ser intercambiables en deserialización', () => {
 			const instanceBang = new QuickTestBang(testData);
-			const serialized = instanceBang.serialize();
+			const IQSerialized = instanceBang.serialize();
 
 			// Deserializar el JSON del modelo Bang en modelo Declare
-			const instanceDeclare = new QuickTestDeclare(serialized);
+			const instanceDeclare = new QuickTestDeclare(IQSerialized);
 
 			expect(instanceDeclare.id).toBe(instanceBang.id);
 			expect(instanceDeclare.createdAt.getTime()).toBe(

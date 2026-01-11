@@ -24,7 +24,7 @@ class User extends QModel<IUser> implements IUserTransforms {
 
 describe('State Management Methods', () => {
 	describe('toInterface()', () => {
-		test('should return current state in serialized format', () => {
+		test('should return current state in IQSerialized format', () => {
 			const user = new User({
 				id: '1',
 				name: 'John',
@@ -79,7 +79,7 @@ describe('State Management Methods', () => {
 	});
 
 	describe('getInitInterface()', () => {
-		test('should return initial state in serialized format', () => {
+		test('should return initial state in IQSerialized format', () => {
 			const user = new User({
 				id: '1',
 				name: 'John',

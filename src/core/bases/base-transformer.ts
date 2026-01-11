@@ -4,7 +4,7 @@
  * Provides a common implementation foundation for transformers,
  * allowing them to focus only on their specific transformation logic.
  *
- * @template TInput - The serialized type (typically for JSON)
+ * @template TInput - The IQSerialized type (typically for JSON)
  * @template TOutput - The runtime type (typically a native JavaScript object)
  *
  * @remarks
@@ -38,7 +38,7 @@ export abstract class BaseTransformer<
 	TOutput = unknown,
 > implements IQTransformer<TInput, TOutput> {
 	/**
-	 * Transforms from serialized format (JSON) to runtime type.
+	 * Transforms from IQSerialized format (JSON) to runtime type.
 	 *
 	 * @param value - The value to deserialize
 	 * @param propertyKey - The property name (for error messages)
@@ -56,7 +56,7 @@ export abstract class BaseTransformer<
 	 * Serializes from runtime type to JSON-compatible format.
 	 *
 	 * @param value - The runtime value to serialize
-	 * @returns The serialized value suitable for JSON
+	 * @returns The IQSerialized value suitable for JSON
 	 */
 	abstract serialize(value: TOutput): TInput;
 }

@@ -88,7 +88,7 @@ QuickModel supports handling binary data via Base64 strings.
 
 You can create your own transformers by implementing the transformer interface.
 
-_(See [QTransform definition](../../src/core/interfaces/transformer.interface.ts) for details)_
+_(See [IQTransform definition](../../src/core/interfaces/transformer.interface.ts) for details)_
 
 ### 1. Implicit (Inline) Transformers
 

@@ -9,9 +9,9 @@ Un transformador es una clase que implementa la lógica de transformación para 
 ### Estructura Básica
 
 ```typescript
-import { ITransformer } from '@cartago-git/quickmodel/types';
+import { IQTransformer } from '@cartago-git/quickmodel/types';
 
-class MyCustomTransformer implements ITransformer<MyType, SerializedType> {
+class MyCustomTransformer implements IQTransformer<MyType, SerializedType> {
 	// Transformar de JSON a tipo runtime
 	transform(value: SerializedType): MyType {
 		// Tu lógica de transformación
@@ -50,9 +50,9 @@ interface IMoneyJSON {
 }
 
 // 3. Crea el transformador
-import { ITransformer } from '@cartago-git/quickmodel/types';
+import { IQTransformer } from '@cartago-git/quickmodel/types';
 
-class MoneyTransformer implements ITransformer<Money, IMoneyJSON> {
+class MoneyTransformer implements IQTransformer<Money, IMoneyJSON> {
 	transform(value: IMoneyJSON): Money {
 		if (!value || typeof value !== 'object') {
 			throw new Error('Formato de dinero inválido');
@@ -69,9 +69,9 @@ class MoneyTransformer implements ITransformer<Money, IMoneyJSON> {
 }
 
 // 4. Registra el transformador
-import { TransformerRegistry } from '@cartago-git/quickmodel/advanced';
+import { QTransformerRegistry } from '@cartago-git/quickmodel/advanced';
 
-TransformerRegistry.register(Money, new MoneyTransformer());
+QTransformerRegistry.register(Money, new MoneyTransformer());
 
 // 5. Úsalo en tus modelos
 interface IProduct {
@@ -126,7 +126,7 @@ class Color {
 	}
 }
 
-class ColorTransformer implements ITransformer<Color, string> {
+class ColorTransformer implements IQTransformer<Color, string> {
 	transform(value: string): Color {
 		if (typeof value !== 'string' || !value.startsWith('#')) {
 			throw new Error(
@@ -141,7 +141,7 @@ class ColorTransformer implements ITransformer<Color, string> {
 	}
 }
 
-TransformerRegistry.register(Color, new ColorTransformer());
+QTransformerRegistry.register(Color, new ColorTransformer());
 
 // Uso
 @Quick({ backgroundColor: Color })
@@ -183,7 +183,7 @@ interface ICoordinateJSON {
 	lng: number;
 }
 
-class CoordinateTransformer implements ITransformer<
+class CoordinateTransformer implements IQTransformer<
 	Coordinate,
 	ICoordinateJSON
 > {
@@ -202,7 +202,7 @@ class CoordinateTransformer implements ITransformer<
 	}
 }
 
-TransformerRegistry.register(Coordinate, new CoordinateTransformer());
+QTransformerRegistry.register(Coordinate, new CoordinateTransformer());
 
 // Uso
 @Quick({ location: Coordinate })
@@ -225,7 +225,7 @@ Puedes sobrescribir transformadores integrados si necesitas comportamiento perso
 
 ```typescript
 // Transformador de Fecha personalizado que maneja múltiples formatos
-class CustomDateTransformer implements ITransformer<Date, string> {
+class CustomDateTransformer implements IQTransformer<Date, string> {
 	transform(value: string): Date {
 		// Soportar múltiples formatos de fecha
 		if (value.includes('/')) {
@@ -243,7 +243,7 @@ class CustomDateTransformer implements ITransformer<Date, string> {
 }
 
 // Sobrescribir el transformador Date integrado
-TransformerRegistry.register(Date, new CustomDateTransformer());
+QTransformerRegistry.register(Date, new CustomDateTransformer());
 ```
 
 ## Manejo de Null y Undefined
@@ -251,7 +251,7 @@ TransformerRegistry.register(Date, new CustomDateTransformer());
 Los transformadores deben manejar `null` y `undefined` de manera elegante:
 
 ```typescript
-class MoneyTransformer implements ITransformer<Money, IMoneyJSON | null> {
+class MoneyTransformer implements IQTransformer<Money, IMoneyJSON | null> {
 	transform(value: IMoneyJSON | null): Money | null {
 		if (value === null || value === undefined) {
 			return null;
@@ -301,7 +301,7 @@ console.log(product.prices[0] instanceof Money); // true
 Añade lógica de validación en tus transformadores:
 
 ```typescript
-class EmailTransformer implements ITransformer<string, string> {
+class EmailTransformer implements IQTransformer<string, string> {
 	private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 	transform(value: string): string {
@@ -319,7 +319,7 @@ class EmailTransformer implements ITransformer<string, string> {
 // Crear un tipo Email personalizado
 class Email extends String {}
 
-TransformerRegistry.register(Email, new EmailTransformer());
+QTransformerRegistry.register(Email, new EmailTransformer());
 
 @Quick({ email: Email })
 class User extends QModel<IUser> {
@@ -401,9 +401,9 @@ Asegura que `reverseTransform(transform(x))` devuelva datos equivalentes:
 ```typescript
 const original = { amount: 99.99, currency: 'USD' };
 const money = transformer.transform(original);
-const serialized = transformer.reverseTransform(money);
+const IQSerialized = transformer.reverseTransform(money);
 
-console.log(JSON.stringify(original) === JSON.stringify(serialized)); // true
+console.log(JSON.stringify(original) === JSON.stringify(IQSerialized)); // true
 ```
 
 ## Próximos Pasos

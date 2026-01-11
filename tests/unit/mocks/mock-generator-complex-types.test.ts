@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Unit: Mock Generator - Complex Types', () => {
 	// Enums (TypeScript enums become unions at runtime)
@@ -46,7 +46,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	})
 	class Task
 		extends QModel<ITask>
-		implements QImplements<ITask, ITaskTransform>
+		implements IQImplements<ITask, ITaskTransform>
 	{
 		id!: string;
 		title!: string;
@@ -57,7 +57,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	}
 
 	test('should generate mocks with enum values', () => {
-		// MockGenerator produces generic numbers. We use override to simulate enum selection logic if desired,
+		// QMockGenerator produces generic numbers. We use override to simulate enum selection logic if desired,
 		// or accepts that random numbers might not match strict enum values unless forced.
 		const mock = Task.mock().random({
 			priority: Priority.HIGH,
@@ -140,7 +140,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	})
 	class Payment
 		extends QModel<IPayment>
-		implements QImplements<IPayment, IPaymentTransform>
+		implements IQImplements<IPayment, IPaymentTransform>
 	{
 		id!: string;
 		amount!: bigint;
@@ -153,7 +153,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	}
 
 	test('should generate mocks with optional nested properties', () => {
-		// MockGenerator defaults mostly anything to string if type is 'string'
+		// QMockGenerator defaults mostly anything to string if type is 'string'
 		// We override here to satisfy strict specific values
 		const mock = Payment.mock().random({
 			method: 'card',
@@ -237,7 +237,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	})
 	class Product
 		extends QModel<IProduct>
-		implements QImplements<IProduct, IProductTransform>
+		implements IQImplements<IProduct, IProductTransform>
 	{
 		id!: string;
 		name!: string;

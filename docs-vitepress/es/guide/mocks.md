@@ -28,16 +28,16 @@ console.log(admin.role); // 'admin'
 ```
 
 > [!NOTE] IMPORTAR TIPOS DE MOCK
-> Si necesitas tipar el parámetro `type` explícitamente (e.j. `'random' | 'empty'`), puedes importar `MockType` desde types:
+> Si necesitas tipar el parámetro `type` explícitamente (e.j. `'random' | 'empty'`), puedes importar `IQMockType` desde types:
 >
 > ```typescript
-> import type { MockType } from '@cartago-git/quickmodel/types';
+> import type { IQMockType } from '@cartago-git/quickmodel/types';
 > ```
 >
-> Para uso avanzado personalizado, `MockGenerator` está disponible en advanced:
+> Para uso avanzado personalizado, `QMockGenerator` está disponible en advanced:
 >
 > ```typescript
-> import { MockGenerator } from '@cartago-git/quickmodel/advanced';
+> import { QMockGenerator } from '@cartago-git/quickmodel/advanced';
 > ```
 
 ## Cómo Funciona
@@ -183,14 +183,14 @@ El método `.mock()` devuelve un `QMockBuilder` con una API fluida.
 
 Devuelve instancias reales de tu clase (`instanceof User` será true).
 
-| Método                                | Descripción                                                                              | Firma                                                         |
-| :------------------------------------ | :--------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
-| **`random(overrides?)`**              | Genera 1 instancia con datos **aleatorios** realistas (Faker).                           | `(overrides?: Partial<T>) => T`                               |
-| **`empty(overrides?)`**               | Genera 1 instancia con valores **vacíos/nulos**.                                         | `(overrides?: Partial<T>) => T`                               |
-| **`minimal(overrides?)`**             | Genera 1 instancia solo con campos **obligatorios**.                                     | `(overrides?: Partial<T>) => T`                               |
-| **`full(overrides?)`**                | Genera 1 instancia con **todos** los campos (req + opcionales).                          | `(overrides?: Partial<T>) => T`                               |
-| **`sample(overrides?)`**              | Genera 1 instancia con datos de muestra **deterministas/estáticos**.                     | `(overrides?: Partial<T>) => T`                               |
-| **`array(count, type?, overrides?)`** | Genera `count` instancias. `type` por defecto es `'random'`. `overrides` es un callback. | `(n: number, type?: MockType, fn?: (i) => Partial<T>) => T[]` |
+| Método                                | Descripción                                                                              | Firma                                                           |
+| :------------------------------------ | :--------------------------------------------------------------------------------------- | :-------------------------------------------------------------- |
+| **`random(overrides?)`**              | Genera 1 instancia con datos **aleatorios** realistas (Faker).                           | `(overrides?: Partial<T>) => T`                                 |
+| **`empty(overrides?)`**               | Genera 1 instancia con valores **vacíos/nulos**.                                         | `(overrides?: Partial<T>) => T`                                 |
+| **`minimal(overrides?)`**             | Genera 1 instancia solo con campos **obligatorios**.                                     | `(overrides?: Partial<T>) => T`                                 |
+| **`full(overrides?)`**                | Genera 1 instancia con **todos** los campos (req + opcionales).                          | `(overrides?: Partial<T>) => T`                                 |
+| **`sample(overrides?)`**              | Genera 1 instancia con datos de muestra **deterministas/estáticos**.                     | `(overrides?: Partial<T>) => T`                                 |
+| **`array(count, type?, overrides?)`** | Genera `count` instancias. `type` por defecto es `'random'`. `overrides` es un callback. | `(n: number, type?: IQMockType, fn?: (i) => Partial<T>) => T[]` |
 
 ```typescript
 // Array con overrides personalizados por ítem

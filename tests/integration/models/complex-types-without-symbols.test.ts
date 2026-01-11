@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, QImplements } from '@/index';
+import { QModel, IQImplements } from '@/index';
 import { QType } from '@/utils';
 
 // ============================================================================
@@ -49,7 +49,7 @@ type ComplexTypesTransforms = {
 // SIN especificar symbols - solo @QType()
 class ComplexTypesModel
 	extends QModel<IComplexTypes>
-	implements QImplements<IComplexTypes, ComplexTypesTransforms>
+	implements IQImplements<IComplexTypes, ComplexTypesTransforms>
 {
 	@QType() pattern!: RegExp; // Sin QRegExp
 	@QType() error!: Error; // Sin QError

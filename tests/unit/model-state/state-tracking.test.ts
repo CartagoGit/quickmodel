@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { Quick, QModel, QImplements } from '@/index';
+import { Quick, QModel, IQImplements } from '@/index';
 
 describe('QModel State Tracking', () => {
 	// Test models
@@ -20,7 +20,7 @@ describe('QModel State Tracking', () => {
 	})
 	class User
 		extends QModel<IUser>
-		implements QImplements<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		declare id: string;
 		declare name: string;

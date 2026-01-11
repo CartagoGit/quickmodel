@@ -17,11 +17,11 @@ import type { QModel } from '@/core/models/quick.model';
  *   @QType() name!: string;
  * }
  *
- * type UserInstance = QModelInstance<typeof User>; // User
+ * type UserInstance = IQModelInstance<typeof User>; // User
  * const user: UserInstance = User.mock().random();
  * ```
  */
-export type QModelInstance<T> = T extends abstract new (
+export type IQModelInstance<T> = T extends abstract new (
 	...args: any[]
 ) => infer R
 	? R
@@ -44,9 +44,9 @@ export type QModelInstance<T> = T extends abstract new (
  *   @QType() name!: string;
  * }
  *
- * type UserInterface = QModelInterface<typeof User>; // IUser
+ * type UserInterface = IQModelInterface<typeof User>; // IUser
  * const data: UserInterface = { name: 'John' };
  * ```
  */
-export type QModelInterface<T> =
-	QModelInstance<T> extends QModel<infer I> ? I : never;
+export type IQModelInterface<T> =
+	IQModelInstance<T> extends QModel<infer I> ? I : never;

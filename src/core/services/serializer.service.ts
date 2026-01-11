@@ -12,13 +12,13 @@
  * for JSON serialization, using registered transformers for type conversions.
  *
  * @template TModel - The model type (extends Record)
- * @template TInterface - The serialized interface type
+ * @template TInterface - The IQSerialized interface type
  *
  * @remarks
  * **SOLID principles:**
  * - **Single Responsibility**: Only handles JSON serialization (no format preservation)
  * - **Open/Closed**: Extensible via transformer registry
- * - **Dependency Inversion**: Depends on ITransformer abstraction
+ * - **Dependency Inversion**: Depends on IQTransformer abstraction
  *
  * **Serialization process:**
  * 1. Iterates through all model properties
@@ -36,7 +36,7 @@
  * - `Set` → array `[value1, value2, value3]`
  * - `Error` → object `{ message, stack, name }`
  * - TypedArrays → number/string arrays
- * - Nested models → recursively serialized
+ * - Nested models → recursively IQSerialized
  *
  * @example
  * **Basic serialization**
@@ -87,7 +87,7 @@
 
 import {
 	IQSerializer,
-	ISerializationOptions,
+	IQSerializationOptions,
 } from '../interfaces/serializer.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -104,7 +104,7 @@ import {
 	SetTransformer,
 } from '@/transformers/map-set.transformer';
 import { IQTransformer } from '../interfaces/transformer.interface';
-import { TransformerRegistry } from '../registry/transformer.registry';
+import { QTransformerRegistry } from '../registry/transformer.registry';
 import 'reflect-metadata';
 import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
 
@@ -207,7 +207,7 @@ export class Serializer<
 	serialize(
 		model: TModel,
 		seen?: WeakSet<object>,
-		options?: ISerializationOptions
+		options?: IQSerializationOptions
 	): TInterface {
 		const result: Record<string, unknown> = {};
 
@@ -286,7 +286,7 @@ export class Serializer<
 	 * @param model - The model instance to serialize
 	 * @returns JSON string representation
 	 */
-	serializeToJson(model: TModel, options?: ISerializationOptions): string {
+	serializeToJson(model: TModel, options?: IQSerializationOptions): string {
 		return JSON.stringify(this.serialize(model, undefined, options));
 	}
 
@@ -296,7 +296,7 @@ export class Serializer<
 	 * @param value - The value to serialize
 	 * @param seen - WeakSet to track circular references
 	 * @param options - Serialization options for nested structures
-	 * @returns Serialized value suitable for JSON
+	 * @returns IQSerialized value suitable for JSON
 	 *
 	 * @remarks
 	 * Handles special types in priority order:
@@ -318,7 +318,7 @@ export class Serializer<
 	private serializeValue(
 		value: unknown,
 		seen?: WeakSet<object>,
-		options?: ISerializationOptions
+		options?: IQSerializationOptions
 	): unknown {
 		// Containers (Set, Map, Array) - Handle FIRST to support recursion & cycles
 		if (value instanceof Map) {
@@ -330,7 +330,7 @@ export class Serializer<
 
 			const result: Record<string, unknown> = {};
 			for (const [k, v] of value) {
-				// Recursive call ensures values (like BigInt) are serialized
+				// Recursive call ensures values (like BigInt) are IQSerialized
 				result[String(k)] = this.serializeValue(v, visited, options);
 			}
 			return result;
@@ -343,7 +343,7 @@ export class Serializer<
 			}
 			visited.add(value);
 
-			// Recursive call ensures values (like Date) are serialized
+			// Recursive call ensures values (like Date) are IQSerialized
 			return Array.from(value).map((item) =>
 				this.serializeValue(item, visited, options)
 			);
@@ -369,8 +369,8 @@ export class Serializer<
 		) {
 			// Try to find transformer by constructor
 			const ctor = (value as Record<string, unknown>).constructor;
-			if (ctor && TransformerRegistry.has(ctor)) {
-				const transformer = TransformerRegistry.get(ctor);
+			if (ctor && QTransformerRegistry.has(ctor)) {
+				const transformer = QTransformerRegistry.get(ctor);
 				if (transformer) {
 					return transformer.serialize(value);
 				}
@@ -529,7 +529,7 @@ export class Serializer<
 				value as {
 					serialize: (
 						s?: WeakSet<object>,
-						o?: ISerializationOptions
+						o?: IQSerializationOptions
 					) => unknown;
 				}
 			).serialize(visited, options);

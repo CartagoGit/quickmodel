@@ -4,7 +4,7 @@ This guide will walk you through creating your first QuickModel in 5 minutes.
 
 ## The Problem
 
-When working with APIs, data comes as JSON with primitive types only. Complex types like `Date`, `BigInt`, `Set`, and `Map` are serialized as strings or arrays:
+When working with APIs, data comes as JSON with primitive types only. Complex types like `Date`, `BigInt`, `Set`, and `Map` are IQSerialized as strings or arrays:
 
 ```typescript
 // API Response

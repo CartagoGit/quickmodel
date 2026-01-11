@@ -7,8 +7,8 @@
  * @module @cartago-git/quickmodel/advanced
  */
 
-export { MockGenerator } from './core/services/mock-generator.service';
+export { QMockGenerator } from './core/services/mock-generator.service';
 export {
-	TransformerRegistry,
-	type TransformerKey,
+	QTransformerRegistry,
+	type IQTransformerKey,
 } from './core/registry/transformer.registry';

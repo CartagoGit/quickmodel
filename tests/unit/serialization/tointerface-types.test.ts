@@ -619,7 +619,7 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.arrayWithWrappers[2]!.valueOf()).toBe(true);
 	});
 
-	test('should preserve Map serialized as array of pairs', () => {
+	test('should preserve Map IQSerialized as array of pairs', () => {
 		const data = {
 			numPrimitive: 1,
 			numWrapper: new Number(1),
@@ -686,7 +686,7 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.mapEmpty.length).toBe(0);
 	});
 
-	test('should preserve Set serialized as array', () => {
+	test('should preserve Set IQSerialized as array', () => {
 		const data = {
 			numPrimitive: 1,
 			numWrapper: new Number(1),

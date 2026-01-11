@@ -7,7 +7,7 @@ import {
 } from '../core/interfaces/transformer.interface';
 
 /**
- * Serialized representation of a RegExp.
+ * IQSerialized representation of a RegExp.
  */
 interface IRegExpData {
 	source: string;

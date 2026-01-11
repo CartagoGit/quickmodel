@@ -9,9 +9,9 @@ A transformer is a class that implements the transformation logic for a specific
 ### Basic Structure
 
 ```typescript
-import { ITransformer } from '@cartago-git/quickmodel/types';
+import { IQTransformer } from '@cartago-git/quickmodel/types';
 
-class MyCustomTransformer implements ITransformer<MyType, SerializedType> {
+class MyCustomTransformer implements IQTransformer<MyType, SerializedType> {
 	// Transform from JSON to runtime type
 	transform(value: SerializedType): MyType {
 		// Your transformation logic
@@ -50,9 +50,9 @@ interface IMoneyJSON {
 }
 
 // 3. Create the transformer
-import { ITransformer } from '@cartago-git/quickmodel/types';
+import { IQTransformer } from '@cartago-git/quickmodel/types';
 
-class MoneyTransformer implements ITransformer<Money, IMoneyJSON> {
+class MoneyTransformer implements IQTransformer<Money, IMoneyJSON> {
 	transform(value: IMoneyJSON): Money {
 		if (!value || typeof value !== 'object') {
 			throw new Error('Invalid money format');
@@ -69,9 +69,9 @@ class MoneyTransformer implements ITransformer<Money, IMoneyJSON> {
 }
 
 // 4. Register the transformer
-import { TransformerRegistry } from '@cartago-git/quickmodel/advanced';
+import { QTransformerRegistry } from '@cartago-git/quickmodel/advanced';
 
-TransformerRegistry.register(Money, new MoneyTransformer());
+QTransformerRegistry.register(Money, new MoneyTransformer());
 
 // 5. Use it in your models
 interface IProduct {
@@ -126,7 +126,7 @@ class Color {
 	}
 }
 
-class ColorTransformer implements ITransformer<Color, string> {
+class ColorTransformer implements IQTransformer<Color, string> {
 	transform(value: string): Color {
 		if (typeof value !== 'string' || !value.startsWith('#')) {
 			throw new Error(
@@ -141,7 +141,7 @@ class ColorTransformer implements ITransformer<Color, string> {
 	}
 }
 
-TransformerRegistry.register(Color, new ColorTransformer());
+QTransformerRegistry.register(Color, new ColorTransformer());
 
 // Usage
 @Quick({ backgroundColor: Color })
@@ -183,7 +183,7 @@ interface ICoordinateJSON {
 	lng: number;
 }
 
-class CoordinateTransformer implements ITransformer<
+class CoordinateTransformer implements IQTransformer<
 	Coordinate,
 	ICoordinateJSON
 > {
@@ -202,7 +202,7 @@ class CoordinateTransformer implements ITransformer<
 	}
 }
 
-TransformerRegistry.register(Coordinate, new CoordinateTransformer());
+QTransformerRegistry.register(Coordinate, new CoordinateTransformer());
 
 // Usage
 @Quick({ location: Coordinate })
@@ -225,7 +225,7 @@ You can override built-in transformers if you need custom behavior:
 
 ```typescript
 // Custom Date transformer that handles multiple formats
-class CustomDateTransformer implements ITransformer<Date, string> {
+class CustomDateTransformer implements IQTransformer<Date, string> {
 	transform(value: string): Date {
 		// Support multiple date formats
 		if (value.includes('/')) {
@@ -243,7 +243,7 @@ class CustomDateTransformer implements ITransformer<Date, string> {
 }
 
 // Override the built-in Date transformer
-TransformerRegistry.register(Date, new CustomDateTransformer());
+QTransformerRegistry.register(Date, new CustomDateTransformer());
 ```
 
 ## Handling Null and Undefined
@@ -251,7 +251,7 @@ TransformerRegistry.register(Date, new CustomDateTransformer());
 Transformers should handle `null` and `undefined` gracefully:
 
 ```typescript
-class MoneyTransformer implements ITransformer<Money, IMoneyJSON | null> {
+class MoneyTransformer implements IQTransformer<Money, IMoneyJSON | null> {
 	transform(value: IMoneyJSON | null): Money | null {
 		if (value === null || value === undefined) {
 			return null;
@@ -301,7 +301,7 @@ console.log(product.prices[0] instanceof Money); // true
 Add validation logic in your transformers:
 
 ```typescript
-class EmailTransformer implements ITransformer<string, string> {
+class EmailTransformer implements IQTransformer<string, string> {
 	private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 	transform(value: string): string {
@@ -319,7 +319,7 @@ class EmailTransformer implements ITransformer<string, string> {
 // Create a custom Email type
 class Email extends String {}
 
-TransformerRegistry.register(Email, new EmailTransformer());
+QTransformerRegistry.register(Email, new EmailTransformer());
 
 @Quick({ email: Email })
 class User extends QModel<IUser> {
@@ -401,9 +401,9 @@ Ensure `reverseTransform(transform(x))` returns equivalent data:
 ```typescript
 const original = { amount: 99.99, currency: 'USD' };
 const money = transformer.transform(original);
-const serialized = transformer.reverseTransform(money);
+const IQSerialized = transformer.reverseTransform(money);
 
-console.log(JSON.stringify(original) === JSON.stringify(serialized)); // true
+console.log(JSON.stringify(original) === JSON.stringify(IQSerialized)); // true
 ```
 
 ## Next Steps

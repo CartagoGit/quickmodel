@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QImplements } from '@/index';
+import { QModel, Quick, type IQImplements } from '@/index';
 
 describe('E2E: User Registration Flow', () => {
 	// Step 1: Define interfaces for the complete system
@@ -74,7 +74,7 @@ describe('E2E: User Registration Flow', () => {
 	})
 	class User
 		extends QModel<IUser>
-		implements QImplements<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		email!: string;

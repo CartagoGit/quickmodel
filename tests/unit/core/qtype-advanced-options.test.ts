@@ -72,7 +72,7 @@ describe('Advanced Options with @QType Decorator', () => {
 		// Let's use standard declaration
 		// Wait, the test logic depends on the specific implementation order in services.
 		// Looking at code:
-		// MockGenerator:
+		// QMockGenerator:
 		//   1. Check options.mockers (from @Quick)
 		//   2. Check customMocker (@QType)
 		// So @Quick should win.

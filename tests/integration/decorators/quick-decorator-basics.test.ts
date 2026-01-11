@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QImplements } from '@/index';
+import { QModel, Quick, type IQImplements } from '@/index';
 
 describe('Integration: @Quick() Decorator Basics', () => {
 	test('should auto-detect and transform Date types', () => {
@@ -24,7 +24,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class User
 			extends QModel<IUser>
-			implements QImplements<IUser, IUserTransform>
+			implements IQImplements<IUser, IUserTransform>
 		{
 			id!: string;
 			name!: string;
@@ -64,7 +64,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class Account
 			extends QModel<IAccount>
-			implements QImplements<IAccount, IAccountTransform>
+			implements IQImplements<IAccount, IAccountTransform>
 		{
 			id!: string;
 			balance!: bigint;
@@ -102,7 +102,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class Post
 			extends QModel<IPost>
-			implements QImplements<IPost, IPostTransform>
+			implements IQImplements<IPost, IPostTransform>
 		{
 			id!: string;
 			title!: string;
@@ -134,7 +134,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		}
 
 		@Quick({})
-		class Data extends QModel<IData> implements QImplements<IData> {
+		class Data extends QModel<IData> implements IQImplements<IData> {
 			id!: string;
 			value!: number;
 			flag!: boolean;
@@ -172,7 +172,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class User
 			extends QModel<IUser>
-			implements QImplements<IUser, IUserTransform>
+			implements IQImplements<IUser, IUserTransform>
 		{
 			id!: string;
 			balance!: bigint;
@@ -185,13 +185,13 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 		});
 
-		const serialized = user.serialize();
+		const IQSerialized = user.serialize();
 
-		expect(serialized.id).toBe('1');
+		expect(IQSerialized.id).toBe('1');
 		// BigInt se serializa como objeto con __type
-		expect(serialized.balance).toBe('999');
-		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-		expect(typeof serialized.createdAt).toBe('string');
+		expect(IQSerialized.balance).toBe('999');
+		expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+		expect(typeof IQSerialized.createdAt).toBe('string');
 	});
 
 	test('should handle collections', () => {
@@ -212,7 +212,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class Data
 			extends QModel<IData>
-			implements QImplements<IData, IDataTransform>
+			implements IQImplements<IData, IDataTransform>
 		{
 			id!: string;
 			tags!: Set<string>;

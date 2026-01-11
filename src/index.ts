@@ -12,7 +12,7 @@
  * Helper type to enforce type consistency between a model class
  * and its input/output interfaces.
  */
-export type { QImplements } from './core/interfaces/model.interface';
+export type { IQImplements } from './core/interfaces/model.interface';
 export { QModel } from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { TransformerRegistry } from '@/core/registry/transformer.registry';
+import { QTransformerRegistry } from '@/core/registry/transformer.registry';
 
 describe('Model Validation', () => {
 	interface IUser {
@@ -70,7 +70,7 @@ describe('Model Validation', () => {
 		}
 
 		// 2. Register it
-		TransformerRegistry.register('Email', new EmailTransformer());
+		QTransformerRegistry.register('Email', new EmailTransformer());
 
 		// 3. Use it
 		interface IContact {

@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('@Quick() with declaration styles', () => {
 	// ============================================================================
@@ -62,8 +62,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(product.inStock).toBe(true);
 
 			// Serialize
-			const serialized = product.serialize();
-			expect(serialized).toEqual(productData);
+			const IQSerialized = product.serialize();
+			expect(IQSerialized).toEqual(productData);
 
 			// toInterface
 			const iface = product.toInterface();
@@ -78,8 +78,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(product.price).toBe(999.99);
 			expect(product.inStock).toBe(true);
 
-			const serialized = product.serialize();
-			expect(serialized).toEqual(productData);
+			const IQSerialized = product.serialize();
+			expect(IQSerialized).toEqual(productData);
 
 			const iface = product.toInterface();
 			expect(iface).toEqual(productData);
@@ -93,8 +93,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(product.price).toBe(999.99);
 			expect(product.inStock).toBe(true);
 
-			const serialized = product.serialize();
-			expect(serialized).toEqual(productData);
+			const IQSerialized = product.serialize();
+			expect(IQSerialized).toEqual(productData);
 
 			const iface = product.toInterface();
 			expect(iface).toEqual(productData);
@@ -125,7 +125,7 @@ describe('@Quick() with declaration styles', () => {
 		})
 		class OrderWithDeclare
 			extends QModel<IOrder>
-			implements QImplements<IOrder, IOrderTransform>
+			implements IQImplements<IOrder, IOrderTransform>
 		{
 			declare id: string;
 			declare total: bigint;
@@ -140,7 +140,7 @@ describe('@Quick() with declaration styles', () => {
 		})
 		class OrderWithExclamation
 			extends QModel<IOrder>
-			implements QImplements<IOrder, IOrderTransform>
+			implements IQImplements<IOrder, IOrderTransform>
 		{
 			id!: string;
 			total!: bigint;
@@ -155,7 +155,7 @@ describe('@Quick() with declaration styles', () => {
 		})
 		class OrderWithOptional
 			extends QModel<IOrder>
-			implements QImplements<IOrder, IOrderTransform>
+			implements IQImplements<IOrder, IOrderTransform>
 		{
 			id!: string;
 			total!: bigint;
@@ -184,11 +184,11 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags.has('premium')).toBe(true);
 
 			// Serialize back
-			const serialized = order.serialize();
-			expect(serialized.total).toBe('123456789012345');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['urgent', 'premium']);
+			const IQSerialized = order.serialize();
+			expect(IQSerialized.total).toBe('123456789012345');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			expect(Array.isArray(IQSerialized.tags)).toBe(true);
+			expect(IQSerialized.tags).toEqual(['urgent', 'premium']);
 		});
 
 		test('!: should transform types correctly', () => {
@@ -203,9 +203,9 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags).toBeInstanceOf(Set);
 			expect(order.tags.has('urgent')).toBe(true);
 
-			const serialized = order.serialize();
-			expect(serialized.total).toBe('123456789012345');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			const IQSerialized = order.serialize();
+			expect(IQSerialized.total).toBe('123456789012345');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
 
 		test('?: should transform types correctly', () => {
@@ -216,9 +216,9 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.createdAt).toBeInstanceOf(Date);
 			expect(order.tags).toBeInstanceOf(Set);
 
-			const serialized = order.serialize();
-			expect(serialized.total).toBe('123456789012345');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
+			const IQSerialized = order.serialize();
+			expect(IQSerialized.total).toBe('123456789012345');
+			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
 	});
 
@@ -302,8 +302,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(customer.address.city).toBe('New York');
 			expect(customer.address.zipCode).toBe('10001');
 
-			const serialized = customer.serialize();
-			expect(serialized).toEqual(customerData);
+			const IQSerialized = customer.serialize();
+			expect(IQSerialized).toEqual(customerData);
 		});
 
 		test('!: should handle nested models', () => {
@@ -314,8 +314,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(customer.address.street).toBe('123 Main St');
 			expect(customer.address.city).toBe('New York');
 
-			const serialized = customer.serialize();
-			expect(serialized).toEqual(customerData);
+			const IQSerialized = customer.serialize();
+			expect(IQSerialized).toEqual(customerData);
 		});
 
 		test('?: should handle nested models', () => {
@@ -325,8 +325,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(customer.address).toBeInstanceOf(AddressOptional);
 			expect(customer.address.street).toBe('123 Main St');
 
-			const serialized = customer.serialize();
-			expect(serialized).toEqual(customerData);
+			const IQSerialized = customer.serialize();
+			expect(IQSerialized).toEqual(customerData);
 		});
 	});
 
@@ -376,8 +376,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(Array.isArray(team.scores)).toBe(true);
 			expect(team.scores).toEqual([95, 87, 92]);
 
-			const serialized = team.serialize();
-			expect(serialized).toEqual(teamData);
+			const IQSerialized = team.serialize();
+			expect(IQSerialized).toEqual(teamData);
 		});
 
 		test('!: should handle arrays', () => {
@@ -388,8 +388,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(team.members).toEqual(['Alice', 'Bob', 'Charlie']);
 			expect(team.scores).toEqual([95, 87, 92]);
 
-			const serialized = team.serialize();
-			expect(serialized).toEqual(teamData);
+			const IQSerialized = team.serialize();
+			expect(IQSerialized).toEqual(teamData);
 		});
 
 		test('?: should handle arrays', () => {
@@ -399,8 +399,8 @@ describe('@Quick() with declaration styles', () => {
 			expect(Array.isArray(team.members)).toBe(true);
 			expect(team.members).toEqual(['Alice', 'Bob', 'Charlie']);
 
-			const serialized = team.serialize();
-			expect(serialized).toEqual(teamData);
+			const IQSerialized = team.serialize();
+			expect(IQSerialized).toEqual(teamData);
 		});
 	});
 

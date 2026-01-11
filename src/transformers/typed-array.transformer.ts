@@ -43,7 +43,7 @@ type TypedArray =
  * Supports all standard TypedArray types:
  * - Integer: Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Uint32Array
  * - Float: Float32Array, Float64Array
- * - BigInt: BigInt64Array, BigUint64Array (serialized as string arrays)
+ * - BigInt: BigInt64Array, BigUint64Array (IQSerialized as string arrays)
  *
  * BigInt variants serialize to string arrays because JSON doesn't support BigInt.
  * Invalid BigInt values default to 0n.
@@ -157,7 +157,7 @@ export class TypedArrayTransformer<T extends TypedArray>
 	 * @returns Number array for standard types, string array for BigInt variants
 	 *
 	 * @remarks
-	 * BigInt variants are serialized as string arrays because JSON doesn't support BigInt.
+	 * BigInt variants are IQSerialized as string arrays because JSON doesn't support BigInt.
 	 */
 	serialize(value: T): number[] | string[] {
 		if (this.isBigInt) {

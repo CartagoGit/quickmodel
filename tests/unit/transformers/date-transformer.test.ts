@@ -10,7 +10,7 @@ import { QModel, Quick } from '@/index';
 describe('Unit: Date Transformer', () => {
 	interface IEvent {
 		id: string;
-		createdAt: string; // Serialized as ISO string
+		createdAt: string; // IQSerialized as ISO string
 		updatedAt: string | null;
 	}
 
@@ -32,10 +32,10 @@ describe('Unit: Date Transformer', () => {
 			updatedAt: null,
 		});
 
-		const serialized = event.serialize();
+		const IQSerialized = event.serialize();
 
-		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-		expect(typeof serialized.createdAt).toBe('string');
+		expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+		expect(typeof IQSerialized.createdAt).toBe('string');
 	});
 
 	test('should deserialize ISO string to Date', () => {

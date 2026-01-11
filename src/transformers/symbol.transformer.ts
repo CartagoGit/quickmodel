@@ -13,7 +13,7 @@ import {
  * **Deserialization**: `string` → `symbol`
  *
  * @remarks
- * Uses `Symbol.for()` to create global symbols that can be serialized.
+ * Uses `Symbol.for()` to create global symbols that can be IQSerialized.
  * Retrieves the key using `Symbol.keyFor()` during serialization.
  * Falls back to `toString()` for symbols without a global key.
  *

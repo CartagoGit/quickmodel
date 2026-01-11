@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Integration: Mock Generator - Real World', () => {
 	// Complete E-Commerce scenario
@@ -51,7 +51,7 @@ describe('Integration: Mock Generator - Real World', () => {
 	})
 	class OrderItem
 		extends QModel<IOrderItem>
-		implements QImplements<IOrderItem, IOrderItemTransform>
+		implements IQImplements<IOrderItem, IOrderItemTransform>
 	{
 		productId!: string;
 		name!: string;
@@ -111,7 +111,7 @@ describe('Integration: Mock Generator - Real World', () => {
 	})
 	class Order
 		extends QModel<IOrder>
-		implements QImplements<IOrder, IOrderTransform>
+		implements IQImplements<IOrder, IOrderTransform>
 	{
 		id!: string;
 		userId!: string;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 import { QType } from '@/utils';
 
 // ========================================
@@ -17,7 +17,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class User extends QModel<IUser> implements QImplements<IUser> {
+		class User extends QModel<IUser> implements IQImplements<IUser> {
 			declare id: string;
 			declare name: string;
 			declare email: string;
@@ -59,7 +59,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Post extends QModel<IPost> implements QImplements<IPost> {
+		class Post extends QModel<IPost> implements IQImplements<IPost> {
 			declare id: string;
 			declare title: string;
 			declare createdAt: Date;
@@ -90,7 +90,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		@Quick()
 		class Account
 			extends QModel<IAccount>
-			implements QImplements<IAccount>
+			implements IQImplements<IAccount>
 		{
 			declare id: string;
 			declare balance: bigint;
@@ -121,7 +121,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Data extends QModel<IData> implements QImplements<IData> {
+		class Data extends QModel<IData> implements IQImplements<IData> {
 			declare id: string;
 			declare metadata: Map<string, string>;
 			declare tags: Set<string>;
@@ -150,7 +150,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 
 		class Address
 			extends QModel<IAddress>
-			implements QImplements<IAddress>
+			implements IQImplements<IAddress>
 		{
 			@QType() declare street: string;
 			@QType() declare city: string;
@@ -163,7 +163,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Person extends QModel<IPerson> implements QImplements<IPerson> {
+		class Person extends QModel<IPerson> implements IQImplements<IPerson> {
 			declare name: string;
 			declare age: number;
 
@@ -202,7 +202,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		@Quick()
 		class Product
 			extends QModel<IProduct>
-			implements QImplements<IProduct>
+			implements IQImplements<IProduct>
 		{
 			declare productId: string;
 			declare title: string;
@@ -216,7 +216,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Cart extends QModel<ICart> implements QImplements<ICart> {
+		class Cart extends QModel<ICart> implements IQImplements<ICart> {
 			declare cartId: string;
 
 			@QType([Product]) // ⚠️ Explicit @QType() still required for arrays
@@ -263,7 +263,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			balance: BigInt,
 			createdAt: Date,
 		})
-		class User extends QModel<IUser> implements QImplements<IUser> {
+		class User extends QModel<IUser> implements IQImplements<IUser> {
 			declare id: string;
 			declare name: string;
 			declare balance: bigint;
@@ -298,7 +298,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Data extends QModel<IData> implements QImplements<IData> {
+		class Data extends QModel<IData> implements IQImplements<IData> {
 			declare id: string;
 			declare value: number;
 			declare date: Date;
@@ -327,7 +327,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		// Manual decoration
-		class UserManual extends QModel<IUser> implements QImplements<IUser> {
+		class UserManual extends QModel<IUser> implements IQImplements<IUser> {
 			@QType() declare id: string;
 			@QType() declare name: string;
 			@QType() declare age: number;
@@ -335,7 +335,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 
 		// Auto decoration
 		@Quick()
-		class UserAuto extends QModel<IUser> implements QImplements<IUser> {
+		class UserAuto extends QModel<IUser> implements IQImplements<IUser> {
 			declare id: string;
 			declare name: string;
 			declare age: number;

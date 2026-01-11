@@ -1,6 +1,6 @@
-# Referencia de QAlias
+# Referencia de IQAlias
 
-QuickModel soporta una amplia gama de **alias de cadena** (QAlias) para especificar tipos de forma concisa. Estos alias se utilizan dentro de los decoradores `@Quick` y `@QType`.
+QuickModel soporta una amplia gama de **alias de cadena** (IQAlias) para especificar tipos de forma concisa. Estos alias se utilizan dentro de los decoradores `@Quick` y `@QType`.
 
 El uso de alias proporciona un excelente soporte de **IntelliSense** y mantiene tu código limpio evitando importaciones innecesarias de constructores globales.
 

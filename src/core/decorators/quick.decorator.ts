@@ -1,5 +1,5 @@
-import { AnyRecord } from './../interfaces/model.interface';
-import { QImplements } from '@/index';
+import { IQAnyRecord } from './../interfaces/model.interface';
+import { IQImplements } from '@/index';
 /**
  * @Quick() class decorator for automatic property registration.
  *
@@ -75,8 +75,8 @@ import { QImplements } from '@/index';
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-// import type { QAlias } from '../types/q-alias.type'; // Unused
-import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
+// import type { IQAlias } from '../types/q-alias.type'; // Unused
+import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
@@ -85,15 +85,15 @@ import {
 	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
 import type {
-	// IConstructor, // Unused
+	// IQConstructor, // Unused
 	// INativeFactory, // Unused
-	// ISpec, // Unused
-	// ISpecs, // Unused
-	QOptions,
+	// IQSpec, // Unused
+	// IQSpecs, // Unused
+	IQOptions,
 } from '../interfaces/quick.interface';
 
 // Re-export common types for backward compatibility or direct usage
-export type { QOptions } from '../interfaces/quick.interface';
+export type { IQOptions } from '../interfaces/quick.interface';
 
 /**
  * Class decorator that automatically applies @QType() to all properties.
@@ -447,14 +447,14 @@ export type { QOptions } from '../interfaces/quick.interface';
  * Without discriminators, QuickModel uses the first type in the array as fallback.
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
- * @see {@link QAdvancedOptions} for discriminator configuration
+ * @see {@link IQAdvancedOptions} for discriminator configuration
  */
 export function Quick<
-	TExtendedTypes extends AnyRecord = AnyRecord,
-	TTypeMap extends QOptions = QOptions,
+	TExtendedTypes extends IQAnyRecord = IQAnyRecord,
+	TTypeMap extends IQOptions = IQOptions,
 >(
-	typeMap?: QImplements<TTypeMap, TExtendedTypes>,
-	advancedOptions?: QAdvancedOptions<TTypeMap>
+	typeMap?: IQImplements<TTypeMap, TExtendedTypes>,
+	advancedOptions?: IQAdvancedOptions<TTypeMap>
 ): ClassDecorator {
 	return function <T extends Function>(target: T): T {
 		// Mark class as using @Quick() for auto-registration
@@ -488,7 +488,7 @@ export function Quick<
 				}
 
 				// Register the property using QType decorator
-				// Type assertion: ISpec | ISpecs is compatible with QType parameter
+				// Type assertion: IQSpec | IQSpecs is compatible with QType parameter
 				const decorator = QType(
 					mappedType as Parameters<typeof QType>[0]
 				);

@@ -14,9 +14,9 @@
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
 import { NATIVE_TYPE_MAP } from '../constants/native-types';
-import type { QTypeOptions } from '../interfaces/qtype-options.interface';
-import type { QTypeSpec } from '../interfaces/quick.interface';
-// import type { QAlias } from '../types/q-alias.type'; // Unused
+import type { IQTypeOptions } from '../interfaces/qtype-options.interface';
+import type { IQTypeSpec } from '../interfaces/quick.interface';
+// import type { IQAlias } from '../types/q-alias.type'; // Unused
 
 /**
  * Metadata key symbol for storing the list of properties decorated with @QType().
@@ -188,8 +188,8 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  */
 
 export function QType<T>(
-	typeOrClass?: QTypeSpec<T> | Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
-	options?: QTypeOptions
+	typeOrClass?: IQTypeSpec<T> | Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
+	options?: IQTypeOptions
 ): PropertyDecorator {
 	return function (target: object, propertyKey: string | symbol): void {
 		// Register the property in the fields list

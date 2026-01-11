@@ -1,6 +1,6 @@
 /**
  * Test to verify that the type system works correctly
- * and that serialize() returns the correct serialized type
+ * and that serialize() returns the correct IQSerialized type
  *
  * Tests type transformations:
  * - RegExp → string
@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, test } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 interface ITypeSafeModel {
 	pattern: RegExp;
@@ -38,7 +38,7 @@ interface ITypeSafeModelTransform {
 })
 class TypeSafeModel
 	extends QModel<ITypeSafeModel>
-	implements QImplements<ITypeSafeModel, ITypeSafeModelTransform>
+	implements IQImplements<ITypeSafeModel, ITypeSafeModelTransform>
 {
 	declare pattern: RegExp;
 	declare error: Error;
@@ -48,7 +48,7 @@ class TypeSafeModel
 }
 
 describe('Type Safety', () => {
-	test('serialize() should return correct serialized types', () => {
+	test('serialize() should return correct IQSerialized types', () => {
 		const model = new TypeSafeModel({
 			pattern: /test/gi,
 			error: new Error('Test error'),
@@ -57,30 +57,30 @@ describe('Type Safety', () => {
 			tags: new Set(['tag1', 'tag2']),
 		});
 
-		const serialized = model.serialize();
+		const IQSerialized = model.serialize();
 
 		// TypeScript sabe que estos son objetos con __type o strings
-		expect(typeof serialized.pattern).toBe('object'); // Ahora es { __type: 'regexp', source, flags }
-		expect(serialized.pattern).toHaveProperty('__type', 'regexp');
-		expect(typeof serialized.error).toBe('string');
-		expect(typeof serialized.amount).toBe('string');
-		expect(typeof serialized.createdAt).toBe('string');
-		expect(Array.isArray(serialized.tags)).toBe(true); // Ahora es array simple
-		// expect(serialized.tags).toHaveProperty('__type', 'Set'); // YA NO TIENE WRAPPER
+		expect(typeof IQSerialized.pattern).toBe('object'); // Ahora es { __type: 'regexp', source, flags }
+		expect(IQSerialized.pattern).toHaveProperty('__type', 'regexp');
+		expect(typeof IQSerialized.error).toBe('string');
+		expect(typeof IQSerialized.amount).toBe('string');
+		expect(typeof IQSerialized.createdAt).toBe('string');
+		expect(Array.isArray(IQSerialized.tags)).toBe(true); // Ahora es array simple
+		// expect(IQSerialized.tags).toHaveProperty('__type', 'Set'); // YA NO TIENE WRAPPER
 
 		// Los valores serializados son correctos
-		expect(serialized.pattern).toEqual({
+		expect(IQSerialized.pattern).toEqual({
 			__type: 'regexp',
 			source: 'test',
 			flags: 'gi',
 		});
-		expect(serialized.error).toBe('Error: Test error');
-		expect(serialized.amount).toBe('123');
-		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-		expect(serialized.tags).toEqual(['tag1', 'tag2']);
+		expect(IQSerialized.error).toBe('Error: Test error');
+		expect(IQSerialized.amount).toBe('123');
+		expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+		expect(IQSerialized.tags).toEqual(['tag1', 'tag2']);
 	});
 
-	test('deserialize() should accept serialized data', () => {
+	test('deserialize() should accept IQSerialized data', () => {
 		const serializedData = {
 			pattern: '/test/gi',
 			error: 'Error: Test error',
@@ -127,10 +127,10 @@ describe('Type Safety', () => {
 		});
 
 		// Serialize
-		const serialized = original.serialize();
+		const IQSerialized = original.serialize();
 
 		// Deserialize
-		const restored = TypeSafeModel.deserialize(serialized);
+		const restored = TypeSafeModel.deserialize(IQSerialized);
 
 		// Verify integrity
 		expect(restored.pattern.source).toBe('test');

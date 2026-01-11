@@ -26,7 +26,7 @@
 1. **Arrays de Dates no transforman automáticamente**
     - Expected: `Date` instances
     - Received: strings ISO
-    - **Solución:** Agregar `@QImplements()` para arrays de objetos complejos
+    - **Solución:** Agregar `@IQImplements()` para arrays de objetos complejos
 
 2. **Validación inconsistente**
     - Null en campos no-nullable a veces pasa sin error
@@ -64,7 +64,7 @@
 
 1. **Arrays de Dates con null/undefined**
     - Mixed arrays [Date, null, Date] no transforman Dates
-    - **Solución:** Mismo que arriba - `@QImplements()` decorator
+    - **Solución:** Mismo que arriba - `@IQImplements()` decorator
 
 #### 🎉 Fortalezas
 
@@ -168,7 +168,7 @@
 #### 🟠 IMPORTANTE
 
 4. **Arrays de Tipos Complejos**
-    - Date[] en arrays necesita `@QImplements()`
+    - Date[] en arrays necesita `@IQImplements()`
     - Documentar patrón correcto
     - Posiblemente auto-detectar
 
@@ -236,7 +236,7 @@
 - Símbolos (0% confiable)
 - Buffers binarios (25% confiable)
 - Errors con stack traces
-- Arrays de Dates sin `@QImplements()`
+- Arrays de Dates sin `@IQImplements()`
 
 ### 📚 Documentación Necesaria
 
@@ -244,8 +244,8 @@
 // ❌ NO funciona (Date[] no transforma)
 @QType() dates!: Date[];
 
-// ✅ SÍ funciona (con QImplements)
-@QImplements() dates!: Date[];
+// ✅ SÍ funciona (con IQImplements)
+@IQImplements() dates!: Date[];
 ```
 
 ---

@@ -1,13 +1,13 @@
 /**
  * Utility types for type-safe serialization/deserialization
  *
- * These types correctly map TypeScript types to their serialized representations
+ * These types correctly map TypeScript types to their IQSerialized representations
  */
 
 /**
- * Maps a TypeScript type to its serialized version
+ * Maps a TypeScript type to its IQSerialized version
  */
-export type Serialized<T> = T extends RegExp
+export type IQSerialized<T> = T extends RegExp
 	? string | { __type: 'regexp'; source: string; flags: string }
 	: T extends Error
 		? string
@@ -53,8 +53,8 @@ export type Serialized<T> = T extends RegExp
 																					  >
 																					?
 																							| [
-																									Serialized<K>,
-																									Serialized<V>,
+																									IQSerialized<K>,
+																									IQSerialized<V>,
 																							  ][]
 																							| {
 																									__type: 'Map';
@@ -67,7 +67,7 @@ export type Serialized<T> = T extends RegExp
 																								infer U
 																						  >
 																						?
-																								| Serialized<U>[]
+																								| IQSerialized<U>[]
 																								| {
 																										__type: 'Set';
 																										values: U[];
@@ -75,20 +75,20 @@ export type Serialized<T> = T extends RegExp
 																						: T extends Array<
 																									infer U
 																							  >
-																							? Serialized<U>[]
+																							? IQSerialized<U>[]
 																							: T extends object
 																								? {
-																										[K in keyof T]: Serialized<
+																										[K in keyof T]: IQSerialized<
 																											T[K]
 																										>;
 																									}
 																								: T; // primitivos (string, number, boolean, null, undefined)
 
 /**
- * Maps a complete interface to its serialized version
+ * Maps a complete interface to its IQSerialized version
  */
-export type SerializedInterface<T> = {
-	[K in keyof T]: Serialized<T[K]>;
+export type IQSerializedInterface<T> = {
+	[K in keyof T]: IQSerialized<T[K]>;
 };
 
 /**
@@ -101,4 +101,7 @@ export type Deserialized<T> = T; // Deserialization handled at runtime with tran
  * Acepta datos completos, ya sean originales o serializados
  * Uses Record<string, unknown> to allow flexibility while maintaining type safety
  */
-export type ModelData<T> = T | SerializedInterface<T> | Record<string, unknown>;
+export type IQModelData<T> =
+	| T
+	| IQSerializedInterface<T>
+	| Record<string, unknown>;

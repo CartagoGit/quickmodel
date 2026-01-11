@@ -256,12 +256,12 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			]),
 		});
 
-		const serialized = original.serialize();
-		const deserialized = StringContainer.deserialize(serialized);
+		const IQSerialized = original.serialize();
+		const deserialized = StringContainer.deserialize(IQSerialized);
 
 		console.log('\n=== SERIALIZACIÓN ===');
 		console.log('Original:', original.value);
-		console.log('Serialized:', JSON.stringify(serialized, null, 2));
+		console.log('IQSerialized:', JSON.stringify(IQSerialized, null, 2));
 		console.log('Deserialized:', deserialized.value);
 
 		// Funciona correctamente

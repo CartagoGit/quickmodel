@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QImplements } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Property Declaration Styles', () => {
 	// ============================================================================
@@ -38,7 +38,7 @@ describe('Property Declaration Styles', () => {
 	})
 	class UserWithDeclare
 		extends QModel<IUser>
-		implements QImplements<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		declare id: string;
 		declare name: string;
@@ -59,7 +59,7 @@ describe('Property Declaration Styles', () => {
 	})
 	class UserWithExclamation
 		extends QModel<IUser>
-		implements QImplements<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		name!: string;
@@ -80,7 +80,7 @@ describe('Property Declaration Styles', () => {
 	})
 	class UserWithOptional
 		extends QModel<IUser>
-		implements QImplements<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		name!: string;
@@ -150,35 +150,35 @@ describe('Property Declaration Styles', () => {
 	describe('Serialization', () => {
 		test('declare: should serialize correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const serialized = user.serialize();
+			const IQSerialized = user.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('John Doe');
-			expect(serialized.age).toBe(30);
-			expect(serialized.email).toBe('john@example.com');
-			expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('John Doe');
+			expect(IQSerialized.age).toBe(30);
+			expect(IQSerialized.email).toBe('john@example.com');
+			expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		});
 
 		test('!: should serialize correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const serialized = user.serialize();
+			const IQSerialized = user.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('John Doe');
-			expect(serialized.age).toBe(30);
-			expect(serialized.email).toBe('john@example.com');
-			expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('John Doe');
+			expect(IQSerialized.age).toBe(30);
+			expect(IQSerialized.email).toBe('john@example.com');
+			expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		});
 
 		test('?: should serialize correctly', () => {
 			const user = new UserWithOptional(testData);
-			const serialized = user.serialize();
+			const IQSerialized = user.serialize();
 
-			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('John Doe');
-			expect(serialized.age).toBe(30);
-			expect(serialized.email).toBe('john@example.com');
-			expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
+			expect(IQSerialized.id).toBe('test-123');
+			expect(IQSerialized.name).toBe('John Doe');
+			expect(IQSerialized.age).toBe(30);
+			expect(IQSerialized.email).toBe('john@example.com');
+			expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		});
 	});
 

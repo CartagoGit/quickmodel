@@ -77,27 +77,32 @@ src/
 ### Principios SOLID
 
 #### 1. Single Responsibility Principle (SRP)
+
 - **Transformers**: Cada transformer maneja UN tipo específico
 - **Services**: Servicios separados para serialización, deserialización y validación
 - **Decorators**: Solo registran metadata, no contienen lógica de transformación
 
 #### 2. Open/Closed Principle (OCP)
+
 - Sistema extensible mediante registro de nuevos transformers
 - No requiere modificar código existente para añadir tipos
 - Registry pattern permite inyección de transformers custom
 
 #### 3. Liskov Substitution Principle (LSP)
-- Todos los transformers implementan `ITransformer<TInput, TSerialized>`
+
+- Todos los transformers implementan `IQTransformer<TInput, TSerialized>`
 - Los modelos se comportan como clases TypeScript estándar
 - Sustitución transparente en jerarquías de herencia
 
 #### 4. Interface Segregation Principle (ISP)
+
 - Interfaces separadas para serialización (`IUser`) y runtime (`IUserTransform`)
 - Clientes no dependen de interfaces que no usan
 - Contratos pequeños y específicos
 
 #### 5. Dependency Inversion Principle (DIP)
-- Servicios dependen de abstracciones (`ITransformer`), no de implementaciones
+
+- Servicios dependen de abstracciones (`IQTransformer`), no de implementaciones
 - Registry actúa como contenedor de inyección de dependencias
 - Transformers no conocen detalles de serialización
 
@@ -149,56 +154,59 @@ bun run typecheck
 ### Configuración TypeScript
 
 **tsconfig.json** - Compilación del código fuente:
+
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2023"],
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "strict": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "run", "docs"]
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["ES2023"],
+		"moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
+		"rootDir": "./src",
+		"outDir": "./dist",
+		"strict": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "tests", "run", "docs"]
 }
 ```
 
 **tsconfig.test.json** - Configuración para tests:
+
 ```json
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
-  },
-  "include": ["src/**/*", "tests/**/*"]
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true
+	},
+	"include": ["src/**/*", "tests/**/*"]
 }
 ```
 
 ### Bundling con tsup
 
 **tsup.config.ts**:
+
 ```typescript
 export default defineConfig({
-  entry: { index: 'src/index.ts' },
-  format: ['cjs', 'esm'],
-  dts: true,
-  sourcemap: true,
-  clean: true,
-  treeshake: true,
-  external: ['reflect-metadata'],
-  esbuildOptions(options) {
-    options.alias = { '@': './src' };
-  }
+	entry: { index: 'src/index.ts' },
+	format: ['cjs', 'esm'],
+	dts: true,
+	sourcemap: true,
+	clean: true,
+	treeshake: true,
+	external: ['reflect-metadata'],
+	esbuildOptions(options) {
+		options.alias = { '@': './src' };
+	},
 });
 ```
 
@@ -231,6 +239,7 @@ import { BigIntTransformer } from '@/transformers/bigint.transformer';
 ```
 
 **Razones:**
+
 - Evita dependencias circulares
 - Build más rápido (menos resoluciones de módulos)
 - Mejor tree-shaking
@@ -283,25 +292,29 @@ bun test --watch
 ### Escribir Tests
 
 **Patrón básico:**
+
 ```typescript
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
 describe('Feature Name', () => {
-  test('should do something specific', () => {
-    // Arrange
-    const data = { /* ... */ };
-    
-    // Act
-    const model = new Model(data);
-    
-    // Assert
-    expect(model.property).toBe(expected);
-  });
+	test('should do something specific', () => {
+		// Arrange
+		const data = {
+			/* ... */
+		};
+
+		// Act
+		const model = new Model(data);
+
+		// Assert
+		expect(model.property).toBe(expected);
+	});
 });
 ```
 
 **Convenciones:**
+
 - Nombrar archivos con patrón: `feature-scenario.test.ts`
 - Usar `describe` para agrupar tests relacionados
 - Cada `test` debe validar UNA cosa específica
@@ -318,14 +331,15 @@ describe('Feature Name', () => {
 ### Configuración
 
 **.prettierrc.json**:
+
 ```json
 {
-  "useTabs": true,
-  "tabWidth": 2,
-  "singleQuote": true,
-  "printWidth": 100,
-  "trailingComma": "es5",
-  "semi": true
+	"useTabs": true,
+	"tabWidth": 2,
+	"singleQuote": true,
+	"printWidth": 100,
+	"trailingComma": "es5",
+	"semi": true
 }
 ```
 
@@ -356,18 +370,23 @@ bun run format
 ### Convenciones TypeScript
 
 **Interfaces:**
+
 ```typescript
 // ✅ Prefijo I para interfaces de datos
 interface IUser { ... }
 
 // ✅ Prefijo I para interfaces de contrato
-interface ITransformer<T, S> { ... }
+interface IQTransformer<T, S> { ... }
 ```
 
 **Types vs Interfaces:**
+
 ```typescript
 // ✅ Usar interface para objetos y contratos
-interface IUser { id: number; name: string; }
+interface IUser {
+	id: number;
+	name: string;
+}
 
 // ✅ Usar type para unions, tuples, utilities
 type Status = 'active' | 'inactive';
@@ -375,17 +394,18 @@ type Point = [number, number];
 ```
 
 **Property Declaration:**
+
 ```typescript
 // ✅ Opción 1: declare (recomendado)
 class User extends QModel<IUser> {
-  declare id: number;
-  declare name: string;
+	declare id: number;
+	declare name: string;
 }
 
 // ✅ Opción 2: definite assignment (!)
 class User extends QModel<IUser> {
-  id!: number;
-  name!: string;
+	id!: number;
+	name!: string;
 }
 ```
 
@@ -394,6 +414,7 @@ class User extends QModel<IUser> {
 ### Conventional Commits
 
 **Formato obligatorio:**
+
 ```
 <type>(<scope>): <subject>
 
@@ -403,6 +424,7 @@ class User extends QModel<IUser> {
 ```
 
 **Tipos principales:**
+
 - `feat`: Nueva feature (MINOR bump)
 - `fix`: Bug fix (PATCH bump)
 - `docs`: Solo documentación
@@ -413,9 +435,11 @@ class User extends QModel<IUser> {
 - `perf`: Mejora de performance (PATCH bump)
 
 **Scopes del proyecto:**
+
 - `transformers`, `decorators`, `services`, `core`, `tests`, `docs`, `build`, `deps`
 
 **Ejemplos:**
+
 ```bash
 feat(transformers): add URL transformer support
 fix(serializer): correct BigInt serialization bug
@@ -428,6 +452,7 @@ chore(deps): update typescript to 5.7.2
 ### Release Workflow
 
 **Antes de hacer release:**
+
 ```bash
 # 1. Verificar commits desde último tag
 bun run release:check
@@ -440,6 +465,7 @@ bun run build
 ```
 
 **Proceso de release (automático):**
+
 ```bash
 # 1. Merge a main
 git checkout main
@@ -494,13 +520,13 @@ bun run docs:preview
 
 ### Escribir JSDoc
 
-```typescript
+````typescript
 /**
  * Transforms BigInt values for serialization
- * 
+ *
  * @remarks
  * Serializes as string to maintain precision in JSON
- * 
+ *
  * @example
  * ```ts
  * const transformer = new BigIntTransformer();
@@ -508,10 +534,10 @@ bun run docs:preview
  * transformer.deserialize("123"); // 123n
  * ```
  */
-export class BigIntTransformer implements ITransformer<bigint, string> {
-  // ...
+export class BigIntTransformer implements IQTransformer<bigint, string> {
+	// ...
 }
-```
+````
 
 ## 🤝 Contribuir
 
