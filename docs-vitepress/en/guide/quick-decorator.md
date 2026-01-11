@@ -86,6 +86,10 @@ class User extends QModel<IUser> {
 }
 ```
 
+::: tip ROBUSTNESS
+**Recommendation**: Even if you use `@QType` for individual fields, adding `@Quick()` (even empty) to the class is recommended if you use default values (`prop = 123`). It guarantees that QuickModel's logic runs _before_ accidental overwrites occur.
+:::
+
 ---
 
 ## Advanced Options

@@ -22,7 +22,6 @@ import type { QModel } from '@/core/models/quick.model';
  * ```
  */
 export type QModelInstance<T> = T extends abstract new (
-	 
 	...args: any[]
 ) => infer R
 	? R

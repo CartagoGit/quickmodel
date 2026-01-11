@@ -13,11 +13,9 @@
 
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
-import {
-	type INativeConstructor,
-	NATIVE_TYPE_MAP,
-} from '../constants/native-types';
+import { NATIVE_TYPE_MAP } from '../constants/native-types';
 import type { QTypeOptions } from '../interfaces/qtype-options.interface';
+import type { QTypeSpec } from '../interfaces/quick.interface';
 import type { QAlias } from '../types/q-alias.type';
 
 /**
@@ -190,13 +188,7 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  */
 
 export function QType<T>(
-	typeOrClass?:
-		| (new (...args: any[]) => T) // Constructor relaxed to 'any' argument to allow various signatures
-		| symbol
-		| QAlias
-		| INativeConstructor
-		| PromiseConstructor
-		| Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
+	typeOrClass?: QTypeSpec<T> | Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
 	options?: QTypeOptions
 ): PropertyDecorator {
 	return function (target: object, propertyKey: string | symbol): void {

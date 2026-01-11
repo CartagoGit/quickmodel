@@ -51,4 +51,3 @@ export const QUICK_DISCRIMINATORS_KEY = '__quickDiscriminators__';
  * Used by @Quick() second parameter.
  */
 export const QUICK_OPTIONS_KEY = '__quickOptions__';
-

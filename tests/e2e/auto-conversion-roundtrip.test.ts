@@ -541,7 +541,6 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	});
 
 	describe('13. serialize() - Serialización', () => {
-		 
 		let interfaceData: any;
 
 		// beforeAll(() => {
@@ -644,12 +643,11 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	describe('17. Métodos custom en el modelo', () => {
 		test('custom methods work correctly', () => {
 			// Add a custom method to TestUser
-			 
+
 			(TestUser.prototype as any).getFullInfo = function () {
 				return `${this.name} (${this.email})`;
 			};
 
-			 
 			expect((user as any).getFullInfo()).toBe(
 				'John Doe (john@example.com)'
 			);

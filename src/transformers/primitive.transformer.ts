@@ -89,12 +89,15 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 		});
 
 		if (!validationResult.isValid) {
-			throw new QModelError(validationResult.error || 'Validation failed', {
-				className,
-				propertyKey,
-				value,
-				expectedType: this.expectedType,
-			});
+			throw new QModelError(
+				validationResult.error || 'Validation failed',
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: this.expectedType,
+				}
+			);
 		}
 
 		if (value === null || value === undefined) {

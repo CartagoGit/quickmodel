@@ -79,9 +79,7 @@
  * ```
  */
 
-import {
-	QUICK_OPTIONS_KEY,
-} from '../constants/metadata-keys';
+import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
 
 export class ToInterfaceService<
@@ -118,10 +116,8 @@ export class ToInterfaceService<
 		const isProduction = process.env.NODE_ENV === 'production';
 
 		// Retrieve advanced options (custom serializers)
-		const options: QAdvancedOptions = Reflect.getMetadata(
-			QUICK_OPTIONS_KEY,
-			model.constructor
-		) || {};
+		const options: QAdvancedOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, model.constructor) || {};
 
 		// ONLY iterate over properties that were in the original initData
 		// Return current values, but preserve original format based on __initData type
@@ -237,8 +233,8 @@ export class ToInterfaceService<
 				currentValue &&
 				typeof currentValue === 'object' &&
 				'toISOString' in currentValue &&
-				typeof (currentValue as { toISOString: () => string }).toISOString ===
-					'function'
+				typeof (currentValue as { toISOString: () => string })
+					.toISOString === 'function'
 			) {
 				try {
 					return (
@@ -372,7 +368,9 @@ export class ToInterfaceService<
 			const bigintValue =
 				typeof currentValue === 'bigint'
 					? currentValue
-					: BigInt(currentValue as string | number | bigint | boolean);
+					: BigInt(
+							currentValue as string | number | bigint | boolean
+						);
 			return bigintValue.toString();
 		}
 
@@ -443,12 +441,17 @@ export class ToInterfaceService<
 				currentValue &&
 				typeof currentValue === 'object' &&
 				'toInterface' in currentValue &&
-				typeof (currentValue as { toInterface: (s: WeakSet<object>) => unknown })
-					.toInterface === 'function'
+				typeof (
+					currentValue as {
+						toInterface: (s: WeakSet<object>) => unknown;
+					}
+				).toInterface === 'function'
 			) {
 				// Pass the 'seen' set to prevent infinite loops in recursive models
 				return (
-					currentValue as { toInterface: (s: WeakSet<object>) => unknown }
+					currentValue as {
+						toInterface: (s: WeakSet<object>) => unknown;
+					}
 				).toInterface(seen);
 			}
 

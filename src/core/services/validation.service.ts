@@ -33,7 +33,10 @@ import {
 	IQValidator,
 	IQTransformer,
 } from '../interfaces/transformer.interface';
-import { TransformerRegistry, type TransformerKey } from '../registry/transformer.registry';
+import {
+	TransformerRegistry,
+	type TransformerKey,
+} from '../registry/transformer.registry';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { ErrorTransformer } from '@/transformers/error.transformer';
@@ -191,7 +194,7 @@ export class ValidationService {
 	 */
 	validate(
 		instance: Record<string, unknown>,
-		 
+
 		modelClass?: Function
 	): IQValidationResult[] {
 		const results: IQValidationResult[] = [];
@@ -218,7 +221,7 @@ export class ValidationService {
 
 			// Get metadata from the instance
 			const fieldType = Reflect.getMetadata('fieldType', instance, key);
-			
+
 			if (fieldType) {
 				const transformer = this.getTransformer(fieldType);
 

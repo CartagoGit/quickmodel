@@ -51,7 +51,7 @@ This ensures TypeScript emits the type metadata but does **not** generate proper
 
 **Do NOT use `!` (Definite Assignment Assertion) or `=` (Initializers).**
 
-```typescript
+````typescript
 // ❌ BAD: Without `@Quick`, this fails!
 // The '!' operator (with useDefineForClassFields: true) creates a property initializer
 // that runs AFTER the decorator, overwriting your getter with 'undefined'.
@@ -63,10 +63,13 @@ class User extends QModel<IUser> {
 // ✅ OK: If you use `@Quick` on the class, it fixes this automatically!
 @Quick()
 class User extends QModel<IUser> {
-	@QType(String)
-	name!: string; // Works because @Quick cleans up the instance
+  @QType(String)
+  name!: string; // Works because @Quick cleans up the instance
 }
-```
+
+::: tip RECOMMENDATION
+**Always use `@Quick()` on the class** if you plan to define default values (`name = "default"`) or use strict initialization (`name!`). This ensures robust behavior by letting QuickModel manage the property lifecycle.
+:::
 
 ### Why does this fail?
 
@@ -94,7 +97,7 @@ class Product extends QModel<IProduct> {
 	@QType((v) => Number(v) * 100)
 	declare centAmount: number;
 }
-```
+````
 
 ### 2. Manual Control
 

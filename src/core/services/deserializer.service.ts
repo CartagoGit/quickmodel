@@ -60,7 +60,10 @@ import {
 	TransformerRegistry,
 	type TransformerKey,
 } from '../registry/transformer.registry';
-import type { QDiscriminatorConfig, QAdvancedOptions } from '../interfaces/quick-options.interface';
+import type {
+	QDiscriminatorConfig,
+	QAdvancedOptions,
+} from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { QModelError } from '../errors/quickmodel.error';
@@ -298,21 +301,36 @@ export class Deserializer<
 			if (typeof value !== 'number') {
 				throw new QModelError(
 					`${className}.${key}: Expected number, got ${typeof value}`,
-					{ className, propertyKey: key, value, expectedType: 'number' }
+					{
+						className,
+						propertyKey: key,
+						value,
+						expectedType: 'number',
+					}
 				);
 			}
 		} else if (expectedType === String) {
 			if (typeof value !== 'string') {
 				throw new QModelError(
 					`${className}.${key}: Expected string, got ${typeof value}`,
-					{ className, propertyKey: key, value, expectedType: 'string' }
+					{
+						className,
+						propertyKey: key,
+						value,
+						expectedType: 'string',
+					}
 				);
 			}
 		} else if (expectedType === Boolean) {
 			if (typeof value !== 'boolean') {
 				throw new QModelError(
 					`${className}.${key}: Expected boolean, got ${typeof value}`,
-					{ className, propertyKey: key, value, expectedType: 'boolean' }
+					{
+						className,
+						propertyKey: key,
+						value,
+						expectedType: 'boolean',
+					}
 				);
 			}
 		}
@@ -374,12 +392,17 @@ export class Deserializer<
 			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
 
 		// Get strict mode configuration
-		const options: QAdvancedOptions = Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+		const options: QAdvancedOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
 		const isStrict = options.strict === true;
 
 		for (const [key, value] of Object.entries(data)) {
 			// SECURITY: Prevent Prototype Pollution
-			if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			) {
 				continue;
 			}
 
@@ -387,8 +410,9 @@ export class Deserializer<
 			if (isStrict) {
 				const isDecorated = decoratedFields.includes(key);
 				const hasDesignType = key in designTypes;
-				const isDeclared = key in instance || key in Object.getPrototypeOf(instance);
-				
+				const isDeclared =
+					key in instance || key in Object.getPrototypeOf(instance);
+
 				if (!isDecorated && !hasDesignType && !isDeclared) {
 					// NOTE: This might be too aggressive if user didn't use declare/decorators
 					// BUT strict mode is opt-in, so it should be fine.
@@ -1925,7 +1949,6 @@ export class Deserializer<
 
 		// 2. Function discriminator: call function with data
 		if (typeof QDiscriminatorConfig === 'function') {
-			 
 			const result = (QDiscriminatorConfig as any)(data);
 			return (result as Function) || getFirstType();
 		}

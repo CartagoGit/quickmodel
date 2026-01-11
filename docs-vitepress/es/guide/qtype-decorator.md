@@ -67,6 +67,10 @@ class User extends QModel<IUser> {
   name!: string; // Funciona porque @Quick limpia la instancia
 }
 
+::: tip RECOMENDACIÓN
+**Siempre usa `@Quick()` en la clase** si vas a definir valores por defecto (`name = "default"`) o usar inicialización estricta (`name!`). Esto garantiza un comportamiento robusto al permitir que QuickModel gestione el ciclo de vida de la propiedad.
+:::
+
 // ❌ MAL: Los inicializadores se ejecutan DESPUÉS de que se crea el modelo.
 // Esto sobrescribe los datos deserializados con "Default".
 @QType(String)

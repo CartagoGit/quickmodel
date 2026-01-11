@@ -47,7 +47,6 @@ export type {
 	QMockerFn,
 } from './core/interfaces/transform-options.interface';
 
-
 /**
  * Supported string aliases for types (e.g. 'date', 'bigint', 'regexp')
  * Useful reference for valid values in the type map.

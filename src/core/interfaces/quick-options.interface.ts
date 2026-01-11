@@ -387,7 +387,7 @@ export interface QAdvancedOptions<
 	 * }, {
 	 *   mockers: {
 	 *     // Generate valid SKU base for the transformer
-	 *     sku: () => faker.string.alphanumeric(8) 
+	 *     sku: () => faker.string.alphanumeric(8)
 	 *   }
 	 * })
 	 * ```
@@ -396,4 +396,3 @@ export interface QAdvancedOptions<
 		[K in keyof TTypeMap]?: QMockerFn;
 	};
 }
-

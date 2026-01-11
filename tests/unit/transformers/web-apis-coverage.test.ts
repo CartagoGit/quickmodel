@@ -126,7 +126,11 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('deserialize should ALLOW null', () => {
-			const result = transformer.deserialize(null as any, 'params', 'TestClass');
+			const result = transformer.deserialize(
+				null as any,
+				'params',
+				'TestClass'
+			);
 			expect(result).toBeNull();
 		});
 

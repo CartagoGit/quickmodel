@@ -39,7 +39,11 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should ALLOW null', () => {
-			const result = transformer.deserialize(null, propertyKey, className);
+			const result = transformer.deserialize(
+				null,
+				propertyKey,
+				className
+			);
 			expect(result).toBeNull();
 		});
 

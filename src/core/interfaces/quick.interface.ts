@@ -1,3 +1,4 @@
+import type { INativeConstructor } from '../constants/native-types';
 import type { QAlias } from '../types/q-alias.type';
 
 /**
@@ -11,38 +12,18 @@ export type IConstructor<T = any> = new (...args: any[]) => T;
 export type ITransformerFunction = (value: unknown) => unknown;
 
 /**
- * Native constructors and factories supported by QuickModel
+ * Single type specification supported by QuickModel (without transformers).
+ * Represents a type that can be transformed via class, native constructor, or alias.
  */
-export type INativeFactory =
-	| BigIntConstructor
-	| SymbolConstructor
-	| DateConstructor
-	| RegExpConstructor
-	| MapConstructor
-	| SetConstructor
-	| StringConstructor
-	| NumberConstructor
-	| BooleanConstructor
-	| ArrayBufferConstructor
-	| SharedArrayBufferConstructor
-	| DataViewConstructor
-	| ErrorConstructor
-	| Int8ArrayConstructor
-	| Uint8ArrayConstructor
-	| Uint8ClampedArrayConstructor
-	| Int16ArrayConstructor
-	| Uint16ArrayConstructor
-	| Int32ArrayConstructor
-	| Uint32ArrayConstructor
-	| Float32ArrayConstructor
-	| Float64ArrayConstructor
-	| { new (...args: any[]): URL; prototype: URL }
-	| { new (...args: any[]): URLSearchParams; prototype: URLSearchParams }
-	| { new (...args: any[]): TextEncoder; prototype: TextEncoder }
-	| { new (...args: any[]): TextDecoder; prototype: TextDecoder };
+export type QTypeSpec<T = any> =
+	| IConstructor<T>
+	| INativeConstructor
+	| QAlias
+	| symbol
+	| PromiseConstructor;
 
 /**
- * All supported type specifications for @Quick() decorator
+ * All supported type specifications for @Quick() and @QType() decorators.
  *
  * Supports:
  * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
@@ -52,11 +33,9 @@ export type INativeFactory =
  * - Custom transformers
  */
 export type ISpec =
-	| QAlias // String literals like 'bigint', 'date', 'regexp'
-	| IConstructor // Custom classes
-	| INativeFactory // Built-in types (Date, BigInt, etc)
-	| ITransformerFunction
-	| ISpec[] // Array with element type like [Date], [[Date]], [[[Date]]]
+	| QTypeSpec // Classes, natives, aliases
+	| ITransformerFunction // Custom transformer function
+	| ISpec[] // Array with element type like [Date], [[Date]]
 	| (string & {}); // Allow any string (custom transformers) but preserve autocomplete for QAlias
 
 /**

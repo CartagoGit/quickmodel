@@ -119,7 +119,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 			{
 				// Serializer (New way: Date -> number)
 				serializers: {
-					stamp: (val: any) => (val instanceof Date ? val.getTime() / 1000 : 0),
+					stamp: (val: any) =>
+						val instanceof Date ? val.getTime() / 1000 : 0,
 				},
 			}
 		)

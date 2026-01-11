@@ -26,6 +26,13 @@ class User extends QModel<IUser> {
 class User extends QModel<IUser> {
 	declare createdAt: Date; // No runtime code generated
 }
+
+// ✅ OR: Use @Quick() on the class (Recommended)
+// This makes sure QuickModel runs before the initializer
+@Quick()
+class User extends QModel<IUser> {
+	createdAt: Date = new Date();
+}
 ```
 
 ## "Property has no initializer" Error

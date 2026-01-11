@@ -105,7 +105,12 @@ export class URLSearchParamsTransformer
 	implements IQValidator
 {
 	deserialize(
-		value: string | Record<string, string> | URLSearchParams | null | undefined,
+		value:
+			| string
+			| Record<string, string>
+			| URLSearchParams
+			| null
+			| undefined,
 		propertyKey: string,
 		className: string
 	): URLSearchParams | null {
@@ -245,7 +250,6 @@ export class TextDecoderTransformer extends BaseTransformer<
 
 		if (typeof value === 'string') {
 			try {
-				 
 				return new TextDecoder(value as any);
 			} catch (_error) {
 				throw new QModelError(
@@ -265,7 +269,6 @@ export class TextDecoderTransformer extends BaseTransformer<
 			const encoding =
 				(value as { encoding?: string }).encoding || 'utf-8';
 			try {
-				 
 				return new TextDecoder(encoding as any);
 			} catch (_error) {
 				throw new QModelError(

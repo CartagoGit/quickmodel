@@ -103,7 +103,12 @@ export class MapTransformer<K = string, V = unknown>
 		if (typeof value !== 'object' || value === null) {
 			throw new QModelError(
 				`${className}.${propertyKey}: Expected object or array for Map, got ${typeof value}`,
-				{ className, propertyKey, value, expectedType: 'object | array' }
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'object | array',
+				}
 			);
 		}
 

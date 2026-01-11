@@ -87,6 +87,10 @@ class User extends QModel<IUser> {
 }
 ```
 
+::: tip ROBUSTEZ
+**Recomendación**: Siempre usa `@Quick()` en la clase (aunque sea vacío) si vas a definir valores por defecto (`prop = 123`) o usas modificadores estrictos. Esto garantiza un comportamiento robusto y evita errores de inicialización.
+:::
+
 ### 1. Transformadores Personalizados (Deserialización)
 
 Sobrescribe la lógica de deserialización por defecto (JSON -> Modelo) para propiedades específicas.

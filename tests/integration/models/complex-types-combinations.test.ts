@@ -353,7 +353,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		expect(deserialized.timestamps[0]).toBeInstanceOf(Date);
 		expect(deserialized.amounts[2]).toBe(3n);
 		expect(deserialized.patterns[0]).toBeInstanceOf(RegExp);
-		
+
 		// Map<string, Uint8Array> deserializa los valores como primitivos (arrays)
 		// porque MapTransformer no conoce el tipo de los valores en tiempo de ejecución
 		// a menos que se use un wrapper con metadatos.
@@ -363,7 +363,9 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		} else {
 			// Fallback: se deserializó como array de números
 			expect(Array.isArray(buf)).toBe(true);
-			expect(Array.from(buf as unknown as number[])).toEqual([255, 0, 128]);
+			expect(Array.from(buf as unknown as number[])).toEqual([
+				255, 0, 128,
+			]);
 		}
 
 		expect(deserialized.errorLog.size).toBe(1);

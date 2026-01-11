@@ -1,7 +1,6 @@
 /**
  * Test: ¿Qué pasa si NO instalamos lazy getters?
  */
- 
 
 import { describe, test, expect } from 'bun:test';
 
