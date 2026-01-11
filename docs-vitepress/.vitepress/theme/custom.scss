@@ -363,3 +363,14 @@ $secondary-color: #35495e;
 		align-items: center !important;
 	}
 }
+
+// Style the logo with rounded corners and shadow
+.VPImage.logo {
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+	transition: box-shadow 0.3s ease;
+
+	&:hover {
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+	}
+}

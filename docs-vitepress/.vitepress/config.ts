@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import { fileURLToPath, URL } from 'node:url';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -7,15 +8,16 @@ export default defineConfig({
 	base: '/quickmodel/',
 	outDir: '../docs-vitepress/dist',
 	ignoreDeadLinks: true,
-	head: [
-		[
-			'link',
-			{
-				rel: 'icon',
-				type: 'image/svg+xml',
-				href: '/quickmodel/logo.svg',
+	vite: {
+		resolve: {
+			alias: {
+				'@assets': fileURLToPath(
+					new URL('../../assets', import.meta.url)
+				),
 			},
-		],
+		},
+	},
+	head: [
 		[
 			'link',
 			{ rel: 'icon', type: 'image/png', href: '/quickmodel/favicon.png' },
@@ -24,6 +26,11 @@ export default defineConfig({
 
 	// Global theme config (shared across all locales)
 	themeConfig: {
+		logo: {
+			src: '/quickmodel/quickmodel.png',
+			width: 32,
+			height: 32,
+		},
 		outline: {
 			level: [2, 3],
 			label: 'On this page',
