@@ -130,6 +130,10 @@ export class ErrorTransformer
 		if (value instanceof Error) {
 			return { isValid: true };
 		}
+		
+		if (typeof value === 'string') {
+			return { isValid: true };
+		}
 
 		if (typeof value === 'object' && value !== null && 'message' in value) {
 			return { isValid: true };
@@ -137,7 +141,7 @@ export class ErrorTransformer
 
 		return {
 			isValid: false,
-			error: `${context.className}.${context.propertyKey}: Expected Error or {message} object, got ${typeof value}`,
+			error: `${context.className}.${context.propertyKey}: Expected Error, string or {message} object, got ${typeof value}`,
 		};
 	}
 }

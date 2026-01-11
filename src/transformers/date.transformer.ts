@@ -99,7 +99,7 @@ export class DateTransformer
 		if (value instanceof Date) {
 			return { isValid: true };
 		}
-		if (typeof value === 'string') {
+		if (typeof value === 'string' || typeof value === 'number') {
 			const date = new Date(value);
 			if (!isNaN(date.getTime())) {
 				return { isValid: true };
@@ -107,7 +107,7 @@ export class DateTransformer
 		}
 		return {
 			isValid: false,
-			error: `Expected Date or valid date string, got ${typeof value}`,
+			error: `Expected Date, valid date string or timestamp number, got ${typeof value}`,
 		};
 	}
 }

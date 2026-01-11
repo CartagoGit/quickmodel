@@ -422,7 +422,7 @@ export function QType<T>(
 				Math.atan,
 			];
 
-			if (mathMethods.includes(typeOrClass as any)) {
+			if (mathMethods.includes(typeOrClass as (x: number) => number)) {
 				// It's a Math method - store as transformer
 				Reflect.defineMetadata(
 					'customTransformer',

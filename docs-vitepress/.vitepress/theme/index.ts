@@ -31,16 +31,39 @@ export default {
 								e.preventDefault();
 								e.stopPropagation();
 
-								// Get language from localStorage (set by LanguageSwitcher)
 								const STORAGE_KEY_LANG = 'vitepress-theme-lang';
-								const savedLang =
-									localStorage.getItem(STORAGE_KEY_LANG);
+								const currentPath = window.location.pathname;
 
-								// Use saved language, or default to 'en'
-								const lang = savedLang || 'en';
+								// Detectar idioma de la misma manera que LanguageSwitcher
+								let lang: string;
+
+								// Si estamos en una ruta con idioma explícito, usarlo
+								if (currentPath.includes('/es/')) {
+									lang = 'es';
+								} else if (currentPath.includes('/en/')) {
+									lang = 'en';
+								} else {
+									// Ruta compartida (como /tsdoc/): usar localStorage
+									const savedLang =
+										localStorage.getItem(STORAGE_KEY_LANG);
+									lang = savedLang || 'en';
+									console.log(
+										'Logo click from shared route - savedLang:',
+										savedLang,
+										'using:',
+										lang
+									);
+								}
 
 								const base = '/quickmodel/';
-								router.go(`${base}${lang}/`);
+								const targetPath = `${base}${lang}/`;
+								console.log(
+									'Logo navigation - from:',
+									currentPath,
+									'to:',
+									targetPath
+								);
+								router.go(targetPath);
 							},
 							true
 						);
@@ -60,6 +83,62 @@ export default {
 
 			// Run on route changes
 			router.onAfterRouteChanged = setupLogoInterceptor;
+
+			// Intercept nav links (Guide, Examples) to use correct language
+			const setupNavInterceptor = () => {
+				setTimeout(() => {
+					const navLinks =
+						document.querySelectorAll('.VPNavBarMenuLink');
+					navLinks.forEach((link) => {
+						if (!link.hasAttribute('data-nav-intercepted')) {
+							link.setAttribute('data-nav-intercepted', 'true');
+							link.addEventListener(
+								'click',
+								(e) => {
+									const anchor =
+										e.currentTarget as HTMLAnchorElement;
+									const href = anchor.getAttribute('href');
+
+									// Only intercept /en/ links
+									if (href && href.includes('/en/')) {
+										const STORAGE_KEY_LANG =
+											'vitepress-theme-lang';
+										const savedLang =
+											localStorage.getItem(
+												STORAGE_KEY_LANG
+											);
+
+										// If user has selected Spanish, redirect to Spanish version
+										if (savedLang === 'es') {
+											e.preventDefault();
+											const newHref = href.replace(
+												'/en/',
+												'/es/'
+											);
+											router.go(newHref);
+										}
+									}
+								},
+								true
+							);
+						}
+					});
+				}, 100);
+			};
+
+			// Run nav interceptor on initial load and route changes
+			if (document.readyState === 'loading') {
+				document.addEventListener(
+					'DOMContentLoaded',
+					setupNavInterceptor
+				);
+			} else {
+				setupNavInterceptor();
+			}
+			router.onAfterRouteChanged = () => {
+				setupLogoInterceptor();
+				setupNavInterceptor();
+			};
 		}
 	},
 } satisfies Theme;

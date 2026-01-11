@@ -36,7 +36,9 @@ describe('Unit: Buffer Transformers Coverage', () => {
 		});
 
 		test('validate: should accept valid types', () => {
-			expect(transformer.validate(new ArrayBuffer(1), context).isValid).toBe(true);
+			expect(
+				transformer.validate(new ArrayBuffer(1), context).isValid
+			).toBe(true);
 			expect(transformer.validate([1, 2], context).isValid).toBe(true);
 		});
 
@@ -80,8 +82,13 @@ describe('Unit: Buffer Transformers Coverage', () => {
 		});
 
 		test('validate: should accept valid types', () => {
-			expect(transformer.validate(new DataView(new ArrayBuffer(1)), context).isValid).toBe(true);
-			expect(transformer.validate(new ArrayBuffer(1), context).isValid).toBe(true);
+			expect(
+				transformer.validate(new DataView(new ArrayBuffer(1)), context)
+					.isValid
+			).toBe(true);
+			expect(
+				transformer.validate(new ArrayBuffer(1), context).isValid
+			).toBe(true);
 			expect(transformer.validate([], context).isValid).toBe(true);
 		});
 
@@ -92,42 +99,45 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 	describe('SharedArrayBufferTransformer', () => {
 		const transformer = new SharedArrayBufferTransformer();
-    
-    // Check if SharedArrayBuffer is supported in this environment
-    const isSupported = typeof SharedArrayBuffer !== 'undefined';
 
-    if (isSupported) {
-      test('deserialize: should accept number array', () => {
-        const input = [1, 2, 3];
-        const result = transformer.deserialize(input, 'p', 'C');
-        expect(result).toBeInstanceOf(SharedArrayBuffer);
-        expect(result.byteLength).toBe(3);
-      });
+		// Check if SharedArrayBuffer is supported in this environment
+		const isSupported = typeof SharedArrayBuffer !== 'undefined';
 
-      test('deserialize: should return same instance', () => {
-        const buf = new SharedArrayBuffer(4);
-        expect(transformer.deserialize(buf, 'p', 'C')).toBe(buf);
-      });
+		if (isSupported) {
+			test('deserialize: should accept number array', () => {
+				const input = [1, 2, 3];
+				const result = transformer.deserialize(input, 'p', 'C');
+				expect(result).toBeInstanceOf(SharedArrayBuffer);
+				expect(result.byteLength).toBe(3);
+			});
 
-		test('deserialize: should throw on invalid input', () => {
-			expect(() => {
-				transformer.deserialize('invalid' as any, 'p', 'C');
-			}).toThrow(/SharedArrayBuffer transformer accepts/);
-		});
+			test('deserialize: should return same instance', () => {
+				const buf = new SharedArrayBuffer(4);
+				expect(transformer.deserialize(buf, 'p', 'C')).toBe(buf);
+			});
 
-      test('serialize: should return number array', () => {
-        const buf = new SharedArrayBuffer(2);
-        const view = new Uint8Array(buf);
-        view[0] = 10;
-        view[1] = 20;
-        expect(transformer.serialize(buf)).toEqual([10, 20]);
-      });
+			test('deserialize: should throw on invalid input', () => {
+				expect(() => {
+					transformer.deserialize('invalid' as any, 'p', 'C');
+				}).toThrow(/SharedArrayBuffer transformer accepts/);
+			});
 
-      test('validate: should accept valid types', () => {
-        expect(transformer.validate(new SharedArrayBuffer(1), context).isValid).toBe(true);
-        expect(transformer.validate([], context).isValid).toBe(true);
-      });
-    }
+			test('serialize: should return number array', () => {
+				const buf = new SharedArrayBuffer(2);
+				const view = new Uint8Array(buf);
+				view[0] = 10;
+				view[1] = 20;
+				expect(transformer.serialize(buf)).toEqual([10, 20]);
+			});
+
+			test('validate: should accept valid types', () => {
+				expect(
+					transformer.validate(new SharedArrayBuffer(1), context)
+						.isValid
+				).toBe(true);
+				expect(transformer.validate([], context).isValid).toBe(true);
+			});
+		}
 
 		test('validate: should reject invalid types', () => {
 			expect(transformer.validate('bad', context).isValid).toBe(false);

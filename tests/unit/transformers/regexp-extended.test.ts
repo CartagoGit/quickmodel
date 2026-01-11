@@ -7,14 +7,22 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 
 	test('deserialize: should throw on object with non-string source', () => {
 		expect(() => {
-			transformer.deserialize({ source: 123 } as any, 'regex', 'TestClass');
+			transformer.deserialize(
+				{ source: 123 } as any,
+				'regex',
+				'TestClass'
+			);
 		}).toThrow(/must have 'source' as string/);
 	});
 
 	test('deserialize: should throw on invalid pattern in object', () => {
 		expect(() => {
 			// Unmatched parenthesis causing invalid regex
-			transformer.deserialize({ source: '(', flags: '' }, 'regex', 'TestClass');
+			transformer.deserialize(
+				{ source: '(', flags: '' },
+				'regex',
+				'TestClass'
+			);
 		}).toThrow(/Invalid RegExp pattern/);
 	});
 
@@ -45,10 +53,12 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 	test('validate: should reject invalid types', () => {
 		expect(transformer.validate(123, context).isValid).toBe(false);
 	});
-  
-  test('validate: should accept valid types', () => {
-    expect(transformer.validate(/abc/, context).isValid).toBe(true);
-    expect(transformer.validate('/abc/', context).isValid).toBe(true);
-    expect(transformer.validate({source: 'abc'}, context).isValid).toBe(true);
-  });
+
+	test('validate: should accept valid types', () => {
+		expect(transformer.validate(/abc/, context).isValid).toBe(true);
+		expect(transformer.validate('/abc/', context).isValid).toBe(true);
+		expect(transformer.validate({ source: 'abc' }, context).isValid).toBe(
+			true
+		);
+	});
 });

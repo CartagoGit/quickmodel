@@ -119,17 +119,17 @@ export class MapTransformer<K = string, V = unknown>
 			return { isValid: true };
 		}
 
-		if (
-			typeof value === 'object' &&
-			value !== null &&
-			!Array.isArray(value)
-		) {
+		if (Array.isArray(value)) {
+			return { isValid: true };
+		}
+
+		if (typeof value === 'object' && value !== null) {
 			return { isValid: true };
 		}
 
 		return {
 			isValid: false,
-			error: `${context.className}.${context.propertyKey}: Expected Map or object, got ${typeof value}`,
+			error: `${context.className}.${context.propertyKey}: Expected Map, array or object, got ${typeof value}`,
 		};
 	}
 }
@@ -223,6 +223,15 @@ export class SetTransformer<V = unknown>
 	 */
 	validate(value: unknown, context: IQValidationContext): IQValidationResult {
 		if (value instanceof Set || Array.isArray(value)) {
+			return { isValid: true };
+		}
+		
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			'__type' in value &&
+			(value as any).__type === 'Set'
+		) {
 			return { isValid: true };
 		}
 

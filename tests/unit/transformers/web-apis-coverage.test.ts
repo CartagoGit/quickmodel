@@ -15,7 +15,11 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		const context = { propertyKey: 'url', className: 'TestClass' };
 
 		test('deserialize should return URL instance from valid string', () => {
-			const url = transformer.deserialize('https://example.com', 'url', 'TestClass');
+			const url = transformer.deserialize(
+				'https://example.com',
+				'url',
+				'TestClass'
+			);
 			expect(url).toBeInstanceOf(URL);
 			expect(url.href).toBe('https://example.com/');
 		});
@@ -39,16 +43,23 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('serialize should return string', () => {
-			const output = transformer.serialize(new URL('https://example.com'));
+			const output = transformer.serialize(
+				new URL('https://example.com')
+			);
 			expect(output).toBe('https://example.com/');
 		});
 
 		test('validate should return valid for URL instance', () => {
-			expect(transformer.validate(new URL('https://example.com'), context).isValid).toBe(true);
+			expect(
+				transformer.validate(new URL('https://example.com'), context)
+					.isValid
+			).toBe(true);
 		});
 
 		test('validate should return valid for valid URL string', () => {
-			expect(transformer.validate('https://example.com', context).isValid).toBe(true);
+			expect(
+				transformer.validate('https://example.com', context).isValid
+			).toBe(true);
 		});
 
 		test('validate should return invalid for invalid URL string', () => {
@@ -72,19 +83,31 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		const context = { propertyKey: 'params', className: 'TestClass' };
 
 		test('deserialize should return instance from string', () => {
-			const params = transformer.deserialize('foo=bar&baz=qux', 'params', 'TestClass');
+			const params = transformer.deserialize(
+				'foo=bar&baz=qux',
+				'params',
+				'TestClass'
+			);
 			expect(params).toBeInstanceOf(URLSearchParams);
 			expect(params.get('foo')).toBe('bar');
 		});
 
 		test('deserialize should return instance from object', () => {
-			const params = transformer.deserialize({ foo: 'bar' }, 'params', 'TestClass');
+			const params = transformer.deserialize(
+				{ foo: 'bar' },
+				'params',
+				'TestClass'
+			);
 			expect(params.get('foo')).toBe('bar');
 		});
 
 		test('deserialize should return same instance', () => {
 			const input = new URLSearchParams('foo=bar');
-			const result = transformer.deserialize(input, 'params', 'TestClass');
+			const result = transformer.deserialize(
+				input,
+				'params',
+				'TestClass'
+			);
 			expect(result).toBe(input);
 		});
 
@@ -94,8 +117,8 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			}).toThrow(/URLSearchParams transformer ONLY accepts/);
 		});
 
-    test('deserialize should throw on null', () => {
-      // @ts-ignore
+		test('deserialize should throw on null', () => {
+			// @ts-expect-error Testing invalid input for coverage
 			expect(() => {
 				transformer.deserialize(null, 'params', 'TestClass');
 			}).toThrow(/URLSearchParams transformer ONLY accepts/);
@@ -107,20 +130,24 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('validate should pass for valid inputs', () => {
-			expect(transformer.validate(new URLSearchParams(), context).isValid).toBe(true);
+			expect(
+				transformer.validate(new URLSearchParams(), context).isValid
+			).toBe(true);
 			expect(transformer.validate('foo=bar', context).isValid).toBe(true);
-			expect(transformer.validate({ foo: 'bar' }, context).isValid).toBe(true);
+			expect(transformer.validate({ foo: 'bar' }, context).isValid).toBe(
+				true
+			);
 		});
 
-    test('validate should fail for invalid string', () => {
-      // Note: URLSearchParams accepts almost any string, so it's hard to make it throw.
-      // But let's see if we can trigger the catch block.
-      // Actually passing a symbol or incompatible type that pretends to be string might do it?
-      // Or maybe URLSearchParams constructor is very lenient.
-      // The catch block in validation might be unreachable for standard strings.
-      // But let's checking non-object types.
-      expect(transformer.validate(123, context).isValid).toBe(false);
-    });
+		test('validate should fail for invalid string', () => {
+			// Note: URLSearchParams accepts almost any string, so it's hard to make it throw.
+			// But let's see if we can trigger the catch block.
+			// Actually passing a symbol or incompatible type that pretends to be string might do it?
+			// Or maybe URLSearchParams constructor is very lenient.
+			// The catch block in validation might be unreachable for standard strings.
+			// But let's checking non-object types.
+			expect(transformer.validate(123, context).isValid).toBe(false);
+		});
 	});
 
 	// =========================================================================
@@ -130,9 +157,15 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		const transformer = new TextEncoderTransformer();
 
 		test('deserialize should return instance from null/undefined/empty', () => {
-			expect(transformer.deserialize(null, 'enc', 'TC')).toBeInstanceOf(TextEncoder);
-			expect(transformer.deserialize(undefined, 'enc', 'TC')).toBeInstanceOf(TextEncoder);
-			expect(transformer.deserialize({}, 'enc', 'TC')).toBeInstanceOf(TextEncoder);
+			expect(transformer.deserialize(null, 'enc', 'TC')).toBeInstanceOf(
+				TextEncoder
+			);
+			expect(
+				transformer.deserialize(undefined, 'enc', 'TC')
+			).toBeInstanceOf(TextEncoder);
+			expect(transformer.deserialize({}, 'enc', 'TC')).toBeInstanceOf(
+				TextEncoder
+			);
 		});
 
 		test('deserialize should return same instance', () => {
@@ -164,7 +197,11 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('deserialize should return instance from object config', () => {
-			const dec = transformer.deserialize({ encoding: 'utf-8' }, 'dec', 'TC');
+			const dec = transformer.deserialize(
+				{ encoding: 'utf-8' },
+				'dec',
+				'TC'
+			);
 			expect(dec).toBeInstanceOf(TextDecoder);
 		});
 
@@ -174,22 +211,26 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('deserialize should handle invalid encoding gracefully or throw', () => {
-      // Node/Bun might throw on invalid encoding
-      try {
-			  transformer.deserialize('invalid-encoding-xyz', 'dec', 'TC');
-      } catch (e: any) {
-        expect(e.message).toContain('Invalid encoding');
-      }
+			// Node/Bun might throw on invalid encoding
+			try {
+				transformer.deserialize('invalid-encoding-xyz', 'dec', 'TC');
+			} catch (e: any) {
+				expect(e.message).toContain('Invalid encoding');
+			}
 		});
 
-    test('deserialize should throw on bad object config', () => {
-      try {
-        // @ts-ignore
-        transformer.deserialize({ encoding: 'bad-encoding' }, 'dec', 'TC');
-      } catch (e: any) {
-        expect(e.message).toContain('Invalid encoding');
-      }
-    });
+		test('deserialize should throw on bad object config', () => {
+			try {
+				// @ts-expect-error Testing invalid input for coverage
+				transformer.deserialize(
+					{ encoding: 'bad-encoding' },
+					'dec',
+					'TC'
+				);
+			} catch (e: any) {
+				expect(e.message).toContain('Invalid encoding');
+			}
+		});
 
 		test('deserialize should throw on invalid input type', () => {
 			expect(() => {

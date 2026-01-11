@@ -113,9 +113,18 @@ export class SymbolTransformer
 			return { isValid: true };
 		}
 
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			'__type' in value &&
+			(value as any).__type === 'symbol'
+		) {
+			return { isValid: true };
+		}
+
 		return {
 			isValid: false,
-			error: `${context.className}.${context.propertyKey}: Expected string or symbol, got ${typeof value}`,
+			error: `${context.className}.${context.propertyKey}: Expected string, symbol or symbol object, got ${typeof value}`,
 		};
 	}
 }
