@@ -85,7 +85,8 @@ import {
 /**
  * Constructor type for class-based type mapping
  */
-type IConstructor<T = unknown> = new (...args: unknown[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type IConstructor<T = any> = new (...args: any[]) => T;
 
 /**
  * Transformer function that converts a value
@@ -106,7 +107,26 @@ type INativeFactory =
 	| NumberConstructor
 	| BooleanConstructor
 	| ArrayBufferConstructor
-	| DataViewConstructor;
+	| SharedArrayBufferConstructor
+	| DataViewConstructor
+	| ErrorConstructor
+	| Int8ArrayConstructor
+	| Uint8ArrayConstructor
+	| Uint8ClampedArrayConstructor
+	| Int16ArrayConstructor
+	| Uint16ArrayConstructor
+	| Int32ArrayConstructor
+	| Uint32ArrayConstructor
+	| Float32ArrayConstructor
+	| Float64ArrayConstructor
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	| { new (...args: any[]): URL; prototype: URL }
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	| { new (...args: any[]): URLSearchParams; prototype: URLSearchParams }
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	| { new (...args: any[]): TextEncoder; prototype: TextEncoder }
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	| { new (...args: any[]): TextDecoder; prototype: TextDecoder };
 
 /**
  * All supported type specifications for @Quick() decorator

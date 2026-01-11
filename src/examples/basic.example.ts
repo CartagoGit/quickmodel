@@ -103,12 +103,14 @@ type IUserTransform = {
 	tags: Set,
 	metadata: Map,
 	symbolic: Symbol,
-	dates: (arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
-		arr?.map((date) => (typeof date === 'string' ? new Date(date) : date)),
+	dates: ((arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
+		arr?.map((date) =>
+			typeof date === 'string' ? new Date(date) : date
+		)) as unknown as any,
 	pattern: RegExp, // RegExp from string
-	address: Address, // Plain object → Address class
-	profile: Profile, // Plain object → Profile QModel
-	addresses: [Address], // Array of plain objects → Array of Address classes
+	address: Address as unknown as any, // Plain object → Address class
+	profile: Profile as unknown as any, // Plain object → Profile QModel
+	addresses: [Address] as unknown as any, // Array of plain objects → Array of Address classes
 })
 class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 	// All properties are automatically protected by @Quick()

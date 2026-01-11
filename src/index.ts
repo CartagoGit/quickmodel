@@ -23,6 +23,11 @@ export { QModel } from './core/models/quick.model';
  */
 export { Quick } from './core/decorators/quick.decorator';
 
+/**
+ * Property decorator for manual type mapping (optional when using Quick)
+ */
+export { QType } from './core/decorators/qtype.decorator';
+
 // ============================================================================
 // PUBLIC API - Type Helper Utilities
 // ============================================================================
