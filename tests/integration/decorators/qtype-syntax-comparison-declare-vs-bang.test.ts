@@ -38,12 +38,12 @@ interface ITestBang {
 class TestDeclare extends QModel<ITestDeclare> {
 	@QType() declare id: string;
 	@QType() declare name: string;
-	@QType() declare createdAt: Date;
+	@QType(Date) declare createdAt: Date;
 	@QType(BigInt) declare count: bigint;
-	@QType() declare key: symbol;
-	@QType() declare pattern: RegExp;
-	@QType() declare tags: Set<string>;
-	@QType() declare metadata: Map<string, string>;
+	@QType(Symbol) declare key: symbol;
+	@QType(RegExp) declare pattern: RegExp;
+	@QType(Set) declare tags: Set<string>;
+	@QType(Map) declare metadata: Map<string, string>;
 }
 
 // ====================

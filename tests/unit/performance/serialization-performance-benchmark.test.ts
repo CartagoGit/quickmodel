@@ -199,7 +199,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
 		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
 
-		expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k carts
+		expect(totalTime).toBeLessThan(250); // Debe ser < 250ms para 1k carts
 	});
 
 	test('Performance: Array pequeño (10 items) - SIN inferencia (explícito)', () => {

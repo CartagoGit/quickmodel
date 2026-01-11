@@ -77,10 +77,7 @@ describe('Type Safety', () => {
 		expect(serialized.error).toBe('Error: Test error');
 		expect(serialized.amount).toBe('123');
 		expect(serialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
-		expect(serialized.tags).toEqual({
-			__type: 'Set',
-			values: ['tag1', 'tag2'],
-		});
+		expect(serialized.tags).toEqual(['tag1', 'tag2']);
 	});
 
 	test('deserialize() should accept serialized data', () => {

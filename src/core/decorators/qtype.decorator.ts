@@ -111,6 +111,42 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * ```
  *
  * @example
+ * **Maps, Sets, and Weak Collections**:
+ * ```typescript
+ * class Collections extends QModel<ICollections> {
+ *   @QType(Map) declare mapping: Map<string, string>;
+ *   @QType(Set) declare uniqueValues: Set<number>;
+ *   @QType(WeakMap) declare cache: WeakMap<object, unknown>;
+ * }
+ * ```
+ *
+ * @example
+ * **Buffer & Binary Types**:
+ * ```typescript
+ * class BlobData extends QModel<IBlobData> {
+ *   @QType(ArrayBuffer) declare raw: ArrayBuffer;
+ *   @QType(Uint8Array) declare image: Uint8Array;
+ *   @QType(Float32Array) declare weights: Float32Array;
+ *   @QType(DataView) declare view: DataView;
+ * }
+ * ```
+ *
+ * @example
+ * **Transformers and Functions**:
+ * ```typescript
+ * class Products extends QModel<IProduct> {
+ *   // Round price to nearest integer
+ *   @QType(Math.round) declare price: number;
+ *
+ *   // Custom transformer function
+ *   @QType((val) => val.toUpperCase()) declare code: string;
+ *
+ *   // Parse JSON string
+ *   @QType(JSON.parse) declare metadata: object;
+ * }
+ * ```
+ *
+ * @example
  * **Q-Symbol based**:
  * ```typescript
  * class Account extends QModel<IAccount> {
@@ -121,6 +157,9 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * }
  * ```
  *
+ * @remarks
+ * **Why use @QType?**
+ * TypeScript types are erased at runtime. Without this decorator (or @Quick), the library cannot know that `createdAt` should be transformed into a `Date` object, or that `balance` should be a `BigInt`.
  */
 // Define strict types for native constructors to avoid 'any'
 export type INativeFactory =

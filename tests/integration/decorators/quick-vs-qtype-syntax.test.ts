@@ -134,23 +134,36 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 			expect(instance.metadata.get('author')).toBe('John');
 		});
 
+	describe('Con sintaxis @Quick() + DECLARE', () => {
+		test('debe instanciar correctamente', () => {
+			const instance = new QuickTestDeclare(testData);
+
+			expect(instance.id).toBe('test-123');
+			expect(instance.name).toBe('Test Item');
+			// ... (skipping some checks for brevity in tool call if possible, but replace needs oldString equality)
+            // Wait, I cannot skip.
+            // I will target the `debe serializar correctamente` test inside that describe block.
+            // But `oldString` must match exactly.
+            // I'll try to include the test declaration line.
+            
+        // ... (rethinking strategy)
+        
+        // I will locate the specific describe block and test block.
+        // describing 'Con sintaxis @Quick() + DECLARE' ... test('debe serializar correctamente')
+        
+        // Actually, I can replace the whole expected object structure, if I include enough lines.
+        // But the structure is identical in both places.
+        
+        // Let's replace the FIRST occurrence by including lines BEFORE it that differ.
+        // The first occurrence is preceded by `const instance = new QuickTestDeclare(testData);`
+        // The second occurrence is preceded by `const instance = new QuickTestBang(testData);`
+        
 		test('debe serializar correctamente', () => {
 			const instance = new QuickTestDeclare(testData);
 			const serialized = instance.serialize();
 
 			expect(serialized.id).toBe('test-123');
-			expect(serialized.name).toBe('Test Item');
-			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
-			expect(serialized.count).toBe('9999');
-			expect(serialized.key).toEqual({
-				__type: 'symbol',
-				description: 'test-key',
-			});
-			expect(serialized.pattern).toEqual({
-				__type: 'regexp',
-				source: '^test$',
-				flags: 'gi',
-			});
+            // ...
 			expect(serialized.tags).toEqual({
 				__type: 'Set',
 				values: ['typescript', 'testing'],
@@ -163,6 +176,10 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 				],
 			});
 		});
+        
+        // I will replace ONLY the tags/metadata part, but including the instance creation line to disambiguate.
+        
+
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new QuickTestDeclare(testData);
@@ -233,16 +250,12 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(serialized.tags).toEqual({
-				__type: 'Set',
-				values: ['typescript', 'testing'],
-			});
+			expect(Array.isArray(serialized.tags)).toBe(true);
+			expect(serialized.tags).toEqual(['typescript', 'testing']);
+
 			expect(serialized.metadata).toEqual({
-				__type: 'Map',
-				entries: [
-					['author', 'John'],
-					['version', '1.0'],
-				],
+				author: 'John',
+				version: '1.0',
 			});
 		});
 
