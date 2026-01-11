@@ -90,11 +90,14 @@ You can create your own transformers by implementing the transformer interface.
 
 _(See [QTransform definition](../../src/core/interfaces/transformer.interface.ts) for details)_
 
-However, for most cases, **Inline Transformers** are sufficient:
+### 1. Implicit (Inline) Transformers
+
+For simple cases, you can define the transformer logic directly in the property definition. This is the **implicit** approach.
+
+> [!NOTE]
+> Implicit transformers act **ONLY as Deserializers** (JSON -> Model).
 
 ```typescript
-
-
 @Quick({
   // Custom: Uppercase string
   // NOTE: Inline functions act ONLY as Deserializers (JSON -> Model)
@@ -112,7 +115,13 @@ However, for most cases, **Inline Transformers** are sufficient:
 
 ## Advanced: Transformers & Serializers via Options
 
-For cleaner code, or when you need bidirectional custom logic without creating a full class, you can use the **Advanced Options** object (second argument of `@Quick`).
+For cleaner code, or when you need bidirectional custom logic, you can use the **Advanced Options** object (second argument of `@Quick`).
+
+This explicit approach allows you to:
+
+1.  **Implicit vs Explicit**: Use transformers in the second argument instead of inline.
+2.  **Independent Serializers**: Define serializers without transformers (or vice versa).
+3.  **Separation of Concerns**: Keep type definitions clean.
 
 This allows you to separate the type definition from the transformation logic and define explicit **serializers**.
 
@@ -141,6 +150,22 @@ class MyModel extends QModel<IMyInterface> {
 	declare status: string;
 	declare date: Date;
 }
+```
+
+### Independent Serializers
+
+You don't need to define a transformer to define a serializer. You can use them independently!
+
+```typescript
+@Quick({
+    date: Date // Standard Date transformer
+}, {
+    serializers: {
+        // Custom serialization logic ONLY
+        // Deserialization will still use the standard Date transformer
+        date: (val: Date) => val.getTime()
+    }
+})
 ```
 
 This approach is recommended when:

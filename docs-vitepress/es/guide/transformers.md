@@ -88,13 +88,14 @@ QuickModel soporta el manejo de datos binarios a través de cadenas Base64.
 
 Puedes crear tus propios transformadores implementando la interfaz de transformador.
 
-Sin embargo, para la mayoría de los casos, los **Transformadores en Línea** son suficientes:
+### 1. Transformadores Implicitos (En Línea)
+
+Para casos simples, puedes definir la lógica del transformador directamente en la definición de la propiedad. Este es el enfoque **implícito**.
+
+> [!NOTE]
+> Los transformadores implícitos actúan **SOLO como Deserializadores** (JSON -> Modelo).
 
 ```typescript
-@Quick({
-  // Personalizado: String a mayúsculas
-  code: (val: string) => val.toUpperCase(),
-
 @Quick({
   // Personalizado: String a mayúsculas
   // NOTA: Las funciones en línea actúan SOLO como Deserializadores (JSON -> Modelo)
@@ -112,7 +113,13 @@ Sin embargo, para la mayoría de los casos, los **Transformadores en Línea** so
 
 ## Avanzado: Transformadores y Serializadores vía Opciones
 
-Para un código más limpio, o cuando necesitas lógica personalizada bidireccional sin crear una clase completa, puedes usar el objeto de **Opciones Avanzadas** (segundo argumento de `@Quick`).
+Para un código más limpio, o cuando necesitas lógica personalizada bidireccional, puedes usar el objeto de **Opciones Avanzadas** (segundo argumento de `@Quick`).
+
+Este enfoque explícito te permite:
+
+1.  **Implícito vs Explícito**: Usar transformadores en el segundo argumento en lugar de en línea.
+2.  **Serializadores Independientes**: Definir serializadores sin transformadores (o viceversa).
+3.  **Separación de Responsabilidades**: Mantener limpias las definiciones de tipos.
 
 Esto te permite separar la definición de tipos de la lógica de transformación y definir **serializadores** explícitos.
 
@@ -141,6 +148,22 @@ class MyModel extends QModel<IMyInterface> {
 	declare status: string;
 	declare date: Date;
 }
+```
+
+### Serializadores Independientes
+
+¡No necesitas definir un transformador para definir un serializador! Puedes usarlos de forma independiente.
+
+```typescript
+@Quick({
+    date: Date // Transformador Date estándar
+}, {
+    serializers: {
+        // Lógica de serialización personalizada SOLAMENTE
+        // La deserialización seguirá usando el transformador Date estándar
+        date: (val: Date) => val.getTime()
+    }
+})
 ```
 
 Este enfoque se recomienda cuando:

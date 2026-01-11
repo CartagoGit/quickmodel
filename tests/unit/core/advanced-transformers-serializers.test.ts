@@ -77,6 +77,66 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 		expect(user.toInterface().email).toBe('TEST@EXAMPLE.COM');
 	});
 
+	test('should allow one-way serialization (serializer only)', () => {
+		interface IFormat {
+			code: string;
+		}
+
+		@Quick(
+			{
+				code: String,
+			},
+			{
+				serializers: {
+					// Add prefix on output only
+					code: (val: any) => `PREFIX_${val}`,
+				},
+			}
+		)
+		class Format extends QModel<IFormat> {
+			declare code: string;
+		}
+
+		// Input is normal (no transformer)
+		const item = new Format({ code: '123' });
+		expect(item.code).toBe('123');
+
+		// Output is transformed (custom serializer)
+		const output = item.toInterface();
+		expect(output.code).toBe('PREFIX_123');
+	});
+
+	test('should work with inline transformers (legacy syntax) + custom serializers', () => {
+		interface ITime {
+			stamp: number;
+		}
+
+		@Quick(
+			{
+				// Inline transformer (Old way: number -> Date)
+				stamp: (val: any) => new Date(val * 1000),
+			},
+			{
+				// Serializer (New way: Date -> number)
+				serializers: {
+					stamp: (val: any) => (val instanceof Date ? val.getTime() / 1000 : 0),
+				},
+			}
+		)
+		class TimeModel extends QModel<ITime> {
+			declare stamp: Date;
+		}
+
+		// 1. Deserialization (Inline transformer)
+		const time = new TimeModel({ stamp: 1000 });
+		expect(time.stamp).toBeInstanceOf(Date);
+		expect(time.stamp.toISOString()).toBe(new Date(1000000).toISOString());
+
+		// 2. Serialization (Option serializer)
+		const output = time.toInterface();
+		expect(output.stamp).toBe(1000);
+	});
+
 	test('custom transformer should take precedence over known types (Date)', () => {
 		interface ILog {
 			date: string;
