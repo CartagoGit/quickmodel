@@ -96,7 +96,13 @@
 		"vitepress": "^1.6.4"
 	},
 	"peerDependencies": {
-		"typescript": ">=5.0.0"
+		"typescript": ">=5.0.0",
+		"@faker-js/faker": ">=10.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@faker-js/faker": {
+			"optional": true
+		}
 	},
 	"engines": {
 		"node": ">=18.0.0"
