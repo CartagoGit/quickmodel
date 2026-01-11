@@ -454,6 +454,43 @@ class CartItem extends QModel<ICartItem> {
 
 📖 **[Complete Dot Notation Guide](docs/DOT-NOTATION.md)** - Learn when and how to use nested transformations
 
+## ✅ Validation
+
+QuickModel provides built-in validation to ensure runtime integrity. The `validate()` method checks that all transformed properties contain valid values according to their transformers.
+
+```typescript
+@Quick({
+  birthDate: Date,
+  tags: [Set] // Array of Sets
+})
+class User extends QModel<IUser> {
+  declare birthDate: Date;
+  declare tags: Set<string>[];
+}
+
+// 1. Valid data
+const user = new User({ 
+  birthDate: "2024-01-01", 
+  tags: [["a", "b"]] 
+});
+console.log(user.validate()); // [] (Empty array = valid)
+
+// 2. Invalid data
+const invalidUser = new User({ 
+  birthDate: "invalid-date", 
+  tags: "not-an-array" // Should be array of arrays of strings
+});
+
+const errors = invalidUser.validate();
+if (errors.length > 0) {
+  console.log(errors);
+  // [
+  //   { isValid: false, error: "User.birthDate: Invalid Date string: invalid-date" },
+  //   { isValid: false, error: "User.tags: Expected array for Set[], got string" }
+  // ]
+}
+```
+
 ## 🎭 Testing with Mocks
 
 ```typescript

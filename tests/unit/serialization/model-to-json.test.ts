@@ -27,7 +27,7 @@ describe('Model Serialization (toJSON)', () => {
     }
 
     test('should serialize simple primitives correctly', () => {
-        const user = User.create({
+        const user = new User({
             id: 1,
             name: 'John',
             birthDate: '2024-01-01T00:00:00.000Z',
@@ -42,7 +42,7 @@ describe('Model Serialization (toJSON)', () => {
     });
 
     test('should serialize transformed types correctly', () => {
-        const user = User.create({
+        const user = new User({
             id: 1,
             name: 'John',
             birthDate: '2024-01-01T00:00:00.000Z',
@@ -90,7 +90,7 @@ describe('Model Serialization (toJSON)', () => {
             declare address: Address;
         }
 
-        const profile = Profile.create({
+        const profile = new Profile({
             address: {
                 city: 'New York',
                 location: { lat: 40, lon: -74 }
@@ -121,7 +121,7 @@ describe('Model Serialization (toJSON)', () => {
             declare items: Item[];
         }
 
-        const cart = Cart.create({
+        const cart = new Cart({
             items: [{ name: 'Item 1' }, { name: 'Item 2' }]
         });
 
@@ -132,7 +132,7 @@ describe('Model Serialization (toJSON)', () => {
     });
 
     test('should exclude internal properties starting with __', () => {
-         const user = User.create({
+         const user = new User({
             id: 1,
             name: 'Internal',
             birthDate: new Date().toISOString(),
