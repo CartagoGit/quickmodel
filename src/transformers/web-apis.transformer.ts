@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -32,11 +33,17 @@ export class URLTransformer
 
 		// Must be string, nothing else
 		if (typeof value !== 'string') {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: URL transformer ONLY accepts:\n` +
 					`  - string (valid URL, e.g., "https://example.com/path?query=1")\n` +
 					`  - URL instance\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`
+					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'string | URL',
+				}
 			);
 		}
 
@@ -45,10 +52,16 @@ export class URLTransformer
 		} catch (error) {
 			const errorMsg =
 				error instanceof Error ? error.message : String(error);
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: Invalid URL string "${value}".\n` +
 					`Error: ${errorMsg}\n` +
-					`Expected: Valid URL with protocol (e.g., "https://example.com/path")`
+					`Expected: Valid URL with protocol (e.g., "https://example.com/path")`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'Valid absolute URL',
+				}
 			);
 		}
 	}
@@ -120,12 +133,18 @@ export class URLSearchParamsTransformer
 			return new URLSearchParams(value);
 		}
 
-		throw new Error(
+		throw new QModelError(
 			`${className}.${propertyKey}: URLSearchParams transformer ONLY accepts:\n` +
 				`  - string (query format, e.g., "key=value&foo=bar")\n` +
 				`  - object (key-value pairs, e.g., { key: "value", foo: "bar" })\n` +
 				`  - URLSearchParams instance\n` +
-				`Received: ${typeof value} = ${JSON.stringify(value)}`
+				`Received: ${typeof value} = ${JSON.stringify(value)}`,
+			{
+				className,
+				propertyKey,
+				value,
+				expectedType: 'string | object | URLSearchParams',
+			}
 		);
 	}
 
@@ -181,14 +200,20 @@ export class TextEncoderTransformer extends BaseTransformer<
 			return new TextEncoder();
 		}
 
-		throw new Error(
+		throw new QModelError(
 			`${className}.${propertyKey}: TextEncoder transformer ONLY accepts:\n` +
 				`  - null\n` +
 				`  - undefined\n` +
 				`  - {} (empty object)\n` +
 				`  - TextEncoder instance\n` +
 				`Note: TextEncoder has no configuration, these values just create a new instance.\n` +
-				`Received: ${typeof value} = ${JSON.stringify(value)}`
+				`Received: ${typeof value} = ${JSON.stringify(value)}`,
+			{
+				className,
+				propertyKey,
+				value,
+				expectedType: 'null | undefined | {} | TextEncoder',
+			}
 		);
 	}
 
@@ -223,9 +248,15 @@ export class TextDecoderTransformer extends BaseTransformer<
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				return new TextDecoder(value as any);
 			} catch (_error) {
-				throw new Error(
+				throw new QModelError(
 					`${className}.${propertyKey}: Invalid encoding "${value}". ` +
-						`Valid encodings include: utf-8, utf-16, iso-8859-1, etc.`
+						`Valid encodings include: utf-8, utf-16, iso-8859-1, etc.`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'TextDecoder valid encoding (string)',
+					}
 				);
 			}
 		}
@@ -237,9 +268,15 @@ export class TextDecoderTransformer extends BaseTransformer<
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				return new TextDecoder(encoding as any);
 			} catch (_error) {
-				throw new Error(
+				throw new QModelError(
 					`${className}.${propertyKey}: Invalid encoding "${encoding}". ` +
-						`Valid encodings include: utf-8, utf-16, iso-8859-1, etc.`
+						`Valid encodings include: utf-8, utf-16, iso-8859-1, etc.`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'TextDecoder valid encoding (object)',
+					}
 				);
 			}
 		}
@@ -248,9 +285,15 @@ export class TextDecoderTransformer extends BaseTransformer<
 			return new TextDecoder();
 		}
 
-		throw new Error(
+		throw new QModelError(
 			`${className}.${propertyKey}: TextDecoder transformer accepts string (encoding name like "utf-8"), ` +
-				`object with encoding property, or TextDecoder instance. Got ${typeof value}`
+				`object with encoding property, or TextDecoder instance. Got ${typeof value}`,
+			{
+				className,
+				propertyKey,
+				value,
+				expectedType: 'string | { encoding: string } | TextDecoder',
+			}
 		);
 	}
 

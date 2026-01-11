@@ -49,16 +49,16 @@ import {
 	IQTransformContext,
 	IQTransformer,
 } from '../interfaces/transformer.interface';
-import {
-	QTYPES_METADATA_KEY,
-	type QTypeString,
-} from '../decorators/qtype.decorator';
+import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_TYPE_MAP_KEY,
 	QUICK_DESIGN_TYPES_KEY,
 } from '../constants/metadata-keys';
-import { TransformerRegistry } from '../registry/transformer.registry';
+import {
+	TransformerRegistry,
+	type TransformerKey,
+} from '../registry/transformer.registry';
 import type { QDiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
@@ -82,12 +82,6 @@ import {
 	TextDecoderTransformer,
 } from '@/transformers/web-apis.transformer';
 import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
-
-/**
- * Valid keys to identify a transformer.
- * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), or a string name.
- */
-export type TransformerKey = QTypeString | { name: string } | string;
 
 export class Deserializer<
 	TInterface extends Record<string, unknown> = Record<string, unknown>,

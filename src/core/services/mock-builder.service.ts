@@ -15,14 +15,14 @@ import type { MockType } from './mock-generator.service';
  * const mockUsers = User.mock().array(5);
  * ```
  */
-export class QMockBuilder<
+export class QQMockBuilder<
 	TInstance,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
 	private _fieldsRegistered = false;
 
 	/**
-	 * Creates a new MockBuilder instance.
+	 * Creates a new QMockBuilder instance.
 	 *
 	 * @param modelClass - The model class constructor
 	 * @param mockGenerator - The mock generator service instance

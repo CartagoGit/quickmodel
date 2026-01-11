@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '../core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -57,8 +58,14 @@ export class ArrayBufferTransformer
 		}
 
 		if (!Array.isArray(value)) {
-			throw new Error(
-				`${className}.${propertyKey}: Expected array for ArrayBuffer, got ${typeof value}`
+			throw new QModelError(
+				`${className}.${propertyKey}: Expected array for ArrayBuffer, got ${typeof value}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'number[] | ArrayBuffer',
+				}
 			);
 		}
 
@@ -153,8 +160,14 @@ export class DataViewTransformer
 		}
 
 		if (!Array.isArray(value)) {
-			throw new Error(
-				`${className}.${propertyKey}: Expected array for DataView, got ${typeof value}`
+			throw new QModelError(
+				`${className}.${propertyKey}: Expected array for DataView, got ${typeof value}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'number[] | ArrayBuffer | DataView',
+				}
 			);
 		}
 
@@ -223,9 +236,15 @@ export class SharedArrayBufferTransformer
 		}
 
 		if (!Array.isArray(value)) {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: SharedArrayBuffer transformer accepts number array or SharedArrayBuffer instance. ` +
-					`Got ${typeof value}`
+					`Got ${typeof value}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'number[] | SharedArrayBuffer',
+				}
 			);
 		}
 

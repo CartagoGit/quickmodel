@@ -51,6 +51,7 @@ export interface IModelConstructor<TModel> {
  *   declare balance: bigint;
  * }
  * ```
+ * @group Types
  */
 export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
 

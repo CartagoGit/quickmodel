@@ -14,13 +14,7 @@
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
 import { NATIVE_TYPE_MAP } from '../constants/native-types';
-import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
-
-/**
- * Available field types as string literals.
- * @see {@link IQTypeAlias}
- */
-export type QTypeString = IQTypeAlias;
+import type { QAlias } from '../interfaces/qtype-symbols.interface';
 
 /**
  * Metadata key symbol for storing the list of properties decorated with @QType().
@@ -157,7 +151,7 @@ export function QType<T>(
 	typeOrClass?:
 		| (new (...args: any[]) => T) // Constructor relaxed to 'any' argument to allow various signatures
 		| symbol
-		| QTypeString
+		| QAlias
 		| INativeFactory
 		| PromiseConstructor
 		| Array<unknown> // Support array syntax: [Type], [[Type]], etc.

@@ -63,8 +63,9 @@
  *   meta: 'map'          // Transform tuples to Map
  * })
  * ```
+ * @group Types
  */
-export type IQTypeAlias =
+export type QAlias =
 	// Primitives
 	| 'bigint'
 	| 'symbol'

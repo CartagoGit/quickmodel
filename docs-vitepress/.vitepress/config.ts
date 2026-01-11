@@ -18,7 +18,11 @@ export default defineConfig({
 	head: [
 		[
 			'link',
-			{ rel: 'icon', type: 'image/png', href: '/quickmodel/quickmodel.png' },
+			{
+				rel: 'icon',
+				type: 'image/png',
+				href: '/quickmodel/quickmodel.png',
+			},
 		],
 	],
 
@@ -54,7 +58,10 @@ export default defineConfig({
 				{
 					text: 'API Reference',
 					items: [
-						{ text: 'Overview', link: '/tsdoc/' },
+						{
+							text: 'Overview',
+							link: '/tsdoc/',
+						},
 						{
 							text: 'Classes',
 							collapsed: false,
@@ -62,6 +69,14 @@ export default defineConfig({
 								{
 									text: 'QModel',
 									link: '/tsdoc/classes/QModel',
+								},
+								{
+									text: 'QMockBuilder',
+									link: '/tsdoc/classes/QMockBuilder',
+								},
+								{
+									text: 'QModelError',
+									link: '/tsdoc/classes/QModelError',
 								},
 							],
 						},
@@ -73,19 +88,41 @@ export default defineConfig({
 									text: '@Quick',
 									link: '/tsdoc/functions/Quick',
 								},
+							],
+						},
+						{
+							text: 'Interfaces',
+							collapsed: false,
+							items: [
 								{
-									text: '@QType',
-									link: '/tsdoc/functions/QType',
+									text: 'QOptions',
+									link: '/tsdoc/interfaces/QOptions',
+								},
+								{
+									text: 'QAdvancedOptions',
+									link: '/tsdoc/interfaces/QAdvancedOptions',
 								},
 							],
 						},
 						{
-							text: 'Types',
+							text: 'Type Aliases',
 							collapsed: false,
 							items: [
 								{
 									text: 'QInterface',
 									link: '/tsdoc/type-aliases/QInterface',
+								},
+								{
+									text: 'QAlias',
+									link: '/tsdoc/type-aliases/QAlias',
+								},
+								{
+									text: 'QDiscriminatorConfig',
+									link: '/tsdoc/type-aliases/QDiscriminatorConfig',
+								},
+								{
+									text: 'QTransform',
+									link: '/tsdoc/type-aliases/QTransform',
 								},
 							],
 						},

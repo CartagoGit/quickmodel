@@ -1,15 +1,15 @@
 /**
  * @Quick() class decorator for automatic property registration.
  *
- * This decorator automatically applies @QType() to all properties of a class,
+ * This decorator automatically prepares all properties of a class for serialization,
  * eliminating the need for manual decoration of each property. It uses TypeScript's
  * design:type metadata to detect property types and applies the appropriate
  * transformations.
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Only handles automatic property registration
- * - Open/Closed: Extends QType functionality without modifying it
- * - Don't Repeat Yourself: Eliminates repetitive @QType() decorators
+ * - Open/Closed: Extends property decoration functionality without modifying it
+ * - Don't Repeat Yourself: Eliminates repetitive decorators
  *
  * @example
  * **Without @Quick()** (verbose):
@@ -73,7 +73,7 @@
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
+import type { QAlias } from '../interfaces/qtype-symbols.interface';
 import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
@@ -118,7 +118,7 @@ type INativeFactory =
  * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
  */
 export type ISpec =
-	| IQTypeAlias // String literals like 'bigint', 'date', 'regexp'
+	| QAlias // String literals like 'bigint', 'date', 'regexp'
 	| IConstructor // Custom classes
 	| INativeFactory // Built-in types (Date, BigInt, etc)
 	| ITransformerFunction

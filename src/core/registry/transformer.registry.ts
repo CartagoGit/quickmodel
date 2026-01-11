@@ -1,11 +1,11 @@
 import { IQTransformer } from '../interfaces/transformer.interface';
-import { QTypeString } from '../decorators/qtype.decorator';
+import type { QAlias } from '../interfaces/qtype-symbols.interface';
 
 /**
  * Valid keys to identify a transformer.
  * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), or a string name.
  */
-export type TransformerKey = QTypeString | { name: string } | string;
+export type TransformerKey = QAlias | { name: string } | string;
 
 /**
  * Global registry for transformers.

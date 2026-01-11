@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -75,9 +76,15 @@ export class SymbolTransformer
 			value.__type === 'symbol'
 		) {
 			if (typeof value.description !== 'string') {
-				throw new Error(
+				throw new QModelError(
 					`${className}.${propertyKey}: Symbol object must have 'description' as string.\\n` +
-						`Received: description type = ${typeof value.description}`
+						`Received: description type = ${typeof value.description}`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'string description',
+					}
 				);
 			}
 			return Symbol.for(value.description);
@@ -85,13 +92,19 @@ export class SymbolTransformer
 
 		// Must be string for simple description format
 		if (typeof value !== 'string') {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: Symbol transformer ONLY accepts:\\n` +
 					`  - string (symbol description, e.g., "mySymbol")\\n` +
 					`  - object ({ __type: "symbol", description: "mySymbol" })\\n` +
 					`  - symbol instance\\n` +
 					`Note: Uses Symbol.for() to create global symbols.\\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`
+					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'string | symbol | object',
+				}
 			);
 		}
 

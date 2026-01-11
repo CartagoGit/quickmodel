@@ -48,13 +48,13 @@ export type {
  * Supported string aliases for types (e.g. 'date', 'bigint', 'regexp')
  * Useful reference for valid values in the type map.
  */
-export type { IQTypeAlias as QTypeString } from './core/interfaces/qtype-symbols.interface';
+export type { QAlias } from './core/interfaces/qtype-symbols.interface';
 
 // ============================================================================
 // PUBLIC API - Testing Tools
 // ============================================================================
 
-export { QMockBuilder as MockBuilder } from './core/services/mock-builder.service';
+export { QQMockBuilder as QMockBuilder } from './core/services/mock-builder.service';
 
 // ============================================================================
 // PUBLIC API - Errors

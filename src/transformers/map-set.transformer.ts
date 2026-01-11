@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { QuickModelError } from '@/core/errors/quickmodel.error';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -85,18 +85,25 @@ export class MapTransformer<K = string, V = unknown>
 			try {
 				return new Map(value);
 			} catch (error) {
-				throw new Error(
+				throw new QModelError(
 					`MapTransformer.deserialize: Invalid Map data format. ` +
 						`Expected array of [key, value] pairs, got: ${JSON.stringify(value)}. ` +
-						`Error: ${error instanceof Error ? error.message : String(error)}`
+						`Error: ${error instanceof Error ? error.message : String(error)}`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'array of [key, value] pairs',
+					}
 				);
 			}
 		}
 
 		// Handle legacy plain object format
 		if (typeof value !== 'object' || value === null) {
-			throw new Error(
-				`${className}.${propertyKey}: Expected object or array for Map, got ${typeof value}`
+			throw new QModelError(
+				`${className}.${propertyKey}: Expected object or array for Map, got ${typeof value}`,
+				{ className, propertyKey, value, expectedType: 'object | array' }
 			);
 		}
 
@@ -205,8 +212,9 @@ export class SetTransformer<V = unknown>
 
 		// Handle legacy plain array format
 		if (!Array.isArray(value)) {
-			throw new Error(
-				`${className}.${propertyKey}: Expected array for Set, got ${typeof value}`
+			throw new QModelError(
+				`${className}.${propertyKey}: Expected array for Set, got ${typeof value}`,
+				{ className, propertyKey, value, expectedType: 'array' }
 			);
 		}
 

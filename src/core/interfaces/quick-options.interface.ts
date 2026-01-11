@@ -213,6 +213,7 @@ export type TypeGuardFunction<TConstructors> = (data: unknown) => TConstructors;
  *   // TypeScript knows this must return Content | Metadata based on items: [Content, Metadata]
  * }
  * ```
+ * @group Types
  */
 export type QDiscriminatorConfig<
 	TConstructors = unknown,
