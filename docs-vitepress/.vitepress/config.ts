@@ -7,6 +7,20 @@ export default defineConfig({
 	base: '/quickmodel/',
 	outDir: '../docs-vitepress/dist',
 	ignoreDeadLinks: true,
+	head: [
+		[
+			'link',
+			{
+				rel: 'icon',
+				type: 'image/svg+xml',
+				href: '/quickmodel/logo.svg',
+			},
+		],
+		[
+			'link',
+			{ rel: 'icon', type: 'image/png', href: '/quickmodel/favicon.png' },
+		],
+	],
 
 	// Global theme config (shared across all locales)
 	themeConfig: {

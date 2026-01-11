@@ -85,12 +85,14 @@ import {
 /**
  * Constructor type for class-based type mapping
  */
-type IConstructor<T = unknown> = new (...args: unknown[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type IConstructor<T = any> = new (...args: any[]) => T;
 
 /**
  * Transformer function that converts a value
  */
-type ITransformerFunction = (value: unknown) => unknown;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ITransformerFunction = (value: any) => any;
 
 /**
  * Native constructors and factories supported by QuickModel

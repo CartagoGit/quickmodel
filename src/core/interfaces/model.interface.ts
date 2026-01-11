@@ -3,10 +3,24 @@
  *
  * This module provides helper types for defining type transformations
  * in model classes that extend QModel.
+ * @module core/interfaces/model.interface
+ * Really is used in multiple places to dodge eslint no-explicit-any
+ * in several files where really is needed any type.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyRecord = Record<string, any>;
+
+/**
+ * Interface representing a concrete QModel constructor
+ * Used to type-check static methods like deserialize locally
+ */
+export interface IModelConstructor<TModel> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	new (data: any): TModel;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	deserialize(data: any): TModel;
+}
 
 /**
  * Quick transform helper - merges base interface with transformed properties.

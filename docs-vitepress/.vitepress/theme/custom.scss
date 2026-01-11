@@ -1,4 +1,12 @@
-// Custom SCSS for QuickModel Documentation
+/**
+ * Customize default theme styling by overriding CSS variables
+ * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ */
+
+// Prevent content shift when scrollbar appears
+html {
+	scrollbar-gutter: stable both-edges;
+}
 
 // Variables
 $primary-color: #42b883;
@@ -103,7 +111,9 @@ $secondary-color: #35495e;
 			top: none;
 		}*/
 		.title {
-			padding-left: calc((100% - (var(--vp-layout-max-width)) + 64px) / 2) !important;
+			padding-left: calc(
+				(100% - (var(--vp-layout-max-width)) + 64px) / 2
+			) !important;
 		}
 		.has-sidebar title {
 			padding-left: 0 !important;
@@ -336,4 +346,20 @@ $secondary-color: #35495e;
 // Hide default VitePress translations selector
 .VPNavBar .translations {
 	display: none !important;
+}
+
+// Reduce content padding-bottom
+.vp-doc {
+	padding-bottom: 24px !important;
+	padding-left: 0 !important;
+}
+
+// Increase search input width
+.VPNavBarSearch {
+	.DocSearch-Button {
+		width: 240px !important;
+		display: flex !important;
+		justify-content: space-between !important;
+		align-items: center !important;
+	}
 }

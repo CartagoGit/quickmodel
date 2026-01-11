@@ -8,7 +8,7 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 	test('deserialize: should throw on object with non-string source', () => {
 		expect(() => {
 			transformer.deserialize(
-				{ source: 123 } as unknown as { source: string },
+				{ source: 123 } as any,
 				'regex',
 				'TestClass'
 			);

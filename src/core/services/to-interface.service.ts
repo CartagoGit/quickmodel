@@ -200,11 +200,17 @@ export class ToInterfaceService<
 				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(originalValue))
 		) {
 			// If currentValue is a Date, convert to ISO string
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			if (typeof (currentValue as any)?.toISOString === 'function') {
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'toISOString' in currentValue &&
+				typeof (currentValue as { toISOString: () => string }).toISOString ===
+					'function'
+			) {
 				try {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					return (currentValue as any).toISOString();
+					return (
+						currentValue as { toISOString: () => string }
+					).toISOString();
 				} catch {
 					// Invalid Date - return original value if available, otherwise string representation
 					return typeof originalValue === 'string'
@@ -266,15 +272,13 @@ export class ToInterfaceService<
 		}
 
 		if (typeof originalValue === 'bigint') {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			return BigInt(currentValue as any);
+			return BigInt(currentValue as string | number | bigint | boolean);
 		}
 
 		if (typeof originalValue === 'symbol') {
 			return typeof currentValue === 'symbol'
 				? currentValue
-				: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-				  Symbol(currentValue as any);
+				: Symbol(currentValue as string | number | undefined);
 		}
 
 		// 6. WRAPPER OBJECTS: Number, String, Boolean objects
@@ -329,14 +333,13 @@ export class ToInterfaceService<
 		if (
 			originalValue &&
 			typeof originalValue === 'object' &&
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(originalValue as any).__type === 'bigint'
+			'__type' in originalValue &&
+			(originalValue as { __type: unknown }).__type === 'bigint'
 		) {
 			const bigintValue =
 				typeof currentValue === 'bigint'
 					? currentValue
-					: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-					  BigInt(currentValue as any);
+					: BigInt(currentValue as string | number | bigint | boolean);
 			return bigintValue.toString();
 		}
 
@@ -403,24 +406,27 @@ export class ToInterfaceService<
 
 			// Objects with custom constructor: try to call toInterface
 			// For QModel instances, call toInterface() recursively
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			if (typeof (currentValue as any)?.toInterface === 'function') {
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'toInterface' in currentValue &&
+				typeof (currentValue as { toInterface: (s: WeakSet<object>) => unknown })
+					.toInterface === 'function'
+			) {
 				// Pass the 'seen' set to prevent infinite loops in recursive models
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				return (currentValue as any).toInterface(seen);
+				return (
+					currentValue as { toInterface: (s: WeakSet<object>) => unknown }
+				).toInterface(seen);
 			}
 
 			// For other objects, create plain object
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const anyCurrent = currentValue as any;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const anyOriginal = originalValue as any;
+			const typedCurrent = currentValue as Record<string, unknown>;
 
-			for (const key in anyCurrent) {
-				if (typeof anyCurrent[key] !== 'function') {
+			for (const key in typedCurrent) {
+				if (typeof typedCurrent[key] !== 'function') {
 					result[key] = this.convertToInterfaceFormat(
-						anyCurrent[key],
-						anyOriginal?.[key],
+						typedCurrent[key],
+						typedOriginal[key],
 						seen,
 						isProduction,
 						`${propertyKey}.${key}`

@@ -34,8 +34,9 @@ export interface IQTransformContext {
 
 export interface IQValidationContext {
 	propertyKey: string;
-	className: string;
-	value: unknown;
+	className?: string;
+	value?: unknown;
+	target?: unknown;
 }
 
 export interface IQValidationResult {

@@ -138,7 +138,7 @@ export default {
 			} else {
 				setupNavInterceptor();
 			}
-			router.onAfterRouteChanged = () => {
+			router.onAfterRouteChange = () => {
 				setupLogoInterceptor();
 				setupNavInterceptor();
 			};

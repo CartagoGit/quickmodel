@@ -22,7 +22,10 @@ import type {
 	SerializedInterface,
 	ModelData,
 } from '@/core/interfaces/serialization-types.interface';
-import type { AnyRecord } from '@/core/interfaces/model.interface';
+import type {
+	AnyRecord,
+	IModelConstructor,
+} from '@/core/interfaces/model.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import {
 	QUICK_VALUES_KEY,
@@ -211,7 +214,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * @see {@link QModel} for main class documentation
 	 */
 	static create<
-		T extends Record<string, unknown> = Record<string, unknown>,
+		T extends AnyRecord = AnyRecord,
 		TClass extends QModel<T> = QModel<T>,
 		TResult = TClass,
 	>(this: new (data: T) => TClass, data: T): TResult {
@@ -235,8 +238,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 */
 	static mock<
 		T extends abstract new (
-			...args: unknown[]
-		) => QModel<Record<string, unknown>>,
+			...args: any[]
+		) => QModel<AnyRecord>,
 	>(this: T): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
@@ -244,11 +247,10 @@ export abstract class QModel<TInterface extends AnyRecord> {
 		) => infer R
 			? R
 			: never;
-		type InterfaceType = InstanceType extends QModel<infer I> ? I : never;
 
-		// @ts-expect-error - TypeScript doesn't allow instantiating abstract classes, but at runtime `this` is the concrete class
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const ModelClass: new (data: any) => InstanceType = this as any;
+		const ModelClass: new (data: any) => InstanceType =
+			this as unknown as IModelConstructor<InstanceType>;
 
 		return new MockBuilder(ModelClass, QModel.mockGenerator) as unknown as MockBuilder<
 			QModelInstance<T>,
@@ -952,8 +954,9 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 */
 	reset(): void {
 		const initial = this.getInitInterface();
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const Constructor = this.constructor as any;
+		const Constructor = this.constructor as unknown as IModelConstructor<
+			QModel<TInterface>
+		>;
 		const restored = Constructor.deserialize(initial);
 
 		// Copy all properties from restored instance
@@ -992,8 +995,9 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * ```
 	 */
 	patch(patch: Partial<ModelData<TInterface>>): void {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const Constructor = this.constructor as any;
+		const Constructor = this.constructor as unknown as IModelConstructor<
+			QModel<TInterface>
+		>;
 		const current = this.serialize();
 		const merged = { ...current, ...patch };
 		const updated = Constructor.deserialize(merged);
@@ -1046,8 +1050,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * @returns A new instance with the same data
 	 */
 	clone(): this {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const Constructor = this.constructor as any;
+		const Constructor = this.constructor as unknown as IModelConstructor<this>;
 		return Constructor.deserialize(this.serialize()) as this;
 	}
 }

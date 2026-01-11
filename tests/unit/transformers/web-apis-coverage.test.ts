@@ -126,9 +126,8 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('deserialize should throw on null', () => {
-			// @ts-expect-error Testing invalid input for coverage
 			expect(() => {
-				transformer.deserialize(null, 'params', 'TestClass');
+				transformer.deserialize(null as any, 'params', 'TestClass');
 			}).toThrow(/URLSearchParams transformer ONLY accepts/);
 		});
 
@@ -214,7 +213,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		});
 
 		test('deserialize should return default utf-8', () => {
-			const dec = transformer.deserialize(null, 'dec', 'TC');
+			const dec = transformer.deserialize(null as any, 'dec', 'TC');
 			expect(dec.encoding).toBe('utf-8');
 		});
 
@@ -230,7 +229,6 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 
 		test('deserialize should throw on bad object config', () => {
 			try {
-				// @ts-expect-error Testing invalid input for coverage
 				transformer.deserialize(
 					{ encoding: 'bad-encoding' },
 					'dec',

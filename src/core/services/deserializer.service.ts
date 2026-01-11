@@ -1894,7 +1894,7 @@ export class Deserializer<
 			if (discriminatorConfig.mapping && fieldValue !== undefined) {
 				const mapped =
 					discriminatorConfig.mapping[fieldValue as string | number];
-				if (mapped) return mapped;
+				if (mapped) return mapped as Function;
 			}
 
 			// Try to match by constructor name

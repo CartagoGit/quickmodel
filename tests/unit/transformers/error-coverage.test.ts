@@ -30,7 +30,7 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 		});
 
 		test('should deserialize object with message', () => {
-			const obj = { message: 'Simple error' };
+			const obj = { name: 'Error', message: 'Simple error' };
 			const result = transformer.deserialize(obj, propertyKey, className);
 			expect(result.message).toBe('Simple error');
 		});
@@ -63,9 +63,8 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 
 		test('should throw error if message is not string', () => {
 			expect(() => {
-				// @ts-expect-error - Testing invalid inputs
 				transformer.deserialize(
-					{ message: 123 },
+					{ message: 123 } as any,
 					propertyKey,
 					className
 				);

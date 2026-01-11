@@ -28,16 +28,14 @@ describe('Transformer Coverage: SymbolTransformer', () => {
 
 		test('should throw error for invalid types (number)', () => {
 			expect(() => {
-				// @ts-expect-error - Testing invalid inputs
-				transformer.deserialize(123, propertyKey, className);
+				transformer.deserialize(123 as any, propertyKey, className);
 			}).toThrow(/Symbol transformer ONLY accepts/);
 		});
 
 		test('should throw error for object wrapper with invalid description', () => {
 			expect(() => {
-				// @ts-expect-error - Testing invalid inputs
 				transformer.deserialize(
-					{ __type: 'symbol', description: 123 },
+					{ __type: 'symbol', description: 123 } as any,
 					propertyKey,
 					className
 				);

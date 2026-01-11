@@ -195,7 +195,7 @@ export type INativeFactory =
 
 export function QType<T>(
 	typeOrClass?:
-		| (new (data: unknown) => T) // Constructor relaxed to 'any' argument to allow various signatures
+		| (new (...args: any[]) => T) // Constructor relaxed to 'any' argument to allow various signatures
 		| symbol
 		| QTypeString
 		| INativeFactory

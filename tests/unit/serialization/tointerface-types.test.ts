@@ -840,8 +840,8 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.objectWithNull.z!.w).toBe(null);
 
 		// Object.create(null) - debe preservar estructura
-		expect(result.objectNoProto.key).toBe('value');
-		expect(result.objectNoProto.nested.prop).toBe(42);
+		expect((result.objectNoProto as any).key).toBe('value');
+		expect((result.objectNoProto as any).nested.prop).toBe(42);
 
 		// Objeto profundamente anidado
 		expect(result.objectDeeplyNested.level1.l1val).toBe(1);

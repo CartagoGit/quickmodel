@@ -295,7 +295,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		expect(model.buffers.size).toBe(2);
 		const buf1 = model.buffers.get('buf1');
 		expect(buf1).toBeInstanceOf(Uint8Array);
-		expect(Array.from(buf1)).toEqual([1, 2, 3]);
+		expect(Array.from(buf1!)).toEqual([1, 2, 3]);
 
 		// Validar Set de errors
 		expect(model.errorLog).toBeInstanceOf(Set);
