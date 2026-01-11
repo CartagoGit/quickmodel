@@ -23,11 +23,6 @@ export { QModel } from './core/models/quick.model';
  */
 export { Quick } from './core/decorators/quick.decorator';
 
-/**
- * Property decorator for explicit field type specification (optional)
- */
-export { QType } from './core/decorators/qtype.decorator';
-
 // ============================================================================
 // PUBLIC API - Type Helper Utilities
 // ============================================================================
@@ -60,3 +55,9 @@ export type { IQTypeAlias as QTypeString } from './core/interfaces/qtype-symbols
 // ============================================================================
 
 export { MockBuilder } from './core/services/mock-builder.service';
+
+// ============================================================================
+// PUBLIC API - Errors
+// ============================================================================
+
+export { QuickModelError } from './core/errors/quickmodel.error';

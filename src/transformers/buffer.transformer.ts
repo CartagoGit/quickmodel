@@ -17,8 +17,9 @@ import {
  *
  * @example
  * ```typescript
+ * @Quick({ data: ArrayBuffer })
  * class FileModel extends QuickModel<IFileModel> {
- *   @QType() declare data: ArrayBuffer;
+ *   declare data: ArrayBuffer;
  * }
  *
  * const file = new FileModel({
@@ -108,8 +109,9 @@ export class ArrayBufferTransformer
  *
  * @example
  * ```typescript
+ * @Quick({ view: DataView })
  * class BinaryData extends QuickModel<IBinaryData> {
- *   @QType() declare view: DataView;
+ *   declare view: DataView;
  * }
  *
  * const data = new BinaryData({

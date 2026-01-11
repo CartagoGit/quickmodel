@@ -82,9 +82,9 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  *
  * class User extends QModel<IUser, UserTransforms>
  *   implements QInterface<IUser, UserTransforms> {
- *   @QType() id!: string;
- *   @QType(QBigInt) balance!: bigint;
- *   @QType() createdAt!: Date;
+ *   declare id: string;
+ *   declare balance: bigint;
+ *   declare createdAt: Date;
  * }
  * ```
  *
@@ -106,10 +106,10 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  *
  * class Product extends QModel<IProduct, ProductTransforms>
  *   implements QInterface<IProduct, ProductTransforms> {
- *   @QType() id!: string;
- *   @QType(QBigInt) price!: bigint;
- *   @QType(QRegExp) regex!: RegExp;
- *   @QType() updated!: Date;
+ *   declare id: string;
+ *   declare price: bigint;
+ *   declare regex: RegExp;
+ *   declare updated: Date;
  * }
  * ```
  */

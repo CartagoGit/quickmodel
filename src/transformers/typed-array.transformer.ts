@@ -50,9 +50,13 @@ type TypedArray =
  *
  * @example
  * ```typescript
+ * @Quick({
+ *   samples: Float32Array,
+ *   largeNumbers: BigInt64Array
+ * })
  * class AudioData extends QuickModel<IAudioData> {
- *   @QType() declare samples: Float32Array;
- *   @QType() declare largeNumbers: BigInt64Array;
+ *   declare samples: Float32Array;
+ *   declare largeNumbers: BigInt64Array;
  * }
  *
  * const audio = new AudioData({
@@ -102,7 +106,13 @@ export class TypedArrayTransformer<T extends TypedArray>
 	 * For BigInt variants, strings are converted to BigInt. Invalid values default to 0n.
 	 */
 	deserialize(
-		value: number[] | string[] | T | Record<number, number> | null | undefined,
+		value:
+			| number[]
+			| string[]
+			| T
+			| Record<number, number>
+			| null
+			| undefined,
 		_propertyKey: string,
 		_className: string
 	): T | null {
@@ -111,7 +121,6 @@ export class TypedArrayTransformer<T extends TypedArray>
 		}
 
 		if (value instanceof this.ArrayConstructor) {
-
 			return value as T;
 		}
 

@@ -43,10 +43,15 @@
  * ```typescript
  * const serializer = new Serializer();
  *
+ * @Quick({
+ *   name: 'string',
+ *   birthDate: Date,
+ *   tags: Set
+ * })
  * class User extends QuickModel<IUser> {
- *   @QType() name!: string;
- *   @QType() birthDate!: Date;
- *   @QType() tags!: Set<string>;
+ *   declare name: string;
+ *   declare birthDate: Date;
+ *   declare tags: Set<string>;
  * }
  *
  * const user = new User({

@@ -91,10 +91,8 @@ type IUserTransform = {
 /**
  * REGLA SIMPLE de QuickModel:
  *
- * - Without @QType() → property is COPIED AS-IS from backend
- * - With @QType(Type) → property is TRANSFORMED to specified type
- *
- * Works with BOTH: declare and !
+ * - Without transform → property is COPIED AS-IS from backend
+ * - With transform → property is TRANSFORMED to specified type
  */
 
 // ✅ OPTION WITH @Quick() - Automatically protects ALL properties
@@ -183,7 +181,7 @@ const baseObj: IUser = {
 const logTests = (obj: User) => {
 	console.log('\n=== TEST RESULTS ===');
 	console.log({ obj }, '\n');
-	console.log('\n=== Properties WITHOUT @QType() (copied as-is) ===');
+	console.log('\n=== Properties WITHOUT transform (copied as-is) ===');
 	console.log('id:', obj.id, '→', typeof obj.id, obj.id === 1 ? '✅' : '❌');
 	console.log(
 		'name:',
@@ -200,7 +198,7 @@ const logTests = (obj: User) => {
 		obj.surname === 'Doe' ? '✅' : '❌'
 	);
 
-	console.log('\n=== Properties WITH @QType() (transformed) ===');
+	console.log('\n=== Properties WITH transform (via @Quick) ===');
 	console.log(
 		'createdAt:',
 		obj.createdAt,
