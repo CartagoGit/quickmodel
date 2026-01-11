@@ -293,7 +293,7 @@ describe('Null Safety: Edge Cases', () => {
 
 	test('should handle undefined as entire model data', () => {
 		try {
-			new User(undefined as any);
+			new User(undefined as unknown as IUser);
 
 			// Might not throw, just log
 			console.warn('⚠️  Undefined model data accepted without error');
@@ -304,7 +304,7 @@ describe('Null Safety: Edge Cases', () => {
 
 	test('should handle empty object', () => {
 		try {
-			new User({} as any);
+			new User({} as unknown as IUser);
 
 			// Will likely work but fields will be undefined
 			const user = new User({} as any);
