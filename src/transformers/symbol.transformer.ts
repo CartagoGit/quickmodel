@@ -52,7 +52,8 @@ export class SymbolTransformer
 			| string
 			| symbol
 			| { __type: 'symbol'; description: string }
-			| null,
+			| null
+			| undefined,
 		propertyKey: string,
 		className: string
 	): symbol | null {

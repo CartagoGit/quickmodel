@@ -1289,6 +1289,11 @@ export class Deserializer<
 		designType: Function | undefined,
 		context: IQTransformContext
 	): unknown {
+		// Null/Undefined check - Pass through
+		if (value === null || value === undefined) {
+			return value;
+		}
+
 		// Check for __type marker FIRST (highest priority)
 		// This allows roundtrip: Model → serialize() → Model
 		const detectedTransformer = this.detectTransformerFromValue(value);

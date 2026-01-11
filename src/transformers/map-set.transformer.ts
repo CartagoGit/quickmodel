@@ -54,10 +54,14 @@ export class MapTransformer<K = string, V = unknown>
 			| Record<string, V>
 			| { __type: 'Map'; entries: [K, V][] }
 			| Map<K, V>
-			| [K, V][],
+			| [K, V][]
+			| null
+			| undefined,
 		propertyKey: string,
 		className: string
-	): Map<K, V> {
+	): Map<K, V> | null {
+		if (value === null || value === undefined) return null;
+
 		if (value instanceof Map) {
 			return value;
 		}

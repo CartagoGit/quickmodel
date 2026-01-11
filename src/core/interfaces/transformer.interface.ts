@@ -10,7 +10,11 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	 * @param propertyKey - Nombre de la propiedad
 	 * @param className - Nombre de la clase
 	 */
-	deserialize(value: TInput, propertyKey: string, className: string): TOutput;
+	deserialize(
+		value: TInput | null | undefined,
+		propertyKey: string,
+		className: string
+	): TOutput | null;
 
 	/**
 	 * Serializa desde el tipo del modelo hacia la interfaz (JSON)

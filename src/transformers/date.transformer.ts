@@ -44,7 +44,7 @@ export class DateTransformer
 	 * @throws {Error} If the value is not a valid date
 	 */
 	deserialize(
-		value: string | number | Date | null,
+		value: string | number | Date | null | undefined,
 		propertyKey: string,
 		className: string
 	): Date | null {

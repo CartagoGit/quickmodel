@@ -44,6 +44,8 @@ export type {
 	TypeGuardFunction,
 } from './core/interfaces/quick-options.interface';
 
+export type { ISpec, ISpecs } from './core/decorators/quick.decorator';
+
 // ============================================================================
 // PUBLIC API - Testing Tools
 // ============================================================================
@@ -62,6 +64,17 @@ export type {
 // ============================================================================
 // PUBLIC API - Advanced / Extensions
 // ============================================================================
+
+// Serialization Types (Useful for typing API responses and constructor inputs)
+export type {
+	ModelData,
+	SerializedInterface,
+	Serialized,
+	Deserialized,
+} from './core/interfaces/serialization-types.interface';
+
+// Reference Types (Documentation for valid values)
+export type { QTypeString } from './core/decorators/qtype.decorator';
 
 // Registry (For advanced custom transformers)
 export { TransformerRegistry } from './core/registry/transformer.registry';

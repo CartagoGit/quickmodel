@@ -47,10 +47,10 @@ export abstract class BaseTransformer<
 	 * @throws {Error} When transformation fails or value is invalid
 	 */
 	abstract deserialize(
-		value: TInput,
+		value: TInput | null | undefined,
 		propertyKey: string,
 		className: string
-	): TOutput;
+	): TOutput | null;
 
 	/**
 	 * Serializes from runtime type to JSON-compatible format.

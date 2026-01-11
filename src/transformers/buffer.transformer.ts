@@ -45,10 +45,12 @@ export class ArrayBufferTransformer
 	 * @throws {Error} If the value is not an array or ArrayBuffer
 	 */
 	deserialize(
-		value: number[] | ArrayBuffer,
+		value: number[] | ArrayBuffer | null | undefined,
 		propertyKey: string,
 		className: string
-	): ArrayBuffer {
+	): ArrayBuffer | null {
+		if (value === null || value === undefined) return null;
+
 		if (value instanceof ArrayBuffer) {
 			return value;
 		}
@@ -134,10 +136,12 @@ export class DataViewTransformer
 	 * @throws {Error} If the value is not an array, DataView, or ArrayBuffer
 	 */
 	deserialize(
-		value: number[] | DataView | ArrayBuffer,
+		value: number[] | DataView | ArrayBuffer | null | undefined,
 		propertyKey: string,
 		className: string
-	): DataView {
+	): DataView | null {
+		if (value === null || value === undefined) return null;
+
 		if (value instanceof DataView) {
 			return value;
 		}
@@ -206,10 +210,12 @@ export class SharedArrayBufferTransformer
 	implements IQValidator
 {
 	deserialize(
-		value: number[] | SharedArrayBuffer,
+		value: number[] | SharedArrayBuffer | null | undefined,
 		propertyKey: string,
 		className: string
-	): SharedArrayBuffer {
+	): SharedArrayBuffer | null {
+		if (value === null || value === undefined) return null;
+
 		if (value instanceof SharedArrayBuffer) {
 			return value;
 		}

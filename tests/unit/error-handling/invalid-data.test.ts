@@ -52,17 +52,24 @@ interface IAddress {
 	zipCode: string;
 }
 
+@Quick({
+	street: String,
+	zipCode: String,
+})
+class Address extends QModel<IAddress> {
+	declare street: string;
+	declare zipCode: string;
+}
+
 interface IUserWithAddress {
 	id: number;
 	address: IAddress;
 }
 
-@Quick({ id: Number })
+@Quick({ id: Number, address: Address })
 class UserWithAddress extends QModel<IUserWithAddress> {
 	declare id: number;
-	// Address validation requires nested model or Object validator?
-	// For now let's focus on simple types
-	declare address: IAddress;
+	declare address: Address;
 }
 
 // ============================================================================
@@ -191,6 +198,10 @@ describe('Error Handling: Array Type Mismatches', () => {
 		dates: Date[];
 	}
 
+	@Quick({
+		numbers: [Number], // Explicitly enable validation for primitives in array
+		dates: [Date],
+	})
 	class Data extends QModel<IData> {
 		declare numbers: number[];
 		declare dates: Date[];

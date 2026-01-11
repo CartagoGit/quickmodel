@@ -62,7 +62,7 @@ export class RegExpTransformer
 	 * @throws {Error} If the value cannot be converted to RegExp
 	 */
 	deserialize(
-		value: IRegExpData | string | RegExp | null,
+		value: IRegExpData | string | RegExp | null | undefined,
 		propertyKey: string,
 		className: string
 	): RegExp | null {

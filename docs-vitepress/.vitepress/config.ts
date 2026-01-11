@@ -18,14 +18,14 @@ export default defineConfig({
 	head: [
 		[
 			'link',
-			{ rel: 'icon', type: 'image/png', href: '/quickmodel/logo.png' },
+			{ rel: 'icon', type: 'image/png', href: '/quickmodel/quickmodel.png' },
 		],
 	],
 
 	// Global theme config (shared across all locales)
 	themeConfig: {
 		logo: {
-			src: '/logo.png',
+			src: '/quickmodel.png',
 			height: 32,
 		},
 		outline: {

@@ -16,7 +16,7 @@ export class URLTransformer
 	implements IQValidator
 {
 	deserialize(
-		value: string | URL | null,
+		value: string | URL | null | undefined,
 		propertyKey: string,
 		className: string
 	): URL | null {
@@ -92,7 +92,7 @@ export class URLSearchParamsTransformer
 	implements IQValidator
 {
 	deserialize(
-		value: string | Record<string, string> | URLSearchParams | null,
+		value: string | Record<string, string> | URLSearchParams | null | undefined,
 		propertyKey: string,
 		className: string
 	): URLSearchParams | null {
@@ -166,7 +166,7 @@ export class TextEncoderTransformer extends BaseTransformer<
 		value: unknown,
 		propertyKey: string,
 		className: string
-	): TextEncoder {
+	): TextEncoder | null {
 		// Already a TextEncoder instance - return as-is
 		if (value instanceof TextEncoder) {
 			return value;
@@ -208,10 +208,12 @@ export class TextDecoderTransformer extends BaseTransformer<
 	TextDecoder
 > {
 	deserialize(
-		value: string | { encoding?: string } | TextDecoder,
+		value: string | { encoding?: string } | TextDecoder | null | undefined,
 		propertyKey: string,
 		className: string
-	): TextDecoder {
+	): TextDecoder | null {
+		if (value === null || value === undefined) return null;
+
 		if (value instanceof TextDecoder) {
 			return value;
 		}

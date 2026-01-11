@@ -57,7 +57,8 @@ export class BigIntTransformer
 			| number
 			| bigint
 			| { __type: 'bigint'; value: string }
-			| null,
+			| null
+			| undefined,
 		propertyKey: string,
 		className: string
 	): bigint | null {
