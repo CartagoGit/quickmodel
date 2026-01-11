@@ -225,7 +225,7 @@ export class SetTransformer<V = unknown>
 		if (value instanceof Set || Array.isArray(value)) {
 			return { isValid: true };
 		}
-		
+
 		if (
 			typeof value === 'object' &&
 			value !== null &&

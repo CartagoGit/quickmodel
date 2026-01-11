@@ -79,9 +79,14 @@ export class TypedArrayTransformer<T extends TypedArray>
 	 */
 	constructor(
 		private ArrayConstructor: TypedArrayConstructor,
-		private isBigInt: boolean = false
+		private isBigInt?: boolean
 	) {
 		super();
+		if (this.isBigInt === undefined) {
+			this.isBigInt =
+				this.ArrayConstructor.name === 'BigInt64Array' ||
+				this.ArrayConstructor.name === 'BigUint64Array';
+		}
 	}
 
 	/**

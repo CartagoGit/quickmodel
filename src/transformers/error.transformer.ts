@@ -130,7 +130,7 @@ export class ErrorTransformer
 		if (value instanceof Error) {
 			return { isValid: true };
 		}
-		
+
 		if (typeof value === 'string') {
 			return { isValid: true };
 		}
