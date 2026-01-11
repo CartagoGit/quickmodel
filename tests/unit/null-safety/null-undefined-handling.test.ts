@@ -307,7 +307,7 @@ describe('Null Safety: Edge Cases', () => {
 			new User({} as unknown as IUser);
 
 			// Will likely work but fields will be undefined
-			const user = new User({} as any);
+			const user = new User({} as unknown as IUser);
 			expect(user.id).toBeUndefined();
 		} catch (error) {
 			// OK if it throws

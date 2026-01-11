@@ -241,7 +241,13 @@ describe('Interface Conversion - Edge Cases', () => {
 		test('should handle arrays with null/undefined elements', () => {
 			const model = new Complex({
 				id: '1',
-				tags: ['a', null as unknown as string, 'b', undefined as unknown as string, 'c'],
+				tags: [
+					'a',
+					null as unknown as string,
+					'b',
+					undefined as unknown as string,
+					'c',
+				],
 				metadata: {
 					key: 'test',
 					values: [1, null as unknown as number, 3],
