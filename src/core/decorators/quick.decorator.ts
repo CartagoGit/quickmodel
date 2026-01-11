@@ -84,13 +84,7 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
-import type {
-	// IQConstructor, // Unused
-	// INativeFactory, // Unused
-	// IQSpec, // Unused
-	// IQSpecs, // Unused
-	IQOptions,
-} from '../interfaces/quick.interface';
+import type { IQOptions } from '../interfaces/quick.interface';
 
 // Re-export common types for backward compatibility or direct usage
 export type { IQOptions } from '../interfaces/quick.interface';

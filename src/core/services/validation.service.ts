@@ -252,6 +252,59 @@ export class ValidationService {
 					}
 				}
 			}
+
+			// RECURSIVE VALIDATION for Nested Models
+			// Checks if the value itself is validatable (has a validate method)
+			if (value) {
+				// 1. Single Nested Model
+				if (
+					typeof value === 'object' &&
+					'validate' in value &&
+					typeof (value as any).validate === 'function'
+				) {
+					try {
+						const nestedErrors = (value as any).validate() as IQValidationResult[];
+						if (Array.isArray(nestedErrors)) {
+							for (const err of nestedErrors) {
+								results.push({
+									isValid: false,
+									error: `${key}.${err.error ? err.error.replace(/^\w+\./, '') : 'Invalid'}`, 
+									// Try to clean up class prefix if possible, or just append
+									// Simple approach: `${key}.${err.error}`
+								});
+							}
+						}
+					} catch (e) {
+						// Ignore validation errors in child to prevent crash
+					}
+				}
+
+				// 2. Array of Nested Models
+				if (Array.isArray(value)) {
+					value.forEach((item, index) => {
+						if (
+							item &&
+							typeof item === 'object' &&
+							'validate' in item &&
+							typeof (item as any).validate === 'function'
+						) {
+							try {
+								const nestedErrors = (item as any).validate() as IQValidationResult[];
+								if (Array.isArray(nestedErrors)) {
+									for (const err of nestedErrors) {
+										results.push({
+											isValid: false,
+											error: `${key}[${index}].${err.error ? err.error.replace(/^\w+\./, '') : 'Invalid'}`,
+										});
+									}
+								}
+							} catch (e) {
+								// Ignore
+							}
+						}
+					});
+				}
+			}
 		}
 
 		return results;
