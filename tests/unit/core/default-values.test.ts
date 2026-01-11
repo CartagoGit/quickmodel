@@ -92,4 +92,56 @@ describe('Default Value Overwrite Bug', () => {
 		const user = new UserPrivate({ name: 'John' });
 		expect(user.name).toBe('John');
 	});
+
+	// Case 7: Optional property with default value
+	test('Case 7: should handle optional properties (?) with defaults', () => {
+		interface IConfig {
+			retries?: number;
+			timeout?: number;
+		}
+
+		@Quick()
+		class Config extends QModel<IConfig> {
+			// Optional property with default value
+			retries?: number = 3;
+			
+			// Optional property without default
+			timeout?: number; 
+		}
+
+		// Subcase A: Default used when no data provided
+		const c1 = new Config({});
+		expect(c1.retries).toBe(3);
+		expect(c1.timeout).toBeUndefined();
+
+		// Subcase B: Data overrides default
+		const c2 = new Config({ retries: 5 });
+		expect(c2.retries).toBe(5);
+	});
+
+	// Case 8: Explicit undefined behavior
+	test('Case 8: should handle explicit undefined in data', () => {
+		interface ISettings {
+			theme: string;
+		}
+
+		@Quick()
+		class Settings extends QModel<ISettings> {
+			theme: string = 'light';
+		}
+
+		// If explicit undefined is passed, does it override the default?
+		// Current logic: Object.assign behavior says yes, strict frameworks might say no.
+		// In QuickModel we usually want "what comes in data wins" for hydration,
+		// but if it is undefined, effectively the value is undefined.
+		
+		// NOTE: QModel filters undefined values during hydration?
+		// Implementation detail: QModel hydration iterates explicitly over keys passed.
+		
+		const s1 = new Settings({ theme: undefined as any });
+		
+		// If the user EXPLICITLY passes undefined, we expect undefined
+		// (overwriting the default 'light' which runs before constructor)
+		expect(s1.theme).toBeUndefined();
+	});
 });
