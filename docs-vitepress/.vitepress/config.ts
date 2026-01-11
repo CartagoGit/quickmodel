@@ -184,6 +184,10 @@ export default defineConfig({
 									text: 'Serialization',
 									link: '/en/guide/serialization',
 								},
+								{
+									text: 'Aliases Reference',
+									link: '/en/guide/aliases',
+								},
 							],
 						},
 						{
@@ -282,6 +286,10 @@ export default defineConfig({
 								{
 									text: 'Serialización',
 									link: '/es/guide/serialization',
+								},
+								{
+									text: 'Referencia de Alias',
+									link: '/es/guide/aliases',
 								},
 							],
 						},

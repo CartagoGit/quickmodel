@@ -431,6 +431,17 @@ export class Deserializer<
 				className: modelClass.name,
 			};
 
+			// 0. 🔥 CHECK: Custom transformer from options (High Priority)
+			// Allows overriding deserialization logic via options.transformers
+			if (
+				options.transformers &&
+				key in options.transformers &&
+				typeof options.transformers[key] === 'function'
+			) {
+				instance[key] = options.transformers[key]!(value);
+				continue;
+			}
+
 			// 1. Check for custom transformer function from @Quick()
 			const customTransformer = Reflect.getMetadata(
 				'customTransformer',

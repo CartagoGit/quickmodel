@@ -95,10 +95,21 @@ Sin embargo, para la mayoría de los casos, los **Transformadores en Línea** so
   // Personalizado: String a mayúsculas
   code: (val: string) => val.toUpperCase(),
 
-  // Personalizado: Formateador de moneda
-  price: {
-    from: (val: number) => `$${val.toFixed(2)}`,
-    to: (val: string) => parseFloat(val.replace('$', ''))
-  }
+@Quick({
+  // Personalizado: String a mayúsculas
+  // NOTA: Las funciones en línea actúan SOLO como Deserializadores (JSON -> Modelo)
+  code: (val: string) => val.toUpperCase(),
+
+  // Parseo personalizado
+  config: JSON.parse
 })
+```
+
+> [!WARNING] Importante
+> Las funciones en línea `(val) => ...` se utilizan **únicamente para la Deserialización** (de JSON a tu instancia de Modelo).
+>
+> Si necesitas transformación bidireccional (también para serializar de vuelta a JSON con un formato específico), debes crear una clase que implemente `IQTransformer`.
+
+```
+
 ```

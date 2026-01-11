@@ -97,10 +97,21 @@ However, for most cases, **Inline Transformers** are sufficient:
   // Custom: Uppercase string
   code: (val: string) => val.toUpperCase(),
 
-  // Custom: Currency formatter
-  price: {
-    from: (val: number) => `$${val.toFixed(2)}`,
-    to: (val: string) => parseFloat(val.replace('$', ''))
-  }
+@Quick({
+  // Custom: Uppercase string
+  // NOTE: Inline functions act ONLY as Deserializers (JSON -> Model)
+  code: (val: string) => val.toUpperCase(),
+
+  // Custom parsing
+  config: JSON.parse
 })
+```
+
+> [!WARNING] Important
+> Inline functions `(val) => ...` are used **only for Deserialization** (from JSON to your Model instance).
+>
+> If you need bidirectional transformation (also serializing back to JSON with a specific format), you must create a class implementing `IQTransformer`.
+
+```
+
 ```

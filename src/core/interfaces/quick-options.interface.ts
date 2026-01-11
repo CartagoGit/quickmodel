@@ -317,5 +317,26 @@ export interface QAdvancedOptions<
 	 * - **false** (default): Ignores/copies extra properties.
 	 */
 	strict?: boolean;
+
+	/**
+	 * Custom transformers for specific properties.
+	 *
+	 * Allows overriding the default deserialization logic for specific fields
+	 * by providing a custom function that receives the raw value and returns the transformed value.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   status: String // Normal string
+	 * }, {
+	 *   transformers: {
+	 *     status: (val) => val.toUpperCase() // Custom transformation
+	 *   }
+	 * })
+	 * ```
+	 */
+	transformers?: {
+		[K in keyof TTypeMap]?: (value: unknown) => unknown;
+	};
 }
 

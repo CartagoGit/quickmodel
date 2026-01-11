@@ -47,7 +47,12 @@ class User extends QModel<IUser> {
 
 ## Referencia de Tipos Soportados
 
-QuickModel soporta una vasta gama de tipos "out of the box".
+QuickModel soporta una amplia gama de tipos y alias de cadena.
+
+> [!TIP]
+> Para una **lista completa** de todos los alias soportados (incluyendo Web APIs, Datos Binarios, etc.), consulta la [Referencia de Alias](./aliases.md).
+
+### Primitivos
 
 ### Primitivos
 
@@ -181,22 +186,8 @@ class User extends QModel<IUser> {
 
 ---
 
-## Tabla Resumen: Alias de Cadenas
+## Tipos Soportados y Alias
 
-Referencia rápida para todos los alias de cadena que activan comportamiento estándar.
+QuickModel proporciona alias de cadena (como `'int8array'`, `'blob'`, `'urlsearchparams'`) para casi todos los tipos soportados.
 
-| Alias           | TypeConstructor Resultante |
-| :-------------- | :------------------------- |
-| `'string'`      | `String`                   |
-| `'number'`      | `Number`                   |
-| `'boolean'`     | `Boolean`                  |
-| `'bigint'`      | `BigInt`                   |
-| `'date'`        | `Date`                     |
-| `'regexp'`      | `RegExp`                   |
-| `'symbol'`      | `Symbol`                   |
-| `'url'`         | `URL`                      |
-| `'error'`       | `Error`                    |
-| `'map'`         | `Map`                      |
-| `'set'`         | `Set`                      |
-| `'arraybuffer'` | `ArrayBuffer`              |
-| `'uint8array'`  | `Uint8Array`               |
+👉 **[Ver la Referencia Completa de Alias](./aliases.md)** para la lista exhaustiva de los más de 30 alias soportados.

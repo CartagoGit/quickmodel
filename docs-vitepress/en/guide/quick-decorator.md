@@ -47,7 +47,12 @@ class User extends QModel<IUser> {
 
 ## Supported Types Reference
 
-QuickModel supports a vast array of types out of the box.
+QuickModel supports a vast array of types and string aliases.
+
+> [!TIP]
+> For a **complete list** of all supported string aliases (including Web APIs, Binary Data, etc.), see the [Aliases Reference](./aliases.md).
+
+### Primitives
 
 ### Primitives
 
@@ -181,22 +186,8 @@ class User extends QModel<IUser> {
 
 ---
 
-## Summary Table: String Aliases
+## Supported Types & Aliases
 
-Quick reference for all string aliases that activate standard behavior.
+QuickModel provides string aliases (like `'int8array'`, `'blob'`, `'urlsearchparams'`) for almost every supported type.
 
-| Alias           | Resulting TypeConstructor |
-| :-------------- | :------------------------ |
-| `'string'`      | `String`                  |
-| `'number'`      | `Number`                  |
-| `'boolean'`     | `Boolean`                 |
-| `'bigint'`      | `BigInt`                  |
-| `'date'`        | `Date`                    |
-| `'regexp'`      | `RegExp`                  |
-| `'symbol'`      | `Symbol`                  |
-| `'url'`         | `URL`                     |
-| `'error'`       | `Error`                   |
-| `'map'`         | `Map`                     |
-| `'set'`         | `Set`                     |
-| `'arraybuffer'` | `ArrayBuffer`             |
-| `'uint8array'`  | `Uint8Array`              |
+👉 **[View the Complete Aliases Reference](./aliases.md)** for the exhaustive list of all 30+ supported aliases.
