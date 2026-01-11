@@ -201,6 +201,10 @@ export default defineConfig({
 									text: 'Mock Generation',
 									link: '/en/guide/mocks',
 								},
+								{
+									text: 'Troubleshooting',
+									link: '/en/guide/troubleshooting',
+								},
 							],
 						},
 					],
@@ -295,6 +299,10 @@ export default defineConfig({
 								{
 									text: 'Generación de Mocks',
 									link: '/es/guide/mocks',
+								},
+								{
+									text: 'Solución de Problemas',
+									link: '/es/guide/troubleshooting',
 								},
 							],
 						},

@@ -309,4 +309,13 @@ export interface QAdvancedOptions<
 			ExtractValidDiscriminatorKeys<TTypeMap[K]> & string
 		>;
 	};
+
+	/**
+	 * STRICT MODE configuration.
+	 *
+	 * - **true**: Rejects (throws error) if input data contains properties NOT defined in the model.
+	 * - **false** (default): Ignores/copies extra properties.
+	 */
+	strict?: boolean;
 }
+

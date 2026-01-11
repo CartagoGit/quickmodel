@@ -82,7 +82,9 @@ import {
 	QUICK_TYPE_MAP_KEY,
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_DISCRIMINATORS_KEY,
+	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
+
 
 /**
  * Constructor type for class-based type mapping
@@ -573,6 +575,11 @@ export function Quick<
 				advancedOptions.discriminators,
 				target
 			);
+		}
+
+		// Store advanced options (strict mode, etc)
+		if (advancedOptions) {
+			Reflect.defineMetadata(QUICK_OPTIONS_KEY, advancedOptions, target);
 		}
 
 		// CRITICAL: Capture design:type metadata NOW before TypeScript field initialization overwrites it

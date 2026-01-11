@@ -1,86 +1,104 @@
 # Transformadores
 
-QuickModel incluye transformadores integrados para más de 30 tipos de JavaScript y TypeScript.
+Los transformadores son los componentes lógicos responsables de convertir datos entre formatos serializables (strings JSON, números) y tipos en tiempo de ejecución (Date, BigInt, objetos).
 
-## Tipos Primitivos
+## Transformadores Integrados
 
-### Date
+QuickModel viene con un conjunto completo de transformadores para tipos comunes de JavaScript.
 
-Transforma strings de fecha ISO en objetos `Date`.
+### Primitivos
 
-### BigInt
+| Tipo        | Entrada (JSON)      | Tipo Runtime | Alias       |
+| ----------- | ------------------- | ------------ | ----------- |
+| **BigInt**  | `string` / `number` | `bigint`     | `'bigint'`  |
+| **Symbol**  | `string`            | `symbol`     | `'symbol'`  |
+| **String**  | `any`               | `string`     | `'string'`  |
+| **Number**  | `string`            | `number`     | `'number'`  |
+| **Boolean** | `string`            | `boolean`    | `'boolean'` |
 
-Transforma representaciones en string de enteros grandes en `bigint`.
-
-### RegExp
-
-Transforma strings u objetos en instancias `RegExp`.
-
-### Symbol
-
-Transforma strings en instancias `Symbol` usando `Symbol.for()`.
-
-### Error
-
-Transforma objetos de error.
-
-## Tipos de Colección
-
-### Set
-
-Transforma arrays en instancias `Set`.
-
-### Map
-
-Transforma arrays de tuplas en instancias `Map`.
-
-### Arrays con Transformaciones
-
-Usa notación de corchetes para arrays de tipos transformados.
-
-## Tipos Binarios
-
-- `ArrayBuffer`
-- TypedArrays (`Int8Array`, `Uint8Array`, etc.)
-- `DataView`
-
-## Tipos de Web API
-
-- `URL`
-- `URLSearchParams`
-
-## Modelos Anidados
-
-Transforma objetos anidados en instancias de modelo.
-
-## Arrays Multidimensionales
-
-Anidamiento explícito con notación de corchetes:
+**Ejemplo:**
 
 ```typescript
 @Quick({
-  matrix: [[Date]],      // Date[][]
-  cube: [[[BigInt]]],    // bigint[][][]
-  grid: [[Product]]      // Product[][]
+  balance: 'bigint',   // "100" -> 100n
+  id: 'string',        // 123 -> "123"
+  active: 'boolean'    // "true" -> true
 })
 ```
 
-## Reglas de Transformación
+### Objetos Nativos
 
-### 1. Declaración Explícita Requerida
+| Tipo       | Entrada (JSON)         | Tipo Runtime | Alias      |
+| ---------- | ---------------------- | ------------ | ---------- |
+| **Date**   | ISO String / Timestamp | `Date`       | `'date'`   |
+| **RegExp** | String / Objeto        | `RegExp`     | `'regexp'` |
+| **URL**    | String                 | `URL`        | `'url'`    |
+| **Error**  | Objeto                 | `Error`      | `'error'`  |
 
-QuickModel **no auto-detecta** tipos. Todas las transformaciones deben declararse explícitamente.
+**Ejemplo:**
 
-### 2. Sintaxis de Arrays
+```typescript
+@Quick({
+  createdAt: Date,
+  pattern: RegExp,
+  site: URL
+})
+```
 
-Siempre usa corchetes para arrays.
+### Colecciones
 
-### 3. Null y Undefined
+| Tipo    | Entrada (JSON)            | Tipo Runtime | Alias   |
+| ------- | ------------------------- | ------------ | ------- |
+| **Map** | Array de Tuplas `[[k,v]]` | `Map<K, V>`  | `'map'` |
+| **Set** | Array `[v1, v2]`          | `Set<V>`     | `'set'` |
 
-Los transformadores manejan `null` y `undefined` de manera elegante.
+**Ejemplo:**
 
-## Próximos Pasos
+```typescript
+@Quick({
+  tags: Set,     // ["a", "b"] -> Set{"a", "b"}
+  meta: Map      // [["k", "v"]] -> Map{"k" => "v"}
+})
+```
 
-- [Transformadores Personalizados](/es/guide/custom-transformers) - Crea tus propios transformadores
-- [Modelos Anidados](/es/guide/nested-models) - Trabaja con estructuras complejas
-- [Serialización](/es/guide/serialization) - Entiende toJSON()
+### Datos Binarios
+
+QuickModel soporta el manejo de datos binarios a través de cadenas Base64.
+
+| Tipo                  | Alias                 |
+| --------------------- | --------------------- |
+| **ArrayBuffer**       | `'arraybuffer'`       |
+| **DataView**          | `'dataview'`          |
+| **Int8Array**         | `'int8array'`         |
+| **Uint8Array**        | `'uint8array'`        |
+| **Uint8ClampedArray** | `'uint8clampedarray'` |
+| **Float32Array**      | `'float32array'`      |
+| **Float64Array**      | `'float64array'`      |
+
+**Ejemplo:**
+
+```typescript
+@Quick({
+  buffer: ArrayBuffer,
+  pixels: Uint8Array
+})
+```
+
+## Transformadores Personalizados
+
+Puedes crear tus propios transformadores implementando la interfaz de transformador.
+
+Sin embargo, para la mayoría de los casos, los **Transformadores en Línea** son suficientes:
+
+```typescript
+@Quick({
+  // Personalizado: String a mayúsculas
+  code: (val: string) => val.toUpperCase(),
+
+  // Personalizado: Formateador de moneda
+  price: {
+    from: (val: number) => `$${val.toFixed(2)}`,
+    to: (val: string) => parseFloat(val.replace('$', ''))
+  }
+})
+```

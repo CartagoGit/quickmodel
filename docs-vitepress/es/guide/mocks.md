@@ -1,6 +1,6 @@
 # Generación de Mocks
 
-QuickModel incluye generación de mocks integrada usando [@faker-js/faker](https://fakerjs.dev/), facilitando la creación de datos de prueba.
+QuickModel incluye un potente generador de mocks integrado impulsado por `@faker-js/faker`, lo que hace increíblemente fácil crear datos de prueba realistas.
 
 ## Instalación
 
@@ -12,46 +12,78 @@ npm install --save-dev @faker-js/faker
 
 ## Uso Básico
 
-Usa el método estático `mock()` para generar datos mock:
+Cada QModel tiene un método estático `.mock()` que devuelve un **Mock Builder**. Debes llamar a `.random()` o `.array()` para obtener los datos reales.
 
 ```typescript
-@Quick()
+@Quick({ name: String, email: String })
 class User extends QModel<IUser> {
-	declare id: number;
 	declare name: string;
 	declare email: string;
 }
 
-// Generar un solo mock
-const mockUser = User.mock();
+// 1. Generar una sola instancia aleatoria
+const user = User.mock().random();
+console.log(user instanceof User); // true
 
-// Generar múltiples mocks
-const users = User.mock(5);
+// 2. Generar un array de 10 instancias
+const users = User.mock().array(10);
+console.log(users.length); // 10
 
-// Mock con valores personalizados
-const customUser = User.mock({
-	name: 'Alice Smith',
-	email: 'alice@example.com',
-});
+// 3. Generar con sobrescrituras parciales (datos fijos)
+const admin = User.mock().random({ role: 'admin' });
+console.log(admin.role); // 'admin'
 ```
 
-## Mocks Específicos por Tipo
+## Cómo Funciona
 
-QuickModel genera datos mock apropiados basados en los tipos de propiedad:
+QuickModel infiere automáticamente datos falsos apropiados basados en tus definiciones de tipos:
 
-- **Primitivos:** Números, strings, booleanos aleatorios
-- **Dates:** Fechas recientes aleatorias
-- **BigInt:** Números grandes aleatorios
-- **Collections:** Sets y Maps aleatorios
-- **Arrays:** Arrays con transformaciones
+| Tipo                    | Mock Generado                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `String` / `'string'`   | String aleatorio (o especializado si el nombre coincide con patrones comunes como 'email', 'name') |
+| `Number` / `'number'`   | Número aleatorio                                                                                   |
+| `Boolean` / `'boolean'` | Booleano aleatorio                                                                                 |
+| `Date` / `'date'`       | Fecha reciente aleatoria                                                                           |
+| `BigInt` / `'bigint'`   | Entero grande aleatorio                                                                            |
+| `URL` / `'url'`         | URL aleatoria                                                                                      |
 
-## Modelos Anidados
+### Inferencia Inteligente
 
-Los mocks se generan recursivamente para modelos anidados.
+El generador de mocks es lo suficientemente inteligente como para adivinar el contexto a partir de los nombres de las propiedades.
 
-## Generadores de Mock Personalizados
+```typescript
+@Quick({
+  email: String,       // Genera "alice@example.com"
+  firstName: String,   // Genera "Alice"
+  avatar: URL,         // Genera "https://placeimg.com..."
+  createdAt: Date      // Genera "2023-11-20T..."
+})
+```
 
-Sobrescribe la generación de mock predeterminada para propiedades específicas.
+## Uso Avanzado
+
+### Modelos Anidados
+
+Los mocks se generan recursivamente. Los modelos anidados también serán completamente mockeados.
+
+```typescript
+@Quick({ address: Address })
+class User extends QModel<IUser> {
+	declare address: Address;
+}
+
+const user = User.mock().random();
+console.log(user.address.city); // "Nueva York" (Aleatorio)
+```
+
+### Arrays Parciales
+
+Puedes crear arrays donde todos los elementos compartan algunas propiedades comunes:
+
+```typescript
+// 10 usuarios, todos activos
+const activeUsers = User.mock().array(10, { isActive: true });
+```
 
 ## Patrones de Testing
 
@@ -59,32 +91,37 @@ Sobrescribe la generación de mock predeterminada para propiedades específicas.
 
 ```typescript
 describe('UserService', () => {
-	it('should create a user', () => {
-		const mockUser = User.mock({
-			name: 'Test User',
+	it('should create a valid user', () => {
+		const mockUser = User.mock().random({
+			name: 'Usuario Test',
 		});
-		const result = userService.create(mockUser);
-		expect(result.name).toBe('Test User');
+
+		const savedUser = service.save(mockUser);
+		expect(savedUser.name).toBe('Usuario Test');
 	});
 });
 ```
 
-### Fixtures
+### Poblado de Base de Datos
 
-Crea fixtures de prueba reutilizables.
+Perfecto para poblar bases de datos locales:
 
-### Poblar Bases de Datos
-
-Usa mocks para poblar bases de datos de prueba.
+```typescript
+async function seedKeywords() {
+	const users = User.mock().array(50);
+	await db.insertMany('users', users);
+	console.log('Seeded 50 users!');
+}
+```
 
 ## Mejores Prácticas
 
-1. **Usa Mocks Solo en Tests**
-2. **Sobrescribe Campos Críticos**
-3. **Crea Fixtures Reutilizables**
-4. **Pobla Datos Realistas**
+1. **Sobrescrituras Explícitas**: Si un test depende de un valor específico (e.g., `role: 'admin'`), SIEMPRE sobrescríbelo. No confíes en el azar.
+2. **Usa en `devDependencies`**: No envíes faker a producción.
+3. **Fixtures**: Crea un archivo `fixtures.ts` dedicado para exportar configuraciones comunes de mocks.
 
-## Próximos Pasos
-
-- [Ejemplos](/es/examples/basic) - Ve mocks en ejemplos reales
-- [QModel](/es/guide/qmodel) - Aprende más sobre métodos del modelo
+```typescript
+// fixtures.ts
+export const mockAdmin = User.mock().random({ role: 'admin' });
+export const mockGuest = User.mock().random({ role: 'guest' });
+```

@@ -1,10 +1,10 @@
 # QModel
 
-`QModel` es la clase base para todos los modelos de QuickModel. Proporciona capacidades de serialización, deserialización y generación de mocks.
+La clase `QModel` es el corazón de la librería. Es una clase base abstracta que proporciona todas las capacidades de serialización, deserialización y mocking a tus modelos.
 
-## Uso Básico
+## Uso
 
-Para crear un modelo, extiende `QModel` con tu interfaz:
+Extiende `QModel` pasando tu interfaz de datos como tipo genérico:
 
 ```typescript
 import { QModel } from '@cartago-git/quickmodel';
@@ -15,39 +15,114 @@ interface IUser {
 }
 
 class User extends QModel<IUser> {
-	declare id: number;
-	declare name: string;
+	// Tus propiedades de clase
 }
-
-const user = new User({ id: 1, name: 'John' });
 ```
 
-## Constructor
+## Métodos de Instanciación
 
-El constructor acepta datos que coinciden con tu interfaz.
+QuickModel ofrece varias formas de crear instancias, dependiendo de tus necesidades.
 
-## Métodos Estáticos
+### 1. Constructor (Recomendado)
 
-### `create<T>(data: Partial<T>): T`
+La forma más común y estándar.
 
-Método factory para crear instancias con mejor inferencia de tipos.
+```typescript
+const user = new User({
+	id: 1,
+	name: 'Juan',
+});
+```
 
-### `mock(count?: number | Partial<T>, overrides?: Partial<T>): T | T[]`
+### 2. Método Factoría (`create`)
 
-Genera datos mock para testing.
+Útil para patrones de programación funcional o mapeo de arrays.
 
-## Métodos de Instancia
+```typescript
+const user = User.create({
+	id: 1,
+	name: 'Juan',
+});
 
-### `toJSON(): T`
+// Ejemplo de mapeo
+const users = dataArray.map(User.create);
+```
 
-Serializa el modelo de vuelta al formato compatible con JSON.
+### 3. Desde Cadena JSON
 
-### `clone(): this`
+Parsea automáticamente JSON y luego transforma los tipos.
 
-Crea una copia profunda del modelo.
+```typescript
+const json = '{"id":1,"name":"Juan","createdAt":"2024-01-01"}';
+const user = User.fromJSON(json);
+```
 
-## Próximos Pasos
+### 4. Clonación
 
-- [Decorador @Quick](/es/guide/quick-decorator) - Configura transformaciones
-- [Transformadores](/es/guide/transformers) - Transformaciones de tipos disponibles
-- [Serialización](/es/guide/serialization) - Profundiza en toJSON()
+Crea una copia profunda de una instancia existente.
+
+```typescript
+const clone = user.clone();
+```
+
+## Ciclo de Vida
+
+Cuando se instancia un modelo, sucede lo siguiente:
+
+1. **Constructor Llamado**: Se reciben los datos.
+2. **Inicialización**: Se llama internamente a `this.initialize()`.
+3. **Deserialización**: Se procesan los datos, se aplican transformadores (`string` -> `Date`).
+4. **Hidratación**: Se asignan las propiedades a la instancia.
+5. **Validación**: Se ejecutan los pasos opcionales de validación.
+
+## Métodos Principales
+
+### `serialize()`
+
+Convierte el modelo de vuelta a un objeto JavaScript plano, revirtiendo las transformaciones (e.g., `Date` -> `ISO string`).
+
+```typescript
+const plain = user.serialize();
+```
+
+### `toJSON()`
+
+Devuelve una representación en cadena JSON del modelo.
+
+```typescript
+const jsonString = user.toJSON();
+```
+
+### `toInterface()`
+
+Devuelve los datos en su formato original (definido por la interfaz), preservando los tipos originales (e.g., manteniendo strings como strings). Útil para formularios o verificar el estado inicial.
+
+```typescript
+const rawData = user.toInterface();
+```
+
+### `validate()`
+
+Ejecuta todas las validaciones definidas en las propiedades.
+
+```typescript
+const errors = user.validate();
+if (errors.length) {
+	console.error(errors);
+}
+```
+
+## Mocking
+
+Cada QModel tiene un generador de mocks estático incorporado.
+
+```typescript
+// Generar una instancia
+const fakeUser = User.mock().random();
+
+// Generar array de 10 instancias
+const fakeUsers = User.mock().array(10);
+
+// Generar con sobrescrituras específicas
+const admin = User.mock().random({ role: 'admin' });
+```

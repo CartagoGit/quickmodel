@@ -19,16 +19,16 @@ features:
       details: Defines transformations seamlessly using a single, powerful decorator with support for string literals and constructors.
 
     - icon: 🔄
-      title: Smart Transformations
-      details: Auto-converts Dates, BigInts, Maps, Sets, and TypedArrays. Handles nested models and polymorphism automatically.
+      title: Automatic Polymorphism
+      details: Handles union types and varied API responses effortlessly. Instantiates the correct class based on data content.
 
     - icon: 🧪
-      title: Automatic Mocking
-      details: Generates realistic mock data instantly for your tests using the properties you've already defined.
+      title: Zero-Config Mocks
+      details: Don't write factories. QuickModel reads your decorators to generate unlimited, strictly-typed realistic data instantly.
 
-    - icon: 🔒
-      title: 100% Type-Safe
-      details: Built with strict TypeScript support in mind. Enjoy perfect type inference and safety at runtime.
+    - icon: 🛡️
+      title: Runtime Integrity
+      details: TypeScript types are erased at runtime; QuickModel keeps them alive. Guarantees your objects match your interfaces.
 
     - icon: 🎯
       title: Clean Architecture
@@ -126,7 +126,7 @@ interface IUser {
 class User extends QModel<IUser> {}
 
 // 3. API Response (JSON strings -> Objects)
-const user = User.from({
+const user = new User({
 	name: 'Alice',
 	balance: '500000000000000000',
 	lastLogin: '2024-03-15T10:00:00Z',
@@ -152,6 +152,6 @@ const fakeUser = User.mock().random();
 
 **QuickModel** bridges the gap between static types and dynamic runtime data.
 
-- **🛡️ Universal Type Safety**: If it compiles, it works. No more `any` casting or runtime surprises.
-- **🧩 Polymorphic JSON**: Handles complex logical structures that standard `JSON.parse` chokes on.
-- **🛠️ Testing Superpower**: The built-in mock generator (`.mock()`) saves hours of setup time for unit tests.
+- **🛡️ True Runtime Integrity**: TypeScript ensures correct code, but QuickModel ensures correct **data**. It eliminates "undefined is not a function" errors caused by unparsed API responses.
+- **🧩 Polymorphic JSON**: APIs often return different objects in the same list (e.g., `Payment` can be `Card` or `PayPal`). QuickModel automatically instantiates the correct class for each item.
+- **⚡ Zero-Boilerplate Mocks**: Stop writing fixtures manually. Since you've already defined your types, QuickModel can generate realistic test scenarios for you instantly.

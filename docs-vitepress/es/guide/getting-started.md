@@ -2,27 +2,18 @@
 
 ## ¿Qué es QuickModel?
 
-QuickModel es una librería de TypeScript que proporciona serialización y deserialización automática para tus modelos. Maneja tipos complejos como `Date`, `BigInt`, `Map`, `Set`, y más, convirtiéndolos sin problemas entre objetos JavaScript y JSON.
+QuickModel es una librería de TypeScript que proporciona serialización y deserialización automática para tus modelos. Maneja tipos complejos como `Date`, `BigInt`, `Map`, `Set`, e incluso modelos anidados, convirtiéndolos sin problemas entre objetos JavaScript y JSON.
 
 ## Características Clave
 
-- **Cero Configuración**: Funciona desde el primer momento con decoradores de TypeScript
-- **Seguridad de Tipos**: Soporte completo de TypeScript con verificación estricta de tipos
-- **Transformaciones Automáticas**: Maneja Date, BigInt, Map, Set, RegExp, Buffer, TypedArrays, y más
-- **Arquitectura SOLID**: Diseño limpio y extensible
-- **Generación de Mocks**: Integración incorporada con faker.js para testing
-- **Alias de Rutas**: Importaciones limpias con alias `@/*`
+- **Cero Configuración**: Funciona desde el primer momento con decoradores de TypeScript.
+- **Seguridad de Tipos**: Soporte completo de TypeScript con verificación estricta de tipos.
+- **Transformaciones Automáticas**: Maneja Date, BigInt, Map, Set, RegExp, Buffer, TypedArrays, y más.
+- **Arquitectura SOLID**: Diseño limpio y extensible siguiendo las mejores prácticas.
+- **Generación de Mocks**: Integración incorporada para generar datos de prueba (`User.mock().random()`).
+- **API Limpia**: Métodos intuitivos para serialización y deserialización.
 
 ## ¿Por Qué QuickModel?
-
-Trabajar con modelos de TypeScript y APIs JSON a menudo requiere conversión manual tediosa entre tipos de JavaScript y formatos compatibles con JSON. QuickModel automatiza este proceso mientras mantiene la seguridad de tipos y proporciona una arquitectura limpia y extensible.
-
-Perfecto para:
-
-- 🌐 **Clientes de API REST**
-- 📦 **Serialización/deserialización de datos**
-- 🧪 **Testing con datos mock realistas**
-- 🏗️ **Aplicaciones con arquitectura limpia**
 
 Cuando trabajas con TypeScript y APIs, a menudo enfrentas desafíos como:
 
@@ -43,7 +34,7 @@ const user = {
 };
 ```
 
-QuickModel resuelve esto:
+QuickModel resuelve esto elegantemente:
 
 ```typescript
 // ✅ Solución: Conversión automática
@@ -60,9 +51,22 @@ class User extends QModel<IUser> {
 	declare metadata: Map<string, any>;
 }
 
+// 1. Instanciación (Auto-transformación)
 const user = new User(apiData);
-// ¡Todo es del tipo correcto automáticamente!
+console.log(user.createdAt instanceof Date); // ¡true!
+
+// 2. Serialización (Auto-formato)
+const json = user.toJSON();
+// {"createdAt": "2024-01-01T...", "tags": ["a", "b"], ...}
 ```
+
+## Métodos de Instanciación
+
+QuickModel proporciona formas flexibles de crear instancias de modelos:
+
+- **Constructor**: `const user = new User(data);` (Recomendado)
+- **Factoría**: `const user = User.create(data);`
+- **Desde JSON**: `const user = User.fromJSON(jsonString);`
 
 ## Próximos Pasos
 

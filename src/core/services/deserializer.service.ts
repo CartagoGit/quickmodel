@@ -54,12 +54,13 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_TYPE_MAP_KEY,
 	QUICK_DESIGN_TYPES_KEY,
+	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
 import {
 	TransformerRegistry,
 	type TransformerKey,
 } from '../registry/transformer.registry';
-import type { QDiscriminatorConfig } from '../interfaces/quick-options.interface';
+import type { QDiscriminatorConfig, QAdvancedOptions } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { QModelError } from '../errors/quickmodel.error';
@@ -372,7 +373,34 @@ export class Deserializer<
 		const designTypes =
 			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
 
+		// Get strict mode configuration
+		const options: QAdvancedOptions = Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+		const isStrict = options.strict === true;
+
 		for (const [key, value] of Object.entries(data)) {
+			// SECURITY: Prevent Prototype Pollution
+			if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+				continue;
+			}
+
+			// Strict Mode: Check if property is known
+			if (isStrict) {
+				const isDecorated = decoratedFields.includes(key);
+				const hasDesignType = key in designTypes;
+				const isDeclared = key in instance || key in Object.getPrototypeOf(instance);
+				
+				if (!isDecorated && !hasDesignType && !isDeclared) {
+					// NOTE: This might be too aggressive if user didn't use declare/decorators
+					// BUT strict mode is opt-in, so it should be fine.
+					throw new QModelError(
+						`Strict Mode: Property '${key}' is not defined in model ${modelClass.name}`,
+						{ className: modelClass.name, propertyKey: key, value }
+					);
+				}
+			}
+
+			// Always allow undefined as "missing value" (optional)
+
 			// Always allow undefined as "missing value" (optional)
 			// But allow null to proceed to validation/transformer phase
 			if (value === undefined) {

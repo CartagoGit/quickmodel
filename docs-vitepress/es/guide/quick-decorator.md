@@ -1,80 +1,104 @@
 # Decorador @Quick
 
-El decorador `@Quick()` es el núcleo del sistema de transformación de QuickModel. Le dice a QuickModel qué propiedades necesitan transformación de tipo y cómo transformarlas.
+El decorador `@Quick()` es el núcleo de la librería QuickModel. Define el mapeo entre tus propiedades en tiempo de ejecución y sus formas serializadas.
 
-## Sintaxis Básica
+## Uso
+
+Puedes usar `@Quick` para decorar propiedades de clase o la propia clase.
+
+### Decoración de Clase (Type Map)
+
+La forma más común y recomendada. Pasa un objeto que mapee nombres de propiedades a tipos/transformadores.
 
 ```typescript
-import { Quick, QModel } from '@cartago-git/quickmodel';
-
 @Quick({
-	propertyName: TransformerType,
+	name: String,
+	age: 'number', // Alias literal de cadena
+	birthDate: Date,
+	tags: [Set],
+	meta: Map,
 })
-class MyModel extends QModel<IMyModel> {
+class User extends QModel<IUser> {
 	// ...
 }
 ```
 
-## Sin Argumentos
+## Tipos Soportados
 
-Usar `@Quick()` sin argumentos decora automáticamente todas las propiedades.
+Puedes especificar transformaciones usando:
 
-## Con Transformaciones
+1. **Constructores** (e.g., `Date`)
+2. **Literales de Cadena** (e.g., `'date'`)
+3. **Otros Modelos** (Modelos anidados)
+4. **Arrays** (e.g., `[Date]`)
+5. **Funciones en Línea** (Lógica personalizada)
 
-Especifica qué propiedades necesitan transformación:
+### Literales de Cadena (Alias)
+
+QuickModel soporta alias descriptivos como cadenas para todos los tipos integrados. Esto es útil para evitar importaciones o tener una sintaxis más limpia.
+
+| Alias       | Descripción                | Entrada Ejemplo         | Salida Ejemplo      |
+| ----------- | -------------------------- | ----------------------- | ------------------- |
+| `'string'`  | Castea a string            | `123`                   | `"123"`             |
+| `'number'`  | Castea a number            | `"123"`                 | `123`               |
+| `'boolean'` | Castea a boolean           | `"true"`                | `true`              |
+| `'bigint'`  | Transforma a BigInt        | `"9007199254740991"`    | `9007199254740991n` |
+| `'date'`    | Transforma ISO string      | `"2024-01-01"`          | `Objeto Date`       |
+| `'regexp'`  | Transforma patrón          | `"/^test$/i"`           | `/^test$/i`         |
+| `'map'`     | Transforma array de tuplas | `[["k","v"]]`           | `Map {"k" => "v"}`  |
+| `'set'`     | Transforma array           | `["a", "b"]`            | `Set {"a", "b"}`    |
+| `'url'`     | Transforma string          | `"https://example.com"` | `Objeto URL`        |
+| `'error'`   | Transforma objeto          | `{"message":"..."}`     | `Objeto Error`      |
+
+**Tipos Binarios:**
+`'arraybuffer'`, `'dataview'`, `'int8array'`, `'uint8array'`, `'float32array'`, etc.
+
+### Sintaxis de Arrays
+
+Siempre usa notación de corchetes `[Type]` para arrays.
 
 ```typescript
 @Quick({
-  createdAt: Date,    // Transforma string → Date
-  balance: BigInt     // Transforma string → bigint
+  dates: [Date],         // Array de Dates
+  tags: ['string'],      // Array de strings
+  matrix: [[BigInt]]     // Array de arrays de BigInts
 })
 ```
 
-## Transformadores Soportados
+### Transformadores en Línea
 
-- **Primitivos:** `BigInt`, `Date`, `RegExp`, `Symbol`, `Error`
-- **Colecciones:** `Set`, `Map`, Arrays
-- **Binarios:** `ArrayBuffer`, TypedArrays, `DataView`
-- **Web APIs:** `URL`, `URLSearchParams`
-
-## Sintaxis de Arrays
-
-**Siempre usa notación de corchetes `[Type]` para arrays:**
+Puedes pasar una función para transformaciones rápidas y personalizadas directamente en el decorador.
 
 ```typescript
 @Quick({
-  dates: [Date],        // string[] → Date[]
-  tags: [Set],          // string[][] → Set<string>[]
-  authors: [Author]     // IAuthor[] → Author[]
+  // Nombres en mayúsculas
+  name: (val: string) => val.toUpperCase(),
+
+  // Parseo personalizado
+  score: (val: string) => parseInt(val, 10) * 2
 })
 ```
 
 ## Modelos Anidados
 
-```typescript
-@Quick({ birthDate: Date })
-class Profile extends QModel<IProfile> {
-	declare birthDate: Date;
-}
+Para usar otro QuickModel como tipo de propiedad, simplemente pasa el constructor de la clase.
 
-@Quick({ profile: Profile })
+```typescript
+@Quick({ address: Address })
 class User extends QModel<IUser> {
-	declare profile: Profile;
+	declare address: Address;
 }
 ```
 
-## Notación de Punto para Propiedades Anidadas
+## Decorador de Propiedad (Legacy)
+
+También puedes decorar propiedades individualmente, aunque se prefiere la decoración de clase por un código más limpio.
 
 ```typescript
-@Quick({
-  product: Product,
-  'product.price': BigInt,      // Transforma propiedad anidada
-  'product.createdAt': Date     // Transforma propiedad anidada
-})
+class User extends QModel<IUser> {
+	@Quick(Date)
+	declare createdAt: Date;
+}
 ```
 
-## Próximos Pasos
-
-- [Transformadores](/es/guide/transformers) - Ve todos los transformadores disponibles
-- [Modelos Anidados](/es/guide/nested-models) - Trabaja con estructuras complejas
-- [Transformadores Personalizados](/es/guide/custom-transformers) - Crea tus propios transformadores
+Esto es funcionalmente equivalente pero puede ser más verboso si tienes muchas propiedades.

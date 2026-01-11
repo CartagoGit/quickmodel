@@ -16,24 +16,15 @@ const apiResponse = {
 	tags: ['typescript', 'node'], // ❌ Array, not Set
 	metadata: [['key1', 'val1']], // ❌ Array, not Map
 };
-
-// Manual conversion is tedious
-const user = {
-	...apiResponse,
-	createdAt: new Date(apiResponse.createdAt),
-	balance: BigInt(apiResponse.balance),
-	tags: new Set(apiResponse.tags),
-	metadata: new Map(apiResponse.metadata),
-};
 ```
 
 ## The Solution: QuickModel
 
 QuickModel automates these transformations using decorators.
 
-## Step 1: Define Your Interfaces
+## Step 1: Define Your Interface
 
-Create two interfaces following the **Two-Interface Pattern**:
+Create an interface reflecting the raw JSON structure:
 
 ```typescript
 // Backend interface (JSON-compatible types)
@@ -45,14 +36,6 @@ interface IUser {
 	tags: string[]; // Array
 	metadata: [string, any][]; // Map as array of tuples
 }
-
-// Runtime transformation interface (optional but recommended)
-interface IUserTransform {
-	createdAt: Date;
-	balance: bigint;
-	tags: Set<string>;
-	metadata: Map<string, any>;
-}
 ```
 
 ## Step 2: Create Your Model
@@ -60,7 +43,7 @@ interface IUserTransform {
 Use the `@Quick()` decorator to specify transformations:
 
 ```typescript
-import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+import { QModel, Quick } from '@cartago-git/quickmodel';
 
 @Quick({
 	createdAt: Date,
@@ -68,7 +51,7 @@ import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
 	tags: Set,
 	metadata: Map,
 })
-class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+class User extends QModel<IUser> {
 	declare id: number;
 	declare name: string;
 	declare createdAt: Date;
@@ -118,77 +101,16 @@ const json = user.toJSON();
 // }
 ```
 
-## Understanding the Decorator
+## Step 5: Testing with Mocks
 
-The `@Quick()` decorator tells QuickModel which properties need transformation:
-
-```typescript
-@Quick({
-  createdAt: Date,    // Transform string → Date
-  balance: BigInt,    // Transform string → bigint
-  tags: Set,          // Transform array → Set
-  metadata: Map       // Transform array of tuples → Map
-})
-```
-
-**Important:** Only properties listed in `@Quick()` are transformed. Properties not listed remain as-is.
-
-## Array Syntax
-
-For arrays of transformed types, use bracket notation:
+Need fake data for testing? QuickModel generates it automatically based on your types:
 
 ```typescript
-interface IPost {
-	dates: string[]; // Array of ISO strings
-	tags: string[][]; // Array of arrays
-}
+// Get 5 users with random realistic data
+const fakeUsers = User.mock().array(5);
 
-@Quick({
-	dates: [Date], // Transform to Date[]
-	tags: [Set], // Transform to Set<string>[]
-})
-class Post extends QModel<IPost> {
-	declare dates: Date[];
-	declare tags: Set<string>[];
-}
-
-const post = new Post({
-	dates: ['2026-01-01', '2026-01-02'],
-	tags: [
-		['js', 'ts'],
-		['node', 'deno'],
-	],
-});
-
-console.log(post.dates[0] instanceof Date); // true
-console.log(post.tags[0] instanceof Set); // true
-```
-
-## Property Declaration Styles
-
-All three TypeScript property declaration styles work identically:
-
-```typescript
-// ✅ Style 1: declare (recommended - no runtime code)
-@Quick({ createdAt: Date })
-class User extends QModel<IUser> {
-	declare id: number;
-	declare createdAt: Date;
-}
-
-// ✅ Style 2: Definite assignment (!)
-@Quick({ createdAt: Date })
-class User extends QModel<IUser> {
-	id!: number;
-	createdAt!: Date;
-}
-
-// ✅ Style 3: Optional (?)
-@Quick({ createdAt: Date })
-class User extends QModel<IUser> {
-	id?: number;
-	createdAt?: Date;
-}
+console.log(fakeUsers.length); // 5
+console.log(fakeUsers[0].name); // "Alice Smith" (Random)
 ```
 
 ## Next Steps
@@ -199,4 +121,4 @@ Now that you understand the basics:
 - [@Quick Decorator](/en/guide/quick-decorator) - Deep dive into the decorator
 - [Transformers](/en/guide/transformers) - See all available transformations
 - [Nested Models](/en/guide/nested-models) - Work with complex nested structures
-- [Examples](/en/examples/) - Real-world use cases
+- [Examples](/en/examples/basic) - Real-world use cases

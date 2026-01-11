@@ -454,6 +454,14 @@ class CartItem extends QModel<ICartItem> {
 
 📖 **[Complete Dot Notation Guide](docs/DOT-NOTATION.md)** - Learn when and how to use nested transformations
 
+## 🛡️ Robustness & Security
+
+QuickModel includes built-in protections for robust serialization:
+
+- **Circular Reference Protection**: `toJSON()` calls safely handle circular references in Objects, Arrays, Maps, and Sets by returning a `{ __circular: true }` marker instead of crashing.
+- **Deep Serialization**: Collections like `Map` and `Set` are serialized recursively, ensuring that nested complex types (like `BigInt` or `Date`) are properly converted to their JSON-compatible formats.
+- **Internal Property Protection**: Properties starting with `__` are automatically excluded from serialization to prevent leaking internal state.
+
 ## ✅ Validation
 
 QuickModel provides built-in validation to ensure runtime integrity. The `validate()` method checks that all transformed properties contain valid values according to their transformers.

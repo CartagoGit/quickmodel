@@ -19,16 +19,16 @@ features:
       details: Define transformaciones sin esfuerzo usando un único decorador potente con soporte para literales y constructores.
 
     - icon: 🔄
-      title: Transformaciones Inteligentes
-      details: Convierte automáticamente Dates, BigInts, Maps, Sets y TypedArrays. Maneja modelos anidados y polimorfismo.
+      title: Polimorfismo Automático
+      details: Maneja tipos unión y respuestas variadas de API sin esfuerzo. Instancia la clase correcta según el contenido de los datos.
 
     - icon: 🧪
-      title: Mocking Automático
-      details: Genera datos de prueba realistas al instante para tus tests utilizando las propiedades que ya has definido.
+      title: Mocks Cero-Config
+      details: No escribas factorías. QuickModel lee tus decoradores para generar datos realistas y estrictamente tipados al instante.
 
-    - icon: 🔒
-      title: 100% Type-Safe
-      details: Diseñado pensando en TypeScript estricto. Disfruta de una inferencia de tipos perfecta y seguridad en tiempo de ejecución.
+    - icon: 🛡️
+      title: Integridad en Runtime
+      details: Los tipos TS se borran en runtime; QuickModel los mantiene vivos. Garantiza que tus objetos coincidan con tus interfaces.
 
     - icon: 🎯
       title: Arquitectura Limpia
@@ -126,7 +126,7 @@ interface IUser {
 class User extends QModel<IUser> {}
 
 // 3. Respuesta de API (Strings JSON -> Objetos)
-const user = User.from({
+const user = new User({
 	name: 'Alice',
 	balance: '500000000000000000',
 	lastLogin: '2024-03-15T10:00:00Z',
@@ -152,6 +152,6 @@ const fakeUser = User.mock().random();
 
 **QuickModel** cierra la brecha entre los tipos estáticos y los datos dinámicos en tiempo de ejecución.
 
-- **🛡️ Seguridad de Tipos Universal**: Si compila, funciona. Olvídate de los castings `any` y las sorpresas en producción.
-- **🧩 JSON Polimórfico**: Maneja estructuras lógicas complejas que el `JSON.parse` estándar no puede procesar.
-- **🛠️ Superpoderes de Testing**: El generador de mocks integrado (`.mock()`) te ahorra horas de configuración en tus tests unitarios.
+- **🛡️ Verdadera Integridad en Runtime**: TypeScript asegura el código, QuickModel asegura los **datos**. Elimina errores de "undefined is not a function" por respuestas de API no parseadas.
+- **🧩 JSON Polimórfico**: Las APIs a menudo devuelven objetos variados en la misma lista (e.g., `Payment` puede ser `Card` o `PayPal`). QuickModel instancia la clase correcta automáticamente.
+- **⚡ Mocks sin Boilerplate**: Deja de escribir fixtures a mano. Como ya definiste tus tipos, QuickModel genera escenarios de prueba realistas por ti al instante.

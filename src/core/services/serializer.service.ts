@@ -280,6 +280,45 @@ export class Serializer<
 	 * 14. Primitives → as-is
 	 */
 	private serializeValue(value: unknown, seen?: WeakSet<object>): unknown {
+		// Containers (Set, Map, Array) - Handle FIRST to support recursion & cycles
+		if (value instanceof Map) {
+			const visited = seen || new WeakSet<object>();
+			if (visited.has(value)) {
+				return { __circular: true };
+			}
+			visited.add(value);
+
+			const result: Record<string, unknown> = {};
+			for (const [k, v] of value) {
+				// Recursive call ensures values (like BigInt) are serialized
+				result[String(k)] = this.serializeValue(v, visited);
+			}
+			return result;
+		}
+
+		if (value instanceof Set) {
+			const visited = seen || new WeakSet<object>();
+			if (visited.has(value)) {
+				return { __circular: true };
+			}
+			visited.add(value);
+
+			// Recursive call ensures values (like Date) are serialized
+			return Array.from(value).map((item) =>
+				this.serializeValue(item, visited)
+			);
+		}
+
+		if (Array.isArray(value)) {
+			const visited = seen || new WeakSet<object>();
+			if (visited.has(value)) {
+				return { __circular: true };
+			}
+			visited.add(value);
+
+			return value.map((item) => this.serializeValue(item, visited));
+		}
+
 		// Custom Transformers (Registry)
 		if (
 			value !== null &&
@@ -447,38 +486,6 @@ export class Serializer<
 			return (
 				value as { serialize: (s?: WeakSet<object>) => unknown }
 			).serialize(visited);
-		}
-
-		// Array
-		if (Array.isArray(value)) {
-			return value.map((item) => this.serializeValue(item, seen));
-		}
-
-		// Map
-		if (value instanceof Map) {
-			const transformer =
-				this.transformers.get('map') || this.transformers.get(Map);
-			if (transformer) {
-				return transformer.serialize(value);
-			}
-			// If no transformer, serialize entries recursively
-			const result: Record<string, unknown> = {};
-			for (const [k, v] of value) {
-				result[String(k)] = this.serializeValue(v, seen);
-			}
-			return result;
-		}
-
-		// Set
-		if (value instanceof Set) {
-			const transformer =
-				this.transformers.get('set') || this.transformers.get(Set);
-			if (transformer) {
-				return transformer.serialize(value);
-			}
-			return Array.from(value).map((item) =>
-				this.serializeValue(item, seen)
-			);
 		}
 
 		// Plain Object (recursive serialization)

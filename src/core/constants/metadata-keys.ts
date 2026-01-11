@@ -45,3 +45,10 @@ export const QUICK_DEFAULT_KEYS = '__quickDefaultKey__';
  * Used by @Quick() second parameter to handle polymorphic arrays.
  */
 export const QUICK_DISCRIMINATORS_KEY = '__quickDiscriminators__';
+
+/**
+ * Key for storing advanced options (discriminators, strict mode, etc).
+ * Used by @Quick() second parameter.
+ */
+export const QUICK_OPTIONS_KEY = '__quickOptions__';
+

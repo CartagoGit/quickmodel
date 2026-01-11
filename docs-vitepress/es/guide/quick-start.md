@@ -22,7 +22,9 @@ const apiResponse = {
 
 QuickModel automatiza estas transformaciones usando decoradores.
 
-## Paso 1: Define tus Interfaces
+## Paso 1: Define tu Interfaz
+
+Crea una interfaz que refleje la estructura JSON cruda:
 
 ```typescript
 // Interfaz del backend (tipos compatibles con JSON)
@@ -34,20 +36,14 @@ interface IUser {
 	tags: string[]; // Array
 	metadata: [string, any][]; // Map como array de tuplas
 }
-
-// Interfaz de transformación en runtime (opcional pero recomendada)
-interface IUserTransform {
-	createdAt: Date;
-	balance: bigint;
-	tags: Set<string>;
-	metadata: Map<string, any>;
-}
 ```
 
 ## Paso 2: Crea tu Modelo
 
+Usa el decorador `@Quick()` para especificar las transformaciones:
+
 ```typescript
-import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+import { QModel, Quick } from '@cartago-git/quickmodel';
 
 @Quick({
 	createdAt: Date,
@@ -55,7 +51,7 @@ import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
 	tags: Set,
 	metadata: Map,
 })
-class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+class User extends QModel<IUser> {
 	declare id: number;
 	declare name: string;
 	declare createdAt: Date;
@@ -66,6 +62,8 @@ class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
 ```
 
 ## Paso 3: Usa tu Modelo
+
+Ahora puedes crear instancias con transformación automática de tipos:
 
 ```typescript
 const user = new User({
@@ -89,6 +87,8 @@ console.log(user.metadata instanceof Map); // true
 
 ## Paso 4: Serializa de Vuelta a JSON
 
+Cuando necesites enviar datos de vuelta a la API:
+
 ```typescript
 const json = user.toJSON();
 // {
@@ -101,29 +101,24 @@ const json = user.toJSON();
 // }
 ```
 
-## Sintaxis de Arrays
+## Paso 5: Testing con Mocks
 
-Para arrays de tipos transformados, usa notación de corchetes:
+¿Necesitas datos falsos para pruebas? QuickModel los genera automáticamente basándose en tus tipos:
 
 ```typescript
-interface IPost {
-	dates: string[]; // Array de strings ISO
-	tags: string[][]; // Array de arrays
-}
+// Obtén 5 usuarios con datos realistas y aleatorios
+const fakeUsers = User.mock().array(5);
 
-@Quick({
-	dates: [Date], // Transforma a Date[]
-	tags: [Set], // Transforma a Set<string>[]
-})
-class Post extends QModel<IPost> {
-	declare dates: Date[];
-	declare tags: Set<string>[];
-}
+console.log(fakeUsers.length); // 5
+console.log(fakeUsers[0].name); // "Alice Smith" (Aleatorio)
 ```
 
 ## Próximos Pasos
 
+Ahora que entiendes lo básico:
+
 - [QModel](/es/guide/qmodel) - Aprende sobre la clase base del modelo
 - [Decorador @Quick](/es/guide/quick-decorator) - Profundiza en el decorador
 - [Transformadores](/es/guide/transformers) - Ve todas las transformaciones disponibles
-- [Ejemplos](/es/examples/) - Casos de uso del mundo real
+- [Modelos Anidados](/es/guide/nested-models) - Trabaja con estructuras anidadas complejas
+- [Ejemplos](/es/examples/basic) - Casos de uso del mundo real
