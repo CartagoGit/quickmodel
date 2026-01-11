@@ -94,8 +94,27 @@ $secondary-color: #35495e;
 	}
 }
 @media (min-width: 1280px) {
-	.container{
-		max-width: clamp(calc(var(--vp-layout-max-width) - 64px), 2000px, max-content);
+	.VPNavBar {
+		/* .title {
+			// padding-left: max(32px, calc((100% - (var(--vp-layout-max-width) - 64px)) / 2));
+			padding-left: 0 !important;
+			width: auto;
+			left: none;
+			top: none;
+		}*/
+		.title {
+			padding-left: calc((100% - (var(--vp-layout-max-width)) + 64px) / 2) !important;
+		}
+		.has-sidebar title {
+			padding-left: 0 !important;
+		}
+		position: relative;
+		.content {
+			padding-right: 0 !important;
+		}
+	}
+	.container {
+		max-width: 1440px !important;
 	}
 	.search {
 		justify-content: flex-end;

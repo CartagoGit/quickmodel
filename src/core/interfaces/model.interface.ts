@@ -5,6 +5,9 @@
  * in model classes that extend QModel.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyRecord = Record<string, any>;
+
 /**
  * Quick transform helper - merges base interface with transformed properties.
  *

@@ -515,7 +515,8 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			// Caso 2: Campo ausente - también es undefined actualmente
 			// TODO: Considerar restaurar defaults cuando el campo falta completamente
 			const dataWithoutField = { ...testData };
-			delete (dataWithoutField as unknown as { defaultProp?: string }).defaultProp;
+			delete (dataWithoutField as unknown as { defaultProp?: string })
+				.defaultProp;
 			const userWithoutField = new TestUser(dataWithoutField);
 
 			// Actualmente: undefined (el default se perdió en el proceso)
@@ -540,6 +541,7 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	});
 
 	describe('13. serialize() - Serialización', () => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let interfaceData: any;
 
 		// beforeAll(() => {
@@ -642,10 +644,12 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	describe('17. Métodos custom en el modelo', () => {
 		test('custom methods work correctly', () => {
 			// Add a custom method to TestUser
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(TestUser.prototype as any).getFullInfo = function () {
 				return `${this.name} (${this.email})`;
 			};
 
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			expect((user as any).getFullInfo()).toBe(
 				'John Doe (john@example.com)'
 			);

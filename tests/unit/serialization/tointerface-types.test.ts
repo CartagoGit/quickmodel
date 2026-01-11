@@ -42,7 +42,7 @@ interface AllTypesInterface {
 
 	// Arrays mixtos
 	arrayMixed: Array<number | string | null | undefined | boolean>;
-	arrayEmpty: any[];
+	arrayEmpty: unknown[];
 	arrayNested: Array<Array<number>>;
 	arrayWithWrappers: Array<number | string | boolean>;
 
@@ -58,7 +58,7 @@ interface AllTypesInterface {
 		};
 	};
 	objectWithNull: { x: null; y: undefined; z?: { w: null } };
-	objectNoProto: any; // Object.create(null)
+	objectNoProto: unknown; // Object.create(null)
 	objectDeeplyNested: {
 		level1: {
 			l1val?: number;
@@ -83,12 +83,12 @@ interface AllTypesInterface {
 	regexpObject: { source: string; flags: string };
 
 	// Map serializado como array de pares
-	mapAsArray: Array<[string, any]>;
-	mapEmpty: Array<[any, any]>;
+	mapAsArray: Array<[string, unknown]>;
+	mapEmpty: Array<[unknown, unknown]>;
 
 	// Set serializado como array
-	setAsArray: Array<any>;
-	setEmpty: Array<any>;
+	setAsArray: Array<unknown>;
+	setEmpty: Array<unknown>;
 
 	// Funciones (deberían ignorarse o convertirse a undefined)
 	functionValue?: undefined;
@@ -128,13 +128,13 @@ class AllTypesModel extends QModel<AllTypesInterface> {
 	declare undefinedValue: undefined;
 
 	declare arrayMixed: Array<number | string | null | undefined | boolean>;
-	declare arrayEmpty: any[];
+	declare arrayEmpty: unknown[];
 	declare arrayNested: Array<Array<number>>;
 	declare arrayWithWrappers: Array<number | string | boolean>;
 
 	declare plainObject: { a: number; b: string; nested: { c: boolean } };
 	declare objectWithNull: { x: null; y: undefined };
-	declare objectNoProto: any;
+	declare objectNoProto: unknown;
 	declare objectDeeplyNested: {
 		level1: { level2: { level3: { value: number } } };
 	};
@@ -146,11 +146,11 @@ class AllTypesModel extends QModel<AllTypesInterface> {
 	declare regexpPattern: string;
 	declare regexpObject: { source: string; flags: string };
 
-	declare mapAsArray: Array<[string, any]>;
-	declare mapEmpty: Array<[any, any]>;
+	declare mapAsArray: Array<[string, unknown]>;
+	declare mapEmpty: Array<[unknown, unknown]>;
 
-	declare setAsArray: Array<any>;
-	declare setEmpty: Array<any>;
+	declare setAsArray: Array<unknown>;
+	declare setEmpty: Array<unknown>;
 
 	declare functionValue?: undefined;
 }
@@ -906,9 +906,9 @@ describe('toInterface() - All Types Preservation', () => {
 		const model = new AllTypesModel(data);
 
 		// Modificar con primitivos
-		model.numWrapper = 999 as any;
-		model.strWrapper = 'changed' as any;
-		model.boolWrapper = false as any;
+		model.numWrapper = 999;
+		model.strWrapper = 'changed';
+		model.boolWrapper = false;
 
 		const result = model.toInterface();
 

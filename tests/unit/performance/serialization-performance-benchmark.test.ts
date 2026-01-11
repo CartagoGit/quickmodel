@@ -187,7 +187,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 
 		const start = performance.now();
 		for (let i = 0; i < iterations; i++) {
-			new Cart(data as any);
+			new Cart(data as unknown as ICart);
 		}
 		const end = performance.now();
 
@@ -216,7 +216,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 
 		const start = performance.now();
 		for (let i = 0; i < iterations; i++) {
-			new CartExplicit(data as any);
+			new CartExplicit(data as unknown as ICart);
 		}
 		const end = performance.now();
 
@@ -245,7 +245,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 
 		const start = performance.now();
 		for (let i = 0; i < iterations; i++) {
-			new Cart(data as any);
+			new Cart(data as unknown as ICart);
 		}
 		const end = performance.now();
 
@@ -274,7 +274,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		};
 
 		const start = performance.now();
-		const cart = new Cart(data as any);
+		const cart = new Cart(data as unknown as ICart);
 		const end = performance.now();
 
 		const totalTime = end - start;
@@ -352,7 +352,7 @@ describe('Performance: Costo de anidación profunda', () => {
 
 		const start = performance.now();
 		for (let i = 0; i < iterations; i++) {
-			new Level1<User>(data as any);
+			new Level1<User>(data as unknown as ILevel1<User>);
 		}
 		const end = performance.now();
 
@@ -386,7 +386,7 @@ describe('Performance: Costo de anidación profunda', () => {
 
 		const start = performance.now();
 		for (let i = 0; i < iterations; i++) {
-			new Level1<User>(data as any);
+			new Level1<User>(data as unknown as ILevel1<User>);
 		}
 		const end = performance.now();
 

@@ -70,7 +70,7 @@ export type { QInterface, QTransform } from '@/core/interfaces/model.interface';
  * console.log(user.createdAt instanceof Date); // true
  * ```
  */
-export abstract class QModel<TInterface extends Record<string, any>> {
+export abstract class QModel<TInterface extends Record<string, unknown>> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();

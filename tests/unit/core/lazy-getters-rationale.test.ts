@@ -1,6 +1,7 @@
 /**
  * Test: ¿Qué pasa si NO instalamos lazy getters?
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, test, expect } from 'bun:test';
 
