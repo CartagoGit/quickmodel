@@ -22,6 +22,7 @@ import type {
 	SerializedInterface,
 	ModelData,
 } from '@/core/interfaces/serialization-types.interface';
+import type { AnyRecord } from '@/core/interfaces/model.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import {
 	QUICK_VALUES_KEY,
@@ -70,7 +71,7 @@ export type { QInterface, QTransform } from '@/core/interfaces/model.interface';
  * console.log(user.createdAt instanceof Date); // true
  * ```
  */
-export abstract class QModel<TInterface extends Record<string, unknown>> {
+export abstract class QModel<TInterface extends AnyRecord> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();
@@ -246,9 +247,13 @@ export abstract class QModel<TInterface extends Record<string, unknown>> {
 		type InterfaceType = InstanceType extends QModel<infer I> ? I : never;
 
 		// @ts-expect-error - TypeScript doesn't allow instantiating abstract classes, but at runtime `this` is the concrete class
-		const ModelClass: new (data: InterfaceType) => InstanceType = this;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const ModelClass: new (data: any) => InstanceType = this as any;
 
-		return new MockBuilder(ModelClass, QModel.mockGenerator);
+		return new MockBuilder(ModelClass, QModel.mockGenerator) as unknown as MockBuilder<
+			QModelInstance<T>,
+			QModelInterface<T>
+		>;
 	}
 
 	/**
@@ -520,10 +525,7 @@ export abstract class QModel<TInterface extends Record<string, unknown>> {
 
 					// 2. Search in backup
 					val = (
-						this as unknown as Record<
-							symbol,
-							Record<string, unknown>
-						>
+						this as unknown as Record<string, Record<string, unknown>>
 					)[QUICK_VALUES_KEY]?.[key];
 					if (val !== undefined) return val;
 
@@ -955,8 +957,8 @@ export abstract class QModel<TInterface extends Record<string, unknown>> {
 
 		// Copy all properties from restored instance
 		for (const key of Object.keys(restored)) {
-			(this as Record<string, unknown>)[key] = (
-				restored as Record<string, unknown>
+			(this as unknown as AnyRecord)[key] = (
+				restored as unknown as AnyRecord
 			)[key];
 		}
 	}
@@ -996,8 +998,8 @@ export abstract class QModel<TInterface extends Record<string, unknown>> {
 
 		// Copy all properties from updated instance
 		for (const key of Object.keys(updated)) {
-			(this as Record<string, unknown>)[key] = (
-				updated as Record<string, unknown>
+			(this as unknown as AnyRecord)[key] = (
+				updated as unknown as AnyRecord
 			)[key];
 		}
 	}

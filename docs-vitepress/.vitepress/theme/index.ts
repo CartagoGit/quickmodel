@@ -4,6 +4,7 @@ import type { Theme } from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
 import LanguageSwitcher from './LanguageSwitcher.vue';
 import CustomFooter from './CustomFooter.vue';
+import NavTranslator from './NavTranslator.vue';
 import './custom.scss';
 
 export default {
@@ -12,11 +13,13 @@ export default {
 		return h(DefaultTheme.Layout, null, {
 			'nav-bar-content-after': () => h(LanguageSwitcher),
 			'layout-bottom': () => h(CustomFooter),
+			'layout-top': () => h(NavTranslator),
 		});
 	},
 	enhanceApp({ app, router }) {
 		app.component('LanguageSwitcher', LanguageSwitcher);
 		app.component('CustomFooter', CustomFooter);
+		app.component('NavTranslator', NavTranslator);
 
 		// Intercept logo clicks to use SPA navigation
 		if (typeof window !== 'undefined') {
@@ -139,6 +142,44 @@ export default {
 				setupLogoInterceptor();
 				setupNavInterceptor();
 			};
+
+			// Translate nav text in tsdoc based on saved language
+			const translateNavForTsdoc = () => {
+				const currentPath = window.location.pathname;
+				if (currentPath.includes('/tsdoc/')) {
+					const STORAGE_KEY_LANG = 'vitepress-theme-lang';
+					const savedLang = localStorage.getItem(STORAGE_KEY_LANG);
+
+					if (savedLang === 'es') {
+						// Translate nav links to Spanish immediately
+						const doTranslation = () => {
+							const navLinks =
+								document.querySelectorAll('.VPNavBarMenuLink');
+							navLinks.forEach((link) => {
+								const text = link.textContent?.trim();
+								if (text === 'Guide') link.textContent = 'Guía';
+								if (text === 'API Reference')
+									link.textContent = 'Referencia API';
+								if (text === 'Examples')
+									link.textContent = 'Ejemplos';
+							});
+						};
+
+						// Try immediately
+						doTranslation();
+						// And retry after a short delay to catch late renders
+						setTimeout(doTranslation, 10);
+					}
+				}
+			};
+
+			// Run translation on route changes
+			router.onAfterRouteChanged = () => {
+				setupLogoInterceptor();
+				setupNavInterceptor();
+				translateNavForTsdoc();
+			};
+			translateNavForTsdoc(); // Run on initial load
 		}
 	},
 } satisfies Theme;
