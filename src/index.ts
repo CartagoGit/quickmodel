@@ -6,7 +6,7 @@
  */
 
 // ============================================================================
-// PUBLIC API - Only these exports
+// PUBLIC API - Core
 // ============================================================================
 
 /**
@@ -30,33 +30,23 @@ export { Quick } from './core/decorators/quick.decorator';
 export { QType } from './core/decorators/qtype.decorator';
 
 // ============================================================================
-// TYPES & INTERFACES - Supporting types
+// PUBLIC API - Options & Configurations
 // ============================================================================
 
-export type {
-	IQuickOptions,
-	ISpec,
-	ISpecs,
-} from './core/decorators/quick.decorator';
+export type { IQuickOptions } from './core/decorators/quick.decorator';
 
+/**
+ * Advanced options types for @Quick() decorator
+ */
 export type {
-	ExtractConstructors,
-	ExtractValidDiscriminatorKeys,
-	ExtractCommonKeys,
-	ExtractQModelInterface,
-	ExtractInstanceType,
+	IQuickAdvancedOptions,
+	DiscriminatorConfig,
+	TypeGuardFunction,
 } from './core/interfaces/quick-options.interface';
 
-export type {
-	QTypeString,
-	INativeFactory,
-} from './core/decorators/qtype.decorator';
-
-export type {
-	SerializedInterface,
-	ModelData,
-	Serialized,
-} from './core/interfaces/serialization-types.interface';
+// ============================================================================
+// PUBLIC API - Testing Tools
+// ============================================================================
 
 export { MockBuilder } from './core/services/mock-builder.service';
 export type {
@@ -69,16 +59,11 @@ export type {
 	QModelInterface,
 } from './core/interfaces/mock-types.interface';
 
+// ============================================================================
+// PUBLIC API - Advanced / Extensions
+// ============================================================================
+
 // Registry (For advanced custom transformers)
 export { TransformerRegistry } from './core/registry/transformer.registry';
 export type { TransformerKey } from './core/registry/transformer.registry';
 export type { IQTransformer } from './core/interfaces/transformer.interface';
-
-/**
- * Advanced options types for @Quick() decorator
- */
-export type {
-	IQuickAdvancedOptions,
-	DiscriminatorConfig,
-	TypeGuardFunction,
-} from './core/interfaces/quick-options.interface';
