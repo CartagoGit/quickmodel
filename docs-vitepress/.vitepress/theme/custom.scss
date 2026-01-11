@@ -351,6 +351,9 @@ body {
 
 	// Navigation Bar Adjustments
 	.VPNavBar {
+		.content-body {
+			background-color: transparent !important;
+		}
 		.title {
 			padding-left: calc(
 				(100% - (var(--vp-layout-max-width)) + 64px) / 2
