@@ -3,8 +3,8 @@ layout: home
 
 hero:
     name: QuickModel
-    text: Serialización Type-safe para TypeScript
-    tagline: Serialización/deserialización JSON automática con arquitectura SOLID
+    text: Modelos Inteligentes, Serialización y Mocks
+    tagline: La solución definitiva para manejar modelos complejos, serialización y mocking sin código repetitivo.
     actions:
         - theme: brand
           text: Comenzar
@@ -15,28 +15,28 @@ hero:
 
 features:
     - icon: 🚀
-      title: Sin Configuración
-      details: Funciona directamente con decoradores TypeScript. Sin configuración compleja.
-
-    - icon: 🔒
-      title: Type-Safe
-      details: Soporte completo TypeScript con verificación estricta de tipos e inferencia.
-
-    - icon: ⚡
-      title: Transformaciones Automáticas
-      details: Maneja Date, BigInt, Map, Set, RegExp y más sin conversión manual.
-
-    - icon: 🎯
-      title: Arquitectura SOLID
-      details: Diseño limpio y extensible siguiendo principios SOLID.
-
-    - icon: 🧪
-      title: Generación de Mocks
-      details: Generación de datos de prueba integrada con faker.js.
+      title: Cero Configuración con @Quick
+      details: Define transformaciones sin esfuerzo usando un único decorador potente con soporte para literales y constructores.
 
     - icon: 🔄
-      title: Bidireccional
-      details: Serialización y deserialización fluida con soporte completo de ida y vuelta.
+      title: Transformaciones Inteligentes
+      details: Convierte automáticamente Dates, BigInts, Maps, Sets y TypedArrays. Maneja modelos anidados y polimorfismo.
+
+    - icon: 🧪
+      title: Mocking Automático
+      details: Genera datos de prueba realistas al instante para tus tests utilizando las propiedades que ya has definido.
+
+    - icon: 🔒
+      title: 100% Type-Safe
+      details: Diseñado pensando en TypeScript estricto. Disfruta de una inferencia de tipos perfecta y seguridad en tiempo de ejecución.
+
+    - icon: 🎯
+      title: Arquitectura Limpia
+      details: Mantén tus modelos limpios y enfocados. Sigue los principios SOLID para un código mantenible y escalable.
+
+    - icon: ⚡
+      title: Alto Rendimiento
+      details: Optimizado para velocidad con una sobrecarga mínima, perfecto para procesamiento de datos de alta frecuencia.
 ---
 
 <style>
@@ -91,10 +91,12 @@ onMounted(() => {
   if (heroNameEl && !document.querySelector('.hero-logo-injected')) {
     const logo = document.createElement('img')
     
+    // Construct path dynamically using site base
+    // site.value.base usually ends with '/', e.g., '/quickmodel/'
     const base = site.value.base || '/'
     logo.src = (base + 'quickmodel.png').replace('//', '/')
     
-    logo.alt = 'Logo de QuickModel'
+    logo.alt = 'QuickModel Logo'
     logo.className = 'hero-logo-injected'
     
     heroNameEl.insertBefore(logo, heroNameEl.firstChild)
@@ -107,47 +109,49 @@ onMounted(() => {
 ```typescript
 import { QModel, Quick } from '@cartago-git/quickmodel';
 
+// 1. Define tu interfaz
 interface IUser {
-	id: number;
 	name: string;
-	createdAt: Date;
-	tags: Set<string>;
+	balance: bigint;
+	lastLogin: Date;
+	metadata: Map<string, any>;
 }
 
+// 2. Aplica el decorador mágico
 @Quick({
-	createdAt: Date,
-	tags: Set,
+	balance: 'bigint', // Usa literales para tipos simples
+	lastLogin: Date, // Usa constructores para objetos nativos
+	metadata: Map, // Maneja estructuras complejas automáticamente
 })
-class User extends QModel<IUser> {
-	declare id: number;
-	declare name: string;
-	declare createdAt: Date;
-	declare tags: Set<string>;
-}
+class User extends QModel<IUser> {}
 
-// Crear desde datos de API
-const user = new User({
-	id: 1,
-	name: 'John',
-	createdAt: '2024-01-01T00:00:00.000Z',
-	tags: ['admin', 'user'],
+// 3. Respuesta de API (Strings JSON -> Objetos)
+const user = User.from({
+	name: 'Alice',
+	balance: '500000000000000000',
+	lastLogin: '2024-03-15T10:00:00Z',
+	metadata: [
+		['role', 'admin'],
+		['theme', 'dark'],
+	],
 });
 
-console.log(user.createdAt instanceof Date); // true
-console.log(user.tags instanceof Set); // true
+console.log(user.balance + 1n); // 500000000000000001n (¡Es un BigInt!)
+console.log(user.lastLogin.getFullYear()); // 2024 (¡Es un Date!)
+console.log(user.metadata.get('role')); // "admin" (¡Es un Map!)
 
-// Serializar de vuelta a JSON
-const json = user.toJSON();
-// { id: 1, name: 'John', createdAt: '2024-01-01T00:00:00.000Z', tags: ['admin', 'user'] }
+// 4. Enviar de vuelta a API (Objetos -> JSON)
+const payload = user.toJSON();
+
+// 5. ¿Necesitas Datos de Prueba?
+const fakeUser = User.mock().random();
+// ¡Genera una instancia de User totalmente poblada con datos realistas y aleatorios!
 ```
 
-## ¿Por Qué QuickModel?
+## ¿Por qué QuickModel?
 
-Trabajar con modelos de TypeScript y APIs JSON a menudo requiere conversión manual tediosa entre tipos de JavaScript y formatos compatibles con JSON. QuickModel automatiza este proceso mientras mantiene la seguridad de tipos y proporciona una arquitectura limpia y extensible.
+**QuickModel** cierra la brecha entre los tipos estáticos y los datos dinámicos en tiempo de ejecución.
 
-Perfecto para:
-
-- 🌐 Clientes de API REST
-- 📦 Serialización/deserialización de datos
-- 🧪 Testing con datos mock realistas
-- 🏗️ Aplicaciones con arquitectura limpia
+- **🛡️ Seguridad de Tipos Universal**: Si compila, funciona. Olvídate de los castings `any` y las sorpresas en producción.
+- **🧩 JSON Polimórfico**: Maneja estructuras lógicas complejas que el `JSON.parse` estándar no puede procesar.
+- **🛠️ Superpoderes de Testing**: El generador de mocks integrado (`.mock()`) te ahorra horas de configuración en tus tests unitarios.

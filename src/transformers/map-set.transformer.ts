@@ -111,13 +111,13 @@ export class MapTransformer<K = string, V = unknown>
 	}
 
 	/**
-	 * Converts a Map to an object with __type marker for reliable detection.
+	 * Converts a Map to a plain object.
 	 *
 	 * @param value - The Map to serialize
-	 * @returns Object with __type marker and entries array
+	 * @returns Plain object with stringified keys
 	 */
-	serialize(value: Map<K, V>): { __type: 'Map'; entries: [K, V][] } {
-		return { __type: 'Map', entries: Array.from(value.entries()) };
+	serialize(value: Map<K, V>): Record<string, V> {
+		return Object.fromEntries(value);
 	}
 
 	/**
@@ -222,13 +222,13 @@ export class SetTransformer<V = unknown>
 	}
 
 	/**
-	 * Converts a Set to an object with __type marker for reliable detection.
+	 * Converts a Set to a plain array.
 	 *
 	 * @param value - The Set to serialize
-	 * @returns Object with __type marker and values array
+	 * @returns Array of values
 	 */
-	serialize(value: Set<V>): { __type: 'Set'; values: V[] } {
-		return { __type: 'Set', values: Array.from(value) };
+	serialize(value: Set<V>): V[] {
+		return Array.from(value);
 	}
 
 	/**
