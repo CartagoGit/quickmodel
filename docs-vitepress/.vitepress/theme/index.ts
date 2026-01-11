@@ -20,24 +20,46 @@ export default {
 
 		// Intercept logo clicks to use SPA navigation
 		if (typeof window !== 'undefined') {
-			router.onAfterRouteChange = () => {
-				const logo = document.querySelector('.VPNavBarTitle');
-				if (logo) {
-					logo.addEventListener('click', (e) => {
-						const target = e.currentTarget as HTMLElement;
-						const href = target.getAttribute('href');
-						if (href === '/' || href === '/quickmodel/') {
-							e.preventDefault();
-							const currentPath = window.location.pathname;
-							const lang = currentPath.includes('/es/')
-								? 'es'
-								: 'en';
-							const base = '/quickmodel/';
-							router.go(`${base}${lang}/`);
-						}
-					});
-				}
+			const setupLogoInterceptor = () => {
+				setTimeout(() => {
+					const logo = document.querySelector('.VPNavBarTitle');
+					if (logo && !logo.hasAttribute('data-intercepted')) {
+						logo.setAttribute('data-intercepted', 'true');
+						logo.addEventListener(
+							'click',
+							(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+
+								// Get language from localStorage (set by LanguageSwitcher)
+								const STORAGE_KEY_LANG = 'vitepress-theme-lang';
+								const savedLang =
+									localStorage.getItem(STORAGE_KEY_LANG);
+
+								// Use saved language, or default to 'en'
+								const lang = savedLang || 'en';
+
+								const base = '/quickmodel/';
+								router.go(`${base}${lang}/`);
+							},
+							true
+						);
+					}
+				}, 100);
 			};
+
+			// Run on initial load
+			if (document.readyState === 'loading') {
+				document.addEventListener(
+					'DOMContentLoaded',
+					setupLogoInterceptor
+				);
+			} else {
+				setupLogoInterceptor();
+			}
+
+			// Run on route changes
+			router.onAfterRouteChanged = setupLogoInterceptor;
 		}
 	},
 } satisfies Theme;
