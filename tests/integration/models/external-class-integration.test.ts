@@ -15,7 +15,7 @@ describe('External classes without @Quick()', () => {
 		name!: string;
 		email!: string;
 
-		constructor(data: any) {
+		constructor(data: Partial<ExternalUser>) {
 			Object.assign(this, data);
 		}
 
@@ -30,7 +30,7 @@ describe('External classes without @Quick()', () => {
 		city!: string;
 		zipCode!: string;
 
-		constructor(data: any) {
+		constructor(data: Partial<ExternalAddress>) {
 			Object.assign(this, data);
 		}
 	}
@@ -38,13 +38,13 @@ describe('External classes without @Quick()', () => {
 	// Interfaces
 	interface IProfile {
 		userId: number;
-		user: any; // ExternalUser serializado
-		address: any; // ExternalAddress serializado
+		user: unknown; // ExternalUser serializado
+		address: unknown; // ExternalAddress serializado
 	}
 
 	interface ITeam {
 		id: number;
-		members: any[]; // Array de ExternalUser
+		members: unknown[]; // Array de ExternalUser
 	}
 
 	test('Should handle single external class without @Quick()', () => {
@@ -196,7 +196,7 @@ describe('External classes without @Quick()', () => {
 		@Quick()
 		class Profile extends QModel<IProfile> {
 			userId!: number;
-			user!: any; // Sin tipo especificado
+			user!: unknown; // Sin tipo especificado
 		}
 
 		const profile = new Profile({

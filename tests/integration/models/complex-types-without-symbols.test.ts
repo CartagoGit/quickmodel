@@ -107,7 +107,8 @@ describe('Tipos complejos SIN symbols', () => {
 				console.log('❌ RegExp NO funciona sin symbol\n');
 				console.log('Valor recibido:', model.pattern);
 			}
-		} catch (error: any) {
+		} catch (err: unknown) {
+			const error = err as Error;
 			console.log('❌ Error al crear modelo con RegExp:', error.message);
 		}
 	});
@@ -142,7 +143,8 @@ describe('Tipos complejos SIN symbols', () => {
 				console.log('❌ Error NO funciona sin symbol\n');
 				console.log('Valor recibido:', model.error);
 			}
-		} catch (error: any) {
+		} catch (err: unknown) {
+			const error = err as Error;
 			console.log('❌ Error al crear modelo con Error:', error.message);
 		}
 	});
@@ -173,7 +175,8 @@ describe('Tipos complejos SIN symbols', () => {
 				console.log('❌ Uint8Array NO funciona sin symbol\n');
 				console.log('Valor recibido:', model.uint8);
 			}
-		} catch (error: any) {
+		} catch (err: unknown) {
+			const error = err as Error;
 			console.log(
 				'❌ Error al crear modelo con Uint8Array:',
 				error.message
@@ -209,7 +212,8 @@ describe('Tipos complejos SIN symbols', () => {
 				console.log('❌ ArrayBuffer NO funciona sin symbol\n');
 				console.log('Valor recibido:', model.buffer);
 			}
-		} catch (error: any) {
+		} catch (err: unknown) {
+			const error = err as Error;
 			console.log(
 				'❌ Error al crear modelo con ArrayBuffer:',
 				error.message
@@ -242,7 +246,8 @@ describe('Tipos complejos SIN symbols', () => {
 				console.log('❌ DataView NO funciona sin symbol\n');
 				console.log('Valor recibido:', model.view);
 			}
-		} catch (error: any) {
+		} catch (err: unknown) {
+			const error = err as Error;
 			console.log(
 				'❌ Error al crear modelo con DataView:',
 				error.message
@@ -282,7 +287,8 @@ describe('Tipos complejos SIN symbols', () => {
 				);
 				console.log('Valor recibido:', model.tags);
 			}
-		} catch (error: any) {
+		} catch (err: unknown) {
+			const error = err as Error;
 			console.log(
 				'❌ Error al crear modelo con array de modelos:',
 				error.message

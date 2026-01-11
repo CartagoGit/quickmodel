@@ -9,12 +9,13 @@ class Money {
 	public amount: number;
 	public currency: string;
 
-	constructor(amountOrData: any, currency?: string) {
+	constructor(amountOrData: unknown, currency?: string) {
 		if (typeof amountOrData === 'object' && amountOrData !== null) {
-			this.amount = amountOrData.amount;
-			this.currency = amountOrData.currency;
+			const data = amountOrData as { amount: number; currency: string };
+			this.amount = data.amount;
+			this.currency = data.currency;
 		} else {
-			this.amount = amountOrData;
+			this.amount = amountOrData as number;
 			this.currency = currency || 'USD';
 		}
 	}

@@ -14,7 +14,7 @@ interface IComplexEntity {
 	uniqueKey: symbol;
 	lastError: Error | null;
 	buffer: Int8Array;
-	metadata: Map<string, any>;
+	metadata: Map<string, unknown>;
 	tags: Set<string>;
 }
 

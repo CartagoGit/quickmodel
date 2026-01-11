@@ -67,7 +67,7 @@ describe('Null Safety: Deep Optional Chaining', () => {
 		const user = new User({
 			id: 1,
 			name: 'John',
-			profile: null as any,
+			profile: null as unknown as IProfile,
 			bio: null,
 		});
 
@@ -152,7 +152,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 
 	test('should handle array with all nulls', () => {
 		const timeline = new Timeline({
-			events: [null, null, null] as any,
+			events: [null, null, null] as ITimeline['events'],
 		});
 
 		expect(timeline.events.length).toBe(3);
@@ -161,7 +161,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 
 	test('should handle array with all undefined', () => {
 		const timeline = new Timeline({
-			events: [undefined, undefined] as any,
+			events: [undefined, undefined] as ITimeline['events'],
 		});
 
 		expect(timeline.events.length).toBe(2);
@@ -249,7 +249,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			name: 'John',
 			profile: {
 				address: {
-					city: null as any,
+					city: null as unknown as string,
 				},
 			},
 			bio: null,
@@ -267,7 +267,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 				new Date('2024-01-01'),
 				null,
 				new Date('2024-01-03'),
-			] as any,
+			] as ITimeline['events'],
 		});
 
 		const json = timeline.serialize();
@@ -282,7 +282,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 describe('Null Safety: Edge Cases', () => {
 	test('should handle null as entire model data', () => {
 		try {
-			new User(null as any);
+			new User(null as unknown as IUser);
 
 			// Might not throw, just log
 			console.warn('⚠️  Null model data accepted without error');

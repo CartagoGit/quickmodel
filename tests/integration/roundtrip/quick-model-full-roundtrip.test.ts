@@ -72,7 +72,8 @@ try {
 	console.log('  ✓ Interface Segregation - Specific interfaces');
 	console.log('  ✓ Dependency Inversion - Depends on abstractions');
 	console.log('════════════════════════════════════════');
-} catch (error: any) {
+} catch (err: unknown) {
+	const error = err as Error;
 	console.log('❌ Error:', error.message);
 	console.log(error.stack);
 }

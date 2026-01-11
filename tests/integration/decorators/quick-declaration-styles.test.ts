@@ -185,7 +185,7 @@ describe('@Quick() with declaration styles', () => {
 
 			// Serialize back
 			const serialized = order.serialize();
-			expect(serialized.total as any).toBe('123456789012345');
+			expect(serialized.total).toBe('123456789012345');
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 			expect(serialized.tags).toMatchObject({
 				__type: 'Set',
@@ -206,7 +206,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags.has('urgent')).toBe(true);
 
 			const serialized = order.serialize();
-			expect(serialized.total as any).toBe('123456789012345');
+			expect(serialized.total).toBe('123456789012345');
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
 
@@ -219,7 +219,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags).toBeInstanceOf(Set);
 
 			const serialized = order.serialize();
-			expect(serialized.total as any).toBe('123456789012345');
+			expect(serialized.total).toBe('123456789012345');
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
 	});

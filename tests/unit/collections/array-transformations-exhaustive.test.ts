@@ -139,7 +139,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			const data = new Data({
 				dates: [
 					'2026-01-01T00:00:00.000Z',
-					null as any,
+					null as unknown as string,
 					'2026-12-31T23:59:59.999Z',
 				],
 			});
@@ -281,12 +281,12 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 	describe('Arrays of Map', () => {
 		interface IData {
-			maps: [string, any][][];
+			maps: [string, unknown][][];
 		}
 
 		@Quick({ maps: [Map] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
-			declare maps: Map<string, any>[];
+			declare maps: Map<string, unknown>[];
 		}
 
 		test('Map<string, any>[] from tuples', () => {
@@ -487,7 +487,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 				id: 1,
 				posts: [
 					{ id: 1, title: 'Post 1' },
-					null as any,
+					null as unknown as IPost,
 					{ id: 2, title: 'Post 2' },
 				],
 			});
@@ -571,14 +571,14 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 	describe('Edge cases', () => {
 		interface IData {
-			empty: any[];
+			empty: unknown[];
 			single: number[];
 			nested: number[][];
 		}
 
 		@Quick()
 		class Data extends QModel<IData> {
-			declare empty: any[];
+			declare empty: unknown[];
 			declare single: number[];
 			declare nested: number[][];
 		}

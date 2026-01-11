@@ -25,7 +25,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			});
 
 			// Create circular reference
-			(node as any).parent = node;
+			node.parent = node;
 
 			// This should not throw or hang
 			expect(() => {
@@ -47,8 +47,8 @@ describe('Interface Conversion - Edge Cases', () => {
 			});
 
 			// Create circular reference
-			(child as any).parent = parent;
-			(parent as any).children = [child];
+			child.parent = parent;
+			parent.children = [child];
 
 			// Should not hang
 			expect(() => {
@@ -160,7 +160,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			});
 
 			// Set invalid date
-			(model as any).createdAt = new Date('invalid');
+			model.createdAt = new Date('invalid');
 
 			const iface = model.toInterface();
 
@@ -241,10 +241,10 @@ describe('Interface Conversion - Edge Cases', () => {
 		test('should handle arrays with null/undefined elements', () => {
 			const model = new Complex({
 				id: '1',
-				tags: ['a', null as any, 'b', undefined as any, 'c'],
+				tags: ['a', null as unknown as string, 'b', undefined as unknown as string, 'c'],
 				metadata: {
 					key: 'test',
-					values: [1, null as any, 3],
+					values: [1, null as unknown as number, 3],
 				},
 			});
 
@@ -398,13 +398,13 @@ describe('Interface Conversion - Edge Cases', () => {
 	describe('Error handling during serialization', () => {
 		interface IData {
 			id: string;
-			data: any;
+			data: unknown;
 		}
 
 		@Quick()
 		class DataModel extends QModel<IData> {
 			declare id: string;
-			declare data: any;
+			declare data: unknown;
 		}
 
 		test('should handle objects with functions gracefully', () => {

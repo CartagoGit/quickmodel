@@ -71,7 +71,7 @@ interface ICompleteModel {
 	};
 
 	// Nested model
-	nested?: any;
+	nested?: unknown;
 }
 
 type CompleteModelTransforms = {
@@ -452,7 +452,8 @@ try {
 	console.log(
 		'   ✓ Methods: serialize(), toJSON(), deserialize(), fromJSON()'
 	);
-} catch (error: any) {
+} catch (err: unknown) {
+	const error = err as Error;
 	console.log('\n❌ ERROR EN TESTS:');
 	console.log(error.message);
 	console.log(error.stack);

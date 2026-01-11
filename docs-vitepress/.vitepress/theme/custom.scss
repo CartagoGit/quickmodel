@@ -301,3 +301,8 @@ $secondary-color: #35495e;
 	padding-top: 3rem;
 	margin-top: 3rem;
 }
+
+// Hide default VitePress translations selector
+.VPNavBar .translations {
+	display: none !important;
+}

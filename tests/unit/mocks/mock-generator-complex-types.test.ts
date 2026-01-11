@@ -185,7 +185,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 
 	@Quick({
 		id: 'string',
-		content: (val: any) => val, // Identity transformer for union
+		content: (val: unknown) => val, // Identity transformer for union
 		version: 'number',
 	})
 	class Document extends QModel<IDocument> {

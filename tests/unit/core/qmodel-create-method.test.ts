@@ -100,7 +100,7 @@ describe('QModel.create() factory method', () => {
 			});
 
 			expect(account.id).toBe('ACC-1');
-			expect(account.balance).toEqual(999999999999999n as any);
+			expect(account.balance).toEqual(999999999999999n);
 			expect(typeof account.balance).toBe('bigint');
 		});
 
@@ -366,7 +366,7 @@ describe('QModel.create() factory method', () => {
 			expect(record.id).toBe('REC-1');
 			expect(record.createdAt).toBeInstanceOf(Date);
 			expect(record.updatedAt).toBeInstanceOf(Date);
-			expect(record.balance).toEqual(123456789n as any);
+			expect(record.balance).toEqual(123456789n);
 			expect(record.tags).toBeInstanceOf(Set);
 			expect(record.tags.size).toBe(2);
 		});
@@ -467,7 +467,7 @@ describe('QModel.create() factory method', () => {
 
 			// Type-safe: TypeScript knows it's bigint
 			const result: bigint = data.value;
-			expect(result).toBe(12345n as any);
+			expect(result).toBe(12345n);
 		});
 	});
 
@@ -492,8 +492,8 @@ describe('QModel.create() factory method', () => {
 			const user1 = new UserWithDeclare(data);
 			const user2 = UserWithCreate.create(data);
 
-			expect(user1.id).toBe((user2 as any).id);
-			expect(user1.name).toBe((user2 as any).name);
+			expect(user1.id).toBe((user2 as unknown as IUser).id);
+			expect(user1.name).toBe((user2 as unknown as IUser).name);
 			expect(user1.toInterface()).toEqual(user2.toInterface());
 		});
 	});

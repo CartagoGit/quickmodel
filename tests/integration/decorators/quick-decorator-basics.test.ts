@@ -130,7 +130,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			id: string;
 			value: number;
 			flag: boolean;
-			metadata: Record<string, any>;
+			metadata: Record<string, unknown>;
 		}
 
 		@Quick({})
@@ -138,7 +138,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			id!: string;
 			value!: number;
 			flag!: boolean;
-			metadata!: Record<string, any>;
+			metadata!: Record<string, unknown>;
 		}
 
 		const data = new Data({
@@ -198,12 +198,12 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		interface IData {
 			id: string;
 			tags: string[];
-			metadata: [string, any][];
+			metadata: [string, unknown][];
 		}
 
 		interface IDataTransform {
 			tags: Set<string>;
-			metadata: Map<string, any>;
+			metadata: Map<string, unknown>;
 		}
 
 		@Quick({
@@ -216,7 +216,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		{
 			id!: string;
 			tags!: Set<string>;
-			metadata!: Map<string, any>;
+			metadata!: Map<string, unknown>;
 		}
 
 		const data = new Data({
