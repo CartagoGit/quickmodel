@@ -14,7 +14,7 @@
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
 import { NATIVE_TYPE_MAP } from '../constants/native-types';
-import type { QAlias } from '../interfaces/qtype-symbols.interface';
+import type { QAlias } from '../types/q-alias.type';
 
 /**
  * Metadata key symbol for storing the list of properties decorated with @QType().

@@ -1,5 +1,5 @@
 import { IQTransformer } from '../interfaces/transformer.interface';
-import type { QAlias } from '../interfaces/qtype-symbols.interface';
+import type { QAlias } from '../types/q-alias.type';
 
 /**
  * Valid keys to identify a transformer.

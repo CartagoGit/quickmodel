@@ -65,6 +65,25 @@ Creates a deep copy of an existing instance.
 const clone = user.clone();
 ```
 
+### 5. Readonly Instance
+
+Creates a deeply frozen (immutable) instance. Any attempt to modify it will throw an error in strict mode.
+
+```typescript
+const readonlyUser = User.createReadonly({
+	id: 1,
+	name: 'John',
+});
+
+// readonlyUser.name = 'Jane'; // Error!
+```
+
+Creates a deep copy of an existing instance.
+
+```typescript
+const clone = user.clone();
+```
+
 ## Lifecycle
 
 When a model is instantiated, the following happens:
@@ -98,7 +117,26 @@ const jsonString = user.toJSON();
 Returns the data in its original raw format (as defined by the interface), preserving original types (e.g., keeping strings as strings). Useful for forms or checking initial state.
 
 ```typescript
+// If User was created with { createdAt: '2024-01-01' }
 const rawData = user.toInterface();
+// rawData.createdAt is '2024-01-01' (string)
+```
+
+### `static getMetadata()`
+
+Returns a map of all decorated properties and their configuration. Useful for building dynamic forms or inspection tools.
+
+```typescript
+const meta = User.getMetadata();
+console.log(meta.get('createdAt').type); // 'Date'
+```
+
+### `static deserialize(data)`
+
+Low-level method to hydrate a plain object into a model instance. Equivalent to `new Model(data)`.
+
+```typescript
+const user = User.deserialize(plainObject);
 ```
 
 ### `validate()`
@@ -124,5 +162,9 @@ const fakeUser = User.mock().random();
 const fakeUsers = User.mock().array(10);
 
 // Generate with specific overrides
+// Generate with specific overrides
 const admin = User.mock().random({ role: 'admin' });
 ```
+
+> [!TIP]
+> For more details on powerful mock generation features, check out the [Mocks Guide](/en/guide/mocks).

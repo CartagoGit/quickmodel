@@ -1,104 +1,202 @@
 # Decorador @Quick
 
-El decorador `@Quick()` es el núcleo de la librería QuickModel. Define el mapeo entre tus propiedades en tiempo de ejecución y sus formas serializadas.
+El decorador `@Quick()` es el **corazón** de QuickModel. Conecta el puente entre los tipos estáticos de TypeScript y el comportamiento en tiempo de ejecución, definiendo exactamente cómo tus datos deben ser serializados, deserializados y "mockeados".
+
+## Visión General
+
+Los tipos de TypeScript (`: string`, `: Date`) son **eliminados** (desaparecen) en tiempo de ejecución. Sin `@Quick`, la librería ve tus propiedades como valores planos.
+
+`@Quick` restaura esta información de tipo perdida, permitiendo a QuickModel:
+
+1.  **Transformar** JSON entrante (ej: string "2024-01-01" -> objeto `Date`).
+2.  **Validar** estructuras de datos.
+3.  **Generar** mocks precisos.
 
 ## Uso
 
-Puedes usar `@Quick` para decorar propiedades de clase o la propia clase.
+### Decoración de Clase (Recomendado)
 
-### Decoración de Clase (Type Map)
-
-La forma más común y recomendada. Pasa un objeto que mapee nombres de propiedades a tipos/transformadores.
+La forma más limpia de definir el esquema de tu modelo. Pasa un **Mapa de Tipos** donde las claves coincidan con los nombres de tus propiedades.
 
 ```typescript
 @Quick({
-	name: String,
-	age: 'number', // Alias literal de cadena
-	birthDate: Date,
-	tags: [Set],
-	meta: Map,
+	name: String, // Primitivo
+	age: 'number', // Literal de cadena (Alias)
+	birthDate: Date, // Constructor
+	tags: [Set], // Colección (Array wrap)
+	metadata: Map, // Colección
+	avatar: URL, // Web API
 })
 class User extends QModel<IUser> {
 	// ...
 }
 ```
 
-## Tipos Soportados
+### Decoración de Propiedad
 
-Puedes especificar transformaciones usando:
-
-1. **Constructores** (e.g., `Date`)
-2. **Literales de Cadena** (e.g., `'date'`)
-3. **Otros Modelos** (Modelos anidados)
-4. **Arrays** (e.g., `[Date]`)
-5. **Funciones en Línea** (Lógica personalizada)
-
-### Literales de Cadena (Alias)
-
-QuickModel soporta alias descriptivos como cadenas para todos los tipos integrados. Esto es útil para evitar importaciones o tener una sintaxis más limpia.
-
-| Alias       | Descripción                | Entrada Ejemplo         | Salida Ejemplo      |
-| ----------- | -------------------------- | ----------------------- | ------------------- |
-| `'string'`  | Castea a string            | `123`                   | `"123"`             |
-| `'number'`  | Castea a number            | `"123"`                 | `123`               |
-| `'boolean'` | Castea a boolean           | `"true"`                | `true`              |
-| `'bigint'`  | Transforma a BigInt        | `"9007199254740991"`    | `9007199254740991n` |
-| `'date'`    | Transforma ISO string      | `"2024-01-01"`          | `Objeto Date`       |
-| `'regexp'`  | Transforma patrón          | `"/^test$/i"`           | `/^test$/i`         |
-| `'map'`     | Transforma array de tuplas | `[["k","v"]]`           | `Map {"k" => "v"}`  |
-| `'set'`     | Transforma array           | `["a", "b"]`            | `Set {"a", "b"}`    |
-| `'url'`     | Transforma string          | `"https://example.com"` | `Objeto URL`        |
-| `'error'`   | Transforma objeto          | `{"message":"..."}`     | `Objeto Error`      |
-
-**Tipos Binarios:**
-`'arraybuffer'`, `'dataview'`, `'int8array'`, `'uint8array'`, `'float32array'`, etc.
-
-### Sintaxis de Arrays
-
-Siempre usa notación de corchetes `[Type]` para arrays.
-
-```typescript
-@Quick({
-  dates: [Date],         // Array de Dates
-  tags: ['string'],      // Array de strings
-  matrix: [[BigInt]]     // Array de arrays de BigInts
-})
-```
-
-### Transformadores en Línea
-
-Puedes pasar una función para transformaciones rápidas y personalizadas directamente en el decorador.
-
-```typescript
-@Quick({
-  // Nombres en mayúsculas
-  name: (val: string) => val.toUpperCase(),
-
-  // Parseo personalizado
-  score: (val: string) => parseInt(val, 10) * 2
-})
-```
-
-## Modelos Anidados
-
-Para usar otro QuickModel como tipo de propiedad, simplemente pasa el constructor de la clase.
-
-```typescript
-@Quick({ address: Address })
-class User extends QModel<IUser> {
-	declare address: Address;
-}
-```
-
-## Decorador de Propiedad (Legacy)
-
-También puedes decorar propiedades individualmente, aunque se prefiere la decoración de clase por un código más limpio.
+Útil para casos específicos o si prefieres decorar los campos directamente.
 
 ```typescript
 class User extends QModel<IUser> {
-	@Quick(Date)
+	@QType(Date)
 	declare createdAt: Date;
 }
 ```
 
-Esto es funcionalmente equivalente pero puede ser más verboso si tienes muchas propiedades.
+---
+
+## Referencia de Tipos Soportados
+
+QuickModel soporta una vasta gama de tipos "out of the box".
+
+### Primitivos
+
+Mapear primitivos explícitamente asegura la coerción de tipos (ej: string `"123"` se convierte en number `123`).
+
+| Tipo        | Sintaxis                | Descripción                                                          |
+| :---------- | :---------------------- | :------------------------------------------------------------------- |
+| **String**  | `String` / `'string'`   | Convierte valor a string.                                            |
+| **Number**  | `Number` / `'number'`   | Convierte valor a number.                                            |
+| **Boolean** | `Boolean` / `'boolean'` | Convierte valor a boolean.                                           |
+| **BigInt**  | `BigInt` / `'bigint'`   | **Crucial:** Transforma enteros string ("900...") a `BigInt` nativo. |
+| **Symbol**  | `Symbol` / `'symbol'`   | Crea un símbolo único.                                               |
+
+### Fechas y Tiempo
+
+El manejo nativo de `Date` es una de las características más útiles.
+
+| Tipo     | Sintaxis          | Entrada (JSON)           | Salida (Modelo) |
+| :------- | :---------------- | :----------------------- | :-------------- |
+| **Date** | `Date` / `'date'` | `"2024-01-01T12:00:00Z"` | `new Date(...)` |
+
+### Colecciones
+
+Transforma automáticamente arrays de datos en Colecciones ES6 eficientes.
+
+| Tipo        | Sintaxis        | Entrada (JSON)     | Salida (Modelo)                  |
+| :---------- | :-------------- | :----------------- | :------------------------------- |
+| **Set**     | `Set` / `'set'` | `["a", "b", "a"]`  | `Set {"a", "b"}` (Des-duplicado) |
+| **Map**     | `Map` / `'map'` | `[["key", "val"]]` | `Map { "key" => "val" }`         |
+| **WeakMap** | `WeakMap`       | `[[obj, val]]`     | `WeakMap`                        |
+| **WeakSet** | `WeakSet`       | `[obj1, obj2]`     | `WeakSet`                        |
+
+### Datos Binarios & Buffers
+
+Maneja datos binarios directamente, perfecto para subida de archivos o criptografía.
+
+| Tipo             | Sintaxis                                         |
+| :--------------- | :----------------------------------------------- |
+| **ArrayBuffer**  | `ArrayBuffer` / `'arraybuffer'`                  |
+| **Uint8Array**   | `Uint8Array` / `'uint8array'`                    |
+| **Float32Array** | `Float32Array` / `'float32array'`                |
+| **DataView**     | `DataView` / `'dataview'`                        |
+| **TypedArrays**  | `Int8Array`, `Int16Array`, `BigInt64Array`, etc. |
+
+### Tipos Estructurales
+
+| Tipo       | Sintaxis              | Descripción                                               |
+| :--------- | :-------------------- | :-------------------------------------------------------- |
+| **RegExp** | `RegExp` / `'regexp'` | Convierte string regex (`"/^test$/i"`) a objeto `RegExp`. |
+| **URL**    | `URL` / `'url'`       | Convierte string URL a objeto `URL`.                      |
+| **Error**  | `Error` / `'error'`   | Reconstruye objetos `Error`.                              |
+
+---
+
+## Recetario: Escenarios Comunes (Cookbook)
+
+### ¿Cómo manejo Arrays?
+
+Usa siempre la **notación de corchetes** `[Type]`.
+
+```typescript
+@Quick({
+  // Array de Dates
+  dates: [Date],
+
+  // Array de Modelos Personalizados
+  posts: [Post],
+
+  // Array de Arrays (Matriz)
+  matrix: [[Number]]
+})
+```
+
+### ¿Cómo uso Transformadores Personalizados?
+
+Puedes pasar una **función** a cualquier propiedad. Esta función actúa como un **Deserializador**.
+
+**Flujo de Datos:**
+`Entrada JSON` -> **`Función Transformadora`** -> `Propiedad de Clase`
+
+```typescript
+@Quick({
+  // 1. Limpieza de Datos
+  // Entrada: "  john@example.com " -> Salida: "john@example.com"
+  email: (val: string) => val.trim().toLowerCase(),
+
+  // 2. Cálculos
+  // Entrada: "100" -> Salida: 121 (Añade 21% IVA)
+  priceWithTax: (val: string) => Number(val) * 1.21,
+
+  // 3. Parseo de Datos Complejos
+  // Entrada: "{\"a\":1}" (String) -> Salida: { a: 1 } (Objeto)
+  config: JSON.parse
+})
+```
+
+### ¿Cómo hago operaciones matemáticas?
+
+¡Puedes usar funciones nativas de `Math` directamente como transformadores!
+
+```typescript
+@Quick({
+  // Entrada: 10.567 -> Salida: 11
+  score: Math.round,
+
+  // Entrada: -50 -> Salida: 50
+  distance: Math.abs,
+
+  // Entrada: 5.9 -> Salida: 5
+  level: Math.floor
+})
+```
+
+### ¿Cómo anido otros modelos?
+
+Simplemente pasa el constructor de la clase.
+
+```typescript
+@Quick({
+	// Un solo modelo anidado
+	profile: UserProfile,
+
+	// Array de modelos
+	friends: [User],
+})
+class User extends QModel<IUser> {
+	declare profile: UserProfile;
+	declare friends: User[];
+}
+```
+
+---
+
+## Tabla Resumen: Alias de Cadenas
+
+Referencia rápida para todos los alias de cadena que activan comportamiento estándar.
+
+| Alias           | TypeConstructor Resultante |
+| :-------------- | :------------------------- |
+| `'string'`      | `String`                   |
+| `'number'`      | `Number`                   |
+| `'boolean'`     | `Boolean`                  |
+| `'bigint'`      | `BigInt`                   |
+| `'date'`        | `Date`                     |
+| `'regexp'`      | `RegExp`                   |
+| `'symbol'`      | `Symbol`                   |
+| `'url'`         | `URL`                      |
+| `'error'`       | `Error`                    |
+| `'map'`         | `Map`                      |
+| `'set'`         | `Set`                      |
+| `'arraybuffer'` | `ArrayBuffer`              |
+| `'uint8array'`  | `Uint8Array`               |

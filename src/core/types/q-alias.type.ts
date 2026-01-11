@@ -1,31 +1,8 @@
 /**
- * Type aliases for QuickModel @Quick() decorator
- *
- * @example
- * ```typescript
- * @Quick({
- *   // String literals
- *   value: 'bigint',
- *   date: 'date',
- *   pattern: 'regexp',
- *
- *   // Constructors
- *   tags: Set,
- *   metadata: Map,
- *   error: Error,
- *
- *   // Functions
- *   price: (v) => Math.round(v * 100) / 100,
- *   name: (s) => s.trim().toUpperCase()
- * })
- * ```
- */
-
-/**
  * String literal type aliases for basic type conversions in \@Quick() decorator.
  * These aliases provide autocomplete support and type checking.
  *
- * Used in the `typeMap` parameter of `@Quick(typeMap)`.
+ * Used in the `typeMap` parameter of `@Quick(typeMap)` and `@QType(alias)`.
  *
  * ## Usage Guide
  *
@@ -53,16 +30,6 @@
  * - **'dataview'**: Base64 string ↔ DataView
  * - **'int8array'**, **'uint8array'**, etc.: Base64 string/array ↔ TypedArray
  *
- * @example
- * ```typescript
- * @Quick({
- *   balance: 'bigint',   // Transform string to BigInt
- *   createdAt: 'date',   // Transform ISO string to Date
- *   pattern: 'regexp',   // Transform string to RegExp
- *   tags: 'set',         // Transform array to Set
- *   meta: 'map'          // Transform tuples to Map
- * })
- * ```
  * @group Types
  */
 export type QAlias =

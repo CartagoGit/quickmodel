@@ -188,7 +188,11 @@ describe('@Quick() with declaration styles', () => {
 			expect(serialized.total).toBe('123456789012345');
 			expect(serialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 			expect(Array.isArray(serialized.tags)).toBe(true);
-			expect(serialized.tags).toEqual(['urgent', 'premium']onst order = new OrderWithExclamation(orderData);
+			expect(serialized.tags).toEqual(['urgent', 'premium']);
+		});
+
+		test('!: should transform types correctly', () => {
+			const order = new OrderWithExclamation(orderData);
 
 			expect(order.id).toBe('order-456');
 			expect(order.total).toBe(123456789012345n);

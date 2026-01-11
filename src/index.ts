@@ -53,7 +53,7 @@ export type {
  * Supported string aliases for types (e.g. 'date', 'bigint', 'regexp')
  * Useful reference for valid values in the type map.
  */
-export type { QAlias } from './core/interfaces/qtype-symbols.interface';
+export type { QAlias } from './core/types/q-alias.type';
 
 // ============================================================================
 // PUBLIC API - Testing Tools

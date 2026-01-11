@@ -75,7 +75,7 @@ import { QInterface } from '@/index';
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-import type { QAlias } from '../interfaces/qtype-symbols.interface';
+import type { QAlias } from '../types/q-alias.type';
 import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
@@ -84,7 +84,6 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
-
 
 /**
  * Constructor type for class-based type mapping
@@ -648,7 +647,7 @@ export function Quick<
 			// BUT: If strict mode is enabled, we should NOT auto-register unknown properties
 			// because we want the deserializer to reject them.
 			const isStrict = advancedOptions?.strict === true;
-			
+
 			if (
 				!isStrict &&
 				!propertiesRegistered &&
