@@ -193,14 +193,15 @@ body {
 // --- Navigation Bar ---
 .VPNavBar {
 	position: relative;
-	.VPNNavBar:not(.home.top) .conent-body{
+	.VPNNavBar:not(.home.top) .conent-body {
 		background: transparent;
-		transition: 3000ms ease background;
 	}
 	// Force solid background (except home if needed, but safer to force per user request)
 	.home {
 		background-color: var(--vp-c-bg);
-		.content, .container, .title {
+		.content,
+		.container,
+		.title {
 			.background-color: var(--vp-c-bg);
 		}
 	}
@@ -214,7 +215,6 @@ body {
 	.content {
 		padding-right: 0 !important;
 		padding-left: 0 !important;
-		
 	}
 
 	// Hide unwanted elements
@@ -229,10 +229,10 @@ body {
 		display: flex !important;
 		justify-content: space-between !important;
 		align-items: center !important;
+		transition: border-color 300ms ease;
 
 		&:not(.home.top) {
 			background: var(--vp-c-bg);
-			transition: 3000ms ease background;
 		}
 	}
 
@@ -276,7 +276,6 @@ body {
 			display: grid;
 			grid-template-columns: 1fr; // 1 col by default
 			gap: 12px;
-			
 
 			.box {
 				display: grid;

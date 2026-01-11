@@ -8,7 +8,6 @@
  * in several files where really is needed any type.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyRecord = Record<string, any>;
 
 /**
@@ -16,9 +15,7 @@ export type AnyRecord = Record<string, any>;
  * Used to type-check static methods like deserialize locally
  */
 export interface IModelConstructor<TModel> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	new (data: any): TModel;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	deserialize(data: any): TModel;
 }
 

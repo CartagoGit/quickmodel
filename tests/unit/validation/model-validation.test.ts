@@ -59,7 +59,7 @@ describe('Model Validation', () => {
 			deserialize(val: string) {
 				return val;
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 			validate(val: any, _context: any) {
 				// Strict check
 				if (typeof val !== 'string' || !val.includes('@')) {
@@ -77,7 +77,7 @@ describe('Model Validation', () => {
 			email: string;
 		}
 
-		@Quick<{ email: 'Email' }>({ email: 'Email' })
+		@Quick({ email: 'Email' })
 		class Contact extends QModel<IContact> {
 			declare email: string;
 		}

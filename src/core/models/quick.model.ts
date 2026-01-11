@@ -249,7 +249,6 @@ export abstract class QModel<TInterface extends AnyRecord> {
 			? R
 			: never;
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const ModelClass: new (data: any) => InstanceType =
 			this as unknown as IModelConstructor<InstanceType>;
 

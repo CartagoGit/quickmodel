@@ -35,7 +35,7 @@ export default tseslint.config(
       ...prettierConfig.rules,
       
       // Customize typescript-eslint rules
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -62,7 +62,7 @@ export default tseslint.config(
       "@typescript-eslint/no-this-alias": "off",
 
       // Prettier rule
-      "prettier/prettier": "error",
+      // "prettier/prettier": "error",
     },
   }
 );

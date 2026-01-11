@@ -87,7 +87,6 @@ import {
 /**
  * Constructor type for class-based type mapping
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type IConstructor<T = any> = new (...args: any[]) => T;
 
 /**
@@ -121,13 +120,9 @@ type INativeFactory =
 	| Uint32ArrayConstructor
 	| Float32ArrayConstructor
 	| Float64ArrayConstructor
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	| { new (...args: any[]): URL; prototype: URL }
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	| { new (...args: any[]): URLSearchParams; prototype: URLSearchParams }
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	| { new (...args: any[]): TextEncoder; prototype: TextEncoder }
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	| { new (...args: any[]): TextDecoder; prototype: TextDecoder };
 
 /**
@@ -144,7 +139,8 @@ export type ISpec =
 	| IConstructor // Custom classes
 	| INativeFactory // Built-in types (Date, BigInt, etc)
 	| ITransformerFunction
-	| ISpec[]; // Array with element type like [Date], [[Date]], [[[Date]]]
+	| ISpec[] // Array with element type like [Date], [[Date]], [[[Date]]]
+	| (string & {}); // Allow any string (custom transformers) but preserve autocomplete for QAlias
 
 /**
  * All supported type specifications for @Quick() decorator for arrays
