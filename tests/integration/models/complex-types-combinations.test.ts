@@ -14,7 +14,7 @@ interface IComplexEntity {
 	uniqueKey: symbol;
 	lastError: Error | null;
 	buffer: Int8Array;
-	metadata: Map<string, any>;
+	metadata: Map<string, unknown>;
 	tags: Set<string>;
 }
 
@@ -128,11 +128,11 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 			uniqueKey: symbolKey,
 			lastError: new Error('Test error'),
 			buffer: new Int8Array([1, -2, 3, -4, 5]),
-			metadata: new Map([
+			metadata: new Map<string, unknown>([
 				['key1', 'value1'],
 				['key2', 42],
 				['key3', true],
-			] as any),
+			]),
 			tags: new Set(['tag1', 'tag2', 'tag3']),
 		});
 
@@ -295,7 +295,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		expect(model.buffers.size).toBe(2);
 		const buf1 = model.buffers.get('buf1');
 		expect(buf1).toBeInstanceOf(Uint8Array);
-		expect(Array.from(buf1!)).toEqual([1, 2, 3]);
+		expect(Array.from(buf1)).toEqual([1, 2, 3]);
 
 		// Validar Set de errors
 		expect(model.errorLog).toBeInstanceOf(Set);
@@ -496,11 +496,11 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
 			value: 'test',
 			items: [],
 			optionalEntity: null,
-			multiType: new Map([
+			multiType: new Map<string, string | number | RegExp>([
 				['str', 'string value'],
 				['num', 42],
 				['regex', /pattern/gi],
-			] as any),
+			]),
 		};
 
 		const model = MixedUnionModel.deserialize(data);

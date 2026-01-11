@@ -117,7 +117,7 @@ export class SymbolTransformer
 			typeof value === 'object' &&
 			value !== null &&
 			'__type' in value &&
-			(value as any).__type === 'symbol'
+			(value as { __type: string }).__type === 'symbol'
 		) {
 			return { isValid: true };
 		}

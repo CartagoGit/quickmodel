@@ -153,7 +153,7 @@ export class TextEncoderTransformer extends BaseTransformer<
 	TextEncoder
 > {
 	deserialize(
-		value: any,
+		value: unknown,
 		propertyKey: string,
 		className: string
 	): TextEncoder {
@@ -208,7 +208,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 
 		if (typeof value === 'string') {
 			try {
-				return new (TextDecoder as any)(value);
+				return new TextDecoder(value);
 			} catch (_error) {
 				throw new Error(
 					`${className}.${propertyKey}: Invalid encoding "${value}". ` +
@@ -218,9 +218,10 @@ export class TextDecoderTransformer extends BaseTransformer<
 		}
 
 		if (typeof value === 'object' && value !== null) {
-			const encoding = (value as any).encoding || 'utf-8';
+			const encoding =
+				(value as { encoding?: string }).encoding || 'utf-8';
 			try {
-				return new (TextDecoder as any)(encoding);
+				return new TextDecoder(encoding);
 			} catch (_error) {
 				throw new Error(
 					`${className}.${propertyKey}: Invalid encoding "${encoding}". ` +

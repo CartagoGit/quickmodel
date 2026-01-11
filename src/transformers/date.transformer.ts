@@ -95,7 +95,10 @@ export class DateTransformer
 	 * @param _context - Validation context (unused)
 	 * @returns Validation result
 	 */
-	validate(value: any, _context: IQValidationContext): IQValidationResult {
+	validate(
+		value: unknown,
+		_context: IQValidationContext
+	): IQValidationResult {
 		if (value instanceof Date) {
 			return { isValid: true };
 		}

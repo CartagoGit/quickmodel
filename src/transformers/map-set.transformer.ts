@@ -230,7 +230,7 @@ export class SetTransformer<V = unknown>
 			typeof value === 'object' &&
 			value !== null &&
 			'__type' in value &&
-			(value as any).__type === 'Set'
+			(value as { __type: string }).__type === 'Set'
 		) {
 			return { isValid: true };
 		}
