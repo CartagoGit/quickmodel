@@ -93,7 +93,7 @@ export type IQExtractCommonKeys<T> =
 /**
  * Extract the interface type from a QModel class.
  *
- * QModel classes extend QModel<IInterface>, this extracts the IInterface type.
+ * QModel classes extend `QModel<IInterface>`, this extracts the IInterface type.
  *
  * @example
  * ```typescript

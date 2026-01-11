@@ -33,6 +33,8 @@ import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import {
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
+	QUICK_TYPE_MAP_KEY,
+	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 
@@ -495,10 +497,29 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		}
 
 		// Install lazy getters only for actual property names (not storage keys)
-		const propertyNames = Array.from(allKeys).filter(
-			(k) => !k.startsWith(QUICK_PROPERTY_KEYS)
+		const propertyNames = new Set(
+			Array.from(allKeys).filter((k) => !k.startsWith(QUICK_PROPERTY_KEYS))
 		);
-		this.installLazyGetters(propertyNames);
+
+		// Add keys from @Quick metadata to ensure smart setters work even for empty/missing properties
+		const typeMap = Reflect.getMetadata(
+			QUICK_TYPE_MAP_KEY,
+			this.constructor
+		);
+		if (typeMap) {
+			Object.keys(typeMap).forEach((key) => propertyNames.add(key));
+		}
+
+		// Add keys from @QType metadata
+		const qTypes = Reflect.getMetadata(
+			QTYPES_METADATA_KEY,
+			this.constructor.prototype
+		);
+		if (Array.isArray(qTypes)) {
+			qTypes.forEach((key) => propertyNames.add(String(key)));
+		}
+
+		this.installLazyGetters(Array.from(propertyNames));
 
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
@@ -566,7 +587,100 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 					// 3. Return undefined
 					return undefined;
 				},
-				set(this: Record<string, unknown>, value: unknown) {
+				set(this: any, value: unknown) {
+					// SMART SETTER IMPLEMENTATION
+					// Attempt to auto-transform the value if a transformer exists
+					// and the value is not already of the correct type.
+
+					try {
+						let spec: unknown = null;
+
+						// 1. Try @QType metadata first (Higher specificity)
+						// Check native field type (e.g. 'date', 'bigint', 'set')
+						const fieldType = Reflect.getMetadata('fieldType', this, key);
+						
+						// Check array element type
+						const arrayElementClass = Reflect.getMetadata(
+							'arrayElementClass',
+							this,
+							key
+						);
+						
+						// Check design:type (Array or Class)
+						const designType = Reflect.getMetadata('design:type', this, key);
+
+						if (fieldType && fieldType !== 'array') {
+							// Use explicit field type (e.g. 'date')
+							spec = fieldType;
+						} else if (arrayElementClass) {
+							// It has an element class, check if it's an array or single nested
+							if (fieldType === 'array' || designType === Array) {
+								// It is an array of [Element]
+								spec = [arrayElementClass];
+							} else {
+								// It is a single nested model
+								spec = arrayElementClass;
+							}
+						}
+
+						// 2. Fallback to @Quick map (Class-level configuration)
+						if (!spec) {
+							const constructor = this.constructor;
+							const typeMap = Reflect.getMetadata(
+								QUICK_TYPE_MAP_KEY,
+								constructor
+							);
+							if (typeMap && typeMap[key]) {
+								spec = typeMap[key];
+							}
+						}
+
+						// 3. Apply transformation if spec found
+						if (spec) {
+							// Access the private static deserializer instance
+							// We cast QModel to any to access the private property
+							const deserializer = (QModel as any).deserializer;
+							
+							if (deserializer && typeof deserializer.transformValue === 'function') {
+								const transformed = deserializer.transformValue(value, key, spec);
+								
+								// STRICT MODE CHECK
+								const constructor = this.constructor;
+								const options = Reflect.getMetadata(
+									QUICK_OPTIONS_KEY,
+									constructor
+								);
+								
+								if (options?.strict) {
+									// Check for Invalid Date
+									if (transformed instanceof Date && isNaN(transformed.getTime())) {
+										throw new Error(`Strict Mode: Property '${key}' received invalid Date value`);
+									}
+									
+									// Future: Add more strict checks (e.g. if BigInt fails silently?)
+								}
+
+								this[storageKey] = transformed;
+								return;
+							}
+						}
+					} catch (e) {
+						// STRICT MODE: Rethrow validation errors
+						const constructor = this.constructor;
+						const options = Reflect.getMetadata(
+							QUICK_OPTIONS_KEY,
+							constructor
+						);
+						
+						if (options?.strict) {
+							throw e;
+						}
+						
+						// If transformation fails, fall back to raw assignment
+						// We don't want to break the app if a partial string is typed
+					}
+
+					// Fallback: Raw assignment
 					this[storageKey] = value;
 				},
 				enumerable: true,

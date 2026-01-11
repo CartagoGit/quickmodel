@@ -26,7 +26,7 @@ class MyCustomTransformer implements IQTransformer<SerializedType, MyType> {
 }
 ```
 
-### Objetos Transformadores en Línea (Nuevo)
+### Objetos Transformadores en Línea
 
 A veces no necesitas crear una clase completa para una transformación simple o de un solo uso. QuickModel permite pasar objetos literales directamente al decorador `@Quick` siempre que implementen la interfaz `IQTransformer` (métodos `serialize` y `deserialize`).
 
@@ -35,22 +35,22 @@ Esto es ideal para reducers, formateadores rápidos o lógica específica de un 
 ```typescript
 // Define el transformador como un objeto constante
 const ReverseString = {
-  // De JSON a Modelo
-  deserialize(value: string): string {
-    return value && value.split('').reverse().join('');
-  },
-  // De Modelo a JSON
-  serialize(value: string): string {
-    return value.split('').reverse().join('');
-  }
+	// De JSON a Modelo
+	deserialize(value: string): string {
+		return value && value.split('').reverse().join('');
+	},
+	// De Modelo a JSON
+	serialize(value: string): string {
+		return value.split('').reverse().join('');
+	},
 };
 
 @Quick({
-  // Úsalo directamente
-  secretCode: ReverseString
+	// Úsalo directamente
+	secretCode: ReverseString,
 })
 class SpyMessage extends QModel<IMessage> {
-  declare secretCode: string;
+	declare secretCode: string;
 }
 ```
 

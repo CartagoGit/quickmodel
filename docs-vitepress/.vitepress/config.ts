@@ -244,10 +244,6 @@ export default defineConfig({
 								},
 							],
 						},
-						{
-							text: 'Type Aliases',
-							items: [],
-						},
 					],
 				},
 				{
@@ -327,7 +323,7 @@ export default defineConfig({
 							],
 						},
 						{
-							text: 'Decorators',
+							text: 'Core Decorators',
 							items: [
 								{
 									text: '@Quick',
@@ -344,22 +340,22 @@ export default defineConfig({
 								},
 							],
 						},
+					],
+				},
+				{
+					text: 'Navigation',
+					items: [
 						{
-							text: 'Namespaces',
-							items: [
-								{
-									text: 'Types',
-									link: '/tsdoc/@cartago-git/namespaces/Types/',
-								},
-								{
-									text: 'Advanced',
-									link: '/tsdoc/@cartago-git/namespaces/Advanced/',
-								},
-								{
-									text: 'Utils',
-									link: '/tsdoc/@cartago-git/namespaces/Utils/',
-								},
-							],
+							text: 'Advanced',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Types',
+							link: '/tsdoc/@cartago-git/namespaces/Types/',
+						},
+						{
+							text: 'Utils',
+							link: '/tsdoc/@cartago-git/namespaces/Utils/',
 						},
 					],
 				},
