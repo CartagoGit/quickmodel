@@ -13,6 +13,7 @@ import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
 import { MockGenerator } from '@/core/services/mock-generator.service';
+import { ValidationService } from '@/core/services/validation.service';
 import { QQMockBuilder } from '@/core/services/mock-builder.service';
 import type {
 	QModelInstance,
@@ -22,6 +23,7 @@ import type {
 	SerializedInterface,
 	ModelData,
 } from '@/core/interfaces/serialization-types.interface';
+import type { IQValidationResult } from '@/core/interfaces/transformer.interface';
 import type {
 	AnyRecord,
 	IModelConstructor,
@@ -80,6 +82,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	private static readonly serializer = new Serializer();
 	private static readonly toInterfaceService = new ToInterfaceService();
 	private static readonly mockGenerator = new MockGenerator();
+	private static readonly validation = new ValidationService();
 
 	// Store initial state for change tracking and reset
 	private __initData?: SerializedInterface<TInterface>;
@@ -236,11 +239,9 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * const users = User.mock().array(5); // returns User[]
 	 * ```
 	 */
-	static mock<
-		T extends abstract new (
-			...args: any[]
-		) => QModel<AnyRecord>,
-	>(this: T): QQMockBuilder<QModelInstance<T>, QModelInterface<T>> {
+	static mock<T extends abstract new (...args: any[]) => QModel<AnyRecord>>(
+		this: T
+	): QQMockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
 			...args: unknown[]
@@ -252,10 +253,10 @@ export abstract class QModel<TInterface extends AnyRecord> {
 		const ModelClass: new (data: any) => InstanceType =
 			this as unknown as IModelConstructor<InstanceType>;
 
-		return new QQMockBuilder(ModelClass, QModel.mockGenerator) as unknown as QQMockBuilder<
-			QModelInstance<T>,
-			QModelInterface<T>
-		>;
+		return new QQMockBuilder(
+			ModelClass,
+			QModel.mockGenerator
+		) as unknown as QQMockBuilder<QModelInstance<T>, QModelInterface<T>>;
 	}
 
 	/**
@@ -527,7 +528,10 @@ export abstract class QModel<TInterface extends AnyRecord> {
 
 					// 2. Search in backup
 					val = (
-						this as unknown as Record<string, Record<string, unknown>>
+						this as unknown as Record<
+							string,
+							Record<string, unknown>
+						>
 					)[QUICK_VALUES_KEY]?.[key];
 					if (val !== undefined) return val;
 
@@ -588,6 +592,27 @@ export abstract class QModel<TInterface extends AnyRecord> {
 		return QModel.serializer.serializeToJson(
 			this as unknown as ModelAsRecord
 		);
+	}
+
+	/**
+	 * Validates the model instance against defined transformers.
+	 *
+	 * Checks each property that has a transformer with validation logic.
+	 *
+	 * @returns Array of validation errors (empty if valid)
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ email: 'invalid-email' });
+	 * const errors = user.validate();
+	 * if (errors.length > 0) {
+	 *   console.error('Validation failed:', errors);
+	 * }
+	 * ```
+	 */
+	validate(): IQValidationResult[] {
+		type ModelAsRecord = Record<string, unknown>;
+		return QModel.validation.validate(this as unknown as ModelAsRecord);
 	}
 
 	/**
@@ -1050,7 +1075,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * @returns A new instance with the same data
 	 */
 	clone(): this {
-		const Constructor = this.constructor as unknown as IModelConstructor<this>;
+		const Constructor = this
+			.constructor as unknown as IModelConstructor<this>;
 		return Constructor.deserialize(this.serialize()) as this;
 	}
 }

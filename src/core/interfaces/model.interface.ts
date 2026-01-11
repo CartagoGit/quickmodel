@@ -116,7 +116,8 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  */
 export type QInterface<
 	TInterface,
-	TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
+	TTransforms extends Partial<Record<keyof TInterface, unknown>> | AnyRecord =
+		{},
 > = Omit<TInterface, keyof TTransforms> & TTransforms;
 
 /** @deprecated Use QInterface instead */

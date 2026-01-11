@@ -62,6 +62,7 @@ import {
 import type { QDiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
+import { QModelError } from '../errors/quickmodel.error';
 import { ErrorTransformer } from '@/transformers/error.transformer';
 import {
 	MapTransformer,
@@ -294,20 +295,23 @@ export class Deserializer<
 
 		if (expectedType === Number) {
 			if (typeof value !== 'number') {
-				throw new Error(
-					`${className}.${key}: Expected number, got ${typeof value}`
+				throw new QModelError(
+					`${className}.${key}: Expected number, got ${typeof value}`,
+					{ className, propertyKey: key, value, expectedType: 'number' }
 				);
 			}
 		} else if (expectedType === String) {
 			if (typeof value !== 'string') {
-				throw new Error(
-					`${className}.${key}: Expected string, got ${typeof value}`
+				throw new QModelError(
+					`${className}.${key}: Expected string, got ${typeof value}`,
+					{ className, propertyKey: key, value, expectedType: 'string' }
 				);
 			}
 		} else if (expectedType === Boolean) {
 			if (typeof value !== 'boolean') {
-				throw new Error(
-					`${className}.${key}: Expected boolean, got ${typeof value}`
+				throw new QModelError(
+					`${className}.${key}: Expected boolean, got ${typeof value}`,
+					{ className, propertyKey: key, value, expectedType: 'boolean' }
 				);
 			}
 		}

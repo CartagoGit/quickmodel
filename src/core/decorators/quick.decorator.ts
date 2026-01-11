@@ -1,3 +1,5 @@
+import { AnyRecord } from './../interfaces/model.interface';
+import { QInterface } from '@/index';
 /**
  * @Quick() class decorator for automatic property registration.
  *
@@ -521,8 +523,11 @@ export interface QOptions {
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  * @see {@link QAdvancedOptions} for discriminator configuration
  */
-export function Quick<TTypeMap extends QOptions = QOptions>(
-	typeMap?: TTypeMap,
+export function Quick<
+	TExtendedTypes extends AnyRecord = AnyRecord,
+	TTypeMap extends QOptions = QOptions,
+>(
+	typeMap?: QInterface<TTypeMap, TExtendedTypes>,
 	advancedOptions?: QAdvancedOptions<TTypeMap>
 ): ClassDecorator {
 	return function <T extends Function>(target: T): T {
