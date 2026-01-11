@@ -148,11 +148,20 @@ const errors = user.validate();
 if (errors.length) {
 	console.error(errors);
 }
+```
+
+````
+
+### `validate()`
+
+Ejecuta todas las validaciones definidas en las propiedades.
+
+```typescript
 const errors = user.validate();
 if (errors.length) {
 	console.error(errors);
 }
-```
+````
 
 ## Gestión de Estado y Control de Cambios
 

@@ -62,7 +62,7 @@ class MyModel extends QModel<IMyInterface> { ... }
 
 ### Options Reference:
 
-- **`strict`**: (Boolean) Only allows properties defined in the decorator.
+- **[`strict`](#5-strict-mode)**: (Boolean) If `true`, throws an error when unknown properties are present in the input.
 - **[`transformers`](#1-custom-transformers-deserialization)**: Custom deserialization logic.
 - **[`serializers`](#2-custom-serializers)**: Custom serialization logic.
 - **[`mockers`](#3-custom-mockers)**: Custom mock generation.
@@ -175,6 +175,18 @@ Handle arrays containing different model types (Union Types).
     items: (data) => 'text' in (data as any) ? Content : Metadata
   }
 })
+```
+
+### 5. Strict Mode
+
+By default, QuickModel ignores (copies) extra properties found in the input JSON that are not defined in the interface/decorator. Enable `strict: true` to throw an error instead.
+
+```typescript
+@Quick({ name: String }, { strict: true })
+class User extends QModel<IUser> {}
+
+// Throws Error: "Property 'unknownProp' is not allowed in strict mode"
+new User({ name: 'John', unknownProp: 123 });
 ```
 
 ---

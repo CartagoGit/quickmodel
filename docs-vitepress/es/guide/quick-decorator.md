@@ -56,14 +56,14 @@ Puedes pasar un segundo objeto de opciones a `@Quick` para un control avanzado:
   transformers: { ... },
   serializers: { ... },
   mockers: { ... },
-  discriminators: { ... }
+  discriminators: { ... } // Manejo de polimorfismo
 })
 class MyModel extends QModel<IMyInterface> { ... }
 ```
 
 ### Referencia de Opciones:
 
-- **`strict`**: (Boolean) Solo permite propiedades definidas en el decorador.
+- **[`strict`](#5-modo-estricto)**: (Boolean) Si es `true`, lanza un error cuando hay propiedades desconocidas en la entrada.
 - **[`transformers`](#1-transformadores-personalizados-deserializacion)**: Lógica de deserialización personalizada.
 - **[`serializers`](#2-serializadores-personalizados)**: Lógica de serialización personalizada.
 - **[`mockers`](#3-mocks-personalizados)**: Generación de mocks personalizada.
@@ -158,6 +158,18 @@ Maneja arrays que contienen diferentes tipos de modelos (Tipos Unión).
     items: (data) => 'text' in (data as any) ? Content : Metadata
   }
 })
+```
+
+### 5. Modo Estricto
+
+Por defecto, QuickModel ignora (copia) las propiedades extra encontradas en el JSON de entrada que no están definidas en el decorador. Activa `strict: true` para lanzar un error en su lugar.
+
+```typescript
+@Quick({ name: String }, { strict: true })
+class User extends QModel<IUser> {}
+
+// Lanza Error: "Property 'unknownProp' is not allowed in strict mode"
+new User({ name: 'John', unknownProp: 123 });
 ```
 
 ---

@@ -207,6 +207,7 @@ export class QQMockBuilder<
 	 * ```
 	 */
 	interfaceEmpty(overrides?: Partial<TInterface>): TInterface {
+		this.ensureFieldsRegistered();
 		return this.mockGenerator.generate(this.modelClass, 'empty', overrides);
 	}
 
@@ -222,6 +223,7 @@ export class QQMockBuilder<
 	 * ```
 	 */
 	interfaceRandom(overrides?: Partial<TInterface>): TInterface {
+		this.ensureFieldsRegistered();
 		return this.mockGenerator.generate(
 			this.modelClass,
 			'random',
@@ -236,6 +238,7 @@ export class QQMockBuilder<
 	 * @returns A plain interface object with sample values
 	 */
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
+		this.ensureFieldsRegistered();
 		return this.mockGenerator.generate(
 			this.modelClass,
 			'sample',
@@ -250,6 +253,7 @@ export class QQMockBuilder<
 	 * @returns A plain interface object with minimal values
 	 */
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
+		this.ensureFieldsRegistered();
 		return this.mockGenerator.generate(
 			this.modelClass,
 			'minimal',
@@ -264,6 +268,7 @@ export class QQMockBuilder<
 	 * @returns A plain interface object with all fields
 	 */
 	interfaceFull(overrides?: Partial<TInterface>): TInterface {
+		this.ensureFieldsRegistered();
 		return this.mockGenerator.generate(this.modelClass, 'full', overrides);
 	}
 
@@ -328,6 +333,7 @@ export class QQMockBuilder<
 		type: MockType = 'random',
 		overrides?: (index: number) => Partial<TInterface>
 	): TInterface[] {
+		this.ensureFieldsRegistered();
 		if (count < 0) {
 			throw new Error(`Count must be non-negative, got ${count}`);
 		}

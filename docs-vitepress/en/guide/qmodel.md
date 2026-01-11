@@ -141,13 +141,9 @@ const user = User.deserialize(plainObject);
 
 ### `validate()`
 
-Runs all validations defined on properties.
+Runs all validations defined on properties (if verification middleware is enabled).
 
 ```typescript
-const errors = user.validate();
-if (errors.length) {
-	console.error(errors);
-}
 const errors = user.validate();
 if (errors.length) {
 	console.error(errors);
