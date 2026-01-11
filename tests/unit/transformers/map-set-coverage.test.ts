@@ -75,11 +75,10 @@ describe('Transformer Coverage: Map & Set', () => {
 		});
 
 		describe('serialize', () => {
-			test('should serialize to __type wrapper', () => {
+			test('should serialize to plain object', () => {
 				const map = new Map([['key', 'val']]);
 				const result = transformer.serialize(map);
-				expect(result.__type).toBe('Map');
-				expect(result.entries).toEqual([['key', 'val']]);
+				expect(result).toEqual({ key: 'val' });
 			});
 		});
 
@@ -153,11 +152,11 @@ describe('Transformer Coverage: Map & Set', () => {
 		});
 
 		describe('serialize', () => {
-			test('should serialize to __type wrapper', () => {
+			test('should serialize to array', () => {
 				const set = new Set([1, 2]);
 				const result = transformer.serialize(set);
-				expect(result.__type).toBe('Set');
-				expect(result.values).toEqual([1, 2]);
+				expect(Array.isArray(result)).toBe(true);
+				expect(result).toEqual([1, 2]);
 			});
 		});
 

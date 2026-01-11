@@ -65,8 +65,8 @@ describe('Type Safety', () => {
 		expect(typeof serialized.error).toBe('string');
 		expect(typeof serialized.amount).toBe('string');
 		expect(typeof serialized.createdAt).toBe('string');
-		expect(typeof serialized.tags).toBe('object'); // Ahora es { __type: 'Set', values }
-		expect(serialized.tags).toHaveProperty('__type', 'Set');
+		expect(Array.isArray(serialized.tags)).toBe(true); // Ahora es array simple
+		// expect(serialized.tags).toHaveProperty('__type', 'Set'); // YA NO TIENE WRAPPER
 
 		// Los valores serializados son correctos
 		expect(serialized.pattern).toEqual({

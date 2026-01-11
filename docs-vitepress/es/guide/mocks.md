@@ -1,24 +1,17 @@
 # Generación de Mocks
 
-QuickModel incluye un potente generador de mocks integrado impulsado por `@faker-js/faker`, lo que hace increíblemente fácil crear datos de prueba realistas.
-
-## Instalación
-
-La generación de mocks requiere `@faker-js/faker` como dependencia de desarrollo:
-
-```bash
-npm install --save-dev @faker-js/faker
-```
+QuickModel incluye un potente generador de mocks integrado impulsado por `@faker-js/faker`, que viene **incluido automáticamente** con la librería. No necesitas instalar nada extra.
 
 ## Uso Básico
 
 Cada QModel tiene un método estático `.mock()` que devuelve un **Mock Builder**. Debes llamar a `.random()` o `.array()` para obtener los datos reales.
 
 ```typescript
-@Quick({ name: String, email: String })
+@Quick({ name: String, email: String, isActive: Boolean })
 class User extends QModel<IUser> {
 	declare name: string;
 	declare email: string;
+	declare isActive: boolean;
 }
 
 // 1. Generar una sola instancia aleatoria
@@ -38,14 +31,26 @@ console.log(admin.role); // 'admin'
 
 QuickModel infiere automáticamente datos falsos apropiados basados en tus definiciones de tipos:
 
-| Tipo                    | Mock Generado                                                                                      |
-| ----------------------- | -------------------------------------------------------------------------------------------------- |
-| `String` / `'string'`   | String aleatorio (o especializado si el nombre coincide con patrones comunes como 'email', 'name') |
-| `Number` / `'number'`   | Número aleatorio                                                                                   |
-| `Boolean` / `'boolean'` | Booleano aleatorio                                                                                 |
-| `Date` / `'date'`       | Fecha reciente aleatoria                                                                           |
-| `BigInt` / `'bigint'`   | Entero grande aleatorio                                                                            |
-| `URL` / `'url'`         | URL aleatoria                                                                                      |
+| Tipo                    | Mock Generado                                                        |
+| :---------------------- | :------------------------------------------------------------------- |
+| `String` / `'string'`   | String aleatorio / Contexto inferido ('email', 'name', 'uuid', etc.) |
+| `Number` / `'number'`   | Número aleatorio                                                     |
+| `Boolean` / `'boolean'` | Booleano aleatorio                                                   |
+| `Date` / `'date'`       | Fecha reciente aleatoria                                             |
+| `BigInt` / `'bigint'`   | Entero grande aleatorio                                              |
+| `RegExp` / `'regexp'`   | Patrón regex aleatorio                                               |
+| `Symbol` / `'symbol'`   | Símbolo aleatorio                                                    |
+| `URL` / `'url'`         | URL aleatoria                                                        |
+| `Error` / `'error'`     | Objeto Error aleatorio                                               |
+| `Map` / `'map'`         | Map con entradas aleatorias                                          |
+| `Set` / `'set'`         | Set con valores aleatorios                                           |
+| Tipos `Buffer`          | `ArrayBuffer`, `DataView`, `Uint8Array`, `Float32Array`, etc.        |
+
+### ¿Por qué tengo que especificar los tipos?
+
+Te preguntarás: _"Si ya declaré `name: string`, ¿por qué necesito `@Quick({ name: String })`?"_
+
+**Respuesta:** Los tipos de TypeScript (`: string`) se **eliminan** al compilar a JavaScript. En tiempo de ejecución, la librería no puede ver tus definiciones de tipos de TypeScript. El decorador `@Quick` (o `@QType`) proporciona los **metadatos en tiempo de ejecución** necesarios para que la librería sepa cómo generar mocks y deserializar datos.
 
 ### Inferencia Inteligente
 
@@ -81,9 +86,11 @@ console.log(user.address.city); // "Nueva York" (Aleatorio)
 Puedes crear arrays donde todos los elementos compartan algunas propiedades comunes:
 
 ```typescript
-// 10 usuarios, todos activos
+// 10 usuarios, todos con isActive = true
 const activeUsers = User.mock().array(10, { isActive: true });
 ```
+
+Esto genera 10 usuarios únicos, pero **fuerza** que todos tengan `isActive: true`.
 
 ## Patrones de Testing
 
@@ -117,8 +124,7 @@ async function seedKeywords() {
 ## Mejores Prácticas
 
 1. **Sobrescrituras Explícitas**: Si un test depende de un valor específico (e.g., `role: 'admin'`), SIEMPRE sobrescríbelo. No confíes en el azar.
-2. **Usa en `devDependencies`**: No envíes faker a producción.
-3. **Fixtures**: Crea un archivo `fixtures.ts` dedicado para exportar configuraciones comunes de mocks.
+2. **Fixtures**: Crea un archivo `fixtures.ts` dedicado para exportar configuraciones comunes de mocks.
 
 ```typescript
 // fixtures.ts

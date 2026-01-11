@@ -120,16 +120,12 @@ describe('Syntax Comparison: declare vs !', () => {
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(serialized.tags).toEqual({
-				__type: 'Set',
-				values: ['typescript', 'testing'],
-			});
+			expect(Array.isArray(serialized.tags)).toBe(true);
+			expect(serialized.tags).toEqual(['typescript', 'testing']);
+
 			expect(serialized.metadata).toEqual({
-				__type: 'Map',
-				entries: [
-					['author', 'John'],
-					['version', '1.0'],
-				],
+				author: 'John',
+				version: '1.0',
 			});
 		});
 
@@ -202,16 +198,12 @@ describe('Syntax Comparison: declare vs !', () => {
 				source: '^test$',
 				flags: 'gi',
 			});
-			expect(serialized.tags).toEqual({
-				__type: 'Set',
-				values: ['typescript', 'testing'],
-			});
+			expect(Array.isArray(serialized.tags)).toBe(true);
+			expect(serialized.tags).toEqual(['typescript', 'testing']);
+
 			expect(serialized.metadata).toEqual({
-				__type: 'Map',
-				entries: [
-					['author', 'John'],
-					['version', '1.0'],
-				],
+				author: 'John',
+				version: '1.0',
 			});
 		});
 

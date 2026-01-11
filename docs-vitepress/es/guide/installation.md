@@ -91,18 +91,6 @@ console.log(user.createdAt instanceof Date); // true ✅
 
 Si esto se ejecuta sin errores e imprime `true`, ¡estás listo!
 
-## Dependencias Opcionales
-
-### Para Testing (Mocks)
-
-QuickModel incluye generación de mocks usando Faker.js:
-
-```bash
-npm install --save-dev @faker-js/faker
-```
-
-Esto solo es necesario si planeas usar el método `.mock()` para testing.
-
 ## Próximos Pasos
 
 - [Inicio Rápido](/es/guide/quick-start) - Construye tu primer modelo

@@ -15,31 +15,31 @@ describe('Robustness: Strict Mode', () => {
 
     test('should REJECT extra properties when strict: true', () => {
         interface IUser { name: string }
-        @Quick({}, { strict: true })
+        // In Strict Mode, we MUST explicitly define properties since we can't infer them safely
+        @Quick({ name: 'string' }, { strict: true })
         class StrictUser extends QModel<IUser> { 
             declare name: string; 
         }
 
-        expect(() => {
-            new StrictUser({ name: 'John', extra: 123 } as any);
-        }).toThrow(QModelError);
+        const action = () => {
+             new StrictUser({ name: 'John', extra: 123 } as any);
+        };
+
+        expect(action).toThrow(QModelError);
         
         try {
-            new StrictUser({ name: 'John', extra: 123 } as any);
+            action();
         } catch (e: any) {
             expect(e.message).toContain("Strict Mode: Property 'extra' is not defined");
         }
     });
 
-    test('should allow properties defined via declare in strict mode', () => {
+    test('should allow properties explicitly mapped in strict mode', () => {
          interface IUser { name: string; age: number }
-         @Quick({}, { strict: true })
+         // Explicit mapping required for strict mode
+         @Quick({ name: 'string', age: 'number' }, { strict: true })
          class User extends QModel<IUser> {
              declare name: string;
-             // age is in interface but maybe not decorated?
-             // If we use declare, it might imply existence on instance/prototype?
-             // Actually, 'declare' is TS only. At runtime, it doesn't exist until assigned.
-             // But @Quick captures design:type!
              declare age: number;
          }
 

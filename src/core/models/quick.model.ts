@@ -33,6 +33,7 @@ import {
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
 } from '../constants/metadata-keys';
+import { deepFreeze } from '@/core/helpers/transform-helpers';
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -224,6 +225,30 @@ export abstract class QModel<TInterface extends AnyRecord> {
 		// Use generics to cast 'this' to the constructor type
 		const Constructor = this as unknown as new (data: T) => TClass;
 		return new Constructor(data) as unknown as TResult;
+	}
+
+	/**
+	 * Creates a READ-ONLY (immutable) instance of the model.
+	 * The instance and all nested properties will be recursively frozen.
+	 *
+	 * @param data - Data to initialize the model
+	 * @returns Deeply frozen model instance
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = User.createReadonly({ name: 'John' });
+	 * user.name = 'Jane'; // ❌ Throws TypeError in strict mode
+	 * ```
+	 */
+	static createReadonly<
+		T extends AnyRecord = AnyRecord,
+		TClass extends QModel<T> = QModel<T>,
+		TResult = TClass,
+	>(this: new (data: T) => TClass, data: T): Readonly<TResult> {
+		// Instantiate directly using the logic from create() to avoid abstract type issues
+		const Constructor = this as unknown as new (data: T) => TClass;
+		const instance = new Constructor(data) as unknown as TResult;
+		return deepFreeze(instance) as unknown as Readonly<TResult>;
 	}
 
 	/**

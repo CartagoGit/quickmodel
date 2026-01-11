@@ -645,7 +645,12 @@ export function Quick<
 
 			// Register properties NOT in typeMap on first instantiation
 			// This allows @Quick() without typeMap to work with primitives
+			// BUT: If strict mode is enabled, we should NOT auto-register unknown properties
+			// because we want the deserializer to reject them.
+			const isStrict = advancedOptions?.strict === true;
+			
 			if (
+				!isStrict &&
 				!propertiesRegistered &&
 				data &&
 				typeof data === 'object' &&

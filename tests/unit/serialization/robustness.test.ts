@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { Serializer } from '@/core/services/serializer.service';
+
 
 describe('Robustness Scenarios', () => {
     

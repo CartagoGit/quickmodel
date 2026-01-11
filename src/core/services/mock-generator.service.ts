@@ -4,65 +4,20 @@
  */
 
 import 'reflect-metadata';
+import { faker } from '@faker-js/faker';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
-
-// Import type only
-import type { Faker } from '@faker-js/faker';
 
 export type MockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
 export class MockGenerator {
-	private fakerInstance?: Faker;
-
 	/**
 	 * Creates a new MockGenerator instance.
 	 */
 	constructor() {}
 
 	/**
-	 * Lazily loads the faker instance.
-	 * Throws an error if @faker-js/faker is not installed.
-	 */
-	private async ensureFaker(): Promise<Faker> {
-		if (this.fakerInstance) {
-			return this.fakerInstance;
-		}
-
-		try {
-			// Dynamic import to avoid hard dependency
-			const fakerModule = await import('@faker-js/faker');
-			this.fakerInstance = fakerModule.faker;
-			return this.fakerInstance;
-		} catch {
-			// Try synchronous require as fallback (Node/CJS environments)
-			try {
-				/* eslint-disable @typescript-eslint/no-var-requires */
-				// @ts-ignore
-				// eslint-disable-next-line
-				const fakerLib = require('@faker-js/faker');
-				this.fakerInstance = fakerLib.faker;
-				return this.fakerInstance as Faker;
-			} catch {
-				throw new Error(
-					'The "@faker-js/faker" package is required for mocking. Please install it as a dev dependency: npm install -D @faker-js/faker'
-				);
-			}
-		}
-	}
-
-	/**
 	 * Generates a mock based on reflect metadata.
-	 *
-	 * Note: While this method signature appears synchronous, internally it relies on faker being loaded.
-	 * Since dynamic imports are async, this might pose a challenge for synchronous APIs.
-	 * However, in most test environments using Node/Bun, `require` is available or the user
-	 * can ensuring pre-loading if needed. We assume for now strict dynamic import works or valid CJS fallback.
-	 *
-	 * UNFORTUNATELY: Changing this to async would break the public API.
-	 * We will try to rely on the fact that if this is called, we are likely in a test environment.
-	 * If we are in an ESM environment where top-level await isn't available and no `require`,
-	 * we might fail. This is a known trade-off for making it optional without breaking API.
 	 */
 	generate<
 		TModel,
@@ -72,56 +27,16 @@ export class MockGenerator {
 		type: MockType = 'random',
 		overrides: Partial<TData> = {}
 	): TData {
-		// We can't await here. This is a limitation.
-		// We must assume that if the user calls generate(), they are in an env where we can get faker.
-		// If `this.fakerInstance` is missing, we try to get it synchronously.
-
-		if (!this.fakerInstance) {
-			try {
-				// Try sync require (Node/Bun/CJS)
-				// @ts-ignore
-				// eslint-disable-next-line
-				const req = typeof require !== 'undefined' ? require : null;
-				if (req) {
-					// @ts-ignore
-					this.fakerInstance = req('@faker-js/faker').faker;
-				} else {
-					throw new Error('No require');
-				}
-			} catch {
-				throw new Error(
-					'QuickModel: Synchronous mock generation requires "@faker-js/faker" to be synchronously loadable (CommonJS/Node). \n' +
-						'In pure ESM environments, you might need to ensure it is loaded. \n' +
-						'Please install: npm install -D @faker-js/faker'
-				);
-			}
-		}
-
-		if (!this.fakerInstance) {
-			throw new Error(
-				'Critical: Faker instance could not be loaded. Please install @faker-js/faker.'
-			);
-		}
-
-		return this.generateSync(modelClass, type, overrides);
-	}
-
-	// Internal sync generation logic
-	private generateSync<
-		TModel,
-		TData extends Record<string, unknown> = Record<string, unknown>,
-	>(
-		modelClass: new (data: TData) => TModel,
-		type: MockType,
-		overrides: Partial<TData>
-	): TData {
 		const instance = Object.create(modelClass.prototype);
 		const mock: Record<string, unknown> = {};
 
+		// Obtener todas las propiedades con metadata
 		const properties = this.getDecoratedProperties(instance);
+		// Explicit typing for key to satisfy index signature requirements
 		const overrideData = overrides as Record<string, unknown>;
 
 		for (const key of properties) {
+			// If override exists, use it
 			if (key in overrideData) {
 				mock[key] = overrideData[key];
 				continue;
@@ -143,6 +58,7 @@ export class MockGenerator {
 				key
 			);
 
+			// FALLBACK: If metadata is missing but property is in Quick TypeMap, try to resolve it from there
 			if (!fieldType && !designType && !arrayElementClass) {
 				const typeMap = Reflect.getMetadata(
 					QUICK_TYPE_MAP_KEY,
@@ -150,15 +66,22 @@ export class MockGenerator {
 				);
 				if (typeMap && typeMap[key]) {
 					const mappedType = typeMap[key];
+
+					// Case 1: mappedType is Array constructor: @Quick({ tags: Array })
 					if (mappedType === Array) {
 						arrayElementClass = Array;
 						designType = Array;
-					} else if (Array.isArray(mappedType)) {
+					}
+					// Case 2: mappedType is array syntax: @Quick({ tags: [String] })
+					else if (Array.isArray(mappedType)) {
 						designType = Array;
 						if (mappedType.length > 0) {
 							arrayElementClass = mappedType[0];
 						}
-					} else if (typeof mappedType === 'function') {
+					}
+					// Case 3: mappedType is constructor: @Quick({ date: Date })
+					else if (typeof mappedType === 'function') {
+						// Check common types
 						const name = mappedType.name.toLowerCase();
 						if (
 							['date', 'regexp', 'set', 'map', 'bigint'].includes(
@@ -167,9 +90,12 @@ export class MockGenerator {
 						) {
 							fieldType = name;
 						} else {
+							// Assume custom model or other class
 							fieldType = mappedType;
 						}
-					} else if (typeof mappedType === 'string') {
+					}
+					// Case 4: mappedType is string: @Quick({ val: 'bigint' })
+					else if (typeof mappedType === 'string') {
 						fieldType = mappedType;
 					}
 				}
@@ -208,8 +134,11 @@ export class MockGenerator {
 		instance: Record<string, unknown>
 	): string[] {
 		const properties: Set<string> = new Set();
+
+		// Traverse the prototype chain
 		let current = instance;
 		while (current && current !== Object.prototype) {
+			// Get the list of properties registered by @QType()
 			const registeredFields = Reflect.getMetadata(
 				QTYPES_METADATA_KEY,
 				current
@@ -220,9 +149,11 @@ export class MockGenerator {
 					properties.add(field);
 				}
 			}
+
 			current = Object.getPrototypeOf(current);
 		}
 
+		// Also check for @Quick() typeMap - if no fields registered, use typeMap keys
 		if (properties.size === 0) {
 			const typeMap = Reflect.getMetadata(
 				QUICK_TYPE_MAP_KEY,
@@ -234,6 +165,7 @@ export class MockGenerator {
 				}
 			}
 		}
+
 		return Array.from(properties);
 	}
 
@@ -243,13 +175,13 @@ export class MockGenerator {
 		designType: Function | undefined,
 		arrayElementClass: unknown
 	): unknown {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const faker = this.fakerInstance!;
-
+		// Array de modelos
 		if (arrayElementClass && designType === Array) {
+			// Special case: generic Array class (e.g. @Quick({ tags: Array }))
 			if (arrayElementClass === Array) {
 				return this.getDefaultValue(type, 'array');
 			}
+
 			const length =
 				type === 'minimal'
 					? 1
@@ -265,6 +197,7 @@ export class MockGenerator {
 			);
 		}
 
+		// Nested model
 		if (arrayElementClass && !fieldType) {
 			return this.generate(
 				arrayElementClass as new (
@@ -274,6 +207,7 @@ export class MockGenerator {
 			);
 		}
 
+		// By fieldType (special types)
 		if (fieldType) {
 			return this.generateByFieldType(
 				type,
@@ -281,6 +215,7 @@ export class MockGenerator {
 			);
 		}
 
+		// By designType (auto-detection)
 		if (designType) {
 			return this.generateByDesignType(type, designType);
 		}
@@ -299,95 +234,101 @@ export class MockGenerator {
 					? fieldType
 					: fieldType.name;
 
-		if (typeStr === 'string' || typeStr === 'String')
+		// Normalize to lowercase for comparison
+
+		// Primitives (must come first - exact match with QType metadata)
+		if (typeStr === 'string' || typeStr === 'String') {
 			return this.getDefaultValue(type, 'string');
-		if (typeStr === 'number' || typeStr === 'Number')
+		}
+		if (typeStr === 'number' || typeStr === 'Number') {
 			return this.getDefaultValue(type, 'number');
-		if (typeStr === 'boolean' || typeStr === 'Boolean')
+		}
+		if (typeStr === 'boolean' || typeStr === 'Boolean') {
 			return this.getDefaultValue(type, 'boolean');
-		if (typeStr === 'object' || typeStr === 'Object')
+		}
+
+		// Object (explicit in Quick config)
+		if (typeStr === 'object' || typeStr === 'Object') {
 			return this.getDefaultValue(type, 'object');
+		}
 
-		if (typeStr === 'array' || typeStr === 'Array')
+		// Collections (exact match with QType metadata)
+		if (typeStr === 'array' || typeStr === 'Array') {
 			return this.getDefaultValue(type, 'array');
-		if (typeStr === 'set' || typeStr === 'Set')
+		}
+		if (typeStr === 'set' || typeStr === 'Set') {
 			return this.getDefaultValue(type, 'set');
-		if (typeStr === 'map' || typeStr === 'Map')
+		}
+		if (typeStr === 'map' || typeStr === 'Map') {
 			return this.getDefaultValue(type, 'map');
+		}
 
-		if (typeStr === 'date' || typeStr === 'Date')
+		// Special types (exact match with QType metadata)
+		if (typeStr === 'date' || typeStr === 'Date') {
 			return this.getDefaultValue(type, 'date');
-		if (typeStr === 'bigint' || typeStr === 'BigInt')
+		}
+		if (typeStr === 'bigint' || typeStr === 'BigInt') {
 			return this.getDefaultValue(type, 'bigint');
-		if (typeStr === 'symbol' || typeStr === 'Symbol')
+		}
+		if (typeStr === 'symbol' || typeStr === 'Symbol') {
 			return this.getDefaultValue(type, 'symbol');
-		if (typeStr === 'regexp' || typeStr === 'RegExp')
+		}
+		if (typeStr === 'regexp' || typeStr === 'RegExp') {
 			return this.getDefaultValue(type, 'regexp');
-		if (typeStr === 'error' || typeStr === 'Error')
+		}
+		if (typeStr === 'error' || typeStr === 'Error') {
 			return this.getDefaultValue(type, 'error');
+		}
 
-		if (typeStr === 'url' || typeStr === 'URL')
+		// Web APIs (exact match with QType metadata)
+		if (typeStr === 'url' || typeStr === 'URL') {
 			return this.getDefaultValue(type, 'url');
-		if (typeStr === 'urlsearchparams' || typeStr === 'URLSearchParams')
+		}
+		if (typeStr === 'urlsearchparams' || typeStr === 'URLSearchParams') {
 			return this.getDefaultValue(type, 'urlsearchparams');
+		}
 
-		if (typeStr === 'arraybuffer' || typeStr === 'ArrayBuffer')
+		// Binary types
+		if (typeStr === 'arraybuffer' || typeStr === 'ArrayBuffer') {
 			return this.getDefaultValue(type, 'arraybuffer');
-		if (typeStr === 'dataview' || typeStr === 'DataView')
+		}
+		if (typeStr === 'dataview' || typeStr === 'DataView') {
 			return this.getDefaultValue(type, 'dataview');
-
-		// TypedArrays
-		const typedArrays = [
-			'int8array',
-			'uint8array',
-			'int16array',
-			'uint16array',
-			'int32array',
-			'uint32array',
-			'float32array',
-			'float64array',
-			'bigint64array',
-			'biguint64array',
-		];
-		if (
-			typedArrays.includes(typeStr.toLowerCase()) ||
-			typedArrays.some(
-				(t) => t.toLowerCase() === typeStr.toLowerCase() + 'array' // handle generic cases if needed
-			)
-		) {
-			// exact match logic continues below
 		}
 
-		// Simplify typed array check
-		if (
-			typeStr.toLowerCase().endsWith('array') &&
-			typeStr.toLowerCase() !== 'array'
-		) {
-			// Fall through to exact string matching in generateValue which used exact strings
-		}
-
-		// Just use original logic for simplicity
-		if (typeStr === 'int8array' || typeStr === 'Int8Array')
+		// TypedArrays (exact match with QType metadata)
+		if (typeStr === 'int8array' || typeStr === 'Int8Array') {
 			return this.getDefaultValue(type, 'int8array');
-		if (typeStr === 'uint8array' || typeStr === 'Uint8Array')
+		}
+		if (typeStr === 'uint8array' || typeStr === 'Uint8Array') {
 			return this.getDefaultValue(type, 'uint8array');
-		if (typeStr === 'int16array' || typeStr === 'Int16Array')
+		}
+		if (typeStr === 'int16array' || typeStr === 'Int16Array') {
 			return this.getDefaultValue(type, 'int16array');
-		if (typeStr === 'uint16array' || typeStr === 'Uint16Array')
+		}
+		if (typeStr === 'uint16array' || typeStr === 'Uint16Array') {
 			return this.getDefaultValue(type, 'uint16array');
-		if (typeStr === 'int32array' || typeStr === 'Int32Array')
+		}
+		if (typeStr === 'int32array' || typeStr === 'Int32Array') {
 			return this.getDefaultValue(type, 'int32array');
-		if (typeStr === 'uint32array' || typeStr === 'Uint32Array')
+		}
+		if (typeStr === 'uint32array' || typeStr === 'Uint32Array') {
 			return this.getDefaultValue(type, 'uint32array');
-		if (typeStr === 'float32array' || typeStr === 'Float32Array')
+		}
+		if (typeStr === 'float32array' || typeStr === 'Float32Array') {
 			return this.getDefaultValue(type, 'float32array');
-		if (typeStr === 'float64array' || typeStr === 'Float64Array')
+		}
+		if (typeStr === 'float64array' || typeStr === 'Float64Array') {
 			return this.getDefaultValue(type, 'float64array');
-		if (typeStr === 'bigint64array' || typeStr === 'BigInt64Array')
+		}
+		if (typeStr === 'bigint64array' || typeStr === 'BigInt64Array') {
 			return this.getDefaultValue(type, 'bigint64array');
-		if (typeStr === 'biguint64array' || typeStr === 'BigUint64Array')
+		}
+		if (typeStr === 'biguint64array' || typeStr === 'BigUint64Array') {
 			return this.getDefaultValue(type, 'biguint64array');
+		}
 
+		// Fallback: If no match, default to string
 		return this.getDefaultValue(type, 'string');
 	}
 
@@ -396,6 +337,7 @@ export class MockGenerator {
 		designType: Function
 	): unknown {
 		const typeName = designType.name;
+
 		if (typeName === 'String') return this.getDefaultValue(type, 'string');
 		if (typeName === 'Number') return this.getDefaultValue(type, 'number');
 		if (typeName === 'Boolean')
@@ -410,9 +352,14 @@ export class MockGenerator {
 	}
 
 	private getDefaultValue(type: MockType, jsType: string): unknown {
-		if (type === 'empty') return this.getEmptyValue(jsType);
-		if (type === 'minimal' || type === 'sample')
+		if (type === 'empty') {
+			return this.getEmptyValue(jsType);
+		}
+
+		if (type === 'minimal' || type === 'sample') {
 			return this.getSampleValue(jsType);
+		}
+
 		return this.getRandomValue(jsType);
 	}
 
@@ -425,17 +372,17 @@ export class MockGenerator {
 			case 'boolean':
 				return false;
 			case 'bigint':
-				return '0';
+				return '0'; // Serialized format for transformers
 			case 'symbol':
 				return Symbol();
 			case 'date':
-				return new Date(0).toISOString();
+				return new Date(0).toISOString(); // Serialized format
 			case 'regexp':
-				return /(?:)/.toString();
+				return /(?:)/.toString(); // Serialized format
 			case 'error':
 				return new Error();
 			case 'url':
-				return 'http://localhost';
+				return 'http://localhost'; // Serialized format
 			case 'urlsearchparams':
 				return new URLSearchParams();
 			case 'array':
@@ -484,17 +431,17 @@ export class MockGenerator {
 			case 'boolean':
 				return true;
 			case 'bigint':
-				return '123';
+				return '123'; // Serialized format for transformers
 			case 'symbol':
 				return Symbol('sample');
 			case 'date':
-				return new Date('2024-01-01').toISOString();
+				return new Date('2024-01-01').toISOString(); // Serialized format
 			case 'regexp':
-				return '/test/gi';
+				return '/test/gi'; // Serialized format
 			case 'error':
 				return new Error('Sample error');
 			case 'url':
-				return 'https://example.com';
+				return 'https://example.com'; // Serialized format
 			case 'urlsearchparams':
 				return new URLSearchParams('key=value');
 			case 'array':
@@ -535,8 +482,6 @@ export class MockGenerator {
 	}
 
 	private getRandomValue(jsType: string): unknown {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const faker = this.fakerInstance!;
 		switch (jsType) {
 			case 'string':
 				return faker.lorem.word();
@@ -545,22 +490,22 @@ export class MockGenerator {
 			case 'boolean':
 				return faker.datatype.boolean();
 			case 'bigint':
-				return String(faker.number.int({ min: 1, max: 999999 }));
+				return String(faker.number.int({ min: 1, max: 999999 })); // Serialized format
 			case 'symbol':
 				return Symbol(faker.lorem.word());
 			case 'date':
-				return faker.date.recent().toISOString();
+				return faker.date.recent().toISOString(); // Serialized format
 			case 'regexp': {
 				const patterns = ['\\w+', '\\d+', '[a-z]+', '.*'];
 				const flags = ['', 'i', 'g', 'gi', 'm'];
 				const pattern = faker.helpers.arrayElement(patterns);
 				const flag = faker.helpers.arrayElement(flags);
-				return `/${pattern}/${flag}`;
+				return `/${pattern}/${flag}`; // Serialized format
 			}
 			case 'error':
 				return new Error(faker.lorem.sentence());
 			case 'url':
-				return faker.internet.url();
+				return faker.internet.url(); // Already string
 			case 'urlsearchparams': {
 				const params = new URLSearchParams();
 				params.set(faker.lorem.word(), faker.lorem.word());
