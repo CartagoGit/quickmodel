@@ -22,6 +22,7 @@ import type { QModel } from '@/core/models/quick.model';
  * ```
  */
 export type QModelInstance<T> = T extends abstract new (
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	...args: any[]
 ) => infer R
 	? R

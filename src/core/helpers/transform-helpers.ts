@@ -123,9 +123,9 @@ export const base64Encode = (s: string): string =>
 export const base64Decode = (s: string): string =>
 	Buffer.from(s, 'base64').toString('utf-8');
 
-export const jsonParse = <T = any>(s: string): T => JSON.parse(s);
+export const jsonParse = <T = unknown>(s: string): T => JSON.parse(s);
 
-export const jsonStringify = (obj: any): string => JSON.stringify(obj);
+export const jsonStringify = (obj: unknown): string => JSON.stringify(obj);
 
 export const encodeURIString = (s: string): string => encodeURIComponent(s);
 

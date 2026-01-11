@@ -17,7 +17,7 @@ import type { MockType } from './mock-generator.service';
  */
 export class MockBuilder<
 	TInstance,
-	TInterface extends Record<string, any> = any,
+	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
 	private _fieldsRegistered = false;
 
@@ -44,7 +44,7 @@ export class MockBuilder<
 				const typeMap =
 					Reflect.getMetadata(QUICK_TYPE_MAP_KEY, this.modelClass) ||
 					{};
-				const sampleData: Record<string, any> = {};
+				const sampleData: Record<string, unknown> = {};
 
 				for (const [key, value] of Object.entries(typeMap)) {
 					// Generate appropriate sample data based on type

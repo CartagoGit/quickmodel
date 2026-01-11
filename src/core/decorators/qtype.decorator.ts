@@ -195,7 +195,7 @@ export type INativeFactory =
 
 export function QType<T>(
 	typeOrClass?:
-		| (new (data: any) => T) // Constructor relaxed to 'any' argument to allow various signatures
+		| (new (data: unknown) => T) // Constructor relaxed to 'any' argument to allow various signatures
 		| symbol
 		| QTypeString
 		| INativeFactory
@@ -227,10 +227,10 @@ export function QType<T>(
 
 			// Define getter/setter
 			Object.defineProperty(target, propertyKey, {
-				get(this: any) {
+				get(this: Record<string, unknown>) {
 					return this[storageKey];
 				},
-				set(this: any, value: any) {
+				set(this: Record<string, unknown>, value: unknown) {
 					this[storageKey] = value;
 				},
 				enumerable: true,

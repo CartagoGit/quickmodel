@@ -167,7 +167,7 @@ const currentLang = computed(() => {
 	return lang || locales.value[0];
 });
 
-const handleLanguageChange = (lang: {
+const handleLanguageChange = async (lang: {
 	code: string;
 	label: string;
 	flagSvg: string;
@@ -185,8 +185,10 @@ const handleLanguageChange = (lang: {
 		localStorage.setItem(STORAGE_KEY_LANG, lang.code);
 
 		if (isSharedRoute) {
-			// En rutas compartidas, solo actualizar el override local
+			// En rutas compartidas, actualizar el override local
 			overrideLocale.value = lang.code;
+			// Esperar a que Vue actualice la vista
+			await nextTick();
 		} else {
 			// Ruta con idioma (/en/, /es/): construir la nueva ruta
 			const newPath = currentPath.replace(

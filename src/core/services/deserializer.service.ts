@@ -116,8 +116,8 @@ export class Deserializer<
 
 		if (typeof key === 'string') {
 			lookupKey = key.toLowerCase();
-		} else if (typeof key === 'function' && (key as any).name) {
-			lookupKey = (key as any).name.toLowerCase();
+		} else if (typeof key === 'function' && 'name' in key) {
+			lookupKey = (key as { name: string }).name.toLowerCase();
 		} else if (typeof key === 'object' && key !== null && 'name' in key) {
 			// Handle object with name property (like a class constructor viewed as object)
 			lookupKey = (key as { name: string }).name.toLowerCase();
@@ -265,12 +265,16 @@ export class Deserializer<
 					data,
 					'root',
 					modelClass.name
-				) as unknown as TResult;
+				) as TResult;
 			}
 		}
 
 		// Check if class has custom instance creation (from @Quick() decorator)
-		const createQuickInstance = (modelClass as any).__createQuickInstance;
+		const createQuickInstance = (
+			modelClass as {
+				__createQuickInstance?: (data: TData) => TResult;
+			}
+		).__createQuickInstance;
 		const instance = createQuickInstance
 			? createQuickInstance(data)
 			: Object.create(modelClass.prototype);
@@ -285,8 +289,8 @@ export class Deserializer<
 	 */
 	private validatePrimitiveType(
 		key: string,
-		value: any,
-		expectedType: any,
+		value: unknown,
+		expectedType: unknown,
 		className: string
 	): void {
 		if (expectedType === Number) {
@@ -320,9 +324,9 @@ export class Deserializer<
 	 */
 	deserializeFromJson<TResult = TModel>(
 		json: string,
-		modelClass: new (data: any) => TResult
+		modelClass: new (data: Record<string, unknown>) => TResult
 	): TResult {
-		const data = JSON.parse(json);
+		const data = JSON.parse(json) as Record<string, unknown>;
 		return this.deserialize(data, modelClass);
 	}
 
@@ -1039,7 +1043,7 @@ export class Deserializer<
 		// Handle Dot Notation properties
 		// These are properties decorated like 'nested.prop': Type
 		const dotNotationFields = decoratedFields.filter(
-			(f: any) => typeof f === 'string' && f.includes('.')
+			(f: unknown) => typeof f === 'string' && f.includes('.')
 		);
 
 		for (const dotKey of dotNotationFields) {
@@ -1056,12 +1060,12 @@ export class Deserializer<
 	 * e.g. @Quick({ 'profile.birthDate': Date })
 	 */
 	private applyDotNotationTransform(
-		instance: Record<string, any>,
+		instance: Record<string, unknown>,
 		path: string,
 		modelClass: Function
 	): void {
 		const parts = path.split('.');
-		let current = instance;
+		let current: Record<string, unknown> = instance;
 
 		// Navigate to parent object
 		for (let i = 0; i < parts.length - 1; i++) {
@@ -1073,7 +1077,8 @@ export class Deserializer<
 			) {
 				return; // Path doesn't exist, skip
 			}
-			current = current[part];
+			// Cast to Record<string, unknown> to proceed navigation
+			current = current[part] as Record<string, unknown>;
 		}
 
 		const lastKey = parts[parts.length - 1];
@@ -1790,7 +1795,7 @@ export class Deserializer<
 	 * 4. **Fallback**: Returns the first type in `possibleTypes`.
 	 */
 	private resolveUnionType(
-		data: any,
+		data: unknown,
 		possibleTypes: Function[],
 		discriminatorConfig?: DiscriminatorConfig
 	): Function {
@@ -1819,7 +1824,8 @@ export class Deserializer<
 					type !== Number &&
 					type !== Boolean &&
 					type !== BigInt &&
-					data instanceof (type as any)
+					data instanceof
+						(type as new (...args: unknown[]) => unknown)
 			);
 			if (exactMatch) return exactMatch;
 		}
@@ -1841,7 +1847,9 @@ export class Deserializer<
 
 		// 1. String discriminator: use field value to match
 		if (typeof discriminatorConfig === 'string') {
-			const fieldValue = data?.[discriminatorConfig];
+			const fieldValue = (data as Record<string, unknown>)?.[
+				discriminatorConfig
+			];
 
 			if (fieldValue !== undefined) {
 				// Try to match by constructor name (case-insensitive)
@@ -1874,7 +1882,9 @@ export class Deserializer<
 			typeof discriminatorConfig === 'object' &&
 			discriminatorConfig.field
 		) {
-			const fieldValue = data?.[discriminatorConfig.field];
+			const fieldValue = (data as Record<string, unknown>)?.[
+				discriminatorConfig.field
+			];
 
 			// Try explicit mapping first
 			if (discriminatorConfig.mapping && fieldValue !== undefined) {

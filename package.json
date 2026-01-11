@@ -42,7 +42,7 @@
 	],
 	"scripts": {
 		"build": "bun run clean && bun run check && tsup",
-		"check": "bun run lint && bun run typecheck && bun test",
+		"check": "bun run format && bun run lint && bun run typecheck && bun test",
 		"dev": "tsup --watch",
 		"test": "bun test",
 		"test:coverage": "bun test --coverage",

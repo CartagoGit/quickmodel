@@ -70,7 +70,7 @@ export type { QInterface, QTransform } from '@/core/interfaces/model.interface';
  * console.log(user.createdAt instanceof Date); // true
  * ```
  */
-export abstract class QModel<TInterface extends Record<string, any>> {
+export abstract class QModel<TInterface extends Record<string, unknown>> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();
@@ -210,8 +210,8 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * @see {@link QModel} for main class documentation
 	 */
 	static create<
-		T extends Record<string, any> = Record<string, any>,
-		TClass extends QModel<T> = any,
+		T extends Record<string, unknown> = Record<string, unknown>,
+		TClass extends QModel<T> = QModel<T>,
 		TResult = TClass,
 	>(this: new (data: T) => TClass, data: T): TResult {
 		// Use generics to cast 'this' to the constructor type
@@ -232,12 +232,14 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * const users = User.mock().array(5); // returns User[]
 	 * ```
 	 */
-	static mock<T extends abstract new (...args: any[]) => QModel<any>>(
-		this: T
-	): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
+	static mock<
+		T extends abstract new (
+			...args: unknown[]
+		) => QModel<Record<string, unknown>>,
+	>(this: T): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
-			...args: any[]
+			...args: unknown[]
 		) => infer R
 			? R
 			: never;
@@ -267,8 +269,11 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // balance: type=BigInt, transformer=BigIntTransformer
 	 * ```
 	 */
-	static getMetadata(): Map<string, { type: string; transformer: any }> {
-		const result = new Map<string, { type: string; transformer: any }>();
+	static getMetadata(): Map<string, { type: string; transformer: unknown }> {
+		const result = new Map<
+			string,
+			{ type: string; transformer: unknown }
+		>();
 		const prototype = this.prototype;
 
 		// Get all registered qtypes using the correct symbol
@@ -424,7 +429,10 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 			}
 
 			// Skip methods
-			if (typeof (deserialized as any)[key] === 'function') {
+			if (
+				typeof (deserialized as Record<string, unknown>)[key] ===
+				'function'
+			) {
 				continue;
 			}
 
@@ -478,13 +486,13 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		for (const key of Object.keys(this[QUICK_VALUES_KEY])) {
 			// Compare current value (might be default) with backup (deserialized data)
 			// ACCESS DIRECTLY VIA PROPERTY NAME to check effective value (handles getters/shadowed props)
-			const currentValue = (this as any)[key];
+			const currentValue = (this as Record<string, unknown>)[key];
 			const backupValue = this[QUICK_VALUES_KEY][key];
 
 			// If different, likely overwritten by default initializer
 			if (currentValue !== backupValue) {
 				// Restore from backup (triggers setter which updates storage)
-				(this as any)[key] = backupValue;
+				(this as Record<string, unknown>)[key] = backupValue;
 			}
 		}
 	}
@@ -505,19 +513,24 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 			// Define getter that searches in multiple locations
 			Object.defineProperty(this, key, {
-				get(this: any) {
+				get(this: Record<string, unknown>) {
 					// 1. Try from specific storage
 					let val = this[storageKey];
 					if (val !== undefined) return val;
 
 					// 2. Search in backup
-					val = this[QUICK_VALUES_KEY]?.[key];
+					val = (
+						this as unknown as Record<
+							symbol,
+							Record<string, unknown>
+						>
+					)[QUICK_VALUES_KEY]?.[key];
 					if (val !== undefined) return val;
 
 					// 3. Return undefined
 					return undefined;
 				},
-				set(this: any, value: any) {
+				set(this: Record<string, unknown>, value: unknown) {
 					this[storageKey] = value;
 				},
 				enumerable: true,
@@ -614,9 +627,9 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(account.pattern instanceof RegExp); // true
 	 * ```
 	 */
-	static deserialize<T extends QModel<any>>(
-		this: new (data: ModelData<any>) => T,
-		data: ModelData<any>
+	static deserialize<T extends QModel<Record<string, unknown>>>(
+		this: new (data: ModelData<Record<string, unknown>>) => T,
+		data: ModelData<Record<string, unknown>>
 	): T {
 		return QModel.deserializer.deserialize(data, this);
 	}
@@ -640,8 +653,8 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QModel<any>>(
-		this: new (data: ModelData<any>) => T,
+	static fromJSON<T extends QModel<Record<string, unknown>>>(
+		this: new (data: ModelData<Record<string, unknown>>) => T,
 		json: string
 	): T {
 		return QModel.deserializer.deserializeFromJson(json, this);
@@ -754,7 +767,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 */
 	toInterface(seen?: WeakSet<object>): TInterface {
 		return QModel.toInterfaceService.toInterface<TInterface>(
-			this as any,
+			this as unknown as Record<string, unknown>,
 			seen
 		);
 	}
@@ -938,11 +951,13 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	reset(): void {
 		const initial = this.getInitInterface();
 		const Constructor = this.constructor as typeof QModel;
-		const restored = (Constructor as any).deserialize(initial);
+		const restored = Constructor.deserialize(initial);
 
 		// Copy all properties from restored instance
 		for (const key of Object.keys(restored)) {
-			(this as any)[key] = restored[key];
+			(this as Record<string, unknown>)[key] = (
+				restored as Record<string, unknown>
+			)[key];
 		}
 	}
 
@@ -977,11 +992,13 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		const Constructor = this.constructor as typeof QModel;
 		const current = this.serialize();
 		const merged = { ...current, ...patch };
-		const updated = (Constructor as any).deserialize(merged);
+		const updated = Constructor.deserialize(merged);
 
 		// Copy all properties from updated instance
 		for (const key of Object.keys(updated)) {
-			(this as any)[key] = updated[key];
+			(this as Record<string, unknown>)[key] = (
+				updated as Record<string, unknown>
+			)[key];
 		}
 	}
 
@@ -990,7 +1007,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *
 	 * @private
 	 */
-	private deepEqual(a: any, b: any): boolean {
+	private deepEqual(a: unknown, b: unknown): boolean {
 		if (a === b) return true;
 		if (a == null || b == null) return false;
 		if (typeof a !== typeof b) return false;
@@ -1008,7 +1025,12 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 			if (keysA.length !== keysB.length) return false;
 
-			return keysA.every((key) => this.deepEqual(a[key], b[key]));
+			return keysA.every((key) =>
+				this.deepEqual(
+					(a as Record<string, unknown>)[key],
+					(b as Record<string, unknown>)[key]
+				)
+			);
 		}
 
 		return false;
@@ -1021,6 +1043,6 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 */
 	clone(): this {
 		const Constructor = this.constructor as typeof QModel;
-		return (Constructor as any).deserialize(this.serialize()) as this;
+		return Constructor.deserialize(this.serialize()) as this;
 	}
 }

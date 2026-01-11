@@ -233,7 +233,7 @@ export class Serializer<
 				continue;
 			}
 
-			const value = (model as any)[key];
+			const value = (model as unknown as Record<string, unknown>)[key];
 			result[key] = this.serializeValue(value, visited);
 		}
 
@@ -282,7 +282,7 @@ export class Serializer<
 			typeof value === 'object'
 		) {
 			// Try to find transformer by constructor
-			const ctor = (value as any).constructor;
+			const ctor = (value as Record<string, unknown>).constructor;
 			if (ctor && TransformerRegistry.has(ctor)) {
 				const transformer = TransformerRegistry.get(ctor);
 				if (transformer) {
@@ -439,7 +439,9 @@ export class Serializer<
 		) {
 			const visited = seen || new WeakSet<object>();
 			// No need to check visited here because value.serialize(seen) will check it
-			return (value as any).serialize(visited);
+			return (
+				value as { serialize: (s?: WeakSet<object>) => unknown }
+			).serialize(visited);
 		}
 
 		// Array

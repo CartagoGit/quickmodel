@@ -81,7 +81,7 @@
 
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
-	TInterface extends Record<string, unknown> = any,
+	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
 	/**
 	 * Converts model to interface format, preserving original input types.
@@ -107,13 +107,17 @@ export class ToInterfaceService<
 	): T {
 		const result: Record<string, unknown> = {};
 		const visited = seen || new WeakSet<object>(); // Track circular references
-		const initData = (model as any).__initData || {};
+		const initData =
+			(model as unknown as { __initData?: Record<string, unknown> })
+				.__initData || {};
 		const isProduction = process.env.NODE_ENV === 'production';
 
 		// ONLY iterate over properties that were in the original initData
 		// Return current values, but preserve original format based on __initData type
 		for (const key of Object.keys(initData)) {
-			const currentValue = (model as any)[key];
+			const currentValue = (model as unknown as Record<string, unknown>)[
+				key
+			];
 			const originalValue = initData[key];
 
 			// Convert to interface format, preserving original type
@@ -157,12 +161,12 @@ export class ToInterfaceService<
 	 * 10. Fallback → return currentValue
 	 */
 	private convertToInterfaceFormat(
-		currentValue: any,
-		originalValue: any,
+		currentValue: unknown,
+		originalValue: unknown,
 		seen: WeakSet<object>,
 		isProduction: boolean,
 		propertyKey: string = ''
-	): any {
+	): unknown {
 		// 1. Handle null and undefined first
 		if (currentValue === null) return null;
 		if (currentValue === undefined) return undefined;
@@ -306,7 +310,7 @@ export class ToInterfaceService<
 			if (!Array.isArray(currentValue)) {
 				return [];
 			}
-			return currentValue.map((item: any, index: number) =>
+			return currentValue.map((item: unknown, index: number) =>
 				this.convertToInterfaceFormat(
 					item,
 					originalValue[index],
@@ -339,15 +343,20 @@ export class ToInterfaceService<
 
 		// 9. PLAIN OBJECTS: Recursively convert properties
 		if (originalValue && typeof originalValue === 'object') {
-			const result: any = {};
+			const typedOriginal = originalValue as Record<string, unknown>;
+			const result: Record<string, unknown> = {};
 
 			// Handle objects without constructor (Object.create(null))
-			if (!originalValue.constructor) {
+			if (
+				!('constructor' in typedOriginal) ||
+				!typedOriginal.constructor
+			) {
+				const typedCurrent = currentValue as Record<string, unknown>;
 				const resultNoProto = Object.create(null);
-				for (const key in currentValue) {
+				for (const key in typedCurrent) {
 					resultNoProto[key] = this.convertToInterfaceFormat(
-						currentValue[key],
-						originalValue[key],
+						typedCurrent[key],
+						typedOriginal[key],
 						seen,
 						isProduction,
 						`${propertyKey}.${key}`
@@ -357,7 +366,7 @@ export class ToInterfaceService<
 			}
 
 			// Plain Object literal
-			if (originalValue.constructor === Object) {
+			if (typedOriginal.constructor === Object) {
 				// Ensure currentValue is also an object
 				if (typeof currentValue !== 'object' || currentValue === null) {
 					if (!isProduction) {
@@ -371,11 +380,12 @@ export class ToInterfaceService<
 					return currentValue;
 				}
 
-				for (const key in originalValue) {
-					if (key in currentValue) {
+				const typedCurrent = currentValue as Record<string, unknown>;
+				for (const key in typedOriginal) {
+					if (key in typedCurrent) {
 						result[key] = this.convertToInterfaceFormat(
-							currentValue[key],
-							originalValue[key],
+							typedCurrent[key],
+							typedOriginal[key],
 							seen,
 							isProduction,
 							`${propertyKey}.${key}`

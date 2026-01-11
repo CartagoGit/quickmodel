@@ -19,7 +19,10 @@ export class MockGenerator {
 	/**
 	 * Generates a mock based on reflect metadata.
 	 */
-	generate<TModel, TData extends Record<string, any> = any>(
+	generate<
+		TModel,
+		TData extends Record<string, unknown> = Record<string, unknown>,
+	>(
 		modelClass: new (data: TData) => TModel,
 		type: MockType = 'random',
 		overrides: Partial<TData> = {}
@@ -112,7 +115,10 @@ export class MockGenerator {
 	/**
 	 * Generates an array of mocks.
 	 */
-	generateArray<TModel, TData extends Record<string, any> = any>(
+	generateArray<
+		TModel,
+		TData extends Record<string, unknown> = Record<string, unknown>,
+	>(
 		modelClass: new (data: TData) => TModel,
 		count: number,
 		type: MockType = 'random',
@@ -152,7 +158,7 @@ export class MockGenerator {
 			const typeMap = Reflect.getMetadata(
 				QUICK_TYPE_MAP_KEY,
 				instance.constructor
-			) as Record<string, any> | undefined;
+			) as Record<string, unknown> | undefined;
 			if (typeMap) {
 				for (const key of Object.keys(typeMap)) {
 					properties.add(key);
@@ -183,7 +189,9 @@ export class MockGenerator {
 						? 0
 						: faker.number.int({ min: 1, max: 3 });
 			return this.generateArray(
-				arrayElementClass as new (data: any) => unknown,
+				arrayElementClass as new (
+					data: Record<string, unknown>
+				) => unknown,
 				length,
 				type
 			);
@@ -192,7 +200,9 @@ export class MockGenerator {
 		// Nested model
 		if (arrayElementClass && !fieldType) {
 			return this.generate(
-				arrayElementClass as new (data: any) => unknown,
+				arrayElementClass as new (
+					data: Record<string, unknown>
+				) => unknown,
 				type
 			);
 		}

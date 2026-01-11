@@ -85,12 +85,12 @@ import {
 /**
  * Constructor type for class-based type mapping
  */
-type IConstructor<T = unknown> = new (...args: any[]) => T;
+type IConstructor<T = unknown> = new (...args: unknown[]) => T;
 
 /**
  * Transformer function that converts a value
  */
-type ITransformerFunction = (value: any) => any;
+type ITransformerFunction = (value: unknown) => unknown;
 
 /**
  * Native constructors and factories supported by QuickModel
@@ -558,7 +558,7 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 		// This metadata is emitted by TypeScript at compile time but only for properties with decorators
 		// Since we're a class decorator applying property decorators dynamically, we need to capture
 		// the original design:type metadata and store it for later use
-		const designTypeCache: Record<string, any> = {};
+		const designTypeCache: Record<string, unknown> = {};
 		const proto = target.prototype;
 
 		// Scan all properties in the prototype chain to capture design:type metadata

@@ -12,7 +12,10 @@ export type TransformerKey = QTypeString | { name: string } | string;
  * Allows users to register custom transformers that will be available to all specific services (Deserializer, Serializer).
  */
 export class TransformerRegistry {
-	private static transformers = new Map<string, IQTransformer<any, any>>();
+	private static transformers = new Map<
+		string,
+		IQTransformer<unknown, unknown>
+	>();
 
 	/**
 	 * Registers a custom transformer.
@@ -28,7 +31,7 @@ export class TransformerRegistry {
 	 */
 	public static register(
 		key: TransformerKey,
-		transformer: IQTransformer<any, any>
+		transformer: IQTransformer<unknown, unknown>
 	): void {
 		const lookupKey = this.normalizeKey(key);
 		if (lookupKey) {
@@ -44,7 +47,7 @@ export class TransformerRegistry {
 	 */
 	public static get(
 		key: TransformerKey
-	): IQTransformer<any, any> | undefined {
+	): IQTransformer<unknown, unknown> | undefined {
 		const lookupKey = this.normalizeKey(key);
 		if (lookupKey && this.transformers.has(lookupKey)) {
 			return this.transformers.get(lookupKey);
@@ -66,8 +69,11 @@ export class TransformerRegistry {
 	private static normalizeKey(key: TransformerKey): string | undefined {
 		if (typeof key === 'string') {
 			return key.toLowerCase();
-		} else if (typeof key === 'function' && (key as any).name) {
-			return (key as any).name.toLowerCase();
+		} else if (
+			typeof key === 'function' &&
+			(key as { name: string }).name
+		) {
+			return (key as { name: string }).name.toLowerCase();
 		} else if (typeof key === 'object' && key !== null && 'name' in key) {
 			// Handle object with name property (like a class constructor viewed as object)
 			return (key as { name: string }).name.toLowerCase();

@@ -32,7 +32,7 @@ export type INativeConstructor =
  * Mapping of native constructors to their string identifiers.
  * Used for type detection and transformer lookup.
  */
-export const NATIVE_TYPE_MAP = new Map<any, string>([
+export const NATIVE_TYPE_MAP = new Map<Function, string>([
 	[Date, 'date'],
 	[BigInt, 'bigint'],
 	[Symbol, 'symbol'],

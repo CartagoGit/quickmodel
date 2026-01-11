@@ -19,9 +19,9 @@
  * type Spec4 = 'bigint';                // ExtractConstructors<Spec4> = 'bigint' (passthrough for string literals)
  * ```
  */
-export type ExtractConstructors<TSpec> = TSpec extends readonly any[]
-	? TSpec[number] // Array/tuple → union of all elements
-	: TSpec; // Single value → passthrough
+export type ExtractConstructors<TSpec> = TSpec extends readonly unknown[]
+	? TSpec[number]
+	: TSpec;
 
 /**
  * Extract instance type from a constructor.
@@ -32,7 +32,9 @@ export type ExtractConstructors<TSpec> = TSpec extends readonly any[]
  * type Instance2 = ExtractInstanceType<DateConstructor>;  // Date
  * ```
  */
-export type ExtractInstanceType<T> = T extends new (...args: any[]) => infer R
+export type ExtractInstanceType<T> = T extends new (
+	...args: unknown[]
+) => infer R
 	? R
 	: never;
 
@@ -46,7 +48,7 @@ export type ExtractInstanceType<T> = T extends new (...args: any[]) => infer R
  * ```
  */
 export type UnionToIntersection<U> = (
-	U extends any ? (k: U) => void : never
+	U extends unknown ? (k: U) => void : never
 ) extends (k: infer I) => void
 	? I
 	: never;
@@ -62,7 +64,7 @@ export type UnionToIntersection<U> = (
  * type Content = { type: 'content'; text: string; };
  * type Metadata = { type: 'metadata'; tags: string[]; };
  *
- * type Common = ExtractCommonKeys<Content | Metadata>;  // 'type'
+ * type Common = ExtractCommonKeys<T> =
  * ```
  */
 export type ExtractCommonKeys<T> =
@@ -71,7 +73,11 @@ export type ExtractCommonKeys<T> =
 		? K extends keyof T
 			? // Check if this key exists in ALL members of the union
 				(
-					T extends any ? (K extends keyof T ? true : false) : never
+					T extends unknown
+						? K extends keyof T
+							? true
+							: false
+						: never
 				) extends true
 				? K
 				: never
@@ -112,13 +118,13 @@ export type ExtractQModelInterface<T> = T extends { toInterface(): infer I }
  * ```
  */
 export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
-	...args: any[]
-) => any)[]
+	...args: unknown[]
+) => unknown)[]
 	? // Array of constructors → extract common keys from interface types
 		ExtractCommonKeys<
 			ExtractQModelInterface<ExtractInstanceType<TSpec[number]>>
 		>
-	: TSpec extends new (...args: any[]) => any
+	: TSpec extends new (...args: unknown[]) => unknown
 		? // Single constructor → all keys from interface type
 			keyof ExtractQModelInterface<ExtractInstanceType<TSpec>>
 		: // Not a constructor → string (no validation)
@@ -170,7 +176,7 @@ export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
  * })
  * ```
  */
-export type TypeGuardFunction<TConstructors> = (data: any) => TConstructors;
+export type TypeGuardFunction<TConstructors> = (data: unknown) => TConstructors;
 
 /**
  * Discriminator configuration for a property with union types.
@@ -209,7 +215,7 @@ export type TypeGuardFunction<TConstructors> = (data: any) => TConstructors;
  * ```
  */
 export type DiscriminatorConfig<
-	TConstructors = any,
+	TConstructors = unknown,
 	TValidKeys extends string = string,
 > =
 	| TValidKeys // Field name (validated against common keys)
@@ -282,7 +288,7 @@ export type DiscriminatorConfig<
  * ```
  */
 export interface IQuickAdvancedOptions<
-	TTypeMap extends Record<string, any> = Record<string, any>,
+	TTypeMap extends Record<string, unknown> = Record<string, unknown>,
 > {
 	/**
 	 * Discriminator configuration for union type properties.
