@@ -293,6 +293,11 @@ export class Deserializer<
 		expectedType: unknown,
 		className: string
 	): void {
+		// Passthrough null/undefined for primitives (consistent with optional types)
+		if (value === null || value === undefined) {
+			return;
+		}
+
 		if (expectedType === Number) {
 			if (typeof value !== 'number') {
 				throw new Error(
@@ -370,7 +375,9 @@ export class Deserializer<
 			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
 
 		for (const [key, value] of Object.entries(data)) {
-			if (value === null || value === undefined) {
+			// Always allow undefined as "missing value" (optional)
+			// But allow null to proceed to validation/transformer phase
+			if (value === undefined) {
 				instance[key] = value;
 				continue;
 			}

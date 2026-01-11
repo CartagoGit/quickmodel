@@ -38,11 +38,10 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 			}).toThrow(/Expected string\/number/);
 		});
 
-		test('should throw error for invalid types (null)', () => {
-			expect(() => {
-				// @ts-expect-error - Testing invalid inputs
-				transformer.deserialize(null, propertyKey, className);
-			}).toThrow(/Expected string\/number/);
+		test('should ALLOW null', () => {
+			// @ts-expect-error - Testing invalid inputs
+			const result = transformer.deserialize(null, propertyKey, className);
+			expect(result).toBeNull();
 		});
 
 		test('should throw error for invalid string format', () => {

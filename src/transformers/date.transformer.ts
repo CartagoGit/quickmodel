@@ -44,10 +44,15 @@ export class DateTransformer
 	 * @throws {Error} If the value is not a valid date
 	 */
 	deserialize(
-		value: string | number | Date,
+		value: string | number | Date | null,
 		propertyKey: string,
 		className: string
-	): Date {
+	): Date | null {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return value as null;
+		}
+
 		// Already a Date instance - return as-is
 		if (value instanceof Date) {
 			return value;

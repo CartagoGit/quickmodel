@@ -29,13 +29,13 @@ describe('Transformer Coverage: Primitives', () => {
 				).isValid
 			).toBe(true);
 		});
-		test('should fail valudation for invalid type', () => {
+		test('should ALLOW null (validation passes)', () => {
 			expect(
 				StringTransformer.validate(
 					null,
 					{} as unknown as IQValidationContext
 				).isValid
-			).toBe(false);
+			).toBe(true);
 		});
 		test('should serialize valid string', () => {
 			expect(StringTransformer.serialize('ok')).toBe('ok');

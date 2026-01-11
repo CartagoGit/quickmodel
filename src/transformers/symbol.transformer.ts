@@ -48,10 +48,19 @@ export class SymbolTransformer
 	 * @throws {Error} If the value is not a string or symbol
 	 */
 	deserialize(
-		value: string | symbol | { __type: 'symbol'; description: string },
+		value:
+			| string
+			| symbol
+			| { __type: 'symbol'; description: string }
+			| null,
 		propertyKey: string,
 		className: string
-	): symbol {
+	): symbol | null {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return value as null;
+		}
+
 		// Already a symbol - return as-is
 		if (typeof value === 'symbol') {
 			return value;

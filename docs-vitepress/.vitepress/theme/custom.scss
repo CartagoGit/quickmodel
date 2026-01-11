@@ -103,13 +103,6 @@ $secondary-color: #35495e;
 }
 @media (min-width: 1280px) {
 	.VPNavBar {
-		/* .title {
-			// padding-left: max(32px, calc((100% - (var(--vp-layout-max-width) - 64px)) / 2));
-			padding-left: 0 !important;
-			width: auto;
-			left: none;
-			top: none;
-		}*/
 		.title {
 			padding-left: calc(
 				(100% - (var(--vp-layout-max-width)) + 64px) / 2
@@ -372,5 +365,16 @@ $secondary-color: #35495e;
 
 	&:hover {
 		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+	}
+}
+
+// Style the hero image (home page logo)
+.VPHero .VPImage {
+	border-radius: 16px;
+	box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+	max-width: 400px;
+
+	&:hover {
+		box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
 	}
 }

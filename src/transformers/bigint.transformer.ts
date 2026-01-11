@@ -52,10 +52,20 @@ export class BigIntTransformer
 	 * @throws {Error} If the value cannot be converted to bigint
 	 */
 	deserialize(
-		value: string | number | bigint | { __type: 'bigint'; value: string },
+		value:
+			| string
+			| number
+			| bigint
+			| { __type: 'bigint'; value: string }
+			| null,
 		propertyKey: string,
 		className: string
-	): bigint {
+	): bigint | null {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return value as null;
+		}
+
 		if (typeof value === 'bigint') {
 			return value;
 		}

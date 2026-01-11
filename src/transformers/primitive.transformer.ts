@@ -106,6 +106,11 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 	 * @returns Validation result
 	 */
 	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return { isValid: true };
+		}
+
 		if (typeof value === this.expectedType) {
 			return { isValid: true };
 		}

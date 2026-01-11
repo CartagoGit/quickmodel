@@ -125,10 +125,9 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			}).toThrow(/URLSearchParams transformer ONLY accepts/);
 		});
 
-		test('deserialize should throw on null', () => {
-			expect(() => {
-				transformer.deserialize(null as any, 'params', 'TestClass');
-			}).toThrow(/URLSearchParams transformer ONLY accepts/);
+		test('deserialize should ALLOW null', () => {
+			const result = transformer.deserialize(null as any, 'params', 'TestClass');
+			expect(result).toBeNull();
 		});
 
 		test('serialize should return query string', () => {

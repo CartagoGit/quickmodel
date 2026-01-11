@@ -62,10 +62,15 @@ export class ErrorTransformer
 	 * @throws {Error} If the value cannot be converted to Error
 	 */
 	deserialize(
-		value: string | IErrorData | Error,
+		value: string | IErrorData | Error | null,
 		propertyKey: string,
 		className: string
-	): Error {
+	): Error | null {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return value as null;
+		}
+
 		if (value instanceof Error) {
 			return value;
 		}

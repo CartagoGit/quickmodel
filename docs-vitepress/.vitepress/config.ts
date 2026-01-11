@@ -9,26 +9,23 @@ export default defineConfig({
 	outDir: '../docs-vitepress/dist',
 	ignoreDeadLinks: true,
 	vite: {
-		resolve: {
-			alias: {
-				'@assets': fileURLToPath(
-					new URL('../../assets', import.meta.url)
-				),
+		server: {
+			fs: {
+				allow: ['..'],
 			},
 		},
 	},
 	head: [
 		[
 			'link',
-			{ rel: 'icon', type: 'image/png', href: '/quickmodel/favicon.png' },
+			{ rel: 'icon', type: 'image/png', href: '/quickmodel/logo.png' },
 		],
 	],
 
 	// Global theme config (shared across all locales)
 	themeConfig: {
 		logo: {
-			src: '/quickmodel/quickmodel.png',
-			width: 32,
+			src: '/logo.png',
 			height: 32,
 		},
 		outline: {

@@ -16,10 +16,15 @@ export class URLTransformer
 	implements IQValidator
 {
 	deserialize(
-		value: string | URL,
+		value: string | URL | null,
 		propertyKey: string,
 		className: string
-	): URL {
+	): URL | null {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return value as null;
+		}
+
 		// Already a URL instance - return as-is
 		if (value instanceof URL) {
 			return value;
@@ -87,10 +92,15 @@ export class URLSearchParamsTransformer
 	implements IQValidator
 {
 	deserialize(
-		value: string | Record<string, string> | URLSearchParams,
+		value: string | Record<string, string> | URLSearchParams | null,
 		propertyKey: string,
 		className: string
-	): URLSearchParams {
+	): URLSearchParams | null {
+		// Passthrough null/undefined
+		if (value === null || value === undefined) {
+			return value as null;
+		}
+
 		// Already a URLSearchParams instance - return as-is
 		if (value instanceof URLSearchParams) {
 			return value;
