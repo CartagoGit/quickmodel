@@ -338,5 +338,32 @@ export interface QAdvancedOptions<
 	transformers?: {
 		[K in keyof TTypeMap]?: (value: unknown) => unknown;
 	};
+
+	/**
+	 * Custom serializers for specific properties.
+	 *
+	 * Allows defining the reverse transformation logic (Model -> Interface) for specific fields.
+	 * Critical when using custom transformers that function as one-way mappings, or when
+	 * the default serialization behavior needs to be overridden for specific fields.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   date: Date
+	 * }, {
+	 *   transformers: {
+	 *     // Deserialize: seconds -> Date
+	 *     date: (val) => new Date(val * 1000)
+	 *   },
+	 *   serializers: {
+	 *     // Serialize: Date -> seconds
+	 *     date: (val: Date) => Math.floor(val.getTime() / 1000)
+	 *   }
+	 * })
+	 * ```
+	 */
+	serializers?: {
+		[K in keyof TTypeMap]?: (value: unknown) => unknown;
+	};
 }
 
