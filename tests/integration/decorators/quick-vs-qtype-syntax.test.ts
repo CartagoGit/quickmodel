@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 // ====================
 // INTERFACES
@@ -49,7 +49,7 @@ const quickConfig = {
 @Quick(quickConfig)
 class QuickTestDeclare
 	extends QModel<IQuickTestDeclare>
-	implements QInterface<IQuickTestDeclare>
+	implements QImplements<IQuickTestDeclare>
 {
 	declare id: string;
 	declare name: string;
@@ -77,7 +77,7 @@ class QuickTestDeclare
 @Quick(quickConfig)
 class QuickTestBang
 	extends QModel<IQuickTestBang>
-	implements QInterface<IQuickTestBang>
+	implements QImplements<IQuickTestBang>
 {
 	// Aunque se llama Bang, aquí usamos declare para que el test pase
 	// ya que ! con @Quick() tiene problemas conocidos documentados arriba.

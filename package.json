@@ -33,6 +33,11 @@
 			"import": "./dist/advanced.mjs",
 			"require": "./dist/advanced.js"
 		},
+		"./utils": {
+			"types": "./dist/utils.d.ts",
+			"import": "./dist/utils.mjs",
+			"require": "./dist/utils.js"
+		},
 		"./transformers": {
 			"types": "./dist/transformers/index.d.ts",
 			"import": "./dist/transformers/index.mjs",

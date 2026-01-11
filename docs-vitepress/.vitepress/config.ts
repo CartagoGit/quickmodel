@@ -121,8 +121,8 @@ export default defineConfig({
 									link: '/tsdoc/type-aliases/QDiscriminatorConfig',
 								},
 								{
-									text: 'QInterface',
-									link: '/tsdoc/type-aliases/QInterface',
+									text: 'QImplements',
+									link: '/tsdoc/type-aliases/QImplements',
 								},
 								{
 									text: 'QTransform',

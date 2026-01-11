@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '@/index';
+import { QModel, Quick, type QImplements } from '@/index';
 
 describe('System: API Response Transformation', () => {
 	// Simulated API responses (what backend sends)
@@ -102,7 +102,7 @@ describe('System: API Response Transformation', () => {
 	})
 	class User
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements QImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		username!: string;
@@ -129,7 +129,7 @@ describe('System: API Response Transformation', () => {
 	})
 	class Post
 		extends QModel<IPost>
-		implements QInterface<IPost, IPostTransform>
+		implements QImplements<IPost, IPostTransform>
 	{
 		id!: string;
 		title!: string;
@@ -157,7 +157,7 @@ describe('System: API Response Transformation', () => {
 	})
 	class Stats
 		extends QModel<IStats>
-		implements QInterface<IStats, IStatsTransform>
+		implements QImplements<IStats, IStatsTransform>
 	{
 		totalViews!: bigint;
 		totalPosts!: number;
@@ -361,7 +361,7 @@ describe('System: API Response Transformation', () => {
 		class PaginatedPosts
 			extends QModel<IPaginatedResponse>
 			implements
-				QInterface<IPaginatedResponse, IPaginatedResponseTransform>
+				QImplements<IPaginatedResponse, IPaginatedResponseTransform>
 		{
 			data!: Post[];
 			meta!: {

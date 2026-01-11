@@ -8,3 +8,7 @@
  */
 
 export { MockGenerator } from './core/services/mock-generator.service';
+export {
+	TransformerRegistry,
+	type TransformerKey,
+} from './core/registry/transformer.registry';

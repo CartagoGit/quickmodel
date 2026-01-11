@@ -79,7 +79,7 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * };
  *
  * class User extends QModel<IUser, UserTransforms>
- *   implements QInterface<IUser, UserTransforms> {
+ *   implements QImplements<IUser, UserTransforms> {
  *   declare id: string;
  *   declare balance: bigint;
  *   declare createdAt: Date;
@@ -103,7 +103,7 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * };
  *
  * class Product extends QModel<IProduct, ProductTransforms>
- *   implements QInterface<IProduct, ProductTransforms> {
+ *   implements QImplements<IProduct, ProductTransforms> {
  *   declare id: string;
  *   declare price: bigint;
  *   declare regex: RegExp;
@@ -111,14 +111,14 @@ export type QTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * }
  * ```
  */
-export type QInterface<
+export type QImplements<
 	TInterface,
 	TTransforms extends Partial<Record<keyof TInterface, unknown>> | AnyRecord =
 		{},
 > = Omit<TInterface, keyof TTransforms> & TTransforms;
 
-/** @deprecated Use QInterface instead */
+/** @deprecated Use QImplements instead */
 export type QuickType<
 	TInterface,
 	TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
-> = QInterface<TInterface, TTransforms>;
+> = QImplements<TInterface, TTransforms>;

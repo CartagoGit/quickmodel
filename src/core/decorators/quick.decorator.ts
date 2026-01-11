@@ -1,5 +1,5 @@
 import { AnyRecord } from './../interfaces/model.interface';
-import { QInterface } from '@/index';
+import { QImplements } from '@/index';
 /**
  * @Quick() class decorator for automatic property registration.
  *
@@ -453,7 +453,7 @@ export function Quick<
 	TExtendedTypes extends AnyRecord = AnyRecord,
 	TTypeMap extends QOptions = QOptions,
 >(
-	typeMap?: QInterface<TTypeMap, TExtendedTypes>,
+	typeMap?: QImplements<TTypeMap, TExtendedTypes>,
 	advancedOptions?: QAdvancedOptions<TTypeMap>
 ): ClassDecorator {
 	return function <T extends Function>(target: T): T {

@@ -12,55 +12,44 @@
  * Helper type to enforce type consistency between a model class
  * and its input/output interfaces.
  */
-export type { QInterface, QTransform } from './core/interfaces/model.interface';
+export type { QImplements } from './core/interfaces/model.interface';
 export { QModel } from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';
 
-export { QType } from './core/decorators/qtype.decorator';
-export type { QTypeOptions } from './core/interfaces/qtype-options.interface';
-
 // ============================================================================
-// PUBLIC API - Type Helper Utilities
-// ============================================================================
-
-// ============================================================================
-// PUBLIC API - Configuration Types
+// PUBLIC API - Submodules (Namespaces for Documentation)
 // ============================================================================
 
 /**
- * Options type for @Quick() decorator (the type map)
+ * Secondary types and interfaces.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/types';
+ * ```
  */
-export type { QOptions } from './core/decorators/quick.decorator';
+export * as Types from './types';
 
 /**
- * Advanced options for @Quick() decorator (discriminators, etc.)
+ * Advanced utilities and internal tools.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/advanced';
+ * ```
  */
-export type {
-	QAdvancedOptions,
-	QDiscriminatorConfig,
-} from './core/interfaces/quick-options.interface';
-
-export type {
-	QTransformerFn,
-	QSerializerFn,
-	QMockerFn,
-} from './core/interfaces/transform-options.interface';
+export * as Advanced from './advanced';
 
 /**
- * Supported string aliases for types (e.g. 'date', 'bigint', 'regexp')
- * Useful reference for valid values in the type map.
+ * Common utilities and helper types.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/utils';
+ * ```
  */
-export type { QAlias } from './core/types/q-alias.type';
-
-// ============================================================================
-// PUBLIC API - Testing Tools
-// ============================================================================
-
-export { QQMockBuilder as QMockBuilder } from './core/services/mock-builder.service';
-
-// ============================================================================
-// PUBLIC API - Errors
-// ============================================================================
-
-export { QModelError } from './core/errors/quickmodel.error';
+export * as Utils from './utils';

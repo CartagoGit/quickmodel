@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 describe('Unit: Mock Generator - Complex Types', () => {
 	// Enums (TypeScript enums become unions at runtime)
@@ -46,7 +46,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	})
 	class Task
 		extends QModel<ITask>
-		implements QInterface<ITask, ITaskTransform>
+		implements QImplements<ITask, ITaskTransform>
 	{
 		id!: string;
 		title!: string;
@@ -140,7 +140,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	})
 	class Payment
 		extends QModel<IPayment>
-		implements QInterface<IPayment, IPaymentTransform>
+		implements QImplements<IPayment, IPaymentTransform>
 	{
 		id!: string;
 		amount!: bigint;
@@ -237,7 +237,7 @@ describe('Unit: Mock Generator - Complex Types', () => {
 	})
 	class Product
 		extends QModel<IProduct>
-		implements QInterface<IProduct, IProductTransform>
+		implements QImplements<IProduct, IProductTransform>
 	{
 		id!: string;
 		name!: string;

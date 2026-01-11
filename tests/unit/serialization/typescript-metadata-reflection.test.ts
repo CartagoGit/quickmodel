@@ -3,7 +3,8 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, QType } from '@/index';
+import { QModel } from '@/index';
+import { QType } from '@/utils';
 
 // ============================================================================
 // Test Models

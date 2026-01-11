@@ -9,7 +9,7 @@ Un transformador es una clase que implementa la lógica de transformación para 
 ### Estructura Básica
 
 ```typescript
-import { ITransformer } from '@cartago-git/quickmodel/core';
+import { ITransformer } from '@cartago-git/quickmodel/types';
 
 class MyCustomTransformer implements ITransformer<MyType, SerializedType> {
 	// Transformar de JSON a tipo runtime
@@ -50,7 +50,7 @@ interface IMoneyJSON {
 }
 
 // 3. Crea el transformador
-import { ITransformer } from '@cartago-git/quickmodel/core';
+import { ITransformer } from '@cartago-git/quickmodel/types';
 
 class MoneyTransformer implements ITransformer<Money, IMoneyJSON> {
 	transform(value: IMoneyJSON): Money {
@@ -69,7 +69,7 @@ class MoneyTransformer implements ITransformer<Money, IMoneyJSON> {
 }
 
 // 4. Registra el transformador
-import { TransformerRegistry } from '@cartago-git/quickmodel/core';
+import { TransformerRegistry } from '@cartago-git/quickmodel/advanced';
 
 TransformerRegistry.register(Money, new MoneyTransformer());
 

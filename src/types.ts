@@ -34,7 +34,10 @@ export type {
 } from './core/interfaces/serialization-types.interface';
 
 // Validation Types
-export type { IQValidationResult } from './core/interfaces/transformer.interface';
+export type {
+	IQValidationResult,
+	IQTransformer as ITransformer,
+} from './core/interfaces/transformer.interface';
 
 // Mock Types
 export type {

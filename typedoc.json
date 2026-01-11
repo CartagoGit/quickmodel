@@ -1,5 +1,5 @@
 {
-	"entryPoints": ["src/index.ts", "src/types.ts", "src/advanced.ts"],
+	"entryPoints": ["src/index.ts"],
 	"out": "docs-vitepress/tsdoc",
 	"plugin": ["typedoc-plugin-markdown"],
 	"disableSources": true,

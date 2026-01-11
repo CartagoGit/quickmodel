@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, test } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 interface ITypeSafeModel {
 	pattern: RegExp;
@@ -38,7 +38,7 @@ interface ITypeSafeModelTransform {
 })
 class TypeSafeModel
 	extends QModel<ITypeSafeModel>
-	implements QInterface<ITypeSafeModel, ITypeSafeModelTransform>
+	implements QImplements<ITypeSafeModel, ITypeSafeModelTransform>
 {
 	declare pattern: RegExp;
 	declare error: Error;

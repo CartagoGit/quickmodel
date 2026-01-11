@@ -39,7 +39,10 @@ import { deepFreeze } from '@/core/helpers/transform-helpers';
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';
-export type { QInterface, QTransform } from '@/core/interfaces/model.interface';
+export type {
+	QImplements,
+	QTransform,
+} from '@/core/interfaces/model.interface';
 
 /**
  * Base abstract class for type-safe models with automatic serialization and type transformation.

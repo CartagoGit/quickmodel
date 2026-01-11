@@ -5,6 +5,7 @@ export default defineConfig({
 		index: 'src/index.ts',
 		types: 'src/types.ts',
 		advanced: 'src/advanced.ts',
+		utils: 'src/utils.ts',
 		'core/index': 'src/core/index.ts',
 		'transformers/index': 'src/transformers/index.ts',
 	},

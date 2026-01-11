@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 describe('@Quick() with declaration styles', () => {
 	// ============================================================================
@@ -125,7 +125,7 @@ describe('@Quick() with declaration styles', () => {
 		})
 		class OrderWithDeclare
 			extends QModel<IOrder>
-			implements QInterface<IOrder, IOrderTransform>
+			implements QImplements<IOrder, IOrderTransform>
 		{
 			declare id: string;
 			declare total: bigint;
@@ -140,7 +140,7 @@ describe('@Quick() with declaration styles', () => {
 		})
 		class OrderWithExclamation
 			extends QModel<IOrder>
-			implements QInterface<IOrder, IOrderTransform>
+			implements QImplements<IOrder, IOrderTransform>
 		{
 			id!: string;
 			total!: bigint;
@@ -155,7 +155,7 @@ describe('@Quick() with declaration styles', () => {
 		})
 		class OrderWithOptional
 			extends QModel<IOrder>
-			implements QInterface<IOrder, IOrderTransform>
+			implements QImplements<IOrder, IOrderTransform>
 		{
 			id!: string;
 			total!: bigint;

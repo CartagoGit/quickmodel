@@ -3,9 +3,14 @@ import type { QAlias } from '../types/q-alias.type';
 
 /**
  * Valid keys to identify a transformer.
- * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), or a string name.
+ * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), a string name,
+ * or a custom transformer object implementing IQTransformer.
  */
-export type TransformerKey = QAlias | { name: string } | string;
+export type TransformerKey =
+	| QAlias
+	| { name: string }
+	| string
+	| IQTransformer<any, any>;
 
 /**
  * Global registry for transformers.

@@ -6,7 +6,8 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QTransform } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QTransform } from '@/utils';
 
 describe('QModel.create() factory method', () => {
 	describe('Basic usage', () => {

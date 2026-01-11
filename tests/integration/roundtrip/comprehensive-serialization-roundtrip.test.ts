@@ -1,4 +1,5 @@
-import { QModel, QType, QInterface } from '@/index';
+import { QModel, QImplements } from '@/index';
+import { QType } from '@/utils';
 
 console.log(
 	'╔═══════════════════════════════════════════════════════════════════════╗'
@@ -112,7 +113,7 @@ class NestedModel extends QModel<INestedModel> {
 // ============================================================================
 class CompleteModel
 	extends QModel<ICompleteModel>
-	implements QInterface<ICompleteModel, CompleteModelTransforms>
+	implements QImplements<ICompleteModel, CompleteModelTransforms>
 {
 	// Primitives
 	@QType() id!: string;

@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QType } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QType } from '@/utils';
 
 describe('Array Transformations - Exhaustive Tests', () => {
 	// ============================================================================

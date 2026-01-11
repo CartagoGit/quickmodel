@@ -105,6 +105,8 @@ import {
 } from '@/transformers/map-set.transformer';
 import { IQTransformer } from '../interfaces/transformer.interface';
 import { TransformerRegistry } from '../registry/transformer.registry';
+import 'reflect-metadata';
+import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
 
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -240,6 +242,12 @@ export class Serializer<
 			proto = Object.getPrototypeOf(proto);
 		}
 
+		// Get TypeMap from model constructor
+		const typeMap = Reflect.getMetadata(
+			QUICK_TYPE_MAP_KEY,
+			model.constructor
+		);
+
 		// Serialize with transformers
 		for (const key of keys) {
 			if (key.startsWith('__')) {
@@ -249,6 +257,23 @@ export class Serializer<
 			}
 
 			const value = (model as unknown as Record<string, unknown>)[key];
+
+			// Custom Transformer Object check (Bidirectional transformers in TypeMap)
+			if (typeMap && typeMap[key]) {
+				const mapValue = typeMap[key];
+
+				if (
+					typeof mapValue === 'object' &&
+					mapValue !== null &&
+					!Array.isArray(mapValue) &&
+					'serialize' in mapValue
+				) {
+					// Use custom transformer serializer
+					result[key] = (mapValue as IQTransformer).serialize(value);
+					continue;
+				}
+			}
+
 			result[key] = this.serializeValue(value, visited, options);
 		}
 

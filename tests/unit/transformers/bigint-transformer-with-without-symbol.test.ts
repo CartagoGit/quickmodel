@@ -5,7 +5,8 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, QInterface, QType } from '@/index';
+import { QModel, QImplements } from '@/index';
+import { QType } from '@/utils';
 
 // ============================================================================
 // Test Models
@@ -23,7 +24,7 @@ type AccountWithSymbolTransforms = {
 // ✅ CON BigInt symbol
 class AccountWithSymbol
 	extends QModel<IAccountWithSymbol>
-	implements QInterface<IAccountWithSymbol, AccountWithSymbolTransforms>
+	implements QImplements<IAccountWithSymbol, AccountWithSymbolTransforms>
 {
 	@QType() id!: string;
 	@QType(BigInt) balance!: bigint; // 👈 CON symbol
@@ -32,7 +33,7 @@ class AccountWithSymbol
 // ❌ SIN QBigInt symbol (solo @QType())
 class AccountWithoutSymbol
 	extends QModel<IAccountWithSymbol>
-	implements QInterface<IAccountWithSymbol, AccountWithSymbolTransforms>
+	implements QImplements<IAccountWithSymbol, AccountWithSymbolTransforms>
 {
 	@QType() id!: string;
 	@QType() balance!: bigint; // 👈 SIN symbol

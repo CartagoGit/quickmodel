@@ -104,6 +104,16 @@ export class Deserializer<
 	public getTransformer(
 		key: TransformerKey
 	): IQTransformer<unknown, unknown> | undefined {
+		// 0. Check if key is a Transformer Object (Direct injection)
+		if (
+			typeof key === 'object' &&
+			key !== null &&
+			'serialize' in key &&
+			'deserialize' in key
+		) {
+			return key as IQTransformer<unknown, unknown>;
+		}
+
 		// 1. Check global registry first (allows overriding defaults)
 		const customTransformer = TransformerRegistry.get(key);
 		if (customTransformer) {

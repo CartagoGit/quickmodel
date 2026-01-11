@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { QModel, Quick, QType, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
+import { QType } from '@/utils';
 
 // ========================================
 // @Quick() DECORATOR: AUTO REGISTRATION
@@ -16,7 +17,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class User extends QModel<IUser> implements QInterface<IUser> {
+		class User extends QModel<IUser> implements QImplements<IUser> {
 			declare id: string;
 			declare name: string;
 			declare email: string;
@@ -58,7 +59,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Post extends QModel<IPost> implements QInterface<IPost> {
+		class Post extends QModel<IPost> implements QImplements<IPost> {
 			declare id: string;
 			declare title: string;
 			declare createdAt: Date;
@@ -87,7 +88,10 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Account extends QModel<IAccount> implements QInterface<IAccount> {
+		class Account
+			extends QModel<IAccount>
+			implements QImplements<IAccount>
+		{
 			declare id: string;
 			declare balance: bigint;
 			declare pattern: RegExp;
@@ -117,7 +121,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Data extends QModel<IData> implements QInterface<IData> {
+		class Data extends QModel<IData> implements QImplements<IData> {
 			declare id: string;
 			declare metadata: Map<string, string>;
 			declare tags: Set<string>;
@@ -144,7 +148,10 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			city: string;
 		}
 
-		class Address extends QModel<IAddress> implements QInterface<IAddress> {
+		class Address
+			extends QModel<IAddress>
+			implements QImplements<IAddress>
+		{
 			@QType() declare street: string;
 			@QType() declare city: string;
 		}
@@ -156,7 +163,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Person extends QModel<IPerson> implements QInterface<IPerson> {
+		class Person extends QModel<IPerson> implements QImplements<IPerson> {
 			declare name: string;
 			declare age: number;
 
@@ -193,7 +200,10 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Product extends QModel<IProduct> implements QInterface<IProduct> {
+		class Product
+			extends QModel<IProduct>
+			implements QImplements<IProduct>
+		{
 			declare productId: string;
 			declare title: string;
 			declare price: number;
@@ -206,7 +216,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Cart extends QModel<ICart> implements QInterface<ICart> {
+		class Cart extends QModel<ICart> implements QImplements<ICart> {
 			declare cartId: string;
 
 			@QType([Product]) // ⚠️ Explicit @QType() still required for arrays
@@ -253,7 +263,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			balance: BigInt,
 			createdAt: Date,
 		})
-		class User extends QModel<IUser> implements QInterface<IUser> {
+		class User extends QModel<IUser> implements QImplements<IUser> {
 			declare id: string;
 			declare name: string;
 			declare balance: bigint;
@@ -288,7 +298,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		@Quick()
-		class Data extends QModel<IData> implements QInterface<IData> {
+		class Data extends QModel<IData> implements QImplements<IData> {
 			declare id: string;
 			declare value: number;
 			declare date: Date;
@@ -317,7 +327,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		// Manual decoration
-		class UserManual extends QModel<IUser> implements QInterface<IUser> {
+		class UserManual extends QModel<IUser> implements QImplements<IUser> {
 			@QType() declare id: string;
 			@QType() declare name: string;
 			@QType() declare age: number;
@@ -325,7 +335,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 
 		// Auto decoration
 		@Quick()
-		class UserAuto extends QModel<IUser> implements QInterface<IUser> {
+		class UserAuto extends QModel<IUser> implements QImplements<IUser> {
 			declare id: string;
 			declare name: string;
 			declare age: number;

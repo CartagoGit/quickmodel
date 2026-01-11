@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 describe('Unit: Mock Generator - Arrays and Collections', () => {
 	interface IPost {
@@ -109,7 +109,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	})
 	class BlogPost
 		extends QModel<IBlogPost>
-		implements QInterface<IBlogPost, IBlogPostTransform>
+		implements QImplements<IBlogPost, IBlogPostTransform>
 	{
 		id!: string;
 		title!: string;
@@ -165,7 +165,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	})
 	class DataStore
 		extends QModel<IDataStore>
-		implements QInterface<IDataStore, IDataStoreTransform>
+		implements QImplements<IDataStore, IDataStoreTransform>
 	{
 		id!: string;
 		tags!: Set<string>;

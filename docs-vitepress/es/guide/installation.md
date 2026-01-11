@@ -60,6 +60,23 @@ QuickModel usa decoradores, por lo que debes habilitarlos en tu `tsconfig.json`:
 - **`target: "ES2020"`** - Características modernas de JavaScript
 - **`module: "ESNext"`** - Sistema de módulos moderno
 
+## Estructura de Importación
+
+QuickModel utiliza una estructura de importación modular para mantener tu proyecto limpio:
+
+- **Core**: Clases principales y decoradores (`QModel`, `Quick`, `QType`)
+    ```typescript
+    import { QModel, Quick } from '@cartago-git/quickmodel';
+    ```
+- **Definiciones de Tipos**: Interfaces y tipos auxiliares (`SerializedInterface`, `ISpec`, etc.)
+    ```typescript
+    import type { SerializedInterface } from '@cartago-git/quickmodel/types';
+    ```
+- **Utilidades Avanzadas**: Utilidades en tiempo de ejecución para usuarios avanzados (`MockGenerator`)
+    ```typescript
+    import { MockGenerator } from '@cartago-git/quickmodel/advanced';
+    ```
+
 ## Verificar la Instalación
 
 Crea un archivo de prueba simple para verificar que todo funciona:

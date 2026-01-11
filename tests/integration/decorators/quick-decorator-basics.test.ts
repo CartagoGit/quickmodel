@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '@/index';
+import { QModel, Quick, type QImplements } from '@/index';
 
 describe('Integration: @Quick() Decorator Basics', () => {
 	test('should auto-detect and transform Date types', () => {
@@ -24,7 +24,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class User
 			extends QModel<IUser>
-			implements QInterface<IUser, IUserTransform>
+			implements QImplements<IUser, IUserTransform>
 		{
 			id!: string;
 			name!: string;
@@ -64,7 +64,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class Account
 			extends QModel<IAccount>
-			implements QInterface<IAccount, IAccountTransform>
+			implements QImplements<IAccount, IAccountTransform>
 		{
 			id!: string;
 			balance!: bigint;
@@ -102,7 +102,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class Post
 			extends QModel<IPost>
-			implements QInterface<IPost, IPostTransform>
+			implements QImplements<IPost, IPostTransform>
 		{
 			id!: string;
 			title!: string;
@@ -134,7 +134,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		}
 
 		@Quick({})
-		class Data extends QModel<IData> implements QInterface<IData> {
+		class Data extends QModel<IData> implements QImplements<IData> {
 			id!: string;
 			value!: number;
 			flag!: boolean;
@@ -172,7 +172,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class User
 			extends QModel<IUser>
-			implements QInterface<IUser, IUserTransform>
+			implements QImplements<IUser, IUserTransform>
 		{
 			id!: string;
 			balance!: bigint;
@@ -212,7 +212,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 		})
 		class Data
 			extends QModel<IData>
-			implements QInterface<IData, IDataTransform>
+			implements QImplements<IData, IDataTransform>
 		{
 			id!: string;
 			tags!: Set<string>;

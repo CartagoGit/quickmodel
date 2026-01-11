@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '@/index';
+import { QModel, Quick, type QImplements } from '@/index';
 
 describe('System: E-Commerce Cart', () => {
 	// Models
@@ -72,7 +72,7 @@ describe('System: E-Commerce Cart', () => {
 	})
 	class Product
 		extends QModel<IProduct>
-		implements QInterface<IProduct, IProductTransform>
+		implements QImplements<IProduct, IProductTransform>
 	{
 		id!: string;
 		name!: string;
@@ -98,7 +98,7 @@ describe('System: E-Commerce Cart', () => {
 	})
 	class CartItem
 		extends QModel<ICartItem>
-		implements QInterface<ICartItem, ICartItemTransform>
+		implements QImplements<ICartItem, ICartItemTransform>
 	{
 		product!: Product;
 		quantity!: number;
@@ -116,7 +116,7 @@ describe('System: E-Commerce Cart', () => {
 	})
 	class Cart
 		extends QModel<ICart>
-		implements QInterface<ICart, ICartTransform>
+		implements QImplements<ICart, ICartTransform>
 	{
 		id!: string;
 		userId!: string;
@@ -148,7 +148,7 @@ describe('System: E-Commerce Cart', () => {
 	})
 	class Order
 		extends QModel<IOrder>
-		implements QInterface<IOrder, IOrderTransform>
+		implements QImplements<IOrder, IOrderTransform>
 	{
 		id!: string;
 		userId!: string;

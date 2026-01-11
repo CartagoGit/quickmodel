@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 import { QType } from '@/core/decorators/qtype.decorator';
 
 describe('Unit: Mock Generator - Nested Models', () => {
@@ -58,7 +58,7 @@ describe('Unit: Mock Generator - Nested Models', () => {
 	})
 	class User
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements QImplements<IUser, IUserTransform>
 	{
 		@QType() id!: string;
 		@QType() name!: string;
@@ -162,7 +162,7 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		})
 		class Company
 			extends QModel<ICompany>
-			implements QInterface<ICompany, ICompanyTransform>
+			implements QImplements<ICompany, ICompanyTransform>
 		{
 			name!: string;
 			owner!: User;

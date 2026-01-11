@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, QType } from '@/index';
+import { QModel } from '@/index';
+import { QType } from '@/utils';
 
 describe('Advanced Options with @QType Decorator', () => {
 	test('should support custom transformer, serializer and mocker via @QType options', () => {

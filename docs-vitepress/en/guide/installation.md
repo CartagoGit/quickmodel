@@ -60,6 +60,23 @@ QuickModel uses decorators, so you need to enable them in your `tsconfig.json`:
 - **`target: "ES2020"`** - Modern JavaScript features
 - **`module: "ESNext"`** - Modern module system
 
+## Import Structure
+
+QuickModel uses a modular import structure to keep your project clean:
+
+- **Core**: Main classes and decorators (`QModel`, `Quick`, `QType`)
+    ```typescript
+    import { QModel, Quick } from '@cartago-git/quickmodel';
+    ```
+- **Type Definitions**: Interfaces and helper types (`SerializedInterface`, `ISpec`, etc.)
+    ```typescript
+    import type { SerializedInterface } from '@cartago-git/quickmodel/types';
+    ```
+- **Advanced Utilities**: Runtime utilities for power users (`MockGenerator`)
+    ```typescript
+    import { MockGenerator } from '@cartago-git/quickmodel/advanced';
+    ```
+
 ## Verify Installation
 
 Create a simple test file to verify everything works:

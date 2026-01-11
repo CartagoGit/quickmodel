@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 describe('Property Declaration Styles', () => {
 	// ============================================================================
@@ -38,7 +38,7 @@ describe('Property Declaration Styles', () => {
 	})
 	class UserWithDeclare
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements QImplements<IUser, IUserTransform>
 	{
 		declare id: string;
 		declare name: string;
@@ -59,7 +59,7 @@ describe('Property Declaration Styles', () => {
 	})
 	class UserWithExclamation
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements QImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		name!: string;
@@ -80,7 +80,7 @@ describe('Property Declaration Styles', () => {
 	})
 	class UserWithOptional
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements QImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		name!: string;

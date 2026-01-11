@@ -1,4 +1,5 @@
-import { QModel, QType, QInterface } from '@/index';
+import { QModel, QImplements } from '@/index';
+import { QType } from '@/utils';
 
 console.log('═══ TEST: QModel Core Functionality ═══\n');
 
@@ -13,7 +14,7 @@ type UserTransforms = {
 	createdAt: Date;
 };
 
-class User extends QModel<IUser> implements QInterface<IUser, UserTransforms> {
+class User extends QModel<IUser> implements QImplements<IUser, UserTransforms> {
 	@QType() id!: string;
 	@QType() name!: string;
 	@QType() age!: number;

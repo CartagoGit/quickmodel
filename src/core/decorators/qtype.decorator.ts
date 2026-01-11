@@ -374,6 +374,22 @@ export function QType<T>(
 			}
 		}
 
+		if (
+			typeof typeOrClass === 'object' &&
+			typeOrClass !== null &&
+			!Array.isArray(typeOrClass) &&
+			('serialize' in typeOrClass || 'deserialize' in typeOrClass)
+		) {
+			// Custom Transformer Object
+			Reflect.defineMetadata(
+				'fieldType',
+				typeOrClass,
+				target,
+				propertyKey
+			);
+			return;
+		}
+
 		if (typeof typeOrClass === 'string') {
 			// String literal ('bigint', 'regexp', 'int8array', etc.)
 			Reflect.defineMetadata(

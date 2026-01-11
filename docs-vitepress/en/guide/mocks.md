@@ -27,6 +27,19 @@ const admin = User.mock().random({ role: 'admin' });
 console.log(admin.role); // 'admin'
 ```
 
+> [!NOTE] IMPORTING MOCK TYPES
+> If you need to type the `type` parameter explicitly (e.g. `'random' | 'empty'`), you can import `MockType` from types:
+>
+> ```typescript
+> import type { MockType } from '@cartago-git/quickmodel/types';
+> ```
+>
+> For advanced custom usage, `MockGenerator` is available in advanced:
+>
+> ```typescript
+> import { MockGenerator } from '@cartago-git/quickmodel/advanced';
+> ```
+
 ## How It Works
 
 QuickModel automatically infers appropriate fake data based on your type definitions:
@@ -170,14 +183,14 @@ The `.mock()` method returns a `QMockBuilder` with a fluent API.
 
 Returns actual instances of your class (`instanceof User` will be true).
 
-| Method                                | Description                                                                            | Signature                                                      |
-| :------------------------------------ | :------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
-| **`random(overrides?)`**              | Generates 1 instance with **random** realistic data (Faker).                           | `(overrides?: Partial<T>) => T`                                |
-| **`empty(overrides?)`**               | Generates 1 instance with **empty/null** values.                                       | `(overrides?: Partial<T>) => T`                                |
-| **`minimal(overrides?)`**             | Generates 1 instance with only **required** fields populated.                          | `(overrides?: Partial<T>) => T`                                |
-| **`full(overrides?)`**                | Generates 1 instance with **all** fields (req + optional) populated.                   | `(overrides?: Partial<T>) => T`                                |
-| **`sample(overrides?)`**              | Generates 1 instance with **deterministic/static** sample data.                        | `(overrides?: Partial<T>) => T`                                |
-| **`array(count, type?, overrides?)`** | Generates `count` instances. `type` defaults to `'random'`. `overrides` is a callback. | `(n: number, type?: MoackType, fn?: (i) => Partial<T>) => T[]` |
+| Method                                | Description                                                                            | Signature                                                     |
+| :------------------------------------ | :------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| **`random(overrides?)`**              | Generates 1 instance with **random** realistic data (Faker).                           | `(overrides?: Partial<T>) => T`                               |
+| **`empty(overrides?)`**               | Generates 1 instance with **empty/null** values.                                       | `(overrides?: Partial<T>) => T`                               |
+| **`minimal(overrides?)`**             | Generates 1 instance with only **required** fields populated.                          | `(overrides?: Partial<T>) => T`                               |
+| **`full(overrides?)`**                | Generates 1 instance with **all** fields (req + optional) populated.                   | `(overrides?: Partial<T>) => T`                               |
+| **`sample(overrides?)`**              | Generates 1 instance with **deterministic/static** sample data.                        | `(overrides?: Partial<T>) => T`                               |
+| **`array(count, type?, overrides?)`** | Generates `count` instances. `type` defaults to `'random'`. `overrides` is a callback. | `(n: number, type?: MockType, fn?: (i) => Partial<T>) => T[]` |
 
 ```typescript
 // Array with custom overrides per item

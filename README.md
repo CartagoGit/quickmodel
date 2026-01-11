@@ -72,7 +72,7 @@ class User extends QModel<IUser> {
 #### 3️⃣ **With Type Transformations** - Explicit mapping required
 
 ```typescript
-import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+import { QModel, Quick, QImplements } from '@cartago-git/quickmodel';
 
 // Backend interface (JSON-compatible types)
 interface IUser {
@@ -118,10 +118,10 @@ console.log(user.tags); // Set<string>
 console.log(user.metadata); // Map<string, any>
 ```
 
-#### 4️⃣ **Type-Safe with QInterface** - Enforce transformation types
+#### 4️⃣ **Type-Safe with QImplements** - Enforce transformation types
 
 ```typescript
-import { QModel, Quick, QInterface } from '@cartago-git/quickmodel';
+import { QModel, Quick, QImplements } from '@cartago-git/quickmodel';
 
 // Backend interface (JSON types)
 interface IUser {
@@ -146,7 +146,7 @@ interface IUserTransform {
 	tags: Set,
 	metadata: Map,
 })
-class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+class User extends QModel<IUser> implements QImplements<IUser, IUserTransform> {
 	declare id: number;
 	declare createdAt: Date; // TypeScript enforces this matches IUserTransform
 	declare balance: bigint; // TypeScript enforces this matches IUserTransform
@@ -380,7 +380,7 @@ interface IPostTransform {
 	categories: [Set], // Array of Sets - explicit syntax!
 	metadata: Map, // Single Map
 })
-class Post extends QModel<IPost> implements QInterface<IPost, IPostTransform> {
+class Post extends QModel<IPost> implements QImplements<IPost, IPostTransform> {
 	declare id: string;
 	declare tags: Set<string>; // Single Set
 	declare categories: Set<string>[]; // Array of Sets
@@ -468,34 +468,34 @@ QuickModel provides built-in validation to ensure runtime integrity. The `valida
 
 ```typescript
 @Quick({
-  birthDate: Date,
-  tags: [Set] // Array of Sets
+	birthDate: Date,
+	tags: [Set], // Array of Sets
 })
 class User extends QModel<IUser> {
-  declare birthDate: Date;
-  declare tags: Set<string>[];
+	declare birthDate: Date;
+	declare tags: Set<string>[];
 }
 
 // 1. Valid data
-const user = new User({ 
-  birthDate: "2024-01-01", 
-  tags: [["a", "b"]] 
+const user = new User({
+	birthDate: '2024-01-01',
+	tags: [['a', 'b']],
 });
 console.log(user.validate()); // [] (Empty array = valid)
 
 // 2. Invalid data
-const invalidUser = new User({ 
-  birthDate: "invalid-date", 
-  tags: "not-an-array" // Should be array of arrays of strings
+const invalidUser = new User({
+	birthDate: 'invalid-date',
+	tags: 'not-an-array', // Should be array of arrays of strings
 });
 
 const errors = invalidUser.validate();
 if (errors.length > 0) {
-  console.log(errors);
-  // [
-  //   { isValid: false, error: "User.birthDate: Invalid Date string: invalid-date" },
-  //   { isValid: false, error: "User.tags: Expected array for Set[], got string" }
-  // ]
+	console.log(errors);
+	// [
+	//   { isValid: false, error: "User.birthDate: Invalid Date string: invalid-date" },
+	//   { isValid: false, error: "User.tags: Expected array for Set[], got string" }
+	// ]
 }
 ```
 

@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, QImplements } from '@/index';
 
 describe('Unit: RegExp Transformer', () => {
 	interface IPattern {
@@ -19,7 +19,7 @@ describe('Unit: RegExp Transformer', () => {
 	@Quick({ pattern: RegExp })
 	class Pattern
 		extends QModel<IPattern>
-		implements QInterface<IPattern, IPatternTransform>
+		implements QImplements<IPattern, IPatternTransform>
 	{
 		pattern!: RegExp;
 	}
