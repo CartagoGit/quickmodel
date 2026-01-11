@@ -17,7 +17,7 @@ class MyModel extends QModel<IMyModel> {
 
 ## Without Arguments
 
-Using `@Quick()` without arguments automatically applies `@QType()` to all properties:
+Using `@Quick()` without arguments automatically decorates all properties:
 
 ```typescript
 interface IUser {
@@ -220,33 +220,6 @@ This is useful for:
 
 See [Nested Models](/en/guide/nested-models) for details.
 
-## Combining with @QType
-
-You can mix `@Quick()` with `@QType()` for fine-grained control:
-
-```typescript
-import { Quick, QType, QModel } from '@cartago-git/quickmodel';
-
-@Quick({
-	createdAt: Date,
-	balance: BigInt,
-})
-class User extends QModel<IUser> {
-	declare id: number;
-
-	@QType(Date)
-	declare createdAt: Date;
-
-	@QType(BigInt)
-	declare balance: bigint;
-
-	@QType(String) // Explicit primitive type
-	declare name: string;
-}
-```
-
-However, this is usually unnecessary. `@Quick()` is sufficient for most cases.
-
 ## Type Safety with QInterface
 
 Enforce transformation types at compile time:
@@ -439,11 +412,11 @@ class User extends QModel<IUser> {
 	// ...
 }
 
-// ❌ Bad - transformations scattered
+// ❌ Bad - manual transformations in constructor or getters
 class User extends QModel<IUser> {
-	@QType(Date) declare createdAt: Date;
-	@QType(Date) declare updatedAt: Date;
-	@QType(BigInt) declare balance: bigint;
+	get createdAt(): Date {
+		return new Date(this.data.createdAt); // Manual transform
+	}
 }
 ```
 

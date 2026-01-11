@@ -17,7 +17,7 @@ class MyModel extends QModel<IMyModel> {
 
 ## Sin Argumentos
 
-Usar `@Quick()` sin argumentos aplica automáticamente `@QType()` a todas las propiedades.
+Usar `@Quick()` sin argumentos decora automáticamente todas las propiedades.
 
 ## Con Transformaciones
 

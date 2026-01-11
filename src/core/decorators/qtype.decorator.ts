@@ -14,53 +14,13 @@
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
 import { NATIVE_TYPE_MAP } from '../constants/native-types';
+import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
 
 /**
- * Available field types as string literals with IntelliSense support.
- * Allows using @QType('regexp'), @QType('bigint'), etc. with autocomplete.
- *
- * These string literals provide a convenient alternative to symbol-based type hints.
- *
- * @example
- * ```typescript
- * class User extends QModel<IUser> {
- *   @QType('bigint') balance!: bigint;
- *   @QType('regexp') pattern!: RegExp;
- *   @QType('int8array') bytes!: Int8Array;
- * }
- * ```
+ * Available field types as string literals.
+ * @see {@link IQTypeAlias}
  */
-export type QTypeString =
-	// Primitives
-	| 'string'
-	| 'number'
-	| 'boolean'
-	// Special types with constructors
-	| 'date'
-	| 'regexp'
-	| 'error'
-	| 'url'
-	| 'urlsearchparams'
-	// Special types without usable constructor
-	| 'bigint'
-	| 'symbol'
-	// Collections
-	| 'map'
-	| 'set'
-	// Buffers
-	| 'arraybuffer'
-	| 'dataview'
-	// TypedArrays
-	| 'int8array'
-	| 'uint8array'
-	| 'int16array'
-	| 'uint16array'
-	| 'int32array'
-	| 'uint32array'
-	| 'float32array'
-	| 'float64array'
-	| 'bigint64array'
-	| 'biguint64array';
+export type QTypeString = IQTypeAlias;
 
 /**
  * Metadata key symbol for storing the list of properties decorated with @QType().

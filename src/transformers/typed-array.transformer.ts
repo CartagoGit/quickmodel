@@ -102,11 +102,16 @@ export class TypedArrayTransformer<T extends TypedArray>
 	 * For BigInt variants, strings are converted to BigInt. Invalid values default to 0n.
 	 */
 	deserialize(
-		value: number[] | string[] | T | Record<number, number>,
+		value: number[] | string[] | T | Record<number, number> | null | undefined,
 		_propertyKey: string,
 		_className: string
-	): T {
+	): T | null {
+		if (value === null || value === undefined) {
+			return null;
+		}
+
 		if (value instanceof this.ArrayConstructor) {
+
 			return value as T;
 		}
 

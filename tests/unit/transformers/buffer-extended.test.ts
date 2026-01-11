@@ -15,8 +15,8 @@ describe('Unit: Buffer Transformers Coverage', () => {
 			const input = [1, 2, 3];
 			const result = transformer.deserialize(input, 'p', 'C');
 			expect(result).toBeInstanceOf(ArrayBuffer);
-			expect(result.byteLength).toBe(3);
-			expect(new Uint8Array(result)[1]).toBe(2);
+			expect(result!.byteLength).toBe(3);
+			expect(new Uint8Array(result!)[1]).toBe(2);
 		});
 
 		test('deserialize: should return same instance', () => {

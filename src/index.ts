@@ -8,16 +8,15 @@
 // ============================================================================
 // PUBLIC API - Core
 // ============================================================================
-
+/**
+ * Helper type to enforce type consistency between a model class
+ * and its input/output interfaces.
+ */
+export type { QInterface, QTransform } from './core/interfaces/model.interface';
 /**
  * Base model class with automatic serialization/deserialization
  */
 export { QModel } from './core/models/quick.model';
-
-/**
- * Type helper for model interfaces
- */
-export type { QInterface, QTransform } from './core/models/quick.model';
 
 /**
  * Class decorator for automatic property type mapping
@@ -30,53 +29,34 @@ export { Quick } from './core/decorators/quick.decorator';
 export { QType } from './core/decorators/qtype.decorator';
 
 // ============================================================================
-// PUBLIC API - Options & Configurations
+// PUBLIC API - Type Helper Utilities
 // ============================================================================
 
+// ============================================================================
+// PUBLIC API - Configuration Types
+// ============================================================================
+
+/**
+ * Options type for @Quick() decorator (the type map)
+ */
 export type { IQuickOptions } from './core/decorators/quick.decorator';
 
 /**
- * Advanced options types for @Quick() decorator
+ * Advanced options for @Quick() decorator (discriminators, etc.)
  */
 export type {
 	IQuickAdvancedOptions,
 	DiscriminatorConfig,
-	TypeGuardFunction,
 } from './core/interfaces/quick-options.interface';
 
-export type { ISpec, ISpecs } from './core/decorators/quick.decorator';
+/**
+ * Supported string aliases for types (e.g. 'date', 'bigint', 'regexp')
+ * Useful reference for valid values in the type map.
+ */
+export type { IQTypeAlias as QTypeString } from './core/interfaces/qtype-symbols.interface';
 
 // ============================================================================
 // PUBLIC API - Testing Tools
 // ============================================================================
 
 export { MockBuilder } from './core/services/mock-builder.service';
-export type {
-	MockGenerator,
-	MockType,
-} from './core/services/mock-generator.service';
-
-export type {
-	QModelInstance,
-	QModelInterface,
-} from './core/interfaces/mock-types.interface';
-
-// ============================================================================
-// PUBLIC API - Advanced / Extensions
-// ============================================================================
-
-// Serialization Types (Useful for typing API responses and constructor inputs)
-export type {
-	ModelData,
-	SerializedInterface,
-	Serialized,
-	Deserialized,
-} from './core/interfaces/serialization-types.interface';
-
-// Reference Types (Documentation for valid values)
-export type { QTypeString } from './core/decorators/qtype.decorator';
-
-// Registry (For advanced custom transformers)
-export { TransformerRegistry } from './core/registry/transformer.registry';
-export type { TransformerKey } from './core/registry/transformer.registry';
-export type { IQTransformer } from './core/interfaces/transformer.interface';

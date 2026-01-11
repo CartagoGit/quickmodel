@@ -51,7 +51,7 @@ QuickModel uses decorators, so you need to enable them in your `tsconfig.json`:
 
 ### Required Compiler Options
 
-- **`experimentalDecorators: true`** - Enables decorator syntax (`@Quick()`, `@QType()`)
+- **`experimentalDecorators: true`** - Enables decorator syntax (`@Quick()`)
 - **`emitDecoratorMetadata: true`** - Enables runtime type reflection
 
 ### Recommended Options

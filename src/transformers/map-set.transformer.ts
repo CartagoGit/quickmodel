@@ -179,10 +179,12 @@ export class SetTransformer<V = unknown>
 	 * @throws {Error} If the value is not an array or Set
 	 */
 	deserialize(
-		value: V[] | { __type: 'Set'; values: V[] } | Set<V>,
+		value: V[] | { __type: 'Set'; values: V[] } | Set<V> | null | undefined,
 		propertyKey: string,
 		className: string
-	): Set<V> {
+	): Set<V> | null {
+		if (value === null || value === undefined) return null;
+
 		if (value instanceof Set) {
 			return value;
 		}

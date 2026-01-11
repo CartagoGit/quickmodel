@@ -22,11 +22,50 @@
  */
 
 /**
- * String literal type aliases for basic type conversions.
- * Use these with @Quick() for autocomplete support in your IDE.
+ * String literal type aliases for basic type conversions in \@Quick() decorator.
+ * These aliases provide autocomplete support and type checking.
+ *
+ * Used in the `typeMap` parameter of `@Quick(typeMap)`.
+ *
+ * ## Usage Guide
+ *
+ * ### Primitives
+ * - **'bigint'**: Converts string/number ↔ BigInt (e.g., "9007199254740991" ↔ 9007199254740991n)
+ * - **'symbol'**: Converts string ↔ Symbol (using Symbol.for)
+ * - **'string'**: Ensures value is a string (String(val))
+ * - **'number'**: Ensures value is a number (Number(val))
+ * - **'boolean'**: Ensures value is a boolean (Boolean(val))
+ *
+ * ### Native Objects
+ * - **'date'**: Converts ISO string/timestamp ↔ Date object
+ * - **'regexp'**: Converts string/object ↔ RegExp
+ * - **'error'**: Converts plain object ↔ Error instance (preserving name, message, stack)
+ * - **'url'**: Converts string ↔ URL object
+ * - **'urlsearchparams'**: Converts string/object ↔ URLSearchParams
+ *
+ * ### Collections
+ * - **'map'**: Converts array of tuples `[[k,v], ...]` ↔ Map
+ * - **'set'**: Converts array `[v1, v2]` ↔ Set
+ * - **'array'**: Ensures value is an array (Array.from)
+ *
+ * ### Binary Data & Buffers
+ * - **'arraybuffer'**: Base64 string ↔ ArrayBuffer
+ * - **'dataview'**: Base64 string ↔ DataView
+ * - **'int8array'**, **'uint8array'**, etc.: Base64 string/array ↔ TypedArray
+ *
+ * @example
+ * ```typescript
+ * @Quick({
+ *   balance: 'bigint',   // Transform string to BigInt
+ *   createdAt: 'date',   // Transform ISO string to Date
+ *   pattern: 'regexp',   // Transform string to RegExp
+ *   tags: 'set',         // Transform array to Set
+ *   meta: 'map'          // Transform tuples to Map
+ * })
+ * ```
  */
 export type IQTypeAlias =
-	// Primitivos
+	// Primitives
 	| 'bigint'
 	| 'symbol'
 	| 'number'
@@ -35,7 +74,7 @@ export type IQTypeAlias =
 	| 'null'
 	| 'undefined'
 
-	// Objetos nativos
+	// Native Objects
 	| 'date'
 	| 'regexp'
 	| 'error'
@@ -47,7 +86,7 @@ export type IQTypeAlias =
 	| 'array'
 	| 'object'
 
-	// Typed Arrays
+	// Typed Arrays (Binary)
 	| 'int8array'
 	| 'uint8array'
 	| 'uint8clampedarray'
@@ -60,7 +99,7 @@ export type IQTypeAlias =
 	| 'bigint64array'
 	| 'biguint64array'
 
-	// Buffers
+	// Buffers & Views
 	| 'arraybuffer'
 	| 'sharedarraybuffer'
 	| 'dataview'

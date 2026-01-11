@@ -21,7 +21,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 			const iso = '2023-01-01T12:00:00.000Z';
 			const result = transformer.deserialize(iso, propertyKey, className);
 			expect(result).toBeInstanceOf(Date);
-			expect(result.toISOString()).toBe(iso);
+			expect(result!.toISOString()).toBe(iso);
 		});
 
 		test('should deserialize numeric timestamp', () => {
@@ -32,7 +32,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 				className
 			);
 			expect(result).toBeInstanceOf(Date);
-			expect(result.getTime()).toBe(timestamp);
+			expect(result!.getTime()).toBe(timestamp);
 		});
 
 		test('should throw error for invalid types (boolean)', () => {

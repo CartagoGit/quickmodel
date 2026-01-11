@@ -12,14 +12,15 @@
  * - Don't Repeat Yourself: Eliminates repetitive @QType() decorators
  *
  * @example
+ * @example
  * **Without @Quick()** (verbose):
  * ```typescript
  * class User extends QModel<IUser> {
- *   @QType() declare id: string;
- *   @QType() declare name: string;
- *   @QType() declare email: string;
- *   @QType() declare age: number;
- *   @QType() declare createdAt: Date;
+ *   // Manual property handling would be required here
+ *   // without the automation of @Quick()
+ *   declare id: string;
+ *   declare name: string;
+ *   // ...
  * }
  * ```
  *
@@ -55,17 +56,17 @@
  * ```
  *
  * @example
- * **Mix with @QType() for specific control**:
+ * @example
+ * **Explicit Configuration**:
  * ```typescript
- * @Quick()
+ * @Quick({
+ *   category: Category,    // Explicit for nested model
+ *   tags: [Tag]           // Explicit for array of models
+ * })
  * class Product extends QModel<IProduct> {
- *   declare id: string;           // Auto from @Quick()
- *   declare name: string;         // Auto from @Quick()
- *
- *   @QType(Category)       // Explicit for nested model
+ *   declare id: string;
+ *   declare name: string;
  *   declare category: Category;
- *
- *   @QType(Tag)           // Explicit for array of models
  *   declare tags: Tag[];
  * }
  * ```

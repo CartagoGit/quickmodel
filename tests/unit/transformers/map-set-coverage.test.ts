@@ -27,8 +27,8 @@ describe('Transformer Coverage: Map & Set', () => {
 					className
 				);
 				expect(result).toBeInstanceOf(Map);
-				expect(result.get('a')).toBe(1);
-				expect(result.get('b')).toBe(2);
+				expect(result!.get('a')).toBe(1);
+				expect(result!.get('b')).toBe(2);
 			});
 
 			test('should deserialize __type wrapper', () => {
@@ -41,7 +41,7 @@ describe('Transformer Coverage: Map & Set', () => {
 					propertyKey,
 					className
 				);
-				expect(result.get('a')).toBe(1);
+				expect(result!.get('a')).toBe(1);
 			});
 
 			test('should deserialize array of entries', () => {
@@ -54,7 +54,7 @@ describe('Transformer Coverage: Map & Set', () => {
 					propertyKey,
 					className
 				);
-				expect(result.get('b')).toBe(2);
+				expect(result!.get('b')).toBe(2);
 			});
 
 			test('should throw error for invalid types', () => {
@@ -130,8 +130,8 @@ describe('Transformer Coverage: Map & Set', () => {
 					className
 				);
 				expect(result).toBeInstanceOf(Set);
-				expect(result.size).toBe(2);
-				expect(result.has(1)).toBe(true);
+				expect(result!.size).toBe(2);
+				expect(result!.has(1)).toBe(true);
 			});
 
 			test('should deserialize __type wrapper', () => {
@@ -141,7 +141,7 @@ describe('Transformer Coverage: Map & Set', () => {
 					propertyKey,
 					className
 				);
-				expect(result.has(1)).toBe(true);
+				expect(result!.has(1)).toBe(true);
 			});
 
 			test('should throw error for invalid types', () => {

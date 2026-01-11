@@ -17,22 +17,22 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 			const msg = 'Something went wrong';
 			const result = transformer.deserialize(msg, propertyKey, className);
 			expect(result).toBeInstanceOf(Error);
-			expect(result.message).toBe(msg);
-			expect(result.name).toBe('Error'); // Default
+			expect(result!.message).toBe(msg);
+			expect(result!.name).toBe('Error'); // Default
 		});
 
 		test('should deserialize formatted string "Name: message"', () => {
 			const raw = 'TypeError: something is null';
 			const result = transformer.deserialize(raw, propertyKey, className);
 			expect(result).toBeInstanceOf(Error);
-			expect(result.name).toBe('TypeError');
-			expect(result.message).toBe('something is null');
+			expect(result!.name).toBe('TypeError');
+			expect(result!.message).toBe('something is null');
 		});
 
 		test('should deserialize object with message', () => {
 			const obj = { name: 'Error', message: 'Simple error' };
 			const result = transformer.deserialize(obj, propertyKey, className);
-			expect(result.message).toBe('Simple error');
+			expect(result!.message).toBe('Simple error');
 		});
 
 		test('should deserialize full error object', () => {
@@ -42,9 +42,9 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 				stack: 'line 1\nline 2',
 			};
 			const result = transformer.deserialize(obj, propertyKey, className);
-			expect(result.message).toBe('Complex error');
-			expect(result.name).toBe('CustomError');
-			expect(result.stack).toBe('line 1\nline 2');
+			expect(result!.message).toBe('Complex error');
+			expect(result!.name).toBe('CustomError');
+			expect(result!.stack).toBe('line 1\nline 2');
 		});
 
 		test('should throw error for invalid types (number)', () => {
