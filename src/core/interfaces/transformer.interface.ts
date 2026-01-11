@@ -5,10 +5,10 @@
 
 export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	/**
-	 * Transforma desde la interfaz (JSON) hacia el tipo del modelo
-	 * @param value - Valor desde JSON/Interface
-	 * @param propertyKey - Nombre de la propiedad
-	 * @param className - Nombre de la clase
+	 * Transforms from interface (JSON) to model type
+	 * @param value - Value from JSON/Interface
+	 * @param propertyKey - Property name
+	 * @param className - Class name
 	 */
 	deserialize(
 		value: TInput | null | undefined,
@@ -17,15 +17,15 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	): TOutput | null;
 
 	/**
-	 * Serializa desde el tipo del modelo hacia la interfaz (JSON)
-	 * @param value - Valor del modelo
+	 * Serializes from model type to interface (JSON)
+	 * @param value - Model value
 	 */
 	serialize(value: TOutput): TInput;
 }
 
 export interface IQValidator {
 	/**
-	 * Valida que el valor sea del tipo correcto
+	 * Validates that the value is of the correct type
 	 */
 	validate(value: unknown, context: IQValidationContext): IQValidationResult;
 }

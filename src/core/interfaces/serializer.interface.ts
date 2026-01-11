@@ -36,7 +36,7 @@ export interface IQSerializer<
 	): TInterface;
 
 	/**
-	 * Serializa a JSON string
+	 * Serializes to JSON string
 	 */
 	serializeToJson(model: TModel, options?: IQSerializationOptions): string;
 }
@@ -46,7 +46,7 @@ export interface IQDeserializer<
 	TModel,
 > {
 	/**
-	 * Deserializa una interfaz a un modelo
+	 * Deserializes an interface to a model
 	 */
 	deserialize(
 		data: TInterface,

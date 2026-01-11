@@ -221,6 +221,65 @@ const payment = createPayment({
 console.log(payment instanceof CreditCardPayment); // true
 ```
 
+## Polimorfismo Automatizado (Discriminadores)
+
+QuickModel soporta polimorfismo automatizado usando la opción `discriminators` en el decorador `@Quick`. Esto permite a TypeScript inferir tipos y realizar transformaciones en tiempo de ejecución basadas en un campo discriminador.
+
+```typescript
+import { Quick, QModel } from '@cartago-git/quickmodel';
+
+interface IContent {
+	type: 'content';
+	text: string;
+}
+
+interface IMetadata {
+	type: 'metadata';
+	tags: string[];
+}
+
+class Content extends QModel<IContent> {
+	declare type: 'content';
+	declare text: string;
+}
+
+class Metadata extends QModel<IMetadata> {
+	declare type: 'metadata';
+	declare tags: string[];
+}
+
+@Quick(
+	{
+		items: [Content, Metadata],
+	},
+	{
+		discriminators: {
+			items: (data) => {
+				if (data.type === 'content') return Content;
+				if (data.type === 'metadata') return Metadata;
+				return Content;
+			},
+		},
+	}
+)
+class Data extends QModel<{ items: (Content | Metadata)[] }> {
+	declare items: (Content | Metadata)[];
+}
+```
+
+También puedes usar un string para discriminación simple basada en propiedad:
+
+```typescript
+@Quick(
+	{ items: [Content, Metadata] },
+	{
+		discriminators: {
+			items: 'type' // Usa la propiedad 'type' para coincidir nombre de clase
+		}
+	}
+)
+```
+
 ## Datos Binarios
 
 ```typescript

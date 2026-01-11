@@ -194,9 +194,16 @@ export class ValidationService {
 	 */
 	validate(
 		instance: Record<string, unknown>,
-
-		modelClass?: Function
+		modelClass?: Function,
+		seen: WeakSet<object> = new WeakSet()
 	): IQValidationResult[] {
+        if (typeof instance === 'object' && instance !== null) {
+            if (seen.has(instance)) {
+                return []; // Already validated this instance in this cycle
+            }
+            seen.add(instance);
+        }
+
 		const results: IQValidationResult[] = [];
 		const className = modelClass
 			? modelClass.name
@@ -263,19 +270,42 @@ export class ValidationService {
 					typeof (value as any).validate === 'function'
 				) {
 					try {
-						const nestedErrors = (value as any).validate() as IQValidationResult[];
+                        // Pass 'seen' set to recursive call
+                        // We need to cast because QModel.validate doesn't officially expose 'seen' yet in interface,
+                        // but implementation will support it.
+                        // However, QModel.validate() calls QValidationService.validate(this).
+                        // So if we call instance.validate(), it starts a new chain?
+                        // YES. QModel.validate() implementation creates a NEW service call or reuses?
+                        // QModel: validate() { return QModel.validator.validate(this); }
+                        // Wait, QModel.validate simply delegates.
+                        // So calling (value as any).validate() will call `QModel.validator.validate(value)`.
+                        // It will NOT receive our 'seen' set.
+                        
+                        // PROBLEM: The `validate()` method on QModel instance does NOT accept `seen`.
+                        // Solving this requires changing QModel.validate() signature OR 
+                        // calling the service directly here?
+                        
+                        // We are inside the Service. We should validate recursively using THIS service instance options?
+                        // Or just call `this.validate(value, undefined, seen)`.
+                        // YES! We should call `this.validate`, not `value.validate()`.
+                        // If `value` is a QModel, `this.validate(value)` works perfectly.
+                        // But wait, `value.validate()` might have custom logic overrides?
+                        // QModel.validate() is standard.
+                        
+                        // Let's call `this.validate(value, undefined, seen)` to preserve cycle detection context.
+                        
+						const nestedErrors = this.validate(value as Record<string, unknown>, undefined, seen);
 						if (Array.isArray(nestedErrors)) {
 							for (const err of nestedErrors) {
 								results.push({
 									isValid: false,
-									error: `${key}.${err.error ? err.error.replace(/^\w+\./, '') : 'Invalid'}`, 
-									// Try to clean up class prefix if possible, or just append
-									// Simple approach: `${key}.${err.error}`
+									error: `${key}.${err.error ? err.error.replace(/^\w+\./, '') : 'Invalid'}`,
 								});
 							}
 						}
 					} catch (e) {
 						// Ignore validation errors in child to prevent crash
+                        console.error('Caught validation error:', e);
 					}
 				}
 
@@ -285,11 +315,11 @@ export class ValidationService {
 						if (
 							item &&
 							typeof item === 'object' &&
-							'validate' in item &&
-							typeof (item as any).validate === 'function'
+                            // We can check if it's potentially a model
+                            (Reflect.hasMetadata(QTYPES_METADATA_KEY, item) || Reflect.hasMetadata(QTYPES_METADATA_KEY, Object.getPrototypeOf(item)))
 						) {
 							try {
-								const nestedErrors = (item as any).validate() as IQValidationResult[];
+								const nestedErrors = this.validate(item as Record<string, unknown>, undefined, seen);
 								if (Array.isArray(nestedErrors)) {
 									for (const err of nestedErrors) {
 										results.push({

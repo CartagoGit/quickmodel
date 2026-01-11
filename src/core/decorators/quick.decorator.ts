@@ -569,10 +569,12 @@ export function Quick<
 			// This allows @Quick() without typeMap to work with primitives
 			// BUT: If strict mode is enabled, we should NOT auto-register unknown properties
 			// because we want the deserializer to reject them.
-			const isStrict = advancedOptions?.strict === true;
-
+			// Robustness Upgrade: Auto-Registration now works WITH Strict Mode
+			// This allows "First usage defines schema" pattern.
+			// The first instance defines the allowed keys. Subsequent instances with extra keys will fail.
+			
 			if (
-				!isStrict &&
+				!propertiesRegistered &&
 				!propertiesRegistered &&
 				data &&
 				typeof data === 'object' &&

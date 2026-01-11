@@ -221,6 +221,65 @@ const payment = createPayment({
 console.log(payment instanceof CreditCardPayment); // true
 ```
 
+## Automated Polymorphism (Discriminators)
+
+QuickModel supports automated polymorphism using the `discriminators` option in the `@Quick` decorator. This allows TypeScript to infer types and runtime transformation based on a discriminator field.
+
+```typescript
+import { Quick, QModel } from '@cartago-git/quickmodel';
+
+interface IContent {
+	type: 'content';
+	text: string;
+}
+
+interface IMetadata {
+	type: 'metadata';
+	tags: string[];
+}
+
+class Content extends QModel<IContent> {
+	declare type: 'content';
+	declare text: string;
+}
+
+class Metadata extends QModel<IMetadata> {
+	declare type: 'metadata';
+	declare tags: string[];
+}
+
+@Quick(
+	{
+		items: [Content, Metadata],
+	},
+	{
+		discriminators: {
+			items: (data) => {
+				if (data.type === 'content') return Content;
+				if (data.type === 'metadata') return Metadata;
+				return Content;
+			},
+		},
+	}
+)
+class Data extends QModel<{ items: (Content | Metadata)[] }> {
+	declare items: (Content | Metadata)[];
+}
+```
+
+You can also use a string for simple property-based discrimination:
+
+```typescript
+@Quick(
+	{ items: [Content, Metadata] },
+	{
+		discriminators: {
+			items: 'type' // Uses 'type' property to match class name
+		}
+	}
+)
+```
+
 ## Binary Data
 
 ```typescript

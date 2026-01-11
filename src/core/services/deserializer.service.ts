@@ -473,7 +473,9 @@ export class Deserializer<
 		// Get strict mode configuration
 		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
-		const isStrict = options.strict === true;
+		// Robustness Upgrade: Strict Mode is now enabled by default (unless explicitly disabled)
+		const isStrict = options.strict !== false;
+        // console.log(`DEBUG: Strict Mode is ${isStrict} for ${modelClass.name}`);
 
 		for (const [key, value] of Object.entries(data)) {
 			// SECURITY: Prevent Prototype Pollution

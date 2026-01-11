@@ -7,7 +7,7 @@
  * import { trim, uppercase, compose } from './core/helpers/transform-helpers';
  *
  * @Quick({
- *   name: compose(trim, uppercase),  // Aplica trim y luego uppercase
+ *   name: compose(trim, uppercase),           // Applies trim and then uppercase
  *   email: compose(trim, lowercase),
  *   slug: slugify,
  * })
@@ -192,7 +192,7 @@ export const discount =
 	(price: number): number =>
 		price * (1 - rate);
 
-export const vat = (price: number): number => price * 0.21; // IVA 21%
+export const vat = (price: number): number => price * 0.21; // VAT 21%
 
 export const formatCurrency =
 	(currency: string = '$', decimals: number = 2) =>

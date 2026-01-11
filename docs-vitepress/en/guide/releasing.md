@@ -1,19 +1,21 @@
-# Semantic-release Configuration
+# Semantic Release Configuration
 
 ## Setup Instructions
 
 ### 1. Create NPM Token
-1. Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+
+1. Go to [npmjs.com Tokens](https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
 2. Create new token (Automation type)
 3. Copy the token
 
 ### 2. Add Secrets to GitHub
-1. Go to your repo: https://github.com/CartagoGit/quickmodel/settings/secrets/actions
-2. Add new secret:
-   - Name: `NPM_TOKEN`
-   - Value: (paste the token from npm)
 
-### 3. Create Initial Tag (IMPORTANT - Do this FIRST)
+1. Go to your repo settings: `Settings > Secrets and variables > Actions`
+2. Add new secret:
+    - Name: `NPM_TOKEN`
+    - Value: (paste the token from npm)
+
+### 3. Create Initial Tag (IMPORTANT)
 
 Before your first release, create a baseline tag to prevent semantic-release from analyzing all historical commits:
 
@@ -34,6 +36,7 @@ bun run release:check
 ```
 
 This script will:
+
 - ✅ Show commits since last tag
 - ✅ Analyze commit types (feat, fix, breaking)
 - ✅ Calculate expected new version
@@ -48,6 +51,7 @@ git push origin main
 ```
 
 GitHub Actions will automatically:
+
 1. Run tests
 2. Build the project
 3. Semantic-release analyzes commits since last tag
@@ -70,6 +74,7 @@ chore: update dependencies      # → No version change
 ### 6. Skip CI
 
 If you want to push without triggering release:
+
 ```bash
 git commit -m "docs: update [skip ci]"
 ```

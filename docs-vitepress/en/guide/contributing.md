@@ -1,44 +1,44 @@
-# Development Guide - QuickModel
+# Contribution Guide
 
-Guía completa para desarrolladores que contribuyen al proyecto QuickModel.
+Complete guide for developers contributing to the QuickModel project.
 
-## 📋 Índice
+## 📋 Table of Contents
 
-- [Configuración del Entorno](#configuración-del-entorno)
-- [Arquitectura](#arquitectura)
+- [Environment Setup](#environment-setup)
+- [Architecture](#architecture)
 - [Build System](#build-system)
 - [Testing](#testing)
 - [Code Style](#code-style)
-- [Commits y Releases](#commits-y-releases)
+- [Commits and Releases](#commits-and-releases)
 
-## 🚀 Configuración del Entorno
+## 🚀 Environment Setup
 
-### Requisitos
+### Requirements
 
-- **Bun** >= 1.0 (runtime y package manager)
+- **Bun** >= 1.0 (runtime and package manager)
 - **TypeScript** >= 5.7
-- **Node.js** >= 20 (para herramientas de documentación)
+- **Node.js** >= 20 (for documentation tools)
 
-### Instalación
+### Installation
 
 ```bash
-# Clonar repositorio
+# Clone repository
 git clone https://github.com/CartagoGit/quickmodel.git
 cd quickmodel
 
-# Instalar dependencias
+# Install dependencies
 bun install
 
-# Verificar instalación
+# Verify installation
 bun test
 bun run build
 ```
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
-QuickModel sigue **principios SOLID** con una arquitectura clara y mantenible.
+QuickModel follows **SOLID principles** with a clear and maintainable architecture.
 
-### Estructura del Proyecto
+### Project Structure
 
 ```
 src/
@@ -74,86 +74,86 @@ src/
     └── primitive.transformer.ts
 ```
 
-### Principios SOLID
+### SOLID Principles
 
 #### 1. Single Responsibility Principle (SRP)
 
-- **Transformers**: Cada transformer maneja UN tipo específico
-- **Services**: Servicios separados para serialización, deserialización y validación
-- **Decorators**: Solo registran metadata, no contienen lógica de transformación
+- **Transformers**: Each transformer handles ONE specific type
+- **Services**: Separate services for serialization, deserialization, and validation
+- **Decorators**: Only register metadata, do not contain transformation logic
 
 #### 2. Open/Closed Principle (OCP)
 
-- Sistema extensible mediante registro de nuevos transformers
-- No requiere modificar código existente para añadir tipos
-- Registry pattern permite inyección de transformers custom
+- Extensible system via registration of new transformers
+- Does not require modifying existing code to add types
+- Registry pattern allows injection of custom transformers
 
 #### 3. Liskov Substitution Principle (LSP)
 
-- Todos los transformers implementan `IQTransformer<TInput, TSerialized>`
-- Los modelos se comportan como clases TypeScript estándar
-- Sustitución transparente en jerarquías de herencia
+- All transformers implement `IQTransformer<TInput, TSerialized>`
+- Models behave like standard TypeScript classes
+- Transparent substitution in inheritance hierarchies
 
 #### 4. Interface Segregation Principle (ISP)
 
-- Interfaces separadas para serialización (`IUser`) y runtime (`IUserTransform`)
-- Clientes no dependen de interfaces que no usan
-- Contratos pequeños y específicos
+- Separate interfaces for serialization (`IUser`) and runtime (`IUserTransform`)
+- Clients do not depend on interfaces they do not use
+- Small and specific contracts
 
 #### 5. Dependency Inversion Principle (DIP)
 
-- Servicios dependen de abstracciones (`IQTransformer`), no de implementaciones
-- Registry actúa como contenedor de inyección de dependencias
-- Transformers no conocen detalles de serialización
+- Services depend on abstractions (`IQTransformer`), not implementations
+- Registry acts as a dependency injection container
+- Transformers do not know serialization details
 
-### Flujo de Datos
+### Data Flow
 
 ```
 ┌─────────────┐
-│ Constructor │ → Data llegando (JSON del backend)
+│ Constructor │ → Incoming Data (JSON from backend)
 └──────┬──────┘
        ↓
 ┌────────────────────┐
-│ @Quick/@QType      │ → Metadata de transformaciones
+│ @Quick/@QType      │ → Transformation Metadata
 │ (Decorators)       │
 └─────────┬──────────┘
           ↓
 ┌──────────────────────┐
-│ Deserializer    │ → Aplica transformaciones
+│ Deserializer    │ → Applies transformations
 │ Service              │
 └──────────┬───────────┘
            ↓
 ┌─────────────────────┐
-│ Transformers        │ → Transforman tipos específicos
+│ Transformers        │ → Transform specific types
 │ (Registry lookup)   │   (string → Date, array → Set, etc.)
 └──────────┬──────────┘
            ↓
 ┌─────────────────┐
-│ QModel Instance │ → Propiedades con tipos runtime correctos
+│ QModel Instance │ → Properties with correct runtime types
 └─────────────────┘
 ```
 
 ## 🔨 Build System
 
-### Scripts Principales
+### Main Scripts
 
 ```bash
-# Compilar proyecto (limpia, testea y build)
+# Compile project (clean, test, and build)
 bun run build
 
-# Development con watch mode
+# Development with watch mode
 bun run dev
 
-# Limpiar dist/
+# Clean dist/
 bun run clean
 
-# Verificar tipos sin emitir
+# Verify types without emitting
 bun run typecheck
 ```
 
-### Configuración TypeScript
+### TypeScript Configuration
 
-**tsconfig.json** - Compilación del código fuente:
+**tsconfig.json** - Source code compilation:
 
 ```json
 {
@@ -177,7 +177,7 @@ bun run typecheck
 }
 ```
 
-**tsconfig.test.json** - Configuración para tests:
+**tsconfig.test.json** - Test configuration:
 
 ```json
 {
@@ -191,7 +191,7 @@ bun run typecheck
 }
 ```
 
-### Bundling con tsup
+### Bundling with tsup
 
 **tsup.config.ts**:
 
@@ -212,86 +212,86 @@ export default defineConfig({
 
 ### Path Aliases
 
-**Siempre usar path aliases `@/*` en lugar de imports relativos:**
+**Always use path aliases `@/*` instead of relative imports:**
 
 ```typescript
-// ✅ CORRECTO
+// ✅ CORRECT
 import { QModel } from '@/core/models/quick.model';
 import { Deserializer } from '@/core/services/model-deserializer.service';
 
-// ❌ INCORRECTO
+// ❌ INCORRECT
 import { QModel } from '../../core/models/quick.model';
 import { Deserializer } from '../services/model-deserializer.service';
 ```
 
 ### NO Barrel Files
 
-**Regla importante:** NO usar barrel files (index.ts) excepto el principal en `src/index.ts`
+**Important Rule:** DO NOT use barrel files (index.ts) except for the main one in `src/index.ts`
 
 ```typescript
-// ❌ NUNCA crear archivos index.ts como estos:
+// ❌ NEVER create index.ts files like these:
 // src/transformers/index.ts
 // src/core/services/index.ts
 // src/core/interfaces/index.ts
 
-// ✅ Importar directamente desde los archivos fuente
+// ✅ Import directly from source files
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 ```
 
-**Razones:**
+**Reasons:**
 
-- Evita dependencias circulares
-- Build más rápido (menos resoluciones de módulos)
-- Mejor tree-shaking
-- Imports explícitos y claros
+- Avoids circular dependencies
+- Faster build (fewer module resolutions)
+- Better tree-shaking
+- Explicit and clear imports
 
 ## 🧪 Testing
 
 ### Framework
 
-Usamos **Bun Test** (nativo, ultra-rápido, compatible con Jest/Vitest API)
+We use **Bun Test** (native, ultra-fast, compatible with Jest/Vitest API)
 
-### Estructura de Tests
+### Test Structure
 
 ```
 tests/
-├── unit/              # Tests de unidades individuales
+├── unit/              # Unit tests
 │   ├── primitives/
 │   ├── collections/
 │   └── transformers/
-├── integration/       # Tests de integración de features
+├── integration/       # Feature integration tests
 │   └── decorators/
-├── system/           # Tests de flujos completos
+├── system/           # Full workflow tests
 │   └── full-workflow/
-└── e2e/              # Tests end-to-end
+└── e2e/              # End-to-end tests
     └── user-scenarios/
 ```
 
-### Ejecutar Tests
+### Running Tests
 
 ```bash
-# Todos los tests
+# All tests
 bun test
 
-# Con coverage
+# With coverage
 bun run test:coverage
 
-# Solo unit tests (rápido)
+# Only unit tests (fast)
 bun test tests/unit
 
-# Solo integration tests
+# Only integration tests
 bun test tests/integration
 
-# Test específico
+# Specific test
 bun test tests/unit/primitives/bigint.test.ts
 
 # Watch mode
 bun test --watch
 ```
 
-### Escribir Tests
+### Writing Tests
 
-**Patrón básico:**
+**Basic Pattern:**
 
 ```typescript
 import { describe, test, expect } from 'bun:test';
@@ -313,82 +313,84 @@ describe('Feature Name', () => {
 });
 ```
 
-**Convenciones:**
+**Conventions:**
 
-- Nombrar archivos con patrón: `feature-scenario.test.ts`
-- Usar `describe` para agrupar tests relacionados
-- Cada `test` debe validar UNA cosa específica
-- Usar comentarios Arrange/Act/Assert en tests complejos
+- Name files with pattern: `feature-scenario.test.ts`
+- Use `describe` to group related tests
+- Each `test` should validate ONE specific thing
+- Use Arrange/Act/Assert comments in complex tests
 
 ## 🎨 Code Style
 
-### Herramientas
+### Tools
 
-- **ESLint**: Análisis estático
-- **Prettier**: Formateo automático
+- **ESLint**: Static analysis
+- **Prettier**: Automatic formatting
 - **TypeScript**: Type checking
 
-### Configuración
+### Configuration
 
-**.prettierrc.json**:
+**package.json** (Prettier):
 
 ```json
 {
-	"useTabs": true,
-	"tabWidth": 2,
-	"singleQuote": true,
-	"printWidth": 100,
-	"trailingComma": "es5",
-	"semi": true
+	"prettier": {
+		"useTabs": true,
+		"tabWidth": 2,
+		"singleQuote": true,
+		"printWidth": 100,
+		"trailingComma": "es5",
+		"semi": true
+	}
 }
 ```
 
-### Reglas Principales
+### Main Rules
 
-1. **Indentación**: Tabs (no espacios)
-2. **Comillas**: Single quotes (`'`)
-3. **Longitud de línea**: Max 100 caracteres
-4. **Semicolons**: Sí (siempre)
+1. **Indentation**: Tabs (no spaces)
+2. **Quotes**: Single quotes (`'`)
+3. **Line Length**: Max 100 characters
+4. **Semicolons**: Yes (always)
 5. **Trailing commas**: ES5 style
 
-### Scripts de Linting
+### Linting Scripts
 
 ```bash
-# Verificar código
+# Check code
 bun run lint
 
-# Auto-fix problemas
+# Auto-fix problems
 bun run lint:fix
 
-# Verificar formato
+# Check format
 bun run format:check
 
-# Auto-formatear
+# Auto-format
 bun run format
 ```
 
-### Convenciones TypeScript
+### TypeScript Conventions
 
 **Interfaces:**
 
 ```typescript
-// ✅ Prefijo I para interfaces de datos
+// ✅ I Prefix for data interfaces
 interface IUser { ... }
 
-// ✅ Prefijo I para interfaces de contrato
+// ✅ I Prefix for contract interfaces
 interface IQTransformer<T, S> { ... }
 ```
 
 **Types vs Interfaces:**
 
 ```typescript
-// ✅ Usar interface para objetos y contratos
+// ✅ Use interface for objects and contracts
 interface IUser {
 	id: number;
 	name: string;
 }
 
-// ✅ Usar type para unions, tuples, utilities
+// ✅ Use type for unions, tuples, utilities
 type Status = 'active' | 'inactive';
 type Point = [number, number];
 ```
@@ -396,24 +398,24 @@ type Point = [number, number];
 **Property Declaration:**
 
 ```typescript
-// ✅ Opción 1: declare (recomendado)
+// ✅ Option 1: declare (recommended)
 class User extends QModel<IUser> {
 	declare id: number;
 	declare name: string;
 }
 
-// ✅ Opción 2: definite assignment (!)
+// ✅ Option 2: definite assignment (!)
 class User extends QModel<IUser> {
 	id!: number;
 	name!: string;
 }
 ```
 
-## 📝 Commits y Releases
+## 📝 Commits and Releases
 
 ### Conventional Commits
 
-**Formato obligatorio:**
+**Mandatory Format:**
 
 ```
 <type>(<scope>): <subject>
@@ -423,22 +425,22 @@ class User extends QModel<IUser> {
 <footer>
 ```
 
-**Tipos principales:**
+**Main Types:**
 
-- `feat`: Nueva feature (MINOR bump)
+- `feat`: New feature (MINOR bump)
 - `fix`: Bug fix (PATCH bump)
-- `docs`: Solo documentación
-- `style`: Formateo, sin cambio de código
-- `refactor`: Refactorización
-- `test`: Añadir o modificar tests
-- `chore`: Mantenimiento
-- `perf`: Mejora de performance (PATCH bump)
+- `docs`: Documentation only
+- `style`: Formatting, no code changes
+- `refactor`: Refactoring
+- `test`: Adding or modifying tests
+- `chore`: Maintenance
+- `perf`: Performance improvement (PATCH bump)
 
-**Scopes del proyecto:**
+**Project Scopes:**
 
 - `transformers`, `decorators`, `services`, `core`, `tests`, `docs`, `build`, `deps`
 
-**Ejemplos:**
+**Examples:**
 
 ```bash
 feat(transformers): add URL transformer support
@@ -447,43 +449,39 @@ docs(readme): update installation instructions
 chore(deps): update typescript to 5.7.2
 ```
 
-📖 **Documentación completa:** [.github/COMMIT_CONVENTIONS.md](../.github/COMMIT_CONVENTIONS.md)
-
 ### Release Workflow
 
-**Antes de hacer release:**
+**Before Releasing:**
 
 ```bash
-# 1. Verificar commits desde último tag
+# 1. Verify commits since last tag
 bun run release:check
 
-# 2. Ejecutar tests
+# 2. Run tests
 bun test
 
-# 3. Verificar build
+# 3. Verify build
 bun run build
 ```
 
-**Proceso de release (automático):**
+**Release Process (Automated):**
 
 ```bash
-# 1. Merge a main
+# 1. Merge to main
 git checkout main
 git merge develop
 git push origin main
 
-# 2. GitHub Actions se encarga de:
-#    - Ejecutar tests
-#    - Build del proyecto
-#    - Analizar commits (semantic-release)
-#    - Calcular nueva versión
-#    - Crear tag
-#    - Actualizar CHANGELOG
-#    - Publicar a npm
-#    - Crear GitHub release
+# 2. GitHub Actions handles:
+#    - Running tests
+#    - Project build
+#    - Analyzing commits (semantic-release)
+#    - Calculating new version
+#    - Creating tag
+#    - Updating CHANGELOG
+#    - Publishing to npm
+#    - Creating GitHub release
 ```
-
-📖 **Documentación completa:** [.github/SEMANTIC_RELEASE_SETUP.md](../.github/SEMANTIC_RELEASE_SETUP.md)
 
 ### Semantic Versioning
 
@@ -491,18 +489,18 @@ git push origin main
 MAJOR.MINOR.PATCH
 ```
 
-- **MAJOR** (2.0.0): Breaking changes (`feat!:` o `BREAKING CHANGE:`)
-- **MINOR** (1.1.0): Nuevas features (`feat:`)
+- **MAJOR** (2.0.0): Breaking changes (`feat!:` or `BREAKING CHANGE:`)
+- **MINOR** (1.1.0): New features (`feat:`)
 - **PATCH** (1.0.1): Bug fixes (`fix:`, `perf:`)
 
-## 📚 Documentación
+## 📚 Documentation
 
-### Herramientas
+### Tools
 
-- **TypeDoc**: Genera API reference desde JSDoc comments
-- **VitePress**: Sitio estático para guías y tutoriales
+- **TypeDoc**: Generates API reference from JSDoc comments
+- **VitePress**: Static site for guides and tutorials
 
-### Generar Documentación
+### Generating Documentation
 
 ```bash
 # API Reference (TypeDoc)
@@ -518,7 +516,7 @@ bun run docs:build
 bun run docs:preview
 ```
 
-### Escribir JSDoc
+### Writing JSDoc
 
 ````typescript
 /**
@@ -539,35 +537,31 @@ export class BigIntTransformer implements IQTransformer<bigint, string> {
 }
 ````
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-### Workflow Recomendado
+### Recommended Workflow
 
-1. **Fork y clone**
-2. **Crear branch**: `git checkout -b feat/new-feature`
-3. **Desarrollar** con tests
-4. **Commit** siguiendo Conventional Commits
-5. **Push** y crear Pull Request
-6. **Review** y merge
+1. **Fork and clone**
+2. **Create branch**: `git checkout -b feat/new-feature`
+3. **Develop** with tests
+4. **Commit** following Conventional Commits
+5. **Push** and create Pull Request
+6. **Review** and merge
 
-### Checklist antes de PR
+### Checklist before PR
 
-- ✅ Tests pasan: `bun test`
-- ✅ Build funciona: `bun run build`
+- ✅ Tests pass: `bun test`
+- ✅ Build works: `bun run build`
 - ✅ Lint OK: `bun run lint`
-- ✅ Formato OK: `bun run format:check`
+- ✅ Format OK: `bun run format:check`
 - ✅ Types OK: `bun run typecheck`
-- ✅ Commits siguen Conventional Commits
-- ✅ Documentación actualizada (si aplica)
+- ✅ Commits follow Conventional Commits
+- ✅ Documentation updated (if applicable)
 
-## 📖 Referencias
+## 📖 References
 
 - [SOLID Principles](https://en.wikipedia.org/wiki/SOLID)
 - [Conventional Commits](https://www.conventionalcommits.org/)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - [Bun Documentation](https://bun.sh/docs)
 - [Semantic Release](https://semantic-release.gitbook.io/)
-
----
-
-**¿Dudas?** Abre un issue en GitHub o consulta la documentación completa en [docs/](./README.md).

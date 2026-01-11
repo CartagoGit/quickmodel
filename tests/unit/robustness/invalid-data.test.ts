@@ -1,0 +1,47 @@
+
+
+import { describe, test, expect } from 'bun:test';
+import { QModel, Quick } from '@/index';
+
+describe('Robustness: Invalid Data Handling', () => {
+
+    test('should THROW ERROR when deserializing Invalid Date (Fail Fast Policy)', () => {
+        interface IUser {
+            name: string;
+            createdAt: Date;
+        }
+
+        @Quick({ createdAt: Date })
+        class User extends QModel<IUser> {
+            declare createdAt: Date;
+        }
+    
+        // The library follows "Fail Fast" for explicit types
+        expect(() => {
+            User.create({ name: 'Test', createdAt: 'GARBAGE' });
+        }).toThrow(/Invalid date value/);
+    });
+
+    test('should allow Unknown Properties (Permissive Policy)', () => {
+         interface IUser {
+            name: string;
+        }
+
+        @Quick()
+        class User extends QModel<IUser> {
+            declare name: string;
+        }
+
+        // What happens with extra fields?
+        const data = { name: 'Test', extraField: 'Hack' };
+        const user = User.create(data);
+
+        // They are preserved in runtime (Permissive)
+        expect((user as any).extraField).toBe('Hack');
+        
+        // And preserved in serialization
+        const json = user.toJSON();
+        expect(json).toContain('"extraField":"Hack"');
+    });
+});
+

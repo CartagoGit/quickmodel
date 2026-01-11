@@ -293,9 +293,12 @@ describe('QModel.create() factory method', () => {
 				value?: number;
 			}
 
+			// In Strict Mode (default), optional properties MUST be decorated/known
+			// to avoid being rejected if they appear later (Schema Inference limitation)
 			@Quick()
-			class Config extends QModel<IConfig> {
+			class Config extends QModel<Config> {
 				declare name: string;
+				@QType() // Explicitly registered
 				declare value?: number;
 			}
 
