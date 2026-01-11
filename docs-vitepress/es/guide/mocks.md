@@ -46,18 +46,10 @@ QuickModel soporta la generación de mocks para todos los tipos estándar, inclu
 ### Tipos Implícitos vs Explícitos
 
 **Implícito (Inferido):**
-En la mayoría de los casos, **¡no necesitas hacer nada!** QuickModel lee automáticamente los metadatos de TypeScript emitidos por los decoradores.
+En la mayoría de los casos, **¡no necesitas hacer nada!** QuickModel lee automáticamente los metadatos de TypeScript.
 
-```typescript
-@Quick({}) // Usa metadatos implícitamente
-class User extends QModel<IUser> {
-	@QType() // Dispara la emisión de metadatos
-	declare name: string; // Inferido como String
-}
-```
-
-**Explícito (Opcional):**
-Puedes especificar tipos explícitamente si quieres **sobrescribir** el comportamiento por defecto o si estás en un entorno donde no se emiten metadatos.
+**Explícito (Recomendado):**
+Recomendamos ser explícitos en el decorador para asegurar un comportamiento consistente en todos los entornos.
 
 ```typescript
 @Quick({

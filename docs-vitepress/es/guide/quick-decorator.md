@@ -52,12 +52,82 @@ Puedes pasar un segundo objeto de opciones a `@Quick` para un control avanzado:
   items: [Content, Metadata] // 1. Mapeo de Tipos
 }, {
   // 2. Opciones Avanzadas
-  strict: true, // Rechazar propiedades desconocidas
-  discriminators: { ... }, // Configuración de Polimorfismo
-  transformers: { ... }, // Deserializadores personalizados
-  serializers: { ... } // Serializadores personalizados
+  strict: true,
+  transformers: { ... },
+  serializers: { ... },
+  mockers: { ... },
+  discriminators: { ... }
 })
 class MyModel extends QModel<IMyInterface> { ... }
+```
+
+### 1. Transformadores Personalizados (Deserialización)
+
+Sobrescribe la lógica de deserialización por defecto (JSON -> Modelo) para propiedades específicas.
+
+```typescript
+@Quick({
+  status: String
+}, {
+  transformers: {
+    // Forzar mayúsculas al recibir
+    status: (val) => String(val).toUpperCase()
+  }
+})
+```
+
+### 2. Serializadores Personalizados
+
+Sobrescribe la lógica de serialización por defecto (Modelo -> JSON/Objeto) para propiedades específicas.
+
+```typescript
+@Quick({
+  date: Date
+}, {
+  transformers: {
+    // Deserializar: segundos -> Date
+    date: (val) => new Date(Number(val) * 1000)
+  },
+  serializers: {
+    // Serializar: Date -> segundos
+    date: (val) => Math.floor((val as Date).getTime() / 1000)
+  }
+})
+```
+
+### 3. Mockers Personalizados
+
+Define cómo generar datos mock para propiedades específicas, especialmente útil cuando usas transformadores personalizados donde la inferencia automática podría fallar.
+
+```typescript
+@Quick({
+  sku: (val) => `ITEM-${val}`
+}, {
+  mockers: {
+    // Generar base válida para el SKU
+    sku: () => faker.string.alphanumeric(8)
+  }
+})
+```
+
+### 4. Discriminadores (Polimorfismo)
+
+Maneja arrays que contienen diferentes tipos de modelos (Tipos Unión).
+
+```typescript
+@Quick({
+  // Declara TODOS los tipos posibles
+  items: [Content, Metadata]
+}, {
+  discriminators: {
+    // Opción A: Nombre del Campo (Simple)
+    // Usa data.type para decidir ('content' -> Content, 'metadata' -> Metadata)
+    items: 'type',
+
+    // Opción B: Función Personalizada (Flexible)
+    items: (data) => 'text' in (data as any) ? Content : Metadata
+  }
+})
 ```
 
 ---

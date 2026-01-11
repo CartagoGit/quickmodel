@@ -62,6 +62,93 @@ class MyModel extends QModel<IMyInterface> { ... }
 
 ---
 
+## Advanced Options
+
+```typescript
+@Quick({
+  items: [Content, Metadata] // 1. Type Mapping
+}, {
+  // 2. Advanced Options
+  strict: true,
+  transformers: { ... },
+  serializers: { ... },
+  mockers: { ... },
+  discriminators: { ... }
+})
+class MyModel extends QModel<IMyInterface> { ... }
+```
+
+### 1. Custom Transformers (Deserialization)
+
+Override the default deserialization logic (JSON -> Model) for specific properties.
+
+```typescript
+@Quick({
+  status: String
+}, {
+  transformers: {
+    // Force uppercase on receive
+    status: (val) => String(val).toUpperCase()
+  }
+})
+```
+
+### 2. Custom Serializers
+
+Override the default serialization logic (Model -> JSON/Object) for specific properties.
+
+```typescript
+@Quick({
+  date: Date
+}, {
+  transformers: {
+    // Deserialize: seconds -> Date
+    date: (val) => new Date(Number(val) * 1000)
+  },
+  serializers: {
+    // Serialize: Date -> seconds
+    date: (val) => Math.floor((val as Date).getTime() / 1000)
+  }
+})
+```
+
+### 3. Custom Mockers
+
+Define how to generate mock data for specific fields, especially when using custom transformers where automatic inference might fail.
+
+```typescript
+@Quick({
+  sku: (val) => `ITEM-${val}`
+}, {
+  mockers: {
+    // Generate valid SKU base
+    sku: () => faker.string.alphanumeric(8)
+  }
+})
+```
+
+### 4. Discriminators (Polymorphism)
+
+Handle arrays containing different model types (Union Types).
+
+```typescript
+@Quick({
+  // Declare ALL possible types
+  items: [Content, Metadata]
+}, {
+  discriminators: {
+    // Option A: Field Name (Simple)
+    // Uses data.type to decide ('content' -> Content, 'metadata' -> Metadata)
+    items: 'type',
+
+    // Option B: Custom Function (Flexible)
+    items: (data) => 'text' in (data as any) ? Content : Metadata
+  }
+})
+```
+
+---
+
 ## Supported Types Reference
 
 QuickModel supports a vast array of types and string aliases.

@@ -46,18 +46,10 @@ QuickModel supports generating mocks for all standard types, including Primitive
 ### Implicit vs Explicit Types
 
 **Implicit (Inferred):**
-In most cases, **you don't need to do anything!** QuickModel automatically reads the TypeScript metadata emitted by the decorators.
+In most cases, **you don't need to do anything!** QuickModel automatically reads the TypeScript metadata.
 
-```typescript
-@Quick({}) // Implicitly uses metadata
-class User extends QModel<IUser> {
-	@QType() // Triggers metadata emission
-	declare name: string; // Inferred as String
-}
-```
-
-**Explicit (Optional):**
-You can specify types explicitly if you want to **override** the default behavior or if you are in an environment where metadata is not emitted.
+**Explicit (Recommended):**
+We recommend being explicit in the decorator to ensure consistent behavior across all environments.
 
 ```typescript
 @Quick({

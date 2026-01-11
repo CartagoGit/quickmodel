@@ -131,15 +131,25 @@ export class ToInterfaceService<
 			];
 			const originalValue = initData[key];
 
-			// 🔥 CHECK: Custom serializer from options (High Priority)
+			// 🔥 CHECK 1: Custom serializer from @Quick options (Highest Priority)
 			// Allows overriding interface generation logic via options.serializers
-			// Useful for cases where default symmetric behavior isn't enough (e.g. one-way transforms)
 			if (
 				options.serializers &&
 				key in options.serializers &&
 				typeof options.serializers[key] === 'function'
 			) {
 				result[key] = options.serializers[key]!(currentValue);
+				continue;
+			}
+
+			// 🔥 CHECK 2: Custom serializer from @QType metadata (High Priority)
+			const customSerializer = Reflect.getMetadata(
+				'customSerializer',
+				model,
+				key
+			);
+			if (customSerializer && typeof customSerializer === 'function') {
+				result[key] = customSerializer(currentValue);
 				continue;
 			}
 

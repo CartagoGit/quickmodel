@@ -49,13 +49,24 @@ export class MockGenerator {
 				continue;
 			}
 
-			// 🔥 CHECK: Custom mocker from options (High Priority)
+			// 🔥 CHECK 1: Custom mocker from @Quick options (Highest Priority)
 			if (
 				options.mockers &&
 				key in options.mockers &&
 				typeof options.mockers[key] === 'function'
 			) {
 				mock[key] = options.mockers[key]!();
+				continue;
+			}
+
+			// 🔥 CHECK 2: Custom mocker from @QType metadata (High Priority)
+			const customMocker = Reflect.getMetadata(
+				'customMocker',
+				modelClass.prototype,
+				key
+			);
+			if (customMocker && typeof customMocker === 'function') {
+				mock[key] = customMocker();
 				continue;
 			}
 

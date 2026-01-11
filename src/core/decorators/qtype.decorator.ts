@@ -38,10 +38,15 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * - Transforms the value to the specified type
  * - Supports: String literals, Native constructors, Q-Symbols, Model classes
  *
+ * **WITH type and options** (`@QType(Type, options)`):
+ * - Allows defining custom `transformer`, `serializer`, and `mocker` for this specific property
+ * - Useful for complex types that default transformers can't handle properly
+ *
  * @group Decorators
- * Syntax: `@QType(typeOrClass)`
+ * Syntax: `@QType(typeOrClass, options?)`
  * @template T - The property type
  * @param typeOrClass - Optional: Constructor, Symbol, or String literal for the field type
+ * @param options - Optional: Object with custom `transformer`, `serializer`, and `mocker`
  * @returns A property decorator function that registers the field with appropriate metadata
  *
  * @example
@@ -84,6 +89,23 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  *
  *   // Array of dates
  *   @QType([Date]) declare logDates: Date[];
+ * }
+ * ```
+ *
+ * @example
+ * **Advanced Options (Custom Transformer/Serializer/Mocker)**:
+ * ```typescript
+ * class Event extends QModel<IEvent> {
+ *   // Handle timestamp <-> Date conversion
+ *   @QType(Date, {
+ *     // Input (JSON -> Model): number -> Date
+ *     transformer: (val: number) => new Date(val),
+ *     // Output (Model -> JSON): Date -> number
+ *     serializer: (date: Date) => date.getTime(),
+ *     // Test (Mock -> Model): random Date
+ *     mocker: () => new Date('2024-01-01')
+ *   })
+ *   declare timestamp: Date;
  * }
  * ```
  *
@@ -186,6 +208,29 @@ export type INativeFactory =
 	| Float64ArrayConstructor
 	| ErrorConstructor;
 
+/**
+ * Options for QType decorator to handle advanced scenarios per property.
+ */
+export interface QTypeOptions {
+	/**
+	 * Custom transformer function (Input -> Model).
+	 * Overrides default deserialization logic for this property.
+	 */
+	transformer?: (value: unknown) => unknown;
+
+	/**
+	 * Custom serializer function (Model -> Output/Interface).
+	 * Overrides default toInterface preservation logic.
+	 */
+	serializer?: (value: unknown) => unknown;
+
+	/**
+	 * Custom mocker function (Test -> Model).
+	 * Overrides default mock generation logic.
+	 */
+	mocker?: () => unknown;
+}
+
 export function QType<T>(
 	typeOrClass?:
 		| (new (...args: any[]) => T) // Constructor relaxed to 'any' argument to allow various signatures
@@ -193,7 +238,8 @@ export function QType<T>(
 		| QAlias
 		| INativeFactory
 		| PromiseConstructor
-		| Array<unknown> // Support array syntax: [Type], [[Type]], etc.
+		| Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
+	options?: QTypeOptions
 ): PropertyDecorator {
 	return function (target: object, propertyKey: string | symbol): void {
 		// Register the property in the fields list
@@ -206,7 +252,36 @@ export function QType<T>(
 			Reflect.defineMetadata(QTYPES_METADATA_KEY, newFields, target);
 		}
 
+		// Save advanced options options if present
+		if (options) {
+			if (options.transformer) {
+				Reflect.defineMetadata(
+					'customTransformer',
+					options.transformer,
+					target,
+					propertyKey
+				);
+			}
+			if (options.serializer) {
+				Reflect.defineMetadata(
+					'customSerializer',
+					options.serializer,
+					target,
+					propertyKey
+				);
+			}
+			if (options.mocker) {
+				Reflect.defineMetadata(
+					'customMocker',
+					options.mocker,
+					target,
+					propertyKey
+				);
+			}
+		}
+
 		// ALWAYS create getter/setter to prevent TypeScript from shadowing with real properties
+
 		// Check if getter/setter already exists
 		const existingDescriptor = Object.getOwnPropertyDescriptor(
 			target,

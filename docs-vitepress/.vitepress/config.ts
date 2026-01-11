@@ -85,6 +85,10 @@ export default defineConfig({
 							collapsed: false,
 							items: [
 								{
+									text: '@QType',
+									link: '/tsdoc/functions/QType',
+								},
+								{
 									text: '@Quick',
 									link: '/tsdoc/functions/Quick',
 								},
@@ -175,6 +179,10 @@ export default defineConfig({
 								{
 									text: '@Quick Decorator',
 									link: '/en/guide/quick-decorator',
+								},
+								{
+									text: '@QType Decorator',
+									link: '/en/guide/qtype-decorator',
 								},
 								{
 									text: 'Transformers',
@@ -278,6 +286,10 @@ export default defineConfig({
 								{
 									text: 'Decorador @Quick',
 									link: '/es/guide/quick-decorator',
+								},
+								{
+									text: 'Decorador @QType',
+									link: '/es/guide/qtype-decorator',
 								},
 								{
 									text: 'Transformadores',

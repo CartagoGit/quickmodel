@@ -495,6 +495,45 @@ export interface QOptions {
  * })
  * ```
  *
+ * @example
+ * **✅ Customizing Transformers, Serializers & Mockers:**
+ *
+ * For full control over the lifecycle of your data.
+ *
+ * ```typescript
+ * @Quick({
+ *   // Define base types
+ *   sku: (val: any) => `ITEM-${val}`, // Inline transformer (fallback to String for mocks)
+ *   timestamp: Date
+ * }, {
+ *   // 1. TRANSFORMERS (Input -> Model)
+ *   // Override default deserialization logic
+ *   transformers: {
+ *     // Convert seconds -> Date object
+ *     timestamp: (val: number) => new Date(val * 1000)
+ *   },
+ *
+ *   // 2. SERIALIZERS (Model -> Output)
+ *   // Override default serialization logic (toInterface)
+ *   serializers: {
+ *     // Convert Date object -> seconds
+ *     timestamp: (val: Date) => Math.floor(val.getTime() / 1000)
+ *   },
+ *
+ *   // 3. MOCKERS (Tests -> Model)
+ *   // Define how to generate fake data for this field
+ *   // Critical for custom transformers where automatic inference fails
+ *   mockers: {
+ *     // Generate '1234' so transformer produces 'ITEM-1234'
+ *     sku: () => faker.string.alphanumeric(4)
+ *   }
+ * })
+ * class Product extends QModel<IProduct> {
+ *   declare sku: string;
+ *   declare timestamp: Date;
+ * }
+ * ```
+ *
  * @remarks
  * **Why Set/Map need type mapping:**
  *

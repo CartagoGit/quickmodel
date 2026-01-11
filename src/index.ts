@@ -13,20 +13,12 @@
  * and its input/output interfaces.
  */
 export type { QInterface, QTransform } from './core/interfaces/model.interface';
-/**
- * Base model class with automatic serialization/deserialization
- */
 export { QModel } from './core/models/quick.model';
 
-/**
- * Class decorator for automatic property type mapping
- */
 export { Quick } from './core/decorators/quick.decorator';
 
-/**
- * Property decorator for manual type mapping (optional when using Quick)
- */
 export { QType } from './core/decorators/qtype.decorator';
+export type { QTypeOptions } from './core/decorators/qtype.decorator';
 
 // ============================================================================
 // PUBLIC API - Type Helper Utilities
