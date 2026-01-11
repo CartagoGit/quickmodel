@@ -148,6 +148,85 @@ const errors = user.validate();
 if (errors.length) {
 	console.error(errors);
 }
+const errors = user.validate();
+if (errors.length) {
+	console.error(errors);
+}
+```
+
+## State Management & Change Tracking
+
+QModel includes powerful built-in tools to track changes, compare states, and manage updates.
+
+### `hasChanges()` / `isDirty()`
+
+Returns `true` if the model has been modified since it was instantiated (or since the last save/reset).
+
+```typescript
+const user = new User({ name: 'John' });
+console.log(user.hasChanges()); // false
+
+user.name = 'Jane';
+console.log(user.hasChanges()); // true
+```
+
+### `getChanges()`
+
+Returns a partial object containing **only the fields that have changed**. Perfect for generating PATCH payloads.
+
+```typescript
+const user = new User({ id: 1, name: 'John', age: 30 });
+
+user.age = 31;
+
+const changes = user.getChanges();
+// Result: { age: 31 }
+```
+
+### `getChangedFields()`
+
+Returns an array of the names of modified properties.
+
+```typescript
+const fields = user.getChangedFields();
+// Result: ['age']
+```
+
+### `reset()`
+
+Reverts the model instance back to its **initial state** (the data provided to the constructor).
+
+```typescript
+user.name = 'Modified';
+user.reset();
+console.log(user.name); // 'John' (Original value)
+```
+
+### `patch(data)`
+
+Applies partial updates to the model. Useful for processing API responses or partial form updates.
+
+```typescript
+user.patch({ age: 32 });
+// Only 'age' is updated, other fields remain unchanged
+```
+
+### `getInitInterface()`
+
+Returns the **original data** used to create the instance, in its original format (preserving strings instead of Dates, etc.).
+
+```typescript
+// Initial input: { createdAt: '2024-01-01' }
+const original = user.getInitInterface();
+console.log(original.createdAt); // '2024-01-01' (String)
+```
+
+### `clone()`
+
+Creates a deep copy of the model instance. The new instance is completely independent.
+
+```typescript
+const copy = user.clone();
 ```
 
 ## Mocking

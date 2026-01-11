@@ -93,9 +93,7 @@ _(See [QTransform definition](../../src/core/interfaces/transformer.interface.ts
 However, for most cases, **Inline Transformers** are sufficient:
 
 ```typescript
-@Quick({
-  // Custom: Uppercase string
-  code: (val: string) => val.toUpperCase(),
+
 
 @Quick({
   // Custom: Uppercase string
@@ -112,6 +110,41 @@ However, for most cases, **Inline Transformers** are sufficient:
 >
 > If you need bidirectional transformation (also serializing back to JSON with a specific format), you must create a class implementing `IQTransformer`.
 
+## Advanced: Transformers & Serializers via Options
+
+For cleaner code, or when you need bidirectional custom logic without creating a full class, you can use the **Advanced Options** object (second argument of `@Quick`).
+
+This allows you to separate the type definition from the transformation logic and define explicit **serializers**.
+
+```typescript
+@Quick(
+	{
+		// 1. Define types normally
+		status: String,
+		date: Date,
+	},
+	{
+		// 2. Define custom transformers (Deserialization: JSON -> Model)
+		transformers: {
+			status: (val) => String(val).toUpperCase(), // "active" -> "ACTIVE"
+			date: (val) => new Date(Number(val) * 1000), // Unix timestamp -> Date
+		},
+
+		// 3. Define custom serializers (Serialization: Model -> JSON)
+		serializers: {
+			// ACTIVE -> "ACTIVE" (no change needed usually, but can override)
+			date: (val: Date) => Math.floor(val.getTime() / 1000), // Date -> Unix timestamp
+		},
+	}
+)
+class MyModel extends QModel<IMyInterface> {
+	declare status: string;
+	declare date: Date;
+}
 ```
 
-```
+This approach is recommended when:
+
+- You want to keep the type definition clean (`status: String`).
+- You need specific serialization logic (e.g. converting Date back to Unix timestamp instead of ISO string).
+- You want to separate concerns.

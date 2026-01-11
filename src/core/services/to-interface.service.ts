@@ -79,6 +79,11 @@
  * ```
  */
 
+import {
+	QUICK_OPTIONS_KEY,
+} from '../constants/metadata-keys';
+import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
+
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
@@ -112,6 +117,12 @@ export class ToInterfaceService<
 				.__initData || {};
 		const isProduction = process.env.NODE_ENV === 'production';
 
+		// Retrieve advanced options (custom serializers)
+		const options: QAdvancedOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			model.constructor
+		) || {};
+
 		// ONLY iterate over properties that were in the original initData
 		// Return current values, but preserve original format based on __initData type
 		for (const key of Object.keys(initData)) {
@@ -119,6 +130,18 @@ export class ToInterfaceService<
 				key
 			];
 			const originalValue = initData[key];
+
+			// 🔥 CHECK: Custom serializer from options (High Priority)
+			// Allows overriding interface generation logic via options.serializers
+			// Useful for cases where default symmetric behavior isn't enough (e.g. one-way transforms)
+			if (
+				options.serializers &&
+				key in options.serializers &&
+				typeof options.serializers[key] === 'function'
+			) {
+				result[key] = options.serializers[key]!(currentValue);
+				continue;
+			}
 
 			// Convert to interface format, preserving original type
 			result[key] = this.convertToInterfaceFormat(

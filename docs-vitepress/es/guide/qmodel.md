@@ -148,6 +148,85 @@ const errors = user.validate();
 if (errors.length) {
 	console.error(errors);
 }
+const errors = user.validate();
+if (errors.length) {
+	console.error(errors);
+}
+```
+
+## Gestión de Estado y Control de Cambios
+
+QModel incluye herramientas integradas potentes para rastrear cambios, comparar estados y gestionar actualizaciones.
+
+### `hasChanges()` / `isDirty()`
+
+Devuelve `true` si el modelo ha sido modificado desde que fue instanciado (o desde el último reset).
+
+```typescript
+const user = new User({ name: 'John' });
+console.log(user.hasChanges()); // false
+
+user.name = 'Jane';
+console.log(user.hasChanges()); // true
+```
+
+### `getChanges()`
+
+Devuelve un objeto parcial que contiene **solo los campos que han cambiado**. Perfecto para generar payloads PATCH.
+
+```typescript
+const user = new User({ id: 1, name: 'John', age: 30 });
+
+user.age = 31;
+
+const changes = user.getChanges();
+// Resultado: { age: 31 }
+```
+
+### `getChangedFields()`
+
+Devuelve un array con los nombres de las propiedades modificadas.
+
+```typescript
+const fields = user.getChangedFields();
+// Resultado: ['age']
+```
+
+### `reset()`
+
+Revierte la instancia del modelo a su **estado inicial** (los datos proporcionados al constructor).
+
+```typescript
+user.name = 'Modificado';
+user.reset();
+console.log(user.name); // 'John' (Valor original)
+```
+
+### `patch(data)`
+
+Aplica actualizaciones parciales al modelo. Útil para procesar respuestas de API o actualizaciones parciales de formularios.
+
+```typescript
+user.patch({ age: 32 });
+// Solo se actualiza 'age', el resto permanece igual
+```
+
+### `getInitInterface()`
+
+Devuelve los **datos originales** usados para crear la instancia, en su formato original (preservando strings en lugar de Dates, etc.).
+
+```typescript
+// Entrada inicial: { createdAt: '2024-01-01' }
+const original = user.getInitInterface();
+console.log(original.createdAt); // '2024-01-01' (String)
+```
+
+### `clone()`
+
+Crea una copia profunda (deep copy) de la instancia del modelo. La nueva instancia es completamente independiente.
+
+```typescript
+const copy = user.clone();
 ```
 
 ## Mocking

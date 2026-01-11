@@ -43,6 +43,23 @@ class User extends QModel<IUser> {
 }
 ```
 
+### Advanced Configuration (Second Argument)
+
+You can pass a second options object to `@Quick` for advanced control:
+
+```typescript
+@Quick({
+  items: [Content, Metadata] // 1. Type Mapping
+}, {
+  // 2. Advanced Options
+  strict: true, // Reject unknown properties
+  discriminators: { ... }, // Polymorphism config
+  transformers: { ... }, // Custom deserializers
+  serializers: { ... } // Custom serializers
+})
+class MyModel extends QModel<IMyInterface> { ... }
+```
+
 ---
 
 ## Supported Types Reference

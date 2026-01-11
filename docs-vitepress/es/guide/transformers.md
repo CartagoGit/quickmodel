@@ -110,6 +110,41 @@ Sin embargo, para la mayoría de los casos, los **Transformadores en Línea** so
 >
 > Si necesitas transformación bidireccional (también para serializar de vuelta a JSON con un formato específico), debes crear una clase que implemente `IQTransformer`.
 
+## Avanzado: Transformadores y Serializadores vía Opciones
+
+Para un código más limpio, o cuando necesitas lógica personalizada bidireccional sin crear una clase completa, puedes usar el objeto de **Opciones Avanzadas** (segundo argumento de `@Quick`).
+
+Esto te permite separar la definición de tipos de la lógica de transformación y definir **serializadores** explícitos.
+
+```typescript
+@Quick(
+	{
+		// 1. Definir tipos normalmente
+		status: String,
+		date: Date,
+	},
+	{
+		// 2. Definir transformadores personalizados (Deserialización: JSON -> Modelo)
+		transformers: {
+			status: (val) => String(val).toUpperCase(), // "active" -> "ACTIVE"
+			date: (val) => new Date(Number(val) * 1000), // Unix timestamp -> Date
+		},
+
+		// 3. Definir serializadores personalizados (Serialización: Modelo -> JSON)
+		serializers: {
+			// ACTIVE -> "ACTIVE" (generalmente no hace falta, pero se puede sobrescribir)
+			date: (val: Date) => Math.floor(val.getTime() / 1000), // Date -> Unix timestamp
+		},
+	}
+)
+class MyModel extends QModel<IMyInterface> {
+	declare status: string;
+	declare date: Date;
+}
 ```
 
-```
+Este enfoque se recomienda cuando:
+
+- Quieres mantener la definición de tipos limpia (`status: String`).
+- Necesitas lógica de serialización específica (ej. convertir Date de vuelta a timestamp Unix en lugar de ISO string).
+- Quieres separar responsabilidades.
