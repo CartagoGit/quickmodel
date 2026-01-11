@@ -952,7 +952,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 */
 	reset(): void {
 		const initial = this.getInitInterface();
-		const Constructor = this.constructor as typeof QModel;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const Constructor = this.constructor as any;
 		const restored = Constructor.deserialize(initial);
 
 		// Copy all properties from restored instance
