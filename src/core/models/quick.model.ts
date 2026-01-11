@@ -992,7 +992,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * ```
 	 */
 	patch(patch: Partial<ModelData<TInterface>>): void {
-		const Constructor = this.constructor as typeof QModel;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const Constructor = this.constructor as any;
 		const current = this.serialize();
 		const merged = { ...current, ...patch };
 		const updated = Constructor.deserialize(merged);
@@ -1045,7 +1046,8 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * @returns A new instance with the same data
 	 */
 	clone(): this {
-		const Constructor = this.constructor as typeof QModel;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const Constructor = this.constructor as any;
 		return Constructor.deserialize(this.serialize()) as this;
 	}
 }

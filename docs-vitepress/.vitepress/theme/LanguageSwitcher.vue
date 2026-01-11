@@ -188,6 +188,13 @@ const handleLanguageChange = async (lang: {
 		// Guardar preferencia
 		localStorage.setItem(STORAGE_KEY_LANG, lang.code);
 
+		// Dispatch custom event for same-window storage change
+		window.dispatchEvent(
+			new CustomEvent('localStorageChange', {
+				detail: { key: STORAGE_KEY_LANG, newValue: lang.code },
+			})
+		);
+
 		if (isSharedRoute) {
 			// En rutas compartidas, actualizar el override local
 			overrideLocale.value = lang.code;

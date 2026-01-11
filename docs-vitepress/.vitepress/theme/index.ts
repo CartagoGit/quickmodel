@@ -142,44 +142,6 @@ export default {
 				setupLogoInterceptor();
 				setupNavInterceptor();
 			};
-
-			// Translate nav text in tsdoc based on saved language
-			const translateNavForTsdoc = () => {
-				const currentPath = window.location.pathname;
-				if (currentPath.includes('/tsdoc/')) {
-					const STORAGE_KEY_LANG = 'vitepress-theme-lang';
-					const savedLang = localStorage.getItem(STORAGE_KEY_LANG);
-
-					if (savedLang === 'es') {
-						// Translate nav links to Spanish immediately
-						const doTranslation = () => {
-							const navLinks =
-								document.querySelectorAll('.VPNavBarMenuLink');
-							navLinks.forEach((link) => {
-								const text = link.textContent?.trim();
-								if (text === 'Guide') link.textContent = 'Guía';
-								if (text === 'API Reference')
-									link.textContent = 'Referencia API';
-								if (text === 'Examples')
-									link.textContent = 'Ejemplos';
-							});
-						};
-
-						// Try immediately
-						doTranslation();
-						// And retry after a short delay to catch late renders
-						setTimeout(doTranslation, 10);
-					}
-				}
-			};
-
-			// Run translation on route changes
-			router.onAfterRouteChanged = () => {
-				setupLogoInterceptor();
-				setupNavInterceptor();
-				translateNavForTsdoc();
-			};
-			translateNavForTsdoc(); // Run on initial load
 		}
 	},
 } satisfies Theme;

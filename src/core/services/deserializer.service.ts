@@ -1158,7 +1158,10 @@ export class Deserializer<
 				}
 			} else if (typeof value === 'object') {
 				// Nested Model (Single)
-				current[lastKey] = this.deserialize(value, arrayElementClass);
+				current[lastKey] = this.deserialize(
+					value as Record<string, unknown>,
+					arrayElementClass
+				);
 			}
 		}
 	}

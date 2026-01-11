@@ -208,7 +208,8 @@ export class TextDecoderTransformer extends BaseTransformer<
 
 		if (typeof value === 'string') {
 			try {
-				return new TextDecoder(value);
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				return new TextDecoder(value as any);
 			} catch (_error) {
 				throw new Error(
 					`${className}.${propertyKey}: Invalid encoding "${value}". ` +
@@ -221,7 +222,8 @@ export class TextDecoderTransformer extends BaseTransformer<
 			const encoding =
 				(value as { encoding?: string }).encoding || 'utf-8';
 			try {
-				return new TextDecoder(encoding);
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				return new TextDecoder(encoding as any);
 			} catch (_error) {
 				throw new Error(
 					`${className}.${propertyKey}: Invalid encoding "${encoding}". ` +

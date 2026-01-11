@@ -200,9 +200,11 @@ export class ToInterfaceService<
 				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(originalValue))
 		) {
 			// If currentValue is a Date, convert to ISO string
-			if (typeof currentValue?.toISOString === 'function') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			if (typeof (currentValue as any)?.toISOString === 'function') {
 				try {
-					return currentValue.toISOString();
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					return (currentValue as any).toISOString();
 				} catch {
 					// Invalid Date - return original value if available, otherwise string representation
 					return typeof originalValue === 'string'
@@ -264,13 +266,15 @@ export class ToInterfaceService<
 		}
 
 		if (typeof originalValue === 'bigint') {
-			return BigInt(currentValue);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			return BigInt(currentValue as any);
 		}
 
 		if (typeof originalValue === 'symbol') {
 			return typeof currentValue === 'symbol'
 				? currentValue
-				: Symbol(currentValue);
+				: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+				  Symbol(currentValue as any);
 		}
 
 		// 6. WRAPPER OBJECTS: Number, String, Boolean objects
@@ -325,12 +329,14 @@ export class ToInterfaceService<
 		if (
 			originalValue &&
 			typeof originalValue === 'object' &&
-			originalValue.__type === 'bigint'
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(originalValue as any).__type === 'bigint'
 		) {
 			const bigintValue =
 				typeof currentValue === 'bigint'
 					? currentValue
-					: BigInt(currentValue);
+					: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+					  BigInt(currentValue as any);
 			return bigintValue.toString();
 		}
 
@@ -397,17 +403,24 @@ export class ToInterfaceService<
 
 			// Objects with custom constructor: try to call toInterface
 			// For QModel instances, call toInterface() recursively
-			if (typeof currentValue?.toInterface === 'function') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			if (typeof (currentValue as any)?.toInterface === 'function') {
 				// Pass the 'seen' set to prevent infinite loops in recursive models
-				return currentValue.toInterface(seen);
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				return (currentValue as any).toInterface(seen);
 			}
 
 			// For other objects, create plain object
-			for (const key in currentValue) {
-				if (typeof currentValue[key] !== 'function') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const anyCurrent = currentValue as any;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const anyOriginal = originalValue as any;
+
+			for (const key in anyCurrent) {
+				if (typeof anyCurrent[key] !== 'function') {
 					result[key] = this.convertToInterfaceFormat(
-						currentValue[key],
-						originalValue[key],
+						anyCurrent[key],
+						anyOriginal?.[key],
 						seen,
 						isProduction,
 						`${propertyKey}.${key}`
