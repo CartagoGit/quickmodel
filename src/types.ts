@@ -38,6 +38,7 @@ export type {
 	IQValidationResult,
 	IQTransformer as IQTransformer,
 } from './core/interfaces/transformer.interface';
+export type { IQTransformerKey } from './core/registry/transformer.registry';
 
 // Mock Types
 export type {
@@ -51,3 +52,18 @@ export type { IQMockType } from './core/services/mock-generator.service';
 
 // Transform Options
 export type { IQPropertyOptions } from './core/interfaces/transform-options.interface';
+
+// Moved from utils
+export type { IQTypeOptions } from './core/interfaces/qtype-options.interface';
+export type { IQOptions } from './core/decorators/quick.decorator';
+export type {
+	IQAdvancedOptions,
+	IQDiscriminatorConfig,
+} from './core/interfaces/quick-options.interface';
+export type {
+	IQTransformerFn,
+	IQSerializerFn,
+	IQMockerFn,
+} from './core/interfaces/transform-options.interface';
+export type { IQAlias } from './core/types/q-alias.type';
+export type { IQTransform } from './core/interfaces/model.interface';

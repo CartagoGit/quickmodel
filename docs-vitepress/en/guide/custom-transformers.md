@@ -11,18 +11,46 @@ A transformer is a class that implements the transformation logic for a specific
 ```typescript
 import { IQTransformer } from '@cartago-git/quickmodel/types';
 
-class MyCustomTransformer implements IQTransformer<MyType, SerializedType> {
+class MyCustomTransformer implements IQTransformer<SerializedType, MyType> {
 	// Transform from JSON to runtime type
-	transform(value: SerializedType): MyType {
+	deserialize(value: SerializedType): MyType {
 		// Your transformation logic
 		return new MyType(value);
 	}
 
 	// Transform from runtime type back to JSON
-	reverseTransform(value: MyType): SerializedType {
+	serialize(value: MyType): SerializedType {
 		// Your serialization logic
 		return value.toJSON();
 	}
+}
+```
+
+### Inline Transformer Objects (New)
+
+Sometimes you don't need to create a full class for a simple or one-off transformation. QuickModel allows you to pass object literals directly to the `@Quick` decorator as long as they implement the `IQTransformer` interface (`serialize` and `deserialize` methods).
+
+This is ideal for reducers, quick formatters, or model-specific logic without polluting the global registry.
+
+```typescript
+// Define the transformer as a constant object
+const ReverseString = {
+  // From JSON to Model
+  deserialize(value: string): string {
+    return value && value.split('').reverse().join('');
+  },
+  // From Model to JSON
+  serialize(value: string): string {
+    return value.split('').reverse().join('');
+  }
+};
+
+@Quick({
+  // Use it directly
+  secretCode: ReverseString
+})
+class SpyMessage extends QModel<IMessage> {
+  declare secretCode: string;
 }
 ```
 
@@ -52,15 +80,15 @@ interface IMoneyJSON {
 // 3. Create the transformer
 import { IQTransformer } from '@cartago-git/quickmodel/types';
 
-class MoneyTransformer implements IQTransformer<Money, IMoneyJSON> {
-	transform(value: IMoneyJSON): Money {
+class MoneyTransformer implements IQTransformer<IMoneyJSON, Money> {
+	deserialize(value: IMoneyJSON): Money {
 		if (!value || typeof value !== 'object') {
 			throw new Error('Invalid money format');
 		}
 		return new Money(value.amount, value.currency);
 	}
 
-	reverseTransform(value: Money): IMoneyJSON {
+	serialize(value: Money): IMoneyJSON {
 		return {
 			amount: value.amount,
 			currency: value.currency,
@@ -126,8 +154,8 @@ class Color {
 	}
 }
 
-class ColorTransformer implements IQTransformer<Color, string> {
-	transform(value: string): Color {
+class ColorTransformer implements IQTransformer<string, Color> {
+	deserialize(value: string): Color {
 		if (typeof value !== 'string' || !value.startsWith('#')) {
 			throw new Error(
 				'Invalid color format. Expected hex string like #FF0000'
@@ -136,7 +164,7 @@ class ColorTransformer implements IQTransformer<Color, string> {
 		return Color.fromHex(value);
 	}
 
-	reverseTransform(value: Color): string {
+	serialize(value: Color): string {
 		return value.toHex();
 	}
 }
@@ -184,17 +212,17 @@ interface ICoordinateJSON {
 }
 
 class CoordinateTransformer implements IQTransformer<
-	Coordinate,
-	ICoordinateJSON
+	ICoordinateJSON,
+	Coordinate
 > {
-	transform(value: ICoordinateJSON): Coordinate {
+	deserialize(value: ICoordinateJSON): Coordinate {
 		if (!value || typeof value !== 'object') {
 			throw new Error('Invalid coordinate format');
 		}
 		return new Coordinate(value.lat, value.lng);
 	}
 
-	reverseTransform(value: Coordinate): ICoordinateJSON {
+	serialize(value: Coordinate): ICoordinateJSON {
 		return {
 			lat: value.latitude,
 			lng: value.longitude,
@@ -225,8 +253,8 @@ You can override built-in transformers if you need custom behavior:
 
 ```typescript
 // Custom Date transformer that handles multiple formats
-class CustomDateTransformer implements IQTransformer<Date, string> {
-	transform(value: string): Date {
+class CustomDateTransformer implements IQTransformer<string, Date> {
+	deserialize(value: string): Date {
 		// Support multiple date formats
 		if (value.includes('/')) {
 			// Handle MM/DD/YYYY
@@ -237,7 +265,7 @@ class CustomDateTransformer implements IQTransformer<Date, string> {
 		return new Date(value);
 	}
 
-	reverseTransform(value: Date): string {
+	serialize(value: Date): string {
 		return value.toISOString();
 	}
 }
@@ -251,15 +279,15 @@ QTransformerRegistry.register(Date, new CustomDateTransformer());
 Transformers should handle `null` and `undefined` gracefully:
 
 ```typescript
-class MoneyTransformer implements IQTransformer<Money, IMoneyJSON | null> {
-	transform(value: IMoneyJSON | null): Money | null {
+class MoneyTransformer implements IQTransformer<IMoneyJSON | null, Money> {
+	deserialize(value: IMoneyJSON | null): Money | null {
 		if (value === null || value === undefined) {
 			return null;
 		}
 		return new Money(value.amount, value.currency);
 	}
 
-	reverseTransform(value: Money | null): IMoneyJSON | null {
+	serialize(value: Money | null): IMoneyJSON | null {
 		if (value === null || value === undefined) {
 			return null;
 		}
@@ -304,14 +332,14 @@ Add validation logic in your transformers:
 class EmailTransformer implements IQTransformer<string, string> {
 	private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-	transform(value: string): string {
+	deserialize(value: string): string {
 		if (!this.emailRegex.test(value)) {
 			throw new Error(`Invalid email format: ${value}`);
 		}
 		return value.toLowerCase(); // Normalize to lowercase
 	}
 
-	reverseTransform(value: string): string {
+	serialize(value: string): string {
 		return value;
 	}
 }
@@ -334,10 +362,10 @@ const user = new User({ email: 'invalid-email' }); // Error!
 
 ### 1. Validate Input
 
-Always validate input in `transform()`:
+Always validate input in `deserialize()`:
 
 ```typescript
-transform(value: any): MyType {
+deserialize(value: any): MyType {
   if (!value || typeof value !== 'object') {
     throw new Error('Invalid input format');
   }
@@ -350,7 +378,7 @@ transform(value: any): MyType {
 Consider `null`, `undefined`, empty strings, etc.:
 
 ```typescript
-transform(value: any): MyType | null {
+deserialize(value: any): MyType | null {
   if (value === null || value === undefined) {
     return null;
   }
@@ -366,7 +394,7 @@ transform(value: any): MyType | null {
 Help users debug transformation issues:
 
 ```typescript
-transform(value: any): MyType {
+deserialize(value: any): MyType {
   if (!value.requiredField) {
     throw new Error(
       `Missing required field 'requiredField' in ${JSON.stringify(value)}`
@@ -382,13 +410,13 @@ Transformers should be stateless and deterministic:
 
 ```typescript
 // ✅ Good - pure function
-transform(value: IMoneyJSON): Money {
+deserialize(value: IMoneyJSON): Money {
   return new Money(value.amount, value.currency);
 }
 
 // ❌ Bad - stateful
 private counter = 0;
-transform(value: IMoneyJSON): Money {
+deserialize(value: IMoneyJSON): Money {
   this.counter++;  // Side effect!
   return new Money(value.amount, value.currency);
 }
@@ -396,14 +424,14 @@ transform(value: IMoneyJSON): Money {
 
 ### 5. Make Transformations Reversible
 
-Ensure `reverseTransform(transform(x))` returns equivalent data:
+Ensure `serialize(deserialize(x))` returns equivalent data:
 
 ```typescript
 const original = { amount: 99.99, currency: 'USD' };
-const money = transformer.transform(original);
-const IQSerialized = transformer.reverseTransform(money);
+const money = transformer.deserialize(original);
+const serialized = transformer.serialize(money);
 
-console.log(JSON.stringify(original) === JSON.stringify(IQSerialized)); // true
+console.log(JSON.stringify(original) === JSON.stringify(serialized)); // true
 ```
 
 ## Next Steps

@@ -8,7 +8,4 @@
  */
 
 export { QMockGenerator } from './core/services/mock-generator.service';
-export {
-	QTransformerRegistry,
-	type IQTransformerKey,
-} from './core/registry/transformer.registry';
+export { QTransformerRegistry } from './core/registry/transformer.registry';

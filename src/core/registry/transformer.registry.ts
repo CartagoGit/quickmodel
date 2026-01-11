@@ -5,6 +5,7 @@ import type { IQAlias } from '../types/q-alias.type';
  * Valid keys to identify a transformer.
  * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), a string name,
  * or a custom transformer object implementing IQTransformer.
+ * @group Types
  */
 export type IQTransformerKey =
 	| IQAlias

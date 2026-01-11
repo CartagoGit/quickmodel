@@ -8,7 +8,7 @@
  * in several files where really is needed any type.
  */
 
-export type IQAnyRecord = Record<string, any>;
+export interface IQAnyRecord extends Record<string, any> {}
 
 /**
  * Interface representing a concrete QModel constructor

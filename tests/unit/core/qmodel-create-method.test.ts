@@ -7,7 +7,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { IQTransform } from '@/utils';
+import { IQTransform } from '@/types';
 
 describe('QModel.create() factory method', () => {
 	describe('Basic usage', () => {
