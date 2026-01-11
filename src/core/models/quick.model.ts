@@ -13,7 +13,7 @@ import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
 import { MockGenerator } from '@/core/services/mock-generator.service';
-import { MockBuilder } from '@/core/services/mock-builder.service';
+import { QMockBuilder } from '@/core/services/mock-builder.service';
 import type {
 	QModelInstance,
 	QModelInterface,
@@ -240,7 +240,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 		T extends abstract new (
 			...args: any[]
 		) => QModel<AnyRecord>,
-	>(this: T): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
+	>(this: T): QMockBuilder<QModelInstance<T>, QModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
 			...args: unknown[]
@@ -252,7 +252,7 @@ export abstract class QModel<TInterface extends AnyRecord> {
 		const ModelClass: new (data: any) => InstanceType =
 			this as unknown as IModelConstructor<InstanceType>;
 
-		return new MockBuilder(ModelClass, QModel.mockGenerator) as unknown as MockBuilder<
+		return new QMockBuilder(ModelClass, QModel.mockGenerator) as unknown as QMockBuilder<
 			QModelInstance<T>,
 			QModelInterface<T>
 		>;

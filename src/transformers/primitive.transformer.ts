@@ -1,5 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { QuickModelError } from '@/core/errors/quickmodel.error';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -89,7 +89,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 		});
 
 		if (!validationResult.isValid) {
-			throw new QuickModelError(validationResult.error || 'Validation failed', {
+			throw new QModelError(validationResult.error || 'Validation failed', {
 				className,
 				propertyKey,
 				value,

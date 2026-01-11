@@ -59,7 +59,7 @@ import {
 	QUICK_DESIGN_TYPES_KEY,
 } from '../constants/metadata-keys';
 import { TransformerRegistry } from '../registry/transformer.registry';
-import type { DiscriminatorConfig } from '../interfaces/quick-options.interface';
+import type { QDiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { ErrorTransformer } from '@/transformers/error.transformer';
@@ -593,12 +593,12 @@ export class Deserializer<
 							arrayElementClass,
 						];
 						// Get discriminator config for this property if exists
-						const discriminatorConfig = discriminators?.[key];
+						const QDiscriminatorConfig = discriminators?.[key];
 
 						instance[key] = this.transformNestedModelArray(
 							value,
 							possibleTypes,
-							discriminatorConfig
+							QDiscriminatorConfig
 						);
 					}
 					continue;
@@ -796,12 +796,12 @@ export class Deserializer<
 							arrayElementClass,
 						];
 						// Get discriminator config for this property if exists
-						const discriminatorConfig = discriminators?.[key];
+						const QDiscriminatorConfig = discriminators?.[key];
 
 						instance[key] = this.transformNestedModelArray(
 							value,
 							possibleTypes,
-							discriminatorConfig
+							QDiscriminatorConfig
 						);
 					}
 					continue;
@@ -1775,7 +1775,7 @@ export class Deserializer<
 	 * Uses discriminator configuration and type mapping from @Quick() decorator.
 	 *
 	 * @param data - The data object to resolve type for
-	 * @param discriminatorConfig - Discriminator configuration (string, function, or object)
+	 * @param QDiscriminatorConfig - Discriminator configuration (string, function, or object)
 	 * @param propertyKey - Property name to get type array from metadata
 	 * @param modelClass - Model class to get type mapping from
 	 * @returns The correct constructor to use
@@ -1783,7 +1783,7 @@ export class Deserializer<
 	 * @example
 	 * **Simple string discriminator**:
 	 * ```typescript
-	 * // discriminatorConfig = 'type'
+	 * // QDiscriminatorConfig = 'type'
 	 * // typeArray from @Quick({ items: [Content, Metadata] })
 	 * // data = { type: 'content', text: '...' }
 	 * // Returns: Content constructor
@@ -1792,14 +1792,14 @@ export class Deserializer<
 	 * @example
 	 * **Function discriminator**:
 	 * ```typescript
-	 * // discriminatorConfig = (data) => 'text' in data ? Content : Metadata
+	 * // QDiscriminatorConfig = (data) => 'text' in data ? Content : Metadata
 	 * // Returns: Content or Metadata based on data structure
 	 * ```
 	 *
 	 * @example
 	 * **Object with mapping**:
 	 * ```typescript
-	 * // discriminatorConfig = { field: 'type', mapping: { 'content': Content } }
+	 * // QDiscriminatorConfig = { field: 'type', mapping: { 'content': Content } }
 	 * // Returns: Content when data.type === 'content'
 	 * ```
 	 *
@@ -1812,7 +1812,7 @@ export class Deserializer<
 	private resolveUnionType(
 		data: unknown,
 		possibleTypes: Function[],
-		discriminatorConfig?: DiscriminatorConfig
+		QDiscriminatorConfig?: QDiscriminatorConfig
 	): Function {
 		// No types available - throw error
 		if (!possibleTypes || possibleTypes.length === 0) {
@@ -1856,14 +1856,14 @@ export class Deserializer<
 			return BigInt; // BigInt primitive
 
 		// No discriminator - return first type as fallback
-		if (!discriminatorConfig) {
+		if (!QDiscriminatorConfig) {
 			return getFirstType();
 		}
 
 		// 1. String discriminator: use field value to match
-		if (typeof discriminatorConfig === 'string') {
+		if (typeof QDiscriminatorConfig === 'string') {
 			const fieldValue = (data as Record<string, unknown>)?.[
-				discriminatorConfig
+				QDiscriminatorConfig
 			];
 
 			if (fieldValue !== undefined) {
@@ -1887,25 +1887,25 @@ export class Deserializer<
 		}
 
 		// 2. Function discriminator: call function with data
-		if (typeof discriminatorConfig === 'function') {
+		if (typeof QDiscriminatorConfig === 'function') {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const result = (discriminatorConfig as any)(data);
+			const result = (QDiscriminatorConfig as any)(data);
 			return (result as Function) || getFirstType();
 		}
 
 		// 3. Object with field + mapping
 		if (
-			typeof discriminatorConfig === 'object' &&
-			discriminatorConfig.field
+			typeof QDiscriminatorConfig === 'object' &&
+			QDiscriminatorConfig.field
 		) {
 			const fieldValue = (data as Record<string, unknown>)?.[
-				discriminatorConfig.field
+				QDiscriminatorConfig.field
 			];
 
 			// Try explicit mapping first
-			if (discriminatorConfig.mapping && fieldValue !== undefined) {
+			if (QDiscriminatorConfig.mapping && fieldValue !== undefined) {
 				const mapped =
-					discriminatorConfig.mapping[fieldValue as string | number];
+					QDiscriminatorConfig.mapping[fieldValue as string | number];
 				if (mapped) return mapped as Function;
 			}
 
@@ -1964,13 +1964,13 @@ export class Deserializer<
 	 *
 	 * @param nestedArray - The nested array to transform
 	 * @param possibleTypes - Array of possible type constructors for union types
-	 * @param discriminatorConfig - Optional discriminator config for union types
+	 * @param QDiscriminatorConfig - Optional discriminator config for union types
 	 * @returns Recursively transformed array of model instances
 	 */
 	private transformNestedModelArray(
 		nestedArray: unknown[],
 		possibleTypes: Function[],
-		discriminatorConfig?: DiscriminatorConfig
+		QDiscriminatorConfig?: QDiscriminatorConfig
 	): unknown[] {
 		return nestedArray
 			.filter((item) => item !== null && item !== undefined)
@@ -1980,7 +1980,7 @@ export class Deserializer<
 					return this.transformNestedModelArray(
 						item,
 						possibleTypes,
-						discriminatorConfig
+						QDiscriminatorConfig
 					);
 				}
 
@@ -1988,7 +1988,7 @@ export class Deserializer<
 				const resolvedClass = this.resolveUnionType(
 					item,
 					possibleTypes,
-					discriminatorConfig
+					QDiscriminatorConfig
 				);
 
 				// Handle Primitives (return primitive value, not object wrapper)

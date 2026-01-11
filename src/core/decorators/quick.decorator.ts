@@ -12,15 +12,14 @@
  * - Don't Repeat Yourself: Eliminates repetitive @QType() decorators
  *
  * @example
- * @example
  * **Without @Quick()** (verbose):
  * ```typescript
  * class User extends QModel<IUser> {
- *   // Manual property handling would be required here
- *   // without the automation of @Quick()
- *   declare id: string;
- *   declare name: string;
- *   // ...
+ *   @QType() declare id: string;
+ *   @QType() declare name: string;
+ *   @QType() declare email: string;
+ *   @QType() declare age: number;
+ *   @QType() declare createdAt: Date;
  * }
  * ```
  *
@@ -56,17 +55,17 @@
  * ```
  *
  * @example
- * @example
- * **Explicit Configuration**:
+ * **Mix with @QType() for specific control**:
  * ```typescript
- * @Quick({
- *   category: Category,    // Explicit for nested model
- *   tags: [Tag]           // Explicit for array of models
- * })
+ * @Quick()
  * class Product extends QModel<IProduct> {
- *   declare id: string;
- *   declare name: string;
+ *   declare id: string;           // Auto from @Quick()
+ *   declare name: string;         // Auto from @Quick()
+ *
+ *   @QType(Category)       // Explicit for nested model
  *   declare category: Category;
+ *
+ *   @QType(Tag)           // Explicit for array of models
  *   declare tags: Tag[];
  * }
  * ```
@@ -75,7 +74,7 @@
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
 import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
-import type { IQuickAdvancedOptions } from '../interfaces/quick-options.interface';
+import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
@@ -86,14 +85,12 @@ import {
 /**
  * Constructor type for class-based type mapping
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type IConstructor<T = any> = new (...args: any[]) => T;
+type IConstructor<T = unknown> = new (...args: unknown[]) => T;
 
 /**
  * Transformer function that converts a value
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ITransformerFunction = (value: any) => any;
+type ITransformerFunction = (value: unknown) => unknown;
 
 /**
  * Native constructors and factories supported by QuickModel
@@ -189,7 +186,7 @@ export type ISpecs = ISpec[]; // Array of any Spec
  *
  * @see [Dot Notation Guide](../../../docs/DOT-NOTATION.md) for complete guide on nested transformations
  */
-export interface IQuickOptions {
+export interface QOptions {
 	[propertyName: string]: ISpec | ISpecs;
 }
 
@@ -502,11 +499,11 @@ export interface IQuickOptions {
  * Without discriminators, QuickModel uses the first type in the array as fallback.
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
- * @see {@link IQuickAdvancedOptions} for discriminator configuration
+ * @see {@link QAdvancedOptions} for discriminator configuration
  */
-export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
+export function Quick<TTypeMap extends QOptions = QOptions>(
 	typeMap?: TTypeMap,
-	advancedOptions?: IQuickAdvancedOptions<TTypeMap>
+	advancedOptions?: QAdvancedOptions<TTypeMap>
 ): ClassDecorator {
 	return function <T extends Function>(target: T): T {
 		// Mark class as using @Quick() for auto-registration

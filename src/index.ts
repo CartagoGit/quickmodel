@@ -34,14 +34,14 @@ export { Quick } from './core/decorators/quick.decorator';
 /**
  * Options type for @Quick() decorator (the type map)
  */
-export type { IQuickOptions } from './core/decorators/quick.decorator';
+export type { QOptions } from './core/decorators/quick.decorator';
 
 /**
  * Advanced options for @Quick() decorator (discriminators, etc.)
  */
 export type {
-	IQuickAdvancedOptions,
-	DiscriminatorConfig,
+	QAdvancedOptions,
+	QDiscriminatorConfig,
 } from './core/interfaces/quick-options.interface';
 
 /**
@@ -54,10 +54,10 @@ export type { IQTypeAlias as QTypeString } from './core/interfaces/qtype-symbols
 // PUBLIC API - Testing Tools
 // ============================================================================
 
-export { MockBuilder } from './core/services/mock-builder.service';
+export { QMockBuilder as MockBuilder } from './core/services/mock-builder.service';
 
 // ============================================================================
 // PUBLIC API - Errors
 // ============================================================================
 
-export { QuickModelError } from './core/errors/quickmodel.error';
+export { QModelError } from './core/errors/quickmodel.error';

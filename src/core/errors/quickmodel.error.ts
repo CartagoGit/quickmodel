@@ -2,7 +2,7 @@
  * Custom error for QuickModel.
  * Provides additional contextual information about transformation errors.
  */
-export class QuickModelError extends Error {
+export class QModelError extends Error {
 	constructor(
 		message: string,
 		public readonly context?: {
@@ -13,11 +13,11 @@ export class QuickModelError extends Error {
 		}
 	) {
 		super(message);
-		this.name = 'QuickModelError';
+		this.name = 'QModelError';
 
 		// Maintain correct stack trace
 		if (Error.captureStackTrace) {
-			Error.captureStackTrace(this, QuickModelError);
+			Error.captureStackTrace(this, QModelError);
 		}
 	}
 
@@ -29,9 +29,9 @@ export class QuickModelError extends Error {
 		propertyKey: string,
 		expectedType: string,
 		actualValue: unknown
-	): QuickModelError {
+	): QModelError {
 		const actualType = actualValue === null ? 'null' : typeof actualValue;
-		return new QuickModelError(
+		return new QModelError(
 			`${className}.${propertyKey}: Expected ${expectedType}, got ${actualType}`,
 			{
 				className,
@@ -50,8 +50,8 @@ export class QuickModelError extends Error {
 		propertyKey: string,
 		value: unknown,
 		reason: string
-	): QuickModelError {
-		return new QuickModelError(
+	): QModelError {
+		return new QModelError(
 			`${className}.${propertyKey}: Invalid value "${value}": ${reason}`,
 			{
 				className,

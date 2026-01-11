@@ -214,7 +214,7 @@ export type TypeGuardFunction<TConstructors> = (data: unknown) => TConstructors;
  * }
  * ```
  */
-export type DiscriminatorConfig<
+export type QDiscriminatorConfig<
 	TConstructors = unknown,
 	TValidKeys extends string = string,
 > =
@@ -287,7 +287,7 @@ export type DiscriminatorConfig<
  * })
  * ```
  */
-export interface IQuickAdvancedOptions<
+export interface QAdvancedOptions<
 	TTypeMap extends Record<string, unknown> = Record<string, unknown>,
 > {
 	/**
@@ -303,7 +303,7 @@ export interface IQuickAdvancedOptions<
 	 * - **object**: Full configuration with field and mapping
 	 */
 	discriminators?: {
-		[K in keyof TTypeMap]?: DiscriminatorConfig<
+		[K in keyof TTypeMap]?: QDiscriminatorConfig<
 			ExtractConstructors<TTypeMap[K]>,
 			ExtractValidDiscriminatorKeys<TTypeMap[K]> & string
 		>;

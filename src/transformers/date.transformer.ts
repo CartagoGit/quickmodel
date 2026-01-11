@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -62,23 +63,35 @@ export class DateTransformer
 
 		// Must be string or number, nothing else
 		if (typeof value !== 'string' && typeof value !== 'number') {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: Date transformer ONLY accepts:\n` +
 					`  - string (ISO 8601 format, e.g., "2024-01-08T10:30:00Z")\n` +
 					`  - number (Unix timestamp in milliseconds, e.g., 1704710400000)\n` +
 					`  - Date instance\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`
+					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'string | number | Date',
+				}
 			);
 		}
 
 		const date = new Date(value);
 		if (isNaN(date.getTime())) {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: Invalid date value. Cannot convert "${value}" to Date.\n` +
 					`Expected:\n` +
 					`  - ISO 8601 string: "2024-01-08T10:30:00.000Z"\n` +
 					`  - Unix timestamp (ms): 1704710400000\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`
+					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'Valid Date string/timestamp',
+				}
 			);
 		}
 

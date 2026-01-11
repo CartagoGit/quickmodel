@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -83,8 +84,14 @@ export class BigIntTransformer
 		}
 
 		if (typeof value !== 'string' && typeof value !== 'number') {
-			throw new Error(
-				`${className}.${propertyKey}: Expected string/number for BigInt, got ${typeof value}`
+			throw new QModelError(
+				`${className}.${propertyKey}: Expected string/number for BigInt, got ${typeof value}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'string | number | bigint',
+				}
 			);
 		}
 
@@ -93,8 +100,14 @@ export class BigIntTransformer
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : String(error);
-			throw new Error(
-				`${className}.${propertyKey}: Invalid BigInt value "${value}": ${errorMessage}`
+			throw new QModelError(
+				`${className}.${propertyKey}: Invalid BigInt value "${value}": ${errorMessage}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'BigInt parsable value',
+				}
 			);
 		}
 	}

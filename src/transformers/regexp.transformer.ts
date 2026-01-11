@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -81,9 +82,15 @@ export class RegExpTransformer
 		// Format: {__type, source, flags} or {source, flags}
 		if (typeof value === 'object' && value !== null && 'source' in value) {
 			if (typeof value.source !== 'string') {
-				throw new Error(
+				throw new QModelError(
 					`${className}.${propertyKey}: RegExp object must have 'source' as string.\\n` +
-						`Received: source type = ${typeof value.source}`
+						`Received: source type = ${typeof value.source}`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'RegExp data object',
+					}
 				);
 			}
 			try {
@@ -91,11 +98,17 @@ export class RegExpTransformer
 			} catch (error) {
 				const errorMsg =
 					error instanceof Error ? error.message : String(error);
-				throw new Error(
+				throw new QModelError(
 					`${className}.${propertyKey}: Invalid RegExp pattern.\\n` +
 						`source: "${value.source}"\\n` +
 						`flags: "${value.flags || ''}"\\n` +
-						`Error: ${errorMsg}`
+						`Error: ${errorMsg}`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'Valid RegExp source/flags',
+					}
 				);
 			}
 		}
@@ -109,12 +122,18 @@ export class RegExpTransformer
 				} catch (error) {
 					const errorMsg =
 						error instanceof Error ? error.message : String(error);
-					throw new Error(
+					throw new QModelError(
 						`${className}.${propertyKey}: Invalid RegExp string with slashes.\\n` +
 							`Input: "${value}"\\n` +
 							`Pattern: "${match[1]}"\\n` +
 							`Flags: "${match[2] || ''}"\\n` +
-							`Error: ${errorMsg}`
+							`Error: ${errorMsg}`,
+						{
+							className,
+							propertyKey,
+							value,
+							expectedType: 'Valid RegExp string',
+						}
 					);
 				}
 			}
@@ -124,21 +143,33 @@ export class RegExpTransformer
 			} catch (error) {
 				const errorMsg =
 					error instanceof Error ? error.message : String(error);
-				throw new Error(
+				throw new QModelError(
 					`${className}.${propertyKey}: Invalid RegExp pattern.\\n` +
 						`Pattern: "${value}"\\n` +
-						`Error: ${errorMsg}`
+						`Error: ${errorMsg}`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType: 'Valid RegExp pattern',
+					}
 				);
 			}
 		}
 
-		throw new Error(
+		throw new QModelError(
 			`${className}.${propertyKey}: RegExp transformer ONLY accepts:\\n` +
 				`  - string with slashes (e.g., "/[a-z]+/gi")\\n` +
 				`  - plain pattern string (e.g., "[a-z]+")\\n` +
 				`  - object ({ source: "[a-z]+", flags: "gi" })\\n` +
 				`  - RegExp instance\\n` +
-				`Received: ${typeof value} = ${JSON.stringify(value)}`
+				`Received: ${typeof value} = ${JSON.stringify(value)}`,
+			{
+				className,
+				propertyKey,
+				value,
+				expectedType: 'RegExp compatible value',
+			}
 		);
 	}
 

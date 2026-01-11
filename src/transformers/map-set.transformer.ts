@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QuickModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,

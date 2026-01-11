@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -94,19 +95,31 @@ export class ErrorTransformer
 			value === null ||
 			!('message' in value)
 		) {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: Error transformer ONLY accepts:\\n` +
 					`  - string (e.g., "TypeError: Invalid input" or "Error message")\\n` +
 					`  - object ({ message: string, name?: string, stack?: string })\\n` +
 					`  - Error instance\\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`
+					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'Error compatible value',
+				}
 			);
 		}
 
 		if (typeof value.message !== 'string') {
-			throw new Error(
+			throw new QModelError(
 				`${className}.${propertyKey}: Error object must have 'message' as string.\\n` +
-					`Received: message type = ${typeof value.message}`
+					`Received: message type = ${typeof value.message}`,
+				{
+					className,
+					propertyKey,
+					value,
+					expectedType: 'object { message: string }',
+				}
 			);
 		}
 
