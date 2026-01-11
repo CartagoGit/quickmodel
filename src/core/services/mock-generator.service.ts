@@ -501,9 +501,11 @@ export class MockGenerator {
 			case 'object':
 				return { sample: true };
 			case 'map':
-				return new Map([['key', 'value']]);
+				// Serialized Map is Array of entries
+				return [['key', 'value']];
 			case 'set':
-				return new Set(['sample']);
+				// Serialized Set is Array
+				return ['sample'];
 			case 'int8array':
 				return new Int8Array([1, 2, 3]);
 			case 'uint8array':
@@ -571,12 +573,15 @@ export class MockGenerator {
 			case 'object':
 				return { [faker.lorem.word()]: faker.lorem.word() };
 			case 'map': {
-				const map = new Map();
-				map.set(faker.lorem.word(), faker.lorem.word());
-				return map;
+				// Serialized Map is Array of entries
+				return [
+					[faker.lorem.word(), faker.lorem.word()],
+					[faker.lorem.word(), faker.lorem.word()],
+				];
 			}
 			case 'set':
-				return new Set([faker.lorem.word(), faker.lorem.word()]);
+				// Serialized Set is Array
+				return [faker.lorem.word(), faker.lorem.word()];
 			case 'int8array':
 				return new Int8Array(
 					Array.from({ length: 3 }, () =>
