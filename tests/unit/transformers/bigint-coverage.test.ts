@@ -39,7 +39,6 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should ALLOW null', () => {
-			// @ts-expect-error - Testing invalid inputs
 			const result = transformer.deserialize(null, propertyKey, className);
 			expect(result).toBeNull();
 		});

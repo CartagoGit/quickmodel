@@ -20,8 +20,9 @@ import {
  *
  * @example
  * ```typescript
+ * @Quick({ metadata: Map })
  * class Config extends QuickModel<IConfig> {
- *   @QType() declare metadata: Map<string, unknown>;
+ *   declare metadata: Map<string, unknown>;
  * }
  *
  * const config = new Config({
@@ -151,8 +152,9 @@ export class MapTransformer<K = string, V = unknown>
  *
  * @example
  * ```typescript
+ * @Quick({ tags: Set })
  * class Config extends QuickModel<IConfig> {
- *   @QType() declare tags: Set<string>;
+ *   declare tags: Set<string>;
  * }
  *
  * const config = new Config({

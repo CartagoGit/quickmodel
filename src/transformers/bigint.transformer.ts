@@ -16,7 +16,7 @@ import {
  *
  * **⚠️ IMPORTANT - TYPE SAFETY**:
  * Since BigInts are serialized as strings, you **MUST** explicitly declare the field with
- * `@Quick({ field: BigInt })` or `@QType(BigInt)` to ensure it deserializes back to a BigInt.
+ * `@Quick({ field: BigInt })` to ensure it deserializes back to a BigInt.
  *
  * If you put a BigInt into an `any` field or an untyped array, it will serialize to a string
  * but deserialize back as a string (losing the BigInt type) because the schema doesn't know
@@ -24,8 +24,9 @@ import {
  *
  * @example
  * ```typescript
+ * @Quick({ balance: BigInt })
  * class Account extends QuickModel<IAccount> {
- *   @QType(QBigInt) declare balance: bigint;
+ *   declare balance: bigint;
  * }
  *
  * const account = new Account({ balance: "9007199254740991" });

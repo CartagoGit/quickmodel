@@ -18,9 +18,11 @@ import {
  * SOLID - Single Responsibility: Only transforms Date objects.
  *
  * @example
+ * @example
  * ```typescript
+ * @Quick({ createdAt: Date })
  * class Event extends QuickModel<IEvent> {
- *   @QType() declare createdAt: Date;
+ *   declare createdAt: Date;
  * }
  *
  * const event = new Event({ createdAt: "2024-01-01T00:00:00.000Z" });

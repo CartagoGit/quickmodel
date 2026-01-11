@@ -26,9 +26,11 @@ interface IRegExpData {
  * - Object: `{source: 'pattern', flags: 'gi'}`
  *
  * @example
+ * @example
  * ```typescript
+ * @Quick({ emailPattern: RegExp })
  * class Config extends QuickModel<IConfig> {
- *   @QType(QRegExp) declare emailPattern: RegExp;
+ *   declare emailPattern: RegExp;
  * }
  *
  * // From string with slashes

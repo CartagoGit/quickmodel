@@ -17,13 +17,13 @@ describe('Transformer Coverage: SymbolTransformer', () => {
 			const key = 'my-symbol';
 			const result = transformer.deserialize(key, propertyKey, className);
 			expect(typeof result).toBe('symbol');
-			expect(Symbol.keyFor(result)).toBe(key);
+			expect(Symbol.keyFor(result!)).toBe(key);
 		});
 
 		test('should deserialize object wrapper', () => {
 			const obj = { __type: 'symbol' as const, description: 'wrapped' };
 			const result = transformer.deserialize(obj, propertyKey, className);
-			expect(Symbol.keyFor(result)).toBe('wrapped');
+			expect(Symbol.keyFor(result!)).toBe('wrapped');
 		});
 
 		test('should throw error for invalid types (number)', () => {

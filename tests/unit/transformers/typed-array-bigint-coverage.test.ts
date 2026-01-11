@@ -19,14 +19,14 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 			const arr = ['1', '9007199254740991'];
 			const result = transformer.deserialize(arr, propertyKey, className);
 			expect(result).toBeInstanceOf(BigInt64Array);
-			expect(result[0]).toBe(1n);
-			expect(result[1]).toBe(9007199254740991n);
+			expect(result![0]).toBe(1n);
+			expect(result![1]).toBe(9007199254740991n);
 		});
 
 		test('should deserialize from number array', () => {
 			const arr = [1, 2];
 			const result = transformer.deserialize(arr, propertyKey, className);
-			expect(result[0]).toBe(1n);
+			expect(result![0]).toBe(1n);
 		});
 
 		test('should handle null/undefined/empty string as 0n', () => {
@@ -36,20 +36,20 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 				propertyKey,
 				className
 			);
-			expect(result[0]).toBe(10n);
-			expect(result[1]).toBe(0n);
-			expect(result[2]).toBe(0n);
-			expect(result[3]).toBe(0n);
-			expect(result[4]).toBe(20n);
+			expect(result![0]).toBe(10n);
+			expect(result![1]).toBe(0n);
+			expect(result![2]).toBe(0n);
+			expect(result![3]).toBe(0n);
+			expect(result![4]).toBe(20n);
 		});
 
 		test('should handle invalid strings as 0n', () => {
 			const arr = ['valid', 'foo', '123'];
 			// 'foo' throws in BigInt('foo'), catch should return 0n
 			const result = transformer.deserialize(arr, propertyKey, className);
-			expect(result[0]).toBe(0n);
-			expect(result[1]).toBe(0n);
-			expect(result[2]).toBe(123n);
+			expect(result![0]).toBe(0n);
+			expect(result![1]).toBe(0n);
+			expect(result![2]).toBe(123n);
 		});
 
 		test('should deserialize from object values', () => {
@@ -62,7 +62,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 			// Object.values order is not strict but for numeric keys usually is
 			// Just checking it returns a BigInt64Array with values
 			expect(result).toBeInstanceOf(BigInt64Array);
-			expect(result.length).toBe(2);
+			expect(result!.length).toBe(2);
 		});
 	});
 

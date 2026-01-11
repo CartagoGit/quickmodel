@@ -59,14 +59,14 @@ describe('Unit: Buffer Transformers Coverage', () => {
 			const input = [1, 2, 3];
 			const result = transformer.deserialize(input, 'p', 'C');
 			expect(result).toBeInstanceOf(DataView);
-			expect(result.byteLength).toBe(3);
+			expect(result!.byteLength).toBe(3);
 		});
 
 		test('deserialize: should accept ArrayBuffer', () => {
 			const buf = new ArrayBuffer(4);
 			const result = transformer.deserialize(buf, 'p', 'C');
 			expect(result).toBeInstanceOf(DataView);
-			expect(result.byteLength).toBe(4);
+			expect(result!.byteLength).toBe(4);
 		});
 
 		test('deserialize: should return same instance', () => {
@@ -116,7 +116,7 @@ describe('Unit: Buffer Transformers Coverage', () => {
 				const input = [1, 2, 3];
 				const result = transformer.deserialize(input, 'p', 'C');
 				expect(result).toBeInstanceOf(SharedArrayBuffer);
-				expect(result.byteLength).toBe(3);
+				expect(result!.byteLength).toBe(3);
 			});
 
 			test('deserialize: should return same instance', () => {

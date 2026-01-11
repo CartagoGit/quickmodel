@@ -21,7 +21,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 				'TestClass'
 			);
 			expect(url).toBeInstanceOf(URL);
-			expect(url.href).toBe('https://example.com/');
+			expect(url!.href).toBe('https://example.com/');
 		});
 
 		test('deserialize should result URL instance from URL instance', () => {
@@ -93,7 +93,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 				'TestClass'
 			);
 			expect(params).toBeInstanceOf(URLSearchParams);
-			expect(params.get('foo')).toBe('bar');
+			expect(params!.get('foo')).toBe('bar');
 		});
 
 		test('deserialize should return instance from object', () => {
@@ -102,7 +102,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 				'params',
 				'TestClass'
 			);
-			expect(params.get('foo')).toBe('bar');
+			expect(params!.get('foo')).toBe('bar');
 		});
 
 		test('deserialize should return same instance', () => {
@@ -199,7 +199,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		test('deserialize should return instance from string encoding', () => {
 			const dec = transformer.deserialize('utf-8', 'dec', 'TC');
 			expect(dec).toBeInstanceOf(TextDecoder);
-			expect(dec.encoding).toBe('utf-8');
+			expect(dec!.encoding).toBe('utf-8');
 		});
 
 		test('deserialize should return instance from object config', () => {
@@ -211,9 +211,9 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			expect(dec).toBeInstanceOf(TextDecoder);
 		});
 
-		test('deserialize should return default utf-8', () => {
+		test('deserialize should return null for null input', () => {
 			const dec = transformer.deserialize(null as any, 'dec', 'TC');
-			expect(dec.encoding).toBe('utf-8');
+			expect(dec).toBeNull();
 		});
 
 		test('deserialize should handle invalid encoding gracefully or throw', () => {

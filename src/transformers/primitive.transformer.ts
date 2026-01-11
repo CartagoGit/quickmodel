@@ -27,11 +27,17 @@ type PrimitiveTypeMap = {
  * safety on plain JavaScript values.
  *
  * @example
+ * @example
  * ```typescript
+ * @Quick({
+ *   name: 'string',
+ *   port: 'number',
+ *   enabled: 'boolean'
+ * })
  * class Config extends QuickModel<IConfig> {
- *   @QType('string') declare name: string;
- *   @QType('number') declare port: number;
- *   @QType('boolean') declare enabled: boolean;
+ *   declare name: string;
+ *   declare port: number;
+ *   declare enabled: boolean;
  * }
  *
  * const config = new Config({
