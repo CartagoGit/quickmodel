@@ -32,7 +32,7 @@ describe('Robustness: Circular References Infinite Loop', () => {
 		node1.children = [node2];
 
 		// Ensure toInterface doesn't crash stack
-		const result: any = node1.toInterface();
+		const result = node1.toInterface();
 		expect(result).toBeDefined();
 
 		// Verify cycle is handled

@@ -93,6 +93,18 @@ $secondary-color: #35495e;
 		width: 100%;
 	}
 }
+@media (min-width: 1280px) {
+	.container{
+		max-width: clamp(calc(var(--vp-layout-max-width) - 64px), 2000px, max-content);
+	}
+	.search {
+		justify-content: flex-end;
+		padding-right: 1rem;
+		.DocSearch-Button {
+			//width: clamp(auto, 200px, 300px);
+		}
+	}
+}
 
 // Typography improvements for code blocks
 .vp-doc {

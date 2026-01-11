@@ -36,7 +36,7 @@ class ComplexEntityQuick extends QModel<IComplexEntity> {
 	declare uniqueKey: symbol;
 	declare lastError: Error | null;
 	declare buffer: Int8Array;
-	declare metadata: Map<string, any>;
+	declare metadata: Map<string, unknown>;
 	declare tags: Set<string>;
 }
 

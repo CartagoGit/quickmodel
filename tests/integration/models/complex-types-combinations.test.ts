@@ -64,7 +64,7 @@ class ComplexEntity extends QModel<IComplexEntity> {
 	buffer!: Int8Array;
 
 	@QType()
-	metadata!: Map<string, any>;
+	metadata!: Map<string, unknown>;
 
 	@QType()
 	tags!: Set<string>;

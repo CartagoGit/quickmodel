@@ -8,7 +8,7 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 	test('deserialize: should throw on object with non-string source', () => {
 		expect(() => {
 			transformer.deserialize(
-				{ source: 123 } as any,
+				{ source: 123 } as unknown as { source: string },
 				'regex',
 				'TestClass'
 			);
@@ -42,7 +42,11 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 
 	test('deserialize: should throw on invalid type', () => {
 		expect(() => {
-			transformer.deserialize(123 as any, 'regex', 'TestClass');
+			transformer.deserialize(
+				123 as unknown as string,
+				'regex',
+				'TestClass'
+			);
 		}).toThrow(/RegExp transformer ONLY accepts/);
 	});
 

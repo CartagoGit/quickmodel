@@ -26,7 +26,11 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 		test('deserialize: should throw on non-array', () => {
 			expect(() => {
-				transformer.deserialize('invalid' as any, 'p', 'C');
+				transformer.deserialize(
+					'invalid' as unknown as number[],
+					'p',
+					'C'
+				);
 			}).toThrow(/Expected array/);
 		});
 
@@ -72,7 +76,11 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 		test('deserialize: should throw on invalid type', () => {
 			expect(() => {
-				transformer.deserialize('invalid' as any, 'p', 'C');
+				transformer.deserialize(
+					'invalid' as unknown as number[],
+					'p',
+					'C'
+				);
 			}).toThrow(/Expected array/);
 		});
 
@@ -118,7 +126,11 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 			test('deserialize: should throw on invalid input', () => {
 				expect(() => {
-					transformer.deserialize('invalid' as any, 'p', 'C');
+					transformer.deserialize(
+						'invalid' as unknown as number[],
+						'p',
+						'C'
+					);
 				}).toThrow(/SharedArrayBuffer transformer accepts/);
 			});
 

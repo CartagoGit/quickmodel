@@ -104,7 +104,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 		});
 
 		test('should fail validation for invalid type', () => {
-			const result = transformer.validate({} as any, {
+			const result = transformer.validate({} as unknown as string, {
 				propertyKey,
 				target: {},
 			});

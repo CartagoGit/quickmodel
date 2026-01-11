@@ -79,7 +79,7 @@ interface ITestUser {
 
 	// Colecciones
 	tags: Set<string>;
-	metadata: Map<string, any>;
+	metadata: Map<string, unknown>;
 	permissions: string[];
 
 	// Tipos especiales
@@ -90,7 +90,7 @@ interface ITestUser {
 
 	// Objetos plain
 	config: { theme: string; lang: string };
-	settings: Record<string, any>;
+	settings: Record<string, unknown>;
 
 	// Nested models
 	address: Address;
@@ -156,7 +156,7 @@ class TestUser extends QModel<ITestUser> {
 	bigNumber!: bigint;
 
 	tags!: Set<string>;
-	metadata!: Map<string, any>;
+	metadata!: Map<string, unknown>;
 	permissions!: string[];
 
 	pattern!: RegExp;
@@ -165,7 +165,7 @@ class TestUser extends QModel<ITestUser> {
 	errorData!: Error;
 
 	config!: { theme: string; lang: string };
-	settings!: Record<string, any>;
+	settings!: Record<string, unknown>;
 
 	address!: Address;
 	company!: ICompany;
@@ -509,13 +509,13 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			const userWithUndefined = new TestUser({
 				...testData,
 				defaultProp: undefined,
-			} as any);
+			} as unknown as ITestUser);
 			expect(userWithUndefined.defaultProp).toBeUndefined();
 
 			// Caso 2: Campo ausente - también es undefined actualmente
 			// TODO: Considerar restaurar defaults cuando el campo falta completamente
 			const dataWithoutField = { ...testData };
-			delete (dataWithoutField as any).defaultProp;
+			delete (dataWithoutField as unknown as { defaultProp?: string }).defaultProp;
 			const userWithoutField = new TestUser(dataWithoutField);
 
 			// Actualmente: undefined (el default se perdió en el proceso)

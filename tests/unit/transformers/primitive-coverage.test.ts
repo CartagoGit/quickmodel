@@ -4,6 +4,7 @@ import {
 	NumberTransformer,
 	BooleanTransformer,
 } from '@/transformers/primitive.transformer';
+import { IQValidationContext } from '@/core/interfaces/transformer.interface';
 
 describe('Transformer Coverage: Primitives', () => {
 	const className = 'TestClass';
@@ -21,14 +22,20 @@ describe('Transformer Coverage: Primitives', () => {
 			}).toThrow(/Expected string/);
 		});
 		test('should validate valid string', () => {
-			expect(StringTransformer.validate('ok', {} as any).isValid).toBe(
-				true
-			);
+			expect(
+				StringTransformer.validate(
+					'ok',
+					{} as unknown as IQValidationContext
+				).isValid
+			).toBe(true);
 		});
 		test('should fail valudation for invalid type', () => {
-			expect(StringTransformer.validate(null, {} as any).isValid).toBe(
-				false
-			);
+			expect(
+				StringTransformer.validate(
+					null,
+					{} as unknown as IQValidationContext
+				).isValid
+			).toBe(false);
 		});
 		test('should serialize valid string', () => {
 			expect(StringTransformer.serialize('ok')).toBe('ok');
@@ -47,9 +54,12 @@ describe('Transformer Coverage: Primitives', () => {
 			}).toThrow(/Expected number/);
 		});
 		test('should validate valid number', () => {
-			expect(NumberTransformer.validate(123, {} as any).isValid).toBe(
-				true
-			);
+			expect(
+				NumberTransformer.validate(
+					123,
+					{} as unknown as IQValidationContext
+				).isValid
+			).toBe(true);
 		});
 	});
 
@@ -65,9 +75,12 @@ describe('Transformer Coverage: Primitives', () => {
 			}).toThrow(/Expected boolean/);
 		});
 		test('should validate valid boolean', () => {
-			expect(BooleanTransformer.validate(false, {} as any).isValid).toBe(
-				true
-			);
+			expect(
+				BooleanTransformer.validate(
+					false,
+					{} as unknown as IQValidationContext
+				).isValid
+			).toBe(true);
 		});
 	});
 });

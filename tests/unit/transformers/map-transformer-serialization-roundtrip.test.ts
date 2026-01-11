@@ -83,11 +83,14 @@ describe('Unit: Map Transformer', () => {
 		const model = new MapData({ map });
 		const deserialized = MapData.fromJSON(model.toJSON());
 
-		const user = deserialized.map.get('user') as any;
+		const user = deserialized.map.get('user') as {
+			name: string;
+			age: number;
+		};
 		expect(user.name).toBe('John');
 		expect(user.age).toBe(30);
 
-		const settings = deserialized.map.get('settings') as any;
+		const settings = deserialized.map.get('settings') as { theme: string };
 		expect(settings.theme).toBe('dark');
 	});
 

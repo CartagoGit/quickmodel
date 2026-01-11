@@ -32,7 +32,11 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 
 		test('deserialize should throw on non-string input', () => {
 			expect(() => {
-				transformer.deserialize(123 as any, 'url', 'TestClass');
+				transformer.deserialize(
+					123 as unknown as string,
+					'url',
+					'TestClass'
+				);
 			}).toThrow(/URL transformer ONLY accepts/);
 		});
 
@@ -113,7 +117,11 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 
 		test('deserialize should throw on array (invalid object)', () => {
 			expect(() => {
-				transformer.deserialize(['foo'] as any, 'params', 'TestClass');
+				transformer.deserialize(
+					['foo'] as unknown as string,
+					'params',
+					'TestClass'
+				);
 			}).toThrow(/URLSearchParams transformer ONLY accepts/);
 		});
 
@@ -214,7 +222,8 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			// Node/Bun might throw on invalid encoding
 			try {
 				transformer.deserialize('invalid-encoding-xyz', 'dec', 'TC');
-			} catch (e: any) {
+			} catch (err: unknown) {
+				const e = err as Error;
 				expect(e.message).toContain('Invalid encoding');
 			}
 		});
@@ -227,14 +236,15 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 					'dec',
 					'TC'
 				);
-			} catch (e: any) {
+			} catch (err: unknown) {
+				const e = err as Error;
 				expect(e.message).toContain('Invalid encoding');
 			}
 		});
 
 		test('deserialize should throw on invalid input type', () => {
 			expect(() => {
-				transformer.deserialize(123 as any, 'dec', 'TC');
+				transformer.deserialize(123 as unknown as string, 'dec', 'TC');
 			}).toThrow(/TextDecoder transformer accepts string/);
 		});
 

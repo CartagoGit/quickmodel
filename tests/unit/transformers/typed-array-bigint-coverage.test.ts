@@ -32,7 +32,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 		test('should handle null/undefined/empty string as 0n', () => {
 			const arr = ['10', null, undefined, '', '20'];
 			const result = transformer.deserialize(
-				arr as any,
+				arr as unknown as string[],
 				propertyKey,
 				className
 			);
@@ -46,11 +46,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 		test('should handle invalid strings as 0n', () => {
 			const arr = ['valid', 'foo', '123'];
 			// 'foo' throws in BigInt('foo'), catch should return 0n
-			const result = transformer.deserialize(
-				arr as any,
-				propertyKey,
-				className
-			);
+			const result = transformer.deserialize(arr, propertyKey, className);
 			expect(result[0]).toBe(0n);
 			expect(result[1]).toBe(0n);
 			expect(result[2]).toBe(123n);
@@ -59,7 +55,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 		test('should deserialize from object values', () => {
 			const obj = { '0': '10', '1': '20' };
 			const result = transformer.deserialize(
-				obj as any,
+				obj as unknown as Record<number, number>,
 				propertyKey,
 				className
 			);
