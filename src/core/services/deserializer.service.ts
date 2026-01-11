@@ -462,7 +462,7 @@ export class Deserializer<
 				key in options.transformers &&
 				typeof options.transformers[key] === 'function'
 			) {
-				instance[key] = options.transformers[key]!(value);
+				instance[key] = options.transformers[key](value);
 				continue;
 			}
 

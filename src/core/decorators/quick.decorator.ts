@@ -75,7 +75,7 @@ import { QInterface } from '@/index';
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-import type { QAlias } from '../types/q-alias.type';
+// import type { QAlias } from '../types/q-alias.type'; // Unused
 import type { QAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
@@ -85,10 +85,10 @@ import {
 	QUICK_OPTIONS_KEY,
 } from '../constants/metadata-keys';
 import type {
-	IConstructor,
-	INativeFactory,
-	ISpec,
-	ISpecs,
+	// IConstructor, // Unused
+	// INativeFactory, // Unused
+	// ISpec, // Unused
+	// ISpecs, // Unused
 	QOptions,
 } from '../interfaces/quick.interface';
 

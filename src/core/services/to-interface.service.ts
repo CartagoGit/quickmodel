@@ -134,7 +134,7 @@ export class ToInterfaceService<
 				key in options.serializers &&
 				typeof options.serializers[key] === 'function'
 			) {
-				result[key] = options.serializers[key]!(currentValue);
+				result[key] = options.serializers[key](currentValue);
 				continue;
 			}
 

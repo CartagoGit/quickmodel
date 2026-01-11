@@ -85,7 +85,10 @@
  * ```
  */
 
-import { IQSerializer } from '../interfaces/serializer.interface';
+import {
+	IQSerializer,
+	ISerializationOptions,
+} from '../interfaces/serializer.interface';
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
 import { DateTransformer } from '@/transformers/date.transformer';
 import { ErrorTransformer } from '@/transformers/error.transformer';
@@ -193,12 +196,17 @@ export class Serializer<
 	 *
 	 * @param model - The model instance to serialize
 	 * @param seen - Optional WeakSet to track circular references
+	 * @param options - Optional serialization options
 	 * @returns Plain object suitable for JSON serialization with transformers applied
 	 *
 	 * @remarks
 	 * Uses transformers to convert special types (BigInt, Date, RegExp, etc.) to JSON-compatible format.
 	 */
-	serialize(model: TModel, seen?: WeakSet<object>): TInterface {
+	serialize(
+		model: TModel,
+		seen?: WeakSet<object>,
+		options?: ISerializationOptions
+	): TInterface {
 		const result: Record<string, unknown> = {};
 
 		// Cycle detection
@@ -234,12 +242,14 @@ export class Serializer<
 
 		// Serialize with transformers
 		for (const key of keys) {
-			if (key.startsWith('__') || key.startsWith('_')) {
-				continue;
+			if (key.startsWith('__')) {
+				if (!options?.includeDoubleUnderscore) continue;
+			} else if (key.startsWith('_')) {
+				if (!options?.includeUnderscore) continue;
 			}
 
 			const value = (model as unknown as Record<string, unknown>)[key];
-			result[key] = this.serializeValue(value, visited);
+			result[key] = this.serializeValue(value, visited, options);
 		}
 
 		return result as TInterface;
@@ -251,8 +261,8 @@ export class Serializer<
 	 * @param model - The model instance to serialize
 	 * @returns JSON string representation
 	 */
-	serializeToJson(model: TModel): string {
-		return JSON.stringify(this.serialize(model));
+	serializeToJson(model: TModel, options?: ISerializationOptions): string {
+		return JSON.stringify(this.serialize(model, undefined, options));
 	}
 
 	/**
@@ -260,6 +270,7 @@ export class Serializer<
 	 *
 	 * @param value - The value to serialize
 	 * @param seen - WeakSet to track circular references
+	 * @param options - Serialization options for nested structures
 	 * @returns Serialized value suitable for JSON
 	 *
 	 * @remarks
@@ -279,7 +290,11 @@ export class Serializer<
 	 * 13. Set → array
 	 * 14. Primitives → as-is
 	 */
-	private serializeValue(value: unknown, seen?: WeakSet<object>): unknown {
+	private serializeValue(
+		value: unknown,
+		seen?: WeakSet<object>,
+		options?: ISerializationOptions
+	): unknown {
 		// Containers (Set, Map, Array) - Handle FIRST to support recursion & cycles
 		if (value instanceof Map) {
 			const visited = seen || new WeakSet<object>();
@@ -291,7 +306,7 @@ export class Serializer<
 			const result: Record<string, unknown> = {};
 			for (const [k, v] of value) {
 				// Recursive call ensures values (like BigInt) are serialized
-				result[String(k)] = this.serializeValue(v, visited);
+				result[String(k)] = this.serializeValue(v, visited, options);
 			}
 			return result;
 		}
@@ -305,7 +320,7 @@ export class Serializer<
 
 			// Recursive call ensures values (like Date) are serialized
 			return Array.from(value).map((item) =>
-				this.serializeValue(item, visited)
+				this.serializeValue(item, visited, options)
 			);
 		}
 
@@ -316,7 +331,9 @@ export class Serializer<
 			}
 			visited.add(value);
 
-			return value.map((item) => this.serializeValue(item, visited));
+			return value.map((item) =>
+				this.serializeValue(item, visited, options)
+			);
 		}
 
 		// Custom Transformers (Registry)
@@ -484,8 +501,13 @@ export class Serializer<
 			const visited = seen || new WeakSet<object>();
 			// No need to check visited here because value.serialize(seen) will check it
 			return (
-				value as { serialize: (s?: WeakSet<object>) => unknown }
-			).serialize(visited);
+				value as {
+					serialize: (
+						s?: WeakSet<object>,
+						o?: ISerializationOptions
+					) => unknown;
+				}
+			).serialize(visited, options);
 		}
 
 		// Plain Object (recursive serialization)
@@ -507,7 +529,8 @@ export class Serializer<
 			for (const key of Object.keys(value)) {
 				result[key] = this.serializeValue(
 					(value as Record<string, unknown>)[key],
-					visited
+					visited,
+					options
 				);
 			}
 			return result;

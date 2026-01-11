@@ -3,6 +3,22 @@
  * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
  */
 
+export interface ISerializationOptions {
+	/**
+	 * Include properties starting with a single underscore `_` (e.g., `_id`, `_value`)
+	 * These are often used for private/protected conventions or special API fields like HAL `_links`.
+	 * @default false
+	 */
+	includeUnderscore?: boolean;
+
+	/**
+	 * Include properties starting with double underscore `__` (e.g., `__meta`)
+	 * These are almost always internal framework properties.
+	 * @default false
+	 */
+	includeDoubleUnderscore?: boolean;
+}
+
 export interface IQSerializer<
 	TModel extends Record<string, unknown>,
 	TInterface,
@@ -11,13 +27,18 @@ export interface IQSerializer<
 	 * Serializes a model to its interface representation
 	 * @param model - The model to serialize
 	 * @param seen - Optional WeakSet to track circular references
+	 * @param options - Serialization options
 	 */
-	serialize(model: TModel, seen?: WeakSet<object>): TInterface;
+	serialize(
+		model: TModel,
+		seen?: WeakSet<object>,
+		options?: ISerializationOptions
+	): TInterface;
 
 	/**
 	 * Serializa a JSON string
 	 */
-	serializeToJson(model: TModel): string;
+	serializeToJson(model: TModel, options?: ISerializationOptions): string;
 }
 
 export interface IQDeserializer<

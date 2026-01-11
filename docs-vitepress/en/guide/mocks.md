@@ -190,11 +190,14 @@ User.mock().array(5, 'random', (index) => ({
 
 Returns plain JavaScript objects (POJOs), **not** class instances. Useful for API response mocking where you don't want class methods.
 
-| Method                            | Description                    |
-| :-------------------------------- | :----------------------------- |
-| **`interfaceRandom(overrides?)`** | Plain object with random data. |
-| **`interfaceEmpty(overrides?)`**  | Plain object with empty data.  |
-| **`interfaceArray(count, ...)`**  | Array of plain objects.        |
+| method                             | description                     |
+| :--------------------------------- | :------------------------------ |
+| **`interfaceRandom(overrides?)`**  | Plain object with random data.  |
+| **`interfaceEmpty(overrides?)`**   | Plain object with empty data.   |
+| **`interfaceSample(overrides?)`**  | Plain object with sample data.  |
+| **`interfaceMinimal(overrides?)`** | Plain object with minimal data. |
+| **`interfaceFull(overrides?)`**    | Plain object with full data.    |
+| **`interfaceArray(count, ...)`**   | Array of plain objects.         |
 
 ```typescript
 // Returns { name: "..." } instead of User { name: "..." }

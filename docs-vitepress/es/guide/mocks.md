@@ -190,11 +190,14 @@ User.mock().array(5, 'random', (index) => ({
 
 Devuelve objetos JavaScript planos (POJOs), **no** instancias de clase. Útil para mockear respuestas de API donde no quieres métodos de clase.
 
-| Método                            | Descripción                        |
-| :-------------------------------- | :--------------------------------- |
-| **`interfaceRandom(overrides?)`** | Objeto plano con datos aleatorios. |
-| **`interfaceEmpty(overrides?)`**  | Objeto plano con datos vacíos.     |
-| **`interfaceArray(count, ...)`**  | Array de objetos planos.           |
+| Método                             | Descripción                        |
+| :--------------------------------- | :--------------------------------- |
+| **`interfaceRandom(overrides?)`**  | Objeto plano con datos aleatorios. |
+| **`interfaceEmpty(overrides?)`**   | Objeto plano con datos vacíos.     |
+| **`interfaceSample(overrides?)`**  | Objeto plano con datos de muestra. |
+| **`interfaceMinimal(overrides?)`** | Objeto plano con datos mínimos.    |
+| **`interfaceFull(overrides?)`**    | Objeto plano con datos completos.  |
+| **`interfaceArray(count, ...)`**   | Array de objetos planos.           |
 
 ```typescript
 // Devuelve { name: "..." } en lugar de User { name: "..." }

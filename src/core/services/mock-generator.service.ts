@@ -56,7 +56,7 @@ export class MockGenerator {
 				key in options.mockers &&
 				typeof options.mockers[key] === 'function'
 			) {
-				mock[key] = options.mockers[key]!();
+				mock[key] = options.mockers[key]();
 				continue;
 			}
 

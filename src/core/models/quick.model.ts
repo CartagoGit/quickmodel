@@ -11,6 +11,7 @@
 import 'reflect-metadata';
 import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
+import type { ISerializationOptions } from '@/core/interfaces/serializer.interface';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
 import { MockGenerator } from '@/core/services/mock-generator.service';
 import { ValidationService } from '@/core/services/validation.service';
@@ -586,11 +587,15 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 */
-	serialize(seen?: WeakSet<object>): SerializedInterface<TInterface> {
+	serialize(
+		seen?: WeakSet<object>,
+		options?: ISerializationOptions
+	): SerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serialize(
 			this as unknown as ModelAsRecord,
-			seen
+			seen,
+			options
 		) as SerializedInterface<TInterface>;
 	}
 
@@ -611,10 +616,11 @@ export abstract class QModel<TInterface extends AnyRecord> {
 	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
 	 * ```
 	 */
-	toJSON(): string {
+	toJSON(_key?: string, options?: ISerializationOptions): string {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serializeToJson(
-			this as unknown as ModelAsRecord
+			this as unknown as ModelAsRecord,
+			options
 		);
 	}
 

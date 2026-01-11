@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, QType } from '@/index';
-import { faker } from '@faker-js/faker';
 
 describe('Advanced Options with @QType Decorator', () => {
 	test('should support custom transformer, serializer and mocker via @QType options', () => {
@@ -65,25 +64,17 @@ describe('Advanced Options with @QType Decorator', () => {
 	test('should prioritize @Quick options over @QType options', () => {
 		// This test ensures that if both exist, Class-level @Quick options override Property-level @QType options
 		// This allows ad-hoc overrides without modifying the model definition
-
-		interface IUser {
-			name: string;
-		}
-
 		// 1. Define Model with @QType specific rules
 		// @Quick is required for QModel but empty config here
-
 		// Note: We need a way to pass options to @Quick, but if we use @Quick without arguments
 		// we can't easily pass options.
 		// Let's use standard declaration
-
 		// Wait, the test logic depends on the specific implementation order in services.
 		// Looking at code:
 		// MockGenerator:
 		//   1. Check options.mockers (from @Quick)
 		//   2. Check customMocker (@QType)
 		// So @Quick should win.
-
 		// To test this we need a class decorated with both
 	});
 });

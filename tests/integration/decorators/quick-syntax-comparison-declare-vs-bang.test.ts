@@ -15,6 +15,7 @@ interface ITestDeclare {
 	tags: Set<string> | { __type: 'Set'; values: string[] };
 	metadata:
 		| Map<string, string>
+		| Record<string, string>
 		| { __type: 'Map'; entries: [string, string][] };
 }
 
@@ -25,9 +26,10 @@ interface ITestBang {
 	count: bigint | string;
 	key: symbol | { __type: 'symbol'; description: string };
 	pattern: RegExp | { __type: 'regexp'; source: string; flags: string };
-	tags: Set<string> | { __type: 'Set'; values: string[] };
+	tags: Set<string> | string[] | { __type: 'Set'; values: string[] };
 	metadata:
 		| Map<string, string>
+		| Record<string, string>
 		| { __type: 'Map'; entries: [string, string][] };
 }
 
