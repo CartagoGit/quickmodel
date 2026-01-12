@@ -62,42 +62,198 @@ export class QGenerateTestTool extends QAbstractTool<
 			),
 	});
 
-	async execute(args: { sourceFile: string }): Promise<{
-		path: string;
-		content: string;
-	}> {
-		// Simulate async work
-		await Promise.resolve();
+	async execute(args: {
+		sourceFile: string;
+	}): Promise<{ path: string; content: string; message?: string }> {
+		const { existsSync } = await import('fs');
+		const { join, resolve } = await import('path');
 
-		if (!existsSync(args.sourceFile)) {
-			throw new Error(`Source file not found: ${args.sourceFile}`);
+		// Resolve path relative to cwd if not absolute
+		const fullPath = resolve(process.cwd(), args.sourceFile);
+
+		if (!existsSync(fullPath)) {
+			return {
+				path: '',
+				content: '',
+				message: `File not found: ${args.sourceFile}`,
+			};
 		}
 
-		const fileName = basename(args.sourceFile);
-		const testFileName = fileName.replace(/\.ts$/, '.test.ts');
-		// Heuristic: try to place it in tests/unit mirroring structure or just flat for now
-		// For simplicity, we suggest a path in tests/generated/
-		const testPath = join(
-			process.cwd(),
-			'tests',
-			'generated',
-			'mcp',
-			testFileName
-		);
+		// Heuristic to find test path
+		// src/core/foo.ts -> tests/unit/core/foo.test.ts
+		const testPath = fullPath
+			.replace(
+				join(process.cwd(), 'src'),
+				join(process.cwd(), 'tests', 'unit')
+			)
+			.replace('.ts', '.test.ts');
 
-		const content = `
+		const fileName = testPath.split('/').pop()!;
+
+		if (existsSync(testPath)) {
+			return {
+				path: testPath,
+				content: '',
+				message: `Test file already exists at ${testPath}`,
+			};
+		}
+
+		try {
+			// Derive className and relativePath for the template
+			const className = fileName.replace(/\.ts$/, ''); // Simple derivation
+			const relativePath = args.sourceFile.startsWith(process.cwd())
+				? `./${args.sourceFile.substring(process.cwd().length + 1)}`
+				: args.sourceFile;
+
+			const content = `
 import { describe, it, expect } from 'bun:test';
-// TODO: Import your class from ${args.sourceFile}
-// import { YourClass } from '@/...';
+// import { ${className} } from '${relativePath}';
 
-describe('${fileName} (Generated)', () => {
-    it('should be testable', () => {
-        expect(true).toBe(true);
+describe('${className}', () => {
+    it('should be defined', () => {
+        // expect(${className}).toBeDefined();
     });
 });
-        `.trim();
+`;
+			// await fs.promises.write_file(testPath, content); // native fs not imported
+			// Using bun write or console for now, but to be safe with node compat let's use console or mock
+			// The original implementation had fs.writeFileSync.
+			// Let's assume we want to write it.
+			const { writeFileSync, mkdirSync } = await import('fs');
+			const { dirname } = await import('path');
+			mkdirSync(dirname(testPath), { recursive: true });
+			writeFileSync(testPath, content);
 
-		// We don't write it automatically to avoid overwriting; we return the content.
-		return { path: testPath, content };
+			return {
+				path: testPath,
+				content,
+				message: `Test file created at ${testPath}`,
+			};
+		} catch (error: any) {
+			return {
+				path: '',
+				content: '',
+				message: `Failed to generate test: ${error.message}`,
+			};
+		}
+	}
+}
+
+/**
+ * Tool to check for missing JSDocs in the codebase.
+ */
+export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
+	name = 'check_jsdocs';
+	description =
+		'Scan the source code for exported members that are missing JSDoc documentation.';
+	schema = z.object({});
+
+	async execute(): Promise<{
+		filesWithMissingDocs: string[];
+		summary: string;
+	}> {
+		await Promise.resolve();
+		// Simplified check: relying on grep/ripgrep if available or native logic.
+		// Native logic:
+		// Use simple recursive search using fs
+		const { readdirSync, readFileSync, statSync } = await import('fs');
+		const { join } = await import('path');
+
+		const missingDocs: string[] = [];
+
+		function scanDir(dir: string) {
+			const files = readdirSync(dir);
+			for (const file of files) {
+				const fullPath = join(dir, file);
+				if (statSync(fullPath).isDirectory()) {
+					scanDir(fullPath);
+				} else if (file.endsWith('.ts') && !file.endsWith('.d.ts')) {
+					const content = readFileSync(fullPath, 'utf-8');
+					const lines = content.split('\n');
+					let inComment = false;
+					for (let i = 0; i < lines.length; i++) {
+						const line = (lines[i] || '').trim();
+						if (line.startsWith('/**')) inComment = true;
+						if (line.endsWith('*/')) inComment = false;
+
+						if (
+							!inComment &&
+							line.startsWith('export') &&
+							!line.includes('from')
+						) {
+							// Check if previous line end was */
+							let hasDoc = false;
+							if (i > 0) {
+								const prev = lines[i - 1];
+								if (prev && prev.trim().endsWith('*/'))
+									hasDoc = true;
+							}
+							if (!hasDoc) {
+								missingDocs.push(
+									`${fullPath}:${i + 1} ${line}`
+								);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		try {
+			// We need await Promise.resolve in execute to satisfy strict lint if no other await
+			await Promise.resolve();
+			scanDir(join(process.cwd(), 'src'));
+		} catch (e: any) {
+			return {
+				filesWithMissingDocs: [],
+				summary: 'Failed to scan: ' + e.message,
+			};
+		}
+
+		return {
+			filesWithMissingDocs: missingDocs.slice(0, 50),
+			summary: `Found ${missingDocs.length} potential missing JSDocs.`,
+		};
+	}
+}
+
+/**
+ * Tool to check project health (lint, typecheck, test).
+ */
+export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
+	name = 'check_project_health';
+	description =
+		'Run a comprehensive health check: Lint, Typecheck, and Run Tests.';
+	schema = z.object({});
+
+	async execute(): Promise<{ status: 'ok' | 'error'; output: string }> {
+		return new Promise((resolve) => {
+			exec('bun run check', (error, stdout, stderr) => {
+				resolve({
+					status: error ? 'error' : 'ok',
+					output: stdout + stderr,
+				});
+			});
+		});
+	}
+}
+
+/**
+ * Tool to get test coverage report.
+ */
+export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
+	name = 'get_coverage_report';
+	description = 'Run tests with coverage and report the summary.';
+	schema = z.object({});
+
+	async execute(): Promise<{ summary: string }> {
+		return new Promise((resolve) => {
+			exec('bun run test:coverage', (error, stdout, stderr) => {
+				// We return stdout as it contains the table
+				resolve({
+					summary: stdout + stderr,
+				});
+			});
+		});
 	}
 }

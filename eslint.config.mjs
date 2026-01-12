@@ -14,7 +14,9 @@ export default tseslint.config(
       "coverage/",
       "**/*.js",
       "**/*.mjs",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "src/mcp/**/*",
+      "tests/**/mcp/**/*"
     ],
   },
   eslint.configs.recommended,

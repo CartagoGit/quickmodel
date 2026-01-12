@@ -60,7 +60,8 @@ export default defineConfig({
 					text: 'Model Context Protocol',
 					items: [
 						{ text: 'Overview', link: '/en/mcp/' },
-						// Future MCP pages can be added here
+						{ text: 'Public Tools', link: '/en/mcp/public/' },
+						{ text: 'Internal Tools', link: '/en/mcp/internal/' },
 					],
 				},
 			],
@@ -466,7 +467,17 @@ export default defineConfig({
 					'/en/mcp/': [
 						{
 							text: 'Model Context Protocol',
-							items: [{ text: 'Overview', link: '/en/mcp/' }],
+							items: [
+								{ text: 'Overview', link: '/en/mcp/' },
+								{
+									text: 'Public Tools',
+									link: '/en/mcp/public/',
+								},
+								{
+									text: 'Internal Tools',
+									link: '/en/mcp/internal/',
+								},
+							],
 						},
 					],
 					'/en/examples/': [
@@ -589,6 +600,14 @@ export default defineConfig({
 								{
 									text: 'Descripción General',
 									link: '/es/mcp/',
+								},
+								{
+									text: 'Herramientas Públicas',
+									link: '/es/mcp/public/',
+								},
+								{
+									text: 'Herramientas Internas',
+									link: '/es/mcp/internal/',
 								},
 							],
 						},

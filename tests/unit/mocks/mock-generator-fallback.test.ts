@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { QModel, Quick } from '@/index';
+import { QModel, Quick } from '../../../src/index';
 
 /**
  * Este test verifica que el MockGenerator hidrata correctamente las instancias
@@ -15,7 +15,11 @@ describe('Mock Generator - Hydration & Fallback', () => {
 		isActive: boolean;
 	}
 
-	@Quick()
+	@Quick({
+		id: 'number',
+		name: 'string',
+		isActive: 'boolean',
+	})
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare name: string;
@@ -23,7 +27,7 @@ describe('Mock Generator - Hydration & Fallback', () => {
 	}
 
 	it('should correctly hydrate a mocked instance (No Fallback needed)', () => {
-		// 1. Generar mock
+		// 1. Generar mock (usando .random() para obtener la instancia)
 		const mockUser = User.mock().random();
 
 		// 2. Verificar que es una instancia de User
@@ -45,6 +49,7 @@ describe('Mock Generator - Hydration & Fallback', () => {
 	});
 
 	it('should accept overrides during mocking', () => {
+		// Usar .random(overrides)
 		const override = { name: 'Fixed Name', id: 999 };
 		const mockUser = User.mock().random(override);
 
@@ -59,7 +64,7 @@ describe('Mock Generator - Hydration & Fallback', () => {
 			bio: string;
 		}
 
-		@Quick()
+		@Quick({ bio: 'string' })
 		class Profile extends QModel<IProfile> {
 			declare bio: string;
 		}
@@ -73,10 +78,11 @@ describe('Mock Generator - Hydration & Fallback', () => {
 			declare profile: Profile;
 		}
 
-		const mock = ComplexUser.mock();
+		// Usar random() para obtener la instancia
+		const mock = ComplexUser.mock().random();
 
-		expect(mock.random().profile).toBeInstanceOf(Profile);
-		expect(mock.random().profile.bio).toBeDefined();
-		expect(typeof mock.random().profile.bio).toBe('string');
+		expect(mock.profile).toBeInstanceOf(Profile);
+		expect(mock.profile.bio).toBeDefined();
+		expect(typeof mock.profile.bio).toBe('string');
 	});
 });

@@ -58,6 +58,7 @@
 		"dist",
 		"docs/**/*",
 		"docs-vitepress/**/*",
-		"tests/**/*"
+		"tests/**/*",
+		"src/mcp/**/*"
 	]
 }

@@ -69,7 +69,9 @@ describe('Transform Helpers', () => {
 		it('base64Decode works', () =>
 			expect(h.base64Decode('YQ==')).toBe('a'));
 		it('jsonParse works', () =>
-			expect(h.jsonParse('{"a":1}')).toEqual({ a: 1 }));
+			expect(h.jsonParse<Record<string, number>>('{"a":1}')).toEqual({
+				a: 1,
+			}));
 		it('jsonStringify works', () =>
 			expect(h.jsonStringify({ a: 1 })).toBe('{"a":1}'));
 		it('encodeURIString works', () =>

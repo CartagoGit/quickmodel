@@ -1,9 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from './abstract-tool';
-import { QTransformerRegistry } from '../../core/registry/transformer.registry';
 import { QModel } from '../../core/models/quick.model';
 import { Quick } from '../../core/decorators/quick.decorator';
-import { QType } from '../../core/decorators/qtype.decorator';
 
 /**
  * Tool to list all available transformers in the registry.
@@ -15,6 +13,7 @@ export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {
 	schema = z.object({});
 
 	async execute(): Promise<string[]> {
+		await Promise.resolve();
 		// Return hardcoded list as registry access might be restricted or empty in this context
 		// In a real app we'd iterate QTransformerRegistry.registry
 		return [
@@ -71,6 +70,7 @@ export class QGenerateMockDataTool extends QAbstractTool<
 		schema: Record<string, string>;
 		count: number;
 	}): Promise<any[]> {
+		await Promise.resolve();
 		// dynamically create a class
 		// We can't easily perform "class X extends QModel" dynamically in strict TS without eval or mixins
 		// But we can define an anonymous class.
@@ -84,7 +84,7 @@ export class QGenerateMockDataTool extends QAbstractTool<
 		// Generate mocks
 		const mocks: any[] = [];
 		for (let i = 0; i < args.count; i++) {
-			mocks.push(DynamicModel.mock());
+			mocks.push((DynamicModel.mock().random() as any).serialize());
 		}
 
 		return mocks;
@@ -109,23 +109,30 @@ export class QInspectModelTool extends QAbstractTool<
 		transformers: string[];
 		structure: string;
 	}> {
+		await Promise.resolve();
 		// Simple regex parsing for demonstration
-		// In a real scenario, use AST parser
 		const classNameMatch = args.code.match(
 			/class\s+(\w+)\s+extends\s+QModel/
 		);
-		const className = classNameMatch ? classNameMatch[1] : 'Unknown';
+		const className =
+			classNameMatch && classNameMatch[1] ? classNameMatch[1] : 'Unknown';
 
 		const decorators = Array.from(
 			args.code.matchAll(/@Quick\(\s*({[\s\S]*?})\s*\)/g)
 		);
-		const quickConfig = decorators.length > 0 ? decorators[0][1] : '{}';
+		const quickConfig =
+			decorators.length > 0 && decorators[0] && decorators[0][1]
+				? decorators[0][1]
+				: '{}';
 
 		// Extract transformer types roughly using regex
 		const transformerMatches = Array.from(
 			quickConfig.matchAll(/:\s*['"]?(\w+)['"]?/g)
 		);
-		const transformers = transformerMatches.map((m) => m[1]);
+		// Filter out undefineds to ensure string[]
+		const transformers = transformerMatches
+			.map((m) => m[1])
+			.filter((t): t is string => t !== undefined);
 
 		return {
 			name: className,

@@ -1,41 +1,57 @@
-# Servidor MCP de QuickModel
+# Servidor MCP (Model Context Protocol)
 
-QuickModel soporta nativamente el **Protocolo de Contexto de Modelo (MCP)**, permitiendo a los agentes de IA interactuar directamente con la librería. Esta integración tiene dos propósitos:
+QuickModel incluye un servidor **MCP** totalmente compatible que permite a asistentes de IA (como Claude, Cursor o Antigravity) entender e interactuar profundamente con la librería.
 
-1.  **Uso Público**: Los agentes pueden usar las herramientas de QuickModel para generar, validar y simular modelos en tus proyectos.
-2.  **Desarrollo Interno**: Usamos herramientas internas específicas para mantener y mejorar la propia librería.
+Al conectar un agente de IA a este servidor, le permites:
 
-## Primeros Pasos
+- **Generar clases QModel válidas** automáticamente.
+- **Validar tu código** buscando errores comunes.
+- **Simular transformaciones de datos** asegurando corrección.
+- **Inspeccionar estructuras de modelos** y explicar comportamientos.
 
-Para usar el servidor MCP de QuickModel, necesitas ejecutarlo a través del script `mcp`.
+## Instalación y Configuración
 
-```bash
-bun run mcp
-```
+Puedes ejecutar el servidor MCP directamente via `npx` (para usuarios) o desde el código fuente (para colaboradores).
 
-O usarlo vía `npx` (una vez publicado):
+### Para Usuarios (Público)
+
+Para usar las herramientas de QuickModel en tu editor de IA:
 
 ```bash
 npx -y @cartago-git/quickmodel mcp
 ```
 
+### Para Colaboradores (Interno)
+
+Si estás desarrollando QuickModel:
+
+```bash
+bun run mcp
+```
+
+## Integración con Editores
+
+Proporcionamos un script de ayuda para generar la configuración de editores comunes:
+
+```bash
+# En la raíz del proyecto
+bun run scripts/generate-mcp-config.ts
+```
+
+### Antigravity IDE
+
+1. Abre el panel de **Agente**.
+2. Haz clic en el menú `...` > **Manage MCP Servers**.
+3. Selecciona **View raw config** (`mcp_config.json`).
+4. Añade la configuración generada por el script anterior.
+
+### Cursor / VSCode / Claude Desktop
+
+Sigue las instrucciones proporcionadas por el script `generate-mcp-config.ts` para actualizar tus archivos de configuración respectivos.
+
 ## Herramientas Disponibles
 
-### Herramientas Públicas
+El servidor expone herramientas divididas en dos categorías:
 
-Estas herramientas están diseñadas para uso general por cualquier agente que trabaje con QuickModel.
-
-- **`create_model`**: Genera una clase TypeScript extendiendo `QModel` basada en una lista de propiedades.
-- **`validate_usage`**: Analiza un fragmento de código para verificar errores comunes de uso.
-- **`simulate_transformation`**: Simula la lógica de transformación de los decoradores `@Quick` para previsualizar resultados sin ejecutar toda la app.
-
-### Herramientas Internas
-
-Estas herramientas están restringidas para uso dentro del repositorio de QuickModel para mantenimiento.
-
-- **`update_docs`**: Dispara una reconstrucción del sitio de documentación.
-- **`generate_test`**: Crea un archivo de prueba unitaria base para un componente fuente dado.
-
-## Configuración
-
-El servidor detecta automáticamente la versión del proyecto desde `package.json`. No se requiere configuración adicional.
+- **[Herramientas Públicas](./public/index.md)**: Para usuarios construyendo aplicaciones con QuickModel.
+- **[Herramientas Internas](./internal/index.md)**: Para mantenedores desarrollando QuickModel.
