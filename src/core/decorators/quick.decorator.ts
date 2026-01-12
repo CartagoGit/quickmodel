@@ -669,7 +669,7 @@ export function Quick<
 
 						// Restore default value if it wasn't provided in constructor data
 						// We check __initData to see if the key was present in the input
-						const initData = (instance as any).__initData || {};
+						const initData = instance.__initData || {};
 
 						if (
 							!Object.prototype.hasOwnProperty.call(
