@@ -14,6 +14,7 @@ import {
 	QSearchDocsTool,
 } from './tools/public-tools';
 import { QSimulateTransformationTool } from './tools/core-tools';
+import { QCheckProjectRulesTool } from './tools/rule-tools';
 import {
 	QUpdateDocsTool,
 	QGenerateTestTool,
@@ -21,7 +22,6 @@ import {
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
 } from './tools/internal-tools';
-import { QCheckProjectRulesTool } from './tools/rule-tools';
 
 /**
  * Main class for the QuickModel MCP Server.
