@@ -19,10 +19,8 @@
 
 import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
-import {
-	IQTransformer,
-	IQTransformerKey,
-} from '../interfaces/transformer.interface';
+import { IQTransformer } from '../interfaces/transformer.interface';
+import { IQTransformerKey } from '../registry/transformer.registry';
 import { TransformerLookupService } from './transformer-lookup.service';
 import { InstanceFactoryService } from './instance-factory.service';
 import { PopulationService } from './population.service';

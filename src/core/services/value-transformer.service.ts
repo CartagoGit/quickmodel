@@ -82,7 +82,7 @@ export class ValueTransformerService {
 							targetClass = result as new (data: any) => any;
 							matchFound = true;
 						}
-					} catch (e) {
+					} catch (_) {
 						// Ignore error, use default
 					}
 				} else if (typeof discriminatorConfig === 'string') {

@@ -340,7 +340,7 @@ export class ValidationService {
 										});
 									}
 								}
-							} catch (e) {
+							} catch (_) {
 								// Ignore
 							}
 						}
