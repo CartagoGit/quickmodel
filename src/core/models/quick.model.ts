@@ -15,7 +15,7 @@ import type { IQSerializationOptions } from '@/core/interfaces/serializer.interf
 import { ToInterfaceService } from '@/core/services/to-interface.service';
 import { QMockGenerator } from '@/core/services/mock-generator.service';
 import { ValidationService } from '@/core/services/validation.service';
-import { QQMockBuilder } from '@/core/services/mock-builder.service';
+import { QMockBuilder } from '@/core/services/mock-builder.service';
 import type {
 	IQModelInstance,
 	IQModelInterface,
@@ -279,7 +279,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 */
 	static mock<T extends abstract new (...args: any[]) => QModel<IQAnyRecord>>(
 		this: T
-	): QQMockBuilder<IQModelInstance<T>, IQModelInterface<T>> {
+	): QMockBuilder<IQModelInstance<T>, IQModelInterface<T>> {
 		type ThisClass = T;
 		type InstanceType = ThisClass extends abstract new (
 			...args: unknown[]
@@ -290,10 +290,10 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		const ModelClass: new (data: any) => InstanceType =
 			this as unknown as IModelConstructor<InstanceType>;
 
-		return new QQMockBuilder(
+		return new QMockBuilder(
 			ModelClass,
 			QModel.QMockGenerator
-		) as unknown as QQMockBuilder<IQModelInstance<T>, IQModelInterface<T>>;
+		) as unknown as QMockBuilder<IQModelInstance<T>, IQModelInterface<T>>;
 	}
 
 	/**
@@ -406,8 +406,20 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *
 	 * @protected
 	 */
-	protected initialize(): void {
-		const data = this.__tempData;
+	protected initialize(
+		inputData?: IQModelData<TInterface> | QModel<TInterface>
+	): void {
+		const data = inputData || this.__tempData;
+		if (inputData)
+			console.log(
+				'DEBUG: initialize received data keys:',
+				Object.keys(inputData)
+			);
+		else
+			console.log(
+				'DEBUG: initialize using __tempData:',
+				!!this.__tempData
+			);
 		if (!data) return;
 
 		if (data.constructor === this.constructor) {

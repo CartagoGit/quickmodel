@@ -21,13 +21,18 @@
 /**
  * Deep freezes an object.
  */
-export function deepFreeze<T>(obj: T): T {
+export function deepFreeze<T>(obj: T, visited = new WeakSet<any>()): T {
 	if (obj && typeof obj === 'object') {
+		if (visited.has(obj)) {
+			return obj;
+		}
+		visited.add(obj);
+
 		const propNames = Object.getOwnPropertyNames(obj);
 		for (const name of propNames) {
 			const value = (obj as any)[name];
 			if (value && typeof value === 'object') {
-				deepFreeze(value);
+				deepFreeze(value, visited);
 			}
 		}
 		return Object.freeze(obj);

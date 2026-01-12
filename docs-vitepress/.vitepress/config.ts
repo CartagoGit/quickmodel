@@ -38,6 +38,7 @@ export default defineConfig({
 		},
 		nav: [
 			{ text: 'Guide', link: '/en/guide/getting-started' },
+			{ text: 'MCP', link: '/en/mcp/' },
 			{ text: 'API Reference', link: '/tsdoc/' },
 			{ text: 'Examples', link: '/en/examples/' },
 		],
@@ -54,6 +55,15 @@ export default defineConfig({
 			{ icon: 'npm', link: 'https://www.npmjs.com/~cartago-git' },
 		],
 		sidebar: {
+			'/en/mcp/': [
+				{
+					text: 'Model Context Protocol',
+					items: [
+						{ text: 'Overview', link: '/en/mcp/' },
+						// Future MCP pages can be added here
+					],
+				},
+			],
 			'/tsdoc/@cartago-git/namespaces/Types/': [
 				{
 					text: 'Types Namespace',
@@ -377,6 +387,7 @@ export default defineConfig({
 				},
 				nav: [
 					{ text: 'Guide', link: '/en/guide/getting-started' },
+					{ text: 'MCP', link: '/en/mcp/' },
 					{ text: 'API Reference', link: '/tsdoc/' },
 					{ text: 'Examples', link: '/en/examples/' },
 				],
@@ -451,6 +462,13 @@ export default defineConfig({
 							],
 						},
 					],
+
+					'/en/mcp/': [
+						{
+							text: 'Model Context Protocol',
+							items: [{ text: 'Overview', link: '/en/mcp/' }],
+						},
+					],
 					'/en/examples/': [
 						{
 							text: 'Examples',
@@ -488,6 +506,7 @@ export default defineConfig({
 				},
 				nav: [
 					{ text: 'Guía', link: '/es/guide/getting-started' },
+					{ text: 'MCP', link: '/es/mcp/' },
 					{ text: 'Referencia API', link: '/tsdoc/' },
 					{ text: 'Ejemplos', link: '/es/examples/' },
 				],
@@ -558,6 +577,18 @@ export default defineConfig({
 								{
 									text: 'Solución de Problemas',
 									link: '/es/guide/troubleshooting',
+								},
+							],
+						},
+					],
+
+					'/es/mcp/': [
+						{
+							text: 'Protocolo de Contexto de Modelo',
+							items: [
+								{
+									text: 'Descripción General',
+									link: '/es/mcp/',
 								},
 							],
 						},

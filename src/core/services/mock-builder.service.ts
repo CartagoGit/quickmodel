@@ -15,7 +15,7 @@ import type { IQMockType } from './mock-generator.service';
  * const mockUsers = User.mock().array(5);
  * ```
  */
-export class QQMockBuilder<
+export class QMockBuilder<
 	TInstance,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
