@@ -294,11 +294,11 @@ describe('QModel.create() factory method', () => {
 			}
 
 			// In Strict Mode, optional properties MUST be declared in the schema
-            // if we want them to be accepted even if not present in the first usage.
-            // We use { value: Number } to register 'value' as a known property.
+			// if we want them to be accepted even if not present in the first usage.
+			// We use { value: Number } to register 'value' as a known property.
 			@Quick({
-                value: Number // Registers 'value' as known type
-            })
+				value: Number, // Registers 'value' as known type
+			})
 			class Config extends QModel<IConfig> {
 				declare name: string;
 				declare value?: number;

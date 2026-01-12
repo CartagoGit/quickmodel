@@ -70,9 +70,8 @@ export class ValueTransformerService {
 				);
 			}
 
-			if (typeof item !== 'object') return item;
-
 			let targetClass = possibleTypes[0] as new (data: any) => any;
+			let matchFound = false;
 
 			// Handle polymorphism via discriminator
 			if (discriminatorConfig && possibleTypes.length > 0) {
@@ -81,9 +80,10 @@ export class ValueTransformerService {
 						const result = discriminatorConfig(item);
 						if (result) {
 							targetClass = result as new (data: any) => any;
+							matchFound = true;
 						}
 					} catch (e) {
-						// Ignore error, fallback to default
+						// Ignore error, use default
 					}
 				} else if (typeof discriminatorConfig === 'string') {
 					// Handle simple string case: discriminatorConfig is the field name
@@ -95,12 +95,14 @@ export class ValueTransformerService {
 						// Try to match value to class name (case-insensitive)
 						const match = possibleTypes.find(
 							(type: any) =>
+								type &&
 								type.name &&
 								type.name.toLowerCase() ===
 									discriminatorValue.toLowerCase()
 						);
 						if (match) {
 							targetClass = match as new (data: any) => any;
+							matchFound = true;
 						}
 					}
 				} else if (
@@ -118,9 +120,65 @@ export class ValueTransformerService {
 						targetClass = mapping[discriminatorValue] as new (
 							data: any
 						) => any;
+						matchFound = true;
 					}
 				}
 			}
+
+			// Fallback: Best Guess if no discriminator match found
+			if (!matchFound) {
+				for (const type of possibleTypes) {
+					if (!type) continue;
+
+					// 1. Primitive Constructor check (String, Number, Boolean)
+					// If we find an explicit primitive match, return it immediately
+					if (type === String && typeof item === 'string')
+						return item;
+					if (type === Number && typeof item === 'number')
+						return item;
+					if (type === Boolean && typeof item === 'boolean')
+						return item;
+
+					// 2. Instance check (e.g. valid Date, valid Model instance)
+					if (item instanceof (type as any)) {
+						return item; // Already transformed/correct type
+					}
+				}
+
+				// Secondary pass: finding a matching transformer
+				for (const type of possibleTypes) {
+					if (!type) continue;
+
+					// Heuristic: If it's a date string and type is Date
+					if (
+						type === Date &&
+						typeof item === 'string' &&
+						/^\d{4}-\d{2}-\d{2}/.test(item)
+					) {
+						targetClass = Date;
+						matchFound = true;
+						break;
+					}
+
+					// Generic transformer check could go here if needed
+				}
+			}
+
+			// If still no match and it's a primitive, we might want to return it as is if it's not an object
+			// This handles cases where mixed arrays have primitives but 'String' etc wasn't explicitly in possibleTypes
+			// (Though usually it should be if configured correctly)
+			if (
+				!matchFound &&
+				typeof item !== 'object' &&
+				typeof item !== 'function'
+			) {
+				return item;
+			}
+
+			// Handle Primitive Constructors as target (avoid recursiveDeserializer for them)
+			if (targetClass === String) return String(item);
+			if (targetClass === Number) return Number(item);
+			if (targetClass === Boolean) return Boolean(item);
 
 			// If target class has a custom transformer, use it
 			if (this.transformerLookup.getTransformer(targetClass as any)) {

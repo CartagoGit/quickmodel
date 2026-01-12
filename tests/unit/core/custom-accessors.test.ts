@@ -21,7 +21,7 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 		}
 
 		const user = new User({ firstName: 'John', lastName: 'Doe' });
-		
+
 		expect(user.firstName).toBe('John');
 		expect(user.lastName).toBe('Doe');
 		// Getter logic should run
@@ -53,7 +53,7 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 		}
 
 		const user = new User({ firstName: 'John', lastName: 'Doe' });
-		
+
 		// Use setter
 		user.fullName = 'Jane Smith';
 
@@ -86,10 +86,10 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 		}
 
 		// JSON sends explicit fullName
-		const user = new User({ 
-			firstName: 'A', 
-			lastName: 'B', 
-			fullName: 'Ignored Value' 
+		const user = new User({
+			firstName: 'A',
+			lastName: 'B',
+			fullName: 'Ignored Value',
 		});
 
 		// Accessor should win

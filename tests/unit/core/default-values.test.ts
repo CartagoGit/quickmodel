@@ -101,15 +101,15 @@ describe('Default Value Overwrite Bug', () => {
 		}
 
 		@Quick({
-            retries: Number, // Register optional primitives to handle Strict Mode
-            timeout: Number  // Register optional primitives to handle Strict Mode
-        })
+			retries: Number, // Register optional primitives to handle Strict Mode
+			timeout: Number, // Register optional primitives to handle Strict Mode
+		})
 		class Config extends QModel<IConfig> {
 			// Optional property with default value
 			retries?: number = 3;
-			
+
 			// Optional property without default
-			timeout?: number; 
+			timeout?: number;
 		}
 
 		// Subcase A: Default used when no data provided
@@ -137,12 +137,12 @@ describe('Default Value Overwrite Bug', () => {
 		// Current logic: Object.assign behavior says yes, strict frameworks might say no.
 		// In QuickModel we usually want "what comes in data wins" for hydration,
 		// but if it is undefined, effectively the value is undefined.
-		
+
 		// NOTE: QModel filters undefined values during hydration?
 		// Implementation detail: QModel hydration iterates explicitly over keys passed.
-		
+
 		const s1 = new Settings({ theme: undefined as any });
-		
+
 		// If the user EXPLICITLY passes undefined, we expect undefined
 		// (overwriting the default 'light' which runs before constructor)
 		expect(s1.theme).toBeUndefined();
