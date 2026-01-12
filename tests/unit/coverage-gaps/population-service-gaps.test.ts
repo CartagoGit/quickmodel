@@ -8,10 +8,7 @@ import { ValueTransformerService } from '@/core/services/value-transformer.servi
 describe('PopulationService Coverage Gaps', () => {
 	it('should throw validation error when calling populateInstance directly with metadata', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(
-			lookup,
-			{} as any
-		);
+		const valueTransformer = new ValueTransformerService(lookup, {} as any);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,
@@ -34,10 +31,7 @@ describe('PopulationService Coverage Gaps', () => {
 
 	it('should throw validation error for String mismatch', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(
-			lookup,
-			{} as any
-		);
+		const valueTransformer = new ValueTransformerService(lookup, {} as any);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,
@@ -60,10 +54,7 @@ describe('PopulationService Coverage Gaps', () => {
 
 	it('should throw validation error for Boolean mismatch', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(
-			lookup,
-			{} as any
-		);
+		const valueTransformer = new ValueTransformerService(lookup, {} as any);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,

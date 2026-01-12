@@ -4,9 +4,20 @@ import {
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
 	QGenerateTestTool,
+	QUpdateDocsTool,
 } from '../../../src/mcp/tools/internal-tools';
 
 describe('MCP Internal Tools', () => {
+	describe('QUpdateDocsTool', () => {
+		it('should be instantiated correctly', () => {
+			const tool = new QUpdateDocsTool();
+			expect(tool.name).toBe('update_docs');
+			expect(tool.description).toContain('documentation');
+		});
+
+		// We skip actual execution to avoid triggering build processes during unit tests
+	});
+
 	describe('QCheckMissingJSDocsTool', () => {
 		it('should be instantiated correctly', () => {
 			const tool = new QCheckMissingJSDocsTool();

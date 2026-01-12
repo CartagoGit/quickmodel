@@ -85,7 +85,12 @@ export class RegExpTransformer
 		if (typeof value === 'string' && value.length > MAX_LENGTH) {
 			throw new QModelError(
 				`${className}.${propertyKey}: RegExp pattern too long (> ${MAX_LENGTH} chars).`,
-				{ className, propertyKey, value: 'TRUNCATED', expectedType: 'Short RegExp' }
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: 'Short RegExp',
+				}
 			);
 		}
 
@@ -107,7 +112,12 @@ export class RegExpTransformer
 			if (value.source.length > MAX_LENGTH) {
 				throw new QModelError(
 					`${className}.${propertyKey}: RegExp source too long (> ${MAX_LENGTH} chars).`,
-					{ className, propertyKey, value: 'TRUNCATED', expectedType: 'Short RegExp' }
+					{
+						className,
+						propertyKey,
+						value: 'TRUNCATED',
+						expectedType: 'Short RegExp',
+					}
 				);
 			}
 

@@ -13,6 +13,8 @@ describe('Security: Advanced Prototype Pollution', () => {
 		const user = new User(payload);
 		// Accessing accessing shouldn't crash or run code
 		expect((user as any).__defineGetter__).not.toBe('malicious');
+		// Use user explicitly to satisfy linter if strictly configured
+		expect(user).toBeDefined();
 	});
 
 	it('should handle deep nested prototype pollution attempts in arrays', () => {
@@ -24,7 +26,7 @@ describe('Security: Advanced Prototype Pollution', () => {
 		const payload = JSON.parse(
 			'{"list": [{"__proto__": {"polluted": true}}]}'
 		);
-		const user = new Nested(payload);
+		const _user = new Nested(payload);
 
 		expect((Object.prototype as any).polluted).toBeUndefined();
 	});

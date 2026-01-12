@@ -77,4 +77,24 @@ describe('ToInterfaceService Extended Coverage', () => {
 
 		expect(result.obj as any).toBe('not an object');
 	});
+
+	it('should handle generic objects with methods (skipping methods)', () => {
+		interface IData {
+			obj: { a: number; func: () => void };
+		}
+
+		@Quick()
+		class Data extends QModel<IData> {
+			// @ts-expect-error - Intentionally overriding for testing
+			declare obj: { a: number; func: () => void };
+		}
+
+		const data = new Data({ obj: { a: 1, func: () => {} } });
+		const result = data.toInterface();
+
+		// Should retain 'a' but skip 'func'
+		expect(result.obj).toEqual({ a: 1 });
+		// We expect type casting for testing dynamic result
+		expect((result.obj as any).func).toBeUndefined();
+	});
 });

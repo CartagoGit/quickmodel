@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from './abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
-import { join, resolve } from 'path';
+import { join } from 'path';
 
 /**
  * Tool to enforce project-specific coding standards and rules.
@@ -38,7 +38,6 @@ export class QCheckProjectRulesTool extends QAbstractTool<z.ZodObject<{}>> {
 				// For now, let's treat it as an error to be strict.
 
 				// Exemption: comments
-				const uncommentedQType = content.match(/^[^/]*@QType/m);
 				if (content.includes('@QType')) {
 					// Check if it's strictly used as a decorator
 					if (/@QType\(/.test(content)) {
@@ -92,7 +91,7 @@ export class QCheckProjectRulesTool extends QAbstractTool<z.ZodObject<{}>> {
 					}
 				}
 			}
-		} catch (e) {
+		} catch (_e) {
 			// Directory might not exist or be accessible
 		}
 		return results;

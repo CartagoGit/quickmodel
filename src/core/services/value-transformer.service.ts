@@ -219,7 +219,7 @@ export class ValueTransformerService {
 		value: unknown,
 		designType: Function | undefined,
 		context: IQTransformContext,
-		recursionContext?: { visited?: WeakSet<object> }
+		_recursionContext?: { visited?: WeakSet<object> }
 	): unknown {
 		// Null/Undefined check - Pass through
 		if (value === null || value === undefined) {

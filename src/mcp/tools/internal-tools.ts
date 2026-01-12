@@ -1,7 +1,5 @@
 import { z } from 'zod';
 import { QAbstractTool } from './abstract-tool';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import {
 	existsSync,
 	mkdirSync,
@@ -10,9 +8,42 @@ import {
 	readFileSync,
 	statSync,
 } from 'fs';
-import { join, resolve, dirname } from 'path';
+import { join, resolve as pathResolve, dirname } from 'path';
 
-const execAsync = promisify(exec);
+const spawnCommand = async (
+	command: string,
+	args: string[],
+	cwd?: string
+): Promise<{ stdout: string; stderr: string }> => {
+	const { spawn } = await import('child_process');
+	return new Promise((resolve, reject) => {
+		const process = spawn(command, args, { cwd: cwd || undefined });
+		let stdout = '';
+		let stderr = '';
+
+		process.stdout.on('data', (data) => {
+			stdout += data.toString();
+		});
+		process.stderr.on('data', (data) => {
+			stderr += data.toString();
+		});
+
+		process.on('close', (code) => {
+			if (code === 0) {
+				resolve({ stdout, stderr });
+			} else {
+				const error = new Error(`Command failed with code ${code}`);
+				Object.assign(error, { stdout, stderr });
+				reject(error);
+			}
+		});
+
+		process.on('error', (err) => {
+			Object.assign(err, { stdout, stderr });
+			reject(err);
+		});
+	});
+};
 
 /**
  * Tool to trigger documentation updates.
@@ -37,14 +68,13 @@ export class QUpdateDocsTool extends QAbstractTool<
 		stdout: string;
 		stderr: string;
 	}> {
-		const command =
-			args.action === 'build'
-				? 'bun run docs:build'
-				: 'bun run docs:clean';
+		const script = args.action === 'build' ? 'docs:build' : 'docs:clean';
 		try {
-			const { stdout, stderr } = await execAsync(command, {
-				cwd: process.cwd(),
-			});
+			const { stdout, stderr } = await spawnCommand(
+				'bun',
+				['run', script],
+				process.cwd()
+			);
 			return { stdout, stderr };
 		} catch (error: any) {
 			return { stdout: '', stderr: error.message };
@@ -75,7 +105,7 @@ export class QGenerateTestTool extends QAbstractTool<
 		await Promise.resolve();
 
 		// 1. Resolve and Normalize Path
-		const fullPath = resolve(process.cwd(), args.sourceFile);
+		const fullPath = pathResolve(process.cwd(), args.sourceFile);
 		const cwd = process.cwd();
 
 		// 2. SECURITY CHECK: Ensure path is within the project root
@@ -110,7 +140,7 @@ export class QGenerateTestTool extends QAbstractTool<
 		const fileName = testPath.split('/').pop()!;
 
 		// Ensure test path is also safe (though it should be if fullPath was safe)
-		if (!resolve(testPath).startsWith(cwd)) {
+		if (!pathResolve(testPath).startsWith(cwd)) {
 			return {
 				path: '',
 				content: '',
@@ -243,7 +273,10 @@ export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 
 	async execute(): Promise<{ status: 'ok' | 'error'; output: string }> {
 		try {
-			const { stdout, stderr } = await execAsync('bun run check');
+			const { stdout, stderr } = await spawnCommand('bun', [
+				'run',
+				'check',
+			]);
 			return {
 				status: 'ok',
 				output: stdout + stderr,
@@ -267,7 +300,10 @@ export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
 
 	async execute(): Promise<{ summary: string }> {
 		try {
-			const { stdout, stderr } = await execAsync('bun run test:coverage');
+			const { stdout, stderr } = await spawnCommand('bun', [
+				'run',
+				'test:coverage',
+			]);
 			return { summary: stdout + stderr };
 		} catch (error: any) {
 			return { summary: error.stdout + error.stderr || error.message };

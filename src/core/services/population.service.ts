@@ -77,7 +77,11 @@ export class PopulationService {
 			if (
 				key === '__proto__' ||
 				key === 'constructor' ||
-				key === 'prototype'
+				key === 'prototype' ||
+				key === '__defineGetter__' ||
+				key === '__defineSetter__' ||
+				key === '__lookupGetter__' ||
+				key === '__lookupSetter__'
 			) {
 				continue;
 			}

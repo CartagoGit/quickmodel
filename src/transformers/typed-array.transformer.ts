@@ -127,13 +127,17 @@ export class TypedArrayTransformer<T extends TypedArray>
 		// SECURITY: Prevent Memory Exhaustion via massive arrays
 		const MAX_ITEMS = 1_000_000;
 		if (Array.isArray(value) && value.length > MAX_ITEMS) {
-			throw new Error(`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`);
+			throw new Error(
+				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`
+			);
 		}
 
 		const arrayData = Array.isArray(value) ? value : Object.values(value);
 
 		if (arrayData.length > MAX_ITEMS) {
-			throw new Error(`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`);
+			throw new Error(
+				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`
+			);
 		}
 
 		if (this.isBigInt) {
