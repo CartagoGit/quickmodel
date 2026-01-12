@@ -483,7 +483,6 @@ export default defineConfig({
 							text: 'Model Context Protocol',
 							items: [
 								{ text: 'Overview', link: '/en/mcp/' },
-								{ text: 'Setup Guide', link: '/en/mcp/setup' },
 								{
 									text: 'Public Tools',
 									link: '/en/mcp/public/',
@@ -492,7 +491,11 @@ export default defineConfig({
 								'true'
 									? [
 											{
-												text: 'Internal Tools',
+												text: 'Installation (Maintainers)',
+												link: '/en/mcp/internal/setup',
+											},
+											{
+												text: 'Internal Tools (Maintainers)',
 												link: '/en/mcp/internal/',
 											},
 										]
@@ -622,10 +625,6 @@ export default defineConfig({
 									link: '/es/mcp/',
 								},
 								{
-									text: 'Guía de Instalación',
-									link: '/es/mcp/setup',
-								},
-								{
 									text: 'Herramientas Públicas',
 									link: '/es/mcp/public/',
 								},
@@ -633,7 +632,11 @@ export default defineConfig({
 								'true'
 									? [
 											{
-												text: 'Herramientas Internas',
+												text: 'Instalación (Mantenedores)',
+												link: '/es/mcp/internal/setup',
+											},
+											{
+												text: 'Herramientas Internas (Mantenedores)',
 												link: '/es/mcp/internal/',
 											},
 										]

@@ -2,45 +2,10 @@
 
 These tools are designed for **maintainers** of the QuickModel library. They automate common development tasks and project health checks.
 
-## Setup for Maintainers
+> [!WARNING]
+> ⚠️ **Internal Use Only**: This is NOT for end users installing the package via npm.
 
-If you are developing QuickModel itself (cloned the repo), you use the source code version of the MCP server.
-
-### Automatic Configuration
-
-We provide a script to generate the configuration for you:
-
-```bash
-bun run mcp:setup
-```
-
-This runs `scripts/setup-mcp.ts`, which detects your environment and generates the appropriate config.
-
-The script will attempt to configure VS Code automatically and provide instructions for other IDEs. Look at the output for details.
-
-### Manual Configuration
-
-**VSCode / Cursor (`.vscode/settings.json`):**
-
-```json
-{
-	"mcpServers": {
-		"quickmodel-dev": {
-			"command": "bun",
-			"args": ["run", "src/mcp/server.ts"],
-			"env": {
-				"cwd": "${workspaceFolder}"
-			}
-		}
-	}
-}
-```
-
-::: warning
-These tools are intended for use inside the QuickModel repository only. They may not function correctly if run outside the project root.
-:::
-
-## Development Helpers
+## Internal Tools
 
 ### `generate_test`
 
@@ -78,14 +43,3 @@ Runs the test suite with coverage enabled and reports the summary.
 
 - **Usage**: "What is the current test coverage?"
 - **Output**: Summary table of coverage percentages.
-
-## IDE Configuration References
-
-For detailed setup in specific editors:
-
-| Editor          | Resource                                                                                                                                 | Description                            |
-| :-------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------- |
-| **VS Code**     | [Official Extension Guide](https://code.visualstudio.com/api/extension-guides/ai/mcp)                                                    | How to install and manage MCP servers. |
-| **Cursor**      | [Official Documentation](https://cursor.com/docs/context/mcp)                                                                            | Enable and use native MCP.             |
-| **Antigravity** | [Google Cloud Blog](https://cloud.google.com/blog/products/data-analytics/connect-google-antigravity-ide-to-googles-data-cloud-services) | Connecting MCP servers to the IDE.     |
-| **Protocol**    | [Wikipedia / Spec](https://en.wikipedia.org/wiki/Model_Context_Protocol)                                                                 | General protocol specification.        |

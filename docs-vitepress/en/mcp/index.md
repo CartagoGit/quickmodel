@@ -9,59 +9,53 @@ By connecting an AI agent to this server, you enable it to:
 - **Simulate data transformations** ensuring correctness.
 - **Inspect model structures** and explain behaviors.
 
+## Available Tools
+
 - **[Public Tools](./public/)**: For users building applications with QuickModel.
 
 ## Installation & Setup
 
-To use the QuickModel MCP server, you usually install it via `npm` or `npx`. Configuration varies by editor and whether you use extensions.
+To use the QuickModel MCP server in your project (installed via npm), follow the instructions for your IDE.
 
 ### 1. Visual Studio Code
 
-VS Code does not have native MCP support enabled by default. You have two options:
+::: info
+Requires the **GitHub Copilot Chat** extension.
+:::
 
-- **Option A: Use an Extension (Recommended)**: Install an extension like **"GG MCP for VSCode"** or similar. These extensions can often detect or allow you to easily add MCP servers without touching JSON files.
-- **Option B: Manual Configuration**: Edit your Global or Workspace `settings.json` to add the server manually.
-
-### 2. Cursor
-
-Cursor has **native MCP support**. You do not need extensions.
-
-1.  Open **Command Palette** (`Ctrl+Shift+P`).
-2.  Search for **"MCP: Manage MCP Servers"** or similar.
-3.  Add the server configuration directly via the UI.
-
-### 3. Antigravity
-
-Antigravity has a dedicated panel for MCP integration.
-
-1.  Go to **Agent > Manage MCP Servers**.
-2.  Check the **View raw config** option.
-3.  Add your server details there.
-
-### Configuration Snippet (for Manual Setup)
-
-Regardless of the editor, if you configure it manually, the JSON structure is usually:
+1. Create a file named `.vscode/mcp.json` in your project root.
+2. Add the following configuration:
 
 ```json
 {
-  "mcpServers": {
-    "quickmodel": {
-      "command": "npx",
-      "args": ["-y", "@cartago-git/quickmodel", "mcp"]
-    }
-  }
+	"servers": {
+		"quickmodel": {
+			"command": "npx",
+			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
+		}
+	}
 }
 ```
 
-## IDE Configuration References
+### 2. Cursor IDE
 
-If you need more details on how to install MCP in your specific editor, check the official guides:
+1. Go to **Settings** > **Features** > **MCP**.
+2. Click **+ Add New MCP Server**.
+3. Configure it as follows:
+    - **Name**: `quickmodel`
+    - **Type**: `command`
+    - **Command**: `npx -y @cartago-git/quickmodel mcp`
 
-| Editor          | Resource                                                                                                                                 | Description                            |
-| :-------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------- |
-| **VS Code**     | [Official Extension Guide](https://code.visualstudio.com/api/extension-guides/ai/mcp)                                                    | How to install and manage MCP servers. |
-| **Cursor**      | [Official Documentation](https://cursor.com/docs/context/mcp)                                                                            | Enable and use native MCP.             |
-| **Antigravity** | [Google Cloud Blog](https://cloud.google.com/blog/products/data-analytics/connect-google-antigravity-ide-to-googles-data-cloud-services) | Connecting MCP servers to the IDE.     |
-| **Protocol**    | [Wikipedia / Spec](https://en.wikipedia.org/wiki/Model_Context_Protocol)                                                                 | General protocol specification.        |
+### 3. Windsurf (Codeium)
 
-## Available Tools
+1. Open **Cascade** (Chat panel).
+2. Click the **MCP** icon (plug) or go to settings.
+3. Add a new server with the same command:
+    - **Command**: `npx -y @cartago-git/quickmodel mcp`
+
+### 4. Google Antigravity
+
+1. Open the **"Agent"** panel.
+2. Select **"Manage MCP Servers"**.
+3. Add a custom server:
+    - **Command**: `npx -y @cartago-git/quickmodel mcp`

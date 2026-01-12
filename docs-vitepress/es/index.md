@@ -116,8 +116,8 @@ QuickModel es más que una simple librería de serialización; es una **platafor
 - **Decorador @Quick**: La varita mágica. Un decorador para gobernarlos a todos (tipos, validación, transformación). Define estructuras complejas, anidamiento, fechas y mapas automáticamente.
 - **Clase QModel**: La clase base que da superpoderes a tus objetos (`toJSON`, `fromJSON`, `validate`, `mock`).
 - **Mocks Sin Boilerplate**: Deja de escribir fixtures a mano. Simplemente llama a `User.mock().random()` y obtén un objeto User válido y poblado. Perfecto para desarrollar UI antes de que la API esté lista.
-- **🛡️ Verdadera Integridad en Runtime**: Los tipos TypeScript desaparecen al compilar. QuickModel se queda para asegurar que la API devuelve realmente lo que esperas. Elimina errores de "undefined is not a function".
-- **🧩 JSON Polimórfico**: Las APIs a menudo devuelven objetos variados en la misma lista (e.g., `Payment` puede ser `Card` o `PayPal`). QuickModel instancia la clase correcta automáticamente segun la forma de los datos.
+- **Verdadera Integridad en Runtime**: Los tipos TypeScript desaparecen al compilar. QuickModel se queda para asegurar que la API devuelve realmente lo que esperas. Elimina errores de "undefined is not a function".
+- **JSON Polimórfico**: Las APIs a menudo devuelven objetos variados en la misma lista (e.g., `Payment` puede ser `Card` o `PayPal`). QuickModel instancia la clase correcta automáticamente segun la forma de los datos.
 
 ### 🤖 ¿Qué es esto del "MCP"?
 

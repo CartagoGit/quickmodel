@@ -29,16 +29,54 @@ import {
 export class QMcpServer {
 	private server: McpServer;
 
-	constructor() {
-		// Load package.json dynamically
-		const pkgPath = join(process.cwd(), 'package.json');
-		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+	constructor(options?: { name?: string; version?: string }) {
+		let name = 'quickmodel-mcp';
+		let version = '0.0.0';
+
+		try {
+			// Load package.json dynamically ONLY if not provided
+			if (!options?.name || !options?.version) {
+				const pkgPath = join(process.cwd(), 'package.json');
+				if (require('fs').existsSync(pkgPath)) {
+					const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+					name = pkg.name || name;
+					version = pkg.version || version;
+				}
+			}
+		} catch (e) {
+			// Ignore error and use defaults
+		}
 
 		// Initialize the standard MCP server
 		this.server = new McpServer({
-			name: pkg.name,
-			version: pkg.version,
+			name: options?.name || name,
+			version: options?.version || version,
 		});
+	}
+
+	/**
+	 * Returns the list of available tools.
+	 */
+	public static getDefaultTools(): IQMcpTool[] {
+		return [
+			// Public Tools
+			new QCreateModelTool(),
+			new QValidateUsageTool(),
+			new QListTransformersTool(),
+			new QGenerateMockDataTool(),
+			new QInspectModelTool(),
+			new QSearchDocsTool(),
+
+			// Core Simulation
+			new QSimulateTransformationTool(),
+
+			// Internal Dev Tools
+			new QUpdateDocsTool(),
+			new QGenerateTestTool(),
+			new QCheckMissingJSDocsTool(),
+			new QCheckProjectHealthTool(),
+			new QGetCoverageReportTool(),
+		];
 	}
 
 	/**
@@ -92,28 +130,7 @@ export class QMcpServer {
 // Entry point for the script
 if (import.meta.main) {
 	const server = new QMcpServer();
-
-	const tools: IQMcpTool[] = [
-		// Public Tools
-		new QCreateModelTool(),
-		new QValidateUsageTool(),
-		new QListTransformersTool(),
-		new QGenerateMockDataTool(),
-		new QInspectModelTool(),
-		new QSearchDocsTool(),
-
-		// Core Simulation
-		new QSimulateTransformationTool(),
-
-		// Internal Dev Tools
-		new QUpdateDocsTool(),
-		new QGenerateTestTool(),
-		new QCheckMissingJSDocsTool(),
-		new QCheckProjectHealthTool(),
-		new QGetCoverageReportTool(),
-	];
-
-	server.registerTools(tools);
+	server.registerTools(QMcpServer.getDefaultTools());
 
 	server.start().catch((error) => {
 		console.error('Fatal error in MCP Server:', error);
