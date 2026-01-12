@@ -35,5 +35,43 @@ The script will attempt to configure VS Code automatically and provide instructi
 }
 ```
 
+**Or using `.vscode/mcp.json` (Standard):**
+
+```json
+{
+	"servers": {
+		"quickmodel": {
+			"command": "bun",
+			"args": ["run", "/absolute/path/to/quickmodel/src/mcp/server.ts"]
+		}
+	}
+}
+```
+
 > [!WARNING]
 > These settings are for **internal use** within the QuickModel repository only.
+
+## Other IDEs (Manual Setup)
+
+Since you are running from source, you need to use `bun` to run the server script directly.
+
+### Cursor IDE
+
+1. Go to **Settings** > **Features** > **MCP**.
+2. Add a new MCP Server:
+    - **Name**: `quickmodel-dev`
+    - **Type**: `command`
+    - **Command**: `bun run /absolute/path/to/quickmodel/src/mcp/server.ts`
+
+### Windsurf (Codeium)
+
+1. Open **Cascade** > **MCP** (plug icon).
+2. Add a new server:
+    - **Command**: `bun run /absolute/path/to/quickmodel/src/mcp/server.ts`
+
+### Google Antigravity
+
+1. Open **Agent** > **Manage MCP Servers**.
+2. Add custom server:
+    - **Command**: `bun`
+    - **Args**: `run /absolute/path/to/quickmodel/src/mcp/server.ts`

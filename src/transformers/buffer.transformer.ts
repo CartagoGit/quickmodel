@@ -69,6 +69,20 @@ export class ArrayBufferTransformer
 			);
 		}
 
+		// SECURITY: Prevent Memory Exhaustion
+		const MAX_ITEMS = 1_000_000;
+		if (value.length > MAX_ITEMS) {
+			throw new QModelError(
+				`${className}.${propertyKey}: ArrayBuffer input too large (> ${MAX_ITEMS} bytes).`,
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: 'Small ArrayBuffer',
+				}
+			);
+		}
+
 		const buffer = new ArrayBuffer(value.length);
 		const view = new Uint8Array(buffer);
 		view.set(value);

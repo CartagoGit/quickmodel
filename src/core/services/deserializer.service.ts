@@ -143,7 +143,8 @@ export class Deserializer<
 	 */
 	deserialize<TData extends Record<string, unknown>, TResult = unknown>(
 		data: TData,
-		modelClass: new (data: TData) => TResult
+		modelClass: new (data: TData) => TResult,
+		context?: { visited?: WeakSet<object> }
 	): TResult {
 		// 1. Creation
 		const instance = this.instanceFactory.createInstance(modelClass, data);
@@ -155,7 +156,8 @@ export class Deserializer<
 		this.populationService.populateInstance(
 			instance as Record<string, unknown>,
 			data,
-			modelClass
+			modelClass,
+			context
 		);
 
 		return instance;

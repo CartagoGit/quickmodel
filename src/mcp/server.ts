@@ -21,6 +21,7 @@ import {
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
 } from './tools/internal-tools';
+import { QCheckProjectRulesTool } from './tools/rule-tools';
 
 /**
  * Main class for the QuickModel MCP Server.
@@ -76,6 +77,7 @@ export class QMcpServer {
 			new QCheckMissingJSDocsTool(),
 			new QCheckProjectHealthTool(),
 			new QGetCoverageReportTool(),
+			new QCheckProjectRulesTool(),
 		];
 	}
 

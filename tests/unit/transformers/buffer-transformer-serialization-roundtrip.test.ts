@@ -63,8 +63,8 @@ describe('Unit: Buffer Transformer', () => {
 		expect(deserialized.buffer.byteLength).toBe(0);
 	});
 
-	test('Should handle large buffer', () => {
-		const size = 1024 * 1024; // 1MB
+	test('Should handle large buffer (within security limits)', () => {
+		const size = 100 * 1024; // 100KB (Security limit is 1MB)
 		const buffer = new ArrayBuffer(size);
 		const view = new Uint8Array(buffer);
 		for (let i = 0; i < 100; i++) {

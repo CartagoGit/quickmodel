@@ -1,0 +1,97 @@
+import { describe, it, expect } from 'bun:test';
+import { Quick, QModel } from '@/index';
+import { QUICK_DESIGN_TYPES_KEY } from '@/core/constants/metadata-keys';
+import { PopulationService } from '@/core/services/population.service';
+import { TransformerLookupService } from '@/core/services/transformer-lookup.service';
+import { ValueTransformerService } from '@/core/services/value-transformer.service';
+
+describe('PopulationService Coverage Gaps', () => {
+	it('should throw validation error when calling populateInstance directly with metadata', () => {
+		const lookup = new TransformerLookupService();
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as any
+		);
+		const service = new PopulationService(
+			valueTransformer,
+			lookup,
+			{} as any
+		);
+
+		class TestModel {}
+		const instance = new TestModel() as any;
+
+		Reflect.defineMetadata(
+			QUICK_DESIGN_TYPES_KEY,
+			{ val: Number },
+			TestModel
+		);
+
+		expect(() => {
+			service.populateInstance(instance, { val: 'string' }, TestModel);
+		}).toThrow(/Expected number, got string/);
+	});
+
+	it('should throw validation error for String mismatch', () => {
+		const lookup = new TransformerLookupService();
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as any
+		);
+		const service = new PopulationService(
+			valueTransformer,
+			lookup,
+			{} as any
+		);
+		class StrModel {}
+		Reflect.defineMetadata(
+			QUICK_DESIGN_TYPES_KEY,
+			{ val: String },
+			StrModel
+		);
+		expect(() =>
+			service.populateInstance(
+				new StrModel() as any,
+				{ val: 123 },
+				StrModel
+			)
+		).toThrow(/Expected string, got number/);
+	});
+
+	it('should throw validation error for Boolean mismatch', () => {
+		const lookup = new TransformerLookupService();
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as any
+		);
+		const service = new PopulationService(
+			valueTransformer,
+			lookup,
+			{} as any
+		);
+		class BoolModel {}
+		Reflect.defineMetadata(
+			QUICK_DESIGN_TYPES_KEY,
+			{ val: Boolean },
+			BoolModel
+		);
+		expect(() =>
+			service.populateInstance(
+				new BoolModel() as any,
+				{ val: 'true' },
+				BoolModel
+			)
+		).toThrow(/Expected boolean, got string/);
+	});
+
+	it('should NOT throw for null/undefined values in primitive validation', () => {
+		@Quick()
+		class PrimitiveModelNull extends QModel<{ val: number | null }> {
+			declare val: number | null;
+		}
+
+		// Should not throw
+		const model = new PrimitiveModelNull({ val: null });
+		expect(model.val).toBeNull();
+	});
+});

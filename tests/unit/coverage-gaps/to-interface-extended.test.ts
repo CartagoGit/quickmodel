@@ -1,79 +1,80 @@
 import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
-import { ToInterfaceService } from '@/core/services/to-interface.service';
 
 describe('ToInterfaceService Extended Coverage', () => {
-    it('should handle type mismatch when plain object becomes primitive', () => {
-        interface IData {
-            obj: { a: number };
-        }
+	it('should handle type mismatch when plain object becomes primitive', () => {
+		interface IData {
+			obj: { a: number };
+		}
 
-        @Quick()
-        class Data extends QModel<IData> {
-            declare obj: { a: number } | string;
-        }
+		@Quick()
+		class Data extends QModel<IData> {
+			declare obj: { a: number } | string;
+		}
 
-        const data = new Data({ obj: { a: 1 } });
-        // Change type at runtime
-        (data as any).obj = "not an object";
+		const data = new Data({ obj: { a: 1 } });
+		// Change type at runtime
+		(data as any).obj = 'not an object';
 
-        // Access private service to force !isProduction (default in tests)
-        // Or simply rely on QModel.toInterface calls
-        
-        expect(() => data.toInterface()).toThrow(/Cannot convert property/);
-    });
+		// Access private service to force !isProduction (default in tests)
+		// Or simply rely on QModel.toInterface calls
 
-    it('should handle generic class instances without toInterface', () => {
-        class SimpleClass {
-            prop: string = 'value';
-            method() { return true; }
-        }
+		expect(() => data.toInterface()).toThrow(/Cannot convert property/);
+	});
 
-        interface IContainer {
-            instance: SimpleClass;
-        }
+	it('should handle generic class instances without toInterface', () => {
+		class SimpleClass {
+			prop: string = 'value';
+			method() {
+				return true;
+			}
+		}
 
-        // We treat it as generic object
-        @Quick()
-        class Container extends QModel<IContainer> {
-            declare instance: SimpleClass;
-        }
+		interface IContainer {
+			instance: SimpleClass;
+		}
 
-        const simple = new SimpleClass();
-        const container = new Container({ instance: simple });
+		// We treat it as generic object
+		@Quick()
+		class Container extends QModel<IContainer> {
+			declare instance: SimpleClass;
+		}
 
-        const result = container.toInterface();
-        
-        // Should serialize properties but not methods
-        expect(result.instance).toEqual({ prop: 'value' });
-        expect((result.instance as any).method).toBeUndefined();
-    });
+		const simple = new SimpleClass();
+		const container = new Container({ instance: simple });
 
-    it('should handle runtime type mismatch in production silently', () => {
-        // Mock process.env.NODE_ENV
-        const originalEnv = process.env.NODE_ENV;
-        process.env.NODE_ENV = 'production';
+		const result = container.toInterface();
 
-        interface IData {
-            obj: { a: number };
-        }
+		// Should serialize properties but not methods
+		expect(result.instance as any).toEqual({ prop: 'value' });
+		expect((result.instance as any).method).toBeUndefined();
+	});
 
-        @Quick()
-        class Data extends QModel<IData> {
-            declare obj: { a: number } | string;
-        }
+	it('should handle runtime type mismatch in production silently', () => {
+		// Mock process.env.NODE_ENV
+		const originalEnv = process.env.NODE_ENV;
+		process.env.NODE_ENV = 'production';
 
-        const data = new Data({ obj: { a: 1 } });
-        (data as any).obj = "not an object";
+		interface IData {
+			obj: { a: number };
+		}
 
-        // Should NOT throw in production
-        let result;
-        try {
-            result = data.toInterface();
-        } finally {
-            process.env.NODE_ENV = originalEnv;
-        }
+		@Quick()
+		class Data extends QModel<IData> {
+			declare obj: { a: number } | string;
+		}
 
-        expect(result.obj).toBe("not an object");
-    });
+		const data = new Data({ obj: { a: 1 } });
+		(data as any).obj = 'not an object';
+
+		// Should NOT throw in production
+		let result;
+		try {
+			result = data.toInterface();
+		} finally {
+			process.env.NODE_ENV = originalEnv;
+		}
+
+		expect(result.obj as any).toBe('not an object');
+	});
 });

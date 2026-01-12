@@ -44,7 +44,8 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 			const result = transformer.deserialize(obj, propertyKey, className);
 			expect(result!.message).toBe('Complex error');
 			expect(result!.name).toBe('CustomError');
-			expect(result!.stack).toBe('line 1\nline 2');
+			// Security fix: Stack traces from JSON should be ignored to prevent log spoofing
+			expect(result!.stack).not.toBe('line 1\nline 2');
 		});
 
 		test('should throw error for invalid types (number)', () => {

@@ -124,7 +124,8 @@ export class ErrorTransformer
 		}
 
 		const error = new Error(value.message);
-		if (value.stack !== undefined) error.stack = value.stack;
+		// SECURITY: Do not allow stack injection from external data
+		// if (value.stack !== undefined) error.stack = value.stack;
 		if (value.name !== undefined) error.name = value.name;
 		return error;
 	}

@@ -32,8 +32,21 @@ export class PopulationService {
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,
 		data: T,
-		modelClass: Function
+		modelClass: Function,
+		context?: { visited?: WeakSet<object> }
 	): void {
+		const visited = context?.visited || new WeakSet();
+
+		if (typeof data === 'object' && data !== null) {
+			if (visited.has(data)) {
+				// Prevent infinite recursion on circular structures
+				// Just stop populating this instance to avoid stack overflow
+				return;
+			}
+			visited.add(data);
+		}
+		const recursionContext = { visited };
+
 		// Get list of properties decorated with @QType()
 		const decoratedFields =
 			Reflect.getMetadata(QTYPES_METADATA_KEY, instance) ||
@@ -284,7 +297,8 @@ export class PopulationService {
 							this.valueTransformer.transformNestedArray(
 								value,
 								arrayElementClass,
-								context
+								context,
+								recursionContext
 							);
 					} else {
 						const possibleTypes = arrayElementTypes || [
@@ -296,7 +310,8 @@ export class PopulationService {
 							this.valueTransformer.transformNestedModelArray(
 								value,
 								possibleTypes,
-								IQDiscriminatorConfig
+								IQDiscriminatorConfig,
+								recursionContext
 							);
 					}
 					continue;
@@ -416,13 +431,15 @@ export class PopulationService {
 								return this.valueTransformer.transformNestedArray(
 									item,
 									arrayElementClass,
-									context
+									context,
+									recursionContext
 								);
 							}
 							return this.valueTransformer.transformByDesignType(
 								item,
 								arrayElementClass,
-								context
+								context,
+								recursionContext
 							);
 						});
 					} else {
@@ -434,7 +451,8 @@ export class PopulationService {
 							this.valueTransformer.transformNestedModelArray(
 								value,
 								possibleTypes,
-								IQDiscriminatorConfig
+								IQDiscriminatorConfig,
+								recursionContext
 							);
 					}
 					continue;
@@ -543,7 +561,8 @@ export class PopulationService {
 			this.applyDotNotationTransform(
 				instance,
 				dotKey as string,
-				modelClass
+				modelClass,
+				recursionContext
 			);
 		}
 	}
@@ -598,7 +617,8 @@ export class PopulationService {
 	private applyDotNotationTransform(
 		instance: Record<string, unknown>,
 		path: string,
-		modelClass: Function
+		modelClass: Function,
+		recursionContext?: { visited?: WeakSet<object> }
 	): void {
 		const parts = path.split('.');
 		let current: Record<string, unknown> = instance;
@@ -672,20 +692,23 @@ export class PopulationService {
 						this.valueTransformer.transformNestedArray(
 							value,
 							arrayElementClass,
-							context
+							context,
+							recursionContext
 						);
 				} else {
 					current[lastKey] =
 						this.valueTransformer.transformNestedModelArray(
 							value,
 							[arrayElementClass],
-							undefined
+							undefined,
+							recursionContext
 						);
 				}
 			} else if (typeof value === 'object') {
 				current[lastKey] = this.recursiveDeserializer.deserialize(
 					value as Record<string, unknown>,
-					arrayElementClass
+					arrayElementClass,
+					recursionContext
 				);
 			}
 		}

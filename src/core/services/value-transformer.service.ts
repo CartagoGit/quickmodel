@@ -10,7 +10,8 @@ import { IQDiscriminatorConfig } from '../interfaces/quick-options.interface';
 export interface IRecursiveDeserializer {
 	deserialize(
 		data: Record<string, unknown>,
-		modelClass: new (data: any) => any
+		modelClass: new (data: any) => any,
+		context?: { visited?: WeakSet<object> }
 	): any;
 }
 
@@ -30,19 +31,26 @@ export class ValueTransformerService {
 	public transformNestedArray(
 		value: unknown[],
 		elementClass: unknown,
-		context: IQTransformContext
+		context: IQTransformContext,
+		recursionContext?: { visited?: WeakSet<object> }
 	): unknown[] {
 		return value.map((item) => {
 			if (item === null || item === undefined) return item;
 
 			if (Array.isArray(item)) {
-				return this.transformNestedArray(item, elementClass, context);
+				return this.transformNestedArray(
+					item,
+					elementClass,
+					context,
+					recursionContext
+				);
 			}
 
 			return this.transformByDesignType(
 				item,
 				elementClass as Function,
-				context
+				context,
+				recursionContext
 			);
 		});
 	}
@@ -54,7 +62,8 @@ export class ValueTransformerService {
 	public transformNestedModelArray(
 		value: unknown[],
 		possibleTypes: unknown[],
-		discriminatorConfig?: IQDiscriminatorConfig
+		discriminatorConfig?: IQDiscriminatorConfig,
+		recursionContext?: { visited?: WeakSet<object> }
 	): unknown[] {
 		// Filter nulls/undefined for models
 		const validItems = value.filter(
@@ -66,7 +75,8 @@ export class ValueTransformerService {
 				return this.transformNestedModelArray(
 					item,
 					possibleTypes,
-					discriminatorConfig
+					discriminatorConfig,
+					recursionContext
 				);
 			}
 
@@ -196,7 +206,8 @@ export class ValueTransformerService {
 
 			return this.recursiveDeserializer.deserialize(
 				item as Record<string, unknown>,
-				targetClass
+				targetClass,
+				recursionContext
 			);
 		});
 	}
@@ -207,7 +218,8 @@ export class ValueTransformerService {
 	public transformByDesignType(
 		value: unknown,
 		designType: Function | undefined,
-		context: IQTransformContext
+		context: IQTransformContext,
+		recursionContext?: { visited?: WeakSet<object> }
 	): unknown {
 		// Null/Undefined check - Pass through
 		if (value === null || value === undefined) {

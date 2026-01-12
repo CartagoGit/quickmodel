@@ -79,6 +79,16 @@ export class RegExpTransformer
 			return value;
 		}
 
+		// SECURITY: Prevent ReDoS by limiting pattern length
+		// Long patterns can cause catastrophic backtracking or memory issues
+		const MAX_LENGTH = 1000;
+		if (typeof value === 'string' && value.length > MAX_LENGTH) {
+			throw new QModelError(
+				`${className}.${propertyKey}: RegExp pattern too long (> ${MAX_LENGTH} chars).`,
+				{ className, propertyKey, value: 'TRUNCATED', expectedType: 'Short RegExp' }
+			);
+		}
+
 		// Format: {__type, source, flags} or {source, flags}
 		if (typeof value === 'object' && value !== null && 'source' in value) {
 			if (typeof value.source !== 'string') {
@@ -93,6 +103,14 @@ export class RegExpTransformer
 					}
 				);
 			}
+
+			if (value.source.length > MAX_LENGTH) {
+				throw new QModelError(
+					`${className}.${propertyKey}: RegExp source too long (> ${MAX_LENGTH} chars).`,
+					{ className, propertyKey, value: 'TRUNCATED', expectedType: 'Short RegExp' }
+				);
+			}
+
 			try {
 				return new RegExp(value.source, value.flags || '');
 			} catch (error) {
