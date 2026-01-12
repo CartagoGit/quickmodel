@@ -73,8 +73,19 @@ export class QGenerateTestTool extends QAbstractTool<
 		sourceFile: string;
 	}): Promise<{ path: string; content: string; message?: string }> {
 		await Promise.resolve();
-		// Resolve path relative to cwd if not absolute
+
+		// 1. Resolve and Normalize Path
 		const fullPath = resolve(process.cwd(), args.sourceFile);
+		const cwd = process.cwd();
+
+		// 2. SECURITY CHECK: Ensure path is within the project root
+		if (!fullPath.startsWith(cwd)) {
+			return {
+				path: '',
+				content: '',
+				message: `Security Error: Path traverses outside the project root.`,
+			};
+		}
 
 		if (!existsSync(fullPath)) {
 			return {
@@ -86,14 +97,26 @@ export class QGenerateTestTool extends QAbstractTool<
 
 		// Heuristic to find test path
 		// src/core/foo.ts -> tests/unit/core/foo.test.ts
-		const testPath = fullPath
-			.replace(
-				join(process.cwd(), 'src'),
-				join(process.cwd(), 'tests', 'unit')
-			)
+		let testPath = fullPath
+			.replace(join(cwd, 'src'), join(cwd, 'tests', 'unit'))
 			.replace('.ts', '.test.ts');
 
+		// If the replacement didn't happen (e.g. file not in src), handle gracefully or fallback
+		if (testPath === fullPath) {
+			// Fallback: just append .test.ts if not in src
+			testPath = fullPath.replace('.ts', '.test.ts');
+		}
+
 		const fileName = testPath.split('/').pop()!;
+
+		// Ensure test path is also safe (though it should be if fullPath was safe)
+		if (!resolve(testPath).startsWith(cwd)) {
+			return {
+				path: '',
+				content: '',
+				message: `Security Error: Generated test path is outside project root.`,
+			};
+		}
 
 		if (existsSync(testPath)) {
 			return {
@@ -106,8 +129,8 @@ export class QGenerateTestTool extends QAbstractTool<
 		try {
 			// Derive className and relativePath for the template
 			const className = fileName.replace(/\.ts$/, ''); // Simple derivation
-			const relativePath = args.sourceFile.startsWith(process.cwd())
-				? `./${args.sourceFile.substring(process.cwd().length + 1)}`
+			const relativePath = args.sourceFile.startsWith(cwd)
+				? `./${args.sourceFile.substring(cwd.length + 1)}`
 				: args.sourceFile;
 
 			const content = `

@@ -271,29 +271,7 @@ export class ValidationService {
 				) {
 					try {
 						// Pass 'seen' set to recursive call
-						// We need to cast because QModel.validate doesn't officially expose 'seen' yet in interface,
-						// but implementation will support it.
-						// However, QModel.validate() calls QValidationService.validate(this).
-						// So if we call instance.validate(), it starts a new chain?
-						// YES. QModel.validate() implementation creates a NEW service call or reuses?
-						// QModel: validate() { return QModel.validator.validate(this); }
-						// Wait, QModel.validate simply delegates.
-						// So calling (value as any).validate() will call `QModel.validator.validate(value)`.
-						// It will NOT receive our 'seen' set.
-
-						// PROBLEM: The `validate()` method on QModel instance does NOT accept `seen`.
-						// Solving this requires changing QModel.validate() signature OR
-						// calling the service directly here?
-
-						// We are inside the Service. We should validate recursively using THIS service instance options?
-						// Or just call `this.validate(value, undefined, seen)`.
-						// YES! We should call `this.validate`, not `value.validate()`.
-						// If `value` is a QModel, `this.validate(value)` works perfectly.
-						// But wait, `value.validate()` might have custom logic overrides?
-						// QModel.validate() is standard.
-
-						// Let's call `this.validate(value, undefined, seen)` to preserve cycle detection context.
-
+						// to preserve cycle detection context.
 						const nestedErrors = this.validate(
 							value as Record<string, unknown>,
 							undefined,

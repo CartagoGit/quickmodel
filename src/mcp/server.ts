@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import type { IQMcpTool } from './tools/abstract-tool';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 // Tool Imports
@@ -37,13 +37,13 @@ export class QMcpServer {
 			// Load package.json dynamically ONLY if not provided
 			if (!options?.name || !options?.version) {
 				const pkgPath = join(process.cwd(), 'package.json');
-				if (require('fs').existsSync(pkgPath)) {
+				if (existsSync(pkgPath)) {
 					const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
 					name = pkg.name || name;
 					version = pkg.version || version;
 				}
 			}
-		} catch (e) {
+		} catch (_e) {
 			// Ignore error and use defaults
 		}
 
@@ -90,9 +90,15 @@ export class QMcpServer {
 					description: tool.description,
 					inputSchema: tool.schema.shape,
 				},
-				async (args: z.infer<typeof tool.schema>) => {
+				async (args: unknown) => {
+					// Zod parsing is handled by the SDK inside registerTool usually,
+					// but here we are using the low-level McpServer wrapper.
+
 					try {
-						const result = await tool.execute(args);
+						// Validate args against schema manually just in case or trust the SDK?
+						// The SDK validates against the schema provided.
+						const typedArgs = args as z.infer<typeof tool.schema>;
+						const result = await tool.execute(typedArgs);
 						return {
 							content: [
 								{
