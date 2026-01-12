@@ -411,7 +411,34 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		if (!data) return;
 
 		if (data.constructor === this.constructor) {
-			Object.assign(this, data);
+			// Cloning logic: Copy internal storage directly
+			// Object.assign(this, data) fails because properties are getters on prototype (not own enumerable)
+			const source = data as unknown as Record<string, unknown>;
+
+			if (QUICK_VALUES_KEY in source) {
+				const storage = source[QUICK_VALUES_KEY] as object;
+				Object.defineProperty(this, QUICK_VALUES_KEY, {
+					value: { ...storage }, // Shallow copy
+					writable: true,
+					enumerable: false, // Internal storage hidden
+					configurable: true,
+				});
+
+				// Install lazy getters for the cloned properties to ensure they are accessible
+				// This is critical when cloning because Object.assign was removed and getters are on the instance
+				this.installLazyGetters(Object.keys(storage));
+			}
+
+			// Also copy __initData to preserve dirty status
+			if ('__initData' in source) {
+				const initData = source['__initData'] as object;
+				Object.defineProperty(this, '__initData', {
+					value: initData ? { ...initData } : undefined,
+					writable: false,
+					enumerable: false,
+					configurable: true,
+				});
+			}
 			return;
 		}
 
@@ -451,7 +478,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		// Copy ALL properties from deserialized instance
 		// (includes both transformed properties with @QType and copied properties without @QType)
 
-		// Store deserialized values in a hidden storage to handle Bun bug
+		// Store deserialized values in hidden storage to ensure persistence
 		Object.defineProperty(this, QUICK_VALUES_KEY, {
 			value: {},
 			writable: false,
@@ -535,7 +562,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
-	 * INTERNAL: Workaround for TypeScript/ES2022 class initialization order.
+	 * INTERNAL: Handles TypeScript/ES2022 class initialization order.
 	 *
 	 * When using `class User extends QModel { name = 'Default' }`, the property initializer
 	 * runs AFTER super() (QModel constructor), overwriting the deserialized value.
@@ -632,7 +659,6 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 
 					try {
 						let spec: unknown = null;
-
 
 						// 1. Try @QType metadata first (Higher specificity)
 						// Check native field type (e.g. 'date', 'bigint', 'set')

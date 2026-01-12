@@ -490,18 +490,18 @@ export function Quick<
 			}
 		}
 
-		// Store discriminators if provided
+		// Store ALL advanced options (strict, etc.)
+		if (advancedOptions) {
+			Reflect.defineMetadata(QUICK_OPTIONS_KEY, advancedOptions, target);
+		}
+
+		// Store discriminators if provided (legacy key, kept for compatibility if needed elsewhere)
 		if (advancedOptions?.discriminators) {
 			Reflect.defineMetadata(
 				QUICK_DISCRIMINATORS_KEY,
 				advancedOptions.discriminators,
 				target
 			);
-		}
-
-		// Store advanced options (strict mode, etc)
-		if (advancedOptions) {
-			Reflect.defineMetadata(QUICK_OPTIONS_KEY, advancedOptions, target);
 		}
 
 		// CRITICAL: Capture design:type metadata NOW before TypeScript field initialization overwrites it
@@ -565,6 +565,17 @@ export function Quick<
 		) {
 			const data = args[0];
 
+			// STRICT MODE INTERVENTION
+			// If strict mode is enabled, we MUST NOT auto-register properties from the first data instance.
+			// Strict mode requires explicit definition of the schema (via @Quick or @QType).
+			const options = Reflect.getMetadata(
+				QUICK_OPTIONS_KEY,
+				originalConstructor
+			);
+			if (options?.strict === true) {
+				propertiesRegistered = true; // Prevents the auto-registration block below from running
+			}
+
 			// Register properties NOT in typeMap on first instantiation
 			// This allows @Quick() without typeMap to work with primitives
 			// BUT: If strict mode is enabled, we should NOT auto-register unknown properties
@@ -572,7 +583,7 @@ export function Quick<
 			// Robustness Upgrade: Auto-Registration now works WITH Strict Mode
 			// This allows "First usage defines schema" pattern.
 			// The first instance defines the allowed keys. Subsequent instances with extra keys will fail.
-			
+
 			if (
 				!propertiesRegistered &&
 				!propertiesRegistered &&
@@ -629,7 +640,7 @@ export function Quick<
 			);
 
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
-			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
+			// Re-install getters/setters to ensure they are not shadowed by property initializers
 
 			// Check ALL properties in the instance, not just those in quickTypeMap
 			const instanceKeys = Object.keys(instance);
@@ -649,14 +660,32 @@ export function Quick<
 						propertyKey
 					);
 					if (instanceDescriptor && !instanceDescriptor.get) {
+						// Capture the value from the shadowing property (likely a default value)
+						const defaultValue = instance[propertyKey];
+
 						// Instance has a real property (from TypeScript initialization), remove it
 						// The getter from prototype will take over
 						delete instance[propertyKey];
+
+						// Restore default value if it wasn't provided in constructor data
+						// We check __initData to see if the key was present in the input
+						const initData = (instance as any).__initData || {};
+
+						if (
+							!Object.prototype.hasOwnProperty.call(
+								initData,
+								propertyKey
+							)
+						) {
+							// Value was NOT in constructor data, so this is a valid default value
+							// Restore it via the setter (which updates __quickValues__)
+							instance[propertyKey] = defaultValue;
+						}
 					}
 				}
 			}
 
-			// INTERNAL WORKAROUND: Fix for "Default Value Overwrite" bug
+			// Restore values that may have been overwritten by property initializers
 			// When using `class User extends QModel { name = 'Default' }`, the property initializer
 			// runs after QModel initialization, overwriting the deserialized data.
 			// This method compares the backup storage (from data) with the current value (from default)

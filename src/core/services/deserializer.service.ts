@@ -256,73 +256,81 @@ export class Deserializer<
 	 * This method is independent of the class generics to support nested models
 	 * with different interface types.
 	 */
-    
-    /**
-     * Public helper to transform a single value based on a spec.
-     * Used by "Smart Setters" in QModel.
-     * 
-     * @param value - The raw value to transform
-     * @param key - The property name (for context/errors)
-     * @param spec - The Type/Transformer specification (Date, [Date], custom obj, etc.)
-     * @returns The transformed value
-     */
-    public transformValue(value: unknown, key: string, spec: unknown): unknown {
-        // reuse existing internal logic?
-        // We have 'deserializeValue' but it's private and takes 'instance' context.
-        // We need a context-free transform if possible, or create a minimal context.
-        
-        // Let's create a temporary object to mimic the flow, or extract the logic.
-        // Extraction is cleaner.
-        
-        // 1. Resolve transformer
-        // Check if spec is array
-        if (Array.isArray(spec)) {
-            // Array logic
-             if (!Array.isArray(value)) {
-                 // return value; // Or convert single to array?
-                 // QuickModel generally expects array for array spec.
-                 if (value === null || value === undefined) return value;
-                 // throw?
-                 return value;
-            }
-            
-            const itemType = spec[0];
-            return (value as any[]).map(item => this.transformValue(item, key, itemType));
-        }
-        
-        // 2. Resolve single transformer
-        let transformer: IQTransformer | undefined;
-        
-        // Use the internal getTransformer method which checks both Global Registry and Local Defaults
-        // This ensures standard types (Date, Set, etc.) work without manual registration
-        if (spec) {
-             transformer = this.getTransformer(spec as any);
-        }
 
-        if (transformer) {
-             return transformer.deserialize(value, key, 'SmartSetter');
-        }
+	/**
+	 * Public helper to transform a single value based on a spec.
+	 * Used by "Smart Setters" in QModel.
+	 *
+	 * @param value - The raw value to transform
+	 * @param key - The property name (for context/errors)
+	 * @param spec - The Type/Transformer specification (Date, [Date], custom obj, etc.)
+	 * @returns The transformed value
+	 */
+	public transformValue(value: unknown, key: string, spec: unknown): unknown {
+		// reuse existing internal logic?
+		// We have 'deserializeValue' but it's private and takes 'instance' context.
+		// We need a context-free transform if possible, or create a minimal context.
 
-        // 3. Fallback: Nested model check? (Using metadata check to avoid circular dependency with QModel)
-        if (typeof spec === 'function' && Reflect.getMetadata(QUICK_DECORATOR_KEY, spec)) {
-            // It's a nested model class
-             if (value instanceof (spec as any)) return value;
-             if (value && typeof value === 'object') {
-                 // Note: we can't do 'new spec(value)' easily if types are mismatched.
-                 // But for smart setters, we assume standard usage.
-                type ModelConstructor = new (data: any) => any;
-                // If it's a QModel subclass, it usually takes data in constructor.
-                return new (spec as ModelConstructor)(value);
-             }
-        }
-        
-        // 4. Primitive checks or fallback
-        if (spec === BigInt && (typeof value === 'string' || typeof value === 'number')) {
-            return BigInt(value);
-        }
+		// Let's create a temporary object to mimic the flow, or extract the logic.
+		// Extraction is cleaner.
 
-        return value;
-    }
+		// 1. Resolve transformer
+		// Check if spec is array
+		if (Array.isArray(spec)) {
+			// Array logic
+			if (!Array.isArray(value)) {
+				// return value; // Or convert single to array?
+				// QuickModel generally expects array for array spec.
+				if (value === null || value === undefined) return value;
+				// throw?
+				return value;
+			}
+
+			const itemType = spec[0];
+			return (value as any[]).map((item) =>
+				this.transformValue(item, key, itemType)
+			);
+		}
+
+		// 2. Resolve single transformer
+		let transformer: IQTransformer | undefined;
+
+		// Use the internal getTransformer method which checks both Global Registry and Local Defaults
+		// This ensures standard types (Date, Set, etc.) work without manual registration
+		if (spec) {
+			transformer = this.getTransformer(spec as any);
+		}
+
+		if (transformer) {
+			return transformer.deserialize(value, key, 'SmartSetter');
+		}
+
+		// 3. Fallback: Nested model check? (Using metadata check to avoid circular dependency with QModel)
+		if (
+			typeof spec === 'function' &&
+			Reflect.getMetadata(QUICK_DECORATOR_KEY, spec)
+		) {
+			// It's a nested model class
+			if (value instanceof (spec as any)) return value;
+			if (value && typeof value === 'object') {
+				// Note: we can't do 'new spec(value)' easily if types are mismatched.
+				// But for smart setters, we assume standard usage.
+				type ModelConstructor = new (data: any) => any;
+				// If it's a QModel subclass, it usually takes data in constructor.
+				return new (spec as ModelConstructor)(value);
+			}
+		}
+
+		// 4. Primitive checks or fallback
+		if (
+			spec === BigInt &&
+			(typeof value === 'string' || typeof value === 'number')
+		) {
+			return BigInt(value);
+		}
+
+		return value;
+	}
 
 	deserialize<TData extends Record<string, unknown>, TResult = unknown>(
 		data: TData,
@@ -473,9 +481,8 @@ export class Deserializer<
 		// Get strict mode configuration
 		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
-		// Robustness Upgrade: Strict Mode is now enabled by default (unless explicitly disabled)
-		const isStrict = options.strict !== false;
-        // console.log(`DEBUG: Strict Mode is ${isStrict} for ${modelClass.name}`);
+		// Strict Mode is DISABLED by default (unless explicitly enabled)
+		const isStrict = options.strict === true;
 
 		for (const [key, value] of Object.entries(data)) {
 			// SECURITY: Prevent Prototype Pollution
@@ -899,7 +906,7 @@ export class Deserializer<
 								);
 							}
 
-							// 🔥 RECURSION FIX: If item is array (for non-TypedArray types), recursively process
+							// Recursively process nested arrays (for non-TypedArray types)
 							if (Array.isArray(item)) {
 								return item.map((nestedItem) => {
 									if (
@@ -1077,7 +1084,7 @@ export class Deserializer<
 				continue;
 			}
 
-			// 🔥 FIX: If value is an array but designType is NOT Array (e.g., Date, BigInt)
+			// Handle array values where designType is a primitive (e.g. Date[], BigInt[])
 			// This means we need to transform each element of the array
 			// Example: dates: Date[] where designType = Date (not Array), value = ['2026-01-01', '2026-01-02']
 			if (

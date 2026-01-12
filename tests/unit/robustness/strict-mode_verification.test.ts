@@ -5,14 +5,14 @@ import { QType } from '@/core/decorators/qtype.decorator'; // Import from source
 
 describe('Strict Mode Verification', () => {
 
-    test('Strict Mode (Default): requires explicit decorators', () => {
+    test('Strict Mode (DISABLED by default): requires explicit decorators still good practice', () => {
         interface IUser {
             name: string;
         }
 
-        @Quick() // Strict is now default!
+        @Quick() // Strict is NOT default anymore
         class User extends QModel<IUser> {
-            @QType() // REQUIRED check in Strict Mode
+            @QType() // Still good practice
             declare name: string; 
         }
 
@@ -20,7 +20,7 @@ describe('Strict Mode Verification', () => {
         expect(user.name).toBe('Test');
     });
 
-    test('Strict Mode (Default): throws on unknown properties', () => {
+    test('Strict Mode (DISABLED by default): accepts extra properties', () => {
         interface IUser {
             name: string;
         }
@@ -31,9 +31,8 @@ describe('Strict Mode Verification', () => {
             declare name: string;
         }
 
-        // Extra property 'admin' should throw
-        expect(() => {
-             User.create({ name: 'Test', admin: true } as any);
-        }).toThrow(/not defined in model/);
+        // Extra property 'admin' should NOT throw by default
+        const user = User.create({ name: 'Test', admin: true } as any);
+        expect((user as any).admin).toBe(true);
     });
 });

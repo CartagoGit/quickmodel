@@ -42,32 +42,32 @@ interface IMixedUnionModel {
 // ========================================
 
 class ComplexEntity extends QModel<IComplexEntity> {
-	@QType()
-	id!: string;
+	@QType(String)
+	declare id: string;
 
-	@QType()
-	createdAt!: Date;
+	@QType(Date)
+	declare createdAt: Date;
 
-	@QType()
-	amount!: bigint;
+	@QType(BigInt)
+	declare amount: bigint;
 
-	@QType()
-	pattern!: RegExp;
+	@QType(RegExp)
+	declare pattern: RegExp;
 
-	@QType()
-	uniqueKey!: symbol;
+	@QType(Symbol)
+	declare uniqueKey: symbol;
 
-	@QType()
-	lastError!: Error | null;
+	@QType(Error)
+	declare lastError: Error | null;
 
-	@QType()
-	buffer!: Int8Array;
+	@QType(Int8Array)
+	declare buffer: Int8Array;
 
-	@QType()
-	metadata!: Map<string, unknown>;
+	@QType(Map)
+	declare metadata: Map<string, unknown>;
 
-	@QType()
-	tags!: Set<string>;
+	@QType(Set)
+	declare tags: Set<string>;
 }
 
 class NestedComplexModel extends QModel<INestedComplexModel> {

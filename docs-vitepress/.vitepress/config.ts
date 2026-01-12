@@ -429,6 +429,10 @@ export default defineConfig({
 							text: 'Advanced',
 							items: [
 								{
+									text: 'Strict Mode',
+									link: '/en/guide/strict-mode',
+								},
+								{
 									text: 'Custom Transformers',
 									link: '/en/guide/custom-transformers',
 								},
@@ -535,6 +539,10 @@ export default defineConfig({
 						{
 							text: 'Avanzado',
 							items: [
+								{
+									text: 'Modo Estricto',
+									link: '/es/guide/strict-mode',
+								},
 								{
 									text: 'Transformadores Personalizados',
 									link: '/es/guide/custom-transformers',

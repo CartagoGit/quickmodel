@@ -37,22 +37,22 @@ describe('QModel.create() factory method', () => {
 			expect(user).toBeInstanceOf(User);
 		});
 
-		test('should fail without @Quick() decorator in Strict Mode (Default)', () => {
+		test('should succeed without @Quick() decorator (Default: Allow Unknown)', () => {
 			interface IPerson {
 				name: string;
 				age: number;
 			}
 
-			// Without @Quick, strict mode (default) rejects all unknown properties,
-			// and since there are no decorators, all properties are unknown.
+			// Without @Quick, strict mode is DISABLED by default.
+			// It should allow properties even if not decorated.
 			class Person extends QModel<IPerson> {
 				declare name: string;
 				declare age: number;
 			}
 
-			expect(() => {
-				Person.create({ name: 'Bob', age: 30 });
-			}).toThrow(/Strict Mode/);
+			const person = Person.create({ name: 'Bob', age: 30 });
+			expect(person.name).toBe('Bob');
+			expect(person.age).toBe(30);
 		});
 	});
 

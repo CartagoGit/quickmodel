@@ -117,9 +117,3 @@ export type IQImplements<
 		| Partial<Record<keyof TInterface, unknown>>
 		| IQAnyRecord = {},
 > = Omit<TInterface, keyof TTransforms> & TTransforms;
-
-/** @deprecated Use IQImplements instead */
-export type QuickType<
-	TInterface,
-	TTransforms extends Partial<Record<keyof TInterface, unknown>> = {},
-> = IQImplements<TInterface, TTransforms>;

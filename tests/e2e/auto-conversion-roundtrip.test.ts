@@ -519,9 +519,8 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 				.defaultProp;
 			const userWithoutField = new TestUser(dataWithoutField);
 
-			// Actualmente: undefined (el default se perdió en el proceso)
-			// Idealmente: 'default-value'
-			expect(userWithoutField.defaultProp).toBeUndefined();
+			// Actualmente: 'default-value' (FIXED!)
+			expect(userWithoutField.defaultProp).toBe('default-value');
 
 			// Workaround: Establecer el default después si es undefined
 			// if (userWithoutField.defaultProp === undefined) {
