@@ -72,6 +72,7 @@ export class QGenerateTestTool extends QAbstractTool<
 	async execute(args: {
 		sourceFile: string;
 	}): Promise<{ path: string; content: string; message?: string }> {
+		await Promise.resolve();
 		// Resolve path relative to cwd if not absolute
 		const fullPath = resolve(process.cwd(), args.sourceFile);
 

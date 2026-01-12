@@ -10,7 +10,6 @@ By connecting an AI agent to this server, you enable it to:
 - **Inspect model structures** and explain behaviors.
 
 - **[Public Tools](./public/)**: For users building applications with QuickModel.
-- **[Internal Tools](./internal/)**: For maintainers developing QuickModel itself.
 
 ## Installation & Setup
 
@@ -51,5 +50,16 @@ Edit `claude_desktop_config.json`:
 
 1.  **Agent > Manage MCP Servers > View raw config**.
 2.  Add the JSON snippet above.
+
+## IDE Configuration References
+
+If you need more details on how to install MCP in your specific editor, check the official guides:
+
+| Editor          | Resource                                                                                                                                 | Description                            |
+| :-------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------- |
+| **VS Code**     | [Official Extension Guide](https://code.visualstudio.com/api/extension-guides/ai/mcp)                                                    | How to install and manage MCP servers. |
+| **Cursor**      | [Official Documentation](https://cursor.com/docs/context/mcp)                                                                            | Enable and use native MCP.             |
+| **Antigravity** | [Google Cloud Blog](https://cloud.google.com/blog/products/data-analytics/connect-google-antigravity-ide-to-googles-data-cloud-services) | Connecting MCP servers to the IDE.     |
+| **Protocol**    | [Wikipedia / Spec](https://en.wikipedia.org/wiki/Model_Context_Protocol)                                                                 | General protocol specification.        |
 
 ## Available Tools

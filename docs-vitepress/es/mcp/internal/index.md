@@ -11,10 +11,12 @@ Si estás desarrollando QuickModel (clonaste el repo), usa la versión de códig
 Proporcionamos un script para generar la configuración por ti:
 
 ```bash
-bun run scripts/generate-mcp-config.ts
+bun run mcp:setup
 ```
 
-Copia la salida relevante para tu editor.
+Esto ejecuta `scripts/setup-mcp.ts`, que detecta tu entorno y genera la configuración adecuada.
+
+El script intentará configurar VS Code automáticamente y proporcionará instrucciones para otros IDEs. Revisa la salida para más detalles.
 
 ### Configuración Manual
 

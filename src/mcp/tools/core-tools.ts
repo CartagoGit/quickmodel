@@ -17,23 +17,23 @@ export class QSimulateTransformationTool extends QAbstractTool<
 	description =
 		'Simulates a QuickModel data transformation given an input object and a configuration map.';
 	schema = z.object({
-data: z
-.record(z.string(), z.any())
+		data: z
+			.record(z.string(), z.any())
 			.describe('The raw input data object'),
 		options: z
 			.record(z.string(), z.any())
 			.describe(
-'The configuration object typically passed to @Quick() (e.g. { field: "Date", list: ["Date"] })'
-),
+				'The configuration object typically passed to @Quick() (e.g. { field: "Date", list: ["Date"] })'
+			),
 	});
 
 	async execute(args: {
-data: Record<string, any>;
+		data: Record<string, any>;
 		options: Record<string, any>;
 	}): Promise<{ result: any }> {
 		// Simulate async work
 		await Promise.resolve();
-		
+
 		const hydratedOptions = this.hydrateOptions(args.options);
 
 		@Quick(hydratedOptions)
@@ -51,29 +51,47 @@ data: Record<string, any>;
 	private hydrateOptions(options: any): any {
 		if (typeof options === 'string') {
 			switch (options) {
-				case 'Date': return Date;
-				case 'BigInt': return BigInt;
-				case 'RegExp': return RegExp;
-				case 'Set': return Set;
-				case 'Map': return Map;
-				case 'ArrayBuffer': return ArrayBuffer;
-				case 'Int8Array': return Int8Array;
-				case 'Uint8Array': return Uint8Array;
-				case 'Uint8ClampedArray': return Uint8ClampedArray;
-				case 'Int16Array': return Int16Array;
-				case 'Uint16Array': return Uint16Array;
-				case 'Int32Array': return Int32Array;
-				case 'Uint32Array': return Uint32Array;
-				case 'Float32Array': return Float32Array;
-				case 'Float64Array': return Float64Array;
-				case 'URL': return URL;
-				case 'URLSearchParams': return URLSearchParams;
-				default: return options;
+				case 'Date':
+					return Date;
+				case 'BigInt':
+					return BigInt;
+				case 'RegExp':
+					return RegExp;
+				case 'Set':
+					return Set;
+				case 'Map':
+					return Map;
+				case 'ArrayBuffer':
+					return ArrayBuffer;
+				case 'Int8Array':
+					return Int8Array;
+				case 'Uint8Array':
+					return Uint8Array;
+				case 'Uint8ClampedArray':
+					return Uint8ClampedArray;
+				case 'Int16Array':
+					return Int16Array;
+				case 'Uint16Array':
+					return Uint16Array;
+				case 'Int32Array':
+					return Int32Array;
+				case 'Uint32Array':
+					return Uint32Array;
+				case 'Float32Array':
+					return Float32Array;
+				case 'Float64Array':
+					return Float64Array;
+				case 'URL':
+					return URL;
+				case 'URLSearchParams':
+					return URLSearchParams;
+				default:
+					return options;
 			}
 		}
 
 		if (Array.isArray(options)) {
-			return options.map(item => this.hydrateOptions(item));
+			return options.map((item) => this.hydrateOptions(item));
 		}
 
 		if (options && typeof options === 'object') {

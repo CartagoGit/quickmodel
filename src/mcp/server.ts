@@ -11,7 +11,7 @@ import {
 	QListTransformersTool,
 	QGenerateMockDataTool,
 	QInspectModelTool,
-	QSearchDocsTool
+	QSearchDocsTool,
 } from './tools/public-tools';
 import { QSimulateTransformationTool } from './tools/core-tools';
 import {
@@ -19,7 +19,7 @@ import {
 	QGenerateTestTool,
 	QCheckMissingJSDocsTool,
 	QCheckProjectHealthTool,
-	QGetCoverageReportTool
+	QGetCoverageReportTool,
 } from './tools/internal-tools';
 
 /**
@@ -36,9 +36,9 @@ export class QMcpServer {
 
 		// Initialize the standard MCP server
 		this.server = new McpServer({
-name: pkg.name,
-version: pkg.version,
-});
+			name: pkg.name,
+			version: pkg.version,
+		});
 	}
 
 	/**
@@ -47,12 +47,12 @@ version: pkg.version,
 	public registerTools(tools: IQMcpTool[]): void {
 		for (const tool of tools) {
 			this.server.registerTool(
-tool.name,
-{
-description: tool.description,
-inputSchema: tool.schema.shape,
-},
-async (args: z.infer<typeof tool.schema>) => {
+				tool.name,
+				{
+					description: tool.description,
+					inputSchema: tool.schema.shape,
+				},
+				async (args: z.infer<typeof tool.schema>) => {
 					try {
 						const result = await tool.execute(args);
 						return {
@@ -110,7 +110,7 @@ if (import.meta.main) {
 		new QGenerateTestTool(),
 		new QCheckMissingJSDocsTool(),
 		new QCheckProjectHealthTool(),
-		new QGetCoverageReportTool()
+		new QGetCoverageReportTool(),
 	];
 
 	server.registerTools(tools);

@@ -1,5 +1,12 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig, loadEnv } from 'vitepress';
 import { fileURLToPath, URL } from 'node:url';
+
+const env = loadEnv('', process.cwd());
+console.log('DEBUG: VITE_SHOW_INTERNAL_DOCS =', env.VITE_SHOW_INTERNAL_DOCS);
+console.log(
+	'DEBUG: process.env.VITE_SHOW_INTERNAL_DOCS =',
+	process.env.VITE_SHOW_INTERNAL_DOCS
+);
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -480,7 +487,8 @@ export default defineConfig({
 									text: 'Public Tools',
 									link: '/en/mcp/public/',
 								},
-								...(process.env.SHOW_INTERNAL_DOCS
+								...(process.env.VITE_SHOW_INTERNAL_DOCS ===
+								'true'
 									? [
 											{
 												text: 'Internal Tools',
@@ -616,7 +624,8 @@ export default defineConfig({
 									text: 'Herramientas Públicas',
 									link: '/es/mcp/public/',
 								},
-								...(process.env.SHOW_INTERNAL_DOCS
+								...(process.env.VITE_SHOW_INTERNAL_DOCS ===
+								'true'
 									? [
 											{
 												text: 'Herramientas Internas',

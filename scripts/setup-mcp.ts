@@ -3,17 +3,16 @@ import { join, resolve } from 'path';
 
 const projectRoot = resolve(process.cwd());
 const vscodeDir = join(projectRoot, '.vscode');
-const settingsFile = join(vscodeDir, 'settings.json');
-const bunPath = process.argv[0]; 
-const serverScript = join(projectRoot, 'src', 'mcp', 'server.ts');
+const mcpFile = join(vscodeDir, 'mcp.json');
 
+// Relative path configuration for VS Code
 const mcpConfig = {
-    mcpServers: {
-        "quickmodel": {
-            "command": "bun",
-            "args": ["run", serverScript]
-        }
-    }
+	servers: {
+		quickmodel: {
+			command: 'bun',
+			args: ['run', '${workspaceFolder}/src/mcp/server.ts'],
+		},
+	},
 };
 
 const RED = '\x1b[31m';
@@ -22,53 +21,62 @@ const YELLOW = '\x1b[33m';
 const RESET = '\x1b[0m';
 
 function setupVSCode() {
-    console.log(`${YELLOW}Detected VS Code environment...${RESET}`);
-    
-    if (!existsSync(vscodeDir)) {
-        console.log(`Creating .vscode directory...`);
-        mkdirSync(vscodeDir);
-    }
+	console.log(`${YELLOW}Detected VS Code environment...${RESET}`);
 
-    let settings: any = {};
-    if (existsSync(settingsFile)) {
-        try {
-            const content = readFileSync(settingsFile, 'utf-8');
-            settings = JSON.parse(content);
-        } catch (e) {
-            console.warn(`${YELLOW}Warning: Could not parse existing settings.json. Starting fresh.${RESET}`);
-        }
-    }
+	if (!existsSync(vscodeDir)) {
+		console.log(`Creating .vscode directory...`);
+		mkdirSync(vscodeDir);
+	}
 
-    // Merge config
-    // VS Code Copilot Chat uses "github.copilot.chat.mcpServers"
-    settings['github.copilot.chat.mcpServers'] = {
-        ...settings['github.copilot.chat.mcpServers'],
-        ...mcpConfig.mcpServers
-    };
+	let currentConfig: any = { servers: {} };
+	if (existsSync(mcpFile)) {
+		try {
+			const content = readFileSync(mcpFile, 'utf-8');
+			currentConfig = JSON.parse(content);
+		} catch (e) {
+			console.warn(
+				`${YELLOW}Warning: Could not parse existing mcp.json. Starting fresh.${RESET}`
+			);
+		}
+	}
 
-    writeFileSync(settingsFile, JSON.stringify(settings, null, 4));
-    console.log(`${GREEN}✅ Successfully updated .vscode/settings.json with MCP configuration.${RESET}`);
-    console.log(`   Server Path: ${serverScript}`);
+	// Merge config
+	currentConfig.servers = {
+		...currentConfig.servers,
+		...mcpConfig.servers,
+	};
+
+	writeFileSync(mcpFile, JSON.stringify(currentConfig, null, 4));
+	console.log(
+		`${GREEN}✅ Successfully updated .vscode/mcp.json with MCP configuration.${RESET}`
+	);
+	console.log(
+		`   Server configured with relative path: \${workspaceFolder}/src/mcp/server.ts`
+	);
+}
+
+function showOtherIDEsInfo() {
+	console.log(`\n${YELLOW}ℹ️  Information for other IDEs:${RESET}`);
+
+	console.log(`\n${GREEN}Cursor IDE:${RESET}`);
+	console.log(`   Cursor has native MCP support.`);
+	console.log(`   1. Open Command Palette (Ctrl+Shift+P)`);
+	console.log(`   2. Search for "MCP"`);
+	console.log(
+		`   3. Add the server manually pointing to: ${resolve(process.cwd(), 'src/mcp/server.ts')}`
+	);
+	console.log(`   🔗 Docs: https://cursor.com/docs/context/mcp`);
+
+	console.log(`\n${GREEN}Antigravity IDE:${RESET}`);
+	console.log(`   Configure via "Agent" > "Manage MCP Servers" panel.`);
+	console.log(
+		`   🔗 Google Cloud Blog: https://cloud.google.com/blog/products/data-analytics/connect-google-antigravity-ide-to-googles-data-cloud-services`
+	);
 }
 
 function main() {
-    const isVSCode = existsSync(vscodeDir);
-    // Add other IDE checks here if needed (e.g. Cursor, Windsurf if they have known project files)
-    
-    // We can also check for specific env vars, but file presence is safer for project-setup scripts
-    
-    if (isVSCode) {
-        setupVSCode();
-    } else {
-        console.error(`${RED}❌ Error: No compatible IDE configuration found to auto-update.${RESET}`);
-        console.error(`${YELLOW}We could not detect a .vscode folder or known IDE configuration.${RESET}`);
-        console.error(`\nPlease consult your IDE documentation to configure the MCP server manually.`);
-        console.error(`Server entry point: ${serverScript}`);
-        console.error(`\nExamples:`);
-        console.error(` - VS Code / Copilot: Add to .vscode/settings.json under "github.copilot.chat.mcpServers"`);
-        console.error(` - Claude Desktop: Add to your global claude_desktop_config.json`);
-        process.exit(1);
-    }
+	setupVSCode();
+	showOtherIDEsInfo();
 }
 
 main();

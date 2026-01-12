@@ -11,10 +11,12 @@ If you are developing QuickModel itself (cloned the repo), you use the source co
 We provide a script to generate the configuration for you:
 
 ```bash
-bun run scripts/generate-mcp-config.ts
+bun run mcp:setup
 ```
 
-Copy the output relevant to your editor.
+This runs `scripts/setup-mcp.ts`, which detects your environment and generates the appropriate config.
+
+The script will attempt to configure VS Code automatically and provide instructions for other IDEs. Look at the output for details.
 
 ### Manual Configuration
 
