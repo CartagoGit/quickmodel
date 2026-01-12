@@ -6,13 +6,20 @@ import { join } from 'path';
 /**
  * Tool to enforce project-specific coding standards and rules.
  */
-export class QCheckProjectRulesTool extends QAbstractTool<z.ZodObject<{}>> {
+export class QCheckProjectRulesTool extends QAbstractTool<
+	z.ZodObject<{ targetDir: z.ZodOptional<z.ZodString> }>
+> {
 	name = 'check_project_rules';
 	description =
 		'Enforce internal project rules: use @Quick over @QType in tests, and no console.log.';
-	schema = z.object({});
+	schema = z.object({
+		targetDir: z
+			.string()
+			.optional()
+			.describe('Directory to scan (defaults to project root)'),
+	});
 
-	async execute(): Promise<{
+	async execute(args: { targetDir?: string }): Promise<{
 		passed: boolean;
 		errors: string[];
 		warnings: string[];
@@ -20,7 +27,7 @@ export class QCheckProjectRulesTool extends QAbstractTool<z.ZodObject<{}>> {
 		await Promise.resolve();
 		const errors: string[] = [];
 		const warnings: string[] = [];
-		const rootDir = process.cwd();
+		const rootDir = args.targetDir || process.cwd();
 
 		// Rule 1: Tests must favor @Quick over @QType
 		const testDir = join(rootDir, 'tests');

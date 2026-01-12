@@ -26,7 +26,7 @@ describe('Security: Advanced Prototype Pollution', () => {
 		const payload = JSON.parse(
 			'{"list": [{"__proto__": {"polluted": true}}]}'
 		);
-		const _user = new Nested(payload);
+		new Nested(payload);
 
 		expect((Object.prototype as any).polluted).toBeUndefined();
 	});

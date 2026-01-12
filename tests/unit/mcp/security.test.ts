@@ -1,24 +1,5 @@
-import { describe, it, expect, mock, spyOn } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
 import { QSearchDocsTool } from '../../../src/mcp/tools/public-tools';
-import { QUpdateDocsTool } from '../../../src/mcp/tools/internal-tools';
-
-// Mock child_process to avoid actual execution but capture arguments
-const mockSpawn = mock((cmd, args) => {
-	return {
-		stdout: {
-			on: (event, callback) => {
-				if (event === 'data') callback(Buffer.from('Mock Output'));
-			},
-		},
-		stderr: {
-			on: (event, callback) => {},
-		},
-		on: (event, callback) => {
-			if (event === 'close') callback(0);
-		},
-		kill: () => {},
-	};
-});
 
 describe('MCP Security Tests', () => {
 	describe('QSearchDocsTool', () => {

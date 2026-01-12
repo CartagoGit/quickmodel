@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it } from 'bun:test';
 // import { server.test } from 'src/mcp/server.ts';
 
 describe('server.test', () => {

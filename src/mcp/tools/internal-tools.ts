@@ -1,16 +1,9 @@
 import { z } from 'zod';
 import { QAbstractTool } from './abstract-tool';
-import {
-	existsSync,
-	mkdirSync,
-	writeFileSync,
-	readdirSync,
-	readFileSync,
-	statSync,
-} from 'fs';
+import * as fs from 'fs';
 import { join, resolve as pathResolve, dirname } from 'path';
 
-const spawnCommand = async (
+export const spawnCommand = async (
 	command: string,
 	args: string[],
 	cwd?: string
@@ -64,13 +57,17 @@ export class QUpdateDocsTool extends QAbstractTool<
 			.describe('The action to perform'),
 	});
 
+	// Dependency Injection point for testing
+	// Using explicit property so tests can override it without spying on global modules
+	protected _spawn = spawnCommand;
+
 	async execute(args: { action: 'build' | 'clean' }): Promise<{
 		stdout: string;
 		stderr: string;
 	}> {
 		const script = args.action === 'build' ? 'docs:build' : 'docs:clean';
 		try {
-			const { stdout, stderr } = await spawnCommand(
+			const { stdout, stderr } = await this._spawn(
 				'bun',
 				['run', script],
 				process.cwd()
@@ -99,6 +96,9 @@ export class QGenerateTestTool extends QAbstractTool<
 			),
 	});
 
+	// Dependency Injection for FS
+	protected _fs = fs;
+
 	async execute(args: {
 		sourceFile: string;
 	}): Promise<{ path: string; content: string; message?: string }> {
@@ -109,6 +109,8 @@ export class QGenerateTestTool extends QAbstractTool<
 		const cwd = process.cwd();
 
 		// 2. SECURITY CHECK: Ensure path is within the project root
+		// Note: We use process.cwd() directly here, but _fs is used for file ops.
+		// If we wanted to be 100% DI we would inject cwd too, but fs is the main pain point.
 		if (!fullPath.startsWith(cwd)) {
 			return {
 				path: '',
@@ -117,7 +119,7 @@ export class QGenerateTestTool extends QAbstractTool<
 			};
 		}
 
-		if (!existsSync(fullPath)) {
+		if (!this._fs.existsSync(fullPath)) {
 			return {
 				path: '',
 				content: '',
@@ -148,7 +150,7 @@ export class QGenerateTestTool extends QAbstractTool<
 			};
 		}
 
-		if (existsSync(testPath)) {
+		if (this._fs.existsSync(testPath)) {
 			return {
 				path: testPath,
 				content: '',
@@ -174,8 +176,8 @@ describe('${className}', () => {
 });
 `;
 
-			mkdirSync(dirname(testPath), { recursive: true });
-			writeFileSync(testPath, content);
+			this._fs.mkdirSync(dirname(testPath), { recursive: true });
+			this._fs.writeFileSync(testPath, content);
 
 			return {
 				path: testPath,
@@ -201,20 +203,30 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		'Scan the source code for exported members that are missing JSDoc documentation.';
 	schema = z.object({});
 
+	protected _fs = fs;
+
 	async execute(): Promise<{
 		filesWithMissingDocs: string[];
 		summary: string;
 	}> {
 		const missingDocs: string[] = [];
+		const self = this;
 
 		function scanDir(dir: string) {
-			const files = readdirSync(dir);
+			const files = self._fs.readdirSync(dir);
 			for (const file of files) {
-				const fullPath = join(dir, file);
-				if (statSync(fullPath).isDirectory()) {
+				// readdirSync returns string[] | Buffer[] or Dirent[] based on options.
+				// Default is string[]. We assume string[].
+				const fileName = String(file);
+				const fullPath = join(dir, fileName);
+
+				if (self._fs.statSync(fullPath).isDirectory()) {
 					scanDir(fullPath);
-				} else if (file.endsWith('.ts') && !file.endsWith('.d.ts')) {
-					const content = readFileSync(fullPath, 'utf-8');
+				} else if (
+					fileName.endsWith('.ts') &&
+					!fileName.endsWith('.d.ts')
+				) {
+					const content = self._fs.readFileSync(fullPath, 'utf-8');
 					const lines = content.split('\n');
 					let inComment = false;
 					for (let i = 0; i < lines.length; i++) {
@@ -247,6 +259,8 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 
 		try {
 			await Promise.resolve(); // Async compliance if needed
+			// Start scan on src
+			// Note: "src" is hardcoded here relative to cwd
 			scanDir(join(process.cwd(), 'src'));
 		} catch (e: any) {
 			return {
@@ -271,9 +285,11 @@ export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 		'Run a comprehensive health check: Lint, Typecheck, and Run Tests.';
 	schema = z.object({});
 
+	protected _spawn = spawnCommand;
+
 	async execute(): Promise<{ status: 'ok' | 'error'; output: string }> {
 		try {
-			const { stdout, stderr } = await spawnCommand('bun', [
+			const { stdout, stderr } = await this._spawn('bun', [
 				'run',
 				'check',
 			]);
@@ -298,9 +314,11 @@ export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
 	description = 'Run tests with coverage and report the summary.';
 	schema = z.object({});
 
+	protected _spawn = spawnCommand;
+
 	async execute(): Promise<{ summary: string }> {
 		try {
-			const { stdout, stderr } = await spawnCommand('bun', [
+			const { stdout, stderr } = await this._spawn('bun', [
 				'run',
 				'test:coverage',
 			]);

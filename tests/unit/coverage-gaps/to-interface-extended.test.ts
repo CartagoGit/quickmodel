@@ -85,7 +85,6 @@ describe('ToInterfaceService Extended Coverage', () => {
 
 		@Quick()
 		class Data extends QModel<IData> {
-			// @ts-expect-error - Intentionally overriding for testing
 			declare obj: { a: number; func: () => void };
 		}
 
@@ -93,7 +92,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		const result = data.toInterface();
 
 		// Should retain 'a' but skip 'func'
-		expect(result.obj).toEqual({ a: 1 });
+		expect(result.obj as any).toEqual({ a: 1 });
 		// We expect type casting for testing dynamic result
 		expect((result.obj as any).func).toBeUndefined();
 	});

@@ -1,82 +1,182 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import {
+	QUpdateDocsTool,
+	QGenerateTestTool,
 	QCheckMissingJSDocsTool,
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
-	QGenerateTestTool,
-	QUpdateDocsTool,
 } from '../../../src/mcp/tools/internal-tools';
 
 describe('MCP Internal Tools', () => {
-	describe('QUpdateDocsTool', () => {
-		it('should be instantiated correctly', () => {
-			const tool = new QUpdateDocsTool();
-			expect(tool.name).toBe('update_docs');
-			expect(tool.description).toContain('documentation');
-		});
+	// Mocks for Dependency Injection
+	const mockSpawn = mock((..._args: any[]) =>
+		Promise.resolve({ stdout: 'mock output', stderr: '' })
+	);
 
-		// We skip actual execution to avoid triggering build processes during unit tests
+	// FS Mocks
+	const mockExistsSync = mock((..._args: any[]) => true);
+	const mockWriteFileSync = mock((..._args: any[]) => undefined);
+	const mockMkdirSync = mock((..._args: any[]) => undefined);
+	const mockReadFileSync = mock((..._args: any[]) => '');
+	const mockReaddirSync = mock((..._args: any[]) => [] as string[]);
+	const mockStatSync = mock((..._args: any[]) => ({
+		isDirectory: () => false,
+	}));
+
+	const mockFs = {
+		existsSync: mockExistsSync,
+		writeFileSync: mockWriteFileSync,
+		mkdirSync: mockMkdirSync,
+		readFileSync: mockReadFileSync,
+		readdirSync: mockReaddirSync,
+		statSync: mockStatSync,
+	};
+
+	beforeEach(() => {
+		mockSpawn.mockClear();
+		mockExistsSync.mockClear();
+		mockWriteFileSync.mockClear();
+		mockMkdirSync.mockClear();
+		mockReadFileSync.mockClear();
+		mockReaddirSync.mockClear();
+		mockStatSync.mockClear();
 	});
 
-	describe('QCheckMissingJSDocsTool', () => {
-		it('should be instantiated correctly', () => {
-			const tool = new QCheckMissingJSDocsTool();
-			expect(tool.name).toBe('check_jsdocs');
-			expect(tool.description).toContain('Scan');
+	describe('QUpdateDocsTool', () => {
+		it('should run docs:build when action is build', async () => {
+			const tool = new QUpdateDocsTool();
+			// Inject Mock
+			(tool as any)._spawn = mockSpawn;
+
+			await tool.execute({ action: 'build' });
+
+			expect(mockSpawn).toHaveBeenCalled();
+			const callArgs = mockSpawn.mock.calls[0]!;
+			// callArgs: [command, args, cwd]
+			const cmdArgs = callArgs[1] as string[];
+			expect(cmdArgs).toContain('docs:build');
 		});
 
-		it('should run scan without crashing', async () => {
-			const tool = new QCheckMissingJSDocsTool();
-			const result = await tool.execute();
-			// Since we run on actual src, we expect some result (docs missing or not)
-			expect(result.summary).toBeString();
-			expect(result.filesWithMissingDocs).toBeArray();
+		it('should run docs:clean when action is clean', async () => {
+			const tool = new QUpdateDocsTool();
+			(tool as any)._spawn = mockSpawn;
+
+			await tool.execute({ action: 'clean' });
+
+			expect(mockSpawn).toHaveBeenCalled();
+			const cmdArgs = mockSpawn.mock.calls[0]![1] as string[];
+			expect(cmdArgs).toContain('docs:clean');
 		});
 	});
 
 	describe('QCheckProjectHealthTool', () => {
-		it('should be instantiated correctly', () => {
+		it('should run check script', async () => {
 			const tool = new QCheckProjectHealthTool();
-			expect(tool.name).toBe('check_project_health');
+			(tool as any)._spawn = mockSpawn;
+
+			await tool.execute();
+
+			expect(mockSpawn).toHaveBeenCalled();
+			const cmdArgs = mockSpawn.mock.calls[0]![1] as string[];
+			expect(cmdArgs).toContain('check');
 		});
-		// We avoid running execute() as it triggers a full 'bun run check' which is heavy and recursive
 	});
 
 	describe('QGetCoverageReportTool', () => {
-		it('should be instantiated correctly', () => {
+		it('should run test:coverage script', async () => {
 			const tool = new QGetCoverageReportTool();
-			expect(tool.name).toBe('get_coverage_report');
+			(tool as any)._spawn = mockSpawn;
+
+			await tool.execute();
+
+			expect(mockSpawn).toHaveBeenCalled();
+			const cmdArgs = mockSpawn.mock.calls[0]![1] as string[];
+			expect(cmdArgs).toContain('test:coverage');
 		});
-		// Avoid running full test suite recursively
 	});
 
 	describe('QGenerateTestTool', () => {
-		it('should return error if source file does not exist', async () => {
+		it('should generate test file if input is valid', async () => {
 			const tool = new QGenerateTestTool();
-			const result = await tool.execute({
-				sourceFile: 'src/core/non-existent.ts',
+			(tool as any)._fs = mockFs;
+
+			// Customize mock for this specific test case
+			mockExistsSync.mockImplementation((path: any) => {
+				const sPath = String(path);
+				if (sPath.endsWith('src/foo.ts')) return true; // Source exists
+				return false; // Test file does not exist
 			});
+
+			await tool.execute({ sourceFile: 'src/foo.ts' });
+
+			expect(mockWriteFileSync).toHaveBeenCalled();
+		});
+
+		it('should prevent path traversal', async () => {
+			const tool = new QGenerateTestTool();
+			// No need to inject if it fails logic before FS usage, but safety first
+			(tool as any)._fs = mockFs;
+
+			const result = await tool.execute({ sourceFile: '../outside.ts' });
+			// The tool catches errors or returns message? Implementation returns result object with message.
+			expect(result.message).toContain('Security Error');
+		});
+
+		it('should warn if file does not exist', async () => {
+			mockExistsSync.mockReturnValue(false);
+			const tool = new QGenerateTestTool();
+			(tool as any)._fs = mockFs;
+
+			const result = await tool.execute({ sourceFile: 'noboday.ts' });
 			expect(result.message).toContain('File not found');
 		});
 
-		it('should return message if test file already exists', async () => {
-			// Point to an existing file that likely has a test
+		it('should warn if test file already exists', async () => {
+			mockExistsSync.mockReturnValue(true);
 			const tool = new QGenerateTestTool();
-			const result = await tool.execute({
-				sourceFile: 'src/mcp/server.ts', // Likely has no test yet or we check logic
-			});
+			(tool as any)._fs = mockFs;
 
-			if (result.message && result.message.includes('already exists')) {
-				expect(result.path).toBeString();
-			} else {
-				// If it created it (it shouldn't in a real environment if we point to something existing),
-				// but wait, does src/mcp/server.ts have a test?
-				// checks: tests/unit/mcp/server.test.ts
-				// We haven't created server.test.ts, so it might try to create it.
-				// We should clean up if it creates it.
-				// For safety, let's target something we know exists:
-				// tests/unit/core/quick.model.test.ts corresponds to src/core/models/quick.model.ts
-			}
+			const result = await tool.execute({ sourceFile: 'src/exists.ts' });
+			expect(result.message).toContain('already exists');
+		});
+	});
+
+	describe('QCheckMissingJSDocsTool', () => {
+		it('should find missing docs', async () => {
+			const tool = new QCheckMissingJSDocsTool();
+			(tool as any)._fs = mockFs;
+
+			mockReaddirSync.mockReturnValue(['file.ts']);
+			// @ts-ignore
+			mockStatSync.mockImplementation(() => ({
+				isDirectory: () => false,
+			}));
+			mockReadFileSync.mockReturnValue('export class NoDocs {}');
+
+			const result = await tool.execute();
+			const json = JSON.stringify(result);
+			expect(json).toContain('file.ts');
+		});
+
+		it('should ignore documented members', async () => {
+			const tool = new QCheckMissingJSDocsTool();
+			(tool as any)._fs = mockFs;
+
+			mockReaddirSync.mockReturnValue(['file.ts']);
+			// @ts-ignore
+			mockStatSync.mockImplementation(() => ({
+				isDirectory: () => false,
+			}));
+			mockReadFileSync.mockReturnValue(`
+                /**
+                 * Documented class
+                 */
+                export class DocClass {}
+             `);
+
+			const result = await tool.execute();
+			const json = JSON.stringify(result);
+			expect(json).not.toContain('DocClass');
 		});
 	});
 });

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { QAbstractTool } from './abstract-tool';
 import { QModel } from '../../core/models/quick.model';
 import { Quick } from '../../core/decorators/quick.decorator';
+import { TransformerLookupService } from '../../core/services/transformer-lookup.service';
 
 /**
  * Tool to list all available transformers in the registry.
@@ -12,32 +13,23 @@ export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {
 		'List all available data transformers in QuickModel (e.g., string, date, email).';
 	schema = z.object({});
 
-	async execute(): Promise<string[]> {
-		await Promise.resolve();
-		// Return hardcoded list as registry access might be restricted or empty in this context
-		// In a real app we'd iterate QTransformerRegistry.registry
-		return [
-			'string',
-			'number',
-			'boolean',
-			'date',
-			'bigint',
-			'buffer',
-			'regexp',
-			'symbol',
-			'map',
-			'set',
-			'url',
-			'email',
-			'uuid',
-			'password',
-			'hex',
-			'base64',
-			'int',
-			'float',
-			'currency',
-			'percentage',
-		];
+	execute(): Promise<string[]> {
+		// Use the service to get the real list
+		const service = new TransformerLookupService();
+		const transformers = service.getAvailableTransformers();
+
+		// If empty (shouldn't happen as default ones are registered in constructor), fallback
+		if (transformers.length === 0) {
+			return Promise.resolve([
+				'string',
+				'number',
+				'boolean',
+				'date',
+				'bigint',
+			]);
+		}
+
+		return Promise.resolve(transformers.sort());
 	}
 }
 

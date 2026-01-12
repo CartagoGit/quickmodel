@@ -46,6 +46,12 @@ export class TransformerLookupService {
 	 * @param key - The key to look up (string literal, constructor, or class name)
 	 * @returns The registered transformer or undefined if not found
 	 */
+	/**
+	 * Gets a registered transformer by key or constructor name.
+	 *
+	 * @param key - The key to look up (string literal, constructor, or class name)
+	 * @returns The registered transformer or undefined if not found
+	 */
 	public getTransformer(
 		key: IQTransformerKey
 	): IQTransformer<unknown, unknown> | undefined {
@@ -82,6 +88,15 @@ export class TransformerLookupService {
 		}
 
 		return undefined;
+	}
+
+	/**
+	 * Returns a list of all available transformer keys.
+	 *
+	 * @returns Array of transformer keys (e.g., 'date', 'bigint')
+	 */
+	public getAvailableTransformers(): string[] {
+		return Array.from(this.transformers.keys());
 	}
 
 	private registerDefaultTransformers(): void {
