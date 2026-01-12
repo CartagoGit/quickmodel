@@ -13,43 +13,45 @@ By connecting an AI agent to this server, you enable it to:
 
 ## Installation & Setup
 
-To use the QuickModel MCP server, you generally install it via `npm` or `npx`. Configuration depends on your editor.
+To use the QuickModel MCP server, you usually install it via `npm` or `npx`. Configuration varies by editor and whether you use extensions.
 
-### VSCode & Cursor
+### 1. Visual Studio Code
 
-1.  Open your **Settings JSON** (`.vscode/settings.json` or Global Settings).
-2.  Add the server configuration:
+VS Code does not have native MCP support enabled by default. You have two options:
 
-    ```json
-    {
-    	"mcpServers": {
-    		"quickmodel": {
-    			"command": "npx",
-    			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
-    		}
-    	}
-    }
-    ```
+- **Option A: Use an Extension (Recommended)**: Install an extension like **"GG MCP for VSCode"** or similar. These extensions can often detect or allow you to easily add MCP servers without touching JSON files.
+- **Option B: Manual Configuration**: Edit your Global or Workspace `settings.json` to add the server manually.
 
-### Claude Desktop
+### 2. Cursor
 
-Edit `claude_desktop_config.json`:
+Cursor has **native MCP support**. You do not need extensions.
+
+1.  Open **Command Palette** (`Ctrl+Shift+P`).
+2.  Search for **"MCP: Manage MCP Servers"** or similar.
+3.  Add the server configuration directly via the UI.
+
+### 3. Antigravity
+
+Antigravity has a dedicated panel for MCP integration.
+
+1.  Go to **Agent > Manage MCP Servers**.
+2.  Check the **View raw config** option.
+3.  Add your server details there.
+
+### Configuration Snippet (for Manual Setup)
+
+Regardless of the editor, if you configure it manually, the JSON structure is usually:
 
 ```json
 {
-	"mcpServers": {
-		"quickmodel": {
-			"command": "npx",
-			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
-		}
-	}
+  "mcpServers": {
+    "quickmodel": {
+      "command": "npx",
+      "args": ["-y", "@cartago-git/quickmodel", "mcp"]
+    }
+  }
 }
 ```
-
-### Antigravity
-
-1.  **Agent > Manage MCP Servers > View raw config**.
-2.  Add the JSON snippet above.
 
 ## IDE Configuration References
 

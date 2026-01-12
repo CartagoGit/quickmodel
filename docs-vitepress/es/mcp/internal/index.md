@@ -78,3 +78,14 @@ Ejecuta la suite de tests con cobertura habilitada y reporta el resumen.
 
 - **Uso**: "¿Cuál es la cobertura actual de tests?"
 - **Salida**: Tabla resumen de porcentajes de cobertura.
+
+## Referencias de Configuración de IDE
+
+Para configuración detallada en editores específicos:
+
+| Editor          | Recurso                                                                                                                                  | Descripción                               |
+| :-------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
+| **VS Code**     | [Guía Oficial de Extensión](https://code.visualstudio.com/api/extension-guides/ai/mcp)                                                   | Cómo instalar y gestionar servidores MCP. |
+| **Cursor**      | [Documentación Oficial](https://cursor.com/docs/context/mcp)                                                                             | Habilitar y usar MCP nativo.              |
+| **Antigravity** | [Blog Google Cloud](https://cloud.google.com/blog/products/data-analytics/connect-google-antigravity-ide-to-googles-data-cloud-services) | Conectar servidores MCP al IDE.           |
+| **Protocolo**   | [Wikipedia / Spec](https://en.wikipedia.org/wiki/Model_Context_Protocol)                                                                 | Especificación general del protocolo.     |
