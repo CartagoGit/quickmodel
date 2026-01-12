@@ -23,6 +23,8 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	serialize(value: TOutput): TInput;
 }
 
+export type IQTransformerKey = string | Function | object;
+
 export interface IQValidator {
 	/**
 	 * Validates that the value is of the correct type

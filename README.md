@@ -9,7 +9,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
-> 📚 **[Complete Documentation](docs/README.md)**
+> 📚 **[Complete Documentation](https://cartagogit.github.io/quickmodel/)**
 
 ## ✨ Key Features
 
