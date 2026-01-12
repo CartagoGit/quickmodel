@@ -63,6 +63,11 @@ export class QMcpServer {
 }
 
 import { QCreateModelTool, QValidateUsageTool } from './tools/model-tools';
+import {
+	QListTransformersTool,
+	QGenerateMockDataTool,
+	QInspectModelTool,
+} from './tools/public-tools';
 import { QSimulateTransformationTool } from './tools/core-tools';
 import { QUpdateDocsTool, QGenerateTestTool } from './tools/internal-tools';
 
@@ -70,9 +75,16 @@ import { QUpdateDocsTool, QGenerateTestTool } from './tools/internal-tools';
 if (import.meta.main) {
 	const server = new QMcpServer();
 
-	// Register Public Tools
+	// Register Public Tools (Creation & Validation)
 	server.registerTool(new QCreateModelTool());
 	server.registerTool(new QValidateUsageTool());
+
+	// Register Public Tools (Utility & Inspection)
+	server.registerTool(new QListTransformersTool());
+	server.registerTool(new QGenerateMockDataTool());
+	server.registerTool(new QInspectModelTool());
+
+	// Register Core Exposure
 	server.registerTool(new QSimulateTransformationTool());
 
 	// Register Internal Tools

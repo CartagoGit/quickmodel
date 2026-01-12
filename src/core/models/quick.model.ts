@@ -410,16 +410,6 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		inputData?: IQModelData<TInterface> | QModel<TInterface>
 	): void {
 		const data = inputData || this.__tempData;
-		if (inputData)
-			console.log(
-				'DEBUG: initialize received data keys:',
-				Object.keys(inputData)
-			);
-		else
-			console.log(
-				'DEBUG: initialize using __tempData:',
-				!!this.__tempData
-			);
 		if (!data) return;
 
 		if (data.constructor === this.constructor) {

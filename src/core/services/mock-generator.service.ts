@@ -34,9 +34,6 @@ export class QMockGenerator {
 		const instance = Object.create(modelClass.prototype);
 		const mock: Record<string, unknown> = {};
 
-        console.log('DEBUG: MockGenerator.generate model:', modelClass.name);
-        console.log('DEBUG: MockGenerator instance has initialize?', typeof (instance as any).initialize);
-
 		// Obtener todas las propiedades con metadata
 		const properties = this.getDecoratedProperties(instance);
 		// Explicit typing for key to satisfy index signature requirements

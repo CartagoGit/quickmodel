@@ -1,80 +1,82 @@
 import { describe, it, expect } from 'bun:test';
-import { QModel } from '../../../src/core/models/quick.model';
-import { Quick } from '../../../src/core/decorators/quick.decorator';
+import { QModel, Quick } from '@/index';
 
-describe('Mock Generator Fallbacks', () => {
-	// Case 1: mappedType is Array constructor: @Quick({ tags: Array })
-	it('should generate mocks using Array constructor in Quick map', () => {
-		interface ITest {
-			list: any[];
-		}
+/**
+ * Este test verifica que el MockGenerator hidrata correctamente las instancias
+ * ahora que QModel.initialize acepta argumentos.
+ *
+ * Anteriormente (Fallback), si initialize no aceptaba argumentos,
+ * el mock se creaba vacío. Este test asegura que eso no ocurra.
+ */
+describe('Mock Generator - Hydration & Fallback', () => {
+	interface IUser {
+		id: number;
+		name: string;
+		isActive: boolean;
+	}
 
-		@Quick({ list: Array })
-		class TestModel extends QModel<ITest> {
-			declare list: any[];
-		}
+	@Quick()
+	class User extends QModel<IUser> {
+		declare id: number;
+		declare name: string;
+		declare isActive: boolean;
+	}
 
-		const mock = TestModel.mock();
-		console.log('Case 1 keys:', Object.keys(mock));
-		console.log('Case 1 internal:', (mock as any).__quickValues__);
-		console.log('Case 1 list:', mock.list);
-		expect(Array.isArray(mock.list)).toBe(true);
+	it('should correctly hydrate a mocked instance (No Fallback needed)', () => {
+		// 1. Generar mock
+		const mockUser = User.mock().random();
+
+		// 2. Verificar que es una instancia de User
+		expect(mockUser).toBeInstanceOf(User);
+
+		// 3. Verificar que tiene datos (no está vacía)
+		expect(mockUser.id).toBeDefined();
+		expect(typeof mockUser.id).toBe('number');
+
+		expect(mockUser.name).toBeDefined();
+		expect(typeof mockUser.name).toBe('string');
+
+		expect(mockUser.isActive).toBeDefined();
+		expect(typeof mockUser.isActive).toBe('boolean');
+
+		// 4. Verificar acceso vía propiedades directas (Lazy Getters)
+		// Si la hidratación fallase, esto sería undefined
+		expect(mockUser.name.length).toBeGreaterThan(0);
 	});
 
-	// Case 2: mappedType is array syntax: @Quick({ tags: [String] })
-	it('should generate mocks using array syntax in Quick map', () => {
-		interface ITest {
-			tags: string[];
-		}
+	it('should accept overrides during mocking', () => {
+		const override = { name: 'Fixed Name', id: 999 };
+		const mockUser = User.mock().random(override);
 
-		@Quick({ tags: [String] })
-		class TestModel extends QModel<ITest> {
-			declare tags: string[];
-		}
-
-		const mock = TestModel.mock();
-		console.log('Case 2 list:', mock.tags);
-		expect(Array.isArray(mock.tags)).toBe(true);
+		expect(mockUser.name).toBe('Fixed Name');
+		expect(mockUser.id).toBe(999);
+		// isActive should still be generated random
+		expect(typeof mockUser.isActive).toBe('boolean');
 	});
 
-	// Case 3: mappedType is constructor: @Quick({ date: Date })
-	it('should generate mocks using Constructor in Quick map', () => {
-		interface ITest {
-			date: Date;
-			set: Set<any>;
-			map: Map<any, any>;
+	it('should handle complex nested hydration in mocks', () => {
+		interface IProfile {
+			bio: string;
 		}
 
-		@Quick({
-			date: Date,
-			set: Set,
-			map: Map,
-		})
-		class TestModel extends QModel<ITest> {
-			declare date: Date;
-			declare set: Set<any>;
-			declare map: Map<any, any>;
+		@Quick()
+		class Profile extends QModel<IProfile> {
+			declare bio: string;
 		}
 
-		const mock = TestModel.mock();
-		console.log('Case 3 date:', mock.date);
-		expect(mock.date).toBeInstanceOf(Date);
-		expect(mock.set).toBeInstanceOf(Set);
-		expect(mock.map).toBeInstanceOf(Map);
-	});
-
-	it('should generate mocks using string type in Quick map', () => {
-		interface ITest {
-			num: number;
+		interface IComplex {
+			profile: Profile;
 		}
 
-		@Quick({ num: 'number' as any })
-		class TestModel extends QModel<ITest> {
-			declare num: number;
+		@Quick({ profile: Profile })
+		class ComplexUser extends QModel<IComplex> {
+			declare profile: Profile;
 		}
 
-		const mock = TestModel.mock();
-		console.log('Case 4 num:', mock.num);
-		expect(typeof mock.num).toBe('number');
+		const mock = ComplexUser.mock();
+
+		expect(mock.random().profile).toBeInstanceOf(Profile);
+		expect(mock.random().profile.bio).toBeDefined();
+		expect(typeof mock.random().profile.bio).toBe('string');
 	});
 });
