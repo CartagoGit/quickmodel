@@ -100,7 +100,10 @@ describe('Default Value Overwrite Bug', () => {
 			timeout?: number;
 		}
 
-		@Quick()
+		@Quick({
+            retries: Number, // Register optional primitives to handle Strict Mode
+            timeout: Number  // Register optional primitives to handle Strict Mode
+        })
 		class Config extends QModel<IConfig> {
 			// Optional property with default value
 			retries?: number = 3;

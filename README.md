@@ -19,7 +19,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
-- 🧪 **Well Tested** - 200+ tests covering all features
+- 🧪 **Well Tested** - 700+ tests covering all features
 
 ## 📦 Installation
 

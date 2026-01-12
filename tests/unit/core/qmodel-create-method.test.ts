@@ -37,22 +37,22 @@ describe('QModel.create() factory method', () => {
 			expect(user).toBeInstanceOf(User);
 		});
 
-		test('should work without @Quick() decorator', () => {
+		test('should fail without @Quick() decorator in Strict Mode (Default)', () => {
 			interface IPerson {
 				name: string;
 				age: number;
 			}
 
+			// Without @Quick, strict mode (default) rejects all unknown properties,
+			// and since there are no decorators, all properties are unknown.
 			class Person extends QModel<IPerson> {
 				declare name: string;
 				declare age: number;
 			}
 
-			const person = Person.create({ name: 'Bob', age: 30 });
-
-			expect(person.name).toBe('Bob');
-			expect(person.age).toBe(30);
-			expect(person).toBeInstanceOf(Person);
+			expect(() => {
+				Person.create({ name: 'Bob', age: 30 });
+			}).toThrow(/Strict Mode/);
 		});
 	});
 
@@ -293,12 +293,14 @@ describe('QModel.create() factory method', () => {
 				value?: number;
 			}
 
-			// In Strict Mode (default), optional properties MUST be decorated/known
-			// to avoid being rejected if they appear later (Schema Inference limitation)
-			@Quick()
-			class Config extends QModel<Config> {
+			// In Strict Mode, optional properties MUST be declared in the schema
+            // if we want them to be accepted even if not present in the first usage.
+            // We use { value: Number } to register 'value' as a known property.
+			@Quick({
+                value: Number // Registers 'value' as known type
+            })
+			class Config extends QModel<IConfig> {
 				declare name: string;
-				@QType() // Explicitly registered
 				declare value?: number;
 			}
 
@@ -387,11 +389,11 @@ describe('QModel.create() factory method', () => {
 			@Quick({ createdAt: Date })
 			class Post extends QModel<IPost> {}
 
-			// Pass IQTransform as 1st type parameter to create()
-			// <TResult>
+			// Pass IQTransform as 2nd type parameter to create()
+			// create<TClass, TInterface>
 			const post = Post.create<
-				IPost,
 				Post,
+				IPost,
 				IQTransform<
 					IPost,
 					{
@@ -425,8 +427,8 @@ describe('QModel.create() factory method', () => {
 			class Account extends QModel<IAccount> {}
 
 			const account = Account.create<
-				IAccount,
 				Account,
+				IAccount,
 				IQTransform<
 					IAccount,
 					{
@@ -457,8 +459,8 @@ describe('QModel.create() factory method', () => {
 			class Data extends QModel<IData> {}
 
 			const data = Data.create<
-				IData,
 				Data,
+				IData,
 				IQTransform<
 					IData,
 					{

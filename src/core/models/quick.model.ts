@@ -223,14 +223,21 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *
 	 * @see {@link QModel} for main class documentation
 	 */
+	/**
+	 * Creates a new instance of the model with STRICT type checking.
+	 *
+	 * @param data - Data strictly matching the model interface
+	 */
 	static create<
-		T extends IQAnyRecord = IQAnyRecord,
-		TClass extends QModel<T> = QModel<T>,
+		TClass extends QModel<any>,
+		TInterface = TClass extends QModel<infer I> ? I : never,
 		TResult = TClass,
-	>(this: new (data: T) => TClass, data: T): TResult {
+	>(this: new (data: any) => TClass, data: NoInfer<TInterface>): TResult;
+
+	static create(this: any, data: any): any {
 		// Use generics to cast 'this' to the constructor type
-		const Constructor = this as unknown as new (data: T) => TClass;
-		return new Constructor(data) as unknown as TResult;
+		const Constructor = this;
+		return new Constructor(data);
 	}
 
 	/**
@@ -625,6 +632,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 
 					try {
 						let spec: unknown = null;
+
 
 						// 1. Try @QType metadata first (Higher specificity)
 						// Check native field type (e.g. 'date', 'bigint', 'set')
