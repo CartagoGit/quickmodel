@@ -2,8 +2,15 @@ import { z } from 'zod';
 import { QAbstractTool } from './abstract-tool';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { existsSync } from 'fs';
-import { join, basename } from 'path';
+import {
+	existsSync,
+	mkdirSync,
+	writeFileSync,
+	readdirSync,
+	readFileSync,
+	statSync,
+} from 'fs';
+import { join, resolve, dirname } from 'path';
 
 const execAsync = promisify(exec);
 
@@ -65,9 +72,6 @@ export class QGenerateTestTool extends QAbstractTool<
 	async execute(args: {
 		sourceFile: string;
 	}): Promise<{ path: string; content: string; message?: string }> {
-		const { existsSync } = await import('fs');
-		const { join, resolve } = await import('path');
-
 		// Resolve path relative to cwd if not absolute
 		const fullPath = resolve(process.cwd(), args.sourceFile);
 
@@ -115,12 +119,7 @@ describe('${className}', () => {
     });
 });
 `;
-			// await fs.promises.write_file(testPath, content); // native fs not imported
-			// Using bun write or console for now, but to be safe with node compat let's use console or mock
-			// The original implementation had fs.writeFileSync.
-			// Let's assume we want to write it.
-			const { writeFileSync, mkdirSync } = await import('fs');
-			const { dirname } = await import('path');
+
 			mkdirSync(dirname(testPath), { recursive: true });
 			writeFileSync(testPath, content);
 
@@ -152,13 +151,6 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		filesWithMissingDocs: string[];
 		summary: string;
 	}> {
-		await Promise.resolve();
-		// Simplified check: relying on grep/ripgrep if available or native logic.
-		// Native logic:
-		// Use simple recursive search using fs
-		const { readdirSync, readFileSync, statSync } = await import('fs');
-		const { join } = await import('path');
-
 		const missingDocs: string[] = [];
 
 		function scanDir(dir: string) {
@@ -200,8 +192,7 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		}
 
 		try {
-			// We need await Promise.resolve in execute to satisfy strict lint if no other await
-			await Promise.resolve();
+			await Promise.resolve(); // Async compliance if needed
 			scanDir(join(process.cwd(), 'src'));
 		} catch (e: any) {
 			return {
@@ -227,14 +218,18 @@ export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 	schema = z.object({});
 
 	async execute(): Promise<{ status: 'ok' | 'error'; output: string }> {
-		return new Promise((resolve) => {
-			exec('bun run check', (error, stdout, stderr) => {
-				resolve({
-					status: error ? 'error' : 'ok',
-					output: stdout + stderr,
-				});
-			});
-		});
+		try {
+			const { stdout, stderr } = await execAsync('bun run check');
+			return {
+				status: 'ok',
+				output: stdout + stderr,
+			};
+		} catch (error: any) {
+			return {
+				status: 'error',
+				output: error.stdout + error.stderr || error.message,
+			};
+		}
 	}
 }
 
@@ -247,13 +242,11 @@ export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
 	schema = z.object({});
 
 	async execute(): Promise<{ summary: string }> {
-		return new Promise((resolve) => {
-			exec('bun run test:coverage', (error, stdout, stderr) => {
-				// We return stdout as it contains the table
-				resolve({
-					summary: stdout + stderr,
-				});
-			});
-		});
+		try {
+			const { stdout, stderr } = await execAsync('bun run test:coverage');
+			return { summary: stdout + stderr };
+		} catch (error: any) {
+			return { summary: error.stdout + error.stderr || error.message };
+		}
 	}
 }

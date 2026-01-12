@@ -9,49 +9,47 @@ Al conectar un agente de IA a este servidor, le permites:
 - **Simular transformaciones de datos** asegurando corrección.
 - **Inspeccionar estructuras de modelos** y explicar comportamientos.
 
+- **[Herramientas Públicas](./public/)**: Para usuarios construyendo aplicaciones con QuickModel.
+- **[Herramientas Internas](./internal/)**: Para mantenedores desarrollando QuickModel.
+
 ## Instalación y Configuración
 
-Puedes ejecutar el servidor MCP directamente via `npx` (para usuarios) o desde el código fuente (para colaboradores).
+Para usar el servidor MCP de QuickModel, generalmente lo instalas vía `npm` o `npx`. La configuración depende de tu editor.
 
-### Para Usuarios (Público)
+### VSCode y Cursor
 
-Para usar las herramientas de QuickModel en tu editor de IA:
+1.  Abre tu **JSON de Configuración** (`.vscode/settings.json` o Ajustes Globales).
+2.  Añade la configuración del servidor:
 
-```bash
-npx -y @cartago-git/quickmodel mcp
+    ```json
+    {
+    	"mcpServers": {
+    		"quickmodel": {
+    			"command": "npx",
+    			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
+    		}
+    	}
+    }
+    ```
+
+### Claude Desktop
+
+Edita `claude_desktop_config.json`:
+
+```json
+{
+	"mcpServers": {
+		"quickmodel": {
+			"command": "npx",
+			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
+		}
+	}
+}
 ```
 
-### Para Colaboradores (Interno)
+### Antigravity
 
-Si estás desarrollando QuickModel:
-
-```bash
-bun run mcp
-```
-
-## Integración con Editores
-
-Proporcionamos un script de ayuda para generar la configuración de editores comunes:
-
-```bash
-# En la raíz del proyecto
-bun run scripts/generate-mcp-config.ts
-```
-
-### Antigravity IDE
-
-1. Abre el panel de **Agente**.
-2. Haz clic en el menú `...` > **Manage MCP Servers**.
-3. Selecciona **View raw config** (`mcp_config.json`).
-4. Añade la configuración generada por el script anterior.
-
-### Cursor / VSCode / Claude Desktop
-
-Sigue las instrucciones proporcionadas por el script `generate-mcp-config.ts` para actualizar tus archivos de configuración respectivos.
+1.  **Agente > Gestionar Servidores MCP > Ver configuración raw**.
+2.  Añade el snippet JSON anterior.
 
 ## Herramientas Disponibles
-
-El servidor expone herramientas divididas en dos categorías:
-
-- **[Herramientas Públicas](./public/index.md)**: Para usuarios construyendo aplicaciones con QuickModel.
-- **[Herramientas Internas](./internal/index.md)**: Para mantenedores desarrollando QuickModel.

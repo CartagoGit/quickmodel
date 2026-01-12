@@ -15,7 +15,6 @@ export default tseslint.config(
       "**/*.js",
       "**/*.mjs",
       "**/*.d.ts",
-      "src/mcp/**/*",
       "tests/**/mcp/**/*"
     ],
   },

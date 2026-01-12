@@ -75,7 +75,7 @@
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"docs:api": "typedoc",
-		"docs:dev": "bun run docs:api && vitepress dev docs-vitepress",
+		"docs:dev": "SHOW_INTERNAL_DOCS=true bun run docs:api && vitepress dev docs-vitepress",
 		"docs:clean": "rm -rf docs-vitepress/dist docs-vitepress/api",
 		"docs:build": "bun run docs:clean && bun run docs:api && vitepress build docs-vitepress",
 		"docs:preview": "vitepress preview docs-vitepress",

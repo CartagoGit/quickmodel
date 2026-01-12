@@ -2,6 +2,38 @@
 
 Estas herramientas están diseñadas para **mantenedores** de la librería QuickModel. Automatizan tareas comunes de desarrollo y comprobaciones de salud del proyecto.
 
+## Configuración para Mantenedores
+
+Si estás desarrollando QuickModel (clonaste el repo), usa la versión de código fuente del servidor MCP.
+
+### Configuración Automática
+
+Proporcionamos un script para generar la configuración por ti:
+
+```bash
+bun run scripts/generate-mcp-config.ts
+```
+
+Copia la salida relevante para tu editor.
+
+### Configuración Manual
+
+**VSCode / Cursor (`.vscode/settings.json`):**
+
+```json
+{
+	"mcpServers": {
+		"quickmodel-dev": {
+			"command": "bun",
+			"args": ["run", "src/mcp/server.ts"],
+			"env": {
+				"cwd": "${workspaceFolder}"
+			}
+		}
+	}
+}
+```
+
 ::: warning
 Estas herramientas están pensadas para usarse solo dentro del repositorio de QuickModel. Pueden no funcionar correctamente si se ejecutan fuera de la raíz del proyecto.
 :::

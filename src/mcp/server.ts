@@ -2,9 +2,25 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import type { IQMcpTool } from './tools/abstract-tool';
-
 import { readFileSync } from 'fs';
 import { join } from 'path';
+
+// Tool Imports
+import { QCreateModelTool, QValidateUsageTool } from './tools/model-tools';
+import {
+	QListTransformersTool,
+	QGenerateMockDataTool,
+	QInspectModelTool,
+	QSearchDocsTool
+} from './tools/public-tools';
+import { QSimulateTransformationTool } from './tools/core-tools';
+import {
+	QUpdateDocsTool,
+	QGenerateTestTool,
+	QCheckMissingJSDocsTool,
+	QCheckProjectHealthTool,
+	QGetCoverageReportTool
+} from './tools/internal-tools';
 
 /**
  * Main class for the QuickModel MCP Server.
@@ -20,40 +36,51 @@ export class QMcpServer {
 
 		// Initialize the standard MCP server
 		this.server = new McpServer({
-			name: pkg.name,
-			version: pkg.version,
-		});
+name: pkg.name,
+version: pkg.version,
+});
 	}
 
 	/**
-	 * Registers a new tool with the server.
-	 * @param tool - An instance of a tool implementing IQMcpTool
+	 * Registers a list of tools with the server.
 	 */
-	public registerTool(tool: IQMcpTool): void {
-		this.server.registerTool(
-			tool.name,
-			{
-				description: tool.description,
-				inputSchema: tool.schema.shape,
-			},
-			async (args: z.infer<typeof tool.schema>) => {
-				// We bind the execution in the tool class context
-				const result = await tool.execute(args);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: JSON.stringify(result, null, 2),
-						},
-					],
-				};
-			}
-		);
+	public registerTools(tools: IQMcpTool[]): void {
+		for (const tool of tools) {
+			this.server.registerTool(
+tool.name,
+{
+description: tool.description,
+inputSchema: tool.schema.shape,
+},
+async (args: z.infer<typeof tool.schema>) => {
+					try {
+						const result = await tool.execute(args);
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(result, null, 2),
+								},
+							],
+						};
+					} catch (error: any) {
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: `Error executing tool ${tool.name}: ${error.message}`,
+								},
+							],
+							isError: true,
+						};
+					}
+				}
+			);
+		}
 	}
 
 	/**
 	 * Starts the server and connects via StdIO.
-	 * This method keeps the process alive listening for input.
 	 */
 	public async start(): Promise<void> {
 		const transport = new StdioServerTransport();
@@ -62,34 +89,31 @@ export class QMcpServer {
 	}
 }
 
-import { QCreateModelTool, QValidateUsageTool } from './tools/model-tools';
-import {
-	QListTransformersTool,
-	QGenerateMockDataTool,
-	QInspectModelTool,
-} from './tools/public-tools';
-import { QSimulateTransformationTool } from './tools/core-tools';
-import { QUpdateDocsTool, QGenerateTestTool } from './tools/internal-tools';
-
 // Entry point for the script
 if (import.meta.main) {
 	const server = new QMcpServer();
 
-	// Register Public Tools (Creation & Validation)
-	server.registerTool(new QCreateModelTool());
-	server.registerTool(new QValidateUsageTool());
+	const tools: IQMcpTool[] = [
+		// Public Tools
+		new QCreateModelTool(),
+		new QValidateUsageTool(),
+		new QListTransformersTool(),
+		new QGenerateMockDataTool(),
+		new QInspectModelTool(),
+		new QSearchDocsTool(),
 
-	// Register Public Tools (Utility & Inspection)
-	server.registerTool(new QListTransformersTool());
-	server.registerTool(new QGenerateMockDataTool());
-	server.registerTool(new QInspectModelTool());
+		// Core Simulation
+		new QSimulateTransformationTool(),
 
-	// Register Core Exposure
-	server.registerTool(new QSimulateTransformationTool());
+		// Internal Dev Tools
+		new QUpdateDocsTool(),
+		new QGenerateTestTool(),
+		new QCheckMissingJSDocsTool(),
+		new QCheckProjectHealthTool(),
+		new QGetCoverageReportTool()
+	];
 
-	// Register Internal Tools
-	server.registerTool(new QUpdateDocsTool());
-	server.registerTool(new QGenerateTestTool());
+	server.registerTools(tools);
 
 	server.start().catch((error) => {
 		console.error('Fatal error in MCP Server:', error);

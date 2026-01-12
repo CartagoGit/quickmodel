@@ -61,7 +61,14 @@ export default defineConfig({
 					items: [
 						{ text: 'Overview', link: '/en/mcp/' },
 						{ text: 'Public Tools', link: '/en/mcp/public/' },
-						{ text: 'Internal Tools', link: '/en/mcp/internal/' },
+						...(process.env.SHOW_INTERNAL_DOCS
+							? [
+									{
+										text: 'Internal Tools',
+										link: '/en/mcp/internal/',
+									},
+								]
+							: []),
 					],
 				},
 			],
@@ -473,10 +480,14 @@ export default defineConfig({
 									text: 'Public Tools',
 									link: '/en/mcp/public/',
 								},
-								{
-									text: 'Internal Tools',
-									link: '/en/mcp/internal/',
-								},
+								...(process.env.SHOW_INTERNAL_DOCS
+									? [
+											{
+												text: 'Internal Tools',
+												link: '/en/mcp/internal/',
+											},
+										]
+									: []),
 							],
 						},
 					],
@@ -605,10 +616,14 @@ export default defineConfig({
 									text: 'Herramientas Públicas',
 									link: '/es/mcp/public/',
 								},
-								{
-									text: 'Herramientas Internas',
-									link: '/es/mcp/internal/',
-								},
+								...(process.env.SHOW_INTERNAL_DOCS
+									? [
+											{
+												text: 'Herramientas Internas',
+												link: '/es/mcp/internal/',
+											},
+										]
+									: []),
 							],
 						},
 					],
