@@ -71,16 +71,30 @@ export class QMockGenerator {
 				continue;
 			}
 
+			let fieldType = Reflect.getMetadata(
+				'fieldType',
+				modelClass.prototype,
+				key
+			);
+
 			// 🔥 CHECK 3: Validation Warning - Missing Mocker for Custom Transformer
 			// If a custom transformer is present but NO mocker is defined, warn the user.
 			// The library cannot know how to mock the input expected by the transformer.
+
+			// Check if fieldType is a transformer object (from @QType(Transformer))
+			const isFieldTypeTransformer =
+				fieldType &&
+				typeof fieldType === 'object' &&
+				('serialize' in fieldType || 'deserialize' in fieldType);
+
 			const customTransformer =
 				(options.transformers && options.transformers[key]) ||
 				Reflect.getMetadata(
 					'customTransformer',
 					modelClass.prototype,
 					key
-				);
+				) ||
+				(isFieldTypeTransformer ? fieldType : undefined);
 
 			if (customTransformer) {
 				console.warn(
@@ -94,11 +108,6 @@ export class QMockGenerator {
 				);
 			}
 
-			let fieldType = Reflect.getMetadata(
-				'fieldType',
-				modelClass.prototype,
-				key
-			);
 			let designType = Reflect.getMetadata(
 				'design:type',
 				modelClass.prototype,
