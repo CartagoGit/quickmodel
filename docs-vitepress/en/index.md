@@ -3,40 +3,43 @@ layout: home
 
 hero:
     name: QuickModel
-    text: Smart Models, Serialization & Mocks
-    tagline: The ultimate solution for handling complex data models, serialization, and mocking with zero boilerplate.
+    text: AI-Ready Data Models
+    tagline: The first TypeScript modeling library with a built-in AI Brain (MCP). Serialize, validate, mock, and generate code automatically.
     actions:
         - theme: brand
           text: Get Started
           link: /en/guide/getting-started
         - theme: alt
-          text: View on GitHub
+          text: What is MCP?
+          link: /en/mcp/
+        - theme: alt
+          text: GitHub
           link: https://github.com/CartagoGit/quickmodel
 
 features:
-    - icon: 🚀
-      title: Zero Config with @Quick
-      details: Defines transformations seamlessly using a single, powerful decorator with support for string literals and constructors.
+    - icon: 🧠
+      title: Smart Models
+      details: Single @Quick decorator for complex data structures including maps and dates.
 
-    - icon: 🔄
-      title: Automatic Polymorphism
-      details: Handles union types and varied API responses effortlessly. Instantiates the correct class based on data content.
+    - icon: 🤖
+      title: Built-in AI Brain (MCP)
+      details: Connect Claude, Cursor, VS Code, or Antigravity directly to your codebase.
 
     - icon: 🧪
-      title: Zero-Config Mocks
-      details: Don't write factories. QuickModel reads your decorators to generate unlimited, strictly-typed realistic data instantly.
+      title: Instant Mocks
+      details: Infinite, type-safe mock objects derived directly from your class definitions.
 
     - icon: 🛡️
       title: Runtime Integrity
-      details: TypeScript types are erased at runtime; QuickModel keeps them alive. Guarantees your objects match your interfaces.
+      details: Validates that API responses actually match your TypeScript definitions at runtime.
 
-    - icon: 🎯
-      title: Clean Architecture
-      details: Keeps your models clean and focused. Follows SOLID principles for maintainable and scalable code.
+    - icon: 🧩
+      title: Automatic Polymorphism
+      details: Instantiates correct subclasses automatically based on the shape of data.
 
     - icon: ⚡
       title: High Performance
-      details: Optimized for speed with lightweight overhead, perfect for high-frequency data processing.
+      details: Native JSON parsing with zero-copy architecture where possible.
 ---
 
 <style>
@@ -104,6 +107,27 @@ onMounted(() => {
 })
 </script>
 
+## Why QuickModel?
+
+QuickModel is more than just a library; it's a **development platform** for data-heavy applications.
+
+### 🌟 Development Superpowers
+
+- **@Quick Decorator**: The magic wand. One decorator to rule them all. Define complex data structures, handle nesting, dates, and maps automatically with a single line of code.
+- **QModel Class**: The base class that gives your objects superpowers (`toJSON`, `fromJSON`, `validate`, `mock`).
+- **Zero-Boilerplate Mocks**: Stop writing fixtures manually. Just call `User.mock().random()` and get a valid, populated User object. Perfect for UI development before the API is ready.
+- **🛡️ Runtime Integrity**: TypeScript types disappear at runtime. QuickModel stays to ensure API responses actually match what you expect. It eliminates "undefined is not a function" errors caused by unparsed API responses.
+- **� Polymorphic JSON**: APIs often return different objects in the same list (e.g., `Payment` can be `Card` or `PayPal`). QuickModel automatically instantiates the correct class for each item.
+
+### �🤖 What is this "MCP" thing?
+
+**MCP (Model Context Protocol)** is like a "universal driver" for AI Tools.
+
+QuickModel comes with an **MCP Server** built-in. This means you can plug your favorite AI (Claude, Cursor, Antigravity) directly into the library.
+
+- **For Beginners**: It's like having a senior engineer explaining the library to your AI. The AI _knows_ how to write valid QuickModel code because the library tells it how.
+- **For Pros**: Generate robust models from JSON responses in milliseconds, create test suites automatically, and validate your architecture without context switching.
+
 ## Quick Example
 
 ```typescript
@@ -147,11 +171,3 @@ const payload = user.toJSON();
 const fakeUser = User.mock().random();
 // Generates a fully populated User instance with random, realistic data!
 ```
-
-## Why QuickModel?
-
-**QuickModel** bridges the gap between static types and dynamic runtime data.
-
-- **🛡️ True Runtime Integrity**: TypeScript ensures correct code, but QuickModel ensures correct **data**. It eliminates "undefined is not a function" errors caused by unparsed API responses.
-- **🧩 Polymorphic JSON**: APIs often return different objects in the same list (e.g., `Payment` can be `Card` or `PayPal`). QuickModel automatically instantiates the correct class for each item.
-- **⚡ Zero-Boilerplate Mocks**: Stop writing fixtures manually. Since you've already defined your types, QuickModel can generate realistic test scenarios for you instantly.

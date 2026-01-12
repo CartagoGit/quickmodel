@@ -3,40 +3,43 @@ layout: home
 
 hero:
     name: QuickModel
-    text: Modelos Inteligentes, Serialización y Mocks
-    tagline: La solución definitiva para manejar modelos complejos, serialización y mocking sin código repetitivo.
+    text: Modelos de Datos Listos para IA
+    tagline: La primera librería de modelado TypeScript con Cerebro IA (MCP) integrado. Serializa, valida, mockea y genera código automáticamente.
     actions:
         - theme: brand
           text: Comenzar
           link: /es/guide/getting-started
         - theme: alt
-          text: Ver en GitHub
+          text: ¿Qué es MCP?
+          link: /es/mcp/
+        - theme: alt
+          text: GitHub
           link: https://github.com/CartagoGit/quickmodel
 
 features:
-    - icon: 🚀
-      title: Cero Configuración con @Quick
-      details: Define transformaciones sin esfuerzo usando un único decorador potente con soporte para literales y constructores.
+    - icon: 🧠
+      title: Modelos Inteligentes
+      details: Un solo decorador @Quick para estructuras complejas, incluyendo mapas y fechas.
 
-    - icon: 🔄
-      title: Polimorfismo Automático
-      details: Maneja tipos unión y respuestas variadas de API sin esfuerzo. Instancia la clase correcta según el contenido de los datos.
+    - icon: 🤖
+      title: Cerebro IA Integrado (MCP)
+      details: Conecta Claude, Cursor, VS Code o Antigravity directamente a tu base de código.
 
     - icon: 🧪
-      title: Mocks Cero-Config
-      details: No escribas factorías. QuickModel lee tus decoradores para generar datos realistas y estrictamente tipados al instante.
+      title: Mocks Instantáneos
+      details: Objetos mock infinitos y tipados derivados directamente de tus definiciones.
 
     - icon: 🛡️
       title: Integridad en Runtime
-      details: Los tipos TS se borran en runtime; QuickModel los mantiene vivos. Garantiza que tus objetos coincidan con tus interfaces.
+      details: Valida en tiempo de ejecución que las respuestas de API coinciden con tus definiciones.
 
-    - icon: 🎯
-      title: Arquitectura Limpia
-      details: Mantén tus modelos limpios y enfocados. Sigue los principios SOLID para un código mantenible y escalable.
+    - icon: 🧩
+      title: Polimorfismo Automático
+      details: Instancia automáticamente la subclase correcta basándose en la forma de los datos.
 
     - icon: ⚡
       title: Alto Rendimiento
-      details: Optimizado para velocidad con una sobrecarga mínima, perfecto para procesamiento de datos de alta frecuencia.
+      details: Parseo JSON nativo con arquitectura zero-copy donde es posible.
 ---
 
 <style>
@@ -104,6 +107,27 @@ onMounted(() => {
 })
 </script>
 
+## ¿Por qué QuickModel?
+
+QuickModel es más que una simple librería de serialización; es una **plataforma de desarrollo** para aplicaciones intensivas en datos.
+
+### 🌟 Superpoderes de Desarrollo
+
+- **Decorador @Quick**: La varita mágica. Un decorador para gobernarlos a todos (tipos, validación, transformación). Define estructuras complejas, anidamiento, fechas y mapas automáticamente.
+- **Clase QModel**: La clase base que da superpoderes a tus objetos (`toJSON`, `fromJSON`, `validate`, `mock`).
+- **Mocks Sin Boilerplate**: Deja de escribir fixtures a mano. Simplemente llama a `User.mock().random()` y obtén un objeto User válido y poblado. Perfecto para desarrollar UI antes de que la API esté lista.
+- **🛡️ Verdadera Integridad en Runtime**: Los tipos TypeScript desaparecen al compilar. QuickModel se queda para asegurar que la API devuelve realmente lo que esperas. Elimina errores de "undefined is not a function".
+- **🧩 JSON Polimórfico**: Las APIs a menudo devuelven objetos variados en la misma lista (e.g., `Payment` puede ser `Card` o `PayPal`). QuickModel instancia la clase correcta automáticamente segun la forma de los datos.
+
+### 🤖 ¿Qué es esto del "MCP"?
+
+**MCP (Model Context Protocol)** es como un "driver universal" para Herramientas de IA.
+
+QuickModel trae un **Servidor MCP** integrado. Esto significa que puedes conectar tu IA favorita (Claude, Cursor, Antigravity) directamente a la librería.
+
+- **Para Principiantes**: Es como darle a tu IA el manual de instrucciones de tu código. En lugar de adivinar, la IA _sabe_ exactamente cómo escribir código QuickModel válido.
+- **Para Pros**: Genera modelos robustos desde JSON en milisegundos, crea suites de tests automáticamente y valida tu arquitectura sin cambiar de contexto.
+
 ## Ejemplo Rápido
 
 ```typescript
@@ -147,11 +171,3 @@ const payload = user.toJSON();
 const fakeUser = User.mock().random();
 // ¡Genera una instancia de User totalmente poblada con datos realistas y aleatorios!
 ```
-
-## ¿Por qué QuickModel?
-
-**QuickModel** cierra la brecha entre los tipos estáticos y los datos dinámicos en tiempo de ejecución.
-
-- **🛡️ Verdadera Integridad en Runtime**: TypeScript asegura el código, QuickModel asegura los **datos**. Elimina errores de "undefined is not a function" por respuestas de API no parseadas.
-- **🧩 JSON Polimórfico**: Las APIs a menudo devuelven objetos variados en la misma lista (e.g., `Payment` puede ser `Card` o `PayPal`). QuickModel instancia la clase correcta automáticamente.
-- **⚡ Mocks sin Boilerplate**: Deja de escribir fixtures a mano. Como ya definiste tus tipos, QuickModel genera escenarios de prueba realistas por ti al instante.

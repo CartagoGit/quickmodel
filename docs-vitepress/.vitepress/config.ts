@@ -483,6 +483,7 @@ export default defineConfig({
 							text: 'Model Context Protocol',
 							items: [
 								{ text: 'Overview', link: '/en/mcp/' },
+								{ text: 'Setup Guide', link: '/en/mcp/setup' },
 								{
 									text: 'Public Tools',
 									link: '/en/mcp/public/',
@@ -619,6 +620,10 @@ export default defineConfig({
 								{
 									text: 'Descripción General',
 									link: '/es/mcp/',
+								},
+								{
+									text: 'Guía de Instalación',
+									link: '/es/mcp/setup',
 								},
 								{
 									text: 'Herramientas Públicas',
