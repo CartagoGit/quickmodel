@@ -17,7 +17,19 @@ Al conectar un agente de IA a este servidor, le permites:
 
 Para usar el servidor MCP de QuickModel en tu proyecto (instalado vía npm), sigue las instrucciones de tu IDE.
 
-### 1. Visual Studio Code
+### Automático
+
+La forma más sencilla de que tu IDE detecte el servidor MCP es ejecutando el siguiente comando en tu terminal:
+
+```bash
+npx -y @cartago-git/quickmodel mcp
+```
+
+### Manual
+
+Si prefieres configurarlo manualmente, sigue las instrucciones específicas para tu IDE.
+
+#### 1. Visual Studio Code
 
 ::: info
 Requiere la extensión **GitHub Copilot Chat**.
@@ -37,7 +49,7 @@ Requiere la extensión **GitHub Copilot Chat**.
 }
 ```
 
-### 2. Cursor IDE
+#### 2. Cursor IDE
 
 1. Ve a **Settings (Ajustes)** > **Features** > **MCP**.
 2. Haz clic en **+ Add New MCP Server**.
@@ -46,7 +58,7 @@ Requiere la extensión **GitHub Copilot Chat**.
     - **Type**: `command`
     - **Command**: `npx -y @cartago-git/quickmodel mcp`
 
-### 3. Windsurf (Codeium)
+#### 3. Windsurf (Codeium)
 
 1. Abre **Cascade** (Panel de Chat).
 2. Haz clic en el icono de **MCP** (enchufe) o ve a los ajustes.

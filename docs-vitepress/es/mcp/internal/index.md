@@ -1,9 +1,9 @@
 # Herramientas MCP Internas
 
-Estas herramientas están diseñadas para **mantenedores** de la librería QuickModel. Automatizan tareas comunes de desarrollo y comprobaciones de salud del proyecto.
-
 > [!WARNING]
 > ⚠️ **Solo Uso Interno**: Esto NO es para usuarios finales que instalan el paquete vía npm.
+
+Estas herramientas están diseñadas para **mantenedores** de la librería QuickModel. Automatizan tareas comunes de desarrollo y comprobaciones de salud del proyecto.
 
 ## Herramientas Internas
 

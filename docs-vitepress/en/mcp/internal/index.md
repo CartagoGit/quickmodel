@@ -1,9 +1,9 @@
 # Internal MCP Tools
 
-These tools are designed for **maintainers** of the QuickModel library. They automate common development tasks and project health checks.
-
 > [!WARNING]
 > ⚠️ **Internal Use Only**: This is NOT for end users installing the package via npm.
+
+These tools are designed for **maintainers** of the QuickModel library. They automate common development tasks and project health checks.
 
 ## Internal Tools
 

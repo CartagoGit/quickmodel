@@ -8,7 +8,7 @@ const command = args[0];
 if (command === 'mcp') {
 	const server = new QMcpServer({
 		name: pkg.name,
-		version: pkg.version
+		version: pkg.version,
 	});
 
 	server.registerTools(QMcpServer.getDefaultTools());

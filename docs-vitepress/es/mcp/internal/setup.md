@@ -1,5 +1,8 @@
 # Instalación y Configuración para Mantenedores
 
+> [!WARNING]
+> ⚠️ **Solo Uso Interno**: Esto NO es para usuarios finales que instalan el paquete vía npm.
+
 Si estás desarrollando QuickModel (clonaste el repo), usa la versión de código fuente del servidor MCP.
 
 ## Configuración Automática

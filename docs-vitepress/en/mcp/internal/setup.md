@@ -1,5 +1,8 @@
 # Maintainer Installation & Setup
 
+> [!WARNING]
+> ⚠️ **Internal Use Only**: This is NOT for end users installing the package via npm.
+
 If you are developing QuickModel itself (cloned the repo), you use the source code version of the MCP server.
 
 ## Automatic Configuration

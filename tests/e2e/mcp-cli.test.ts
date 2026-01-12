@@ -39,10 +39,10 @@ describe('CLI E2E', () => {
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
-				
+
 				const chunk = new TextDecoder().decode(value);
 				output += chunk;
-				
+
 				if (output.includes('QuickModel MCP Server running on StdIO')) {
 					found = true;
 					break;
