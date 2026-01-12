@@ -199,6 +199,7 @@ export class ToInterfaceService<
 		// 1. Handle null and undefined first
 		if (currentValue === null) return null;
 		if (currentValue === undefined) return undefined;
+		if (typeof currentValue === 'function') return undefined;
 
 		// 2. Check for circular references (only for objects)
 		if (typeof currentValue === 'object' && currentValue !== null) {

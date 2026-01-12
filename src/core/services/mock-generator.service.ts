@@ -409,6 +409,34 @@ export class QMockGenerator {
 		if (typeName === 'Map') return this.getDefaultValue(type, 'map');
 		if (typeName === 'Set') return this.getDefaultValue(type, 'set');
 
+		// Binary types
+		if (typeName === 'ArrayBuffer')
+			return this.getDefaultValue(type, 'arraybuffer');
+		if (typeName === 'DataView')
+			return this.getDefaultValue(type, 'dataview');
+		if (typeName === 'Int8Array')
+			return this.getDefaultValue(type, 'int8array');
+		if (typeName === 'Uint8Array')
+			return this.getDefaultValue(type, 'uint8array');
+		if (typeName === 'Uint8ClampedArray')
+			return this.getDefaultValue(type, 'uint8clampedarray');
+		if (typeName === 'Int16Array')
+			return this.getDefaultValue(type, 'int16array');
+		if (typeName === 'Uint16Array')
+			return this.getDefaultValue(type, 'uint16array');
+		if (typeName === 'Int32Array')
+			return this.getDefaultValue(type, 'int32array');
+		if (typeName === 'Uint32Array')
+			return this.getDefaultValue(type, 'uint32array');
+		if (typeName === 'Float32Array')
+			return this.getDefaultValue(type, 'float32array');
+		if (typeName === 'Float64Array')
+			return this.getDefaultValue(type, 'float64array');
+		if (typeName === 'BigInt64Array')
+			return this.getDefaultValue(type, 'bigint64array');
+		if (typeName === 'BigUint64Array')
+			return this.getDefaultValue(type, 'biguint64array');
+
 		return this.getDefaultValue(type, 'string');
 	}
 
@@ -458,6 +486,8 @@ export class QMockGenerator {
 				return new Int8Array(0);
 			case 'uint8array':
 				return new Uint8Array(0);
+			case 'uint8clampedarray':
+				return new Uint8ClampedArray(0);
 			case 'int16array':
 				return new Int16Array(0);
 			case 'uint16array':
@@ -519,6 +549,8 @@ export class QMockGenerator {
 				return new Int8Array([1, 2, 3]);
 			case 'uint8array':
 				return new Uint8Array([1, 2, 3]);
+			case 'uint8clampedarray':
+				return new Uint8ClampedArray([1, 2, 3]);
 			case 'int16array':
 				return new Int16Array([1, 2, 3]);
 			case 'uint16array':
@@ -599,6 +631,12 @@ export class QMockGenerator {
 				);
 			case 'uint8array':
 				return new Uint8Array(
+					Array.from({ length: 3 }, () =>
+						faker.number.int({ min: 0, max: 255 })
+					)
+				);
+			case 'uint8clampedarray':
+				return new Uint8ClampedArray(
 					Array.from({ length: 3 }, () =>
 						faker.number.int({ min: 0, max: 255 })
 					)
