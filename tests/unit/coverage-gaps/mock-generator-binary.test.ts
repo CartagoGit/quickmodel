@@ -33,7 +33,7 @@ describe('Mock Generator - Binary & Typed Arrays Coverage', () => {
 	}
 
 	it('should generate empty mocks for all binary types', () => {
-		const mock = BinaryModel.mock({}, 'empty');
+		const mock = BinaryModel.mock().empty({});
 
 		expect(mock.buffer).toBeInstanceOf(ArrayBuffer);
 		expect(mock.buffer.byteLength).toBe(0);
@@ -55,7 +55,7 @@ describe('Mock Generator - Binary & Typed Arrays Coverage', () => {
 	});
 
 	it('should generate sample mocks for all binary types', () => {
-		const mock = BinaryModel.mock({}, 'sample');
+		const mock = BinaryModel.mock().sample({});
 
 		// Check if sample values are populated (mock-generator usually provides non-empty for 'sample')
 		expect(mock.i8.length).toBeGreaterThan(0);
@@ -64,7 +64,7 @@ describe('Mock Generator - Binary & Typed Arrays Coverage', () => {
 	});
 
 	it('should support random mocks for all binary types', () => {
-		const mock = BinaryModel.mock({}, 'random');
+		const mock = BinaryModel.mock().random({});
 		expect(mock.i8).toBeInstanceOf(Int8Array);
 	});
 });

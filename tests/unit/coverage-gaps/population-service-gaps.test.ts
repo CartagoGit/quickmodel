@@ -16,7 +16,7 @@ describe('PopulationService Coverage Gaps', () => {
 		);
 
 		class TestModel {}
-		const instance = new TestModel() as any;
+		const instance = new TestModel();
 
 		Reflect.defineMetadata(
 			QUICK_DESIGN_TYPES_KEY,
@@ -25,7 +25,11 @@ describe('PopulationService Coverage Gaps', () => {
 		);
 
 		expect(() => {
-			service.populateInstance(instance, { val: 'string' }, TestModel);
+			service.populateInstance(
+				instance as Record<string, unknown>,
+				{ val: 'string' },
+				TestModel
+			);
 		}).toThrow(/Expected number, got string/);
 	});
 

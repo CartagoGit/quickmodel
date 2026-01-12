@@ -473,6 +473,25 @@ export class ToInterfaceService<
 			return result;
 		}
 
+		// Fallback for NULL original value but QModel current value (Recursion support for nullable fields)
+		if (
+			originalValue === null &&
+			currentValue &&
+			typeof currentValue === 'object' &&
+			'toInterface' in currentValue &&
+			typeof (
+				currentValue as {
+					toInterface: (s: WeakSet<object>) => unknown;
+				}
+			).toInterface === 'function'
+		) {
+			return (
+				currentValue as {
+					toInterface: (s: WeakSet<object>) => unknown;
+				}
+			).toInterface(seen);
+		}
+
 		// 10. Fallback: return currentValue as-is
 		return currentValue;
 	}
