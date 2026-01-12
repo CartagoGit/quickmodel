@@ -4,6 +4,7 @@ import {
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
+	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -67,7 +68,8 @@ export class RegExpTransformer
 	deserialize(
 		value: IRegExpData | string | RegExp | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): RegExp | null {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {

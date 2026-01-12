@@ -4,6 +4,7 @@ import {
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
+	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -62,7 +63,8 @@ export class BigIntTransformer
 			| null
 			| undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): bigint | null {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {

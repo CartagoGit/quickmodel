@@ -13,7 +13,8 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	deserialize(
 		value: TInput | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		context?: IQTransformContext
 	): TOutput | null;
 
 	/**

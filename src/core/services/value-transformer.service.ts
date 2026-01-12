@@ -63,6 +63,7 @@ export class ValueTransformerService {
 		value: unknown[],
 		possibleTypes: unknown[],
 		discriminatorConfig?: IQDiscriminatorConfig,
+		context?: IQTransformContext,
 		recursionContext?: { visited?: WeakSet<object> }
 	): unknown[] {
 		// Filter nulls/undefined for models
@@ -76,6 +77,7 @@ export class ValueTransformerService {
 					item,
 					possibleTypes,
 					discriminatorConfig,
+					context,
 					recursionContext
 				);
 			}
@@ -199,7 +201,8 @@ export class ValueTransformerService {
 					return transformer.deserialize(
 						item,
 						'arrayItem',
-						targetClass.name
+						targetClass.name,
+						context
 					);
 				}
 			}
@@ -232,7 +235,8 @@ export class ValueTransformerService {
 			return detectedTransformer.deserialize(
 				value,
 				context.propertyKey,
-				context.className
+				context.className,
+				context
 			);
 		}
 
@@ -248,7 +252,8 @@ export class ValueTransformerService {
 				return transformer.deserialize(
 					value,
 					context.propertyKey,
-					context.className
+					context.className,
+					context
 				);
 			if (
 				typeof value === 'string' ||
@@ -267,7 +272,8 @@ export class ValueTransformerService {
 				return transformer.deserialize(
 					value,
 					context.propertyKey,
-					context.className
+					context.className,
+					context
 				);
 			if (typeof value === 'string' || typeof value === 'number')
 				return BigInt(value);
@@ -282,7 +288,8 @@ export class ValueTransformerService {
 			return transformer.deserialize(
 				value,
 				context.propertyKey,
-				context.className
+				context.className,
+				context
 			);
 		}
 

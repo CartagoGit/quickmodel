@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import {
+	IQTransformContext,
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
@@ -114,7 +115,8 @@ export class TypedArrayTransformer<T extends TypedArray>
 			| null
 			| undefined,
 		_propertyKey: string,
-		_className: string
+		_className: string,
+		context?: IQTransformContext
 	): T | null {
 		if (value === null || value === undefined) {
 			return null;
@@ -125,7 +127,10 @@ export class TypedArrayTransformer<T extends TypedArray>
 		}
 
 		// SECURITY: Prevent Memory Exhaustion via massive arrays
-		const MAX_ITEMS = 1_000_000;
+		const maxItems = (
+			context?.metadata?.transformerOptions as { maxItems?: number }
+		)?.maxItems;
+		const MAX_ITEMS = maxItems || 1_000_000;
 		if (Array.isArray(value) && value.length > MAX_ITEMS) {
 			throw new Error(
 				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`

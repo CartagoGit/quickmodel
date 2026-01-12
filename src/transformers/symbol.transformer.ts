@@ -1,6 +1,7 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {
+	IQTransformContext,
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
@@ -56,7 +57,8 @@ export class SymbolTransformer
 			| null
 			| undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): symbol | null {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {

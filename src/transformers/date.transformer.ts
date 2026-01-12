@@ -1,6 +1,7 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {
+	IQTransformContext,
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
@@ -49,7 +50,8 @@ export class DateTransformer
 	deserialize(
 		value: string | number | Date | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): Date | null {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {

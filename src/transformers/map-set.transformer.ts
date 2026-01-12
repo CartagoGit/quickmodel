@@ -4,6 +4,7 @@ import {
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
+	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -60,7 +61,8 @@ export class MapTransformer<K = string, V = unknown>
 			| null
 			| undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): Map<K, V> | null {
 		if (value === null || value === undefined) return null;
 
@@ -196,7 +198,8 @@ export class SetTransformer<V = unknown>
 	deserialize(
 		value: V[] | { __type: 'Set'; values: V[] } | Set<V> | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): Set<V> | null {
 		if (value === null || value === undefined) return null;
 

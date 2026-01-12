@@ -4,6 +4,7 @@ import {
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
+	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -19,7 +20,8 @@ export class URLTransformer
 	deserialize(
 		value: string | URL | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): URL | null {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {
@@ -112,7 +114,8 @@ export class URLSearchParamsTransformer
 			| null
 			| undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): URLSearchParams | null {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {
@@ -189,7 +192,8 @@ export class TextEncoderTransformer extends BaseTransformer<
 	deserialize(
 		value: unknown,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): TextEncoder | null {
 		// Already a TextEncoder instance - return as-is
 		if (value instanceof TextEncoder) {
@@ -240,7 +244,8 @@ export class TextDecoderTransformer extends BaseTransformer<
 	deserialize(
 		value: string | { encoding?: string } | TextDecoder | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): TextDecoder | null {
 		if (value === null || value === undefined) return null;
 

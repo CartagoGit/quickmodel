@@ -128,6 +128,9 @@ export class PopulationService {
 			const context: IQTransformContext = {
 				propertyKey: key,
 				className: modelClass.name,
+				metadata: {
+					transformerOptions: options.transformerOptions?.[key],
+				},
 			};
 
 			// 0. 🔥 CHECK: Custom transformer from options (High Priority)
@@ -160,7 +163,8 @@ export class PopulationService {
 					instance[key] = transformer.deserialize(
 						value,
 						context.propertyKey,
-						context.className
+						context.className,
+						context
 					);
 					continue;
 				}
@@ -185,7 +189,8 @@ export class PopulationService {
 					instance[key] = transformer.deserialize(
 						value,
 						context.propertyKey,
-						context.className
+						context.className,
+						context
 					);
 					continue;
 				}
@@ -315,6 +320,7 @@ export class PopulationService {
 								value,
 								possibleTypes,
 								IQDiscriminatorConfig,
+								context,
 								recursionContext
 							);
 					}
@@ -334,7 +340,8 @@ export class PopulationService {
 						instance[key] = transformer.deserialize(
 							value,
 							context.propertyKey,
-							context.className
+							context.className,
+							context
 						);
 						continue;
 					}
@@ -359,7 +366,8 @@ export class PopulationService {
 							return transformer.deserialize(
 								item,
 								context.propertyKey,
-								context.className
+								context.className,
+								context
 							);
 						});
 						continue;
@@ -456,6 +464,7 @@ export class PopulationService {
 								value,
 								possibleTypes,
 								IQDiscriminatorConfig,
+								context,
 								recursionContext
 							);
 					}
@@ -639,9 +648,15 @@ export class PopulationService {
 		const value = current[lastKey];
 		if (value === undefined || value === null) return;
 
+		const options: IQAdvancedOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+
 		const context: IQTransformContext = {
 			propertyKey: path,
 			className: modelClass.name,
+			metadata: {
+				transformerOptions: options.transformerOptions?.[path],
+			},
 		};
 
 		const fieldType = Reflect.getMetadata('fieldType', instance, path);
@@ -652,7 +667,8 @@ export class PopulationService {
 				current[lastKey] = transformer.deserialize(
 					value,
 					path,
-					context.className
+					context.className,
+					context
 				);
 				return;
 			}
@@ -705,6 +721,7 @@ export class PopulationService {
 							value,
 							[arrayElementClass],
 							undefined,
+							context,
 							recursionContext
 						);
 				}

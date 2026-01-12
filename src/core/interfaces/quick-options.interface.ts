@@ -410,4 +410,25 @@ export interface IQAdvancedOptions<
 	mockers?: {
 		[K in keyof TTypeMap]?: IQMockerFn;
 	};
+
+	/**
+	 * Configuration options passed to transformers.
+	 *
+	 * Allows configuring specific limits or behaviors for built-in transformers.
+	 * e.g. maxBytes for ArrayBuffer, maxItems for TypedArray.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   video: ArrayBuffer
+	 * }, {
+	 *   transformerOptions: {
+	 *     video: { maxBytes: 5_000_000 } // Allow 5MB
+	 *   }
+	 * })
+	 * ```
+	 */
+	transformerOptions?: {
+		[K in keyof TTypeMap]?: Record<string, unknown>;
+	};
 }

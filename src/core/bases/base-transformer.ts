@@ -31,7 +31,10 @@
  * ```
  */
 
-import { IQTransformer } from '../interfaces/transformer.interface';
+import {
+	IQTransformer,
+	IQTransformContext,
+} from '../interfaces/transformer.interface';
 
 export abstract class BaseTransformer<
 	TInput = unknown,
@@ -49,7 +52,8 @@ export abstract class BaseTransformer<
 	abstract deserialize(
 		value: TInput | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		context?: IQTransformContext
 	): TOutput | null;
 
 	/**

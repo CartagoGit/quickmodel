@@ -1,6 +1,7 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {
+	IQTransformContext,
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
@@ -80,7 +81,8 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 	deserialize(
 		value: unknown,
 		propertyKey: string,
-		className: string
+		className: string,
+		_context?: IQTransformContext
 	): PrimitiveTypeMap[T] | null {
 		const validationResult = this.validate(value, {
 			propertyKey,

@@ -1,6 +1,7 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '../core/errors/quickmodel.error';
 import {
+	IQTransformContext,
 	IQValidationContext,
 	IQValidationResult,
 	IQValidator,
@@ -49,7 +50,8 @@ export class ArrayBufferTransformer
 	deserialize(
 		value: number[] | ArrayBuffer | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		context?: IQTransformContext
 	): ArrayBuffer | null {
 		if (value === null || value === undefined) return null;
 
@@ -70,7 +72,11 @@ export class ArrayBufferTransformer
 		}
 
 		// SECURITY: Prevent Memory Exhaustion
-		const MAX_ITEMS = 1_000_000;
+		// Allow overriding maxBytes via transformerOptions
+		const maxBytes = (
+			context?.metadata?.transformerOptions as { maxBytes?: number }
+		)?.maxBytes;
+		const MAX_ITEMS = maxBytes || 1_000_000;
 		if (value.length > MAX_ITEMS) {
 			throw new QModelError(
 				`${className}.${propertyKey}: ArrayBuffer input too large (> ${MAX_ITEMS} bytes).`,
@@ -78,7 +84,7 @@ export class ArrayBufferTransformer
 					className,
 					propertyKey,
 					value: 'TRUNCATED',
-					expectedType: 'Small ArrayBuffer',
+					expectedType: `Small ArrayBuffer (< ${MAX_ITEMS} bytes)`,
 				}
 			);
 		}
