@@ -80,6 +80,14 @@ export class DateTransformer
 			);
 		}
 
+		// Protection against DoS with massive date strings
+		if (typeof value === 'string' && value.length > 128) {
+			throw new QModelError(
+				`${className}.${propertyKey}: Date input string too long > 128 chars`,
+				{ className, propertyKey, value }
+			);
+		}
+
 		const date = new Date(value);
 		if (isNaN(date.getTime())) {
 			throw new QModelError(

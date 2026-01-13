@@ -82,6 +82,20 @@ export class ErrorTransformer
 
 		// String format: "ErrorName: message"
 		if (typeof value === 'string') {
+			// SECURITY: DoS Prevention
+			const MAX_LEN = 2048;
+			if (value.length > MAX_LEN) {
+				throw new QModelError(
+					`${className}.${propertyKey}: Error message too long (> ${MAX_LEN} chars).`,
+					{
+						className,
+						propertyKey,
+						value: 'TRUNCATED',
+						expectedType: 'Short String',
+					}
+				);
+			}
+
 			const match = value.match(/^([^:]+):\s*(.+)$/);
 			if (match && match[1] && match[2]) {
 				const error = new Error(match[2]);
@@ -121,6 +135,20 @@ export class ErrorTransformer
 					propertyKey,
 					value,
 					expectedType: 'object { message: string }',
+				}
+			);
+		}
+
+		// SECURITY: DoS Prevention
+		const MAX_LEN = 2048;
+		if (value.message.length > MAX_LEN) {
+			throw new QModelError(
+				`${className}.${propertyKey}: Error message too long (> ${MAX_LEN} chars).`,
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: 'Short String',
 				}
 			);
 		}

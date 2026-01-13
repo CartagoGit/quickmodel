@@ -43,6 +43,19 @@ describe('QExportJsonSchemaTool', () => {
 		expect(schema.properties.isActive).toEqual({ type: 'boolean' });
 	});
 
+	it('should map integer to number', async () => {
+		const tool = new QExportJsonSchemaTool();
+		const code = `
+            @Quick({
+                count: 'integer'
+            })
+            class Counter {}
+        `;
+		const result = await tool.execute({ code });
+		const schema = result.schema as any;
+		expect(schema.properties.count).toEqual({ type: 'number' });
+	});
+
 	it('should map date to string with format date-time', async () => {
 		const tool = new QExportJsonSchemaTool();
 		const code = `

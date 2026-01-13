@@ -98,6 +98,10 @@ export class BigIntTransformer
 		}
 
 		try {
+			// Limit string length to prevent DoS with massive BigInt parsing
+			if (typeof value === 'string' && value.length > 2048) {
+				throw new Error('BigInt input string too long > 2048 chars');
+			}
 			return BigInt(value);
 		} catch (error) {
 			const errorMessage =

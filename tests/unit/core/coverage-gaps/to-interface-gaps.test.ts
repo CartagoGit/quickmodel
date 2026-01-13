@@ -247,35 +247,27 @@ describe('ToInterface Coverage Gaps', () => {
 		expect(res.sym.toString()).toBe('Symbol(new-symbol-desc)');
 	});
 
-	it('should handle legacy BigInt object format', () => {
-		// Covers lines 303-315
-		@Quick({ big: 'any' })
-		class LegacyBigInt extends QModel<any> {
-			declare big: any;
-		}
-
-		// Simulate legacy object structure { __type: 'bigint' } as original value
-		// We have to bypass standard init which might not support this directly or transform it
-		// But if we pass it as 'any', it is preserved.
+	it('should handle legacy BigInt object format (Direct Service Usage)', () => {
+		// Covers lines 303-315 in ToInterfaceService
+		const service = new ToInterfaceService();
 		const legacyObj = { __type: 'bigint' };
-		const m = new LegacyBigInt({ big: legacyObj });
 
-		// Debugging: Check what __initData holds
-		const initData = (m as any)['__initData'];
-		console.log('DEBUG: __initData:', JSON.stringify(initData, null, 2));
+		// We use an array to pass original values corresponding to current values
+		// convertToInterfaceFormat(current, original) is called for each item
 
 		// Case 1: Current is BigInt
-		m.big = 123n;
-		try {
-			expect(m.toInterface()).toEqual({ big: '123' });
-		} catch (e) {
-			console.error('DEBUG: Error in toInterface:', e);
-			throw e;
-		}
+		const res1 = service.toInterface(
+			[123n] as any,
+			[legacyObj] as any
+		) as any;
+		expect(res1).toEqual(['123']);
 
 		// Case 2: Current is string (needs conversion) - Line 312
-		m.big = '456';
-		expect(m.toInterface()).toEqual({ big: '456' });
+		const res2 = service.toInterface(
+			['456'] as any,
+			[legacyObj] as any
+		) as any;
+		expect(res2).toEqual(['456']);
 	});
 
 	it('should serialize custom class instance when original is also custom instance', () => {

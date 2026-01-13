@@ -77,13 +77,45 @@ export class MapTransformer<K = string, V = unknown>
 			'__type' in value &&
 			value.__type === 'Map'
 		) {
-			return new Map(
-				(value as { __type: 'Map'; entries: [K, V][] }).entries
-			);
+			const entries = (value as { __type: 'Map'; entries: [K, V][] }).entries;
+			// SECURITY: Prevent DoS via limit
+			const maxItems =
+				(_context?.metadata?.transformerOptions as { maxItems?: number })
+					?.maxItems || 1_000_000;
+
+			if (Array.isArray(entries) && entries.length > maxItems) {
+				throw new QModelError(
+					`${className}.${propertyKey}: Map input too large (> ${maxItems} items).`,
+					{
+						className,
+						propertyKey,
+						value: 'TRUNCATED',
+						expectedType: 'Map data',
+					}
+				);
+			}
+			return new Map(entries);
 		}
 
 		// Handle array of [key, value] pairs (from backend)
 		if (Array.isArray(value)) {
+			// SECURITY: Prevent DoS via limit
+			const maxItems =
+				(_context?.metadata?.transformerOptions as { maxItems?: number })
+					?.maxItems || 1_000_000;
+
+			if (value.length > maxItems) {
+				throw new QModelError(
+					`${className}.${propertyKey}: Map input too large (> ${maxItems} items).`,
+					{
+						className,
+						propertyKey,
+						value: 'TRUNCATED',
+						expectedType: 'Map data',
+					}
+				);
+			}
+
 			try {
 				return new Map(value);
 			} catch (error) {
@@ -215,7 +247,24 @@ export class SetTransformer<V = unknown>
 			'__type' in value &&
 			value.__type === 'Set'
 		) {
-			return new Set(value.values);
+			const values = (value as { __type: 'Set'; values: V[] }).values;
+			// SECURITY: Prevent DoS via limit
+			const maxItems =
+				(_context?.metadata?.transformerOptions as { maxItems?: number })
+					?.maxItems || 1_000_000;
+
+			if (Array.isArray(values) && values.length > maxItems) {
+				throw new QModelError(
+					`${className}.${propertyKey}: Set input too large (> ${maxItems} items).`,
+					{
+						className,
+						propertyKey,
+						value: 'TRUNCATED',
+						expectedType: 'Set data',
+					}
+				);
+			}
+			return new Set(values);
 		}
 
 		// Handle legacy plain array format
@@ -223,6 +272,23 @@ export class SetTransformer<V = unknown>
 			throw new QModelError(
 				`${className}.${propertyKey}: Expected array for Set, got ${typeof value}`,
 				{ className, propertyKey, value, expectedType: 'array' }
+			);
+		}
+
+		// SECURITY: Prevent DoS via limit
+		const maxItems =
+			(_context?.metadata?.transformerOptions as { maxItems?: number })
+				?.maxItems || 1_000_000;
+
+		if (value.length > maxItems) {
+			throw new QModelError(
+				`${className}.${propertyKey}: Set input too large (> ${maxItems} items).`,
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: 'Set data',
+				}
 			);
 		}
 

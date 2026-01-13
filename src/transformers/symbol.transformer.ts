@@ -70,6 +70,18 @@ export class SymbolTransformer
 			return value;
 		}
 
+		// SECURITY: Prevent DoS via massive symbol keys in Global Registry
+		const MAX_LEN = 1024;
+		if (
+			typeof value === 'string' &&
+			value.length > MAX_LEN
+		) {
+			throw new QModelError(
+				`${className}.${propertyKey}: Symbol description too long (> ${MAX_LEN} chars).`,
+				{ className, propertyKey, value: 'TRUNCATED', expectedType: 'Short String' }
+			);
+		}
+
 		// Handle format with __type marker
 		if (
 			typeof value === 'object' &&
@@ -87,6 +99,12 @@ export class SymbolTransformer
 						value,
 						expectedType: 'string description',
 					}
+				);
+			}
+			if (value.description.length > MAX_LEN) {
+				throw new QModelError(
+					`${className}.${propertyKey}: Symbol description too long (> ${MAX_LEN} chars).`,
+					{ className, propertyKey, value: 'TRUNCATED', expectedType: 'Short String' }
 				);
 			}
 			return Symbol.for(value.description);

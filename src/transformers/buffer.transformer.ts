@@ -167,7 +167,8 @@ export class DataViewTransformer
 	deserialize(
 		value: number[] | DataView | ArrayBuffer | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		context?: IQTransformContext
 	): DataView | null {
 		if (value === null || value === undefined) return null;
 
@@ -187,6 +188,23 @@ export class DataViewTransformer
 					propertyKey,
 					value,
 					expectedType: 'number[] | ArrayBuffer | DataView',
+				}
+			);
+		}
+
+		// SECURITY: Prevent Memory Exhaustion
+		const maxBytes =
+			(context?.metadata?.transformerOptions as { maxBytes?: number })
+				?.maxBytes || 1_000_000;
+
+		if (value.length > maxBytes) {
+			throw new QModelError(
+				`${className}.${propertyKey}: DataView input too large (> ${maxBytes} bytes).`,
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: `Small DataView (< ${maxBytes} bytes)`,
 				}
 			);
 		}
@@ -247,7 +265,8 @@ export class SharedArrayBufferTransformer
 	deserialize(
 		value: number[] | SharedArrayBuffer | null | undefined,
 		propertyKey: string,
-		className: string
+		className: string,
+		context?: IQTransformContext
 	): SharedArrayBuffer | null {
 		if (value === null || value === undefined) return null;
 
@@ -264,6 +283,23 @@ export class SharedArrayBufferTransformer
 					propertyKey,
 					value,
 					expectedType: 'number[] | SharedArrayBuffer',
+				}
+			);
+		}
+
+		// SECURITY: Prevent Memory Exhaustion
+		const maxBytes =
+			(context?.metadata?.transformerOptions as { maxBytes?: number })
+				?.maxBytes || 1_000_000;
+
+		if (value.length > maxBytes) {
+			throw new QModelError(
+				`${className}.${propertyKey}: SharedArrayBuffer input too large (> ${maxBytes} bytes).`,
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: `Small SharedArrayBuffer (< ${maxBytes} bytes)`,
 				}
 			);
 		}
