@@ -92,9 +92,7 @@ export class PopulationService {
 			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
 			// Do not allow data to overwrite methods defined in the class prototype
 			if (this.isMethodOnPrototype(Object.getPrototypeOf(instance), key)) {
-				// Silently ignore to prevent crashing, or maybe warn in debug?
-				// For security, silent filtering is usually preferred to prevent enumeration,
-				// but here we just want to protect integrity.
+				console.log(`[SECURITY] Skipped shadowing attempt for: ${key}`);
 				continue;
 			}
 
@@ -778,9 +776,6 @@ export class PopulationService {
 				if (typeof descriptor.value === 'function') {
 					return true;
 				}
-				// If we found a property that is NOT a function, it stops the search
-				// (it's a field declaration in a parent class)
-				return false;
 			}
 			current = Object.getPrototypeOf(current);
 		}

@@ -38,6 +38,11 @@ QuickModel provides protections against Mass Assignment attacks:
 ### 6. Safe Error Reporting
 Internal error handlers allow secure logging of malformed data without crashing the process, even when the data contains circular references that would typically cause `JSON.stringify` to throw.
 
+### 7. Known Limitations
+- **Symbol Memory Usage**: The `Symbol` transformer uses `Symbol.for()` to ensure symbols can be serialized and deserialized accurately across sessions. However, `Symbol.for()` creates entries in the global symbol registry which are never garbage collected. **Do not use `Symbol` type for high-frequency unique user input** (like session IDs) to prevent memory leaks.
+- **Client-Side ReDoS**: While we limit input length for RegExp deserialization, the complexity of the regex itself is not validated. Users should sanitize regex patterns from untrusted sources to prevent ReDoS in their application logic.
+- **Arrow Function Shadowing**: Class methods defined as Arrow Functions (`method = () => {}`) are technically instance properties, not prototype methods. In non-strict mode, a malicious payload can overwrite them initially (though constructor initialization usually restores them). To block this vector completely, use **Strict Mode** (`@Quick({}, { strict: true })`) to reject undeclared properties in the payload.
+
 ## Best Practices
 
 - **Validate Input**: Always use `.validate()` on models created from untrusted sources.
@@ -54,7 +59,8 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
 
 - **Command Injection Prevention**:
   - `search_docs` tool uses `spawn` instead of `exec` to prevent shell command injection.
-  - **Test**: `tests/security/mcp-security.test.ts` - "QSearchDocsTool (Command Injection)"
+  - Arguments are escaped using `-e` flag to prevent grep flag injection (e.g. `--help` treated as pattern).
+  - **Test**: `tests/security/mcp-security.test.ts` - "QSearchDocsTool (Command Injection)", `tests/security/advanced-vectors.test.ts`
 
 - **Path Traversal Prevention**:
   - All file system operations in tools (`scaffold_feature`, `check_api_compatibility`, `check_project_rules`) strictly validate that target paths are within the project root.

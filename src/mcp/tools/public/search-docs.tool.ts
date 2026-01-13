@@ -21,6 +21,7 @@ export class QSearchDocsTool extends QAbstractTool<
 				'-rnC',
 				'2',
 				'-i',
+				'-e', // Treat next argument as pattern, preventing flag injection
 				args.query,
 				'docs/',
 				'docs-vitepress/guide',
