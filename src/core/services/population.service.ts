@@ -20,11 +20,42 @@ import { QTransformerRegistry } from '../registry/transformer.registry';
  * Service responsible for populating an instance with data.
  */
 export class PopulationService {
+	private static readonly templateCache = new WeakMap<
+		Function,
+		Record<string, unknown> | null
+	>();
+
 	constructor(
 		private readonly valueTransformer: ValueTransformerService,
 		private readonly transformerLookup: TransformerLookupService,
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
+
+	/**
+	 * Gets a template instance of the model to inspect default values/methods.
+	 * Used for intrinsic security checks.
+	 */
+	private getTemplateInstance(
+		modelClass: Function
+	): Record<string, unknown> | null {
+		if (PopulationService.templateCache.has(modelClass)) {
+			return PopulationService.templateCache.get(modelClass) || null;
+		}
+
+		try {
+			// Try to instantiate with no arguments
+			// QModel constructor handles undefined data gracefully (skips init)
+			// This allows field initializers to run
+			const instance = new (modelClass as new () => unknown)();
+			const record = instance as Record<string, unknown>;
+			PopulationService.templateCache.set(modelClass, record);
+			return record;
+		} catch (e) {
+			// If constructor throws (e.g. strict validation), we can't inspect it
+			PopulationService.templateCache.set(modelClass, null);
+			return null;
+		}
+	}
 
 	/**
 	 * Populates a model instance with data from a plain object.
@@ -93,6 +124,24 @@ export class PopulationService {
 			// Do not allow data to overwrite methods defined in the class prototype
 			if (this.isMethodOnPrototype(Object.getPrototypeOf(instance), key)) {
 				console.log(`[SECURITY] Skipped shadowing attempt for: ${key}`);
+				continue;
+			}
+
+			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
+			// Intrinsic check: Inspect a template instance to see if this property is supposed to be a function
+			// We only block UNDECORATED properties. If the user explicitly decorated it (e.g. @QType(Function)),
+			// we assume they know what they are doing.
+			const template = this.getTemplateInstance(modelClass);
+			if (
+				template &&
+				typeof template[key] === 'function' &&
+				!decoratedFields.includes(key)
+			) {
+				console.warn(
+					`[QuickModel] Security Warning: Blocked attempt to overwrite instance method '${key}' with data. ` +
+						`This property acts as a function in the model default state. ` +
+						`If you intend to assign data to it, you must explicitly decorate it with @Quick({ ${key}: Type }) or @QType(Type) to authorize the overwrite.`
+				);
 				continue;
 			}
 
