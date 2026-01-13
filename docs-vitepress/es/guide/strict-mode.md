@@ -17,6 +17,8 @@ Esto es útil para:
 
 ## Cómo activarlo
 
+### Por Clase
+
 Puedes activar el modo estricto pasando `{ strict: true }` en el segundo argumento del decorador `@Quick`.
 
 ```typescript
@@ -26,8 +28,37 @@ interface IUser {
   name: string;
 }
 
-// ✅ Activar Strict Mode
+// ✅ Activar Strict Mode solo para esta clase
 @Quick({}, { strict: true })
+class User extends QModel<IUser> {
+  declare name: string;
+}
+```
+
+### Globalmente (Recomendado para Seguridad)
+
+Puedes forzar el Modo Estricto por defecto para toda tu aplicación usando `QConfig`. Este es el enfoque recomendado para garantizar una arquitectura "segura por defecto".
+
+```typescript
+import { QConfig } from '@cartago-git/quickmodel';
+
+// Llama a esto al inicio de tu aplicación (ej. index.ts o server.ts)
+QConfig.configure({
+  defaults: {
+    strict: true
+  }
+});
+```
+
+Cuando está habilitado globalmente, aún puedes desactivarlo para clases legacy específicas:
+
+```typescript
+// Deshabilitar strict mode localmente para modelos legacy/flexibles
+@Quick({}, { strict: false })
+class LegacyData extends QModel<any> {
+  // ...
+}
+```
 class User extends QModel<IUser> {
   declare name: string;
 }

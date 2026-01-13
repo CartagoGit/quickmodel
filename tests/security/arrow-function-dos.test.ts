@@ -19,13 +19,11 @@ describe('Advanced Security Vectors', () => {
                 declare username: string;
 
                 // Instance property (arrow function)
-                // This is NOT on the prototype; it's added in the constructor.
                 public validateParams = () => {
                     return true;
                 };
 
                 // Normal method (on prototype)
-                // This IS protected by existing isMethodOnPrototype
                 public save() {
                     return "saved";
                 }

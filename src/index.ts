@@ -17,6 +17,7 @@ export { QModel } from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';
 export { QType } from './core/decorators/qtype.decorator';
+export { QConfig } from './core/config/quick.config';
 
 // ============================================================================
 // PUBLIC API - Submodules (Namespaces for Documentation)

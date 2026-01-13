@@ -1,5 +1,6 @@
 import { IQAnyRecord } from './../interfaces/model.interface';
 import { IQImplements } from '@/index';
+import { QConfig } from '../config/quick.config';
 /**
  * @Quick() class decorator for automatic property registration.
  *
@@ -466,6 +467,15 @@ export function Quick<
 	return function <T extends Function>(target: T): T {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
+
+		// Merge global defaults
+		const globalDefaults = QConfig.get().defaults;
+		const mergedOptions = { ...globalDefaults, ...advancedOptions };
+
+		// Store options (strict mode, etc)
+		if (Object.keys(mergedOptions).length > 0) {
+			Reflect.defineMetadata(QUICK_OPTIONS_KEY, mergedOptions, target);
+		}
 
 		// Store type map if provided
 		if (typeMap) {

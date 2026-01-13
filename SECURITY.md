@@ -41,9 +41,15 @@ Internal error handlers allow secure logging of malformed data without crashing 
 ### 7. Known Limitations
 - **Symbol Memory Usage**: The `Symbol` transformer uses `Symbol.for()` to ensure symbols can be serialized and deserialized accurately across sessions. However, `Symbol.for()` creates entries in the global symbol registry which are never garbage collected. **Do not use `Symbol` type for high-frequency unique user input** (like session IDs) to prevent memory leaks.
 - **Client-Side ReDoS**: While we limit input length for RegExp deserialization, the complexity of the regex itself is not validated. Users should sanitize regex patterns from untrusted sources to prevent ReDoS in their application logic.
-- **Arrow Function Shadowing**: Class methods defined as Arrow Functions (`method = () => {}`) are technically instance properties, not prototype methods. In non-strict mode, a malicious payload can overwrite them initially (though constructor initialization usually restores them). To block this vector completely, use **Strict Mode** (`@Quick({}, { strict: true })`) to reject undeclared properties in the payload.
+- **Arrow Function Shadowing**: Class methods defined as Arrow Functions (`method = () => {}`) are technically instance properties. To block shadowing attacks, use Strict Mode.
+  - **Global Enforcement**: You can enable Strict Mode for the entire project:
+    ```typescript
+    import { QConfig } from '@cartago-git/quickmodel';
+    QConfig.configure({ defaults: { strict: true } });
+    ```
+  - **Per-Class**: `@Quick({}, { strict: true })`
 
-## Best Practices
+### 7. Known Limitations
 
 - **Validate Input**: Always use `.validate()` on models created from untrusted sources.
 - **Use Strict Mode**: Consider enabling strict mode (`@Quick({ strict: true })`) to reject unknown properties in payloads.
