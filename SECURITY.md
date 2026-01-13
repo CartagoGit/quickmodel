@@ -21,7 +21,7 @@ QuickModel includes several built-in security features to protect your applicati
 The deserializer explicitly prevents prototype pollution attacks by blocking modification of `__proto__`, `constructor`, and `prototype` properties in:
 - Recursive merges (PopulationService)
 - Map/Set Transformers (both Input/Deserialization and Output/Serialization)
-- Interface conversion (ToInterfaceService)
+- Interface conversion (ToInterfaceService) - Prevents polluted data from being re-serialized
 
 ### 2. Denial of Service (DoS) Prevention
 - **Buffer Allocation**: `ArrayBufferTransformer` enforces a maximum size limit to prevent memory exhaustion attacks.
@@ -111,6 +111,10 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
   - **Syntax Validation**: Ensures only valid RegExp strings are instantiated.
   - *limitation*: Short but complex ReDoS patterns are not statically analyzed.
   - **Test**: `tests/security/regexp-redos.test.ts`
+
+- **Interface Serialization Injection**:
+  - `ToInterfaceService` strips unsafe keys (`__proto__`, `constructor`, `prototype`) during object reconstruction, ensuring that even if an internal model state theoretically held a dangerous key, it is not emitted in the interface output.
+  - **Test**: `tests/security/to-interface-safety.test.ts`
 
 - **Safe Error Reporting (Crash Prevention)**:
   - Ensures that reporting errors on circular data structures (like self-referencing Maps) uses a safe serialization method instead of crashing the process (Availability protection).

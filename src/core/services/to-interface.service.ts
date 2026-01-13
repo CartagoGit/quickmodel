@@ -390,6 +390,14 @@ export class ToInterfaceService<
 				const typedCurrent = currentValue as Record<string, unknown>;
 				const resultNoProto = Object.create(null);
 				for (const key in typedCurrent) {
+					// SECURITY: Prevent Prototype Pollution
+					if (
+						key === '__proto__' ||
+						key === 'constructor' ||
+						key === 'prototype'
+					) {
+						continue;
+					}
 					resultNoProto[key] = this.convertToInterfaceFormat(
 						typedCurrent[key],
 						typedOriginal[key],
@@ -419,6 +427,15 @@ export class ToInterfaceService<
 
 				const typedCurrent = currentValue as Record<string, unknown>;
 				for (const key in typedOriginal) {
+					// SECURITY: Prevent Prototype Pollution
+					if (
+						key === '__proto__' ||
+						key === 'constructor' ||
+						key === 'prototype'
+					) {
+						continue;
+					}
+
 					if (key in typedCurrent) {
 						result[key] = this.convertToInterfaceFormat(
 							typedCurrent[key],
@@ -457,6 +474,15 @@ export class ToInterfaceService<
 			const typedCurrent = currentValue as Record<string, unknown>;
 
 			for (const key in typedCurrent) {
+				// SECURITY: Prevent Prototype Pollution
+				if (
+					key === '__proto__' ||
+					key === 'constructor' ||
+					key === 'prototype'
+				) {
+					continue;
+				}
+
 				if (typeof typedCurrent[key] !== 'function') {
 					result[key] = this.convertToInterfaceFormat(
 						typedCurrent[key],
