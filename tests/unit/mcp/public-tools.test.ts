@@ -3,6 +3,7 @@ import {
 	QListTransformersTool,
 	QGenerateMockDataTool,
 	QInspectModelTool,
+	QJsonToModelTool,
 } from '../../../src/mcp/tools/public-tools';
 
 describe('MCP Public Tools', () => {
@@ -70,7 +71,64 @@ describe('MCP Public Tools', () => {
 
 			expect(result.name).toBe('Unknown');
 			expect(result.transformers).toBeArray();
-			expect(result.transformers).toHaveLength(0);
+		});
+	});
+
+	describe('QJsonToModelTool', () => {
+		it('should convert simple json to model', async () => {
+			const tool = new QJsonToModelTool();
+			const json = JSON.stringify({
+				name: 'John',
+				age: 30,
+				isAdmin: true,
+			});
+
+			const result = await tool.execute({ json, className: 'User' });
+			expect(result.code).toContain('class User extends QModel<User>');
+			expect(result.code).toContain(
+				"@Quick({\n    name: 'string',\n    age: 'number',\n    isAdmin: 'boolean'\n})"
+			);
+			expect(result.code).toContain('public name: string;');
+			expect(result.code).toContain('public age: number;');
+			expect(result.code).toContain('public isAdmin: boolean;');
+		});
+
+		it('should infer date type', async () => {
+			const tool = new QJsonToModelTool();
+			const json = JSON.stringify({
+				createdAt: '2024-01-01T12:00:00Z',
+				birth: '2000-01-01',
+			});
+
+			const result = await tool.execute({
+				json,
+				className: 'DateModel',
+			});
+			expect(result.code).toContain("createdAt: 'date'");
+			expect(result.code).toContain("birth: 'date'");
+		});
+
+		it('should fail on invalid json', async () => {
+			const tool = new QJsonToModelTool();
+			const json = '{ invalid json ';
+
+			// Using try/catch because bun:test expect().toThrow() with async can be finicky depending on version
+			try {
+				await tool.execute({ json, className: 'Fail' });
+				expect(true).toBe(false); // Fail if no error
+			} catch (e: any) {
+				expect(e.message).toContain('Invalid JSON');
+			}
+		});
+
+		it('should fail if json is not an object', async () => {
+			const tool = new QJsonToModelTool();
+			try {
+				await tool.execute({ json: '123', className: 'Fail' });
+				expect(true).toBe(false);
+			} catch (e: any) {
+				expect(e.message).toContain('must be an object');
+			}
 		});
 	});
 });

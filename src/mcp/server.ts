@@ -12,6 +12,7 @@ import {
 	QGenerateMockDataTool,
 	QInspectModelTool,
 	QSearchDocsTool,
+	QJsonToModelTool,
 } from './tools/public-tools';
 import { QSimulateTransformationTool } from './tools/core-tools';
 import { QCheckProjectRulesTool } from './tools/rule-tools';
@@ -21,6 +22,7 @@ import {
 	QCheckMissingJSDocsTool,
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
+	QSyncDocsTool,
 } from './tools/internal-tools';
 
 /**
@@ -78,6 +80,8 @@ export class QMcpServer {
 			new QCheckProjectHealthTool(),
 			new QGetCoverageReportTool(),
 			new QCheckProjectRulesTool(),
+			new QJsonToModelTool(),
+			new QSyncDocsTool(),
 		];
 	}
 

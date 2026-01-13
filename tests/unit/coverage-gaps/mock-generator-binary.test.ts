@@ -8,6 +8,7 @@ describe('Mock Generator - Binary & Typed Arrays Coverage', () => {
 		view: DataView,
 		i8: Int8Array,
 		u8: Uint8Array,
+		u8c: Uint8ClampedArray,
 		i16: Int16Array,
 		u16: Uint16Array,
 		i32: Int32Array,
@@ -22,6 +23,7 @@ describe('Mock Generator - Binary & Typed Arrays Coverage', () => {
 		declare view: DataView;
 		declare i8: Int8Array;
 		declare u8: Uint8Array;
+		declare u8c: Uint8ClampedArray;
 		declare i16: Int16Array;
 		declare u16: Uint16Array;
 		declare i32: Int32Array;
@@ -44,6 +46,7 @@ describe('Mock Generator - Binary & Typed Arrays Coverage', () => {
 		expect(mock.i8).toBeInstanceOf(Int8Array);
 		expect(mock.i8.length).toBe(0);
 		expect(mock.u8).toBeInstanceOf(Uint8Array);
+		expect(mock.u8c).toBeInstanceOf(Uint8ClampedArray);
 		expect(mock.i16).toBeInstanceOf(Int16Array);
 		expect(mock.u16).toBeInstanceOf(Uint16Array);
 		expect(mock.i32).toBeInstanceOf(Int32Array);
