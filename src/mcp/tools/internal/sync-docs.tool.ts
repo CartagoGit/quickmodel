@@ -135,7 +135,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 
 	private generateToolMd(
 		tools: any[],
-		title: string,
+		_title: string,
 		texts: Record<string, any>,
 		descLookup: (name: string, defaultDesc: string) => string
 	): string {

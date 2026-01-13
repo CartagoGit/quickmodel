@@ -4,7 +4,7 @@ import { QAbstractTool } from '../../../src/mcp/tools/abstract-tool';
 import { z } from 'zod';
 
 // Mocks
-const mockRegisterTool = mock((name, schema, callback) => {});
+const mockRegisterTool = mock((_name, _schema, _callback) => {});
 const mockConnect = mock(() => Promise.resolve());
 
 mock.module('@modelcontextprotocol/sdk/server/mcp.js', () => {
@@ -68,7 +68,9 @@ describe('QMcpServer', () => {
 		server.registerTools([tool]);
 
 		// Get the callback passed to registerTool
-		const callback = mockRegisterTool.mock.calls[0][2];
+		const args = mockRegisterTool.mock.calls[0];
+		if (!args) throw new Error('Tool not registered');
+		const callback = args[2] as (args: any) => Promise<any>;
 
 		// Execute callback
 		const result = await callback({ input: 'test' });
@@ -88,7 +90,9 @@ describe('QMcpServer', () => {
 		const tool = new MockTool();
 		server.registerTools([tool]);
 
-		const callback = mockRegisterTool.mock.calls[0][2];
+		const args = mockRegisterTool.mock.calls[0];
+		if (!args) throw new Error('Tool not registered');
+		const callback = args[2] as (args: any) => Promise<any>;
 
 		// Execute callback with error input
 		const result = await callback({ input: 'error' });
