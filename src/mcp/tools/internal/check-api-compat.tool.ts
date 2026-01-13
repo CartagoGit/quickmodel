@@ -35,6 +35,12 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 			args.baselineFile || 'api-baseline.json'
 		);
 
+		if (!baselinePath.startsWith(cwd)) {
+			throw new Error(
+				'Security Error: Baseline file path is outside project root.'
+			);
+		}
+
 		// 1. Generate current API surface
 		const currentApi = this.scanExports(join(cwd, 'src'));
 

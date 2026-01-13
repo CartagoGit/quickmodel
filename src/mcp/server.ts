@@ -156,10 +156,11 @@ if (import.meta.main) {
 	const server = new QMcpServer();
 	server.registerTools(QMcpServer.getDefaultTools());
 
-	/* istanbul ignore next */
+	/* c8 ignore start */
 	server.start().catch((error) => {
 		console.error('Fatal error in MCP Server:', error);
 		process.exit(1);
 	});
+	/* c8 ignore stop */
 }
 /* c8 ignore stop */

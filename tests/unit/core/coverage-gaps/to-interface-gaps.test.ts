@@ -133,4 +133,32 @@ describe('ToInterface Coverage Gaps', () => {
 
 		expect(d.toInterface()).toEqual({ date: '123456789' });
 	});
+
+	it('should serialize custom class instance using properties matching original', () => {
+		// Covers lines 402-413: object with non-Object constructor but no toInterface
+		class CustomData {
+			constructor(
+				public a: number,
+				public b: string
+			) {}
+			method() {
+				return true;
+			} // Should skip functions (line 403)
+		}
+
+		@Quick({ data: 'any' })
+		class CustomModel extends QModel<any> {
+			declare data: CustomData;
+		}
+
+		// Initialize with a simple object to set "originalValue" structure
+		// NOTE: if original is generic object, we enter the block.
+		const m = new CustomModel({ data: { a: 1, b: 'orig' } });
+
+		// Update to instance of CustomData
+		m.data = new CustomData(99, 'updated');
+
+		// Expect serialization to extract properties 'a' and 'b' and ignore 'method'
+		expect(m.toInterface()).toEqual({ data: { a: 99, b: 'updated' } });
+	});
 });

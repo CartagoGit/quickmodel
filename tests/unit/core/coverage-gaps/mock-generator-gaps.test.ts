@@ -17,6 +17,17 @@ describe('Mock Generator Coverage Gaps', () => {
 
 			@QType()
 			date: Date;
+
+			@QType() u8: Uint8Array;
+			@QType() u8c: Uint8ClampedArray;
+			@QType() i16: Int16Array;
+			@QType() u16: Uint16Array;
+			@QType() i32: Int32Array;
+			@QType() u32: Uint32Array;
+			@QType() f32: Float32Array;
+			@QType() f64: Float64Array;
+			@QType() bi64: BigInt64Array;
+			@QType() bu64: BigUint64Array;
 		}
 
 		const mock = ImplicitBinaryModel.mock().random();
@@ -24,6 +35,16 @@ describe('Mock Generator Coverage Gaps', () => {
 		expect(mock.buf).toBeInstanceOf(ArrayBuffer);
 		expect(mock.view).toBeInstanceOf(DataView);
 		expect(mock.date).toBeInstanceOf(Date);
+		expect(mock.u8).toBeInstanceOf(Uint8Array);
+		expect(mock.u8c).toBeInstanceOf(Uint8ClampedArray);
+		expect(mock.i16).toBeInstanceOf(Int16Array);
+		expect(mock.u16).toBeInstanceOf(Uint16Array);
+		expect(mock.i32).toBeInstanceOf(Int32Array);
+		expect(mock.u32).toBeInstanceOf(Uint32Array);
+		expect(mock.f32).toBeInstanceOf(Float32Array);
+		expect(mock.f64).toBeInstanceOf(Float64Array);
+		expect(mock.bi64).toBeInstanceOf(BigInt64Array);
+		expect(mock.bu64).toBeInstanceOf(BigUint64Array);
 	});
 
 	it('should generate sample values for all types', () => {
