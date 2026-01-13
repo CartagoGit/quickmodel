@@ -1,0 +1,71 @@
+bun test v1.3.2 (b131639c)
+
+tests/mcp/unit/internal/new-tools.test.ts:
+(pass) New Internal Tools > QScaffoldFeatureTool > should scaffold a transformer [10.18ms]
+(pass) New Internal Tools > QScaffoldFeatureTool > should scaffold a tool [1.13ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > should detect compatible changes [1.66ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > should detect breaking changes [0.96ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > should create new baseline if it does not exist [0.79ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > QGenerateTestTool > should generate test file for source outside src/ [1.34ms]
+(pass) New Internal Tools > QBenchmarkPerformanceTool > should run benchmarks and return metrics [9.09ms]
+(pass) New Internal Tools - Health & Docs > QCheckProjectHealthTool > should return ok on successful check [0.38ms]
+(pass) New Internal Tools - Health & Docs > QCheckProjectHealthTool > should return error on failed check [0.37ms]
+(pass) New Internal Tools - Health & Docs > QGetCoverageReportTool > should return coverage summary on success [0.24ms]
+(pass) New Internal Tools - Health & Docs > QGetCoverageReportTool > should return error summary on failure [0.16ms]
+(pass) New Internal Tools - Health & Docs > QUpdateDocsTool > should run build script [0.42ms]
+(pass) New Internal Tools - Health & Docs > QUpdateDocsTool > should run clean script [0.37ms]
+(pass) New Internal Tools - Health & Docs > QUpdateDocsTool > should handle spawn errors [0.25ms]
+----------------------------------------------------|---------|---------|-------------------
+File                                                | % Funcs | % Lines | Uncovered Line #s
+----------------------------------------------------|---------|---------|-------------------
+All files                                           |   41.07 |   55.16 |
+ src/core/bases/base-transformer.ts                 |    0.00 |  100.00 | 
+ src/core/constants/metadata-keys.ts                |  100.00 |  100.00 | 
+ src/core/constants/native-types.ts                 |  100.00 |  100.00 | 
+ src/core/decorators/qtype.decorator.ts             |  100.00 |   21.13 | 220-243,282,288-289,292,295-297,300-307,310-315,318-323,326-331,333-334,338-343,346-351,354-361,365-370,373-378,381-386,388-395,403,405-411,422,425-427,429-430,432-433,435-436,438-439,441-442,444-445,447-448,450-451,453-454,456-457,459-478,480,482-489,493,495,497-510,515-523,526-527,529-536,539-541,543,548-560,563-568
+ src/core/decorators/quick.decorator.ts             |   80.00 |   81.96 | 496,501-505,530,538-542,577,605-607,610-619,621-626,629-630
+ src/core/errors/quickmodel.error.ts                |    0.00 |    8.51 | 6-20,27-41,48-60
+ src/core/helpers/transform-helpers.ts              |    0.00 |   48.31 | 24-39,54,57-60,63-68,71,74-76,79-81,87-88,93,101-102,111-112,118-119,123-124,128-129,133-134,138-139,146,149,176,191-192,196-197,203-204
+ src/core/models/quick.model.ts                     |   32.14 |   37.70 | 259-266,283-298,320-367,647-664,667-781,805-813,858-859,904-907,930-933,1002-1005,1048,1070-1072,1081,1106-1116,1146-1156,1185-1196,1227-1239,1248-1273,1317-1319
+ src/core/registry/transformer.registry.ts          |   50.00 |   77.78 | 38-44
+ src/core/services/deserializer.service.ts          |   40.00 |   37.89 | 68-70,83-133,174-178
+ src/core/services/instance-factory.service.ts      |   50.00 |   88.24 | 23
+ src/core/services/mock-builder.service.ts          |    0.00 |   10.90 | 30-32,40-79,94-100,117-123,140-146,163-169,186-192,209-214,229-234,244-249,259-264,274-275,298-315,335-351
+ src/core/services/mock-generator.service.ts        |    9.09 |    2.54 | 26-172,179-190,194-229,233-283,287-398,402-445,449-457,461-517,522-580,585-708
+ src/core/services/population.service.ts            |   42.86 |   69.17 | 363-370,432-454,583-626,630-751
+ src/core/services/serializer.service.ts            |   71.43 |   99.70 | 
+ src/core/services/to-interface.service.ts          |    0.00 |    1.40 | 8-100,104-434
+ src/core/services/transformer-lookup.service.ts    |   75.00 |   99.20 | 
+ src/core/services/validation.service.ts            |   25.00 |   36.51 | 156-179,195-329
+ src/core/services/value-transformer.service.ts     |   60.00 |   35.40 | 31-54,62-214
+ src/mcp/locales/en.mcp.ts                          |  100.00 |  100.00 | 
+ src/mcp/locales/es.mcp.ts                          |  100.00 |  100.00 | 
+ src/mcp/tools/abstract-tool.ts                     |    0.00 |  100.00 | 
+ src/mcp/tools/internal/benchmark-perf.tool.ts      |  100.00 |  100.00 | 
+ src/mcp/tools/internal/check-api-compat.tool.ts    |   80.00 |   98.97 | 
+ src/mcp/tools/internal/check-health.tool.ts        |   66.67 |   96.00 | 
+ src/mcp/tools/internal/check-jsdocs.tool.ts        |    0.00 |   12.50 | 15-83
+ src/mcp/tools/internal/check-project-rules.tool.ts |    0.00 |   14.29 | 20-94,98-117
+ src/mcp/tools/internal/coverage-report.tool.ts     |   66.67 |   94.44 | 
+ src/mcp/tools/internal/generate-test.tool.ts       |   66.67 |   98.75 | 
+ src/mcp/tools/internal/index.ts                    |  100.00 |  100.00 | 
+ src/mcp/tools/internal/scaffold-feature.tool.ts    |   75.00 |   98.68 | 
+ src/mcp/tools/internal/sync-docs.tool.ts           |    0.00 |    7.27 | 21-136,140-181,185-200,204-207,211-235
+ src/mcp/tools/internal/update-docs.tool.ts         |   66.67 |   96.15 | 
+ src/mcp/tools/internal/utils.ts                    |    0.00 |    3.03 | 1-32
+ src/transformers/bigint.transformer.ts             |    0.00 |   11.49 | 57-112,123,134-153
+ src/transformers/buffer.transformer.ts             |    0.00 |   16.35 | 50-94,104,115-122,167-196,206,217-228,247-273,277,281-288
+ src/transformers/date.transformer.ts               |   50.00 |   40.63 | 58,63,68-69,73-80,85-86,90-97,120-135
+ src/transformers/error.transformer.ts              |    0.00 |   10.99 | 68-131,141,152-167
+ src/transformers/map-set.transformer.ts            |    0.00 |   12.33 | 55-116,126,137-152,198-228,238,249-265
+ src/transformers/primitive.transformer.ts          |   75.00 |   97.78 | 
+ src/transformers/regexp.transformer.ts             |    0.00 |    6.02 | 68-202,212-216,227-242
+ src/transformers/symbol.transformer.ts             |    0.00 |   10.99 | 52-112,123-125,136-152
+ src/transformers/typed-array.transformer.ts        |   25.00 |   34.38 | 109-168,181-184,195-214
+ src/transformers/web-apis.transformer.ts           |    0.00 |    9.84 | 20-66,71,75-94,109-155,159,163-178,192-225,229,244-304
+----------------------------------------------------|---------|---------|-------------------
+
+ 14 pass
+ 0 fail
+ 28 expect() calls
+Ran 14 tests across 1 file. [305.00ms]

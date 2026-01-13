@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 /**
  * Tool to check API compatibility.
@@ -30,7 +30,7 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 	}> {
 		await Promise.resolve();
 		const cwd = process.cwd();
-		const baselinePath = pathResolve(
+		const baselinePath = resolve(
 			cwd,
 			args.baselineFile || 'api-baseline.json'
 		);
@@ -125,5 +125,3 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 		return results;
 	}
 }
-
-import { resolve as pathResolve } from 'path';

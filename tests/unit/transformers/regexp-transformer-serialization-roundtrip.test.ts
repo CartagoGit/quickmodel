@@ -93,6 +93,7 @@ describe('Unit: RegExp Transformer', () => {
 	});
 
 	test('Should maintain pattern functionality after roundtrip', () => {
+		// eslint-disable-next-line security/detect-unsafe-regex
 		const emailPattern = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 		const model = new Pattern({ pattern: emailPattern.toString() });
 		const deserialized = Pattern.fromJSON(model.toJSON());

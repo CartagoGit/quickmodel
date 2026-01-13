@@ -50,4 +50,22 @@ describe('QType Decorator Coverage Gaps', () => {
 		const m = new TransformModel({ doubled: 10 });
 		expect(m.doubled).toBe(20);
 	});
+
+	it('should handle object method shorthand as transformer', () => {
+		const obj = {
+			transformer(x: number) {
+				return x * 3;
+			},
+		};
+		// obj.transformer.prototype is undefined for method shorthand!
+		// And toString() starts with "transformer(" not "function"
+
+		class MethodModel extends QModel<any> {
+			// eslint-disable-next-line @typescript-eslint/unbound-method
+			@QType(obj.transformer) val: number;
+		}
+
+		const m = new MethodModel({ val: 10 });
+		expect(m.val).toBe(30);
+	});
 });

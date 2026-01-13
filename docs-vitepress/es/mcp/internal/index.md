@@ -73,6 +73,14 @@ Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y 
 }
 ```
 
+## `check_security`
+
+Run the security test suite to verify protection against vulnerabilities (XSS, Injection, Path Traversal, etc.).
+
+```json
+{}
+```
+
 ## `generate_test`
 
 Herramienta interna para generar un archivo de prueba inicial para un componente fuente.

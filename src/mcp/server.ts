@@ -30,6 +30,7 @@ import {
 	QCheckApiCompatibilityTool,
 	QBenchmarkPerformanceTool,
 	QCheckProjectRulesTool,
+	QCheckSecurityTool,
 } from './tools/internal';
 /**
  * Main class for the QuickModel MCP Server.
@@ -88,6 +89,7 @@ export class QMcpServer {
 			new QCheckProjectHealthTool(),
 			new QGetCoverageReportTool(),
 			new QCheckProjectRulesTool(),
+			new QCheckSecurityTool(),
 			new QJsonToModelTool(),
 			new QSyncDocsTool(),
 			new QScaffoldFeatureTool(),

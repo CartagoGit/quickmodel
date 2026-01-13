@@ -3,6 +3,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import securityPlugin from 'eslint-plugin-security';
 
 export default tseslint.config(
   {
@@ -20,8 +21,16 @@ export default tseslint.config(
     ],
   },
   eslint.configs.recommended,
+  securityPlugin.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+  {
+    rules: {
+      'security/detect-object-injection': 'off', // Essential for a reflection/serialization library
+      'security/detect-non-literal-fs-filename': 'off', // We validate paths manually in tools
+      'security/detect-unsafe-regex': 'warn', // checking manually
+    }
+  },
   {
     languageOptions: {
       parserOptions: {

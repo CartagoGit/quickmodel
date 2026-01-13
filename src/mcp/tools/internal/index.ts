@@ -9,3 +9,4 @@ export * from './scaffold-feature.tool';
 export * from './check-api-compat.tool';
 export * from './benchmark-perf.tool';
 export * from './check-project-rules.tool';
+export * from './check-security.tool';

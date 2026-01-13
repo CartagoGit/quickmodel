@@ -8,12 +8,24 @@ export const spawnCommand = async (
 		const process = spawn(command, args, { cwd: cwd || undefined });
 		let stdout = '';
 		let stderr = '';
+		const MAX_BUFFER = 10 * 1024 * 1024; // 10MB Limit
 
 		process.stdout.on('data', (data) => {
-			stdout += data.toString();
+			if (stdout.length < MAX_BUFFER) {
+				const chunk = data.toString();
+				stdout += chunk;
+				if (stdout.length > MAX_BUFFER) {
+					stdout =
+						stdout.slice(0, MAX_BUFFER) +
+						'\n... [TRUNCATED DUE TO SIZE]';
+					process.kill(); // Kill process if rogue
+				}
+			}
 		});
 		process.stderr.on('data', (data) => {
-			stderr += data.toString();
+			if (stderr.length < MAX_BUFFER) {
+				stderr += data.toString();
+			}
 		});
 
 		process.on('close', (code) => {

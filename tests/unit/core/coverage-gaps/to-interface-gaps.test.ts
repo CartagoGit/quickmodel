@@ -228,4 +228,85 @@ describe('ToInterface Coverage Gaps', () => {
 
 		process.env.NODE_ENV = originalEnv;
 	});
+
+	it('should handle Symbol conversion with fallback', () => {
+		// Covers line 252: typeof currentValue !== 'symbol'
+		@Quick({ sym: 'any' })
+		class SymbolWrapper extends QModel<any> {
+			declare sym: any;
+		}
+		// Init with symbol to set originalValue type
+		const originalSym = Symbol('orig');
+		const w = new SymbolWrapper({ sym: originalSym });
+
+		// Update to string
+		w.sym = 'new-symbol-desc';
+
+		const res = w.toInterface();
+		expect(typeof res.sym).toBe('symbol');
+		expect(res.sym.toString()).toBe('Symbol(new-symbol-desc)');
+	});
+
+	it('should handle legacy BigInt object format', () => {
+		// Covers lines 303-315
+		@Quick({ big: 'any' })
+		class LegacyBigInt extends QModel<any> {
+			declare big: any;
+		}
+
+		// Simulate legacy object structure { __type: 'bigint' } as original value
+		// We have to bypass standard init which might not support this directly or transform it
+		// But if we pass it as 'any', it is preserved.
+		const legacyObj = { __type: 'bigint' };
+		const m = new LegacyBigInt({ big: legacyObj });
+
+		// Debugging: Check what __initData holds
+		const initData = (m as any)['__initData'];
+		console.log('DEBUG: __initData:', JSON.stringify(initData, null, 2));
+
+		// Case 1: Current is BigInt
+		m.big = 123n;
+		try {
+			expect(m.toInterface()).toEqual({ big: '123' });
+		} catch (e) {
+			console.error('DEBUG: Error in toInterface:', e);
+			throw e;
+		}
+
+		// Case 2: Current is string (needs conversion) - Line 312
+		m.big = '456';
+		expect(m.toInterface()).toEqual({ big: '456' });
+	});
+
+	it('should serialize custom class instance when original is also custom instance', () => {
+		// Covers lines 402-413: object with non-Object constructor but no toInterface
+		class CustomData {
+			constructor(public a: number) {}
+		}
+		@Quick({ data: 'any' })
+		class CustomModel extends QModel<any> {
+			declare data: any;
+		}
+
+		const orig = new CustomData(1);
+		const m = new CustomModel({ data: orig });
+
+		// Update to new instance
+		m.data = new CustomData(2);
+
+		// Should effectively clone it as plain object?
+		expect(m.toInterface()).toEqual({ data: { a: 2 } });
+	});
+
+	it('should handle String original with BigInt current', () => {
+		// Covers lines 318-322: original is string, current is bigint -> string
+		@Quick({ val: 'any' })
+		class StringBigInt extends QModel<any> {
+			declare val: any;
+		}
+		const m = new StringBigInt({ val: 'initial' });
+		m.val = 999n;
+
+		expect(m.toInterface()).toEqual({ val: '999' });
+	});
 });

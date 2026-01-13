@@ -1,0 +1,2164 @@
+$ bun test --coverage
+bun test v1.3.2 (b131639c)
+
+tests/security/core-security.test.ts:
+(pass) Core Security Standards > Prototype Pollution Prevention > PopulationService should ignore __proto__ keys [2.84ms]
+(pass) Core Security Standards > DoS Prevention > TypedArrayTransformer should enforce MAX_ITEMS limit [3.77ms]
+(pass) Core Security Standards > DoS Prevention > TypedArrayTransformer should allow arrays within limit [0.11ms]
+
+tests/security/mcp-security.test.ts:
+(pass) MCP Tools Security > QSearchDocsTool (Command Injection) > should treat shell operators as literal text (spawn check) [9.16ms]
+(pass) MCP Tools Security > Path Traversal Prevention > QScaffoldFeatureTool should reject paths outside project root [3.59ms]
+(pass) MCP Tools Security > Path Traversal Prevention > QCheckApiCompatibilityTool should reject baseline file outside root [0.75ms]
+(pass) MCP Tools Security > Path Traversal Prevention > QCheckProjectRulesTool should reject target directory outside root [0.56ms]
+
+tests/e2e/mcp-cli.test.ts:
+(pass) CLI E2E > should show help when run without arguments [328.25ms]
+(pass) CLI E2E > should show help when run with help command [357.59ms]
+(pass) CLI E2E > should start MCP server with mcp command [311.68ms]
+
+tests/e2e/auto-conversion-roundtrip.test.ts:
+(pass) QuickModel - Comprehensive Test Suite > 1. Primitivos > number: id [11.14ms]
+(pass) QuickModel - Comprehensive Test Suite > 1. Primitivos > string: name [0.07ms]
+(pass) QuickModel - Comprehensive Test Suite > 1. Primitivos > boolean: isActive [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 1. Primitivos > null: age [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 1. Primitivos > string: email [0.02ms]
+(pass) QuickModel - Comprehensive Test Suite > 1. Primitivos > undefined: nickname [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 2. Enums > string enum: role [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 2. Enums > numeric enum: status [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 2. Enums > const enum: userType [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 3. Dates y BigInt > Date: createdAt [0.06ms]
+(pass) QuickModel - Comprehensive Test Suite > 3. Dates y BigInt > Date: updatedAt [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 3. Dates y BigInt > Date | null: birthDate [0.02ms]
+(pass) QuickModel - Comprehensive Test Suite > 3. Dates y BigInt > BigInt: bigNumber [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 4. Colecciones > Set<string>: tags [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 4. Colecciones > Map<string, any>: metadata [0.05ms]
+(pass) QuickModel - Comprehensive Test Suite > 4. Colecciones > Array<string>: permissions [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 5. Tipos especiales > RegExp: pattern [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 5. Tipos especiales > Symbol: symbolic [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 5. Tipos especiales > Buffer: buffer [0.05ms]
+(pass) QuickModel - Comprehensive Test Suite > 5. Tipos especiales > Error: errorData [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 6. Objetos plain > plain object: config [0.02ms]
+(pass) QuickModel - Comprehensive Test Suite > 6. Objetos plain > Record: settings [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 7. Nested models > class instance: address [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 7. Nested models > plain object interface: company [0.05ms]
+(pass) QuickModel - Comprehensive Test Suite > 7. Nested models > array of class instances: addresses [0.06ms]
+(pass) QuickModel - Comprehensive Test Suite > 8. Arrays de QModels > array of Post models - automatic conversion [0.06ms]
+(pass) QuickModel - Comprehensive Test Suite > 9. Tipos complejos > nested object: preferences [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 9. Tipos complejos > union array: history [0.06ms]
+(pass) QuickModel - Comprehensive Test Suite > 10. TypedArrays > Uint8Array: scores [0.19ms]
+(pass) QuickModel - Comprehensive Test Suite > 10. TypedArrays > Float32Array: data [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 11. Default values > property with default value [0.02ms]
+(pass) QuickModel - Comprehensive Test Suite > 11. Default values > default value behavior with undefined/missing fields [1.53ms]
+(pass) QuickModel - Comprehensive Test Suite > 12. Clone functionality > clone from instance [0.18ms]
+(pass) QuickModel - Comprehensive Test Suite > 13. serialize() - Serialización > returns plain object [1.09ms]
+(pass) QuickModel - Comprehensive Test Suite > 13. serialize() - Serialización > Date transformed to string [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 13. serialize() - Serialización > BigInt transformed to string [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 13. serialize() - Serialización > Set serializes to array format [0.03ms]
+(pass) QuickModel - Comprehensive Test Suite > 13. serialize() - Serialización > Map serializes to object format [0.02ms]
+(pass) QuickModel - Comprehensive Test Suite > 14. Roundtrip (Model → Interface → Model) > dates preserved through roundtrip [1.14ms]
+(pass) QuickModel - Comprehensive Test Suite > 14. Roundtrip (Model → Interface → Model) > BigInt preserved through roundtrip [0.81ms]
+(pass) QuickModel - Comprehensive Test Suite > 14. Roundtrip (Model → Interface → Model) > Set preserved through roundtrip [0.74ms]
+(pass) QuickModel - Comprehensive Test Suite > 14. Roundtrip (Model → Interface → Model) > Map preserved through roundtrip [0.77ms]
+(pass) QuickModel - Comprehensive Test Suite > 15. URL y URLSearchParams > URL transformation [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 15. URL y URLSearchParams > URLSearchParams transformation [0.04ms]
+(pass) QuickModel - Comprehensive Test Suite > 16. Herencia de modelos > extended model inherits base properties [0.31ms]
+(pass) QuickModel - Comprehensive Test Suite > 17. Métodos custom en el modelo > custom methods work correctly [0.11ms]
+
+tests/mcp/integration/tool-execution.test.ts:
+(pass) MCP Tool Execution Integration > should execute QInterfaceToModelTool via server registry [8.52ms]
+(pass) MCP Tool Execution Integration > should execute QGenerateMockDataTool via server registry [2.58ms]
+
+tests/mcp/integration/server-startup.test.ts:
+(pass) MCP Server Integration > should initialize with default tools [5.89ms]
+(pass) MCP Server Integration > should register tools with the underlying McpServer [2.47ms]
+
+tests/mcp/unit/spawn-command.test.ts:
+(pass) MCP Internal Tools - spawnCommand > should resolve with stdout when command succeeds [21.96ms]
+(pass) MCP Internal Tools - spawnCommand > should reject when command fails [1.33ms]
+(pass) MCP Internal Tools - spawnCommand > should handle stderr output [1.24ms]
+(pass) MCP Internal Tools - spawnCommand > should handle non-existent command [35.75ms]
+
+tests/mcp/unit/rule-tools.test.ts:
+(pass) QCheckProjectRulesTool > should pass given no violations [1.12ms]
+(pass) QCheckProjectRulesTool > should detect @QType in test files [0.76ms]
+(pass) QCheckProjectRulesTool > should detect console.log in src files [1.08ms]
+
+tests/mcp/unit/security.test.ts:
+(pass) MCP Security Tests > QSearchDocsTool > should use spawn instead of exec to prevent injection [3.20ms]
+(pass) MCP Security Tests > QSearchDocsTool > should sanitize or handle potentially dangerous input gracefully [1.89ms]
+
+tests/mcp/unit/server.test.ts:
+(pass) QMcpServer > should be defined [0.18ms]
+(pass) QMcpServer > should register tools correctly [0.28ms]
+(pass) QMcpServer > should execute tool callback successfully [0.38ms]
+(pass) QMcpServer > should handle errors in tool callback [0.22ms]
+(pass) QMcpServer > should start the server [0.19ms]
+(pass) QMcpServer > should get default tools [0.76ms]
+
+tests/integration/decorators/qtype-syntax-comparison-declare-vs-bang.test.ts:
+(pass) Syntax Comparison: declare vs ! > Con sintaxis DECLARE > debe instanciar correctamente [0.36ms]
+(pass) Syntax Comparison: declare vs ! > Con sintaxis DECLARE > debe serializar correctamente [0.31ms]
+(pass) Syntax Comparison: declare vs ! > Con sintaxis DECLARE > debe deserializar correctamente después de serialización [0.42ms]
+(pass) Syntax Comparison: declare vs ! > Con sintaxis ! (BANG) > debe instanciar correctamente [0.30ms]
+(pass) Syntax Comparison: declare vs ! > Con sintaxis ! (BANG) > debe serializar correctamente [0.23ms]
+(pass) Syntax Comparison: declare vs ! > Con sintaxis ! (BANG) > debe deserializar correctamente después de serialización [0.39ms]
+(pass) Syntax Comparison: declare vs ! > Comparación entre ambas sintaxis > ambas sintaxis deben producir el mismo resultado [0.33ms]
+(pass) Syntax Comparison: declare vs ! > Comparación entre ambas sintaxis > ambas sintaxis deben ser intercambiables en deserialización [0.28ms]
+
+tests/integration/decorators/qtype-constructor-aliases.test.ts:
+(pass) Constructor Aliases > Usando constructores nativos (@QType(RegExp), @QType(Error), etc.) > Should serialize correctly [0.74ms]
+(pass) Constructor Aliases > Usando constructores nativos (@QType(RegExp), @QType(Error), etc.) > Should deserialize correctly [0.21ms]
+(pass) Constructor Aliases > Usando constructores nativos (@QType(RegExp), @QType(Error), etc.) > Should perform round-trip correctly [0.29ms]
+(pass) Constructor Aliases > Usando symbols (@QType(QRegExp), @QType(QError), etc.) > Should serialize correctly [0.27ms]
+(pass) Constructor Aliases > Usando symbols (@QType(QRegExp), @QType(QError), etc.) > Should deserialize correctly [0.16ms]
+(pass) Constructor Aliases > Usando symbols (@QType(QRegExp), @QType(QError), etc.) > Should perform round-trip correctly [0.30ms]
+(pass) Constructor Aliases > Both approaches should produce the same result > Serialization should be identical [0.33ms]
+(pass) Constructor Aliases > Both approaches should produce the same result > Deserialization should be identical [0.16ms]
+
+tests/integration/decorators/quick-syntax-comparison-declare-vs-bang.test.ts:
+(pass) Syntax Comparison: declare vs ! with @Quick > Con sintaxis DECLARE > debe instanciar correctamente desde tipos runtime [0.32ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Con sintaxis DECLARE > debe instanciar correctamente desde estructura serializada (__type) [0.20ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Con sintaxis DECLARE > debe serializar correctamente [0.29ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Con sintaxis ! (BANG) > debe instanciar correctamente desde tipos runtime [0.27ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Con sintaxis ! (BANG) > debe instanciar correctamente desde estructura serializada (__type) [0.29ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Robustez y Error Handling > debe lanzar error explicativo si falta __type o es desconocido en Symbol [0.58ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Robustez y Error Handling > debe lanzar error explicativo si falta __type o es desconocido en RegExp [0.13ms]
+(pass) Syntax Comparison: declare vs ! with @Quick > Robustez y Error Handling > debe lanzar error si Map recibe algo que no es objeto válido [0.16ms]
+
+tests/integration/decorators/quick-declaration-styles.test.ts:
+(pass) @Quick() with declaration styles > Primitives only (no transformations) > declare: should work with primitives [0.69ms]
+(pass) @Quick() with declaration styles > Primitives only (no transformations) > !: should work with primitives [0.42ms]
+(pass) @Quick() with declaration styles > Primitives only (no transformations) > ?: should work with primitives [0.25ms]
+(pass) @Quick() with declaration styles > With type transformations > declare: should transform types correctly [0.30ms]
+(pass) @Quick() with declaration styles > With type transformations > !: should transform types correctly [0.23ms]
+(pass) @Quick() with declaration styles > With type transformations > ?: should transform types correctly [0.20ms]
+(pass) @Quick() with declaration styles > Nested models > declare: should handle nested models [0.29ms]
+(pass) @Quick() with declaration styles > Nested models > !: should handle nested models [0.27ms]
+(pass) @Quick() with declaration styles > Nested models > ?: should handle nested models [0.24ms]
+(pass) @Quick() with declaration styles > Arrays and collections > declare: should handle arrays [0.20ms]
+(pass) @Quick() with declaration styles > Arrays and collections > !: should handle arrays [0.17ms]
+(pass) @Quick() with declaration styles > Arrays and collections > ?: should handle arrays [0.22ms]
+(pass) @Quick() with declaration styles > Modification and state tracking > declare: should track modifications [0.54ms]
+(pass) @Quick() with declaration styles > Modification and state tracking > !: should track modifications [0.28ms]
+(pass) @Quick() with declaration styles > Modification and state tracking > ?: should track modifications [0.23ms]
+(pass) @Quick() with declaration styles > Clone and reset > declare: should clone and reset [0.27ms]
+(pass) @Quick() with declaration styles > Clone and reset > !: should clone and reset [0.30ms]
+(pass) @Quick() with declaration styles > Clone and reset > ?: should clone and reset [0.23ms]
+
+tests/integration/decorators/quick-vs-qtype-syntax.test.ts:
+(pass) Syntax Comparison with @Quick(): declare vs ! > Con sintaxis @Quick() + DECLARE > debe instanciar correctamente [0.27ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Con sintaxis @Quick() + DECLARE > debe serializar correctamente [0.29ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Con sintaxis @Quick() + DECLARE > debe deserializar correctamente después de serialización [0.41ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Con sintaxis @Quick() + ! (BANG) > debe instanciar correctamente [0.22ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Con sintaxis @Quick() + ! (BANG) > debe serializar correctamente [0.24ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Con sintaxis @Quick() + ! (BANG) > debe deserializar correctamente después de serialización [0.39ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Comparación entre ambas sintaxis con @Quick() > ambas sintaxis deben producir el mismo resultado [0.30ms]
+(pass) Syntax Comparison with @Quick(): declare vs ! > Comparación entre ambas sintaxis con @Quick() > ambas sintaxis deben ser intercambiables en deserialización [0.36ms]
+
+tests/integration/decorators/qtype-string-literals.test.ts:
+(pass) String Literals (@QType("type")) > Should deserialize correctly using string literals [0.50ms]
+(pass) String Literals (@QType("type")) > Should serialize correctly [0.38ms]
+(pass) String Literals (@QType("type")) > Should perform round-trip correctly [0.40ms]
+(pass) String Literals (@QType("type")) > Should work with JSON [0.42ms]
+
+tests/integration/decorators/quick-decorator-functionality.test.ts:
+(pass) @Quick() decorator: Automatic property registration > Basic properties without @QType() [2.18ms]
+(pass) @Quick() decorator: Automatic property registration > Date properties auto-detected [0.24ms]
+(pass) @Quick() decorator: Automatic property registration > Complex types: BigInt, RegExp, Symbol [0.43ms]
+(pass) @Quick() decorator: Automatic property registration > Collections: Map and Set [0.25ms]
+(pass) @Quick() decorator: Automatic property registration > Mix @Quick() with explicit @QType() for nested models [0.37ms]
+(pass) @Quick() decorator: Automatic property registration > @Quick() with nested model arrays: requires @QType() and prior instantiation [0.45ms]
+(pass) @Quick() decorator: Automatic property registration > Serialization and deserialization with @Quick() [0.28ms]
+(pass) @Quick() decorator: Automatic property registration > Clone works with @Quick() [0.26ms]
+(pass) @Quick() decorator: Automatic property registration > Comparison: @Quick() vs manual @QType() [0.33ms]
+
+tests/integration/decorators/quick-decorator-basics.test.ts:
+(pass) Integration: @Quick() Decorator Basics > should auto-detect and transform Date types [0.30ms]
+(pass) Integration: @Quick() Decorator Basics > should handle multiple type transformations [0.27ms]
+(pass) Integration: @Quick() Decorator Basics > should work with optional properties [0.26ms]
+(pass) Integration: @Quick() Decorator Basics > should preserve properties without type mapping [0.25ms]
+(pass) Integration: @Quick() Decorator Basics > should serialize back correctly [0.21ms]
+(pass) Integration: @Quick() Decorator Basics > should handle collections [0.24ms]
+
+tests/integration/mocks/mock-generator-real-world.test.ts:
+(pass) Integration: Mock Generator - Real World > should generate complete order mock with all nested structures [1.57ms]
+(pass) Integration: Mock Generator - Real World > should allow complex overrides in real-world scenario [1.01ms]
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+(pass) Integration: Mock Generator - Real World > should work with custom methods on mocked data [1.28ms]
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+(pass) Integration: Mock Generator - Real World > should generate array of complete orders [3.77ms]
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+(pass) Integration: Mock Generator - Real World > should generate array with custom indexed data [2.25ms]
+[QuickModel] Warning: Property 'metadata' in model 'Order' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+(pass) Integration: Mock Generator - Real World > should serialize and deserialize mocked data correctly [1.12ms]
+
+tests/integration/models/external-class-integration.test.ts:
+
+=== Single External Class ===
+profile.user: ExternalUser {
+  id: 100,
+  name: "John Doe",
+  email: "john@example.com",
+  getDisplayName: [Function: getDisplayName],
+}
+profile.user instanceof ExternalUser: true
+profile.user.id: 100
+profile.user.name: John Doe
+profile.user.getDisplayName(): John Doe <john@example.com>
+(pass) External classes without @Quick() > Should handle single external class without @Quick() [1.30ms]
+
+=== Array of External Classes ===
+team.members: [
+  ExternalUser {
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com",
+    getDisplayName: [Function: getDisplayName],
+  }, ExternalUser {
+    id: 2,
+    name: "Bob",
+    email: "bob@example.com",
+    getDisplayName: [Function: getDisplayName],
+  }
+]
+team.members.length: 2
+team.members[0]: ExternalUser {
+  id: 1,
+  name: "Alice",
+  email: "alice@example.com",
+  getDisplayName: [Function: getDisplayName],
+}
+team.members[0] instanceof ExternalUser: true
+(pass) External classes without @Quick() > Should handle array of external classes without @Quick() [0.99ms]
+
+=== Nested External Classes ===
+profile.user instanceof ExternalUser: true
+profile.address instanceof ExternalAddress: true
+profile.user: ExternalUser {
+  id: 100,
+  name: "John",
+  email: "john@example.com",
+  getDisplayName: [Function: getDisplayName],
+}
+profile.address: ExternalAddress {
+  street: "123 Main St",
+  city: "NYC",
+  zipCode: "10001",
+}
+(pass) External classes without @Quick() > Should handle nested external classes [0.93ms]
+
+=== External Class with Dot Notation ===
+profile.user: ExternalUser {
+  id: 100,
+  name: "John Doe",
+  email: "john@example.com",
+  getDisplayName: [Function: getDisplayName],
+}
+profile.user instanceof ExternalUser: true
+(pass) External classes without @Quick() > Should handle external class with dot notation [0.83ms]
+
+=== Plain Object (no type) ===
+profile.user: {
+  id: 100,
+  name: "John",
+  email: "john@example.com",
+}
+typeof profile.user: object
+profile.user constructor: Object
+(pass) External classes without @Quick() > What happens with plain object (no class specified)? [0.73ms]
+
+tests/integration/models/complex-types-without-symbols.test.ts:
+
+=== METADATA PARA TIPOS COMPLEJOS ===
+
+pattern:     RegExp
+error:       Error
+buffer:      ArrayBuffer
+view:        DataView
+uint8:       Uint8Array
+tags:        Array
+
+
+(pass) Tipos complejos SIN symbols > Verificar metadata emitida por TypeScript [1.16ms]
+
+=== RESULTADO RegExp ===
+pattern: /^test$/i
+tipo: RegExp
+¿Es RegExp? true
+✅ RegExp funciona automáticamente!
+
+(pass) Tipos complejos SIN symbols > Probar RegExp sin QRegExp symbol [0.97ms]
+
+=== RESULTADO Error ===
+error: 123 | 					expectedType: 'object { message: string }',
+124 | 				}
+125 | 			);
+126 | 		}
+127 | 
+128 | 		const error = new Error(value.message);
+                      ^
+TestError: Test error
+      at deserialize (/home/cartago/_projects/quickmodel/src/transformers/error.transformer.ts:128:17)
+      at populateInstance (/home/cartago/_projects/quickmodel/src/core/services/population.service.ts:561:42)
+      at deserialize (/home/cartago/_projects/quickmodel/src/core/services/deserializer.service.ts:156:26)
+      at initialize (/home/cartago/_projects/quickmodel/src/core/models/quick.model.ts:485:44)
+      at new QModel (/home/cartago/_projects/quickmodel/src/core/models/quick.model.ts:402:8)
+      at new ComplexTypesModel (1:23)
+      at <anonymous> (/home/cartago/_projects/quickmodel/tests/integration/models/complex-types-without-symbols.test.ts:132:18)
+
+tipo: Error
+¿Es Error? true
+✅ Error funciona automáticamente!
+
+(pass) Tipos complejos SIN symbols > Probar Error sin QError symbol [0.89ms]
+
+=== RESULTADO Uint8Array ===
+uint8: Uint8Array(3) [ 1, 2, 3 ]
+tipo: Uint8Array
+¿Es Uint8Array? true
+✅ Uint8Array funciona automáticamente!
+
+(pass) Tipos complejos SIN symbols > Probar Uint8Array sin QUint8Array symbol [0.74ms]
+
+=== RESULTADO ArrayBuffer ===
+buffer: ArrayBuffer(3) [ 1, 2, 3 ]
+tipo: ArrayBuffer
+¿Es ArrayBuffer? true
+✅ ArrayBuffer funciona automáticamente!
+
+(pass) Tipos complejos SIN symbols > Probar ArrayBuffer sin symbol [0.72ms]
+
+=== RESULTADO DataView ===
+view: DataView(3) [ 1, 2, 3 ]
+tipo: DataView
+¿Es DataView? true
+✅ DataView funciona automáticamente!
+
+(pass) Tipos complejos SIN symbols > Probar DataView sin symbol [0.80ms]
+
+=== RESULTADO Array de modelos ===
+tags: [
+  {
+    id: "1",
+    name: "tag1",
+  }, {
+    id: "2",
+    name: "tag2",
+  }
+]
+tags[0] tipo: Object
+¿tags[0] es Tag? false
+❌ Array de modelos NO funciona sin especificar clase
+
+Valor recibido: [
+  {
+    id: "1",
+    name: "tag1",
+  }, {
+    id: "2",
+    name: "tag2",
+  }
+]
+(pass) Tipos complejos SIN symbols > Probar Array de modelos sin especificar Tag [1.03ms]
+
+tests/integration/models/generics-runtime-behavior.test.ts:
+
+=== TYPE ERASURE ===
+strContainer.constructor.name: GenericContainer
+numContainer.constructor.name: GenericContainer
+¿Son la misma clase? true
+(pass) Genéricos: Type erasure y runtime behavior > En runtime: Los genéricos son borrados (type erasure) [0.73ms]
+
+=== METADATA ===
+value design:type: Object
+metadata design:type: Map
+(pass) Genéricos: Type erasure y runtime behavior > TypeScript metadata: NO incluye información de genéricos [0.44ms]
+
+=== CLASES ESPECÍFICAS ===
+strContainer.constructor.name: StringContainer
+numContainer.constructor.name: NumberContainer
+¿Son clases diferentes? true
+StringContainer.value type: String
+NumberContainer.value type: Number
+(pass) Genéricos: Type erasure y runtime behavior > Solución: Clases específicas en lugar de genéricos [0.93ms]
+
+=== MODELO ANIDADO ===
+value design:type: SimpleModel
+(pass) Genéricos: Type erasure y runtime behavior > Genéricos con modelos anidados: El modelo sí se detecta [0.49ms]
+
+=== SERIALIZACIÓN ===
+Original: hello world
+IQSerialized: {
+  "value": "hello world",
+  "metadata": {
+    "lang": "en",
+    "version": "1.0"
+  }
+}
+Deserialized: hello world
+(pass) Genéricos: Type erasure y runtime behavior > Serialización/Deserialización: Funciona con genéricos [0.63ms]
+
+=== ARRAYS DE GENÉRICOS ===
+items[0]: Task {
+  __quickPropertyKeys__taskId: "t1",
+  __quickPropertyKeys__description: "First task",
+  __quickPropertyKeys__completed: false,
+  taskId: [Getter/Setter],
+  description: [Getter/Setter],
+  completed: [Getter/Setter],
+  initialize: [Function: initialize],
+  __forceHydration: [Function: __forceHydration],
+  installLazyGetters: [Function: installLazyGetters],
+  serialize: [Function: serialize],
+  toJSON: [Function: toJSON],
+  validate: [Function: validate],
+  toInterface: [Function: toInterface],
+  getInitInterface: [Function: getInitInterface],
+  hasChanges: [Function: hasChanges],
+  isDirty: [Function: isDirty],
+  getChangedFields: [Function: getChangedFields],
+  getChanges: [Function: getChanges],
+  reset: [Function: reset],
+  patch: [Function: patch],
+  deepEqual: [Function: deepEqual],
+  clone: [Function: clone],
+}
+¿items[0] es Task? true
+(pass) Genéricos: Type erasure y runtime behavior > Arrays de genéricos: Inferencia automática SIN @QType(ModelClass) [0.67ms]
+
+=== CONCLUSIÓN ===
+
+✅ Genéricos en TypeScript:
+   - Proporcionan type-safety en COMPILE-TIME
+   - Se borran completamente en RUNTIME (type erasure)
+   - No afectan la metadata emitida por TypeScript
+
+✅ QModel funciona correctamente porque:
+   - Usa reflect-metadata para tipos concretos (Date, BigInt, etc.)
+   - Usa inferencia runtime para arrays (analiza propiedades)
+   - NO depende de los genéricos para funcionar
+   - NO necesita @QType(ModelClass) - solo @QType()
+
+⚠️  Limitación:
+   - GenericContainer<string> y GenericContainer<number>
+     son indistinguibles en runtime
+   - Si necesitas distinguirlos, usa clases específicas
+   - Si dos modelos tienen EXACTAMENTE las mismas propiedades,
+     usa @QType(ModelClass) explícito para desambiguar
+
+✅ Recomendación:
+   - Usa genéricos para type-safety (IModel<T>)
+   - QModel<IUser> funciona perfectamente
+   - Solo @QType() sin argumentos es suficiente
+   - El sistema detecta tipos reales en runtime
+   - Los genéricos no interfieren con el funcionamiento
+    
+(pass) Genéricos: Type erasure y runtime behavior > Conclusión: Los genéricos son para type-safety, no para runtime [0.26ms]
+(pass) Genéricos: Casos prácticos > API Response genérica: Type-safety en compile-time [0.20ms]
+(pass) Genéricos: Casos prácticos > Múltiples responses: Misma clase en runtime [0.22ms]
+(pass) Genéricos: Casos prácticos > Recomendación: Clases específicas para APIs [0.43ms]
+
+tests/integration/models/complex-types-combinations.test.ts:
+IQSerialized ComplexEntity: {
+  "id": "entity-1",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "amount": "9007199254740991",
+  "pattern": {
+    "__type": "regexp",
+    "source": "test-\\d+",
+    "flags": "gi"
+  },
+  "uniqueKey": {
+    "__type": "symbol",
+    "description": "Symbol(unique)"
+  },
+  "lastError": "Error: Test error",
+  "buffer": [
+    1,
+    -2,
+    3,
+    -4,
+    5
+  ],
+  "metadata": {
+    "key1": "value1",
+    "key2": 42,
+    "key3": true
+  },
+  "tags": [
+    "tag1",
+    "tag2",
+    "tag3"
+  ]
+}
+(pass) ComplexEntity: todos los tipos complejos en una entidad > serializa y deserializa entidad con todos los tipos complejos [0.69ms]
+(pass) ComplexEntity: todos los tipos complejos en una entidad > clona entidad compleja preservando todos los tipos [0.32ms]
+(pass) NestedComplexModel: anidación de entidades complejas > deserializa modelo con arrays de entidades complejas [0.47ms]
+(pass) NestedComplexModel: anidación de entidades complejas > serializa y deserializa modelo nested complejo completo [0.83ms]
+Test case 1: string value string
+Test case 2: 42 number
+Test case 3: true boolean
+Test case 4: 2024-01-01T00:00:00.000Z object
+Test case 5: 9999999999n bigint
+(pass) MixedUnionModel: union types con tipos complejos > deserializa property value con múltiples tipos posibles [0.88ms]
+(pass) MixedUnionModel: union types con tipos complejos > deserializa array heterogéneo con strings, entidades y dates [0.21ms]
+(pass) MixedUnionModel: union types con tipos complejos > maneja optionalEntity como ComplexEntity o null [0.24ms]
+(pass) MixedUnionModel: union types con tipos complejos > Map con valores de múltiples tipos complejos [0.12ms]
+(pass) Edge cases: combinaciones extremas > entidad con todos los valores null o undefined [0.09ms]
+(pass) Edge cases: combinaciones extremas > arrays vacíos de tipos complejos [0.24ms]
+(pass) Edge cases: combinaciones extremas > buffers muy grandes y patterns complejos [1.15ms]
+
+tests/integration/models/complex-types-quick.test.ts:
+(pass) Complex Types Combinations (Using @Quick) > ComplexEntityQuick: todos los tipos complejos en una entidad > serializa y deserializa entidad con todos los tipos complejos [0.24ms]
+(pass) Complex Types Combinations (Using @Quick) > NestedComplexModelQuick: anidación de entidades complejas > serializa y deserializa modelo nested complejo completo [0.38ms]
+(pass) Complex Types Combinations (Using @Quick) > MixedUnionModelQuick: union types con tipos complejos > deserializa array heterogéneo con strings, entidades y dates [0.31ms]
+
+tests/integration/inheritance/quick-inheritance.test.ts:
+(pass) Integration: Decoration Inheritance > should work on Child extending undecorated Parent [0.19ms]
+(pass) Integration: Decoration Inheritance > should inherit transformations from parent class [2.19ms]
+(pass) Integration: Decoration Inheritance > should respect child overrides of parent fields [0.15ms]
+
+tests/integration/patterns/polymorphic-collections.test.ts:
+(pass) Integration: Polymorphic Collections (The "Union" Problem) > should correctly transform a mixed array of subclasses based on a discriminator [0.52ms]
+(pass) Integration: Polymorphic Collections (The "Union" Problem) > should maintain polymorphism during serialization (Roundtrip) [0.32ms]
+
+tests/integration/roundtrip/quick-model-full-roundtrip.test.ts:
+═══ TEST: QModel Core Functionality ═══
+
+1. Creating user from interface...
+✅ User created: {
+  id: "123",
+  name: "John Doe",
+  age: 30,
+  createdAt: 2024-01-01T00:00:00.000Z,
+}
+   createdAt is Date? true
+
+2. Serializing to interface...
+✅ IQSerialized: {
+  id: "123",
+  name: "John Doe",
+  age: 30,
+  createdAt: "2024-01-01T00:00:00.000Z",
+}
+
+3. Round-trip test...
+✅ Round-trip successful: {
+  id: true,
+  name: true,
+  age: true,
+  createdAt: true,
+}
+
+4. Static method deserialize...
+✅ deserialize: true
+
+5. JSON serialization...
+✅ JSON round-trip: true
+
+✅ ALL TESTS PASSED
+
+════════════════════════════════════════
+SOLID PRINCIPLES APPLIED:
+  ✓ Single Responsibility - Separated services
+  ✓ Open/Closed - Extensible via registry
+  ✓ Liskov Substitution - Interchangeable transformers
+  ✓ Interface Segregation - Specific interfaces
+  ✓ Dependency Inversion - Depends on abstractions
+════════════════════════════════════════
+
+tests/integration/roundtrip/comprehensive-serialization-roundtrip.test.ts:
+╔═══════════════════════════════════════════════════════════════════════╗
+║           COMPREHENSIVE TEST - ALL SUPPORTED TYPES                 ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+🧪 1. CREATING COMPLETE MODEL...
+
+📦 PRIMITIVES:
+  ✓ id: ✅
+  ✓ count: ✅
+  ✓ active: ✅
+  ✓ nothing: ✅
+  ✓ optional: ✅
+
+🔧 SPECIAL TYPES:
+  ✓ BigInt: ✅
+  ✓ Symbol: ✅
+  ✓ RegExp: ✅
+  ✓ Error: ✅
+  ✓ Date: ✅
+  ✓ URL: ✅
+  ✓ URLSearchParams: ✅
+
+📊 TYPED ARRAYS:
+  ✓ Int8Array: ✅
+  ✓ Uint8Array: ✅
+  ✓ Float32Array: ✅
+  ✓ BigInt64Array: ✅
+
+💾 BUFFERS:
+  ✓ ArrayBuffer: ✅
+  ✓ DataView: ✅
+
+📚 COLECCIONES:
+  ✓ Array: ✅
+  ✓ Map: ✅
+  ✓ Set: ✅
+
+🎯 ENUMS (TypeScript):
+  ✓ String Enum: ✅
+  ✓ Numeric Enum: ✅
+
+📋 OBJETOS PLANOS:
+  ✓ Plain Object: ✅
+
+🪆 MODELO ANIDADO:
+  ✓ Nested Model: ✅
+
+🧪 2. SERIALIZANDO A INTERFAZ...
+
+📤 VERIFYING SERIALIZATION:
+  ✓ BigInt → string: ✅
+  ✓ Symbol → string: ❌
+  ✓ Date → string: ✅
+  ✓ URL → string: ✅
+  ✓ Map → object: ✅
+  ✓ Set → array: ✅
+
+🧪 3. ROUND-TRIP TEST (Interface → Model → Interface → Model)...
+
+🔄 VERIFYING ROUND-TRIP:
+  ✓ id preserved: ✅
+  ✓ BigInt preserved: ✅
+  ✓ Symbol preserved: ✅
+  ✓ Date preserved: ✅
+  ✓ URL preserved: ✅
+  ✓ URLSearchParams preserved: ✅
+  ✓ RegExp preserved: ✅
+  ✓ Error preserved: ✅
+  ✓ Map preserved: ✅
+  ✓ Enum preserved: ✅
+
+🧪 4. JSON SERIALIZATION...
+
+📄 VERIFYING JSON ROUND-TRIP:
+  ✓ JSON valid: ✅
+  ✓ fromJSON returns instance: ✅
+  ✓ Types restored: ✅
+
+🧪 5. STATIC METHODS...
+
+🔧 VERIFYING STATIC METHODS:
+  ✓ deserialize works: ✅
+  ✓ Correct data: ✅
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║                            FINAL SUMMARY                              ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+✅ Tests passed: 46
+❌ Tests failed: 0
+📊 Total: 46
+🎯 Success rate: 100.00%
+
+🎉 ALL SUPPORTED TYPES WORK CORRECTLY!
+
+📋 TESTED TYPES:
+   ✓ Primitives: string, number, boolean, null, undefined
+   ✓ Special types: BigInt, Symbol, RegExp, Error, Date, URL, URLSearchParams
+   ✓ TypedArrays: Int8Array, Uint8Array, Float32Array, BigInt64Array, etc.
+   ✓ Buffers: ArrayBuffer, DataView
+   ✓ Collections: Array, Map, Set
+   ✓ Enums: String Enums, Numeric Enums
+   ✓ Objects: Plain objects, Nested models
+   ✓ Methods: serialize(), toJSON(), deserialize(), fromJSON()
+
+tests/integration/external/zod-validation.test.ts:
+(pass) Integration: External Libraries (Zod) > should pass Zod validation after valid transformation [2.15ms]
+(pass) Integration: External Libraries (Zod) > should fail Zod validation if business rules are violated (even if types are correct) [0.84ms]
+(pass) Integration: External Libraries (Zod) > should fail Zod validation if QuickModel transformation failed silently (e.g. Invalid Date) [0.12ms]
+
+tests/system/full-workflow/api-response-transformation-workflow.test.ts:
+(pass) System: API Response Transformation > Complete API workflow: fetch → transform → use → serialize → send [0.24ms]
+(pass) System: API Response Transformation > Should handle array of API responses [0.46ms]
+(pass) System: API Response Transformation > Should handle stats with BigInt calculations [0.12ms]
+(pass) System: API Response Transformation > Should handle nested API responses [0.15ms]
+(pass) System: API Response Transformation > Should handle API error responses gracefully [0.07ms]
+(pass) System: API Response Transformation > Should maintain data integrity through multiple transformations [0.14ms]
+(pass) System: API Response Transformation > Should handle API pagination metadata [0.28ms]
+
+tests/system/real-world/api-response-handling.test.ts:
+(pass) System: Real World API Response Handling > should handle messy legacy API responses [0.36ms]
+(pass) System: Real World API Response Handling > should handle incomplete/partial API responses gracefully [0.11ms]
+
+tests/system/real-world/e-commerce-cart-system.test.ts:
+(pass) System: E-Commerce Cart > Complete shopping workflow: browse → cart → checkout → order [2.08ms]
+(pass) System: E-Commerce Cart > Should handle empty cart [0.13ms]
+(pass) System: E-Commerce Cart > Should handle cart modifications [0.30ms]
+(pass) System: E-Commerce Cart > Should handle price precision correctly [0.34ms]
+
+tests/unit/mcp/abstract-tool-coverage.test.ts:
+(pass) QAbstractTool coverage > should allow extension and verify instance type [0.18ms]
+
+tests/unit/error-handling/invalid-data.test.ts:
+(pass) Error Handling: Invalid Data Types > should throw descriptive error when string passed for number [0.15ms]
+(pass) Error Handling: Invalid Data Types > should handle valid data correctly [0.14ms]
+(pass) Error Handling: Invalid Data Types > should detect invalid BigInt string [0.15ms]
+(pass) Error Handling: Invalid Data Types > should handle valid BigInt correctly [0.07ms]
+(pass) Error Handling: Invalid Data Types > should ALLOW null (treated as optional runtime value) [0.11ms]
+(pass) Error Handling: Nested Property Errors > should provide property path in nested errors [0.18ms]
+(pass) Error Handling: Nested Property Errors > should handle valid nested data correctly [0.11ms]
+(pass) Error Handling: Missing Required Fields > should work when all fields provided [0.11ms]
+(pass) Error Handling: Missing Required Fields > should handle missing optional fields [0.10ms]
+(pass) Error Handling: Array Type Mismatches > should handle arrays with correct types [0.21ms]
+(pass) Error Handling: Array Type Mismatches > should detect array with wrong element types [0.10ms]
+(pass) Error Handling: Type Coercion vs Validation > should validate types when configured (runtime validation) [0.08ms]
+
+tests/unit/null-safety/null-undefined-handling.test.ts:
+(pass) Null Safety: Deep Optional Chaining > should handle null in nested optional properties [0.17ms]
+(pass) Null Safety: Deep Optional Chaining > should handle undefined in deep nesting [0.10ms]
+(pass) Null Safety: Deep Optional Chaining > should handle missing nested properties [0.08ms]
+(pass) Null Safety: Deep Optional Chaining > should handle fully populated nested structure [0.09ms]
+(pass) Null Safety: Arrays with Null/Undefined > should accept mixed null/undefined in arrays [0.18ms]
+(pass) Null Safety: Arrays with Null/Undefined > should handle empty array [0.08ms]
+(pass) Null Safety: Arrays with Null/Undefined > should handle array with all nulls [0.10ms]
+(pass) Null Safety: Arrays with Null/Undefined > should handle array with all undefined [0.08ms]
+(pass) Null Safety: Nullable vs Optional > should distinguish between null and undefined [0.10ms]
+(pass) Null Safety: Nullable vs Optional > should preserve null in serialization [0.09ms]
+(pass) Null Safety: Nullable vs Optional > should preserve undefined in serialization [0.10ms]
+(pass) Null Safety: Nullable vs Optional > should handle explicit undefined vs missing [0.08ms]
+(pass) Null Safety: Roundtrip with Null/Undefined > should preserve null through roundtrip [0.07ms]
+(pass) Null Safety: Roundtrip with Null/Undefined > should handle null in nested structures [0.10ms]
+(pass) Null Safety: Roundtrip with Null/Undefined > should handle mixed null and valid values in arrays [0.15ms]
+⚠️  Null model data accepted without error
+(pass) Null Safety: Edge Cases > should handle null as entire model data [0.18ms]
+⚠️  Undefined model data accepted without error
+(pass) Null Safety: Edge Cases > should handle undefined as entire model data [0.14ms]
+(pass) Null Safety: Edge Cases > should handle empty object [0.07ms]
+(pass) Null Safety: Optional Fields Behavior > should accept missing optional field [0.06ms]
+(pass) Null Safety: Optional Fields Behavior > should accept explicit undefined for optional field [0.09ms]
+(pass) Null Safety: Optional Fields Behavior > should accept null for optional field if allowed by type [0.10ms]
+
+tests/unit/transformers/primitive-coverage.test.ts:
+(pass) Transformer Coverage: Primitives > StringTransformer > should deserialize valid string [0.02ms]
+(pass) Transformer Coverage: Primitives > StringTransformer > should throw error for invalid type [0.09ms]
+(pass) Transformer Coverage: Primitives > StringTransformer > should validate valid string [0.03ms]
+(pass) Transformer Coverage: Primitives > StringTransformer > should ALLOW null (validation passes) [0.02ms]
+(pass) Transformer Coverage: Primitives > StringTransformer > should serialize valid string [0.03ms]
+(pass) Transformer Coverage: Primitives > NumberTransformer > should deserialize valid number [0.02ms]
+(pass) Transformer Coverage: Primitives > NumberTransformer > should throw error for invalid type [0.06ms]
+(pass) Transformer Coverage: Primitives > NumberTransformer > should validate valid number [0.02ms]
+(pass) Transformer Coverage: Primitives > BooleanTransformer > should deserialize valid boolean [0.03ms]
+(pass) Transformer Coverage: Primitives > BooleanTransformer > should throw error for invalid type [0.05ms]
+(pass) Transformer Coverage: Primitives > BooleanTransformer > should validate valid boolean [0.02ms]
+
+tests/unit/transformers/bigint-transformer-with-without-symbol.test.ts:
+CON symbol: {
+  balance: 999999999999999999n,
+  type: "bigint",
+  isBigInt: true,
+}
+(pass) BigInt WITHOUT QBigInt symbol > CON @QType(QBigInt) - funciona correctamente [0.30ms]
+SIN symbol: {
+  balance: 999999999999999999n,
+  type: "bigint",
+  isBigInt: true,
+}
+(pass) BigInt WITHOUT QBigInt symbol > SIN @QType(QBigInt) - AHORA SÍ convierte a bigint automáticamente! [0.23ms]
+Metadata CON symbol: BigInt
+Metadata SIN symbol: BigInt
+
+✅ TypeScript emite BigInt correctamente
+✅ El deserializador lo detecta automáticamente
+✅ Ya NO necesitas @QType(QBigInt) obligatoriamente
+
+(pass) BigInt WITHOUT QBigInt symbol > Verificar metadata de TypeScript - SÍ emite BigInt [0.61ms]
+
+tests/unit/transformers/map-set-coverage.test.ts:
+(pass) Transformer Coverage: Map & Set > MapTransformer > deserialize > should return Map as-is [0.03ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > deserialize > should deserialize plain object [0.06ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > deserialize > should deserialize __type wrapper [0.04ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > deserialize > should deserialize array of entries [0.04ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > deserialize > should throw error for invalid types [0.09ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > deserialize > should throw error generic Map creation error in array [0.12ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > serialize > should serialize to plain object [0.09ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > validate > should validate Map [0.07ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > validate > should validate object [0.03ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > validate > should validate array [0.03ms]
+(pass) Transformer Coverage: Map & Set > MapTransformer > validate > should fail for number [0.03ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > deserialize > should return Set as-is [0.03ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > deserialize > should deserialize array [0.04ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > deserialize > should deserialize __type wrapper [0.03ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > deserialize > should throw error for invalid types [0.06ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > serialize > should serialize to array [0.05ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > validate > should validate Set [0.06ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > validate > should validate array [0.03ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > validate > should validate __type wrapper [0.03ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > validate > should fail for plain object [0.03ms]
+(pass) Transformer Coverage: Map & Set > SetTransformer > validate > should fail for number [0.03ms]
+
+tests/unit/transformers/validate-methods-coverage.test.ts:
+(pass) Transformers Validate Method Coverage > BigIntTransformer > should validate bigint [0.07ms]
+(pass) Transformers Validate Method Coverage > BigIntTransformer > should validate parsable string [0.03ms]
+(pass) Transformers Validate Method Coverage > BigIntTransformer > should invalid non-parsable string [0.06ms]
+(pass) Transformers Validate Method Coverage > BigIntTransformer > should invalid wrong type [0.03ms]
+(pass) Transformers Validate Method Coverage > DateTransformer > should validate Date object [0.06ms]
+(pass) Transformers Validate Method Coverage > DateTransformer > should validate valid ISO string [0.03ms]
+(pass) Transformers Validate Method Coverage > DateTransformer > should invalidate invalid string [0.03ms]
+(pass) Transformers Validate Method Coverage > RegExpTransformer > should validate RegExp object [0.07ms]
+(pass) Transformers Validate Method Coverage > RegExpTransformer > should validate string pattern [0.03ms]
+(pass) Transformers Validate Method Coverage > RegExpTransformer > should validate object pattern [0.03ms]
+(pass) Transformers Validate Method Coverage > RegExpTransformer > should invalidate wrong types [0.03ms]
+(pass) Transformers Validate Method Coverage > ErrorTransformer > should validate Error object [0.06ms]
+(pass) Transformers Validate Method Coverage > ErrorTransformer > should validate plain object error [0.03ms]
+(pass) Transformers Validate Method Coverage > ErrorTransformer > should invalidate wrong types [0.02ms]
+(pass) Transformers Validate Method Coverage > SymbolTransformer > should validate Symbol [0.07ms]
+(pass) Transformers Validate Method Coverage > SymbolTransformer > should validate string key [0.02ms]
+(pass) Transformers Validate Method Coverage > SymbolTransformer > should invalidate wrong types [0.02ms]
+
+tests/unit/transformers/bigint-coverage.test.ts:
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should return bigint as-is [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should deserialize string to bigint [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should deserialize number to bigint [0.02ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should deserialize object wrapper {__type: bigint, value} [0.04ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should throw error for invalid types (boolean) [0.08ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should ALLOW null [0.02ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should throw error for invalid string format [0.07ms]
+(pass) Transformer Coverage: BigIntTransformer > deserialize > should throw error for float string [0.04ms]
+(pass) Transformer Coverage: BigIntTransformer > serialize > should serialize bigint to string [0.04ms]
+(pass) Transformer Coverage: BigIntTransformer > validate > should validate bigint instance [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > validate > should validate numeric string [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > validate > should validate number [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > validate > should fail validation for non-numeric string [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > validate > should fail validation for boolean [0.03ms]
+(pass) Transformer Coverage: BigIntTransformer > validate > should fail validation for object [0.03ms]
+
+tests/unit/transformers/error-transformer-serialization-roundtrip.test.ts:
+(pass) Unit: Error Transformer > Should serialize simple error [0.23ms]
+(pass) Unit: Error Transformer > Should deserialize simple error [0.08ms]
+(pass) Unit: Error Transformer > Should handle error with message [0.13ms]
+(pass) Unit: Error Transformer > Should handle TypeError [0.10ms]
+(pass) Unit: Error Transformer > Should handle RangeError [0.12ms]
+(pass) Unit: Error Transformer > Should handle error with multiline message [0.10ms]
+(pass) Unit: Error Transformer > Should handle empty error message [0.10ms]
+(pass) Unit: Error Transformer > Should preserve error name in message [0.15ms]
+
+tests/unit/transformers/symbol-transformer-serialization-roundtrip.test.ts:
+(pass) Unit: Symbol Transformer > Should serialize symbol with description [0.16ms]
+(pass) Unit: Symbol Transformer > Should deserialize symbol [0.07ms]
+(pass) Unit: Symbol Transformer > Should handle symbol without description [0.10ms]
+(pass) Unit: Symbol Transformer > Should preserve symbol description [0.11ms]
+(pass) Unit: Symbol Transformer > Should handle symbol with special characters [0.09ms]
+(pass) Unit: Symbol Transformer > Should return same global symbol on each deserialization [0.09ms]
+(pass) Unit: Symbol Transformer > Should handle empty description [0.08ms]
+(pass) Unit: Symbol Transformer > Should handle numeric descriptions [0.08ms]
+(pass) Unit: Symbol Transformer > Should handle multiword descriptions [0.08ms]
+
+tests/unit/transformers/configurable-limits.test.ts:
+(pass) Configurable Transformer Limits > should enforce default limit of 1MB for ArrayBuffer [31.96ms]
+(pass) Configurable Transformer Limits > should allow custom limit via transformerOptions [57.38ms]
+(pass) Configurable Transformer Limits > should still enforce the new custom limit [62.64ms]
+(pass) Configurable Transformer Limits > should support TypedArrays configurable limits [0.49ms]
+
+tests/unit/transformers/typed-array-bigint-coverage.test.ts:
+(pass) Transformer Coverage: TypedArray (BigInt) > deserialize bigInt array > should return instance as-is [0.06ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > deserialize bigInt array > should deserialize from string array [0.06ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > deserialize bigInt array > should deserialize from number array [0.06ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > deserialize bigInt array > should handle null/undefined/empty string as 0n [0.16ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > deserialize bigInt array > should handle invalid strings as 0n [0.18ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > deserialize bigInt array > should deserialize from object values [0.08ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > serialize bigInt array > should serialize to string array [0.05ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > validate > should validate instance [0.09ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > validate > should validate array [0.16ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > validate > should validate object (array like) [0.05ms]
+(pass) Transformer Coverage: TypedArray (BigInt) > validate > should reject invalid primitive [10.64ms]
+
+tests/unit/transformers/symbol-coverage.test.ts:
+(pass) Transformer Coverage: SymbolTransformer > deserialize > should return symbol instance as-is [0.04ms]
+(pass) Transformer Coverage: SymbolTransformer > deserialize > should deserialize string to global symbol [0.05ms]
+(pass) Transformer Coverage: SymbolTransformer > deserialize > should deserialize object wrapper [0.05ms]
+(pass) Transformer Coverage: SymbolTransformer > deserialize > should throw error for invalid types (number) [0.09ms]
+(pass) Transformer Coverage: SymbolTransformer > deserialize > should throw error for object wrapper with invalid description [0.10ms]
+(pass) Transformer Coverage: SymbolTransformer > serialize > should serialize global symbol to object with key [0.04ms]
+(pass) Transformer Coverage: SymbolTransformer > serialize > should serialize local symbol using toString [0.04ms]
+(pass) Transformer Coverage: SymbolTransformer > validate > should validate symbol [0.03ms]
+(pass) Transformer Coverage: SymbolTransformer > validate > should validate string [0.03ms]
+(pass) Transformer Coverage: SymbolTransformer > validate > should validate object wrapper [0.04ms]
+(pass) Transformer Coverage: SymbolTransformer > validate > should fail validation for invalid type [0.03ms]
+
+tests/unit/transformers/error-coverage.test.ts:
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should return Error instance as-is [0.04ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should deserialize simple string [0.05ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should deserialize formatted string "Name: message" [0.04ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should deserialize object with message [0.05ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should deserialize full error object [0.06ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should throw error for invalid types (number) [0.12ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should throw error for object without message property [0.07ms]
+(pass) Transformer Coverage: ErrorTransformer > deserialize > should throw error if message is not string [0.14ms]
+(pass) Transformer Coverage: ErrorTransformer > serialize > should serialize Error to formatted string [0.03ms]
+(pass) Transformer Coverage: ErrorTransformer > validate > should validate Error instance [0.03ms]
+(pass) Transformer Coverage: ErrorTransformer > validate > should validate string [0.04ms]
+(pass) Transformer Coverage: ErrorTransformer > validate > should validate valid object [0.03ms]
+(pass) Transformer Coverage: ErrorTransformer > validate > should fail validation for invalid type [0.03ms]
+(pass) Transformer Coverage: ErrorTransformer > validate > should fail validation for object without message [0.03ms]
+
+tests/unit/transformers/buffer-extended.test.ts:
+(pass) Unit: Buffer Transformers Coverage > ArrayBufferTransformer > deserialize: should accept number array [0.06ms]
+(pass) Unit: Buffer Transformers Coverage > ArrayBufferTransformer > deserialize: should return same instance [0.03ms]
+(pass) Unit: Buffer Transformers Coverage > ArrayBufferTransformer > deserialize: should throw on non-array [0.07ms]
+(pass) Unit: Buffer Transformers Coverage > ArrayBufferTransformer > serialize: should return number array [0.08ms]
+(pass) Unit: Buffer Transformers Coverage > ArrayBufferTransformer > validate: should accept valid types [0.06ms]
+(pass) Unit: Buffer Transformers Coverage > ArrayBufferTransformer > validate: should reject invalid types [0.03ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > deserialize: should accept number array [0.04ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > deserialize: should accept ArrayBuffer [0.03ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > deserialize: should return same instance [0.03ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > deserialize: should throw on invalid type [0.05ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > serialize: should return number array [0.05ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > validate: should accept valid types [0.07ms]
+(pass) Unit: Buffer Transformers Coverage > DataViewTransformer > validate: should reject invalid types [0.02ms]
+(pass) Unit: Buffer Transformers Coverage > SharedArrayBufferTransformer > deserialize: should accept number array [0.07ms]
+(pass) Unit: Buffer Transformers Coverage > SharedArrayBufferTransformer > deserialize: should return same instance [0.03ms]
+(pass) Unit: Buffer Transformers Coverage > SharedArrayBufferTransformer > deserialize: should throw on invalid input [0.07ms]
+(pass) Unit: Buffer Transformers Coverage > SharedArrayBufferTransformer > serialize: should return number array [0.05ms]
+(pass) Unit: Buffer Transformers Coverage > SharedArrayBufferTransformer > validate: should accept valid types [0.07ms]
+(pass) Unit: Buffer Transformers Coverage > SharedArrayBufferTransformer > validate: should reject invalid types [0.03ms]
+
+tests/unit/transformers/edge-cases.test.ts:
+(pass) Transformer Edge Cases: BigInt > should handle very large bigints [0.23ms]
+(pass) Transformer Edge Cases: BigInt > should handle negative bigints [0.08ms]
+(pass) Transformer Edge Cases: BigInt > should handle zero bigint [0.06ms]
+(pass) Transformer Edge Cases: BigInt > should serialize extreme bigints [0.08ms]
+(pass) Transformer Edge Cases: BigInt > should handle BigInt.MAX_SAFE_INTEGER equivalent [0.06ms]
+(pass) Transformer Edge Cases: Date > should handle very old dates [0.15ms]
+(pass) Transformer Edge Cases: Date > should handle far future dates [0.08ms]
+(pass) Transformer Edge Cases: Date > should handle epoch date (1970-01-01) [0.07ms]
+(pass) Transformer Edge Cases: Date > should handle dates with milliseconds [0.06ms]
+(pass) Transformer Edge Cases: Date > should serialize dates to ISO strings [0.11ms]
+(pass) Transformer Edge Cases: RegExp > should handle complex regex patterns [0.16ms]
+(pass) Transformer Edge Cases: RegExp > should handle common regex flags [0.08ms]
+(pass) Transformer Edge Cases: RegExp > should handle empty regex [0.07ms]
+(pass) Transformer Edge Cases: RegExp > should escape special characters [0.07ms]
+(pass) Transformer Edge Cases: RegExp > should serialize regex to structured format [0.13ms]
+(pass) Transformer Edge Cases: Error > should handle Error with empty message [0.16ms]
+(pass) Transformer Edge Cases: Error > should handle Error with very long message [0.15ms]
+(pass) Transformer Edge Cases: Error > should handle Error with custom names [0.08ms]
+(pass) Transformer Edge Cases: Error > should serialize errors to string format [0.10ms]
+(pass) Transformer Edge Cases: Symbol > should handle Symbol.for keys [0.10ms]
+(pass) Transformer Edge Cases: Symbol > should handle plain symbols [0.07ms]
+(pass) Transformer Edge Cases: Symbol > should handle symbols without description [0.06ms]
+(pass) Transformer Edge Cases: Symbol > should serialize symbols to structured format [0.07ms]
+(pass) Transformer Edge Cases: ArrayBuffer > should handle empty buffer [0.12ms]
+(pass) Transformer Edge Cases: ArrayBuffer > should handle large buffer [0.15ms]
+(pass) Transformer Edge Cases: ArrayBuffer > should handle buffer with specific bytes [0.08ms]
+(pass) Transformer Edge Cases: ArrayBuffer > should roundtrip buffers exactly [0.14ms]
+
+tests/unit/transformers/set-transformer-serialization-roundtrip.test.ts:
+(pass) Unit: Set Transformer > Should serialize empty set [0.17ms]
+(pass) Unit: Set Transformer > Should deserialize empty set [0.06ms]
+(pass) Unit: Set Transformer > Should serialize set with primitive values [0.12ms]
+(pass) Unit: Set Transformer > Should handle set with numbers [0.17ms]
+(pass) Unit: Set Transformer > Should handle set with booleans [0.14ms]
+(pass) Unit: Set Transformer > Should handle set with mixed types [0.12ms]
+(pass) Unit: Set Transformer > Should maintain uniqueness [0.10ms]
+(pass) Unit: Set Transformer > Should handle large set [0.65ms]
+(pass) Unit: Set Transformer > Should preserve insertion order [0.15ms]
+(pass) Unit: Set Transformer > Should handle set with special strings [0.12ms]
+(pass) Unit: Set Transformer > Should handle zero and negative numbers [0.14ms]
+(pass) Unit: Set Transformer > Should handle decimal numbers [0.14ms]
+(pass) Unit: Set Transformer > Should support set operations after deserialization [0.11ms]
+
+tests/unit/transformers/map-transformer-serialization-roundtrip.test.ts:
+(pass) Unit: Map Transformer > Should serialize empty map [0.24ms]
+(pass) Unit: Map Transformer > Should deserialize empty map [0.07ms]
+(pass) Unit: Map Transformer > Should serialize map with primitive values [0.15ms]
+(pass) Unit: Map Transformer > Should handle map with number keys [0.14ms]
+(pass) Unit: Map Transformer > Should handle map with null and undefined values [0.13ms]
+(pass) Unit: Map Transformer > Should handle map with object values [0.16ms]
+(pass) Unit: Map Transformer > Should handle map with array values [0.14ms]
+(pass) Unit: Map Transformer > Should handle large map [2.37ms]
+(pass) Unit: Map Transformer > Should preserve insertion order [0.17ms]
+(pass) Unit: Map Transformer > Should handle special string keys [0.14ms]
+
+tests/unit/transformers/web-apis-coverage.test.ts:
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > deserialize should return URL instance from valid string [0.05ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > deserialize should result URL instance from URL instance [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > deserialize should return null/undefined for null/undefined [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > deserialize should throw on non-string input [0.10ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > deserialize should throw on invalid URL string [0.11ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > serialize should return string [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > validate should return valid for URL instance [0.07ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > validate should return valid for valid URL string [0.04ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > validate should return invalid for invalid URL string [0.05ms]
+(pass) Unit: Web APIs Transformers Coverage > URLTransformer > validate should return invalid for non-string [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > deserialize should return instance from string [0.04ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > deserialize should return instance from object [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > deserialize should return same instance [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > deserialize should throw on array (invalid object) [0.07ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > deserialize should ALLOW null [0.02ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > serialize should return query string [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > validate should pass for valid inputs [0.06ms]
+(pass) Unit: Web APIs Transformers Coverage > URLSearchParamsTransformer > validate should fail for invalid string [0.02ms]
+(pass) Unit: Web APIs Transformers Coverage > TextEncoderTransformer > deserialize should return instance from null/undefined/empty [0.12ms]
+(pass) Unit: Web APIs Transformers Coverage > TextEncoderTransformer > deserialize should return same instance [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > TextEncoderTransformer > deserialize should throw on invalid input [0.15ms]
+(pass) Unit: Web APIs Transformers Coverage > TextEncoderTransformer > serialize should return empty object [0.04ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should return instance from string encoding [0.10ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should return instance from object config [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should return null for null input [0.02ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should handle invalid encoding gracefully or throw [0.09ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should throw on bad object config [0.05ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should throw on invalid input type [0.06ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > deserialize should return same instance if input is TextDecoder [0.03ms]
+(pass) Unit: Web APIs Transformers Coverage > TextDecoderTransformer > serialize should return config [0.05ms]
+
+tests/unit/transformers/regexp-transformer-serialization-roundtrip.test.ts:
+(pass) Unit: RegExp Transformer > Should serialize simple regexp [0.27ms]
+(pass) Unit: RegExp Transformer > Should deserialize simple regexp [0.07ms]
+(pass) Unit: RegExp Transformer > Should handle all regexp flags [0.57ms]
+(pass) Unit: RegExp Transformer > Should handle complex patterns [0.32ms]
+(pass) Unit: RegExp Transformer > Should handle escaped characters [0.19ms]
+(pass) Unit: RegExp Transformer > Should handle empty pattern [0.10ms]
+(pass) Unit: RegExp Transformer > Should maintain pattern functionality after roundtrip [0.13ms]
+(pass) Unit: RegExp Transformer > Should handle unicode patterns [0.12ms]
+
+tests/unit/transformers/date-coverage.test.ts:
+(pass) Transformer Coverage: DateTransformer > deserialize > should return Date instance as-is [0.03ms]
+(pass) Transformer Coverage: DateTransformer > deserialize > should deserialize ISO string [0.04ms]
+(pass) Transformer Coverage: DateTransformer > deserialize > should deserialize numeric timestamp [0.03ms]
+(pass) Transformer Coverage: DateTransformer > deserialize > should throw error for invalid types (boolean) [0.09ms]
+(pass) Transformer Coverage: DateTransformer > deserialize > should throw error for invalid types (object) [0.05ms]
+(pass) Transformer Coverage: DateTransformer > deserialize > should throw error for invalid date string [0.06ms]
+(pass) Transformer Coverage: DateTransformer > deserialize > should throw error for invalid date number (NaN) [0.05ms]
+(pass) Transformer Coverage: DateTransformer > serialize > should serialize Date to ISO string [0.03ms]
+(pass) Transformer Coverage: DateTransformer > validate > should validate Date instance [0.03ms]
+(pass) Transformer Coverage: DateTransformer > validate > should validate valid ISO string [0.03ms]
+(pass) Transformer Coverage: DateTransformer > validate > should validate valid timestamp [0.03ms]
+(pass) Transformer Coverage: DateTransformer > validate > should fail validation for invalid string [0.03ms]
+(pass) Transformer Coverage: DateTransformer > validate > should fail validation for invalid type [0.02ms]
+(pass) Transformer Coverage: DateTransformer > validate > should fail validation for NaN [0.03ms]
+
+tests/unit/transformers/date-transformer.test.ts:
+(pass) Unit: Date Transformer > should serialize Date to ISO string [0.27ms]
+(pass) Unit: Date Transformer > should deserialize ISO string to Date [0.11ms]
+(pass) Unit: Date Transformer > should deserialize Date object as-is [0.09ms]
+(pass) Unit: Date Transformer > should handle null dates [0.07ms]
+(pass) Unit: Date Transformer > should roundtrip dates correctly [0.27ms]
+(pass) Unit: Date Transformer > should preserve milliseconds [0.16ms]
+(pass) Unit: Date Transformer > should handle timezone information [0.13ms]
+(pass) Unit: Date Transformer > should handle various date formats [0.19ms]
+
+tests/unit/transformers/buffer-transformer-serialization-roundtrip.test.ts:
+(pass) Unit: Buffer Transformer > Should serialize ArrayBuffer [0.20ms]
+(pass) Unit: Buffer Transformer > Should deserialize ArrayBuffer [0.13ms]
+(pass) Unit: Buffer Transformer > Should maintain buffer data after roundtrip [0.12ms]
+(pass) Unit: Buffer Transformer > Should handle empty buffer [0.11ms]
+(pass) Unit: Buffer Transformer > Should handle large buffer (within security limits) [7.87ms]
+(pass) Unit: Buffer Transformer > Should handle buffer with binary data [0.19ms]
+(pass) Unit: Buffer Transformer > Should handle buffer created from different typed arrays [0.16ms]
+
+tests/unit/transformers/regexp-extended.test.ts:
+(pass) Unit: RegExp Transformer Extended Coverage > deserialize: should throw on object with non-string source [0.12ms]
+(pass) Unit: RegExp Transformer Extended Coverage > deserialize: should throw on invalid pattern in object [0.20ms]
+(pass) Unit: RegExp Transformer Extended Coverage > deserialize: should throw on string with slashes but invalid pattern [0.08ms]
+(pass) Unit: RegExp Transformer Extended Coverage > deserialize: should fall back to plain string and throw if invalid [0.06ms]
+(pass) Unit: RegExp Transformer Extended Coverage > deserialize: should throw on invalid type [0.06ms]
+(pass) Unit: RegExp Transformer Extended Coverage > validate: should reject null [0.03ms]
+(pass) Unit: RegExp Transformer Extended Coverage > validate: should reject invalid types [0.02ms]
+(pass) Unit: RegExp Transformer Extended Coverage > validate: should accept valid types [0.04ms]
+
+tests/unit/security/prototype-pollution.test.ts:
+(pass) Security: Prototype Pollution Prevention > should prevent modification of prototype via JSON payload [0.31ms]
+(pass) Security: Prototype Pollution Prevention > should prevent overwriting constructor [0.16ms]
+(pass) Security: Prototype Pollution Prevention > should prevent modification of prototype property [0.15ms]
+
+tests/unit/security/deep-pollution.test.ts:
+(pass) Security: Advanced Prototype Pollution > should NOT allow setting __defineGetter__ type properties [0.17ms]
+(pass) Security: Advanced Prototype Pollution > should handle deep nested prototype pollution attempts in arrays [0.17ms]
+(pass) Security: Advanced Prototype Pollution > should handle pollution attempts in Maps [0.17ms]
+
+tests/unit/mocks/mock-generator-transformed-types.test.ts:
+(pass) Unit: Mock Generator - Transformed Types > should generate mocks with Date types [0.46ms]
+(pass) Unit: Mock Generator - Transformed Types > should generate mocks with BigInt types [0.21ms]
+(pass) Unit: Mock Generator - Transformed Types > should generate mocks with RegExp types [0.22ms]
+(pass) Unit: Mock Generator - Transformed Types > should allow overriding transformed types [0.22ms]
+(pass) Unit: Mock Generator - Transformed Types > should generate empty mocks with default transformed types [0.27ms]
+(pass) Unit: Mock Generator - Transformed Types > should generate array of mocks with transformed types [0.40ms]
+
+tests/unit/mocks/mock-generator-nested-models.test.ts:
+(pass) Unit: Mock Generator - Nested Models > should generate mocks with nested model instances [0.59ms]
+(pass) Unit: Mock Generator - Nested Models > should generate nested models with proper types [0.42ms]
+(pass) Unit: Mock Generator - Nested Models > should generate nested plain objects [0.37ms]
+(pass) Unit: Mock Generator - Nested Models > should allow overriding nested models [0.46ms]
+(pass) Unit: Mock Generator - Nested Models > should allow overriding nested plain objects [0.32ms]
+(pass) Unit: Mock Generator - Nested Models > should generate empty mocks with nested empty models [0.30ms]
+(pass) Unit: Mock Generator - Nested Models > should generate array of mocks with nested models [0.71ms]
+(pass) Unit: Mock Generator - Nested Models > should handle deep nesting correctly [0.53ms]
+
+tests/unit/mocks/mock-generator-arrays-collections.test.ts:
+(pass) Unit: Mock Generator - Arrays and Collections > should generate mocks with string arrays [0.40ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should generate mocks with number arrays [0.27ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should generate empty mocks with empty arrays [0.18ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should allow overriding arrays [0.17ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should generate mocks with arrays of nested models [0.39ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should allow overriding nested model arrays [0.58ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should generate mocks with Set [0.23ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should generate mocks with Map [0.17ms]
+(pass) Unit: Mock Generator - Arrays and Collections > should allow overriding Set and Map [0.19ms]
+
+tests/unit/mocks/mock-generator-complex-types.test.ts:
+(pass) Unit: Mock Generator - Complex Types > should generate mocks with enum values [0.31ms]
+(pass) Unit: Mock Generator - Complex Types > should generate mocks with string literal unions [0.22ms]
+(pass) Unit: Mock Generator - Complex Types > should generate mocks with nullable fields [0.20ms]
+(pass) Unit: Mock Generator - Complex Types > should generate empty mocks with null for nullable fields [0.17ms]
+(pass) Unit: Mock Generator - Complex Types > should allow overriding enum and union values [0.19ms]
+(pass) Unit: Mock Generator - Complex Types > should generate mocks with optional nested properties [0.24ms]
+(pass) Unit: Mock Generator - Complex Types > should allow overriding optional nested properties [0.15ms]
+[QuickModel] Warning: Property 'content' in model 'Document' has a Custom Transformer but NO Custom Mocker. Generated mock data might not satisfy the transformer's expectations. Please add a 'mocker' in @Quick options or @QType options.
+(pass) Unit: Mock Generator - Complex Types > should generate mocks with union of different types [0.34ms]
+(pass) Unit: Mock Generator - Complex Types > should allow overriding union types [0.43ms]
+(pass) Unit: Mock Generator - Complex Types > should generate mocks with readonly properties [0.31ms]
+(pass) Unit: Mock Generator - Complex Types > should allow methods to work on mocked data [0.15ms]
+
+tests/unit/mocks/mock-generator-basic-types.test.ts:
+(pass) Unit: Mock Generator - Basic Types > should generate empty mock with default values [0.32ms]
+(pass) Unit: Mock Generator - Basic Types > should generate random mock with values [0.32ms]
+(pass) Unit: Mock Generator - Basic Types > should generate sample mock with predictable values [0.28ms]
+(pass) Unit: Mock Generator - Basic Types > should allow overrides in mock generation [0.18ms]
+(pass) Unit: Mock Generator - Basic Types > should generate array of mocks [0.40ms]
+(pass) Unit: Mock Generator - Basic Types > should generate array with indexed overrides [0.29ms]
+(pass) Unit: Mock Generator - Basic Types > should generate interface (plain object) mocks [0.14ms]
+(pass) Unit: Mock Generator - Basic Types > should handle empty array generation [0.09ms]
+(pass) Unit: Mock Generator - Basic Types > should throw error for negative array count [0.09ms]
+
+tests/unit/mocks/mock-generator-fallback.test.ts:
+(pass) Mock Generator - Hydration & Fallback > should correctly hydrate a mocked instance (No Fallback needed) [0.27ms]
+(pass) Mock Generator - Hydration & Fallback > should accept overrides during mocking [0.16ms]
+(pass) Mock Generator - Hydration & Fallback > should handle complex nested hydration in mocks [0.37ms]
+
+tests/unit/mocks/mock-builder-interface-methods.test.ts:
+(pass) MockBuilder Interface Methods > interfaceEmpty() should return plain object with default values [0.25ms]
+(pass) MockBuilder Interface Methods > interfaceRandom() should return plain object with random values [0.14ms]
+(pass) MockBuilder Interface Methods > interfaceSample() should return plain object with deterministic values [0.12ms]
+(pass) MockBuilder Interface Methods > interfaceMinimal() should return plain object with only required fields [0.26ms]
+(pass) MockBuilder Interface Methods > interfaceFull() should return plain object with all fields [0.20ms]
+(pass) MockBuilder Interface Methods > interfaceArray() should return array of plain objects [0.23ms]
+(pass) MockBuilder Interface Methods > Overrides should work in interface methods [0.14ms]
+
+tests/unit/validation/nested-validation.test.ts:
+Parent Errors: [
+  {
+    isValid: false,
+    error: "nested.Value is invalid",
+  }
+]
+(pass) Nested Model Validation > should validate nested models recursively [0.79ms]
+
+tests/unit/validation/circular-validation.test.ts:
+Test: calling validate on circular structure...
+(pass) Validation Robustness: Circular References > should handle circular references without stack overflow [0.36ms]
+
+tests/unit/validation/model-validation.test.ts:
+(pass) Model Validation > should return empty array for valid model [0.24ms]
+(pass) Model Validation > should validate Date (strict deserialization check) [0.13ms]
+(pass) Model Validation > should support custom validation via Custom Transformer [0.29ms]
+
+tests/unit/model-state/state-tracking.test.ts:
+(pass) QModel State Tracking > toInterface() - Current state as primitives > should return current state with transformed types as primitives [0.21ms]
+(pass) QModel State Tracking > toInterface() - Current state as primitives > should reflect modifications [0.23ms]
+(pass) QModel State Tracking > getInitInterface() - Initial state as primitives > should return initial state unchanged [0.10ms]
+(pass) QModel State Tracking > getInitInterface() - Initial state as primitives > should return immutable snapshot [0.09ms]
+(pass) QModel State Tracking > hasChanges() / isDirty() > should return false for unmodified instance [0.15ms]
+(pass) QModel State Tracking > hasChanges() / isDirty() > should return true after modification [0.27ms]
+(pass) QModel State Tracking > hasChanges() / isDirty() > should detect changes in transformed types [0.15ms]
+(pass) QModel State Tracking > hasChanges() / isDirty() > should return false if changed back to original value [0.15ms]
+(pass) QModel State Tracking > getChangedFields() > should return empty array for unmodified instance [0.12ms]
+(pass) QModel State Tracking > getChangedFields() > should return only modified field names [0.13ms]
+(pass) QModel State Tracking > getChangedFields() > should detect changes in transformed types [0.19ms]
+(pass) QModel State Tracking > getChanges() > should return empty object for unmodified instance [0.14ms]
+(pass) QModel State Tracking > getChanges() > should return only modified fields with current values [0.15ms]
+(pass) QModel State Tracking > getChanges() > should return transformed types as primitives [0.12ms]
+(pass) QModel State Tracking > getChanges() > should be perfect for PATCH requests [0.16ms]
+(pass) QModel State Tracking > reset() > should restore initial state [0.14ms]
+(pass) QModel State Tracking > reset() > should restore transformed types [0.13ms]
+(pass) QModel State Tracking > reset() > should clear dirty flag after reset [0.14ms]
+(pass) QModel State Tracking > reset() > should work with form cancel/undo [0.13ms]
+(pass) QModel State Tracking > patch() > should apply partial updates [0.34ms]
+(pass) QModel State Tracking > patch() > should handle transformed types [0.16ms]
+(pass) QModel State Tracking > patch() > should work with API PATCH responses [0.14ms]
+(pass) QModel State Tracking > patch() > should be chainable with other operations [0.17ms]
+(pass) QModel State Tracking > Integration: State tracking workflow > complete CRUD workflow with change tracking [0.24ms]
+Warning: You have unsaved changes to: name, email
+(pass) QModel State Tracking > Integration: State tracking workflow > form with cancel functionality [0.36ms]
+(pass) QModel State Tracking > Integration: State tracking workflow > optimistic UI updates with rollback [0.14ms]
+
+tests/unit/model-state/patch-updates.test.ts:
+(pass) Robustness: Partial Updates (PATCH) > should update only provided fields [0.23ms]
+(pass) Robustness: Partial Updates (PATCH) > should handle undefined vs missing fields in patch [0.12ms]
+(pass) Robustness: Partial Updates (PATCH) > should validate the resulting merged state [0.23ms]
+(pass) Robustness: Partial Updates (PATCH) > should support patching nested properties? [0.38ms]
+(pass) Robustness: Partial Updates (PATCH) > should NOT expose partial update pitfall if recursive merge is not implemented [0.01ms]
+
+tests/unit/model-state/readonly-properties.test.ts:
+(pass) Readonly Properties > should allow setting readonly properties via constructor [0.16ms]
+(pass) Readonly Properties > should be mutable if not frozen (standard TS behavior) [0.08ms]
+(pass) Readonly Properties > should be immutable if frozen explicitly [0.12ms]
+
+tests/unit/model-state/full-lifecycle.test.ts:
+(pass) State Management Methods > toInterface() > should return current state in IQSerialized format [0.20ms]
+(pass) State Management Methods > toInterface() > should reflect modifications [0.15ms]
+(pass) State Management Methods > toInterface() > should serialize Date to ISO string [0.15ms]
+(pass) State Management Methods > getInitInterface() > should return initial state in IQSerialized format [0.09ms]
+(pass) State Management Methods > getInitInterface() > should NOT reflect modifications [0.10ms]
+(pass) State Management Methods > hasChanges() > should return false for unmodified instance [0.14ms]
+(pass) State Management Methods > hasChanges() > should return true after modification [0.15ms]
+(pass) State Management Methods > hasChanges() > should detect Date changes [0.14ms]
+(pass) State Management Methods > isDirty() > should be alias for hasChanges() [0.20ms]
+(pass) State Management Methods > getChangedFields() > should return empty array for unmodified instance [0.12ms]
+(pass) State Management Methods > getChangedFields() > should return array of modified field names [0.13ms]
+(pass) State Management Methods > getChanges() > should return empty object for unmodified instance [0.10ms]
+(pass) State Management Methods > getChanges() > should return only modified fields with current values [0.12ms]
+(pass) State Management Methods > getChanges() > should be perfect for PATCH requests [0.14ms]
+(pass) State Management Methods > reset() > should restore initial state [0.13ms]
+(pass) State Management Methods > reset() > should restore transformed types correctly [0.14ms]
+(pass) State Management Methods > reset() > should clear dirty flag after reset [0.19ms]
+(pass) State Management Methods > patch() > should apply partial updates [0.16ms]
+(pass) State Management Methods > patch() > should handle transformed types [0.14ms]
+(pass) State Management Methods > patch() > should work with API PATCH responses [0.18ms]
+(pass) State Management Methods > getMetadata() > should return metadata for all fields [0.18ms]
+(pass) State Management Methods > getMetadata() > should contain field type information [0.05ms]
+(pass) State Management Methods > getMetadata() > should identify Date transformer [0.05ms]
+
+tests/unit/robustness/readonly.test.ts:
+(pass) Robustness: Readonly Models > should prevent modification of readonly models [0.51ms]
+(pass) Robustness: Readonly Models > should deeply freeze nested properties [0.31ms]
+(pass) Robustness: Readonly Models > should deeply freeze Maps and Sets (if possible) [0.25ms]
+
+tests/unit/robustness/invalid-data.test.ts:
+(pass) Robustness: Invalid Data Handling > should THROW ERROR when deserializing Invalid Date (Fail Fast Policy) [0.25ms]
+(pass) Robustness: Invalid Data Handling > should allow Unknown Properties (Permissive Policy) [0.19ms]
+
+tests/unit/robustness/strict-mode_verification.test.ts:
+(pass) Strict Mode Verification > Strict Mode (DISABLED by default): requires explicit decorators still good practice [0.18ms]
+(pass) Strict Mode Verification > Strict Mode (DISABLED by default): accepts extra properties [0.17ms]
+
+tests/unit/robustness/edge-cases.test.ts:
+(pass) Robustness: Strict Mode & Edge Cases > should prevent prototype pollution via constructor [2.02ms]
+(pass) Robustness: Strict Mode & Edge Cases > should handle extra properties gracefully (currently allows them) [0.16ms]
+(pass) Robustness: Strict Mode & Edge Cases > should allow null for optional fields but maybe warn/error for required ones if strict [0.15ms]
+(pass) Robustness: Strict Mode & Edge Cases > should fail gracefully or throw explicit error on invalid date [0.26ms]
+
+tests/unit/robustness/strict-mode.test.ts:
+(pass) Robustness: Strict Mode > should allow extra properties by default (strict: false) [0.24ms]
+(pass) Robustness: Strict Mode > should REJECT extra properties when strict: true [0.26ms]
+(pass) Robustness: Strict Mode > should allow properties explicitly mapped in strict mode [0.15ms]
+
+tests/unit/primitives/bigint.test.ts:
+(pass) Unit: BigInt Transformer > should serialize bigint to string [0.17ms]
+(pass) Unit: BigInt Transformer > should deserialize string to bigint [0.09ms]
+(pass) Unit: BigInt Transformer > should handle very large bigint values [0.10ms]
+(pass) Unit: BigInt Transformer > should roundtrip bigint correctly [0.14ms]
+(pass) Unit: BigInt Transformer > should handle zero bigint [0.11ms]
+(pass) Unit: BigInt Transformer > should handle negative bigint [0.09ms]
+
+tests/unit/core/qtype-advanced-options.test.ts:
+(pass) Advanced Options with @QType Decorator > should support custom transformer, serializer and mocker via @QType options [0.53ms]
+(pass) Advanced Options with @QType Decorator > should prioritize @Quick options over @QType options [0.01ms]
+
+tests/unit/core/custom-accessors.test.ts:
+(pass) Feature: Custom Accessors (Getters & Setters) > should respect user-defined computed getters [0.23ms]
+(pass) Feature: Custom Accessors (Getters & Setters) > should respect user-defined custom setters [0.21ms]
+(pass) Feature: Custom Accessors (Getters & Setters) > should allow custom accessors to shadow/override incoming data [0.18ms]
+(pass) Feature: Custom Accessors (Getters & Setters) > should allow backing field pattern [0.23ms]
+
+tests/unit/core/smart-setters.test.ts:
+(pass) Robustness: Smart Setters (Auto-Transformation) > should automatically transform values assigned via setter (Date) [0.23ms]
+(pass) Robustness: Smart Setters (Auto-Transformation) > should handle arrays/Sets correctly in setters [0.16ms]
+(pass) Robustness: Smart Setters (Auto-Transformation) > should handle BigInt in setters [0.15ms]
+
+tests/unit/core/custom-transformers-registry.test.ts:
+(pass) Feature: Custom Transformers via Registry > should use Nested Model logic if not registered (default behavior) [0.27ms]
+(pass) Feature: Custom Transformers via Registry > should use Custom Transformer when registered [0.20ms]
+(pass) Feature: Custom Transformers via Registry > should override default transformer if registered (Date override) [0.21ms]
+
+tests/unit/core/qmodel-create-method.test.ts:
+(pass) QModel.create() factory method > Basic usage > should create instance with automatic type-safety [0.23ms]
+(pass) QModel.create() factory method > Basic usage > should succeed without @Quick() decorator (Default: Allow Unknown) [0.16ms]
+(pass) QModel.create() factory method > Type transformations > should transform Date types [0.20ms]
+(pass) QModel.create() factory method > Type transformations > should transform BigInt types [0.16ms]
+(pass) QModel.create() factory method > Type transformations > should transform Set and Map types [0.19ms]
+(pass) QModel.create() factory method > Nested models > should transform nested models [0.25ms]
+(pass) QModel.create() factory method > Nested models > should transform arrays of nested models [0.28ms]
+(pass) QModel.create() factory method > Methods and functionality > should work with custom methods [0.20ms]
+(pass) QModel.create() factory method > Methods and functionality > should work with toInterface() [0.21ms]
+(pass) QModel.create() factory method > Methods and functionality > should work with toJSON() [0.18ms]
+(pass) QModel.create() factory method > Complex scenarios > should handle optional properties [0.23ms]
+(pass) QModel.create() factory method > Complex scenarios > should handle arrays and collections [0.17ms]
+(pass) QModel.create() factory method > Complex scenarios > should handle multiple transformations [0.22ms]
+(pass) QModel.create() factory method > IQTransform helper with generic overriding (Option B) > should work by passing explicit output type to create() [0.16ms]
+(pass) QModel.create() factory method > IQTransform helper with generic overriding (Option B) > should work with IQTransform for multiple transformations [0.21ms]
+(pass) QModel.create() factory method > IQTransform helper with generic overriding (Option B) > Generic overriding should match runtime behavior [0.13ms]
+(pass) QModel.create() factory method > Comparison with constructor > create() and new constructor should behave identically [0.32ms]
+
+tests/unit/core/default-values.test.ts:
+(pass) Default Value Overwrite Bug > Case 1: should prevent default value from overwriting constructor data [0.29ms]
+(pass) Default Value Overwrite Bug > Case 2: should work normally without default value [0.15ms]
+(pass) Default Value Overwrite Bug > Case 3: should use default value when data is missing [0.14ms]
+(pass) Default Value Overwrite Bug > Case 5: should handle complex types with defaults [0.18ms]
+(pass) Default Value Overwrite Bug > Case 6: should handle getter/setter with backing field [0.18ms]
+(pass) Default Value Overwrite Bug > Case 7: should handle optional properties (?) with defaults [0.27ms]
+(pass) Default Value Overwrite Bug > Case 8: should handle explicit undefined in data [0.17ms]
+
+tests/unit/core/property-declaration-styles.test.ts:
+(pass) Property Declaration Styles > Constructor and property access > declare: should create instance and access all properties [0.15ms]
+(pass) Property Declaration Styles > Constructor and property access > ! (definite assignment): should create instance and access all properties [0.16ms]
+(pass) Property Declaration Styles > Constructor and property access > ? (optional): should create instance and access all properties [0.13ms]
+(pass) Property Declaration Styles > Serialization > declare: should serialize correctly [0.13ms]
+(pass) Property Declaration Styles > Serialization > !: should serialize correctly [0.13ms]
+(pass) Property Declaration Styles > Serialization > ?: should serialize correctly [0.13ms]
+(pass) Property Declaration Styles > toInterface() > declare: should return interface with current values [0.12ms]
+(pass) Property Declaration Styles > toInterface() > !: should return interface with current values [0.11ms]
+(pass) Property Declaration Styles > toInterface() > ?: should return interface with current values [0.10ms]
+(pass) Property Declaration Styles > State tracking > declare: should track changes correctly [0.18ms]
+(pass) Property Declaration Styles > State tracking > !: should track changes correctly [0.13ms]
+(pass) Property Declaration Styles > State tracking > ?: should track changes correctly [0.14ms]
+(pass) Property Declaration Styles > Mocking > declare: should generate mocks correctly [0.22ms]
+(pass) Property Declaration Styles > Mocking > !: should generate mocks correctly [0.19ms]
+(pass) Property Declaration Styles > Mocking > ?: should generate mocks correctly [0.17ms]
+(pass) Property Declaration Styles > Cloning > declare: should clone correctly [0.14ms]
+(pass) Property Declaration Styles > Cloning > !: should clone correctly [0.14ms]
+(pass) Property Declaration Styles > Cloning > ?: should clone correctly [0.14ms]
+
+tests/unit/core/lazy-getters-rationale.test.ts:
+
+=== COMPARACIÓN ===
+
+--- CON Lazy Getters ---
+conGetters.id: 1
+conGetters.name: Test
+conGetters.__quickValues__: {
+  id: 1,
+  name: "Test",
+}
+Object.keys(conGetters): [ "__quickValues__", "id", "name" ]
+
+--- SIN Lazy Getters ---
+sinGetters.id: undefined
+sinGetters.name: undefined
+sinGetters.__quickValues__: {
+  id: 1,
+  name: "Test",
+}
+Object.keys(sinGetters): [ "__quickValues__" ]
+(pass) Sin lazy getters > Comparación: Con lazy getters vs Sin lazy getters [4.03ms]
+
+
+=== PROBLEMAS SIN LAZY GETTERS ===
+
+❌ Problema 1: No puedes acceder a las propiedades directamente
+   model.id: undefined
+   Deberías usar: model.__quickValues__.id: 1
+
+❌ Problema 2: Serialización JSON incompleta
+   JSON.stringify(model): {"__quickValues__":{"id":1,"name":"Test","age":25}}
+   (Solo incluye __quickValues__, no las propiedades)
+
+❌ Problema 3: Iteración con for..in no funciona
+   for (let key in model):
+     __quickValues__: [object Object]
+   (Solo muestra __quickValues__)
+
+❌ Problema 4: Object.keys() no devuelve las propiedades
+   Object.keys(model): [ "__quickValues__" ]
+   Deberías usar: Object.keys(model.__quickValues__): [ "id", "name", "age" ]
+
+❌ Problema 5: Spreads no funcionan
+   { ...model }: {
+  __quickValues__: {
+    id: 1,
+    name: "Test",
+    age: 25,
+  },
+}
+   (Solo copia __quickValues__)
+
+❌ Problema 6: TypeScript piensa que las propiedades existen
+   user.id (TypeScript dice que existe): undefined
+   Pero en runtime es: undefined
+(pass) Sin lazy getters > Problemas sin lazy getters [2.49ms]
+
+
+=== VENTAJAS DE LOS LAZY GETTERS ===
+
+✅ Ventaja 1: Acceso directo natural
+   model.id: 1
+
+✅ Ventaja 2: Serialización JSON completa
+   JSON.stringify(model): {"__quickValues__":{"id":1,"name":"Test","age":25},"id":1,"name":"Test","age":25}
+
+✅ Ventaja 3: Iteración funciona
+   for (let key in model):
+     id: 1
+     name: Test
+     age: 25
+
+✅ Ventaja 4: Object.keys() correcto
+   Object.keys(model).filter(k => !k.startsWith("__")): [ "id", "name", "age" ]
+
+✅ Ventaja 5: Spreads funcionan
+   { ...model }: {
+  id: 1,
+  name: "Test",
+  age: 25,
+}
+
+✅ Ventaja 6: TypeScript y runtime coinciden
+   model.name existe en TypeScript: ✓
+   model.name existe en runtime: string
+(pass) Sin lazy getters > Ventajas de los lazy getters [2.18ms]
+
+
+=== ALTERNATIVA: COPIAR PROPIEDADES DIRECTAMENTE ===
+
+Propiedades copiadas:
+  model.id: 1
+  model.name: Test
+
+❌ Problema: Los datos están duplicados
+  model.__quickValues__: {
+  id: 1,
+  name: "Test",
+}
+  model.id también almacenado directamente
+  Memoria duplicada: ✗
+
+❌ Problema: Cambios no se sincronizan
+  Después de model.id = 999:
+    model.id: 999
+    model.__quickValues__.id: 1
+  (Están desincronizados!)
+(pass) Sin lazy getters > Alternativa sin getters: Copiar propiedades directamente [1.41ms]
+
+tests/unit/core/advanced-transformers-serializers.test.ts:
+(pass) Advanced Options: Custom Transformers & Serializers > should handle bidirectional timestamp <-> Date conversion [0.44ms]
+(pass) Advanced Options: Custom Transformers & Serializers > should allow one-way transformation (deserializer only) [0.21ms]
+(pass) Advanced Options: Custom Transformers & Serializers > should allow one-way serialization (serializer only) [0.18ms]
+(pass) Advanced Options: Custom Transformers & Serializers > should work with inline transformers (legacy syntax) + custom serializers [0.22ms]
+(pass) Advanced Options: Custom Transformers & Serializers > should support custom mockers to generate data designed for transformers [0.22ms]
+(pass) Advanced Options: Custom Transformers & Serializers > custom transformer should take precedence over known types (Date) [0.17ms]
+(pass) Advanced Options: Custom Transformers & Serializers > custom serializer should override default preservation logic [0.18ms]
+(pass) Advanced Options: Custom Transformers & Serializers > should handle validation/transformation flow with strict mode [0.30ms]
+(pass) Advanced Options: Custom Transformers & Serializers > should work with undefined values correctly [0.14ms]
+
+tests/unit/core/custom-transformer-object.test.ts:
+(pass) Robustness: Custom Transformer Objects in TypeMap > should allow passing transformer object in TypeMap (Runtime Check) [0.33ms]
+
+tests/unit/core/strict-setters.test.ts:
+(pass) Robustness: Strict Setters > should throw error on invalid assignment in strict mode [0.28ms]
+(pass) Robustness: Strict Setters > should NOT throw error on invalid assignment in non-strict mode (default) [0.16ms]
+
+tests/unit/core/interface-edge-cases.test.ts:
+(pass) Interface Conversion - Edge Cases > toInterface() with circular references > should handle self-referencing objects without infinite loop [0.17ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with circular references > should handle parent-child circular references [0.16ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with null/undefined edge cases > should handle null values correctly [0.15ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with null/undefined edge cases > should handle undefined values correctly [0.11ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with null/undefined edge cases > should handle nested null/undefined [0.12ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with Date edge cases > should convert Date to ISO string [0.13ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with Date edge cases > should handle invalid Date gracefully [0.25ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with Date edge cases > should handle null Date fields [0.10ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with arrays and nested structures > should handle empty arrays [0.21ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with arrays and nested structures > should handle deeply nested structures [0.28ms]
+(pass) Interface Conversion - Edge Cases > toInterface() with arrays and nested structures > should handle arrays with null/undefined elements [0.14ms]
+(pass) Interface Conversion - Edge Cases > getInitInterface() immutability and consistency > should return a copy, not reference to internal data [0.15ms]
+(pass) Interface Conversion - Edge Cases > getInitInterface() immutability and consistency > should not be affected by mutations to returned object [0.10ms]
+(pass) Interface Conversion - Edge Cases > getInitInterface() immutability and consistency > should always return same initial state regardless of modifications [0.09ms]
+(pass) Interface Conversion - Edge Cases > toInterface() vs getInitInterface() with complex transformations > should correctly serialize BigInt back to string [0.14ms]
+(pass) Interface Conversion - Edge Cases > toInterface() vs getInitInterface() with complex transformations > should handle BigInt modifications [0.14ms]
+(pass) Interface Conversion - Edge Cases > toInterface() vs getInitInterface() with complex transformations > should correctly serialize RegExp back to string [0.14ms]
+(pass) Interface Conversion - Edge Cases > Error handling during serialization > should handle objects with functions gracefully [0.21ms]
+(pass) Interface Conversion - Edge Cases > Error handling during serialization > should handle symbols gracefully [0.20ms]
+
+tests/unit/core/transformer-registry-list.test.ts:
+(pass) TransformerLookupService - Listing > should list default transformers [0.12ms]
+(pass) TransformerLookupService - Listing > should include dynamically registered transformers [0.05ms]
+
+tests/unit/performance/serialization-performance-benchmark.test.ts:
+
+=== BASELINE: Plain Objects ===
+Iteraciones: 10000
+Tiempo total: 1.93ms
+Promedio: 0.19μs por objeto
+(pass) Performance: Costo de serialización/deserialización > Baseline: Crear objeto plain (sin QModel) [2.52ms]
+
+=== CREAR INSTANCIAS (constructor) ===
+Iteraciones: 10000
+Tiempo total: 285.97ms
+Promedio: 28.60μs por instancia
+Overhead vs plain: 18.60μs
+(pass) Performance: Costo de serialización/deserialización > Performance: Crear instancias QModel (constructor) [286.45ms]
+
+=== SERIALIZACIÓN (serialize) ===
+Iteraciones: 1000
+Tiempo total: 6.26ms
+Promedio: 6.26μs por objeto
+(pass) Performance: Costo de serialización/deserialización > Performance: Serialización (serialize) [32.56ms]
+
+=== DESERIALIZACIÓN (deserialize) ===
+Iteraciones: 1000
+Tiempo total: 15.69ms
+Promedio: 15.69μs por objeto
+(pass) Performance: Costo de serialización/deserialización > Performance: Deserialización (deserialize) [16.78ms]
+
+=== ARRAY PEQUEÑO (10 items) - CON INFERENCIA ===
+Iteraciones: 1000
+Tiempo total: 58.76ms
+Promedio: 58.76μs por cart
+(pass) Performance: Costo de inferencia de arrays > Performance: Array pequeño (10 items) - CON inferencia [59.30ms]
+
+=== ARRAY PEQUEÑO (10 items) - SIN INFERENCIA ===
+Iteraciones: 1000
+Tiempo total: 57.21ms
+Promedio: 57.21μs por cart
+(pass) Performance: Costo de inferencia de arrays > Performance: Array pequeño (10 items) - SIN inferencia (explícito) [57.77ms]
+
+=== ARRAY GRANDE (100 items) - CON INFERENCIA ===
+Iteraciones: 100
+Tiempo total: 32.24ms
+Promedio: 0.32ms por cart (100 productos)
+(pass) Performance: Costo de inferencia de arrays > Performance: Array grande (100 items) - CON inferencia [32.72ms]
+
+=== ARRAY MUY GRANDE (1000 items) ===
+Tiempo: 3.52ms
+Items deserializados: 1000
+Promedio: 0.004ms por item
+(pass) Performance: Costo de inferencia de arrays > Performance: Array muy grande (1000 items) [4.31ms]
+
+=== ANIDACIÓN 4 NIVELES (10 users cada uno) ===
+Iteraciones: 1000
+Tiempo total: 17.39ms
+Promedio: 17.39μs por estructura
+(pass) Performance: Costo de anidación profunda > Performance: Anidación 4 niveles (10 users) [17.99ms]
+
+=== ANIDACIÓN 4 NIVELES (100 users cada uno) ===
+Iteraciones: 100
+Tiempo total: 6.44ms
+Promedio: 0.06ms por estructura
+(pass) Performance: Costo de anidación profunda > Performance: Anidación 4 niveles (100 users) [7.19ms]
+
+=== TIPOS COMPLEJOS (Date, BigInt, RegExp, Map, Set) ===
+Iteraciones: 1000
+Tiempo total: 14.64ms
+Promedio: 14.64μs por modelo
+(pass) Performance: Tipos complejos > Performance: Tipos complejos (Date, BigInt, RegExp, Map, Set) [15.06ms]
+
+=== RESUMEN DE RENDIMIENTO ===
+
+📊 Benchmarks realizados:
+   ✅ Plain objects (baseline)
+   ✅ Instancias QModel
+   ✅ Serialización (serialize)
+   ✅ Deserialización (deserialize)
+   ✅ Inferencia de arrays (pequeños y grandes)
+   ✅ Anidación profunda (4 niveles)
+   ✅ Tipos complejos (Date, BigInt, RegExp, Map, Set)
+
+🎯 Resultados típicos:
+   - Crear instancia: ~50-100μs
+   - Serializar: ~30-50μs
+   - Deserializar: ~50-80μs
+   - Inferencia (10 items): ~100-150μs
+   - Anidación 4 niveles: ~150-250μs
+
+✅ Performance en casos reales:
+   - API con 100 users: ~10ms
+   - Cart con 100 productos: ~5ms
+   - Estructura anidada compleja: ~1ms
+   - 1000 items con inferencia: <100ms
+
+⚡ Optimizaciones implementadas:
+   - Inferencia homogénea: analiza solo 1er elemento
+   - Metadata caché: no reanaliza tipos conocidos
+   - Deserialización lazy: solo procesa lo necesario
+   - Sin clonación innecesaria
+
+📦 Tamaño de la librería:
+   - Core: ~15KB minified
+   - Transformers: ~5KB
+   - Total: ~20KB minified + gzip ~5KB
+
+💡 Conclusión:
+   ✅ Overhead mínimo (<100μs por operación)
+   ✅ Escala bien con datos grandes
+   ✅ Inferencia no afecta performance significativamente
+   ✅ Librería liviana (<25KB)
+   ✅ Perfecta para producción
+    
+(pass) Performance: Resumen y conclusiones > Resumen: Overhead de la librería [0.22ms]
+
+tests/unit/playground/money-transformer.test.ts:
+(pass) Custom Transformer Type Safety > Should handle custom Money class without type errors [0.29ms]
+
+tests/unit/serialization/private-properties.test.ts:
+(pass) Private/Protected Properties Serialization > should Exclude properties starting with double underscore __ [0.27ms]
+(pass) Private/Protected Properties Serialization > should EXCLUDE single underscore properties by default (default options) [0.16ms]
+(pass) Private/Protected Properties Serialization > should INCLUDE single underscore properties when configured [0.11ms]
+(pass) Private/Protected Properties Serialization > should INCLUDE double underscore properties when configured [0.10ms]
+(pass) Private/Protected Properties Serialization > should include standard properties [0.09ms]
+
+tests/unit/serialization/tointerface-types.test.ts:
+(pass) toInterface() - All Types Preservation > should preserve all number types exactly [0.97ms]
+(pass) toInterface() - All Types Preservation > should preserve all string types [0.58ms]
+(pass) toInterface() - All Types Preservation > should preserve bigint in different formats [0.40ms]
+(pass) toInterface() - All Types Preservation > should preserve Date objects as ISO strings [0.39ms]
+(pass) toInterface() - All Types Preservation > should preserve RegExp in different formats [0.40ms]
+(pass) toInterface() - All Types Preservation > should preserve arrays with nested structures [0.46ms]
+(pass) toInterface() - All Types Preservation > should preserve Map IQSerialized as array of pairs [0.40ms]
+(pass) toInterface() - All Types Preservation > should preserve Set IQSerialized as array [0.40ms]
+(pass) toInterface() - All Types Preservation > should preserve deeply nested objects [0.49ms]
+(pass) toInterface() - All Types Preservation > should preserve properties when mutated (toInterface uses __initData) [0.40ms]
+
+tests/unit/serialization/robustness.test.ts:
+(pass) Robustness Scenarios > Circular References > should handle circular references in plain objects [2.67ms]
+(pass) Robustness Scenarios > Circular References > should handle circular references in Arrays [0.17ms]
+(pass) Robustness Scenarios > Circular References > should handle circular references in Maps [0.15ms]
+(pass) Robustness Scenarios > Deep Recursive Serialization > should serialize BigInt inside Map [0.14ms]
+(pass) Robustness Scenarios > Deep Recursive Serialization > should serialize Date inside Set [0.18ms]
+
+tests/unit/serialization/type-safety-serialization.test.ts:
+(pass) Type Safety > serialize() should return correct IQSerialized types [0.31ms]
+(pass) Type Safety > deserialize() should accept IQSerialized data [0.10ms]
+(pass) Type Safety > deserialize() should also accept original data [0.09ms]
+(pass) Type Safety > Round-trip mantiene la integridad de datos [0.22ms]
+
+tests/unit/serialization/circular-references-repro.test.ts:
+Circular JSON: "{\"value\":1,\"children\":[{\"parent\":{\"__circular\":true},\"value\":2}]}"
+(pass) Robustness: Circular References Infinite Loop > should handle circular reference gracefully on serialization [0.43ms]
+(pass) Robustness: Circular References Infinite Loop > should handle circular references gracefully in toInterface if customized [0.22ms]
+
+tests/unit/serialization/model-to-json.test.ts:
+(pass) Model Serialization (toJSON) > should serialize simple primitives correctly [0.21ms]
+(pass) Model Serialization (toJSON) > should serialize transformed types correctly [0.15ms]
+(pass) Model Serialization (toJSON) > should handle nested models recursively [0.30ms]
+(pass) Model Serialization (toJSON) > should handle arrays of models [0.31ms]
+(pass) Model Serialization (toJSON) > should exclude internal properties starting with __ [0.13ms]
+
+tests/unit/serialization/typescript-metadata-reflection.test.ts:
+
+=== METADATA EMITIDA POR TYPESCRIPT ===
+
+str!: string    → metadata: String
+num!: number    → metadata: Number
+bool!: boolean  → metadata: Boolean
+big!: bigint    → metadata: BigInt
+date!: Date     → metadata: Date
+
+
+¿bigType es BigInt? true
+¿bigType es Object? false
+(pass) TypeScript Metadata Emission > ¿Qué metadata emite TypeScript? [1.10ms]
+
+=== COMPARACIÓN ===
+
+TypeScript emite para bigint: BigInt
+Lo que necesitamos: BigInt
+Son iguales? true
+
+✅ TypeScript SÍ emite BigInt correctamente!
+✅ Ahora el deserializador lo detecta automáticamente
+✅ Ya NO necesitas @QType(QBigInt) explícitamente
+
+(pass) TypeScript Metadata Emission > Comparación: TypeScript emite BigInt correctamente [0.79ms]
+
+=== RESULTADO CON AUTO-DETECCIÓN ===
+
+model.str: string hello
+model.num: number 42
+model.bool: boolean true
+model.date: object 2024-01-01T00:00:00.000Z
+model.big: bigint 999999999999999999n
+
+
+(pass) TypeScript Metadata Emission > Demostración: bigint AHORA funciona automáticamente! [1.00ms]
+
+tests/unit/coverage-gaps/to-interface-object-fallback.test.ts:
+(pass) ToInterfaceService Object Fallback Coverage > should hit the fallback path for generic class instances [0.27ms]
+
+tests/unit/coverage-gaps/to-interface-gaps.test.ts:
+(pass) ToInterfaceService Coverage Gaps > should handle Wrapper Objects (Number, String, Boolean) [0.11ms]
+(pass) ToInterfaceService Coverage Gaps > should handle BigInt special formats [0.06ms]
+(pass) ToInterfaceService Coverage Gaps > should handle circular references in Objects [0.12ms]
+(pass) ToInterfaceService Coverage Gaps > should handle Objects without constructor [0.06ms]
+(pass) ToInterfaceService Coverage Gaps > should handle RegExps correctly [0.07ms]
+
+tests/unit/coverage-gaps/population-service-gaps.test.ts:
+(pass) PopulationService Coverage Gaps > should throw validation error when calling populateInstance directly with metadata [0.27ms]
+(pass) PopulationService Coverage Gaps > should throw validation error for String mismatch [0.14ms]
+(pass) PopulationService Coverage Gaps > should throw validation error for Boolean mismatch [0.14ms]
+(pass) PopulationService Coverage Gaps > should NOT throw for null/undefined values in primitive validation [0.19ms]
+(pass) PopulationService Coverage Gaps > should prevent prototype pollution via population [0.12ms]
+(pass) PopulationService Coverage Gaps > should prevent prototype pollution via dot notation [0.22ms]
+
+tests/unit/coverage-gaps/to-interface-extended.test.ts:
+(pass) ToInterfaceService Extended Coverage > should handle type mismatch when plain object becomes primitive [1.82ms]
+(pass) ToInterfaceService Extended Coverage > should handle generic class instances without toInterface [0.22ms]
+(pass) ToInterfaceService Extended Coverage > should handle runtime type mismatch in production silently [0.16ms]
+(pass) ToInterfaceService Extended Coverage > should handle generic objects with methods (skipping methods) [0.20ms]
+
+tests/unit/coverage-gaps/to-interface-deep-dive.test.ts:
+(pass) ToInterfaceService Coverage Gaps - Deep Dive > should handle Date fallback when current value became a string [0.06ms]
+(pass) ToInterfaceService Coverage Gaps - Deep Dive > should return current RegExp if original was RegExp and current is RegExp [0.05ms]
+(pass) ToInterfaceService Coverage Gaps - Deep Dive > should call toInterface on objects with custom constructor (Nested QModels) [0.25ms]
+(pass) ToInterfaceService Coverage Gaps - Deep Dive > should call toInterface when original was null but current is QModel [0.15ms]
+(pass) ToInterfaceService Coverage Gaps - Deep Dive > should handle arrays with nulls correctly [0.06ms]
+
+tests/unit/coverage-gaps/validation-gaps.test.ts:
+(pass) ValidationService Coverage Gaps > should recursively validate nested array of models [0.42ms]
+(pass) ValidationService Coverage Gaps > should catch errors thrown by validators [0.02ms]
+
+tests/unit/coverage-gaps/analysis-fixes-to-interface.test.ts:
+(pass) ToInterfaceService Coverage Gaps > should handle circular references in production mode [0.28ms]
+(pass) ToInterfaceService Coverage Gaps > should handle invalid Date toISOString where originalValue is Date (fallback to String(current)) [0.37ms]
+(pass) ToInterfaceService Coverage Gaps > should handle RegExp where current value is NOT RegExp [0.15ms]
+
+tests/unit/coverage-gaps/to-interface-gaps-2.test.ts:
+(pass) ToInterfaceService Additional Gaps > should throw error on circular reference when recursion is active (dev mode) [2.48ms]
+(pass) ToInterfaceService Additional Gaps > should handle invalid Date objects by returning string representation [0.20ms]
+(pass) ToInterfaceService Additional Gaps > should handle invalid Date objects without original value [0.16ms]
+(pass) ToInterfaceService Additional Gaps > should fallback to String(current) if originalValue is not string in catch block [0.15ms]
+
+tests/unit/coverage-gaps/base-transformer.test.ts:
+(pass) BaseTransformer Coverage > should be instantiable [0.07ms]
+
+tests/unit/coverage-gaps/value-transformer-coverage.test.ts:
+(pass) ValueTransformerService Gaps > should handle nulls differently in primitive vs model arrays [0.42ms]
+(pass) ValueTransformerService Gaps > should handle runtime error in discriminator function by falling back [0.17ms]
+(pass) ValueTransformerService Gaps > should match case-insensitive string discriminators [0.16ms]
+(pass) ValueTransformerService Gaps > should handle recursive nested arrays [0.07ms]
+
+tests/unit/coverage-gaps/mock-generator-gaps.test.ts:
+(pass) QMockGenerator Coverage Gaps > should generate empty values for all supported types [0.35ms]
+(pass) QMockGenerator Coverage Gaps > should generate typed arrays correctly [0.39ms]
+(pass) QMockGenerator Coverage Gaps > should handle custom mockers prioritisation [0.19ms]
+(pass) QMockGenerator Coverage Gaps > should warn if custom transformer exists but no mocker [0.15ms]
+(pass) QMockGenerator Coverage Gaps > should handle array design type with empty array in typeMap [0.14ms]
+
+tests/unit/coverage-gaps/abstract-tool.test.ts:
+(pass) QAbstractTool Coverage > should be instantiable [0.18ms]
+
+tests/unit/coverage-gaps/analysis-fixes-mock-generator.test.ts:
+DEBUG element: {} object Object
+(pass) MockGeneratorService Coverage Gaps > should handle FALLBACK logic by manually injecting metadata (Simulating legacy or dynamic usage) [0.52ms]
+
+tests/unit/coverage-gaps/mock-builder-methods.test.ts:
+(pass) MockBuilder Methods Coverage > should generate minimal mock with valid required fields [2.43ms]
+(pass) MockBuilder Methods Coverage > should generate full mock with all fields [0.23ms]
+
+tests/unit/coverage-gaps/instance-factory-gaps.test.ts:
+(pass) InstanceFactoryService Coverage Gaps > should return the same instance if data is already an instance of the model [0.05ms]
+(pass) InstanceFactoryService Coverage Gaps > should create empty instance via Object.create if no factory method [0.05ms]
+(pass) InstanceFactoryService Coverage Gaps > should use __createQuickInstance static method if present [0.10ms]
+
+tests/unit/coverage-gaps/regexp-security.test.ts:
+(pass) Unit: RegExp Transformer Security > deserialize: should throw on very long string pattern (> 1000 chars) [1.04ms]
+(pass) Unit: RegExp Transformer Security > deserialize: should throw on object with very long source (> 1000 chars) [0.08ms]
+
+tests/unit/coverage-gaps/quick-decorator-create-instance.test.ts:
+(pass) Quick Decorator - Internal Methods Coverage > should explicitly verify __createQuickInstance is generated and works [0.13ms]
+
+tests/unit/coverage-gaps/mock-generator-binary.test.ts:
+(pass) Mock Generator - Binary & Typed Arrays Coverage > should generate empty mocks for all binary types [0.58ms]
+(pass) Mock Generator - Binary & Typed Arrays Coverage > should generate sample mocks for all binary types [0.34ms]
+(pass) Mock Generator - Binary & Typed Arrays Coverage > should support random mocks for all binary types [0.36ms]
+
+tests/unit/collections/deep-nesting.test.ts:
+(pass) Nested Arrays and Objects - Deep Nesting > Arrays de arrays de primitivos > number[][] - 2 niveles [0.19ms]
+(pass) Nested Arrays and Objects - Deep Nesting > Arrays de arrays de primitivos > number[][][] - 3 niveles [0.12ms]
+(pass) Nested Arrays and Objects - Deep Nesting > Arrays de arrays de primitivos > string[][][][] - 4 niveles [0.09ms]
+(pass) Arrays de arrays con tipos transformables > Date[][] - arrays de dates anidados [0.17ms]
+(pass) Arrays de arrays de modelos > Post[][] - 2 niveles de modelos [0.22ms]
+(pass) Arrays de arrays de modelos > Tag[][][] - 3 niveles de modelos [0.12ms]
+(pass) Objetos anidados profundos > User → Profile → Address (3 niveles) [0.22ms]
+(pass) Mezcla de arrays y objetos anidados > User[] → Post[] → Comment[] (arrays en cada nivel) [0.21ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays mixtos con diferentes tipos en cada nivel > User[] → Post[] → (Set, Comment[], Date[]) - múltiples tipos en cada nivel [0.37ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de TypedArrays anidados > number[][][] - matrices 3D (sin transformación) [0.20ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de TypedArrays anidados > Int8Array[] - arrays de TypedArrays (1 nivel) [0.21ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de modelos que contienen arrays de transformables anidados > Report[] → Metrics[] → (BigInt[], Date[]) - 3 niveles con transformaciones [0.28ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de diferentes colecciones anidadas > Set<string>[] - arrays de Sets [0.18ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de diferentes colecciones anidadas > Map<string, number>[] - arrays de Maps [0.11ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de union types anidados en múltiples niveles > Union types con discriminador - Content y Metadata mixtos [0.59ms]
+(pass) Mezcla de arrays y objetos anidados > Arrays de union types anidados en múltiples niveles > Arrays mixtos: (string[] | number[])[] - diferentes tipos de arrays [0.13ms]
+(pass) Mezcla de arrays y objetos anidados > Casos extremos: 5+ niveles de anidamiento > 5 niveles de profundidad: Level0 → Level1[] → Level2[] → Level3[] → Level4[] → BigInt[] [0.24ms]
+(pass) Mezcla de arrays y objetos anidados > Transformaciones mixtas en arrays anidados > Múltiples transformaciones en arrays 2D simultáneas [0.42ms]
+(pass) Mezcla de arrays y objetos anidados > Combinaciones extremas: todo junto > Ultimate test: User → Post[][] → (Tag[], Date[], Map) - 6 niveles con todo tipo de transformaciones [0.34ms]
+(pass) Mezcla de arrays y objetos anidados > Edge cases con anidamiento profundo > arrays vacíos anidados [0.13ms]
+(pass) Mezcla de arrays y objetos anidados > Edge cases con anidamiento profundo > arrays con tipos mixtos anidados [0.11ms]
+(pass) Mezcla de arrays y objetos anidados > Edge cases con anidamiento profundo > arrays con nulls anidados [0.10ms]
+
+tests/unit/collections/array-metadata-behavior.test.ts:
+
+=== METADATA DE ARRAYS ===
+
+strArray:       undefined
+numArray:       undefined
+modelArray:     Array
+
+
+(pass) Metadata de arrays y union types > Verificar metadata de arrays [0.65ms]
+
+=== METADATA DE UNION TYPES ===
+
+role:           undefined
+status:         undefined
+literalStr:     undefined
+literalNum:     undefined
+optional:       undefined
+nullable:       undefined
+mixed:          undefined
+
+
+(pass) Metadata de arrays y union types > Verificar metadata de union types [1.04ms]
+
+=== RESULTADO ARRAYS ===
+strArray: [ "a", "b", "c" ] → tipo: Array
+numArray: [ 1, 2, 3 ] → tipo: Array
+modelArray: [
+  Tag {
+    id: "1",
+    name: "tag1",
+    initialize: [Function: initialize],
+    __forceHydration: [Function: __forceHydration],
+    installLazyGetters: [Function: installLazyGetters],
+    serialize: [Function: serialize],
+    toJSON: [Function: toJSON],
+    validate: [Function: validate],
+    toInterface: [Function: toInterface],
+    getInitInterface: [Function: getInitInterface],
+    hasChanges: [Function: hasChanges],
+    isDirty: [Function: isDirty],
+    getChangedFields: [Function: getChangedFields],
+    getChanges: [Function: getChanges],
+    reset: [Function: reset],
+    patch: [Function: patch],
+    deepEqual: [Function: deepEqual],
+    clone: [Function: clone],
+  }, Tag {
+    id: "2",
+    name: "tag2",
+    initialize: [Function: initialize],
+    __forceHydration: [Function: __forceHydration],
+    installLazyGetters: [Function: installLazyGetters],
+    serialize: [Function: serialize],
+    toJSON: [Function: toJSON],
+    validate: [Function: validate],
+    toInterface: [Function: toInterface],
+    getInitInterface: [Function: getInitInterface],
+    hasChanges: [Function: hasChanges],
+    isDirty: [Function: isDirty],
+    getChangedFields: [Function: getChangedFields],
+    getChanges: [Function: getChanges],
+    reset: [Function: reset],
+    patch: [Function: patch],
+    deepEqual: [Function: deepEqual],
+    clone: [Function: clone],
+  }
+]
+modelArray[0] tipo: Tag
+¿modelArray[0] es Tag? true
+
+
+(pass) Metadata de arrays y union types > Probar comportamiento de arrays sin especificar tipo [1.15ms]
+
+=== RESULTADO UNION TYPES ===
+role: admin → tipo: string
+status: active → tipo: string
+literalStr: maria → tipo: string
+literalNum: 2 → tipo: number
+nullable: null → tipo: object
+mixed: 123 → tipo: number
+
+
+(pass) Metadata de arrays y union types > Probar comportamiento de union types [1.08ms]
+
+tests/unit/collections/array-transformations-exhaustive.test.ts:
+(pass) Array Transformations - Exhaustive Tests > Arrays of primitives > number[] [0.22ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of primitives > string[] [0.11ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of primitives > boolean[] [0.10ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of primitives > mixed array [0.08ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays with null/undefined > array with null values [0.13ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays with null/undefined > array with undefined values [0.08ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays with null/undefined > array with mixed null/undefined [0.07ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of Date > Date[] from ISO strings [0.16ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of Date > Date[] with null values [0.10ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of BigInt > bigint[] from strings [0.15ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of BigInt > bigint[] with large numbers [0.08ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of RegExp > RegExp[] from strings [0.18ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of Symbol > symbol[] from strings [0.13ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of Set > Set<string>[] from arrays [0.12ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of Map > Map<string, any>[] from tuples [0.16ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of TypedArrays > Int8Array[] from number arrays [0.14ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of TypedArrays > Uint8Array[] from number arrays [0.10ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of TypedArrays > Float32Array[] from number arrays [0.10ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of URL > URL[] from strings [0.17ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of Error > Error[] from objects [0.18ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of nested models > Model[] - Syntax: @Quick({ posts: [Post] }) [0.24ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of nested models > Model[] with empty array [0.08ms]
+(pass) Array Transformations - Exhaustive Tests > Arrays of nested models > Model[] with null values filtered [0.10ms]
+(pass) Array Transformations - Exhaustive Tests > Array syntax validation > ✅ CORRECT: @Quick({ posts: [Post] }) with explicit array syntax [0.20ms]
+(pass) Array Transformations - Exhaustive Tests > Array syntax validation > ✅ CORRECT: @QType([Post]) with explicit array syntax [0.16ms]
+(pass) Array Transformations - Exhaustive Tests > Array syntax validation > ❌ WRONG: @QType(Post) without array syntax should throw error [0.21ms]
+(pass) Array Transformations - Exhaustive Tests > Edge cases > empty array [0.13ms]
+(pass) Array Transformations - Exhaustive Tests > Edge cases > single element array [0.08ms]
+(pass) Array Transformations - Exhaustive Tests > Edge cases > nested arrays [0.08ms]
+
+tests/unit/collections/mixed-arrays.test.ts:
+(pass) Robustness: Heterogeneous Arrays > should preserve primitives in mixed arrays without explicit config [0.21ms]
+(pass) Robustness: Heterogeneous Arrays > should transform recognized types in mixed arrays IF we could configure it? [0.08ms]
+
+tests/e2e/user-scenarios/user-registration-flow.test.ts:
+(pass) E2E: User Registration Flow > Complete registration flow: form → model → storage → retrieval [0.92ms]
+(pass) E2E: User Registration Flow > Should handle validation errors gracefully [0.20ms]
+(pass) E2E: User Registration Flow > Should handle partial updates correctly [0.40ms]
+
+tests/e2e/user-scenarios/e-commerce-flow.test.ts:
+(pass) E2E: E-Commerce Order Flow > should handle a complete order lifecycle [1.19ms]
+
+tests/mcp/unit/public/create-model.test.ts:
+(pass) QCreateModelTool > should be defined [0.19ms]
+(pass) QCreateModelTool > should generate a basic model class with primitive types [0.42ms]
+(pass) QCreateModelTool > should correctly map special types like Date, RegExp, BigInt [0.21ms]
+(pass) QCreateModelTool > should fallback to any for unknown types [0.14ms]
+
+tests/mcp/unit/public/validate-usage.test.ts:
+(pass) QValidateUsageTool > should be defined [0.10ms]
+(pass) QValidateUsageTool > should return valid for correct usage [0.21ms]
+(pass) QValidateUsageTool > should detect missing QModel inheritance [0.11ms]
+(pass) QValidateUsageTool > should detect missing declare keyword [0.16ms]
+(pass) QValidateUsageTool > should detect missing @Quick decorator [0.11ms]
+
+tests/mcp/unit/public/export-schema.test.ts:
+(pass) QExportJsonSchemaTool > should be defined [0.17ms]
+(pass) QExportJsonSchemaTool > should extract class name as title [0.79ms]
+(pass) QExportJsonSchemaTool > should map primitives to json schema types [0.28ms]
+(pass) QExportJsonSchemaTool > should map date to string with format date-time [0.17ms]
+(pass) QExportJsonSchemaTool > should handle unquoted keys if regex supports it (or quoted values) [0.15ms]
+
+tests/mcp/unit/public/simulate-transformation.test.ts:
+(pass) QSimulateTransformationTool > should be defined [2.13ms]
+(pass) QSimulateTransformationTool > should transform basic types [0.60ms]
+(pass) QSimulateTransformationTool > should transform BigInt (as string in JSON) [0.30ms]
+(pass) QSimulateTransformationTool > should support array notation [0.29ms]
+(pass) QSimulateTransformationTool > should support nested objects [0.28ms]
+(pass) QSimulateTransformationTool > should support Set transformation [0.23ms]
+
+tests/mcp/unit/public/explain-error.test.ts:
+(pass) QExplainErrorTool > should be defined [0.11ms]
+(pass) QExplainErrorTool > should return error message for invalid JSON [0.26ms]
+(pass) QExplainErrorTool > should explain INVALID_TYPE error [0.17ms]
+(pass) QExplainErrorTool > should explain REQUIRED error [0.12ms]
+(pass) QExplainErrorTool > should use message property if code is unknown [0.11ms]
+(pass) QExplainErrorTool > should stringify error if no known code or message [0.10ms]
+(pass) QExplainErrorTool > should handle array of errors [0.13ms]
+(pass) QExplainErrorTool > should handle object with errors array property [0.12ms]
+
+tests/mcp/unit/public/all-tools.test.ts:
+(pass) MCP Public Tools > QListTransformersTool > should list available transformers [2.23ms]
+(pass) MCP Public Tools > QGenerateMockDataTool > should generate mock data based on schema [0.53ms]
+(pass) MCP Public Tools > QGenerateMockDataTool > should handle non-existent transformers gracefully [0.26ms]
+(pass) MCP Public Tools > QInspectModelTool > should extract model structure from code [0.17ms]
+(pass) MCP Public Tools > QInspectModelTool > should handle code without class definition [0.17ms]
+(pass) MCP Public Tools > QJsonToModelTool > should convert simple json to model [0.60ms]
+(pass) MCP Public Tools > QJsonToModelTool > should infer date type [0.18ms]
+(pass) MCP Public Tools > QJsonToModelTool > should fail on invalid json [0.24ms]
+(pass) MCP Public Tools > QJsonToModelTool > should fail if json is not an object [0.17ms]
+
+tests/mcp/unit/internal/new-tools.test.ts:
+(pass) New Internal Tools > QScaffoldFeatureTool > should scaffold a transformer [0.97ms]
+(pass) New Internal Tools > QScaffoldFeatureTool > should scaffold a tool [0.63ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > should detect compatible changes [0.77ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > should detect breaking changes [0.65ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > should create new baseline if it does not exist [0.55ms]
+(pass) New Internal Tools > QCheckApiCompatibilityTool > QGenerateTestTool > should generate test file for source outside src/ [0.77ms]
+(pass) New Internal Tools > QBenchmarkPerformanceTool > should run benchmarks and return metrics [1.83ms]
+
+tests/mcp/unit/internal/all-tools.test.ts:
+(pass) MCP Internal Tools > QUpdateDocsTool > should run docs:build when action is build [0.38ms]
+(pass) MCP Internal Tools > QUpdateDocsTool > should run docs:clean when action is clean [0.15ms]
+(pass) MCP Internal Tools > QCheckProjectHealthTool > should run check script [0.17ms]
+(pass) MCP Internal Tools > QGetCoverageReportTool > should run test:coverage script [0.18ms]
+(pass) MCP Internal Tools > QGenerateTestTool > should generate test file if input is valid [0.22ms]
+(pass) MCP Internal Tools > QGenerateTestTool > should prevent path traversal [0.11ms]
+(pass) MCP Internal Tools > QGenerateTestTool > should warn if file does not exist [0.11ms]
+(pass) MCP Internal Tools > QGenerateTestTool > should warn if test file already exists [0.13ms]
+(pass) MCP Internal Tools > QCheckMissingJSDocsTool > should find missing docs [0.38ms]
+(pass) MCP Internal Tools > QCheckMissingJSDocsTool > should ignore documented members [0.16ms]
+Warning: Marker <!-- TOOLS-START --> not found in /home/cartago/_projects/quickmodel/docs-vitepress/en/mcp/public/index.md. Appending to end.
+Warning: Marker <!-- TOOLS-START --> not found in /home/cartago/_projects/quickmodel/docs-vitepress/en/mcp/internal/index.md. Appending to end.
+Warning: Marker <!-- TOOLS-START --> not found in /home/cartago/_projects/quickmodel/docs-vitepress/es/mcp/public/index.md. Appending to end.
+Warning: Marker <!-- TOOLS-START --> not found in /home/cartago/_projects/quickmodel/docs-vitepress/es/mcp/internal/index.md. Appending to end.
+(pass) MCP Internal Tools > QSyncDocsTool > should generate documentation files for both languages [51.95ms]
+
+tests/unit/core/bases/base-transformer-coverage.test.ts:
+(pass) BaseTransformer > should allow extension and implementation [0.10ms]
+
+tests/unit/core/helpers/transform-helpers.test.ts:
+(pass) Transform Helpers > Object Helpers > should deep freeze object [0.07ms]
+(pass) Transform Helpers > Object Helpers > should handle circular references gracefully in deepFreeze [0.06ms]
+(pass) Transform Helpers > Object Helpers > should return primitives as-is [0.03ms]
+(pass) Transform Helpers > String Helpers > trim works [0.04ms]
+(pass) Transform Helpers > String Helpers > trimStart works [0.03ms]
+(pass) Transform Helpers > String Helpers > trimEnd works [0.03ms]
+(pass) Transform Helpers > String Helpers > uppercase works [0.03ms]
+(pass) Transform Helpers > String Helpers > lowercase works [0.03ms]
+(pass) Transform Helpers > String Helpers > capitalize works [0.05ms]
+(pass) Transform Helpers > String Helpers > capitalizeWords works [0.07ms]
+(pass) Transform Helpers > String Helpers > slugify works [0.09ms]
+(pass) Transform Helpers > String Helpers > slugify removes special chars [0.03ms]
+(pass) Transform Helpers > String Helpers > camelCase works [0.08ms]
+(pass) Transform Helpers > String Helpers > snakeCase works [0.06ms]
+(pass) Transform Helpers > String Helpers > kebabCase works [0.05ms]
+(pass) Transform Helpers > String Helpers > reverse works [0.04ms]
+(pass) Transform Helpers > String Helpers > truncate works [0.06ms]
+(pass) Transform Helpers > String Helpers > removeSpaces works [0.04ms]
+(pass) Transform Helpers > String Helpers > normalizeWhitespace works [0.05ms]
+(pass) Transform Helpers > Number Helpers > round works [0.05ms]
+(pass) Transform Helpers > Number Helpers > floor works [0.03ms]
+(pass) Transform Helpers > Number Helpers > ceil works [0.03ms]
+(pass) Transform Helpers > Number Helpers > trunc works [0.04ms]
+(pass) Transform Helpers > Number Helpers > abs works [0.03ms]
+(pass) Transform Helpers > Number Helpers > clamp works [0.05ms]
+(pass) Transform Helpers > Number Helpers > percentage works [0.04ms]
+(pass) Transform Helpers > Number Helpers > toFixed works [0.08ms]
+(pass) Transform Helpers > Number Helpers > multiply works [0.04ms]
+(pass) Transform Helpers > Number Helpers > divide works [0.04ms]
+(pass) Transform Helpers > Number Helpers > add works [0.04ms]
+(pass) Transform Helpers > Number Helpers > subtract works [0.03ms]
+(pass) Transform Helpers > Encoding > base64Encode works [0.06ms]
+(pass) Transform Helpers > Encoding > base64Decode works [0.04ms]
+(pass) Transform Helpers > Encoding > jsonParse works [0.04ms]
+(pass) Transform Helpers > Encoding > jsonStringify works [0.04ms]
+(pass) Transform Helpers > Encoding > encodeURIString works [0.05ms]
+(pass) Transform Helpers > Encoding > decodeURIString works [0.07ms]
+(pass) Transform Helpers > Composition > compose works [0.19ms]
+(pass) Transform Helpers > Composition > pipe alias works [0.05ms]
+(pass) Transform Helpers > Business > tax works [0.05ms]
+(pass) Transform Helpers > Business > discount works [0.05ms]
+(pass) Transform Helpers > Business > vat works [0.03ms]
+(pass) Transform Helpers > Business > formatCurrency works [0.07ms]
+(pass) Transform Helpers > Array > unique works [0.05ms]
+(pass) Transform Helpers > Array > sortAsc works [0.04ms]
+(pass) Transform Helpers > Array > sortDesc works [0.04ms]
+(pass) Transform Helpers > Array > first works [0.03ms]
+(pass) Transform Helpers > Array > last works [0.03ms]
+(pass) Transform Helpers > Array > compact works [0.09ms]
+
+tests/unit/core/coverage-gaps/to-interface-gaps.test.ts:
+(pass) ToInterface Coverage Gaps > should handle null original value becoming a model instance [0.42ms]
+(pass) ToInterface Coverage Gaps > should handle circular reference in conversion [0.22ms]
+(pass) ToInterface Coverage Gaps > should handle root array model [0.05ms]
+(pass) ToInterface Coverage Gaps > should handle Map to Array conversion in nested array [0.18ms]
+(pass) ToInterface Coverage Gaps > should handle BigInt conversion from string original [0.15ms]
+(pass) ToInterface Coverage Gaps > should handle Object.create(null) [0.16ms]
+(pass) ToInterface Coverage Gaps > should handle Set to Array conversion in nested array [0.16ms]
+(pass) ToInterface Coverage Gaps > should preserve Date string if already string [0.16ms]
+(pass) ToInterface Coverage Gaps > should fallback to String(date) if not a Date object or string [0.15ms]
+(pass) ToInterface Coverage Gaps > should serialize custom class instance using properties matching original [0.19ms]
+(pass) ToInterface Coverage Gaps > should serialize nested model when original value is null [0.25ms]
+(pass) ToInterface Coverage Gaps > should handle wrapper objects (Number, String, Boolean) [0.26ms]
+Cannot convert property "obj": type mismatch
+(pass) ToInterface Coverage Gaps > should throw/log error on object type mismatch in development [0.35ms]
+
+tests/unit/core/coverage-gaps/mock-generator-gaps.test.ts:
+(pass) Mock Generator Coverage Gaps > should generate mocks via implicit design:type (no explicit config) [0.78ms]
+(pass) Mock Generator Coverage Gaps > should generate sample values for all types [0.63ms]
+(pass) Mock Generator Coverage Gaps > should generate random values for all types [1.01ms]
+(pass) Mock Generator Coverage Gaps > should generate nested model based on design:type when no other metadata is present [0.17ms]
+
+tests/unit/core/coverage-gaps/qtype-coverage.test.ts:
+(pass) QType Decorator Coverage Gaps > should handle Boolean constructor [2.74ms]
+(pass) QType Decorator Coverage Gaps > should handle WeakMap, WeakSet, Promise [0.23ms]
+(pass) QType Decorator Coverage Gaps > should handle Math methods as transformers [0.13ms]
+(pass) QType Decorator Coverage Gaps > should handle arrow functions as transformers [0.15ms]
+
+tests/unit/core/errors/quickmodel.error.test.ts:
+(pass) QModelError > should create an error with a message [0.05ms]
+(pass) QModelError > should store context [0.04ms]
+(pass) QModelError > static invalidType > should create a formatted error for invalid types [0.07ms]
+(pass) QModelError > static invalidType > should handle null values in message [0.03ms]
+(pass) QModelError > static invalidValue > should create a formatted error for invalid values [0.06ms]
+------------------------------------------------------|---------|---------|-------------------
+File                                                  | % Funcs | % Lines | Uncovered Line #s
+------------------------------------------------------|---------|---------|-------------------
+All files                                             |   82.53 |   98.98 |
+ src/advanced.ts                                      |  100.00 |  100.00 | 
+ src/core/bases/base-transformer.ts                   |    0.00 |  100.00 | 
+ src/core/constants/metadata-keys.ts                  |  100.00 |  100.00 | 
+ src/core/constants/native-types.ts                   |  100.00 |  100.00 | 
+ src/core/decorators/qtype.decorator.ts               |  100.00 |   97.89 | 560,563-567
+ src/core/decorators/quick.decorator.ts               |   80.00 |   99.48 | 
+ src/core/errors/quickmodel.error.ts                  |  100.00 |  100.00 | 
+ src/core/helpers/transform-helpers.ts                |  100.00 |  100.00 | 
+ src/core/models/quick.model.ts                       |   96.67 |  100.00 | 
+ src/core/registry/transformer.registry.ts            |   83.33 |  100.00 | 
+ src/core/services/deserializer.service.ts            |  100.00 |  100.00 | 
+ src/core/services/instance-factory.service.ts        |   50.00 |  100.00 | 
+ src/core/services/mock-builder.service.ts            |  100.00 |  100.00 | 
+ src/core/services/mock-generator.service.ts          |  100.00 |   99.65 | 282
+ src/core/services/population.service.ts              |  100.00 |  100.00 | 
+ src/core/services/serializer.service.ts              |   85.71 |  100.00 | 
+ src/core/services/to-interface.service.ts            |   75.00 |   93.75 | 252,312-313,321-322,397,400,402-413
+ src/core/services/transformer-lookup.service.ts      |  100.00 |  100.00 | 
+ src/core/services/validation.service.ts              |   80.00 |   99.54 | 
+ src/core/services/value-transformer.service.ts       |  100.00 |  100.00 | 
+ src/index.ts                                         |  100.00 |  100.00 | 
+ src/mcp/locales/en.mcp.ts                            |  100.00 |  100.00 | 
+ src/mcp/locales/es.mcp.ts                            |  100.00 |  100.00 | 
+ src/mcp/server.ts                                    |   87.50 |   97.85 | 160-161
+ src/mcp/tools/abstract-tool.ts                       |    0.00 |  100.00 | 
+ src/mcp/tools/internal/benchmark-perf.tool.ts        |  100.00 |  100.00 | 
+ src/mcp/tools/internal/check-api-compat.tool.ts      |   80.00 |   98.97 | 
+ src/mcp/tools/internal/check-health.tool.ts          |   66.67 |   96.00 | 
+ src/mcp/tools/internal/check-jsdocs.tool.ts          |   75.00 |   98.46 | 
+ src/mcp/tools/internal/check-project-rules.tool.ts   |   75.00 |   98.77 | 
+ src/mcp/tools/internal/coverage-report.tool.ts       |   66.67 |   94.44 | 
+ src/mcp/tools/internal/generate-test.tool.ts         |   66.67 |   98.75 | 
+ src/mcp/tools/internal/index.ts                      |  100.00 |  100.00 | 
+ src/mcp/tools/internal/scaffold-feature.tool.ts      |   75.00 |   98.68 | 
+ src/mcp/tools/internal/sync-docs.tool.ts             |   78.57 |   99.42 | 
+ src/mcp/tools/internal/update-docs.tool.ts           |   66.67 |   96.15 | 
+ src/mcp/tools/internal/utils.ts                      |  100.00 |  100.00 | 
+ src/mcp/tools/public/create-model.tool.ts            |   85.71 |   97.73 | 
+ src/mcp/tools/public/explain-error.tool.ts           |   75.00 |   97.30 | 
+ src/mcp/tools/public/export-schema.tool.ts           |   66.67 |   97.22 | 
+ src/mcp/tools/public/generate-mock.tool.ts           |   66.67 |   96.77 | 
+ src/mcp/tools/public/index.ts                        |  100.00 |  100.00 | 
+ src/mcp/tools/public/inspect-model.tool.ts           |   80.00 |   97.30 | 
+ src/mcp/tools/public/interface-to-model.tool.ts      |   66.67 |   98.08 | 
+ src/mcp/tools/public/json-to-model.tool.ts           |   66.67 |   98.46 | 
+ src/mcp/tools/public/list-transformers.tool.ts       |   50.00 |   95.45 | 
+ src/mcp/tools/public/search-docs.tool.ts             |   80.00 |   97.22 | 
+ src/mcp/tools/public/simulate-transformation.tool.ts |  100.00 |  100.00 | 
+ src/mcp/tools/public/validate-usage.tool.ts          |   66.67 |   96.88 | 
+ src/transformers/bigint.transformer.ts               |   75.00 |  100.00 | 
+ src/transformers/buffer.transformer.ts               |   90.00 |  100.00 | 
+ src/transformers/date.transformer.ts                 |   75.00 |  100.00 | 
+ src/transformers/error.transformer.ts                |   75.00 |  100.00 | 
+ src/transformers/map-set.transformer.ts              |   85.71 |  100.00 | 
+ src/transformers/primitive.transformer.ts            |  100.00 |  100.00 | 
+ src/transformers/regexp.transformer.ts               |   75.00 |   99.28 | 
+ src/transformers/symbol.transformer.ts               |   75.00 |   98.61 | 
+ src/transformers/typed-array.transformer.ts          |  100.00 |  100.00 | 
+ src/transformers/web-apis.transformer.ts             |   90.91 |   99.51 | 
+ src/types.ts                                         |  100.00 |  100.00 | 
+ src/utils.ts                                         |  100.00 |  100.00 | 
+------------------------------------------------------|---------|---------|-------------------
+
+ 1033 pass
+ 0 fail
+ 3163 expect() calls
+Ran 1033 tests across 138 files. [2.92s]

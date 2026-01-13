@@ -3,6 +3,7 @@ import {
 	QScaffoldFeatureTool,
 	QCheckApiCompatibilityTool,
 	QBenchmarkPerformanceTool,
+	QGenerateTestTool,
 } from '../../../../src/mcp/tools/internal';
 import { join } from 'path';
 import { existsSync, rmSync, mkdirSync } from 'fs';
@@ -111,6 +112,44 @@ describe('New Internal Tools', () => {
 				true
 			);
 		});
+		it('should create new baseline if it does not exist', async () => {
+			const tool = new QCheckApiCompatibilityTool();
+			const mockFs: any = {
+				existsSync: () => false,
+				writeFileSync: () => {}, // Mock write
+				readFileSync: () => 'export class MyClass {}', // Mock source scan
+				readdirSync: () => ['file.ts'],
+				statSync: () => ({ isDirectory: () => false }),
+			};
+			(tool as any)._fs = mockFs;
+
+			const result = await tool.execute({
+				baselineFile: 'new-baseline.json',
+			});
+			expect(result.status).toBe('baseline_created');
+			expect(result.changes[0]).toContain('No baseline found');
+		});
+
+		describe('QGenerateTestTool', () => {
+			it('should generate test file for source outside src/', async () => {
+				const tool = new QGenerateTestTool();
+				const mockFs: any = {
+					existsSync: (path: string) => path.endsWith('outside.ts'),
+					mkdirSync: () => {},
+					writeFileSync: () => {},
+					readdirSync: () => [],
+					statSync: () => ({ isDirectory: () => false }),
+				};
+				(tool as any)._fs = mockFs;
+
+				const result = await tool.execute({
+					sourceFile: 'outside.ts',
+				});
+
+				expect(result.message).toContain('Test file created');
+				expect(result.path).toContain('outside.test.ts');
+			});
+		});
 	});
 
 	describe('QBenchmarkPerformanceTool', () => {
@@ -123,6 +162,105 @@ describe('New Internal Tools', () => {
 			expect(result.results['instantiation_avg_ms']).toBeDefined();
 			expect(result.results['transformation_avg_ms']).toBeDefined();
 			expect(result.results['serialization_avg_ms']).toBeDefined();
+		});
+	});
+});
+
+describe('New Internal Tools - Health & Docs', () => {
+	// Import dynamically or explicitly if they are exported in index.ts
+	// Assuming they are exported similar to others:
+	const {
+		QCheckProjectHealthTool,
+		QGetCoverageReportTool,
+		QUpdateDocsTool,
+	} = require('../../../../src/mcp/tools/internal');
+
+	describe('QCheckProjectHealthTool', () => {
+		it('should return ok on successful check', async () => {
+			const tool = new QCheckProjectHealthTool();
+			(tool as any)._spawn = async () => ({
+				stdout: 'Passed',
+				stderr: '',
+			});
+
+			const result = await tool.execute({});
+			expect(result.status).toBe('ok');
+			expect(result.output).toContain('Passed');
+		});
+
+		it('should return error on failed check', async () => {
+			const tool = new QCheckProjectHealthTool();
+			(tool as any)._spawn = async () => {
+				const err = new Error('Failed');
+				(err as any).stdout = 'Errors found';
+				(err as any).stderr = '';
+				throw err;
+			};
+
+			const result = await tool.execute({});
+			expect(result.status).toBe('error');
+			expect(result.output).toContain('Errors found');
+		});
+	});
+
+	describe('QGetCoverageReportTool', () => {
+		it('should return coverage summary on success', async () => {
+			const tool = new QGetCoverageReportTool();
+			(tool as any)._spawn = async () => ({
+				stdout: 'Coverage: 100%',
+				stderr: '',
+			});
+
+			const result = await tool.execute({});
+			expect(result.summary).toContain('Coverage: 100%');
+		});
+
+		it('should return error summary on failure', async () => {
+			const tool = new QGetCoverageReportTool();
+			(tool as any)._spawn = async () => {
+				throw new Error('Coverage failed');
+			};
+
+			const result = await tool.execute({});
+			expect(result.summary).toContain('Coverage failed');
+		});
+	});
+
+	describe('QUpdateDocsTool', () => {
+		it('should run build script', async () => {
+			const tool = new QUpdateDocsTool();
+			let capturedCmd = '';
+			(tool as any)._spawn = async (_cmd: string, args: string[]) => {
+				capturedCmd = args.join(' ');
+				return { stdout: 'Built', stderr: '' };
+			};
+
+			const result = await tool.execute({ action: 'build' });
+			expect(capturedCmd).toContain('docs:build');
+			expect(result.stdout).toBe('Built');
+		});
+
+		it('should run clean script', async () => {
+			const tool = new QUpdateDocsTool();
+			let capturedCmd = '';
+			(tool as any)._spawn = async (_cmd: string, args: string[]) => {
+				capturedCmd = args.join(' ');
+				return { stdout: 'Cleaned', stderr: '' };
+			};
+
+			const result = await tool.execute({ action: 'clean' });
+			expect(capturedCmd).toContain('docs:clean');
+			expect(result.stdout).toBe('Cleaned');
+		});
+
+		it('should handle spawn errors', async () => {
+			const tool = new QUpdateDocsTool();
+			(tool as any)._spawn = async () => {
+				throw new Error('Spawn failed');
+			};
+
+			const result = await tool.execute({ action: 'build' });
+			expect(result.stderr).toContain('Spawn failed');
 		});
 	});
 });

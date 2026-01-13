@@ -304,6 +304,7 @@ export class ValueTransformerService {
 		// ISO 8601 date format check
 		if (typeof value === 'string') {
 			if (
+				// eslint-disable-next-line security/detect-unsafe-regex
 				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(value)
 			) {
 				return this.transformerLookup.getTransformer('date');

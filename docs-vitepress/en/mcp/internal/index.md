@@ -73,6 +73,14 @@ Enforce internal project rules: use @Quick over @QType in tests, and no console.
 }
 ```
 
+## `check_security`
+
+Run the security test suite to verify protection against vulnerabilities (XSS, Injection, Path Traversal, etc.).
+
+```json
+{}
+```
+
 ## `generate_test`
 
 Internal tool to generate a starter test file for a source component.

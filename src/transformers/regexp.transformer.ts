@@ -124,6 +124,7 @@ export class RegExpTransformer
 			}
 
 			try {
+				// eslint-disable-next-line security/detect-non-literal-regexp
 				return new RegExp(value.source, value.flags || '');
 			} catch (error) {
 				const errorMsg =
@@ -148,6 +149,7 @@ export class RegExpTransformer
 			const match = value.match(/^\/(.+)\/([gimsuy]*)$/);
 			if (match && match[1]) {
 				try {
+					// eslint-disable-next-line security/detect-non-literal-regexp
 					return new RegExp(match[1], match[2] || '');
 				} catch (error) {
 					const errorMsg =
@@ -169,6 +171,7 @@ export class RegExpTransformer
 			}
 			// Try as plain pattern (no slashes)
 			try {
+				// eslint-disable-next-line security/detect-non-literal-regexp
 				return new RegExp(value);
 			} catch (error) {
 				const errorMsg =

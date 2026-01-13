@@ -151,7 +151,16 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		for (const tool of tools) {
 			md += `## \`${tool.name}\`\n\n`;
 			// Use translation lookup
-			const desc = descLookup(tool.name, tool.description);
+			let desc = descLookup(tool.name, tool.description);
+
+			// SECURITY: Escape HTML characters to prevent XSS in generated docs
+			desc = desc
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;')
+				.replace(/'/g, '&#039;');
+
 			md += `${desc}\n\n`;
 			// md += `### ${texts.inputSchema}\n\n`;
 			md += `\`\`\`json\n`;
