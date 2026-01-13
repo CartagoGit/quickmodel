@@ -77,11 +77,15 @@ export class MapTransformer<K = string, V = unknown>
 			'__type' in value &&
 			value.__type === 'Map'
 		) {
-			const entries = (value as { __type: 'Map'; entries: [K, V][] }).entries;
+			const entries = (value as { __type: 'Map'; entries: [K, V][] })
+				.entries;
 			// SECURITY: Prevent DoS via limit
 			const maxItems =
-				(_context?.metadata?.transformerOptions as { maxItems?: number })
-					?.maxItems || 1_000_000;
+				(
+					_context?.metadata?.transformerOptions as {
+						maxItems?: number;
+					}
+				)?.maxItems || 1_000_000;
 
 			if (Array.isArray(entries) && entries.length > maxItems) {
 				throw new QModelError(
@@ -101,8 +105,11 @@ export class MapTransformer<K = string, V = unknown>
 		if (Array.isArray(value)) {
 			// SECURITY: Prevent DoS via limit
 			const maxItems =
-				(_context?.metadata?.transformerOptions as { maxItems?: number })
-					?.maxItems || 1_000_000;
+				(
+					_context?.metadata?.transformerOptions as {
+						maxItems?: number;
+					}
+				)?.maxItems || 1_000_000;
 
 			if (value.length > maxItems) {
 				throw new QModelError(
@@ -250,8 +257,11 @@ export class SetTransformer<V = unknown>
 			const values = (value as { __type: 'Set'; values: V[] }).values;
 			// SECURITY: Prevent DoS via limit
 			const maxItems =
-				(_context?.metadata?.transformerOptions as { maxItems?: number })
-					?.maxItems || 1_000_000;
+				(
+					_context?.metadata?.transformerOptions as {
+						maxItems?: number;
+					}
+				)?.maxItems || 1_000_000;
 
 			if (Array.isArray(values) && values.length > maxItems) {
 				throw new QModelError(

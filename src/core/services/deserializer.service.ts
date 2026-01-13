@@ -144,8 +144,17 @@ export class Deserializer<
 	deserialize<TData extends Record<string, unknown>, TResult = unknown>(
 		data: TData,
 		modelClass: new (data: TData) => TResult,
-		context?: { visited?: WeakSet<object> }
+		context?: { visited?: WeakSet<object>; depth?: number }
 	): TResult {
+		// SECURITY: Prevent Stack Overflow
+		const currentDepth = context?.depth || 0;
+		const MAX_DEPTH = 512;
+		if (currentDepth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during model deserialization.`
+			);
+		}
+
 		// 1. Creation
 		const instance = this.instanceFactory.createInstance(modelClass, data);
 

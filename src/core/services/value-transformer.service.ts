@@ -11,7 +11,7 @@ export interface IRecursiveDeserializer {
 	deserialize(
 		data: Record<string, unknown>,
 		modelClass: new (data: any) => any,
-		context?: { visited?: WeakSet<object> }
+		context?: { visited?: WeakSet<object>; depth?: number }
 	): any;
 }
 
@@ -32,18 +32,25 @@ export class ValueTransformerService {
 		value: unknown[],
 		elementClass: unknown,
 		context: IQTransformContext,
-		recursionContext?: { visited?: WeakSet<object> }
+		recursionContext?: { visited?: WeakSet<object>; depth?: number }
 	): unknown[] {
+		// SECURITY: Prevent Stack Overflow via Deep Recursion
+		const currentDepth = recursionContext?.depth || 0;
+		const MAX_DEPTH = 512;
+		if (currentDepth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during array transformation.`
+			);
+		}
+
 		return value.map((item) => {
 			if (item === null || item === undefined) return item;
 
 			if (Array.isArray(item)) {
-				return this.transformNestedArray(
-					item,
-					elementClass,
-					context,
-					recursionContext
-				);
+				return this.transformNestedArray(item, elementClass, context, {
+					...recursionContext,
+					depth: currentDepth + 1,
+				});
 			}
 
 			return this.transformByDesignType(
@@ -64,8 +71,17 @@ export class ValueTransformerService {
 		possibleTypes: unknown[],
 		discriminatorConfig?: IQDiscriminatorConfig,
 		context?: IQTransformContext,
-		recursionContext?: { visited?: WeakSet<object> }
+		recursionContext?: { visited?: WeakSet<object>; depth?: number }
 	): unknown[] {
+		// SECURITY: Prevent Stack Overflow via Deep Recursion
+		const currentDepth = recursionContext?.depth || 0;
+		const MAX_DEPTH = 512;
+		if (currentDepth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during model array transformation.`
+			);
+		}
+
 		// Filter nulls/undefined for models
 		const validItems = value.filter(
 			(item) => item !== null && item !== undefined
@@ -78,7 +94,7 @@ export class ValueTransformerService {
 					possibleTypes,
 					discriminatorConfig,
 					context,
-					recursionContext
+					{ ...recursionContext, depth: currentDepth + 1 }
 				);
 			}
 
@@ -222,7 +238,7 @@ export class ValueTransformerService {
 		value: unknown,
 		designType: Function | undefined,
 		context: IQTransformContext,
-		_recursionContext?: { visited?: WeakSet<object> }
+		_recursionContext?: { visited?: WeakSet<object>; depth?: number }
 	): unknown {
 		// Null/Undefined check - Pass through
 		if (value === null || value === undefined) {

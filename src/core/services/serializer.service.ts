@@ -209,6 +209,15 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): TInterface {
+		const depth = options?._depth || 0;
+		// SECURITY: Prevent Stack Overflow
+		const MAX_DEPTH = 512;
+		if (depth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during serialization.`
+			);
+		}
+
 		const result: Record<string, unknown> = {};
 
 		// Cycle detection
@@ -250,6 +259,15 @@ export class Serializer<
 
 		// Serialize with transformers
 		for (const key of keys) {
+			// SECURITY: Prevent Prototype Pollution
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			) {
+				continue;
+			}
+
 			if (key.startsWith('__')) {
 				if (!options?.includeDoubleUnderscore) continue;
 			} else if (key.startsWith('_')) {
@@ -274,7 +292,10 @@ export class Serializer<
 				}
 			}
 
-			result[key] = this.serializeValue(value, visited, options);
+			result[key] = this.serializeValue(value, visited, {
+				...options,
+				_depth: depth + 1,
+			});
 		}
 
 		return result as TInterface;
@@ -320,6 +341,15 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): unknown {
+		const depth = options?._depth || 0;
+		// SECURITY: Prevent Stack Overflow
+		const MAX_DEPTH = 512;
+		if (depth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during value serialization.`
+			);
+		}
+
 		// Containers (Set, Map, Array) - Handle FIRST to support recursion & cycles
 		if (value instanceof Map) {
 			const visited = seen || new WeakSet<object>();
@@ -331,7 +361,10 @@ export class Serializer<
 			const result: Record<string, unknown> = {};
 			for (const [k, v] of value) {
 				// Recursive call ensures values (like BigInt) are IQSerialized
-				result[String(k)] = this.serializeValue(v, visited, options);
+				result[String(k)] = this.serializeValue(v, visited, {
+					...options,
+					_depth: depth + 1,
+				});
 			}
 			return result;
 		}
@@ -345,7 +378,10 @@ export class Serializer<
 
 			// Recursive call ensures values (like Date) are IQSerialized
 			return Array.from(value).map((item) =>
-				this.serializeValue(item, visited, options)
+				this.serializeValue(item, visited, {
+					...options,
+					_depth: depth + 1,
+				})
 			);
 		}
 
@@ -357,7 +393,10 @@ export class Serializer<
 			visited.add(value);
 
 			return value.map((item) =>
-				this.serializeValue(item, visited, options)
+				this.serializeValue(item, visited, {
+					...options,
+					_depth: depth + 1,
+				})
 			);
 		}
 
@@ -532,7 +571,7 @@ export class Serializer<
 						o?: IQSerializationOptions
 					) => unknown;
 				}
-			).serialize(visited, options);
+			).serialize(visited, { ...options, _depth: depth + 1 });
 		}
 
 		// Plain Object (recursive serialization)
@@ -555,7 +594,7 @@ export class Serializer<
 				result[key] = this.serializeValue(
 					(value as Record<string, unknown>)[key],
 					visited,
-					options
+					{ ...options, _depth: depth + 1 }
 				);
 			}
 			return result;

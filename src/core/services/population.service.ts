@@ -33,7 +33,7 @@ export class PopulationService {
 		instance: Record<string, unknown>,
 		data: T,
 		modelClass: Function,
-		context?: { visited?: WeakSet<object> }
+		context?: { visited?: WeakSet<object>; depth?: number }
 	): void {
 		const visited = context?.visited || new WeakSet();
 
@@ -45,7 +45,10 @@ export class PopulationService {
 			}
 			visited.add(data);
 		}
-		const recursionContext = { visited };
+		const recursionContext = {
+			visited,
+			depth: (context?.depth || 0) + 1,
+		};
 
 		// Get list of properties decorated with @QType()
 		const decoratedFields =

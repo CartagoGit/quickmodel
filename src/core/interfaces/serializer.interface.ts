@@ -17,6 +17,12 @@ export interface IQSerializationOptions {
 	 * @default false
 	 */
 	includeDoubleUnderscore?: boolean;
+
+	/**
+	 * Internal recursion depth tracking for security
+	 * @internal
+	 */
+	_depth?: number;
 }
 
 export interface IQSerializer<

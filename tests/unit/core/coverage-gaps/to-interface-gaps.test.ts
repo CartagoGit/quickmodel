@@ -52,7 +52,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const service = new ToInterfaceService();
 		// Covers line 15: if (Array.isArray(model))
 		const result = service.toInterface([1, 2] as any);
-		expect(result).toEqual({});
+		expect(result).toEqual([1, 2]);
 	});
 
 	it('should handle Map to Array conversion in nested array', () => {

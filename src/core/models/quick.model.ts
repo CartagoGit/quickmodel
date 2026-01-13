@@ -451,6 +451,15 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		// IMPORTANT: Must be done BEFORE deserialization to preserve original types
 		const initDataClone: Record<string, unknown> = {};
 		for (const key in data) {
+			// SECURITY: Prevent Prototype Pollution
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			) {
+				continue;
+			}
+
 			const value = (data as Record<string, unknown>)[key];
 			// Symbols and functions cannot be cloned, keep reference
 			// QModel instances should also be kept by reference to avoid structuredClone corruption of getters
@@ -999,10 +1008,11 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * model2.toInterface();  // { pattern: /^test$/ } - REGEXP preserved
 	 * ```
 	 */
-	toInterface(seen?: WeakSet<object>): TInterface {
+	toInterface(seen?: WeakSet<object>, depth?: number): TInterface {
 		return QModel.toInterfaceService.toInterface<TInterface>(
 			this as unknown as Record<string, unknown>,
-			seen
+			seen,
+			depth
 		);
 	}
 
