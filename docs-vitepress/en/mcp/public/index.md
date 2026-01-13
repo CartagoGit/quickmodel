@@ -31,24 +31,28 @@ Generates the TypeScript code for a class extending QModel based on a list of pr
 }
 ```
 
-## `validate_usage`
+## `explain_error`
 
-Analyzes a code snippet to check for common QuickModel usage errors (e.g. missing declare, wrong inheritance).
+Explain a QuickModel validation error in human-readable language.
 
 ```json
 {
-  "code": {
-    "description": "The TypeScript code to analyze"
+  "error": {
+    "description": "The JSON string of the validation error"
   }
 }
 ```
 
-## `list_transformers`
+## `export_json_schema`
 
-List all available data transformers in QuickModel (e.g., string, date, email).
+Generate a JSON Schema Definition from a QuickModel class.
 
 ```json
-{}
+{
+  "code": {
+    "description": "The QuickModel class code"
+  }
+}
 ```
 
 ## `generate_mock`
@@ -79,18 +83,6 @@ Analyze a QuickModel class definition and explain its structure.
 }
 ```
 
-## `search_docs`
-
-Search the QuickModel documentation for a query string.
-
-```json
-{
-  "query": {
-    "description": "The search term or phrase"
-  }
-}
-```
-
 ## `interface_to_model`
 
 Convert a TypeScript interface definition into a QuickModel class.
@@ -103,26 +95,38 @@ Convert a TypeScript interface definition into a QuickModel class.
 }
 ```
 
-## `export_json_schema`
+## `json_to_model`
 
-Generate a JSON Schema Definition from a QuickModel class.
+Convert a JSON string into a QuickModel class definition with inferred types.
 
 ```json
 {
-  "code": {
-    "description": "The QuickModel class code"
+  "json": {
+    "description": "The JSON string to convert"
+  },
+  "className": {
+    "description": "The name of the generated class",
+    "optional": true
   }
 }
 ```
 
-## `explain_error`
+## `list_transformers`
 
-Explain a QuickModel validation error in human-readable language.
+List all available data transformers in QuickModel (e.g., string, date, email).
+
+```json
+{}
+```
+
+## `search_docs`
+
+Search the QuickModel documentation for a query string.
 
 ```json
 {
-  "error": {
-    "description": "The JSON string of the validation error"
+  "query": {
+    "description": "The search term or phrase"
   }
 }
 ```
@@ -142,18 +146,14 @@ Simulates a QuickModel data transformation given an input object and a configura
 }
 ```
 
-## `json_to_model`
+## `validate_usage`
 
-Convert a JSON string into a QuickModel class definition with inferred types.
+Analyzes a code snippet to check for common QuickModel usage errors (e.g. missing declare, wrong inheritance).
 
 ```json
 {
-  "json": {
-    "description": "The JSON string to convert"
-  },
-  "className": {
-    "description": "The name of the generated class",
-    "optional": true
+  "code": {
+    "description": "The TypeScript code to analyze"
   }
 }
 ```

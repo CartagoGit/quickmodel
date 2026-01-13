@@ -18,26 +18,28 @@ Las siguientes herramientas se usan para desarrollo interno.
 
 <!-- _Generado automáticamente por QSyncDocsTool. No editar manualmente._ -->
 
-## `update_docs`
+## `benchmark_performance`
 
-Herramienta interna para ejecutar scripts de construcción de documentación.
+Ejecuta pruebas de rendimiento para las transformaciones de QuickModel.
 
 ```json
 {
-  "action": {
-    "description": "The action to perform"
+  "iterations": {
+    "description": "Number of iterations for each test case",
+    "optional": true
   }
 }
 ```
 
-## `generate_test`
+## `check_api_compatibility`
 
-Herramienta interna para generar un archivo de prueba inicial para un componente fuente.
+Verifica la compatibilidad de la API pública.
 
 ```json
 {
-  "sourceFile": {
-    "description": "Absolute path to the source file (e.g., src/core/user.ts)"
+  "baselineFile": {
+    "description": "Path to the API baseline JSON file. Defaults to api-baseline.json.",
+    "optional": true
   }
 }
 ```
@@ -58,14 +60,6 @@ Ejecuta una verificación completa de salud: Lint, Typecheck y Tests.
 {}
 ```
 
-## `get_coverage_report`
-
-Ejecuta pruebas con cobertura y reporta el resumen.
-
-```json
-{}
-```
-
 ## `check_project_rules`
 
 Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y no console.log.
@@ -79,9 +73,21 @@ Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y 
 }
 ```
 
-## `update_docs_content`
+## `generate_test`
 
-Genera automáticamente archivos de documentación para Herramientas y Transformadores basado en el código actual.
+Herramienta interna para generar un archivo de prueba inicial para un componente fuente.
+
+```json
+{
+  "sourceFile": {
+    "description": "Absolute path to the source file (e.g., src/core/user.ts)"
+  }
+}
+```
+
+## `get_coverage_report`
+
+Ejecuta pruebas con cobertura y reporta el resumen.
 
 ```json
 {}
@@ -106,29 +112,23 @@ Genera la estructura básica para una nueva funcionalidad.
 }
 ```
 
-## `check_api_compatibility`
+## `update_docs`
 
-Verifica la compatibilidad de la API pública.
+Herramienta interna para ejecutar scripts de construcción de documentación.
 
 ```json
 {
-  "baselineFile": {
-    "description": "Path to the API baseline JSON file. Defaults to api-baseline.json.",
-    "optional": true
+  "action": {
+    "description": "The action to perform"
   }
 }
 ```
 
-## `benchmark_performance`
+## `update_docs_content`
 
-Ejecuta pruebas de rendimiento para las transformaciones de QuickModel.
+Genera automáticamente archivos de documentación para Herramientas y Transformadores basado en el código actual.
 
 ```json
-{
-  "iterations": {
-    "description": "Number of iterations for each test case",
-    "optional": true
-  }
-}
+{}
 ```
 

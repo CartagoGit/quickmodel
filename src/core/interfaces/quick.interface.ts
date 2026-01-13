@@ -9,7 +9,7 @@ export type IQConstructor<T = any> = new (...args: any[]) => T;
 /**
  * Transformer function that converts a value
  */
-export type IQTransformerFunction = (value: unknown) => unknown;
+export type IQTransformerFunction = Function;
 
 /**
  * Single type specification supported by QuickModel (without transformers).

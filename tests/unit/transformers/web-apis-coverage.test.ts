@@ -30,6 +30,15 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			expect(url).toBe(input);
 		});
 
+		test('deserialize should return null/undefined for null/undefined', () => {
+			expect(
+				transformer.deserialize(null, 'url', 'TestClass')
+			).toBeNull();
+			expect(
+				transformer.deserialize(undefined, 'url', 'TestClass')
+			).toBeUndefined();
+		});
+
 		test('deserialize should throw on non-string input', () => {
 			expect(() => {
 				transformer.deserialize(
@@ -247,6 +256,11 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			expect(() => {
 				transformer.deserialize(123 as unknown as string, 'dec', 'TC');
 			}).toThrow(/TextDecoder transformer accepts string/);
+		});
+
+		test('deserialize should return same instance if input is TextDecoder', () => {
+			const dec = new TextDecoder('utf-8');
+			expect(transformer.deserialize(dec, 'dec', 'TC')).toBe(dec);
 		});
 
 		test('serialize should return config', () => {

@@ -66,7 +66,7 @@ Requires the **GitHub Copilot Chat** extension.
 3. Add a new server with the same command:
     - **Command**: `npx -y @cartago-git/quickmodel mcp`
 
-### 4. Google Antigravity
+#### 4. Google Antigravity
 
 1. Open the **"Agent"** panel.
 2. Select **"Manage MCP Servers"**.

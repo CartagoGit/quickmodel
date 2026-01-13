@@ -40,12 +40,16 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			'benchmark_',
 		];
 
-		const internalTools = allTools.filter((t: any) =>
-			internalPrefixes.some((p) => t.name.startsWith(p))
-		);
-		const publicTools = allTools.filter(
-			(t: any) => !internalPrefixes.some((p) => t.name.startsWith(p))
-		);
+		const internalTools = allTools
+			.filter((t: any) =>
+				internalPrefixes.some((p) => t.name.startsWith(p))
+			)
+			.sort((a, b) => a.name.localeCompare(b.name));
+		const publicTools = allTools
+			.filter(
+				(t: any) => !internalPrefixes.some((p) => t.name.startsWith(p))
+			)
+			.sort((a, b) => a.name.localeCompare(b.name));
 
 		// 2. Generate Transformers Documentation
 		const { TransformerLookupService } =

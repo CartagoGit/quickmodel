@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 import { QModel, Quick } from '../../../../src';
+import { ToInterfaceService } from '../../../../src/core/services/to-interface.service';
 
 describe('ToInterface Coverage Gaps', () => {
 	it('should handle null original value becoming a model instance', () => {
@@ -47,10 +48,49 @@ describe('ToInterface Coverage Gaps', () => {
 		process.env.NODE_ENV = originalEnv;
 	});
 
-	it('should handle "any" array inference mismatch', () => {
-		// Line ~37 in to-interface: if (Array.isArray(model))
-		// This is tricky to hit via QModel.toInterface() since instance is object.
-		// Need to call ToInterfaceService directly with array.
-		// But let's check nested array of models where original was missing?
+	it('should handle root array model', () => {
+		const service = new ToInterfaceService();
+		// Covers line 15: if (Array.isArray(model))
+		const result = service.toInterface([1, 2] as any);
+		expect(result).toEqual({});
+	});
+
+	it('should handle Map to Array conversion in nested array', () => {
+		// Covers lines 159-160
+		// We use an array that grows so originalValue is undefined for new item
+		@Quick({ items: 'any' }) // Use any to allow Map
+		class Wrapper extends QModel<any> {
+			declare items: any[];
+		}
+
+		const w = new Wrapper({ items: [] });
+		w.items.push(new Map([['a', 1]]));
+
+		expect(w.toInterface()).toEqual({ items: [[['a', 1]]] });
+	});
+
+	it('should handle BigInt conversion from string original', () => {
+		// Covers lines 321-322: if (originalValue === 'string' && currentValue === 'bigint')
+		@Quick({ val: 'any' })
+		class Mixed extends QModel<any> {
+			declare val: any;
+		}
+		const m = new Mixed({ val: '100' });
+		m.val = 100n;
+		expect(m.toInterface()).toEqual({ val: '100' });
+	});
+
+	it('should handle Object.create(null)', () => {
+		// Covers lines 331-346: !('constructor' in typedOriginal)
+		@Quick({ obj: 'any' })
+		class NullProto extends QModel<any> {
+			declare obj: any;
+		}
+
+		const noProto = Object.create(null);
+		noProto.a = 1;
+
+		const n = new NullProto({ obj: noProto });
+		expect(n.toInterface()).toEqual({ obj: { a: 1 } });
 	});
 });

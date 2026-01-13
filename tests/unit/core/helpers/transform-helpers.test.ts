@@ -17,6 +17,12 @@ describe('Transform Helpers', () => {
 			expect(Object.isFrozen(obj)).toBe(true);
 			expect(Object.isFrozen(obj.self)).toBe(true);
 		});
+
+		it('should return primitives as-is', () => {
+			expect(h.deepFreeze(123)).toBe(123);
+			expect(h.deepFreeze(null)).toBe(null);
+			expect(h.deepFreeze(undefined)).toBe(undefined);
+		});
 	});
 
 	describe('String Helpers', () => {
@@ -104,5 +110,10 @@ describe('Transform Helpers', () => {
 		it('sortAsc works', () => expect(h.sortAsc([2, 1])).toEqual([1, 2]));
 		it('sortDesc works', () => expect(h.sortDesc([1, 2])).toEqual([2, 1]));
 		it('first works', () => expect(h.first([1, 2])).toBe(1));
+		it('last works', () => expect(h.last([1, 2])).toBe(2));
+		it('compact works', () =>
+			expect(h.compact([0, 1, false, 2, '', null, undefined])).toEqual([
+				1, 2,
+			]));
 	});
 });
