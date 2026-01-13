@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
-import { join, resolve } from 'path';
+import { join, resolve, sep } from 'path';
 
 /**
  * Tool to enforce project-specific coding standards and rules.
@@ -37,7 +37,12 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 			? resolve(process.cwd(), args.targetDir)
 			: process.cwd();
 
-		if (!absRoot.startsWith(process.cwd())) {
+		// Suffix with separator to ensure we don't match sibling folders sharing a prefix
+		// e.g. /opt/project vs /opt/project-evil
+		const safeCwd = process.cwd().endsWith(sep) ? process.cwd() : process.cwd() + sep;
+		const safeTarget = absRoot.endsWith(sep) ? absRoot : absRoot + sep;
+
+		if (!safeTarget.startsWith(safeCwd)) {
 			throw new Error(
 				'Security Error: Target directory is outside project root.'
 			);

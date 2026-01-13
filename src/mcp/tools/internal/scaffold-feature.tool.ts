@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
-import { join, dirname, resolve } from 'path';
+import { join, dirname, resolve, sep } from 'path';
 
 /**
  * Tool to scaffold boilerplate code for new features.
@@ -57,7 +57,9 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 				? resolve(cwd, args.location)
 				: join(cwd, 'src/transformers');
 
-			if (!dir.startsWith(cwd)) {
+			const safeCwd = cwd.endsWith(sep) ? cwd : cwd + sep;
+			const safeDir = dir.endsWith(sep) ? dir : dir + sep;
+			if (!safeDir.startsWith(safeCwd)) {
 				throw new Error(
 					'Security Error: Target path is outside project root.'
 				);

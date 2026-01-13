@@ -25,4 +25,15 @@ describe('BigIntTransformer Security', () => {
 		);
 		expect(result).toBe(90071992547409919007199254740991n);
 	});
+
+	test('should reject extremely long strings in object wrapper format', () => {
+		const transformer = new BigIntTransformer();
+		const hugeNumber = '1'.repeat(5000);
+
+		const input = { __type: 'bigint' as const, value: hugeNumber };
+
+		expect(() => {
+			transformer.deserialize(input as any, 'balance', 'Account');
+		}).toThrow(/too long/);
+	});
 });
