@@ -161,4 +161,71 @@ describe('ToInterface Coverage Gaps', () => {
 		// Expect serialization to extract properties 'a' and 'b' and ignore 'method'
 		expect(m.toInterface()).toEqual({ data: { a: 99, b: 'updated' } });
 	});
+
+	it('should serialize nested model when original value is null', () => {
+		// Covers lines 417-432: originalValue === null && 'toInterface' in currentValue
+		class Nested extends QModel<any> {
+			declare val: string;
+		}
+		@Quick({ child: Nested })
+		class Parent extends QModel<any> {
+			declare child: Nested | null;
+		}
+
+		// Init with null
+		const p = new Parent({ child: null });
+		// Set to instance
+		p.child = new Nested({ val: 'test' });
+
+		expect(p.toInterface()).toEqual({ child: { val: 'test' } });
+	});
+
+	it('should handle wrapper objects (Number, String, Boolean)', () => {
+		// Covers lines 256-284
+		@Quick({ n: 'any', s: 'any', b: 'any' })
+		class Wrappers extends QModel<any> {
+			declare n: any;
+			declare s: any;
+			declare b: any;
+		}
+		// Init with wrapper objects
+		// Note: QModel by default unwraps primitives? No, not if ANY.
+		// Actually if input was wrapper, toInterface should try to return wrapper?
+		// Logic at 256 checks "instanceof Number".
+		const w = new Wrappers({
+			n: new Number(123),
+			s: new String('str'),
+			b: new Boolean(true),
+		});
+
+		// If we keep them as wrappers
+		expect(w.toInterface().n).toBeInstanceOf(Number);
+		expect(w.toInterface().s).toBeInstanceOf(String);
+		expect(w.toInterface().b).toBeInstanceOf(Boolean);
+		expect(w.toInterface().n.valueOf()).toBe(123);
+	});
+
+	it('should throw/log error on object type mismatch in development', () => {
+		// Covers lines 352-361: original was object, current is NOT
+		@Quick({ obj: 'object' })
+		class Mismatch extends QModel<any> {
+			declare obj: object;
+		}
+
+		const m = new Mismatch({ obj: { a: 1 } });
+		// Force invalid type (ts-ignore or any)
+		(m as any).obj = 'not-an-object';
+
+		const originalEnv = process.env.NODE_ENV;
+		process.env.NODE_ENV = 'test'; // Not production
+
+		expect(() => m.toInterface()).toThrow('Cannot convert property');
+
+		process.env.NODE_ENV = 'production';
+		// Should not throw, should return current value (string)
+		const res = m.toInterface();
+		expect(res).toEqual({ obj: 'not-an-object' });
+
+		process.env.NODE_ENV = originalEnv;
+	});
 });

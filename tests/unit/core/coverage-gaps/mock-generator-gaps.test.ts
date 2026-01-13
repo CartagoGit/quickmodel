@@ -122,4 +122,17 @@ describe('Mock Generator Coverage Gaps', () => {
 		expect(mock.map).toBeInstanceOf(Map);
 		expect(mock.set).toBeInstanceOf(Set);
 	});
+	it('should generate nested model based on design:type when no other metadata is present', () => {
+		// Covers line 281-282 in mock-generator.service.ts
+		class NestedClass {}
+
+		class Wrapper extends QModel<any> {
+			@QType() // No args -> fieldType undefined
+			nested: NestedClass;
+		}
+
+		// nested is not a "known" special type, so generateByDesignType returns string default
+		const mock = Wrapper.mock().random();
+		expect(typeof mock.nested).toBe('string');
+	});
 });

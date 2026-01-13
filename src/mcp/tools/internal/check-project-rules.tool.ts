@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 /**
  * Tool to enforce project-specific coding standards and rules.
@@ -27,10 +27,24 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		await Promise.resolve();
 		const errors: string[] = [];
 		const warnings: string[] = [];
-		const rootDir = args.targetDir || process.cwd();
+		const rootDir = args.targetDir
+			? join(process.cwd(), args.targetDir) // Fix: always relative to cwd first or resolve absolute?
+			: process.cwd();
+
+		// Better fix: Treat args.targetDir as potentially absolute or relative, resolve it, and check start
+
+		const absRoot = args.targetDir
+			? resolve(process.cwd(), args.targetDir)
+			: process.cwd();
+
+		if (!absRoot.startsWith(process.cwd())) {
+			throw new Error(
+				'Security Error: Target directory is outside project root.'
+			);
+		}
 
 		// Rule 1: Tests must favor @Quick over @QType
-		const testDir = join(rootDir, 'tests');
+		const testDir = join(absRoot, 'tests');
 		const testFiles = this.getAllFiles(testDir, '.ts');
 
 		for (const file of testFiles) {
@@ -57,7 +71,7 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		}
 
 		// Rule 2: No console.log in src (except maybe CLI entry points)
-		const srcDir = join(rootDir, 'src');
+		const srcDir = join(absRoot, 'src');
 		const srcFiles = this.getAllFiles(srcDir, '.ts');
 
 		for (const file of srcFiles) {
@@ -69,7 +83,7 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 			const content = readFileSync(file, 'utf-8');
 			if (content.includes('console.log')) {
 				warnings.push(
-					`[Rule: No Console Log] Found console.log in source file: ${file.replace(rootDir, '')}. Use a proper logger or remove debug code.`
+					`[Rule: No Console Log] Found console.log in source file: ${file.replace(absRoot, '')}. Use a proper logger or remove debug code.`
 				);
 			}
 		}
