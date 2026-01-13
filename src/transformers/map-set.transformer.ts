@@ -71,6 +71,15 @@ export class MapTransformer<K = string, V = unknown>
 			return value;
 		}
 
+		const isUnsafeKey = (key: unknown): boolean => {
+			if (typeof key !== 'string') return false;
+			return (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			);
+		};
+
 		// Handle new format with __type marker
 		if (
 			typeof value === 'object' &&
@@ -78,7 +87,7 @@ export class MapTransformer<K = string, V = unknown>
 			'__type' in value &&
 			value.__type === 'Map'
 		) {
-			const entries = (value as { __type: 'Map'; entries: [K, V][] })
+			const rawEntries = (value as { __type: 'Map'; entries: [K, V][] })
 				.entries;
 			// SECURITY: Prevent DoS via limit
 			const maxItems =
@@ -88,7 +97,7 @@ export class MapTransformer<K = string, V = unknown>
 					}
 				)?.maxItems || 1_000_000;
 
-			if (Array.isArray(entries) && entries.length > maxItems) {
+			if (Array.isArray(rawEntries) && rawEntries.length > maxItems) {
 				throw new QModelError(
 					`${className}.${propertyKey}: Map input too large (> ${maxItems} items).`,
 					{
@@ -99,6 +108,12 @@ export class MapTransformer<K = string, V = unknown>
 					}
 				);
 			}
+
+			// Filter unsafe keys
+			const entries = Array.isArray(rawEntries)
+				? rawEntries.filter(([k]) => !isUnsafeKey(k))
+				: rawEntries;
+
 			return new Map(entries);
 		}
 
@@ -125,7 +140,9 @@ export class MapTransformer<K = string, V = unknown>
 			}
 
 			try {
-				return new Map(value);
+				// Filter unsafe keys
+				const safeEntries = value.filter(([k]) => !isUnsafeKey(k));
+				return new Map(safeEntries);
 			} catch (error) {
 				throw new QModelError(
 					`MapTransformer.deserialize: Invalid Map data format. ` +
@@ -154,7 +171,11 @@ export class MapTransformer<K = string, V = unknown>
 			);
 		}
 
-		return new Map(Object.entries(value) as Iterable<[K, V]>);
+		// Filter unsafe keys for object input
+		const safeEntries = Object.entries(value).filter(
+			([k]) => !isUnsafeKey(k)
+		);
+		return new Map(safeEntries as Iterable<[K, V]>);
 	}
 
 	/**
@@ -164,7 +185,20 @@ export class MapTransformer<K = string, V = unknown>
 	 * @returns Plain object with stringified keys
 	 */
 	serialize(value: Map<K, V>): Record<string, V> {
-		return Object.fromEntries(value);
+		const isUnsafeKey = (key: unknown): boolean => {
+			if (typeof key !== 'string') return false;
+			return (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			);
+		};
+
+		// Filter unsafe keys before Object.fromEntries to prevent Prototype Poisoning
+		const entries = Array.from(value.entries()).filter(
+			([k]) => !isUnsafeKey(k)
+		);
+		return Object.fromEntries(entries) as Record<string, V>;
 	}
 
 	/**

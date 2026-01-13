@@ -360,8 +360,18 @@ export class Serializer<
 
 			const result: Record<string, unknown> = {};
 			for (const [k, v] of value) {
+				const keyStr = String(k);
+				// SECURITY: Prevent Prototype Poisoning
+				if (
+					keyStr === '__proto__' ||
+					keyStr === 'constructor' ||
+					keyStr === 'prototype'
+				) {
+					continue;
+				}
+
 				// Recursive call ensures values (like BigInt) are IQSerialized
-				result[String(k)] = this.serializeValue(v, visited, {
+				result[keyStr] = this.serializeValue(v, visited, {
 					...options,
 					_depth: depth + 1,
 				});
