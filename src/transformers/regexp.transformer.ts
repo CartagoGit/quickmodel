@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
+import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -196,7 +197,7 @@ export class RegExpTransformer
 				`  - plain pattern string (e.g., "[a-z]+")\\n` +
 				`  - object ({ source: "[a-z]+", flags: "gi" })\\n` +
 				`  - RegExp instance\\n` +
-				`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				`Received: ${typeof value} = ${safeStringify(value)}`,
 			{
 				className,
 				propertyKey,

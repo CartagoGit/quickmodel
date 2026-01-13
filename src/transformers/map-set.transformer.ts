@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
+import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -128,7 +129,7 @@ export class MapTransformer<K = string, V = unknown>
 			} catch (error) {
 				throw new QModelError(
 					`MapTransformer.deserialize: Invalid Map data format. ` +
-						`Expected array of [key, value] pairs, got: ${JSON.stringify(value)}. ` +
+						`Expected array of [key, value] pairs, got: ${safeStringify(value)}. ` +
 						`Error: ${error instanceof Error ? error.message : String(error)}`,
 					{
 						className,

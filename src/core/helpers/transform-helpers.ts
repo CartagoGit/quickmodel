@@ -48,6 +48,31 @@ export const trim = (s: string): string => s.trim();
 export const trimStart = (s: string): string => s.trimStart();
 export const trimEnd = (s: string): string => s.trimEnd();
 
+/**
+ * Safely stringifies a value, handling circular references and limiting length.
+ * Use this for error messages to prevent DoS via circular objects.
+ */
+export function safeStringify(value: unknown, space?: number): string {
+	const visited = new WeakSet();
+	try {
+		return JSON.stringify(
+			value,
+			(key, val) => {
+				if (typeof val === 'object' && val !== null) {
+					if (visited.has(val)) {
+						return '[Circular]';
+					}
+					visited.add(val);
+				}
+				return val;
+			},
+			space
+		);
+	} catch (error) {
+		return `[Unserializable: ${typeof value}]`;
+	}
+}
+
 export const uppercase = (s: string): string => s.toUpperCase();
 export const lowercase = (s: string): string => s.toLowerCase();
 
