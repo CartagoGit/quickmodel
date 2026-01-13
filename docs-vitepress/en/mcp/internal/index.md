@@ -12,7 +12,6 @@ These tools are designed for maintaining and developing the QuickModel project i
 The following tools are used for internal development. Please refer to the [API Reference](./tools.md) for detailed schemas.
 
 - **Scaffolding**: Generate tests (`generate_test`) and feature skeletons.
-- **Documentation**: Sync docs (`sync_docs`), check for missing JSDocs (`check_jsdocs`).
+- **Documentation**: Sync docs (`update_docs`), check for missing JSDocs (`check_jsdocs`).
 - **QA**: Check project health (`check_project_health`), coverage (`get_coverage_report`), and API compatibility.
 - **Performance**: Benchmark performance (`benchmark_performance`).
-

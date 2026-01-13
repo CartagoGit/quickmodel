@@ -63,7 +63,8 @@ export type {
  * - **Open/Closed (OCP)**: Extensible via custom transformers without core modification.
  * - **Dependency Inversion (DIP)**: Depends on abstractions, not concrete implementations.
  *
- * **Syntax**: \`QModel<InterfaceType>\`
+ * @group Classes
+ * Syntax: `QModel<InterfaceType>`
  * 
  * @template TInterface - The interface representing the IQSerialized JSON structure (e.g., `string` for dates)
  *

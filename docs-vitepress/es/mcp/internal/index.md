@@ -5,41 +5,13 @@
 
 Estas herramientas están diseñadas para **mantenedores** de la librería QuickModel. Automatizan tareas comunes de desarrollo y comprobaciones de salud del proyecto.
 
-## Herramientas Internas
+> **[Ver Referencia Completa de API](./tools.md)** (Generado automáticamente con Esquemas)
 
-### `generate_test`
+## Herramientas Disponibles
 
-Genera un esqueleto de archivo de test unitario para un archivo fuente dado.
+Las siguientes herramientas se usan para desarrollo interno. Por favor consulta la [Referencia de API](./tools.md) para esquemas detallados.
 
-- **Entrada**: Ruta del archivo fuente (ej: `src/core/my-feature.ts`).
-- **Acción**: Crea `tests/unit/core/my-feature.test.ts` con imports pre-llenados.
-
-### `update_docs`
-
-Dispara el proceso de construcción de documentación.
-
-- **Acciones**: `build` (reconstrucción completa), `clean` (eliminar dist).
-- **Uso**: "Reconstruye la documentación para verificar mis cambios."
-
-## Aseguramiento de Calidad
-
-### `check_project_health`
-
-Ejecuta una comprobación completa del estado del proyecto.
-
-- **Ejecuta**: `bun run check` (Lint, Typecheck, Tests).
-- **Uso**: "¿Está saludable el proyecto?"
-
-### `check_jsdocs`
-
-Escanea el código fuente en busca de miembros exportados que carecen de documentación JSDoc.
-
-- **Uso**: "¿Hay documentación faltante?"
-- **Salida**: Lista de archivos y líneas con documentación faltante.
-
-### `get_coverage_report`
-
-Ejecuta la suite de tests con cobertura habilitada y reporta el resumen.
-
-- **Uso**: "¿Cuál es la cobertura actual de tests?"
-- **Salida**: Tabla resumen de porcentajes de cobertura.
+- **Scaffolding**: Genera tests (`generate_test`) y esqueletos de funcionalidad.
+- **Documentación**: Sincroniza docs (`update_docs`), comprueba JSDocs faltantes (`check_jsdocs`).
+- **QA**: Comprueba salud del proyecto (`check_project_health`), cobertura (`get_coverage_report`), y compatibilidad de API.
+- **Rendimiento**: Benchmarks de rendimiento (`benchmark_performance`).
