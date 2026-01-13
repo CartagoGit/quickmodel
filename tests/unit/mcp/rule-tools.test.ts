@@ -49,4 +49,38 @@ describe('QCheckProjectRulesTool', () => {
 		);
 		expect(hasError).toBe(true);
 	});
+
+	it('should detect console.log in src files', async () => {
+		const mockSrcDir = join(mockProjectRoot, 'src');
+		mkdirSync(mockSrcDir, { recursive: true });
+
+		const violationFile = join(mockSrcDir, 'bad-code.ts');
+		writeFileSync(
+			violationFile,
+			`
+            function debug() {
+                console.log('debug info'); // Violation
+            }
+        `
+		);
+
+		// Should ignore safe files
+		const safeFile = join(mockSrcDir, 'server.ts');
+		writeFileSync(safeFile, "console.log('server started')");
+
+		const result = await tool.execute({ targetDir: mockProjectRoot });
+		// It might still pass because console.log produces warnings, not errors
+		// Check implementation: passed = errors.length === 0. So it passes.
+		expect(result.passed).toBe(true);
+
+		const hasWarning = result.warnings.some(
+			(w) => w.includes('Found console.log') && w.includes('bad-code.ts')
+		);
+		expect(hasWarning).toBe(true);
+
+		const safeWarning = result.warnings.find((w) =>
+			w.includes('server.ts')
+		);
+		expect(safeWarning).toBeUndefined();
+	});
 });
