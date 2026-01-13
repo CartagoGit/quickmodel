@@ -34,6 +34,13 @@ const user = new User({
 });
 ```
 
+> [!TIP] Seguridad de Tipos (Recomendado)
+> Para una verificación de tipos estricta entre tu interfaz y tu clase, es altamente rrecomendable usar `IQImplements`. Este ayudante asegura que las propiedades de tu clase coincidan con la definición de tu interfaz. [Aprende más](/es/guide/iq-implements).
+>
+> ```typescript
+> class User extends QModel<IUser> implements IQImplements<IUser, IUserTransform> { ... }
+> ```
+
 ### 2. Método Factoría (`create`)
 
 Útil para patrones de programación funcional o mapeo de arrays.

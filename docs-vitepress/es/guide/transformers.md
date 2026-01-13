@@ -1,173 +1,40 @@
-# Transformadores
+# Transformadores Integrados
 
-Los transformadores son los componentes lógicos responsables de convertir datos entre formatos serializables (strings JSON, números) y tipos en tiempo de ejecución (Date, BigInt, objetos).
+QuickModel incluye un conjunto de transformadores integrados para manejar tipos de datos comunes.
 
-## Transformadores Integrados
+_Generado automáticamente por QSyncDocsTool. No editar manualmente._
 
-QuickModel viene con un conjunto completo de transformadores para tipos comunes de JavaScript.
+| Transformador | Descripción |
+| :--- | :--- |
+| `arraybuffer` | Handles `arraybuffer` data types. |
+| `bigint` | Handles `bigint` data types. |
+| `bigint64array` | Handles `bigint64array` data types. |
+| `biguint64array` | Handles `biguint64array` data types. |
+| `boolean` | Handles `boolean` data types. |
+| `buffer` | Handles `buffer` data types. |
+| `dataview` | Handles `dataview` data types. |
+| `date` | Handles `date` data types. |
+| `error` | Handles `error` data types. |
+| `float32array` | Handles `float32array` data types. |
+| `float64array` | Handles `float64array` data types. |
+| `int16array` | Handles `int16array` data types. |
+| `int32array` | Handles `int32array` data types. |
+| `int8array` | Handles `int8array` data types. |
+| `map` | Handles `map` data types. |
+| `number` | Handles `number` data types. |
+| `regexp` | Handles `regexp` data types. |
+| `set` | Handles `set` data types. |
+| `sharedarraybuffer` | Handles `sharedarraybuffer` data types. |
+| `string` | Handles `string` data types. |
+| `symbol` | Handles `symbol` data types. |
+| `textdecoder` | Handles `textdecoder` data types. |
+| `textencoder` | Handles `textencoder` data types. |
+| `uint16array` | Handles `uint16array` data types. |
+| `uint32array` | Handles `uint32array` data types. |
+| `uint8array` | Handles `uint8array` data types. |
+| `uint8clampedarray` | Handles `uint8clampedarray` data types. |
+| `url` | Handles `url` data types. |
+| `urlsearchparams` | Handles `urlsearchparams` data types. |
 
-### Primitivos
 
-| Tipo        | Entrada (JSON)      | Tipo Runtime | Alias       |
-| ----------- | ------------------- | ------------ | ----------- |
-| **BigInt**  | `string` / `number` | `bigint`     | `'bigint'`  |
-| **Symbol**  | `string`            | `symbol`     | `'symbol'`  |
-| **String**  | `any`               | `string`     | `'string'`  |
-| **Number**  | `string`            | `number`     | `'number'`  |
-| **Boolean** | `string`            | `boolean`    | `'boolean'` |
-
-**Ejemplo:**
-
-```typescript
-@Quick({
-  balance: 'bigint',   // "100" -> 100n
-  id: 'string',        // 123 -> "123"
-  active: 'boolean'    // "true" -> true
-})
-```
-
-### Objetos Nativos
-
-| Tipo       | Entrada (JSON)         | Tipo Runtime | Alias      |
-| ---------- | ---------------------- | ------------ | ---------- |
-| **Date**   | ISO String / Timestamp | `Date`       | `'date'`   |
-| **RegExp** | String / Objeto        | `RegExp`     | `'regexp'` |
-| **URL**    | String                 | `URL`        | `'url'`    |
-| **Error**  | Objeto                 | `Error`      | `'error'`  |
-
-**Ejemplo:**
-
-```typescript
-@Quick({
-  createdAt: Date,
-  pattern: RegExp,
-  site: URL
-})
-```
-
-### Colecciones
-
-| Tipo    | Entrada (JSON)            | Tipo Runtime | Alias   |
-| ------- | ------------------------- | ------------ | ------- |
-| **Map** | Array de Tuplas `[[k,v]]` | `Map<K, V>`  | `'map'` |
-| **Set** | Array `[v1, v2]`          | `Set<V>`     | `'set'` |
-
-**Ejemplo:**
-
-```typescript
-@Quick({
-  tags: Set,     // ["a", "b"] -> Set{"a", "b"}
-  meta: Map      // [["k", "v"]] -> Map{"k" => "v"}
-})
-```
-
-### Datos Binarios
-
-QuickModel soporta el manejo de datos binarios a través de cadenas Base64.
-
-| Tipo                  | Alias                 |
-| --------------------- | --------------------- |
-| **ArrayBuffer**       | `'arraybuffer'`       |
-| **DataView**          | `'dataview'`          |
-| **Int8Array**         | `'int8array'`         |
-| **Uint8Array**        | `'uint8array'`        |
-| **Uint8ClampedArray** | `'uint8clampedarray'` |
-| **Float32Array**      | `'float32array'`      |
-| **Float64Array**      | `'float64array'`      |
-
-**Ejemplo:**
-
-```typescript
-@Quick({
-  buffer: ArrayBuffer,
-  pixels: Uint8Array
-})
-```
-
-## Transformadores Personalizados
-
-Puedes crear tus propios transformadores implementando la interfaz de transformador.
-
-### 1. Transformadores Implicitos (En Línea)
-
-Para casos simples, puedes definir la lógica del transformador directamente en la definición de la propiedad. Este es el enfoque **implícito**.
-
-> [!NOTE]
-> Los transformadores implícitos actúan **SOLO como Deserializadores** (JSON -> Modelo).
-
-```typescript
-@Quick({
-  // Personalizado: String a mayúsculas
-  // NOTA: Las funciones en línea actúan SOLO como Deserializadores (JSON -> Modelo)
-  code: (val: string) => val.toUpperCase(),
-
-  // Parseo personalizado
-  config: JSON.parse
-})
-```
-
-> [!WARNING] Importante
-> Las funciones en línea `(val) => ...` se utilizan **únicamente para la Deserialización** (de JSON a tu instancia de Modelo).
->
-> Si necesitas transformación bidireccional (también para serializar de vuelta a JSON con un formato específico), debes crear una clase que implemente `IQTransformer`.
-
-## Avanzado: Transformadores y Serializadores vía Opciones
-
-Para un código más limpio, o cuando necesitas lógica personalizada bidireccional, puedes usar el objeto de **Opciones Avanzadas** (segundo argumento de `@Quick`).
-
-Este enfoque explícito te permite:
-
-1.  **Implícito vs Explícito**: Usar transformadores en el segundo argumento en lugar de en línea.
-2.  **Serializadores Independientes**: Definir serializadores sin transformadores (o viceversa).
-3.  **Separación de Responsabilidades**: Mantener limpias las definiciones de tipos.
-
-Esto te permite separar la definición de tipos de la lógica de transformación y definir **serializadores** explícitos.
-
-```typescript
-@Quick(
-	{
-		// 1. Definir tipos normalmente
-		status: String,
-		date: Date,
-	},
-	{
-		// 2. Definir transformadores personalizados (Deserialización: JSON -> Modelo)
-		transformers: {
-			status: (val) => String(val).toUpperCase(), // "active" -> "ACTIVE"
-			date: (val) => new Date(Number(val) * 1000), // Unix timestamp -> Date
-		},
-
-		// 3. Definir serializadores personalizados (Serialización: Modelo -> JSON)
-		serializers: {
-			// ACTIVE -> "ACTIVE" (generalmente no hace falta, pero se puede sobrescribir)
-			date: (val: Date) => Math.floor(val.getTime() / 1000), // Date -> Unix timestamp
-		},
-	}
-)
-class MyModel extends QModel<IMyInterface> {
-	declare status: string;
-	declare date: Date;
-}
-```
-
-### Serializadores Independientes
-
-¡No necesitas definir un transformador para definir un serializador! Puedes usarlos de forma independiente.
-
-```typescript
-@Quick({
-    date: Date // Transformador Date estándar
-}, {
-    serializers: {
-        // Lógica de serialización personalizada SOLAMENTE
-        // La deserialización seguirá usando el transformador Date estándar
-        date: (val: Date) => val.getTime()
-    }
-})
-```
-
-Este enfoque se recomienda cuando:
-
-- Quieres mantener la definición de tipos limpia (`status: String`).
-- Necesitas lógica de serialización específica (ej. convertir Date de vuelta a timestamp Unix en lugar de ISO string).
-- Quieres separar responsabilidades.
+Consulta [Transformadores Personalizados](./custom-transformers.md) para añadir los tuyos.

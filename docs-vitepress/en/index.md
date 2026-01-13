@@ -113,13 +113,13 @@ QuickModel is more than just a library; it's a **development platform** for data
 
 ### 🌟 Development Superpowers
 
-- **@Quick Decorator**: The magic wand. One decorator to rule them all. Define complex data structures, handle nesting, dates, and maps automatically with a single line of code.
-- **QModel Class**: The base class that gives your objects superpowers (`toJSON`, `fromJSON`, `validate`, `mock`).
-- **Zero-Boilerplate Mocks**: Stop writing fixtures manually. Just call `User.mock().random()` and get a valid, populated User object. Perfect for UI development before the API is ready.
+- **✨ @Quick Decorator**: The magic wand. One decorator to rule them all. Define complex data structures, handle nesting, dates, and maps automatically with a single line of code.
+- **🚀 QModel Class**: The base class that gives your objects superpowers (`toJSON`, `fromJSON`, `validate`, `mock`).
+- **🎭 Zero-Boilerplate Mocks**: Stop writing fixtures manually. Just call `User.mock().random()` and get a valid, populated User object. Perfect for UI development before the API is ready.
 - **🛡️ Runtime Integrity**: TypeScript types disappear at runtime. QuickModel stays to ensure API responses actually match what you expect. It eliminates "undefined is not a function" errors caused by unparsed API responses.
-- **� Polymorphic JSON**: APIs often return different objects in the same list (e.g., `Payment` can be `Card` or `PayPal`). QuickModel automatically instantiates the correct class for each item.
+- **🧩 Polymorphic JSON**: APIs often return different objects in the same list (e.g., `Payment` can be `Card` or `PayPal`). QuickModel automatically instantiates the correct class for each item.
 
-### �🤖 What is this "MCP" thing?
+### 🧠🤖 What is this "MCP" thing?
 
 **MCP (Model Context Protocol)** is like a "universal driver" for AI Tools.
 

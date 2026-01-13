@@ -12,6 +12,7 @@ By connecting an AI agent to this server, you enable it to:
 ## Available Tools
 
 - **[Public Tools](./public/)**: For users building applications with QuickModel.
+- **[Internal Tools](./internal/)**: For contributors working on the QuickModel codebase itself.
 
 ## Installation & Setup
 

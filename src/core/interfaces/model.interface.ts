@@ -1,3 +1,4 @@
+
 /**
  * Public types for QModel models.
  *
@@ -60,6 +61,7 @@ export type IQTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * RegExp, etc. that need serialization/deserialization.
  *
  * @group Types
+ * Syntax: `IQImplements<TInterface, TTransform>`
  *
  * @template TInterface - Base model interface representing JSON structure
  * @template TTransforms - Object mapping property names to their transformed types

@@ -2,21 +2,18 @@
 
 Estas herramientas están diseñadas para ayudar a los desarrolladores a **usar** QuickModel efectivamente en sus aplicaciones.
 
-## Creación y Validación de Modelos
+> **[Ver Referencia Completa de API](./tools.md)** (Generado automáticamente con Esquemas)
 
-### `create_model`
+## Herramientas Disponibles
 
-Genera una definición completa de clase TypeScript para un `QModel` a partir de una descripción simple.
+Las siguientes herramientas están disponibles para uso público. Por favor consulta la [Referencia de API](./tools.md) para esquemas detallados y ejemplos de uso.
 
-- **Uso**: "Crea un modelo Usuario con nombre, email y edad."
-- **Salida**: Una clase totalmente decorada usando `@Quick` y `@QType`.
+- **Creación de Modelos**: Genera clases `QModel` completas desde descripciones.
+- **Validación**: Analiza código para el uso correcto de `@Quick` y decoradores.
+- **Simulación**: Prueba cómo se transforman los datos sin ejecutar todo el código de la aplicación.
+- **Mocking**: Genera datos simulados realistas para pruebas.
+- **Inspección**: Analiza estructuras de modelos y transformadores disponibles.
 
-### `validate_usage`
-
-Analiza un fragmento de código buscando errores comunes de uso de QuickModel.
-
-- **Uso**: "Revisa si esta definición de modelo es correcta: [código]"
-- **Comprobaciones**: Falta de `declare`, uso incorrecto de decoradores, tipos incorrectos.
 
 ## Simulación de Datos
 

@@ -34,6 +34,13 @@ const user = new User({
 });
 ```
 
+> [!TIP] Type Safety (Recommended)
+> For strict type checking between your interface and your class, it is highly recommended to use `IQImplements`. This helper ensures your class properties match your interface definition. [Learn more](/en/guide/iq-implements).
+>
+> ```typescript
+> class User extends QModel<IUser> implements IQImplements<IUser, IUserTransform> { ... }
+> ```
+
 ### 2. Factory Method (`create`)
 
 Useful for functional programming patterns or when mapping arrays.

@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
 import { resolve as pathResolve, dirname } from 'path';
+import { enMcp } from '../../locales/en.mcp';
+import { esMcp } from '../../locales/es.mcp';
 
 /**
  * Tool to synchronize documentation content with code.
@@ -25,16 +27,10 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		// 1. Get Tools via dynamic import to avoid circular dependency
 		// Note: We assume the server exports QMcpServer class
 		const { QMcpServer } = await import('../../server');
-		const tools = QMcpServer.getDefaultTools();
+		const allTools = QMcpServer.getDefaultTools();
 
-		// Separate Public vs Internal
-		// Heuristic: Internal tools usually are in internal-tools.ts or have names like 'check_', 'generate_test', 'update_docs'
-		// We can categorize by checking if they are instance of classes in this file, but that's hard dynamically.
-		// Better heuristic: internal tools start with 'check_', 'generate_test', 'update_', 'get_coverage'
-		// Or simply hardcode the list or check descriptions?
-		// Let's use a "public" vs "internal" classification based on names for now, or assume all in public-tools.ts are public.
-		// Since we have instances, we can check their class names? No, minification might break it.
-		// Let's use the names.
+		// Separate Public vs Internal using Heuristic
+		// Heuristic: internal tools start with internal prefixes
 		const internalPrefixes = [
 			'check_',
 			'update_',
@@ -43,43 +39,84 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			'scaffold_',
 			'benchmark_',
 		];
-		const internalTools = tools.filter((t: any) =>
+
+		const internalTools = allTools.filter((t: any) =>
 			internalPrefixes.some((p) => t.name.startsWith(p))
 		);
-		const publicTools = tools.filter(
+		const publicTools = allTools.filter(
 			(t: any) => !internalPrefixes.some((p) => t.name.startsWith(p))
 		);
 
-		// 2. Generate Tools Documentation
-		const publicDocs = this.generateToolMd(publicTools, 'Public MCP Tools');
-		const internalDocs = this.generateToolMd(
-			internalTools,
-			'Internal MCP Tools'
-		);
-
-		this.writeDoc(
-			pathResolve(cwd, 'docs-vitepress/en/mcp/public/tools.md'),
-			publicDocs,
-			updatedFiles
-		);
-		this.writeDoc(
-			pathResolve(cwd, 'docs-vitepress/en/mcp/internal/tools.md'),
-			internalDocs,
-			updatedFiles
-		);
-
-		// 3. Generate Transformers Documentation
+		// 2. Generate Transformers Documentation
 		const { TransformerLookupService } =
 			await import('../../../core/services/transformer-lookup.service');
 		const transformers =
 			new TransformerLookupService().getAvailableTransformers();
-		const transformerDocs = this.generateTransformerMd(transformers);
 
-		this.writeDoc(
-			pathResolve(cwd, 'docs-vitepress/en/guide/transformers.md'),
-			transformerDocs,
-			updatedFiles
-		);
+		// 3. Process each language
+		const languages = [
+			{ code: 'en', texts: enMcp },
+			{ code: 'es', texts: esMcp },
+		];
+
+		for (const lang of languages) {
+			const t = lang.texts as any;
+			const isEn = lang.code === 'en';
+
+			// Helper to get description
+			// If English, use tool.description (Source of Truth in Code) if not in file (or just always tool.desc?)
+			// User said: "use translations". But for English, tool.description IS the text.
+			// Ideally en.mcp.ts shouldn't double maintain it.
+			// Let's assume for 'en', we prefer tool.description.
+			// For 'es', we look in t.tools[name].
+			const getDesc = (name: string, defaultDesc: string) => {
+				if (t.tools && t.tools[name]) {
+					return t.tools[name];
+				}
+				// If not found in translation file
+				if (isEn) {
+					return defaultDesc; // For English, use code description
+				}
+				// For other languages, fallback to English with a warning prefix? Or just English.
+				// User wants "unified", so maybe we should enforce it?
+				// But let's just return defaultDesc (English) as fallback.
+				return defaultDesc;
+			};
+
+			// Generate Tools Documentation
+			const publicDocs = this.generateToolMd(
+				publicTools,
+				t.publicTitle,
+				t,
+				getDesc
+			);
+			const internalDocs = this.generateToolMd(
+				internalTools,
+				t.internalTitle,
+				t,
+				getDesc
+			);
+
+			this.writeDoc(
+				pathResolve(cwd, `docs-vitepress/${lang.code}/mcp/public/tools.md`),
+				publicDocs,
+				updatedFiles
+			);
+			this.writeDoc(
+				pathResolve(cwd, `docs-vitepress/${lang.code}/mcp/internal/tools.md`),
+				internalDocs,
+				updatedFiles
+			);
+
+			// Generate Transformers Documentation
+			const transformerDocs = this.generateTransformerMd(transformers, t);
+
+			this.writeDoc(
+				pathResolve(cwd, `docs-vitepress/${lang.code}/guide/transformers.md`),
+				transformerDocs,
+				updatedFiles
+			);
+		}
 
 		return {
 			summary: `Successfully updated ${updatedFiles.length} documentation files.`,
@@ -87,19 +124,22 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		};
 	}
 
-	private generateToolMd(tools: any[], title: string): string {
+	private generateToolMd(
+		tools: any[],
+		title: string,
+		texts: Record<string, any>,
+		descLookup: (name: string, defaultDesc: string) => string
+	): string {
 		let md = `# ${title}\n\n`;
-		md += `_Auto-generated by QSyncDocsTool. Do not edit manually._\n\n`;
+		md += `${texts.generatedBy}\n\n`;
 
 		for (const tool of tools) {
 			md += `## \`${tool.name}\`\n\n`;
-			md += `${tool.description}\n\n`;
-			md += `### Input Schema\n\n`;
+			// Use translation lookup
+			const desc = descLookup(tool.name, tool.description);
+			md += `${desc}\n\n`;
+			// md += `### ${texts.inputSchema}\n\n`;
 			md += `\`\`\`json\n`;
-			// format zod schema if possible?
-			// tool.schema is a ZodObject. We can use zod-to-json-schema if installed, or just simple introspection
-			// For now, let's just describe it or omit strict JSON schema to avoid huge deps if not needed.
-			// Let's try to print a simplified view.
 			const shape = tool.schema.shape || {};
 			const simpleSchema: any = {};
 			for (const key in shape) {
@@ -118,20 +158,22 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		return md;
 	}
 
-	private generateTransformerMd(transformers: string[]): string {
-		let md = `# Built-in Transformers\n\n`;
-		md += `QuickModel comes with a set of built-in transformers to handle common data types.\n\n`;
-		md += `_Auto-generated by QSyncDocsTool._\n\n`;
+	private generateTransformerMd(
+		transformers: string[],
+		texts: Record<string, any>
+	): string {
+		let md = `# ${texts.transformersTitle}\n\n`;
+		md += `${texts.transformersDesc}\n\n`;
+		md += `${texts.generatedBy}\n\n`;
 
-		md += `| Transformer | Description |\n`;
+		md += `| ${texts.transformerHeader} | ${texts.descHeader} |\n`;
 		md += `| :--- | :--- |\n`;
 
 		for (const t of transformers.sort()) {
-			// We don't have descriptions in the registry yet, so just list them
 			md += `| \`${t}\` | Handles \`${t}\` data types. |\n`;
 		}
 
-		md += `\n\nSee [Custom Transformers](./custom-transformers.md) to add your own.\n`;
+		md += `\n\n${texts.customTransformers}\n`;
 		return md;
 	}
 

@@ -9,7 +9,7 @@ QuickModel uses two interfaces to represent the same data:
 1. **Serialization Interface** - JSON-compatible types (what goes over the wire)
 2. **Runtime Interface** - TypeScript types (what you work with in code)
 
-```typescript
+````typescript
 // Serialization interface (JSON-compatible)
 interface IUser {
 	id: number;
@@ -20,7 +20,7 @@ interface IUser {
 	metadata: [string, any][]; // Map as tuples
 }
 
-// Runtime interface (optional but recommended)
+// Runtime interface (what you want to work with)
 interface IUserTransform {
 	createdAt: Date;
 	balance: bigint;
@@ -45,7 +45,6 @@ class User
 	declare tags: Set<string>;
 	declare metadata: Map<string, any>;
 }
-```
 
 ## Deserialization (JSON → Runtime)
 
@@ -66,7 +65,7 @@ console.log(user.createdAt instanceof Date); // true
 console.log(typeof user.balance); // 'bigint'
 console.log(user.tags instanceof Set); // true
 console.log(user.metadata instanceof Map); // true
-```
+````
 
 ## Serialization (Runtime → JSON)
 

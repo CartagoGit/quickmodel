@@ -118,7 +118,9 @@ console.log(user.tags); // Set<string>
 console.log(user.metadata); // Map<string, any>
 ```
 
-#### 4️⃣ **Type-Safe with IQImplements** - Enforce transformation types
+#### 4️⃣ **Type-Safe with IQImplements** (Recommended)
+
+> Although optional, using `IQImplements` is **highly recommended** to ensure your class definitions match your data contracts and transformations, preventing silent type errors.
 
 ```typescript
 import { QModel, Quick, IQImplements } from '@cartago-git/quickmodel';

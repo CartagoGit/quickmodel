@@ -430,6 +430,10 @@ export default defineConfig({
 							items: [
 								{ text: 'QModel', link: '/en/guide/qmodel' },
 								{
+									text: 'IQImplements Helper',
+									link: '/en/guide/iq-implements',
+								},
+								{
 									text: '@Quick Decorator',
 									link: '/en/guide/quick-decorator',
 								},
@@ -567,6 +571,10 @@ export default defineConfig({
 							text: 'Conceptos Básicos',
 							items: [
 								{ text: 'QModel', link: '/es/guide/qmodel' },
+								{
+									text: 'Ayuda de IQImplements',
+									link: '/es/guide/iq-implements',
+								},
 								{
 									text: 'Decorador @Quick',
 									link: '/es/guide/quick-decorator',

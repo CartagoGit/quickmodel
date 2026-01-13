@@ -182,7 +182,7 @@ describe('MCP Internal Tools', () => {
 	});
 
 	describe('QSyncDocsTool', () => {
-		it('should generate documentation files', async () => {
+		it('should generate documentation files for both languages', async () => {
 			const tool = new QSyncDocsTool();
 			(tool as any)._fs = mockFs;
 
@@ -212,19 +212,31 @@ describe('MCP Internal Tools', () => {
 				// But we want to test `writeDoc`.
 			}
 
-			// We expect writeFileSync to be called at least 3 times (public, internal, transformers)
+			// We expect writeFileSync to be called at least 6 times (3 en + 3 es)
 			// verify calls
 			const calls = mockWriteFileSync.mock.calls;
 			if (calls.length > 0) {
 				const paths = calls.map((c) => c[0] as string);
-				expect(paths.some((p) => p.includes('public/tools.md'))).toBe(
-					true
-				);
-				expect(paths.some((p) => p.includes('internal/tools.md'))).toBe(
-					true
-				);
+				// English
 				expect(
-					paths.some((p) => p.includes('guide/transformers.md'))
+					paths.some((p) => p.includes('en/mcp/public/tools.md'))
+				).toBe(true);
+				expect(
+					paths.some((p) => p.includes('en/mcp/internal/tools.md'))
+				).toBe(true);
+				expect(
+					paths.some((p) => p.includes('en/guide/transformers.md'))
+				).toBe(true);
+
+				// Spanish
+				expect(
+					paths.some((p) => p.includes('es/mcp/public/tools.md'))
+				).toBe(true);
+				expect(
+					paths.some((p) => p.includes('es/mcp/internal/tools.md'))
+				).toBe(true);
+				expect(
+					paths.some((p) => p.includes('es/guide/transformers.md'))
 				).toBe(true);
 			}
 		});

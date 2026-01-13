@@ -12,6 +12,7 @@ Al conectar un agente de IA a este servidor, le permites:
 ## Herramientas Disponibles
 
 - **[Herramientas Públicas](./public/)**: Para usuarios construyendo aplicaciones con QuickModel.
+- **[Herramientas Internas](./internal/)**: Para contribuidores trabajando en el código base de QuickModel.
 
 ## Instalación y Configuración
 
