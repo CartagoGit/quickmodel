@@ -89,6 +89,15 @@ export class PopulationService {
 				continue;
 			}
 
+			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
+			// Do not allow data to overwrite methods defined in the class prototype
+			if (this.isMethodOnPrototype(Object.getPrototypeOf(instance), key)) {
+				// Silently ignore to prevent crashing, or maybe warn in debug?
+				// For security, silent filtering is usually preferred to prevent enumeration,
+				// but here we just want to protect integrity.
+				continue;
+			}
+
 			// Strict Mode: Check if property is known
 			if (isStrict) {
 				const isDecorated = decoratedFields.includes(key);
@@ -753,5 +762,28 @@ export class PopulationService {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Checks if a key corresponds to a method on the prototype chain.
+	 * Used to prevent Method Shadowing attacks where payload data overwrites methods.
+	 */
+	private isMethodOnPrototype(proto: any, key: string): boolean {
+		let current = proto;
+		while (current && current !== Object.prototype) {
+			const descriptor = Object.getOwnPropertyDescriptor(current, key);
+			if (descriptor) {
+				// We only care about protecting methods (functions)
+				// Getters/Setters are safe to assign to (they will invoke the setter)
+				if (typeof descriptor.value === 'function') {
+					return true;
+				}
+				// If we found a property that is NOT a function, it stops the search
+				// (it's a field declaration in a parent class)
+				return false;
+			}
+			current = Object.getPrototypeOf(current);
+		}
+		return false;
 	}
 }

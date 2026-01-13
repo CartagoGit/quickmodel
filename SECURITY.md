@@ -58,12 +58,20 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
 ### Core Library Security
 
 - **Prototype Pollution**:
-  - `PopulationService` explicitly ignores `__proto__`, `constructor`, and `prototype` keys during data population.
-  - **Test**: `tests/security/core-security.test.ts` - "Prototype Pollution Prevention"
+  - `PopulationService`, `SerializerService`, and `ToInterfaceService` explicitly ignore `__proto__`, `constructor`, and `prototype` keys during data population, serialization, and cloning.
+  - **Test**: `tests/security/core-security.test.ts` & `tests/security/prototype-pollution.test.ts`
 
 - **Memory Exhaustion (DoS)**:
-  - `TypedArrayTransformer` enforces a configurable `MAX_ITEMS` limit (default 1,000,000) to prevent large memory allocation attacks.
-  - **Test**: `tests/security/core-security.test.ts` - "DoS Prevention"
+  - `TypedArrayTransformer`, `ArrayBufferTransformer`, `SetTransformer`, and `MapTransformer` enforce a configurable `maxItems`/`maxBytes` limit (default 1,000,000) to prevent large memory allocation attacks.
+  - **Test**: `tests/security/core-security.test.ts`, `tests/security/buffers-limit.test.ts`, `tests/security/collections-limit.test.ts`
+
+- **Stack Overflow (Recursion DoS)**:
+  - Global `MAX_DEPTH` (512) enforced in `ValueTransformerService`, `DeserializerService`, `PopulationService`, `ToInterfaceService`, and `SerializerService`. This prevents process crashes from deeply nested JSON or recursive model structures.
+  - **Test**: `tests/security/stack-overflow.test.ts`
+
+- **CPU Exhaustion (DoS)**:
+  - String length limits enforced for resource-intensive transformers: `RegExpTransformer`, `DateTransformer`, `BigIntTransformer`, `SymbolTransformer`, `ErrorTransformer`.
+  - **Test**: `tests/security/*-dos.test.ts` suites.
 
 ### Running Security Tests
 

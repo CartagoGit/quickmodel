@@ -450,6 +450,19 @@ export function Quick<
 	typeMap?: IQImplements<TTypeMap, TExtendedTypes>,
 	advancedOptions?: IQAdvancedOptions<TTypeMap>
 ): ClassDecorator {
+	// SAFETY CHECK: Detect common misconfiguration where options are passed as first argument
+	if (
+		typeMap &&
+		'strict' in typeMap &&
+		typeof (typeMap as any).strict === 'boolean'
+	) {
+		throw new Error(
+			`[QuickModel] Misconfiguration detected: 'strict: ${(typeMap as any).strict}' found in type map. ` +
+				`Did you mean to pass options as the second argument? \n` +
+				`Correct usage: @Quick({ /* types */ }, { strict: true })`
+		);
+	}
+
 	return function <T extends Function>(target: T): T {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
@@ -728,6 +741,7 @@ export function Quick<
 			QUICK_TYPE_MAP_KEY,
 			QUICK_DESIGN_TYPES_KEY,
 			QUICK_DECORATOR_KEY,
+			QUICK_OPTIONS_KEY,
 		];
 
 		for (const key of keysToCopy) {

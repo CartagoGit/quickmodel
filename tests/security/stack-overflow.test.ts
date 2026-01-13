@@ -49,42 +49,42 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 		class Data extends QModel<IData> {
 			declare meta: any;
 		}
-		
+
 		const data = new Data({ meta: {} });
-		
+
 		// Manually build deep structure bypassing ingestion checks
 		let current = data.meta;
-        const DEPTH = 1000; 
+		const DEPTH = 1000;
 		for (let i = 0; i < DEPTH; i++) {
 			current.next = {};
 			current = current.next;
 		}
-		
+
 		expect(() => data.serialize()).toThrow(/Maximum recursion depth/);
 	});
-    
-    test('should prevent stack overflow on deep serialize (Nested Models)', () => {
-        interface INode {
-            child?: Node;
-        }
-        
-        @Quick()
-        class Node extends QModel<INode> {
-            declare child?: Node;
-        }
-        
-        const root = new Node({});
-        let current = root;
-        const DEPTH = 1000;
+
+	test('should prevent stack overflow on deep serialize (Nested Models)', () => {
+		interface INode {
+			child?: Node;
+		}
+
+		@Quick()
+		class Node extends QModel<INode> {
+			declare child?: Node;
+		}
+
+		const root = new Node({});
+		let current = root;
+		const DEPTH = 1000;
 		// Hack to bypass type checking for rapid construction
-        
-        // Build chain of models
-        for(let i = 0; i < DEPTH; i++) {
-            const next = new Node({});
-            current.child = next;
-            current = next;
-        }
-        
-        expect(() => root.serialize()).toThrow(/Maximum recursion depth/);
-    });
+
+		// Build chain of models
+		for (let i = 0; i < DEPTH; i++) {
+			const next = new Node({});
+			current.child = next;
+			current = next;
+		}
+
+		expect(() => root.serialize()).toThrow(/Maximum recursion depth/);
+	});
 });
