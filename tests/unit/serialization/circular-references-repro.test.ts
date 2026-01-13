@@ -27,22 +27,28 @@ describe('Robustness: Circular References Infinite Loop', () => {
 	});
 
 	test('should handle circular references gracefully in toInterface if customized', () => {
-		const node1 = new Node({ value: 1, children: [] });
-		const node2 = new Node({ value: 2, parent: node1 });
-		node1.children = [node2];
+		const originalEnv = process.env.NODE_ENV;
+		process.env.NODE_ENV = 'production';
+		try {
+			const node1 = new Node({ value: 1, children: [] });
+			const node2 = new Node({ value: 2, parent: node1 });
+			node1.children = [node2];
 
-		// Ensure toInterface doesn't crash stack
-		const result = node1.toInterface();
-		expect(result).toBeDefined();
+			// Ensure toInterface doesn't crash stack
+			const result = node1.toInterface();
+			expect(result).toBeDefined();
 
-		// Verify cycle is handled
-		// result is node1 interface containing node2 instance (raw) because it wasn't in original initData structure
-		// But JSON.stringify should handle it safely via serialization
+			// Verify cycle is handled
+			// result is node1 interface containing node2 instance (raw) because it wasn't in original initData structure
+			// But JSON.stringify should handle it safely via serialization
 
-		let jsonResult: string;
-		expect(() => {
-			jsonResult = JSON.stringify(result);
-		}).not.toThrow();
-		expect(jsonResult!).toContain('__circular');
+			let jsonResult: string;
+			expect(() => {
+				jsonResult = JSON.stringify(result);
+			}).not.toThrow();
+			expect(jsonResult!).toContain('__circular');
+		} finally {
+			process.env.NODE_ENV = originalEnv;
+		}
 	});
 });

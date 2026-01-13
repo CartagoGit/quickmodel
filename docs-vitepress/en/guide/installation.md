@@ -40,7 +40,6 @@ QuickModel uses decorators, so you need to enable them in your `tsconfig.json`:
 {
 	"compilerOptions": {
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
 		"target": "ES2020",
 		"lib": ["ES2020"],
 		"module": "ESNext",
@@ -52,13 +51,20 @@ QuickModel uses decorators, so you need to enable them in your `tsconfig.json`:
 ### Required Compiler Options
 
 - **`experimentalDecorators: true`** - Enables decorator syntax (`@Quick()`)
-- **`emitDecoratorMetadata: true`** - Enables runtime type reflection
 
 ### Recommended Options
 
 - **`strict: true`** - Enable all strict type-checking options for better type safety
 - **`target: "ES2020"`** - Modern JavaScript features
 - **`module: "ESNext"`** - Modern module system
+
+::: warning emitDecoratorMetadata is NOT required
+Unlike many other libraries, **QuickModel does NOT require `"emitDecoratorMetadata": true`**.
+
+QuickModel relies on **explicit type mapping** (e.g., `@Quick({ date: Date })`) as the source of truth. This ensures robust behavior regardless of your compiler settings or build tool (esbuild, swc, babel, etc.).
+
+**Specific Case:** When using `@QType()` **without arguments**, QuickModel attempts to read metadata. If `emitDecoratorMetadata` is disabled, it simply falls back to treating the value **"as-is"** (no transformation). This is perfectly fine for primitives but means you must use explicit mapping for special types (Date, BigInt, etc.).
+:::
 
 ## Import Structure
 

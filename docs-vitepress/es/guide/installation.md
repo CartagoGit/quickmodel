@@ -40,7 +40,6 @@ QuickModel usa decoradores, por lo que debes habilitarlos en tu `tsconfig.json`:
 {
 	"compilerOptions": {
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
 		"target": "ES2020",
 		"lib": ["ES2020"],
 		"module": "ESNext",
@@ -52,13 +51,20 @@ QuickModel usa decoradores, por lo que debes habilitarlos en tu `tsconfig.json`:
 ### Opciones Requeridas
 
 - **`experimentalDecorators: true`** - Habilita la sintaxis de decoradores (`@Quick()`)
-- **`emitDecoratorMetadata: true`** - Habilita la reflexión de tipos en tiempo de ejecución
 
 ### Opciones Recomendadas
 
 - **`strict: true`** - Habilita todas las opciones estrictas de verificación de tipos
 - **`target: "ES2020"`** - Características modernas de JavaScript
 - **`module: "ESNext"`** - Sistema de módulos moderno
+
+::: warning emitDecoratorMetadata NO es necesario
+A diferencia de muchas otras librerías, **QuickModel NO requiere `"emitDecoratorMetadata": true`**.
+
+QuickModel se basa en el **mapeo explícito de tipos** (ej: `@Quick({ date: Date })`) como única fuente de verdad. Esto asegura un comportamiento robusto independientemente de tu configuración de compilador o herramienta de construcción (esbuild, swc, babel, etc.).
+
+**Caso específico:** Cuando usas `@QType()` **sin argumentos**, QuickModel intenta leer metadatos. Si `emitDecoratorMetadata` está desactivado, simplemente recurre a tratar el valor **"tal cual"** (sin transformación). Esto funciona perfectamente para primitivos, pero significa que debes usar mapeo explícito para tipos especiales (Date, BigInt, etc.).
+:::
 
 ## Estructura de Importación
 
