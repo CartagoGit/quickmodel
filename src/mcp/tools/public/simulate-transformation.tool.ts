@@ -42,9 +42,10 @@ export class QSimulateTransformationTool extends QAbstractTool<
 
 		const instance = DynamicModel.create(args.data);
 
-		// We return the entries because the instance itself might be complex to serialize
-		// converting to plain object to ensure JSON serializability for the MCP response
-		return { result: JSON.parse(JSON.stringify(instance)) };
+		// QModel.toJSON() returns a serialized JSON string.
+		// We parse it back to an object to return structured data to the MCP client.
+		// This ensures all complex types (Date, BigInt, Set) are properly converted to their JSON representations.
+		return { result: JSON.parse(instance.toJSON()) };
 	}
 
 	private hydrateOptions(options: any): any {

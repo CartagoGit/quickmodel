@@ -97,13 +97,19 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 				getDesc
 			);
 
-			this.writeDoc(
-				pathResolve(cwd, `docs-vitepress/${lang.code}/mcp/public/tools.md`),
+			this.injectDoc(
+				pathResolve(
+					cwd,
+					`docs-vitepress/${lang.code}/mcp/public/index.md`
+				),
 				publicDocs,
 				updatedFiles
 			);
-			this.writeDoc(
-				pathResolve(cwd, `docs-vitepress/${lang.code}/mcp/internal/tools.md`),
+			this.injectDoc(
+				pathResolve(
+					cwd,
+					`docs-vitepress/${lang.code}/mcp/internal/index.md`
+				),
 				internalDocs,
 				updatedFiles
 			);
@@ -112,7 +118,10 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			const transformerDocs = this.generateTransformerMd(transformers, t);
 
 			this.writeDoc(
-				pathResolve(cwd, `docs-vitepress/${lang.code}/guide/transformers.md`),
+				pathResolve(
+					cwd,
+					`docs-vitepress/${lang.code}/guide/transformers.md`
+				),
 				transformerDocs,
 				updatedFiles
 			);
@@ -130,8 +139,10 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		texts: Record<string, any>,
 		descLookup: (name: string, defaultDesc: string) => string
 	): string {
-		let md = `# ${title}\n\n`;
-		md += `${texts.generatedBy}\n\n`;
+		// Title is handled by the parent index.md usually, but let's add a separator or subheader if needed.
+		// For now, we just append the list of tools.
+		let md = `\n\n`;
+		md += `<!-- ${texts.generatedBy} -->\n\n`;
 
 		for (const tool of tools) {
 			md += `## \`${tool.name}\`\n\n`;
@@ -164,7 +175,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	): string {
 		let md = `# ${texts.transformersTitle}\n\n`;
 		md += `${texts.transformersDesc}\n\n`;
-		md += `${texts.generatedBy}\n\n`;
+		md += `<!-- ${texts.generatedBy} -->\n\n`;
 
 		md += `| ${texts.transformerHeader} | ${texts.descHeader} |\n`;
 		md += `| :--- | :--- |\n`;
@@ -181,6 +192,34 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		// Ensure dir exists
 		this._fs.mkdirSync(dirname(path), { recursive: true });
 		this._fs.writeFileSync(path, content);
+		updatedFiles.push(path);
+	}
+
+	private injectDoc(path: string, content: string, updatedFiles: string[]) {
+		if (!this._fs.existsSync(path)) {
+			console.warn(
+				`Warning: File ${path} not found. Skipping injection.`
+			);
+			return;
+		}
+
+		const originalContent = this._fs.readFileSync(path, 'utf-8');
+		const marker = '<!-- TOOLS-START -->';
+		const parts = originalContent.split(marker);
+
+		if (parts.length < 2) {
+			console.warn(
+				`Warning: Marker ${marker} not found in ${path}. Appending to end.`
+			);
+			this._fs.writeFileSync(
+				path,
+				originalContent + '\n\n' + marker + content
+			);
+		} else {
+			// Keep pre-marker content and append new content
+			const newContent = parts[0] + marker + content;
+			this._fs.writeFileSync(path, newContent);
+		}
 		updatedFiles.push(path);
 	}
 }

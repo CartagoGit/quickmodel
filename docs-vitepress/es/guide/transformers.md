@@ -2,7 +2,7 @@
 
 QuickModel incluye un conjunto de transformadores integrados para manejar tipos de datos comunes.
 
-_Generado automáticamente por QSyncDocsTool. No editar manualmente._
+<!-- _Generado automáticamente por QSyncDocsTool. No editar manualmente._ -->
 
 | Transformador | Descripción |
 | :--- | :--- |
