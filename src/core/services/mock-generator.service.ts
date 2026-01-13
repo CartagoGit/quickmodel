@@ -364,6 +364,9 @@ export class QMockGenerator {
 		if (typeStr === 'uint8array' || typeStr === 'Uint8Array') {
 			return this.getDefaultValue(type, 'uint8array');
 		}
+		if (typeStr === 'uint8clampedarray' || typeStr === 'Uint8ClampedArray') {
+			return this.getDefaultValue(type, 'uint8clampedarray');
+		}
 		if (typeStr === 'int16array' || typeStr === 'Int16Array') {
 			return this.getDefaultValue(type, 'int16array');
 		}
