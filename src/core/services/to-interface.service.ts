@@ -148,6 +148,8 @@ export class ToInterfaceService<
 	): unknown {
 		// SECURITY: Prevent Stack Overflow in deep properties
 		const MAX_DEPTH = 512;
+		
+
 		if (depth > MAX_DEPTH) {
 			throw new Error(
 				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during toInterface property conversion.`
@@ -346,7 +348,8 @@ export class ToInterfaceService<
 					originalValue[index],
 					seen,
 					isProduction,
-					`${propertyKey}[${index}]`
+					`${propertyKey}[${index}]`,
+					depth + 1
 				)
 			);
 		}
@@ -392,7 +395,8 @@ export class ToInterfaceService<
 						typedOriginal[key],
 						seen,
 						isProduction,
-						`${propertyKey}.${key}`
+						`${propertyKey}.${key}`,
+						depth + 1
 					);
 				}
 				return resultNoProto;
@@ -421,7 +425,8 @@ export class ToInterfaceService<
 							typedOriginal[key],
 							seen,
 							isProduction,
-							`${propertyKey}.${key}`
+							`${propertyKey}.${key}`,
+							depth + 1
 						);
 					}
 				}
@@ -443,9 +448,9 @@ export class ToInterfaceService<
 				// Pass the 'seen' set to prevent infinite loops in recursive models
 				return (
 					currentValue as {
-						toInterface: (s: WeakSet<object>) => unknown;
+						toInterface: (s: WeakSet<object>, d: number) => unknown;
 					}
-				).toInterface(seen);
+				).toInterface(seen, depth + 1);
 			}
 
 			// For other objects, create plain object
@@ -458,7 +463,8 @@ export class ToInterfaceService<
 						typedOriginal[key],
 						seen,
 						isProduction,
-						`${propertyKey}.${key}`
+						`${propertyKey}.${key}`,
+						depth + 1
 					);
 				}
 			}
@@ -479,9 +485,9 @@ export class ToInterfaceService<
 		) {
 			return (
 				currentValue as {
-					toInterface: (s: WeakSet<object>) => unknown;
+					toInterface: (s: WeakSet<object>, d: number) => unknown;
 				}
-			).toInterface(seen);
+			).toInterface(seen, depth + 1);
 		}
 
 		return currentValue;
