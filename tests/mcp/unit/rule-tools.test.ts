@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeEach } from 'bun:test';
-import { QCheckProjectRulesTool } from '../../../src/mcp/tools/rule-tools';
+import { QCheckProjectRulesTool } from '../../../src/mcp/tools/internal';
 import { writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
@@ -43,7 +43,7 @@ describe('QCheckProjectRulesTool', () => {
 		const result = await tool.execute({ targetDir: mockProjectRoot });
 		expect(result.passed).toBe(false);
 		const hasError = result.errors.some(
-			(e) =>
+			(e: string) =>
 				e.includes('Found @QType usage') &&
 				e.includes('violation.test.ts')
 		);
@@ -74,11 +74,12 @@ describe('QCheckProjectRulesTool', () => {
 		expect(result.passed).toBe(true);
 
 		const hasWarning = result.warnings.some(
-			(w) => w.includes('Found console.log') && w.includes('bad-code.ts')
+			(w: string) =>
+				w.includes('Found console.log') && w.includes('bad-code.ts')
 		);
 		expect(hasWarning).toBe(true);
 
-		const safeWarning = result.warnings.find((w) =>
+		const safeWarning = result.warnings.find((w: string) =>
 			w.includes('server.ts')
 		);
 		expect(safeWarning).toBeUndefined();

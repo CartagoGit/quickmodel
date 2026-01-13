@@ -4,7 +4,7 @@ import {
 	QGenerateMockDataTool,
 	QInspectModelTool,
 	QJsonToModelTool,
-} from '../../../src/mcp/tools/public-tools';
+} from '../../../../src/mcp/tools/public';
 
 describe('MCP Public Tools', () => {
 	describe('QListTransformersTool', () => {

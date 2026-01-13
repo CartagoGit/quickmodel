@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { spawnCommand } from '../../../src/mcp/tools/internal-tools';
+import { spawnCommand } from '../../../src/mcp/tools/internal';
 
 describe('MCP Internal Tools - spawnCommand', () => {
 	it('should resolve with stdout when command succeeds', async () => {

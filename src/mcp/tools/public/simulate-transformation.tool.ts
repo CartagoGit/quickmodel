@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { QAbstractTool } from './abstract-tool';
-import { Quick } from '../../core/decorators/quick.decorator';
-import { QModel } from '../../core/models/quick.model';
+import { QAbstractTool } from '../abstract-tool';
+import { Quick } from '../../../core/decorators/quick.decorator';
+import { QModel } from '../../../core/models/quick.model';
 
 /**
  * Tool to simulate how QuickModel transforms data.
@@ -31,7 +31,6 @@ export class QSimulateTransformationTool extends QAbstractTool<
 		data: Record<string, any>;
 		options: Record<string, any>;
 	}): Promise<{ result: any }> {
-		// Simulate async work
 		await Promise.resolve();
 
 		const hydratedOptions = this.hydrateOptions(args.options);

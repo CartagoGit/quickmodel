@@ -85,3 +85,54 @@ Auto-generate documentation files for Tools and Transformers based on current co
 {}
 ```
 
+## `scaffold_feature`
+
+Generate boilerplate code for new features (transformers, tools).
+
+### Input Schema
+
+```json
+{
+  "type": {
+    "description": "Type of feature to scaffold"
+  },
+  "name": {
+    "description": "Name of the feature (e.g., \"email\", \"validate-user\")"
+  },
+  "location": {
+    "description": "Target directory (relative to project root). Defaults to standard locations.",
+    "optional": true
+  }
+}
+```
+
+## `check_api_compatibility`
+
+Compare current public API exports against a baseline to detect breaking changes.
+
+### Input Schema
+
+```json
+{
+  "baselineFile": {
+    "description": "Path to the API baseline JSON file. Defaults to api-baseline.json.",
+    "optional": true
+  }
+}
+```
+
+## `benchmark_performance`
+
+Run performance benchmarks for QuickModel transformations.
+
+### Input Schema
+
+```json
+{
+  "iterations": {
+    "description": "Number of iterations for each test case",
+    "optional": true
+  }
+}
+```
+

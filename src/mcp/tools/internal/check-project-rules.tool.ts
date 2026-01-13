@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { QAbstractTool } from './abstract-tool';
+import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 

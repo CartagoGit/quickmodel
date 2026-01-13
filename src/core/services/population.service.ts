@@ -638,12 +638,29 @@ export class PopulationService {
 
 		for (let i = 0; i < parts.length - 1; i++) {
 			const part = parts[i];
+			// SECURITY: Prevent accessing/creating prototype properties via dot notation
+			if (
+				part === '__proto__' ||
+				part === 'constructor' ||
+				part === 'prototype'
+			) {
+				return;
+			}
+
 			if (!part || current[part] === undefined || current[part] === null)
 				return;
 			current = current[part] as Record<string, unknown>;
 		}
 
 		const lastKey = parts[parts.length - 1];
+		// SECURITY
+		if (
+			lastKey === '__proto__' ||
+			lastKey === 'constructor' ||
+			lastKey === 'prototype'
+		) {
+			return;
+		}
 		if (!lastKey) return;
 		const value = current[lastKey];
 		if (value === undefined || value === null) return;

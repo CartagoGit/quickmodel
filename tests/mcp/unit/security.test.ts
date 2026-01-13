@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { QSearchDocsTool } from '../../../src/mcp/tools/public-tools';
+import { QSearchDocsTool } from '../../../src/mcp/tools/public';
 
 describe('MCP Security Tests', () => {
 	describe('QSearchDocsTool', () => {

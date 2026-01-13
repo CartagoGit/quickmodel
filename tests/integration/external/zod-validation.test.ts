@@ -105,8 +105,8 @@ describe('Integration: External Libraries (Zod)', () => {
 			birthDate: 'not-a-date',
 		};
 
-        // QuickModel now throws strict errors for invalid dates instead of returning "Invalid Date"
-        // So we expect this to throw
-        expect(() => User.create(invalidDateData)).toThrow();
+		// QuickModel now throws strict errors for invalid dates instead of returning "Invalid Date"
+		// So we expect this to throw
+		expect(() => User.create(invalidDateData)).toThrow();
 	});
 });

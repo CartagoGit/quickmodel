@@ -1,7 +1,5 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
-import { QModel } from '../../../core/models/quick.model';
-import { Quick } from '../../../core/decorators/quick.decorator';
 
 /**
  * Tool to convert a raw JSON object into a QuickModel class definition.

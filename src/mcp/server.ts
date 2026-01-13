@@ -5,17 +5,20 @@ import type { IQMcpTool } from './tools/abstract-tool';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-// Tool Imports
-import { QCreateModelTool, QValidateUsageTool } from './tools/model-tools';
 import {
 	QListTransformersTool,
 	QGenerateMockDataTool,
 	QInspectModelTool,
 	QSearchDocsTool,
 	QJsonToModelTool,
-} from './tools/public-tools';
-import { QSimulateTransformationTool } from './tools/core-tools';
-import { QCheckProjectRulesTool } from './tools/rule-tools';
+	QInterfaceToModelTool,
+	QExportJsonSchemaTool,
+	QExplainErrorTool,
+	QSimulateTransformationTool,
+	QCreateModelTool,
+	QValidateUsageTool,
+} from './tools/public';
+
 import {
 	QUpdateDocsTool,
 	QGenerateTestTool,
@@ -23,8 +26,11 @@ import {
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
 	QSyncDocsTool,
-} from './tools/internal-tools';
-
+	QScaffoldFeatureTool,
+	QCheckApiCompatibilityTool,
+	QBenchmarkPerformanceTool,
+	QCheckProjectRulesTool,
+} from './tools/internal';
 /**
  * Main class for the QuickModel MCP Server.
  * Handles the connection lifecycle and tool registration.
@@ -69,7 +75,9 @@ export class QMcpServer {
 			new QGenerateMockDataTool(),
 			new QInspectModelTool(),
 			new QSearchDocsTool(),
-
+			new QInterfaceToModelTool(),
+			new QExportJsonSchemaTool(),
+			new QExplainErrorTool(),
 			// Core Simulation
 			new QSimulateTransformationTool(),
 
@@ -82,6 +90,9 @@ export class QMcpServer {
 			new QCheckProjectRulesTool(),
 			new QJsonToModelTool(),
 			new QSyncDocsTool(),
+			new QScaffoldFeatureTool(),
+			new QCheckApiCompatibilityTool(),
+			new QBenchmarkPerformanceTool(),
 		];
 	}
 

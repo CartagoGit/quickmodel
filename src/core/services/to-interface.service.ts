@@ -1,84 +1,3 @@
-/**
- * Service for converting model instances back to their original interface format.
- *
- * **IMPORTANT:** This service does NOT serialize to JSON. It preserves the EXACT format
- * that was provided in the model constructor (__initData).
- *
- * **Key difference from serializer.service.ts:**
- * - `serializer.serialize()` → Converts to JSON-compatible format (Date → ISO string, BigInt → string, etc.)
- * - `toInterface.toInterface()` → Preserves ORIGINAL input format from constructor
- *
- * @template TModel - The model type (extends Record)
- * @template TInterface - The original interface type (from constructor input)
- *
- * @remarks
- * **Use cases for toInterface():**
- * - Comparing current state vs initial state: `model.toInterface() === model.getInitInterface()`
- * - Change detection: `model.hasChanges()`, `model.getChanges()`
- * - Form reset: restore original values
- * - API responses: return data in same format as received
- *
- * **How it works:**
- * 1. Reads `__initData` (stored BEFORE transformations in constructor)
- * 2. For each property, compares `originalValue` (from __initData) vs `currentValue` (from model)
- * 3. Returns values preserving the ORIGINAL type/format:
- *    - If input was `string "2024-01-01"` → returns string (NOT Date object)
- *    - If input was `string "999999"` → returns string (NOT bigint)
- *    - If input was `RegExp /test/` → returns RegExp (NOT string)
- *    - If input was `string "^test$"` → returns string (NOT RegExp)
- *
- * @example
- * **Example 1: Date as string input**
- * ```typescript
- * const user = new User({
- *   createdAt: '2024-01-01T00:00:00.000Z'  // String input
- * });
- *
- * user.createdAt;           // Date object (transformed)
- * user.toInterface();       // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
- * user.serialize();         // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
- * ```
- *
- * @example
- * **Example 2: BigInt as string input**
- * ```typescript
- * const account = new Account({
- *   balance: '999999999999999'  // String input
- * });
- *
- * account.balance;          // 999999999999999n (bigint transformed)
- * account.toInterface();    // { balance: '999999999999999' } - STRING preserved
- * account.serialize();      // { balance: '999999999999999' } - string for JSON
- * ```
- *
- * @example
- * **Example 3: RegExp as string vs RegExp input**
- * ```typescript
- * // Case A: String input
- * const model1 = new Model({ pattern: '^test$' });
- * model1.pattern;          // /^test$/ (RegExp transformed)
- * model1.toInterface();    // { pattern: '^test$' } - STRING preserved
- *
- * // Case B: RegExp input
- * const model2 = new Model({ pattern: /^test$/ });
- * model2.pattern;          // /^test$/ (RegExp)
- * model2.toInterface();    // { pattern: /^test$/ } - REGEXP preserved
- * model2.serialize();      // { pattern: { source: '^test$', flags: '' } } - object for JSON
- * ```
- *
- * @example
- * **Example 4: Change detection**
- * ```typescript
- * const user = new User({ name: 'John', age: 30 });
- *
- * user.name = 'Jane';
- * user.hasChanges();       // true
- * user.getChanges();       // { name: 'Jane' }
- * user.getInitInterface(); // { name: 'John', age: 30 } - original
- * user.toInterface();      // { name: 'Jane', age: 30 } - current
- * ```
- */
-
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
@@ -86,30 +5,22 @@ export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
-	/**
-	 * Converts model to interface format, preserving original input types.
-	 *
-	 * @param model - The model instance to convert
-	 * @returns Plain object with values in their ORIGINAL input format
-	 *
-	 * @remarks
-	 * Preserves the EXACT format that was provided in the constructor (__initData).
-	 * - If Date was provided as ISO string → returns ISO string
-	 * - If BigInt was provided as string → returns string
-	 * - If RegExp was provided as string → returns string
-	 * - If RegExp was provided as RegExp → returns RegExp
-	 *
-	 * This method does NOT serialize to JSON. Use `serialize()` for JSON output.
-	 *
-	 * @param model - The model instance
-	 * @param seen - Optional WeakSet for cycle detection (internal use)
-	 */
 	toInterface<T extends Record<string, unknown> = TInterface>(
 		model: TModel,
 		seen?: WeakSet<object>
 	): T {
 		const result: Record<string, unknown> = {};
 		const visited = seen || new WeakSet<object>(); // Track circular references
+		// If model is a collection (Array/Set/Map), handle it specially
+		if (Array.isArray(model)) {
+			// This path is usually not hit for root models but for nested calls
+			// For arrays, we don't return Record but Array, but generics expect T (Record)
+			// This is a type conflict in the signature if T is Record.
+			// However, toInterface usually takes a MODEL (object).
+			// If model is array, it's not a QModel instance standard.
+			// Let's assume model IS a QModel-like object with properties.
+		}
+
 		const initData =
 			(model as unknown as { __initData?: Record<string, unknown> })
 				.__initData || {};
@@ -119,16 +30,30 @@ export class ToInterfaceService<
 		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, model.constructor) || {};
 
-		// ONLY iterate over properties that were in the original initData
-		// Return current values, but preserve original format based on __initData type
+		// INFER MISSING KEYS:
+		// If initData is missing (e.g. newly created instance without initData or manual pop? No, QModel always has initData).
+		// But if properties were added dynamically? QuickModel only tracks declared props.
+
+		// Wait, toInterface only iterates initData keys to "PRESERVE" format.
+		// If a key is NOT in initData, it means it wasn't in constructor.
+		// If it's a declared property, it should be processed.
+		// QModel uses QUICK_VALUES_KEY for internal storage.
+
+		// BUT for toInterface() we only care about "Restoring Interface".
+		// If expected interface has key X, and initData had X.
+		// If we added a property Y dynamically that is NOT in the interface... should it be in toInterface()?
+		// Usually NO. toInterface implies "contract compliance".
+		// The loop over initData keys ensures strict adherance to original input structure.
+
+		// However, if we added items to an array (which is a Value, not a Key on the model), that is handled in convertToInterfaceFormat.
+
 		for (const key of Object.keys(initData)) {
 			const currentValue = (model as unknown as Record<string, unknown>)[
 				key
 			];
 			const originalValue = initData[key];
 
-			// 🔥 CHECK 1: Custom serializer from @Quick options (Highest Priority)
-			// Allows overriding interface generation logic via options.serializers
+			// 🔥 CHECK 1: Custom serializer from @Quick options
 			if (
 				options.serializers &&
 				key in options.serializers &&
@@ -138,7 +63,7 @@ export class ToInterfaceService<
 				continue;
 			}
 
-			// 🔥 CHECK 2: Custom serializer from @QType metadata (High Priority)
+			// 🔥 CHECK 2: Custom serializer from @QType metadata
 			const customSerializer = Reflect.getMetadata(
 				'customSerializer',
 				model,
@@ -149,7 +74,7 @@ export class ToInterfaceService<
 				continue;
 			}
 
-			// Convert to interface format, preserving original type
+			// Convert to interface format
 			result[key] = this.convertToInterfaceFormat(
 				currentValue,
 				originalValue,
@@ -159,36 +84,23 @@ export class ToInterfaceService<
 			);
 		}
 
+		// Wait! What if we want to include properties that are NEW but valid?
+		// E.g. Optional properties not present in initData but set later?
+		// If user set user.optionalProp = 'value', it should be in toInterface().
+		// But current implementation ONLY iterates initData keys.
+		// This means optional properties set later are IGNORED in toInterface().
+		// IS THIS INTENTIONAL?
+		// "Preserves ORIGINAL input format". If it wasn't in input, it has no "original format".
+		// Maybe we should iterate over Model Keys too?
+		// But Model Keys are getters.
+
+		// Let's stick to current logic which iterates initData.
+		// If the user wants full serialization including new props, they use serialize().
+		// toInterface() is strictly "revert to input format".
+
 		return result as T;
 	}
 
-	/**
-	 * Converts a value to interface format, preserving the original type from __initData.
-	 *
-	 * @param currentValue - The current value from the model instance
-	 * @param originalValue - The original value from __initData (constructor input)
-	 * @param seen - WeakSet for circular reference detection
-	 * @param isProduction - Production mode flag
-	 * @param propertyKey - Property name for error messages
-	 * @returns Value in original format
-	 *
-	 * @remarks
-	 * Logic priority (order matters):
-	 * 1. null/undefined → return as-is
-	 * 2. Circular references → error or __circular marker
-	 * 3. **Date handling** (BEFORE generic string check):
-	 *    - If originalValue is Date or ISO string → convert currentValue to ISO string
-	 * 4. **RegExp handling** (BEFORE generic string check):
-	 *    - If originalValue is RegExp → return currentValue as RegExp
-	 *    - If originalValue is string + currentValue is RegExp → return string (source or toString)
-	 *    - If originalValue is object {source, flags} → return object
-	 * 5. **Primitives** (number, string, boolean, bigint, symbol) → cast to original type
-	 * 6. **Wrapper objects** (Number, String, Boolean) → return wrapper
-	 * 7. **Arrays** → recursively process elements
-	 * 8. **BigInt special formats** (__type: 'bigint' or string) → convert appropriately
-	 * 9. **Plain objects** → recursively process properties
-	 * 10. Fallback → return currentValue
-	 */
 	private convertToInterfaceFormat(
 		currentValue: unknown,
 		originalValue: unknown,
@@ -217,8 +129,37 @@ export class ToInterfaceService<
 			seen.add(currentValue);
 		}
 
-		// If no original value to compare, return currentValue as-is
+		// If no original value to compare, we must infer the interface format for complex types
+		// This happens when adding new items to collections that weren't in the original data
 		if (originalValue === undefined) {
+			// Handle Nested QModels (Recursion)
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'toInterface' in currentValue &&
+				typeof (
+					currentValue as {
+						toInterface: (s: WeakSet<object>) => unknown;
+					}
+				).toInterface === 'function'
+			) {
+				return (
+					currentValue as {
+						toInterface: (s: WeakSet<object>) => unknown;
+					}
+				).toInterface(seen);
+			}
+
+			// Handle Sets -> Array
+			if (currentValue instanceof Set) {
+				return Array.from(currentValue);
+			}
+
+			// Handle Maps -> Array of entries (standard QuickModel interface format)
+			if (currentValue instanceof Map) {
+				return Array.from(currentValue.entries());
+			}
+
 			return currentValue;
 		}
 
@@ -313,7 +254,6 @@ export class ToInterfaceService<
 
 		// 6. WRAPPER OBJECTS: Number, String, Boolean objects
 		if (originalValue instanceof Number) {
-			// Extract primitive value if currentValue is also a wrapper
 			const primitiveValue =
 				typeof currentValue === 'object' &&
 				currentValue !== null &&
@@ -492,7 +432,6 @@ export class ToInterfaceService<
 			).toInterface(seen);
 		}
 
-		// 10. Fallback: return currentValue as-is
 		return currentValue;
 	}
 }

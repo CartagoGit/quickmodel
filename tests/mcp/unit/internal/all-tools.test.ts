@@ -6,7 +6,7 @@ import {
 	QCheckProjectHealthTool,
 	QGetCoverageReportTool,
 	QSyncDocsTool,
-} from '../../../src/mcp/tools/internal-tools';
+} from '../../../../src/mcp/tools/internal';
 
 describe('MCP Internal Tools', () => {
 	// Mocks for Dependency Injection

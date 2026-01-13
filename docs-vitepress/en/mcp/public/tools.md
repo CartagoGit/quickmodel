@@ -89,6 +89,48 @@ Search the QuickModel documentation for a query string.
 }
 ```
 
+## `interface_to_model`
+
+Convert a TypeScript interface definition into a QuickModel class.
+
+### Input Schema
+
+```json
+{
+  "code": {
+    "description": "The TypeScript interface code"
+  }
+}
+```
+
+## `export_json_schema`
+
+Generate a JSON Schema Definition from a QuickModel class.
+
+### Input Schema
+
+```json
+{
+  "code": {
+    "description": "The QuickModel class code"
+  }
+}
+```
+
+## `explain_error`
+
+Explain a QuickModel validation error in human-readable language.
+
+### Input Schema
+
+```json
+{
+  "error": {
+    "description": "The JSON string of the validation error"
+  }
+}
+```
+
 ## `simulate_transformation`
 
 Simulates a QuickModel data transformation given an input object and a configuration map.

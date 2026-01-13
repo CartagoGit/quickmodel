@@ -450,7 +450,14 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		for (const key in data) {
 			const value = (data as Record<string, unknown>)[key];
 			// Symbols and functions cannot be cloned, keep reference
-			if (typeof value === 'symbol' || typeof value === 'function') {
+			// QModel instances should also be kept by reference to avoid structuredClone corruption of getters
+			if (
+				typeof value === 'symbol' ||
+				typeof value === 'function' ||
+				(typeof value === 'object' &&
+					value !== null &&
+					'toInterface' in value)
+			) {
 				initDataClone[key] = value;
 			} else {
 				try {
