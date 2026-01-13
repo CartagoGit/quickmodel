@@ -256,6 +256,184 @@ export class ${args.className} extends QModel<${args.className}> {
 ${props.join('\n')}
 }`;
 
-		return { code };
+
+/**
+ * Tool to convert a TypeScript interface to a QuickModel class.
+ */
+export class QInterfaceToModelTool extends QAbstractTool<
+	z.ZodObject<{
+		code: z.ZodString;
+	}>
+> {
+	name = 'interface_to_model';
+	description =
+		'Convert a TypeScript interface definition into a QuickModel class.';
+	schema = z.object({
+		code: z.string().describe('The TypeScript interface code'),
+	});
+
+	async execute(args: { code: string }): Promise<{ code: string }> {
+		await Promise.resolve();
+		// Naive regex parsing. In production use tsx/morph or similar.
+		// Matches: interface Key { prop: type; }
+		const interfaceMatch = args.code.match(
+			/interface\s+(\w+)\s*{([\s\S]*?)}/
+		);
+		if (!interfaceMatch) {
+			throw new Error('No interface found in code');
+		}
+
+		const name = interfaceMatch[1];
+		const body = interfaceMatch[2];
+		const props: string[] = [];
+		const decorators: string[] = [];
+
+		const lines = body?.split('\n') || [];
+		for (const line of lines) {
+			const trim = line.trim();
+			if (!trim || trim.startsWith('//')) continue;
+			// prop?: type;
+			const propMatch = trim.match(/(\w+)(\??):\s*([^;]+);?/);
+			if (propMatch) {
+				const key = propMatch[1];
+				const optional = propMatch[2] === '?';
+				const tsType = propMatch[3]?.trim();
+				let transformer = 'string'; // default
+
+				if (tsType?.includes('Date')) transformer = 'date';
+				else if (tsType?.includes('number')) transformer = 'number';
+				else if (tsType?.includes('boolean')) transformer = 'boolean';
+				// else if ... more complex logic
+
+				decorators.push(`    ${key}: '${transformer}'`);
+				props.push(
+					`    public ${key}${optional ? '?' : ''}: ${tsType};`
+				);
+			}
+		}
+
+		const decoratorString =
+			decorators.length > 0
+				? `@Quick({\n${decorators.join(',\n')}\n})`
+				: '@Quick({})';
+
+		return {
+			code: `import { QModel, Quick } from '@cartago-git/quickmodel';
+
+${decoratorString}
+export class ${name}Model extends QModel<${name}Model> {
+${props.join('\n')}
+}`,
+		};
+	}
+}
+
+/**
+ * Tool to export a QuickModel to JSON Schema.
+ */
+export class QExportJsonSchemaTool extends QAbstractTool<
+	z.ZodObject<{
+		code: z.ZodString;
+	}>
+> {
+	name = 'export_json_schema';
+	description = 'Generate a JSON Schema Definition from a QuickModel class.';
+	schema = z.object({
+		code: z.string().describe('The QuickModel class code'),
+	});
+
+	async execute(args: { code: string }): Promise<{ schema: object }> {
+		// Use inspect logic to get structure, then map to standard JSON Schema
+		const tool = new QInspectModelTool();
+		const inspectResult = await tool.execute({ code: args.code });
+		const decorators = inspectResult.transformers; // e.g. ['string', 'date']
+		// We need the keys too. QInspectModelTool currently only returns values in some regex way,
+		// let's parse the structure property which was the config object string.
+		// Actually, let's just re-parse here better for schema.
+
+		const schema: any = {
+			type: 'object',
+			properties: {},
+			required: [],
+			title: inspectResult.name,
+		};
+
+		// Parse @Quick({ func: 'type' })
+		// Flexible regex for keys and values
+		const matches = args.code.matchAll(/(\w+):\s*['"](\w+)['"]/g);
+		for (const m of matches) {
+			const key = m[1]; // prop name
+			const type = m[2]; // transformer name
+
+			let jsonType: any = { type: 'string' };
+			if (type === 'number' || type === 'integer')
+				jsonType = { type: 'number' };
+			else if (type === 'boolean') jsonType = { type: 'boolean' };
+			else if (type === 'date')
+				jsonType = { type: 'string', format: 'date-time' };
+
+			if (key) {
+				schema.properties[key] = jsonType;
+				// Assume required for now unless we parse '?'
+				schema.required.push(key);
+			}
+		}
+
+		return { schema };
+	}
+}
+
+/**
+ * Tool to explain validation errors in plain language.
+ */
+export class QExplainErrorTool extends QAbstractTool<
+	z.ZodObject<{
+		error: z.ZodString;
+	}>
+> {
+	name = 'explain_error';
+	description =
+		'Explain a QuickModel validation error in human-readable language.';
+	schema = z.object({
+		error: z.string().describe('The JSON string of the validation error'),
+	});
+
+	async execute(args: { error: string }): Promise<{ explanation: string }> {
+		await Promise.resolve();
+		let errObj: any;
+		try {
+			errObj = JSON.parse(args.error);
+		} catch (_e) {
+			return { explanation: 'Could not parse error JSON.' };
+		}
+
+		// QuickModel errors usually have structure { code, message, path, ... } or "errors": []
+		// Let's handle a standard shape or the specific library shape.
+		// Assuming we see standard QuickModel validation error shape.
+
+		const explanations: string[] = [];
+
+		const processError = (e: any) => {
+			if (e.code === 'INVALID_TYPE') {
+				return `Field '${e.path}' expected ${e.expected} but got ${e.received}.`;
+			}
+			if (e.code === 'REQUIRED') {
+				return `Field '${e.path}' is required but was missing.`;
+			}
+			if (e.message) return e.message;
+			return JSON.stringify(e);
+		};
+
+		if (Array.isArray(errObj)) {
+			explanations.push(...errObj.map(processError));
+		} else if (errObj.errors && Array.isArray(errObj.errors)) {
+			explanations.push(...errObj.errors.map(processError));
+		} else {
+			explanations.push(processError(errObj));
+		}
+
+		return {
+			explanation: `Found ${explanations.length} issues:\n- ${explanations.join('\n- ')}`,
+		};
 	}
 }

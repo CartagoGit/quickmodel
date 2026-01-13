@@ -36,7 +36,8 @@ export type IQSpec =
 	| IQTypeSpec // Classes, natives, aliases
 	| IQTransformerFunction // Custom transformer function
 	| IQSpec[] // Array with element type like [Date], [[Date]]
-	| (string & {}); // Allow any string (custom transformers) but preserve autocomplete for IQAlias
+	| (string & {}) // Allow any string (custom transformers) but preserve autocomplete for IQAlias
+	| { deserialize: Function; serialize: Function }; // Custom transformer object
 
 /**
  * All supported type specifications for @Quick() decorator for arrays

@@ -1,6 +1,7 @@
 // tests/integration/patterns/polymorphic-collections.test.ts
 import { describe, it, expect } from 'bun:test';
-import { Quick, QModel, BaseTransformer } from '@/index';
+import { Quick, QModel } from '@/index';
+import { BaseTransformer } from '@/core/bases/base-transformer';
 
 /**
  * Demonstrates how to handle polymorphic collections (arrays of different objects)

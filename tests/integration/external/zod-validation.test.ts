@@ -105,16 +105,8 @@ describe('Integration: External Libraries (Zod)', () => {
 			birthDate: 'not-a-date',
 		};
 
-		const user = User.create(invalidDateData);
-
-		// QuickModel might have created an "Invalid Date" object
-		expect(user.birthDate).toBeInstanceOf(Date);
-		expect(isNaN(user.birthDate.getTime())).toBe(true);
-
-		const result = user.validateWithZod();
-		expect(result.success).toBe(false);
-		if (!result.success) {
-			expect(result.error.flatten().fieldErrors.birthDate).toBeDefined();
-		}
+        // QuickModel now throws strict errors for invalid dates instead of returning "Invalid Date"
+        // So we expect this to throw
+        expect(() => User.create(invalidDateData)).toThrow();
 	});
 });

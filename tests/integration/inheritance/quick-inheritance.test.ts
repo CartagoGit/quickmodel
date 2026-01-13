@@ -58,12 +58,7 @@ describe('Integration: Decoration Inheritance', () => {
 			simpleChild: 'child',
 		};
 
-		const instance = QModel.create.call(Child, data);
-
-		// DEBUG: Check metadata manually
-		const proto = Object.getPrototypeOf(instance);
-		const meta = Reflect.getMetadata('fieldType', proto, 'childBigInt');
-		console.log('[Test] Manual Metadata Check:', meta);
+		const instance = QModel.create.call(Child, data) as Child;
 
 		// Parent's transformation (inherited)
 		expect(instance.parentDate).toBeInstanceOf(Date);

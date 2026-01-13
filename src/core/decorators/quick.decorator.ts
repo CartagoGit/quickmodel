@@ -461,13 +461,14 @@ export function Quick<
 			// 🔥 REGISTER PROPERTIES IMMEDIATELY (not on first instantiation)
 			// This eliminates race conditions and makes behavior predictable
 			for (const [propertyKey, mappedType] of Object.entries(typeMap)) {
-				// Check if property already has metadata registered (e.g., from @QType())
-				const existingFieldType = Reflect.getMetadata(
+				// Check if property already has metadata registered locally (e.g., from @QType())
+				// use getOwnMetadata to allow overriding inherited properties
+				const existingFieldType = Reflect.getOwnMetadata(
 					'fieldType',
 					target.prototype,
 					propertyKey
 				);
-				const existingArrayClass = Reflect.getMetadata(
+				const existingArrayClass = Reflect.getOwnMetadata(
 					'arrayElementClass',
 					target.prototype,
 					propertyKey
@@ -633,10 +634,12 @@ export function Quick<
 			propertiesRegistered = true;
 
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
+			// FIX: Use new.target to propagate inheritance chain correctly (e.g. when Child extends Parent decorated with @Quick)
+			const targetConstructor = new.target || wrappedConstructor;
 			const instance = Reflect.construct(
 				originalConstructor,
 				args,
-				wrappedConstructor
+				targetConstructor
 			);
 
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization

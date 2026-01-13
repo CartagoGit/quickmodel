@@ -56,10 +56,6 @@ export class PopulationService {
 			) ||
 			[];
 
-		console.log(
-			`[Population] model=${modelClass.name}, decorated=${JSON.stringify(decoratedFields)}`
-		);
-
 		// Get discriminator configuration if exists
 		const discriminators = Reflect.getMetadata(
 			QUICK_DISCRIMINATORS_KEY,
