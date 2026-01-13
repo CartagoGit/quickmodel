@@ -46,6 +46,18 @@ describe('Security: RegExp Transformer', () => {
         }).toThrow(/RegExp source too long/);
     });
 
+    test('should prevent massive regex in slash format', () => {
+        // /aaaa..../ + extra margin to be safe
+        const massivePattern = '/' + 'a'.repeat(1100) + '/';
+        const input = { pattern: massivePattern };
+
+        // Note: The transformer checks length BEFORE parsing matches for string inputs?
+        // Let's verify behavior. If it checks length first, it throws "RegExp pattern too long".
+        expect(() => {
+            new RegexConfig(input);
+        }).toThrow(/RegExp pattern too long/);
+    });
+
     // NOTE: This test demonstrates what is currently ALLOWED (Short but Evil).
     // QuickModel handles *transformation*, it does not currently valid ReDoS safety of the pattern itself
     // because that requires complex analysis or a heavyweight dependency like 'safe-regex'.
@@ -68,6 +80,6 @@ describe('Security: RegExp Transformer', () => {
 
         expect(() => {
             new RegexConfig(input);
-        }).toThrow(/Invalid RegExp pattern/);
+        }).toThrow(/Invalid RegExp/); // Matches both "Invalid RegExp pattern" and "Invalid RegExp string with slashes"
     });
 });

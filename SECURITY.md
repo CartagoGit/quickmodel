@@ -18,11 +18,14 @@ If you discover a security vulnerability within QuickModel, please send an e-mai
 QuickModel includes several built-in security features to protect your application:
 
 ### 1. Prototype Pollution Protection
-The deserializer explicitly prevents prototype pollution attacks by blocking modification of `__proto__`, `constructor`, and `prototype` properties during recursive merges.
+The deserializer explicitly prevents prototype pollution attacks by blocking modification of `__proto__`, `constructor`, and `prototype` properties in:
+- Recursive merges (PopulationService)
+- Map/Set Transformers (both Input/Deserialization and Output/Serialization)
+- Interface conversion (ToInterfaceService)
 
 ### 2. Denial of Service (DoS) Prevention
-- **Buffer Allocation**: `ArrayBufferTransformer` enforces a maximum size limit (1MB default) to prevent memory exhaustion attacks.
-- **RegExp Safety**: While we support RegExp serialization, users should validate input patterns to prevent ReDoS (Regular Expression Denial of Service) in their own regular expressions.
+- **Buffer Allocation**: `ArrayBufferTransformer` enforces a maximum size limit to prevent memory exhaustion attacks.
+- **RegExp Safety**: Enforces maximum pattern length (1000 chars) to mitigate Memory DoS. Note: Users must still sanitize user-provided regex patterns against complex algorithmic ReDoS.
 
 ### 3. Circular Reference Handling
 To prevent stack overflow attacks or crashes, QuickModel detects circular references during serialization and conversion to interface format.
@@ -40,16 +43,14 @@ Internal error handlers allow secure logging of malformed data without crashing 
 
 ### 7. Known Limitations
 - **Symbol Memory Usage**: The `Symbol` transformer uses `Symbol.for()` to ensure symbols can be serialized and deserialized accurately across sessions. However, `Symbol.for()` creates entries in the global symbol registry which are never garbage collected. **Do not use `Symbol` type for high-frequency unique user input** (like session IDs) to prevent memory leaks.
-- **Client-Side ReDoS**: While we limit input length for RegExp deserialization, the complexity of the regex itself is not validated. Users should sanitize regex patterns from untrusted sources to prevent ReDoS in their application logic.
-- **Arrow Function Shadowing**: Class methods defined as Arrow Functions (`method = () => {}`) are technically instance properties. To block shadowing attacks, use Strict Mode.
-  - **Global Enforcement**: You can enable Strict Mode for the entire project:
+- **Client-Side ReDoS**: We limit input length (1000 chars) for RegExp deserialization to prevent memory exhaustion, but the algorithmic complexity of the regex itself is not validated. Users should sanitize regex patterns from untrusted sources.
+- **Arrow Function Shadowing**: Class methods defined as Arrow Functions (`method = () => {}`) are instance properties. QuickModel provides **Intrinsic Protection** that warns and blocks attempts to overwrite them via payload, unless the property is explicitly decorated with `@QType` or `@Quick`.
+  - To enforcing strict rejection of unknown properties globally, use:
     ```typescript
-    import { QConfig } from '@cartago-git/quickmodel';
     QConfig.configure({ defaults: { strict: true } });
     ```
-  - **Per-Class**: `@Quick({}, { strict: true })`
 
-### 7. Known Limitations
+### 8. Security Best Practices
 
 - **Validate Input**: Always use `.validate()` on models created from untrusted sources.
 - **Use Strict Mode**: Consider enabling strict mode (`@Quick({ strict: true })`) to reject unknown properties in payloads.
@@ -95,8 +96,21 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
 
 - **Mass Assignment & Method Shadowing**:
   - Validates that payloads cannot override class methods (logic bomb prevention).
+  - **Intrinsic Protection**: Arrow functions are protected by default via template inspection, issuing a warning if a payload tries to overwrite a method unless it's explicitly decorated.
   - Verifies behavior of `strict: true` mode.
-  - **Test**: `tests/security/mass-assignment.test.ts`
+  - **Test**: `tests/security/mass-assignment.test.ts`, `tests/system/security/arrow-function-warning.test.ts`
+
+- **Map/Set Prototype Pollution (Defense in Depth)**:
+  - Multi-layer filtering of `__proto__`, `constructor`, `prototype` throughout the lifecycle:
+    1. **Deserialization (Input)**: `MapTransformer` strips unsafe keys.
+    2. **Serialization (Output)**: `Serializer` and `MapTransformer` strip unsafe keys before `Object.fromEntries` or `JSON.stringify`.
+  - **Test**: `tests/security/map-pollution.test.ts`
+
+- **RegExp Safety**:
+  - **ReDoS Prevention**: Enforces a strict length limit (1000 chars) on patterns to prevent catastrophic backtracking on massive inputs.
+  - **Syntax Validation**: Ensures only valid RegExp strings are instantiated.
+  - *limitation*: Short but complex ReDoS patterns are not statically analyzed.
+  - **Test**: `tests/security/regexp-redos.test.ts`
 
 - **Safe Error Reporting (Crash Prevention)**:
   - Ensures that reporting errors on circular data structures (like self-referencing Maps) uses a safe serialization method instead of crashing the process (Availability protection).
