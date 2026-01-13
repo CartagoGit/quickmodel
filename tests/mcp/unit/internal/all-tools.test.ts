@@ -8,6 +8,22 @@ import {
 	QSyncDocsTool,
 } from '../../../../src/mcp/tools/internal';
 
+// Mock QMcpServer for QSyncDocsTool
+mock.module('../../../../src/mcp/server', () => {
+	return {
+		QMcpServer: {
+			getDefaultTools: () => [
+				// Minimal mock tools to ensure generation loop runs
+				{
+					name: 'mock_tool',
+					description: 'Mock Description',
+					schema: require('zod').object({}),
+				},
+			],
+		},
+	};
+});
+
 describe('MCP Internal Tools', () => {
 	// Mocks for Dependency Injection
 	const mockSpawn = mock((..._args: any[]) =>
@@ -219,10 +235,10 @@ describe('MCP Internal Tools', () => {
 				const paths = calls.map((c) => c[0] as string);
 				// English
 				expect(
-					paths.some((p) => p.includes('en/mcp/public/tools.md'))
+					paths.some((p) => p.includes('en/mcp/public/index.md'))
 				).toBe(true);
 				expect(
-					paths.some((p) => p.includes('en/mcp/internal/tools.md'))
+					paths.some((p) => p.includes('en/mcp/internal/index.md'))
 				).toBe(true);
 				expect(
 					paths.some((p) => p.includes('en/guide/transformers.md'))
@@ -230,10 +246,10 @@ describe('MCP Internal Tools', () => {
 
 				// Spanish
 				expect(
-					paths.some((p) => p.includes('es/mcp/public/tools.md'))
+					paths.some((p) => p.includes('es/mcp/public/index.md'))
 				).toBe(true);
 				expect(
-					paths.some((p) => p.includes('es/mcp/internal/tools.md'))
+					paths.some((p) => p.includes('es/mcp/internal/index.md'))
 				).toBe(true);
 				expect(
 					paths.some((p) => p.includes('es/guide/transformers.md'))

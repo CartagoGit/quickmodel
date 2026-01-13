@@ -43,13 +43,16 @@ export const esMcp = {
 			'Escanea el código fuente buscando miembros exportados que carecen de documentación JSDoc.',
 		check_project_health:
 			'Ejecuta una verificación completa de salud: Lint, Typecheck y Tests.',
-		get_coverage_report: 'Ejecuta pruebas con cobertura y reporta el resumen.',
+		get_coverage_report:
+			'Ejecuta pruebas con cobertura y reporta el resumen.',
 		check_project_rules:
 			'Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y no console.log.',
 		update_docs_content:
 			'Genera automáticamente archivos de documentación para Herramientas y Transformadores basado en el código actual.',
-		scaffold_feature: 'Genera la estructura básica para una nueva funcionalidad.',
-		check_api_compatibility: 'Verifica la compatibilidad de la API pública.',
+		scaffold_feature:
+			'Genera la estructura básica para una nueva funcionalidad.',
+		check_api_compatibility:
+			'Verifica la compatibilidad de la API pública.',
 		benchmark_performance:
 			'Ejecuta pruebas de rendimiento para las transformaciones de QuickModel.',
 	},

@@ -49,7 +49,8 @@ export const enMcp = {
 			'Auto-generate documentation files for Tools and Transformers based on current code.',
 		scaffold_feature:
 			'Generate boilerplate code for new features (transformers, tools).',
-		check_api_compatibility: 'Check for breaking changes in the public API.',
+		check_api_compatibility:
+			'Check for breaking changes in the public API.',
 		benchmark_performance:
 			'Run performance benchmarks for QuickModel transformations.',
 	},

@@ -65,7 +65,7 @@ export type {
  *
  * @group Classes
  * Syntax: `QModel<InterfaceType>`
- * 
+ *
  * @template TInterface - The interface representing the IQSerialized JSON structure (e.g., `string` for dates)
  *
  * @example

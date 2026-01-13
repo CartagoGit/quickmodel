@@ -21,7 +21,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["src/*"],
-			"@tests/*": ["tests/*"]
+			"@tests/*": ["tests/*"],
+			"@mcp/*": ["src/mcp/*"]
 		},
 
 		// Interoperabilidad
