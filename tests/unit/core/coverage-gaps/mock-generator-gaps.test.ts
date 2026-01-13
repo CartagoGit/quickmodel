@@ -55,14 +55,14 @@ describe('Mock Generator Coverage Gaps', () => {
 
 		const mock = SampleModel.mock().sample();
 
-		expect(typeof mock.bi).toBe('string'); // Serialized format
+		expect(typeof mock.bi).toBe('bigint');
 		expect(typeof mock.sym).toBe('symbol');
-		expect(typeof mock.re).toBe('string'); // Serialized format "/pat/flags"
+		expect(mock.re).toBeInstanceOf(RegExp);
 		expect(mock.err).toBeInstanceOf(Error);
-		expect(typeof mock.u).toBe('string'); // Serialized format
+		expect(mock.u).toBeInstanceOf(URL);
 		expect(mock.usp).toBeInstanceOf(URLSearchParams);
-		expect(Array.isArray(mock.map)).toBe(true); // Serialized entries
-		expect(Array.isArray(mock.set)).toBe(true); // Serialized array
+		expect(mock.map).toBeInstanceOf(Map);
+		expect(mock.set).toBeInstanceOf(Set);
 		expect(Array.isArray(mock.arr)).toBe(true);
 		expect(typeof mock.obj).toBe('object');
 	});

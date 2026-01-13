@@ -7,7 +7,7 @@ describe('QType Decorator Coverage Gaps', () => {
 			@QType(Boolean)
 			flag: boolean;
 		}
-		const m = new BoolModel({ flag: 1 });
+		const m = new BoolModel({ flag: true });
 		// QType(Boolean) sets fieldType='boolean'. BaseTransformer should handle it?
 		// Actually QType sets metadata, Deserializer uses it.
 		// We just need to ensure the metadata is set correctly (coverage hit)
