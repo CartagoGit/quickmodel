@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 
 /**
  * Tool to scaffold boilerplate code for new features.
@@ -54,8 +54,15 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 
 		if (args.type === 'transformer') {
 			const dir = args.location
-				? join(cwd, args.location)
+				? resolve(cwd, args.location)
 				: join(cwd, 'src/transformers');
+
+			if (!dir.startsWith(cwd)) {
+				throw new Error(
+					'Security Error: Target path is outside project root.'
+				);
+			}
+
 			targetPath = join(dir, `${safeName}.transformer.ts`);
 			content = `import { ValueTransformer } from '../core/services/value-transformer.service';
 
@@ -73,8 +80,15 @@ export const ${safeName}Transformer: ValueTransformer<any> = {
 `;
 		} else if (args.type === 'tool') {
 			const dir = args.location
-				? join(cwd, args.location)
+				? resolve(cwd, args.location)
 				: join(cwd, 'src/mcp/tools/internal');
+
+			if (!dir.startsWith(cwd)) {
+				throw new Error(
+					'Security Error: Target path is outside project root.'
+				);
+			}
+
 			targetPath = join(dir, `${safeName}.tool.ts`);
 			content = `import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';

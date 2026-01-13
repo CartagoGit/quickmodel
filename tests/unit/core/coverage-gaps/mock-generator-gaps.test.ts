@@ -66,4 +66,39 @@ describe('Mock Generator Coverage Gaps', () => {
 		expect(Array.isArray(mock.arr)).toBe(true);
 		expect(typeof mock.obj).toBe('object');
 	});
+	it('should generate random values for all types', () => {
+		// Covers getRandomValue gaps (lines 595, 605-613, etc)
+		@Quick({
+			bi: 'bigint',
+			sym: 'symbol',
+			re: 'regexp',
+			err: 'error',
+			u: 'url',
+			usp: 'urlsearchparams',
+			map: 'map',
+			set: 'set',
+		})
+		class RandomModel extends QModel<any> {
+			declare bi: bigint;
+			declare sym: symbol;
+			declare re: RegExp;
+			declare err: Error;
+			declare u: URL;
+			declare usp: URLSearchParams;
+			declare map: Map<any, any>;
+			declare set: Set<any>;
+		}
+
+		// Random is default
+		const mock = RandomModel.mock().random();
+
+		expect(typeof mock.bi).toBe('bigint');
+		expect(typeof mock.sym).toBe('symbol');
+		expect(mock.re).toBeInstanceOf(RegExp);
+		expect(mock.err).toBeInstanceOf(Error);
+		expect(mock.u).toBeInstanceOf(URL);
+		expect(mock.usp).toBeInstanceOf(URLSearchParams);
+		expect(mock.map).toBeInstanceOf(Map);
+		expect(mock.set).toBeInstanceOf(Set);
+	});
 });

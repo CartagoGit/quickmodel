@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-const execAsync = promisify(exec);
+import { spawn } from 'child_process';
 
 /**
  * Tool to search the documentation.
@@ -18,14 +16,30 @@ export class QSearchDocsTool extends QAbstractTool<
 
 	async execute(args: { query: string }): Promise<{ matches: string[] }> {
 		try {
-			// Grep recursively in docs/ folder, case insensitive, show line number
-			const cmd = `grep -rnC 2 -i "${args.query.replace(
-				/"/g,
-				'"'
-			)}" docs/ docs-vitepress/guide`;
-			const { stdout } = await execAsync(cmd).catch((e) => ({
-				stdout: e.stdout || '',
-			}));
+			// Use spawn to avoid shell injection vulnerabilities
+			const grepArgs = [
+				'-rnC',
+				'2',
+				'-i',
+				args.query,
+				'docs/',
+				'docs-vitepress/guide',
+			];
+
+			const child = spawn('grep', grepArgs);
+
+			let stdout = '';
+
+			// Collect stdout
+			for await (const chunk of child.stdout) {
+				stdout += chunk;
+			}
+
+			// Wait for process to exit
+			await new Promise((resolve) => {
+				child.on('close', resolve);
+			});
+
 			const lines = stdout
 				.split('\n')
 				.filter((block: string) => block.length > 0)
