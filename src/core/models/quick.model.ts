@@ -41,7 +41,6 @@ import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
 import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
 
-
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';

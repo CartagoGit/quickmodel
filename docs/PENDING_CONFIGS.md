@@ -1,5 +1,10 @@
 # QuickModel Configuration Roadmap
 
+> **✅ STATUS: COMPLETED**
+>
+> All features listed in this roadmap have been implemented, tested, and verified as of Jan 2026.
+> This document overrides the previous "Pending" status and serves as a reference for the implemented configuration features.
+
 This document outlines the planned configuration options for `QConfig` to enhance the library's robustness, flexibility, and developer experience.
 
 Each feature must be implemented with dedicated unit tests (and integration tests where applicable) to ensure correctness and prevent regressions.
