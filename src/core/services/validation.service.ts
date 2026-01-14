@@ -195,8 +195,20 @@ export class ValidationService {
 	validate(
 		instance: Record<string, unknown>,
 		modelClass?: Function,
-		seen: WeakSet<object> = new WeakSet()
+		seen: WeakSet<object> = new WeakSet(),
+		depth: number = 0
 	): IQValidationResult[] {
+		// SECURITY: Prevent Stack Overflow via deep recursion
+		const MAX_DEPTH = 200;
+		if (depth > MAX_DEPTH) {
+			return [
+				{
+					isValid: false,
+					error: `Validation error: Maximum recursion depth (${MAX_DEPTH}) exceeded.`,
+				},
+			];
+		}
+
 		if (typeof instance === 'object' && instance !== null) {
 			if (seen.has(instance)) {
 				return []; // Already validated this instance in this cycle
@@ -275,7 +287,8 @@ export class ValidationService {
 						const nestedErrors = this.validate(
 							value as Record<string, unknown>,
 							undefined,
-							seen
+							seen,
+							depth + 1
 						);
 						if (Array.isArray(nestedErrors)) {
 							for (const err of nestedErrors) {
@@ -308,7 +321,8 @@ export class ValidationService {
 								const nestedErrors = this.validate(
 									item as Record<string, unknown>,
 									undefined,
-									seen
+									seen,
+									depth + 1
 								);
 								if (Array.isArray(nestedErrors)) {
 									for (const err of nestedErrors) {

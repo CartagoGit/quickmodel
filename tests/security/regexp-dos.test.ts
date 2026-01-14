@@ -22,7 +22,7 @@ describe('RegExpTransformer Security', () => {
 		};
 
 		expect(() => {
-			// @ts-ignore - simulating untyped runtime input
+			// @ts-expect-error simulating untyped runtime input
 			transformer.deserialize(hugeObject, 'emailPattern', 'Config');
 		}).toThrow('RegExp source too long');
 	});

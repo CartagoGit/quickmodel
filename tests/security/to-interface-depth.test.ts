@@ -1,6 +1,4 @@
 import { describe, test, expect } from 'bun:test';
-import 'reflect-metadata';
-import { QModel, Quick } from '@/index';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
 
 describe('Security: toInterface Recursion Depth', () => {
@@ -16,18 +14,12 @@ describe('Security: toInterface Recursion Depth', () => {
 		// We need a QModel that holds this array, OR use ToInterfaceService directly.
 		const service = new ToInterfaceService();
 
-		// Create 2000 levels deep array
-		let deepArray: any = [1];
-		let current = deepArray;
-		// We need a structure that ToInterfaceService traverses.
-		// It requires 'originalValue' to match structure for recursion in arrays.
-
 		// Input model (currentValue)
-		let deepModel: any = [1];
+		const deepModel: any = [1];
 		let ptr1 = deepModel;
 
 		// Original data (originalValue) - needs to match structure to trigger array recursion
-		let deepOriginal: any = [1];
+		const deepOriginal: any = [1];
 		let ptr2 = deepOriginal;
 
 		for (let i = 0; i < 600; i++) {
@@ -48,9 +40,9 @@ describe('Security: toInterface Recursion Depth', () => {
 	test('should pass depth correctly in recursive Objects', () => {
 		const service = new ToInterfaceService();
 
-		let deepObj: any = { a: 1 };
+		const deepObj: any = { a: 1 };
 		let ptr1 = deepObj;
-		let deepOriginal: any = { a: 1 };
+		const deepOriginal: any = { a: 1 };
 		let ptr2 = deepOriginal;
 
 		for (let i = 0; i < 600; i++) {
@@ -67,7 +59,7 @@ describe('Security: toInterface Recursion Depth', () => {
 				value: deepOriginal,
 				enumerable: false,
 			});
-		} catch (e) {
+		} catch {
 			deepObj.__initData = deepOriginal;
 		}
 

@@ -47,6 +47,6 @@ describe('Security: Map Prototype Poisoning', () => {
 
 		// Should be standard Object prototype, NOT the poisoned one
 		expect(proto).toBe(Object.prototype);
-		expect((proto as any).poisoned).toBeUndefined();
+		expect(proto.poisoned).toBeUndefined();
 	});
 });

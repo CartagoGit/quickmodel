@@ -132,6 +132,13 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 			return { isValid: true };
 		}
 
+		if (typeof value === 'string' && value.length > 5 * 1024 * 1024) {
+			return {
+				isValid: false,
+				error: `${context.className}.${context.propertyKey}: String too long (> 5MB)`,
+			};
+		}
+
 		if (typeof value === this.expectedType) {
 			return { isValid: true };
 		}

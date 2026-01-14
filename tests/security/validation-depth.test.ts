@@ -31,13 +31,16 @@ describe('Security: Validation Recursion & Depth', () => {
 		}
 
 		// Validate
-		// If it doesn't support recursion, this is fast.
-		// If it supports it but no limit, stack overflow.
-		try {
-			const errors = root.validate();
-			expect(Array.isArray(errors)).toBe(true);
-		} catch (e) {
-			expect(e.message).toContain('Maximum recursion depth');
-		}
+		// Should return errors about recursion depth, NOT crash
+		const errors = root.validate();
+		expect(Array.isArray(errors)).toBe(true);
+
+		// We expect at least one error about recursion depth because DEPTH (2000) > LIMIT (200)
+		const depthError = errors.find(
+			(e) =>
+				e.error?.includes('Maximum recursion depth') ||
+				e.error?.includes('depth')
+		);
+		expect(depthError).toBeDefined();
 	});
 });

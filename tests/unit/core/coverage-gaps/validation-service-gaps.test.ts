@@ -1,6 +1,6 @@
 import { describe, it, expect, spyOn } from 'bun:test';
 import { ValidationService } from '../../../../src/core/services/validation.service';
-import { QModel, Quick, QType } from '../../../../src/index';
+import { QType } from '../../../../src/index';
 
 describe('Validation Service Coverage Gaps', () => {
 	it('should handle exceptions thrown by validator', () => {
@@ -64,8 +64,6 @@ describe('Validation Service Coverage Gaps', () => {
 		// Parent has 'child' decorated? we need a decorator.
 		Reflect.defineMetadata('quick:types', ['child'], Parent.prototype);
 		Reflect.defineMetadata('fieldType', 'any', Parent.prototype, 'child'); // fake type
-
-		const instance = new Parent();
 
 		// Spy on validate to throw when called with Child
 		const spy = spyOn(service, 'validate');

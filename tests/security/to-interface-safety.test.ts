@@ -27,13 +27,13 @@ describe('Security: toInterface Injection', () => {
 		const output = model.toInterface();
 
 		// 4. Verify output is clean
-		const outputUntouched = output.untouched as any;
+		const outputUntouched = output.untouched;
 
 		// It should NOT have the key '__proto__'
 		expect(Object.keys(outputUntouched)).not.toContain('__proto__');
 
 		// It should NOT be polluted
-		expect((outputUntouched as any).admin).toBeUndefined();
+		expect(outputUntouched.admin).toBeUndefined();
 		expect(({} as any).admin).toBeUndefined(); // Global check
 	});
 
@@ -47,7 +47,7 @@ describe('Security: toInterface Injection', () => {
 
 		const model = new Nesthetic(payload);
 		const output = model.toInterface();
-		const obj = output.untouched as any;
+		const obj = output.untouched;
 
 		expect(obj).not.toHaveProperty('constructor', 'fake');
 		// However, standard objects have a .constructor property validly pointing to Object
@@ -71,7 +71,7 @@ describe('Security: toInterface Injection', () => {
 		expect(Array.isArray(arr)).toBe(true);
 		expect(arr[1]).toHaveProperty('valid', 2);
 		expect(Object.keys(arr[1])).not.toContain('__proto__');
-		expect((arr[1] as any).polluted).toBeUndefined();
+		expect(arr[1].polluted).toBeUndefined();
 	});
 
 	test('should handle Object.create(null) objects without pollution', () => {
@@ -89,7 +89,7 @@ describe('Security: toInterface Injection', () => {
 		const model = new Nesthetic(payload);
 
 		const output = model.toInterface();
-		const resultObj = output.untouched as any;
+		const resultObj = output.untouched;
 
 		expect(resultObj.valid).toBe('data');
 		expect(resultObj).not.toHaveProperty('constructor', 'hacked');
@@ -109,10 +109,10 @@ describe('Security: toInterface Injection', () => {
 
 		const model = new Nesthetic(payload);
 		const output = model.toInterface();
-		const nested = (output.untouched as any).level1.level2;
+		const nested = output.untouched.level1.level2;
 
 		expect(nested.clean).toBe('yes');
 		expect(Object.keys(nested)).not.toContain('__proto__');
-		expect((nested as any).b).toBeUndefined();
+		expect(nested.b).toBeUndefined();
 	});
 });

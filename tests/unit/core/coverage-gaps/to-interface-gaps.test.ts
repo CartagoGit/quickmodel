@@ -256,18 +256,12 @@ describe('ToInterface Coverage Gaps', () => {
 		// convertToInterfaceFormat(current, original) is called for each item
 
 		// Case 1: Current is BigInt
-		const res1 = service.toInterface(
-			[123n] as any,
-			[legacyObj] as any
-		) as any;
-		expect(res1).toEqual(['123']);
+		const res1 = service.toInterface([123n] as any, [legacyObj] as any);
+		expect(res1).toEqual(['123'] as any);
 
 		// Case 2: Current is string (needs conversion) - Line 312
-		const res2 = service.toInterface(
-			['456'] as any,
-			[legacyObj] as any
-		) as any;
-		expect(res2).toEqual(['456']);
+		const res2 = service.toInterface(['456'] as any, [legacyObj] as any);
+		expect(res2).toEqual(['456'] as any);
 	});
 
 	it('should serialize custom class instance when original is also custom instance', () => {
@@ -326,7 +320,7 @@ describe('ToInterface Coverage Gaps', () => {
 			declare next: Node | null;
 		}
 
-		let head = new Node({ next: null });
+		const head = new Node({ next: null });
 		let current = head;
 
 		for (let i = 0; i < 600; i++) {

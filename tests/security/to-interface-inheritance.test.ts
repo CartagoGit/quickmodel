@@ -23,7 +23,7 @@ describe('Defense in Depth: toInterface Inheritance', () => {
 		// Now test QModel behavior
 		const model = new Wrapper({ payload: obj });
 		const output = model.toInterface();
-		const result = output.payload as any;
+		const result = output.payload;
 
 		// Current behavior check:
 		// If it includes inherited, this expectation will fail (or pass if I expect it)

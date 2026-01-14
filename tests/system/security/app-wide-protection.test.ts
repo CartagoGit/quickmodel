@@ -66,7 +66,6 @@ describe('System Security: App-Wide Protection', () => {
 		// preventing the attack without crashing the application.
 		const attackedUser = new User({
 			username: 'hacker',
-			// @ts-ignore
 			isAdmin: () => true,
 		});
 
@@ -84,7 +83,6 @@ describe('System Security: App-Wide Protection', () => {
 			new Product({
 				sku: 'A-123',
 				price: 100,
-				// @ts-ignore
 				_internal_id: 999,
 			});
 		}).toThrow(/Strict Mode/);
@@ -93,7 +91,7 @@ describe('System Security: App-Wide Protection', () => {
 
 		// Legacy logs should still accept junk data
 		const log = new LegacyLog({ message: 'hello', extra: 123 });
-		// @ts-ignore
+		// @ts-expect-error LegacyLog is typed as any, so 'extra' is not explicitly defined on its type.
 		expect(log.extra).toBe(123);
 	});
 });
