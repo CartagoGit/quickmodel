@@ -521,4 +521,16 @@ export interface IQAdvancedOptions<
 	transformerOptions?: {
 		[K in keyof TTypeMap]?: Record<string, unknown>;
 	};
+
+	/**
+	 * Performance optimization settings.
+	 */
+	performance?: {
+		/**
+		 * Disables redundant runtime safety checks (like `Object.freeze`) when data source is trusted.
+		 * Use with caution.
+		 * @default false
+		 */
+		disableSafetyChecks?: boolean;
+	};
 }

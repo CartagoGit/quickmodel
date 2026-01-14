@@ -38,6 +38,9 @@ import {
 	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
+import { QConfig } from '@/core/config/quick.config';
+import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
+
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -265,6 +268,22 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		// Instantiate directly using the logic from create() to avoid abstract type issues
 		const Constructor = this as unknown as new (data: T) => TClass;
 		const instance = new Constructor(data) as unknown as TResult;
+
+		// Check performance config
+		const localOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			Constructor
+		) as IQAdvancedOptions;
+		const globalOptions = QConfig.get().defaults;
+		const disableSafetyChecks =
+			localOptions?.performance?.disableSafetyChecks ??
+			globalOptions?.performance?.disableSafetyChecks ??
+			false;
+
+		if (disableSafetyChecks) {
+			return instance as unknown as Readonly<TResult>;
+		}
+
 		return deepFreeze(instance) as unknown as Readonly<TResult>;
 	}
 

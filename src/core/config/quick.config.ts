@@ -124,6 +124,18 @@ export interface IQConfig {
 		 * @default false
 		 */
 		exposeUnsetFields?: boolean;
+
+		/**
+		 * Performance optimization settings.
+		 */
+		performance?: {
+			/**
+			 * Disables redundant runtime safety checks (like `Object.freeze`) when data source is trusted.
+			 * Use with caution.
+			 * @default false
+			 */
+			disableSafetyChecks?: boolean;
+		};
 	};
 }
 

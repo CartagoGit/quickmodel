@@ -99,7 +99,7 @@ Optimizations and debugging tools.
     - **Description**: Controls if optional fields without values appear as `key: null/undefined` in the output JSON.
     - **Test File**: `tests/unit/core/config/system-expose-unset.test.ts` (Pending creation)
 
-- [ ] **`performance`**
+- [x] **`performance`**
     - **Type**: `{ disableSafetyChecks?: boolean }`
     - **Description**: "Turbo Mode" for production. Disables redundant runtime checks (like freezing) when data source is trusted.
     - **Test File**: `tests/unit/core/config/system-performance.test.ts`

@@ -69,9 +69,22 @@ export class PopulationService {
 	): void {
 		const visited = context?.visited || new WeakSet();
 
+		// Get strict mode configuration
+		const options: IQAdvancedOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+
+		const globalDefaults = QConfig.get().defaults || {};
+
+		const disableSafetyChecks =
+			options?.performance?.disableSafetyChecks ??
+			globalDefaults?.performance?.disableSafetyChecks ??
+			false;
+
 		// Recursion Limits check
 		const currentDepth = context?.depth || 0;
-		this.recursionGuard.validateDepth(currentDepth);
+		if (!disableSafetyChecks) {
+			this.recursionGuard.validateDepth(currentDepth);
+		}
 
 		// Circular reference detection
 		if (this.recursionGuard.hasCircularReference(data, visited)) {
@@ -99,12 +112,6 @@ export class PopulationService {
 		// Get design:type metadata (captured by @Quick) for validation of non-decorated fields
 		const designTypes =
 			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
-
-		// Get strict mode configuration
-		const options: IQAdvancedOptions =
-			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
-
-		const globalDefaults = QConfig.get().defaults || {};
 
 		// Keep strict for backwards compatibility logic
 		const strictOption = options.strict ?? globalDefaults.strict;
@@ -320,7 +327,7 @@ export class PopulationService {
 			}
 
 			// DoS Protection: Check Array Length
-			if (Array.isArray(value)) {
+			if (!disableSafetyChecks && Array.isArray(value)) {
 				this.sizeValidator.validateArraySize(
 					targetKey,
 					value,
@@ -330,11 +337,13 @@ export class PopulationService {
 			}
 
 			// DoS Protection: Check nested object size
-			this.sizeValidator.validateNestedObjectSize(
-				targetKey,
-				value,
-				modelClass.name
-			);
+			if (!disableSafetyChecks) {
+				this.sizeValidator.validateNestedObjectSize(
+					targetKey,
+					value,
+					modelClass.name
+				);
+			}
 
 			// Transform Property
 			instance[targetKey] = this.propertyTransformer.transformProperty(
