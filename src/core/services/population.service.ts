@@ -353,7 +353,7 @@ export class PopulationService {
 					},
 					recursionContext,
 					maxArrayLength,
-					coercionStrategy: coercionStrategy as 'strict' | 'loose',
+					coercionStrategy: coercionStrategy,
 				}
 			);
 		}

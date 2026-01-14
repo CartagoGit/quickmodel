@@ -232,7 +232,7 @@ export class PropertyTransformer {
 			// Validation: If it's a singular model/type (not array syntax), value must NOT be an array
 			if (!isArrayType && Array.isArray(value)) {
 				throw new Error(
-					`${modelClass.name}.${transformContext.key}: Expected object, got array. Did you mean to use @QType([${arrayElementClass.name}])?`
+					`${modelClass.name}.${transformContext.propertyKey}: Expected object, got array. Did you mean to use @QType([${arrayElementClass.name}])?`
 				);
 			}
 
