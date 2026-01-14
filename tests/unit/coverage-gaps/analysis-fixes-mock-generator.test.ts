@@ -52,7 +52,6 @@ describe('MockGeneratorService Coverage Gaps', () => {
 		expect(Array.isArray(mock.arrSyntax)).toBe(true);
 		if (mock.arrSyntax.length > 0) {
 			const el = mock.arrSyntax[0];
-			console.log('DEBUG element:', el, typeof el, el.constructor.name);
 			// It should be object wrappers around strings
 			expect(typeof el).toBe('object');
 		}

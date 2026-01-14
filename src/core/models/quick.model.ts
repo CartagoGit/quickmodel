@@ -35,6 +35,7 @@ import {
 	QUICK_PROPERTY_KEYS,
 	QUICK_TYPE_MAP_KEY,
 	QUICK_OPTIONS_KEY,
+	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 
@@ -372,11 +373,27 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * Instance alias for static getMetadata.
 	 * Useful for inspecting model state and configuration from an instance.
 	 *
+	 * Includes Dynamic Auto-discovery: Returns both statically defined fields AND
+	 * instance-specific fields found on this object (e.g. declare properties without decorators).
+	 *
 	 * @see {@link QModel.getMetadata}
 	 */
 	public getMetadata(): Map<string, { type: string; transformer: unknown }> {
-		// Use constructor to access static method on the concrete class
-		return (this.constructor as any).getMetadata();
+		// Start with static metadata (schema definition)
+		const metadata = (this.constructor as any).getMetadata();
+
+		// Merge with instance keys (dynamic data discovery)
+		// This provides "what arrived" validation without permanently polluting the class schema
+		const keys = Object.keys(this);
+		for (const key of keys) {
+			if (!key.startsWith('__') && !metadata.has(key)) {
+				// Register discovered key as unknown/Object to indicate presence
+				// We don't assume type to avoid misleading info, just presence
+				metadata.set(key, { type: 'Object', transformer: undefined });
+			}
+		}
+
+		return metadata;
 	}
 
 	// Temporary property for unprocessed data (removed after initialize)
@@ -613,7 +630,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *
 	 * @internal
 	 */
-	public __forceHydration(): void {
+	public [FORCE_HYDRATION_KEY](): void {
 		// Only run if we have backup values
 		if (!this[QUICK_VALUES_KEY]) return;
 

@@ -389,7 +389,7 @@ describe('State Management Methods', () => {
 
 		test('should contain field type information', () => {
 			// Ensure usage to trigger auto-discovery
-			new User({
+			const user = new User({
 				id: '1',
 				name: 'Discovery',
 				age: 99,
@@ -397,23 +397,32 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const metadata = User.getMetadata();
+			// OPTION 1: Static Metadata (Strict Schema)
+			// Should strictly match what is defined in @Quick or @QType
+			const staticMetadata = User.getMetadata();
+			expect(staticMetadata.has('createdAt')).toBe(true);
+			// Static schema should NOT be polluted by instance data (Security Fix)
+			expect(staticMetadata.has('id')).toBe(false);
+
+			// OPTION 2: Instance Metadata (Dynamic Discovery)
+			// Should include all fields present in the instance + schema fields
+			const instanceMetadata = user.getMetadata();
 
 			// Decorated fields
-			expect(metadata.has('createdAt')).toBe(true);
+			expect(instanceMetadata.has('createdAt')).toBe(true);
 
 			// Auto-detected fields (discovered from usage)
-			expect(metadata.has('id')).toBe(true);
-			expect(metadata.has('name')).toBe(true);
-			expect(metadata.has('age')).toBe(true);
-			expect(metadata.has('email')).toBe(true);
+			expect(instanceMetadata.has('id')).toBe(true);
+			expect(instanceMetadata.has('name')).toBe(true);
+			expect(instanceMetadata.has('age')).toBe(true);
+			expect(instanceMetadata.has('email')).toBe(true);
 
 			// Verify types
 			// Note: Type name case might vary depending on TS version or metadata implementation
-			expect(metadata.get('createdAt')?.type).toMatch(/date/i);
+			expect(instanceMetadata.get('createdAt')?.type).toMatch(/date/i);
 			// Auto-detected ones default to Object/unknown usually, or constructor name if inferred?
 			// The decorator registered them with 'Object' as fieldType.
-			expect(metadata.get('id')).toBeDefined();
+			expect(instanceMetadata.get('id')).toBeDefined();
 		});
 
 		test('should identify Date transformer', () => {

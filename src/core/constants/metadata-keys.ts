@@ -51,3 +51,10 @@ export const QUICK_DISCRIMINATORS_KEY = '__quickDiscriminators__';
  * Used by @Quick() second parameter.
  */
 export const QUICK_OPTIONS_KEY = '__quickOptions__';
+
+/**
+ * Key for internal force hydration method in QModel.
+ * Used by @Quick decorator to handle property initialization order.
+ * Using Symbol to hide it from public API autocomplete.
+ */
+export const FORCE_HYDRATION_KEY = Symbol('__forceHydration__');
