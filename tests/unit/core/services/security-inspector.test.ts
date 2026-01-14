@@ -48,10 +48,10 @@ describe('SecurityInspector', () => {
 			}
 			inspector.getTemplateInstance(Cached);
 			inspector.getTemplateInstance(Cached);
-			expect(calls).toBe(1); // Constructor called only once due to cache? 
-            // Wait, getTemplateInstance instantiates using new(), so calls will be 1 if it succeeds and we try again?
-            // Actually, the method caches the *result*. 
-            // So second call returns the *same instance* from cache.
+			expect(calls).toBe(1); // Constructor called only once due to cache?
+			// Wait, getTemplateInstance instantiates using new(), so calls will be 1 if it succeeds and we try again?
+			// Actually, the method caches the *result*.
+			// So second call returns the *same instance* from cache.
 		});
 	});
 
@@ -97,10 +97,10 @@ describe('SecurityInspector', () => {
 			expect(
 				inspector.isMethodOnPrototype(ProtoCheck.prototype, 'prop')
 			).toBe(false); // prop is not on prototype usually for class fields, let's verify
-            // Class fields are initialized on the instance, but not on the prototype.
-            // So searching prototype for 'prop' will be undefined unless defined.
+			// Class fields are initialized on the instance, but not on the prototype.
+			// So searching prototype for 'prop' will be undefined unless defined.
 		});
-        
+
 		it('should return false for toString on Object prototype (explicit exclusion)', () => {
 			expect(
 				inspector.isMethodOnPrototype(ProtoCheck.prototype, 'toString')
@@ -137,26 +137,28 @@ describe('SecurityInspector', () => {
 		class ArrowCheck {
 			arrow = () => {};
 			prop = 1;
-            norm() {}
+			norm() {}
 		}
 
 		it('should detect arrow functions on instance template', () => {
 			const template = new ArrowCheck() as any;
-			expect(
-				inspector.isArrowFunctionMethod('arrow', template, [])
-			).toBe(true);
+			expect(inspector.isArrowFunctionMethod('arrow', template, [])).toBe(
+				true
+			);
 		});
 
 		it('should return false for regular properties', () => {
 			const template = new ArrowCheck() as any;
-			expect(
-				inspector.isArrowFunctionMethod('prop', template, [])
-			).toBe(false);
+			expect(inspector.isArrowFunctionMethod('prop', template, [])).toBe(
+				false
+			);
 		});
 
-        it('should return false if template is null', () => {
-            expect(inspector.isArrowFunctionMethod('arrow', null, [])).toBe(false);
-        });
+		it('should return false if template is null', () => {
+			expect(inspector.isArrowFunctionMethod('arrow', null, [])).toBe(
+				false
+			);
+		});
 
 		it('should bypass if field is decorated', () => {
 			const template = new ArrowCheck() as any;

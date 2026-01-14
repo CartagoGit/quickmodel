@@ -1,18 +1,21 @@
 import 'reflect-metadata';
-import { ValueTransformerService, IRecursiveDeserializer } from './value-transformer.service';
+import {
+	ValueTransformerService,
+	IRecursiveDeserializer,
+} from './value-transformer.service';
 import { TransformerLookupService } from './transformer-lookup.service';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { IQTransformContext } from '../interfaces/transformer.interface';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
 export class DotNotationHandler {
-    constructor(
-        private readonly transformerLookup: TransformerLookupService,
-        private readonly valueTransformer: ValueTransformerService,
-        private readonly recursiveDeserializer: IRecursiveDeserializer
-    ) {}
+	constructor(
+		private readonly transformerLookup: TransformerLookupService,
+		private readonly valueTransformer: ValueTransformerService,
+		private readonly recursiveDeserializer: IRecursiveDeserializer
+	) {}
 
-    public apply(
+	public apply(
 		instance: Record<string, unknown>,
 		path: string,
 		modelClass: Function,

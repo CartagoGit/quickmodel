@@ -8,14 +8,11 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_OPTIONS_KEY,
-	QUICK_TYPE_MAP_KEY,
 } from '../constants/metadata-keys';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QModelError } from '../errors/quickmodel.error';
 import { TransformerLookupService } from './transformer-lookup.service';
-import { IQTransformContext } from '../interfaces/transformer.interface';
-import { QTransformerRegistry } from '../registry/transformer.registry';
 import { SecurityInspector } from './security-inspector.service';
 import { ObjectSizeValidator } from './object-size-validator.service';
 import { RecursionGuard } from './recursion-guard.service';
@@ -34,9 +31,9 @@ export class PopulationService {
 	private readonly propertyTransformer: PropertyTransformer;
 
 	constructor(
-		private readonly valueTransformer: ValueTransformerService,
-		private readonly transformerLookup: TransformerLookupService,
-		private readonly recursiveDeserializer: IRecursiveDeserializer
+		valueTransformer: ValueTransformerService,
+		transformerLookup: TransformerLookupService,
+		recursiveDeserializer: IRecursiveDeserializer
 	) {
 		this.dotNotationHandler = new DotNotationHandler(
 			transformerLookup,
@@ -352,11 +349,11 @@ export class PopulationService {
 					discriminators,
 					transformContext: {
 						propertyKey: targetKey,
-						className: modelClass.name
+						className: modelClass.name,
 					},
 					recursionContext,
 					maxArrayLength,
-					coercionStrategy: coercionStrategy as 'strict' | 'loose'
+					coercionStrategy: coercionStrategy as 'strict' | 'loose',
 				}
 			);
 		}
@@ -375,6 +372,4 @@ export class PopulationService {
 			);
 		}
 	}
-
 }
-

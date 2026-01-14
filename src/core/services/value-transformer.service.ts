@@ -370,7 +370,6 @@ export class ValueTransformerService {
 			}
 		}
 
-
 		return undefined;
 	}
 
