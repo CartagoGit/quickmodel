@@ -52,7 +52,9 @@ describe('Integrity: Strip Internal Identifiers', () => {
 	});
 
 	it('should strip custom prefixes when configured globally', () => {
-		QConfig.configure({ defaults: { stripInternalIdentifiers: ['__', 'internal_'] } });
+		QConfig.configure({
+			defaults: { stripInternalIdentifiers: ['__', 'internal_'] },
+		});
 
 		@Quick()
 		class User extends QModel<any> {
@@ -85,19 +87,19 @@ describe('Integrity: Strip Internal Identifiers', () => {
 		expect((user as any)._internal).toBe('kept');
 	});
 
-    it('should allow custom stripping via decorator', () => {
-        @Quick({}, { stripInternalIdentifiers: ['ugly_'] })
-        class User extends QModel<any> {
-            declare ugly_field: string;
-            declare _normal: string;
-        }
+	it('should allow custom stripping via decorator', () => {
+		@Quick({}, { stripInternalIdentifiers: ['ugly_'] })
+		class User extends QModel<any> {
+			declare ugly_field: string;
+			declare _normal: string;
+		}
 
-        const user = User.create({
-            ugly_field: 'gone',
-            _normal: 'kept'
-        });
+		const user = User.create({
+			ugly_field: 'gone',
+			_normal: 'kept',
+		});
 
-        expect((user as any).ugly_field).toBeUndefined();
-        expect((user as any)._normal).toBe('kept');
-    });
+		expect((user as any).ugly_field).toBeUndefined();
+		expect((user as any)._normal).toBe('kept');
+	});
 });

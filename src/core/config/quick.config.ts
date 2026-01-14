@@ -92,13 +92,13 @@ export interface IQConfig {
 		 */
 		dateStrategy?: 'iso' | 'timestamp' | 'native';
 
-        /**
-         * Case transformation strategy.
-         */
-        transformCase?: {
-            in?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
-            out?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
-        };
+		/**
+		 * Case transformation strategy.
+		 */
+		transformCase?: {
+			in?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+			out?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+		};
 	};
 }
 

@@ -28,6 +28,10 @@ import {
 	ValueTransformerService,
 	IRecursiveDeserializer,
 } from './value-transformer.service';
+import { ValidationService } from './validation.service';
+import { QConfig } from '../config/quick.config';
+import { QModelError } from '../errors/quickmodel.error';
+import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
 export class Deserializer<
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
@@ -39,13 +43,15 @@ export class Deserializer<
 	private readonly instanceFactory: InstanceFactoryService;
 	private readonly populationService: PopulationService;
 	private readonly valueTransformer: ValueTransformerService;
+	private readonly validationService: ValidationService;
 
 	/**
 	 * Creates a model deserializer.
 	 */
-	constructor() {
+	constructor(validationService?: ValidationService) {
 		this.transformerLookup = new TransformerLookupService();
 		this.instanceFactory = new InstanceFactoryService();
+		this.validationService = validationService || new ValidationService();
 		this.valueTransformer = new ValueTransformerService(
 			this.transformerLookup,
 			this
@@ -168,6 +174,28 @@ export class Deserializer<
 			modelClass,
 			context
 		);
+
+		// 3. Validation (Trigger: 'construction')
+		const localOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+		const globalDefaults = QConfig.get().defaults || {};
+		const trigger =
+			localOptions.validationTrigger ||
+			globalDefaults.validationTrigger ||
+			'manual';
+
+		if (trigger === 'construction') {
+			const errors = this.validationService.validate(
+				instance as Record<string, unknown>,
+				modelClass
+			);
+			if (errors.length > 0) {
+				const errorMsgs = errors.map((e) => e.error).join('; ');
+				throw new QModelError(
+					`Validation failed during construction: ${errorMsgs}`
+				);
+			}
+		}
 
 		return instance;
 	}

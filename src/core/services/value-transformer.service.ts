@@ -5,6 +5,7 @@ import {
 } from '../interfaces/transformer.interface';
 import { TransformerLookupService } from './transformer-lookup.service';
 import { IQDiscriminatorConfig } from '../interfaces/quick-options.interface';
+import { Logger } from '../helpers/logger.helper';
 
 // Interface to avoid circular dependency
 export interface IRecursiveDeserializer {
@@ -251,6 +252,12 @@ export class ValueTransformerService {
 		context: IQTransformContext,
 		_recursionContext?: { visited?: WeakSet<object>; depth?: number }
 	): unknown {
+		// Log debug info
+		Logger.debug(
+			`Transforming '${context.propertyKey}' using design:type '${designType?.name || 'unknown'}'`,
+			context.className
+		);
+
 		// Null/Undefined check - Pass through
 		if (value === null || value === undefined) {
 			return value;

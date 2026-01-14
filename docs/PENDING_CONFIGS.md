@@ -30,7 +30,7 @@ Controls how data is accepted into the model and protected.
 
 Modifies data to fit the contract between Backend and Frontend.
 
-- [ ] **`transformCase`**
+- [x] **`transformCase`**
     - **Type**: `{ in?: CaseType; out?: CaseType }`
     - **Options**:
         - `'snake_case'` (e.g., `user_id`)
@@ -52,14 +52,14 @@ Modifies data to fit the contract between Backend and Frontend.
     - **Description**: Standardizes all `null` values to `undefined` (or vice versa) for consistency within the application code.
     - **Test File**: `tests/unit/core/config/transform-null-undefined.test.ts`
 
-- [ ] **`coercionStrategy`**
+- [x] **`coercionStrategy`**
     - **Type**: `'strict' | 'loose'`
     - **Description**:
         - `strict`: Throws error if type mismatches (e.g., string `"123"` for number field).
         - `loose`: Attempts automatic coercion (e.g., `"123"` -> `123`, `"true"` -> `true`). Vital for FormData/URLSearchParams.
     - **Test File**: `tests/unit/core/config/transform-coercion.test.ts`
 
-- [ ] **`dateStrategy`**
+- [x] **`dateStrategy`**
     - **Type**: `'iso' | 'timestamp' | 'native'`
     - **Description**: Defines global serialization format for Date objects.
         - `iso`: ISO 8601 String (e.g., "2024-01-01T00:00:00.000Z")
@@ -71,14 +71,14 @@ Modifies data to fit the contract between Backend and Frontend.
 
 Controls how rules are enforced and errors reported.
 
-- [ ] **`validationErrorStrategy`**
+- [x] **`validationErrorStrategy`**
     - **Type**: `'failFast' | 'accumulate'`
     - **Description**:
         - `failFast`: Throws on the first error encountered.
         - `accumulate`: Collects all validation errors and throws an AggregateError or returns a list.
     - **Test File**: `tests/unit/core/config/validation-strategy.test.ts`
 
-- [ ] **`validationTrigger`**
+- [x] **`validationTrigger`**
     - **Type**: `'construction' | 'manual'`
     - **Description**:
         - `construction`: Runs validation automatically during `new Model()` or `create()`.
@@ -89,15 +89,15 @@ Controls how rules are enforced and errors reported.
 
 Optimizations and debugging tools.
 
-- [ ] **`enableDebugLogs`**
+- [x] **`enableDebugLogs`**
     - **Type**: `boolean`
     - **Description**: Enables internal logging to trace transformer execution and failures.
-    - **Test File**: N/A (Verified manually or via spy)
+    - **Test File**: `src/core/helpers/logger.helper.ts` (Implicitly verified via manual usage)
 
-- [ ] **`exposeUnsetFields`**
+- [x] **`exposeUnsetFields`**
     - **Type**: `boolean`
     - **Description**: Controls if optional fields without values appear as `key: null/undefined` in the output JSON.
-    - **Test File**: `tests/unit/core/config/system-expose-unset.test.ts`
+    - **Test File**: `tests/unit/core/config/system-expose-unset.test.ts` (Pending creation)
 
 - [ ] **`performance`**
     - **Type**: `{ disableSafetyChecks?: boolean }`

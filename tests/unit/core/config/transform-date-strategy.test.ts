@@ -2,7 +2,6 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { QConfig } from '@/core/config/quick.config';
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
-import { dateTransformer } from '@/transformers/date.transformer';
 
 describe('Configuration: dateStrategy', () => {
 	beforeEach(() => {
@@ -52,15 +51,17 @@ describe('Configuration: dateStrategy', () => {
 		const date = new Date('2024-01-01T12:00:00.000Z');
 		const model = new TestModel({ date });
 
-        // Native strategy means toJSON returns Date object? 
-        // No, model.toJSON() calls serializeToJson() which stringifies.
-        // If serialize() returns Date object, JSON.stringify(Date) -> ISO String.
-        // So "native" strategy via toJSON() ends up being ISO string anyway but implicit.
-        // But if I use QModel.serializer.serialize() directly, I get Date object.
-        
-        const serializedObject = (TestModel as any).serializer.serialize(model);
+		// Native strategy means toJSON returns Date object?
+		// No, model.toJSON() calls serializeToJson() which stringifies.
+		// If serialize() returns Date object, JSON.stringify(Date) -> ISO String.
+		// So "native" strategy via toJSON() ends up being ISO string anyway but implicit.
+		// But if I use QModel.serializer.serialize() directly, I get Date object.
+
+		const serializedObject = (TestModel as any).serializer.serialize(model);
 		expect(serializedObject.date).toBeInstanceOf(Date);
-		expect(serializedObject.date.toISOString()).toBe('2024-01-01T12:00:00.000Z');
+		expect(serializedObject.date.toISOString()).toBe(
+			'2024-01-01T12:00:00.000Z'
+		);
 	});
 
 	test('should support global configuration defaults', () => {
@@ -97,7 +98,9 @@ describe('Configuration: dateStrategy', () => {
 		const date = new Date('2024-01-01T12:00:00.000Z');
 		const model = new TestModel({ date });
 
-		expect(JSON.parse(model.toJSON()).date).toBe('2024-01-01T12:00:00.000Z');
+		expect(JSON.parse(model.toJSON()).date).toBe(
+			'2024-01-01T12:00:00.000Z'
+		);
 	});
 
 	test('should handle nested dates correctly', () => {
@@ -121,9 +124,9 @@ describe('Configuration: dateStrategy', () => {
 			nested: { when: date },
 			other: date,
 		});
-		
-        // Use direct serializer to check 'native' output
-        const json = (Root as any).serializer.serialize(model);
+
+		// Use direct serializer to check 'native' output
+		const json = (Root as any).serializer.serialize(model);
 		expect(json.nested.when).toBe(1704110400000); // from Nested config
 		expect(json.other).toBeInstanceOf(Date); // from Root config
 	});

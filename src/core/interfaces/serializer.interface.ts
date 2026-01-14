@@ -3,6 +3,8 @@
  * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
  */
 
+import { IQCaseOptions } from '../types/case.type';
+
 export interface IQSerializationOptions {
 	/**
 	 * Include properties starting with a single underscore `_` (e.g., `_id`, `_value`)
@@ -28,6 +30,16 @@ export interface IQSerializationOptions {
 	 * Date serialization strategy overlap (internal use for passing down config)
 	 */
 	dateStrategy?: 'iso' | 'timestamp' | 'native';
+
+	/**
+	 * Case transformation strategy.
+	 */
+	transformCase?: IQCaseOptions;
+
+	/**
+	 * Include fields with undefined/null values in the serialized output.
+	 */
+	exposeUnsetFields?: boolean;
 }
 
 export interface IQSerializer<

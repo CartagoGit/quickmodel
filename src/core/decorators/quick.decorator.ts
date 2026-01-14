@@ -469,31 +469,36 @@ export function Quick<
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
 
-        // Auto-detect argument confusion: @Quick({ dateStrategy: '...' })
-        // If typeMap has keys that look like options (dateStrategy, strict, etc)
-        // AND it doesn't have valid transformers... we might be in trouble.
-        // For now, let's just properly merge defaults.
+		// Auto-detect argument confusion: @Quick({ dateStrategy: '...' })
+		// If typeMap has keys that look like options (dateStrategy, strict, etc)
+		// AND it doesn't have valid transformers... we might be in trouble.
+		// For now, let's just properly merge defaults.
 
 		// Merge global defaults
 		const globalDefaults = QConfig.get().defaults;
-        // Merge passed advancedOptions
+		// Merge passed advancedOptions
 		let mergedOptions = { ...globalDefaults, ...advancedOptions };
 
-        // Handle case where options are passed as first argument (typeMap)
-        // Only if typeMap is provided AND advancedOptions is undefined
-        if (typeMap && !advancedOptions) {
-            const hasOptionKeys = 'dateStrategy' in typeMap || 'strict' in typeMap || 'transformers' in typeMap || 'serializers' in typeMap || 'discriminators' in typeMap;
-            // Check if it has ACTUAL type mappings (keys that are property names)
-            // This is ambiguous if a property name matches an option key.
-            // Assumption: if 'dateStrategy' is present, it's likely an option object IF the value is a string 'iso'|'native'|'timestamp'
+		// Handle case where options are passed as first argument (typeMap)
+		// Only if typeMap is provided AND advancedOptions is undefined
+		if (typeMap && !advancedOptions) {
+			// Check if it has ACTUAL type mappings (keys that are property names)
+			// This is ambiguous if a property name matches an option key.
+			// Assumption: if 'dateStrategy' is present, it's likely an option object IF the value is a string 'iso'|'native'|'timestamp'
 
-             if ('dateStrategy' in typeMap && typeof (typeMap as any).dateStrategy === 'string' && ['iso', 'timestamp', 'native'].includes((typeMap as any).dateStrategy)) {
-                 // It IS an option object passed as first arg
-                 mergedOptions = { ...mergedOptions, ...(typeMap as any) };
-                 // Do NOT register 'dateStrategy' as a property type!
-                 delete (typeMap as any).dateStrategy;
-             }
-        }
+			if (
+				'dateStrategy' in typeMap &&
+				typeof (typeMap as any).dateStrategy === 'string' &&
+				['iso', 'timestamp', 'native'].includes(
+					(typeMap as any).dateStrategy
+				)
+			) {
+				// It IS an option object passed as first arg
+				mergedOptions = { ...mergedOptions, ...(typeMap as any) };
+				// Do NOT register 'dateStrategy' as a property type!
+				delete (typeMap as any).dateStrategy;
+			}
+		}
 
 		// Store options (strict mode, etc)
 		if (Object.keys(mergedOptions).length > 0) {

@@ -3,6 +3,7 @@ import type {
 	IQSerializerFn,
 	IQTransformerFn,
 } from './transform-options.interface';
+import { IQCaseOptions } from '../types/case.type';
 
 /**
  * Options for @Quick() decorator to handle advanced scenarios.
@@ -366,13 +367,40 @@ export interface IQAdvancedOptions<
 	 */
 	dateStrategy?: 'iso' | 'timestamp' | 'native';
 
-    /**
-     * Case transformation strategy for input (API -> Model) and output (Model -> API).
-     */
-    transformCase?: {
-        in?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
-        out?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
-    };
+	/**
+	 * Case transformation strategy for input (API -> Model) and output (Model -> API).
+	 */
+	transformCase?: IQCaseOptions;
+
+	/**
+	 * Strategy for reporting validation errors.
+	 *
+	 * - **failFast**: Returns immediately on the first error encountered (optimized).
+	 * - **accumulate** (default): Collects and returns all validation errors.
+	 */
+	validationErrorStrategy?: 'failFast' | 'accumulate';
+
+	/**
+	 * When to run validation.
+	 *
+	 * - **manual** (default): Validation must be triggered explicitly via `.validate()`.
+	 * - **construction**: Validation runs automatically after population. Throws if invalid.
+	 */
+	validationTrigger?: 'manual' | 'construction';
+
+	/**
+	 * Enable internal debug logging for this model.
+	 * Useful for troubleshooting transformation or validation issues.
+	 */
+	enableDebugLogs?: boolean;
+
+	/**
+	 * Include fields with undefined/null values in the serialized output.
+	 *
+	 * - **true**: `key: null` or `key: undefined` are included in JSON.
+	 * - **false** (default): Keys with undefined values are omitted (standard JSON behavior for undefined).
+	 */
+	exposeUnsetFields?: boolean;
 
 	/**
 	 * String normalization options (per-model override).

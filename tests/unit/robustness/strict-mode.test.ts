@@ -36,7 +36,7 @@ describe('Robustness: Strict Mode', () => {
 			action();
 		} catch (e: any) {
 			expect(e.message).toContain(
-				"Strict Mode: Property 'extra' is not defined"
+				"Strict Mode: Property 'extra' (mapped from 'extra') is not defined in model StrictUser"
 			);
 		}
 	});

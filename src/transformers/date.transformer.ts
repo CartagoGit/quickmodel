@@ -116,7 +116,10 @@ export class DateTransformer
 	 * @param context - The transformation context
 	 * @returns ISO 8601 formatted string
 	 */
-	serialize(value: Date, context?: IQTransformContext): string | number | Date {
+	serialize(
+		value: Date,
+		context?: IQTransformContext
+	): string | number | Date {
 		const strategy = context?.metadata?.dateStrategy ?? 'iso';
 
 		if (strategy === 'timestamp') {

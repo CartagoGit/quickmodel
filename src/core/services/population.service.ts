@@ -100,7 +100,8 @@ export class PopulationService {
 		// Determine Unknown Property Policy
 		// Priority: Model Config > Global Config > Strict Mode Fallback > Default ('keep')
 		let unknownPolicy =
-			options.unknownPropertyPolicy || globalDefaults.unknownPropertyPolicy;
+			options.unknownPropertyPolicy ||
+			globalDefaults.unknownPropertyPolicy;
 
 		if (!unknownPolicy) {
 			// Backward compatibility: map strict boolean to policy
@@ -133,9 +134,9 @@ export class PopulationService {
 		const nullToUndefined =
 			options.nullToUndefined ?? globalDefaults.nullToUndefined ?? false;
 
-        // Case Transformation Config
-        const transformCase =
-            options.transformCase || globalDefaults.transformCase;
+		// Case Transformation Config
+		const transformCase =
+			options.transformCase || globalDefaults.transformCase;
 
 		// SECURITY: Prevent Stack Overflow via Deep Recursion
 		this.recursionGuard.validateDepth(recursionContext.depth);
@@ -152,36 +153,43 @@ export class PopulationService {
 		for (const key of keys) {
 			let value = data[key];
 
-            // Case Transformation (Input -> Model Property)
-            let targetKey = key;
-             if (transformCase?.in) {
-                // If input case is specified, we assume we need to convert it to camelCase
-                // to match standard property naming conventions.
-                // We verify if the direct key exists first (priority to exact match),
-                // if not, we try the transformed case.
-                
-                // Note: We always check exact match first?
-                // Actually, if transformCase.in is "snake_case", and key is "user_id",
-                // we want to map it to "userId".
-                // But if the model actually HAS "user_id", maybe we should use it?
-                // Standard behavior: Try transformed key. If it exists in Model, use it.
-                // If not, maybe fallback to original key?
-                
-                // Let's normalize key to camelCase (default model convention)
-                const normalizedKey = CaseHelper.toCase('camelCase', key);
-                
-                // Check if normalized key is a known property on the model
-                const isKnownProperty = 
-                    decoratedFields.includes(normalizedKey) || 
-                    Object.prototype.hasOwnProperty.call(designTypes, normalizedKey) ||
-                    Object.prototype.hasOwnProperty.call(instance, normalizedKey);
+			// Case Transformation (Input Key -> Model Property)
+			let targetKey = key;
+			if (transformCase?.in) {
+				// If input case is specified, we assume we need to convert it to camelCase
+				// to match standard property naming conventions.
+				const normalizedKey = CaseHelper.toCase('camelCase', key);
 
-                if (isKnownProperty) {
-                    targetKey = normalizedKey;
-                }
-            }
+				// Check if normalized key is a known property on the model
+				const isNormalizedKnown =
+					decoratedFields.includes(normalizedKey) ||
+					Object.prototype.hasOwnProperty.call(
+						designTypes,
+						normalizedKey
+					) ||
+					Object.prototype.hasOwnProperty.call(
+						instance,
+						normalizedKey
+					);
 
-            // Normalization logic (String trimming, etc) applied to VALUE
+				// Check if original key is a known property on the model
+				const isOriginalKnown =
+					decoratedFields.includes(key) ||
+					Object.prototype.hasOwnProperty.call(designTypes, key) ||
+					Object.prototype.hasOwnProperty.call(instance, key);
+
+				if (isNormalizedKnown) {
+					targetKey = normalizedKey;
+				} else if (!isOriginalKnown) {
+					// Neither is explicitly known.
+					// If transformCase is explicit, we assume the intention IS to normalize keys
+					// to maintain standard JS conventions (camelCase), even for loose schemas.
+					targetKey = normalizedKey;
+				}
+				// If isOriginalKnown is true and isNormalizedKnown is false, we keep original key.
+			}
+
+			// Normalization logic (String trimming, etc) applied to VALUE
 			if (key === 'save')
 				console.log('[POPULATE_DEBUG] Found save key in data');
 
@@ -192,20 +200,23 @@ export class PopulationService {
 				);
 			}
 
-			// SECURITY: Prevent Prototype Pollution
+			// SECURITY: Prevent Prototype Pollution (Check raw input key)
 			if (this.securityInspector.isDangerousKey(key)) {
 				continue;
 			}
 
 			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
+			// Check TARGET key because that's what will be assigned
 			if (
 				this.securityInspector.isMethodOnPrototype(
 					Object.getPrototypeOf(instance),
-					key,
+					targetKey,
 					decoratedFields
 				)
 			) {
-				console.log(`[SECURITY] Skipped shadowing attempt for: ${key}`);
+				console.log(
+					`[SECURITY] Skipped shadowing attempt for: ${targetKey} (mapped from ${key})`
+				);
 				continue;
 			}
 
@@ -242,14 +253,19 @@ export class PopulationService {
 
 			const hasDesignType = targetKey in designTypes;
 			const isDeclared =
-				targetKey in instance || targetKey in Object.getPrototypeOf(instance);
+				targetKey in instance ||
+				targetKey in Object.getPrototypeOf(instance);
 			const isUnknown = !isDecorated && !hasDesignType && !isDeclared;
 
 			if (isUnknown) {
 				if (unknownPolicy === 'error') {
 					throw new QModelError(
 						`Strict Mode: Property '${targetKey}' (mapped from '${key}') is not defined in model ${modelClass.name}`,
-						{ className: modelClass.name, propertyKey: targetKey, value }
+						{
+							className: modelClass.name,
+							propertyKey: targetKey,
+							value,
+						}
 					);
 				}
 				if (unknownPolicy === 'strip') {
@@ -267,10 +283,14 @@ export class PopulationService {
 					decoratedFields
 				)
 			) {
-				if (isStrict) {
+				if (strictOption) {
 					throw new QModelError(
 						`Strict Mode: Blocked attempt to overwrite instance method '${targetKey}' with data.`,
-						{ className: modelClass.name, propertyKey: targetKey, value }
+						{
+							className: modelClass.name,
+							propertyKey: targetKey,
+							value,
+						}
 					);
 				}
 				console.warn(
@@ -324,12 +344,13 @@ export class PopulationService {
 					propertyKey: targetKey,
 					className: modelClass.name,
 				};
-				instance[targetKey] = this.valueTransformer.transformByDesignType(
-					value,
-					expectedType,
-					transformContext,
-					recursionContext
-				);
+				instance[targetKey] =
+					this.valueTransformer.transformByDesignType(
+						value,
+						expectedType,
+						transformContext,
+						recursionContext
+					);
 				continue;
 			}
 
@@ -345,12 +366,9 @@ export class PopulationService {
 			};
 
 			// 0. 🔥 CHECK: Custom transformer from options (High Priority)
-			if (
-				options.transformers &&
-				targetKey in options.transformers &&
-				typeof options.transformers[targetKey] === 'function'
-			) {
-				instance[targetKey] = options.transformers[targetKey](value);
+			const customTransformerFn = options.transformers?.[targetKey];
+			if (typeof customTransformerFn === 'function') {
+				instance[targetKey] = customTransformerFn(value);
 				continue;
 			}
 
@@ -366,7 +384,11 @@ export class PopulationService {
 			}
 
 			// 2. Check for custom transformer via fieldType metadata
-			const fieldType = Reflect.getMetadata('fieldType', instance, targetKey);
+			const fieldType = Reflect.getMetadata(
+				'fieldType',
+				instance,
+				targetKey
+			);
 			if (fieldType) {
 				const transformer =
 					this.transformerLookup.getTransformer(fieldType);
@@ -535,7 +557,10 @@ export class PopulationService {
 					const isPrimitiveOrTransformable =
 						transformableTypes.includes(arrayElementClass);
 
-					if (isPrimitiveOrTransformable && !discriminators?.[targetKey]) {
+					if (
+						isPrimitiveOrTransformable &&
+						!discriminators?.[targetKey]
+					) {
 						instance[targetKey] =
 							this.valueTransformer.transformNestedArray(
 								value,
@@ -547,7 +572,8 @@ export class PopulationService {
 						const possibleTypes = arrayElementTypes || [
 							arrayElementClass,
 						];
-						const IQDiscriminatorConfig = discriminators?.[targetKey];
+						const IQDiscriminatorConfig =
+							discriminators?.[targetKey];
 
 						instance[targetKey] =
 							this.valueTransformer.transformNestedModelArray(
@@ -578,7 +604,6 @@ export class PopulationService {
 							context
 						);
 						continue;
-
 					}
 				}
 
@@ -693,7 +718,8 @@ export class PopulationService {
 						const possibleTypes = arrayElementTypes || [
 							arrayElementClass,
 						];
-						const IQDiscriminatorConfig = discriminators?.[targetKey];
+						const IQDiscriminatorConfig =
+							discriminators?.[targetKey];
 						instance[targetKey] =
 							this.valueTransformer.transformNestedModelArray(
 								value,
@@ -712,11 +738,12 @@ export class PopulationService {
 					value !== null &&
 					!Array.isArray(value)
 				) {
-					instance[targetKey] = this.recursiveDeserializer.deserialize(
-						value as Record<string, unknown>,
-						arrayElementClass,
-						recursionContext
-					);
+					instance[targetKey] =
+						this.recursiveDeserializer.deserialize(
+							value as Record<string, unknown>,
+							arrayElementClass,
+							recursionContext
+						);
 					continue;
 				}
 			}
@@ -747,11 +774,12 @@ export class PopulationService {
 			) {
 				// Special Case: Set/Map
 				if (designType === Set || designType === Map) {
-					instance[targetKey] = this.valueTransformer.transformByDesignType(
-						value,
-						designType,
-						context
-					);
+					instance[targetKey] =
+						this.valueTransformer.transformByDesignType(
+							value,
+							designType,
+							context
+						);
 					continue;
 				}
 
@@ -775,11 +803,12 @@ export class PopulationService {
 				const isDataView = designType === DataView;
 
 				if (isTypedArray || isArrayBuffer || isDataView) {
-					instance[targetKey] = this.valueTransformer.transformByDesignType(
-						value,
-						designType,
-						context
-					);
+					instance[targetKey] =
+						this.valueTransformer.transformByDesignType(
+							value,
+							designType,
+							context
+						);
 				} else {
 					// STRICT VALIDATION:
 					// If we are here, it means we have an Array value but design:type is NOT Array (and not a special native type like Set/Map/TypedArray).

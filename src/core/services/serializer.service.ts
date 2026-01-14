@@ -216,21 +216,50 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): TInterface {
-		// Resolve Configuration (DateStrategy, etc.)
+		// Resolve Configuration (DateStrategy, Case, etc.)
 		let activeOptions = options;
-		if (!options?.dateStrategy) {
+		// Combine incoming options with model defaults if options are missing properties
+		// This handles the first call (no options) and recursive calls (inheriting options)
+		// But recursive calls should preferably respect Child Model config for some things?
+		// DateStrategy was fixed. transformCase should probably follow similar logic.
+
+		if (!options?.dateStrategy || !options?.transformCase) {
 			const modelOptions = Reflect.getMetadata(
 				QUICK_OPTIONS_KEY,
 				model.constructor
 			) as IQAdvancedOptions;
 
 			const globalDefaults = QConfig.get().defaults;
-			const dateStrategy =
-				modelOptions?.dateStrategy ?? globalDefaults?.dateStrategy ?? 'iso';
 
-			if (dateStrategy !== 'iso') {
-				activeOptions = { ...options, dateStrategy };
+			const dateStrategy =
+				modelOptions?.dateStrategy ??
+				globalDefaults?.dateStrategy ??
+				'iso';
+
+			const transformCase =
+				modelOptions?.transformCase ?? globalDefaults?.transformCase;
+
+			const exposeUnsetFields =
+				modelOptions?.exposeUnsetFields ??
+				globalDefaults?.exposeUnsetFields;
+
+			const newOptions: IQSerializationOptions = { ...(options || {}) };
+
+			if (!options?.dateStrategy && dateStrategy !== 'iso') {
+				newOptions.dateStrategy = dateStrategy;
 			}
+			if (!options?.transformCase && transformCase) {
+				newOptions.transformCase = transformCase;
+			}
+			if (
+				!options?.exposeUnsetFields &&
+				exposeUnsetFields !== undefined
+			) {
+				newOptions.exposeUnsetFields = exposeUnsetFields;
+			}
+			// Only update if something changed (to avoid object creation spam if optimization needed)
+			// But here simplistic approach is safer
+			activeOptions = newOptions;
 		}
 
 		const depth = activeOptions?._depth || 0;
@@ -300,6 +329,20 @@ export class Serializer<
 
 			const value = (model as unknown as Record<string, unknown>)[key];
 
+			// Exclude undefined values unless explicitly exposed
+			if (value === undefined && !activeOptions?.exposeUnsetFields) {
+				continue;
+			}
+
+			// Calculate Output Key (Case Transformation)
+			let outputKey = key;
+			if (activeOptions?.transformCase?.out) {
+				outputKey = CaseHelper.toCase(
+					activeOptions.transformCase.out,
+					key
+				);
+			}
+
 			// Custom Transformer Object check (Bidirectional transformers in TypeMap)
 			if (typeMap && typeMap[key]) {
 				const mapValue = typeMap[key];
@@ -317,12 +360,15 @@ export class Serializer<
 						className: model.constructor.name,
 						metadata: activeOptions as any,
 					};
-					result[key] = (mapValue as IQTransformer).serialize(value, context);
+					result[outputKey] = (mapValue as IQTransformer).serialize(
+						value,
+						context
+					);
 					continue;
 				}
 			}
 
-			result[key] = this.serializeValue(value, visited, {
+			result[outputKey] = this.serializeValue(value, visited, {
 				...activeOptions,
 				_depth: depth + 1,
 			});
@@ -627,8 +673,10 @@ export class Serializer<
 				Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, value.constructor)
 			) {
 				delete childOptions.dateStrategy;
+				delete childOptions.transformCase; // Strip case config too
 				// Force explicit removal via type assertion if needed
 				(childOptions as any).dateStrategy = undefined;
+				(childOptions as any).transformCase = undefined;
 			}
 
 			return (

@@ -64,6 +64,9 @@ export class RecursionGuard {
 	 * Gets the maximum allowed depth
 	 */
 	public getMaxDepth(): number {
-		return RecursionGuard.MAX_DEPTH;
+		return (
+			QConfig.get().defaults?.maxRecursionDepth ??
+			RecursionGuard.DEFAULT_MAX_DEPTH
+		);
 	}
 }
