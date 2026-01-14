@@ -70,7 +70,7 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
   - **Test**: `tests/security/mcp-security.test.ts` - "QSearchDocsTool (Command Injection)", `tests/security/advanced-vectors.test.ts`
 
 - **Path Traversal Prevention**:
-  - All file system operations in tools (`scaffold_feature`, `check_api_compatibility`, `check_project_rules`) strictly validate that target paths are within the project root.
+  - All file system operations in tools (`scaffold_feature`, `check_api_compatibility`, `check_project_rules`) strictly validate that target paths are within the project root using secure prefix check (safe against sibling folder attacks).
   - **Test**: `tests/security/mcp-security.test.ts` - "Path Traversal Prevention" suite.
 
 - **Cross-Site Scripting (XSS) Prevention**:
@@ -91,7 +91,7 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
   - **Test**: `tests/security/stack-overflow.test.ts`, `tests/security/to-interface-depth.test.ts`
 
 - **CPU Exhaustion (DoS)**:
-  - String length limits enforced for resource-intensive transformers: `RegExpTransformer`, `DateTransformer`, `BigIntTransformer`, `SymbolTransformer`, `ErrorTransformer`.
+  - String length limits enforced for resource-intensive transformers: `RegExpTransformer`, `DateTransformer`, `BigIntTransformer` (including object wrapper bypass), `SymbolTransformer`, `ErrorTransformer`.
   - **Test**: `tests/security/*-dos.test.ts` suites.
 
 - **Mass Assignment & Method Shadowing**:

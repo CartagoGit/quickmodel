@@ -135,4 +135,15 @@ describe('Mock Generator Coverage Gaps', () => {
 		const mock = Wrapper.mock().random();
 		expect(typeof mock.nested).toBe('string');
 	});
+
+	it('should fallback to default string when no type metadata is available (line 284 coverage)', () => {
+		@Quick({ unknownProp: null as any })
+		class UnknownModel extends QModel<any> {
+			// No declaration, so no design:type.
+			// TypeMap entry is null, so it doesn't resolve to fieldType.
+		}
+
+		const mock = UnknownModel.mock().random();
+		expect(typeof (mock as any).unknownProp).toBe('string');
+	});
 });

@@ -148,7 +148,6 @@ export class ToInterfaceService<
 	): unknown {
 		// SECURITY: Prevent Stack Overflow in deep properties
 		const MAX_DEPTH = 512;
-		
 
 		if (depth > MAX_DEPTH) {
 			throw new Error(
@@ -368,13 +367,6 @@ export class ToInterfaceService<
 							currentValue as string | number | bigint | boolean
 						);
 			return bigintValue.toString();
-		}
-
-		if (
-			typeof originalValue === 'string' &&
-			typeof currentValue === 'bigint'
-		) {
-			return currentValue.toString();
 		}
 
 		// 9. PLAIN OBJECTS: Recursively convert properties

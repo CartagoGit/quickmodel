@@ -52,7 +52,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const service = new ToInterfaceService();
 		// Covers line 15: if (Array.isArray(model))
 		const result = service.toInterface([1, 2] as any);
-		expect(result).toEqual([1, 2]);
+		expect(result as any).toEqual([1, 2]);
 	});
 
 	it('should handle Map to Array conversion in nested array', () => {
@@ -300,5 +300,43 @@ describe('ToInterface Coverage Gaps', () => {
 		m.val = 999n;
 
 		expect(m.toInterface()).toEqual({ val: '999' });
+	});
+	it('should throw on maximum recursion depth', () => {
+		const deepObj: any = {};
+		let current = deepObj;
+		for (let i = 0; i < 600; i++) {
+			current.next = {};
+			current = current.next;
+		}
+
+		@Quick({ root: 'any' })
+		class Deep extends QModel<any> {
+			declare root: any;
+		}
+
+		const m = new Deep({ root: deepObj });
+		expect(() => m.toInterface()).toThrow(
+			'QuickModel Security: Maximum recursion depth'
+		);
+	});
+
+	it('should throw on maximum recursion depth in toInterface (Nested QModels)', () => {
+		@Quick({ next: 'any' })
+		class Node extends QModel<any> {
+			declare next: Node | null;
+		}
+
+		let head = new Node({ next: null });
+		let current = head;
+
+		for (let i = 0; i < 600; i++) {
+			const next = new Node({ next: null });
+			current.next = next;
+			current = next;
+		}
+
+		expect(() => head.toInterface()).toThrow(
+			'QuickModel Security: Maximum recursion depth'
+		);
 	});
 });

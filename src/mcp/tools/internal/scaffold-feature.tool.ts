@@ -85,7 +85,9 @@ export const ${safeName}Transformer: ValueTransformer<any> = {
 				? resolve(cwd, args.location)
 				: join(cwd, 'src/mcp/tools/internal');
 
-			if (!dir.startsWith(cwd)) {
+			const safeCwd = cwd.endsWith(sep) ? cwd : cwd + sep;
+			const safeDir = dir.endsWith(sep) ? dir : dir + sep;
+			if (!safeDir.startsWith(safeCwd)) {
 				throw new Error(
 					'Security Error: Target path is outside project root.'
 				);

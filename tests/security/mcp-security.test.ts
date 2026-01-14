@@ -76,5 +76,41 @@ describe('MCP Tools Security', () => {
 				expect(error.message).toContain('outside project root');
 			}
 		});
+
+		test('QScaffoldFeatureTool should reject Sibling Directory Attack', async () => {
+			const tool = new QScaffoldFeatureTool();
+			// Get current directory name efficiently
+			const segments = process.cwd().split(/[/\\]/);
+			const currentDirName = segments[segments.length - 1] || 'root';
+			// Try to access "../quickmodel-evil" which textually starts with ".../quickmodel"
+			const siblingPath = `../${currentDirName}-evil`;
+
+			try {
+				await tool.execute({
+					type: 'transformer',
+					name: 'test',
+					location: siblingPath,
+				});
+				expect(true).toBe(false); // Should fail
+			} catch (error: any) {
+				expect(error.message).toContain('Security Error');
+				expect(error.message).toContain('outside project root');
+			}
+		});
+
+		test('QCheckProjectRulesTool should reject Sibling Directory Attack', async () => {
+			const tool = new QCheckProjectRulesTool();
+			const segments = process.cwd().split(/[/\\]/);
+			const currentDirName = segments[segments.length - 1] || 'root';
+			const siblingPath = `../${currentDirName}-evil`;
+
+			try {
+				await tool.execute({ targetDir: siblingPath });
+				expect(true).toBe(false);
+			} catch (error: any) {
+				expect(error.message).toContain('Security Error');
+				expect(error.message).toContain('outside project root');
+			}
+		});
 	});
 });

@@ -122,26 +122,10 @@ export class PopulationService {
 
 			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
 			// Do not allow data to overwrite methods defined in the class prototype
-			if (this.isMethodOnPrototype(Object.getPrototypeOf(instance), key)) {
-				console.log(`[SECURITY] Skipped shadowing attempt for: ${key}`);
-				continue;
-			}
-
-			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
-			// Intrinsic check: Inspect a template instance to see if this property is supposed to be a function
-			// We only block UNDECORATED properties. If the user explicitly decorated it (e.g. @QType(Function)),
-			// we assume they know what they are doing.
-			const template = this.getTemplateInstance(modelClass);
 			if (
-				template &&
-				typeof template[key] === 'function' &&
-				!decoratedFields.includes(key)
+				this.isMethodOnPrototype(Object.getPrototypeOf(instance), key)
 			) {
-				console.warn(
-					`[QuickModel] Security Warning: Blocked attempt to overwrite instance method '${key}' with data. ` +
-						`This property acts as a function in the model default state. ` +
-						`If you intend to assign data to it, you must explicitly decorate it with @Quick({ ${key}: Type }) or @QType(Type) to authorize the overwrite.`
-				);
+				console.log(`[SECURITY] Skipped shadowing attempt for: ${key}`);
 				continue;
 			}
 
@@ -158,6 +142,30 @@ export class PopulationService {
 						{ className: modelClass.name, propertyKey: key, value }
 					);
 				}
+			}
+
+			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
+			// Intrinsic check: Inspect a template instance to see if this property is supposed to be a function
+			// We only block UNDECORATED properties. If the user explicitly decorated it (e.g. @QType(Function)),
+			// we assume they know what they are doing.
+			const template = this.getTemplateInstance(modelClass);
+			if (
+				template &&
+				typeof template[key] === 'function' &&
+				!decoratedFields.includes(key)
+			) {
+				if (isStrict) {
+					throw new QModelError(
+						`Strict Mode: Blocked attempt to overwrite instance method '${key}' with data.`,
+						{ className: modelClass.name, propertyKey: key, value }
+					);
+				}
+				console.warn(
+					`[QuickModel] Security Warning: Blocked attempt to overwrite instance method '${key}' with data. ` +
+						`This property acts as a function in the model default state. ` +
+						`If you intend to assign data to it, you must explicitly decorate it with @Quick({ ${key}: Type }) or @QType(Type) to authorize the overwrite.`
+				);
+				continue;
 			}
 
 			// Always allow undefined as "missing value" (optional)

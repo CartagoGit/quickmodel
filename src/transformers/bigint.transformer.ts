@@ -84,12 +84,15 @@ export class BigIntTransformer
 		) {
 			// Limit string length to prevent DoS with massive BigInt parsing
 			if (typeof value.value === 'string' && value.value.length > 2048) {
-				throw new QModelError('BigInt input string too long > 2048 chars', {
-					className,
-					propertyKey,
-					value: 'TRUNCATED',
-					expectedType: 'Short BigInt string',
-				});
+				throw new QModelError(
+					'BigInt input string too long > 2048 chars',
+					{
+						className,
+						propertyKey,
+						value: 'TRUNCATED',
+						expectedType: 'Short BigInt string',
+					}
+				);
 			}
 			return BigInt(value.value);
 		}

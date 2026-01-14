@@ -39,7 +39,9 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 
 		// Suffix with separator to ensure we don't match sibling folders sharing a prefix
 		// e.g. /opt/project vs /opt/project-evil
-		const safeCwd = process.cwd().endsWith(sep) ? process.cwd() : process.cwd() + sep;
+		const safeCwd = process.cwd().endsWith(sep)
+			? process.cwd()
+			: process.cwd() + sep;
 		const safeTarget = absRoot.endsWith(sep) ? absRoot : absRoot + sep;
 
 		if (!safeTarget.startsWith(safeCwd)) {

@@ -140,9 +140,8 @@ export class MapTransformer<K = string, V = unknown>
 			}
 
 			try {
-				// Filter unsafe keys
-				const safeEntries = value.filter(([k]) => !isUnsafeKey(k));
-				return new Map(safeEntries);
+				// Map keys are safe, no need to filter for map construction
+				return new Map(value);
 			} catch (error) {
 				throw new QModelError(
 					`MapTransformer.deserialize: Invalid Map data format. ` +
