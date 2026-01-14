@@ -99,6 +99,31 @@ export interface IQConfig {
 			in?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
 			out?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
 		};
+
+		/**
+		 * Strategy for reporting validation errors.
+		 * - 'failFast': Throws on first error.
+		 * - 'accumulate': Collects all errors (Default).
+		 */
+		validationErrorStrategy?: 'failFast' | 'accumulate';
+
+		/**
+		 * When to run validation.
+		 * - 'manual': Must be called explicitly (Default).
+		 * - 'construction': Runs automatically on model creation.
+		 */
+		validationTrigger?: 'manual' | 'construction';
+
+		/**
+		 * Enables internal debug logging.
+		 */
+		enableDebugLogs?: boolean;
+
+		/**
+		 * If true, undefined/null values are exposed in serialized output.
+		 * @default false
+		 */
+		exposeUnsetFields?: boolean;
 	};
 }
 

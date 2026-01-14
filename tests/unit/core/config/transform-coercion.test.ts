@@ -2,6 +2,7 @@ import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';
 import { QType } from '@/core/decorators/qtype.decorator';
+import { describe, it, expect, beforeEach } from 'bun:test';
 
 describe('Transformation: Coercion Strategy', () => {
 	beforeEach(() => {

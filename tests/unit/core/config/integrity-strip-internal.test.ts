@@ -1,6 +1,7 @@
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';
+import { describe, it, expect, beforeEach } from 'bun:test';
 
 describe('Integrity: Strip Internal Identifiers', () => {
 	beforeEach(() => {

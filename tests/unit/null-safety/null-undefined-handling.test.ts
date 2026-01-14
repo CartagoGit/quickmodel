@@ -195,7 +195,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 		expect(json.value).not.toBeUndefined();
 	});
 
-	test('should preserve undefined in serialization', () => {
+	test('should omit undefined in serialization by default', () => {
 		const data = new Data({
 			value: null,
 			optional: undefined,
@@ -204,10 +204,8 @@ describe('Null Safety: Nullable vs Optional', () => {
 
 		const json = data.serialize();
 
-		// Undefined typically omitted from JSON
-		// but should be preserved in serialize()
-		expect('optional' in json).toBe(true);
-		expect(json.optional).toBeUndefined();
+		// Undefined should be omitted from JSON by default
+		expect('optional' in json).toBe(false);
 	});
 
 	test('should handle explicit undefined vs missing', () => {

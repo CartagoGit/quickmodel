@@ -1,5 +1,5 @@
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
-import { Quick, QModel, IQImplements, QConfig, Advanced } from '../../../../src';
+import { describe, test, expect, afterEach } from 'bun:test';
+import { Quick, QModel, QConfig, Advanced } from '../../../../src';
 import { IQTransformer, IQValidationResult } from '../../../../src/core/interfaces/transformer.interface';
 
 const { QTransformerRegistry } = Advanced;
@@ -52,7 +52,7 @@ describe('Validation Trigger Configuration', () => {
         // Manual validation detects it
         const errors = instance.validate();
         expect(errors.length).toBeGreaterThan(0);
-        expect(errors[0].error).toContain('Value is invalid');
+        expect(errors[0]?.error).toContain('Value is invalid');
 	});
     
     test('should validate on construction when trigger is "construction"', () => {
