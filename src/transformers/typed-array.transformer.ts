@@ -1,4 +1,5 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQTransformContext,
 	IQValidationContext,
@@ -131,17 +132,51 @@ export class TypedArrayTransformer<T extends TypedArray>
 			context?.metadata?.transformerOptions as { maxItems?: number }
 		)?.maxItems;
 		const MAX_ITEMS = maxItems || 1_000_000;
+
+		// Check array length eagerly
 		if (Array.isArray(value) && value.length > MAX_ITEMS) {
-			throw new Error(
-				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`
+			throw new QModelError(
+				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`,
+				{
+					className: _className,
+					propertyKey: _propertyKey,
+					value: 'TRUNCATED',
+					expectedType: `Small TypedArray (< ${MAX_ITEMS} items)`,
+				}
 			);
 		}
 
-		const arrayData = Array.isArray(value) ? value : Object.values(value);
+		// Handle object-like input (e.g. {0: 1, 1: 2})
+		let arrayData: unknown[];
+		if (Array.isArray(value)) {
+			arrayData = value;
+		} else {
+			// SECURITY: Check object size before iteration to prevent DoS
+			// Object.keys is slightly cheaper than Object.values (stores strings vs potentially complex objects)
+			const keys = Object.keys(value);
+			if (keys.length > MAX_ITEMS) {
+				throw new QModelError(
+					`${_className}.${_propertyKey}: TypedArray input object too large (> ${MAX_ITEMS} keys).`,
+					{
+						className: _className,
+						propertyKey: _propertyKey,
+						value: 'TRUNCATED',
+						expectedType: `Small TypedArray (< ${MAX_ITEMS} items)`,
+					}
+				);
+			}
+			arrayData = Object.values(value);
+		}
 
 		if (arrayData.length > MAX_ITEMS) {
-			throw new Error(
-				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`
+			throw new QModelError(
+				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`,
+				{
+					className: _className,
+					propertyKey: _propertyKey,
+					value: 'TRUNCATED',
+					expectedType: `Small TypedArray (< ${MAX_ITEMS} items)`,
+				}
 			);
 		}
 

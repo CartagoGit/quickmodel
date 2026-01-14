@@ -24,7 +24,7 @@ The deserializer explicitly prevents prototype pollution attacks by blocking mod
 - Interface conversion (ToInterfaceService) - Prevents polluted data from being re-serialized
 
 ### 2. Denial of Service (DoS) Prevention
-- **Buffer Allocation**: `ArrayBufferTransformer` enforces a maximum size limit to prevent memory exhaustion attacks.
+- **Buffer & TypedArray Safety**: `ArrayBufferTransformer` and `TypedArrayTransformer` enforce maximum size limits to prevent memory exhaustion attacks.
 - **RegExp Safety**: Enforces maximum pattern length (1000 chars) to mitigate Memory DoS. Note: Users must still sanitize user-provided regex patterns against complex algorithmic ReDoS.
 - **Large Array Protection**: **(New in v1.1.0)** Prevents Event Loop blocking via massive arrays.
   - Default limit: **10,000 items** per array (globally configurable).
