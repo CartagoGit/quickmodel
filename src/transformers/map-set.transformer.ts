@@ -170,6 +170,25 @@ export class MapTransformer<K = string, V = unknown>
 			);
 		}
 
+		// SECURITY: Prevent DoS via limit
+		const maxItems =
+			(_context?.metadata?.transformerOptions as { maxItems?: number })
+				?.maxItems || 1_000_000;
+
+		// Use Object.keys first to avoid creating potentially massive entries array if already too big
+		const keys = Object.keys(value);
+		if (keys.length > maxItems) {
+			throw new QModelError(
+				`${className}.${propertyKey}: Map input too large (> ${maxItems} items).`,
+				{
+					className,
+					propertyKey,
+					value: 'TRUNCATED',
+					expectedType: 'Map data',
+				}
+			);
+		}
+
 		// Filter unsafe keys for object input
 		const safeEntries = Object.entries(value).filter(
 			([k]) => !isUnsafeKey(k)

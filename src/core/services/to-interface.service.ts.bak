@@ -360,27 +360,13 @@ export class ToInterfaceService<
 			'__type' in originalValue &&
 			(originalValue as { __type: unknown }).__type === 'bigint'
 		) {
-			if (typeof currentValue === 'bigint') {
-				return currentValue.toString();
-			}
-
-			// Extract primitive value from wrapper objects
-			const primitiveValue =
-				typeof currentValue === 'object' &&
-				currentValue !== null &&
-				'valueOf' in currentValue
-					? currentValue.valueOf()
-					: currentValue;
-
-			try {
-				const bigintValue = BigInt(
-					primitiveValue as string | number | bigint | boolean
-				);
-				return bigintValue.toString();
-			} catch {
-				// If conversion fails, return string representation
-				return String(primitiveValue);
-			}
+			const bigintValue =
+				typeof currentValue === 'bigint'
+					? currentValue
+					: BigInt(
+							currentValue as string | number | bigint | boolean
+						);
+			return bigintValue.toString();
 		}
 
 		// 9. PLAIN OBJECTS: Recursively convert properties

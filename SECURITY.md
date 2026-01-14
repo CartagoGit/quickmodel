@@ -35,6 +35,7 @@ The deserializer explicitly prevents prototype pollution attacks by blocking mod
     - Configurable per-model via `@Quick({}, { maxArrayLength: 20000 })`.
 - **Large Object Protection**: **(New in v1.1.0)** Prevents memory exhaustion attacks via objects with excessive key counts.
     - Enforced limit: **50,000 properties** per object instance.
+- **Map/Set Pre-allocation Checks**: Transformers verify input size against limits (`maxItems`) *before* allocating memory or iterating keys, preventing CPU/Memory exhaustion from massive inputs even in legacy object-to-map conversion paths.
 
 ### 3. Circular Reference & Stack Overflow Handling
 
@@ -96,6 +97,10 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
 
 - **Cross-Site Scripting (XSS) Prevention**:
     - Documentation generation tools (`sync_docs`) escape HTML content to prevent Stored XSS in generated Markdown files.
+
+- **Code Injection Prevention**:
+    - Scaffolding tools (`create_model`, `json_to_model`) enforce strict regex validation on class names and safely escape all property keys/values to prevent malicious code injection into generated TypeScript files.
+    - **Test**: `tests/mcp/unit/code-injection.test.ts`.
 
 ### Core Library Security
 
