@@ -157,7 +157,7 @@ describe('Transformation: Coercion Strategy', () => {
 			// so they are not coerced simply by 'Map' type metadata.
 			// This matches current implementation limitations.
 			const valid = data.meta.get('valid');
-			expect(valid === true || valid === 'true').toBe(true);
+			expect(valid === true || (valid as unknown) === 'true').toBe(true);
 		});
 	});
 });
