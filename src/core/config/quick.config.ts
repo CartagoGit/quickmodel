@@ -1,7 +1,7 @@
 /**
  * Global configuration for QuickModel.
  */
-export interface IQuickModelConfig {
+export interface IQConfig {
 	/**
 	 * Default options applied to all models decorated with `@Quick`.
 	 * Can be overridden by individual `@Quick` decorators.
@@ -28,7 +28,7 @@ export interface IQuickModelConfig {
  * such as enabling Strict Mode globally.
  */
 export class QuickModelConfigService {
-	private config: IQuickModelConfig = {};
+	private config: IQConfig = {};
 
 	/**
 	 * Updates the global configuration.
@@ -44,7 +44,7 @@ export class QuickModelConfigService {
 	 * });
 	 * ```
 	 */
-	public configure(config: IQuickModelConfig): void {
+	public configure(config: IQConfig): void {
 		this.config = { ...this.config, ...config };
 	}
 
@@ -54,7 +54,7 @@ export class QuickModelConfigService {
 	 *
 	 * @returns The current configuration object.
 	 */
-	public get(): IQuickModelConfig {
+	public get(): IQConfig {
 		return this.config;
 	}
 }

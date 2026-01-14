@@ -51,7 +51,7 @@ export type {
 // Options
 export type { IQSerializationOptions } from './core/interfaces/serializer.interface';
 export type { IQMockType } from './core/services/mock-generator.service';
-export type { IQuickModelConfig } from './core/config/quick.config';
+export type { IQConfig } from './core/config/quick.config';
 
 // Transform Options
 export type { IQPropertyOptions } from './core/interfaces/transform-options.interface';
