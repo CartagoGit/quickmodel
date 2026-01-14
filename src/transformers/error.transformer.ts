@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
+import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQTransformContext,
 	IQValidationContext,
@@ -116,7 +117,7 @@ export class ErrorTransformer
 					`  - string (e.g., "TypeError: Invalid input" or "Error message")\\n` +
 					`  - object ({ message: string, name?: string, stack?: string })\\n` +
 					`  - Error instance\\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+					`Received: ${typeof value} = ${safeStringify(value)}`,
 				{
 					className,
 					propertyKey,

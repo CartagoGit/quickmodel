@@ -648,6 +648,16 @@ export function Quick<
 						continue;
 					}
 
+					// SECURITY: Do not auto-register properties that are actually methods on the prototype
+					// This prevents an attacker from overwriting methods by passing them in the data payload
+					const protoDesc = Object.getOwnPropertyDescriptor(
+						originalConstructor.prototype,
+						propertyKey
+					);
+					if (protoDesc && typeof protoDesc.value === 'function') {
+						continue;
+					}
+
 					// Register property without type (for primitives)
 					const decorator = QType();
 					decorator(originalConstructor.prototype, propertyKey);

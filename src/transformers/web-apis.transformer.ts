@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
+import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQValidationContext,
 	IQValidationResult,
@@ -39,7 +40,7 @@ export class URLTransformer
 				`${className}.${propertyKey}: URL transformer ONLY accepts:\n` +
 					`  - string (valid URL, e.g., "https://example.com/path?query=1")\n` +
 					`  - URL instance\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+					`Received: ${typeof value} = ${safeStringify(value)}`,
 				{
 					className,
 					propertyKey,
@@ -146,7 +147,7 @@ export class URLSearchParamsTransformer
 				`  - string (query format, e.g., "key=value&foo=bar")\n` +
 				`  - object (key-value pairs, e.g., { key: "value", foo: "bar" })\n` +
 				`  - URLSearchParams instance\n` +
-				`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				`Received: ${typeof value} = ${safeStringify(value)}`,
 			{
 				className,
 				propertyKey,
@@ -216,7 +217,7 @@ export class TextEncoderTransformer extends BaseTransformer<
 				`  - {} (empty object)\n` +
 				`  - TextEncoder instance\n` +
 				`Note: TextEncoder has no configuration, these values just create a new instance.\n` +
-				`Received: ${typeof value} = ${JSON.stringify(value)}`,
+				`Received: ${typeof value} = ${safeStringify(value)}`,
 			{
 				className,
 				propertyKey,

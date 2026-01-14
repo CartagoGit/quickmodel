@@ -115,6 +115,8 @@ export class PopulationService {
 			options.maxArrayLength ?? globalDefaults.maxArrayLength ?? 5000000;
 
 		for (const [key, value] of Object.entries(data)) {
+			if (key === 'save')
+				console.log('[POPULATE_DEBUG] Found save key in data');
 			// SECURITY: Prevent Prototype Pollution
 			if (
 				key === '__proto__' ||
@@ -131,7 +133,11 @@ export class PopulationService {
 			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
 			// Do not allow data to overwrite methods defined in the class prototype
 			if (
-				this.isMethodOnPrototype(Object.getPrototypeOf(instance), key)
+				this.isMethodOnPrototype(
+					Object.getPrototypeOf(instance),
+					key,
+					decoratedFields
+				)
 			) {
 				console.log(`[SECURITY] Skipped shadowing attempt for: ${key}`);
 				continue;
@@ -852,14 +858,29 @@ export class PopulationService {
 	 * Checks if a key corresponds to a method on the prototype chain.
 	 * Used to prevent Method Shadowing attacks where payload data overwrites methods.
 	 */
-	private isMethodOnPrototype(proto: any, key: string): boolean {
+	private isMethodOnPrototype(
+		proto: any,
+		key: string,
+		decoratedFields: string[] = []
+	): boolean {
+		// If the property is explicitly decorated as a data field, we trust it.
+		if (decoratedFields.includes(key)) {
+			return false;
+		}
+
 		let current = proto;
 		while (current && current !== Object.prototype) {
 			const descriptor = Object.getOwnPropertyDescriptor(current, key);
 			if (descriptor) {
-				// We only care about protecting methods (functions)
-				// Getters/Setters are safe to assign to (they will invoke the setter)
+				// Classic method definition
 				if (typeof descriptor.value === 'function') {
+					return true;
+				}
+				// Accessors (getters/setters)
+				if (
+					typeof descriptor.get === 'function' ||
+					typeof descriptor.set === 'function'
+				) {
 					return true;
 				}
 			}

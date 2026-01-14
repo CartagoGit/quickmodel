@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { IQMcpTool } from './tools/abstract-tool';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { safeStringify } from '../core/helpers/transform-helpers';
 
 import {
 	QListTransformersTool,
@@ -122,7 +123,7 @@ export class QMcpServer {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(result, null, 2),
+									text: safeStringify(result, 2),
 								},
 							],
 						};

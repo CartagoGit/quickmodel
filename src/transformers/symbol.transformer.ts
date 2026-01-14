@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
+import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQTransformContext,
 	IQValidationContext,
@@ -125,7 +126,7 @@ export class SymbolTransformer
 					`  - object ({ __type: "symbol", description: "mySymbol" })\\n` +
 					`  - symbol instance\\n` +
 					`Note: Uses Symbol.for() to create global symbols.\\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+					`Received: ${typeof value} = ${safeStringify(value)}`,
 				{
 					className,
 					propertyKey,

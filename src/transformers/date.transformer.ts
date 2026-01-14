@@ -1,5 +1,6 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
+import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQTransformContext,
 	IQValidationContext,
@@ -70,7 +71,7 @@ export class DateTransformer
 					`  - string (ISO 8601 format, e.g., "2024-01-08T10:30:00Z")\n` +
 					`  - number (Unix timestamp in milliseconds, e.g., 1704710400000)\n` +
 					`  - Date instance\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+					`Received: ${typeof value} = ${safeStringify(value)}`,
 				{
 					className,
 					propertyKey,
@@ -95,7 +96,7 @@ export class DateTransformer
 					`Expected:\n` +
 					`  - ISO 8601 string: "2024-01-08T10:30:00.000Z"\n` +
 					`  - Unix timestamp (ms): 1704710400000\n` +
-					`Received: ${typeof value} = ${JSON.stringify(value)}`,
+					`Received: ${typeof value} = ${safeStringify(value)}`,
 				{
 					className,
 					propertyKey,
