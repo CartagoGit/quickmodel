@@ -202,7 +202,8 @@ export class PopulationService {
 				modelClass.name
 			);
 
-			// If property is NOT decorated with @QType(), copy as-is (but validate type first)
+			// If property is NOT decorated with @QType(), transform by design type
+			// This allows __type polymorphism for generic fields (Object/any)
 			if (!decoratedFields.includes(key)) {
 				// Validation: Check if value matches the design type (primitives only)
 				const expectedType = designTypes[key];
@@ -215,7 +216,17 @@ export class PopulationService {
 					);
 				}
 
-				instance[key] = value;
+				// Transform by design type (handles __type polymorphism for generic fields)
+				const transformContext: IQTransformContext = {
+					propertyKey: key,
+					className: modelClass.name,
+				};
+				instance[key] = this.valueTransformer.transformByDesignType(
+					value,
+					expectedType,
+					transformContext,
+					recursionContext
+				);
 				continue;
 			}
 
