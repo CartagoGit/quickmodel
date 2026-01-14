@@ -469,6 +469,9 @@ QuickModel includes built-in protections for robust serialization:
 - **Circular Reference Protection**: `toJSON()` calls safely handle circular references in Objects, Arrays, Maps, and Sets by returning a `{ __circular: true }` marker instead of crashing.
 - **Deep Serialization**: Collections like `Map` and `Set` are IQSerialized recursively, ensuring that nested complex types (like `BigInt` or `Date`) are properly converted to their JSON-compatible formats.
 - **Internal Property Protection**: Properties starting with `__` are automatically excluded from serialization to prevent leaking internal state.
+- **Injection Protection**: Automatic validation for URLs (blocks `javascript:`) and limits on RegExp length.
+
+> ⚠️ **Security Notice**: QuickModel operates in **Permissive Mode** by default (unknown properties are preserved). For public APIs, enable strict mode: `@Quick({}, { strict: true })`. See [SECURITY.md](SECURITY.md) for details.
 
 ## ✅ Validation
 

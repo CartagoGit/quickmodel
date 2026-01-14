@@ -35,30 +35,32 @@ describe('ValueTransformerService Gaps', () => {
 		});
 		expect(resPrim).toEqual([1, null, 2]);
 
-		// Model Array: Filters nulls (Current Implementation Behavior)
+		// Model Array: NOW Preserves nulls too (Security Fix)
 		const modelArr = [{ type: 'A' }, null, { type: 'B' }];
 		const resModel = service.transformNestedModelArray(modelArr, [
 			ChildA,
 			ChildB,
 		]);
-		expect(resModel).toHaveLength(2);
+		expect(resModel).toHaveLength(3);
 		expect(resModel[0]).toBeInstanceOf(ChildA);
-		expect(resModel[1]).toBeInstanceOf(ChildA); // Default to first type if no discriminator
+		expect(resModel[1]).toBeNull();
+		expect(resModel[2]).toBeInstanceOf(ChildA); // Default to first type if no discriminator
 	});
 
-	it('should handle runtime error in discriminator function by falling back', () => {
+	it('should handle runtime error in discriminator function by THROWING (Security Fix)', () => {
 		const arr = [{ type: 'B' }];
 		const discriminator = () => {
 			throw new Error('Boom');
 		};
 
-		const res = service.transformNestedModelArray(
-			arr,
-			[ChildA, ChildB], // ChildA is default
-			discriminator
-		);
-
-		expect(res[0]).toBeInstanceOf(ChildA); // Fallback to first
+		// Should NOT fallback, should throw
+		expect(() => {
+			service.transformNestedModelArray(
+				arr,
+				[ChildA, ChildB], 
+				discriminator
+			);
+		}).toThrow('Boom');
 	});
 
 	it('should match case-insensitive string discriminators', () => {

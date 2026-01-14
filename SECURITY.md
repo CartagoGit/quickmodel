@@ -42,9 +42,20 @@ The deserializer explicitly prevents prototype pollution attacks by blocking mod
 - **Circular References**: QuickModel detects circular references during serialization and conversion to interface format to prevent crashes.
 - **Recursion Limits**: Strict maximum recursion depth (512 levels) is enforced in all traversal operations (`serialize`, `deserialize`, `toInterface`, `deepFreeze`) to prevent Stack Overflow attacks.
 
-### 4. Input Validation
+### 4. Input Validation & Injection Prevention
 
 Transformers validate inputs strictly. The `validate()` method allows you to verify that deserialized data matches the expected schema before processing it.
+
+**URL Injection Protection (v1.0.1+):**
+The `URLTransformer` now validates protocols to prevent unsafe schemes like `javascript:` or `file:`.
+- **Allowed by default:** `http:`, `https:`, `ftp:`, `ws:`, `wss:`
+- **Blocked:** `javascript:`, `file:`, `data:`, `vbscript:`
+- Use `transformerOptions.allowedProtocols` to customize.
+
+**RegExp Safety (ReDoS):**
+We limit input length to 1000 chars, but **do NOT validates algorithmic complexity**.
+:warning: **Risk:** An attacker could supply a short but "evil" regex (e.g., `(a+)+`) that causes catastrophic backtracking.
+**Advice:** Do not allow untrusted users to supply RegExp strings if your application uses them to match against large inputs.
 
 ### 5. Mass Assignment Protection
 
@@ -53,7 +64,21 @@ QuickModel provides protections against Mass Assignment attacks:
 - **Method Shadowing Prevention**: Automatically prevents incoming JSON payloads from overwriting class methods.
 - **Strict Mode**: When enabled via `@Quick({ strict: true })`, any property in the payload that is not defined in the model is rejected.
 
-### 6. Safe Error Reporting
+:warning: **IMPORTANT DEFAULT**: Strict mode is **DISABLED by default**.
+Properties present in the JSON but not in the model **will be copied** to the instance unless strict mode is enabled.
+**Recommendation:** Always enable strict mode for public-facing API models:
+```typescript
+@Quick({}, { strict: true })
+class User extends QModel<IUser> { ... }
+```
+
+### 6. Type Confusion & Polymorphism Safety
+
+**Discriminator Integrity (v1.0.1+):**
+- **Fail Secure**: If a discriminator function throws an error (e.g. malformed data), the library will **propagate the error** instead of silently falling back to a default type.
+- **Null Safety**: When deserializing arrays of models (`[User]`), `null` or `undefined` values are now **preserved** (`[User, null]`) instead of being filtered out, ensuring index integrity and preventing logic errors.
+
+### 7. Safe Error Reporting
 
 Internal error handlers allow secure logging of malformed data without crashing the process, even when the data contains circular references that would typically cause `JSON.stringify` to throw.
 

@@ -98,12 +98,9 @@ export class ValueTransformerService {
 			);
 		}
 
-		// Filter nulls/undefined for models
-		const validItems = value.filter(
-			(item) => item !== null && item !== undefined
-		);
+		return value.map((item) => {
+			if (item === null || item === undefined) return item;
 
-		return validItems.map((item) => {
 			if (Array.isArray(item)) {
 				return this.transformNestedModelArray(
 					item,
@@ -120,14 +117,12 @@ export class ValueTransformerService {
 			// Handle polymorphism via discriminator
 			if (discriminatorConfig && possibleTypes.length > 0) {
 				if (typeof discriminatorConfig === 'function') {
-					try {
-						const result = discriminatorConfig(item);
-						if (result) {
-							targetClass = result as new (data: any) => any;
-							matchFound = true;
-						}
-					} catch (_) {
-						// Ignore error, use default
+					// SECURITY: Fail Secure - If discriminator fails, we must NOT use a default type blindly
+					// We let the error propagate so the application knows something is wrong
+					const result = discriminatorConfig(item);
+					if (result) {
+						targetClass = result as new (data: any) => any;
+						matchFound = true;
 					}
 				} else if (typeof discriminatorConfig === 'string') {
 					// Handle simple string case: discriminatorConfig is the field name

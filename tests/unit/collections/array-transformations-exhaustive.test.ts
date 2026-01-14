@@ -493,10 +493,11 @@ describe('Array Transformations - Exhaustive Tests', () => {
 				],
 			});
 
-			// Null values should be filtered out
-			expect(user.posts).toHaveLength(2);
+			// Null values should be PRESERVED (Security Fix)
+			expect(user.posts).toHaveLength(3);
 			expect(user.posts[0]!.id).toBe(1);
-			expect(user.posts[1]!.id).toBe(2);
+			expect(user.posts[1]).toBeNull();
+			expect(user.posts[2]!.id).toBe(2);
 		});
 	});
 

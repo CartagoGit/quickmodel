@@ -51,14 +51,32 @@ export class URLTransformer
 		}
 
 		try {
-			return new URL(value);
+			const url = new URL(value);
+			// SECURITY: Protocol Validation
+			// Block dangerous protocols (javascript:, file:, data:, vbscript:)
+			const ALLOWED_PROTOCOLS = ['http:', 'https:', 'ftp:', 'ws:', 'wss:'];
+			
+			// Allow custom protocols if explicitly configured (future proofing)
+			const allowed = (
+				_context?.metadata?.transformerOptions as {
+					allowedProtocols?: string[];
+				}
+			)?.allowedProtocols || ALLOWED_PROTOCOLS;
+
+			if (!allowed.includes(url.protocol)) {
+				throw new Error(
+					`Protocol '${url.protocol}' is not allowed. Allowed: ${allowed.join(', ')}`
+				);
+			}
+
+			return url;
 		} catch (error) {
 			const errorMsg =
 				error instanceof Error ? error.message : String(error);
 			throw new QModelError(
 				`${className}.${propertyKey}: Invalid URL string "${value}".\n` +
 					`Error: ${errorMsg}\n` +
-					`Expected: Valid URL with protocol (e.g., "https://example.com/path")`,
+					`Expected: Valid URL with allowed protocol (http, https)`,
 				{
 					className,
 					propertyKey,
