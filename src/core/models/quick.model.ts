@@ -620,13 +620,16 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
-	 * INTERNAL: Handles TypeScript/ES2022 class initialization order.
+	 * **INTERNAL LIFECYCLE METHOD**
 	 *
-	 * When using `class User extends QModel { name = 'Default' }`, the property initializer
-	 * runs AFTER super() (QModel constructor), overwriting the deserialized value.
+	 * Handles a specific quirk of TypeScript/ES2022 class initialization order where
+	 * property initializers (e.g. `name = 'Default'`) run **after** the `super()` constructor calls.
 	 *
-	 * This method is called by the `@Quick` decorator wrapper to restore values from the
-	 * backup storage, effectively making "input data wins over default initializers".
+	 * This behavior effectively overwrites any data deserialized in the parent `QModel` constructor.
+	 * This method is called by the `@Quick` decorator wrapper immediately after the subclass
+	 * has finished initializing, to "re-apply" the correct deserialized values from the backup storage.
+	 *
+	 * Uses a `Symbol` key to remain hidden from the public API and autocompletion.
 	 *
 	 * @internal
 	 */
