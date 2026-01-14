@@ -97,7 +97,7 @@ Optimizations and debugging tools.
 - [x] **`exposeUnsetFields`**
     - **Type**: `boolean`
     - **Description**: Controls if optional fields without values appear as `key: null/undefined` in the output JSON.
-    - **Test File**: `tests/unit/core/config/system-expose-unset.test.ts` (Pending creation)
+    - **Test File**: `tests/unit/core/config/system-expose-unset.test.ts`
 
 - [x] **`performance`**
     - **Type**: `{ disableSafetyChecks?: boolean }`
