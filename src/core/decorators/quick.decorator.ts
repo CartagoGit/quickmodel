@@ -208,7 +208,7 @@ export type { IQOptions } from '../interfaces/quick.interface';
  * ```
  *
  * @example
- * **✅ Dot notation for nested properties (see [Dot Notation Guide](../../../docs/DOT-NOTATION.md)):**
+ * **✅ Dot notation for nested properties:**
  * ```typescript
  * // Option 1: Decorate nested class (recommended for reusable models)
  * @Quick({ price: BigInt, createdAt: Date })

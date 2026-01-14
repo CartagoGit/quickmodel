@@ -3,8 +3,8 @@
  */
 export interface IQuickModelConfig {
 	/**
-	 * Default options applied to all models decorated with @Quick.
-	 * Can be overridden by individual @Quick decorators.
+	 * Default options applied to all models decorated with `@Quick`.
+	 * Can be overridden by individual `@Quick` decorators.
 	 */
 	defaults?: {
 		/**
@@ -27,7 +27,7 @@ export interface IQuickModelConfig {
  * Allows setting default behaviors for the entire application,
  * such as enabling Strict Mode globally.
  */
-class QuickModelConfigService {
+export class QuickModelConfigService {
 	private config: IQuickModelConfig = {};
 
 	/**

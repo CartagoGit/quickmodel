@@ -9,3 +9,4 @@
 
 export { QMockGenerator } from './core/services/mock-generator.service';
 export { QTransformerRegistry } from './core/registry/transformer.registry';
+export { QuickModelConfigService } from './core/config/quick.config';
