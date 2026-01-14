@@ -6,6 +6,7 @@ import {
 import { TransformerLookupService } from './transformer-lookup.service';
 import { IQDiscriminatorConfig } from '../interfaces/quick-options.interface';
 import { Logger } from '../helpers/logger.helper';
+import { QModelError } from '../errors/quickmodel.error';
 
 // Interface to avoid circular dependency
 export interface IRecursiveDeserializer {
@@ -369,6 +370,79 @@ export class ValueTransformerService {
 			}
 		}
 
+
 		return undefined;
+	}
+
+	public validateOrCoercePrimitive(
+		key: string,
+		value: unknown,
+		expectedType: unknown,
+		className: string,
+		strategy: 'strict' | 'loose'
+	): unknown {
+		if (value === null || value === undefined) return value;
+
+		if (expectedType === Number) {
+			if (typeof value === 'number') return value;
+
+			if (strategy === 'loose') {
+				const coerced = Number(value);
+				if (!isNaN(coerced)) return coerced;
+			}
+
+			throw new QModelError(
+				`${className}.${key}: Expected number, got ${typeof value}`,
+				{
+					className,
+					propertyKey: key,
+					value,
+					expectedType: 'number',
+				}
+			);
+		} else if (expectedType === String) {
+			if (typeof value === 'string') return value;
+
+			if (strategy === 'loose') {
+				if (
+					typeof value === 'number' ||
+					typeof value === 'boolean' ||
+					typeof value === 'bigint'
+				) {
+					return String(value);
+				}
+			}
+
+			throw new QModelError(
+				`${className}.${key}: Expected string, got ${typeof value}`,
+				{
+					className,
+					propertyKey: key,
+					value,
+					expectedType: 'string',
+				}
+			);
+		} else if (expectedType === Boolean) {
+			if (typeof value === 'boolean') return value;
+
+			if (strategy === 'loose') {
+				if (value === 'true') return true;
+				if (value === 'false') return false;
+				if (value === 1) return true;
+				if (value === 0) return false;
+			}
+
+			throw new QModelError(
+				`${className}.${key}: Expected boolean, got ${typeof value}`,
+				{
+					className,
+					propertyKey: key,
+					value,
+					expectedType: 'boolean',
+				}
+			);
+		}
+
+		return value;
 	}
 }

@@ -223,12 +223,16 @@ export class ValidationService {
 			? modelClass.name
 			: instance.constructor.name;
 
-        // Configuration
-        const configClass = modelClass || instance.constructor;
-        const localOptions = Reflect.getMetadata(QUICK_OPTIONS_KEY, configClass) || {};
-        const globalDefaults = QConfig.get().defaults || {};
-        const strategy = localOptions.validationErrorStrategy || globalDefaults.validationErrorStrategy || 'accumulate';
-        const failFast = strategy === 'failFast';
+		// Configuration
+		const configClass = modelClass || instance.constructor;
+		const localOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, configClass) || {};
+		const globalDefaults = QConfig.get().defaults || {};
+		const strategy =
+			localOptions.validationErrorStrategy ||
+			globalDefaults.validationErrorStrategy ||
+			'accumulate';
+		const failFast = strategy === 'failFast';
 
 		// Get list of properties decorated with @QType() (or implicit via @Quick)
 		// These are the fields we know how to validate
@@ -270,7 +274,7 @@ export class ValidationService {
 						const result = validator.validate(value, context);
 						if (!result.isValid) {
 							results.push(result);
-                            if (failFast) return results;
+							if (failFast) return results;
 						}
 					} catch (error) {
 						// Catch errors during validation to prevent crash
@@ -278,7 +282,7 @@ export class ValidationService {
 							isValid: false,
 							error: `Validation error for ${className}.${key}: ${error instanceof Error ? error.message : String(error)}`,
 						});
-                         if (failFast) return results;
+						if (failFast) return results;
 					}
 				}
 			}
@@ -306,7 +310,9 @@ export class ValidationService {
 								results.push({
 									isValid: false,
 									error: `${key}.${err.error ? err.error.replace(/^\w+\./, '') : 'Invalid'}`,
-								});                                if (failFast) return results;							}
+								});
+								if (failFast) return results;
+							}
 						}
 					} catch (e) {
 						// Ignore validation errors in child to prevent crash
