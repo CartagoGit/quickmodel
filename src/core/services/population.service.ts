@@ -16,15 +16,17 @@ import { QModelError } from '../errors/quickmodel.error';
 import { TransformerLookupService } from './transformer-lookup.service';
 import { IQTransformContext } from '../interfaces/transformer.interface';
 import { QTransformerRegistry } from '../registry/transformer.registry';
+import { SecurityInspector } from './security-inspector.service';
+import { ObjectSizeValidator } from './object-size-validator.service';
+import { RecursionGuard } from './recursion-guard.service';
 
 /**
  * Service responsible for populating an instance with data.
  */
 export class PopulationService {
-	private static readonly templateCache = new WeakMap<
-		Function,
-		Record<string, unknown> | null
-	>();
+	private readonly securityInspector = new SecurityInspector();
+	private readonly sizeValidator = new ObjectSizeValidator();
+	private readonly recursionGuard = new RecursionGuard();
 
 	constructor(
 		private readonly valueTransformer: ValueTransformerService,
@@ -35,36 +37,12 @@ export class PopulationService {
 	/**
 	 * Gets a template instance of the model to inspect default values/methods.
 	 * Used for intrinsic security checks.
+	 * @deprecated Use securityInspector.getTemplateInstance() directly
 	 */
 	private getTemplateInstance(
 		modelClass: Function
 	): Record<string, unknown> | null {
-		if (PopulationService.templateCache.has(modelClass)) {
-			return PopulationService.templateCache.get(modelClass) || null;
-		}
-
-		try {
-			let instance: unknown;
-			try {
-				// 1. Try to instantiate with no arguments
-				instance = new (modelClass as new () => unknown)();
-			} catch {
-				// 2. Retry with empty object (common pattern for strict constructors)
-				instance = new (modelClass as unknown as new (
-					d: unknown
-				) => unknown)({});
-			}
-
-			const record = instance as Record<string, unknown>;
-			PopulationService.templateCache.set(modelClass, record);
-			return record;
-		} catch {
-			// If constructor still throws (e.g. requires specific shape), we can't inspect it
-			// We log a debug warning because this reduces security guarantees for arrow functions
-			// console.debug(`[QuickModel] Could not instantiate template for ${modelClass.name} - Arrow function protection disabled for this model.`);
-			PopulationService.templateCache.set(modelClass, null);
-			return null;
-		}
+		return this.securityInspector.getTemplateInstance(modelClass);
 	}
 
 	/**
@@ -80,24 +58,15 @@ export class PopulationService {
 
 		// Recursion Limits check
 		const currentDepth = context?.depth || 0;
-		if (currentDepth > 512) {
-			throw new Error(
-				`QuickModel Security: Maximum recursion depth (512) exceeded during population.`
-			);
+		this.recursionGuard.validateDepth(currentDepth);
+
+		// Circular reference detection
+		if (this.recursionGuard.hasCircularReference(data, visited)) {
+			// Prevent infinite recursion on circular structures
+			return;
 		}
 
-		if (typeof data === 'object' && data !== null) {
-			if (visited.has(data)) {
-				// Prevent infinite recursion on circular structures
-				// Just stop populating this instance to avoid stack overflow
-				return;
-			}
-			visited.add(data);
-		}
-		const recursionContext = {
-			visited,
-			depth: currentDepth + 1,
-		};
+		const recursionContext = this.recursionGuard.createContext(context);
 
 		// Get list of properties decorated with @QType()
 		const decoratedFields =
@@ -132,27 +101,16 @@ export class PopulationService {
 			options.maxArrayLength ?? globalDefaults.maxArrayLength ?? 5000000;
 
 		// SECURITY: Prevent Stack Overflow via Deep Recursion
-		if (recursionContext.depth > 512) {
-			throw new Error(
-				`QuickModel Security: Maximum recursion depth (512) exceeded during population.`
-			);
-		}
+		this.recursionGuard.validateDepth(recursionContext.depth);
 
 		// SECURITY: Prevent Memory Exhaustion via Massive Objects
-		// While JS objects can handle millions of keys, processing them recursively allows DoS.
-		// We limit the number of properties processed per object instance.
 		const PROPS_LIMIT = 50000;
 		const keys = Object.keys(data);
-		if (keys.length > PROPS_LIMIT) {
-			throw new QModelError(
-				`QuickModel Security: Input object has too many properties (${keys.length}). Limit is ${PROPS_LIMIT}.`,
-				{
-					className: modelClass.name,
-					propertyKey: '<root>',
-					value: 'TRUNCATED',
-				}
-			);
-		}
+		this.sizeValidator.validateObjectSize(
+			keys,
+			PROPS_LIMIT,
+			modelClass.name
+		);
 
 		for (const key of keys) {
 			const value = data[key];
@@ -167,22 +125,13 @@ export class PopulationService {
 			}
 
 			// SECURITY: Prevent Prototype Pollution
-			if (
-				key === '__proto__' ||
-				key === 'constructor' ||
-				key === 'prototype' ||
-				key === '__defineGetter__' ||
-				key === '__defineSetter__' ||
-				key === '__lookupGetter__' ||
-				key === '__lookupSetter__'
-			) {
+			if (this.securityInspector.isDangerousKey(key)) {
 				continue;
 			}
 
 			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
-			// Do not allow data to overwrite methods defined in the class prototype
 			if (
-				this.isMethodOnPrototype(
+				this.securityInspector.isMethodOnPrototype(
 					Object.getPrototypeOf(instance),
 					key,
 					decoratedFields
@@ -208,22 +157,13 @@ export class PopulationService {
 			}
 
 			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
-			// Intrinsic check: Inspect a template instance to see if this property is supposed to be a function
-			// We only block UNDECORATED properties. If the user explicitly decorated it (e.g. @QType(Function)),
-			// we assume they know what they are doing.
-			let template = this.getTemplateInstance(modelClass);
-
-			// Fallback: If instantiation failed (e.g. strict constructor), inspect prototype
-			if (!template && modelClass.prototype) {
-				template = modelClass.prototype as Record<string, unknown>;
-			}
-
-			// Using 'in' operator to check prototype chain if direct access fails or returns undefined
+			const template = this.getTemplateInstance(modelClass);
 			if (
-				template &&
-				key in template &&
-				typeof (template as any)[key] === 'function' &&
-				!decoratedFields.includes(key)
+				this.securityInspector.isArrowFunctionMethod(
+					key,
+					template,
+					decoratedFields
+				)
 			) {
 				if (isStrict) {
 					throw new QModelError(
@@ -246,40 +186,21 @@ export class PopulationService {
 			}
 
 			// DoS Protection: Check Array Length
-			if (Array.isArray(value) && value.length > maxArrayLength) {
-				throw new QModelError(
-					`Security: Array '${key}' length (${value.length}) exceeds maximum allowed limit (${maxArrayLength}).`,
-					{
-						className: modelClass.name,
-						propertyKey: key,
-						value: 'TRUNCATED',
-					}
+			if (Array.isArray(value)) {
+				this.sizeValidator.validateArraySize(
+					key,
+					value,
+					maxArrayLength,
+					modelClass.name
 				);
 			}
 
-			// DoS Protection: Check nested object size (for plain objects, not models)
-			if (
-				value &&
-				typeof value === 'object' &&
-				!Array.isArray(value) &&
-				!(value instanceof Date) &&
-				!(value instanceof RegExp) &&
-				!(value instanceof Map) &&
-				!(value instanceof Set)
-			) {
-				const nestedKeys = Object.keys(value);
-				const PROPS_LIMIT = 50000;
-				if (nestedKeys.length > PROPS_LIMIT) {
-					throw new QModelError(
-						`Security: Nested object '${key}' has too many properties (${nestedKeys.length}). Limit is ${PROPS_LIMIT}.`,
-						{
-							className: modelClass.name,
-							propertyKey: key,
-							value: 'TRUNCATED',
-						}
-					);
-				}
-			}
+			// DoS Protection: Check nested object size
+			this.sizeValidator.validateNestedObjectSize(
+				key,
+				value,
+				modelClass.name
+			);
 
 			// If property is NOT decorated with @QType(), copy as-is (but validate type first)
 			if (!decoratedFields.includes(key)) {
