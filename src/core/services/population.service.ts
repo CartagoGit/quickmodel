@@ -44,15 +44,24 @@ export class PopulationService {
 		}
 
 		try {
-			// Try to instantiate with no arguments
-			// QModel constructor handles undefined data gracefully (skips init)
-			// This allows field initializers to run
-			const instance = new (modelClass as new () => unknown)();
+			let instance: unknown;
+			try {
+				// 1. Try to instantiate with no arguments
+				instance = new (modelClass as new () => unknown)();
+			} catch {
+				// 2. Retry with empty object (common pattern for strict constructors)
+				instance = new (modelClass as unknown as new (
+					d: unknown
+				) => unknown)({});
+			}
+
 			const record = instance as Record<string, unknown>;
 			PopulationService.templateCache.set(modelClass, record);
 			return record;
 		} catch {
-			// If constructor throws (e.g. strict validation), we can't inspect it
+			// If constructor still throws (e.g. requires specific shape), we can't inspect it
+			// We log a debug warning because this reduces security guarantees for arrow functions
+			// console.debug(`[QuickModel] Could not instantiate template for ${modelClass.name} - Arrow function protection disabled for this model.`);
 			PopulationService.templateCache.set(modelClass, null);
 			return null;
 		}
@@ -69,6 +78,14 @@ export class PopulationService {
 	): void {
 		const visited = context?.visited || new WeakSet();
 
+		// Recursion Limits check
+		const currentDepth = context?.depth || 0;
+		if (currentDepth > 512) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (512) exceeded during population.`
+			);
+		}
+
 		if (typeof data === 'object' && data !== null) {
 			if (visited.has(data)) {
 				// Prevent infinite recursion on circular structures
@@ -79,7 +96,7 @@ export class PopulationService {
 		}
 		const recursionContext = {
 			visited,
-			depth: (context?.depth || 0) + 1,
+			depth: currentDepth + 1,
 		};
 
 		// Get list of properties decorated with @QType()
@@ -114,9 +131,41 @@ export class PopulationService {
 		const maxArrayLength =
 			options.maxArrayLength ?? globalDefaults.maxArrayLength ?? 5000000;
 
-		for (const [key, value] of Object.entries(data)) {
+		// SECURITY: Prevent Stack Overflow via Deep Recursion
+		if (recursionContext.depth > 512) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (512) exceeded during population.`
+			);
+		}
+
+		// SECURITY: Prevent Memory Exhaustion via Massive Objects
+		// While JS objects can handle millions of keys, processing them recursively allows DoS.
+		// We limit the number of properties processed per object instance.
+		const PROPS_LIMIT = 50000;
+		const keys = Object.keys(data);
+		if (keys.length > PROPS_LIMIT) {
+			throw new QModelError(
+				`QuickModel Security: Input object has too many properties (${keys.length}). Limit is ${PROPS_LIMIT}.`,
+				{
+					className: modelClass.name,
+					propertyKey: '<root>',
+					value: 'TRUNCATED',
+				}
+			);
+		}
+
+		for (const key of keys) {
+			const value = data[key];
 			if (key === 'save')
 				console.log('[POPULATE_DEBUG] Found save key in data');
+
+			// DEBUG
+			if (key === 'save') {
+				console.log(
+					`[DEBUG] decoratedFields: ${JSON.stringify(decoratedFields)}`
+				);
+			}
+
 			// SECURITY: Prevent Prototype Pollution
 			if (
 				key === '__proto__' ||
@@ -206,6 +255,30 @@ export class PopulationService {
 						value: 'TRUNCATED',
 					}
 				);
+			}
+
+			// DoS Protection: Check nested object size (for plain objects, not models)
+			if (
+				value &&
+				typeof value === 'object' &&
+				!Array.isArray(value) &&
+				!(value instanceof Date) &&
+				!(value instanceof RegExp) &&
+				!(value instanceof Map) &&
+				!(value instanceof Set)
+			) {
+				const nestedKeys = Object.keys(value);
+				const PROPS_LIMIT = 50000;
+				if (nestedKeys.length > PROPS_LIMIT) {
+					throw new QModelError(
+						`Security: Nested object '${key}' has too many properties (${nestedKeys.length}). Limit is ${PROPS_LIMIT}.`,
+						{
+							className: modelClass.name,
+							propertyKey: key,
+							value: 'TRUNCATED',
+						}
+					);
+				}
 			}
 
 			// If property is NOT decorated with @QType(), copy as-is (but validate type first)
@@ -579,7 +652,11 @@ export class PopulationService {
 					value !== null &&
 					!Array.isArray(value)
 				) {
-					instance[key] = new arrayElementClass(value);
+					instance[key] = this.recursiveDeserializer.deserialize(
+						value as Record<string, unknown>,
+						arrayElementClass,
+						recursionContext
+					);
 					continue;
 				}
 			}

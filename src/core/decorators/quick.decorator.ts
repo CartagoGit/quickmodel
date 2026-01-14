@@ -579,92 +579,13 @@ export function Quick<
 			};
 
 		// Wrap constructor to handle TypeScript field initialization shadowing
-		// AND register properties not specified in typeMap (for @Quick() without typeMap)
 		const originalConstructor = target;
-		let propertiesRegistered = false;
 
 		const wrappedConstructor: Function = function (
 			this: Record<string, unknown>,
 			...args: unknown[]
 		) {
 			const data = args[0];
-
-			// STRICT MODE INTERVENTION
-			// If strict mode is enabled, we MUST NOT auto-register properties from the first data instance.
-			// Strict mode requires explicit definition of the schema (via @Quick or @QType).
-			const options = Reflect.getMetadata(
-				QUICK_OPTIONS_KEY,
-				originalConstructor
-			);
-			if (options?.strict === true) {
-				propertiesRegistered = true; // Prevents the auto-registration block below from running
-			}
-
-			// Register properties NOT in typeMap on first instantiation
-			// This allows @Quick() without typeMap to work with primitives
-			// BUT: If strict mode is enabled, we should NOT auto-register unknown properties
-			// because we want the deserializer to reject them.
-			// Robustness Upgrade: Auto-Registration now works WITH Strict Mode
-			// This allows "First usage defines schema" pattern.
-			// The first instance defines the allowed keys. Subsequent instances with extra keys will fail.
-
-			if (
-				!propertiesRegistered &&
-				!propertiesRegistered &&
-				data &&
-				typeof data === 'object' &&
-				!Array.isArray(data)
-			) {
-				const typeMapFromMetadata =
-					Reflect.getMetadata(
-						QUICK_TYPE_MAP_KEY,
-						originalConstructor
-					) || {};
-				const dataProperties = Object.keys(data);
-
-				// Only register properties that are NOT already in typeMap
-				for (const propertyKey of dataProperties) {
-					// Skip if already registered (from typeMap in decorator)
-					if (propertyKey in typeMapFromMetadata) {
-						continue;
-					}
-
-					// Check if property already has metadata
-					const existingFieldType = Reflect.getMetadata(
-						'fieldType',
-						originalConstructor.prototype,
-						propertyKey
-					);
-					const existingArrayClass = Reflect.getMetadata(
-						'arrayElementClass',
-						originalConstructor.prototype,
-						propertyKey
-					);
-
-					if (
-						existingFieldType !== undefined ||
-						existingArrayClass !== undefined
-					) {
-						continue;
-					}
-
-					// SECURITY: Do not auto-register properties that are actually methods on the prototype
-					// This prevents an attacker from overwriting methods by passing them in the data payload
-					const protoDesc = Object.getOwnPropertyDescriptor(
-						originalConstructor.prototype,
-						propertyKey
-					);
-					if (protoDesc && typeof protoDesc.value === 'function') {
-						continue;
-					}
-
-					// Register property without type (for primitives)
-					const decorator = QType();
-					decorator(originalConstructor.prototype, propertyKey);
-				}
-			}
-
-			propertiesRegistered = true;
 
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
 			// FIX: Use new.target to propagate inheritance chain correctly (e.g. when Child extends Parent decorated with @Quick)

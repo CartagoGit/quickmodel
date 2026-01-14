@@ -261,18 +261,26 @@ export class ValueTransformerService {
 			return value;
 		}
 
-		// Check for __type marker FIRST (highest priority)
-		const detectedTransformer = this.detectTransformerFromValue(value);
-		if (detectedTransformer) {
-			return detectedTransformer.deserialize(
-				value,
-				context.propertyKey,
-				context.className,
-				context
-			);
+		// SECURITY: Type Confusion Prevention
+		// Only allow __type polymorphism if the target type is generic (Object/any/undefined).
+		// If a strict type (e.g. Number, Date) is defined, we must enforce it and not allow
+		// overriding it with a different type via metadata.
+		const isGenericType = !designType || designType === Object;
+
+		if (isGenericType) {
+			// Check for __type marker (polymorphism support for generic fields)
+			const detectedTransformer = this.detectTransformerFromValue(value);
+			if (detectedTransformer) {
+				return detectedTransformer.deserialize(
+					value,
+					context.propertyKey,
+					context.className,
+					context
+				);
+			}
 		}
 
-		// If no designType, return value as-is
+		// If no designType (and no detected transformer), return value as-is
 		if (!designType) {
 			return value;
 		}

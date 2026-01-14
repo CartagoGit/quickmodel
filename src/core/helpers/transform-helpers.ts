@@ -21,7 +21,17 @@
 /**
  * Deep freezes an object.
  */
-export function deepFreeze<T>(obj: T, visited = new WeakSet<any>()): T {
+export function deepFreeze<T>(
+	obj: T,
+	visited = new WeakSet<any>(),
+	depth = 0
+): T {
+	if (depth > 512) {
+		throw new Error(
+			`QuickModel Security: Maximum recursion depth (512) exceeded during deepFreeze.`
+		);
+	}
+
 	if (obj && typeof obj === 'object') {
 		if (visited.has(obj)) {
 			return obj;
@@ -32,7 +42,7 @@ export function deepFreeze<T>(obj: T, visited = new WeakSet<any>()): T {
 		for (const name of propNames) {
 			const value = (obj as any)[name];
 			if (value && typeof value === 'object') {
-				deepFreeze(value, visited);
+				deepFreeze(value, visited, depth + 1);
 			}
 		}
 		return Object.freeze(obj);
