@@ -54,14 +54,21 @@ export class URLTransformer
 			const url = new URL(value);
 			// SECURITY: Protocol Validation
 			// Block dangerous protocols (javascript:, file:, data:, vbscript:)
-			const ALLOWED_PROTOCOLS = ['http:', 'https:', 'ftp:', 'ws:', 'wss:'];
-			
+			const ALLOWED_PROTOCOLS = [
+				'http:',
+				'https:',
+				'ftp:',
+				'ws:',
+				'wss:',
+			];
+
 			// Allow custom protocols if explicitly configured (future proofing)
-			const allowed = (
-				_context?.metadata?.transformerOptions as {
-					allowedProtocols?: string[];
-				}
-			)?.allowedProtocols || ALLOWED_PROTOCOLS;
+			const allowed =
+				(
+					_context?.metadata?.transformerOptions as {
+						allowedProtocols?: string[];
+					}
+				)?.allowedProtocols || ALLOWED_PROTOCOLS;
 
 			if (!allowed.includes(url.protocol)) {
 				throw new Error(

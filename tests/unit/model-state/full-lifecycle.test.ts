@@ -388,11 +388,32 @@ describe('State Management Methods', () => {
 		});
 
 		test('should contain field type information', () => {
+			// Ensure usage to trigger auto-discovery
+			new User({
+				id: '1',
+				name: 'Discovery',
+				age: 99,
+				email: 'test@example.com',
+				createdAt: '2024-01-01T00:00:00.000Z',
+			});
+
 			const metadata = User.getMetadata();
 
+			// Decorated fields
+			expect(metadata.has('createdAt')).toBe(true);
+
+			// Auto-detected fields (discovered from usage)
 			expect(metadata.has('id')).toBe(true);
 			expect(metadata.has('name')).toBe(true);
-			expect(metadata.has('createdAt')).toBe(true);
+			expect(metadata.has('age')).toBe(true);
+			expect(metadata.has('email')).toBe(true);
+
+			// Verify types
+			// Note: Type name case might vary depending on TS version or metadata implementation
+			expect(metadata.get('createdAt')?.type).toMatch(/date/i);
+			// Auto-detected ones default to Object/unknown usually, or constructor name if inferred?
+			// The decorator registered them with 'Object' as fieldType.
+			expect(metadata.get('id')).toBeDefined();
 		});
 
 		test('should identify Date transformer', () => {

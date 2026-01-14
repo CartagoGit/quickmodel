@@ -75,7 +75,7 @@ import { QConfig } from '../config/quick.config';
  */
 
 import 'reflect-metadata';
-import { QType } from './qtype.decorator';
+import { QType, QTYPES_METADATA_KEY } from './qtype.decorator';
 // import type { IQAlias } from '../types/q-alias.type'; // Unused
 import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
@@ -594,7 +594,49 @@ export function Quick<
 				targetConstructor
 			);
 
+			// AUTOMATIC METADATA DISCOVERY (Lazy Registration)
+			// If properties are present in the instance (passed via constructor data) but not in metadata,
+			// we register them dynamically. This ensures getMetadata() reflects the actual shape of data
+			// seen by the model, even for fields without explicit @Quick() or @QType() decoration.
+			// This enables "autodetect because it's what arrived" behavior.
+			try {
+				const proto = originalConstructor.prototype;
+				const currentQTypes: string[] =
+					Reflect.getMetadata(QTYPES_METADATA_KEY, proto) || [];
+				const registeredKeys = new Set(currentQTypes);
+				let hasNewKeys = false;
+
+				// Scan instance properties (excluding internals)
+				for (const key of Object.keys(instance)) {
+					if (
+						!key.startsWith('__') &&
+						!registeredKeys.has(key) &&
+						typeof instance[key] !== 'function'
+					) {
+						// Register new key
+						registeredKeys.add(key);
+						// We don't know the type, so we default to Object/unknown
+						// But we mark it so getMetadata() includes it
+						Reflect.defineMetadata('fieldType', Object, proto, key);
+						hasNewKeys = true;
+					}
+				}
+
+				// Update metadata if new keys were found
+				if (hasNewKeys) {
+					Reflect.defineMetadata(
+						QTYPES_METADATA_KEY,
+						Array.from(registeredKeys),
+						proto
+					);
+				}
+			} catch (_e) {
+				// Silently fail on metadata update issues to not break application flow
+				// This is a progressive enhancement feature
+			}
+
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
+
 			// Re-install getters/setters to ensure they are not shadowed by property initializers
 
 			// Check ALL properties in the instance, not just those in quickTypeMap

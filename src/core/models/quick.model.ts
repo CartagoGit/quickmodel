@@ -368,6 +368,17 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		return result;
 	}
 
+	/**
+	 * Instance alias for static getMetadata.
+	 * Useful for inspecting model state and configuration from an instance.
+	 *
+	 * @see {@link QModel.getMetadata}
+	 */
+	public getMetadata(): Map<string, { type: string; transformer: unknown }> {
+		// Use constructor to access static method on the concrete class
+		return (this.constructor as any).getMetadata();
+	}
+
 	// Temporary property for unprocessed data (removed after initialize)
 	private readonly __tempData?: IQModelData<TInterface>;
 
@@ -531,6 +542,15 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 
 			const value = (deserialized as Record<string, unknown>)[key];
 
+			// Check for custom accessor (Backing Field Pattern support)
+			if (this.hasAccessor(key)) {
+				// Use public assignment to trigger the custom setter
+				(this as any)[key] = value;
+				// Remove from allKeys so it's not picked up for lazy getter installation
+				allKeys.delete(key);
+				continue;
+			}
+
 			// Determine storage key - don't duplicate QUICK_PROPERTY_KEYS prefix
 			let storageKey: string;
 			let propertyKey: string;
@@ -609,6 +629,26 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 				(this as Record<string, unknown>)[key] = backupValue;
 			}
 		}
+	}
+
+	/**
+	 * Checks if a property has a custom accessor (getter/setter) on the prototype chain.
+	 */
+	private hasAccessor(key: string): boolean {
+		let current = Object.getPrototypeOf(this);
+		while (current && current !== Object.prototype) {
+			const descriptor = Object.getOwnPropertyDescriptor(current, key);
+			if (descriptor && (descriptor.get || descriptor.set)) {
+				const isGenerated = Reflect.getMetadata(
+					'qtype:generated',
+					current,
+					key
+				);
+				if (!isGenerated) return true;
+			}
+			current = Object.getPrototypeOf(current);
+		}
+		return false;
 	}
 
 	/**

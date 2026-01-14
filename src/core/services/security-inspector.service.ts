@@ -83,13 +83,9 @@ export class SecurityInspector {
 				if (typeof descriptor.value === 'function') {
 					return true;
 				}
-				// Accessors (getters/setters)
-				if (
-					typeof descriptor.get === 'function' ||
-					typeof descriptor.set === 'function'
-				) {
-					return true;
-				}
+				// Accessors (getters/setters) are NOT methods in this context.
+				// We want to allow them so setters are triggered (Backing Field pattern).
+				// Method Shadowing protection is specifically for protecting logic functions (methods).
 			}
 			current = Object.getPrototypeOf(current);
 		}

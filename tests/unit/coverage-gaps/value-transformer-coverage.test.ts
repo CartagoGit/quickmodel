@@ -57,7 +57,7 @@ describe('ValueTransformerService Gaps', () => {
 		expect(() => {
 			service.transformNestedModelArray(
 				arr,
-				[ChildA, ChildB], 
+				[ChildA, ChildB],
 				discriminator
 			);
 		}).toThrow('Boom');
