@@ -23,6 +23,11 @@ export interface IQSerializationOptions {
 	 * @internal
 	 */
 	_depth?: number;
+
+	/**
+	 * Date serialization strategy overlap (internal use for passing down config)
+	 */
+	dateStrategy?: 'iso' | 'timestamp' | 'native';
 }
 
 export interface IQSerializer<

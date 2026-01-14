@@ -19,6 +19,7 @@ import { QTransformerRegistry } from '../registry/transformer.registry';
 import { SecurityInspector } from './security-inspector.service';
 import { ObjectSizeValidator } from './object-size-validator.service';
 import { RecursionGuard } from './recursion-guard.service';
+import { CaseHelper } from '../helpers/case.helper';
 
 /**
  * Service responsible for populating an instance with data.
@@ -93,12 +94,48 @@ export class PopulationService {
 
 		const globalDefaults = QConfig.get().defaults || {};
 
-		// Strict Mode is DISABLED by default (unless explicitly enabled)
-		const isStrict = options.strict ?? globalDefaults.strict ?? false;
+		// Keep strict for backwards compatibility logic
+		const strictOption = options.strict ?? globalDefaults.strict;
+
+		// Determine Unknown Property Policy
+		// Priority: Model Config > Global Config > Strict Mode Fallback > Default ('keep')
+		let unknownPolicy =
+			options.unknownPropertyPolicy || globalDefaults.unknownPropertyPolicy;
+
+		if (!unknownPolicy) {
+			// Backward compatibility: map strict boolean to policy
+			if (strictOption === true) unknownPolicy = 'error';
+			else unknownPolicy = 'keep';
+		}
 
 		// DoS Protection config
 		const maxArrayLength =
 			options.maxArrayLength ?? globalDefaults.maxArrayLength ?? 5000000;
+
+		// Internal Identifiers Policy
+		const stripInternal =
+			options.stripInternalIdentifiers ??
+			globalDefaults.stripInternalIdentifiers;
+
+		// Normalization Config
+		const normalization = {
+			...globalDefaults.normalization,
+			...options.normalization,
+		};
+
+		// Coercion Strategy
+		const coercionStrategy =
+			options.coercionStrategy ||
+			globalDefaults.coercionStrategy ||
+			'strict';
+
+		// Null to Undefined
+		const nullToUndefined =
+			options.nullToUndefined ?? globalDefaults.nullToUndefined ?? false;
+
+        // Case Transformation Config
+        const transformCase =
+            options.transformCase || globalDefaults.transformCase;
 
 		// SECURITY: Prevent Stack Overflow via Deep Recursion
 		this.recursionGuard.validateDepth(recursionContext.depth);
@@ -113,7 +150,38 @@ export class PopulationService {
 		);
 
 		for (const key of keys) {
-			const value = data[key];
+			let value = data[key];
+
+            // Case Transformation (Input -> Model Property)
+            let targetKey = key;
+             if (transformCase?.in) {
+                // If input case is specified, we assume we need to convert it to camelCase
+                // to match standard property naming conventions.
+                // We verify if the direct key exists first (priority to exact match),
+                // if not, we try the transformed case.
+                
+                // Note: We always check exact match first?
+                // Actually, if transformCase.in is "snake_case", and key is "user_id",
+                // we want to map it to "userId".
+                // But if the model actually HAS "user_id", maybe we should use it?
+                // Standard behavior: Try transformed key. If it exists in Model, use it.
+                // If not, maybe fallback to original key?
+                
+                // Let's normalize key to camelCase (default model convention)
+                const normalizedKey = CaseHelper.toCase('camelCase', key);
+                
+                // Check if normalized key is a known property on the model
+                const isKnownProperty = 
+                    decoratedFields.includes(normalizedKey) || 
+                    Object.prototype.hasOwnProperty.call(designTypes, normalizedKey) ||
+                    Object.prototype.hasOwnProperty.call(instance, normalizedKey);
+
+                if (isKnownProperty) {
+                    targetKey = normalizedKey;
+                }
+            }
+
+            // Normalization logic (String trimming, etc) applied to VALUE
 			if (key === 'save')
 				console.log('[POPULATE_DEBUG] Found save key in data');
 
@@ -141,54 +209,88 @@ export class PopulationService {
 				continue;
 			}
 
-			// Strict Mode: Check if property is known
-			if (isStrict) {
-				const isDecorated = decoratedFields.includes(key);
-				const hasDesignType = key in designTypes;
-				const isDeclared =
-					key in instance || key in Object.getPrototypeOf(instance);
+			// SECURITY: Strip Internal Identifiers
+			if (stripInternal) {
+				const prefixes = Array.isArray(stripInternal)
+					? stripInternal
+					: ['_', '$'];
+				if (prefixes.some((prefix) => key.startsWith(prefix))) {
+					continue;
+				}
+			}
 
-				if (!isDecorated && !hasDesignType && !isDeclared) {
+			// Normalization
+			if (
+				typeof value === 'string' &&
+				(normalization.trimStrings || normalization.emptyStringAsNull)
+			) {
+				if (normalization.trimStrings) {
+					value = value.trim();
+				}
+				if (normalization.emptyStringAsNull && value === '') {
+					value = null;
+				}
+			}
+
+			// Null to Undefined
+			if (value === null && nullToUndefined) {
+				value = undefined;
+			}
+
+			// Unknown Property Handling
+			const isDecorated = decoratedFields.includes(targetKey);
+
+			const hasDesignType = targetKey in designTypes;
+			const isDeclared =
+				targetKey in instance || targetKey in Object.getPrototypeOf(instance);
+			const isUnknown = !isDecorated && !hasDesignType && !isDeclared;
+
+			if (isUnknown) {
+				if (unknownPolicy === 'error') {
 					throw new QModelError(
-						`Strict Mode: Property '${key}' is not defined in model ${modelClass.name}`,
-						{ className: modelClass.name, propertyKey: key, value }
+						`Strict Mode: Property '${targetKey}' (mapped from '${key}') is not defined in model ${modelClass.name}`,
+						{ className: modelClass.name, propertyKey: targetKey, value }
 					);
 				}
+				if (unknownPolicy === 'strip') {
+					continue;
+				}
+				// 'keep': Proceed normally
 			}
 
 			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
 			const template = this.getTemplateInstance(modelClass);
 			if (
 				this.securityInspector.isArrowFunctionMethod(
-					key,
+					targetKey,
 					template,
 					decoratedFields
 				)
 			) {
 				if (isStrict) {
 					throw new QModelError(
-						`Strict Mode: Blocked attempt to overwrite instance method '${key}' with data.`,
-						{ className: modelClass.name, propertyKey: key, value }
+						`Strict Mode: Blocked attempt to overwrite instance method '${targetKey}' with data.`,
+						{ className: modelClass.name, propertyKey: targetKey, value }
 					);
 				}
 				console.warn(
-					`[QuickModel] Security Warning: Blocked attempt to overwrite instance method '${key}' with data. ` +
+					`[QuickModel] Security Warning: Blocked attempt to overwrite instance method '${targetKey}' with data. ` +
 						`This property acts as a function in the model default state. ` +
-						`If you intend to assign data to it, you must explicitly decorate it with @Quick({ ${key}: Type }) or @QType(Type) to authorize the overwrite.`
+						`If you intend to assign data to it, you must explicitly decorate it with @Quick({ ${targetKey}: Type }) or @QType(Type) to authorize the overwrite.`
 				);
 				continue;
 			}
 
 			// Always allow undefined as "missing value" (optional)
 			if (value === undefined) {
-				instance[key] = value;
+				instance[targetKey] = value;
 				continue;
 			}
 
 			// DoS Protection: Check Array Length
 			if (Array.isArray(value)) {
 				this.sizeValidator.validateArraySize(
-					key,
+					targetKey,
 					value,
 					maxArrayLength,
 					modelClass.name
@@ -197,31 +299,32 @@ export class PopulationService {
 
 			// DoS Protection: Check nested object size
 			this.sizeValidator.validateNestedObjectSize(
-				key,
+				targetKey,
 				value,
 				modelClass.name
 			);
 
 			// If property is NOT decorated with @QType(), transform by design type
 			// This allows __type polymorphism for generic fields (Object/any)
-			if (!decoratedFields.includes(key)) {
+			if (!decoratedFields.includes(targetKey)) {
 				// Validation: Check if value matches the design type (primitives only)
-				const expectedType = designTypes[key];
+				const expectedType = designTypes[targetKey];
 				if (expectedType) {
-					this.validatePrimitiveType(
-						key,
+					value = this.validateOrCoercePrimitiveType(
+						targetKey,
 						value,
 						expectedType,
-						modelClass.name
+						modelClass.name,
+						coercionStrategy
 					);
 				}
 
 				// Transform by design type (handles __type polymorphism for generic fields)
 				const transformContext: IQTransformContext = {
-					propertyKey: key,
+					propertyKey: targetKey,
 					className: modelClass.name,
 				};
-				instance[key] = this.valueTransformer.transformByDesignType(
+				instance[targetKey] = this.valueTransformer.transformByDesignType(
 					value,
 					expectedType,
 					transformContext,
@@ -232,21 +335,22 @@ export class PopulationService {
 
 			// Property IS decorated with @QType() → transform it
 			const context: IQTransformContext = {
-				propertyKey: key,
+				propertyKey: targetKey,
 				className: modelClass.name,
 				metadata: {
-					transformerOptions: options.transformerOptions?.[key],
+					transformerOptions: options.transformerOptions?.[targetKey],
 					maxArrayLength,
+					coercionStrategy,
 				},
 			};
 
 			// 0. 🔥 CHECK: Custom transformer from options (High Priority)
 			if (
 				options.transformers &&
-				key in options.transformers &&
-				typeof options.transformers[key] === 'function'
+				targetKey in options.transformers &&
+				typeof options.transformers[targetKey] === 'function'
 			) {
-				instance[key] = options.transformers[key](value);
+				instance[targetKey] = options.transformers[targetKey](value);
 				continue;
 			}
 
@@ -254,20 +358,20 @@ export class PopulationService {
 			const customTransformer = Reflect.getMetadata(
 				'customTransformer',
 				instance,
-				key
+				targetKey
 			);
 			if (customTransformer && typeof customTransformer === 'function') {
-				instance[key] = customTransformer(value);
+				instance[targetKey] = customTransformer(value);
 				continue;
 			}
 
 			// 2. Check for custom transformer via fieldType metadata
-			const fieldType = Reflect.getMetadata('fieldType', instance, key);
+			const fieldType = Reflect.getMetadata('fieldType', instance, targetKey);
 			if (fieldType) {
 				const transformer =
 					this.transformerLookup.getTransformer(fieldType);
 				if (transformer) {
-					instance[key] = transformer.deserialize(
+					instance[targetKey] = transformer.deserialize(
 						value,
 						context.propertyKey,
 						context.className,
@@ -281,8 +385,31 @@ export class PopulationService {
 			let arrayElementClass = Reflect.getMetadata(
 				'arrayElementClass',
 				instance,
-				key
+				targetKey
 			);
+
+			// FALLBACK: Implicit Primitive Handling for @QType() (no args)
+			// If property is decorated but has no explicit transformer or array config
+			if (!fieldType && !arrayElementClass) {
+				const expectedType = designTypes[targetKey];
+
+				// Only handle primitives (String, Number, Boolean) implicitly
+				if (
+					expectedType &&
+					(expectedType === String ||
+						expectedType === Number ||
+						expectedType === Boolean)
+				) {
+					instance[targetKey] = this.validateOrCoercePrimitiveType(
+						targetKey,
+						value,
+						expectedType,
+						modelClass.name,
+						coercionStrategy
+					);
+					continue;
+				}
+			}
 
 			// Check if the nested model class has a registered transformer
 			if (
@@ -293,7 +420,7 @@ export class PopulationService {
 				const transformer =
 					this.transformerLookup.getTransformer(arrayElementClass);
 				if (transformer) {
-					instance[key] = transformer.deserialize(
+					instance[targetKey] = transformer.deserialize(
 						value,
 						context.propertyKey,
 						context.className,
@@ -306,7 +433,7 @@ export class PopulationService {
 			let arrayElementTypes = Reflect.getMetadata(
 				'arrayElementTypes',
 				instance,
-				key
+				targetKey
 			);
 
 			// FALLBACK: If arrayElementClass is missing, try to resolve from Quick TypeMap
@@ -315,8 +442,8 @@ export class PopulationService {
 					QUICK_TYPE_MAP_KEY,
 					modelClass
 				);
-				if (typeMap && typeMap[key]) {
-					const mappedType = typeMap[key];
+				if (typeMap && typeMap[targetKey]) {
+					const mappedType = typeMap[targetKey];
 					if (Array.isArray(mappedType) && mappedType.length > 0) {
 						arrayElementClass = mappedType[0];
 						if (mappedType.length > 1) {
@@ -408,8 +535,8 @@ export class PopulationService {
 					const isPrimitiveOrTransformable =
 						transformableTypes.includes(arrayElementClass);
 
-					if (isPrimitiveOrTransformable && !discriminators?.[key]) {
-						instance[key] =
+					if (isPrimitiveOrTransformable && !discriminators?.[targetKey]) {
+						instance[targetKey] =
 							this.valueTransformer.transformNestedArray(
 								value,
 								arrayElementClass,
@@ -420,9 +547,9 @@ export class PopulationService {
 						const possibleTypes = arrayElementTypes || [
 							arrayElementClass,
 						];
-						const IQDiscriminatorConfig = discriminators?.[key];
+						const IQDiscriminatorConfig = discriminators?.[targetKey];
 
-						instance[key] =
+						instance[targetKey] =
 							this.valueTransformer.transformNestedModelArray(
 								value,
 								possibleTypes,
@@ -444,13 +571,14 @@ export class PopulationService {
 					const transformer =
 						this.transformerLookup.getTransformer(IQTransformerKey);
 					if (transformer) {
-						instance[key] = transformer.deserialize(
+						instance[targetKey] = transformer.deserialize(
 							value,
 							context.propertyKey,
 							context.className,
 							context
 						);
 						continue;
+
 					}
 				}
 
@@ -467,7 +595,7 @@ export class PopulationService {
 					const transformer =
 						this.transformerLookup.getTransformer(IQTransformerKey);
 					if (transformer) {
-						instance[key] = value.map((item) => {
+						instance[targetKey] = value.map((item) => {
 							if (item === null || item === undefined)
 								return item;
 							return transformer.deserialize(
@@ -485,7 +613,7 @@ export class PopulationService {
 				if (isArrayType) {
 					if (!Array.isArray(value)) {
 						throw new Error(
-							`${context.className}.${key}: Expected array, got ${typeof value}`
+							`${context.className}.${targetKey}: Expected array, got ${typeof value}`
 						);
 					}
 
@@ -517,7 +645,7 @@ export class PopulationService {
 
 					const isPrimitiveOrTransformable =
 						transformableTypes.includes(arrayElementClass);
-					const hasDiscriminator = !!discriminators?.[key];
+					const hasDiscriminator = !!discriminators?.[targetKey];
 
 					if (isPrimitiveOrTransformable && !hasDiscriminator) {
 						const typedArrayConstructors = [
@@ -536,7 +664,7 @@ export class PopulationService {
 						const isTypedArrayElement =
 							typedArrayConstructors.includes(arrayElementClass);
 
-						instance[key] = value.map((item) => {
+						instance[targetKey] = value.map((item) => {
 							if (item === null || item === undefined)
 								return item;
 							if (isTypedArrayElement && Array.isArray(item)) {
@@ -565,8 +693,8 @@ export class PopulationService {
 						const possibleTypes = arrayElementTypes || [
 							arrayElementClass,
 						];
-						const IQDiscriminatorConfig = discriminators?.[key];
-						instance[key] =
+						const IQDiscriminatorConfig = discriminators?.[targetKey];
+						instance[targetKey] =
 							this.valueTransformer.transformNestedModelArray(
 								value,
 								possibleTypes,
@@ -584,7 +712,7 @@ export class PopulationService {
 					value !== null &&
 					!Array.isArray(value)
 				) {
-					instance[key] = this.recursiveDeserializer.deserialize(
+					instance[targetKey] = this.recursiveDeserializer.deserialize(
 						value as Record<string, unknown>,
 						arrayElementClass,
 						recursionContext
@@ -597,11 +725,11 @@ export class PopulationService {
 			const designType = Reflect.getMetadata(
 				'design:type',
 				instance,
-				key
+				targetKey
 			);
 
 			if (designType === Array && !arrayElementClass) {
-				instance[key] = value;
+				instance[targetKey] = value;
 				continue;
 			}
 
@@ -619,7 +747,7 @@ export class PopulationService {
 			) {
 				// Special Case: Set/Map
 				if (designType === Set || designType === Map) {
-					instance[key] = this.valueTransformer.transformByDesignType(
+					instance[targetKey] = this.valueTransformer.transformByDesignType(
 						value,
 						designType,
 						context
@@ -647,7 +775,7 @@ export class PopulationService {
 				const isDataView = designType === DataView;
 
 				if (isTypedArray || isArrayBuffer || isDataView) {
-					instance[key] = this.valueTransformer.transformByDesignType(
+					instance[targetKey] = this.valueTransformer.transformByDesignType(
 						value,
 						designType,
 						context
@@ -663,13 +791,13 @@ export class PopulationService {
 					// So it's safe to throw for them too if they receive an array.
 
 					throw new Error(
-						`${context.className}.${key}: Expected object, got array. To allow arrays, use @QType([${designType.name}]) or @Quick({ ${key}: [${designType.name}] })`
+						`${context.className}.${targetKey}: Expected object, got array. To allow arrays, use @QType([${designType.name}]) or @Quick({ ${targetKey}: [${designType.name}] })`
 					);
 				}
 				continue;
 			}
 
-			instance[key] = this.valueTransformer.transformByDesignType(
+			instance[targetKey] = this.valueTransformer.transformByDesignType(
 				value,
 				designType,
 				context
@@ -691,51 +819,76 @@ export class PopulationService {
 		}
 	}
 
-	private validatePrimitiveType(
+	private validateOrCoercePrimitiveType(
 		key: string,
 		value: unknown,
 		expectedType: unknown,
-		className: string
-	): void {
-		if (value === null || value === undefined) return;
+		className: string,
+		strategy: 'strict' | 'loose'
+	): unknown {
+		if (value === null || value === undefined) return value;
 
 		if (expectedType === Number) {
-			if (typeof value !== 'number') {
-				throw new QModelError(
-					`${className}.${key}: Expected number, got ${typeof value}`,
-					{
-						className,
-						propertyKey: key,
-						value,
-						expectedType: 'number',
-					}
-				);
+			if (typeof value === 'number') return value;
+
+			if (strategy === 'loose') {
+				const coerced = Number(value);
+				if (!isNaN(coerced)) return coerced;
 			}
+
+			throw new QModelError(
+				`${className}.${key}: Expected number, got ${typeof value}`,
+				{
+					className,
+					propertyKey: key,
+					value,
+					expectedType: 'number',
+				}
+			);
 		} else if (expectedType === String) {
-			if (typeof value !== 'string') {
-				throw new QModelError(
-					`${className}.${key}: Expected string, got ${typeof value}`,
-					{
-						className,
-						propertyKey: key,
-						value,
-						expectedType: 'string',
-					}
-				);
+			if (typeof value === 'string') return value;
+
+			if (strategy === 'loose') {
+				if (
+					typeof value === 'number' ||
+					typeof value === 'boolean' ||
+					typeof value === 'bigint'
+				) {
+					return String(value);
+				}
 			}
+
+			throw new QModelError(
+				`${className}.${key}: Expected string, got ${typeof value}`,
+				{
+					className,
+					propertyKey: key,
+					value,
+					expectedType: 'string',
+				}
+			);
 		} else if (expectedType === Boolean) {
-			if (typeof value !== 'boolean') {
-				throw new QModelError(
-					`${className}.${key}: Expected boolean, got ${typeof value}`,
-					{
-						className,
-						propertyKey: key,
-						value,
-						expectedType: 'boolean',
-					}
-				);
+			if (typeof value === 'boolean') return value;
+
+			if (strategy === 'loose') {
+				if (value === 'true') return true;
+				if (value === 'false') return false;
+				if (value === 1) return true;
+				if (value === 0) return false;
 			}
+
+			throw new QModelError(
+				`${className}.${key}: Expected boolean, got ${typeof value}`,
+				{
+					className,
+					propertyKey: key,
+					value,
+					expectedType: 'boolean',
+				}
+			);
 		}
+
+		return value;
 	}
 
 	private applyDotNotationTransform(

@@ -8,7 +8,7 @@ Each feature must be implemented with dedicated unit tests (and integration test
 
 Controls how data is accepted into the model and protected.
 
-- [ ] **`unknownPropertyPolicy`**
+- [x] **`unknownPropertyPolicy`**
     - **Type**: `'keep' | 'strip' | 'error'`
     - **Description**: Defines behavior when encountering properties in the input payload that are not defined in the model.
         - `keep`: (Current default) Preserves extra properties.
@@ -16,12 +16,12 @@ Controls how data is accepted into the model and protected.
         - `error`: Throws an error (Current `strict: true` behavior).
     - **Test File**: `tests/unit/core/config/integrity-unknown-property.test.ts`
 
-- [ ] **`maxRecursionDepth`**
+- [x] **`maxRecursionDepth`**
     - **Type**: `number`
     - **Description**: Limits the depth of nested objects during deserialization to prevent Stack Overflow attacks.
-    - **Test File**: `tests/unit/core/config/integrity-recursion.test.ts`
+    - **Test File**: `tests/unit/core/config/integrity-recursion-limit.test.ts`
 
-- [ ] **`stripInternalIdentifiers`**
+- [x] **`stripInternalIdentifiers`**
     - **Type**: `boolean` | `string[]`
     - **Description**: Automatically excludes properties starting with `_` or `$` from serialization (output), preventing internal state leakage.
     - **Test File**: `tests/unit/core/config/integrity-strip-internal.test.ts`
@@ -40,14 +40,14 @@ Modifies data to fit the contract between Backend and Frontend.
     - **Description**: Automates casing conversion between API (Input) and Model (Runtime) and Interface (Output).
     - **Test File**: `tests/unit/core/config/transform-case.test.ts`
 
-- [ ] **`normalization`**
+- [x] **`normalization`**
     - **Type**: `{ emptyStringAsNull?: boolean; trimStrings?: boolean }`
     - **Description**:
         - `emptyStringAsNull`: Converts `""` to `null` before processing.
         - `trimStrings`: Applies `.trim()` to all input strings.
     - **Test File**: `tests/unit/core/config/transform-normalization.test.ts`
 
-- [ ] **`nullToUndefined`**
+- [x] **`nullToUndefined`**
     - **Type**: `boolean`
     - **Description**: Standardizes all `null` values to `undefined` (or vice versa) for consistency within the application code.
     - **Test File**: `tests/unit/core/config/transform-null-undefined.test.ts`

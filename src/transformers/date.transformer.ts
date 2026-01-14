@@ -113,9 +113,20 @@ export class DateTransformer
 	 * Converts a Date object to ISO 8601 string.
 	 *
 	 * @param value - The Date object to serialize
+	 * @param context - The transformation context
 	 * @returns ISO 8601 formatted string
 	 */
-	serialize(value: Date): string {
+	serialize(value: Date, context?: IQTransformContext): string | number | Date {
+		const strategy = context?.metadata?.dateStrategy ?? 'iso';
+
+		if (strategy === 'timestamp') {
+			return value.getTime();
+		}
+
+		if (strategy === 'native') {
+			return value;
+		}
+
 		return value.toISOString();
 	}
 

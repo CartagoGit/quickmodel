@@ -85,6 +85,7 @@
  * ```
  */
 
+import { CaseHelper } from '@/core/helpers/case.helper';
 import {
 	IQSerializer,
 	IQSerializationOptions,
@@ -106,7 +107,13 @@ import {
 import { IQTransformer } from '../interfaces/transformer.interface';
 import { QTransformerRegistry } from '../registry/transformer.registry';
 import 'reflect-metadata';
-import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import {
+	QUICK_TYPE_MAP_KEY,
+	QUICK_OPTIONS_KEY,
+	QUICK_DECORATOR_KEY,
+} from '../constants/metadata-keys';
+import { QConfig } from '../config/quick.config';
+import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -209,7 +216,24 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): TInterface {
-		const depth = options?._depth || 0;
+		// Resolve Configuration (DateStrategy, etc.)
+		let activeOptions = options;
+		if (!options?.dateStrategy) {
+			const modelOptions = Reflect.getMetadata(
+				QUICK_OPTIONS_KEY,
+				model.constructor
+			) as IQAdvancedOptions;
+
+			const globalDefaults = QConfig.get().defaults;
+			const dateStrategy =
+				modelOptions?.dateStrategy ?? globalDefaults?.dateStrategy ?? 'iso';
+
+			if (dateStrategy !== 'iso') {
+				activeOptions = { ...options, dateStrategy };
+			}
+		}
+
+		const depth = activeOptions?._depth || 0;
 		// SECURITY: Prevent Stack Overflow
 		const MAX_DEPTH = 512;
 		if (depth > MAX_DEPTH) {
@@ -269,9 +293,9 @@ export class Serializer<
 			}
 
 			if (key.startsWith('__')) {
-				if (!options?.includeDoubleUnderscore) continue;
+				if (!activeOptions?.includeDoubleUnderscore) continue;
 			} else if (key.startsWith('_')) {
-				if (!options?.includeUnderscore) continue;
+				if (!activeOptions?.includeUnderscore) continue;
 			}
 
 			const value = (model as unknown as Record<string, unknown>)[key];
@@ -287,13 +311,19 @@ export class Serializer<
 					'serialize' in mapValue
 				) {
 					// Use custom transformer serializer
-					result[key] = (mapValue as IQTransformer).serialize(value);
+					// Pass context so transformers can access global config (like dateStrategy)
+					const context = {
+						propertyKey: key,
+						className: model.constructor.name,
+						metadata: activeOptions as any,
+					};
+					result[key] = (mapValue as IQTransformer).serialize(value, context);
 					continue;
 				}
 			}
 
 			result[key] = this.serializeValue(value, visited, {
-				...options,
+				...activeOptions,
 				_depth: depth + 1,
 			});
 		}
@@ -430,8 +460,17 @@ export class Serializer<
 		if (value instanceof Date) {
 			const transformer =
 				this.transformers.get('date') || this.transformers.get(Date);
+
+			const context = {
+				propertyKey: '',
+				className: '',
+				metadata: {
+					dateStrategy: options?.dateStrategy,
+				},
+			};
+
 			return transformer
-				? transformer.serialize(value)
+				? transformer.serialize(value, context)
 				: value.toISOString();
 		}
 
@@ -574,6 +613,24 @@ export class Serializer<
 		) {
 			const visited = seen || new WeakSet<object>();
 			// No need to check visited here because value.serialize(seen) will check it
+
+			// prepare child options
+			const childOptions: IQSerializationOptions = {
+				...options,
+				_depth: depth + 1,
+			};
+
+			// If it is a QModel (has metadata), we should strip the dateStrategy
+			// to allow it to use its own configuration
+			if (
+				Reflect.hasMetadata(QUICK_DECORATOR_KEY, value.constructor) ||
+				Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, value.constructor)
+			) {
+				delete childOptions.dateStrategy;
+				// Force explicit removal via type assertion if needed
+				(childOptions as any).dateStrategy = undefined;
+			}
+
 			return (
 				value as {
 					serialize: (
@@ -581,7 +638,31 @@ export class Serializer<
 						o?: IQSerializationOptions
 					) => unknown;
 				}
-			).serialize(visited, { ...options, _depth: depth + 1 });
+			).serialize(visited, childOptions);
+		}
+
+		// Nested QuickModel (Deep Serialization)
+		// Detects models by presence of metadata if they don't have explicit serialize method
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			value.constructor &&
+			(Reflect.hasMetadata(QUICK_DECORATOR_KEY, value.constructor) ||
+				Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, value.constructor))
+		) {
+			const visited = seen || new WeakSet<object>();
+			// Recursively serialize the nested model
+			// Note: We strip 'dateStrategy' from options to allow the nested model
+			// to fully resolve its own strategy defaults, unless explictly handled otherwise.
+			// Ideally we should differentiate between "Force Global Strategy" and "Inherited Default".
+			// For now, we favor Model Autonomy.
+			const childOptions: IQSerializationOptions = {
+				_depth: depth + 1,
+				includeUnderscore: options?.includeUnderscore,
+				includeDoubleUnderscore: options?.includeDoubleUnderscore,
+			};
+
+			return this.serialize(value as any, visited, childOptions);
 		}
 
 		// Plain Object (recursive serialization)

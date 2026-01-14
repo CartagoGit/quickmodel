@@ -330,6 +330,7 @@ export interface IQAdvancedOptions<
 	 *   that is not explicitly declared in the model (via `@Quick`, `@QType`, or class property).
 	 *
 	 * @default false
+	 * @deprecated Use `unknownPropertyPolicy: 'error'` instead.
 	 *
 	 * @example
 	 * ```typescript
@@ -339,6 +340,57 @@ export interface IQAdvancedOptions<
 	 * ```
 	 */
 	strict?: boolean;
+
+	/**
+	 * Behavior when encountering properties in input data that are not defined in the model.
+	 *
+	 * - **keep** (default): Preserves extra properties.
+	 * - **strip**: Silently removes extra properties.
+	 * - **error**: Throws an error (Equivalent to `strict: true`).
+	 */
+	unknownPropertyPolicy?: 'keep' | 'strip' | 'error';
+
+	/**
+	 * Automatically excludes properties starting with internal prefixes (default: `_`, `$`) from population.
+	 *
+	 * - `true`: Strips properties starting with `_` or `$` (or global configured prefixes).
+	 * - `false`: Allows internal properties.
+	 * - `string[]`: Strips properties starting with these specific prefixes (overrides global).
+	 *
+	 * Used to protect internal state from mass-assignment attacks.
+	 */
+	stripInternalIdentifiers?: boolean | string[];
+
+	/**
+	 * Date serialization strategy.
+	 */
+	dateStrategy?: 'iso' | 'timestamp' | 'native';
+
+    /**
+     * Case transformation strategy for input (API -> Model) and output (Model -> API).
+     */
+    transformCase?: {
+        in?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+        out?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+    };
+
+	/**
+	 * String normalization options (per-model override).
+	 */
+	normalization?: {
+		trimStrings?: boolean;
+		emptyStringAsNull?: boolean;
+	};
+
+	/**
+	 * Type coercion strategy (per-model override).
+	 */
+	coercionStrategy?: 'strict' | 'loose';
+
+	/**
+	 * If true, converts all `null` values to `undefined`.
+	 */
+	nullToUndefined?: boolean;
 
 	/**
 	 * Maximum allowed length for arrays during deserialization.

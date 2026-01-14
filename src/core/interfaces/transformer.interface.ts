@@ -20,8 +20,9 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	/**
 	 * Serializes from model type to interface (JSON)
 	 * @param value - Model value
+	 * @param context - Optional context
 	 */
-	serialize(value: TOutput): TInput;
+	serialize(value: TOutput, context?: IQTransformContext): TInput;
 }
 
 export type IQTransformerKey = string | Function | object;

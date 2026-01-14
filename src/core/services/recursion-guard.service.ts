@@ -1,3 +1,5 @@
+import { QConfig } from '../config/quick.config';
+
 /**
  * RecursionGuard - Manages recursion depth and circular reference detection
  *
@@ -8,15 +10,20 @@
  * - Stack overflow prevention
  */
 export class RecursionGuard {
-	private static readonly MAX_DEPTH = 512;
+	private static readonly DEFAULT_MAX_DEPTH = 50;
 
 	/**
 	 * Validates that the current recursion depth doesn't exceed the maximum
 	 */
 	public validateDepth(currentDepth: number): void {
-		if (currentDepth > RecursionGuard.MAX_DEPTH) {
+		const config = QConfig.get();
+		const maxDepth =
+			config.defaults?.maxRecursionDepth ??
+			RecursionGuard.DEFAULT_MAX_DEPTH;
+
+		if (currentDepth > maxDepth) {
 			throw new Error(
-				`QuickModel Security: Maximum recursion depth (${RecursionGuard.MAX_DEPTH}) exceeded during population.`
+				`QuickModel Security: Maximum recursion depth (${maxDepth}) exceeded during population.`
 			);
 		}
 	}

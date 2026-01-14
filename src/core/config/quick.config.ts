@@ -28,14 +28,77 @@ export interface IQConfig {
 		/**
 		 * If true, enables Strict Mode by default for all models.
 		 * Strict Mode rejects properties in the payload that are not defined in the model.
+		 * @deprecated Use `unknownPropertyPolicy: 'error'` instead.
 		 */
 		strict?: boolean;
+
+		/**
+		 * Defines behavior when encountering properties in the input payload that are not defined in the model.
+		 * - `keep`: Preserves extra properties (Default).
+		 * - `strip`: Silently removes extra properties.
+		 * - `error`: Throws an error (Equivalent to `strict: true`).
+		 */
+		unknownPropertyPolicy?: 'keep' | 'strip' | 'error';
 
 		/**
 		 * Global limit for array length during deserialization to prevent DoS attacks.
 		 * @default 10000
 		 */
 		maxArrayLength?: number;
+
+		/**
+		 * Limits the depth of nested objects during deserialization to prevent Stack Overflow attacks.
+		 * @default 50
+		 */
+		maxRecursionDepth?: number;
+
+		/**
+		 * Automatically excludes properties starting with `_` or `$` from serialization (output),
+		 * preventing internal state leakage.
+		 * - `true`: Strips properties starting with `_` or `$`.
+		 * - `string[]`: Strips properties starting with propertys in the custom array prefix
+		 */
+		stripInternalIdentifiers?: boolean | string[];
+
+		/**
+		 * String normalization options.
+		 */
+		normalization?: {
+			/** If true, applies .trim() to all string values. Default: false. */
+			trimStrings?: boolean;
+			/** If true, converts empty strings "" to null. Default: false. */
+			emptyStringAsNull?: boolean;
+		};
+
+		/**
+		 * Type coercion strategy.
+		 * - `strict`: Throws error on type mismatch (default).
+		 * - `loose`: Attempts strict coercion (string "123" -> number 123, "true" -> true).
+		 */
+		coercionStrategy?: 'strict' | 'loose';
+
+		/**
+		 * If true, converts all `null` values to `undefined` during population.
+		 * Useful for standardizing missing values.
+		 * @default false
+		 */
+		nullToUndefined?: boolean;
+
+		/**
+		 * Serialization strategy for Date objects.
+		 * - `iso`: Serializes to ISO 8601 string (default).
+		 * - `timestamp`: Serializes to numeric timestamp (ms).
+		 * - `native`: Keeps as Date object.
+		 */
+		dateStrategy?: 'iso' | 'timestamp' | 'native';
+
+        /**
+         * Case transformation strategy.
+         */
+        transformCase?: {
+            in?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+            out?: 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+        };
 	};
 }
 
@@ -74,6 +137,15 @@ export class QModelConfigService {
 	 */
 	public get(): IQConfig {
 		return this.config;
+	}
+
+	/**
+	 * Resets the configuration to initial state.
+	 * Useful for testing.
+	 * @internal
+	 */
+	public reset(): void {
+		this.config = {};
 	}
 }
 

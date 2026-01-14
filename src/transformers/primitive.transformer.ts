@@ -82,8 +82,37 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 		value: unknown,
 		propertyKey: string,
 		className: string,
-		_context?: IQTransformContext
+		context?: IQTransformContext
 	): PrimitiveTypeMap[T] | null {
+		// Coercion Logic
+		const coercionStrategy = context?.metadata?.coercionStrategy as string;
+
+		if (
+			coercionStrategy === 'loose' &&
+			coercionStrategy === 'loose' &&
+			value !== null &&
+			value !== undefined
+		) {
+			if (this.expectedType === 'number') {
+				// Avoid coercing empty string to 0
+				if (value !== '') {
+					const coerced = Number(value);
+					if (!isNaN(coerced)) value = coerced;
+				}
+			} else if (this.expectedType === 'string') {
+				if (
+					typeof value === 'number' ||
+					typeof value === 'boolean' ||
+					typeof value === 'bigint'
+				) {
+					value = String(value);
+				}
+			} else if (this.expectedType === 'boolean') {
+				if (value === 'true' || value === 1) value = true;
+				if (value === 'false' || value === 0) value = false;
+			}
+		}
+
 		const validationResult = this.validate(value, {
 			propertyKey,
 			className,
