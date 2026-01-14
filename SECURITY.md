@@ -26,6 +26,10 @@ The deserializer explicitly prevents prototype pollution attacks by blocking mod
 ### 2. Denial of Service (DoS) Prevention
 - **Buffer Allocation**: `ArrayBufferTransformer` enforces a maximum size limit to prevent memory exhaustion attacks.
 - **RegExp Safety**: Enforces maximum pattern length (1000 chars) to mitigate Memory DoS. Note: Users must still sanitize user-provided regex patterns against complex algorithmic ReDoS.
+- **Large Array Protection**: **(New in v1.1.0)** Prevents Event Loop blocking via massive arrays.
+  - Default limit: **10,000 items** per array (globally configurable).
+  - Configurable via `QConfig.configure({ defaults: { maxArrayLength: 50000 } })`.
+  - Configurable per-model via `@Quick({}, { maxArrayLength: 20000 })`.
 
 ### 3. Circular Reference Handling
 To prevent stack overflow attacks or crashes, QuickModel detects circular references during serialization and conversion to interface format.
@@ -97,6 +101,7 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
 - **Mass Assignment & Method Shadowing**:
   - Validates that payloads cannot override class methods (logic bomb prevention).
   - **Intrinsic Protection**: Arrow functions are protected by default via template inspection, issuing a warning if a payload tries to overwrite a method unless it's explicitly decorated.
+  - **Robust Prototype Inspection**: **(New in v1.1.0)** Fallback mechanism inspects the prototype chain (`key in template`) to protect methods even if the class constructor is strict/throws errors during security inspection.
   - Verifies behavior of `strict: true` mode.
   - **Test**: `tests/security/mass-assignment.test.ts`, `tests/system/security/arrow-function-warning.test.ts`
 

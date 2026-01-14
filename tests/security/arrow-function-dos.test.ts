@@ -32,7 +32,7 @@ describe('Advanced Security Vectors', () => {
 			}
 
 			// Verify baseline
-			const p = new User({ id: 0, username: '' });
+			new User({ id: 0, username: '' });
 
 			// Attack payload: trying to overwrite the arrow function with a string
 			const payload = {

@@ -15,16 +15,14 @@ describe('Security: Information Disclosure (Private Fields)', () => {
 			public _internalId = 'secret';
 			public __deepSecret = 'top_secret';
 
-			// TypeScript private (still visible at runtime)
+			// @ts-expect-error - unused but required for testing
 			private apiToken = 'my-token';
 		}
 
 		const user = new User({ id: 1 } as any);
-		// @ts-ignore
 		user._internalId = 'secret';
-		// @ts-ignore
 		user.__deepSecret = 'top_secret';
-		// @ts-ignore
+		// @ts-expect-error testing invalid input
 		user.apiToken = 'my-token';
 
 		const serialized = user.serialize();

@@ -12,6 +12,12 @@ export interface IQuickModelConfig {
 		 * Strict Mode rejects properties in the payload that are not defined in the model.
 		 */
 		strict?: boolean;
+
+		/**
+		 * Global limit for array length during deserialization to prevent DoS attacks.
+		 * @default 10000
+		 */
+		maxArrayLength?: number;
 	};
 }
 

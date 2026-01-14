@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { Quick, QModel } from '@/index';
+
 import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
 
 describe('Security: Primitive String Limit', () => {

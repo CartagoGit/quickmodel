@@ -57,7 +57,7 @@ export function safeStringify(value: unknown, space?: number): string {
 	try {
 		return JSON.stringify(
 			value,
-			(key, val) => {
+			(_key, val) => {
 				if (typeof val === 'object' && val !== null) {
 					if (visited.has(val)) {
 						return '[Circular]';
@@ -68,7 +68,7 @@ export function safeStringify(value: unknown, space?: number): string {
 			},
 			space
 		);
-	} catch (error) {
+	} catch {
 		return `[Unserializable: ${typeof value}]`;
 	}
 }

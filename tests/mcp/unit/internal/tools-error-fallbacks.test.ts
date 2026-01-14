@@ -12,7 +12,7 @@ describe('Internal Tools Error Fallbacks', () => {
 			throw err;
 		};
 
-		const result = await tool.execute({});
+		const result = await tool.execute();
 		expect(result.status).toBe('error');
 		expect(result.output).toBe('Spawn failed hard');
 	});
@@ -23,7 +23,7 @@ describe('Internal Tools Error Fallbacks', () => {
 		(tool as any)._spawn = async () => {
 			throw new Error('Coverage crashed');
 		};
-		const result = await tool.execute({});
+		const result = await tool.execute();
 		// Check implementation of coverage-report tool to see if it handles this
 		// It likely does catch(error: any) => return ...
 		expect(result.summary).toContain('Coverage crashed');

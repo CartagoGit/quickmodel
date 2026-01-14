@@ -17,7 +17,7 @@ describe('Binary Buffers Security (DoS Prevention)', () => {
 		};
 
 		expect(() => {
-			// @ts-ignore
+			// @ts-expect-error testing invalid input
 			transformer.deserialize(data, 'data', 'Binary', context); // Cast as context is optional but logic uses it
 		}).toThrow('DataView input too large');
 	});
@@ -35,7 +35,7 @@ describe('Binary Buffers Security (DoS Prevention)', () => {
 		};
 
 		expect(() => {
-			// @ts-ignore
+			// @ts-expect-error testing invalid input
 			transformer.deserialize(data, 'shared', 'Binary', context);
 		}).toThrow('SharedArrayBuffer input too large');
 	});

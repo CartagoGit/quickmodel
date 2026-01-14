@@ -51,6 +51,7 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 			// @ts-expect-error - Testing invalid usage
 			@Quick({ strict: true })
 			class _BrokenUser extends QModel<any> {}
+			return _BrokenUser;
 		}).toThrow(/Misconfiguration detected/);
 	});
 });

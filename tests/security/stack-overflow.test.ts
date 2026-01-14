@@ -25,7 +25,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 
 		// This will likely crash or throw "Maximum call stack size exceeded"
 		try {
-			const data = new Data({ items: deepArray });
+			new Data({ items: deepArray });
 			console.log('Finished without error');
 		} catch (e: any) {
 			console.log('Error caught: ' + e.message);

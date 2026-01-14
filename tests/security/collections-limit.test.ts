@@ -21,7 +21,7 @@ describe('Collections Security (DoS Prevention)', () => {
 		};
 
 		expect(() => {
-			// @ts-ignore
+			// @ts-expect-error testing invalid input
 			transformer.deserialize(data, 'tags', 'Config', context);
 		}).toThrow('Set input too large');
 	});
@@ -41,7 +41,7 @@ describe('Collections Security (DoS Prevention)', () => {
 		};
 
 		expect(() => {
-			// @ts-ignore
+			// @ts-expect-error testing invalid input
 			transformer.deserialize(data, 'meta', 'Config', context);
 		}).toThrow('Map input too large');
 	});

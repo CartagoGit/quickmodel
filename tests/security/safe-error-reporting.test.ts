@@ -18,7 +18,11 @@ describe('Security: Unsafe Error Reporting (DoS via Circular References)', () =>
 
 		// Using raw transformer to isolate the crash
 		expect(() => {
-			transformer.deserialize(maliciousPayload, 'mapField', 'TestClass');
+			transformer.deserialize(
+				maliciousPayload as any,
+				'mapField',
+				'TestClass'
+			);
 		}).toThrow(/Invalid Map data format/);
 
 		// If it reaches here without crashing the process, we are safe.

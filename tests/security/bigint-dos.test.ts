@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'bun:test';
 import { BigIntTransformer } from '../../src/transformers/bigint.transformer';
-import { QModelError } from '@/core/errors/quickmodel.error';
 
 describe('BigIntTransformer Security', () => {
 	test('should reject extremely long strings (DoS prevention)', () => {

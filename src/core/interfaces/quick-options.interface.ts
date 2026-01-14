@@ -341,6 +341,16 @@ export interface IQAdvancedOptions<
 	strict?: boolean;
 
 	/**
+	 * Maximum allowed length for arrays during deserialization.
+	 * Overrides the global default limit for this model.
+	 *
+	 * Used to mitigate DoS attacks via massive arrays.
+	 *
+	 * @default 10000 (configurable via global config)
+	 */
+	maxArrayLength?: number;
+
+	/**
 	 * Custom transformers for specific properties.
 	 *
 	 * Allows overriding the default deserialization logic for specific fields

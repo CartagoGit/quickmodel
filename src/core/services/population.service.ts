@@ -10,6 +10,7 @@ import {
 	QUICK_OPTIONS_KEY,
 	QUICK_TYPE_MAP_KEY,
 } from '../constants/metadata-keys';
+import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QModelError } from '../errors/quickmodel.error';
 import { TransformerLookupService } from './transformer-lookup.service';
@@ -50,7 +51,7 @@ export class PopulationService {
 			const record = instance as Record<string, unknown>;
 			PopulationService.templateCache.set(modelClass, record);
 			return record;
-		} catch (e) {
+		} catch {
 			// If constructor throws (e.g. strict validation), we can't inspect it
 			PopulationService.templateCache.set(modelClass, null);
 			return null;
@@ -103,8 +104,15 @@ export class PopulationService {
 		// Get strict mode configuration
 		const options: IQAdvancedOptions =
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+
+		const globalDefaults = QConfig.get().defaults || {};
+
 		// Strict Mode is DISABLED by default (unless explicitly enabled)
-		const isStrict = options.strict === true;
+		const isStrict = options.strict ?? globalDefaults.strict ?? false;
+
+		// DoS Protection config
+		const maxArrayLength =
+			options.maxArrayLength ?? globalDefaults.maxArrayLength ?? 5000000;
 
 		for (const [key, value] of Object.entries(data)) {
 			// SECURITY: Prevent Prototype Pollution
@@ -148,10 +156,18 @@ export class PopulationService {
 			// Intrinsic check: Inspect a template instance to see if this property is supposed to be a function
 			// We only block UNDECORATED properties. If the user explicitly decorated it (e.g. @QType(Function)),
 			// we assume they know what they are doing.
-			const template = this.getTemplateInstance(modelClass);
+			let template = this.getTemplateInstance(modelClass);
+
+			// Fallback: If instantiation failed (e.g. strict constructor), inspect prototype
+			if (!template && modelClass.prototype) {
+				template = modelClass.prototype as Record<string, unknown>;
+			}
+
+			// Using 'in' operator to check prototype chain if direct access fails or returns undefined
 			if (
 				template &&
-				typeof template[key] === 'function' &&
+				key in template &&
+				typeof (template as any)[key] === 'function' &&
 				!decoratedFields.includes(key)
 			) {
 				if (isStrict) {
@@ -172,6 +188,18 @@ export class PopulationService {
 			if (value === undefined) {
 				instance[key] = value;
 				continue;
+			}
+
+			// DoS Protection: Check Array Length
+			if (Array.isArray(value) && value.length > maxArrayLength) {
+				throw new QModelError(
+					`Security: Array '${key}' length (${value.length}) exceeds maximum allowed limit (${maxArrayLength}).`,
+					{
+						className: modelClass.name,
+						propertyKey: key,
+						value: 'TRUNCATED',
+					}
+				);
 			}
 
 			// If property is NOT decorated with @QType(), copy as-is (but validate type first)
@@ -197,6 +225,7 @@ export class PopulationService {
 				className: modelClass.name,
 				metadata: {
 					transformerOptions: options.transformerOptions?.[key],
+					maxArrayLength,
 				},
 			};
 

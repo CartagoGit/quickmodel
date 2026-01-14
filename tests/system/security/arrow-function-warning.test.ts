@@ -19,8 +19,8 @@ describe('Security: Arrow Function Warning & Bypass', () => {
 
 		// 2. Should warn
 		expect(warnSpy).toHaveBeenCalled();
-		expect(warnSpy.mock.calls[0][0]).toContain('Security Warning');
-		expect(warnSpy.mock.calls[0][0]).toContain('getCreditCard');
+		expect(warnSpy.mock.calls[0]?.[0]).toContain('Security Warning');
+		expect(warnSpy.mock.calls[0]?.[0]).toContain('getCreditCard');
 
 		warnSpy.mockRestore();
 	});

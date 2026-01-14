@@ -35,8 +35,8 @@ describe('Validation Service Coverage Gaps', () => {
 		const results = service.validate(instance as any);
 
 		expect(results.length).toBe(1);
-		expect(results[0].isValid).toBe(false);
-		expect(results[0].error).toContain('Validator Crash');
+		expect(results[0]?.isValid).toBe(false);
+		expect(results[0]?.error).toContain('Validator Crash');
 	});
 
 	it('should catch errors during recursive validation of nested object', () => {
@@ -130,7 +130,7 @@ describe('Validation Service Coverage Gaps', () => {
 
 		const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
-		service.validate(parent);
+		service.validate(parent as any);
 
 		expect(consoleSpy).toHaveBeenCalledWith(
 			'Caught validation error:',

@@ -1,7 +1,6 @@
 import { describe, test, expect, spyOn } from 'bun:test';
 import { SymbolTransformer } from '../../src/transformers/symbol.transformer';
 import { QSearchDocsTool } from '../../src/mcp/tools/public/search-docs.tool';
-import { spawn } from 'child_process';
 
 describe('Pending Security Vulnerabilities', () => {
 	describe('SymbolTransformer: Global Registry DoS', () => {

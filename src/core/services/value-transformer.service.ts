@@ -43,6 +43,14 @@ export class ValueTransformerService {
 			);
 		}
 
+		// SECURITY: Prevent DoS via Large Arrays
+		const maxLimit = (context?.metadata?.maxArrayLength as number) || 10000;
+		if (value.length > maxLimit) {
+			throw new Error(
+				`QuickModel Security: Nested array length (${value.length}) exceeds maximum allowed limit (${maxLimit}) at depth ${currentDepth}.`
+			);
+		}
+
 		return value.map((item) => {
 			if (item === null || item === undefined) return item;
 
@@ -79,6 +87,14 @@ export class ValueTransformerService {
 		if (currentDepth > MAX_DEPTH) {
 			throw new Error(
 				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during model array transformation.`
+			);
+		}
+
+		// SECURITY: Prevent DoS via Large Arrays
+		const maxLimit = (context?.metadata?.maxArrayLength as number) || 10000;
+		if (value.length > maxLimit) {
+			throw new Error(
+				`QuickModel Security: Nested model array length (${value.length}) exceeds maximum allowed limit (${maxLimit}) at depth ${currentDepth}.`
 			);
 		}
 
