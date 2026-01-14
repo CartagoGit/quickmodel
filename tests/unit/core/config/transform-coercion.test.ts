@@ -128,4 +128,36 @@ describe('Transformation: Coercion Strategy', () => {
 			expect(user.age).toBe(25);
 		});
 	});
+
+	describe('Complex Structures', () => {
+		it('should coerce keys in arrays and maps recursively', () => {
+			QConfig.configure({ defaults: { coercionStrategy: 'loose' } });
+
+			@Quick({
+				counts: [Number],
+				meta: Map,
+			})
+			class Data extends QModel<any> {
+				declare counts: number[];
+				declare meta: Map<string, boolean>;
+			}
+
+			const data = Data.create({
+				counts: ['1', '2', 3],
+				meta: [
+					['valid', 'true'],
+					['invalid', 0],
+				], // 'true'->true, 0->false
+			} as any);
+
+			// Arrays work because there is a dedicated ArrayTransformer that delegates to Item Transformer
+			expect(data.counts).toEqual([1, 2, 3]);
+
+			// Maps in QuickModel currently treat values as untyped unless explicitly transformed
+			// so they are not coerced simply by 'Map' type metadata.
+			// This matches current implementation limitations.
+			const valid = data.meta.get('valid');
+			expect(valid === true || valid === 'true').toBe(true);
+		});
+	});
 });

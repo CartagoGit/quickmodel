@@ -207,4 +207,49 @@ describe('Integrity: Unknown Property Policy', () => {
 			expect((user as any).extra).toBeUndefined();
 		});
 	});
+
+	describe('Nested Models with Mixed Policies', () => {
+		it('should respect different policies at different levels', () => {
+			// Child: Strict/Error
+			@Quick({ name: String }, { unknownPropertyPolicy: 'error' })
+			class Child extends QModel<any> {
+				declare name: string;
+			}
+
+			// Parent: Strip
+			@Quick(
+				{ child: Child, title: String },
+				{ unknownPropertyPolicy: 'strip' }
+			)
+			class Parent extends QModel<any> {
+				declare title: string;
+				declare child: Child;
+			}
+
+			// 1. Parent strips its own unknowns
+			const data = {
+				title: 'Parent',
+				unknownParent: 'gone',
+				child: {
+					name: 'Child',
+					// unknownChild: 'fail' // This would fail
+				},
+			};
+
+			const parent = Parent.create(data);
+			expect((parent as any).unknownParent).toBeUndefined();
+			expect(parent.child.name).toBe('Child');
+
+			// 2. Child throws on its own unknowns
+			expect(() => {
+				Parent.create({
+					title: 'Parent',
+					child: {
+						name: 'Child',
+						unknownChild: 'fail', // Should trigger child's error policy
+					},
+				});
+			}).toThrow(/Property 'unknownChild'/);
+		});
+	});
 });

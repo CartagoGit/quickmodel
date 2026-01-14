@@ -73,6 +73,7 @@ export class PropertyTransformer {
 			transformerOptions: options.transformerOptions?.[targetKey],
 			maxArrayLength,
 			coercionStrategy,
+			normalization: options.normalization, // Pass normalization options to transformers
 		};
 
 		// 0. 🔥 CHECK: Custom transformer from options (High Priority)

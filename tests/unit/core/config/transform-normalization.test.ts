@@ -89,4 +89,41 @@ describe('Transformation: Normalization', () => {
 		const user = User.create({ name: '  john  ' });
 		expect(user.name).toBe('  john  ');
 	});
+
+	it('should apply normalization to arrays and nested objects', () => {
+		QConfig.configure({
+			defaults: {
+				normalization: {
+					trimStrings: true,
+					emptyStringAsNull: true,
+				},
+			},
+		});
+
+		@Quick({ bio: String })
+		class Profile extends QModel<any> {
+			declare bio: string | null;
+		}
+
+		@Quick({ tags: [String], profile: Profile })
+		class User extends QModel<any> {
+			declare tags: string[];
+			declare profile: Profile;
+		}
+
+		const user = User.create({
+			tags: ['  a  ', '  ', 'b'],
+			profile: {
+				bio: '   ',
+			},
+		});
+
+		// Arrays
+		expect(user.tags[0]).toBe('a');
+		expect(user.tags[1]).toBeNull(); // "  " -> "" -> null
+		expect(user.tags[2]).toBe('b');
+
+		// Nested Model Normalization
+		expect(user.profile.bio).toBeNull();
+	});
 });

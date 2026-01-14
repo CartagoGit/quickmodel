@@ -103,4 +103,34 @@ describe('Integrity: Strip Internal Identifiers', () => {
 		expect((user as any).ugly_field).toBeUndefined();
 		expect((user as any)._normal).toBe('kept');
 	});
+
+	it('should apply stripping recursively to nested models', () => {
+		QConfig.configure({
+			defaults: { stripInternalIdentifiers: true },
+		});
+
+		@Quick()
+		class Nested extends QModel<any> {
+			declare _secret: string;
+			declare public: string;
+		}
+
+		@Quick({ nested: Nested })
+		class Root extends QModel<any> {
+			declare _rootSecret: string;
+			declare nested: Nested;
+		}
+
+		const root = Root.create({
+			_rootSecret: 'hide',
+			nested: {
+				_secret: 'hide nested',
+				public: 'show',
+			},
+		});
+
+		expect((root as any)._rootSecret).toBeUndefined();
+		expect((root.nested as any)._secret).toBeUndefined();
+		expect(root.nested.public).toBe('show');
+	});
 });

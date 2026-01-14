@@ -155,4 +155,41 @@ describe('Configuration: validationErrorStrategy', () => {
 
 		expect(errors.length).toBe(1);
 	});
+
+	test('should handle mixed strategies (Parent: accumulate, Child: failFast)', () => {
+		@Quick(
+			{ val: 'number', val2: 'number' },
+			{ validationErrorStrategy: 'failFast' }
+		)
+		class Child extends QModel<any> {
+			declare val: number;
+			declare val2: number;
+		}
+
+		@Quick(
+			{ c1: Child, c2: Child },
+			{ validationErrorStrategy: 'accumulate' }
+		)
+		class Parent extends QModel<any> {
+			declare c1: Child;
+			declare c2: Child;
+		}
+
+		const p = new Parent({});
+		// Child 1 has 2 errors
+		p.c1 = new Child({});
+		(p.c1 as any).val = 'err';
+		(p.c1 as any).val2 = 'err'; // failFast should only report 1 from here
+
+		// Child 2 has 2 errors
+		p.c2 = new Child({});
+		(p.c2 as any).val = 'err';
+		(p.c2 as any).val2 = 'err'; // failFast should only report 1 from here
+
+		const errors = p.validate();
+		// Child 1 returns 1 error (stopped early)
+		// Child 2 returns 1 error (stopped early)
+		// Parent accumulates -> Total 2 errors
+		expect(errors.length).toBe(2);
+	});
 });

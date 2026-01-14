@@ -86,6 +86,10 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 	): PrimitiveTypeMap[T] | null {
 		// Coercion Logic
 		const coercionStrategy = context?.metadata?.coercionStrategy as string;
+		const normalization = context?.metadata?.normalization as {
+			trimStrings?: boolean;
+			emptyStringAsNull?: boolean;
+		};
 
 		if (
 			coercionStrategy === 'loose' &&
@@ -110,6 +114,16 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 			} else if (this.expectedType === 'boolean') {
 				if (value === 'true' || value === 1) value = true;
 				if (value === 'false' || value === 0) value = false;
+			}
+		}
+
+		// Normalization Logic
+		if (this.expectedType === 'string' && typeof value === 'string') {
+			if (normalization?.trimStrings) {
+				value = value.trim();
+			}
+			if (normalization?.emptyStringAsNull && value === '') {
+				return null;
 			}
 		}
 

@@ -87,4 +87,40 @@ describe('Expose Unset Fields Configuration', () => {
 		) as any;
 		expect('opt' in json).toBe(true);
 	});
+
+	test('should handle nested models with mixed settings', () => {
+		// Parent exposes, Child hides
+		@Quick({}, { exposeUnsetFields: false })
+		class HiddenChild extends QModel<any> {
+			declare hidden?: string;
+		}
+
+		@Quick({ child: HiddenChild }, { exposeUnsetFields: true })
+		class ExposedParent extends QModel<any> {
+			declare exposed?: string;
+			declare child: HiddenChild;
+		}
+
+		const p = new ExposedParent({
+			exposed: undefined,
+			child: { hidden: undefined },
+		});
+		// Assign to ensure they exist on instance
+		p.exposed = undefined;
+		p.child.hidden = undefined;
+
+		// Use toInterface() to check the object structure before JSON stringification
+		// (JSON.stringify removes undefined, so we test the interface object)
+		const output = p.toInterface();
+
+		// Parent exposes unset
+		expect(output).toHaveProperty('exposed');
+		expect(output.exposed).toBeUndefined();
+
+		// Child hides unset (when serialized individually)
+		// Note: Parent.toInterface() returns the child Model instance as-is,
+		// so we must call toInterface() on the child to verify its serialization logic.
+		const childOutput = p.child.toInterface();
+		expect(childOutput).not.toHaveProperty('hidden');
+	});
 });
