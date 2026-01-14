@@ -30,24 +30,50 @@ export class QCreateModelTool extends QAbstractTool<
 		await Promise.resolve();
 		const { className, properties } = args;
 
+		// SECURITY: Validate class name to prevent code injection
+		if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(className)) {
+			throw new Error(
+				`Invalid class name: "${className}". Must be a valid identifier.`
+			);
+		}
+
 		const quickProps = Object.keys(properties)
-			.map((key) => `  ${key}: ${properties[key]}`)
+			.map((key) => {
+				// Prevent property injection
+				if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+					// Quote the key if it's not a simple identifier
+					return `  ${JSON.stringify(key)}: ${properties[key]}`;
+				}
+				return `  ${key}: ${properties[key]}`;
+			})
 			.join(',\n\t');
 
 		const declProps = Object.keys(properties)
-			.map(
-				(key) =>
-					`  declare ${key}: ${this.mapTypeToTs(properties[key] ?? 'any')};`
-			)
+			.map((key) => {
+				const tsType = this.mapTypeToTs(properties[key] ?? 'any');
+				// Validate key for class declaration
+				if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+					return `  declare ${JSON.stringify(key)}: ${tsType};`;
+				}
+				return `  declare ${key}: ${tsType};`;
+			})
 			.join('\n\t');
+
+		const interfaceProps = Object.keys(properties)
+			.map((key) => {
+				const tsType = this.mapTypeToTs(properties[key] ?? 'any');
+				if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+					return `${JSON.stringify(key)}: ${tsType};`;
+				}
+				return `${key}: ${tsType};`;
+			})
+			.join('\n  ');
 
 		const code = `
 import { Quick, QModel } from '@cartago-git/quickmodel';
 
 interface I${className} {
-  ${Object.keys(properties)
-		.map((key) => `${key}: ${this.mapTypeToTs(properties[key] ?? 'any')};`)
-		.join('\n  ')}
+  ${interfaceProps}
 }
 
 @Quick({

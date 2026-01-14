@@ -585,8 +585,6 @@ export function Quick<
 			this: Record<string, unknown>,
 			...args: unknown[]
 		) {
-			const data = args[0];
-
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
 			// FIX: Use new.target to propagate inheritance chain correctly (e.g. when Child extends Parent decorated with @Quick)
 			const targetConstructor = new.target || wrappedConstructor;

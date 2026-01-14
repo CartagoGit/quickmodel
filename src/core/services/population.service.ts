@@ -851,39 +851,4 @@ export class PopulationService {
 			}
 		}
 	}
-
-	/**
-	 * Checks if a key corresponds to a method on the prototype chain.
-	 * Used to prevent Method Shadowing attacks where payload data overwrites methods.
-	 */
-	private isMethodOnPrototype(
-		proto: any,
-		key: string,
-		decoratedFields: string[] = []
-	): boolean {
-		// If the property is explicitly decorated as a data field, we trust it.
-		if (decoratedFields.includes(key)) {
-			return false;
-		}
-
-		let current = proto;
-		while (current && current !== Object.prototype) {
-			const descriptor = Object.getOwnPropertyDescriptor(current, key);
-			if (descriptor) {
-				// Classic method definition
-				if (typeof descriptor.value === 'function') {
-					return true;
-				}
-				// Accessors (getters/setters)
-				if (
-					typeof descriptor.get === 'function' ||
-					typeof descriptor.set === 'function'
-				) {
-					return true;
-				}
-			}
-			current = Object.getPrototypeOf(current);
-		}
-		return false;
-	}
 }

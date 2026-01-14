@@ -37,6 +37,13 @@ export class QJsonToModelTool extends QAbstractTool<
 			throw new Error('JSON must be an object');
 		}
 
+		// SECURITY: Validate class name
+		if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(args.className)) {
+			throw new Error(
+				`Invalid class name: "${args.className}". Must be a valid identifier.`
+			);
+		}
+
 		const props: string[] = [];
 		const decorators: string[] = [];
 
@@ -68,10 +75,18 @@ export class QJsonToModelTool extends QAbstractTool<
 				type = 'any'; // Nested objects would need recursion or 'any'
 			}
 
-			if (transformer) {
-				decorators.push(`    ${key}: '${transformer}'`);
+			// Handle key safety
+			let safeKey = key;
+			const isSimpleIdentifier = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key);
+
+			if (!isSimpleIdentifier) {
+				safeKey = JSON.stringify(key);
 			}
-			props.push(`    public ${key}: ${type};`);
+
+			if (transformer) {
+				decorators.push(`    ${safeKey}: '${transformer}'`);
+			}
+			props.push(`    public ${safeKey}: ${type};`);
 		}
 
 		const decoratorString =

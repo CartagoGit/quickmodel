@@ -18,7 +18,7 @@ describe('Security: Schema Poisoning', () => {
 			systemKey: 'xyz', // Extra field
 		};
 
-		const _instance1 = new VictimModel(poisonPayload);
+		void new VictimModel(poisonPayload);
 
 		// 2. Second instantiation with "clean" data
 		// A legitimate user sends normal data
@@ -38,12 +38,11 @@ describe('Security: Schema Poisoning', () => {
 			'isAdmin'
 		);
 
-		// Similarly, if we access instance2.isAdmin, does it exist? (It shouldn't if strict)
-		// But Typescript won't let us access it easily, cast to any
-		const _val = (instance2 as any).isAdmin;
+		// We're checking if the property exists, not using the value
+		const isAdminPresent = 'isAdmin' in instance2;
 
 		console.log('Is Admin Metadata present?:', !!isAdminMetadata);
-		console.log('Instance 2 has isAdmin?', 'isAdmin' in instance2);
+		console.log('Instance 2 has isAdmin?', isAdminPresent);
 
 		// Expectation: The schema must NOT depend on the first runtime payload.
 		// If it does, we have a vulnerability where the first requester dictates the object shape for everyone.
@@ -62,7 +61,7 @@ describe('Security: Schema Poisoning', () => {
 			injectedLevel: 999,
 		};
 
-		const _instance1 = new TargetedModel(poisonPayload);
+		void new TargetedModel(poisonPayload);
 
 		const injectedMetadata = Reflect.getMetadata(
 			'fieldType',
