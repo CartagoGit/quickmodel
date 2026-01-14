@@ -1,23 +1,32 @@
 import { describe, it, expect, beforeEach, mock, spyOn } from 'bun:test';
-import { PropertyTransformer } from '../../../../../src/core/services/property-transformer.service';
-import { ValueTransformerService } from '../../../../../src/core/services/value-transformer.service';
-import { TransformerLookupService } from '../../../../../src/core/services/transformer-lookup.service';
+import { PropertyTransformer } from '@/core/services/property-transformer.service';
+import { ValueTransformerService } from '@/core/services/value-transformer.service';
+import { TransformerLookupService } from '@/core/services/transformer-lookup.service';
 import 'reflect-metadata';
 
 // Mocks
+const mockValidateOrCoercePrimitive = mock((key, val) => val);
+const mockTransformByDesignType = mock((val) => val);
+const mockTransformNestedArray = mock((val) => val);
+const mockTransformNestedModelArray = mock((val) => val);
+
 const mockValueTransformer = {
-    validateOrCoercePrimitive: mock((key, val) => val),
-    transformByDesignType: mock((val) => val),
-    transformNestedArray: mock((val) => val),
-    transformNestedModelArray: mock((val) => val),
+    validateOrCoercePrimitive: mockValidateOrCoercePrimitive,
+    transformByDesignType: mockTransformByDesignType,
+    transformNestedArray: mockTransformNestedArray,
+    transformNestedModelArray: mockTransformNestedModelArray,
 } as unknown as ValueTransformerService;
 
+const mockGetTransformer = mock(() => null);
+
 const mockTransformerLookup = {
-    getTransformer: mock(() => null),
+    getTransformer: mockGetTransformer,
 } as unknown as TransformerLookupService;
 
+const mockDeserialize = mock((val) => val);
+
 const mockRecursiveDeserializer = {
-    deserialize: mock((val) => val),
+    deserialize: mockDeserialize,
 };
 
 describe('PropertyTransformer', () => {
@@ -25,17 +34,17 @@ describe('PropertyTransformer', () => {
 
     beforeEach(() => {
         // Reset mocks
-        mock(mockValueTransformer.validateOrCoercePrimitive).mockClear();
-        mock(mockValueTransformer.transformByDesignType).mockClear();
-        mock(mockValueTransformer.transformNestedArray).mockClear();
-        mock(mockValueTransformer.transformNestedModelArray).mockClear();
-        mock(mockTransformerLookup.getTransformer).mockClear();
-        mock(mockRecursiveDeserializer.deserialize).mockClear();
+        mockValidateOrCoercePrimitive.mockClear();
+        mockTransformByDesignType.mockClear();
+        mockTransformNestedArray.mockClear();
+        mockTransformNestedModelArray.mockClear();
+        mockGetTransformer.mockClear();
+        mockDeserialize.mockClear();
 
         service = new PropertyTransformer(
             mockValueTransformer,
             mockTransformerLookup,
-            mockRecursiveDeserializer
+            mockRecursiveDeserializer as any
         );
     });
 
@@ -54,8 +63,8 @@ describe('PropertyTransformer', () => {
 
         service.transformProperty('age', '123', {}, class User {}, context);
 
-        expect(mockValueTransformer.validateOrCoercePrimitive).toHaveBeenCalled();
-        expect(mockValueTransformer.transformByDesignType).toHaveBeenCalled();
+        expect(mockValidateOrCoercePrimitive).toHaveBeenCalled();
+        expect(mockTransformByDesignType).toHaveBeenCalled();
     });
 
     it('should delegate to custom transformer from options', () => {
@@ -75,7 +84,7 @@ describe('PropertyTransformer', () => {
 
     it('should delegate to fieldType transformer (e.g. @Quick({ field: Date }))', () => {
          const mockDateTransformer = { deserialize: mock(() => new Date('2023-01-01')) };
-         mock(mockTransformerLookup.getTransformer).mockReturnValue(mockDateTransformer);
+         mockGetTransformer.mockReturnValue(mockDateTransformer);
 
          const instance = {};
          Reflect.defineMetadata('fieldType', 'Date', instance, 'createdAt');
@@ -89,7 +98,7 @@ describe('PropertyTransformer', () => {
 
          const result = service.transformProperty('createdAt', '2023-01-01', instance, class User {}, context);
          
-         expect(mockTransformerLookup.getTransformer).toHaveBeenCalled();
+         expect(mockGetTransformer).toHaveBeenCalled();
          expect(mockDateTransformer.deserialize).toHaveBeenCalled();
          expect(result).toBeInstanceOf(Date);
     });
