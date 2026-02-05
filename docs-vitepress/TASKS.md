@@ -95,7 +95,189 @@ describe('MCP Public Tools - Full Coverage', () => {
 
 ---
 
-### ✅ Task #3: Casos edge para transformers compuestos
+### Task #2.5: Schema Generation API (Static & Instance)
+
+**Status:** 🟡 TODO  
+**Impacto:** Alto - Feature muy valiosa para ecosistema  
+**Esfuerzo:** 2-4 horas  
+**ROI:** Muy Alto (aumenta usabilidad y valor del proyecto)
+
+**Descripción:**
+
+Añadir métodos estáticos e de instancia en QModel para generar schemas de validación e introspección:
+
+**Métodos Estáticos (sobre la clase):**
+
+1. `MyModel.getSchema()` → JSON Schema general
+2. `MyModel.getZodSchema()` → Schema compatible con Zod
+3. `MyModel.getMongoSchema()` → Schema compatible con MongoDB
+
+**Métodos de Instancia (sobre instancia):**
+
+1. `instance.getSchema()` → JSON Schema de la instancia
+2. `instance.getZodSchema()` → Zod schema validado con valores
+3. `instance.getMongoSchema()` → Mongo schema con valores
+
+**Beneficios:**
+
+- ✅ Introspección de tipos en runtime
+- ✅ Integración con Zod (popular library de validación)
+- ✅ Integración con MongoDB (ODM común)
+- ✅ Aprovecha metadata existente de `@Quick()`
+- ✅ Útil para documentación automática
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/core/models/schema-generation.test.ts
+describe('QModel Schema Generation API', () => {
+	interface IUser {
+		id: number;
+		name: string;
+		email: string;
+		birth: string; // ISO date
+		balance: string; // BigInt as string
+	}
+
+	@Quick({ birth: Date, balance: BigInt })
+	class User extends QModel<IUser> {
+		declare id: number;
+		declare name: string;
+		declare email: string;
+		declare birth: Date;
+		declare balance: bigint;
+	}
+
+	// 1. Static method: JSON Schema
+	test('MyModel.getSchema() - generate JSON Schema for class', () => {
+		const schema = User.getSchema();
+
+		expect(schema).toMatchObject({
+			type: 'object',
+			properties: {
+				id: { type: 'number' },
+				name: { type: 'string' },
+				email: { type: 'string' },
+				birth: { type: 'string', format: 'date-time' },
+				balance: { type: 'string', pattern: '^-?\\d+$' },
+			},
+			required: ['id', 'name', 'email', 'birth', 'balance'],
+		});
+	});
+
+	// 2. Static method: Zod Schema
+	test('MyModel.getZodSchema() - generate Zod schema', () => {
+		const zodSchema = User.getZodSchema();
+
+		const validData = {
+			id: 1,
+			name: 'John',
+			email: 'john@example.com',
+			birth: '1990-01-01T00:00:00.000Z',
+			balance: '999999999999',
+		};
+
+		expect(() => zodSchema.parse(validData)).not.toThrow();
+	});
+
+	// 3. Static method: MongoDB Schema
+	test('MyModel.getMongoSchema() - generate MongoDB schema', () => {
+		const mongoSchema = User.getMongoSchema();
+
+		expect(mongoSchema).toMatchObject({
+			id: { type: Number, required: true },
+			name: { type: String, required: true },
+			email: { type: String, required: true },
+			birth: { type: Date, required: true },
+			balance: { type: String, required: true }, // BigInt as String in Mongo
+		});
+	});
+
+	// 4. Instance method: JSON Schema with values
+	test('instance.getSchema() - generate schema from instance', () => {
+		const user = new User({
+			id: 1,
+			name: 'John',
+			email: 'john@test.com',
+			birth: '1990-01-01',
+			balance: '123456789',
+		});
+
+		const schema = user.getSchema();
+
+		expect(schema).toHaveProperty('$id', 'User');
+		expect(schema.properties.birth).toHaveProperty('example');
+		expect(schema.properties.balance).toHaveProperty('example');
+	});
+});
+```
+
+**Implementación Sugerida:**
+
+```typescript
+// src/core/models/quick.model.ts
+export class QModel<TInterface = any> {
+	// Existing code...
+
+	/**
+	 * Generate JSON Schema for the model class
+	 * @static
+	 */
+	static getSchema<T extends typeof QModel>(this: T): Record<string, any> {
+		const decoratorConfig =
+			Reflect.getMetadata(QUICK_METADATA_KEY, this.prototype) || {};
+		// Build schema from decoratorConfig...
+		return schema;
+	}
+
+	/**
+	 * Generate Zod schema for validation
+	 * @static
+	 */
+	static getZodSchema<T extends typeof QModel>(this: T): z.ZodObject<any> {
+		// Convert decorator config to Zod schema...
+		return zodSchema;
+	}
+
+	/**
+	 * Generate MongoDB schema definition
+	 * @static
+	 */
+	static getMongoSchema<T extends typeof QModel>(
+		this: T
+	): Record<string, any> {
+		// Convert to Mongoose-compatible schema...
+		return mongoSchema;
+	}
+
+	/**
+	 * Generate JSON Schema from instance with examples
+	 */
+	getSchema(): Record<string, any> {
+		const classSchema = (this.constructor as typeof QModel).getSchema();
+		// Add example values from instance...
+		return enhancedSchema;
+	}
+
+	/**
+	 * Get Zod schema with current instance data
+	 */
+	getZodSchema(): z.ZodObject<any> {
+		return (this.constructor as typeof QModel).getZodSchema();
+	}
+
+	/**
+	 * Get MongoDB schema from instance
+	 */
+	getMongoSchema(): Record<string, any> {
+		return (this.constructor as typeof QModel).getMongoSchema();
+	}
+}
+```
+
+---
+
+### Task #3: Casos edge para transformers compuestos
 
 **Status:** 🟡 TODO  
 **Impacto:** Medio-Alto - Prevención de bugs en producción  
