@@ -23,7 +23,7 @@ export class QJsonToModelTool extends QAbstractTool<
 
 	async execute(args: {
 		json: string;
-		className: string;
+		className?: string;
 	}): Promise<{ code: string }> {
 		await Promise.resolve();
 		let data: any;
@@ -37,10 +37,13 @@ export class QJsonToModelTool extends QAbstractTool<
 			throw new Error('JSON must be an object');
 		}
 
+		// Apply default className if not provided
+		const className = args.className || 'GeneratedModel';
+
 		// SECURITY: Validate class name
-		if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(args.className)) {
+		if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(className)) {
 			throw new Error(
-				`Invalid class name: "${args.className}". Must be a valid identifier.`
+				`Invalid class name: "${className}". Must be a valid identifier.`
 			);
 		}
 
@@ -97,7 +100,7 @@ export class QJsonToModelTool extends QAbstractTool<
 		const code = `import { QModel, Quick } from '@cartago-git/quickmodel';
 
 ${decoratorString}
-export class ${args.className} extends QModel<${args.className}> {
+export class ${className} extends QModel<${className}> {
 ${props.join('\n')}
 }`;
 
