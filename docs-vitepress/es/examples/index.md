@@ -38,6 +38,16 @@ Explora transformaciones de tipos avanzadas:
 - [Inicio Rápido](/es/guide/quick-start) - Introducción de 5 minutos
 - [Referencia API](/tsdoc/) - Documentación completa de la API
 
+## Estructura de los Ejemplos
+
+Cada ejemplo sigue esta estructura:
+
+1. **Problema** - El desafío que estás tratando de resolver
+2. **Solución** - Cómo QuickModel lo resuelve
+3. **Código** - Código completo y ejecutable
+4. **Explicación** - Desglose paso a paso
+5. **Mejores Prácticas** - Consejos y recomendaciones
+
 ## Ejecutar Ejemplos
 
 Todos los ejemplos son TypeScript y pueden ejecutarse con:
@@ -52,3 +62,7 @@ npx ts-node example.ts
 # Usando tsx
 npx tsx example.ts
 ```
+
+## Contribuir con Ejemplos
+
+¿Tienes un gran ejemplo? ¡Nos encantaría verlo! Consulta nuestra [guía de contribución](https://github.com/CartagoGit/quickmodel/blob/main/CONTRIBUTING.md).
