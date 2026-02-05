@@ -1,73 +1,73 @@
 name: Feature Request
 description: Suggest a new feature or enhancement
-title: "[Feature]: "
-labels: ["enhancement", "needs-triage"]
+title: '[Feature]: '
+labels: ['enhancement', 'needs-triage']
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for suggesting a new feature!
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for suggesting a new feature!
 
-  - type: textarea
-    id: problem
-    attributes:
-      label: Problem Statement
-      description: What problem does this feature solve?
-      placeholder: I'm frustrated when...
-    validations:
-      required: true
+    - type: textarea
+      id: problem
+      attributes:
+          label: Problem Statement
+          description: What problem does this feature solve?
+          placeholder: I'm frustrated when...
+      validations:
+          required: true
 
-  - type: textarea
-    id: solution
-    attributes:
-      label: Proposed Solution
-      description: How would you like to solve this?
-      placeholder: I would like QuickModel to...
-    validations:
-      required: true
+    - type: textarea
+      id: solution
+      attributes:
+          label: Proposed Solution
+          description: How would you like to solve this?
+          placeholder: I would like QuickModel to...
+      validations:
+          required: true
 
-  - type: textarea
-    id: example
-    attributes:
-      label: Usage Example
-      description: Show how the feature would be used
-      render: typescript
-      placeholder: |
-        @Quick({ ... })
-        class MyModel extends QModel<IMyModel> {
-          // New feature usage
-        }
+    - type: textarea
+      id: example
+      attributes:
+          label: Usage Example
+          description: Show how the feature would be used
+          render: typescript
+          placeholder: |
+              @Quick({ ... })
+              class MyModel extends QModel<IMyModel> {
+                // New feature usage
+              }
 
-  - type: textarea
-    id: alternatives
-    attributes:
-      label: Alternatives Considered
-      description: What other solutions have you considered?
-      placeholder: I also thought about...
+    - type: textarea
+      id: alternatives
+      attributes:
+          label: Alternatives Considered
+          description: What other solutions have you considered?
+          placeholder: I also thought about...
 
-  - type: dropdown
-    id: priority
-    attributes:
-      label: Priority
-      description: How important is this feature to you?
-      options:
-        - Low - Nice to have
-        - Medium - Would improve my workflow
-        - High - Blocking my project
-    validations:
-      required: true
+    - type: dropdown
+      id: priority
+      attributes:
+          label: Priority
+          description: How important is this feature to you?
+          options:
+              - Low - Nice to have
+              - Medium - Would improve my workflow
+              - High - Blocking my project
+      validations:
+          required: true
 
-  - type: checkboxes
-    id: breaking
-    attributes:
-      label: Breaking Change
-      description: Would this be a breaking change?
-      options:
-        - label: This would require breaking changes
-        - label: This can be implemented without breaking changes
+    - type: checkboxes
+      id: breaking
+      attributes:
+          label: Breaking Change
+          description: Would this be a breaking change?
+          options:
+              - label: This would require breaking changes
+              - label: This can be implemented without breaking changes
 
-  - type: textarea
-    id: additional
-    attributes:
-      label: Additional Context
-      description: Any other context or screenshots
+    - type: textarea
+      id: additional
+      attributes:
+          label: Additional Context
+          description: Any other context or screenshots
