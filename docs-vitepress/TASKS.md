@@ -95,79 +95,107 @@ describe('MCP Public Tools - Full Coverage', () => {
 
 ---
 
-### Task #2.5: Schema Generation API (Static & Instance)
+### Task #2.5: Unified Schema Generation API
 
 **Status:** 🟡 TODO  
 **Impacto:** Alto - Feature muy valiosa para ecosistema  
-**Esfuerzo:** 2-4 horas  
+**Esfuerzo:** 3-5 horas  
 **ROI:** Muy Alto (aumenta usabilidad y valor del proyecto)
 
 **Descripción:**
 
-Añadir métodos estáticos e de instancia en QModel para generar schemas de validación e introspección:
+API unificada con método `.getSchema(type)` para generar diferentes tipos de schemas:
 
-**Métodos Estáticos (sobre la clase):**
+**API Propuesta:**
 
-1. `MyModel.getSchema()` → JSON Schema general
-2. `MyModel.getZodSchema()` → Schema compatible con Zod
-3. `MyModel.getMongoSchema()` → Schema compatible con MongoDB
+```typescript
+// Estático (sobre la clase)
+User.getSchema('json'); // → JSON Schema (draft-07)
+User.getSchema('zod'); // → Zod schema object
+User.getSchema('mongo'); // → MongoDB/Mongoose schema
+User.getSchema('typescript'); // → TypeScript interface string
+User.getSchema('graphql'); // → GraphQL type definition
+User.getSchema('openapi'); // → OpenAPI 3.0 schema
+User.getSchema('ajv'); // → AJV-compatible schema
 
-**Métodos de Instancia (sobre instancia):**
+// Instancia (con ejemplos de valores)
+user.getSchema('json'); // → JSON Schema + examples
+user.getSchema('zod'); // → Zod schema (mismo que estático)
+```
 
-1. `instance.getSchema()` → JSON Schema de la instancia
-2. `instance.getZodSchema()` → Zod schema validado con valores
-3. `instance.getMongoSchema()` → Mongo schema con valores
+**Schema Types Implementados:**
+
+1. **`'json'`** - JSON Schema Draft-07 (estándar universal)
+2. **`'zod'`** - Zod validation schema (muy popular en TS)
+3. **`'mongo'`** - MongoDB/Mongoose schema definition
+4. **`'typescript'`** - TypeScript interface code string
+5. **`'graphql'`** - GraphQL SDL type definition
+6. **`'openapi'`** - OpenAPI 3.0 compatible schema
+7. **`'ajv'`** - AJV validator schema (fast validation)
 
 **Beneficios:**
 
-- ✅ Introspección de tipos en runtime
-- ✅ Integración con Zod (popular library de validación)
-- ✅ Integración con MongoDB (ODM común)
-- ✅ Aprovecha metadata existente de `@Quick()`
-- ✅ Útil para documentación automática
+- ✅ API limpia y extensible (`getSchema(type)`)
+- ✅ Un solo método, múltiples formatos
+- ✅ Fácil añadir nuevos tipos en el futuro
+- ✅ Type-safe con union types: `'json' | 'zod' | 'mongo' | ...`
+- ✅ Integración con todo el ecosistema TypeScript/Node
 
 **Pasos TDD:**
 
 ```typescript
 // Test: tests/unit/core/models/schema-generation.test.ts
-describe('QModel Schema Generation API', () => {
+import { z } from 'zod';
+
+describe('QModel Unified Schema Generation API', () => {
 	interface IUser {
 		id: number;
 		name: string;
 		email: string;
 		birth: string; // ISO date
 		balance: string; // BigInt as string
+		tags: string[]; // Set as array
 	}
 
-	@Quick({ birth: Date, balance: BigInt })
+	@Quick({ birth: Date, balance: BigInt, tags: Set })
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare name: string;
 		declare email: string;
 		declare birth: Date;
 		declare balance: bigint;
+		declare tags: Set<string>;
 	}
 
-	// 1. Static method: JSON Schema
-	test('MyModel.getSchema() - generate JSON Schema for class', () => {
-		const schema = User.getSchema();
+	// 1. JSON Schema (universal standard)
+	test('User.getSchema("json") - generate JSON Schema', () => {
+		const schema = User.getSchema('json');
 
 		expect(schema).toMatchObject({
+			$schema: 'http://json-schema.org/draft-07/schema#',
 			type: 'object',
+			title: 'User',
 			properties: {
 				id: { type: 'number' },
 				name: { type: 'string' },
 				email: { type: 'string' },
 				birth: { type: 'string', format: 'date-time' },
 				balance: { type: 'string', pattern: '^-?\\d+$' },
+				tags: {
+					type: 'array',
+					items: { type: 'string' },
+					uniqueItems: true,
+				},
 			},
-			required: ['id', 'name', 'email', 'birth', 'balance'],
+			required: ['id', 'name', 'email', 'birth', 'balance', 'tags'],
 		});
 	});
 
-	// 2. Static method: Zod Schema
-	test('MyModel.getZodSchema() - generate Zod schema', () => {
-		const zodSchema = User.getZodSchema();
+	// 2. Zod Schema (validation)
+	test('User.getSchema("zod") - generate Zod schema', () => {
+		const zodSchema = User.getSchema('zod');
+
+		expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
 		const validData = {
 			id: 1,
@@ -175,68 +203,205 @@ describe('QModel Schema Generation API', () => {
 			email: 'john@example.com',
 			birth: '1990-01-01T00:00:00.000Z',
 			balance: '999999999999',
+			tags: ['typescript', 'node'],
 		};
 
 		expect(() => zodSchema.parse(validData)).not.toThrow();
 	});
 
-	// 3. Static method: MongoDB Schema
-	test('MyModel.getMongoSchema() - generate MongoDB schema', () => {
-		const mongoSchema = User.getMongoSchema();
+	// 3. MongoDB Schema
+	test('User.getSchema("mongo") - generate MongoDB schema', () => {
+		const mongoSchema = User.getSchema('mongo');
 
 		expect(mongoSchema).toMatchObject({
 			id: { type: Number, required: true },
 			name: { type: String, required: true },
 			email: { type: String, required: true },
 			birth: { type: Date, required: true },
-			balance: { type: String, required: true }, // BigInt as String in Mongo
+			balance: { type: String, required: true },
+			tags: { type: [String], required: true },
 		});
 	});
 
-	// 4. Instance method: JSON Schema with values
-	test('instance.getSchema() - generate schema from instance', () => {
+	// 4. TypeScript Interface
+	test('User.getSchema("typescript") - generate TS interface', () => {
+		const tsInterface = User.getSchema('typescript');
+
+		expect(tsInterface).toContain('interface IUser {');
+		expect(tsInterface).toContain('id: number;');
+		expect(tsInterface).toContain('birth: Date;');
+		expect(tsInterface).toContain('balance: bigint;');
+		expect(tsInterface).toContain('tags: Set<string>;');
+	});
+
+	// 5. GraphQL SDL
+	test('User.getSchema("graphql") - generate GraphQL type', () => {
+		const graphqlType = User.getSchema('graphql');
+
+		expect(graphqlType).toContain('type User {');
+		expect(graphqlType).toContain('id: Int!');
+		expect(graphqlType).toContain('name: String!');
+		expect(graphqlType).toContain('birth: DateTime!');
+		expect(graphqlType).toContain('tags: [String!]!');
+	});
+
+	// 6. OpenAPI 3.0 Schema
+	test('User.getSchema("openapi") - generate OpenAPI schema', () => {
+		const openapiSchema = User.getSchema('openapi');
+
+		expect(openapiSchema).toMatchObject({
+			type: 'object',
+			properties: {
+				id: { type: 'integer' },
+				name: { type: 'string' },
+				birth: { type: 'string', format: 'date-time' },
+			},
+			required: ['id', 'name', 'email', 'birth', 'balance', 'tags'],
+		});
+	});
+
+	// 7. AJV Schema (fast validation)
+	test('User.getSchema("ajv") - generate AJV schema', () => {
+		const ajvSchema = User.getSchema('ajv');
+
+		expect(ajvSchema).toHaveProperty('type', 'object');
+		expect(ajvSchema).toHaveProperty('properties');
+		expect(ajvSchema).toHaveProperty('required');
+	});
+
+	// 8. Instance with examples
+	test('user.getSchema("json") - JSON Schema with examples', () => {
 		const user = new User({
 			id: 1,
 			name: 'John',
 			email: 'john@test.com',
 			birth: '1990-01-01',
 			balance: '123456789',
+			tags: ['ts', 'node'],
 		});
 
-		const schema = user.getSchema();
+		const schema = user.getSchema('json');
 
-		expect(schema).toHaveProperty('$id', 'User');
+		expect(schema.properties.id).toHaveProperty('example', 1);
+		expect(schema.properties.name).toHaveProperty('example', 'John');
 		expect(schema.properties.birth).toHaveProperty('example');
-		expect(schema.properties.balance).toHaveProperty('example');
+	});
+
+	// 9. Invalid schema type
+	test('should throw on invalid schema type', () => {
+		expect(() => User.getSchema('invalid' as any)).toThrow(
+			'Unknown schema type: invalid'
+		);
 	});
 });
 ```
 
 **Implementación Sugerida:**
 
-```typescript
+````typescript
+// src/core/types/schema-types.ts
+export type QSchemaType =
+	| 'json' // JSON Schema Draft-07
+	| 'zod' // Zod validation
+	| 'mongo' // MongoDB/Mongoose
+	| 'typescript' // TypeScript interface
+	| 'graphql' // GraphQL SDL
+	| 'openapi' // OpenAPI 3.0
+	| 'ajv'; // AJV validator
+
 // src/core/models/quick.model.ts
+import type { QSchemaType } from '@/core/types/schema-types';
+
 export class QModel<TInterface = any> {
 	// Existing code...
 
 	/**
-	 * Generate JSON Schema for the model class
+	 * Generate schema in multiple formats
+	 * @param type - Schema type: 'json' | 'zod' | 'mongo' | 'typescript' | 'graphql' | 'openapi' | 'ajv'
 	 * @static
+	 * @example
+	 * ```ts
+	 * const jsonSchema = User.getSchema('json');
+	 * const zodSchema = User.getSchema('zod');
+	 * const mongoSchema = User.getSchema('mongo');
+	 * ```
 	 */
-	static getSchema<T extends typeof QModel>(this: T): Record<string, any> {
+	static getSchema<T extends typeof QModel>(this: T, type: QSchemaType): any {
 		const decoratorConfig =
 			Reflect.getMetadata(QUICK_METADATA_KEY, this.prototype) || {};
-		// Build schema from decoratorConfig...
-		return schema;
+
+		switch (type) {
+			case 'json':
+				return this._generateJsonSchema(decoratorConfig);
+			case 'zod':
+				return this._generateZodSchema(decoratorConfig);
+			case 'mongo':
+				return this._generateMongoSchema(decoratorConfig);
+			case 'typescript':
+				return this._generateTypeScriptInterface(decoratorConfig);
+			case 'graphql':
+				return this._generateGraphQLType(decoratorConfig);
+			case 'openapi':
+				return this._generateOpenAPISchema(decoratorConfig);
+			case 'ajv':
+				return this._generateAjvSchema(decoratorConfig);
+			default:
+				throw new Error(`Unknown schema type: ${type}`);
+		}
 	}
 
 	/**
-	 * Generate Zod schema for validation
-	 * @static
+	 * Generate schema with examples from instance values
+	 * @param type - Schema type
+	 * @example
+	 * ```ts
+	 * const user = new User({ id: 1, name: 'John' });
+	 * const schema = user.getSchema('json'); // Includes examples
+	 * ```
 	 */
-	static getZodSchema<T extends typeof QModel>(this: T): z.ZodObject<any> {
-		// Convert decorator config to Zod schema...
-		return zodSchema;
+	getSchema(type: QSchemaType): any {
+		const classSchema = (this.constructor as typeof QModel).getSchema(type);
+
+		// For JSON/OpenAPI, add examples from instance
+		if (type === 'json' || type === 'openapi') {
+			return this._addExamplesToSchema(classSchema);
+		}
+
+		return classSchema;
+	}
+
+	// Private helper methods
+	private static _generateJsonSchema(config: any): object {
+		// Implementation...
+	}
+
+	private static _generateZodSchema(config: any): z.ZodObject<any> {
+		// Implementation...
+	}
+
+	private static _generateMongoSchema(config: any): object {
+		// Implementation...
+	}
+
+	private static _generateTypeScriptInterface(config: any): string {
+		// Implementation...
+	}
+
+	private static _generateGraphQLType(config: any): string {
+		// Implementation...
+	}
+
+	private static _generateOpenAPISchema(config: any): object {
+		// Implementation...
+	}
+
+	private static _generateAjvSchema(config: any): object {
+		// Implementation...
+	}
+
+	private _addExamplesToSchema(schema: any): object {
+		// Add example values from this instance
+		// Implementation...
 	}
 
 	/**
@@ -273,7 +438,7 @@ export class QModel<TInterface = any> {
 		return (this.constructor as typeof QModel).getMongoSchema();
 	}
 }
-```
+````
 
 ---
 
