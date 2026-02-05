@@ -85,12 +85,6 @@ const readonlyUser = User.createReadonly({
 // readonlyUser.name = 'Ana'; // ¡Error!
 ```
 
-Crea una copia profunda de una instancia existente.
-
-```typescript
-const clone = user.clone();
-```
-
 ## Ciclo de Vida
 
 Cuando se instancia un modelo, sucede lo siguiente:
@@ -156,19 +150,6 @@ if (errors.length) {
 	console.error(errors);
 }
 ```
-
-````
-
-### `validate()`
-
-Ejecuta todas las validaciones definidas en las propiedades.
-
-```typescript
-const errors = user.validate();
-if (errors.length) {
-	console.error(errors);
-}
-````
 
 ## Gestión de Estado y Control de Cambios
 

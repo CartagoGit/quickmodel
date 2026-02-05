@@ -83,7 +83,8 @@
 		"docs:clean": "rm -rf docs-vitepress/dist docs-vitepress/api",
 		"docs:build": "bun run docs:clean && bun run docs:api && vitepress build docs-vitepress",
 		"docs:preview": "vitepress preview docs-vitepress",
-		"release:check": "./scripts/pre-release.sh"
+		"release:check": "./scripts/pre-release.sh",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@faker-js/faker": "^10.2.0",
@@ -106,6 +107,8 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.4",
 		"eslint-plugin-security": "^3.0.1",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.7",
 		"nodemon": "^3.1.11",
 		"prettier": "^3.7.4",
 		"sass": "^1.97.2",
@@ -139,5 +142,14 @@
 	"bugs": {
 		"url": "https://github.com/CartagoGit/quickmodel/issues"
 	},
-	"homepage": "https://github.com/CartagoGit/quickmodel#readme"
+	"homepage": "https://github.com/CartagoGit/quickmodel#readme",
+	"lint-staged": {
+		"*.{ts,js,mjs}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"*.{json,md}": [
+			"prettier --write"
+		]
+	}
 }
