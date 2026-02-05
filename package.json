@@ -17,11 +17,29 @@
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
+	"bin": {
+		"quickmodel": "./dist/cli.js"
+	},
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.js"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts",
+			"import": "./dist/types.mjs",
+			"require": "./dist/types.js"
+		},
+		"./advanced": {
+			"types": "./dist/advanced.d.ts",
+			"import": "./dist/advanced.mjs",
+			"require": "./dist/advanced.js"
+		},
+		"./utils": {
+			"types": "./dist/utils.d.ts",
+			"import": "./dist/utils.mjs",
+			"require": "./dist/utils.js"
 		},
 		"./transformers": {
 			"types": "./dist/transformers/index.d.ts",
@@ -41,7 +59,10 @@
 		"CHANGELOG"
 	],
 	"scripts": {
-		"build": "bun run clean && bun test && tsup",
+		"build": "bun run clean && bun run check && tsup",
+		"check": "bun run format && bun run lint && bun run typecheck && bun test",
+		"mcp": "bun run src/mcp/server.ts",
+		"mcp:setup": "bun run scripts/setup-mcp.ts",
 		"dev": "tsup --watch",
 		"test": "bun test",
 		"test:coverage": "bun test --coverage",
@@ -53,44 +74,48 @@
 		"typecheck:src:watch": "bun run typecheck:src --watch",
 		"typecheck:tests": "tsc --noEmit -p ./tests/tsconfig.json",
 		"typecheck:tests:watch": "bun run typecheck:tests --watch",
-		"lint": "eslint src tests --ext .ts",
-		"lint:fix": "eslint src tests --ext .ts --fix",
+		"lint": "eslint src tests",
+		"lint:fix": "eslint src tests --fix",
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"docs:api": "typedoc",
-		"docs:dev": "bun run docs:api && vitepress dev docs-vitepress",
+		"docs:dev": "bun run docs:api && VITE_SHOW_INTERNAL_DOCS=true vitepress dev docs-vitepress",
 		"docs:clean": "rm -rf docs-vitepress/dist docs-vitepress/api",
 		"docs:build": "bun run docs:clean && bun run docs:api && vitepress build docs-vitepress",
 		"docs:preview": "vitepress preview docs-vitepress",
 		"release:check": "./scripts/pre-release.sh"
 	},
 	"dependencies": {
-		"reflect-metadata": "^0.2.2"
+		"@faker-js/faker": "^10.2.0",
+		"@modelcontextprotocol/sdk": "^1.25.2",
+		"reflect-metadata": "^0.2.2",
+		"zod": "^4.3.5"
 	},
 	"devDependencies": {
-		"@faker-js/faker": "^10.2.0",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",
 		"@semantic-release/github": "^12.0.2",
 		"@semantic-release/npm": "^13.1.3",
 		"@swc/core": "^1.15.8",
-		"@types/bun": "^1.1.13",
-		"@types/node": "^25.0.3",
-		"@typescript-eslint/eslint-plugin": "^8.52.0",
-		"@typescript-eslint/parser": "^8.52.0",
+		"@types/bun": "^1.3.5",
+		"@types/node": "^25.0.8",
+		"@typescript-eslint/eslint-plugin": "^8.53.0",
+		"@typescript-eslint/parser": "^8.53.0",
 		"concurrently": "^9.2.1",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.4",
+		"eslint-plugin-security": "^3.0.1",
 		"nodemon": "^3.1.11",
 		"prettier": "^3.7.4",
 		"sass": "^1.97.2",
 		"semantic-release": "^25.0.2",
-		"tsup": "^8.0.1",
-		"typedoc": "^0.28.15",
+		"tsup": "^8.5.1",
+		"typedoc": "^0.28.16",
 		"typedoc-plugin-markdown": "^4.9.0",
 		"typedoc-vitepress-theme": "^1.1.2",
-		"typescript": "^5.7.2",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.53.0",
 		"vitepress": "^1.6.4"
 	},
 	"peerDependencies": {

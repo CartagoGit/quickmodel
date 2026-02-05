@@ -3,26 +3,84 @@
  * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
  */
 
-export interface IQSerializer<TModel extends Record<string, unknown>, TInterface> {
-  /**
-   * Serializes a model to its interface representation
-   */
-  serialize(model: TModel): TInterface;
+import { IQCaseOptions } from '../types/case.type';
 
-  /**
-   * Serializa a JSON string
-   */
-  serializeToJson(model: TModel): string;
+export interface IQSerializationOptions {
+	/**
+	 * Include properties starting with a single underscore `_` (e.g., `_id`, `_value`)
+	 * These are often used for private/protected conventions or special API fields like HAL `_links`.
+	 * @default false
+	 */
+	includeUnderscore?: boolean;
+
+	/**
+	 * Include properties starting with double underscore `__` (e.g., `__meta`)
+	 * These are almost always internal framework properties.
+	 * @default false
+	 */
+	includeDoubleUnderscore?: boolean;
+
+	/**
+	 * Internal recursion depth tracking for security
+	 * @internal
+	 */
+	_depth?: number;
+
+	/**
+	 * Date serialization strategy overlap (internal use for passing down config)
+	 */
+	dateStrategy?: 'iso' | 'timestamp' | 'native';
+
+	/**
+	 * Case transformation strategy.
+	 */
+	transformCase?: IQCaseOptions;
+
+	/**
+	 * Include fields with undefined/null values in the serialized output.
+	 */
+	exposeUnsetFields?: boolean;
 }
 
-export interface IQDeserializer<TInterface extends Record<string, unknown>, TModel> {
-  /**
-   * Deserializa una interfaz a un modelo
-   */
-  deserialize(data: TInterface, modelClass: new (data: TInterface) => TModel): TModel;
+export interface IQSerializer<
+	TModel extends Record<string, unknown>,
+	TInterface,
+> {
+	/**
+	 * Serializes a model to its interface representation
+	 * @param model - The model to serialize
+	 * @param seen - Optional WeakSet to track circular references
+	 * @param options - Serialization options
+	 */
+	serialize(
+		model: TModel,
+		seen?: WeakSet<object>,
+		options?: IQSerializationOptions
+	): TInterface;
 
-  /**
-   * Deserializes from JSON string.
-   */
-  deserializeFromJson(json: string, modelClass: new (data: any) => TModel): TModel;
+	/**
+	 * Serializes to JSON string
+	 */
+	serializeToJson(model: TModel, options?: IQSerializationOptions): string;
+}
+
+export interface IQDeserializer<
+	TInterface extends Record<string, unknown>,
+	TModel,
+> {
+	/**
+	 * Deserializes an interface to a model
+	 */
+	deserialize(
+		data: TInterface,
+		modelClass: new (data: TInterface) => TModel
+	): TModel;
+
+	/**
+	 * Deserializes from JSON string.
+	 */
+	deserializeFromJson(
+		json: string,
+		modelClass: new (data: unknown) => TModel
+	): TModel;
 }

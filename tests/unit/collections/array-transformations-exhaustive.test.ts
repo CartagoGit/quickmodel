@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QType } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QType } from '@/utils';
 
 describe('Array Transformations - Exhaustive Tests', () => {
 	// ============================================================================
@@ -139,7 +140,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			const data = new Data({
 				dates: [
 					'2026-01-01T00:00:00.000Z',
-					null as any,
+					null as unknown as string,
 					'2026-12-31T23:59:59.999Z',
 				],
 			});
@@ -159,7 +160,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			bigints: string[];
 		}
 
-		@Quick({ bigints: BigInt })
+		@Quick({ bigints: [BigInt] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare bigints: bigint[];
 		}
@@ -255,7 +256,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			sets: string[][];
 		}
 
-		@Quick({ sets: Set })
+		@Quick({ sets: [Set] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare sets: Set<string>[];
 		}
@@ -281,12 +282,12 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 	describe('Arrays of Map', () => {
 		interface IData {
-			maps: [string, any][][];
+			maps: [string, unknown][][];
 		}
 
-		@Quick({ maps: Map })
+		@Quick({ maps: [Map] }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
-			declare maps: Map<string, any>[];
+			declare maps: Map<string, unknown>[];
 		}
 
 		test('Map<string, any>[] from tuples', () => {
@@ -322,9 +323,9 @@ describe('Array Transformations - Exhaustive Tests', () => {
 		}
 
 		@Quick({
-			int8arrays: Int8Array,
-			uint8arrays: Uint8Array,
-			float32arrays: Float32Array,
+			int8arrays: [Int8Array], // ✅ CORRECTO - array syntax
+			uint8arrays: [Uint8Array], // ✅ CORRECTO - array syntax
+			float32arrays: [Float32Array], // ✅ CORRECTO - array syntax
 		})
 		class Data extends QModel<IData> {
 			declare int8arrays: Int8Array[];
@@ -451,7 +452,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			declare title: string;
 		}
 
-		@Quick({ posts: Post })
+		@Quick({ posts: [Post] }) // ✅ CORRECTO - array syntax
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare posts: Post[];
@@ -487,15 +488,16 @@ describe('Array Transformations - Exhaustive Tests', () => {
 				id: 1,
 				posts: [
 					{ id: 1, title: 'Post 1' },
-					null as any,
+					null as unknown as IPost,
 					{ id: 2, title: 'Post 2' },
 				],
 			});
 
-			// Null values should be filtered out
-			expect(user.posts).toHaveLength(2);
+			// Null values should be PRESERVED (Security Fix)
+			expect(user.posts).toHaveLength(3);
 			expect(user.posts[0]!.id).toBe(1);
-			expect(user.posts[1]!.id).toBe(2);
+			expect(user.posts[1]).toBeNull();
+			expect(user.posts[2]!.id).toBe(2);
 		});
 	});
 
@@ -571,14 +573,14 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 	describe('Edge cases', () => {
 		interface IData {
-			empty: any[];
+			empty: unknown[];
 			single: number[];
 			nested: number[][];
 		}
 
 		@Quick()
 		class Data extends QModel<IData> {
-			declare empty: any[];
+			declare empty: unknown[];
 			declare single: number[];
 			declare nested: number[][];
 		}

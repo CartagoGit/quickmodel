@@ -1,67 +1,94 @@
 /**
  * Utility types for type-safe serialization/deserialization
- * 
- * These types correctly map TypeScript types to their serialized representations
+ *
+ * These types correctly map TypeScript types to their IQSerialized representations
  */
 
 /**
- * Maps a TypeScript type to its serialized version
+ * Maps a TypeScript type to its IQSerialized version
  */
-export type Serialized<T> = T extends RegExp
-  ? string | { __type: 'regexp'; source: string; flags: string }
-  : T extends Error
-  ? string
-  : T extends Date
-  ? string
-  : T extends URL
-  ? string
-  : T extends URLSearchParams
-  ? string
-  : T extends bigint
-  ? string | { __type: 'bigint'; value: string }
-  : T extends symbol
-  ? string | { __type: 'symbol'; description: string }
-  : T extends Int8Array
-  ? number[]
-  : T extends Uint8Array
-  ? number[]
-  : T extends Uint8ClampedArray
-  ? number[]
-  : T extends Int16Array
-  ? number[]
-  : T extends Uint16Array
-  ? number[]
-  : T extends Int32Array
-  ? number[]
-  : T extends Uint32Array
-  ? number[]
-  : T extends Float32Array
-  ? number[]
-  : T extends Float64Array
-  ? number[]
-  : T extends BigInt64Array
-  ? string[]
-  : T extends BigUint64Array
-  ? string[]
-  : T extends ArrayBuffer
-  ? number[]
-  : T extends DataView
-  ? number[]
-  : T extends Map<infer K, infer V>
-  ? [Serialized<K>, Serialized<V>][] | { __type: 'Map'; entries: [K, V][] }
-  : T extends Set<infer U>
-  ? Serialized<U>[] | { __type: 'Set'; values: U[] }
-  : T extends Array<infer U>
-  ? Serialized<U>[]
-  : T extends object
-  ? { [K in keyof T]: Serialized<T[K]> }
-  : T; // primitivos (string, number, boolean, null, undefined)
+export type IQSerialized<T> = T extends RegExp
+	? string | { __type: 'regexp'; source: string; flags: string }
+	: T extends Error
+		? string
+		: T extends Date
+			? string
+			: T extends URL
+				? string
+				: T extends URLSearchParams
+					? string
+					: T extends bigint
+						? string | { __type: 'bigint'; value: string }
+						: T extends symbol
+							? string | { __type: 'symbol'; description: string }
+							: T extends Int8Array
+								? number[]
+								: T extends Uint8Array
+									? number[]
+									: T extends Uint8ClampedArray
+										? number[]
+										: T extends Int16Array
+											? number[]
+											: T extends Uint16Array
+												? number[]
+												: T extends Int32Array
+													? number[]
+													: T extends Uint32Array
+														? number[]
+														: T extends Float32Array
+															? number[]
+															: T extends Float64Array
+																? number[]
+																: T extends BigInt64Array
+																	? string[]
+																	: T extends BigUint64Array
+																		? string[]
+																		: T extends ArrayBuffer
+																			? number[]
+																			: T extends DataView
+																				? number[]
+																				: T extends Map<
+																							infer K,
+																							infer V
+																					  >
+																					?
+																							| [
+																									IQSerialized<K>,
+																									IQSerialized<V>,
+																							  ][]
+																							| {
+																									__type: 'Map';
+																									entries: [
+																										K,
+																										V,
+																									][];
+																							  }
+																					: T extends Set<
+																								infer U
+																						  >
+																						?
+																								| IQSerialized<U>[]
+																								| {
+																										__type: 'Set';
+																										values: U[];
+																								  }
+																						: T extends Array<
+																									infer U
+																							  >
+																							? IQSerialized<U>[]
+																							: T extends object
+																								? {
+																										[K in keyof T]: IQSerialized<
+																											T[K]
+																										>;
+																									}
+																								: T; // primitivos (string, number, boolean, null, undefined)
 
 /**
- * Maps a complete interface to its serialized version
+ * Maps a complete interface to its IQSerialized version
  */
-export type SerializedInterface<T> = {
-  [K in keyof T]: Serialized<T[K]>;
+export type IQSerializedInterface<T> = {
+	[K in keyof T]: IQSerialized<T[K]>;
 };
 
 /**
@@ -72,6 +99,9 @@ export type Deserialized<T> = T; // Deserialization handled at runtime with tran
 /**
  * Tipo para datos de entrada en el constructor
  * Acepta datos completos, ya sean originales o serializados
- * Uses Record<string, any> to allow flexibility while maintaining type hints
+ * Uses Record<string, unknown> to allow flexibility while maintaining type safety
  */
-export type ModelData<T> = T | SerializedInterface<T> | Record<string, any>;
+export type IQModelData<T> =
+	| T
+	| IQSerializedInterface<T>
+	| Record<string, unknown>;

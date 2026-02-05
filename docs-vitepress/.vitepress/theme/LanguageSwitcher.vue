@@ -1,22 +1,28 @@
 <template>
-	<div class="VPFlyout VPNavBarMenuGroup" id="language-switcher-mount">
-		<button type="button" class="button" :aria-label="`Change language from ${currentLang.label}`">
-			<img :src="currentLang.flagSvg" :alt="currentLang.label" class="flag-img" />
+	<div
+		class="VPFlyout VPNavBarMenuGroup"
+		id="language-switcher-mount">
+		<button
+			type="button"
+			class="button"
+			:aria-label="`Change language from ${currentLang.label}`">
+			<img
+				:src="currentLang.flagSvg"
+				:alt="currentLang.label"
+				class="flag-img" />
 			<svg
 				class="icon"
 				xmlns="http://www.w3.org/2000/svg"
 				width="24"
 				height="24"
 				viewBox="0 0 24 24"
-				fill="none"
-			>
+				fill="none">
 				<path
 					d="M7 10L12 15L17 10"
 					stroke="currentColor"
 					stroke-width="2"
 					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
+					stroke-linejoin="round" />
 			</svg>
 		</button>
 
@@ -27,9 +33,11 @@
 					:key="lang.code"
 					class="item"
 					:class="{ active: lang.code === currentLocale }"
-					@click.prevent="handleLanguageChange(lang)"
-				>
-					<img :src="lang.flagSvg" :alt="lang.label" class="flag-img" />
+					@click.prevent="handleLanguageChange(lang)">
+					<img
+						:src="lang.flagSvg"
+						:alt="lang.label"
+						class="flag-img" />
 					<span class="text">{{ lang.label }}</span>
 				</a>
 			</div>
@@ -38,13 +46,14 @@
 </template>
 
 <script setup lang="ts">
-import { useData, useRoute } from 'vitepress';
-import { computed, onMounted, nextTick, ref } from 'vue';
+import { useData, useRoute, useRouter } from 'vitepress';
+import { computed, onMounted, nextTick, ref, watch } from 'vue';
 import flagES from './flags/es.svg?url';
 import flagGB from './flags/gb.svg?url';
 
 const { site, localeIndex } = useData();
 const route = useRoute();
+const router = useRouter();
 
 // Override para rutas compartidas donde no podemos cambiar localeIndex
 const overrideLocale = ref<string | null>(null);
@@ -59,25 +68,71 @@ const currentLocale = computed(() => {
 
 const STORAGE_KEY_LANG = 'vitepress-theme-lang';
 
-// Reposicionar el selector antes del botón de tema cuando se monte
+// Watch route changes to update overrideLocale
+watch(
+	() => route.path,
+	(newPath) => {
+		const isSharedRoute =
+			newPath.includes('/tsdoc/') || !newPath.match(/\/(en|es)\//);
+
+		if (isSharedRoute) {
+			// En ruta compartida, usar localStorage
+			const savedLang = localStorage.getItem(STORAGE_KEY_LANG);
+			if (savedLang) {
+				overrideLocale.value = savedLang;
+			}
+		} else {
+			// En ruta con idioma, limpiar override para que use localeIndex
+			overrideLocale.value = null;
+		}
+	}
+);
+
+// Inicializar overrideLocale cuando se monta el componente
+let hasRepositioned = false;
+
 onMounted(async () => {
 	await nextTick();
-	if (typeof window !== 'undefined') {
-		const switcher = document.querySelector('#language-switcher-mount');
-		const themeButton = document.querySelector('.VPNavBar .VPSwitchAppearance');
 
-		// Remover el selector de traducciones por defecto de VitePress
-		const defaultSwitcher = document.querySelector('.VPNavBar .translations');
-		if (defaultSwitcher?.parentElement) {
-			defaultSwitcher.parentElement?.removeChild(defaultSwitcher);
+	// Inicializar overrideLocale desde localStorage si estamos en ruta compartida
+	if (typeof window !== 'undefined') {
+		const currentPath = route.path;
+		const isSharedRoute =
+			currentPath.includes('/tsdoc/') ||
+			!currentPath.match(/\/(en|es)\//);
+
+		if (isSharedRoute) {
+			const savedLang = localStorage.getItem(STORAGE_KEY_LANG);
+			if (savedLang) {
+				overrideLocale.value = savedLang;
+			}
 		}
 
-		// Reposicionar nuestro selector si ambos elementos existen
-		if (switcher && themeButton?.parentElement && !themeButton.parentElement.contains(switcher)) {
-			try {
-				themeButton.parentElement?.insertBefore(switcher, themeButton);
-			} catch (error) {
-				console.warn('Could not reposition language switcher:', error);
+		// Reposicionar el selector solo una vez
+		if (!hasRepositioned) {
+			const switcher = document.querySelector('#language-switcher-mount');
+			const themeButton = document.querySelector(
+				'.VPNavBar .VPSwitchAppearance'
+			);
+
+			// Reposicionar nuestro selector si ambos elementos existen
+			if (
+				switcher &&
+				themeButton?.parentElement &&
+				!themeButton.parentElement.contains(switcher)
+			) {
+				try {
+					themeButton.parentElement?.insertBefore(
+						switcher,
+						themeButton
+					);
+					hasRepositioned = true;
+				} catch (error) {
+					console.warn(
+						'Could not reposition language switcher:',
+						error
+					);
+				}
 			}
 		}
 	}
@@ -87,21 +142,28 @@ const locales = computed(() => {
 	const currentPath = route.path;
 
 	// Detectar si estamos en una ruta compartida (sin prefijo de idioma)
-	const isSharedRoute = currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//);
+	const isSharedRoute =
+		currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//);
 
-	return Object.entries(site.value.locales || {}).map(([localeKey, config]) => {
-		const code = localeKey;
+	return Object.entries(site.value.locales || {}).map(
+		([localeKey, config]) => {
+			const code = localeKey;
 
-		// Si es ruta compartida, mantener el path actual
-		const newPath = isSharedRoute ? currentPath : currentPath.replace(/\/(en|es)\//, `/${code}/`);
+			// Si es ruta compartida, mantener el path actual
+			const newPath = isSharedRoute
+				? currentPath
+				: currentPath.replace(/\/(en|es)\//, `/${code}/`);
 
-		return {
-			code,
-			label: config.label?.replace(/🇬🇧|🇪🇸/, '').trim() || code.toUpperCase(),
-			flagSvg: code === 'en' ? flagGB : code === 'es' ? flagES : '',
-			link: newPath,
-		};
-	});
+			return {
+				code,
+				label:
+					config.label?.replace(/🇬🇧|🇪🇸/, '').trim() ||
+					code.toUpperCase(),
+				flagSvg: code === 'en' ? flagGB : code === 'es' ? flagES : '',
+				link: newPath,
+			};
+		}
+	);
 });
 
 const currentLang = computed(() => {
@@ -109,7 +171,7 @@ const currentLang = computed(() => {
 	return lang || locales.value[0];
 });
 
-const handleLanguageChange = (lang: {
+const handleLanguageChange = async (lang: {
 	code: string;
 	label: string;
 	flagSvg: string;
@@ -119,17 +181,32 @@ const handleLanguageChange = (lang: {
 		const currentPath = route.path;
 
 		// Detectar si estamos en una ruta compartida (sin prefijo de idioma)
-		const isSharedRoute = currentPath.includes('/tsdoc/') || !currentPath.match(/\/(en|es)\//);
+		const isSharedRoute =
+			currentPath.includes('/tsdoc/') ||
+			!currentPath.match(/\/(en|es)\//);
 
 		// Guardar preferencia
 		localStorage.setItem(STORAGE_KEY_LANG, lang.code);
 
+		// Dispatch custom event for same-window storage change
+		window.dispatchEvent(
+			new CustomEvent('localStorageChange', {
+				detail: { key: STORAGE_KEY_LANG, newValue: lang.code },
+			})
+		);
+
 		if (isSharedRoute) {
-			// En rutas compartidas, solo actualizar el override local
+			// En rutas compartidas, actualizar el override local
 			overrideLocale.value = lang.code;
+			// Esperar a que Vue actualice la vista
+			await nextTick();
 		} else {
-			// Ruta con idioma (/en/, /es/): navega a la ruta equivalente
-			window.location.href = lang.link;
+			// Ruta con idioma (/en/, /es/): construir la nueva ruta
+			const newPath = currentPath.replace(
+				/\/(en|es)\//,
+				`/${lang.code}/`
+			);
+			router.go(newPath);
 		}
 	}
 };

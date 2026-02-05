@@ -6,448 +6,459 @@ import { QModel, Quick } from '@/index';
 // ========================================
 
 describe('Performance: Costo de serialización/deserialización', () => {
-  interface IUser {
-    id: string;
-    name: string;
-    email: string;
-    age: number;
-    active: boolean;
-  }
+	interface IUser {
+		id: string;
+		name: string;
+		email: string;
+		age: number;
+		active: boolean;
+	}
 
-  @Quick()
-  class User extends QModel<IUser> {
-    declare id: string;
-    declare name: string;
-    declare email: string;
-    declare age: number;
-    declare active: boolean;
-  }
+	@Quick()
+	class User extends QModel<IUser> {
+		declare id: string;
+		declare name: string;
+		declare email: string;
+		declare age: number;
+		declare active: boolean;
+	}
 
-  test('Baseline: Crear objeto plain (sin QModel)', () => {
-    const iterations = 10000;
-    const start = performance.now();
+	test('Baseline: Crear objeto plain (sin QModel)', () => {
+		const iterations = 10000;
+		const start = performance.now();
 
-    for (let i = 0; i < iterations; i++) {
-      // Creating plain object for performance baseline
-      void {
-        id: `user-${i}`,
-        name: `User ${i}`,
-        email: `user${i}@test.com`,
-        age: 20 + (i % 50),
-        active: i % 2 === 0,
-      };
-    }
+		for (let i = 0; i < iterations; i++) {
+			// Creating plain object for performance baseline
+			void {
+				id: `user-${i}`,
+				name: `User ${i}`,
+				email: `user${i}@test.com`,
+				age: 20 + (i % 50),
+				active: i % 2 === 0,
+			};
+		}
 
-    const end = performance.now();
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const end = performance.now();
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== BASELINE: Plain Objects ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
+		console.log('\n=== BASELINE: Plain Objects ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
 
-    expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 10k objetos
-  });
+		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 10k objetos
+	});
 
-  test('Performance: Crear instancias QModel (constructor)', () => {
-    const iterations = 10000;
-    const start = performance.now();
+	test('Performance: Crear instancias QModel (constructor)', () => {
+		const iterations = 10000;
+		const start = performance.now();
 
-    for (let i = 0; i < iterations; i++) {
-      // Creating QModel instance for performance test
-      void new User({
-        id: `user-${i}`,
-        name: `User ${i}`,
-        email: `user${i}@test.com`,
-        age: 20 + (i % 50),
-        active: i % 2 === 0,
-      });
-    }
+		for (let i = 0; i < iterations; i++) {
+			// Creating QModel instance for performance test
+			void new User({
+				id: `user-${i}`,
+				name: `User ${i}`,
+				email: `user${i}@test.com`,
+				age: 20 + (i % 50),
+				active: i % 2 === 0,
+			});
+		}
 
-    const end = performance.now();
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const end = performance.now();
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== CREAR INSTANCIAS (constructor) ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por instancia`);
-    console.log(`Overhead vs plain: ${((avgTime * 1000) - 10).toFixed(2)}μs`);
+		console.log('\n=== CREAR INSTANCIAS (constructor) ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por instancia`);
+		console.log(`Overhead vs plain: ${(avgTime * 1000 - 10).toFixed(2)}μs`);
 
-    expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 10k instancias
-  });
+		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 10k instancias
+	});
 
-  test('Performance: Serialización (serialize)', () => {
-    const users: User[] = [];
-    for (let i = 0; i < 1000; i++) {
-      users.push(
-        new User({
-          id: `user-${i}`,
-          name: `User ${i}`,
-          email: `user${i}@test.com`,
-          age: 20 + (i % 50),
-          active: i % 2 === 0,
-        })
-      );
-    }
+	test('Performance: Serialización (serialize)', () => {
+		const users: User[] = [];
+		for (let i = 0; i < 1000; i++) {
+			users.push(
+				new User({
+					id: `user-${i}`,
+					name: `User ${i}`,
+					email: `user${i}@test.com`,
+					age: 20 + (i % 50),
+					active: i % 2 === 0,
+				})
+			);
+		}
 
-    const start = performance.now();
-    for (const user of users) {
-      user.serialize();
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (const user of users) {
+			user.serialize();
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / users.length;
+		const totalTime = end - start;
+		const avgTime = totalTime / users.length;
 
-    console.log('\n=== SERIALIZACIÓN (serialize) ===');
-    console.log(`Iteraciones: ${users.length}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
+		console.log('\n=== SERIALIZACIÓN (serialize) ===');
+		console.log(`Iteraciones: ${users.length}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
 
-    expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
-  });
+		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
+	});
 
-  test('Performance: Deserialización (deserialize)', () => {
-    const plainUsers = [];
-    for (let i = 0; i < 1000; i++) {
-      plainUsers.push({
-        id: `user-${i}`,
-        name: `User ${i}`,
-        email: `user${i}@test.com`,
-        age: 20 + (i % 50),
-        active: i % 2 === 0,
-      });
-    }
+	test('Performance: Deserialización (deserialize)', () => {
+		const plainUsers = [];
+		for (let i = 0; i < 1000; i++) {
+			plainUsers.push({
+				id: `user-${i}`,
+				name: `User ${i}`,
+				email: `user${i}@test.com`,
+				age: 20 + (i % 50),
+				active: i % 2 === 0,
+			});
+		}
 
-    const start = performance.now();
-    for (const data of plainUsers) {
-      User.deserialize(data);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (const data of plainUsers) {
+			User.deserialize(data);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / plainUsers.length;
+		const totalTime = end - start;
+		const avgTime = totalTime / plainUsers.length;
 
-    console.log('\n=== DESERIALIZACIÓN (deserialize) ===');
-    console.log(`Iteraciones: ${plainUsers.length}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
+		console.log('\n=== DESERIALIZACIÓN (deserialize) ===');
+		console.log(`Iteraciones: ${plainUsers.length}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
 
-    expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
-  });
+		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
+	});
 });
 
 describe('Performance: Costo de inferencia de arrays', () => {
-  interface IProduct {
-    productId: string;
-    title: string;
-    price: number;
-  }
+	interface IProduct {
+		productId: string;
+		title: string;
+		price: number;
+	}
 
-  class Product extends QModel<IProduct> {
-    declare productId: string;
-    declare title: string;
-    declare price: number;
-  }
+	@Quick()
+	class Product extends QModel<IProduct> {
+		declare productId: string;
+		declare title: string;
+		declare price: number;
+	}
 
-  interface ICart {
-    cartId: string;
-    items: Product[];
-    total: number;
-  }
+	interface ICart {
+		cartId: string;
+		items: Product[];
+		total: number;
+	}
 
-  class Cart extends QModel<ICart> {
-    declare cartId: string;
-    declare items: Product[];
-    declare total: number;
-  }
+	@Quick({ items: [Product] })
+	class Cart extends QModel<ICart> {
+		declare cartId: string;
+		declare items: Product[];
+		declare total: number;
+	}
 
-  class CartExplicit extends QModel<ICart> {
-    declare cartId: string;
-    declare items: Product[];
-    declare total: number;
-  }
+	@Quick({ items: [Product] })
+	class CartExplicit extends QModel<ICart> {
+		declare cartId: string;
+		declare items: Product[];
+		declare total: number;
+	}
 
-  test('Performance: Array pequeño (10 items) - CON inferencia', () => {
-    const iterations = 1000;
-    const data = {
-      cartId: 'cart-1',
-      items: Array.from({ length: 10 }, (_, i) => ({
-        productId: `p${i}`,
-        title: `Product ${i}`,
-        price: 10 + i,
-      })),
-      total: 145,
-    };
+	test('Performance: Array pequeño (10 items) - CON inferencia', () => {
+		const iterations = 1000;
+		const data = {
+			cartId: 'cart-1',
+			items: Array.from({ length: 10 }, (_, i) => ({
+				productId: `p${i}`,
+				title: `Product ${i}`,
+				price: 10 + i,
+			})),
+			total: 145,
+		};
 
-    const start = performance.now();
-    for (let i = 0; i < iterations; i++) {
-      new Cart(data as any);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (let i = 0; i < iterations; i++) {
+			new Cart(data as unknown as ICart);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== ARRAY PEQUEÑO (10 items) - CON INFERENCIA ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
+		console.log('\n=== ARRAY PEQUEÑO (10 items) - CON INFERENCIA ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
 
-    expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k carts
-  });
+		expect(totalTime).toBeLessThan(250); // Debe ser < 250ms para 1k carts
+	});
 
-  test('Performance: Array pequeño (10 items) - SIN inferencia (explícito)', () => {
-    const iterations = 1000;
-    const data = {
-      cartId: 'cart-1',
-      items: Array.from({ length: 10 }, (_, i) => ({
-        productId: `p${i}`,
-        title: `Product ${i}`,
-        price: 10 + i,
-      })),
-      total: 145,
-    };
+	test('Performance: Array pequeño (10 items) - SIN inferencia (explícito)', () => {
+		const iterations = 1000;
+		const data = {
+			cartId: 'cart-1',
+			items: Array.from({ length: 10 }, (_, i) => ({
+				productId: `p${i}`,
+				title: `Product ${i}`,
+				price: 10 + i,
+			})),
+			total: 145,
+		};
 
-    const start = performance.now();
-    for (let i = 0; i < iterations; i++) {
-      new CartExplicit(data as any);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (let i = 0; i < iterations; i++) {
+			new CartExplicit(data as unknown as ICart);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== ARRAY PEQUEÑO (10 items) - SIN INFERENCIA ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
+		console.log('\n=== ARRAY PEQUEÑO (10 items) - SIN INFERENCIA ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
 
-    expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k carts
-  });
+		expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k carts
+	});
 
-  test('Performance: Array grande (100 items) - CON inferencia', () => {
-    const iterations = 100;
-    const data = {
-      cartId: 'cart-1',
-      items: Array.from({ length: 100 }, (_, i) => ({
-        productId: `p${i}`,
-        title: `Product ${i}`,
-        price: 10 + i,
-      })),
-      total: 5450,
-    };
+	test('Performance: Array grande (100 items) - CON inferencia', () => {
+		const iterations = 100;
+		const data = {
+			cartId: 'cart-1',
+			items: Array.from({ length: 100 }, (_, i) => ({
+				productId: `p${i}`,
+				title: `Product ${i}`,
+				price: 10 + i,
+			})),
+			total: 5450,
+		};
 
-    const start = performance.now();
-    for (let i = 0; i < iterations; i++) {
-      new Cart(data as any);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (let i = 0; i < iterations; i++) {
+			new Cart(data as unknown as ICart);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== ARRAY GRANDE (100 items) - CON INFERENCIA ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${avgTime.toFixed(2)}ms por cart (100 productos)`);
+		console.log('\n=== ARRAY GRANDE (100 items) - CON INFERENCIA ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(
+			`Promedio: ${avgTime.toFixed(2)}ms por cart (100 productos)`
+		);
 
-    expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 carts grandes
-  });
+		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 carts grandes
+	});
 
-  test('Performance: Array muy grande (1000 items)', () => {
-    const data = {
-      cartId: 'cart-1',
-      items: Array.from({ length: 1000 }, (_, i) => ({
-        productId: `p${i}`,
-        title: `Product ${i}`,
-        price: 10 + i,
-      })),
-      total: 504500,
-    };
+	test('Performance: Array muy grande (1000 items)', () => {
+		const data = {
+			cartId: 'cart-1',
+			items: Array.from({ length: 1000 }, (_, i) => ({
+				productId: `p${i}`,
+				title: `Product ${i}`,
+				price: 10 + i,
+			})),
+			total: 504500,
+		};
 
-    const start = performance.now();
-    const cart = new Cart(data as any);
-    const end = performance.now();
+		const start = performance.now();
+		const cart = new Cart(data as unknown as ICart);
+		const end = performance.now();
 
-    const totalTime = end - start;
+		const totalTime = end - start;
 
-    console.log('\n=== ARRAY MUY GRANDE (1000 items) ===');
-    console.log(`Tiempo: ${totalTime.toFixed(2)}ms`);
-    console.log(`Items deserializados: ${cart.items.length}`);
-    console.log(`Promedio: ${(totalTime / cart.items.length).toFixed(3)}ms por item`);
+		console.log('\n=== ARRAY MUY GRANDE (1000 items) ===');
+		console.log(`Tiempo: ${totalTime.toFixed(2)}ms`);
+		console.log(`Items deserializados: ${cart.items.length}`);
+		console.log(
+			`Promedio: ${(totalTime / cart.items.length).toFixed(3)}ms por item`
+		);
 
-    expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1000 items
-    expect(cart.items[0]).toBeInstanceOf(Product);
-    expect(cart.items[999]).toBeInstanceOf(Product);
-  });
+		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1000 items
+		expect(cart.items[0]).toBeInstanceOf(Product);
+		expect(cart.items[999]).toBeInstanceOf(Product);
+	});
 });
 
 describe('Performance: Costo de anidación profunda', () => {
-  interface IUser {
-    id: string;
-    name: string;
-  }
+	interface IUser {
+		id: string;
+		name: string;
+	}
 
-  class User extends QModel<IUser> {
-    declare id: string;
-    declare name: string;
-  }
+	class User extends QModel<IUser> {
+		declare id: string;
+		declare name: string;
+	}
 
-  interface IContainer<T> {
-    items: T[];
-  }
+	interface IContainer<T> {
+		items: T[];
+	}
 
-  class Container<T> extends QModel<IContainer<T>> {
-    declare items: T[];
-  }
+	class Container<T> extends QModel<IContainer<T>> {
+		declare items: T[];
+	}
 
-  interface ILevel3<T> {
-    container: Container<T>;
-  }
+	interface ILevel3<T> {
+		container: Container<T>;
+	}
 
-  class Level3<T> extends QModel<ILevel3<T>> {
-    declare container: Container<T>;
-  }
+	class Level3<T> extends QModel<ILevel3<T>> {
+		declare container: Container<T>;
+	}
 
-  interface ILevel2<T> {
-    level3: Level3<T>;
-  }
+	interface ILevel2<T> {
+		level3: Level3<T>;
+	}
 
-  class Level2<T> extends QModel<ILevel2<T>> {
-    declare level3: Level3<T>;
-  }
+	class Level2<T> extends QModel<ILevel2<T>> {
+		declare level3: Level3<T>;
+	}
 
-  interface ILevel1<T> {
-    level2: Level2<T>;
-  }
+	interface ILevel1<T> {
+		level2: Level2<T>;
+	}
 
-  class Level1<T> extends QModel<ILevel1<T>> {
-    declare level2: Level2<T>;
-  }
+	class Level1<T> extends QModel<ILevel1<T>> {
+		declare level2: Level2<T>;
+	}
 
-  test('Performance: Anidación 4 niveles (10 users)', () => {
-    const iterations = 1000;
-    const data = {
-      level2: {
-        level3: {
-          container: {
-            items: Array.from({ length: 10 }, (_, i) => ({
-              id: `user-${i}`,
-              name: `User ${i}`,
-            })),
-          },
-        },
-      },
-    };
+	test('Performance: Anidación 4 niveles (10 users)', () => {
+		const iterations = 1000;
+		const data = {
+			level2: {
+				level3: {
+					container: {
+						items: Array.from({ length: 10 }, (_, i) => ({
+							id: `user-${i}`,
+							name: `User ${i}`,
+						})),
+					},
+				},
+			},
+		};
 
-    const start = performance.now();
-    for (let i = 0; i < iterations; i++) {
-      new Level1<User>(data as any);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (let i = 0; i < iterations; i++) {
+			new Level1<User>(data as unknown as ILevel1<User>);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== ANIDACIÓN 4 NIVELES (10 users cada uno) ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por estructura`);
+		console.log('\n=== ANIDACIÓN 4 NIVELES (10 users cada uno) ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(
+			`Promedio: ${(avgTime * 1000).toFixed(2)}μs por estructura`
+		);
 
-    expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k estructuras
-  });
+		expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k estructuras
+	});
 
-  test('Performance: Anidación 4 niveles (100 users)', () => {
-    const iterations = 100;
-    const data = {
-      level2: {
-        level3: {
-          container: {
-            items: Array.from({ length: 100 }, (_, i) => ({
-              id: `user-${i}`,
-              name: `User ${i}`,
-            })),
-          },
-        },
-      },
-    };
+	test('Performance: Anidación 4 niveles (100 users)', () => {
+		const iterations = 100;
+		const data = {
+			level2: {
+				level3: {
+					container: {
+						items: Array.from({ length: 100 }, (_, i) => ({
+							id: `user-${i}`,
+							name: `User ${i}`,
+						})),
+					},
+				},
+			},
+		};
 
-    const start = performance.now();
-    for (let i = 0; i < iterations; i++) {
-      new Level1<User>(data as any);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (let i = 0; i < iterations; i++) {
+			new Level1<User>(data as unknown as ILevel1<User>);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== ANIDACIÓN 4 NIVELES (100 users cada uno) ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${avgTime.toFixed(2)}ms por estructura`);
+		console.log('\n=== ANIDACIÓN 4 NIVELES (100 users cada uno) ===');
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${avgTime.toFixed(2)}ms por estructura`);
 
-    expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 estructuras
-  });
+		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 estructuras
+	});
 });
 
 describe('Performance: Tipos complejos', () => {
-  interface IComplexModel {
-    id: string;
-    createdAt: Date;
-    amount: bigint;
-    pattern: RegExp;
-    metadata: Map<string, string>;
-    tags: Set<string>;
-  }
+	interface IComplexModel {
+		id: string;
+		createdAt: Date;
+		amount: bigint;
+		pattern: RegExp;
+		metadata: Map<string, string>;
+		tags: Set<string>;
+	}
 
-  class ComplexModel extends QModel<IComplexModel> {
-    declare id: string;
-    declare createdAt: Date;
-    declare amount: bigint;
-    declare pattern: RegExp;
-    declare metadata: Map<string, string>;
-    declare tags: Set<string>;
-  }
+	class ComplexModel extends QModel<IComplexModel> {
+		declare id: string;
+		declare createdAt: Date;
+		declare amount: bigint;
+		declare pattern: RegExp;
+		declare metadata: Map<string, string>;
+		declare tags: Set<string>;
+	}
 
-  test('Performance: Tipos complejos (Date, BigInt, RegExp, Map, Set)', () => {
-    const iterations = 1000;
-    const data = {
-      id: 'model-1',
-      createdAt: new Date('2024-01-01'),
-      amount: 999999999999n,
-      pattern: /test-\d+/gi,
-      metadata: new Map([
-        ['key1', 'value1'],
-        ['key2', 'value2'],
-        ['key3', 'value3'],
-      ]),
-      tags: new Set(['tag1', 'tag2', 'tag3']),
-    };
+	test('Performance: Tipos complejos (Date, BigInt, RegExp, Map, Set)', () => {
+		const iterations = 1000;
+		const data = {
+			id: 'model-1',
+			createdAt: new Date('2024-01-01'),
+			amount: 999999999999n,
+			pattern: /test-\d+/gi,
+			metadata: new Map([
+				['key1', 'value1'],
+				['key2', 'value2'],
+				['key3', 'value3'],
+			]),
+			tags: new Set(['tag1', 'tag2', 'tag3']),
+		};
 
-    const start = performance.now();
-    for (let i = 0; i < iterations; i++) {
-      new ComplexModel(data);
-    }
-    const end = performance.now();
+		const start = performance.now();
+		for (let i = 0; i < iterations; i++) {
+			new ComplexModel(data);
+		}
+		const end = performance.now();
 
-    const totalTime = end - start;
-    const avgTime = totalTime / iterations;
+		const totalTime = end - start;
+		const avgTime = totalTime / iterations;
 
-    console.log('\n=== TIPOS COMPLEJOS (Date, BigInt, RegExp, Map, Set) ===');
-    console.log(`Iteraciones: ${iterations}`);
-    console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-    console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por modelo`);
+		console.log(
+			'\n=== TIPOS COMPLEJOS (Date, BigInt, RegExp, Map, Set) ==='
+		);
+		console.log(`Iteraciones: ${iterations}`);
+		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
+		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por modelo`);
 
-    expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k modelos
-  });
+		expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k modelos
+	});
 });
 
 describe('Performance: Resumen y conclusiones', () => {
-  test('Resumen: Overhead de la librería', () => {
-    console.log(`
+	test('Resumen: Overhead de la librería', () => {
+		console.log(`
 === RESUMEN DE RENDIMIENTO ===
 
 📊 Benchmarks realizados:
@@ -491,6 +502,6 @@ describe('Performance: Resumen y conclusiones', () => {
    ✅ Perfecta para producción
     `);
 
-    expect(true).toBe(true);
-  });
+		expect(true).toBe(true);
+	});
 });

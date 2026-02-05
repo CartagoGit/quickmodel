@@ -1,62 +1,75 @@
-# Getting Started
+# Comenzando
 
-## What is QuickModel?
+## ¿Qué es QuickModel?
 
-QuickModel is a TypeScript library that provides automatic serialization and deserialization for your models. It handles complex types like `Date`, `BigInt`, `Map`, `Set`, and more, converting them seamlessly between JavaScript objects and JSON.
+QuickModel es una librería de TypeScript que proporciona serialización y deserialización automática para tus modelos. Maneja tipos complejos como `Date`, `BigInt`, `Map`, `Set`, e incluso modelos anidados, convirtiéndolos sin problemas entre objetos JavaScript y JSON.
 
-## Key Features
+## Características Clave
 
-- **Zero Configuration**: Works out of the box with TypeScript decorators
-- **Type-Safe**: Full TypeScript support with strict type checking
-- **Automatic Transformations**: Handles Date, BigInt, Map, Set, RegExp, Buffer, TypedArrays, and more
-- **SOLID Architecture**: Clean, extensible design
-- **Mock Generation**: Built-in faker.js integration for testing
-- **Path Aliases**: Clean imports with `@/*` aliases
+- **Cero Configuración**: Funciona desde el primer momento con decoradores de TypeScript.
+- **Seguridad de Tipos**: Soporte completo de TypeScript con verificación estricta de tipos.
+- **Transformaciones Automáticas**: Maneja Date, BigInt, Map, Set, RegExp, Buffer, TypedArrays, y más.
+- **Arquitectura SOLID**: Diseño limpio y extensible siguiendo las mejores prácticas.
+- **Generación de Mocks**: Integración incorporada para generar datos de prueba (`User.mock().random()`).
+- **API Limpia**: Métodos intuitivos para serialización y deserialización.
 
-## Why QuickModel?
+## ¿Por Qué QuickModel?
 
-When working with TypeScript and APIs, you often face challenges like:
+Cuando trabajas con TypeScript y APIs, a menudo enfrentas desafíos como:
 
 ```typescript
-// ❌ Problem: Dates come as strings from APIs
-const user = await fetch('/api/user').then(r => r.json());
-console.log(user.createdAt instanceof Date); // false! It's a string
+// ❌ Problema: Las fechas vienen como strings desde las APIs
+const user = await fetch('/api/user').then((r) => r.json());
+console.log(user.createdAt instanceof Date); // false! Es un string
 
-// ❌ Problem: Sets and Maps don't survive JSON.stringify
+// ❌ Problema: Sets y Maps no sobreviven a JSON.stringify
 JSON.stringify({ tags: new Set(['a', 'b']) }); // {"tags":{}}
 
-// ❌ Problem: Manual conversion is tedious and error-prone
+// ❌ Problema: La conversión manual es tediosa y propensa a errores
 const user = {
-  ...apiData,
-  createdAt: new Date(apiData.createdAt),
-  tags: new Set(apiData.tags),
-  metadata: new Map(Object.entries(apiData.metadata))
+	...apiData,
+	createdAt: new Date(apiData.createdAt),
+	tags: new Set(apiData.tags),
+	metadata: new Map(Object.entries(apiData.metadata)),
 };
 ```
 
-QuickModel solves this:
+QuickModel resuelve esto elegantemente:
 
 ```typescript
-// ✅ Solution: Automatic conversion
+// ✅ Solución: Conversión automática
 @Quick({
-  createdAt: Date,
-  tags: Set,
-  metadata: Map
+	createdAt: Date,
+	tags: Set,
+	metadata: Map,
 })
 class User extends QModel<IUser> {
-  id!: number;
-  name!: string;
-  createdAt!: Date;
-  tags!: Set<string>;
-  metadata!: Map<string, any>;
+	declare id: number;
+	declare name: string;
+	declare createdAt: Date;
+	declare tags: Set<string>;
+	declare metadata: Map<string, any>;
 }
 
+// 1. Instanciación (Auto-transformación)
 const user = new User(apiData);
-// Everything is the correct type automatically!
+console.log(user.createdAt instanceof Date); // ¡true!
+
+// 2. Serialización (Auto-formato)
+const json = user.toJSON();
+// {"createdAt": "2024-01-01T...", "tags": ["a", "b"], ...}
 ```
 
-## Next Steps
+## Métodos de Instanciación
 
-- [Installation](/guide/installation) - Install QuickModel in your project
-- [Quick Start](/guide/quick-start) - Build your first model
-- [Examples](/examples/basic) - See real-world examples
+QuickModel proporciona formas flexibles de crear instancias de modelos:
+
+- **Constructor**: `const user = new User(data);` (Recomendado)
+- **Factoría**: `const user = User.create(data);`
+- **Desde JSON**: `const user = User.fromJSON(jsonString);`
+
+## Próximos Pasos
+
+- [Instalación](/es/guide/installation) - Instala QuickModel en tu proyecto
+- [Inicio Rápido](/es/guide/quick-start) - Construye tu primer modelo
+- [Ejemplos](/es/examples/basic) - Ve ejemplos del mundo real

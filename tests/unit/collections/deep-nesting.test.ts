@@ -441,7 +441,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 		}
 
 		@Quick({
-			singleTypedArrays: Int8Array,
+			singleTypedArrays: [Int8Array],
 		})
 		class Data extends QModel<IData> {
 			declare matrices2D: number[][][];
@@ -967,7 +967,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			title: string;
 			tags: ITag[];
 			dates: string[]; // Date[]
-			metadata: [string, any][]; // Map
+			metadata: [string, unknown][]; // Map
 		}
 
 		interface IUser {
@@ -993,7 +993,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare title: string;
 			declare tags: Tag[];
 			declare dates: Date[];
-			declare metadata: Map<string, any>;
+			declare metadata: Map<string, unknown>;
 		}
 
 		@Quick({
@@ -1077,14 +1077,14 @@ describe('Mezcla de arrays y objetos anidados', () => {
 
 	describe('Edge cases con anidamiento profundo', () => {
 		interface IData {
-			empty2D: any[][];
+			empty2D: unknown[][];
 			mixed: (number | string)[][];
 			nulls: (number | null)[][];
 		}
 
 		@Quick()
 		class Data extends QModel<IData> {
-			declare empty2D: any[][];
+			declare empty2D: unknown[][];
 			declare mixed: (number | string)[][];
 			declare nulls: (number | null)[][];
 		}

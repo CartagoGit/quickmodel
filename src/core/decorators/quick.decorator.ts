@@ -1,25 +1,28 @@
+import { IQAnyRecord } from './../interfaces/model.interface';
+import { IQImplements } from '@/index';
+import { QConfig } from '../config/quick.config';
 /**
  * @Quick() class decorator for automatic property registration.
  *
- * This decorator automatically applies @QType() to all properties of a class,
+ * This decorator automatically prepares all properties of a class for serialization,
  * eliminating the need for manual decoration of each property. It uses TypeScript's
  * design:type metadata to detect property types and applies the appropriate
  * transformations.
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Only handles automatic property registration
- * - Open/Closed: Extends QType functionality without modifying it
- * - Don't Repeat Yourself: Eliminates repetitive @QType() decorators
+ * - Open/Closed: Extends property decoration functionality without modifying it
+ * - Don't Repeat Yourself: Eliminates repetitive decorators
  *
  * @example
  * **Without @Quick()** (verbose):
  * ```typescript
  * class User extends QModel<IUser> {
- *   @QType() id!: string;
- *   @QType() name!: string;
- *   @QType() email!: string;
- *   @QType() age!: number;
- *   @QType() createdAt!: Date;
+ *   @QType() declare id: string;
+ *   @QType() declare name: string;
+ *   @QType() declare email: string;
+ *   @QType() declare age: number;
+ *   @QType() declare createdAt: Date;
  * }
  * ```
  *
@@ -28,11 +31,11 @@
  * ```typescript
  * @Quick()
  * class User extends QModel<IUser> {
- *   id!: string;
- *   name!: string;
- *   email!: string;
- *   age!: number;
- *   createdAt!: Date;
+ *   declare id: string;
+ *   declare name: string;
+ *   declare email: string;
+ *   declare age: number;
+ *   declare createdAt: Date;
  * }
  * ```
  *
@@ -46,11 +49,11 @@
  *   metadata: Map
  * })
  * class Account extends QModel<IAccount> {
- *   id!: string;
- *   balance!: bigint;
- *   pattern!: RegExp;
- *   createdAt!: Date;
- *   metadata!: Map<string, any>;
+ *   declare id: string;
+ *   declare balance: bigint;
+ *   declare pattern: RegExp;
+ *   declare createdAt: Date;
+ *   declare metadata: Map<string, unknown>;
  * }
  * ```
  *
@@ -59,98 +62,50 @@
  * ```typescript
  * @Quick()
  * class Product extends QModel<IProduct> {
- *   id!: string;           // Auto from @Quick()
- *   name!: string;         // Auto from @Quick()
+ *   declare id: string;           // Auto from @Quick()
+ *   declare name: string;         // Auto from @Quick()
  *
  *   @QType(Category)       // Explicit for nested model
- *   category!: Category;
+ *   declare category: Category;
  *
  *   @QType(Tag)           // Explicit for array of models
- *   tags!: Tag[];
+ *   declare tags: Tag[];
  * }
  * ```
  */
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-import type { IQTypeAlias } from '../interfaces/qtype-symbols.interface';
-import type {
-	IQuickAdvancedOptions,
-} from '../interfaces/quick-options.interface';
+// import type { IQAlias } from '../types/q-alias.type'; // Unused
+import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
 	QUICK_TYPE_MAP_KEY,
 	QUICK_DESIGN_TYPES_KEY,
-	QUICK_DEFAULT_KEYS,
 	QUICK_DISCRIMINATORS_KEY,
+	QUICK_OPTIONS_KEY,
+	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
+import type { IQOptions } from '../interfaces/quick.interface';
 
-/**
- * Constructor type for class-based type mapping
- */
-type IConstructor<T = any> = new (...args: any[]) => T;
-
-/**
- * Transformer function that converts a value
- */
-type ITransformerFunction = (value: any) => any;
-
-/**
- * All supported type specifications for @Quick() decorator
- *
- * Supports:
- * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
- * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
- * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
- */
-export type ISpec =
-	| IQTypeAlias // String literals like 'bigint', 'date', 'regexp'
-	| IConstructor // Constructors like Date, RegExp, Map, custom classes
-	| ITransformerFunction
-	| ISpec[]; // Array with element type like [Date], [[Date]], [[[Date]]]
-
-/**
- * All supported type specifications for @Quick() decorator for arrays
- *
- * Supports:
- * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
- * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
- * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Array with element type: [Date], [[Date]], [[[Date]]]
- * - Array of any Spec: ISpec[]
- */
-export type ISpecs = ISpec[]; // Array of any Spec
-
-/**
- * Options for @Quick() decorator to specify property types explicitly
- *
- * @example
- * ```typescript
- * @Quick({
- *   value: 'bigint',           // String literal (autocomplete)
- *   date: Date,                // Constructor
- *   pattern: 'regexp',         // String literal
- *   tags: Set,                 // Constructor
- *   custom: (v) => v * 2       // Transformer function
- * })
- * ```
- */
-export interface IQuickOptions {
-	[propertyName: string]: ISpec | ISpecs;
-}
+// Re-export common types for backward compatibility or direct usage
+export type { IQOptions } from '../interfaces/quick.interface';
 
 /**
  * Class decorator that automatically applies @QType() to all properties.
  *
  * Properties are registered from the data passed to the constructor.
  *
+ * **Property Modifiers (`!` vs `declare`)**:
+ * - ✅ **`!` (Definite Assignment)**: Safe to use. `@Quick` wraps the constructor and handles initialization, preventing "undefined" overwrites.
+ * - ✅ **`declare`**: Also safe to use.
+ *
  * **No automatic detection** - All special types must be explicitly declared:
  * - Date, BigInt, RegExp, Map, Set, etc. MUST be specified in type mapping
  * - Without explicit declaration, values are used as-is with TypeScript metadata only
  *
  * @group Decorators
- * @decorator `@Quick(typeMap)`
+ * Syntax: `@Quick(typeMap)`
  * @param typeMap REQUIRED mapping for Set, Map, custom classes, and transformers
  * @returns A class decorator function
  *
@@ -174,7 +129,7 @@ export interface IQuickOptions {
  * ```
  *
  * @example
- * **✅ String literals para tipos básicos (autocomplete):**
+ * **✅ String literals for basic types (autocomplete):**
  * ```typescript
  * @Quick({
  *   value: 'bigint',    // ← IDE autocomplete!
@@ -193,16 +148,16 @@ export interface IQuickOptions {
  * ```
  *
  * @example
- * **✅ Funciones directas (máxima flexibilidad):**
+ * **✅ Direct functions (maximum flexibility):**
  * ```typescript
  * @Quick({
- *   // Math methods directos
- *   price: (v) => Math.round(v * 100) / 100,       // Redondea a 2 decimales
- *   count: Math.floor,                              // Redondeo hacia abajo
+ *   // Direct Math methods
+ *   price: (v) => Math.round(v * 100) / 100,       // Round to 2 decimals
+ *   count: Math.floor,                              // Floor
  *   percentage: (v) => Math.min(100, Math.max(0, v)), // Clamp 0-100
  *
  *   // String transformations
- *   name: (s) => s.trim().toUpperCase(),            // Limpia y mayúsculas
+ *   name: (s) => s.trim().toUpperCase(),            // Trim and uppercase
  *   slug: (s) => s.toLowerCase().replace(/\s+/g, '-'), // Slugify
  *
  *   // Encoding/Decoding
@@ -249,6 +204,35 @@ export interface IQuickOptions {
  * class User extends QModel<IUser> {
  *   dates?: (Date | undefined | null)[];
  *   custom!: any;
+ * }
+ * ```
+ *
+ * @example
+ * **✅ Dot notation for nested properties:**
+ * ```typescript
+ * // Option 1: Decorate nested class (recommended for reusable models)
+ * @Quick({ price: BigInt, createdAt: Date })
+ * class Product extends QModel<IProduct> {
+ *   price!: bigint;
+ *   createdAt!: Date;
+ * }
+ *
+ * @Quick({ product: Product, addedAt: Date })
+ * class CartItem extends QModel<ICartItem> {
+ *   product!: Product;  // Product already has transformations
+ *   addedAt!: Date;
+ * }
+ *
+ * // Option 2: Use dot notation (useful for third-party or context-specific transforms)
+ * @Quick({
+ *   product: Product,
+ *   'product.price': BigInt,      // Nested transformation
+ *   'product.createdAt': Date,    // Nested transformation
+ *   addedAt: Date
+ * })
+ * class CartItem extends QModel<ICartItem> {
+ *   product!: Product;  // All transformations in one place
+ *   addedAt!: Date;
  * }
  * ```
  *
@@ -397,6 +381,45 @@ export interface IQuickOptions {
  * })
  * ```
  *
+ * @example
+ * **✅ Customizing Transformers, Serializers & Mockers:**
+ *
+ * For full control over the lifecycle of your data.
+ *
+ * ```typescript
+ * @Quick({
+ *   // Define base types
+ *   sku: (val: any) => `ITEM-${val}`, // Inline transformer (fallback to String for mocks)
+ *   timestamp: Date
+ * }, {
+ *   // 1. TRANSFORMERS (Input -> Model)
+ *   // Override default deserialization logic
+ *   transformers: {
+ *     // Convert seconds -> Date object
+ *     timestamp: (val: number) => new Date(val * 1000)
+ *   },
+ *
+ *   // 2. SERIALIZERS (Model -> Output)
+ *   // Override default serialization logic (toInterface)
+ *   serializers: {
+ *     // Convert Date object -> seconds
+ *     timestamp: (val: Date) => Math.floor(val.getTime() / 1000)
+ *   },
+ *
+ *   // 3. MOCKERS (Tests -> Model)
+ *   // Define how to generate fake data for this field
+ *   // Critical for custom transformers where automatic inference fails
+ *   mockers: {
+ *     // Generate '1234' so transformer produces 'ITEM-1234'
+ *     sku: () => faker.string.alphanumeric(4)
+ *   }
+ * })
+ * class Product extends QModel<IProduct> {
+ *   declare sku: string;
+ *   declare timestamp: Date;
+ * }
+ * ```
+ *
  * @remarks
  * **Why Set/Map need type mapping:**
  *
@@ -420,22 +443,111 @@ export interface IQuickOptions {
  * Without discriminators, QuickModel uses the first type in the array as fallback.
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
- * @see {@link IQuickAdvancedOptions} for discriminator configuration
+ * @see {@link IQAdvancedOptions} for discriminator configuration
  */
-export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
-	typeMap?: TTypeMap,
-	advancedOptions?: IQuickAdvancedOptions<TTypeMap>
+export function Quick<
+	TExtendedTypes extends IQAnyRecord = IQAnyRecord,
+	TTypeMap extends IQOptions = IQOptions,
+>(
+	typeMap?: IQImplements<TTypeMap, TExtendedTypes>,
+	advancedOptions?: IQAdvancedOptions<TTypeMap>
 ): ClassDecorator {
-	return function <T extends Function>(target: T): any {
+	// SAFETY CHECK: Detect common misconfiguration where options are passed as first argument
+	if (
+		typeMap &&
+		'unknownPropertyPolicy' in typeMap &&
+		typeof (typeMap as any).unknownPropertyPolicy === 'string'
+	) {
+		throw new Error(
+			`[QuickModel] Misconfiguration detected: 'unknownPropertyPolicy: ${(typeMap as any).unknownPropertyPolicy}' found in type map. ` +
+				`Did you mean to pass options as the second argument? \n` +
+				`Correct usage: @Quick({ /* types */ }, { unknownPropertyPolicy: 'error' })`
+		);
+	}
+
+	return function <T extends Function>(target: T): T {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
+
+		// Auto-detect argument confusion: @Quick({ dateStrategy: '...' })
+		// If typeMap has keys that look like options (dateStrategy, strict, etc)
+		// AND it doesn't have valid transformers... we might be in trouble.
+		// For now, let's just properly merge defaults.
+
+		// Merge global defaults
+		const globalDefaults = QConfig.get().defaults;
+		// Merge passed advancedOptions
+		let mergedOptions = { ...globalDefaults, ...advancedOptions };
+
+		// Handle case where options are passed as first argument (typeMap)
+		// Only if typeMap is provided AND advancedOptions is undefined
+		if (typeMap && !advancedOptions) {
+			// Check if it has ACTUAL type mappings (keys that are property names)
+			// This is ambiguous if a property name matches an option key.
+			// Assumption: if 'dateStrategy' is present, it's likely an option object IF the value is a string 'iso'|'native'|'timestamp'
+
+			if (
+				'dateStrategy' in typeMap &&
+				typeof (typeMap as any).dateStrategy === 'string' &&
+				['iso', 'timestamp', 'native'].includes(
+					(typeMap as any).dateStrategy
+				)
+			) {
+				// It IS an option object passed as first arg
+				mergedOptions = { ...mergedOptions, ...(typeMap as any) };
+				// Do NOT register 'dateStrategy' as a property type!
+				delete (typeMap as any).dateStrategy;
+			}
+		}
+
+		// Store options (strict mode, etc)
+		if (Object.keys(mergedOptions).length > 0) {
+			Reflect.defineMetadata(QUICK_OPTIONS_KEY, mergedOptions, target);
+		}
 
 		// Store type map if provided
 		if (typeMap) {
 			Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
+
+			// 🔥 REGISTER PROPERTIES IMMEDIATELY (not on first instantiation)
+			// This eliminates race conditions and makes behavior predictable
+			for (const [propertyKey, mappedType] of Object.entries(typeMap)) {
+				// Check if property already has metadata registered locally (e.g., from @QType())
+				// use getOwnMetadata to allow overriding inherited properties
+				const existingFieldType = Reflect.getOwnMetadata(
+					'fieldType',
+					target.prototype,
+					propertyKey
+				);
+				const existingArrayClass = Reflect.getOwnMetadata(
+					'arrayElementClass',
+					target.prototype,
+					propertyKey
+				);
+
+				if (
+					existingFieldType !== undefined ||
+					existingArrayClass !== undefined
+				) {
+					// Property already registered, skip
+					continue;
+				}
+
+				// Register the property using QType decorator
+				// Type assertion: IQSpec | IQSpecs is compatible with QType parameter
+				const decorator = QType(
+					mappedType as Parameters<typeof QType>[0]
+				);
+				decorator(target.prototype, propertyKey);
+			}
 		}
 
-		// Store discriminators if provided
+		// Store ALL advanced options (strict, etc.)
+		if (advancedOptions) {
+			Reflect.defineMetadata(QUICK_OPTIONS_KEY, advancedOptions, target);
+		}
+
+		// Store discriminators if provided (legacy key, kept for compatibility if needed elsewhere)
 		if (advancedOptions?.discriminators) {
 			Reflect.defineMetadata(
 				QUICK_DISCRIMINATORS_KEY,
@@ -448,7 +560,7 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 		// This metadata is emitted by TypeScript at compile time but only for properties with decorators
 		// Since we're a class decorator applying property decorators dynamically, we need to capture
 		// the original design:type metadata and store it for later use
-		const designTypeCache: Record<string, any> = {};
+		const designTypeCache: Record<string, unknown> = {};
 		const proto = target.prototype;
 
 		// Scan all properties in the prototype chain to capture design:type metadata
@@ -483,160 +595,36 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 
 		// Add static method for creating instances (used by deserializer)
 		// This allows us to bypass the field initialization problem with `!`
-		(target as any).__createQuickInstance = function (data: any) {
-			// Create instance without calling constructor
-			const instance = Object.create(target.prototype);
+		// Properties are already registered by the decorator, so we just create the instance
+		(target as unknown as Record<string, Function>).__createQuickInstance =
+			function (_data: Record<string, unknown>) {
+				// Create instance without calling constructor
+				const instance = Object.create(target.prototype);
 
-			// Note: This doesn't work with `!` syntax due to TypeScript field initialization
-			// TypeScript generates code that redefines properties AFTER constructor completes
-			// This method is useful for declare syntax or programmatic instance creation
+				// Properties are already registered by the decorator
+				// Just return the instance for the deserializer to populate
+				return instance;
+			};
 
-			// Register properties if not already done
-			const typeMap =
-				Reflect.getMetadata(QUICK_TYPE_MAP_KEY, target) || {};
-			
-			// Combine properties from data AND typeMap
-			const allProperties = new Set([
-				...Object.keys(data),
-				...Object.keys(typeMap),
-			]);
-
-			for (const propertyKey of allProperties) {
-				const existingFieldType = Reflect.getMetadata(
-					'fieldType',
-					target.prototype,
-					propertyKey
-				);
-				const existingArrayClass = Reflect.getMetadata(
-					'arrayElementClass',
-					target.prototype,
-					propertyKey
-				);
-
-				if (
-					existingFieldType !== undefined ||
-					existingArrayClass !== undefined
-				) {
-					continue;
-				}
-
-				const mappedType = typeMap[propertyKey];
-				
-				// Pass the mapped type to QType
-				// mappedType can be: Date, [Date], Set, [Set], Post, [Post], etc.
-				// console.log(`[Quick] Registering ${propertyKey} with type:`, mappedType);
-				const decorator = QType(mappedType);
-				decorator(target.prototype, propertyKey);
-			}
-
-			return instance;
-		};
-
-		// Wrap constructor to register properties on first instantiation
+		// Wrap constructor to handle TypeScript field initialization shadowing
 		const originalConstructor = target;
-		let propertiesRegistered = false;
 
-		const wrappedConstructor: any = function (this: any, ...args: any[]) {
-			const data = args[0];
-
-			// Register properties BEFORE calling constructor (only once, on first instantiation)
-			if (
-				!propertiesRegistered &&
-				data &&
-				typeof data === 'object' &&
-				!Array.isArray(data)
-			) {
-				// Get the type map directly - it's the object passed to @Quick()
-				// Example: @Quick({ posts: Post, tags: Set })
-				const typeMap =
-					Reflect.getMetadata(
-						QUICK_TYPE_MAP_KEY,
-						originalConstructor
-					) || {};
-
-				// Combine properties from data AND typeMap
-				// This ensures we process properties even if they're not in the current data
-				const allProperties = new Set([
-					...Object.keys(data),
-					...Object.keys(typeMap),
-				]);
-
-				for (const propertyKey of allProperties) {
-					const existingFieldType = Reflect.getMetadata(
-						'fieldType',
-						originalConstructor.prototype,
-						propertyKey
-					);
-					const existingArrayClass = Reflect.getMetadata(
-						'arrayElementClass',
-						originalConstructor.prototype,
-						propertyKey
-					);
-
-					if (
-						existingFieldType !== undefined ||
-						existingArrayClass !== undefined
-					) {
-						continue;
-					}
-
-					let mappedType = typeMap[propertyKey];
-					if (mappedType) {
-						// Pass the mapped type to QType
-						// mappedType can be: Date, [Date], [[Date]], Post, [Post], Set, [Set], etc.
-						const decorator = QType(mappedType);
-						decorator(originalConstructor.prototype, propertyKey);
-
-						// Post-construction hook: Delete shadowing properties
-						// These properties are not in the data from backend but have values in the class
-						// Create a temporary instance to capture default values
-						try {
-							const dummyInstance = Reflect.construct(
-								originalConstructor,
-								[{}],
-								originalConstructor
-							);
-							for (const key of Object.keys(dummyInstance)) {
-								// Skip if already registered from data
-								if (Array.from(allProperties).includes(key))
-									continue;
-								// Skip internal properties
-								if (key.startsWith('__')) continue;
-
-								// Apply @QType() to preserve the default value
-								const decorator = QType();
-								decorator(originalConstructor.prototype, key);
-
-								// Store the default value in the prototype
-								Object.defineProperty(
-									originalConstructor.prototype,
-									`${QUICK_DEFAULT_KEYS}${key}`,
-									{
-										value: dummyInstance[key],
-										writable: false,
-										enumerable: false,
-										configurable: false,
-									}
-								);
-							}
-						} catch (e) {
-							// If creating dummy instance fails, just continue
-						}
-					}
-				}
-			}
-
-			propertiesRegistered = true;
-
+		const wrappedConstructor: Function = function (
+			this: Record<string, unknown>,
+			...args: unknown[]
+		) {
 			// Simply call the original constructor - allows both child and QModel constructors to execute normally
+			// FIX: Use new.target to propagate inheritance chain correctly (e.g. when Child extends Parent decorated with @Quick)
+			const targetConstructor = new.target || wrappedConstructor;
 			const instance = Reflect.construct(
 				originalConstructor,
 				args,
-				wrappedConstructor
+				targetConstructor
 			);
 
 			// CRITICAL: Re-install getters/setters AFTER construction to override TypeScript's property initialization
-			// This fixes the issue where `property!: Type` creates a real property that shadows the getter
+
+			// Re-install getters/setters to ensure they are not shadowed by property initializers
 
 			// Check ALL properties in the instance, not just those in quickTypeMap
 			const instanceKeys = Object.keys(instance);
@@ -656,11 +644,38 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 						propertyKey
 					);
 					if (instanceDescriptor && !instanceDescriptor.get) {
+						// Capture the value from the shadowing property (likely a default value)
+						const defaultValue = instance[propertyKey];
+
 						// Instance has a real property (from TypeScript initialization), remove it
 						// The getter from prototype will take over
 						delete instance[propertyKey];
+
+						// Restore default value if it wasn't provided in constructor data
+						// We check __initData to see if the key was present in the input
+						const initData = instance.__initData || {};
+
+						if (
+							!Object.prototype.hasOwnProperty.call(
+								initData,
+								propertyKey
+							)
+						) {
+							// Value was NOT in constructor data, so this is a valid default value
+							// Restore it via the setter (which updates __quickValues__)
+							instance[propertyKey] = defaultValue;
+						}
 					}
 				}
+			}
+
+			// Restore values that may have been overwritten by property initializers
+			// When using `class User extends QModel { name = 'Default' }`, the property initializer
+			// runs after QModel initialization, overwriting the deserialized data.
+			// This method compares the backup storage (from data) with the current value (from default)
+			// and restores the backup if they differ.
+			if (typeof instance[FORCE_HYDRATION_KEY] === 'function') {
+				instance[FORCE_HYDRATION_KEY]();
 			}
 
 			return instance;
@@ -687,7 +702,24 @@ export function Quick<TTypeMap extends IQuickOptions = IQuickOptions>(
 			configurable: true,
 		});
 
-		return wrappedConstructor as any;
+		// Copy metadata from original to wrapped constructor
+		// This is CRITICAL because reflect-metadata stores metadata by object identity
+		const keysToCopy = [
+			QUICK_DISCRIMINATORS_KEY,
+			QUICK_TYPE_MAP_KEY,
+			QUICK_DESIGN_TYPES_KEY,
+			QUICK_DECORATOR_KEY,
+			QUICK_OPTIONS_KEY,
+		];
+
+		for (const key of keysToCopy) {
+			const value = Reflect.getMetadata(key, originalConstructor);
+			if (value !== undefined) {
+				Reflect.defineMetadata(key, value, wrappedConstructor);
+			}
+		}
+
+		return wrappedConstructor as T;
 	};
 }
 

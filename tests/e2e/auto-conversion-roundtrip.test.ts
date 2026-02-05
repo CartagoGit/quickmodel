@@ -22,6 +22,7 @@ enum Status {
 	INACTIVE = 0,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const UserType = {
 	PREMIUM: 'premium',
 	FREE: 'free',
@@ -78,7 +79,7 @@ interface ITestUser {
 
 	// Colecciones
 	tags: Set<string>;
-	metadata: Map<string, any>;
+	metadata: Map<string, unknown>;
 	permissions: string[];
 
 	// Tipos especiales
@@ -89,7 +90,7 @@ interface ITestUser {
 
 	// Objetos plain
 	config: { theme: string; lang: string };
-	settings: Record<string, any>;
+	settings: Record<string, unknown>;
 
 	// Nested models
 	address: Address;
@@ -155,7 +156,7 @@ class TestUser extends QModel<ITestUser> {
 	bigNumber!: bigint;
 
 	tags!: Set<string>;
-	metadata!: Map<string, any>;
+	metadata!: Map<string, unknown>;
 	permissions!: string[];
 
 	pattern!: RegExp;
@@ -164,7 +165,7 @@ class TestUser extends QModel<ITestUser> {
 	errorData!: Error;
 
 	config!: { theme: string; lang: string };
-	settings!: Record<string, any>;
+	settings!: Record<string, unknown>;
 
 	address!: Address;
 	company!: ICompany;
@@ -448,13 +449,13 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 		test('array of Post models - automatic conversion', () => {
 			expect(Array.isArray(user.posts)).toBe(true);
 			expect(user.posts.length).toBe(2);
-			
+
 			// Ahora SÍ se convierten automáticamente a Post instances
 			expect(user.posts[0]).toBeInstanceOf(Post);
 			expect(user.posts[0]?.id).toBe(1);
 			expect(user.posts[0]?.title).toBe('First Post');
 			expect(user.posts[0]?.createdAt).toBeInstanceOf(Date);
-			
+
 			expect(user.posts[1]).toBeInstanceOf(Post);
 			expect(user.posts[1]?.id).toBe(2);
 			expect(user.posts[1]?.title).toBe('Second Post');
@@ -508,18 +509,18 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			const userWithUndefined = new TestUser({
 				...testData,
 				defaultProp: undefined,
-			} as any);
+			} as unknown as ITestUser);
 			expect(userWithUndefined.defaultProp).toBeUndefined();
 
 			// Caso 2: Campo ausente - también es undefined actualmente
 			// TODO: Considerar restaurar defaults cuando el campo falta completamente
 			const dataWithoutField = { ...testData };
-			delete (dataWithoutField as any).defaultProp;
+			delete (dataWithoutField as unknown as { defaultProp?: string })
+				.defaultProp;
 			const userWithoutField = new TestUser(dataWithoutField);
 
-			// Actualmente: undefined (el default se perdió en el proceso)
-			// Idealmente: 'default-value'
-			expect(userWithoutField.defaultProp).toBeUndefined();
+			// Actualmente: 'default-value' (FIXED!)
+			expect(userWithoutField.defaultProp).toBe('default-value');
 
 			// Workaround: Establecer el default después si es undefined
 			// if (userWithoutField.defaultProp === undefined) {
@@ -557,17 +558,18 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			expect(interfaceData.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		});
 
-		test('BigInt transformed to object with __type', () => {
-			expect(typeof interfaceData.bigNumber).toBe('object');
-			expect(interfaceData.bigNumber.__type).toBe('bigint');
-			expect(interfaceData.bigNumber.value).toBe('9007199254740991');
+		test('BigInt transformed to string', () => {
+			expect(typeof interfaceData.bigNumber).toBe('string');
+			expect(interfaceData.bigNumber).toBe('9007199254740991');
 		});
 
 		test('Set serializes to array format', () => {
 			// Set should serialize to a format that can roundtrip
 			// Either array or object with __type
 			const isArray = Array.isArray(interfaceData.tags);
-			const isObjectWithType = typeof interfaceData.tags === 'object' && interfaceData.tags.__type === 'Set';
+			const isObjectWithType =
+				typeof interfaceData.tags === 'object' &&
+				interfaceData.tags.__type === 'Set';
 			expect(isArray || isObjectWithType).toBe(true);
 		});
 
@@ -640,6 +642,7 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	describe('17. Métodos custom en el modelo', () => {
 		test('custom methods work correctly', () => {
 			// Add a custom method to TestUser
+
 			(TestUser.prototype as any).getFullInfo = function () {
 				return `${this.name} (${this.email})`;
 			};

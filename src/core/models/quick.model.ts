@@ -11,114 +11,287 @@
 import 'reflect-metadata';
 import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
+import type { IQSerializationOptions } from '@/core/interfaces/serializer.interface';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
-import { MockGenerator } from '@/core/services/mock-generator.service';
-import { MockBuilder } from '@/core/services/mock-builder.service';
-import type { QModelInstance, QModelInterface } from '@/core/interfaces/mock-types.interface';
+import { QMockGenerator } from '@/core/services/mock-generator.service';
+import { ValidationService } from '@/core/services/validation.service';
+import { QMockBuilder } from '@/core/services/mock-builder.service';
 import type {
-	SerializedInterface,
-	ModelData,
+	IQModelInstance,
+	IQModelInterface,
+} from '@/core/interfaces/mock-types.interface';
+import type {
+	IQSerializedInterface,
+	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
+import type { IQValidationResult } from '@/core/interfaces/transformer.interface';
+import type {
+	IQAnyRecord,
+	IModelConstructor,
+} from '@/core/interfaces/model.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import {
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
+	QUICK_TYPE_MAP_KEY,
+	QUICK_OPTIONS_KEY,
+	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
+import { deepFreeze } from '@/core/helpers/transform-helpers';
+import { QConfig } from '@/core/config/quick.config';
+import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';
-export type { QInterface } from '@/core/interfaces/model.interface';
+export type {
+	IQImplements,
+	IQTransform,
+} from '@/core/interfaces/model.interface';
 
 /**
- * Abstract base class for type-safe models with automatic serialization and mock generation.
+ * Base abstract class for type-safe models with automatic serialization and type transformation.
  *
- * QModel is the core class providing a declarative way to define TypeScript models
- * with automatic JSON serialization/deserialization and type transformations.
+ * `QModel` is the heart of the library. It provides a declarative way to define TypeScript models
+ * that automatically handle the conversion between IQSerialized formats (JSON) and runtime types.
  *
- * **SOLID Principles Applied:**
- * - **S** (Single Responsibility): QModel orchestrates operations, delegates to specialized services
- * - **O** (Open/Closed): Open for extension via transformers, closed for modification
- * - **L** (Liskov Substitution): All transformers are interchangeable
- * - **I** (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
+ * **Key Features:**
+ * - 🔄 **Type Transformation**: Convert strings to Date, BigInt, RegExp, etc.
+ * - 📦 **Serialization**: Safe `toJSON()` and `deserialize()` methods.
+ * - 🎭 **Mocking**: Built-in mock generator using Faker.js.
+ * - 🔍 **Validation**: Integrity checks for required properties.
  *
- * @template TInterface - The interface type representing the model's JSON structure
- * @template TTransforms - Optional type transforms for special field conversions (Date, BigInt, etc.)
+ * **Design Principles (SOLID):**
+ * - **Single Responsibility (SRP)**: Delegates logic to dedicated services (Serializer, Deserializer).
+ * - **Open/Closed (OCP)**: Extensible via custom transformers without core modification.
+ * - **Dependency Inversion (DIP)**: Depends on abstractions, not concrete implementations.
+ *
+ * @group Classes
+ * Syntax: `QModel<InterfaceType>`
+ *
+ * @template TInterface - The interface representing the IQSerialized JSON structure (e.g., `string` for dates)
  *
  * @example
- * Basic model with primitives
+ * **Basic Usage**
  * ```typescript
  * interface IUser {
  *   id: string;
- *   name: string;
- *   age: number;
+ *   createdAt: string; // ISO Date string
  * }
  *
+ * @Quick({ createdAt: Date })
  * class User extends QModel<IUser> {
- *   @QType() id!: string;
- *   @QType() name!: string;
- *   @QType() age!: number;
+ *   declare id: string;
+ *   declare createdAt: Date; // Transformed to Date object
  * }
  *
- * const user = new User({ id: '1', name: 'John', age: 30 });
- * const json = user.toJSON(); // Serialized string
- * const user2 = User.fromJSON(json); // Deserialized instance
- * ```
- *
- * @example
- * Model with type transformations
- * ```typescript
- * interface IAccount {
- *   id: string;
- *   balance: string;      // JSON: string
- *   createdAt: string;    // JSON: ISO date string
- * }
- *
- * type AccountTransforms = {
- *   balance: bigint;      // Memory: bigint
- *   createdAt: Date;      // Memory: Date object
- * };
- *
- * class Account extends QModel<IAccount, AccountTransforms>
- *   implements QInterface<IAccount, AccountTransforms> {
- *   @QType() id!: string;
- *   @QType() balance!: bigint;
- *   @QType() createdAt!: Date;
- * }
- * ```
- *
- * @example
- * Using mock generation
- * ```typescript
- * // Generate single mock
- * const mockUser = User.mock().random();
- *
- * // Generate array of mocks
- * const mockUsers = User.mock().array(10);
- *
- * // Custom mock builder
- * const customMock = User.mock()
- *   .with('name', 'Alice')
- *   .with('age', 25)
- *   .build();
+ * const user = User.create({ id: '1', createdAt: '2024-01-01' });
+ * console.log(user.createdAt instanceof Date); // true
  * ```
  */
-export abstract class QModel<TInterface extends Record<string, any>> {
+export abstract class QModel<TInterface extends IQAnyRecord> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();
 	private static readonly toInterfaceService = new ToInterfaceService();
-	private static readonly mockGenerator = new MockGenerator();
+	private static readonly QMockGenerator = new QMockGenerator();
+	private static readonly validation = new ValidationService();
 
 	// Store initial state for change tracking and reset
-	private __initData?: SerializedInterface<TInterface>;
+	private __initData?: IQSerializedInterface<TInterface>;
+
+	/**
+	 * Internal property storage for transformed values.
+	 * Explicitly defined to avoid 'any' usage and dynamic assignment.
+	 * @internal
+	 */
+	protected [QUICK_VALUES_KEY]: Record<string, unknown> = {};
+
+	/**
+	 * Factory method to create model instances with type-safe access to all properties.
+	 *
+	 * **IMPORTANT: This method provides TWO different approaches for type-safety:**
+	 *
+	 * 1. **RECOMMENDED (Option A)**: Use `declare` keyword in your class
+	 *    - Standard TypeScript pattern
+	 *    - Works with both `new` constructor and `create()` method
+	 *    - Explicit and clear
+	 *    - Most common approach
+	 *
+	 * 2. **ALTERNATIVE (Option B)**: Use `IQTransform` helper or generic overriding
+	 *    - ONLY if you specifically want to avoid `declare` keyword
+	 *    - Requires passing type explicitly
+	 *    - Less common, more verbose
+	 *
+	 * **⚠️ CRITICAL: TypeScript CANNOT auto-infer transformations**
+	 * You MUST specify transformed types using ONE of the two approaches above.
+	 * There is no "magic" automatic inference.
+	 *
+	 * @template T - Backend interface type (JSON-serializable types)
+	 * @template TClass - The concrete model class type
+	 * @template TResult - The final return type (defaults to class & interface, but can be overridden)
+	 *
+	 * @param data - Data to initialize the model
+	 * @returns Model instance with type-safe property access
+	 *
+	 * @example
+	 * **OPTION A (RECOMMENDED): Using `declare` keyword**
+	 * ```typescript
+	 * interface IPost {
+	 *   id: number;
+	 *   title: string;
+	 *   createdAt: string;  // Backend sends ISO string
+	 *   balance: string;    // Backend sends string
+	 * }
+	 *
+	 * @Quick({ createdAt: Date, balance: BigInt })
+	 * class Post extends QModel<IPost> {
+	 *   declare id: number;        // ← Explicit declaration
+	 *   declare title: string;     // ← Explicit declaration
+	 *   declare createdAt: Date;   // ← Runtime type (transformed)
+	 *   declare balance: bigint;   // ← Runtime type (transformed)
+	 * }
+	 *
+	 * // Usage is simple and clean
+	 * const post = Post.create({
+	 *   id: 1,
+	 *   title: 'My Post',
+	 *   createdAt: '2026-01-10T00:00:00.000Z',
+	 *   balance: '999999999999999'
+	 * });
+	 *
+	 * post.id         // ✅ number (type-safe)
+	 * post.title      // ✅ string (type-safe)
+	 * post.createdAt  // ✅ Date (type-safe, transformed)
+	 * post.balance    // ✅ bigint (type-safe, transformed)
+	 *
+	 * // Also works with `new` constructor
+	 * const post2 = new Post({ ... });  // ✅ Same type-safety
+	 * ```
+	 *
+	 * @example
+	 * **OPTION B (ALTERNATIVE): Using IQTransform type helper with generic override**
+	 *
+	 * ⚠️ ONLY use this if you specifically don't want to use `declare` keyword.
+	 * This approach is MORE VERBOSE and ONLY WORKS with `create()`, not with `new`.
+	 *
+	 * ```typescript
+	 * interface IPost {
+	 *   id: number;
+	 *   title: string;
+	 *   createdAt: string;  // Backend: ISO string
+	 *   balance: string;    // Backend: string
+	 * }
+	 *
+	 * @Quick({ createdAt: Date, balance: BigInt })
+	 * class Post extends QModel<IPost> {
+	 *   // No declare needed
+	 * }
+	 *
+	 * // Pass IQTransform as 3rd type parameter to create()
+	 * const post = Post.create<IPost, Post, IQTransform<IPost, {
+	 *   createdAt: Date;
+	 *   balance: bigint;
+	 * }>>({
+	 *   id: 1,
+	 *   title: 'My Post',
+	 *   createdAt: '2026-01-10T00:00:00.000Z',
+	 *   balance: '999999999999999'
+	 * });
+	 *
+	 * post.id         // ✅ number (type-safe)
+	 * post.title      // ✅ string (type-safe)
+	 * post.createdAt  // ✅ Date (type-safe via IQTransform)
+	 * post.balance    // ✅ bigint (type-safe via IQTransform)
+	 *
+	 * // ❌ Does NOT work with `new` constructor
+	 * const post2 = new Post({ ... });  // ❌ No type-safety for transforms
+	 * ```
+	 *
+	 * @remarks
+	 * **When to use each approach:**
+	 *
+	 * | Aspect | Option A: `declare` | Option B: `IQTransform` |
+	 * |--------|---------------------|------------------------|
+	 * | **Recommendation** | ✅ RECOMMENDED | ⚠️ ALTERNATIVE |
+	 * | **Syntax complexity** | Simple | Simple (but manual generic) |
+	 * | **Works with `new`** | ✅ Yes | ❌ No |
+	 * | **Works with `create()`** | ✅ Yes | ✅ Yes (with generic) |
+	 * | **Input Validation** | ✅ Strict | ⚠️ Loose (unless 2nd generic used) |
+	 *
+	 * **Example Usage Details:**
+	 *
+	 * | Usage Pattern | Input (Data) | Output (Instance) |
+	 * |---------------|--------------|-------------------|
+	 * | `User.create(data)` | `IUser` | `User` (requires `declare`) |
+	 * | `User.create<User>(data)` | Loose | `User` |
+	 * | `User.create<IQTransform<...>>(data)` | Loose | Transformed Type |
+	 *
+	 * @see {@link QModel} for main class documentation
+	 */
+	/**
+	 * Creates a new instance of the model with STRICT type checking.
+	 *
+	 * @param data - Data strictly matching the model interface
+	 */
+	static create<
+		TClass extends QModel<any>,
+		TInterface = TClass extends QModel<infer I> ? I : never,
+		TResult = TClass,
+	>(this: new (data: any) => TClass, data: NoInfer<TInterface>): TResult;
+
+	static create(this: any, data: any): any {
+		// Use generics to cast 'this' to the constructor type
+		const Constructor = this;
+		return new Constructor(data);
+	}
+
+	/**
+	 * Creates a READ-ONLY (immutable) instance of the model.
+	 * The instance and all nested properties will be recursively frozen.
+	 *
+	 * @param data - Data to initialize the model
+	 * @returns Deeply frozen model instance
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = User.createReadonly({ name: 'John' });
+	 * user.name = 'Jane'; // ❌ Throws TypeError in strict mode
+	 * ```
+	 */
+	static createReadonly<
+		T extends IQAnyRecord = IQAnyRecord,
+		TClass extends QModel<T> = QModel<T>,
+		TResult = TClass,
+	>(this: new (data: T) => TClass, data: T): Readonly<TResult> {
+		// Instantiate directly using the logic from create() to avoid abstract type issues
+		const Constructor = this as unknown as new (data: T) => TClass;
+		const instance = new Constructor(data) as unknown as TResult;
+
+		// Check performance config
+		const localOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			Constructor
+		) as IQAdvancedOptions;
+		const globalOptions = QConfig.get().defaults;
+		const disableSafetyChecks =
+			localOptions?.performance?.disableSafetyChecks ??
+			globalOptions?.performance?.disableSafetyChecks ??
+			false;
+
+		if (disableSafetyChecks) {
+			return instance as unknown as Readonly<TResult>;
+		}
+
+		return deepFreeze(instance) as unknown as Readonly<TResult>;
+	}
 
 	/**
 	 * Creates a type-safe mock builder for generating test data.
 	 * Each derived class automatically infers its correct types.
 	 *
 	 * @template T - The model class constructor type
-	 * @returns A MockBuilder instance specialized for this model class
+	 * @returns A QMockBuilder instance specialized for this model class
 	 *
 	 * @example
 	 * ```typescript
@@ -126,17 +299,23 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * const users = User.mock().array(5); // returns User[]
 	 * ```
 	 */
-	static mock<T extends abstract new (...args: any[]) => QModel<any>>(
+	static mock<T extends abstract new (...args: any[]) => QModel<IQAnyRecord>>(
 		this: T
-	): MockBuilder<QModelInstance<T>, QModelInterface<T>> {
+	): QMockBuilder<IQModelInstance<T>, IQModelInterface<T>> {
 		type ThisClass = T;
-		type InstanceType = ThisClass extends abstract new (...args: any[]) => infer R ? R : never;
-		type InterfaceType = InstanceType extends QModel<infer I> ? I : never;
+		type InstanceType = ThisClass extends abstract new (
+			...args: unknown[]
+		) => infer R
+			? R
+			: never;
 
-		// @ts-expect-error - TypeScript doesn't allow instantiating abstract classes, but at runtime `this` is the concrete class
-		const ModelClass: new (data: InterfaceType) => InstanceType = this;
+		const ModelClass: new (data: any) => InstanceType =
+			this as unknown as IModelConstructor<InstanceType>;
 
-		return new MockBuilder(ModelClass, QModel.mockGenerator);
+		return new QMockBuilder(
+			ModelClass,
+			QModel.QMockGenerator
+		) as unknown as QMockBuilder<IQModelInstance<T>, IQModelInterface<T>>;
 	}
 
 	/**
@@ -157,17 +336,33 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // balance: type=BigInt, transformer=BigIntTransformer
 	 * ```
 	 */
-	static getMetadata(): Map<string, { type: string; transformer: any }> {
-		const result = new Map<string, { type: string; transformer: any }>();
+	static getMetadata(): Map<string, { type: string; transformer: unknown }> {
+		const result = new Map<
+			string,
+			{ type: string; transformer: unknown }
+		>();
 		const prototype = this.prototype;
 
 		// Get all registered qtypes using the correct symbol
-		const qtypes = Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
+		const qtypes =
+			Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
 
 		for (const fieldName of qtypes) {
-			const fieldType = Reflect.getMetadata('fieldType', prototype, fieldName);
-			const arrayElementClass = Reflect.getMetadata('arrayElementClass', prototype, fieldName);
-			const customTransformer = Reflect.getMetadata('customTransformer', prototype, fieldName);
+			const fieldType = Reflect.getMetadata(
+				'fieldType',
+				prototype,
+				fieldName
+			);
+			const arrayElementClass = Reflect.getMetadata(
+				'arrayElementClass',
+				prototype,
+				fieldName
+			);
+			const customTransformer = Reflect.getMetadata(
+				'customTransformer',
+				prototype,
+				fieldName
+			);
 
 			let type = 'unknown';
 			let transformer = null;
@@ -178,11 +373,12 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 			} else if (arrayElementClass) {
 				type = `Array<${arrayElementClass.name || 'unknown'}>`;
 				// Get transformer for array element type from deserializer registry
-				transformer = (QModel.deserializer as any).transformers?.get(arrayElementClass);
+				transformer =
+					QModel.deserializer.getTransformer(arrayElementClass);
 			} else if (fieldType) {
 				type = fieldType.name || fieldType.toString();
 				// Get transformer from deserializer registry
-				transformer = (QModel.deserializer as any).transformers?.get(fieldType);
+				transformer = QModel.deserializer.getTransformer(fieldType);
 			}
 
 			result.set(fieldName as string, { type, transformer });
@@ -191,12 +387,39 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		return result;
 	}
 
+	/**
+	 * Instance alias for static getMetadata.
+	 * Useful for inspecting model state and configuration from an instance.
+	 *
+	 * Includes Dynamic Auto-discovery: Returns both statically defined fields AND
+	 * instance-specific fields found on this object (e.g. declare properties without decorators).
+	 *
+	 * @see {@link QModel.getMetadata}
+	 */
+	public getMetadata(): Map<string, { type: string; transformer: unknown }> {
+		// Start with static metadata (schema definition)
+		const metadata = (this.constructor as any).getMetadata();
+
+		// Merge with instance keys (dynamic data discovery)
+		// This provides "what arrived" validation without permanently polluting the class schema
+		const keys = Object.keys(this);
+		for (const key of keys) {
+			if (!key.startsWith('__') && !metadata.has(key)) {
+				// Register discovered key as unknown/Object to indicate presence
+				// We don't assume type to avoid misleading info, just presence
+				metadata.set(key, { type: 'Object', transformer: undefined });
+			}
+		}
+
+		return metadata;
+	}
+
 	// Temporary property for unprocessed data (removed after initialize)
-	private readonly __tempData?: ModelData<TInterface>;
+	private readonly __tempData?: IQModelData<TInterface>;
 
 	/**
 	 * Constructs a new model instance from interface data or another instance.
-	 * Automatically deserializes complex types (Date, BigInt, etc.) based on @QType decorators.
+	 * Automatically deserializes complex types (Date, BigInt, etc.) based on `@QType` decorators.
 	 *
 	 * @param data - Either a plain interface object or another model instance (for cloning)
 	 *
@@ -213,7 +436,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * const clonedUser = new User(user);
 	 * ```
 	 */
-	constructor(data: ModelData<TInterface> | QModel<TInterface>) {
+	constructor(data: IQModelData<TInterface> | QModel<TInterface>) {
 		Object.defineProperty(this, '__tempData', {
 			value: data,
 			writable: false,
@@ -232,22 +455,67 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *
 	 * @protected
 	 */
-	protected initialize(): void {
-		const data = this.__tempData;
+	protected initialize(
+		inputData?: IQModelData<TInterface> | QModel<TInterface>
+	): void {
+		const data = inputData || this.__tempData;
 		if (!data) return;
 
 		if (data.constructor === this.constructor) {
-			Object.assign(this, data);
+			// Cloning logic: Copy internal storage directly
+			// Object.assign(this, data) fails because properties are getters on prototype (not own enumerable)
+			const source = data as unknown as Record<string, unknown>;
+
+			if (QUICK_VALUES_KEY in source) {
+				const storage = source[QUICK_VALUES_KEY] as object;
+				Object.defineProperty(this, QUICK_VALUES_KEY, {
+					value: { ...storage }, // Shallow copy
+					writable: true,
+					enumerable: false, // Internal storage hidden
+					configurable: true,
+				});
+
+				// Install lazy getters for the cloned properties to ensure they are accessible
+				// This is critical when cloning because Object.assign was removed and getters are on the instance
+				this.installLazyGetters(Object.keys(storage));
+			}
+
+			// Also copy __initData to preserve dirty status
+			if ('__initData' in source) {
+				const initData = source['__initData'] as object;
+				Object.defineProperty(this, '__initData', {
+					value: initData ? { ...initData } : undefined,
+					writable: false,
+					enumerable: false,
+					configurable: true,
+				});
+			}
 			return;
 		}
 
 		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
 		// IMPORTANT: Must be done BEFORE deserialization to preserve original types
-		const initDataClone: any = {};
+		const initDataClone: Record<string, unknown> = {};
 		for (const key in data) {
-			const value = data[key];
+			// SECURITY: Prevent Prototype Pollution
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			) {
+				continue;
+			}
+
+			const value = (data as Record<string, unknown>)[key];
 			// Symbols and functions cannot be cloned, keep reference
-			if (typeof value === 'symbol' || typeof value === 'function') {
+			// QModel instances should also be kept by reference to avoid structuredClone corruption of getters
+			if (
+				typeof value === 'symbol' ||
+				typeof value === 'function' ||
+				(typeof value === 'object' &&
+					value !== null &&
+					'toInterface' in value)
+			) {
 				initDataClone[key] = value;
 			} else {
 				try {
@@ -277,9 +545,9 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 		// Copy ALL properties from deserialized instance
 		// (includes both transformed properties with @QType and copied properties without @QType)
 
-		// Store deserialized values in a hidden storage to handle Bun bug
+		// Store deserialized values in hidden storage to ensure persistence
 		Object.defineProperty(this, QUICK_VALUES_KEY, {
-			value: {} as any,
+			value: {},
 			writable: false,
 			enumerable: false,
 			configurable: true,
@@ -300,11 +568,23 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 			}
 
 			// Skip methods
-			if (typeof (deserialized as any)[key] === 'function') {
+			if (
+				typeof (deserialized as Record<string, unknown>)[key] ===
+				'function'
+			) {
 				continue;
 			}
 
-			const value = (deserialized as any)[key];
+			const value = (deserialized as Record<string, unknown>)[key];
+
+			// Check for custom accessor (Backing Field Pattern support)
+			if (this.hasAccessor(key)) {
+				// Use public assignment to trigger the custom setter
+				(this as any)[key] = value;
+				// Remove from allKeys so it's not picked up for lazy getter installation
+				allKeys.delete(key);
+				continue;
+			}
 
 			// Determine storage key - don't duplicate QUICK_PROPERTY_KEYS prefix
 			let storageKey: string;
@@ -321,48 +601,271 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 				propertyKey = key;
 			}
 
-			(this as any)[storageKey] = value;
+			(this as Record<string, unknown>)[storageKey] = value;
 			// Store in backup
-			(this as any)[QUICK_VALUES_KEY][propertyKey] = value;
+			this[QUICK_VALUES_KEY][propertyKey] = value;
 		}
 
 		// Install lazy getters only for actual property names (not storage keys)
-		const propertyNames = Array.from(allKeys).filter((k) => !k.startsWith(QUICK_PROPERTY_KEYS));
-		this.installLazyGetters(propertyNames);
+		const propertyNames = new Set(
+			Array.from(allKeys).filter(
+				(k) => !k.startsWith(QUICK_PROPERTY_KEYS)
+			)
+		);
+
+		// Add keys from @Quick metadata to ensure smart setters work even for empty/missing properties
+		const typeMap = Reflect.getMetadata(
+			QUICK_TYPE_MAP_KEY,
+			this.constructor
+		);
+		if (typeMap) {
+			Object.keys(typeMap).forEach((key) => propertyNames.add(key));
+		}
+
+		// Add keys from @QType metadata
+		const qTypes = Reflect.getMetadata(
+			QTYPES_METADATA_KEY,
+			this.constructor.prototype
+		);
+		if (Array.isArray(qTypes)) {
+			qTypes.forEach((key) => propertyNames.add(String(key)));
+		}
+
+		this.installLazyGetters(Array.from(propertyNames));
 
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
 	}
 
 	/**
-	 * Instala getters que recuperan valores del backup si fueron sobrescritos por Bun
+	 * **INTERNAL LIFECYCLE METHOD**
+	 *
+	 * Handles a specific quirk of TypeScript/ES2022 class initialization order where
+	 * property initializers (e.g. `name = 'Default'`) run **after** the `super()` constructor calls.
+	 *
+	 * This behavior effectively overwrites any data deserialized in the parent `QModel` constructor.
+	 * This method is called by the `@Quick` decorator wrapper immediately after the subclass
+	 * has finished initializing, to "re-apply" the correct deserialized values from the backup storage.
+	 *
+	 * Uses a `Symbol` key to remain hidden from the public API and autocompletion.
+	 *
+	 * @internal
+	 */
+	public [FORCE_HYDRATION_KEY](): void {
+		// Only run if we have backup values
+		if (!this[QUICK_VALUES_KEY]) return;
+
+		for (const key of Object.keys(this[QUICK_VALUES_KEY])) {
+			// Compare current value (might be default) with backup (deserialized data)
+			// ACCESS DIRECTLY VIA PROPERTY NAME to check effective value (handles getters/shadowed props)
+			const currentValue = (this as Record<string, unknown>)[key];
+			const backupValue = this[QUICK_VALUES_KEY][key];
+
+			// If different, likely overwritten by default initializer
+			if (currentValue !== backupValue) {
+				// Restore from backup (triggers setter which updates storage)
+				(this as Record<string, unknown>)[key] = backupValue;
+			}
+		}
+	}
+
+	/**
+	 * Checks if a property has a custom accessor (getter/setter) on the prototype chain.
+	 */
+	private hasAccessor(key: string): boolean {
+		let current = Object.getPrototypeOf(this);
+		while (current && current !== Object.prototype) {
+			const descriptor = Object.getOwnPropertyDescriptor(current, key);
+			if (descriptor && (descriptor.get || descriptor.set)) {
+				const isGenerated = Reflect.getMetadata(
+					'qtype:generated',
+					current,
+					key
+				);
+				if (!isGenerated) return true;
+			}
+			current = Object.getPrototypeOf(current);
+		}
+		return false;
+	}
+
+	/**
+	 * Installs getters that retrieve values from backup storage if overwritten by Bun/compiler.
 	 */
 	private installLazyGetters(keys: string[]): void {
 		for (const key of keys) {
-			const descriptor = Object.getOwnPropertyDescriptor(this, key);
+			// 1. Check for existing own property descriptor (e.g. from @QType handled manually)
+			const ownDescriptor = Object.getOwnPropertyDescriptor(this, key);
+			if (ownDescriptor && ownDescriptor.get) {
+				continue;
+			}
 
-			// Si ya tiene getter (de @QType()), skip
-			if (descriptor && descriptor.get) {
+			// 2. Check prototype chain for user-defined accessors
+			let proto = Object.getPrototypeOf(this);
+			let hasAccessor = false;
+			while (proto && proto !== Object.prototype) {
+				const desc = Object.getOwnPropertyDescriptor(proto, key);
+				if (desc && (desc.get || desc.set)) {
+					// Check if this accessor was generated by QType
+					const isGenerated = Reflect.getMetadata(
+						'qtype:generated',
+						proto,
+						key
+					);
+
+					// Only consider it a "user accessor" if it wasn't generated by QType
+					if (!isGenerated) {
+						hasAccessor = true;
+						break;
+					}
+				}
+				proto = Object.getPrototypeOf(proto);
+			}
+
+			// If user defined a custom getter/setter, do NOT install smart setter
+			if (hasAccessor) {
 				continue;
 			}
 
 			const storageKey = `${QUICK_PROPERTY_KEYS}${key}`;
 
-			// Definir getter que busca en múltiples lugares
+			// Define getter that searches in multiple locations
 			Object.defineProperty(this, key, {
-				get(this: any) {
-					// 1. Intentar del storage específico
-					let val = this[storageKey];
+				get(this: Record<string, unknown>) {
+					// 1. Try from specific storage (check existence, not just undefined value)
+					if (
+						Object.prototype.hasOwnProperty.call(this, storageKey)
+					) {
+						return this[storageKey];
+					}
+
+					// 2. Search in backup
+					const val = (
+						this as unknown as Record<
+							string,
+							Record<string, unknown>
+						>
+					)[QUICK_VALUES_KEY]?.[key];
 					if (val !== undefined) return val;
 
-					// 2. Buscar en el backup
-					val = this[QUICK_VALUES_KEY]?.[key];
-					if (val !== undefined) return val;
-
-					// 3. Retornar undefined
+					// 3. Return undefined
 					return undefined;
 				},
-				set(this: any, value: any) {
+				set(this: any, value: unknown) {
+					// SMART SETTER IMPLEMENTATION
+					// Attempt to auto-transform the value if a transformer exists
+					// and the value is not already of the correct type.
+
+					try {
+						let spec: unknown = null;
+
+						// 1. Try @QType metadata first (Higher specificity)
+						// Check native field type (e.g. 'date', 'bigint', 'set')
+						const fieldType = Reflect.getMetadata(
+							'fieldType',
+							this,
+							key
+						);
+
+						// Check array element type
+						const arrayElementClass = Reflect.getMetadata(
+							'arrayElementClass',
+							this,
+							key
+						);
+
+						// Check design:type (Array or Class)
+						const designType = Reflect.getMetadata(
+							'design:type',
+							this,
+							key
+						);
+
+						if (fieldType && fieldType !== 'array') {
+							// Use explicit field type (e.g. 'date')
+							spec = fieldType;
+						} else if (arrayElementClass) {
+							// It has an element class, check if it's an array or single nested
+							if (fieldType === 'array' || designType === Array) {
+								// It is an array of [Element]
+								spec = [arrayElementClass];
+							} else {
+								// It is a single nested model
+								spec = arrayElementClass;
+							}
+						}
+
+						// 2. Fallback to @Quick map (Class-level configuration)
+						if (!spec) {
+							const constructor = this.constructor;
+							const typeMap = Reflect.getMetadata(
+								QUICK_TYPE_MAP_KEY,
+								constructor
+							);
+							if (typeMap && typeMap[key]) {
+								spec = typeMap[key];
+							}
+						}
+
+						// 3. Apply transformation if spec found
+						if (spec) {
+							// Access the private static deserializer instance
+							// We cast QModel to any to access the private property
+							const deserializer = (QModel as any).deserializer;
+
+							if (
+								deserializer &&
+								typeof deserializer.transformValue ===
+									'function'
+							) {
+								const transformed = deserializer.transformValue(
+									value,
+									key,
+									spec
+								);
+
+								// STRICT MODE CHECK
+								const constructor = this.constructor;
+								const options = Reflect.getMetadata(
+									QUICK_OPTIONS_KEY,
+									constructor
+								);
+
+								if (options?.strict) {
+									// Check for Invalid Date
+									if (
+										transformed instanceof Date &&
+										isNaN(transformed.getTime())
+									) {
+										throw new Error(
+											`Strict Mode: Property '${key}' received invalid Date value`
+										);
+									}
+
+									// Future: Add more strict checks (e.g. if BigInt fails silently?)
+								}
+
+								this[storageKey] = transformed;
+								return;
+							}
+						}
+					} catch (e) {
+						// STRICT MODE: Rethrow validation errors
+						const constructor = this.constructor;
+						const options = Reflect.getMetadata(
+							QUICK_OPTIONS_KEY,
+							constructor
+						);
+
+						if (options?.strict) {
+							throw e;
+						}
+
+						// If transformation fails, fall back to raw assignment
+						// We don't want to break the app if a partial string is typed
+					}
+
+					// Fallback: Raw assignment
 					this[storageKey] = value;
 				},
 				enumerable: true,
@@ -377,7 +880,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *
 	 * SOLID - Single Responsibility: Delegates serialization to Serializer.
 	 *
-	 * @returns The serialized version of the instance (complex types converted to primitives/plain objects)
+	 * @returns The IQSerialized version of the instance (complex types converted to primitives/plain objects)
 	 *
 	 * @example
 	 * ```typescript
@@ -386,11 +889,16 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 */
-	serialize(): SerializedInterface<TInterface> {
+	serialize(
+		seen?: WeakSet<object>,
+		options?: IQSerializationOptions
+	): IQSerializedInterface<TInterface> {
 		type ModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serialize(
-			this as unknown as ModelAsRecord
-		) as SerializedInterface<TInterface>;
+			this as unknown as ModelAsRecord,
+			seen,
+			options
+		) as IQSerializedInterface<TInterface>;
 	}
 
 	/**
@@ -410,9 +918,33 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
 	 * ```
 	 */
-	toJSON(): string {
+	toJSON(_key?: string, options?: IQSerializationOptions): string {
 		type ModelAsRecord = Record<string, unknown>;
-		return QModel.serializer.serializeToJson(this as unknown as ModelAsRecord);
+		return QModel.serializer.serializeToJson(
+			this as unknown as ModelAsRecord,
+			options
+		);
+	}
+
+	/**
+	 * Validates the model instance against defined transformers.
+	 *
+	 * Checks each property that has a transformer with validation logic.
+	 *
+	 * @returns Array of validation errors (empty if valid)
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ email: 'invalid-email' });
+	 * const errors = user.validate();
+	 * if (errors.length > 0) {
+	 *   console.error('Validation failed:', errors);
+	 * }
+	 * ```
+	 */
+	validate(): IQValidationResult[] {
+		type ModelAsRecord = Record<string, unknown>;
+		return QModel.validation.validate(this as unknown as ModelAsRecord);
 	}
 
 	/**
@@ -420,7 +952,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *
 	 * Deserializes a plain JavaScript object into a fully typed model instance,
 	 * applying all type transformations (string → Date, string → BigInt, etc.)
-	 * according to the @QType decorators defined in the model.
+	 * according to the `@QType` decorators defined in the model.
 	 *
 	 * **SOLID - Open/Closed:** Allows creating instances from interfaces without modification.
 	 *
@@ -456,9 +988,9 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(account.pattern instanceof RegExp); // true
 	 * ```
 	 */
-	static deserialize<T extends QModel<any>>(
-		this: new (data: ModelData<any>) => T,
-		data: ModelData<any>
+	static deserialize<T extends QModel<IQAnyRecord>>(
+		this: new (data: IQModelData<IQAnyRecord>) => T,
+		data: IQModelData<IQAnyRecord>
 	): T {
 		return QModel.deserializer.deserialize(data, this);
 	}
@@ -482,60 +1014,23 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QModel<any>>(this: new (data: ModelData<any>) => T, json: string): T {
+	static fromJSON<T extends QModel<IQAnyRecord>>(
+		this: new (data: IQModelData<IQAnyRecord>) => T,
+		json: string
+	): T {
 		return QModel.deserializer.deserializeFromJson(json, this);
 	}
 
 	/**
-	 * Creates a deep clone of the model instance.
-	 * 
-	 * Performs a complete deep clone by serializing to interface and deserializing back.
-	 * All nested models and arrays are also cloned, ensuring complete independence
-	 * from the original instance.
-	 * 
-	 * **SOLID - Single Responsibility:** Leverages existing serialization services for cloning.
-	 * 
-	 * @returns A new instance with the same data but completely independent references
-	 * 
-	 * @example
-	 * Simple model cloning
-	 * ```typescript
-	 * const user1 = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const user2 = user1.clone();
-	 * 
-	 * console.log(user2).not.toBe(user1); // true (different instances)
-	 * console.log(user2.name === user1.name); // true (same data)
-	 * ```
-	 * 
-	 * @example
-	 * Nested model cloning
-	 * ```typescript
-	 * const company = new Company({
-	 *   id: '1',
-	 *   employees: [
-	 *     { id: '1', name: 'Alice' },
-	 *     { id: '2', name: 'Bob' }
-	 *   ]
-	 * });
-	 * 
-	 * const cloned = company.clone();
-	 * 
-	 * // Different instances
-	 * console.log(cloned).not.toBe(company);
-	 * console.log(cloned.employees).not.toBe(company.employees);
-	 * console.log(cloned.employees[0]).not.toBe(company.employees[0]);
-	 * 
-
-	/**
 	 * Converts the current state to interface format (preserving original input types).
-	 * 
+	 *
 	 * **IMPORTANT:** This does NOT serialize to JSON. It preserves the EXACT format from constructor input.
-	 * 
+	 *
 	 * **Key differences:**
 	 * - `toInterface()` → Preserves ORIGINAL input format (string stays string, RegExp stays RegExp)
 	 * - `serialize()` → Converts to JSON-compatible format (Date → ISO string, RegExp → object, etc.)
 	 * - `toJSON()` → Same as serialize() but returns JSON string
-	 * 
+	 *
 	 * **How it works:**
 	 * - Reads `__initData` (stored BEFORE transformations)
 	 * - Compares original type vs current type
@@ -544,39 +1039,39 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *   - If input was string `'999999'` → returns string (NOT bigint)
 	 *   - If input was RegExp `/test/` → returns RegExp (NOT string)
 	 *   - If input was string `'^test$'` → returns string (NOT RegExp)
-	 * 
+	 *
 	 * **Use cases:**
 	 * - Change detection: `model.toInterface() vs model.getInitInterface()`
 	 * - Form reset: restore original values
 	 * - API responses: return data in same format as received
 	 * - State comparison: check modifications
-	 * 
-	 * @returns Object with current values in ORIGINAL input format (NOT JSON serialized)
-	 * 
+	 *
+	 * @returns Object with current values in ORIGINAL input format (NOT JSON IQSerialized)
+	 *
 	 * @example
 	 * **Example 1: Date as string input**
 	 * ```typescript
 	 * const user = new User({
 	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String input
 	 * });
-	 * 
+	 *
 	 * user.createdAt;        // Date object (transformed)
 	 * user.toInterface();    // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
 	 * user.serialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
 	 * ```
-	 * 
+	 *
 	 * @example
 	 * **Example 2: BigInt as string input**
 	 * ```typescript
 	 * const account = new Account({
 	 *   balance: '999999999999999'  // String input
 	 * });
-	 * 
+	 *
 	 * account.balance;       // 999999999999999n (bigint transformed)
 	 * account.toInterface(); // { balance: '999999999999999' } - STRING preserved
 	 * account.serialize();   // { balance: '999999999999999' } - string for JSON
 	 * ```
-	 * 
+	 *
 	 * @example
 	 * **Example 3: RegExp input formats**
 	 * ```typescript
@@ -584,15 +1079,19 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * const model1 = new Model({ pattern: '^test$' });
 	 * model1.pattern;        // /^test$/ (RegExp transformed)
 	 * model1.toInterface();  // { pattern: '^test$' } - STRING preserved
-	 * 
+	 *
 	 * // Case B: RegExp object input
 	 * const model2 = new Model({ pattern: /^test$/ });
 	 * model2.pattern;        // /^test$/ (RegExp)
 	 * model2.toInterface();  // { pattern: /^test$/ } - REGEXP preserved
 	 * ```
 	 */
-	toInterface(): TInterface {
-		return QModel.toInterfaceService.toInterface<TInterface>(this as any);
+	toInterface(seen?: WeakSet<object>, depth?: number): TInterface {
+		return QModel.toInterfaceService.toInterface<TInterface>(
+			this as unknown as Record<string, unknown>,
+			seen,
+			depth
+		);
 	}
 
 	/**
@@ -634,8 +1133,8 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(init.name !== current.name); // true
 	 * ```
 	 */
-	getInitInterface(): SerializedInterface<TInterface> {
-		return { ...(this.__initData as SerializedInterface<TInterface>) };
+	getInitInterface(): IQSerializedInterface<TInterface> {
+		return { ...(this.__initData as IQSerializedInterface<TInterface>) };
 	}
 
 	/**
@@ -732,10 +1231,10 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * await api.patch(`/users/${user.id}`, changes);
 	 * ```
 	 */
-	getChanges(): Partial<SerializedInterface<TInterface>> {
+	getChanges(): Partial<IQSerializedInterface<TInterface>> {
 		const current = this.toInterface();
 		const initial = this.getInitInterface();
-		const changes: Partial<SerializedInterface<TInterface>> = {};
+		const changes: Partial<IQSerializedInterface<TInterface>> = {};
 
 		for (const key in current) {
 			if (!this.deepEqual(current[key], initial[key])) {
@@ -773,12 +1272,16 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 */
 	reset(): void {
 		const initial = this.getInitInterface();
-		const Constructor = this.constructor as typeof QModel;
-		const restored = (Constructor as any).deserialize(initial);
+		const Constructor = this.constructor as unknown as IModelConstructor<
+			QModel<TInterface>
+		>;
+		const restored = Constructor.deserialize(initial);
 
 		// Copy all properties from restored instance
 		for (const key of Object.keys(restored)) {
-			(this as any)[key] = (restored as any)[key];
+			(this as unknown as IQAnyRecord)[key] = (
+				restored as unknown as IQAnyRecord
+			)[key];
 		}
 	}
 
@@ -809,15 +1312,19 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 * console.log(user.email); // 'john@example.com' (unchanged)
 	 * ```
 	 */
-	patch(patch: Partial<ModelData<TInterface>>): void {
-		const Constructor = this.constructor as typeof QModel;
+	patch(patch: Partial<IQModelData<TInterface>>): void {
+		const Constructor = this.constructor as unknown as IModelConstructor<
+			QModel<TInterface>
+		>;
 		const current = this.serialize();
 		const merged = { ...current, ...patch };
-		const updated = (Constructor as any).deserialize(merged);
+		const updated = Constructor.deserialize(merged);
 
 		// Copy all properties from updated instance
 		for (const key of Object.keys(updated)) {
-			(this as any)[key] = (updated as any)[key];
+			(this as unknown as IQAnyRecord)[key] = (
+				updated as unknown as IQAnyRecord
+			)[key];
 		}
 	}
 
@@ -826,7 +1333,7 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 	 *
 	 * @private
 	 */
-	private deepEqual(a: any, b: any): boolean {
+	private deepEqual(a: unknown, b: unknown): boolean {
 		if (a === b) return true;
 		if (a == null || b == null) return false;
 		if (typeof a !== typeof b) return false;
@@ -844,19 +1351,60 @@ export abstract class QModel<TInterface extends Record<string, any>> {
 
 			if (keysA.length !== keysB.length) return false;
 
-			return keysA.every((key) => this.deepEqual(a[key], b[key]));
+			return keysA.every((key) =>
+				this.deepEqual(
+					(a as Record<string, unknown>)[key],
+					(b as Record<string, unknown>)[key]
+				)
+			);
 		}
 
 		return false;
 	}
 
 	/**
-	 * Creates a deep copy of this model instance.
+	 * Creates a deep clone of the model instance.
 	 *
-	 * @returns A new instance with the same data
+	 * Performs a complete deep clone by serializing to interface and deserializing back.
+	 * All nested models and arrays are also cloned, ensuring complete independence
+	 * from the original instance.
+	 *
+	 * **SOLID - Single Responsibility:** Leverages existing serialization services for cloning.
+	 *
+	 * @returns A new instance with the same data but completely independent references
+	 *
+	 * @example
+	 * Simple model cloning
+	 * ```typescript
+	 * const user1 = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 * const user2 = user1.clone();
+	 *
+	 * console.log(user2).not.toBe(user1); // true (different instances)
+	 * console.log(user2.name === user1.name); // true (same data)
+	 * ```
+	 *
+	 * @example
+	 * Nested model cloning
+	 * ```typescript
+	 * const company = new Company({
+	 *   id: '1',
+	 *   employees: [
+	 *     { id: '1', name: 'Alice' },
+	 *     { id: '2', name: 'Bob' }
+	 *   ]
+	 * });
+	 *
+	 * const cloned = company.clone();
+	 *
+	 * // Different instances
+	 * console.log(cloned).not.toBe(company);
+	 * console.log(cloned.employees).not.toBe(company.employees);
+	 * console.log(cloned.employees[0]).not.toBe(company.employees[0]);
+	 * ```
 	 */
 	clone(): this {
-		const Constructor = this.constructor as typeof QModel;
-		return (Constructor as any).deserialize(this.serialize()) as this;
+		const Constructor = this
+			.constructor as unknown as IModelConstructor<this>;
+		return Constructor.deserialize(this.serialize());
 	}
 }

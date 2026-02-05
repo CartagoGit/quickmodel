@@ -1,3 +1,10 @@
+import type {
+	IQMockerFn,
+	IQSerializerFn,
+	IQTransformerFn,
+} from './transform-options.interface';
+import { IQCaseOptions } from '../types/case.type';
+
 /**
  * Options for @Quick() decorator to handle advanced scenarios.
  *
@@ -6,33 +13,35 @@
  */
 
 /**
- * Extract constructor types from ISpec or ISpecs.
+ * Extract constructor types from IQSpec or IQSpecs.
  *
  * This helper type extracts all constructor types from a spec definition,
  * which can be used to type discriminator functions properly.
  *
  * @example
  * ```typescript
- * type Spec1 = typeof Date;             // ExtractConstructors<Spec1> = DateConstructor
- * type Spec2 = [typeof Date, typeof BigInt];  // ExtractConstructors<Spec2> = DateConstructor | BigIntConstructor
- * type Spec3 = (v: any) => any;         // ExtractConstructors<Spec3> = (v: any) => any (passthrough for functions)
- * type Spec4 = 'bigint';                // ExtractConstructors<Spec4> = 'bigint' (passthrough for string literals)
+ * type Spec1 = typeof Date;             // IQExtractConstructors<Spec1> = DateConstructor
+ * type Spec2 = [typeof Date, typeof BigInt];  // IQExtractConstructors<Spec2> = DateConstructor | BigIntConstructor
+ * type Spec3 = (v: any) => any;         // IQExtractConstructors<Spec3> = (v: any) => any (passthrough for functions)
+ * type Spec4 = 'bigint';                // IQExtractConstructors<Spec4> = 'bigint' (passthrough for string literals)
  * ```
  */
-export type ExtractConstructors<TSpec> = TSpec extends readonly any[]
-	? TSpec[number] // Array/tuple → union of all elements
-	: TSpec; // Single value → passthrough
+export type IQExtractConstructors<TSpec> = TSpec extends readonly unknown[]
+	? TSpec[number]
+	: TSpec;
 
 /**
  * Extract instance type from a constructor.
  *
  * @example
  * ```typescript
- * type Instance1 = ExtractInstanceType<typeof Date>;  // Date
- * type Instance2 = ExtractInstanceType<DateConstructor>;  // Date
+ * type Instance1 = IQExtractInstanceType<typeof Date>;  // Date
+ * type Instance2 = IQExtractInstanceType<DateConstructor>;  // Date
  * ```
  */
-export type ExtractInstanceType<T> = T extends new (...args: any[]) => infer R
+export type IQExtractInstanceType<T> = T extends new (
+	...args: unknown[]
+) => infer R
 	? R
 	: never;
 
@@ -46,7 +55,7 @@ export type ExtractInstanceType<T> = T extends new (...args: any[]) => infer R
  * ```
  */
 export type UnionToIntersection<U> = (
-	U extends any ? (k: U) => void : never
+	U extends unknown ? (k: U) => void : never
 ) extends (k: infer I) => void
 	? I
 	: never;
@@ -62,16 +71,20 @@ export type UnionToIntersection<U> = (
  * type Content = { type: 'content'; text: string; };
  * type Metadata = { type: 'metadata'; tags: string[]; };
  *
- * type Common = ExtractCommonKeys<Content | Metadata>;  // 'type'
+ * type Common = IQExtractCommonKeys<T> =
  * ```
  */
-export type ExtractCommonKeys<T> =
+export type IQExtractCommonKeys<T> =
 	// Get all possible keys from the union
 	keyof T extends infer K
 		? K extends keyof T
 			? // Check if this key exists in ALL members of the union
 				(
-					T extends any ? (K extends keyof T ? true : false) : never
+					T extends unknown
+						? K extends keyof T
+							? true
+							: false
+						: never
 				) extends true
 				? K
 				: never
@@ -81,20 +94,20 @@ export type ExtractCommonKeys<T> =
 /**
  * Extract the interface type from a QModel class.
  *
- * QModel classes extend QModel<IInterface>, this extracts the IInterface type.
+ * QModel classes extend `QModel<IInterface>`, this extracts the IInterface type.
  *
  * @example
  * ```typescript
  * class Content extends QModel<IContent> { ... }
- * type Interface = ExtractQModelInterface<Content>;  // IContent
+ * type Interface = IQExtractIQModelInterface<Content>;  // IContent
  * ```
  */
-export type ExtractQModelInterface<T> = T extends { toInterface(): infer I }
+export type IQExtractIQModelInterface<T> = T extends { toInterface(): infer I }
 	? I
 	: T;
 
 /**
- * Extract common keys from constructors in an ISpec.
+ * Extract common keys from constructors in an IQSpec.
  *
  * For arrays of constructors, extracts keys that exist in all instance types.
  * For QModel classes, extracts keys from the interface type, not the class instance.
@@ -105,24 +118,23 @@ export type ExtractQModelInterface<T> = T extends { toInterface(): infer I }
  * // With QModel classes
  * class Content extends QModel<IContent> { ... }
  * class Metadata extends QModel<IMetadata> { ... }
- * type Keys1 = ExtractValidDiscriminatorKeys<[typeof Content, typeof Metadata]>;  // 'type'
+ * type Keys1 = IQExtractValidDiscriminatorKeys<[typeof Content, typeof Metadata]>;  // 'type'
  *
  * // With regular constructors
- * type Keys2 = ExtractValidDiscriminatorKeys<typeof Date>;  // keyof Date
+ * type Keys2 = IQExtractValidDiscriminatorKeys<typeof Date>;  // keyof Date
  * ```
  */
-export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
-	...args: any[]
-) => any)[]
-	? // Array of constructors → extract common keys from interface types
-		ExtractCommonKeys<
-			ExtractQModelInterface<ExtractInstanceType<TSpec[number]>>
-		>
-	: TSpec extends new (...args: any[]) => any
-		? // Single constructor → all keys from interface type
-			keyof ExtractQModelInterface<ExtractInstanceType<TSpec>>
-		: // Not a constructor → string (no validation)
-			string;
+export type IQExtractValidDiscriminatorKeys<TSpec> =
+	TSpec extends readonly (new (...args: unknown[]) => unknown)[]
+		? // Array of constructors → extract common keys from interface types
+			IQExtractCommonKeys<
+				IQExtractIQModelInterface<IQExtractInstanceType<TSpec[number]>>
+			>
+		: TSpec extends new (...args: unknown[]) => unknown
+			? // Single constructor → all keys from interface type
+				keyof IQExtractIQModelInterface<IQExtractInstanceType<TSpec>>
+			: // Not a constructor → string (no validation)
+				string;
 
 /**
  * Type guard function for custom discriminator logic.
@@ -170,8 +182,8 @@ export type ExtractValidDiscriminatorKeys<TSpec> = TSpec extends readonly (new (
  * })
  * ```
  */
-export type TypeGuardFunction<TConstructors> = (
-	data: any
+export type IQTypeGuardFunction<TConstructors> = (
+	data: unknown
 ) => TConstructors;
 
 /**
@@ -209,13 +221,14 @@ export type TypeGuardFunction<TConstructors> = (
  *   // TypeScript knows this must return Content | Metadata based on items: [Content, Metadata]
  * }
  * ```
+ * @group Types
  */
-export type DiscriminatorConfig<
-	TConstructors = any,
+export type IQDiscriminatorConfig<
+	TConstructors = unknown,
 	TValidKeys extends string = string,
 > =
 	| TValidKeys // Field name (validated against common keys)
-	| TypeGuardFunction<TConstructors> // Custom function with proper typing
+	| IQTypeGuardFunction<TConstructors> // Custom function with proper typing
 	| {
 			/** Field name to use as discriminator (validated against common keys) */
 			field: TValidKeys;
@@ -283,8 +296,9 @@ export type DiscriminatorConfig<
  * })
  * ```
  */
-export interface IQuickAdvancedOptions<
-	TTypeMap extends Record<string, any> = Record<string, any>,
+
+export interface IQAdvancedOptions<
+	TTypeMap extends Record<string, unknown> = Record<string, unknown>,
 > {
 	/**
 	 * Discriminator configuration for union type properties.
@@ -299,9 +313,201 @@ export interface IQuickAdvancedOptions<
 	 * - **object**: Full configuration with field and mapping
 	 */
 	discriminators?: {
-		[K in keyof TTypeMap]?: DiscriminatorConfig<
-			ExtractConstructors<TTypeMap[K]>,
-			ExtractValidDiscriminatorKeys<TTypeMap[K]> & string
+		[K in keyof TTypeMap]?: IQDiscriminatorConfig<
+			IQExtractConstructors<TTypeMap[K]>,
+			IQExtractValidDiscriminatorKeys<TTypeMap[K]> & string
 		>;
+	};
+
+	/**
+	 * Behavior when encountering properties in input data that are not defined in the model.
+	 *
+	 * - **keep** (default): Preserves extra properties.
+	 * - **strip**: Silently removes extra properties.
+	 * - **error**: Throws an error.
+	 */
+	unknownPropertyPolicy?: 'keep' | 'strip' | 'error';
+
+	/**
+	 * Automatically excludes properties starting with internal prefixes (default: `_`, `$`) from population.
+	 *
+	 * - `true`: Strips properties starting with `_` or `$` (or global configured prefixes).
+	 * - `false`: Allows internal properties.
+	 * - `string[]`: Strips properties starting with these specific prefixes (overrides global).
+	 *
+	 * Used to protect internal state from mass-assignment attacks.
+	 */
+	stripInternalIdentifiers?: boolean | string[];
+
+	/**
+	 * Date serialization strategy.
+	 */
+	dateStrategy?: 'iso' | 'timestamp' | 'native';
+
+	/**
+	 * Case transformation strategy for input (API -> Model) and output (Model -> API).
+	 */
+	transformCase?: IQCaseOptions;
+
+	/**
+	 * Strategy for reporting validation errors.
+	 *
+	 * - **failFast**: Returns immediately on the first error encountered (optimized).
+	 * - **accumulate** (default): Collects and returns all validation errors.
+	 */
+	validationErrorStrategy?: 'failFast' | 'accumulate';
+
+	/**
+	 * When to run validation.
+	 *
+	 * - **manual** (default): Validation must be triggered explicitly via `.validate()`.
+	 * - **construction**: Validation runs automatically after population. Throws if invalid.
+	 */
+	validationTrigger?: 'manual' | 'construction';
+
+	/**
+	 * Enable internal debug logging for this model.
+	 * Useful for troubleshooting transformation or validation issues.
+	 */
+	enableDebugLogs?: boolean;
+
+	/**
+	 * Include fields with undefined/null values in the serialized output.
+	 *
+	 * - **true**: `key: null` or `key: undefined` are included in JSON.
+	 * - **false** (default): Keys with undefined values are omitted (standard JSON behavior for undefined).
+	 */
+	exposeUnsetFields?: boolean;
+
+	/**
+	 * String normalization options (per-model override).
+	 */
+	normalization?: {
+		trimStrings?: boolean;
+		emptyStringAsNull?: boolean;
+	};
+
+	/**
+	 * Type coercion strategy (per-model override).
+	 */
+	coercionStrategy?: 'strict' | 'loose';
+
+	/**
+	 * If true, converts all `null` values to `undefined`.
+	 */
+	nullToUndefined?: boolean;
+
+	/**
+	 * Maximum allowed length for arrays during deserialization.
+	 * Overrides the global default limit for this model.
+	 *
+	 * Used to mitigate DoS attacks via massive arrays.
+	 *
+	 * @default 10000 (configurable via global config)
+	 */
+	maxArrayLength?: number;
+
+	/**
+	 * Custom transformers for specific properties.
+	 *
+	 * Allows overriding the default deserialization logic for specific fields
+	 * by providing a custom function that receives the raw value and returns the transformed value.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   status: String // Normal string
+	 * }, {
+	 *   transformers: {
+	 *     status: (val) => val.toUpperCase() // Custom transformation
+	 *   }
+	 * })
+	 * ```
+	 */
+	transformers?: {
+		[K in keyof TTypeMap]?: IQTransformerFn;
+	};
+
+	/**
+	 * Custom serializers for specific properties.
+	 *
+	 * Allows defining the reverse transformation logic (Model -> Interface) for specific fields.
+	 * Critical when using custom transformers that function as one-way mappings, or when
+	 * the default serialization behavior needs to be overridden for specific fields.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   date: Date
+	 * }, {
+	 *   transformers: {
+	 *     // Deserialize: seconds -> Date
+	 *     date: (val) => new Date(val * 1000)
+	 *   },
+	 *   serializers: {
+	 *     // Serialize: Date -> seconds
+	 *     date: (val: Date) => Math.floor(val.getTime() / 1000)
+	 *   }
+	 * })
+	 * ```
+	 */
+	serializers?: {
+		[K in keyof TTypeMap]?: IQSerializerFn;
+	};
+
+	/**
+	 * Custom mock generators for specific properties.
+	 *
+	 * Allows defining how to generate mock data for specific fields.
+	 * Critical when using custom transformers where the default mock generation
+	 * (which infers from type) might produce invalid/incompatible data.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   sku: (val) => `ITEM-${val}` // Custom transformer
+	 * }, {
+	 *   mockers: {
+	 *     // Generate valid SKU base for the transformer
+	 *     sku: () => faker.string.alphanumeric(8)
+	 *   }
+	 * })
+	 * ```
+	 */
+	mockers?: {
+		[K in keyof TTypeMap]?: IQMockerFn;
+	};
+
+	/**
+	 * Configuration options passed to transformers.
+	 *
+	 * Allows configuring specific limits or behaviors for built-in transformers.
+	 * e.g. maxBytes for ArrayBuffer, maxItems for TypedArray.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({
+	 *   video: ArrayBuffer
+	 * }, {
+	 *   transformerOptions: {
+	 *     video: { maxBytes: 5_000_000 } // Allow 5MB
+	 *   }
+	 * })
+	 * ```
+	 */
+	transformerOptions?: {
+		[K in keyof TTypeMap]?: Record<string, unknown>;
+	};
+
+	/**
+	 * Performance optimization settings.
+	 */
+	performance?: {
+		/**
+		 * Disables redundant runtime safety checks (like `Object.freeze`) when data source is trusted.
+		 * Use with caution.
+		 * @default false
+		 */
+		disableSafetyChecks?: boolean;
 	};
 }

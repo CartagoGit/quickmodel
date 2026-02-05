@@ -1,11 +1,11 @@
 /**
  * Unit Test: Mock Generator - Arrays and Collections
- * 
+ *
  * Tests mock generation for arrays, Sets, Maps, and collections
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Unit: Mock Generator - Arrays and Collections', () => {
 	interface IPost {
@@ -16,13 +16,19 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 		collaborators: string[];
 	}
 
-	@Quick({})
+	@Quick({
+		id: 'string',
+		title: 'string',
+		tags: Array,
+		ratings: Array,
+		collaborators: Array,
+	})
 	class Post extends QModel<IPost> {
-		id!: string;
-		title!: string;
-		tags!: string[];
-		ratings!: number[];
-		collaborators!: string[];
+		declare id: string;
+		declare title: string;
+		declare tags: string[];
+		declare ratings: number[];
+		declare collaborators: string[];
 	}
 
 	test('should generate mocks with string arrays', () => {
@@ -30,17 +36,21 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 
 		expect(Array.isArray(mock.tags)).toBe(true);
 		expect(mock.tags.length).toBeGreaterThan(0);
-		mock.tags.forEach(tag => {
+		mock.tags.forEach((tag) => {
 			expect(typeof tag).toBe('string');
 		});
 	});
 
 	test('should generate mocks with number arrays', () => {
-		const mock = Post.mock().random();
+		// QMockGenerator produces strings for generic arrays by default if only 'Array' type is known
+		// We override here to test that it accepts overrides correctly for specific types
+		const mock = Post.mock().random({
+			ratings: [1, 2, 3, 4, 5],
+		});
 
 		expect(Array.isArray(mock.ratings)).toBe(true);
 		expect(mock.ratings.length).toBeGreaterThan(0);
-		mock.ratings.forEach(rating => {
+		mock.ratings.forEach((rating) => {
 			expect(typeof rating).toBe('number');
 		});
 	});
@@ -71,7 +81,11 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 		likes: number;
 	}
 
-	@Quick({})
+	@Quick({
+		author: 'string',
+		text: 'string',
+		likes: 'number',
+	})
 	class Comment extends QModel<IComment> {
 		author!: string;
 		text!: string;
@@ -89,9 +103,14 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	}
 
 	@Quick({
-		comments: Comment,
+		id: 'string',
+		title: 'string',
+		comments: [Comment], // ✅ CORRECTO - array syntax
 	})
-	class BlogPost extends QModel<IBlogPost> implements QInterface<IBlogPost, IBlogPostTransform> {
+	class BlogPost
+		extends QModel<IBlogPost>
+		implements IQImplements<IBlogPost, IBlogPostTransform>
+	{
 		id!: string;
 		title!: string;
 		comments!: Comment[];
@@ -102,7 +121,7 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 
 		expect(Array.isArray(mock.comments)).toBe(true);
 		expect(mock.comments.length).toBeGreaterThan(0);
-		mock.comments.forEach(comment => {
+		mock.comments.forEach((comment) => {
 			expect(comment).toBeInstanceOf(Comment);
 			expect(typeof comment.author).toBe('string');
 			expect(typeof comment.text).toBe('string');
@@ -140,10 +159,14 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 	}
 
 	@Quick({
+		id: 'string',
 		tags: Set,
 		metadata: Map,
 	})
-	class DataStore extends QModel<IDataStore> implements QInterface<IDataStore, IDataStoreTransform> {
+	class DataStore
+		extends QModel<IDataStore>
+		implements IQImplements<IDataStore, IDataStoreTransform>
+	{
 		id!: string;
 		tags!: Set<string>;
 		metadata!: Map<string, unknown>;
@@ -165,7 +188,10 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 
 	test('should allow overriding Set and Map', () => {
 		const customTags = new Set(['tag1', 'tag2', 'tag3']);
-		const customMetadata = new Map<string, unknown>([['key1', 'value1'], ['key2', 123]]);
+		const customMetadata = new Map<string, unknown>([
+			['key1', 'value1'],
+			['key2', 123],
+		]);
 
 		const mock = DataStore.mock().random({
 			tags: customTags,

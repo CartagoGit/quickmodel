@@ -1,234 +1,328 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
-import { IQValidationContext, IQValidationResult, IQValidator } from '../core/interfaces/transformer.interface';
+import { QModelError } from '@/core/errors/quickmodel.error';
+import {
+	IQTransformContext,
+	IQValidationContext,
+	IQValidationResult,
+	IQValidator,
+} from '../core/interfaces/transformer.interface';
 
 type TypedArrayConstructor =
-  | Int8ArrayConstructor
-  | Uint8ArrayConstructor
-  | Uint8ClampedArrayConstructor
-  | Int16ArrayConstructor
-  | Uint16ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
-  | Float32ArrayConstructor
-  | Float64ArrayConstructor
-  | BigInt64ArrayConstructor
-  | BigUint64ArrayConstructor;
+	| Int8ArrayConstructor
+	| Uint8ArrayConstructor
+	| Uint8ClampedArrayConstructor
+	| Int16ArrayConstructor
+	| Uint16ArrayConstructor
+	| Int32ArrayConstructor
+	| Uint32ArrayConstructor
+	| Float32ArrayConstructor
+	| Float64ArrayConstructor
+	| BigInt64ArrayConstructor
+	| BigUint64ArrayConstructor;
 
 type TypedArray =
-  | Int8Array
-  | Uint8Array
-  | Uint8ClampedArray
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | Float32Array
-  | Float64Array
-  | BigInt64Array
-  | BigUint64Array;
+	| Int8Array
+	| Uint8Array
+	| Uint8ClampedArray
+	| Int16Array
+	| Uint16Array
+	| Int32Array
+	| Uint32Array
+	| Float32Array
+	| Float64Array
+	| BigInt64Array
+	| BigUint64Array;
 
 /**
  * Generic transformer for TypedArray types: converts between number/string array and TypedArray.
- * 
+ *
  * **Serialization**: `TypedArray` → `number[]` (or `string[]` for BigInt variants)
  * **Deserialization**: `number[]` | `string[]` → `TypedArray`
- * 
+ *
  * @template T - The specific TypedArray type (Int8Array, Float32Array, etc.)
- * 
+ *
  * @remarks
  * Supports all standard TypedArray types:
  * - Integer: Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Uint32Array
  * - Float: Float32Array, Float64Array
- * - BigInt: BigInt64Array, BigUint64Array (serialized as string arrays)
- * 
+ * - BigInt: BigInt64Array, BigUint64Array (IQSerialized as string arrays)
+ *
  * BigInt variants serialize to string arrays because JSON doesn't support BigInt.
  * Invalid BigInt values default to 0n.
- * 
+ *
  * @example
  * ```typescript
+ * @Quick({
+ *   samples: Float32Array,
+ *   largeNumbers: BigInt64Array
+ * })
  * class AudioData extends QuickModel<IAudioData> {
- *   @QType() samples!: Float32Array;
- *   @QType() largeNumbers!: BigInt64Array;
+ *   declare samples: Float32Array;
+ *   declare largeNumbers: BigInt64Array;
  * }
- * 
+ *
  * const audio = new AudioData({
  *   samples: [0.5, -0.3, 0.8],
  *   largeNumbers: ["9007199254740991", "123456789012345"]
  * });
  * console.log(audio.samples instanceof Float32Array); // true
  * console.log(audio.largeNumbers instanceof BigInt64Array); // true
- * 
+ *
  * const json = audio.serialize();
  * console.log(json.samples); // [0.5, -0.3, 0.8]
  * console.log(json.largeNumbers); // ["9007199254740991", "123456789012345"]
  * ```
  */
 export class TypedArrayTransformer<T extends TypedArray>
-  extends BaseTransformer<number[] | string[], T>
-  implements IQValidator
+	extends BaseTransformer<number[] | string[], T>
+	implements IQValidator
 {
-  /**
-   * Creates a transformer for a specific TypedArray type.
-   * 
-   * @param ArrayConstructor - The TypedArray constructor (Int8Array, Float32Array, etc.)
-   * @param isBigInt - Whether this is a BigInt variant (BigInt64Array/BigUint64Array)
-   */
-  constructor(
-    private ArrayConstructor: TypedArrayConstructor,
-    private isBigInt: boolean = false,
-  ) {
-    super();
-  }
+	/**
+	 * Creates a transformer for a specific TypedArray type.
+	 *
+	 * @param ArrayConstructor - The TypedArray constructor (Int8Array, Float32Array, etc.)
+	 * @param isBigInt - Whether this is a BigInt variant (BigInt64Array/BigUint64Array)
+	 */
+	constructor(
+		private ArrayConstructor: TypedArrayConstructor,
+		private isBigInt?: boolean
+	) {
+		super();
+		if (this.isBigInt === undefined) {
+			this.isBigInt =
+				this.ArrayConstructor.name === 'BigInt64Array' ||
+				this.ArrayConstructor.name === 'BigUint64Array';
+		}
+	}
 
-  /**
-   * Converts a number/string array to TypedArray.
-   * 
-   * @param value - The value to convert (array, object, or TypedArray)
-   * @param propertyKey - The property name (for error messages)
-   * @param className - The class name (for error messages)
-   * @returns A TypedArray instance
-   * 
-   * @remarks
-   * Accepts arrays or array-like objects (e.g., `{0: 1, 1: 2, 2: 3}`).
-   * For BigInt variants, strings are converted to BigInt. Invalid values default to 0n.
-   */
-  deserialize(
-    value: number[] | string[] | T | Record<number, number>,
-    _propertyKey: string,
-    _className: string,
-  ): T {
-    if (value instanceof this.ArrayConstructor) {
-      return value as T;
-    }
+	/**
+	 * Converts a number/string array to TypedArray.
+	 *
+	 * @param value - The value to convert (array, object, or TypedArray)
+	 * @param propertyKey - The property name (for error messages)
+	 * @param className - The class name (for error messages)
+	 * @returns A TypedArray instance
+	 *
+	 * @remarks
+	 * Accepts arrays or array-like objects (e.g., `{0: 1, 1: 2, 2: 3}`).
+	 * For BigInt variants, strings are converted to BigInt. Invalid values default to 0n.
+	 */
+	deserialize(
+		value:
+			| number[]
+			| string[]
+			| T
+			| Record<number, number>
+			| null
+			| undefined,
+		_propertyKey: string,
+		_className: string,
+		context?: IQTransformContext
+	): T | null {
+		if (value === null || value === undefined) {
+			return null;
+		}
 
-    const arrayData = Array.isArray(value) ? value : Object.values(value);
+		if (value instanceof this.ArrayConstructor) {
+			return value as T;
+		}
 
-    if (this.isBigInt) {
-      const bigIntArray = arrayData.map((v: unknown) => {
-        if (typeof v === 'bigint') return v;
-        if (v === null || v === undefined || v === '') return BigInt(0);
-        if (typeof v === 'string' || typeof v === 'number') {
-          try {
-            return BigInt(v);
-          } catch {
-            return BigInt(0);
-          }
-        }
-        return BigInt(0);
-      });
-      return new (this.ArrayConstructor as BigInt64ArrayConstructor | BigUint64ArrayConstructor)(
-        bigIntArray,
-      ) as T;
-    }
+		// SECURITY: Prevent Memory Exhaustion via massive arrays
+		const maxItems = (
+			context?.metadata?.transformerOptions as { maxItems?: number }
+		)?.maxItems;
+		const MAX_ITEMS = maxItems || 1_000_000;
 
-    return new (this.ArrayConstructor as Exclude<
-      TypedArrayConstructor,
-      BigInt64ArrayConstructor | BigUint64ArrayConstructor
-    >)(arrayData) as T;
-  }
+		// Check array length eagerly
+		if (Array.isArray(value) && value.length > MAX_ITEMS) {
+			throw new QModelError(
+				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`,
+				{
+					className: _className,
+					propertyKey: _propertyKey,
+					value: 'TRUNCATED',
+					expectedType: `Small TypedArray (< ${MAX_ITEMS} items)`,
+				}
+			);
+		}
 
-  /**
-   * Converts a TypedArray to number or string array.
-   * 
-   * @param value - The TypedArray to serialize
-   * @returns Number array for standard types, string array for BigInt variants
-   * 
-   * @remarks
-   * BigInt variants are serialized as string arrays because JSON doesn't support BigInt.
-   */
-  serialize(value: T): number[] | string[] {
-    if (this.isBigInt) {
-      return Array.from(value as Iterable<bigint>, (v) => v.toString());
-    }
-    return Array.from(value as Iterable<number>);
-  }
+		// Handle object-like input (e.g. {0: 1, 1: 2})
+		let arrayData: unknown[];
+		if (Array.isArray(value)) {
+			arrayData = value;
+		} else {
+			// SECURITY: Check object size before iteration to prevent DoS
+			// Object.keys is slightly cheaper than Object.values (stores strings vs potentially complex objects)
+			const keys = Object.keys(value);
+			if (keys.length > MAX_ITEMS) {
+				throw new QModelError(
+					`${_className}.${_propertyKey}: TypedArray input object too large (> ${MAX_ITEMS} keys).`,
+					{
+						className: _className,
+						propertyKey: _propertyKey,
+						value: 'TRUNCATED',
+						expectedType: `Small TypedArray (< ${MAX_ITEMS} items)`,
+					}
+				);
+			}
+			arrayData = Object.values(value);
+		}
 
-  /**
-   * Validates if a value can be converted to a TypedArray.
-   * 
-   * @param value - The value to validate
-   * @param context - Validation context with property and class information
-   * @returns Validation result
-   */
-  validate(value: unknown, context: IQValidationContext): IQValidationResult {
-    if (value instanceof this.ArrayConstructor) {
-      return { isValid: true };
-    }
+		if (arrayData.length > MAX_ITEMS) {
+			throw new QModelError(
+				`${_className}.${_propertyKey}: TypedArray input too large (> ${MAX_ITEMS} items).`,
+				{
+					className: _className,
+					propertyKey: _propertyKey,
+					value: 'TRUNCATED',
+					expectedType: `Small TypedArray (< ${MAX_ITEMS} items)`,
+				}
+			);
+		}
 
-    if (Array.isArray(value)) {
-      return { isValid: true };
-    }
+		if (this.isBigInt) {
+			const bigIntArray = arrayData.map((v: unknown) => {
+				if (typeof v === 'bigint') return v;
+				if (v === null || v === undefined || v === '') return BigInt(0);
+				if (typeof v === 'string' || typeof v === 'number') {
+					try {
+						return BigInt(v);
+					} catch {
+						return BigInt(0);
+					}
+				}
+				return BigInt(0);
+			});
+			return new (this.ArrayConstructor as
+				| BigInt64ArrayConstructor
+				| BigUint64ArrayConstructor)(bigIntArray) as T;
+		}
 
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      return { isValid: true };
-    }
+		return new (this.ArrayConstructor as Exclude<
+			TypedArrayConstructor,
+			BigInt64ArrayConstructor | BigUint64ArrayConstructor
+		>)(arrayData as number[]) as T;
+	}
 
-    return {
-      isValid: false,
-      error: `${context.className}.${context.propertyKey}: Expected ${this.ArrayConstructor.name}, array or object, got ${typeof value}`,
-    };
-  }
+	/**
+	 * Converts a TypedArray to number or string array.
+	 *
+	 * @param value - The TypedArray to serialize
+	 * @returns Number array for standard types, string array for BigInt variants
+	 *
+	 * @remarks
+	 * BigInt variants are IQSerialized as string arrays because JSON doesn't support BigInt.
+	 */
+	serialize(value: T): number[] | string[] {
+		if (this.isBigInt) {
+			return Array.from(value as Iterable<bigint>, (v) => v.toString());
+		}
+		return Array.from(value as Iterable<number>);
+	}
+
+	/**
+	 * Validates if a value can be converted to a TypedArray.
+	 *
+	 * @param value - The value to validate
+	 * @param context - Validation context with property and class information
+	 * @returns Validation result
+	 */
+	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+		if (value instanceof this.ArrayConstructor) {
+			return { isValid: true };
+		}
+
+		if (Array.isArray(value)) {
+			return { isValid: true };
+		}
+
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			!Array.isArray(value)
+		) {
+			return { isValid: true };
+		}
+
+		return {
+			isValid: false,
+			error: `${context.className}.${context.propertyKey}: Expected ${this.ArrayConstructor.name}, array or object, got ${typeof value}`,
+		};
+	}
 }
 
 /**
  * Transformer for Int8Array (-128 to 127).
  */
-export const int8ArrayTransformer = new TypedArrayTransformer<Int8Array>(Int8Array);
+export const int8ArrayTransformer = new TypedArrayTransformer<Int8Array>(
+	Int8Array
+);
 
 /**
  * Transformer for Uint8Array (0 to 255).
  */
-export const uint8ArrayTransformer = new TypedArrayTransformer<Uint8Array>(Uint8Array);
+export const uint8ArrayTransformer = new TypedArrayTransformer<Uint8Array>(
+	Uint8Array
+);
 
 /**
  * Transformer for Uint8ClampedArray (0 to 255, with clamping).
  */
-export const uint8ClampedArrayTransformer = new TypedArrayTransformer<Uint8ClampedArray>(Uint8ClampedArray);
+export const uint8ClampedArrayTransformer =
+	new TypedArrayTransformer<Uint8ClampedArray>(Uint8ClampedArray);
 
 /**
  * Transformer for Int16Array (-32768 to 32767).
  */
-export const int16ArrayTransformer = new TypedArrayTransformer<Int16Array>(Int16Array);
+export const int16ArrayTransformer = new TypedArrayTransformer<Int16Array>(
+	Int16Array
+);
 
 /**
  * Transformer for Uint16Array (0 to 65535).
  */
-export const uint16ArrayTransformer = new TypedArrayTransformer<Uint16Array>(Uint16Array);
+export const uint16ArrayTransformer = new TypedArrayTransformer<Uint16Array>(
+	Uint16Array
+);
 
 /**
  * Transformer for Int32Array (-2147483648 to 2147483647).
  */
-export const int32ArrayTransformer = new TypedArrayTransformer<Int32Array>(Int32Array);
+export const int32ArrayTransformer = new TypedArrayTransformer<Int32Array>(
+	Int32Array
+);
 
 /**
  * Transformer for Uint32Array (0 to 4294967295).
  */
-export const uint32ArrayTransformer = new TypedArrayTransformer<Uint32Array>(Uint32Array);
+export const uint32ArrayTransformer = new TypedArrayTransformer<Uint32Array>(
+	Uint32Array
+);
 
 /**
  * Transformer for Float32Array (32-bit floating point).
  */
-export const float32ArrayTransformer = new TypedArrayTransformer<Float32Array>(Float32Array);
+export const float32ArrayTransformer = new TypedArrayTransformer<Float32Array>(
+	Float32Array
+);
 
 /**
  * Transformer for Float64Array (64-bit floating point).
  */
-export const float64ArrayTransformer = new TypedArrayTransformer<Float64Array>(Float64Array);
+export const float64ArrayTransformer = new TypedArrayTransformer<Float64Array>(
+	Float64Array
+);
 
 /**
  * Transformer for BigInt64Array (signed 64-bit integers).
  * Serializes to string array.
  */
-export const bigInt64ArrayTransformer = new TypedArrayTransformer<BigInt64Array>(
-  BigInt64Array,
-  true,
-);
+export const bigInt64ArrayTransformer =
+	new TypedArrayTransformer<BigInt64Array>(BigInt64Array, true);
 
 /**
  * Transformer for BigUint64Array (unsigned 64-bit integers).
  * Serializes to string array.
  */
-export const bigUint64ArrayTransformer = new TypedArrayTransformer<BigUint64Array>(
-  BigUint64Array,
-  true,
-);
+export const bigUint64ArrayTransformer =
+	new TypedArrayTransformer<BigUint64Array>(BigUint64Array, true);

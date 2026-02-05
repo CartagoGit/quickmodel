@@ -1,0 +1,72 @@
+/**
+ * QuickModel - Secondary Types
+ *
+ * This entry point exports internal interfaces and types that are part of the
+ * public API surface (e.g. return types) but not main library features.
+ *
+ * @module @cartago-git/quickmodel/types
+ */
+
+// Core Interfaces
+export type { IQAnyRecord } from './core/interfaces/model.interface';
+export type {
+	IQTypeGuardFunction,
+	IQExtractConstructors,
+	IQExtractValidDiscriminatorKeys,
+	IQExtractCommonKeys,
+	IQExtractIQModelInterface,
+	IQExtractInstanceType,
+} from './core/interfaces/quick-options.interface';
+export type {
+	IQTypeSpec,
+	IQConstructor,
+	IQSpec,
+	IQSpecs,
+	IQTransformerFunction,
+} from './core/interfaces/quick.interface';
+export type { IQNativeConstructor } from './core/constants/native-types';
+
+// Serialization Types
+export type {
+	IQSerializedInterface,
+	IQModelData,
+	IQSerialized,
+} from './core/interfaces/serialization-types.interface';
+
+// Validation Types
+export type {
+	IQValidationResult,
+	IQTransformer as IQTransformer,
+	IQTransformContext,
+	IQValidationContext,
+} from './core/interfaces/transformer.interface';
+export type { IQTransformerKey } from './core/registry/transformer.registry';
+
+// Mock Types
+export type {
+	IQModelInstance,
+	IQModelInterface,
+} from './core/interfaces/mock-types.interface';
+
+// Options
+export type { IQSerializationOptions } from './core/interfaces/serializer.interface';
+export type { IQMockType } from './core/services/mock-generator.service';
+export type { IQConfig } from './core/config/quick.config';
+
+// Transform Options
+export type { IQPropertyOptions } from './core/interfaces/transform-options.interface';
+
+// Moved from utils
+export type { IQTypeOptions } from './core/interfaces/qtype-options.interface';
+export type { IQOptions } from './core/decorators/quick.decorator';
+export type {
+	IQAdvancedOptions,
+	IQDiscriminatorConfig,
+} from './core/interfaces/quick-options.interface';
+export type {
+	IQTransformerFn,
+	IQSerializerFn,
+	IQMockerFn,
+} from './core/interfaces/transform-options.interface';
+export type { IQAlias } from './core/types/q-alias.type';
+export type { IQTransform } from './core/interfaces/model.interface';

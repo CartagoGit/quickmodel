@@ -8,7 +8,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel } from '@/index';
+import { QModel, Quick } from '@/index';
 
 // Test Models - Using declare syntax
 interface IAddress {
@@ -41,6 +41,7 @@ interface ITimeline {
 	events: (Date | null | undefined)[];
 }
 
+@Quick({ events: [Date] })
 class Timeline extends QModel<ITimeline> {
 	declare events: (Date | null | undefined)[];
 }
@@ -66,14 +67,14 @@ describe('Null Safety: Deep Optional Chaining', () => {
 		const user = new User({
 			id: 1,
 			name: 'John',
-			profile: null as any,
+			profile: null as unknown as IProfile,
 			bio: null,
 		});
 
 		// Should safely return undefined, not throw
 		expect(user.profile?.address?.city).toBeUndefined();
 		expect(() => {
-			user.profile?.address?.city;
+			void user.profile?.address?.city;
 		}).not.toThrow();
 	});
 
@@ -151,7 +152,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 
 	test('should handle array with all nulls', () => {
 		const timeline = new Timeline({
-			events: [null, null, null] as any,
+			events: [null, null, null] as ITimeline['events'],
 		});
 
 		expect(timeline.events.length).toBe(3);
@@ -160,7 +161,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 
 	test('should handle array with all undefined', () => {
 		const timeline = new Timeline({
-			events: [undefined, undefined] as any,
+			events: [undefined, undefined] as ITimeline['events'],
 		});
 
 		expect(timeline.events.length).toBe(2);
@@ -194,7 +195,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 		expect(json.value).not.toBeUndefined();
 	});
 
-	test('should preserve undefined in serialization', () => {
+	test('should omit undefined in serialization by default', () => {
 		const data = new Data({
 			value: null,
 			optional: undefined,
@@ -203,10 +204,8 @@ describe('Null Safety: Nullable vs Optional', () => {
 
 		const json = data.serialize();
 
-		// Undefined typically omitted from JSON
-		// but should be preserved in serialize()
-		expect('optional' in json).toBe(true);
-		expect(json.optional).toBeUndefined();
+		// Undefined should be omitted from JSON by default
+		expect('optional' in json).toBe(false);
 	});
 
 	test('should handle explicit undefined vs missing', () => {
@@ -248,7 +247,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			name: 'John',
 			profile: {
 				address: {
-					city: null as any,
+					city: null as unknown as string,
 				},
 			},
 			bio: null,
@@ -266,7 +265,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 				new Date('2024-01-01'),
 				null,
 				new Date('2024-01-03'),
-			] as any,
+			] as ITimeline['events'],
 		});
 
 		const json = timeline.serialize();
@@ -281,7 +280,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 describe('Null Safety: Edge Cases', () => {
 	test('should handle null as entire model data', () => {
 		try {
-			new User(null as any);
+			new User(null as unknown as IUser);
 
 			// Might not throw, just log
 			console.warn('⚠️  Null model data accepted without error');
@@ -292,7 +291,7 @@ describe('Null Safety: Edge Cases', () => {
 
 	test('should handle undefined as entire model data', () => {
 		try {
-			new User(undefined as any);
+			new User(undefined as unknown as IUser);
 
 			// Might not throw, just log
 			console.warn('⚠️  Undefined model data accepted without error');
@@ -303,10 +302,10 @@ describe('Null Safety: Edge Cases', () => {
 
 	test('should handle empty object', () => {
 		try {
-			new User({} as any);
+			new User({} as unknown as IUser);
 
 			// Will likely work but fields will be undefined
-			const user = new User({} as any);
+			const user = new User({} as unknown as IUser);
 			expect(user.id).toBeUndefined();
 		} catch (error) {
 			// OK if it throws

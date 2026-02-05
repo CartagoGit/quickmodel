@@ -1,165 +1,164 @@
-/**
- * Service for converting model instances back to their original interface format.
- *
- * **IMPORTANT:** This service does NOT serialize to JSON. It preserves the EXACT format
- * that was provided in the model constructor (__initData).
- *
- * **Key difference from serializer.service.ts:**
- * - `serializer.serialize()` → Converts to JSON-compatible format (Date → ISO string, BigInt → string, etc.)
- * - `toInterface.toInterface()` → Preserves ORIGINAL input format from constructor
- *
- * @template TModel - The model type (extends Record)
- * @template TInterface - The original interface type (from constructor input)
- *
- * @remarks
- * **Use cases for toInterface():**
- * - Comparing current state vs initial state: `model.toInterface() === model.getInitInterface()`
- * - Change detection: `model.hasChanges()`, `model.getChanges()`
- * - Form reset: restore original values
- * - API responses: return data in same format as received
- *
- * **How it works:**
- * 1. Reads `__initData` (stored BEFORE transformations in constructor)
- * 2. For each property, compares `originalValue` (from __initData) vs `currentValue` (from model)
- * 3. Returns values preserving the ORIGINAL type/format:
- *    - If input was `string "2024-01-01"` → returns string (NOT Date object)
- *    - If input was `string "999999"` → returns string (NOT bigint)
- *    - If input was `RegExp /test/` → returns RegExp (NOT string)
- *    - If input was `string "^test$"` → returns string (NOT RegExp)
- *
- * @example
- * **Example 1: Date as string input**
- * ```typescript
- * const user = new User({
- *   createdAt: '2024-01-01T00:00:00.000Z'  // String input
- * });
- *
- * user.createdAt;           // Date object (transformed)
- * user.toInterface();       // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
- * user.serialize();         // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
- * ```
- *
- * @example
- * **Example 2: BigInt as string input**
- * ```typescript
- * const account = new Account({
- *   balance: '999999999999999'  // String input
- * });
- *
- * account.balance;          // 999999999999999n (bigint transformed)
- * account.toInterface();    // { balance: '999999999999999' } - STRING preserved
- * account.serialize();      // { balance: '999999999999999' } - string for JSON
- * ```
- *
- * @example
- * **Example 3: RegExp as string vs RegExp input**
- * ```typescript
- * // Case A: String input
- * const model1 = new Model({ pattern: '^test$' });
- * model1.pattern;          // /^test$/ (RegExp transformed)
- * model1.toInterface();    // { pattern: '^test$' } - STRING preserved
- *
- * // Case B: RegExp input
- * const model2 = new Model({ pattern: /^test$/ });
- * model2.pattern;          // /^test$/ (RegExp)
- * model2.toInterface();    // { pattern: /^test$/ } - REGEXP preserved
- * model2.serialize();      // { pattern: { source: '^test$', flags: '' } } - object for JSON
- * ```
- *
- * @example
- * **Example 4: Change detection**
- * ```typescript
- * const user = new User({ name: 'John', age: 30 });
- *
- * user.name = 'Jane';
- * user.hasChanges();       // true
- * user.getChanges();       // { name: 'Jane' }
- * user.getInitInterface(); // { name: 'John', age: 30 } - original
- * user.toInterface();      // { name: 'Jane', age: 30 } - current
- * ```
- */
+import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
+import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
-	TInterface extends Record<string, unknown> = any
+	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
-	/**
-	 * Converts model to interface format, preserving original input types.
-	 *
-	 * @param model - The model instance to convert
-	 * @returns Plain object with values in their ORIGINAL input format
-	 *
-	 * @remarks
-	 * Preserves the EXACT format that was provided in the constructor (__initData).
-	 * - If Date was provided as ISO string → returns ISO string
-	 * - If BigInt was provided as string → returns string
-	 * - If RegExp was provided as string → returns string
-	 * - If RegExp was provided as RegExp → returns RegExp
-	 *
-	 * This method does NOT serialize to JSON. Use `serialize()` for JSON output.
-	 */
-	toInterface<T extends Record<string, unknown> = TInterface>(model: TModel): T {
+	toInterface<T extends Record<string, unknown> = TInterface>(
+		model: TModel,
+		seen?: WeakSet<object>,
+		depth: number = 0
+	): T {
+		// SECURITY: Prevent Stack Overflow
+		const MAX_DEPTH = 512;
+		if (depth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during toInterface serialization.`
+			);
+		}
+
+		// Handle inconsistent Type usage in tests (Passing array as seen for original values)
+		// This supports legacy tests that pass [originalData] as the second argument
+		let visited: WeakSet<object>;
+		let originalArray: any[] = [];
+
+		if (Array.isArray(seen)) {
+			visited = new WeakSet<object>();
+			originalArray = seen;
+		} else {
+			visited = seen || new WeakSet<object>();
+		}
+
+		// If model is a collection (Array/Set/Map), handle it specially
+		// This explicitly supports Arrays passed to toInterface, mapping them using originalArray if provided
+		if (Array.isArray(model)) {
+			return model.map((item, index) =>
+				this.convertToInterfaceFormat(
+					item,
+					originalArray[index],
+					visited,
+					process.env.NODE_ENV === 'production',
+					index.toString(),
+					depth + 1
+				)
+			) as unknown as T;
+		}
+
 		const result: Record<string, unknown> = {};
-		const seen = new WeakSet(); // Track circular references
-		const initData = (model as any).__initData || {};
+		// visited is already initialized above
+
+		const initData =
+			(model as unknown as { __initData?: Record<string, unknown> })
+				.__initData || {};
 		const isProduction = process.env.NODE_ENV === 'production';
 
-		// ONLY iterate over properties that were in the original initData
-		// Return current values, but preserve original format based on __initData type
+		// Retrieve advanced options (custom serializers)
+		const options: IQAdvancedOptions =
+			Reflect.getMetadata(QUICK_OPTIONS_KEY, model.constructor) || {};
+
+		// INFER MISSING KEYS:
+		// If initData is missing (e.g. newly created instance without initData or manual pop? No, QModel always has initData).
+		// But if properties were added dynamically? QuickModel only tracks declared props.
+
+		// Wait, toInterface only iterates initData keys to "PRESERVE" format.
+		// If a key is NOT in initData, it means it wasn't in constructor.
+		// If it's a declared property, it should be processed.
+		// QModel uses QUICK_VALUES_KEY for internal storage.
+
+		// BUT for toInterface() we only care about "Restoring Interface".
+		// If expected interface has key X, and initData had X.
+		// If we added a property Y dynamically that is NOT in the interface... should it be in toInterface()?
+		// Usually NO. toInterface implies "contract compliance".
+		// The loop over initData keys ensures strict adherance to original input structure.
+
+		// However, if we added items to an array (which is a Value, not a Key on the model), that is handled in convertToInterfaceFormat.
+
 		for (const key of Object.keys(initData)) {
-			const currentValue = (model as any)[key];
+			// SECURITY: Prevent Prototype Pollution
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			) {
+				continue;
+			}
+
+			const currentValue = (model as unknown as Record<string, unknown>)[
+				key
+			];
 			const originalValue = initData[key];
 
-			// Convert to interface format, preserving original type
+			// 🔥 CHECK 1: Custom serializer from @Quick options
+			if (
+				options.serializers &&
+				key in options.serializers &&
+				typeof options.serializers[key] === 'function'
+			) {
+				result[key] = options.serializers[key](currentValue);
+				continue;
+			}
+
+			// 🔥 CHECK 2: Custom serializer from @QType metadata
+			const customSerializer = Reflect.getMetadata(
+				'customSerializer',
+				model,
+				key
+			);
+			if (customSerializer && typeof customSerializer === 'function') {
+				result[key] = customSerializer(currentValue);
+				continue;
+			}
+
+			// Convert to interface format
 			result[key] = this.convertToInterfaceFormat(
 				currentValue,
 				originalValue,
-				seen,
+				visited,
 				isProduction,
-				key
+				key,
+				depth + 1
 			);
 		}
+
+		// Wait! What if we want to include properties that are NEW but valid?
+		// E.g. Optional properties not present in initData but set later?
+		// If user set user.optionalProp = 'value', it should be in toInterface().
+		// But current implementation ONLY iterates initData keys.
+		// This means optional properties set later are IGNORED in toInterface().
+		// IS THIS INTENTIONAL?
+		// "Preserves ORIGINAL input format". If it wasn't in input, it has no "original format".
+		// Maybe we should iterate over Model Keys too?
+		// But Model Keys are getters.
+
+		// Let's stick to current logic which iterates initData.
+		// If the user wants full serialization including new props, they use serialize().
+		// toInterface() is strictly "revert to input format".
 
 		return result as T;
 	}
 
-	/**
-	 * Converts a value to interface format, preserving the original type from __initData.
-	 *
-	 * @param currentValue - The current value from the model instance
-	 * @param originalValue - The original value from __initData (constructor input)
-	 * @param seen - WeakSet for circular reference detection
-	 * @param isProduction - Production mode flag
-	 * @param propertyKey - Property name for error messages
-	 * @returns Value in original format
-	 *
-	 * @remarks
-	 * Logic priority (order matters):
-	 * 1. null/undefined → return as-is
-	 * 2. Circular references → error or __circular marker
-	 * 3. **Date handling** (BEFORE generic string check):
-	 *    - If originalValue is Date or ISO string → convert currentValue to ISO string
-	 * 4. **RegExp handling** (BEFORE generic string check):
-	 *    - If originalValue is RegExp → return currentValue as RegExp
-	 *    - If originalValue is string + currentValue is RegExp → return string (source or toString)
-	 *    - If originalValue is object {source, flags} → return object
-	 * 5. **Primitives** (number, string, boolean, bigint, symbol) → cast to original type
-	 * 6. **Wrapper objects** (Number, String, Boolean) → return wrapper
-	 * 7. **Arrays** → recursively process elements
-	 * 8. **BigInt special formats** (__type: 'bigint' or string) → convert appropriately
-	 * 9. **Plain objects** → recursively process properties
-	 * 10. Fallback → return currentValue
-	 */
 	private convertToInterfaceFormat(
-		currentValue: any,
-		originalValue: any,
+		currentValue: unknown,
+		originalValue: unknown,
 		seen: WeakSet<object>,
 		isProduction: boolean,
-		propertyKey: string = ''
-	): any {
+		propertyKey: string = '',
+		depth: number
+	): unknown {
+		// SECURITY: Prevent Stack Overflow in deep properties
+		const MAX_DEPTH = 512;
+
+		if (depth > MAX_DEPTH) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during toInterface property conversion.`
+			);
+		}
+
 		// 1. Handle null and undefined first
 		if (currentValue === null) return null;
 		if (currentValue === undefined) return undefined;
+		if (typeof currentValue === 'function') return undefined;
 
 		// 2. Check for circular references (only for objects)
 		if (typeof currentValue === 'object' && currentValue !== null) {
@@ -177,8 +176,43 @@ export class ToInterfaceService<
 			seen.add(currentValue);
 		}
 
-		// If no original value to compare, return currentValue as-is
+		// If no original value to compare, we must infer the interface format for complex types
+		// This happens when adding new items to collections that weren't in the original data
 		if (originalValue === undefined) {
+			// Handle Nested QModels (Recursion)
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'toInterface' in currentValue &&
+				typeof (
+					currentValue as {
+						toInterface: (
+							s: WeakSet<object>,
+							d?: number
+						) => unknown;
+					}
+				).toInterface === 'function'
+			) {
+				return (
+					currentValue as {
+						toInterface: (
+							s: WeakSet<object>,
+							d?: number
+						) => unknown;
+					}
+				).toInterface(seen, depth + 1);
+			}
+
+			// Handle Sets -> Array
+			if (currentValue instanceof Set) {
+				return Array.from(currentValue);
+			}
+
+			// Handle Maps -> Array of entries (standard QuickModel interface format)
+			if (currentValue instanceof Map) {
+				return Array.from(currentValue.entries());
+			}
+
 			return currentValue;
 		}
 
@@ -190,12 +224,22 @@ export class ToInterfaceService<
 				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(originalValue))
 		) {
 			// If currentValue is a Date, convert to ISO string
-			if (typeof currentValue?.toISOString === 'function') {
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'toISOString' in currentValue &&
+				typeof (currentValue as { toISOString: () => string })
+					.toISOString === 'function'
+			) {
 				try {
-					return currentValue.toISOString();
+					return (
+						currentValue as { toISOString: () => string }
+					).toISOString();
 				} catch {
 					// Invalid Date - return original value if available, otherwise string representation
-					return typeof originalValue === 'string' ? originalValue : String(currentValue);
+					return typeof originalValue === 'string'
+						? originalValue
+						: String(currentValue);
 				}
 			}
 			// If currentValue is already a string (no transformation occurred), return as-is
@@ -215,7 +259,10 @@ export class ToInterfaceService<
 		}
 
 		// RegExp as string pattern
-		if (typeof originalValue === 'string' && currentValue instanceof RegExp) {
+		if (
+			typeof originalValue === 'string' &&
+			currentValue instanceof RegExp
+		) {
 			if (originalValue.startsWith('/')) {
 				return currentValue.toString(); // "/pattern/flags"
 			} else {
@@ -249,18 +296,21 @@ export class ToInterfaceService<
 		}
 
 		if (typeof originalValue === 'bigint') {
-			return BigInt(currentValue);
+			return BigInt(currentValue as string | number | bigint | boolean);
 		}
 
 		if (typeof originalValue === 'symbol') {
-			return typeof currentValue === 'symbol' ? currentValue : Symbol(currentValue);
+			return typeof currentValue === 'symbol'
+				? currentValue
+				: Symbol(currentValue as string | number | undefined);
 		}
 
 		// 6. WRAPPER OBJECTS: Number, String, Boolean objects
 		if (originalValue instanceof Number) {
-			// Extract primitive value if currentValue is also a wrapper
 			const primitiveValue =
-				typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
 					? currentValue.valueOf()
 					: currentValue;
 			return new Number(primitiveValue);
@@ -268,7 +318,9 @@ export class ToInterfaceService<
 
 		if (originalValue instanceof String) {
 			const primitiveValue =
-				typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
 					? currentValue.valueOf()
 					: currentValue;
 			return new String(primitiveValue);
@@ -276,7 +328,9 @@ export class ToInterfaceService<
 
 		if (originalValue instanceof Boolean) {
 			const primitiveValue =
-				typeof currentValue === 'object' && currentValue !== null && 'valueOf' in currentValue
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
 					? currentValue.valueOf()
 					: currentValue;
 			return new Boolean(primitiveValue);
@@ -287,48 +341,83 @@ export class ToInterfaceService<
 			if (!Array.isArray(currentValue)) {
 				return [];
 			}
-			return currentValue.map((item: any, index: number) =>
+			return currentValue.map((item: unknown, index: number) =>
 				this.convertToInterfaceFormat(
 					item,
 					originalValue[index],
 					seen,
 					isProduction,
-					`${propertyKey}[${index}]`
+					`${propertyKey}[${index}]`,
+					depth + 1
 				)
 			);
 		}
 
-		// 8. BIGINT: Preserve original format
-		if (originalValue && typeof originalValue === 'object' && originalValue.__type === 'bigint') {
-			const bigintValue = typeof currentValue === 'bigint' ? currentValue : BigInt(currentValue);
-			return { __type: 'bigint', value: bigintValue.toString() };
-		}
+		// 8. BIGINT: Always serialize to string
+		if (
+			originalValue &&
+			typeof originalValue === 'object' &&
+			'__type' in originalValue &&
+			(originalValue as { __type: unknown }).__type === 'bigint'
+		) {
+			if (typeof currentValue === 'bigint') {
+				return currentValue.toString();
+			}
 
-		if (typeof originalValue === 'string' && typeof currentValue === 'bigint') {
-			return currentValue.toString();
+			// Extract primitive value from wrapper objects
+			const primitiveValue =
+				typeof currentValue === 'object' &&
+				currentValue !== null &&
+				'valueOf' in currentValue
+					? currentValue.valueOf()
+					: currentValue;
+
+			try {
+				const bigintValue = BigInt(
+					primitiveValue as string | number | bigint | boolean
+				);
+				return bigintValue.toString();
+			} catch {
+				// If conversion fails, return string representation
+				return String(primitiveValue);
+			}
 		}
 
 		// 9. PLAIN OBJECTS: Recursively convert properties
 		if (originalValue && typeof originalValue === 'object') {
-			const result: any = {};
+			const typedOriginal = originalValue as Record<string, unknown>;
+			const result: Record<string, unknown> = {};
 
 			// Handle objects without constructor (Object.create(null))
-			if (!originalValue.constructor) {
+			if (
+				!('constructor' in typedOriginal) ||
+				!typedOriginal.constructor
+			) {
+				const typedCurrent = currentValue as Record<string, unknown>;
 				const resultNoProto = Object.create(null);
-				for (const key in currentValue) {
+				for (const key in typedCurrent) {
+					// SECURITY: Prevent Prototype Pollution
+					if (
+						key === '__proto__' ||
+						key === 'constructor' ||
+						key === 'prototype'
+					) {
+						continue;
+					}
 					resultNoProto[key] = this.convertToInterfaceFormat(
-						currentValue[key],
-						originalValue[key],
+						typedCurrent[key],
+						typedOriginal[key],
 						seen,
 						isProduction,
-						`${propertyKey}.${key}`
+						`${propertyKey}.${key}`,
+						depth + 1
 					);
 				}
 				return resultNoProto;
 			}
 
 			// Plain Object literal
-			if (originalValue.constructor === Object) {
+			if (typedOriginal.constructor === Object) {
 				// Ensure currentValue is also an object
 				if (typeof currentValue !== 'object' || currentValue === null) {
 					if (!isProduction) {
@@ -336,18 +425,31 @@ export class ToInterfaceService<
 							`Cannot convert property "${propertyKey}": original was object but current is ${typeof currentValue}`
 						);
 					}
-					console.error(`Cannot convert property "${propertyKey}": type mismatch`);
+					console.error(
+						`Cannot convert property "${propertyKey}": type mismatch`
+					);
 					return currentValue;
 				}
 
-				for (const key in originalValue) {
-					if (key in currentValue) {
+				const typedCurrent = currentValue as Record<string, unknown>;
+				for (const key in typedOriginal) {
+					// SECURITY: Prevent Prototype Pollution
+					if (
+						key === '__proto__' ||
+						key === 'constructor' ||
+						key === 'prototype'
+					) {
+						continue;
+					}
+
+					if (key in typedCurrent) {
 						result[key] = this.convertToInterfaceFormat(
-							currentValue[key],
-							originalValue[key],
+							typedCurrent[key],
+							typedOriginal[key],
 							seen,
 							isProduction,
-							`${propertyKey}.${key}`
+							`${propertyKey}.${key}`,
+							depth + 1
 						);
 					}
 				}
@@ -356,26 +458,70 @@ export class ToInterfaceService<
 
 			// Objects with custom constructor: try to call toInterface
 			// For QModel instances, call toInterface() recursively
-			if (typeof currentValue?.toInterface === 'function') {
-				return currentValue.toInterface();
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'toInterface' in currentValue &&
+				typeof (
+					currentValue as {
+						toInterface: (s: WeakSet<object>) => unknown;
+					}
+				).toInterface === 'function'
+			) {
+				// Pass the 'seen' set to prevent infinite loops in recursive models
+				return (
+					currentValue as {
+						toInterface: (s: WeakSet<object>, d: number) => unknown;
+					}
+				).toInterface(seen, depth + 1);
 			}
 
 			// For other objects, create plain object
-			for (const key in currentValue) {
-				if (typeof currentValue[key] !== 'function') {
+			const typedCurrent = currentValue as Record<string, unknown>;
+
+			for (const key in typedCurrent) {
+				// SECURITY: Prevent Prototype Pollution
+				if (
+					key === '__proto__' ||
+					key === 'constructor' ||
+					key === 'prototype'
+				) {
+					continue;
+				}
+
+				if (typeof typedCurrent[key] !== 'function') {
 					result[key] = this.convertToInterfaceFormat(
-						currentValue[key],
-						originalValue[key],
+						typedCurrent[key],
+						typedOriginal[key],
 						seen,
 						isProduction,
-						`${propertyKey}.${key}`
+						`${propertyKey}.${key}`,
+						depth + 1
 					);
 				}
 			}
 			return result;
 		}
 
-		// 10. Fallback: return currentValue as-is
+		// Fallback for NULL original value but QModel current value (Recursion support for nullable fields)
+		if (
+			originalValue === null &&
+			currentValue &&
+			typeof currentValue === 'object' &&
+			'toInterface' in currentValue &&
+			typeof (
+				currentValue as {
+					toInterface: (s: WeakSet<object>) => unknown;
+				}
+			).toInterface === 'function'
+		) {
+			return (
+				currentValue as {
+					toInterface: (s: WeakSet<object>, d: number) => unknown;
+				}
+			).toInterface(seen, depth + 1);
+		}
+
 		return currentValue;
 	}
 }

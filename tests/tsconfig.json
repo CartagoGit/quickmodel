@@ -15,6 +15,10 @@
 		"../node_modules",
 		"../dist",
 		"../docs/**/*",
-		"../docs-vitepress/**/*"
+		"../docs-vitepress/**/*",
+		"../src/mcp/**/*",
+		"unit/mcp/**/*",
+		"integration/mcp/**/*",
+		"e2e/mcp/**/*"
 	]
 }

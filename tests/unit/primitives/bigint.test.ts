@@ -1,6 +1,6 @@
 /**
  * Unit Test: BigInt Transformation
- * 
+ *
  * Tests BigInt serialization and deserialization transformations
  */
 
@@ -10,7 +10,7 @@ import { QModel, Quick } from '@/index';
 describe('Unit: BigInt Transformer', () => {
 	interface IAccount {
 		id: string;
-		balance: string | { __type: 'bigint'; value: string }; // Serialized with __type
+		balance: string; // IQSerialized as plain string
 	}
 
 	@Quick({
@@ -27,10 +27,10 @@ describe('Unit: BigInt Transformer', () => {
 			balance: '999999999999999999',
 		});
 
-		const serialized = account.serialize();
+		const IQSerialized = account.serialize();
 
-		expect(serialized.balance).toEqual({ __type: 'bigint', value: '999999999999999999' });
-		expect(typeof serialized.balance).toBe('object');
+		expect(IQSerialized.balance).toBe('999999999999999999');
+		expect(typeof IQSerialized.balance).toBe('string');
 	});
 
 	test('should deserialize string to bigint', () => {
@@ -51,7 +51,7 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(9007199254740992n);
-		expect(account.serialize().balance).toEqual({ __type: 'bigint', value: huge });
+		expect(account.serialize().balance).toBe(huge);
 	});
 
 	test('should roundtrip bigint correctly', () => {
@@ -74,7 +74,7 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(0n);
-		expect(account.serialize().balance).toEqual({ __type: 'bigint', value: '0' });
+		expect(account.serialize().balance).toBe('0');
 	});
 
 	test('should handle negative bigint', () => {
@@ -84,6 +84,6 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(-999999n);
-		expect(account.serialize().balance).toEqual({ __type: 'bigint', value: '-999999' });
+		expect(account.serialize().balance).toBe('-999999');
 	});
 });

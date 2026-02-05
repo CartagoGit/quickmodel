@@ -13,53 +13,10 @@
 
 import 'reflect-metadata';
 import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
-
-/**
- * Available field types as string literals with IntelliSense support.
- * Allows using @QType('regexp'), @QType('bigint'), etc. with autocomplete.
- *
- * These string literals provide a convenient alternative to symbol-based type hints.
- *
- * @example
- * ```typescript
- * class User extends QModel<IUser> {
- *   @QType('bigint') balance!: bigint;
- *   @QType('regexp') pattern!: RegExp;
- *   @QType('int8array') bytes!: Int8Array;
- * }
- * ```
- */
-export type QTypeString =
-	// Primitives
-	| 'string'
-	| 'number'
-	| 'boolean'
-	// Special types with constructors
-	| 'date'
-	| 'regexp'
-	| 'error'
-	| 'url'
-	| 'urlsearchparams'
-	// Special types without usable constructor
-	| 'bigint'
-	| 'symbol'
-	// Collections
-	| 'map'
-	| 'set'
-	// Buffers
-	| 'arraybuffer'
-	| 'dataview'
-	// TypedArrays
-	| 'int8array'
-	| 'uint8array'
-	| 'int16array'
-	| 'uint16array'
-	| 'int32array'
-	| 'uint32array'
-	| 'float32array'
-	| 'float64array'
-	| 'bigint64array'
-	| 'biguint64array';
+import { NATIVE_TYPE_MAP } from '../constants/native-types';
+import type { IQTypeOptions } from '../interfaces/qtype-options.interface';
+import type { IQSpec } from '../interfaces/quick.interface';
+// import type { IQAlias } from '../types/q-alias.type'; // Unused
 
 /**
  * Metadata key symbol for storing the list of properties decorated with @QType().
@@ -77,30 +34,81 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **WITHOUT arguments** (`@QType()`):
  * - Copies the value as-is without transformation
  * - Protects properties from TypeScript field initialization when using `!` or `?`
- * - Equivalent to `declare` but works with `!` syntax
+ * - **IMPORTANT**: When used WITHOUT `@Quick` on the class, you **MUST** use `declare` (e.g. `declare name: string`).
+ *   Using `!` (e.g. `name!: string`) will cause TypeScript to emit an initializer that overwrites the decorator's logic.
  *
  * **WITH type argument** (`@QType(Type)`):
  * - Transforms the value to the specified type
  * - Supports: String literals, Native constructors, Q-Symbols, Model classes
  *
+ * **WITH type and options** (`@QType(Type, options)`):
+ * - Allows defining custom `transformer`, `serializer`, and `mocker` for this specific property
+ * - Useful for complex types that default transformers can't handle properly
+ *
  * @group Decorators
- * @decorator `@QType(typeOrClass)`
+ * Syntax: `@QType(typeOrClass, options?)`
  * @template T - The property type
  * @param typeOrClass - Optional: Constructor, Symbol, or String literal for the field type
+ * @param options - Optional: Object with custom `transformer`, `serializer`, and `mocker`
  * @returns A property decorator function that registers the field with appropriate metadata
  *
  * @example
- * **No transformation** (copy as-is with protection):
+ * **No transformation** (copy as-is):
  * ```typescript
  * class User extends QModel<IUser> {
  *   // Option 1: Use declare (no decorator needed)
  *   declare id: number;
  *   declare name: string;
  *
- *   // Option 2: Use @QType() without args (allows ! or ?)
- *   @QType() id!: number;
- *   @QType() name!: string;
- *   @QType() email?: string;
+ *   // Option 2: Use @QType() for explicit metadata
+ *   @QType() declare email: string;
+ * }
+ * ```
+ *
+ * @example
+ * **Type transformation** (converts values):
+ * ```typescript
+ * class Account extends QModel<IAccount> {
+ *   // String/Number -> BigInt
+ *   @QType(BigInt) declare balance: bigint;
+ *
+ *   // String -> Date
+ *   @QType(Date) declare createdAt: Date;
+ *
+ *   // String -> RegExp
+ *   @QType(RegExp) declare pattern: RegExp;
+ * }
+ * ```
+ *
+ * @example
+ * **Nested Models & Collections**:
+ * ```typescript
+ * class User extends QModel<IUser> {
+ *   // Nested model
+ *   @QType(Address) declare address: Address;
+ *
+ *   // Array of models (MUST use array syntax)
+ *   @QType([Post]) declare posts: Post[];
+ *
+ *   // Array of dates
+ *   @QType([Date]) declare logDates: Date[];
+ * }
+ * ```
+ *
+ * @example
+ * **Advanced Options (Custom Transformer/Serializer/Mocker)**:
+ * ```typescript
+ * class Event extends QModel<IEvent> {
+ *   // Handle timestamp <-> Date conversion
+ *   @QType(Date, {
+ *     // Input (JSON -> Model): number -> Date
+ *     transformer: (val: number) => new Date(val),
+ *     // Output (Model -> JSON): Date -> number
+ *     serializer: (date: Date) => date.getTime(),
+ *     // Test (Mock -> Model): random Date
+ *     mocker: () => new Date('2024-01-01')
+ *   })
+ *   declare timestamp: Date;
  * }
  * ```
  *
@@ -108,11 +116,11 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **String literals** (with IntelliSense):
  * ```typescript
  * class Account extends QModel<IAccount> {
- *   @QType('bigint') balance!: bigint;
- *   @QType('symbol') id!: symbol;
- *   @QType('regexp') pattern!: RegExp;
- *   @QType('int8array') bytes!: Int8Array;
- *   @QType('map') metadata!: Map<string, any>;
+ *   @QType('bigint') declare balance: bigint;
+ *   @QType('symbol') declare id: symbol;
+ *   @QType('regexp') declare pattern: RegExp;
+ *   @QType('int8array') declare bytes: Int8Array;
+ *   @QType('map') declare metadata: Map<string, unknown>;
  * }
  * ```
  *
@@ -120,10 +128,46 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **Native constructors**:
  * ```typescript
  * class Binary extends QModel<IBinary> {
- *   @QType(RegExp) pattern!: RegExp;
- *   @QType(Error) lastError!: Error;
- *   @QType(Int8Array) bytes!: Int8Array;
- *   @QType(ArrayBuffer) buffer!: ArrayBuffer;
+ *   @QType(RegExp) declare pattern: RegExp;
+ *   @QType(Error) declare lastError: Error;
+ *   @QType(Int8Array) declare bytes: Int8Array;
+ *   @QType(ArrayBuffer) declare buffer: ArrayBuffer;
+ * }
+ * ```
+ *
+ * @example
+ * **Maps, Sets, and Weak Collections**:
+ * ```typescript
+ * class Collections extends QModel<ICollections> {
+ *   @QType(Map) declare mapping: Map<string, string>;
+ *   @QType(Set) declare uniqueValues: Set<number>;
+ *   @QType(WeakMap) declare cache: WeakMap<object, unknown>;
+ * }
+ * ```
+ *
+ * @example
+ * **Buffer & Binary Types**:
+ * ```typescript
+ * class BlobData extends QModel<IBlobData> {
+ *   @QType(ArrayBuffer) declare raw: ArrayBuffer;
+ *   @QType(Uint8Array) declare image: Uint8Array;
+ *   @QType(Float32Array) declare weights: Float32Array;
+ *   @QType(DataView) declare view: DataView;
+ * }
+ * ```
+ *
+ * @example
+ * **Transformers and Functions**:
+ * ```typescript
+ * class Products extends QModel<IProduct> {
+ *   // Round price to nearest integer
+ *   @QType(Math.round) declare price: number;
+ *
+ *   // Custom transformer function
+ *   @QType((val) => val.toUpperCase()) declare code: string;
+ *
+ *   // Parse JSON string
+ *   @QType(JSON.parse) declare metadata: object;
  * }
  * ```
  *
@@ -131,65 +175,106 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * **Q-Symbol based**:
  * ```typescript
  * class Account extends QModel<IAccount> {
- *   @QType(QBigInt) balance!: bigint;
- *   @QType(QSymbol) id!: symbol;
- *   @QType(QRegExp) pattern!: RegExp;
- *   @QType(QInt8Array) data!: Int8Array;
+ *   @QType(QBigInt) declare balance: bigint;
+ *   @QType(QSymbol) declare id: symbol;
+ *   @QType(QRegExp) declare pattern: RegExp;
+ *   @QType(QInt8Array) declare data: Int8Array;
  * }
  * ```
  *
  * @example
- * **Nested models**:
+ * **Transformer Objects (Inline)**:
  * ```typescript
- * class User extends QModel<IUser> {
- *   @QType(Address) address!: Address;      // Single nested model
- *   @QType([Vehicle]) vehicles!: Vehicle[]; // Array of models - explicit syntax
+ * const MyTransformer = {
+ *   serialize: (v) => v.toString(),
+ *   deserialize: (v) => new Date(v)
+ * };
+ *
+ * class Log extends QModel<ILog> {
+ *   @QType(MyTransformer) declare timestamp: Date;
  * }
  * ```
  *
+ * @remarks
+ * **Why use @QType?**
+ * TypeScript types are erased at runtime. Without this decorator (or @Quick), the library cannot know that `createdAt` should be transformed into a `Date` object, or that `balance` should be a `BigInt`.
  */
-export function QType<T>(
-	typeOrClass?:
-		| (new (data: any) => T)
-		| symbol
-		| QTypeString
-		| BigIntConstructor
-		| SymbolConstructor
-		| SetConstructor
-		| MapConstructor
-		| DateConstructor
-		| BooleanConstructor
-		| NumberConstructor
-		| StringConstructor
-		| PromiseConstructor
-		| Array<any> // Support array syntax: [Type], [[Type]], etc.
+
+export function QType(
+	typeOrClass?: IQSpec | Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
+	options?: IQTypeOptions
 ): PropertyDecorator {
-	return function (target: any, propertyKey: string | symbol): void {
+	return function (target: object, propertyKey: string | symbol): void {
 		// Register the property in the fields list
 		const existingFields =
-			(Reflect.getMetadata(QTYPES_METADATA_KEY, target) as Array<string | symbol>) || [];
+			(Reflect.getMetadata(QTYPES_METADATA_KEY, target) as Array<
+				string | symbol
+			>) || [];
 		if (!existingFields.includes(propertyKey)) {
 			const newFields = [...existingFields, propertyKey];
 			Reflect.defineMetadata(QTYPES_METADATA_KEY, newFields, target);
 		}
 
+		// Save advanced options options if present
+		if (options) {
+			if (options.transformer) {
+				Reflect.defineMetadata(
+					'customTransformer',
+					options.transformer,
+					target,
+					propertyKey
+				);
+			}
+			if (options.serializer) {
+				Reflect.defineMetadata(
+					'customSerializer',
+					options.serializer,
+					target,
+					propertyKey
+				);
+			}
+			if (options.mocker) {
+				Reflect.defineMetadata(
+					'customMocker',
+					options.mocker,
+					target,
+					propertyKey
+				);
+			}
+		}
+
 		// ALWAYS create getter/setter to prevent TypeScript from shadowing with real properties
+
 		// Check if getter/setter already exists
-		const existingDescriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
-		if (!existingDescriptor || (!existingDescriptor.get && !existingDescriptor.set)) {
+		const existingDescriptor = Object.getOwnPropertyDescriptor(
+			target,
+			propertyKey
+		);
+		if (
+			!existingDescriptor ||
+			(!existingDescriptor.get && !existingDescriptor.set)
+		) {
 			const storageKey = `${QUICK_PROPERTY_KEYS}${String(propertyKey)}`;
 
 			// Define getter/setter
 			Object.defineProperty(target, propertyKey, {
-				get(this: any) {
+				get(this: Record<string, unknown>) {
 					return this[storageKey];
 				},
-				set(this: any, value: any) {
+				set(this: Record<string, unknown>, value: unknown) {
 					this[storageKey] = value;
 				},
 				enumerable: true,
 				configurable: true,
 			});
+
+			// Mark as generated by QType so installLazyGetters knows it can override it
+			Reflect.defineMetadata(
+				'qtype:generated',
+				true,
+				target,
+				propertyKey
+			);
 		}
 
 		// If no typeOrClass provided, we're done (no transformation metadata needed)
@@ -202,7 +287,7 @@ export function QType<T>(
 		if (Array.isArray(typeOrClass)) {
 			if (typeOrClass.length === 1) {
 				const elementType = typeOrClass[0];
-				
+
 				// Check if it's nested array syntax: [[Type]], [[[Type]]], etc.
 				if (Array.isArray(elementType)) {
 					// Recursive case: [[Type]] → Type[][]
@@ -210,56 +295,135 @@ export function QType<T>(
 					let currentLevel = elementType;
 					let nestingDepth = 1; // We're already at depth 1 from outer array
 					let deepestType = elementType;
-					
+
 					// Traverse nested arrays to find the actual type
-					while (Array.isArray(currentLevel) && currentLevel.length === 1) {
+					while (
+						Array.isArray(currentLevel) &&
+						currentLevel.length === 1
+					) {
 						nestingDepth++;
 						deepestType = currentLevel[0];
 						currentLevel = currentLevel[0];
 					}
-					
+
 					// Set design:type to Array (for the outermost level)
-					Reflect.defineMetadata('design:type', Array, target, propertyKey);
-					
+					Reflect.defineMetadata(
+						'design:type',
+						Array,
+						target,
+						propertyKey
+					);
+
 					// Register the actual element type (not the nested array)
-					Reflect.defineMetadata('arrayElementClass', deepestType, target, propertyKey);
-					
+					Reflect.defineMetadata(
+						'arrayElementClass',
+						deepestType,
+						target,
+						propertyKey
+					);
+
 					// Store nesting depth for deserializer to handle
-					Reflect.defineMetadata('arrayNestingDepth', nestingDepth, target, propertyKey);
-					
+					Reflect.defineMetadata(
+						'arrayNestingDepth',
+						nestingDepth,
+						target,
+						propertyKey
+					);
+
 					return;
 				}
-				
+
 				// Simple array: [Date], [Post], [BigInt], etc.
 				// Set design:type to Array
-				Reflect.defineMetadata('design:type', Array, target, propertyKey);
-				
+				Reflect.defineMetadata(
+					'design:type',
+					Array,
+					target,
+					propertyKey
+				);
+
 				// Register the element type as arrayElementClass
-				Reflect.defineMetadata('arrayElementClass', elementType, target, propertyKey);
-				
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					elementType,
+					target,
+					propertyKey
+				);
+
 				// Set nesting depth to 1 for simple arrays
-				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
+				Reflect.defineMetadata(
+					'arrayNestingDepth',
+					1,
+					target,
+					propertyKey
+				);
 				return;
 			} else if (typeOrClass.length > 1) {
 				// Union type array: [Content, Metadata], [Date, BigInt], etc.
 				// Store ALL types for discriminator to choose from
-				
-				Reflect.defineMetadata('design:type', Array, target, propertyKey);
-				
+
+				Reflect.defineMetadata(
+					'design:type',
+					Array,
+					target,
+					propertyKey
+				);
+
 				// Store first type as arrayElementClass for backward compatibility
-				Reflect.defineMetadata('arrayElementClass', typeOrClass[0], target, propertyKey);
-				
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					typeOrClass[0],
+					target,
+					propertyKey
+				);
+
 				// Store ALL types in arrayElementTypes for union type discrimination
-				Reflect.defineMetadata('arrayElementTypes', typeOrClass, target, propertyKey);
-				
-				Reflect.defineMetadata('arrayNestingDepth', 1, target, propertyKey);
+				Reflect.defineMetadata(
+					'arrayElementTypes',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+
+				Reflect.defineMetadata(
+					'arrayNestingDepth',
+					1,
+					target,
+					propertyKey
+				);
 				return;
 			}
 		}
 
+		if (
+			typeof typeOrClass === 'object' &&
+			typeOrClass !== null &&
+			!Array.isArray(typeOrClass) &&
+			('serialize' in typeOrClass || 'deserialize' in typeOrClass)
+		) {
+			// Custom Transformer Object
+			Reflect.defineMetadata(
+				'fieldType',
+				typeOrClass,
+				target,
+				propertyKey
+			);
+			return;
+		}
+
 		if (typeof typeOrClass === 'string') {
 			// String literal ('bigint', 'regexp', 'int8array', etc.)
-			Reflect.defineMetadata('fieldType', typeOrClass, target, propertyKey);
+			Reflect.defineMetadata(
+				'fieldType',
+				typeOrClass,
+				target,
+				propertyKey
+			);
+		} else if (typeOrClass === Array) {
+			// Special case for Array constructor (e.g. @QType(Array) or @Quick({ tags: Array }))
+			// Treat as generic array
+			Reflect.defineMetadata('fieldType', 'array', target, propertyKey);
+			Reflect.defineMetadata('design:type', Array, target, propertyKey);
 		} else if (typeOrClass === BigInt) {
 			// Special case for BigInt (not a constructor, but a factory function)
 			Reflect.defineMetadata('fieldType', 'bigint', target, propertyKey);
@@ -313,9 +477,48 @@ export function QType<T>(
 				Math.atan,
 			];
 
-			if (mathMethods.includes(typeOrClass as any)) {
+			if (mathMethods.includes(typeOrClass as (x: number) => number)) {
 				// It's a Math method - store as transformer
-				Reflect.defineMetadata('fieldTransformer', typeOrClass, target, propertyKey);
+				Reflect.defineMetadata(
+					'customTransformer',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+				return;
+			}
+
+			// CRITICAL: Check for wrapped constructors from @Quick() BEFORE checking funcStr
+			// Wrapped constructors start with 'function' but should be treated as classes, not transformers
+			const isQuickWrapped = '__createQuickInstance' in typeOrClass;
+
+			if (isQuickWrapped) {
+				// It's a wrapped constructor from @Quick() - treat as nested model
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+				Reflect.defineMetadata(
+					'design:type',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+				return;
+			}
+
+			// Check if it's a registered native constructor (RegExp, Error, URL, etc.)
+			// We MUST check this BEFORE checking for function transformers, because native constructors
+			// are functions (e.g. RegExp.toString() starts with "function") but must be treated as types.
+			if (NATIVE_TYPE_MAP.has(typeOrClass)) {
+				Reflect.defineMetadata(
+					'fieldType',
+					NATIVE_TYPE_MAP.get(typeOrClass),
+					target,
+					propertyKey
+				);
 				return;
 			}
 
@@ -323,76 +526,46 @@ export function QType<T>(
 			const funcStr = typeOrClass.toString();
 			if (funcStr.includes('=>') || funcStr.startsWith('function')) {
 				// It's a transformer function - store the function itself
-				Reflect.defineMetadata('fieldTransformer', typeOrClass, target, propertyKey);
+				Reflect.defineMetadata(
+					'customTransformer',
+					typeOrClass,
+					target,
+					propertyKey
+				);
 				return;
 			}
 
-			// Check if it's a registered native constructor (RegExp, Error, URL, etc.)
-			type INativeConstructor =
-				| typeof RegExp
-				| typeof Error
-				| typeof URL
-				| typeof URLSearchParams
-				| typeof Int8Array
-				| typeof Uint8Array
-				| typeof Uint8ClampedArray
-				| typeof Int16Array
-				| typeof Uint16Array
-				| typeof Int32Array
-				| typeof Uint32Array
-				| typeof Float32Array
-				| typeof Float64Array
-				| typeof BigInt64Array
-				| typeof BigUint64Array
-				| typeof ArrayBuffer
-				| typeof DataView
-				| typeof Set
-				| typeof Map;
+			// Check if it's a constructor (has prototype property) vs a plain function
+			const hasPrototype =
+				typeOrClass.prototype &&
+				typeOrClass.prototype.constructor === typeOrClass;
 
-			const nativeConstructors: INativeConstructor[] = [
-				RegExp,
-				Error,
-				URL,
-				URLSearchParams,
-				Int8Array,
-				Uint8Array,
-				Uint8ClampedArray,
-				Int16Array,
-				Uint16Array,
-				Int32Array,
-				Uint32Array,
-				Float32Array,
-				Float64Array,
-				BigInt64Array,
-				BigUint64Array,
-				ArrayBuffer,
-				DataView,
-				Set,
-				Map,
-			];
+			if (hasPrototype) {
+				// It's a custom model class - for nested models (single object)
+				// Arrays MUST use explicit [Type] syntax
 
-			const isNativeConstructor = nativeConstructors.some((ctor) => ctor === typeOrClass);
-
-			if (isNativeConstructor) {
-				// Store as fieldType using the constructor directly
-				Reflect.defineMetadata('fieldType', typeOrClass, target, propertyKey);
+				// For single type (NOT array syntax), register as nested model
+				Reflect.defineMetadata(
+					'arrayElementClass',
+					typeOrClass,
+					target,
+					propertyKey
+				);
+				Reflect.defineMetadata(
+					'design:type',
+					typeOrClass,
+					target,
+					propertyKey
+				);
 			} else {
-				// Check if it's a constructor (has prototype property) vs a plain function
-				const hasPrototype =
-					typeOrClass.prototype && typeOrClass.prototype.constructor === typeOrClass;
-
-				if (hasPrototype) {
-					// It's a custom model class - for nested models (single object)
-					// Arrays MUST use explicit [Type] syntax
-					
-					// For single type (NOT array syntax), register as nested model
-					Reflect.defineMetadata('arrayElementClass', typeOrClass, target, propertyKey);
-					Reflect.defineMetadata('design:type', typeOrClass, target, propertyKey);
-				} else {
-					// It's a transformer function (Math.round, btoa, arrow function, etc.)
-					// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2
-					Reflect.defineMetadata('fieldTransformer', typeOrClass, target, propertyKey);
-				}
+				// It's a transformer function (Math.round, btoa, arrow function, etc.)
+				// Examples: Math.round, Math.floor, btoa, atob, JSON.parse, (v) => v * 2
+				Reflect.defineMetadata(
+					'customTransformer',
+					typeOrClass,
+					target,
+					propertyKey
+				);
 			}
 		}
 	};

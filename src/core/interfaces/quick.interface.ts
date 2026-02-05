@@ -1,76 +1,56 @@
-/**
- * Type aliases for QuickModel @Quick() decorator
- * 
- * @example
- * ```typescript
- * @Quick({
- *   // String literals
- *   value: 'bigint',
- *   date: 'date',
- *   pattern: 'regexp',
- *   
- *   // Constructors
- *   tags: Set,
- *   metadata: Map,
- *   error: Error,
- *   
- *   // Functions
- *   price: (v) => Math.round(v * 100) / 100,
- *   name: (s) => s.trim().toUpperCase()
- * })
- * ```
- */
+import type { IQNativeConstructor } from '../constants/native-types';
+import type { IQAlias } from '../types/q-alias.type';
 
 /**
- * String literal type aliases for basic type conversions.
- * Use these with @Quick() for autocomplete support in your IDE.
+ * Constructor type for class-based type mapping
  */
-export type IAlias =
-  // Primitivos
-  | 'bigint'
-  | 'symbol'
-  | 'number'
-  | 'string'
-  | 'boolean'
-  | 'null'
-  | 'undefined'
-  
-  // Objetos nativos
-  | 'date'
-  | 'regexp'
-  | 'error'
-  | 'map'
-  | 'set'
-  | 'weakmap'
-  | 'weakset'
-  | 'promise'
-  | 'array'
-  | 'object'
-  
-  // Typed Arrays
-  | 'int8array'
-  | 'uint8array'
-  | 'uint8clampedarray'
-  | 'int16array'
-  | 'uint16array'
-  | 'int32array'
-  | 'uint32array'
-  | 'float32array'
-  | 'float64array'
-  | 'bigint64array'
-  | 'biguint64array'
-  
-  // Buffers
-  | 'arraybuffer'
-  | 'sharedarraybuffer'
-  | 'dataview'
-  
-  // Web APIs
-  | 'url'
-  | 'urlsearchparams'
-  | 'blob'
-  | 'file'
-  | 'formdata'
-  | 'headers'
-  | 'textencoder'
-  | 'textdecoder';
+export type IQConstructor<T = any> = new (...args: any[]) => T;
+
+/**
+ * Transformer function that converts a value
+ */
+export type IQTransformerFunction = Function;
+
+/**
+ * Single type specification supported by QuickModel (without transformers).
+ * Represents a type that can be transformed via class, native constructor, or alias.
+ */
+export type IQTypeSpec<T = any> =
+	| IQConstructor<T>
+	| IQNativeConstructor
+	| IQAlias
+	| symbol
+	| PromiseConstructor;
+
+/**
+ * All supported type specifications for @Quick() and @QType() decorators.
+ *
+ * Supports:
+ * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
+ * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
+ * - Transformer functions: (value) => transformed value (arrow or regular functions)
+ * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
+ * - Custom transformers
+ */
+export type IQSpec =
+	| IQTypeSpec // Classes, natives, aliases
+	| IQTransformerFunction // Custom transformer function
+	| IQSpec[] // Array with element type like [Date], [[Date]]
+	| (string & {}) // Allow any string (custom transformers) but preserve autocomplete for IQAlias
+	| { deserialize: Function; serialize: Function } // Custom transformer object
+	| null // Allow null in union types (e.g. [Date, null])
+	| undefined; // Allow undefined in union types
+
+/**
+ * All supported type specifications for @Quick() decorator for arrays
+ */
+export type IQSpecs = IQSpec[]; // Array of any Spec
+
+/**
+ * Options for @Quick() decorator to specify property types explicitly
+ *
+ * Supports **dot notation** for nested property transformations.
+ */
+export interface IQOptions {
+	[propertyName: string]: IQSpec | IQSpecs;
+}

@@ -1,34 +1,48 @@
-import { QInterface, QModel, Quick } from '@/index';
+import { IQImplements, QModel, Quick } from '@/index';
 
 // ============================================
-// CLASES ANIDADAS PARA TESTING
+// NESTED CLASSES FOR TESTING
 // ============================================
 
-// Clase simple sin QModel
+// Simple class without QModel
 class Address {
+	public street: string;
+	public city: string;
+	public zip: string;
+
 	constructor(
-		public street: string,
-		public city: string,
-		public zip: string
-	) {}
+		streetOrObj: string | { street: string; city: string; zip: string },
+		city?: string,
+		zip?: string
+	) {
+		if (typeof streetOrObj === 'object') {
+			this.street = streetOrObj.street;
+			this.city = streetOrObj.city;
+			this.zip = streetOrObj.zip;
+		} else {
+			this.street = streetOrObj;
+			this.city = city!;
+			this.zip = zip!;
+		}
+	}
 }
 
-// Clase que extiende QModel (nested model)
+// Class extending QModel (nested model)
 interface IProfile {
 	bio: string;
 	website?: string;
 	joinedAt: string;
 }
 
-@Quick({}) // Necesita @Quick() para auto-detectar Date
+@Quick({ createdAt: Date }) // Needs @Quick() to auto-detect Date
 class Profile extends QModel<IProfile> {
-	bio!: string;
-	website?: string;
-	joinedAt!: Date;
+	declare bio: string;
+	declare website?: string;
+	declare joinedAt: Date;
 }
 
 // ============================================
-// INTERFACES Y TIPOS
+// INTERFACES AND TYPES
 // ============================================
 
 interface IUser {
@@ -39,11 +53,11 @@ interface IUser {
 	updatedAt?: string;
 	bignumber: string;
 	tags: string[]; // Array from backend
-	metadata: [string, any][]; // Array of pairs from backend
+	metadata: [string, unknown][]; // Array of pairs from backend
 	symbolic: string;
 	dates?: (string | undefined | null)[]; // Array of date strings
 	pattern?: string; // RegExp as string from backend
-	config?: Record<string, any>; // Plain object (sin clase)
+	config?: Record<string, unknown>; // Plain object (no class)
 	address?: {
 		// Nested plain object
 		street: string;
@@ -64,63 +78,69 @@ type IUserTransform = {
 	updatedAt?: Date;
 	bignumber: bigint;
 	tags: Set<string>;
-	metadata: Map<string, any>;
+	metadata: Map<string, unknown>;
 	symbolic: symbol;
 	dates?: (Date | undefined | null)[];
-	pattern?: RegExp; // Transformado a RegExp
-	config?: Record<string, any>; // Plain object se mantiene igual
-	address?: Address; // Transformado a clase Address
-	profile?: Profile; // Transformado a QModel Profile
-	addresses?: Address[]; // Array transformado a clases Address
+	pattern?: RegExp; // Transformed to RegExp
+	config?: Record<string, unknown>; // Plain object remains the same
+	address?: Address; // Transformed to Address class
+	profile?: Profile; // Transformed to QModel Profile
+	addresses?: Address[]; // Array transformed to Address classes
 };
 
 /**
  * REGLA SIMPLE de QuickModel:
  *
- * - Sin @QType() → la propiedad se COPIA TAL CUAL desde el backend
- * - Con @QType(Type) → la propiedad se TRANSFORMA al tipo especificado
- *
- * Funciona con AMBOS: declare y !
+ * - Without transform → property is COPIED AS-IS from backend
+ * - With transform → property is TRANSFORMED to specified type
  */
 
-// ✅ OPCIÓN CON @Quick() - Protege automáticamente TODAS las propiedades
+// ✅ OPTION WITH @Quick() - Automatically protects ALL properties
 @Quick({
+	createdAt: Date,
+	updatedAt: Date,
+	bignumber: BigInt,
 	tags: Set,
 	metadata: Map,
 	symbolic: Symbol,
-	dates: (arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
-		arr.map((date) => (typeof date === 'string' ? new Date(date) : date)),
-	pattern: RegExp, // RegExp desde string
-	address: Address, // Plain object → Address class
-	profile: Profile, // Plain object → Profile QModel
-	addresses: [Address], // Array de plain objects → Array de Address classes
+	dates: ((arr: (string | undefined | null)[]): (Date | undefined | null)[] =>
+		arr?.map((date) =>
+			typeof date === 'string' ? new Date(date) : date
+		)) as unknown as any,
+	pattern: RegExp, // RegExp from string
+	address: Address as unknown as any, // Plain object → Address class
+	profile: Profile as unknown as any, // Plain object → Profile QModel
+	addresses: [Address] as unknown as any, // Array of plain objects → Array of Address classes
 })
-class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
-	// Todas las propiedades son protegidas automáticamente por @Quick()
-	// Funciona con declare, !, y ?
-	id!: number;
-	name!: string;
+class User
+	extends QModel<IUser>
+	implements IQImplements<IUser, IUserTransform>
+{
+	// All properties are automatically protected by @Quick()
+	// Works with declare, !, and ?
+	declare id: number;
+	declare name: string;
 	declare surname: string;
 
-	// @Quick() detecta Date, BigInt automáticamente
-	createdAt!: Date;
-	updatedAt?: Date;
-	bignumber!: bigint;
+	// @Quick() detects Date, BigInt explicitly from decorator config
+	declare createdAt: Date;
+	declare updatedAt?: Date;
+	declare bignumber: bigint;
 
-	// Estos los especificamos en el mapa arriba
+	// Specified in the map above
 	declare tags: Set<string>;
-	metadata!: Map<string, any>;
-	symbolic!: symbol;
-	dates?: (Date | undefined | null)[];
-	
-	// Nuevos tipos de transformación
-	pattern?: RegExp;
-	config?: Record<string, any>; // Plain object sin transformación
-	address?: Address;
-	profile?: Profile;
-	addresses?: Address[];
+	declare metadata: Map<string, unknown>;
+	declare symbolic: symbol;
+	declare dates?: (Date | undefined | null)[];
 
-	algo: 'test' = 'test'; // Propiedad normal sin relación con QuickModel
+	// New transformation types
+	declare pattern?: RegExp;
+	declare config?: Record<string, unknown>; // Plain object without transformation
+	declare address?: Address;
+	declare profile?: Profile;
+	declare addresses?: Address[];
+
+	algo = 'test' as const; // Normal property unrelated to QuickModel
 }
 
 const baseObj: IUser = {
@@ -142,7 +162,7 @@ const baseObj: IUser = {
 		undefined,
 		null,
 	],
-	pattern: '^test.*$', // RegExp como string
+	pattern: '^test.*$', // RegExp as string
 	config: { theme: 'dark', lang: 'es' }, // Plain object
 	address: {
 		// Nested plain object
@@ -164,9 +184,9 @@ const baseObj: IUser = {
 };
 
 const logTests = (obj: User) => {
-	console.log('\n=== RESULTADOS DE LAS PRUEBAS ===');
+	console.log('\n=== TEST RESULTS ===');
 	console.log({ obj }, '\n');
-	console.log('\n=== Propiedades SIN @QType() (copiadas tal cual) ===');
+	console.log('\n=== Properties WITHOUT transform (copied as-is) ===');
 	console.log('id:', obj.id, '→', typeof obj.id, obj.id === 1 ? '✅' : '❌');
 	console.log(
 		'name:',
@@ -183,7 +203,7 @@ const logTests = (obj: User) => {
 		obj.surname === 'Doe' ? '✅' : '❌'
 	);
 
-	console.log('\n=== Propiedades CON @QType() (transformadas) ===');
+	console.log('\n=== Properties WITH transform (via @Quick) ===');
 	console.log(
 		'createdAt:',
 		obj.createdAt,
@@ -232,8 +252,8 @@ const logTests = (obj: User) => {
 			: '❌'
 	);
 	console.log('algo (normal):', obj.algo, obj.algo === 'test' ? '✅' : '❌');
-	
-	console.log('\n=== Nuevos tipos de transformación ===');
+
+	console.log('\n=== New transformation types ===');
 	console.log(
 		'pattern:',
 		obj.pattern,
@@ -244,27 +264,37 @@ const logTests = (obj: User) => {
 		'config:',
 		obj.config,
 		'→ Plain Object',
-		obj.config && typeof obj.config === 'object' && obj.config.theme === 'dark' ? '✅' : '❌'
+		obj.config &&
+			typeof obj.config === 'object' &&
+			obj.config.theme === 'dark'
+			? '✅'
+			: '❌'
 	);
 	console.log(
 		'address:',
 		obj.address,
 		'→ Address class',
-		obj.address instanceof Address && obj.address.city === 'Madrid' ? '✅' : '❌'
+		obj.address instanceof Address && obj.address.city === 'Madrid'
+			? '✅'
+			: '❌'
 	);
 	console.log(
 		'profile:',
 		obj.profile,
 		'→ Profile QModel',
-		obj.profile instanceof Profile && obj.profile.joinedAt instanceof Date ? '✅' : '❌'
+		obj.profile instanceof Profile && obj.profile.joinedAt instanceof Date
+			? '✅'
+			: '❌'
 	);
 	console.log(
 		'addresses:',
 		obj.addresses,
 		'→ Address[]',
-		Array.isArray(obj.addresses) && 
-		obj.addresses.length === 2 &&
-		obj.addresses.every(a => a instanceof Address) ? '✅' : '❌'
+		Array.isArray(obj.addresses) &&
+			obj.addresses.length === 2 &&
+			obj.addresses.every((a) => a instanceof Address)
+			? '✅'
+			: '❌'
 	);
 };
 
@@ -284,19 +314,18 @@ const allCorrect =
 	user.metadata instanceof Map &&
 	typeof user.symbolic === 'symbol' &&
 	Array.isArray(user.dates) &&
-	user.dates.every((d) => d instanceof Date || d === undefined || d === null) &&
+	user.dates.every(
+		(d) => d instanceof Date || d === undefined || d === null
+	) &&
 	user.pattern instanceof RegExp &&
 	user.config?.theme === 'dark' &&
 	user.address instanceof Address &&
 	user.profile instanceof Profile &&
 	Array.isArray(user.addresses) &&
 	user.addresses.length === 2 &&
-	user.addresses.every(a => a instanceof Address);
+	user.addresses.every((a) => a instanceof Address);
 
 console.log(
-	allCorrect
-		? '✅ TODO CORRECTO - Ambas opciones funcionan'
-		: '❌ HAY ERRORES'
+	allCorrect ? '✅ ALL CORRECT - Both options work' : '❌ ERRORS FOUND'
 );
 console.log('====================================\n');
-

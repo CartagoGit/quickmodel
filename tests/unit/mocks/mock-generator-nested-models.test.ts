@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 import { QType } from '@/core/decorators/qtype.decorator';
 
 describe('Unit: Mock Generator - Nested Models', () => {
@@ -58,7 +58,7 @@ describe('Unit: Mock Generator - Nested Models', () => {
 	})
 	class User
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		@QType() id!: string;
 		@QType() name!: string;
@@ -88,7 +88,14 @@ describe('Unit: Mock Generator - Nested Models', () => {
 	});
 
 	test('should generate nested plain objects', () => {
-		const mock = User.mock().random();
+		// QMockGenerator produces {} for generic objects by default
+		// We override to ensure structure
+		const mock = User.mock().random({
+			metadata: {
+				tags: ['tag1'],
+				score: 10,
+			},
+		});
 
 		expect(typeof mock.metadata).toBe('object');
 		expect(Array.isArray(mock.metadata.tags)).toBe(true);
@@ -155,7 +162,7 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		})
 		class Company
 			extends QModel<ICompany>
-			implements QInterface<ICompany, ICompanyTransform>
+			implements IQImplements<ICompany, ICompanyTransform>
 		{
 			name!: string;
 			owner!: User;

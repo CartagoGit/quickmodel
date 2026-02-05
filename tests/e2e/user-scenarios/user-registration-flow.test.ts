@@ -1,12 +1,12 @@
 /**
  * E2E Test: Complete User Registration Flow
- * 
+ *
  * Simulates a complete user registration workflow from form data
  * through validation, model creation, serialization, and storage
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '@/index';
+import { QModel, Quick, type IQImplements } from '@/index';
 
 describe('E2E: User Registration Flow', () => {
 	// Step 1: Define interfaces for the complete system
@@ -72,7 +72,10 @@ describe('E2E: User Registration Flow', () => {
 		'metadata.lastLogin': Date,
 		'metadata.loginCount': BigInt,
 	})
-	class User extends QModel<IUser> implements QInterface<IUser, IUserTransform> {
+	class User
+		extends QModel<IUser>
+		implements IQImplements<IUser, IUserTransform>
+	{
 		id!: string;
 		email!: string;
 		username!: string;
@@ -183,7 +186,9 @@ describe('E2E: User Registration Flow', () => {
 		const clonedUser = retrievedUser.clone();
 		expect(clonedUser).not.toBe(retrievedUser);
 		expect(clonedUser.email).toBe(retrievedUser.email);
-		expect(clonedUser.profile.address).not.toBe(retrievedUser.profile.address);
+		expect(clonedUser.profile.address).not.toBe(
+			retrievedUser.profile.address
+		);
 
 		// STEP 11: Simulate login (update metadata)
 		retrievedUser.metadata.lastLogin = new Date();
@@ -228,12 +233,10 @@ describe('E2E: User Registration Flow', () => {
 			},
 		};
 
-		// Model should still create but with invalid date
-		const user = new User(invalidData);
-
-		expect(user.email).toBe('invalid-email');
-		expect(user.profile.birthDate).toBeInstanceOf(Date);
-		expect(isNaN(user.profile.birthDate.getTime())).toBe(true); // Invalid date
+		// Model should throw error with invalid date
+		expect(() => {
+			new User(invalidData);
+		}).toThrow(/Invalid date value/);
 	});
 
 	test('Should handle partial updates correctly', () => {

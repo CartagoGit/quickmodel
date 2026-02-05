@@ -1,40 +1,57 @@
 /**
  * QuickModel - Public API
- * 
- * @package @cartago-git/quickmodel
+ *
+ * @module @cartago-git/quickmodel
  * @license MIT
  */
 
 // ============================================================================
-// PUBLIC API - Only these exports
+// PUBLIC API - Core
+// ============================================================================
+/**
+ * Helper type to enforce type consistency between a model class
+ * and its input/output interfaces.
+ */
+export type { IQImplements } from './core/interfaces/model.interface';
+export { QModel } from './core/models/quick.model';
+
+export { Quick } from './core/decorators/quick.decorator';
+export { QType } from './core/decorators/qtype.decorator';
+export { QConfig } from './core/config/quick.config';
+
+// ============================================================================
+// PUBLIC API - Submodules (Namespaces for Documentation)
 // ============================================================================
 
 /**
- * Base model class with automatic serialization/deserialization
+ * Secondary types and interfaces.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/types';
+ * ```
  */
-export { QModel } from './core/models/quick.model';
+export * as Types from './types';
 
 /**
- * Type helper for model interfaces
+ * Advanced utilities and internal tools.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/advanced';
+ * ```
  */
-export type { QInterface } from './core/models/quick.model';
+export * as Advanced from './advanced';
 
 /**
- * Class decorator for automatic property type mapping
+ * Common utilities and helper types.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/utils';
+ * ```
  */
-export { Quick } from './core/decorators/quick.decorator';
-
-/**
- * Property decorator for explicit field type specification (optional)
- */
-export { QType } from './core/decorators/qtype.decorator';
-
-/**
- * Advanced options types for @Quick() decorator
- */
-export type { 
-	IQuickAdvancedOptions,
-	DiscriminatorConfig,
-	TypeGuardFunction 
-} from './core/interfaces/quick-options.interface';
-
+export * as Utils from './utils';

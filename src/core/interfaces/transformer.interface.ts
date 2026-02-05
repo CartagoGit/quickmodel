@@ -3,42 +3,51 @@
  * SOLID - Interface Segregation: Specific interfaces, not generic
  */
 
-export interface IQTransformer<TInput = any, TOutput = any> {
-  /**
-   * Transforma desde la interfaz (JSON) hacia el tipo del modelo
-   * @param value - Valor desde JSON/Interface
-   * @param propertyKey - Nombre de la propiedad
-   * @param className - Nombre de la clase
-   */
-  deserialize(value: TInput, propertyKey: string, className: string): TOutput;
+export interface IQTransformer<TInput = unknown, TOutput = unknown> {
+	/**
+	 * Transforms from interface (JSON) to model type
+	 * @param value - Value from JSON/Interface
+	 * @param propertyKey - Property name
+	 * @param className - Class name
+	 */
+	deserialize(
+		value: TInput | null | undefined,
+		propertyKey: string,
+		className: string,
+		context?: IQTransformContext
+	): TOutput | null;
 
-  /**
-   * Serializa desde el tipo del modelo hacia la interfaz (JSON)
-   * @param value - Valor del modelo
-   */
-  serialize(value: TOutput): TInput;
+	/**
+	 * Serializes from model type to interface (JSON)
+	 * @param value - Model value
+	 * @param context - Optional context
+	 */
+	serialize(value: TOutput, context?: IQTransformContext): TInput;
 }
 
+export type IQTransformerKey = string | Function | object;
+
 export interface IQValidator {
-  /**
-   * Valida que el valor sea del tipo correcto
-   */
-  validate(value: any, context: IQValidationContext): IQValidationResult;
+	/**
+	 * Validates that the value is of the correct type
+	 */
+	validate(value: unknown, context: IQValidationContext): IQValidationResult;
 }
 
 export interface IQTransformContext {
-  propertyKey: string;
-  className: string;
-  metadata?: Record<string, any>;
+	propertyKey: string;
+	className: string;
+	metadata?: Record<string, unknown>;
 }
 
 export interface IQValidationContext {
-  propertyKey: string;
-  className: string;
-  value: any;
+	propertyKey: string;
+	className?: string;
+	value?: unknown;
+	target?: unknown;
 }
 
 export interface IQValidationResult {
-  isValid: boolean;
-  error?: string;
+	isValid: boolean;
+	error?: string;
 }

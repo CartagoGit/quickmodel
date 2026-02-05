@@ -1,11 +1,11 @@
 /**
  * Unit Test: Mock Generator - Transformed Types
- * 
+ *
  * Tests mock generation for transformed types (Date, BigInt, RegExp, etc.)
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 import { QType } from '@/core/decorators/qtype.decorator';
 
 describe('Unit: Mock Generator - Transformed Types', () => {
@@ -31,7 +31,10 @@ describe('Unit: Mock Generator - Transformed Types', () => {
 		attendees: BigInt,
 		pattern: RegExp,
 	})
-	class Event extends QModel<IEvent> implements QInterface<IEvent, IEventTransform> {
+	class Event
+		extends QModel<IEvent>
+		implements IQImplements<IEvent, IEventTransform>
+	{
 		@QType() id!: string;
 		@QType() title!: string;
 		@QType(Date) createdAt!: Date;
@@ -45,7 +48,9 @@ describe('Unit: Mock Generator - Transformed Types', () => {
 
 		expect(mock).toBeInstanceOf(Event);
 		expect(mock.createdAt).toBeInstanceOf(Date);
-		expect(mock.updatedAt === null || mock.updatedAt instanceof Date).toBe(true);
+		expect(mock.updatedAt === null || mock.updatedAt instanceof Date).toBe(
+			true
+		);
 	});
 
 	test('should generate mocks with BigInt types', () => {
@@ -85,7 +90,7 @@ describe('Unit: Mock Generator - Transformed Types', () => {
 		const mocks = Event.mock().array(3);
 
 		expect(mocks).toHaveLength(3);
-		mocks.forEach(mock => {
+		mocks.forEach((mock) => {
 			expect(mock.createdAt).toBeInstanceOf(Date);
 			expect(typeof mock.attendees).toBe('bigint');
 			expect(mock.pattern).toBeInstanceOf(RegExp);

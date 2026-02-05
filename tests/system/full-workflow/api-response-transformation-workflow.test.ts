@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, type QInterface } from '@/index';
+import { QModel, Quick, type IQImplements } from '@/index';
 
 describe('System: API Response Transformation', () => {
 	// Simulated API responses (what backend sends)
@@ -102,7 +102,7 @@ describe('System: API Response Transformation', () => {
 	})
 	class User
 		extends QModel<IUser>
-		implements QInterface<IUser, IUserTransform>
+		implements IQImplements<IUser, IUserTransform>
 	{
 		id!: string;
 		username!: string;
@@ -129,7 +129,7 @@ describe('System: API Response Transformation', () => {
 	})
 	class Post
 		extends QModel<IPost>
-		implements QInterface<IPost, IPostTransform>
+		implements IQImplements<IPost, IPostTransform>
 	{
 		id!: string;
 		title!: string;
@@ -157,7 +157,7 @@ describe('System: API Response Transformation', () => {
 	})
 	class Stats
 		extends QModel<IStats>
-		implements QInterface<IStats, IStatsTransform>
+		implements IQImplements<IStats, IStatsTransform>
 	{
 		totalViews!: bigint;
 		totalPosts!: number;
@@ -204,7 +204,8 @@ describe('System: API Response Transformation', () => {
 
 		// STEP 2: Parse and transform each post
 		const postsData = JSON.parse(apiResponseJson);
-		const posts = postsData.map((postData: unknown) =>
+
+		const posts = postsData.map((postData: any) =>
 			Post.deserialize(postData)
 		);
 
@@ -249,9 +250,9 @@ describe('System: API Response Transformation', () => {
 		stats.totalViews = viewsAfterUpdate;
 		stats.lastUpdated = new Date();
 
-		const serialized = JSON.parse(stats.toJSON());
-		expect(serialized.totalViews).toBe('4500');
-		expect(typeof serialized.lastUpdated).toBe('string');
+		const IQSerialized = JSON.parse(stats.toJSON());
+		expect(IQSerialized.totalViews).toBe('4500');
+		expect(typeof IQSerialized.lastUpdated).toBe('string');
 	});
 
 	test('Should handle nested API responses', () => {
@@ -266,8 +267,11 @@ describe('System: API Response Transformation', () => {
 		const _parsed1 = JSON.parse(json);
 
 		// Transform each part
+
 		const user = User.deserialize(_parsed1.user);
-		const posts = _parsed1.posts.map((p: unknown) => Post.deserialize(p));
+
+		const posts = _parsed1.posts.map((p: any) => Post.deserialize(p));
+
 		const stats = Stats.deserialize(_parsed1.stats);
 
 		// Verify everything transformed correctly
@@ -313,17 +317,17 @@ describe('System: API Response Transformation', () => {
 		// First transformation
 		const json1 = post.toJSON();
 
-	// Second transformation
-	const post2 = Post.fromJSON(json1);
-	const json2 = post2.toJSON();
-	const parsed2 = JSON.parse(json2);
+		// Second transformation
+		const post2 = Post.fromJSON(json1);
+		const json2 = post2.toJSON();
+		const parsed2 = JSON.parse(json2);
 
-	// Third transformation  
-	const post3 = Post.fromJSON(json2);
+		// Third transformation
+		const post3 = Post.fromJSON(json2);
 
-	// Verify data integrity
-	expect(post3.publishedAt.toISOString()).toBe(originalDate);
-	expect(post3.views).toBe(123456789n);
+		// Verify data integrity
+		expect(post3.publishedAt.toISOString()).toBe(originalDate);
+		expect(post3.views).toBe(123456789n);
 		expect(parsed2.publishedAt).toBe(originalDate);
 		expect(parsed2.views).toBe(originalViews);
 	});
@@ -350,14 +354,14 @@ describe('System: API Response Transformation', () => {
 		}
 
 		@Quick({
-			data: Post,
+			data: [Post],
 			'meta.total': BigInt,
 			'meta.lastFetch': Date,
 		})
 		class PaginatedPosts
 			extends QModel<IPaginatedResponse>
 			implements
-				QInterface<IPaginatedResponse, IPaginatedResponseTransform>
+				IQImplements<IPaginatedResponse, IPaginatedResponseTransform>
 		{
 			data!: Post[];
 			meta!: {

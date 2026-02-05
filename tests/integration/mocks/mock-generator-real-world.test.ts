@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QInterface } from '@/index';
+import { QModel, Quick, IQImplements } from '@/index';
 
 describe('Integration: Mock Generator - Real World', () => {
 	// Complete E-Commerce scenario
@@ -17,7 +17,13 @@ describe('Integration: Mock Generator - Real World', () => {
 		country: string;
 	}
 
-	@Quick({})
+	@Quick({
+		street: String,
+		city: String,
+		state: String,
+		zipCode: String,
+		country: String,
+	})
 	class Address extends QModel<IAddress> {
 		street!: string;
 		city!: string;
@@ -38,11 +44,14 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	@Quick({
+		productId: String,
+		name: String,
+		quantity: Number,
 		price: BigInt,
 	})
 	class OrderItem
 		extends QModel<IOrderItem>
-		implements QInterface<IOrderItem, IOrderItemTransform>
+		implements IQImplements<IOrderItem, IOrderItemTransform>
 	{
 		productId!: string;
 		name!: string;
@@ -88,17 +97,21 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	@Quick({
-		items: OrderItem,
+		id: String,
+		userId: String,
+		items: [OrderItem], // ✅ CORRECTO - array syntax
 		shippingAddress: Address,
 		billingAddress: Address,
+		status: String,
 		total: BigInt,
 		createdAt: Date,
 		shippedAt: Date,
 		deliveredAt: Date,
+		metadata: Object,
 	})
 	class Order
 		extends QModel<IOrder>
-		implements QInterface<IOrder, IOrderTransform>
+		implements IQImplements<IOrder, IOrderTransform>
 	{
 		id!: string;
 		userId!: string;
@@ -134,7 +147,24 @@ describe('Integration: Mock Generator - Real World', () => {
 	}
 
 	test('should generate complete order mock with all nested structures', () => {
-		const mock = Order.mock().random();
+		const statuses = [
+			'pending',
+			'processing',
+			'shipped',
+			'delivered',
+			'cancelled',
+		] as const;
+		const randomStatus =
+			statuses[Math.floor(Math.random() * statuses.length)];
+
+		const mock = Order.mock().random({
+			status: randomStatus,
+			metadata: {
+				paymentMethod: 'Credit Card',
+				trackingNumber: 'TRK-123456',
+				notes: ['Test note'],
+			},
+		});
 
 		// Check main instance
 		expect(mock).toBeInstanceOf(Order);
