@@ -2,7 +2,18 @@
 
 Este archivo es un **índice de navegación** para consultar la documentación específica según la tarea a realizar.
 
-## 📋 ¿Qué vas a hacer?
+## � **METODOLOGÍA TDD - SIEMPRE**
+
+**REGLA CRÍTICA:** Antes de implementar cualquier funcionalidad nueva:
+
+1. ✅ **PRIMERO:** Escribir el test que falla
+2. ✅ **SEGUNDO:** Implementar el código mínimo para que pase
+3. ✅ **TERCERO:** Refactorizar si es necesario
+4. ✅ **CUARTO:** Verificar que todos los tests pasan
+
+**Nunca implementes código de producción sin su test correspondiente.**
+
+## �📋 ¿Qué vas a hacer?
 
 ### 🔄 Voy a hacer un commit
 
