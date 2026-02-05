@@ -63,7 +63,7 @@ class MyModel extends QModel<IMyInterface> { ... }
 
 ### Referencia de Opciones:
 
-- **[`strict`](#5-modo-estricto)**: (Boolean) Si es `true`, lanza un error cuando hay propiedades desconocidas en la entrada.
+- **[`unknownPropertyPolicy`](#5-politica-de-propiedades-desconocidas)**: Controla el manejo de propiedades no definidas ('keep', 'strip', 'error').
 - **[`transformers`](#1-transformadores-personalizados-deserializacion)**: Lógica de deserialización personalizada.
 - **[`serializers`](#2-serializadores-personalizados)**: Lógica de serialización personalizada.
 - **[`mockers`](#3-mocks-personalizados)**: Generación de mocks personalizada.
@@ -90,6 +90,24 @@ class User extends QModel<IUser> {
 ::: tip ROBUSTEZ
 **Recomendación**: Siempre usa `@Quick()` en la clase (aunque sea vacío) si vas a definir valores por defecto (`prop = 123`) o usas modificadores estrictos. Esto garantiza un comportamiento robusto y evita errores de inicialización.
 :::
+
+---
+
+## Opciones Avanzadas
+
+```typescript
+@Quick({
+  items: [Content, Metadata] // 1. Mapeo de Tipos
+}, {
+  // 2. Opciones Avanzadas
+  unknownPropertyPolicy: 'error',
+  transformers: { ... },
+  serializers: { ... },
+  mockers: { ... },
+  discriminators: { ... }
+})
+class MyModel extends QModel<IMyInterface> { ... }
+```
 
 ### 1. Transformadores Personalizados (Deserialización)
 
