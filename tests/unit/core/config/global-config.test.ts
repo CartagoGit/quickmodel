@@ -11,7 +11,7 @@ describe('Global Configuration', () => {
 		// 1. Enable Global Strict Mode
 		QConfig.configure({
 			defaults: {
-				strict: true,
+				unknownPropertyPolicy: 'error',
 			},
 		});
 
@@ -19,7 +19,7 @@ describe('Global Configuration', () => {
 			id: number;
 		}
 
-		// 2. Define model without explicit { strict: true }
+		// 2. Define model without explicit { unknownPropertyPolicy: 'error' }
 		@Quick({ id: Number })
 		class User extends QModel<IUser> {
 			declare id: number;
@@ -40,11 +40,11 @@ describe('Global Configuration', () => {
 	test('should allow overriding global Strict Mode locally', () => {
 		QConfig.configure({
 			defaults: {
-				strict: true,
+				unknownPropertyPolicy: 'error',
 			},
 		});
 
-		@Quick({ id: Number }, { strict: false }) // Explicit override
+		@Quick({ id: Number }, { unknownPropertyPolicy: 'keep' }) // Explicit override
 		class LooselyTypedUser extends QModel<{ id: number }> {
 			declare id: number;
 		}

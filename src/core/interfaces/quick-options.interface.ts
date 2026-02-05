@@ -320,34 +320,11 @@ export interface IQAdvancedOptions<
 	};
 
 	/**
-	 * STRICT MODE configuration.
-	 *
-	 * Controls whether the deserializer should throw an error when encountering
-	 * properties in the input data that are NOT defined in the model.
-	 *
-	 * - **false** (default): Flexible mode. Extra properties in input data are silently preserved in the instance.
-	 *   Useful for partial models or when the backend sends more data than needed.
-	 * - **true**: Strict validations. Throws `QModelError` if input data contains ANY property
-	 *   that is not explicitly declared in the model (via `@Quick`, `@QType`, or class property).
-	 *
-	 * @default false
-	 * @deprecated Use `unknownPropertyPolicy: 'error'` instead.
-	 *
-	 * @example
-	 * ```typescript
-	 * // Strict: Rejects unexpected fields
-	 * @Quick({}, { strict: true })
-	 * class User extends QModel<IUser> { ... }
-	 * ```
-	 */
-	strict?: boolean;
-
-	/**
 	 * Behavior when encountering properties in input data that are not defined in the model.
 	 *
 	 * - **keep** (default): Preserves extra properties.
 	 * - **strip**: Silently removes extra properties.
-	 * - **error**: Throws an error (Equivalent to `strict: true`).
+	 * - **error**: Throws an error.
 	 */
 	unknownPropertyPolicy?: 'keep' | 'strip' | 'error';
 

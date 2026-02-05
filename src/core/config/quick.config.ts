@@ -12,7 +12,7 @@
  * ```typescript
  * const config: IQConfig = {
  *   defaults: {
- *     strict: true,
+ *     unknownPropertyPolicy: 'error',
  *     maxArrayLength: 5000
  *   }
  * };
@@ -26,17 +26,10 @@ export interface IQConfig {
 	 */
 	defaults?: {
 		/**
-		 * If true, enables Strict Mode by default for all models.
-		 * Strict Mode rejects properties in the payload that are not defined in the model.
-		 * @deprecated Use `unknownPropertyPolicy: 'error'` instead.
-		 */
-		strict?: boolean;
-
-		/**
 		 * Defines behavior when encountering properties in the input payload that are not defined in the model.
 		 * - `keep`: Preserves extra properties (Default).
 		 * - `strip`: Silently removes extra properties.
-		 * - `error`: Throws an error (Equivalent to `strict: true`).
+		 * - `error`: Throws an error.
 		 */
 		unknownPropertyPolicy?: 'keep' | 'strip' | 'error';
 
@@ -157,7 +150,7 @@ export class QModelConfigService {
 	 * ```typescript
 	 * QConfig.configure({
 	 *   defaults: {
-	 *     strict: true
+	 *     unknownPropertyPolicy: 'error'
 	 *   }
 	 * });
 	 * ```
@@ -194,7 +187,7 @@ export class QModelConfigService {
  * unless explicitly overridden.
  *
  * **Key Features:**
- * - 🌍 **Global Defaults**: Set `strict: true` once for the whole app.
+ * - 🌍 **Global Defaults**: Set `unknownPropertyPolicy: 'error'` once for the whole app.
  * - 🛡️ **Security Limits**: Configure `maxArrayLength` to prevent DoS attacks.
  * - ⚙️ **Hot Reload**: Configuration can be updated at runtime (though usually done at startup).
  *
@@ -208,7 +201,7 @@ export class QModelConfigService {
  * // Reject any property not defined in the model
  * QConfig.configure({
  *   defaults: {
- *     strict: true
+ *     unknownPropertyPolicy: 'error'
  *   }
  * });
  * ```

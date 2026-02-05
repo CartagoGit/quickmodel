@@ -113,20 +113,12 @@ export class PopulationService {
 		const designTypes =
 			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
 
-		// Keep strict for backwards compatibility logic
-		const strictOption = options.strict ?? globalDefaults.strict;
-
 		// Determine Unknown Property Policy
-		// Priority: Model Config > Global Config > Strict Mode Fallback > Default ('keep')
-		let unknownPolicy =
+		// Priority: Model Config > Global Config > Default ('keep')
+		const unknownPolicy =
 			options.unknownPropertyPolicy ||
-			globalDefaults.unknownPropertyPolicy;
-
-		if (!unknownPolicy) {
-			// Backward compatibility: map strict boolean to policy
-			if (strictOption === true) unknownPolicy = 'error';
-			else unknownPolicy = 'keep';
-		}
+			globalDefaults.unknownPropertyPolicy ||
+			'keep';
 
 		// DoS Protection config
 		const maxArrayLength =
@@ -302,7 +294,7 @@ export class PopulationService {
 					decoratedFields
 				)
 			) {
-				if (strictOption) {
+				if (unknownPolicy === 'error') {
 					throw new QModelError(
 						`Strict Mode: Blocked attempt to overwrite instance method '${targetKey}' with data.`,
 						{

@@ -455,13 +455,13 @@ export function Quick<
 	// SAFETY CHECK: Detect common misconfiguration where options are passed as first argument
 	if (
 		typeMap &&
-		'strict' in typeMap &&
-		typeof (typeMap as any).strict === 'boolean'
+		'unknownPropertyPolicy' in typeMap &&
+		typeof (typeMap as any).unknownPropertyPolicy === 'string'
 	) {
 		throw new Error(
-			`[QuickModel] Misconfiguration detected: 'strict: ${(typeMap as any).strict}' found in type map. ` +
+			`[QuickModel] Misconfiguration detected: 'unknownPropertyPolicy: ${(typeMap as any).unknownPropertyPolicy}' found in type map. ` +
 				`Did you mean to pass options as the second argument? \n` +
-				`Correct usage: @Quick({ /* types */ }, { strict: true })`
+				`Correct usage: @Quick({ /* types */ }, { unknownPropertyPolicy: 'error' })`
 		);
 	}
 

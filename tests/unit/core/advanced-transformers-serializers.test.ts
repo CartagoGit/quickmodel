@@ -231,7 +231,7 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 				key: String,
 			},
 			{
-				strict: true,
+				unknownPropertyPolicy: 'error',
 				transformers: {
 					key: (val: any) => `${val}_processed`,
 				},

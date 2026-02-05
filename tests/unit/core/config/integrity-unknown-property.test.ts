@@ -13,7 +13,6 @@ describe('Integrity: Unknown Property Policy', () => {
 		// Reset config
 		QConfig.configure({
 			defaults: {
-				strict: undefined,
 				unknownPropertyPolicy: undefined,
 			},
 		});
@@ -169,42 +168,6 @@ describe('Integrity: Unknown Property Policy', () => {
 
 			const user = User.create({ id: '1', extra: 'kept' } as any);
 			expect((user as any).extra).toBe('kept');
-		});
-
-		// Legacy 'strict' boolean support
-		it('should treat legacy strict: true as error', () => {
-			@Quick({ id: String }, { strict: true })
-			class User extends QModel<IUser> {
-				declare id: string;
-			}
-
-			expect(() => {
-				User.create({ id: '1', extra: 'fail' } as any);
-			}).toThrow();
-		});
-
-		it('should treat legacy strict: false as keep', () => {
-			@Quick({ id: String }, { strict: false })
-			class User extends QModel<IUser> {
-				declare id: string;
-			}
-
-			const user = User.create({ id: '1', extra: 'kept' } as any);
-			expect((user as any).extra).toBe('kept');
-		});
-
-		it('should map unknownPropertyPolicy over strict if both present', () => {
-			@Quick(
-				{ id: String },
-				{ strict: true, unknownPropertyPolicy: 'strip' }
-			)
-			class User extends QModel<IUser> {
-				declare id: string;
-			}
-
-			// Should strip instead of throw (strict=true would throw)
-			const user = User.create({ id: '1', extra: 'gone' } as any);
-			expect((user as any).extra).toBeUndefined();
 		});
 	});
 

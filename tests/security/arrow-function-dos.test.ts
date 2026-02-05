@@ -14,7 +14,7 @@ describe('Advanced Security Vectors', () => {
 					id: Number,
 					username: String,
 				},
-				{ strict: true }
+				{ unknownPropertyPolicy: 'error' }
 			)
 			class User extends QModel<IUser> {
 				declare id: number;

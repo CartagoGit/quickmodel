@@ -58,7 +58,8 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-non-null-assertion": "off",
       
-      // Temporarily disable strict type-checking rules to allow build
+      // Reflection/serialization libraries require dynamic type access.
+      // These rules are intentionally disabled for metadata operations and runtime type transformations.
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-call": "off",

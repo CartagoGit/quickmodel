@@ -18,7 +18,7 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 	});
 
 	it('should prevent mass assignment in strict mode', () => {
-		@Quick({}, { strict: true })
+		@Quick({}, { unknownPropertyPolicy: 'error' })
 		class StrictUser extends QModel<any> {
 			declare name: string;
 		}
@@ -46,10 +46,9 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 		expect(() => (user as any).save()).not.toThrow();
 	});
 
-	it('should throw informative error when @Quick uses wrong syntax for strict mode', () => {
+	it('should throw informative error when @Quick uses wrong syntax', () => {
 		expect(() => {
-			// @ts-expect-error - Testing invalid usage
-			@Quick({ strict: true })
+			@Quick({ unknownPropertyPolicy: 'error' })
 			class _BrokenUser extends QModel<any> {}
 			return _BrokenUser;
 		}).toThrow(/Misconfiguration detected/);

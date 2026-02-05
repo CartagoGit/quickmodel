@@ -16,7 +16,7 @@ describe('System Security: App-Wide Protection', () => {
 		// In a real app, this happens in main.ts / index.ts
 		QConfig.configure({
 			defaults: {
-				strict: true, // 🛡️ LOCK DOWN EVERYTHING
+				unknownPropertyPolicy: 'error', // 🛡️ LOCK DOWN EVERYTHING
 			},
 		});
 	});
@@ -32,7 +32,7 @@ describe('System Security: App-Wide Protection', () => {
 			username: string;
 		}
 
-		// Dev forgets to add { strict: true } !
+		// Dev forgets to add { unknownPropertyPolicy: 'error' } !
 		@Quick({ username: String })
 		class User extends QModel<IUser> {
 			declare username: string;
@@ -56,7 +56,7 @@ describe('System Security: App-Wide Protection', () => {
 		}
 
 		// --- MODULE C: Legacy Data (Exceptions) ---
-		@Quick({}, { strict: false }) // Explicit opt-out
+		@Quick({}, { unknownPropertyPolicy: 'keep' }) // Explicit opt-out
 		class LegacyLog extends QModel<any> {}
 
 		// 2. ATTACK PHASE
