@@ -62,13 +62,14 @@ We limit input length to 1000 chars, but **do NOT validates algorithmic complexi
 QuickModel provides protections against Mass Assignment attacks:
 
 - **Method Shadowing Prevention**: Automatically prevents incoming JSON payloads from overwriting class methods.
-- **Strict Mode**: When enabled via `@Quick({ strict: true })`, any property in the payload that is not defined in the model is rejected.
+- **Strict Mode**: When enabled via `@Quick({ unknownPropertyPolicy: 'error' })`, any property in the payload that is not defined in the model is rejected.
 
 :warning: **IMPORTANT DEFAULT**: Strict mode is **DISABLED by default**.
-Properties present in the JSON but not in the model **will be copied** to the instance unless strict mode is enabled.
-**Recommendation:** Always enable strict mode for public-facing API models:
+Properties present in the JSON but not in the model **will be copied** to the instance unless you use `unknownPropertyPolicy: 'error'`.
+
+**Recommendation:** Always enable error policy for public-facing API models:
 ```typescript
-@Quick({}, { strict: true })
+@Quick({}, { unknownPropertyPolicy: 'error' })
 class User extends QModel<IUser> { ... }
 ```
 
@@ -94,13 +95,13 @@ Internal error handlers allow secure logging of malformed data without crashing 
     - Works correctly even with strict constructors that throw errors during instantiation
     - To enforce strict rejection of unknown properties globally, use:
         ```typescript
-        QConfig.configure({ defaults: { strict: true } });
+        QConfig.configure({ defaults: { unknownPropertyPolicy: 'error' } });
         ```
 
 ### 8. Security Best Practices
 
 - **Validate Input**: Always use `.validate()` on models created from untrusted sources.
-- **Use Strict Mode**: Consider enabling strict mode (`@Quick({ strict: true })`) to reject unknown properties in payloads.
+- **Use Error Policy**: Consider using `unknownPropertyPolicy: 'error'` (`@Quick({ unknownPropertyPolicy: 'error' })`) to reject unknown properties in payloads.
 - **Sanitize Strings**: When using the `RegExp` transformer with user input, sanitize the input to prevent ReDoS.
 
 ## Security Audits & Implemented Measures
@@ -149,7 +150,7 @@ The MCP tools exposed to AI agents have been hardened against common vulnerabili
     - Validates that payloads cannot override class methods (logic bomb prevention).
     - **Intrinsic Protection**: Arrow functions are protected by default via template inspection, issuing a warning if a payload tries to overwrite a method unless it's explicitly decorated.
     - **Robust Prototype Inspection**: **(New in v1.1.0)** Fallback mechanism inspects the prototype chain (`key in template`) to protect methods even if the class constructor is strict/throws errors during security inspection.
-    - Verifies behavior of `strict: true` mode.
+    - Verifies behavior of `unknownPropertyPolicy: 'error'` mode.
     - **Test**: `tests/security/mass-assignment.test.ts`, `tests/system/security/arrow-function-warning.test.ts`
 
 - **Map/Set Prototype Pollution (Defense in Depth)**:

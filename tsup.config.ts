@@ -15,8 +15,14 @@ export default defineConfig({
 	splitting: true,
 	sourcemap: true,
 	clean: true,
-	treeshake: true,
+	treeshake: {
+		preset: 'smallest',
+		moduleSideEffects: false,
+	},
 	minify: true,
+	minifyIdentifiers: true,
+	minifySyntax: true,
+	minifyWhitespace: true,
 	outDir: 'dist',
 	external: ['reflect-metadata'],
 	// Soporte para path aliases (@/*)

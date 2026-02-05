@@ -52,7 +52,7 @@ Puedes pasar un segundo objeto de opciones a `@Quick` para un control avanzado:
   items: [Content, Metadata] // 1. Mapeo de Tipos
 }, {
   // 2. Opciones Avanzadas
-  strict: true,
+  unknownPropertyPolicy: 'error',
   transformers: { ... },
   serializers: { ... },
   mockers: { ... },
@@ -160,12 +160,12 @@ Maneja arrays que contienen diferentes tipos de modelos (Tipos Unión).
 })
 ```
 
-### 5. Modo Estricto
+### 5. Política de Propiedades Desconocidas
 
-Por defecto, QuickModel ignora (copia) las propiedades extra encontradas en el JSON de entrada que no están definidas en el decorador. Activa `strict: true` para lanzar un error en su lugar.
+QuickModel proporciona tres políticas para manejar propiedades desconocidas: 'keep' (predeterminado - las preserva), 'strip' (las elimina), o 'error' (lanza un error).
 
 ```typescript
-@Quick({ name: String }, { strict: true })
+@Quick({ name: String }, { unknownPropertyPolicy: 'error' })
 class User extends QModel<IUser> {}
 
 // Lanza Error: "Property 'unknownProp' is not allowed in strict mode"

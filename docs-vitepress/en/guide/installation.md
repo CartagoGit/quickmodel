@@ -54,7 +54,7 @@ QuickModel uses decorators, so you need to enable them in your `tsconfig.json`:
 
 ### Recommended Options
 
-- **`strict: true`** - Enable all strict type-checking options for better type safety
+- **`strict: true`** - Enable all **TypeScript** strict type-checking options (unrelated to QuickModel's `unknownPropertyPolicy`)
 - **`target: "ES2020"`** - Modern JavaScript features
 - **`module: "ESNext"`** - Modern module system
 

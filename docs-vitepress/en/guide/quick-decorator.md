@@ -52,7 +52,7 @@ You can pass a second options object to `@Quick` for advanced control:
   items: [Content, Metadata] // 1. Type Mapping
 }, {
   // 2. Advanced Options
-  strict: true, // Reject unknown properties
+  unknownPropertyPolicy: 'error', // Reject unknown properties
   discriminators: { ... }, // Polymorphism config
   transformers: { ... }, // Custom deserializers
   serializers: { ... } // Custom serializers
@@ -62,7 +62,7 @@ class MyModel extends QModel<IMyInterface> { ... }
 
 ### Options Reference:
 
-- **[`strict`](#5-strict-mode)**: (Boolean) If `true`, throws an error when unknown properties are present in the input.
+- **[`unknownPropertyPolicy`](#5-unknown-property-policy)**: (Boolean) If `true`, throws an error when unknown properties are present in the input.
 - **[`transformers`](#1-custom-transformers-deserialization)**: Custom deserialization logic.
 - **[`serializers`](#2-custom-serializers)**: Custom serialization logic.
 - **[`mockers`](#3-custom-mockers)**: Custom mock generation.
@@ -99,7 +99,7 @@ class User extends QModel<IUser> {
   items: [Content, Metadata] // 1. Type Mapping
 }, {
   // 2. Advanced Options
-  strict: true,
+  unknownPropertyPolicy: 'error',
   transformers: { ... },
   serializers: { ... },
   mockers: { ... },
@@ -177,12 +177,12 @@ Handle arrays containing different model types (Union Types).
 })
 ```
 
-### 5. Strict Mode
+### 5. Unknown Property Policy
 
-By default, QuickModel ignores (copies) extra properties found in the input JSON that are not defined in the interface/decorator. Enable `strict: true` to throw an error instead.
+QuickModel provides three policies for handling unknown properties: 'keep' (default - preserves them), 'strip' (removes them), or 'error' (throws an error).
 
 ```typescript
-@Quick({ name: String }, { strict: true })
+@Quick({ name: String }, { unknownPropertyPolicy: 'error' })
 class User extends QModel<IUser> {}
 
 // Throws Error: "Property 'unknownProp' is not allowed in strict mode"

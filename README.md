@@ -11,6 +11,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 [![CI](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml/badge.svg)](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/CartagoGit/quickmodel/branch/main/graph/badge.svg)](https://codecov.io/gh/CartagoGit/quickmodel)
 [![npm version](https://badge.fury.io/js/@cartago-git%2Fquickmodel.svg)](https://www.npmjs.com/package/@cartago-git/quickmodel)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@cartago-git/quickmodel)](https://bundlephobia.com/package/@cartago-git/quickmodel)
 
 > 📚 **[Complete Documentation](https://cartagogit.github.io/quickmodel/)**
 
@@ -474,7 +475,7 @@ QuickModel includes built-in protections for robust serialization:
 - **Internal Property Protection**: Properties starting with `__` are automatically excluded from serialization to prevent leaking internal state.
 - **Injection Protection**: Automatic validation for URLs (blocks `javascript:`) and limits on RegExp length.
 
-> ⚠️ **Security Notice**: QuickModel operates in **Permissive Mode** by default (unknown properties are preserved). For public APIs, enable strict mode: `@Quick({}, { strict: true })`. See [SECURITY.md](SECURITY.md) for details.
+> ⚠️ **Security Notice**: QuickModel operates in **Permissive Mode** by default (`unknownPropertyPolicy: 'keep'`). For public APIs, use error policy: `@Quick({}, { unknownPropertyPolicy: 'error' })`. See [SECURITY.md](SECURITY.md) for details.
 
 ## ✅ Validation
 
