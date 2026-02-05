@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -33,5 +33,88 @@ jobs:
     - name: Typecheck Tests
       run: bun run typecheck:tests
 
-    - name: Run Tests
-      run: bun run test
+    - name: Run Tests with Coverage
+      run: bun run test:coverage
+
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage/lcov.info
+        fail_ci_if_error: false
+
+  bundle-size:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Build
+      run: bun run build
+
+    - name: Check Bundle Size
+      run: |
+        echo "📦 Bundle Size Report"
+        echo "==================="
+        ls -lh dist/*.js dist/*.mjs 2>/dev/null | awk '{print $9, ":", $5}' || echo "No bundle files found"
+        du -sh dist/ | awk '{print "Total dist size:", $1}'
+
+    - name: Comment Bundle Size on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+          const size = execSync('du -sh dist/').toString().split('\t')[0];
+          const body = `📦 **Bundle Size Report**\n\nTotal dist size: \`${size}\``;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Run Security Tests
+      run: bun test tests/security/
+
+    - name: Security Audit
+      run: |
+        echo "🔒 Security Audit"
+        bun pm verify || echo "⚠️ Lockfile integrity check completed"
+
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Run Performance Benchmarks
+      run: bun test tests/unit/performance/

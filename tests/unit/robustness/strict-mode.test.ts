@@ -46,7 +46,10 @@ describe('Robustness: Strict Mode', () => {
 			age: number;
 		}
 		// Explicit mapping required for strict mode
-		@Quick({ name: 'string', age: 'number' }, { unknownPropertyPolicy: 'error' })
+		@Quick(
+			{ name: 'string', age: 'number' },
+			{ unknownPropertyPolicy: 'error' }
+		)
 		class User extends QModel<IUser> {
 			declare name: string;
 			declare age: number;

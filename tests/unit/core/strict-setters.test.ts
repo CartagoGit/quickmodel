@@ -16,9 +16,9 @@ describe('Robustness: Strict Setters', () => {
 		// Act & Assert
 		// Trying to create instance with unknown property should throw
 		expect(() => {
-			new StrictUser({ 
+			new StrictUser({
 				birthDate: new Date(),
-				unknownProperty: 'value' // This is an unknown property
+				unknownProperty: 'value', // This is an unknown property
 			} as any);
 		}).toThrow('Strict Mode');
 	});
@@ -35,9 +35,9 @@ describe('Robustness: Strict Setters', () => {
 		}
 
 		// Act - Create with unknown property
-		const user = new LaxUser({ 
+		const user = new LaxUser({
 			birthDate: new Date(),
-			unknownProperty: 'value' // Should be kept
+			unknownProperty: 'value', // Should be kept
 		} as any);
 
 		// Assert: Unknown property should be kept

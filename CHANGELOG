@@ -1,3 +1,33 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- CI/CD enhancements:
+  - Automatic coverage reporting to Codecov
+  - Bundle size tracking in PRs
+  - Separate security audit job
+  - Performance benchmark job
+- Package metadata:
+  - `publishConfig` for npm registry
+  - `funding` field for GitHub Sponsors
+- README badges for CI status, coverage, and npm version
+
+### Changed
+- **BREAKING**: Removed deprecated `strict` property from `IQConfig` and `IQOptions`
+  - Use `unknownPropertyPolicy: 'error'` instead of `strict: true`
+  - Use `unknownPropertyPolicy: 'keep'` instead of `strict: false` (default)
+- Removed deprecated `getTemplateInstance()` wrapper from `PopulationService`
+  - Now uses `securityInspector.getTemplateInstance()` directly
+- CI workflow now runs on `develop` branch in addition to `main`
+- Tests now run with coverage by default in CI
+
+### Removed
+- Temporary debug files: `test_case.ts`, `test_json.ts`
+- Backup files: `src/core/services/to-interface.service.ts.bak`
+- Legacy config: `.eslintrc.json` (using flat config `eslint.config.mjs`)
+
+### Documentation
+- Updated ESLint config comments to explain disabled TypeScript rules for reflection-based operations
+
 ## [1.0.0] - 2026-01-07

@@ -48,17 +48,6 @@ export class PopulationService {
 	}
 
 	/**
-	 * Gets a template instance of the model to inspect default values/methods.
-	 * Used for intrinsic security checks.
-	 * @deprecated Use securityInspector.getTemplateInstance() directly
-	 */
-	private getTemplateInstance(
-		modelClass: Function
-	): Record<string, unknown> | null {
-		return this.securityInspector.getTemplateInstance(modelClass);
-	}
-
-	/**
 	 * Populates a model instance with data from a plain object.
 	 */
 	public populateInstance<T extends Record<string, unknown>>(
@@ -286,7 +275,8 @@ export class PopulationService {
 			}
 
 			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
-			const template = this.getTemplateInstance(modelClass);
+			const template =
+				this.securityInspector.getTemplateInstance(modelClass);
 			if (
 				this.securityInspector.isArrowFunctionMethod(
 					targetKey,

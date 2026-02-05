@@ -124,6 +124,14 @@
 	"engines": {
 		"node": ">=18.0.0"
 	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"funding": {
+		"type": "github",
+		"url": "https://github.com/sponsors/CartagoGit"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CartagoGit/quickmodel.git"
