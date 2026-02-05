@@ -19,6 +19,7 @@ import { RecursionGuard } from './recursion-guard.service';
 import { CaseHelper } from '../helpers/case.helper';
 import { DotNotationHandler } from './dot-notation-handler.service';
 import { PropertyTransformer } from './property-transformer.service';
+import { Logger } from '../helpers/logger.helper';
 
 /**
  * Service responsible for populating an instance with data.
@@ -190,13 +191,11 @@ export class PopulationService {
 			}
 
 			// Normalization logic (String trimming, etc) applied to VALUE
-			if (key === 'save')
-				console.log('[POPULATE_DEBUG] Found save key in data');
-
-			// DEBUG
 			if (key === 'save') {
-				console.log(
-					`[DEBUG] decoratedFields: ${JSON.stringify(decoratedFields)}`
+				Logger.debug(
+					'[POPULATE_DEBUG] Found save key in data',
+					modelClass,
+					{ decoratedFields }
 				);
 			}
 
@@ -214,8 +213,9 @@ export class PopulationService {
 					decoratedFields
 				)
 			) {
-				console.log(
-					`[SECURITY] Skipped shadowing attempt for: ${targetKey} (mapped from ${key})`
+				Logger.debug(
+					`[SECURITY] Skipped shadowing attempt for: ${targetKey} (mapped from ${key})`,
+					modelClass
 				);
 				continue;
 			}
