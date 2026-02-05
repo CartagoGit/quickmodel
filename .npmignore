@@ -22,11 +22,10 @@ _archived/
 *.bak
 
 # Development
-docs/README.md
-docs/CLEANUP-REPORT.md
-docs/CLEANUP-SUMMARY.md
-docs/README-DEV.md
-docs/INSTALLATION.md
+# (docs/ folder removed - all documentation now in docs-vitepress/)
+
+# GitHub
+.github/
 
 # IDE
 .vscode/
