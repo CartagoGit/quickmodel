@@ -43,7 +43,7 @@ bun run build
 
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Security Policy](./SECURITY.md)
-- [Development Guide](./docs/README-DEV.md)
+- [Development Guide](./docs-vitepress/en/guide/contributing.md)
 - [Architecture Documentation](./docs-vitepress/en/guide/contributing.md#architecture)
 
 ## 💬 Questions?

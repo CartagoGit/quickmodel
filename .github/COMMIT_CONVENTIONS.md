@@ -14,18 +14,18 @@ All commits must follow [Conventional Commits](https://www.conventionalcommits.o
 
 ## Types (REQUIRED)
 
-| Type | Description | Version Bump | Example |
-|------|-------------|--------------|---------|
-| **feat** | New feature | MINOR | `feat(transformers): add URL transformer` |
-| **fix** | Bug fix | PATCH | `fix(serializer): correct BigInt bug` |
-| **docs** | Documentation only | None | `docs(readme): update installation` |
-| **style** | Formatting, no code change | None | `style: fix indentation` |
-| **refactor** | Code refactoring | None | `refactor(decorators): simplify logic` |
-| **perf** | Performance improvement | PATCH | `perf(serializer): optimize speed` |
-| **test** | Adding/modifying tests | None | `test(transformers): add Date tests` |
-| **chore** | Maintenance tasks | None | `chore(deps): update typescript` |
-| **ci** | CI/CD changes | None | `ci: update GitHub Actions` |
-| **build** | Build system changes | None | `build: update tsup config` |
+| Type         | Description                | Version Bump | Example                                   |
+| ------------ | -------------------------- | ------------ | ----------------------------------------- |
+| **feat**     | New feature                | MINOR        | `feat(transformers): add URL transformer` |
+| **fix**      | Bug fix                    | PATCH        | `fix(serializer): correct BigInt bug`     |
+| **docs**     | Documentation only         | None         | `docs(readme): update installation`       |
+| **style**    | Formatting, no code change | None         | `style: fix indentation`                  |
+| **refactor** | Code refactoring           | None         | `refactor(decorators): simplify logic`    |
+| **perf**     | Performance improvement    | PATCH        | `perf(serializer): optimize speed`        |
+| **test**     | Adding/modifying tests     | None         | `test(transformers): add Date tests`      |
+| **chore**    | Maintenance tasks          | None         | `chore(deps): update typescript`          |
+| **ci**       | CI/CD changes              | None         | `ci: update GitHub Actions`               |
+| **build**    | Build system changes       | None         | `build: update tsup config`               |
 
 ## Scopes (OPTIONAL but recommended)
 
@@ -52,6 +52,7 @@ All commits must follow [Conventional Commits](https://www.conventionalcommits.o
 When code breaks backward compatibility:
 
 **Option 1: Use `!` after type:**
+
 ```
 feat!: remove deprecated API
 
@@ -59,6 +60,7 @@ Removed old serialize() method. Users must use toInterface() instead.
 ```
 
 **Option 2: Use BREAKING CHANGE in footer:**
+
 ```
 feat: redesign transformer API
 
@@ -136,4 +138,4 @@ BREAKING CHANGE: API redesigned
 - **Pre-release check**: `bun run release:check` - Shows commits since last tag
 - **Semantic-release**: Analyzes commits and creates releases automatically
 
-See [SEMANTIC_RELEASE_SETUP.md](SEMANTIC_RELEASE_SETUP.md) for release workflow.
+See [releasing guide](../docs-vitepress/en/guide/releasing.md) for release workflow.

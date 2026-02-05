@@ -465,7 +465,7 @@ class CartItem extends QModel<ICartItem> {
 }
 ```
 
-📖 **[Complete Dot Notation Guide](docs/DOT-NOTATION.md)** - Learn when and how to use nested transformations
+📖 **[Complete Dot Notation Guide](https://cartagogit.github.io/quickmodel/en/guide/dot-notation)** - Learn when and how to use nested transformations
 
 ## 🛡️ Robustness & Security
 
@@ -542,10 +542,10 @@ Powered by [@faker-js/faker](https://fakerjs.dev/).
 
 ## 📚 Documentation
 
-- [Installation](docs/INSTALLATION.md)
-- [API Reference](docs/README.md)
-- [Architecture](docs/SOLID-ARCHITECTURE.md)
-- [Development Guide](docs/README-DEV.md)
+- [Installation](https://cartagogit.github.io/quickmodel/en/guide/installation)
+- [API Reference](https://cartagogit.github.io/quickmodel/tsdoc/)
+- [Architecture](https://cartagogit.github.io/quickmodel/en/guide/contributing#architecture)
+- [Development Guide](https://cartagogit.github.io/quickmodel/en/guide/contributing)
 
 ## 📝 License
 
@@ -553,7 +553,7 @@ MIT © Cartago Git
 
 ## 🤝 Contributing
 
-Contributions welcome! See [development guide](docs/README-DEV.md).
+Contributions welcome! See [development guide](https://cartagogit.github.io/quickmodel/en/guide/contributing).
 
 ## 👤 Author
 
