@@ -53,6 +53,81 @@ export class MapTransformer<K = string, V = unknown>
 	 * @returns A Map instance
 	 * @throws {Error} If the value is not an object or Map
 	 */
+	/**
+	 * Auto-transforms keys and values based on detected types.
+	 * Supports: Date (ISO strings), BigInt (string numbers), Symbol (Symbol.for), Error, etc.
+	 */
+	private autoTransformValue(value: unknown): unknown {
+		if (value === null || value === undefined) return value;
+
+		// Handle arrays recursively
+		if (Array.isArray(value)) {
+			// Check if it's a Map (array of tuples)
+			const isMapEntries =
+				value.length > 0 &&
+				value.every((item) => Array.isArray(item) && item.length === 2);
+
+			if (isMapEntries) {
+				// Array of tuples → Map
+				const transformedEntries = value.map(([k, v]) => [
+					this.autoTransformKey(k),
+					this.autoTransformValue(v),
+				]);
+				return new Map(transformedEntries as [any, any][]);
+			}
+
+			// Regular array → transform each element
+			return value.map((item) => this.autoTransformValue(item));
+		}
+
+		// Date detection (ISO string - both full timestamp and date-only)
+		if (typeof value === 'string') {
+			// Full ISO: 2024-01-01T00:00:00.000Z
+			// Date-only: 2024-01-01
+			if (/^\d{4}-\d{2}-\d{2}(T|$)/.test(value)) {
+				const date = new Date(value);
+				if (!isNaN(date.getTime())) return date;
+			}
+		}
+
+		// BigInt detection (numeric string that's too large for Number)
+		if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+			try {
+				return BigInt(value);
+			} catch {
+				return value;
+			}
+		}
+
+		// Error object detection
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			'name' in value &&
+			'message' in value &&
+			typeof (value as any).name === 'string' &&
+			typeof (value as any).message === 'string'
+		) {
+			const error = new Error((value as any).message);
+			error.name = (value as any).name;
+			if ('stack' in value) error.stack = (value as any).stack as string;
+			return error;
+		}
+
+		return value;
+	}
+
+	/**
+	 * Auto-transforms keys (mainly for Symbol detection).
+	 */
+	private autoTransformKey(key: unknown): unknown {
+		// Symbol detection (string like 'global.something')
+		if (typeof key === 'string' && key.includes('.')) {
+			return Symbol.for(key);
+		}
+		return key;
+	}
+
 	deserialize(
 		value:
 			| Record<string, V>
@@ -109,9 +184,17 @@ export class MapTransformer<K = string, V = unknown>
 				);
 			}
 
-			// Filter unsafe keys
+			// Filter unsafe keys and auto-transform entries
 			const entries = Array.isArray(rawEntries)
-				? rawEntries.filter(([k]) => !isUnsafeKey(k))
+				? rawEntries
+						.filter(([k]) => !isUnsafeKey(k))
+						.map(
+							([k, v]) =>
+								[
+									this.autoTransformKey(k),
+									this.autoTransformValue(v),
+								] as [K, V]
+						)
 				: rawEntries;
 
 			return new Map(entries);
@@ -140,8 +223,15 @@ export class MapTransformer<K = string, V = unknown>
 			}
 
 			try {
-				// Map keys are safe, no need to filter for map construction
-				return new Map(value);
+				// Auto-transform keys and values
+				const transformedEntries = value.map(
+					([k, v]) =>
+						[
+							this.autoTransformKey(k),
+							this.autoTransformValue(v),
+						] as [K, V]
+				);
+				return new Map(transformedEntries);
 			} catch (error) {
 				throw new QModelError(
 					`MapTransformer.deserialize: Invalid Map data format. ` +
@@ -189,20 +279,27 @@ export class MapTransformer<K = string, V = unknown>
 			);
 		}
 
-		// Filter unsafe keys for object input
-		const safeEntries = Object.entries(value).filter(
-			([k]) => !isUnsafeKey(k)
-		);
+		// Filter unsafe keys and auto-transform for object input
+		const safeEntries = Object.entries(value)
+			.filter(([k]) => !isUnsafeKey(k))
+			.map(
+				([k, v]) =>
+					[this.autoTransformKey(k), this.autoTransformValue(v)] as [
+						K,
+						V,
+					]
+			);
 		return new Map(safeEntries as Iterable<[K, V]>);
 	}
 
 	/**
-	 * Converts a Map to a plain object.
+	 * Converts a Map to a plain object or array of tuples.
+	 * If the Map has Symbol keys, returns array of tuples to preserve them.
 	 *
 	 * @param value - The Map to serialize
-	 * @returns Plain object with stringified keys
+	 * @returns Plain object with stringified keys OR array of [key, value] tuples if Symbol keys exist
 	 */
-	serialize(value: Map<K, V>): Record<string, V> {
+	serialize(value: Map<K, V>): Record<string, V> | [string, V][] {
 		const isUnsafeKey = (key: unknown): boolean => {
 			if (typeof key !== 'string') return false;
 			return (
@@ -212,11 +309,95 @@ export class MapTransformer<K = string, V = unknown>
 			);
 		};
 
-		// Filter unsafe keys before Object.fromEntries to prevent Prototype Poisoning
-		const entries = Array.from(value.entries()).filter(
-			([k]) => !isUnsafeKey(k)
+		// Check if map has Symbol keys
+		const hasSymbolKeys = Array.from(value.keys()).some(
+			(k) => typeof k === 'symbol'
 		);
+
+		// If has Symbol keys, serialize as array of tuples to preserve Symbol info
+		if (hasSymbolKeys) {
+			const entries = Array.from(value.entries())
+				.filter(([k]) => !isUnsafeKey(k))
+				.map(([k, v]) => {
+					// Convert Symbol to string (Symbol.keyFor or description)
+					const keyStr =
+						typeof k === 'symbol'
+							? (Symbol.keyFor(k) ?? k.description ?? String(k))
+							: String(k);
+
+					// Recursively serialize values
+					const serializedValue = this.serializeValue(v);
+
+					return [keyStr, serializedValue] as [string, V];
+				});
+			return entries;
+		}
+
+		// Filter unsafe keys before Object.fromEntries to prevent Prototype Poisoning
+		const entries = Array.from(value.entries())
+			.filter(([k]) => !isUnsafeKey(k))
+			.map(([k, v]) => [String(k), this.serializeValue(v)]);
+
 		return Object.fromEntries(entries) as Record<string, V>;
+	}
+
+	/**
+	 * Helper to recursively serialize nested values (Date → ISO string, BigInt → string, etc.)
+	 */
+	private serializeValue(value: unknown): any {
+		if (value === null || value === undefined) return value;
+
+		// Date → ISO string
+		if (value instanceof Date) {
+			return value.toISOString();
+		}
+
+		// BigInt → string
+		if (typeof value === 'bigint') {
+			return value.toString();
+		}
+
+		// Error → object
+		if (value instanceof Error) {
+			return {
+				name: value.name,
+				message: value.message,
+				stack: value.stack,
+			};
+		}
+
+		// Map → recursively serialize
+		if (value instanceof Map) {
+			const hasSymbols = Array.from(value.keys()).some(
+				(k) => typeof k === 'symbol'
+			);
+			if (hasSymbols) {
+				return Array.from(value.entries()).map(([k, v]) => [
+					typeof k === 'symbol'
+						? (Symbol.keyFor(k) ?? k.description ?? String(k))
+						: String(k),
+					this.serializeValue(v),
+				]);
+			}
+			return Object.fromEntries(
+				Array.from(value.entries()).map(([k, v]) => [
+					String(k),
+					this.serializeValue(v),
+				])
+			);
+		}
+
+		// Set → array
+		if (value instanceof Set) {
+			return Array.from(value).map((item) => this.serializeValue(item));
+		}
+
+		// Array → map each element
+		if (Array.isArray(value)) {
+			return value.map((item) => this.serializeValue(item));
+		}
+
+		return value;
 	}
 
 	/**
@@ -287,6 +468,67 @@ export class SetTransformer<V = unknown>
 	 * @returns A Set instance
 	 * @throws {Error} If the value is not an array or Set
 	 */
+	/**
+	 * Auto-transforms values based on detected types (same as MapTransformer).
+	 */
+	private autoTransformValue(value: unknown): unknown {
+		if (value === null || value === undefined) return value;
+
+		// Handle arrays recursively
+		if (Array.isArray(value)) {
+			// Check if it's a Map (array of tuples)
+			const isMapEntries =
+				value.length > 0 &&
+				value.every((item) => Array.isArray(item) && item.length === 2);
+
+			if (isMapEntries) {
+				// Array of tuples → Map
+				const transformedEntries = value.map(([k, v]) => [
+					k, // Keys in Set values are not transformed (no Symbol keys here)
+					this.autoTransformValue(v),
+				]);
+				return new Map(transformedEntries as [any, any][]);
+			}
+
+			// Regular array → transform each element
+			return value.map((item) => this.autoTransformValue(item));
+		}
+
+		// Date detection (ISO string - both full timestamp and date-only)
+		if (typeof value === 'string') {
+			if (/^\d{4}-\d{2}-\d{2}(T|$)/.test(value)) {
+				const date = new Date(value);
+				if (!isNaN(date.getTime())) return date;
+			}
+		}
+
+		// BigInt detection (numeric string that's too large for Number)
+		if (typeof value === 'string' && /^\d{15,}$/.test(value)) {
+			try {
+				return BigInt(value);
+			} catch {
+				return value;
+			}
+		}
+
+		// Error object detection
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			'name' in value &&
+			'message' in value &&
+			typeof (value as any).name === 'string' &&
+			typeof (value as any).message === 'string'
+		) {
+			const error = new Error((value as any).message);
+			error.name = (value as any).name;
+			if ('stack' in value) error.stack = (value as any).stack as string;
+			return error;
+		}
+
+		return value;
+	}
+
 	deserialize(
 		value: V[] | { __type: 'Set'; values: V[] } | Set<V> | null | undefined,
 		propertyKey: string,
@@ -327,7 +569,11 @@ export class SetTransformer<V = unknown>
 					}
 				);
 			}
-			return new Set(values);
+			// Auto-transform values
+			const transformedValues = Array.isArray(values)
+				? values.map((v) => this.autoTransformValue(v) as V)
+				: values;
+			return new Set(transformedValues);
 		}
 
 		// Handle legacy plain array format
@@ -355,17 +601,83 @@ export class SetTransformer<V = unknown>
 			);
 		}
 
-		return new Set(value);
+		// Auto-transform values
+		const transformedValues = value.map(
+			(v) => this.autoTransformValue(v) as V
+		);
+		return new Set(transformedValues);
 	}
 
 	/**
 	 * Converts a Set to a plain array.
+	 * Recursively serializes nested values (Maps, Dates, BigInts, etc.)
 	 *
 	 * @param value - The Set to serialize
 	 * @returns Array of values
 	 */
 	serialize(value: Set<V>): V[] {
-		return Array.from(value);
+		return Array.from(value).map((item) => this.serializeSetValue(item));
+	}
+
+	/**
+	 * Helper to recursively serialize nested values in Set
+	 */
+	private serializeSetValue(value: unknown): any {
+		if (value === null || value === undefined) return value;
+
+		// Date → ISO string
+		if (value instanceof Date) {
+			return value.toISOString();
+		}
+
+		// BigInt → string
+		if (typeof value === 'bigint') {
+			return value.toString();
+		}
+
+		// Error → object
+		if (value instanceof Error) {
+			return {
+				name: value.name,
+				message: value.message,
+				stack: value.stack,
+			};
+		}
+
+		// Map → array of tuples or object
+		if (value instanceof Map) {
+			const hasSymbols = Array.from(value.keys()).some(
+				(k) => typeof k === 'symbol'
+			);
+			if (hasSymbols) {
+				return Array.from(value.entries()).map(([k, v]) => [
+					typeof k === 'symbol'
+						? (Symbol.keyFor(k) ?? k.description ?? String(k))
+						: String(k),
+					this.serializeSetValue(v),
+				]);
+			}
+			return Object.fromEntries(
+				Array.from(value.entries()).map(([k, v]) => [
+					String(k),
+					this.serializeSetValue(v),
+				])
+			);
+		}
+
+		// Set → array
+		if (value instanceof Set) {
+			return Array.from(value).map((item) =>
+				this.serializeSetValue(item)
+			);
+		}
+
+		// Array → map each element
+		if (Array.isArray(value)) {
+			return value.map((item) => this.serializeSetValue(item));
+		}
+
+		return value;
 	}
 
 	/**
