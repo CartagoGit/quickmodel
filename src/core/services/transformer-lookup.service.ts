@@ -10,6 +10,10 @@ import {
 	MapTransformer,
 	SetTransformer,
 } from '@/transformers/map-set.transformer';
+import {
+	WeakMapTransformer,
+	WeakSetTransformer,
+} from '@/transformers/weak-collections.transformer';
 import { RegExpTransformer } from '@/transformers/regexp.transformer';
 import { SymbolTransformer } from '@/transformers/symbol.transformer';
 import {
@@ -107,6 +111,8 @@ export class TransformerLookupService {
 		const errorTransformer = new ErrorTransformer();
 		const mapTransformer = new MapTransformer();
 		const setTransformer = new SetTransformer();
+		const weakMapTransformer = new WeakMapTransformer();
+		const weakSetTransformer = new WeakSetTransformer();
 		const bufferTransformer = new ArrayBufferTransformer();
 		const dataviewTransformer = new DataViewTransformer();
 
@@ -122,6 +128,8 @@ export class TransformerLookupService {
 		this.transformers.set('error', errorTransformer);
 		this.transformers.set('map', mapTransformer);
 		this.transformers.set('set', setTransformer);
+		this.transformers.set('weakmap', weakMapTransformer);
+		this.transformers.set('weakset', weakSetTransformer);
 		this.transformers.set('buffer', bufferTransformer);
 		this.transformers.set('arraybuffer', bufferTransformer);
 		this.transformers.set('dataview', dataviewTransformer);

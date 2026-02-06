@@ -104,6 +104,10 @@ import {
 	MapTransformer,
 	SetTransformer,
 } from '@/transformers/map-set.transformer';
+import {
+	WeakMapTransformer,
+	WeakSetTransformer,
+} from '@/transformers/weak-collections.transformer';
 import { IQTransformer } from '../interfaces/transformer.interface';
 import { QTransformerRegistry } from '../registry/transformer.registry';
 import 'reflect-metadata';
@@ -140,6 +144,8 @@ export class Serializer<
 		const urlSearchParamsTransformer = new URLSearchParamsTransformer();
 		const mapTransformer = new MapTransformer();
 		const setTransformer = new SetTransformer();
+		const weakMapTransformer = new WeakMapTransformer();
+		const weakSetTransformer = new WeakSetTransformer();
 
 		// Register by name and constructor
 		this.transformers.set('date', dateTransformer);
@@ -156,6 +162,10 @@ export class Serializer<
 		this.transformers.set(Map, mapTransformer);
 		this.transformers.set('set', setTransformer);
 		this.transformers.set(Set, setTransformer);
+		this.transformers.set('weakmap', weakMapTransformer);
+		this.transformers.set(WeakMap, weakMapTransformer);
+		this.transformers.set('weakset', weakSetTransformer);
+		this.transformers.set(WeakSet, weakSetTransformer);
 
 		// Register typed arrays
 		this.transformers.set(
@@ -423,6 +433,27 @@ export class Serializer<
 		if (depth > MAX_DEPTH) {
 			throw new Error(
 				`QuickModel Security: Maximum recursion depth (${MAX_DEPTH}) exceeded during value serialization.`
+			);
+		}
+
+		// WeakMap and WeakSet - ALWAYS throw error (not serializable)
+		if (value instanceof WeakMap) {
+			const transformer = this.transformers.get(WeakMap);
+			if (transformer) {
+				return transformer.serialize(value); // Will throw error
+			}
+			throw new Error(
+				'WeakMap cannot be serialized to JSON (keys are not iterable/enumerable).'
+			);
+		}
+
+		if (value instanceof WeakSet) {
+			const transformer = this.transformers.get(WeakSet);
+			if (transformer) {
+				return transformer.serialize(value); // Will throw error
+			}
+			throw new Error(
+				'WeakSet cannot be serialized to JSON (values are not iterable/enumerable).'
 			);
 		}
 
