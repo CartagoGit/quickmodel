@@ -2,14 +2,14 @@
 
 > **Fecha de revisión:** 6 de febrero de 2026  
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)  
-> **Estado actual:** 1352 tests passing | Cobertura >90% | v1.0.0
+> **Estado actual:** 1367 tests passing | Cobertura >90% | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: 3/6 tareas (50%)
+✅ Completadas: 4/6 tareas (67%)
 🔄 En progreso: 0/6 tareas
-⏳ Pendientes: 3/6 tareas (50%)
+⏳ Pendientes: 2/6 tareas (33%)
 ```
 
 **Hitos recientes:**
@@ -17,6 +17,7 @@
 - ✅ Task #1: Console.log removidos (commit `2be2df2`)
 - ✅ Task #2: MCP tools coverage 50%→80% (commit `5e80d64`)
 - ✅ Task #2.5: Schema Generation API con 7 formatos (commit `b9bb875`)
+- ✅ Task #3: Composed transformers edge cases (commit `1c44266`, +15 tests)
 
 ---
 
@@ -490,13 +491,50 @@ export class QModel<TInterface = any> {
 
 ---
 
-### Task #3: Casos edge para transformers compuestos
+### ✅ Task #3: Casos edge para transformers compuestos
 
-**Status:** 🟡 TODO  
-**Impacto:** Medio-Alto - Prevención de bugs en producción  
-**Esfuerzo:** 3-4 horas
+**Status:** ✅ COMPLETADA  
+**Commit:** `1c44266` - test(transformers): add composed transformers edge cases coverage  
+**Fecha:** 6 de febrero de 2026  
+**Resultado:** 15 tests comprehensivos, auto-detección de tipos en Map/Set, serialización con Symbol keys  
+**Tests:** 1352 → 1367 (+15 nuevos)
 
-**Casos a testear:**
+<details>
+<summary>Detalles de implementación (clic para expandir)</summary>
+
+**Casos implementados:**
+
+1. ✅ `Map<Symbol, Date>` - tipos compuestos con Symbol keys
+2. ✅ `Set<Map<string, BigInt>>` - 3 niveles de anidamiento
+3. ✅ `Array<Set<Date>>` - manejo de sets vacíos y poblados
+4. ✅ `Map<string, Error[]>` - arrays de tipos complejos en Maps
+5. ✅ Null/undefined en colecciones anidadas
+6. ✅ Arrays 3D con transformers de Date
+7. ✅ Múltiples tipos compuestos simultáneamente
+8. ✅ Referencias circulares en estructuras compuestas
+
+**Mejoras implementadas:**
+
+- Auto-detección en MapTransformer/SetTransformer:
+    - Date (strings ISO: "2024-01-01" o "2024-01-01T00:00:00Z")
+    - BigInt (strings numéricos >15 dígitos)
+    - Symbol (Symbol.for con strings tipo "global.key")
+    - Error (objetos con name/message)
+    - Maps anidados (arrays de tuples)
+    - Transformación recursiva de valores
+
+- Serialización inteligente de Maps:
+    - Maps con Symbol keys → array de tuples (preserva info)
+    - Maps sin Symbol keys → objeto plano (JSON estándar)
+    - Serialización recursiva de valores complejos
+
+**Impacto:** Alto - Prevención de bugs en producción  
+**Esfuerzo real:** 1.5 horas (estimado: 3-4h)  
+**ROI:** Excelente - Detecta casos edge antes de llegar a producción
+
+</details>
+
+**Casos a testear (LEGACY - mantener para referencia):**
 
 1. `Map<Symbol, Date>` - tipos compuestos
 2. `Set<Map<string, BigInt>>` - 3 niveles de anidamiento
@@ -569,11 +607,12 @@ describe('Composed Transformers Edge Cases', () => {
 
 ---
 
-### ✅ Task #4: Documentar WeakMap/WeakSet limitations
+### Task #4: Documentar WeakMap/WeakSet limitations
 
-**Status:** 🟡 TODO  
+**Status:** 🟡 TODO (SIGUIENTE TAREA)  
 **Impacto:** Medio - Evita confusión de usuarios  
-**Esfuerzo:** 1-2 horas
+**Esfuerzo:** 1-2 horas  
+**Prioridad:** Alta (siguiente en la lista)
 
 **Decisión requerida:**
 
