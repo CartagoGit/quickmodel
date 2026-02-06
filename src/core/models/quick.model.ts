@@ -1407,4 +1407,214 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			.constructor as unknown as IModelConstructor<this>;
 		return Constructor.deserialize(this.serialize());
 	}
+
+	// ==========================================================================
+	// SCHEMA GENERATION API
+	// ==========================================================================
+
+	/**
+	 * Generate schema in multiple formats for validation, documentation, and integration.
+	 *
+	 * **Unified API** - One method for all schema types:
+	 * - `'json'` - JSON Schema Draft-07 (universal standard)
+	 * - `'zod'` - Zod validation schema (popular TypeScript validator)
+	 * - `'mongo'` - MongoDB/Mongoose schema definition
+	 * - `'typescript'` - TypeScript interface string
+	 * - `'graphql'` - GraphQL SDL type definition
+	 * - `'openapi'` - OpenAPI 3.0 schema
+	 * - `'ajv'` - AJV validator schema
+	 *
+	 * **SOLID - Open/Closed:** Extensible to new schema types without modifying core.
+	 *
+	 * @param type - Schema type to generate
+	 * @returns Generated schema in the requested format
+	 * @throws Error if schema type is unknown
+	 *
+	 * @example
+	 * Generate JSON Schema
+	 * ```typescript
+	 * @Quick({ createdAt: Date, balance: BigInt })
+	 * class User extends QModel<IUser> {
+	 *   declare id: number;
+	 *   declare name: string;
+	 *   declare createdAt: Date;
+	 *   declare balance: bigint;
+	 * }
+	 *
+	 * const jsonSchema = User.getSchema('json');
+	 * // {
+	 * //   $schema: 'http://json-schema.org/draft-07/schema#',
+	 * //   type: 'object',
+	 * //   title: 'User',
+	 * //   properties: {
+	 * //     id: { type: 'number' },
+	 * //     name: { type: 'string' },
+	 * //     createdAt: { type: 'string', format: 'date-time' },
+	 * //     balance: { type: 'string', pattern: '^-?\\d+$' }
+	 * //   },
+	 * //   required: ['id', 'name', 'createdAt', 'balance']
+	 * // }
+	 * ```
+	 *
+	 * @example
+	 * Generate Zod Schema
+	 * ```typescript
+	 * const zodSchema = User.getSchema('zod');
+	 *
+	 * // Validate data
+	 * const result = zodSchema.safeParse({
+	 *   id: 1,
+	 *   name: 'John',
+	 *   createdAt: '2024-01-01T00:00:00.000Z',
+	 *   balance: '999999999999'
+	 * });
+	 *
+	 * console.log(result.success); // true
+	 * ```
+	 *
+	 * @example
+	 * Generate MongoDB Schema
+	 * ```typescript
+	 * const mongoSchema = User.getSchema('mongo');
+	 * // {
+	 * //   id: { type: Number, required: true },
+	 * //   name: { type: String, required: true },
+	 * //   createdAt: { type: Date, required: true },
+	 * //   balance: { type: String, required: true }
+	 * // }
+	 * ```
+	 *
+	 * @example
+	 * Generate TypeScript Interface
+	 * ```typescript
+	 * const tsInterface = User.getSchema('typescript');
+	 * // "interface IUser {\n\tid: number;\n\tname: string;\n\tcreatedAt: Date;\n\tbalance: bigint;\n}"
+	 * ```
+	 *
+	 * @example
+	 * Generate GraphQL Type
+	 * ```typescript
+	 * const graphqlType = User.getSchema('graphql');
+	 * // "type User {\n\tid: Float!\n\tname: String!\n\tcreatedAt: DateTime!\n\tbalance: String!\n}"
+	 * ```
+	 */
+	static getSchema<T extends typeof QModel>(
+		this: T,
+		type: import('@/core/types/schema-types').QSchemaType
+	): any {
+		const {
+			JsonSchemaGenerator,
+			ZodSchemaGenerator,
+			MongoSchemaGenerator,
+			TypeScriptSchemaGenerator,
+			GraphQLSchemaGenerator,
+			OpenAPISchemaGenerator,
+			AjvSchemaGenerator,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('@/core/services/schema-generators.service');
+
+		const className = this.name;
+		const decoratorConfig =
+			Reflect.getMetadata(QUICK_TYPE_MAP_KEY, this) || {};
+
+		// Get all properties from the prototype
+		const properties =
+			Object.keys(decoratorConfig).length > 0
+				? Object.keys(decoratorConfig)
+				: this._inferPropertiesFromSample();
+
+		const config = {
+			className,
+			decoratorConfig,
+			properties,
+		};
+
+		switch (type) {
+			case 'json':
+				return JsonSchemaGenerator.generate(config);
+			case 'zod':
+				return ZodSchemaGenerator.generate(config);
+			case 'mongo':
+				return MongoSchemaGenerator.generate(config);
+			case 'typescript':
+				return TypeScriptSchemaGenerator.generate(config);
+			case 'graphql':
+				return GraphQLSchemaGenerator.generate(config);
+			case 'openapi':
+				return OpenAPISchemaGenerator.generate(config);
+			case 'ajv':
+				return AjvSchemaGenerator.generate(config);
+			default:
+				throw new Error(`Unknown schema type: ${type}`);
+		}
+	}
+
+	/**
+	 * Generate schema with examples from instance values.
+	 *
+	 * For JSON/OpenAPI schemas, adds `example` fields with actual values from the instance.
+	 *
+	 * @param type - Schema type to generate
+	 * @returns Generated schema with examples
+	 *
+	 * @example
+	 * Generate JSON Schema with examples
+	 * ```typescript
+	 * const user = new User({
+	 *   id: 42,
+	 *   name: 'John Doe',
+	 *   createdAt: '2024-01-01',
+	 *   balance: '999999'
+	 * });
+	 *
+	 * const schema = user.getSchema('json');
+	 * // {
+	 * //   ...
+	 * //   properties: {
+	 * //     id: { type: 'number', example: 42 },
+	 * //     name: { type: 'string', example: 'John Doe' },
+	 * //     createdAt: { type: 'string', format: 'date-time', example: '2024-01-01T00:00:00.000Z' },
+	 * //     balance: { type: 'string', pattern: '^-?\\d+$', example: '999999' }
+	 * //   }
+	 * // }
+	 * ```
+	 */
+	getSchema(type: import('@/core/types/schema-types').QSchemaType): any {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const {
+			JsonSchemaGenerator,
+		} = require('@/core/services/schema-generators.service');
+
+		const classSchema = (this.constructor as typeof QModel).getSchema(type);
+
+		// For JSON/OpenAPI, add examples from instance
+		if (type === 'json' || type === 'openapi') {
+			return JsonSchemaGenerator.addExamples(classSchema, this);
+		}
+
+		return classSchema;
+	}
+
+	/**
+	 * Infer properties from a sample instance when no metadata is available
+	 * @internal
+	 */
+	private static _inferPropertiesFromSample(): string[] {
+		try {
+			// Create a minimal mock instance to discover properties
+			const sampleData: Record<string, any> = {};
+			const instance = new (this as any)(sampleData);
+
+			// Get keys from __quickValues__ if populated
+			if (instance[QUICK_VALUES_KEY]) {
+				return Object.keys(instance[QUICK_VALUES_KEY]);
+			}
+
+			// Last resort: return empty array
+			return [];
+		} catch (_error) {
+			// If instantiation fails, return empty
+			return [];
+		}
+	}
 }
