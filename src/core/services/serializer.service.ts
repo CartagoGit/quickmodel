@@ -434,6 +434,42 @@ export class Serializer<
 			}
 			visited.add(value);
 
+			// Check if Map has Symbol keys
+			const hasSymbolKeys = Array.from(value.keys()).some(
+				(k) => typeof k === 'symbol'
+			);
+
+			// If has Symbol keys, serialize as array of tuples to preserve Symbol info
+			if (hasSymbolKeys) {
+				const entries: [string, unknown][] = [];
+				for (const [k, v] of value) {
+					// Convert Symbol to string (Symbol.keyFor or description)
+					const keyStr =
+						typeof k === 'symbol'
+							? (Symbol.keyFor(k) ?? k.description ?? String(k))
+							: String(k);
+
+					// SECURITY: Prevent Prototype Poisoning
+					if (
+						keyStr === '__proto__' ||
+						keyStr === 'constructor' ||
+						keyStr === 'prototype'
+					) {
+						continue;
+					}
+
+					// Recursive call ensures values (like BigInt, Date) are IQSerialized
+					const serializedValue = this.serializeValue(v, visited, {
+						...options,
+						_depth: depth + 1,
+					});
+
+					entries.push([keyStr, serializedValue]);
+				}
+				return entries;
+			}
+
+			// Standard Map serialization (object format)
 			const result: Record<string, unknown> = {};
 			for (const [k, v] of value) {
 				const keyStr = String(k);
