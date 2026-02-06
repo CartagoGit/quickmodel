@@ -32,7 +32,7 @@ describe('QListTransformersTool - Full Coverage', () => {
 	});
 
 	test('should list all registered transformers', async () => {
-		const result = await tool.execute({});
+		const result = await tool.execute();
 
 		expect(Array.isArray(result)).toBe(true);
 		expect(result.length).toBeGreaterThan(0);
@@ -46,14 +46,14 @@ describe('QListTransformersTool - Full Coverage', () => {
 	});
 
 	test('should return sorted list', async () => {
-		const result = await tool.execute({});
+		const result = await tool.execute();
 		const sorted = [...result].sort();
 
 		expect(result).toEqual(sorted);
 	});
 
 	test('should include all standard transformers', async () => {
-		const result = await tool.execute({});
+		const result = await tool.execute();
 
 		// Verificar transformers importantes
 		const expectedTransformers = [
@@ -75,7 +75,7 @@ describe('QListTransformersTool - Full Coverage', () => {
 	});
 
 	test('should not include duplicates', async () => {
-		const result = await tool.execute({});
+		const result = await tool.execute();
 		const unique = [...new Set(result)];
 
 		expect(result.length).toBe(unique.length);
@@ -272,7 +272,7 @@ describe('QExportJsonSchemaTool - Full Coverage', () => {
 		expect(typeof result).toBe('object');
 		expect(result).toHaveProperty('schema');
 		expect(result.schema).toHaveProperty('type');
-		expect(result.schema.type).toBe('object');
+		expect((result.schema as any).type).toBe('object');
 	});
 
 	test('should handle code with transformers', async () => {

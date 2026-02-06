@@ -1498,8 +1498,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * // "type User {\n\tid: Float!\n\tname: String!\n\tcreatedAt: DateTime!\n\tbalance: String!\n}"
 	 * ```
 	 */
-	static getSchema<T extends typeof QModel>(
-		this: T,
+	static getSchema(
 		type: import('@/core/types/schema-types').QSchemaType
 	): any {
 		const {
@@ -1580,9 +1579,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 */
 	getSchema(type: import('@/core/types/schema-types').QSchemaType): any {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const {
 			JsonSchemaGenerator,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
 		} = require('@/core/services/schema-generators.service');
 
 		const classSchema = (this.constructor as typeof QModel).getSchema(type);
