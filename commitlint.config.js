@@ -49,14 +49,15 @@ export default {
 		// Subject rules
 		'subject-empty': [2, 'never'],
 		'subject-full-stop': [2, 'never', '.'],
-		'subject-max-length': [2, 'always', 72],
+		'subject-max-length': [0], // Disabled: no arbitrary length limit
+		'subject-min-length': [0], // Disabled
 		'subject-case': [0], // Disabled: allows acronyms (URL, BigInt, etc.)
 
 		// Type must be lowercase
 		'type-case': [2, 'always', 'lower-case'],
 		'type-empty': [2, 'never'],
 
-		// Header max length
-		'header-max-length': [2, 'always', 72],
+		// Header max length disabled — descriptive messages are welcome
+		'header-max-length': [0],
 	},
 };
