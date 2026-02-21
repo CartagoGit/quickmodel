@@ -66,7 +66,7 @@ echo ""
 
 # Analyze commit types
 FEAT_COUNT=$(git log ${LATEST_TAG}..HEAD --oneline | grep -c "^[a-f0-9]* feat" || true)
-FIX_COUNT=$(git log ${LATEST_TAG}..HEAD --oneline | grep -c "^[a-f0-9]* fix" || true)
+FIX_COUNT=$(git log ${LATEST_TAG}..HEAD --oneline | grep -cE "^[a-f0-9]* (fix|perf)" || true)
 BREAKING_COUNT=$(git log ${LATEST_TAG}..HEAD --grep="BREAKING CHANGE" --count || true)
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -74,7 +74,7 @@ echo "  📊 COMMIT ANALYSIS:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "  🎯 Features (feat:):        $FEAT_COUNT"
-echo "  🐛 Fixes (fix:):            $FIX_COUNT"
+  echo "  🐛 Fixes (fix:, perf:):     $FIX_COUNT"
 echo "  💥 Breaking Changes:        $BREAKING_COUNT"
 echo ""
 

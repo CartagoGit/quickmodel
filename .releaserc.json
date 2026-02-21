@@ -1,9 +1,61 @@
 {
 	"branches": ["main"],
 	"plugins": [
-		"@semantic-release/commit-analyzer",
-		"@semantic-release/release-notes-generator",
-		"@semantic-release/changelog",
+		[
+			"@semantic-release/commit-analyzer",
+			{
+				"preset": "conventionalcommits",
+				"releaseRules": [
+					{ "type": "feat", "release": "minor" },
+					{ "type": "fix", "release": "patch" },
+					{ "type": "perf", "release": "patch" },
+					{ "breaking": true, "release": "major" }
+				]
+			}
+		],
+		[
+			"@semantic-release/release-notes-generator",
+			{
+				"preset": "conventionalcommits",
+				"presetConfig": {
+					"types": [
+						{
+							"type": "feat",
+							"section": "✨ Nuevas Funcionalidades",
+							"hidden": false
+						},
+						{
+							"type": "fix",
+							"section": "🐛 Correcciones",
+							"hidden": false
+						},
+						{
+							"type": "perf",
+							"section": "⚡ Rendimiento",
+							"hidden": false
+						},
+						{ "type": "refactor", "hidden": true },
+						{ "type": "docs", "hidden": true },
+						{ "type": "test", "hidden": true },
+						{ "type": "chore", "hidden": true },
+						{ "type": "build", "hidden": true },
+						{ "type": "ci", "hidden": true }
+					]
+				},
+				"writerOpts": {
+					"groupBy": "scope",
+					"commitGroupsSort": "title",
+					"commitsSort": ["subject"]
+				}
+			}
+		],
+		[
+			"@semantic-release/changelog",
+			{
+				"changelogFile": "CHANGELOG.md",
+				"changelogTitle": "# Changelog\n\nHistorial de versiones de QuickModel.\n"
+			}
+		],
 		"@semantic-release/npm",
 		"@semantic-release/github",
 		[
