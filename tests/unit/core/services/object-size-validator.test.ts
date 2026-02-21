@@ -14,29 +14,44 @@ describe('ObjectSizeValidator', () => {
 		it('should pass validation for array within limit', () => {
 			const arr = [1, 2, 3];
 			expect(() =>
-				validator.validateArraySize('testProp', arr, 5, CLASS_NAME)
+				validator.validateArraySize({
+					key: 'testProp',
+					value: arr,
+					maxLength: 5,
+					className: CLASS_NAME,
+				})
 			).not.toThrow();
 		});
 
 		it('should throw QModelError when array exceeds limit', () => {
 			const arr = [1, 2, 3, 4, 5, 6];
 			expect(() =>
-				validator.validateArraySize('testProp', arr, 5, CLASS_NAME)
+				validator.validateArraySize({
+					key: 'testProp',
+					value: arr,
+					maxLength: 5,
+					className: CLASS_NAME,
+				})
 			).toThrow(QModelError);
 			expect(() =>
-				validator.validateArraySize('testProp', arr, 5, CLASS_NAME)
+				validator.validateArraySize({
+					key: 'testProp',
+					value: arr,
+					maxLength: 5,
+					className: CLASS_NAME,
+				})
 			).toThrow('exceeds maximum allowed limit');
 		});
 
 		it('should not throw if value is not an array', () => {
 			// Although signature says unknown[], JS might pass something else
 			expect(() =>
-				validator.validateArraySize(
-					'testProp',
-					'not-array' as any,
-					5,
-					CLASS_NAME
-				)
+				validator.validateArraySize({
+					key: 'testProp',
+					value: 'not-array' as any,
+					maxLength: 5,
+					className: CLASS_NAME,
+				})
 			).not.toThrow();
 		});
 	});
@@ -45,17 +60,29 @@ describe('ObjectSizeValidator', () => {
 		it('should pass validation for keys within limit', () => {
 			const keys = ['a', 'b', 'c'];
 			expect(() =>
-				validator.validateObjectSize(keys, 5, CLASS_NAME)
+				validator.validateObjectSize({
+					keys,
+					limit: 5,
+					className: CLASS_NAME,
+				})
 			).not.toThrow();
 		});
 
 		it('should throw QModelError when keys exceed limit', () => {
 			const keys = ['a', 'b', 'c', 'd', 'e', 'f'];
 			expect(() =>
-				validator.validateObjectSize(keys, 5, CLASS_NAME)
+				validator.validateObjectSize({
+					keys,
+					limit: 5,
+					className: CLASS_NAME,
+				})
 			).toThrow(QModelError);
 			expect(() =>
-				validator.validateObjectSize(keys, 5, CLASS_NAME)
+				validator.validateObjectSize({
+					keys,
+					limit: 5,
+					className: CLASS_NAME,
+				})
 			).toThrow('too many properties');
 		});
 	});

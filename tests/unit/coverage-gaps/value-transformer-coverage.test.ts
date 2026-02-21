@@ -55,11 +55,9 @@ describe('ValueTransformerService Gaps', () => {
 
 		// Should NOT fallback, should throw
 		expect(() => {
-			service.transformNestedModelArray(
-				arr,
-				[ChildA, ChildB],
-				discriminator
-			);
+			service.transformNestedModelArray(arr, [ChildA, ChildB], {
+				discriminatorConfig: discriminator,
+			});
 		}).toThrow('Boom');
 	});
 
@@ -72,7 +70,7 @@ describe('ValueTransformerService Gaps', () => {
 		const res = service.transformNestedModelArray(
 			arr,
 			[ChildA, ChildB],
-			'type' // Discriminator is field 'type'
+			{ discriminatorConfig: 'type' } // Discriminator is field 'type'
 		);
 
 		expect(res[0]).toBeInstanceOf(ChildB);

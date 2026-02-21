@@ -7,13 +7,12 @@ describe('ToInterfaceService Coverage Gaps - Deep Dive', () => {
 	// Helper access to private method
 	const service = new ToInterfaceService();
 	const convert = (current: any, original: any) => {
-		return (service as any).convertToInterfaceFormat(
-			current,
-			original,
-			new WeakSet(),
-			false,
-			'testProp'
-		);
+		return (service as any).convertToInterfaceFormat(current, original, {
+			seen: new WeakSet(),
+			isProduction: false,
+			propertyKey: 'testProp',
+			depth: 0,
+		});
 	};
 
 	// Scenario 1: Date Fallbacks (Lines 250-254)

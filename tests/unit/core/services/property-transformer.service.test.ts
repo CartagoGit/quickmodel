@@ -5,7 +5,7 @@ import { TransformerLookupService } from '@/core/services/transformer-lookup.ser
 import 'reflect-metadata';
 
 // Mocks
-const mockValidateOrCoercePrimitive = mock((_key, val) => val);
+const mockValidateOrCoercePrimitive = mock((opts: any) => opts.value);
 const mockTransformByDesignType = mock((val) => val);
 const mockTransformNestedArray = mock((val) => val);
 const mockTransformNestedModelArray = mock((val) => val);
@@ -61,7 +61,11 @@ describe('PropertyTransformer', () => {
 			recursionContext: {},
 		};
 
-		service.transformProperty('age', '123', {}, class User {}, context);
+		service.transformProperty('age', '123', {
+			instance: {},
+			modelClass: class User {},
+			...context,
+		});
 
 		expect(mockValidateOrCoercePrimitive).toHaveBeenCalled();
 		expect(mockTransformByDesignType).toHaveBeenCalled();
@@ -76,13 +80,11 @@ describe('PropertyTransformer', () => {
 			transformContext: { propertyKey: 'customField' },
 		};
 
-		const result = service.transformProperty(
-			'customField',
-			'value',
-			{},
-			class User {},
-			context
-		);
+		const result = service.transformProperty('customField', 'value', {
+			instance: {},
+			modelClass: class User {},
+			...context,
+		});
 
 		expect(result).toBe('custom value');
 		expect(customFn).toHaveBeenCalledWith('value');
@@ -104,13 +106,11 @@ describe('PropertyTransformer', () => {
 			transformContext: { propertyKey: 'createdAt', className: 'User' },
 		};
 
-		const result = service.transformProperty(
-			'createdAt',
-			'2023-01-01',
+		const result = service.transformProperty('createdAt', '2023-01-01', {
 			instance,
-			class User {},
-			context
-		);
+			modelClass: class User {},
+			...context,
+		});
 
 		expect(mockGetTransformer).toHaveBeenCalled();
 		expect(mockDateTransformer.deserialize).toHaveBeenCalled();
