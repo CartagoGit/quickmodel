@@ -1,4 +1,5 @@
-import type { IQTransformer } from '@/core/interfaces/transformer.interface';
+import { BaseTransformer } from '@/core/bases/base-transformer';
+import type { IQTransformContext } from '@/core/interfaces/transformer.interface';
 import { QModelError } from '@/core/errors/quickmodel.error';
 
 /**
@@ -36,18 +37,26 @@ import { QModelError } from '@/core/errors/quickmodel.error';
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap | MDN WeakMap}
  */
-export class WeakMapTransformer implements IQTransformer<
+export class WeakMapTransformer extends BaseTransformer<
 	[any, any][],
 	WeakMap<object, any>
 > {
 	/**
-	 * Deserializes array of tuples into WeakMap
+	 * Deserializes array of tuples into WeakMap.
 	 *
 	 * @param value - Array of [key, value] tuples from backend
-	 * @returns WeakMap instance
+	 * @param propertyKey - Property name (for error messages)
+	 * @param className - Class name (for error messages)
+	 * @returns WeakMap instance, or null if value is null/undefined
 	 * @throws {QModelError} If keys are not objects
 	 */
-	deserialize(value: [any, any][]): WeakMap<object, any> {
+	deserialize(
+		value: [any, any][] | null | undefined,
+		_propertyKey: string,
+		_className: string,
+		_context?: IQTransformContext
+	): WeakMap<object, any> | null {
+		if (value === null || value === undefined) return null;
 		if (!Array.isArray(value)) {
 			throw new QModelError(
 				`WeakMap deserialization expects array of tuples, got ${typeof value}`
@@ -84,11 +93,11 @@ export class WeakMapTransformer implements IQTransformer<
 	}
 
 	/**
-	 * Serialization is NOT supported for WeakMap
+	 * Serialization is NOT supported for WeakMap.
 	 *
-	 * @throws {QModelError} Always throws - WeakMap cannot be serialized
+	 * @throws {QModelError} Always throws — WeakMap keys are not iterable/enumerable
 	 */
-	serialize(_value: WeakMap<object, any>): never {
+	serialize(_value: WeakMap<object, any>): [any, any][] {
 		throw new QModelError(
 			'WeakMap cannot be serialized to JSON (keys are not iterable/enumerable). ' +
 				'Use `excludeFields: ["fieldName"]` in @Quick() options to exclude from serialization, ' +
@@ -142,18 +151,26 @@ export class WeakMapTransformer implements IQTransformer<
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet | MDN WeakSet}
  */
-export class WeakSetTransformer implements IQTransformer<
+export class WeakSetTransformer extends BaseTransformer<
 	object[],
 	WeakSet<object>
 > {
 	/**
-	 * Deserializes array of objects into WeakSet
+	 * Deserializes array of objects into WeakSet.
 	 *
 	 * @param value - Array of objects from backend
-	 * @returns WeakSet instance
+	 * @param propertyKey - Property name (for error messages)
+	 * @param className - Class name (for error messages)
+	 * @returns WeakSet instance, or null if value is null/undefined
 	 * @throws {QModelError} If values are not objects
 	 */
-	deserialize(value: object[]): WeakSet<object> {
+	deserialize(
+		value: object[] | null | undefined,
+		_propertyKey: string,
+		_className: string,
+		_context?: IQTransformContext
+	): WeakSet<object> | null {
+		if (value === null || value === undefined) return null;
 		if (!Array.isArray(value)) {
 			throw new QModelError(
 				`WeakSet deserialization expects array, got ${typeof value}`
@@ -177,11 +194,11 @@ export class WeakSetTransformer implements IQTransformer<
 	}
 
 	/**
-	 * Serialization is NOT supported for WeakSet
+	 * Serialization is NOT supported for WeakSet.
 	 *
-	 * @throws {QModelError} Always throws - WeakSet cannot be serialized
+	 * @throws {QModelError} Always throws — WeakSet values are not iterable/enumerable
 	 */
-	serialize(_value: WeakSet<object>): never {
+	serialize(_value: WeakSet<object>): object[] {
 		throw new QModelError(
 			'WeakSet cannot be serialized to JSON (values are not iterable/enumerable). ' +
 				'Use `excludeFields: ["fieldName"]` in @Quick() options to exclude from serialization, ' +

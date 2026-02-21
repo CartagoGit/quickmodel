@@ -18,8 +18,11 @@ export class ToInterfaceService<
 			);
 		}
 
-		// Handle inconsistent Type usage in tests (Passing array as seen for original values)
-		// This supports legacy tests that pass [originalData] as the second argument
+		// toInterface() accepts an optional WeakSet<object> for cycle detection.
+		// When called with an Array as `seen`, the array is treated as a list of
+		// original values to preserve during collection mapping — this is a valid
+		// call pattern used when mapping arrays where each item needs its original
+		// data reference (e.g. toInterface([...], originalData)).
 		let visited: WeakSet<object>;
 		let originalArray: any[] = [];
 

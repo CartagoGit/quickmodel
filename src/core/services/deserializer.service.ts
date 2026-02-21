@@ -186,7 +186,7 @@ export class Deserializer<
 		if (trigger === 'construction') {
 			const errors = this.validationService.validate(
 				instance as Record<string, unknown>,
-				modelClass
+				{ modelClass }
 			);
 			if (errors.length > 0) {
 				const errorMsgs = errors.map((e) => e.error).join('; ');

@@ -16,7 +16,6 @@ import { QUICK_PROPERTY_KEYS } from '../constants/metadata-keys';
 import { NATIVE_TYPE_MAP } from '../constants/native-types';
 import type { IQTypeOptions } from '../interfaces/qtype-options.interface';
 import type { IQSpec } from '../interfaces/quick.interface';
-// import type { IQAlias } from '../types/q-alias.type'; // Unused
 
 /**
  * Metadata key symbol for storing the list of properties decorated with @QType().

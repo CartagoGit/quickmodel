@@ -16,8 +16,19 @@ export * from './interfaces/serializer.interface';
 export { QTransformerRegistry } from './registry/transformer.registry';
 
 // Bases
-export { BaseTransformer } from './bases/base-transformer';
+// QBaseTransformer is the public alias; BaseTransformer is kept for internal use.
+export {
+	BaseTransformer,
+	BaseTransformer as QBaseTransformer,
+} from './bases/base-transformer';
 
-// Services (Advanced usage)
-export { Serializer } from './services/serializer.service';
-export { Deserializer } from './services/deserializer.service';
+// Services (Advanced usage) — raw pipeline access
+// QSerializer / QDeserializer are the public aliases following Q convention.
+export {
+	Serializer,
+	Serializer as QSerializer,
+} from './services/serializer.service';
+export {
+	Deserializer,
+	Deserializer as QDeserializer,
+} from './services/deserializer.service';

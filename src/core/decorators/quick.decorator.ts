@@ -76,7 +76,6 @@ import { QConfig } from '../config/quick.config';
 
 import 'reflect-metadata';
 import { QType } from './qtype.decorator';
-// import type { IQAlias } from '../types/q-alias.type'; // Unused
 import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import {
 	QUICK_DECORATOR_KEY,
@@ -547,7 +546,10 @@ export function Quick<
 			Reflect.defineMetadata(QUICK_OPTIONS_KEY, advancedOptions, target);
 		}
 
-		// Store discriminators if provided (legacy key, kept for compatibility if needed elsewhere)
+		// Store discriminators separately for fast direct lookup via QUICK_DISCRIMINATORS_KEY,
+		// in addition to being stored inside advancedOptions above.
+		// Both keys coexist intentionally: some lookup paths use the full options object
+		// while others (e.g. polymorphic population) access discriminators directly.
 		if (advancedOptions?.discriminators) {
 			Reflect.defineMetadata(
 				QUICK_DISCRIMINATORS_KEY,

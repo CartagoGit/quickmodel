@@ -14,7 +14,7 @@
  * }
  *
  * const user = new User({ birthDate: "invalid" });
- * const results = service.validate(user, User);
+ * const results = service.validate(user, { modelClass: User });
  *
  * if (results.length > 0) {
  *   console.error('Validation errors:', results);
@@ -63,6 +63,27 @@ import {
 import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
+
+/** @internal Context passed between recursive calls to track cycle detection and depth. */
+type IValidationContext = {
+	/** Tracks already-visited objects to prevent infinite cycles. */
+	seen: WeakSet<object>;
+	/** Current recursion depth; validated against MAX_DEPTH. */
+	depth: number;
+};
+
+/**
+ * Options accepted by {@link ValidationService.validate}.
+ */
+export interface IValidationOptions {
+	/**
+	 * The model class constructor. Used to resolve metadata and configuration.
+	 * When omitted, the constructor is inferred from the instance.
+	 */
+	modelClass?: Function;
+	/** @internal Recursion context — do not pass externally. */
+	ctx?: IValidationContext;
+}
 
 export class ValidationService {
 	private transformers = new Map<string, IQTransformer<unknown, unknown>>();
@@ -194,21 +215,25 @@ export class ValidationService {
 	 * Validates all fields in a model instance.
 	 *
 	 * @param instance - The model instance to validate
-	 * @param modelClass - The model class constructor (reserved for future use/metadata)
+	 * @param options - Optional configuration: `modelClass` to resolve metadata, `ctx` for internal recursion tracking
 	 * @returns Array of validation results for failed validations (empty if all valid)
 	 *
 	 * @remarks
 	 * Only validates fields that have:
 	 * 1. A `fieldType` metadata entry
 	 * 2. A corresponding validator in the registry
+	 *
+	 * @example
+	 * ```typescript
+	 * const errors = service.validate(user, { modelClass: UserModel });
+	 * ```
 	 */
 	validate(
 		instance: Record<string, unknown>,
-		modelClass?: Function,
-		context: { seen?: WeakSet<object>; depth?: number } = {}
+		options: IValidationOptions = {}
 	): IQValidationResult[] {
-		const seen = context.seen ?? new WeakSet();
-		const depth = context.depth ?? 0;
+		const { modelClass, ctx = { seen: new WeakSet(), depth: 0 } } = options;
+		const { depth, seen } = ctx;
 		// SECURITY: Prevent Stack Overflow via deep recursion
 		const MAX_DEPTH = 200;
 		if (depth > MAX_DEPTH) {
@@ -310,8 +335,7 @@ export class ValidationService {
 						// to preserve cycle detection context.
 						const nestedErrors = this.validate(
 							value as Record<string, unknown>,
-							undefined,
-							{ seen, depth: depth + 1 }
+							{ ctx: { seen, depth: depth + 1 } }
 						);
 						if (Array.isArray(nestedErrors)) {
 							for (const err of nestedErrors) {
@@ -344,8 +368,7 @@ export class ValidationService {
 							try {
 								const nestedErrors = this.validate(
 									item as Record<string, unknown>,
-									undefined,
-									{ seen, depth: depth + 1 }
+									{ ctx: { seen, depth: depth + 1 } }
 								);
 								if (Array.isArray(nestedErrors)) {
 									for (const err of nestedErrors) {
@@ -375,6 +398,6 @@ export class ValidationService {
 	 * @returns True if all validations pass, false if any fail
 	 */
 	isValid(instance: Record<string, unknown>, modelClass?: Function): boolean {
-		return this.validate(instance, modelClass).length === 0;
+		return this.validate(instance, { modelClass }).length === 0;
 	}
 }

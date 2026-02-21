@@ -250,7 +250,8 @@ export class MapTransformer<K = string, V = unknown>
 			}
 		}
 
-		// Handle legacy plain object format
+		// Flexible input: plain object format { key: value, ... }
+		// Accepts any JSON object and converts it to a Map, filtering unsafe prototype keys.
 		if (typeof value !== 'object' || value === null) {
 			throw new QModelError(
 				`${className}.${propertyKey}: Expected object or array for Map, got ${typeof value}`,
@@ -579,7 +580,8 @@ export class SetTransformer<V = unknown>
 			return new Set(transformedValues);
 		}
 
-		// Handle legacy plain array format
+		// Flexible input: plain array format [value1, value2, ...]
+		// Accepts any JSON array and converts it to a Set.
 		if (!Array.isArray(value)) {
 			throw new QModelError(
 				`${className}.${propertyKey}: Expected array for Set, got ${typeof value}`,

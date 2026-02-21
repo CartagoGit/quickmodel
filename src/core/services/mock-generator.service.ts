@@ -4,8 +4,28 @@
  */
 
 import 'reflect-metadata';
-import { faker } from '@faker-js/faker';
+import { createRequire } from 'node:module';
+import { QModelError } from '@/core/errors/quickmodel.error';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
+
+// @faker-js/faker is an optional dependency — only required when using mock generation.
+// If not installed, QMockGenerator will throw a descriptive error on first use.
+const _req = createRequire(import.meta.url);
+let _fakerCache: (typeof import('@faker-js/faker'))['faker'] | undefined;
+
+/** @internal Lazily loads faker on first use. Throws a descriptive error if not installed. */
+function _getFaker(): (typeof import('@faker-js/faker'))['faker'] {
+	if (_fakerCache) return _fakerCache;
+	try {
+		_fakerCache = _req('@faker-js/faker').faker;
+		return _fakerCache!;
+	} catch {
+		throw new QModelError(
+			'@faker-js/faker is required for mock generation (optional dependency). ' +
+				'Install it with: npm install @faker-js/faker'
+		);
+	}
+}
 import {
 	QUICK_OPTIONS_KEY,
 	QUICK_TYPE_MAP_KEY,
@@ -239,6 +259,7 @@ export class QMockGenerator {
 		designType: Function | undefined;
 		arrayElementClass: unknown;
 	}): unknown {
+		const faker = _getFaker();
 		const { type, fieldType, designType, arrayElementClass } = options;
 		// Array de modelos
 		if (arrayElementClass && designType === Array) {
@@ -587,6 +608,7 @@ export class QMockGenerator {
 	}
 
 	private getRandomValue(jsType: string): unknown {
+		const faker = _getFaker();
 		switch (jsType) {
 			case 'string':
 				return faker.lorem.word();
