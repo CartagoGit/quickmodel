@@ -30,15 +30,15 @@ export class ValueTransformerService {
 	 * Transforms a nested array of primitive/transformable types.
 	 * e.g. Date[][], BigInt[][][]
 	 */
-	// eslint-disable-next-line max-params
 	public transformNestedArray(
 		value: unknown[],
 		elementClass: unknown,
-		context: IQTransformContext,
-		recursionContext?: { visited?: WeakSet<object>; depth?: number }
+		context: IQTransformContext & {
+			recursionContext?: { visited?: WeakSet<object>; depth?: number };
+		}
 	): unknown[] {
 		// SECURITY: Prevent Stack Overflow via Deep Recursion
-		const currentDepth = recursionContext?.depth || 0;
+		const currentDepth = context.recursionContext?.depth ?? 0;
 		const MAX_DEPTH = 512;
 		if (currentDepth > MAX_DEPTH) {
 			throw new Error(
@@ -58,17 +58,19 @@ export class ValueTransformerService {
 			if (item === null || item === undefined) return item;
 
 			if (Array.isArray(item)) {
-				return this.transformNestedArray(item, elementClass, context, {
-					...recursionContext,
-					depth: currentDepth + 1,
+				return this.transformNestedArray(item, elementClass, {
+					...context,
+					recursionContext: {
+						...context.recursionContext,
+						depth: currentDepth + 1,
+					},
 				});
 			}
 
 			return this.transformByDesignType(
 				item,
 				elementClass as Function,
-				context,
-				recursionContext
+				context
 			);
 		});
 	}
@@ -77,14 +79,16 @@ export class ValueTransformerService {
 	 * Transforms a nested array of models.
 	 * e.g. User[][], Post[][]
 	 */
-	// eslint-disable-next-line max-params
 	public transformNestedModelArray(
 		value: unknown[],
 		possibleTypes: unknown[],
-		discriminatorConfig?: IQDiscriminatorConfig,
-		context?: IQTransformContext,
-		recursionContext?: { visited?: WeakSet<object>; depth?: number }
+		options: {
+			discriminatorConfig?: IQDiscriminatorConfig;
+			context?: IQTransformContext;
+			recursionContext?: { visited?: WeakSet<object>; depth?: number };
+		} = {}
 	): unknown[] {
+		const { discriminatorConfig, context, recursionContext } = options;
 		// SECURITY: Prevent Stack Overflow via Deep Recursion
 		const currentDepth = recursionContext?.depth || 0;
 		const MAX_DEPTH = 512;
@@ -106,13 +110,14 @@ export class ValueTransformerService {
 			if (item === null || item === undefined) return item;
 
 			if (Array.isArray(item)) {
-				return this.transformNestedModelArray(
-					item,
-					possibleTypes,
+				return this.transformNestedModelArray(item, possibleTypes, {
 					discriminatorConfig,
 					context,
-					{ ...recursionContext, depth: currentDepth + 1 }
-				);
+					recursionContext: {
+						...recursionContext,
+						depth: currentDepth + 1,
+					},
+				});
 			}
 
 			let targetClass = possibleTypes[0] as new (data: any) => any;
@@ -249,12 +254,10 @@ export class ValueTransformerService {
 	/**
 	 * Transforms a value based on its design:type metadata.
 	 */
-	// eslint-disable-next-line max-params
 	public transformByDesignType(
 		value: unknown,
 		designType: Function | undefined,
-		context: IQTransformContext,
-		_recursionContext?: { visited?: WeakSet<object>; depth?: number }
+		context: IQTransformContext
 	): unknown {
 		// Log debug info
 		Logger.debug(
@@ -376,14 +379,14 @@ export class ValueTransformerService {
 		return undefined;
 	}
 
-	// eslint-disable-next-line max-params
-	public validateOrCoercePrimitive(
-		key: string,
-		value: unknown,
-		expectedType: unknown,
-		className: string,
-		strategy: 'strict' | 'loose'
-	): unknown {
+	public validateOrCoercePrimitive(options: {
+		key: string;
+		value: unknown;
+		expectedType: unknown;
+		className: string;
+		strategy: 'strict' | 'loose';
+	}): unknown {
+		const { key, value, expectedType, className, strategy } = options;
 		if (value === null || value === undefined) return value;
 
 		if (expectedType === Number) {

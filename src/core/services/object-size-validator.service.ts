@@ -13,13 +13,13 @@ export class ObjectSizeValidator {
 	/**
 	 * Validates that an array doesn't exceed the maximum allowed length
 	 */
-	// eslint-disable-next-line max-params
-	public validateArraySize(
-		key: string,
-		value: unknown[],
-		maxLength: number,
-		className: string
-	): void {
+	public validateArraySize(options: {
+		key: string;
+		value: unknown[];
+		maxLength: number;
+		className: string;
+	}): void {
+		const { key, value, maxLength, className } = options;
 		if (Array.isArray(value) && value.length > maxLength) {
 			throw new QModelError(
 				`Security: Array '${key}' length (${value.length}) exceeds maximum allowed limit (${maxLength}).`,
@@ -35,13 +35,13 @@ export class ObjectSizeValidator {
 	/**
 	 * Validates that an object doesn't have too many properties
 	 */
-	// eslint-disable-next-line max-params
-	public validateObjectSize(
-		keys: string[],
-		limit: number,
-		className: string,
-		propertyKey: string = '<root>'
-	): void {
+	public validateObjectSize(options: {
+		keys: string[];
+		limit: number;
+		className: string;
+		propertyKey?: string;
+	}): void {
+		const { keys, limit, className, propertyKey = '<root>' } = options;
 		if (keys.length > limit) {
 			throw new QModelError(
 				`QuickModel Security: Input object has too many properties (${keys.length}). Limit is ${limit}.`,

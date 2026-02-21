@@ -34,7 +34,7 @@ describe('Core Security Standards', () => {
 			populationService.populateInstance(
 				targetInstance,
 				maliciousPayload,
-				TestModel
+				{ modelClass: TestModel }
 			);
 
 			// Check that normal property is set

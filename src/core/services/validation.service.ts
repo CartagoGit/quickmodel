@@ -202,13 +202,13 @@ export class ValidationService {
 	 * 1. A `fieldType` metadata entry
 	 * 2. A corresponding validator in the registry
 	 */
-	// eslint-disable-next-line max-params
 	validate(
 		instance: Record<string, unknown>,
 		modelClass?: Function,
-		seen: WeakSet<object> = new WeakSet(),
-		depth: number = 0
+		context: { seen?: WeakSet<object>; depth?: number } = {}
 	): IQValidationResult[] {
+		const seen = context.seen ?? new WeakSet();
+		const depth = context.depth ?? 0;
 		// SECURITY: Prevent Stack Overflow via deep recursion
 		const MAX_DEPTH = 200;
 		if (depth > MAX_DEPTH) {
@@ -311,8 +311,7 @@ export class ValidationService {
 						const nestedErrors = this.validate(
 							value as Record<string, unknown>,
 							undefined,
-							seen,
-							depth + 1
+							{ seen, depth: depth + 1 }
 						);
 						if (Array.isArray(nestedErrors)) {
 							for (const err of nestedErrors) {
@@ -346,8 +345,7 @@ export class ValidationService {
 								const nestedErrors = this.validate(
 									item as Record<string, unknown>,
 									undefined,
-									seen,
-									depth + 1
+									{ seen, depth: depth + 1 }
 								);
 								if (Array.isArray(nestedErrors)) {
 									for (const err of nestedErrors) {

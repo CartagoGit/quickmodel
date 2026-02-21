@@ -24,13 +24,13 @@ export class QModelError extends Error {
 	/**
 	 * Helper to create invalid type errors.
 	 */
-	// eslint-disable-next-line max-params
-	static invalidType(
-		className: string,
-		propertyKey: string,
-		expectedType: string,
-		actualValue: unknown
-	): QModelError {
+	static invalidType(options: {
+		className: string;
+		propertyKey: string;
+		expectedType: string;
+		actualValue: unknown;
+	}): QModelError {
+		const { className, propertyKey, expectedType, actualValue } = options;
 		const actualType = actualValue === null ? 'null' : typeof actualValue;
 		return new QModelError(
 			`${className}.${propertyKey}: Expected ${expectedType}, got ${actualType}`,
@@ -46,13 +46,13 @@ export class QModelError extends Error {
 	/**
 	 * Helper to create invalid value errors.
 	 */
-	// eslint-disable-next-line max-params
-	static invalidValue(
-		className: string,
-		propertyKey: string,
-		value: unknown,
-		reason: string
-	): QModelError {
+	static invalidValue(options: {
+		className: string;
+		propertyKey: string;
+		value: unknown;
+		reason: string;
+	}): QModelError {
+		const { className, propertyKey, value, reason } = options;
 		return new QModelError(
 			`${className}.${propertyKey}: Invalid value "${value}": ${reason}`,
 			{

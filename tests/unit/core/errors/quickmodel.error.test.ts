@@ -23,12 +23,12 @@ describe('QModelError', () => {
 
 	describe('static invalidType', () => {
 		it('should create a formatted error for invalid types', () => {
-			const error = QModelError.invalidType(
-				'User',
-				'age',
-				'number',
-				'string-value'
-			);
+			const error = QModelError.invalidType({
+				className: 'User',
+				propertyKey: 'age',
+				expectedType: 'number',
+				actualValue: 'string-value',
+			});
 
 			expect(error.message).toBe('User.age: Expected number, got string');
 			expect(error.context).toEqual({
@@ -40,12 +40,12 @@ describe('QModelError', () => {
 		});
 
 		it('should handle null values in message', () => {
-			const error = QModelError.invalidType(
-				'User',
-				'age',
-				'number',
-				null
-			);
+			const error = QModelError.invalidType({
+				className: 'User',
+				propertyKey: 'age',
+				expectedType: 'number',
+				actualValue: null,
+			});
 
 			expect(error.message).toBe('User.age: Expected number, got null');
 		});
@@ -53,12 +53,12 @@ describe('QModelError', () => {
 
 	describe('static invalidValue', () => {
 		it('should create a formatted error for invalid values', () => {
-			const error = QModelError.invalidValue(
-				'User',
-				'email',
-				'not-an-email',
-				'Must contains @'
-			);
+			const error = QModelError.invalidValue({
+				className: 'User',
+				propertyKey: 'email',
+				value: 'not-an-email',
+				reason: 'Must contains @',
+			});
 
 			expect(error.message).toBe(
 				'User.email: Invalid value "not-an-email": Must contains @'

@@ -28,7 +28,7 @@ describe('PopulationService Coverage Gaps', () => {
 			service.populateInstance(
 				instance as Record<string, unknown>,
 				{ val: 'string' },
-				TestModel
+				{ modelClass: TestModel }
 			);
 		}).toThrow(/Expected number, got string/);
 	});
@@ -51,7 +51,7 @@ describe('PopulationService Coverage Gaps', () => {
 			service.populateInstance(
 				new StrModel() as any,
 				{ val: 123 },
-				StrModel
+				{ modelClass: StrModel }
 			)
 		).toThrow(/Expected string, got number/);
 	});
@@ -74,7 +74,7 @@ describe('PopulationService Coverage Gaps', () => {
 			service.populateInstance(
 				new BoolModel() as any,
 				{ val: 'true' },
-				BoolModel
+				{ modelClass: BoolModel }
 			)
 		).toThrow(/Expected boolean, got string/);
 	});
@@ -105,7 +105,9 @@ describe('PopulationService Coverage Gaps', () => {
 			'{"__proto__": {"polluted": true}, "constructor": {"polluted": true}, "prototype": {"polluted": true}}'
 		);
 
-		service.populateInstance(instance, pollutionPayload, EmptyModel);
+		service.populateInstance(instance, pollutionPayload, {
+			modelClass: EmptyModel,
+		});
 
 		expect(instance.__proto__.polluted).toBeUndefined();
 		expect(instance.constructor.polluted).toBeUndefined();

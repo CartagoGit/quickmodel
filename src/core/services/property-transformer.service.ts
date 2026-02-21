@@ -16,13 +16,12 @@ export class PropertyTransformer {
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
 
-	// eslint-disable-next-line max-params
 	public transformProperty(
 		key: string,
 		value: any,
-		instance: any,
-		modelClass: Function,
 		context: {
+			instance: any;
+			modelClass: Function;
 			decoratedFields: string[];
 			designTypes: Record<string, any>;
 			options: IQAdvancedOptions;
@@ -34,6 +33,8 @@ export class PropertyTransformer {
 		}
 	): any {
 		const {
+			instance,
+			modelClass,
 			decoratedFields,
 			designTypes,
 			options,
@@ -50,21 +51,20 @@ export class PropertyTransformer {
 		if (!decoratedFields.includes(key)) {
 			const expectedType = designTypes[key];
 			if (expectedType) {
-				value = this.valueTransformer.validateOrCoercePrimitive(
+				value = this.valueTransformer.validateOrCoercePrimitive({
 					key,
 					value,
 					expectedType,
-					modelClass.name,
-					coercionStrategy
-				);
+					className: modelClass.name,
+					strategy: coercionStrategy,
+				});
 			}
 
 			// Transform directly by design type
 			return this.valueTransformer.transformByDesignType(
 				value,
 				expectedType,
-				transformContext,
-				recursionContext
+				transformContext
 			);
 		}
 
@@ -141,13 +141,13 @@ export class PropertyTransformer {
 					expectedType === Number ||
 					expectedType === Boolean)
 			) {
-				return this.valueTransformer.validateOrCoercePrimitive(
-					targetKey,
+				return this.valueTransformer.validateOrCoercePrimitive({
+					key: targetKey,
 					value,
 					expectedType,
-					modelClass.name,
-					coercionStrategy
-				);
+					className: modelClass.name,
+					strategy: coercionStrategy,
+				});
 			}
 		}
 
@@ -281,8 +281,7 @@ export class PropertyTransformer {
 					return this.valueTransformer.transformNestedArray(
 						value,
 						arrayElementClass,
-						transformContext,
-						recursionContext
+						{ ...transformContext, recursionContext }
 					);
 				} else {
 					const possibleTypes = arrayElementTypes || [
@@ -292,9 +291,11 @@ export class PropertyTransformer {
 					return this.valueTransformer.transformNestedModelArray(
 						value,
 						possibleTypes,
-						IQDiscriminatorConfig,
-						transformContext,
-						recursionContext
+						{
+							discriminatorConfig: IQDiscriminatorConfig,
+							context: transformContext,
+							recursionContext,
+						}
 					);
 				}
 			}
@@ -410,8 +411,7 @@ export class PropertyTransformer {
 						return this.valueTransformer.transformByDesignType(
 							item,
 							arrayElementClass,
-							transformContext,
-							recursionContext
+							transformContext
 						);
 					});
 				} else {
@@ -422,9 +422,11 @@ export class PropertyTransformer {
 					return this.valueTransformer.transformNestedModelArray(
 						value,
 						possibleTypes,
-						IQDiscriminatorConfig,
-						transformContext,
-						recursionContext
+						{
+							discriminatorConfig: IQDiscriminatorConfig,
+							context: transformContext,
+							recursionContext,
+						}
 					);
 				}
 			}
@@ -454,8 +456,7 @@ export class PropertyTransformer {
 			return this.valueTransformer.transformByDesignType(
 				value,
 				designType,
-				transformContext,
-				recursionContext
+				transformContext
 			);
 		}
 

@@ -171,8 +171,7 @@ export class Deserializer<
 		this.populationService.populateInstance(
 			instance as Record<string, unknown>,
 			data,
-			modelClass,
-			context
+			{ modelClass, context }
 		);
 
 		// 3. Validation (Trigger: 'construction')

@@ -51,13 +51,15 @@ export class PopulationService {
 	/**
 	 * Populates a model instance with data from a plain object.
 	 */
-	// eslint-disable-next-line max-params
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,
 		data: T,
-		modelClass: Function,
-		context?: { visited?: WeakSet<object>; depth?: number }
+		params: {
+			modelClass: Function;
+			context?: { visited?: WeakSet<object>; depth?: number };
+		}
 	): void {
+		const { modelClass, context } = params;
 		const visited = context?.visited || new WeakSet();
 
 		// Get strict mode configuration
@@ -146,11 +148,11 @@ export class PopulationService {
 		// SECURITY: Prevent Memory Exhaustion via Massive Objects
 		const PROPS_LIMIT = 50000;
 		const keys = Object.keys(data);
-		this.sizeValidator.validateObjectSize(
+		this.sizeValidator.validateObjectSize({
 			keys,
-			PROPS_LIMIT,
-			modelClass.name
-		);
+			limit: PROPS_LIMIT,
+			className: modelClass.name,
+		});
 
 		for (const key of keys) {
 			let value = data[key];
@@ -311,12 +313,12 @@ export class PopulationService {
 
 			// DoS Protection: Check Array Length
 			if (!disableSafetyChecks && Array.isArray(value)) {
-				this.sizeValidator.validateArraySize(
-					targetKey,
+				this.sizeValidator.validateArraySize({
+					key: targetKey,
 					value,
-					maxArrayLength,
-					modelClass.name
-				);
+					maxLength: maxArrayLength,
+					className: modelClass.name,
+				});
 			}
 
 			// DoS Protection: Check nested object size
@@ -332,9 +334,9 @@ export class PopulationService {
 			instance[targetKey] = this.propertyTransformer.transformProperty(
 				targetKey,
 				value,
-				instance,
-				modelClass,
 				{
+					instance,
+					modelClass,
 					decoratedFields,
 					designTypes,
 					options,
@@ -356,12 +358,11 @@ export class PopulationService {
 		);
 
 		for (const dotKey of dotNotationFields) {
-			this.dotNotationHandler.apply(
-				instance,
-				dotKey as string,
+			this.dotNotationHandler.apply(instance, {
+				path: dotKey as string,
 				modelClass,
-				recursionContext
-			);
+				recursionContext,
+			});
 		}
 	}
 }

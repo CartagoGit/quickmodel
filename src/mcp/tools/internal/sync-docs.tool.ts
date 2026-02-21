@@ -93,13 +93,11 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			// Generate Tools Documentation
 			const publicDocs = this.generateToolMd(
 				publicTools,
-				langTexts.publicTitle,
 				langTexts,
 				getDesc
 			);
 			const internalDocs = this.generateToolMd(
 				internalTools,
-				langTexts.internalTitle,
 				langTexts,
 				getDesc
 			);
@@ -143,10 +141,8 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		};
 	}
 
-	// eslint-disable-next-line max-params
 	private generateToolMd(
 		tools: any[],
-		_title: string,
 		texts: Record<string, any>,
 		descLookup: (name: string, defaultDesc: string) => string
 	): string {

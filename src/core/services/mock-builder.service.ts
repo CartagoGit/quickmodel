@@ -310,8 +310,7 @@ export class QMockBuilder<
 		const dataArray = this.QMockGenerator.generateArray(
 			this.modelClass,
 			count,
-			type,
-			overrides
+			{ type, overrides }
 		);
 		return dataArray.map((data) => new this.modelClass(data));
 	}
@@ -344,11 +343,9 @@ export class QMockBuilder<
 		if (count === 0) {
 			return [];
 		}
-		return this.QMockGenerator.generateArray(
-			this.modelClass,
-			count,
+		return this.QMockGenerator.generateArray(this.modelClass, count, {
 			type,
-			overrides
-		);
+			overrides,
+		});
 	}
 }

@@ -162,12 +162,12 @@ export class QMockGenerator {
 				}
 			}
 
-			mock[key] = this.generateValue(
+			mock[key] = this.generateValue({
 				type,
 				fieldType,
 				designType,
-				arrayElementClass
-			);
+				arrayElementClass,
+			});
 		}
 
 		return { ...mock, ...overrideData } as unknown as TData;
@@ -176,16 +176,18 @@ export class QMockGenerator {
 	/**
 	 * Generates an array of mocks.
 	 */
-	// eslint-disable-next-line max-params
 	generateArray<
 		TModel,
 		TData extends Record<string, unknown> = Record<string, unknown>,
 	>(
 		modelClass: new (data: TData) => TModel,
 		count: number,
-		type: IQMockType = 'random',
-		overrides?: (index: number) => Partial<TData>
+		options: {
+			type?: IQMockType;
+			overrides?: (index: number) => Partial<TData>;
+		} = {}
 	): TData[] {
+		const { type = 'random', overrides } = options;
 		return Array.from({ length: count }, (_, index) => {
 			const itemOverrides = overrides ? overrides(index) : {};
 			return this.generate(modelClass, type, itemOverrides);
@@ -231,13 +233,13 @@ export class QMockGenerator {
 		return Array.from(properties);
 	}
 
-	// eslint-disable-next-line max-params
-	private generateValue(
-		type: IQMockType,
-		fieldType: unknown,
-		designType: Function | undefined,
-		arrayElementClass: unknown
-	): unknown {
+	private generateValue(options: {
+		type: IQMockType;
+		fieldType: unknown;
+		designType: Function | undefined;
+		arrayElementClass: unknown;
+	}): unknown {
+		const { type, fieldType, designType, arrayElementClass } = options;
 		// Array de modelos
 		if (arrayElementClass && designType === Array) {
 			// Special case: generic Array class (e.g. @Quick({ tags: Array }))
@@ -256,7 +258,7 @@ export class QMockGenerator {
 					data: Record<string, unknown>
 				) => unknown,
 				length,
-				type
+				{ type }
 			);
 		}
 

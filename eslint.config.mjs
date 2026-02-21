@@ -80,16 +80,17 @@ export default tseslint.config(
 			// Reglas portadas desde beatgames
 			// ---------------------------------------------------------------------------
 
-			// PROHIBIR importaciones desde alias raíz sin especificar archivo
-			// @/ → usar siempre @/core/..., @/transformers/..., etc.
+			// PROHIBIR auto-importación desde el nombre del paquete publicado
+			// Dentro de src/, importar '@cartago-git/quickmodel' crea una dependencia circular al barrel.
+			// Además se prohíbe importar '@mcp' sin especificar archivo.
 			'no-restricted-imports': [
 				'error',
 				{
 					patterns: [
 						{
-							group: ['@/index', '@/index.ts'],
+							group: ['@cartago-git/quickmodel'],
 							message:
-								"PROHIBIDO: importar desde el barrel raíz '@/index'. Usa la ruta completa del módulo.",
+								"PROHIBIDO: auto-importar el paquete desde sí mismo. Usa rutas internas '@/core/...', '@/transformers/...', etc.",
 						},
 						{
 							group: ['@mcp'],

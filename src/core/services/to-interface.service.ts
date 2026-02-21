@@ -34,14 +34,12 @@ export class ToInterfaceService<
 		// This explicitly supports Arrays passed to toInterface, mapping them using originalArray if provided
 		if (Array.isArray(model)) {
 			return model.map((item, index) =>
-				this.convertToInterfaceFormat(
-					item,
-					originalArray[index],
-					visited,
-					process.env.NODE_ENV === 'production',
-					index.toString(),
-					depth + 1
-				)
+				this.convertToInterfaceFormat(item, originalArray[index], {
+					seen: visited,
+					isProduction: process.env.NODE_ENV === 'production',
+					propertyKey: index.toString(),
+					depth: depth + 1,
+				})
 			) as unknown as T;
 		}
 
@@ -114,10 +112,12 @@ export class ToInterfaceService<
 			result[key] = this.convertToInterfaceFormat(
 				currentValue,
 				originalValue,
-				visited,
-				isProduction,
-				key,
-				depth + 1
+				{
+					seen: visited,
+					isProduction,
+					propertyKey: key,
+					depth: depth + 1,
+				}
 			);
 		}
 
@@ -138,15 +138,17 @@ export class ToInterfaceService<
 		return result as T;
 	}
 
-	// eslint-disable-next-line max-params
 	private convertToInterfaceFormat(
 		currentValue: unknown,
 		originalValue: unknown,
-		seen: WeakSet<object>,
-		isProduction: boolean,
-		propertyKey: string = '',
-		depth: number
+		options: {
+			seen: WeakSet<object>;
+			isProduction: boolean;
+			propertyKey?: string;
+			depth: number;
+		}
 	): unknown {
+		const { seen, isProduction, propertyKey = '', depth } = options;
 		// SECURITY: Prevent Stack Overflow in deep properties
 		const MAX_DEPTH = 512;
 
@@ -343,14 +345,12 @@ export class ToInterfaceService<
 				return [];
 			}
 			return currentValue.map((item: unknown, index: number) =>
-				this.convertToInterfaceFormat(
-					item,
-					originalValue[index],
+				this.convertToInterfaceFormat(item, originalValue[index], {
 					seen,
 					isProduction,
-					`${propertyKey}[${index}]`,
-					depth + 1
-				)
+					propertyKey: `${propertyKey}[${index}]`,
+					depth: depth + 1,
+				})
 			);
 		}
 
@@ -408,10 +408,12 @@ export class ToInterfaceService<
 					resultNoProto[key] = this.convertToInterfaceFormat(
 						typedCurrent[key],
 						typedOriginal[key],
-						seen,
-						isProduction,
-						`${propertyKey}.${key}`,
-						depth + 1
+						{
+							seen,
+							isProduction,
+							propertyKey: `${propertyKey}.${key}`,
+							depth: depth + 1,
+						}
 					);
 				}
 				return resultNoProto;
@@ -447,10 +449,12 @@ export class ToInterfaceService<
 						result[key] = this.convertToInterfaceFormat(
 							typedCurrent[key],
 							typedOriginal[key],
-							seen,
-							isProduction,
-							`${propertyKey}.${key}`,
-							depth + 1
+							{
+								seen,
+								isProduction,
+								propertyKey: `${propertyKey}.${key}`,
+								depth: depth + 1,
+							}
 						);
 					}
 				}
@@ -494,10 +498,12 @@ export class ToInterfaceService<
 					result[key] = this.convertToInterfaceFormat(
 						typedCurrent[key],
 						typedOriginal[key],
-						seen,
-						isProduction,
-						`${propertyKey}.${key}`,
-						depth + 1
+						{
+							seen,
+							isProduction,
+							propertyKey: `${propertyKey}.${key}`,
+							depth: depth + 1,
+						}
 					);
 				}
 			}

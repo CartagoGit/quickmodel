@@ -15,13 +15,15 @@ export class DotNotationHandler {
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
 
-	// eslint-disable-next-line max-params
 	public apply(
 		instance: Record<string, unknown>,
-		path: string,
-		modelClass: Function,
-		recursionContext?: { visited?: WeakSet<object> }
+		applyConfig: {
+			path: string;
+			modelClass: Function;
+			recursionContext?: { visited?: WeakSet<object> };
+		}
 	): void {
+		const { path, modelClass, recursionContext } = applyConfig;
 		const parts = path.split('.');
 		let current: Record<string, unknown> = instance;
 
@@ -118,17 +120,14 @@ export class DotNotationHandler {
 						this.valueTransformer.transformNestedArray(
 							value,
 							arrayElementClass,
-							context,
-							recursionContext
+							{ ...context, recursionContext }
 						);
 				} else {
 					current[lastKey] =
 						this.valueTransformer.transformNestedModelArray(
 							value,
 							[arrayElementClass],
-							undefined,
-							context,
-							recursionContext
+							{ context, recursionContext }
 						);
 				}
 			} else if (typeof value === 'object') {
