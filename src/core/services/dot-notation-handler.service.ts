@@ -15,6 +15,7 @@ export class DotNotationHandler {
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
 
+	// eslint-disable-next-line max-params
 	public apply(
 		instance: Record<string, unknown>,
 		path: string,

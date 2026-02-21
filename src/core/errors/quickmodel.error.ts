@@ -24,6 +24,7 @@ export class QModelError extends Error {
 	/**
 	 * Helper to create invalid type errors.
 	 */
+	// eslint-disable-next-line max-params
 	static invalidType(
 		className: string,
 		propertyKey: string,
@@ -45,6 +46,7 @@ export class QModelError extends Error {
 	/**
 	 * Helper to create invalid value errors.
 	 */
+	// eslint-disable-next-line max-params
 	static invalidValue(
 		className: string,
 		propertyKey: string,

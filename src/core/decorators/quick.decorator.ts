@@ -1,5 +1,5 @@
 import { IQAnyRecord } from './../interfaces/model.interface';
-import { IQImplements } from '@/index';
+import type { IQImplements } from '../interfaces/model.interface';
 import { QConfig } from '../config/quick.config';
 /**
  * @Quick() class decorator for automatic property registration.

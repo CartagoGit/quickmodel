@@ -30,6 +30,7 @@ export class ValueTransformerService {
 	 * Transforms a nested array of primitive/transformable types.
 	 * e.g. Date[][], BigInt[][][]
 	 */
+	// eslint-disable-next-line max-params
 	public transformNestedArray(
 		value: unknown[],
 		elementClass: unknown,
@@ -76,6 +77,7 @@ export class ValueTransformerService {
 	 * Transforms a nested array of models.
 	 * e.g. User[][], Post[][]
 	 */
+	// eslint-disable-next-line max-params
 	public transformNestedModelArray(
 		value: unknown[],
 		possibleTypes: unknown[],
@@ -247,6 +249,7 @@ export class ValueTransformerService {
 	/**
 	 * Transforms a value based on its design:type metadata.
 	 */
+	// eslint-disable-next-line max-params
 	public transformByDesignType(
 		value: unknown,
 		designType: Function | undefined,
@@ -373,6 +376,7 @@ export class ValueTransformerService {
 		return undefined;
 	}
 
+	// eslint-disable-next-line max-params
 	public validateOrCoercePrimitive(
 		key: string,
 		value: unknown,

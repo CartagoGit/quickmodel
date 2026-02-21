@@ -51,6 +51,7 @@ export class PopulationService {
 	/**
 	 * Populates a model instance with data from a plain object.
 	 */
+	// eslint-disable-next-line max-params
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,
 		data: T,
@@ -351,7 +352,7 @@ export class PopulationService {
 
 		// Handle Dot Notation properties
 		const dotNotationFields = decoratedFields.filter(
-			(f: unknown) => typeof f === 'string' && f.includes('.')
+			(field: unknown) => typeof field === 'string' && field.includes('.')
 		);
 
 		for (const dotKey of dotNotationFields) {

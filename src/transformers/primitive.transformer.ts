@@ -7,9 +7,9 @@ import {
 	IQValidator,
 } from '../core/interfaces/transformer.interface';
 
-type PrimitiveType = 'string' | 'number' | 'boolean';
+type IPrimitiveType = 'string' | 'number' | 'boolean';
 
-type PrimitiveTypeMap = {
+type IPrimitiveTypeMap = {
 	string: string;
 	number: number;
 	boolean: boolean;
@@ -56,8 +56,8 @@ type PrimitiveTypeMap = {
  * new Config({ name: 123 }); // Error: Expected string, got number
  * ```
  */
-export class PrimitiveTransformer<T extends PrimitiveType>
-	extends BaseTransformer<PrimitiveTypeMap[T], PrimitiveTypeMap[T]>
+export class PrimitiveTransformer<T extends IPrimitiveType>
+	extends BaseTransformer<IPrimitiveTypeMap[T], IPrimitiveTypeMap[T]>
 	implements IQValidator
 {
 	/**
@@ -83,7 +83,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 		propertyKey: string,
 		className: string,
 		context?: IQTransformContext
-	): PrimitiveTypeMap[T] | null {
+	): IPrimitiveTypeMap[T] | null {
 		// Coercion Logic
 		const coercionStrategy = context?.metadata?.coercionStrategy as string;
 		const normalization = context?.metadata?.normalization as {
@@ -149,7 +149,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 			return null;
 		}
 
-		return value as PrimitiveTypeMap[T];
+		return value as IPrimitiveTypeMap[T];
 	}
 
 	/**
@@ -158,7 +158,7 @@ export class PrimitiveTransformer<T extends PrimitiveType>
 	 * @param value - The value to serialize
 	 * @returns The same value
 	 */
-	serialize(value: PrimitiveTypeMap[T]): PrimitiveTypeMap[T] {
+	serialize(value: IPrimitiveTypeMap[T]): IPrimitiveTypeMap[T] {
 		return value;
 	}
 

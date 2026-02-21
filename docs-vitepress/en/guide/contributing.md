@@ -295,7 +295,7 @@ bun test --watch
 
 ```typescript
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick } from '@/index';
+import { QModel, Quick } from '@';
 
 describe('Feature Name', () => {
 	test('should do something specific', () => {

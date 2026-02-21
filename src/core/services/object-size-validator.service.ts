@@ -13,6 +13,7 @@ export class ObjectSizeValidator {
 	/**
 	 * Validates that an array doesn't exceed the maximum allowed length
 	 */
+	// eslint-disable-next-line max-params
 	public validateArraySize(
 		key: string,
 		value: unknown[],
@@ -34,6 +35,7 @@ export class ObjectSizeValidator {
 	/**
 	 * Validates that an object doesn't have too many properties
 	 */
+	// eslint-disable-next-line max-params
 	public validateObjectSize(
 		keys: string[],
 		limit: number,

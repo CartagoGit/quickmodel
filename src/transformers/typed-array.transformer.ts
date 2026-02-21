@@ -7,7 +7,7 @@ import {
 	IQValidator,
 } from '../core/interfaces/transformer.interface';
 
-type TypedArrayConstructor =
+type ITypedArrayConstructor =
 	| Int8ArrayConstructor
 	| Uint8ArrayConstructor
 	| Uint8ClampedArrayConstructor
@@ -20,7 +20,7 @@ type TypedArrayConstructor =
 	| BigInt64ArrayConstructor
 	| BigUint64ArrayConstructor;
 
-type TypedArray =
+type ITypedArray =
 	| Int8Array
 	| Uint8Array
 	| Uint8ClampedArray
@@ -73,7 +73,7 @@ type TypedArray =
  * console.log(json.largeNumbers); // ["9007199254740991", "123456789012345"]
  * ```
  */
-export class TypedArrayTransformer<T extends TypedArray>
+export class TypedArrayTransformer<T extends ITypedArray>
 	extends BaseTransformer<number[] | string[], T>
 	implements IQValidator
 {
@@ -84,7 +84,7 @@ export class TypedArrayTransformer<T extends TypedArray>
 	 * @param isBigInt - Whether this is a BigInt variant (BigInt64Array/BigUint64Array)
 	 */
 	constructor(
-		private ArrayConstructor: TypedArrayConstructor,
+		private ArrayConstructor: ITypedArrayConstructor,
 		private isBigInt?: boolean
 	) {
 		super();

@@ -16,6 +16,7 @@ export class PropertyTransformer {
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
 
+	// eslint-disable-next-line max-params
 	public transformProperty(
 		key: string,
 		value: any,

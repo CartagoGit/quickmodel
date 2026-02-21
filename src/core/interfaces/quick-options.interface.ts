@@ -51,10 +51,10 @@ export type IQExtractInstanceType<T> = T extends new (
  * @example
  * ```typescript
  * type Union = { a: string } | { b: number };
- * type Intersection = UnionToIntersection<Union>;  // { a: string } & { b: number }
+ * type Intersection = IUnionToIntersection<Union>;  // { a: string } & { b: number }
  * ```
  */
-export type UnionToIntersection<U> = (
+export type IUnionToIntersection<U> = (
 	U extends unknown ? (k: U) => void : never
 ) extends (k: infer I) => void
 	? I

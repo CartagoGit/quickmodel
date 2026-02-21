@@ -41,13 +41,16 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		];
 
 		const internalTools = allTools
-			.filter((t: any) =>
-				internalPrefixes.some((p) => t.name.startsWith(p))
+			.filter((tool: any) =>
+				internalPrefixes.some((prefix) => tool.name.startsWith(prefix))
 			)
 			.sort((a, b) => a.name.localeCompare(b.name));
 		const publicTools = allTools
 			.filter(
-				(t: any) => !internalPrefixes.some((p) => t.name.startsWith(p))
+				(tool: any) =>
+					!internalPrefixes.some((prefix) =>
+						tool.name.startsWith(prefix)
+					)
 			)
 			.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -64,7 +67,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		];
 
 		for (const lang of languages) {
-			const t = lang.texts as any;
+			const langTexts = lang.texts as any;
 			const isEn = lang.code === 'en';
 
 			// Helper to get description
@@ -72,10 +75,10 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			// User said: "use translations". But for English, tool.description IS the text.
 			// Ideally en.mcp.ts shouldn't double maintain it.
 			// Let's assume for 'en', we prefer tool.description.
-			// For 'es', we look in t.tools[name].
+			// For 'es', we look in langTexts.tools[name].
 			const getDesc = (name: string, defaultDesc: string) => {
-				if (t.tools && t.tools[name]) {
-					return t.tools[name];
+				if (langTexts.tools && langTexts.tools[name]) {
+					return langTexts.tools[name];
 				}
 				// If not found in translation file
 				if (isEn) {
@@ -90,14 +93,14 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			// Generate Tools Documentation
 			const publicDocs = this.generateToolMd(
 				publicTools,
-				t.publicTitle,
-				t,
+				langTexts.publicTitle,
+				langTexts,
 				getDesc
 			);
 			const internalDocs = this.generateToolMd(
 				internalTools,
-				t.internalTitle,
-				t,
+				langTexts.internalTitle,
+				langTexts,
 				getDesc
 			);
 
@@ -119,7 +122,10 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			);
 
 			// Generate Transformers Documentation
-			const transformerDocs = this.generateTransformerMd(transformers, t);
+			const transformerDocs = this.generateTransformerMd(
+				transformers,
+				langTexts
+			);
 
 			this.writeDoc(
 				pathResolve(
@@ -137,6 +143,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		};
 	}
 
+	// eslint-disable-next-line max-params
 	private generateToolMd(
 		tools: any[],
 		_title: string,
@@ -193,8 +200,8 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		md += `| ${texts.transformerHeader} | ${texts.descHeader} |\n`;
 		md += `| :--- | :--- |\n`;
 
-		for (const t of transformers.sort()) {
-			md += `| \`${t}\` | Handles \`${t}\` data types. |\n`;
+		for (const transformer of transformers.sort()) {
+			md += `| \`${transformer}\` | Handles \`${transformer}\` data types. |\n`;
 		}
 
 		md += `\n\n${texts.customTransformers}\n`;

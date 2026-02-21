@@ -41,8 +41,8 @@ export class QInspectModelTool extends QAbstractTool<
 		);
 		// Filter out undefineds to ensure string[]
 		const transformers = transformerMatches
-			.map((m) => m[1])
-			.filter((t): t is string => t !== undefined);
+			.map((matchItem) => matchItem[1])
+			.filter((item): item is string => item !== undefined);
 
 		return {
 			name: className,

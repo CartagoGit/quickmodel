@@ -1,10 +1,10 @@
-import { CaseType } from '../types/case.type';
+import { ICaseType } from '../types/case.type';
 
 export class CaseHelper {
 	/**
 	 * Converts a string to the specified case format.
 	 */
-	static toCase(format: CaseType, str: string): string {
+	static toCase(format: ICaseType, str: string): string {
 		if (!str) return str;
 
 		// normalize to space separated first

@@ -10,7 +10,7 @@ import { z } from 'zod';
 /**
  * Base schema generator configuration
  */
-interface SchemaGeneratorConfig {
+interface ISchemaGeneratorConfig {
 	className: string;
 	decoratorConfig: Record<string, any>;
 	properties: string[];
@@ -20,7 +20,7 @@ interface SchemaGeneratorConfig {
  * JSON Schema Draft-07 Generator
  */
 export class JsonSchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): Record<string, any> {
+	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		const { className, decoratorConfig, properties } = config;
 
 		const schema: Record<string, any> = {
@@ -126,7 +126,7 @@ export class JsonSchemaGenerator {
  * Zod Schema Generator
  */
 export class ZodSchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): z.ZodObject<any> {
+	static generate(config: ISchemaGeneratorConfig): z.ZodObject<any> {
 		const { decoratorConfig, properties } = config;
 
 		const shape: Record<string, z.ZodTypeAny> = {};
@@ -178,7 +178,7 @@ export class ZodSchemaGenerator {
  * MongoDB/Mongoose Schema Generator
  */
 export class MongoSchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): Record<string, any> {
+	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		const { decoratorConfig, properties } = config;
 
 		const schema: Record<string, any> = {};
@@ -232,7 +232,7 @@ export class MongoSchemaGenerator {
  * TypeScript Interface Generator
  */
 export class TypeScriptSchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): string {
+	static generate(config: ISchemaGeneratorConfig): string {
 		const { className, decoratorConfig, properties } = config;
 
 		let tsInterface = `interface I${className} {\n`;
@@ -287,7 +287,7 @@ export class TypeScriptSchemaGenerator {
  * GraphQL SDL Generator
  */
 export class GraphQLSchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): string {
+	static generate(config: ISchemaGeneratorConfig): string {
 		const { className, decoratorConfig, properties } = config;
 
 		let graphqlType = `type ${className} {\n`;
@@ -341,7 +341,7 @@ export class GraphQLSchemaGenerator {
  * OpenAPI 3.0 Schema Generator
  */
 export class OpenAPISchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): Record<string, any> {
+	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		const { decoratorConfig, properties } = config;
 
 		const schema: Record<string, any> = {
@@ -403,7 +403,7 @@ export class OpenAPISchemaGenerator {
  * AJV Schema Generator (JSON Schema compatible)
  */
 export class AjvSchemaGenerator {
-	static generate(config: SchemaGeneratorConfig): Record<string, any> {
+	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		// AJV uses JSON Schema, so we reuse JsonSchemaGenerator
 		// but without $schema property (AJV adds it)
 		const jsonSchema = JsonSchemaGenerator.generate(config);

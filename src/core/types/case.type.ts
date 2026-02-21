@@ -1,7 +1,11 @@
 /**
  * Supported case transformation types.
  */
-export type CaseType = 'snake_case' | 'camelCase' | 'kebab-case' | 'PascalCase';
+export type ICaseType =
+	| 'snake_case'
+	| 'camelCase'
+	| 'kebab-case'
+	| 'PascalCase';
 
 /**
  * Configuration for case transformation.

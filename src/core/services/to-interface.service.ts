@@ -138,6 +138,7 @@ export class ToInterfaceService<
 		return result as T;
 	}
 
+	// eslint-disable-next-line max-params
 	private convertToInterfaceFormat(
 		currentValue: unknown,
 		originalValue: unknown,

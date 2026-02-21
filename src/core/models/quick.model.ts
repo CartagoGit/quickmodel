@@ -302,15 +302,15 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	static mock<T extends abstract new (...args: any[]) => QModel<IQAnyRecord>>(
 		this: T
 	): QMockBuilder<IQModelInstance<T>, IQModelInterface<T>> {
-		type ThisClass = T;
-		type InstanceType = ThisClass extends abstract new (
+		type IThisClass = T;
+		type ILocalInstanceType = IThisClass extends abstract new (
 			...args: unknown[]
 		) => infer R
 			? R
 			: never;
 
-		const ModelClass: new (data: any) => InstanceType =
-			this as unknown as IModelConstructor<InstanceType>;
+		const ModelClass: new (data: any) => ILocalInstanceType =
+			this as unknown as IModelConstructor<ILocalInstanceType>;
 
 		return new QMockBuilder(
 			ModelClass,
@@ -535,11 +535,11 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		});
 
 		// Auto-register was already done in constructor, just deserialize
-		type DataAsInterface = Record<string, unknown>;
-		type ThisConstructor = new (data: DataAsInterface) => this;
+		type IDataAsInterface = Record<string, unknown>;
+		type IThisConstructor = new (data: IDataAsInterface) => this;
 		const deserialized = QModel.deserializer.deserialize(
-			data as unknown as DataAsInterface,
-			this.constructor as ThisConstructor
+			data as unknown as IDataAsInterface,
+			this.constructor as IThisConstructor
 		);
 
 		// Copy ALL properties from deserialized instance
@@ -893,9 +893,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): IQSerializedInterface<TInterface> {
-		type ModelAsRecord = Record<string, unknown>;
+		type IModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serialize(
-			this as unknown as ModelAsRecord,
+			this as unknown as IModelAsRecord,
 			seen,
 			options
 		) as IQSerializedInterface<TInterface>;
@@ -919,9 +919,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 */
 	toJSON(_key?: string, options?: IQSerializationOptions): string {
-		type ModelAsRecord = Record<string, unknown>;
+		type IModelAsRecord = Record<string, unknown>;
 		return QModel.serializer.serializeToJson(
-			this as unknown as ModelAsRecord,
+			this as unknown as IModelAsRecord,
 			options
 		);
 	}
@@ -943,8 +943,8 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 */
 	validate(): IQValidationResult[] {
-		type ModelAsRecord = Record<string, unknown>;
-		return QModel.validation.validate(this as unknown as ModelAsRecord);
+		type IModelAsRecord = Record<string, unknown>;
+		return QModel.validation.validate(this as unknown as IModelAsRecord);
 	}
 
 	/**
@@ -1499,7 +1499,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 */
 	static getSchema(
-		type: import('@/core/types/schema-types').QSchemaType
+		type: import('@/core/types/schema-types').IQSchemaType
 	): any {
 		const {
 			JsonSchemaGenerator,
@@ -1578,7 +1578,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * // }
 	 * ```
 	 */
-	getSchema(type: import('@/core/types/schema-types').QSchemaType): any {
+	getSchema(type: import('@/core/types/schema-types').IQSchemaType): any {
 		const {
 			JsonSchemaGenerator,
 			// eslint-disable-next-line @typescript-eslint/no-require-imports

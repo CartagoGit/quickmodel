@@ -5,7 +5,7 @@
 /**
  * Available schema types for generation
  */
-export type QSchemaType =
+export type IQSchemaType =
 	| 'json' // JSON Schema Draft-07
 	| 'zod' // Zod validation schema
 	| 'mongo' // MongoDB/Mongoose schema

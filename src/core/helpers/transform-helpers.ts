@@ -54,9 +54,9 @@ export function deepFreeze<T>(
 // STRING HELPERS
 // ============================================================================
 
-export const trim = (s: string): string => s.trim();
-export const trimStart = (s: string): string => s.trimStart();
-export const trimEnd = (s: string): string => s.trimEnd();
+export const trim = (str: string): string => str.trim();
+export const trimStart = (str: string): string => str.trimStart();
+export const trimEnd = (str: string): string => str.trimEnd();
 
 /**
  * Safely stringifies a value, handling circular references and limiting length.
@@ -83,50 +83,53 @@ export function safeStringify(value: unknown, space?: number): string {
 	}
 }
 
-export const uppercase = (s: string): string => s.toUpperCase();
-export const lowercase = (s: string): string => s.toLowerCase();
+export const uppercase = (str: string): string => str.toUpperCase();
+export const lowercase = (str: string): string => str.toLowerCase();
 
-export const capitalize = (s: string): string =>
-	s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+export const capitalize = (str: string): string =>
+	str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
-export const capitalizeWords = (s: string): string =>
-	s
+export const capitalizeWords = (str: string): string =>
+	str
 		.split(' ')
 		.map((word) => capitalize(word))
 		.join(' ');
 
-export const slugify = (s: string): string =>
-	s
+export const slugify = (str: string): string =>
+	str
 		.trim()
 		.toLowerCase()
 		.replace(/[^\w\s-]/g, '') // Remove special chars
 		.replace(/\s+/g, '-') // Spaces to hyphens
 		.replace(/-+/g, '-'); // Multiple hyphens to single
 
-export const camelCase = (s: string): string =>
-	s.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+export const camelCase = (str: string): string =>
+	str
+		.toLowerCase()
+		.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
 
-export const snakeCase = (s: string): string =>
-	s
+export const snakeCase = (str: string): string =>
+	str
 		.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
 		.replace(/^_/, '');
 
-export const kebabCase = (s: string): string =>
-	s
+export const kebabCase = (str: string): string =>
+	str
 		.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
 		.replace(/^-/, '');
 
-export const reverse = (s: string): string => s.split('').reverse().join('');
+export const reverse = (str: string): string =>
+	str.split('').reverse().join('');
 
 export const truncate =
 	(maxLength: number) =>
-	(s: string): string =>
-		s.length > maxLength ? s.slice(0, maxLength) + '...' : s;
+	(str: string): string =>
+		str.length > maxLength ? str.slice(0, maxLength) + '...' : str;
 
-export const removeSpaces = (s: string): string => s.replace(/\s+/g, '');
+export const removeSpaces = (str: string): string => str.replace(/\s+/g, '');
 
-export const normalizeWhitespace = (s: string): string =>
-	s.replace(/\s+/g, ' ').trim();
+export const normalizeWhitespace = (str: string): string =>
+	str.replace(/\s+/g, ' ').trim();
 
 // ============================================================================
 // NUMBER HELPERS
@@ -134,63 +137,63 @@ export const normalizeWhitespace = (s: string): string =>
 
 export const round =
 	(decimals: number = 0) =>
-	(n: number): number =>
-		Math.round(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
+	(num: number): number =>
+		Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
-export const floor = (n: number): number => Math.floor(n);
-export const ceil = (n: number): number => Math.ceil(n);
-export const trunc = (n: number): number => Math.trunc(n);
-export const abs = (n: number): number => Math.abs(n);
+export const floor = (num: number): number => Math.floor(num);
+export const ceil = (num: number): number => Math.ceil(num);
+export const trunc = (num: number): number => Math.trunc(num);
+export const abs = (num: number): number => Math.abs(num);
 
 export const clamp =
 	(min: number, max: number) =>
-	(n: number): number =>
-		Math.min(max, Math.max(min, n));
+	(num: number): number =>
+		Math.min(max, Math.max(min, num));
 
-export const percentage = (n: number): number => clamp(0, 100)(n);
+export const percentage = (num: number): number => clamp(0, 100)(num);
 
 export const toFixed =
 	(decimals: number) =>
-	(n: number): string =>
-		n.toFixed(decimals);
+	(num: number): string =>
+		num.toFixed(decimals);
 
 export const multiply =
 	(factor: number) =>
-	(n: number): number =>
-		n * factor;
+	(num: number): number =>
+		num * factor;
 
 export const divide =
 	(divisor: number) =>
-	(n: number): number =>
-		n / divisor;
+	(num: number): number =>
+		num / divisor;
 
 export const add =
 	(amount: number) =>
-	(n: number): number =>
-		n + amount;
+	(num: number): number =>
+		num + amount;
 
 export const subtract =
 	(amount: number) =>
-	(n: number): number =>
-		n - amount;
+	(num: number): number =>
+		num - amount;
 
 // ============================================================================
 // ENCODING/DECODING HELPERS
 // ============================================================================
 
-export const base64Encode = (s: string): string =>
-	Buffer.from(s).toString('base64');
+export const base64Encode = (str: string): string =>
+	Buffer.from(str).toString('base64');
 
-export const base64Decode = (s: string): string =>
-	Buffer.from(s, 'base64').toString('utf-8');
+export const base64Decode = (str: string): string =>
+	Buffer.from(str, 'base64').toString('utf-8');
 
-export const jsonParse = <T = unknown>(s: string): T => JSON.parse(s);
+export const jsonParse = <T = unknown>(str: string): T => JSON.parse(str);
 
 export const jsonStringify = (obj: unknown): string => JSON.stringify(obj);
 
-export const encodeURIString = (s: string): string => encodeURIComponent(s);
+export const encodeURIString = (str: string): string => encodeURIComponent(str);
 
-export const decodeURIString = (s: string): string => decodeURIComponent(s);
+export const decodeURIString = (str: string): string => decodeURIComponent(str);
 
 // ============================================================================
 // COMPOSITION HELPER
@@ -209,7 +212,7 @@ export const decodeURIString = (s: string): string => decodeURIComponent(s);
  * ```
  */
 export function compose<T>(...fns: Array<(val: T) => T>): (val: T) => T {
-	return (value: T) => fns.reduce((acc, fn) => fn(acc), value);
+	return (value: T) => fns.reduce((acc, func) => func(acc), value);
 }
 
 /**

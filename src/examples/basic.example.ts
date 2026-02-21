@@ -246,7 +246,8 @@ const logTests = (obj: User) => {
 		'→ (Date | undefined | null)[]',
 		Array.isArray(obj.dates) &&
 			obj.dates.every(
-				(d) => d instanceof Date || d === undefined || d === null
+				(date) =>
+					date instanceof Date || date === undefined || date === null
 			)
 			? '✅'
 			: '❌'
@@ -315,7 +316,7 @@ const allCorrect =
 	typeof user.symbolic === 'symbol' &&
 	Array.isArray(user.dates) &&
 	user.dates.every(
-		(d) => d instanceof Date || d === undefined || d === null
+		(date) => date instanceof Date || date === undefined || date === null
 	) &&
 	user.pattern instanceof RegExp &&
 	user.config?.theme === 'dark' &&

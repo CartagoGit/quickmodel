@@ -35,9 +35,9 @@ export class QExportJsonSchemaTool extends QAbstractTool<
 		// Parse @Quick({ func: 'type' })
 		// Flexible regex for keys and values
 		const matches = args.code.matchAll(/(\w+):\s*['"](\w+)['"]/g);
-		for (const m of matches) {
-			const key = m[1]; // prop name
-			const type = m[2]; // transformer name
+		for (const matchResult of matches) {
+			const key = matchResult[1]; // prop name
+			const type = matchResult[2]; // transformer name
 
 			let jsonType: any = { type: 'string' };
 			if (type === 'number' || type === 'integer')

@@ -176,6 +176,7 @@ export class QMockGenerator {
 	/**
 	 * Generates an array of mocks.
 	 */
+	// eslint-disable-next-line max-params
 	generateArray<
 		TModel,
 		TData extends Record<string, unknown> = Record<string, unknown>,
@@ -230,6 +231,7 @@ export class QMockGenerator {
 		return Array.from(properties);
 	}
 
+	// eslint-disable-next-line max-params
 	private generateValue(
 		type: IQMockType,
 		fieldType: unknown,

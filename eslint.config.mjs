@@ -6,75 +6,174 @@ import prettierConfig from 'eslint-config-prettier';
 import securityPlugin from 'eslint-plugin-security';
 
 export default tseslint.config(
-  {
-    ignores: [
-      "dist/",
-      "node_modules/",
-      "docs/",
-      "docs-vitepress/",
-      "coverage/",
-      "**/*.js",
-      "**/*.mjs",
-      "**/*.d.ts",
-      "tests/**/mcp/**/*",
-      "tsup.config.ts"
-    ],
-  },
-  eslint.configs.recommended,
-  securityPlugin.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  {
-    rules: {
-      'security/detect-object-injection': 'off', // Essential for a reflection/serialization library
-      'security/detect-non-literal-fs-filename': 'off', // We validate paths manually in tools
-      'security/detect-unsafe-regex': 'warn', // checking manually
-    }
-  },
-  {
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.json', './tests/tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    plugins: {
-      prettier: prettierPlugin,
-    },
-    rules: {
-      // Manually apply eslint-config-prettier rules (turns off conflicting rules)
-      ...prettierConfig.rules,
-      
-      // Customize typescript-eslint rules
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_",
-          "caughtErrorsIgnorePattern": "^_"
-        }
-      ],
-      "@typescript-eslint/no-non-null-assertion": "off",
-      
-      // Reflection/serialization libraries require dynamic type access.
-      // These rules are intentionally disabled for metadata operations and runtime type transformations.
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unsafe-call": "off",
-      "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/no-unsafe-function-type": "off",
-      "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/restrict-template-expressions": "off",
-      "@typescript-eslint/no-unsafe-enum-comparison": "off",
-      "@typescript-eslint/no-redundant-type-constituents": "off",
-      "@typescript-eslint/no-base-to-string": "off",
-      "@typescript-eslint/no-this-alias": "off",
+	{
+		ignores: [
+			'dist/',
+			'node_modules/',
+			'docs/',
+			'docs-vitepress/',
+			'coverage/',
+			'**/*.js',
+			'**/*.mjs',
+			'**/*.d.ts',
+			'tests/**/mcp/**/*',
+			'tsup.config.ts',
+		],
+	},
+	eslint.configs.recommended,
+	securityPlugin.configs.recommended,
+	...tseslint.configs.recommended,
+	...tseslint.configs.recommendedTypeChecked,
+	{
+		rules: {
+			'security/detect-object-injection': 'off', // Essential for a reflection/serialization library
+			'security/detect-non-literal-fs-filename': 'off', // We validate paths manually in tools
+			'security/detect-unsafe-regex': 'warn', // checking manually
+		},
+	},
+	{
+		languageOptions: {
+			parserOptions: {
+				project: ['./tsconfig.json', './tests/tsconfig.json'],
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+		plugins: {
+			prettier: prettierPlugin,
+		},
+		rules: {
+			// Manually apply eslint-config-prettier rules (turns off conflicting rules)
+			...prettierConfig.rules,
 
-      // Prettier rule
-      // "prettier/prettier": "error",
-    },
-  }
+			// Customize typescript-eslint rules
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/explicit-module-boundary-types': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+				},
+			],
+			'@typescript-eslint/no-non-null-assertion': 'off',
+
+			// Reflection/serialization libraries require dynamic type access.
+			// These rules are intentionally disabled for metadata operations and runtime type transformations.
+			'@typescript-eslint/no-unsafe-assignment': 'off',
+			'@typescript-eslint/no-unsafe-member-access': 'off',
+			'@typescript-eslint/no-unsafe-call': 'off',
+			'@typescript-eslint/no-unsafe-return': 'off',
+			'@typescript-eslint/no-unsafe-argument': 'off',
+			'@typescript-eslint/no-unsafe-function-type': 'off',
+			'@typescript-eslint/no-empty-object-type': 'off',
+			'@typescript-eslint/restrict-template-expressions': 'off',
+			'@typescript-eslint/no-unsafe-enum-comparison': 'off',
+			'@typescript-eslint/no-redundant-type-constituents': 'off',
+			'@typescript-eslint/no-base-to-string': 'off',
+			'@typescript-eslint/no-this-alias': 'off',
+
+			// Prettier rule
+			// "prettier/prettier": "error",
+
+			// ---------------------------------------------------------------------------
+			// Reglas portadas desde beatgames
+			// ---------------------------------------------------------------------------
+
+			// PROHIBIR importaciones desde alias raíz sin especificar archivo
+			// @/ → usar siempre @/core/..., @/transformers/..., etc.
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['@/index', '@/index.ts'],
+							message:
+								"PROHIBIDO: importar desde el barrel raíz '@/index'. Usa la ruta completa del módulo.",
+						},
+						{
+							group: ['@mcp'],
+							message:
+								"PROHIBIDO: importar desde '@mcp' sin especificar archivo. Usa '@mcp/server' o la ruta completa.",
+						},
+					],
+				},
+			],
+
+			// OBLIGAR mínimo 3 caracteres en nombres de variables, funciones y parámetros
+			'id-length': [
+				'error',
+				{
+					min: 3,
+					max: 50,
+					properties: 'never', // No validar propiedades de objeto (APIs externas pueden enviar { x, y })
+					exceptions: [
+						'_', // Variable descartada en destructuring
+						'id', // Identificador ubicuo
+						'on', // Método de testing / event listeners
+						'fn', // Función/callback (muy estándar en TS)
+						'fs', // Node.js filesystem module
+						'cb', // Callback
+						'md', // Markdown content (estándar en herramientas de documentación)
+						'a',
+						'b', // Comparadores de sort: (a, b) => a - b
+						'k',
+						'v', // Key/Value en iteración de Map/Object
+						'e', // Error en catch blocks: catch(e)
+						'i', // Index en loops: for(let i = 0; ...)
+					],
+					exceptionPatterns: [
+						'^(posX|posY|idx)$',
+						'^_', // Variables ignoradas con prefijo _ (_e, _err, _val, etc.)
+					],
+				},
+			],
+
+			// PROHIBIR más de 3 parámetros posicionales — usar objeto si necesitas más
+			'max-params': ['error', { max: 3 }],
+
+			// OBLIGAR prefijo I en interfaces y type aliases
+			'@typescript-eslint/naming-convention': [
+				'error',
+				{
+					selector: 'interface',
+					format: ['PascalCase'],
+					prefix: ['I'],
+				},
+				{
+					selector: 'typeAlias',
+					format: ['PascalCase'],
+					prefix: ['I'],
+				},
+			],
+		},
+	},
+	// Override para ficheros de test: relajar reglas que dificultan el testing
+	{
+		files: ['**/*.test.ts', '**/*.spec.ts'],
+		rules: {
+			'@typescript-eslint/no-empty-function': 'off',
+			'@typescript-eslint/no-explicit-any': 'off',
+			'max-params': 'off',
+			'id-length': 'off',
+			'@typescript-eslint/naming-convention': 'off',
+			// Los tests importan desde el barrel público para probar la API expuesta
+			'no-restricted-imports': 'off',
+		},
+	},
+	// Override para ejemplos: demuestran la API pública, importan desde el barrel raíz a propósito
+	{
+		files: ['src/examples/**'],
+		rules: {
+			'no-restricted-imports': 'off',
+		},
+	},
+	// Override para transformers: deserialize(value, propertyKey, className, context?) es
+	// el contrato fijo del interfaz IQTransformer — 4 parámetros son estructuralmente necesarios
+	{
+		files: ['src/transformers/**', 'src/core/bases/**'],
+		rules: {
+			'max-params': 'off',
+		},
+	}
 );

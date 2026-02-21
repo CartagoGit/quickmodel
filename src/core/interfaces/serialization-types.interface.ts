@@ -94,7 +94,7 @@ export type IQSerializedInterface<T> = {
 /**
  * Mapea un tipo serializado de vuelta a su tipo original
  */
-export type Deserialized<T> = T; // Deserialization handled at runtime with transformers
+export type IDeserialized<T> = T; // Deserialization handled at runtime with transformers
 
 /**
  * Tipo para datos de entrada en el constructor

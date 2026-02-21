@@ -46,7 +46,7 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 		const safeName = args.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 		const pascalName = args.name
 			.split('-')
-			.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+			.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 			.join('');
 
 		let targetPath = '';
