@@ -19,12 +19,12 @@ function _getFaker(): (typeof import('@faker-js/faker'))['faker'] {
 	try {
 		_fakerCache = _req('@faker-js/faker').faker;
 		return _fakerCache!;
-	} catch {
+	} /* v8 ignore start */ catch {
 		throw new QModelError(
 			'@faker-js/faker is required for mock generation (optional dependency). ' +
 				'Install it with: npm install @faker-js/faker'
 		);
-	}
+	} /* v8 ignore stop */
 }
 import {
 	QUICK_OPTIONS_KEY,

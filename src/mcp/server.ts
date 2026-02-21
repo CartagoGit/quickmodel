@@ -197,11 +197,9 @@ if (import.meta.main) {
 	server.registerTools(QMcpServer.getDefaultTools());
 	server.registerPrompts(QMcpServer.getDefaultPrompts());
 
-	/* v8 ignore start */
 	server.start().catch((error) => {
 		console.error('Fatal error in MCP Server:', error);
 		process.exit(1);
 	});
-	/* v8 ignore stop */
 }
 /* v8 ignore stop */

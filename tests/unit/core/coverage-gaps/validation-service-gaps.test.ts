@@ -1,6 +1,7 @@
 import { describe, it, expect, spyOn } from 'bun:test';
 import { ValidationService } from '../../../../src/core/services/validation.service';
 import { QType } from '../../../../src/index';
+import 'reflect-metadata';
 
 describe('Validation Service Coverage Gaps', () => {
 	it('should handle exceptions thrown by validator', () => {
@@ -138,5 +139,39 @@ describe('Validation Service Coverage Gaps', () => {
 		);
 
 		consoleSpy.mockRestore();
+	});
+
+	it('should silently catch errors thrown during array nested model validation', () => {
+		// TDD: cover the `catch (_) { // Ignore }` block inside the
+		// "2. Array of Nested Models" section (lines ~381-383 in validation.service.ts)
+		const service = new ValidationService();
+
+		// ChildModel with @QType so QTYPES_METADATA_KEY is set on ChildModel.prototype.
+		// This makes Reflect.hasMetadata(QTYPES_METADATA_KEY, Object.getPrototypeOf(proxy)) === true.
+		class ChildModel {
+			@QType('string' as any)
+			val = 'ok';
+		}
+		const childInstance = new ChildModel();
+
+		// Proxy that throws when `constructor` is accessed.
+		// This causes `this.validate(proxy)` to throw at `instance.constructor.name`.
+		const throwingProxy = new Proxy(childInstance, {
+			get(target, prop, receiver) {
+				if (prop === 'constructor') throw new Error('array proxy trap');
+				return Reflect.get(target, prop, receiver);
+			},
+		});
+
+		// ParentModel with an array field 'items'.
+		class ParentModel {
+			@QType('string' as any)
+			items: any[] = [];
+		}
+		const parent = new ParentModel();
+		parent.items = [throwingProxy];
+
+		// Should NOT throw — the catch block swallows the error.
+		expect(() => service.validate(parent as any)).not.toThrow();
 	});
 });
