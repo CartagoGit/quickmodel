@@ -889,16 +889,75 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 */
+	/**
+	 * Returns a plain snapshot of the current runtime state.
+	 *
+	 * Unlike `serialize()`, complex types are NOT converted to JSON-safe primitives:
+	 * `Date` stays `Date`, `bigint` stays `bigint`, `Map` stays `Map`, etc.
+	 *
+	 * Unlike `toInterface()`, this always returns the **current transformed state**
+	 * regardless of the original input format.
+	 *
+	 * Useful for:
+	 * - In-memory logic that operates on native types
+	 * - Passing data to code that understands runtime types
+	 * - Debugging / inspection
+	 *
+	 * @returns Plain `Record<string, unknown>` with current runtime values
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ createdAt: '2024-01-01T00:00:00.000Z', balance: '999' });
+	 * const plain = user.toPlain();
+	 * plain.createdAt instanceof Date; // true
+	 * typeof plain.balance === 'bigint'; // true
+	 * ```
+	 */
+	toPlain(): Record<string, unknown> {
+		// Use QUICK_VALUES_KEY for the list of known keys, but read each via the
+		// property getter so that mutations made after construction are reflected
+		// (the setter updates storageKey, not the backup store directly).
+		const keys = Object.keys(this[QUICK_VALUES_KEY]);
+		const result: Record<string, unknown> = {};
+		for (const key of keys) {
+			result[key] = (this as Record<string, unknown>)[key];
+		}
+		return result;
+	}
+
 	serialize(
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): IQSerializedInterface<TInterface> {
 		type IModelAsRecord = Record<string, unknown>;
-		return QModel.serializer.serialize(
+		const result = QModel.serializer.serialize(
 			this as unknown as IModelAsRecord,
 			seen,
 			options
 		) as IQSerializedInterface<TInterface>;
+
+		// pick takes precedence over omit
+		if (options?.pick) {
+			const filtered = {} as IQSerializedInterface<TInterface>;
+			for (const key of options.pick) {
+				if (key in result) {
+					(filtered as Record<string, unknown>)[key] = (
+						result as Record<string, unknown>
+					)[key];
+				}
+			}
+			return filtered;
+		}
+
+		if (options?.omit && options.omit.length > 0) {
+			const filtered: Record<string, unknown> = { ...result };
+			for (const key of options.omit) {
+				delete filtered[key];
+			}
+			return filtered as IQSerializedInterface<TInterface>;
+		}
+
+		return result;
 	}
 
 	/**
@@ -1360,6 +1419,68 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Compares this instance with another and returns a field-by-field diff.
+	 *
+	 * Uses serialized (JSON-safe) values for comparison so that complex types
+	 * like `Date` and `bigint` are compared as strings consistently.
+	 *
+	 * @param other - Another instance of the same model class
+	 * @returns Object where each changed key maps to `{ before, after }` values.
+	 *          `before` = this instance's value, `after` = other instance's value.
+	 *          Returns an empty object when both instances are equal.
+	 *
+	 * @example
+	 * ```typescript
+	 * const a = new User({ name: 'John', age: 30 });
+	 * const b = new User({ name: 'Jane', age: 31 });
+	 *
+	 * a.diff(b);
+	 * // { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
+	 * ```
+	 */
+	diff(other: this): Record<string, { before: unknown; after: unknown }> {
+		const selfData = this.serialize() as Record<string, unknown>;
+		const otherData = other.serialize() as Record<string, unknown>;
+		const result: Record<string, { before: unknown; after: unknown }> = {};
+
+		const allKeys = new Set([
+			...Object.keys(selfData),
+			...Object.keys(otherData),
+		]);
+
+		for (const key of allKeys) {
+			if (!this.deepEqual(selfData[key], otherData[key])) {
+				result[key] = { before: selfData[key], after: otherData[key] };
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns `true` when this instance is deeply equal to `other`.
+	 *
+	 * Comparison is performed on serialized (JSON-safe) values so that `Date`,
+	 * `bigint` and other complex types are compared consistently.
+	 *
+	 * @param other - Another instance of the same model class
+	 * @returns `true` if all serialized fields are equal, `false` otherwise
+	 *
+	 * @example
+	 * ```typescript
+	 * const a = new User({ id: '1', name: 'John' });
+	 * const b = new User({ id: '1', name: 'John' });
+	 * a.equals(b); // true
+	 *
+	 * a.name = 'Jane';
+	 * a.equals(b); // false
+	 * ```
+	 */
+	equals(other: this): boolean {
+		return Object.keys(this.diff(other)).length === 0;
 	}
 
 	/**

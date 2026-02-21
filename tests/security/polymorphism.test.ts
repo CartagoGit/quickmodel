@@ -54,7 +54,7 @@ describe('Security: Polymorphism Support', () => {
 		try {
 			new Data(payload as any);
 		} catch (_e) {
-			expect(true).toBe(true);
+			expect(_e).toBeInstanceOf(Error);
 			return;
 		}
 		// If it didn't throw, check it wasn't converted

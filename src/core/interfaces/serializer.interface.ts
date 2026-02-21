@@ -40,6 +40,18 @@ export interface IQSerializationOptions {
 	 * Include fields with undefined/null values in the serialized output.
 	 */
 	exposeUnsetFields?: boolean;
+
+	/**
+	 * Include ONLY the specified fields in the serialized output.
+	 * Takes precedence over `omit` when both are provided.
+	 */
+	pick?: string[];
+
+	/**
+	 * Exclude the specified fields from the serialized output.
+	 * Ignored when `pick` is also provided.
+	 */
+	omit?: string[];
 }
 
 export interface IQSerializer<

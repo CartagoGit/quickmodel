@@ -1,5 +1,9 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
+import {
+	WeakMapTransformer,
+	WeakSetTransformer,
+} from '@/transformers/weak-collections.transformer';
 
 describe('WeakMap Transformer', () => {
 	describe('Deserialization', () => {
@@ -278,5 +282,72 @@ describe('WeakSet Transformer', () => {
 			expect(tracked.tracked.has(obj1)).toBe(true);
 			expect(tracked.tracked.has(obj2)).toBe(true);
 		});
+	});
+});
+
+// ===========================================================================
+// Coverage gaps: direct transformer calls (lines 61-63, 114, 175-177)
+// ===========================================================================
+
+describe('WeakMapTransformer — direct transformer coverage gaps', () => {
+	const transformer = new WeakMapTransformer();
+
+	test('should throw when value is not an array (e.g. a plain string)', () => {
+		expect(() =>
+			transformer.deserialize('not-an-array' as any, 'cache', 'Cache')
+		).toThrow(/WeakMap deserialization expects array of tuples/i);
+	});
+
+	test('should throw when value is a number (non-array)', () => {
+		expect(() =>
+			transformer.deserialize(42 as any, 'cache', 'Cache')
+		).toThrow(/WeakMap deserialization expects array of tuples/i);
+	});
+
+	test('isValid() should return true for a WeakMap instance', () => {
+		expect(transformer.isValid(new WeakMap())).toBe(true);
+	});
+
+	test('isValid() should return false for a non-WeakMap value', () => {
+		expect(transformer.isValid(new Map())).toBe(false);
+		expect(transformer.isValid(null)).toBe(false);
+		expect(transformer.isValid('string')).toBe(false);
+	});
+
+	test('should return null for null input', () => {
+		expect(transformer.deserialize(null, 'cache', 'Cache')).toBeNull();
+	});
+
+	test('should return null for undefined input', () => {
+		expect(transformer.deserialize(undefined, 'cache', 'Cache')).toBeNull();
+	});
+});
+
+describe('WeakSetTransformer — direct transformer coverage gaps', () => {
+	const transformer = new WeakSetTransformer();
+
+	test('should throw when value is not an array (e.g. a plain object)', () => {
+		expect(() =>
+			transformer.deserialize({ key: 'val' } as any, 'tracked', 'Tracker')
+		).toThrow(/WeakSet deserialization expects array/i);
+	});
+
+	test('should throw when value is a number (non-array)', () => {
+		expect(() =>
+			transformer.deserialize(99 as any, 'tracked', 'Tracker')
+		).toThrow(/WeakSet deserialization expects array/i);
+	});
+
+	test('isValid() should return true for a WeakSet instance', () => {
+		expect(transformer.isValid(new WeakSet())).toBe(true);
+	});
+
+	test('isValid() should return false for non-WeakSet value', () => {
+		expect(transformer.isValid(new Set())).toBe(false);
+		expect(transformer.isValid(null)).toBe(false);
+	});
+
+	test('should return null for null input', () => {
+		expect(transformer.deserialize(null, 'tracked', 'Tracker')).toBeNull();
 	});
 });

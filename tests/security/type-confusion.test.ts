@@ -26,7 +26,7 @@ describe('Security: Type Confusion via __type Injection', () => {
 			expect(user.age).not.toBeInstanceOf(Date);
 		} catch (_error) {
 			// Throwing is also a valid (and secure) response to type mismatch
-			expect(true).toBe(true);
+			expect(_error).toBeInstanceOf(Error);
 		}
 	});
 
@@ -52,7 +52,7 @@ describe('Security: Type Confusion via __type Injection', () => {
 			expect(config.active).not.toBeInstanceOf(Map);
 		} catch (_error) {
 			// Throwing is also a valid (and secure) response to type mismatch
-			expect(true).toBe(true);
+			expect(_error).toBeInstanceOf(Error);
 		}
 	});
 });

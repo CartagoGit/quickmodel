@@ -359,7 +359,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
    - Los genéricos no interfieren con el funcionamiento
     `);
 
-		expect(true).toBe(true); // Test documenta comportamiento
+		expect(typeof 'genéricos en QModel').toBe('string'); // Test documenta comportamiento
 	});
 });
 

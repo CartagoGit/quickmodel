@@ -3,6 +3,7 @@ import {
 	MapTransformer,
 	SetTransformer,
 } from '@/transformers/map-set.transformer';
+import type { IQValidationContext } from '@/core/interfaces/transformer.interface';
 
 describe('Transformer Coverage: Map & Set', () => {
 	const className = 'TestClass';
@@ -196,6 +197,219 @@ describe('Transformer Coverage: Map & Set', () => {
 						.isValid
 				).toBe(false);
 			});
+		});
+	});
+});
+
+// ===========================================================================
+// Coverage gaps: MapTransformer — validate, serializeValue complex types,
+// autoTransformValue nested Map/BigInt, serialize with Symbol keys
+// ===========================================================================
+
+describe('MapTransformer — coverage gaps', () => {
+	const ctx: IQValidationContext = {
+		propertyKey: 'testProp',
+		className: 'TestClass',
+	};
+	const transformer = new MapTransformer<any, any>();
+
+	describe('validate()', () => {
+		test('should return isValid=true for an array input', () => {
+			const result = transformer.validate([['a', 1]], ctx);
+			expect(result.isValid).toBe(true);
+		});
+
+		test('should return isValid=false for a number', () => {
+			const result = transformer.validate(42, ctx);
+			expect(result.isValid).toBe(false);
+			expect(result.error).toBeDefined();
+		});
+
+		test('should return isValid=false for a string', () => {
+			const result = transformer.validate('not-a-map', ctx);
+			expect(result.isValid).toBe(false);
+		});
+	});
+
+	describe('serialize() — serializeValue with complex nested types', () => {
+		test('should serialize Map values containing nested Date → ISO string', () => {
+			const date = new Date('2024-06-01T00:00:00.000Z');
+			const map = new Map([['date', date]]);
+			const result = transformer.serialize(map) as Record<
+				string,
+				unknown
+			>;
+			expect(result['date']).toBe('2024-06-01T00:00:00.000Z');
+		});
+
+		test('should serialize Map values containing nested BigInt → string', () => {
+			const map = new Map([['big', 999999999999999n]]);
+			const result = transformer.serialize(map) as Record<
+				string,
+				unknown
+			>;
+			expect(result['big']).toBe('999999999999999');
+		});
+
+		test('should serialize Map values containing nested Error → plain object', () => {
+			const err = new Error('boom');
+			err.name = 'CustomError';
+			const map = new Map([['err', err]]);
+			const result = transformer.serialize(map) as Record<
+				string,
+				unknown
+			>;
+			expect((result['err'] as any).name).toBe('CustomError');
+			expect((result['err'] as any).message).toBe('boom');
+		});
+
+		test('should serialize Map values containing nested Set → array', () => {
+			const inner = new Set([1, 2, 3]);
+			const map = new Map([['items', inner]]);
+			const result = transformer.serialize(map) as Record<
+				string,
+				unknown
+			>;
+			expect(Array.isArray(result['items'])).toBe(true);
+			expect(result['items']).toEqual([1, 2, 3]);
+		});
+
+		test('should serialize Map values containing nested Array', () => {
+			const arr = [10, 20, 30];
+			const map = new Map([['nums', arr]]);
+			const result = transformer.serialize(map) as Record<
+				string,
+				unknown
+			>;
+			expect(result['nums']).toEqual([10, 20, 30]);
+		});
+
+		test('should serialize Map values containing nested Map (no symbols)', () => {
+			const inner = new Map([['x', 1]]);
+			const outer = new Map([['nested', inner]]);
+			const result = transformer.serialize(outer) as Record<
+				string,
+				unknown
+			>;
+			expect((result['nested'] as any).x).toBe(1);
+		});
+
+		test('should serialize Map with Symbol keys → array of tuples', () => {
+			const symKey = Symbol.for('myKey');
+			const map = new Map<any, any>([[symKey, 'value']]);
+			const result = transformer.serialize(map);
+			// Symbol keys → serialized as array of tuples
+			expect(Array.isArray(result)).toBe(true);
+			const tuples = result as unknown as [string, unknown][];
+			expect(tuples[0][0]).toBe('myKey');
+			expect(tuples[0][1]).toBe('value');
+		});
+
+		test('should serialize Map with nested Map containing Symbol keys', () => {
+			const sym = Symbol.for('inner');
+			const inner = new Map<any, any>([[sym, 42]]);
+			const outer = new Map([['data', inner]]);
+			const result = transformer.serialize(outer) as Record<
+				string,
+				unknown
+			>;
+			// inner Map has symbol keys → serialized as array of tuples
+			expect(Array.isArray(result['data'])).toBe(true);
+		});
+	});
+
+	describe('autoTransformValue — nested Map and BigInt detection', () => {
+		test('deserialized array of tuples inside a Map value becomes a nested Map', () => {
+			// When a Map entry's value is itself [[k,v],[k,v]] it should auto-transform to Map
+			const data: [string, unknown][] = [
+				[
+					'nested',
+					[
+						['a', 1],
+						['b', 2],
+					] as any,
+				],
+			];
+			const result = transformer.deserialize(data, 'prop', 'Class');
+			const nested = result!.get('nested');
+			expect(nested).toBeInstanceOf(Map);
+			expect((nested as Map<any, any>).get('a')).toBe(1);
+		});
+
+		test('deserialized large numeric string inside a Map value becomes BigInt', () => {
+			const data: [string, unknown][] = [
+				['amount', '999999999999999999'],
+			];
+			const result = transformer.deserialize(data, 'prop', 'Class');
+			expect(typeof result!.get('amount')).toBe('bigint');
+		});
+	});
+});
+
+// ===========================================================================
+// Coverage gaps: SetTransformer — serializeSetValue with complex nested types
+// ===========================================================================
+
+describe('SetTransformer — coverage gaps', () => {
+	const transformer = new SetTransformer<any>();
+
+	describe('serialize() — serializeSetValue with complex nested types', () => {
+		test('should serialize Set containing Date → ISO string', () => {
+			const date = new Date('2025-01-15T00:00:00.000Z');
+			const set = new Set([date]);
+			const result = transformer.serialize(set);
+			expect(result[0]).toBe('2025-01-15T00:00:00.000Z');
+		});
+
+		test('should serialize Set containing BigInt → string', () => {
+			const set = new Set([12345678901234567n]);
+			const result = transformer.serialize(set);
+			expect(result[0]).toBe('12345678901234567');
+		});
+
+		test('should serialize Set containing Error → plain object', () => {
+			const err = new TypeError('bad type');
+			const set = new Set([err]);
+			const result = transformer.serialize(set);
+			expect(result[0].name).toBe('TypeError');
+			expect(result[0].message).toBe('bad type');
+		});
+
+		test('should serialize Set containing nested Map (no symbols) → object', () => {
+			const inner = new Map([['k', 'v']]);
+			const set = new Set([inner]);
+			const result = transformer.serialize(set);
+			expect(result[0].k).toBe('v');
+		});
+
+		test('should serialize Set containing nested Map with Symbol keys → array of tuples', () => {
+			const sym = Symbol.for('setKey');
+			const inner = new Map<any, any>([[sym, 99]]);
+			const set = new Set([inner]);
+			const result = transformer.serialize(set);
+			expect(Array.isArray(result[0])).toBe(true);
+		});
+
+		test('should serialize Set containing nested Set → array', () => {
+			const inner = new Set(['a', 'b']);
+			const set = new Set([inner]);
+			const result = transformer.serialize(set);
+			expect(Array.isArray(result[0])).toBe(true);
+			expect(result[0]).toEqual(['a', 'b']);
+		});
+
+		test('should serialize Set containing Array → array passthrough', () => {
+			const arr = [1, 2, 3];
+			const set = new Set([arr]);
+			const result = transformer.serialize(set);
+			expect(result[0]).toEqual([1, 2, 3]);
+		});
+
+		test('should handle null/undefined values in Set', () => {
+			const set = new Set([null, undefined]);
+			const result = transformer.serialize(set);
+			expect(result[0]).toBeNull();
+			expect(result[1]).toBeUndefined();
 		});
 	});
 });
