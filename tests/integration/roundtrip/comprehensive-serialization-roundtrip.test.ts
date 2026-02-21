@@ -278,7 +278,7 @@ describe('CompleteModel - All Supported Types', () => {
 		test('should preserve string and numeric enum values', () => {
 			const model = new CompleteModel(testData);
 			expect(model.role).toBe(UserRole.Admin);
-			expect(model.role).toBe('ADMIN');
+			expect(model.role as string).toBe('ADMIN');
 			expect(model.priority).toBe(Priority.High);
 			expect(model.priority).toBe(3);
 		});

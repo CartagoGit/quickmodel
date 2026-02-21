@@ -370,4 +370,41 @@ describe('QModel Unified Schema Generation API', () => {
 			});
 		});
 	});
+
+	// ========================================================================
+	// _inferPropertiesFromSample() coverage — lines 1722-1736 of quick.model.ts
+	// ========================================================================
+	describe('_inferPropertiesFromSample() — no @Quick decorator paths', () => {
+		test('should return property list from QUICK_VALUES_KEY when class has no @Quick', () => {
+			// Class with QModel but no @Quick → decoratorConfig has no keys
+			// → _inferPropertiesFromSample() is called → constructor succeeds
+			// → QUICK_VALUES_KEY is populated → Object.keys(...) is returned
+			class BareModel extends QModel<any> {
+				declare name: string;
+				declare age: number;
+			}
+
+			// Should not throw; returns a schema (even if properties list is empty
+			// because there's no @Quick metadata to populate QUICK_VALUES_KEY keys)
+			const schema = BareModel.getSchema('json');
+			expect(schema).toBeDefined();
+			expect(schema).toHaveProperty('type', 'object');
+		});
+
+		test('should return empty array from catch when constructor throws', () => {
+			// Class whose constructor always throws → _inferPropertiesFromSample catch
+			class ThrowingModel extends QModel<any> {
+				constructor(data: any) {
+					super(data);
+					throw new Error('constructor always fails');
+				}
+			}
+
+			// getSchema must not throw even when instantiation fails
+			expect(() => ThrowingModel.getSchema('json')).not.toThrow();
+			const schema = ThrowingModel.getSchema('json');
+			expect(schema).toBeDefined();
+			expect(schema).toHaveProperty('properties');
+		});
+	});
 });

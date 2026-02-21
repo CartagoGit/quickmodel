@@ -412,4 +412,50 @@ describe('SetTransformer — coverage gaps', () => {
 			expect(result[1]).toBeUndefined();
 		});
 	});
+
+	// ========================================================================
+	// autoTransformValue — array-of-non-tuples path (lines 495, 498)
+	// ========================================================================
+	describe('SetTransformer autoTransformValue — non-tuple array elements', () => {
+		test('should transform array elements that are NOT map-entry tuples via deserialize', () => {
+			// Each element [1,2,3] is an array but NOT [[k,v]] tuples format
+			// → autoTransformValue([1,2,3]) → isMapEntries=false → line 498
+			const result = transformer.deserialize(
+				[
+					[1, 2, 3],
+					[4, 5, 6],
+				],
+				'matrix',
+				'Model'
+			);
+			expect(result).toBeInstanceOf(Set);
+			const items = Array.from(result!);
+			expect(items[0]).toEqual([1, 2, 3]);
+			expect(items[1]).toEqual([4, 5, 6]);
+		});
+
+		test('should recursively transform elements inside non-tuple array', () => {
+			// Array of strings — no special type detected → passthrough
+			const result = transformer.deserialize(
+				[['a', 'b', 'c']],
+				'field',
+				'Model'
+			);
+			expect(result).toBeInstanceOf(Set);
+			expect(Array.from(result!)[0]).toEqual(['a', 'b', 'c']);
+		});
+
+		test('should auto-transform Date strings inside non-tuple array elements', () => {
+			// ['2024-01-01'] → autoTransformValue called on each item → Date
+			const result = transformer.deserialize(
+				[['2024-01-01', '2025-06-15']],
+				'field',
+				'Model'
+			);
+			expect(result).toBeInstanceOf(Set);
+			const inner = Array.from(result!)[0] as unknown[];
+			expect(inner[0]).toBeInstanceOf(Date);
+			expect(inner[1]).toBeInstanceOf(Date);
+		});
+	});
 });
