@@ -2,6 +2,13 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import type { IQMcpTool } from './tools/abstract-tool';
+import type { IQMcpPrompt } from './prompts/abstract-prompt';
+import {
+	QFromTypescriptPrompt,
+	QDebugModelPrompt,
+	QGenerateTestDataPrompt,
+	QInspectAndSchemaPrompt,
+} from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { safeStringify } from '../core/helpers/transform-helpers';
@@ -100,6 +107,37 @@ export class QMcpServer {
 	}
 
 	/**
+	 * Returns the list of available prompts (skills).
+	 */
+	public static getDefaultPrompts(): IQMcpPrompt[] {
+		return [
+			new QFromTypescriptPrompt(),
+			new QDebugModelPrompt(),
+			new QGenerateTestDataPrompt(),
+			new QInspectAndSchemaPrompt(),
+		];
+	}
+
+	/**
+	 * Registers a list of prompts (skills) with the server.
+	 */
+	public registerPrompts(prompts: IQMcpPrompt[]): void {
+		for (const prompt of prompts) {
+			this.server.registerPrompt(
+				prompt.name,
+				{
+					description: prompt.description,
+					argsSchema: prompt.argsSchema,
+				},
+				async (args) => {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					return (await prompt.execute(args as any)) as any;
+				}
+			);
+		}
+	}
+
+	/**
 	 * Registers a list of tools with the server.
 	 */
 	public registerTools(tools: IQMcpTool[]): void {
@@ -158,6 +196,7 @@ export class QMcpServer {
 if (import.meta.main) {
 	const server = new QMcpServer();
 	server.registerTools(QMcpServer.getDefaultTools());
+	server.registerPrompts(QMcpServer.getDefaultPrompts());
 
 	/* v8 ignore start */
 	server.start().catch((error) => {

@@ -1,10 +1,13 @@
 import { describe, it, expect, mock, spyOn, beforeEach } from 'bun:test';
 import { QMcpServer } from '../../../src/mcp/server';
 import { QAbstractTool } from '../../../src/mcp/tools/abstract-tool';
+import { QAbstractPrompt } from '../../../src/mcp/prompts/abstract-prompt';
+import type { IQPromptResult } from '../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
 // Mocks
 const mockRegisterTool = mock((_name, _schema, _callback) => {});
+const mockRegisterPrompt = mock((_name, _config, _callback) => {});
 const mockConnect = mock(() => Promise.resolve());
 
 mock.module('@modelcontextprotocol/sdk/server/mcp.js', () => {
@@ -12,6 +15,7 @@ mock.module('@modelcontextprotocol/sdk/server/mcp.js', () => {
 		McpServer: class {
 			constructor() {}
 			registerTool = mockRegisterTool;
+			registerPrompt = mockRegisterPrompt;
 			connect = mockConnect;
 		},
 	};
@@ -36,9 +40,23 @@ class MockTool extends QAbstractTool<any> {
 	}
 }
 
+class MockPrompt extends QAbstractPrompt<{ input: z.ZodString }> {
+	name = 'mock_prompt';
+	title = 'Mock Prompt';
+	description = 'Mock prompt description';
+	argsSchema = { input: z.string().describe('Input text') };
+	async execute(args: { input: string }): Promise<IQPromptResult> {
+		return {
+			description: 'Mock result',
+			messages: [this.user(`Input: ${args.input}`), this.assistant('Done')],
+		};
+	}
+}
+
 describe('QMcpServer', () => {
 	beforeEach(() => {
 		mockRegisterTool.mockClear();
+		mockRegisterPrompt.mockClear();
 		mockConnect.mockClear();
 	});
 
@@ -118,5 +136,57 @@ describe('QMcpServer', () => {
 		const tools = QMcpServer.getDefaultTools();
 		expect(tools.length).toBeGreaterThan(0);
 		expect(tools.find((t) => t.name === 'create_model')).toBeDefined();
+	});
+
+	it('should register prompts correctly', () => {
+		const server = new QMcpServer();
+		const prompt = new MockPrompt();
+		server.registerPrompts([prompt]);
+
+		expect(mockRegisterPrompt).toHaveBeenCalledTimes(1);
+		expect(mockRegisterPrompt).toHaveBeenCalledWith(
+			'mock_prompt',
+			expect.objectContaining({
+				description: 'Mock prompt description',
+			}),
+			expect.any(Function)
+		);
+	});
+
+	it('should execute prompt callback successfully', async () => {
+		const server = new QMcpServer();
+		const prompt = new MockPrompt();
+		server.registerPrompts([prompt]);
+
+		const callArgs = mockRegisterPrompt.mock.calls[0];
+		if (!callArgs) throw new Error('Prompt not registered');
+		const callback = callArgs[2] as (args: Record<string, string>) => Promise<IQPromptResult>;
+
+		const result = await callback({ input: 'hello' });
+
+		expect(result).toBeDefined();
+		expect(result.messages).toHaveLength(2);
+		expect(result.messages[0].role).toBe('user');
+		expect(result.messages[0].content.text).toContain('hello');
+		expect(result.messages[1].role).toBe('assistant');
+	});
+
+	it('should get default prompts', () => {
+		const prompts = QMcpServer.getDefaultPrompts();
+		expect(prompts.length).toBe(4);
+		expect(prompts.find((p) => p.name === 'quickmodel_from_typescript')).toBeDefined();
+		expect(prompts.find((p) => p.name === 'quickmodel_debug')).toBeDefined();
+		expect(prompts.find((p) => p.name === 'quickmodel_generate_test_data')).toBeDefined();
+		expect(prompts.find((p) => p.name === 'quickmodel_inspect_and_schema')).toBeDefined();
+	});
+
+	it('should register multiple prompts', () => {
+		const server = new QMcpServer();
+		const p1 = new MockPrompt();
+		const p2 = new MockPrompt();
+		p2.name = 'mock_prompt_2';
+		server.registerPrompts([p1, p2]);
+
+		expect(mockRegisterPrompt).toHaveBeenCalledTimes(2);
 	});
 });
