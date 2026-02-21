@@ -36,7 +36,7 @@ export class QDebugModelPrompt extends QAbstractPrompt<{
 			),
 	};
 
-	async execute(args: {
+	execute(args: {
 		model_code: string;
 		error?: string;
 		sample_data?: string;
@@ -50,7 +50,7 @@ export class QDebugModelPrompt extends QAbstractPrompt<{
 			? `\n\n**Sample data that triggers it:**\n\`\`\`json\n${sample_data}\n\`\`\``
 			: '';
 
-		return {
+		return Promise.resolve({
 			description: 'Debug a QuickModel class',
 			messages: [
 				this.user(
@@ -74,11 +74,13 @@ export class QDebugModelPrompt extends QAbstractPrompt<{
 				),
 				this.user(
 					`Please call \`inspect_model\` on the model code` +
-						(error ? `, then call \`explain_error\` with: ${error}` : '') +
+						(error
+							? `, then call \`explain_error\` with: ${error}`
+							: '') +
 						`, then call \`validate_usage\`. ` +
 						`Provide a fixed version of the model at the end.`
 				),
 			],
-		};
+		});
 	}
 }

@@ -34,11 +34,7 @@ export class QGenerateTestDataPrompt extends QAbstractPrompt<{
 			),
 	};
 
-	async execute(args: {
-		model_code: string;
-		count?: string;
-		context?: string;
-	}) {
+	execute(args: { model_code: string; count?: string; context?: string }) {
 		const { model_code, count = '1', context } = args;
 		const contextNote = context
 			? ` The data should be realistic for a **${context}** context.`
@@ -46,7 +42,7 @@ export class QGenerateTestDataPrompt extends QAbstractPrompt<{
 		const countNote =
 			parseInt(count) > 1 ? `Generate **${count}** instances.` : '';
 
-		return {
+		return Promise.resolve({
 			description: 'Generate test data for a QuickModel',
 			messages: [
 				this.user(
@@ -71,6 +67,6 @@ export class QGenerateTestDataPrompt extends QAbstractPrompt<{
 						`Show me data I can drop directly into a test.`
 				),
 			],
-		};
+		});
 	}
 }

@@ -23,7 +23,7 @@ export interface IQPromptResult {
  * MCP Prompt arguments schema — a plain record of Zod types.
  * Used as `argsSchema` in `server.registerPrompt()`.
  */
-export type PromptArgsSchema = Record<string, z.ZodType>;
+export type IPromptArgsSchema = Record<string, z.ZodType>;
 
 /**
  * Interface for QuickModel MCP Prompt (Skill).
@@ -37,7 +37,9 @@ export type PromptArgsSchema = Record<string, z.ZodType>;
  * // "Use the quickmodel_from_typescript skill to convert this interface"
  * ```
  */
-export interface IQMcpPrompt<TArgs extends PromptArgsSchema = PromptArgsSchema> {
+export interface IQMcpPrompt<
+	TArgs extends IPromptArgsSchema = IPromptArgsSchema,
+> {
 	/** Unique identifier — used as the skill name */
 	name: string;
 
@@ -58,17 +60,16 @@ export interface IQMcpPrompt<TArgs extends PromptArgsSchema = PromptArgsSchema> 
  * Abstract base class for QuickModel MCP Prompts.
  */
 export abstract class QAbstractPrompt<
-	TArgs extends PromptArgsSchema = PromptArgsSchema,
-> implements IQMcpPrompt<TArgs>
-{
+	TArgs extends IPromptArgsSchema = IPromptArgsSchema,
+> implements IQMcpPrompt<TArgs> {
 	abstract name: string;
 	abstract title: string;
 	abstract description: string;
 	abstract argsSchema: TArgs;
 
-	abstract execute(
-		args: { [K in keyof TArgs]: string }
-	): Promise<IQPromptResult>;
+	abstract execute(args: {
+		[K in keyof TArgs]: string;
+	}): Promise<IQPromptResult>;
 
 	/** Helper — build a user message */
 	protected user(text: string): IQPromptMessage {

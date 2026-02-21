@@ -32,11 +32,11 @@ export class QFromTypescriptPrompt extends QAbstractPrompt<{
 			),
 	};
 
-	async execute(args: { typescript: string; model_name?: string }) {
+	execute(args: { typescript: string; model_name?: string }) {
 		const { typescript, model_name } = args;
 		const namePart = model_name ? ` Name it \`${model_name}\`.` : '';
 
-		return {
+		return Promise.resolve({
 			description: 'Convert TypeScript interface to a QuickModel class',
 			messages: [
 				this.user(
@@ -54,6 +54,6 @@ export class QFromTypescriptPrompt extends QAbstractPrompt<{
 						`Show me the final model class with a usage example.`
 				),
 			],
-		};
+		});
 	}
 }

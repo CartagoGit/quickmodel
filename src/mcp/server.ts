@@ -130,7 +130,6 @@ export class QMcpServer {
 					argsSchema: prompt.argsSchema,
 				},
 				async (args) => {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					return (await prompt.execute(args as any)) as any;
 				}
 			);

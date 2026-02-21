@@ -48,7 +48,10 @@ class MockPrompt extends QAbstractPrompt<{ input: z.ZodString }> {
 	async execute(args: { input: string }): Promise<IQPromptResult> {
 		return {
 			description: 'Mock result',
-			messages: [this.user(`Input: ${args.input}`), this.assistant('Done')],
+			messages: [
+				this.user(`Input: ${args.input}`),
+				this.assistant('Done'),
+			],
 		};
 	}
 }
@@ -160,7 +163,9 @@ describe('QMcpServer', () => {
 
 		const callArgs = mockRegisterPrompt.mock.calls[0];
 		if (!callArgs) throw new Error('Prompt not registered');
-		const callback = callArgs[2] as (args: Record<string, string>) => Promise<IQPromptResult>;
+		const callback = callArgs[2] as (
+			args: Record<string, string>
+		) => Promise<IQPromptResult>;
 
 		const result = await callback({ input: 'hello' });
 
@@ -174,10 +179,18 @@ describe('QMcpServer', () => {
 	it('should get default prompts', () => {
 		const prompts = QMcpServer.getDefaultPrompts();
 		expect(prompts.length).toBe(4);
-		expect(prompts.find((p) => p.name === 'quickmodel_from_typescript')).toBeDefined();
-		expect(prompts.find((p) => p.name === 'quickmodel_debug')).toBeDefined();
-		expect(prompts.find((p) => p.name === 'quickmodel_generate_test_data')).toBeDefined();
-		expect(prompts.find((p) => p.name === 'quickmodel_inspect_and_schema')).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_from_typescript')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_debug')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_generate_test_data')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_inspect_and_schema')
+		).toBeDefined();
 	});
 
 	it('should register multiple prompts', () => {

@@ -32,7 +32,10 @@ describe('QAbstractPrompt', () => {
 
 		async execute(args: { input: string }): Promise<IQPromptResult> {
 			return {
-				messages: [this.user(`Input: ${args.input}`), this.assistant('Done')],
+				messages: [
+					this.user(`Input: ${args.input}`),
+					this.assistant('Done'),
+				],
 			};
 		}
 	}
@@ -122,7 +125,9 @@ describe('QFromTypescriptPrompt', () => {
 
 	it('execute() starts with a user role message', async () => {
 		const prompt = new QFromTypescriptPrompt();
-		const result = await prompt.execute({ typescript: 'interface IFoo {}' });
+		const result = await prompt.execute({
+			typescript: 'interface IFoo {}',
+		});
 		expect(result.messages[0].role).toBe('user');
 	});
 });

@@ -27,22 +27,25 @@ export class QInspectAndSchemaPrompt extends QAbstractPrompt<{
 			.optional()
 			.describe(
 				"Comma-separated list of schema formats to export (default: 'json,openapi'). " +
-					"Available: json, openapi, zod, mongo, typescript, graphql, ajv"
+					'Available: json, openapi, zod, mongo, typescript, graphql, ajv'
 			),
 	};
 
-	async execute(args: { model_code: string; formats?: string }) {
+	execute(args: { model_code: string; formats?: string }) {
 		const { model_code, formats = 'json,openapi' } = args;
 		const formatList = formats
 			.split(',')
-			.map((f) => f.trim())
+			.map((fmt) => fmt.trim())
 			.filter(Boolean);
 
 		const formatBullets = formatList
-			.map((f) => `   - \`${f}\`: call \`export_json_schema\` with format="${f}"`)
+			.map(
+				(fmt) =>
+					`   - \`${fmt}\`: call \`export_json_schema\` with format="${fmt}"`
+			)
 			.join('\n');
 
-		return {
+		return Promise.resolve({
 			description: `Inspect model and export schemas: ${formatList.join(', ')}`,
 			messages: [
 				this.user(
@@ -62,6 +65,6 @@ export class QInspectAndSchemaPrompt extends QAbstractPrompt<{
 						`Show me how to use each exported schema with its respective library.`
 				),
 			],
-		};
+		});
 	}
 }
