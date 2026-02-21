@@ -134,6 +134,17 @@ describe('Logger.debug()', () => {
 		spy.mockRestore();
 	});
 
+	test('should NOT log when context has no enableDebugLogs metadata', () => {
+		// Ensure global debug is explicitly off for this test
+		QConfig.configure({ defaults: { enableDebugLogs: false } });
+		const spy = spyOn(console, 'debug').mockImplementation(() => {});
+		// This class has no QUICK_OPTIONS_KEY metadata
+		class NoMetaModel {}
+		Logger.debug('should be silent', NoMetaModel);
+		expect(spy).not.toHaveBeenCalled();
+		spy.mockRestore();
+	});
+
 	test('should pass additional data when debug is enabled', () => {
 		const spy = spyOn(console, 'debug').mockImplementation(() => {});
 		QConfig.configure({ defaults: { enableDebugLogs: true } });
@@ -176,6 +187,15 @@ describe('Logger getName() branches', () => {
 		class SomeClass {}
 		Logger.warn('msg', new SomeClass());
 		expect(spy.mock.calls[0][0]).toContain('SomeClass');
+		spy.mockRestore();
+	});
+
+	test('getName via warn: prototype-less object returns "Unknown"', () => {
+		const spy = spyOn(console, 'warn').mockImplementation(() => {});
+		// Object.create(null) has no prototype, so context.constructor is undefined
+		const noPrototype = Object.create(null) as object;
+		Logger.warn('msg', noPrototype);
+		expect(spy.mock.calls[0][0]).toContain('Unknown');
 		spy.mockRestore();
 	});
 });

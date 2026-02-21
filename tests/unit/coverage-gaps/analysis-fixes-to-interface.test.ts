@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, spyOn } from 'bun:test';
 import { QModel } from '../../../src';
 
-describe('ToInterfaceService Coverage Gaps', () => {
+describe('ToInterfaceService - QModel integration edge cases', () => {
 	let originalEnv: string | undefined;
 
 	beforeEach(() => {

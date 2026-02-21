@@ -1,15 +1,6 @@
+import { describe, test, expect } from 'bun:test';
 import { QModel, IQImplements } from '@/index';
 import { QType } from '@/utils';
-
-console.log(
-	'╔═══════════════════════════════════════════════════════════════════════╗'
-);
-console.log(
-	'║           COMPREHENSIVE TEST - ALL SUPPORTED TYPES                 ║'
-);
-console.log(
-	'╚═══════════════════════════════════════════════════════════════════════╝\n'
-);
 
 // ============================================================================
 // ENUM (TypeScript)
@@ -212,251 +203,161 @@ const testData: ICompleteModel = {
 // ============================================================================
 // TESTS
 // ============================================================================
-try {
-	let passed = 0;
-	const failed = 0;
+describe('CompleteModel - All Supported Types', () => {
+	describe('1. Construction - primitive types', () => {
+		test('should populate primitive fields correctly', () => {
+			const model = new CompleteModel(testData);
+			expect(model.id).toBe('test-123');
+			expect(model.count).toBe(42);
+			expect(model.active).toBe(true);
+			expect(model.nothing).toBeNull();
+			expect(model.optional).toBe('presente');
+		});
+	});
 
-	console.log('🧪 1. CREATING COMPLETE MODEL...\n');
-	const model = new CompleteModel(testData);
+	describe('2. Construction - special types', () => {
+		test('should deserialize BigInt, Symbol, RegExp, Error, Date', () => {
+			const model = new CompleteModel(testData);
+			expect(typeof model.amount).toBe('bigint');
+			expect(model.amount).toBe(9007199254740991n);
+			expect(typeof model.key).toBe('symbol');
+			expect(Symbol.keyFor(model.key)).toBe('testKey');
+			expect(model.pattern).toBeInstanceOf(RegExp);
+			expect(model.pattern.source).toBe('^test');
+			expect(model.errorData).toBeInstanceOf(Error);
+			expect(model.errorData.message).toBe('Test error');
+			expect(model.createdAt).toBeInstanceOf(Date);
+		});
 
-	// Test primitivos
-	console.log('📦 PRIMITIVES:');
-	console.log(`  ✓ id: ${model.id === 'test-123' ? '✅' : '❌'}`);
-	console.log(`  ✓ count: ${model.count === 42 ? '✅' : '❌'}`);
-	console.log(`  ✓ active: ${model.active === true ? '✅' : '❌'}`);
-	console.log(`  ✓ nothing: ${model.nothing === null ? '✅' : '❌'}`);
-	console.log(
-		`  ✓ optional: ${model.optional === 'presente' ? '✅' : '❌'}\n`
-	);
-	passed += 5;
+		test('should deserialize URL and URLSearchParams', () => {
+			const model = new CompleteModel(testData);
+			expect(model.homepage).toBeInstanceOf(URL);
+			expect(model.homepage.href).toBe(
+				'https://example.com/path?query=value'
+			);
+			expect(model.queryParams).toBeInstanceOf(URLSearchParams);
+			expect(model.queryParams.get('foo')).toBe('bar');
+		});
+	});
 
-	// Test special types
-	console.log('🔧 SPECIAL TYPES:');
-	console.log(
-		`  ✓ BigInt: ${typeof model.amount === 'bigint' && model.amount === 9007199254740991n ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Symbol: ${typeof model.key === 'symbol' && Symbol.keyFor(model.key) === 'testKey' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ RegExp: ${model.pattern instanceof RegExp && model.pattern.source === '^test' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Error: ${model.errorData instanceof Error && model.errorData.message === 'Test error' ? '✅' : '❌'}`
-	);
-	console.log(`  ✓ Date: ${model.createdAt instanceof Date ? '✅' : '❌'}`);
-	console.log(
-		`  ✓ URL: ${model.homepage instanceof URL && model.homepage.href === 'https://example.com/path?query=value' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ URLSearchParams: ${model.queryParams instanceof URLSearchParams && model.queryParams.get('foo') === 'bar' ? '✅' : '❌'}\n`
-	);
-	passed += 7;
+	describe('3. Construction - typed arrays', () => {
+		test('should deserialize TypedArrays correctly', () => {
+			const model = new CompleteModel(testData);
+			expect(model.int8Data).toBeInstanceOf(Int8Array);
+			expect(model.int8Data[0]).toBe(-128);
+			expect(model.uint8Data).toBeInstanceOf(Uint8Array);
+			expect(model.uint8Data[2]).toBe(255);
+			expect(model.float32Data).toBeInstanceOf(Float32Array);
+			expect(model.bigInt64Data).toBeInstanceOf(BigInt64Array);
+			expect(model.bigInt64Data[0]).toBe(9007199254740991n);
+		});
+	});
 
-	// Test TypedArrays
-	console.log('📊 TYPED ARRAYS:');
-	console.log(
-		`  ✓ Int8Array: ${model.int8Data instanceof Int8Array && model.int8Data[0] === -128 ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Uint8Array: ${model.uint8Data instanceof Uint8Array && model.uint8Data[2] === 255 ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Float32Array: ${model.float32Data instanceof Float32Array ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ BigInt64Array: ${model.bigInt64Data instanceof BigInt64Array && model.bigInt64Data[0] === 9007199254740991n ? '✅' : '❌'}\n`
-	);
-	passed += 4;
+	describe('4. Construction - buffers', () => {
+		test('should deserialize ArrayBuffer and DataView', () => {
+			const model = new CompleteModel(testData);
+			expect(model.buffer).toBeInstanceOf(ArrayBuffer);
+			expect(model.buffer.byteLength).toBe(4);
+			expect(model.view).toBeInstanceOf(DataView);
+		});
+	});
 
-	// Test Buffers
-	console.log('💾 BUFFERS:');
-	console.log(
-		`  ✓ ArrayBuffer: ${model.buffer instanceof ArrayBuffer && model.buffer.byteLength === 4 ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ DataView: ${model.view instanceof DataView ? '✅' : '❌'}\n`
-	);
-	passed += 2;
+	describe('5. Construction - collections', () => {
+		test('should populate Array, Map and Set fields', () => {
+			const model = new CompleteModel(testData);
+			expect(Array.isArray(model.tags)).toBe(true);
+			expect(model.tags[0]).toBe('typescript');
+			expect(model.settings).toBeInstanceOf(Map);
+			expect(model.settings.get('theme')).toBe('dark');
+			expect(model.items).toBeInstanceOf(Set);
+			expect(model.items.has('item1')).toBe(true);
+		});
+	});
 
-	// Test Colecciones
-	console.log('📚 COLECCIONES:');
-	console.log(
-		`  ✓ Array: ${Array.isArray(model.tags) && model.tags[0] === 'typescript' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Map: ${model.settings instanceof Map && model.settings.get('theme') === 'dark' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Set: ${model.items instanceof Set && model.items.has('item1') ? '✅' : '❌'}\n`
-	);
-	passed += 3;
+	describe('6. Construction - enums and plain objects', () => {
+		test('should preserve string and numeric enum values', () => {
+			const model = new CompleteModel(testData);
+			expect(model.role).toBe(UserRole.Admin);
+			expect(model.role).toBe('ADMIN');
+			expect(model.priority).toBe(Priority.High);
+			expect(model.priority).toBe(3);
+		});
 
-	// Test Enums
-	console.log('🎯 ENUMS (TypeScript):');
-	console.log(
-		`  ✓ String Enum: ${model.role === UserRole.Admin && model.role === 'ADMIN' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Numeric Enum: ${model.priority === Priority.High && model.priority === 3 ? '✅' : '❌'}\n`
-	);
-	passed += 2;
+		test('should preserve plain object and nested model', () => {
+			const model = new CompleteModel(testData);
+			expect(typeof model.metadata).toBe('object');
+			expect(model.metadata.author).toBe('Cartago');
+			expect(model.nested).toBeInstanceOf(NestedModel);
+			expect((model.nested as NestedModel).name).toBe('Nested Item');
+		});
+	});
 
-	// Test objetos planos
-	console.log('📋 OBJETOS PLANOS:');
-	console.log(
-		`  ✓ Plain Object: ${typeof model.metadata === 'object' && model.metadata.author === 'Cartago' ? '✅' : '❌'}\n`
-	);
-	passed += 1;
+	describe('7. Serialization type conversions', () => {
+		test('should serialize special types to interface-compatible primitives', () => {
+			const model = new CompleteModel(testData);
+			const serialized = model.serialize();
+			expect(typeof serialized.amount).toBe('string');
+			// Symbol serializes to an object descriptor { __type: 'symbol', key: ... }
+			expect(typeof serialized.key).toBe('object');
+			expect(typeof serialized.createdAt).toBe('string');
+			expect(typeof serialized.homepage).toBe('string');
+			expect(serialized.homepage).toContain('https');
+		});
 
-	// Test modelo anidado
-	console.log('🪆 MODELO ANIDADO:');
-	console.log(
-		`  ✓ Nested Model: ${model.nested instanceof NestedModel && model.nested.name === 'Nested Item' ? '✅' : '❌'}\n`
-	);
-	passed += 1;
+		test('should serialize Map to object and Set to array', () => {
+			const model = new CompleteModel(testData);
+			const serialized = model.serialize();
+			expect(typeof serialized.settings).toBe('object');
+			expect(Array.isArray(serialized.settings)).toBe(false);
+			expect(Array.isArray(serialized.items)).toBe(true);
+		});
+	});
 
-	// ============================================================================
-	// SERIALIZATION
-	// ============================================================================
-	console.log('🧪 2. SERIALIZANDO A INTERFAZ...\n');
-	const IQSerialized = model.serialize();
+	describe('8. Round-trip (Interface → Model → Interface → Model)', () => {
+		test('should preserve all field values across double round-trip', () => {
+			const model = new CompleteModel(testData);
+			const serialized = model.serialize();
+			const model2 = new CompleteModel(serialized);
+			const serialized2 = model2.serialize();
+			const model3 = new CompleteModel(serialized2);
 
-	console.log('📤 VERIFYING SERIALIZATION:');
-	console.log(
-		`  ✓ BigInt → string: ${typeof IQSerialized.amount === 'string' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Symbol → string: ${typeof IQSerialized.key === 'string' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Date → string: ${typeof IQSerialized.createdAt === 'string' ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ URL → string: ${typeof IQSerialized.homepage === 'string' && IQSerialized.homepage.includes('https') ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Map → object: ${typeof IQSerialized.settings === 'object' && !Array.isArray(IQSerialized.settings) ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Set → array: ${Array.isArray(IQSerialized.items) ? '✅' : '❌'}\n`
-	);
-	passed += 6;
+			expect(model3.id).toBe(model.id);
+			expect(model3.amount).toBe(model.amount);
+			expect(Symbol.keyFor(model3.key)).toBe(Symbol.keyFor(model.key));
+			expect(model3.createdAt.getTime()).toBe(model.createdAt.getTime());
+			expect(model3.homepage.href).toBe(model.homepage.href);
+			expect(model3.queryParams.toString()).toBe(
+				model.queryParams.toString()
+			);
+			expect(model3.pattern.source).toBe(model.pattern.source);
+			expect(model3.errorData.message).toBe(model.errorData.message);
+			expect(model3.settings.get('theme')).toBe(
+				model.settings.get('theme')
+			);
+			expect(model3.role).toBe(model.role);
+			expect(model3.priority).toBe(model.priority);
+		});
+	});
 
-	// ============================================================================
-	// ROUND-TRIP
-	// ============================================================================
-	console.log(
-		'🧪 3. ROUND-TRIP TEST (Interface → Model → Interface → Model)...\n'
-	);
-	const model2 = new CompleteModel(IQSerialized);
-	const serialized2 = model2.serialize();
-	const model3 = new CompleteModel(serialized2);
+	describe('9. JSON round-trip (toJSON / fromJSON)', () => {
+		test('should produce valid JSON and restore instance with correct types', () => {
+			const model = new CompleteModel(testData);
+			const json = model.toJSON();
+			expect(typeof json).toBe('string');
+			expect(() => JSON.parse(json)).not.toThrow();
+			const model2 = CompleteModel.fromJSON(json);
+			expect(model2).toBeInstanceOf(CompleteModel);
+			expect(model2.amount).toBe(model.amount);
+			expect(model2.createdAt).toBeInstanceOf(Date);
+		});
+	});
 
-	console.log('🔄 VERIFYING ROUND-TRIP:');
-	console.log(`  ✓ id preserved: ${model3.id === model.id ? '✅' : '❌'}`);
-	console.log(
-		`  ✓ BigInt preserved: ${model3.amount === model.amount ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Symbol preserved: ${Symbol.keyFor(model3.key) === Symbol.keyFor(model.key) ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Date preserved: ${model3.createdAt.getTime() === model.createdAt.getTime() ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ URL preserved: ${model3.homepage.href === model.homepage.href ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ URLSearchParams preserved: ${model3.queryParams.toString() === model.queryParams.toString() ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ RegExp preserved: ${model3.pattern.source === model.pattern.source ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Error preserved: ${model3.errorData.message === model.errorData.message ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Map preserved: ${model3.settings.get('theme') === model.settings.get('theme') ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Enum preserved: ${model3.role === model.role && model3.priority === model.priority ? '✅' : '❌'}\n`
-	);
-	passed += 10;
-
-	// ============================================================================
-	// JSON
-	// ============================================================================
-	console.log('🧪 4. JSON SERIALIZATION...\n');
-	const json = model.toJSON();
-	const model4 = CompleteModel.fromJSON(json);
-
-	console.log('📄 VERIFYING JSON ROUND-TRIP:');
-	console.log(
-		`  ✓ JSON valid: ${typeof json === 'string' && JSON.parse(json) ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ fromJSON returns instance: ${model4 instanceof CompleteModel ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Types restored: ${model4.amount === model.amount && model4.createdAt instanceof Date ? '✅' : '❌'}\n`
-	);
-	passed += 3;
-
-	// ============================================================================
-	// STATIC METHODS
-	// ============================================================================
-	console.log('🧪 5. STATIC METHODS...\n');
-	const model5 = CompleteModel.deserialize(testData);
-
-	console.log('🔧 VERIFYING STATIC METHODS:');
-	console.log(
-		`  ✓ deserialize works: ${model5 instanceof CompleteModel ? '✅' : '❌'}`
-	);
-	console.log(
-		`  ✓ Correct data: ${model5.id === 'test-123' && model5.amount === 9007199254740991n ? '✅' : '❌'}\n`
-	);
-	passed += 2;
-
-	// ============================================================================
-	// SUMMARY
-	// ============================================================================
-	console.log(
-		'╔═══════════════════════════════════════════════════════════════════════╗'
-	);
-	console.log(
-		'║                            FINAL SUMMARY                              ║'
-	);
-	console.log(
-		'╚═══════════════════════════════════════════════════════════════════════╝\n'
-	);
-	console.log(`✅ Tests passed: ${passed}`);
-	console.log(`❌ Tests failed: ${failed}`);
-	console.log(`📊 Total: ${passed + failed}`);
-	console.log(
-		`🎯 Success rate: ${((passed / (passed + failed)) * 100).toFixed(2)}%\n`
-	);
-
-	console.log('🎉 ALL SUPPORTED TYPES WORK CORRECTLY!\n');
-	console.log('📋 TESTED TYPES:');
-	console.log('   ✓ Primitives: string, number, boolean, null, undefined');
-	console.log(
-		'   ✓ Special types: BigInt, Symbol, RegExp, Error, Date, URL, URLSearchParams'
-	);
-	console.log(
-		'   ✓ TypedArrays: Int8Array, Uint8Array, Float32Array, BigInt64Array, etc.'
-	);
-	console.log('   ✓ Buffers: ArrayBuffer, DataView');
-	console.log('   ✓ Collections: Array, Map, Set');
-	console.log('   ✓ Enums: String Enums, Numeric Enums');
-	console.log('   ✓ Objects: Plain objects, Nested models');
-	console.log(
-		'   ✓ Methods: serialize(), toJSON(), deserialize(), fromJSON()'
-	);
-} catch (err: unknown) {
-	const error = err as Error;
-	console.log('\n❌ ERROR EN TESTS:');
-	console.log(error.message);
-	console.log(error.stack);
-	process.exit(1);
-}
+	describe('10. Static methods', () => {
+		test('should deserialize via CompleteModel.deserialize()', () => {
+			const model = CompleteModel.deserialize(testData);
+			expect(model).toBeInstanceOf(CompleteModel);
+			expect(model.id).toBe('test-123');
+			expect(model.amount).toBe(9007199254740991n);
+		});
+	});
+});
