@@ -131,3 +131,44 @@ describe('Configuration: dateStrategy', () => {
 		expect(json.other).toBeInstanceOf(Date); // from Root config
 	});
 });
+
+// ---------------------------------------------------------------------------
+// @Quick({ dateStrategy: 'iso' }) passed as FIRST argument (typeMap)
+// Covers quick.decorator.ts lines 494, 496, 498
+// ---------------------------------------------------------------------------
+describe('@Quick — dateStrategy passed as first argument', () => {
+	test('should accept dateStrategy in the typeMap position and NOT register it as a property', () => {
+		// Passing dateStrategy as first arg (instead of second) triggers lines 494-498
+		@Quick({ dateStrategy: 'iso' })
+		class IsoModel extends QModel<any> {
+			declare createdAt: Date;
+		}
+
+		const model = new IsoModel({ createdAt: '2024-06-01T00:00:00.000Z' });
+		expect(model).toBeDefined();
+		// dateStrategy should NOT become a property of the model
+		expect((model as any).dateStrategy).toBeUndefined();
+	});
+
+	test('should accept dateStrategy: timestamp as first argument', () => {
+		@Quick({ dateStrategy: 'timestamp' })
+		class TsModel extends QModel<any> {
+			declare date: Date;
+		}
+
+		const model = new TsModel({ date: '2024-01-01T00:00:00.000Z' });
+		expect(model).toBeDefined();
+		expect((model as any).dateStrategy).toBeUndefined();
+	});
+
+	test('should accept dateStrategy: native as first argument', () => {
+		@Quick({ dateStrategy: 'native' })
+		class NativeModel extends QModel<any> {
+			declare date: Date;
+		}
+
+		const model = new NativeModel({ date: '2024-01-01T00:00:00.000Z' });
+		expect(model).toBeDefined();
+		expect((model as any).dateStrategy).toBeUndefined();
+	});
+});

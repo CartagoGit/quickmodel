@@ -333,4 +333,29 @@ describe('ToInterface Coverage Gaps', () => {
 			'QuickModel Security: Maximum recursion depth'
 		);
 	});
+
+	it('should throw from toInterface() depth check when called directly with depth > MAX_DEPTH', () => {
+		// Covers to-interface.service.ts lines 16-18
+		// The service.toInterface() depth check is only reachable by calling it directly
+		// with depth >= 513, because the property-level check in convertToInterfaceFormat
+		// fires at the same threshold during normal recursive usage.
+		const service = new ToInterfaceService();
+		expect(() => service.toInterface({} as any, undefined, 513)).toThrow(
+			'QuickModel Security: Maximum recursion depth (512) exceeded during toInterface serialization.'
+		);
+	});
+
+	it('BigInt conversion catch: returns String(value) when BigInt() conversion fails (line 384)', () => {
+		// Covers to-interface.service.ts line 384 (return String(primitiveValue))
+		// Triggered when originalValue has __type: 'bigint' but currentValue cannot be parsed by BigInt()
+		const service = new ToInterfaceService();
+		const legacyBigintOriginal = { __type: 'bigint' };
+
+		// 'not-a-number' → BigInt('not-a-number') throws → catch → return String('not-a-number')
+		const result = service.toInterface(
+			['not-a-number'] as any,
+			[legacyBigintOriginal] as any
+		);
+		expect(result).toEqual(['not-a-number'] as any);
+	});
 });

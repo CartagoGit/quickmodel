@@ -149,3 +149,29 @@ describe('Configuration: transformCase', () => {
 		expect(json['created_at']).toBe('2024-01-01T00:00:00.000Z');
 	});
 });
+
+// ---------------------------------------------------------------------------
+// CaseHelper direct coverage — lines 31-34 (PascalCase + default branch)
+// ---------------------------------------------------------------------------
+import { CaseHelper } from '@/core/helpers/case.helper';
+
+describe('CaseHelper.toCase — uncovered branches', () => {
+	test('PascalCase: should capitalize every word', () => {
+		expect(CaseHelper.toCase('PascalCase', 'hello world')).toBe(
+			'HelloWorld'
+		);
+		expect(CaseHelper.toCase('PascalCase', 'user_id')).toBe('UserId');
+		expect(CaseHelper.toCase('PascalCase', 'apiKey')).toBe('ApiKey');
+	});
+
+	test('default (unknown format): should return original string unchanged', () => {
+		// The switch default: return str — only reachable with a non-union value
+		expect(CaseHelper.toCase('unknownFormat' as any, 'hello world')).toBe(
+			'hello world'
+		);
+	});
+
+	test('edge: empty string returns empty string', () => {
+		expect(CaseHelper.toCase('PascalCase', '')).toBe('');
+	});
+});
