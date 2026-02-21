@@ -18,13 +18,15 @@ TypeScript model system with automatic type transformation and SOLID architectur
 
 ## ✨ Key Features
 
-- 🔄 **Explicit Type Transformation** - Transform 30+ JavaScript/TypeScript types (Date, BigInt, Symbol, RegExp, Set, Map, etc.)
+- 🔄 **Explicit Type Transformation** - Transform 30+ JavaScript/TypeScript types (Date, BigInt, Symbol, RegExp, Set, Map, WeakMap, WeakSet, etc.)
 - 🎯 **Simple API** - Use `@Quick({})` decorator to specify transformations explicitly
 - 💡 **Type-Safe** - Full TypeScript support with interface segregation
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
+- 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
+- 🤖 **MCP Server** - AI assistant integration with 10 public tools and 4 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
-- 🧪 **Well Tested** - 700+ tests covering all features
+- 🧪 **Well Tested** - 1500+ tests covering all features
 
 ## 📦 Installation
 
@@ -282,6 +284,8 @@ This allows type-safe serialization while maintaining clean runtime code.
 - `Set<T>` - Unique values (from array)
 - `Map<K, V>` - Key-value pairs (from array of tuples)
 - `Array<T>` - Arrays with nested transformations
+- `WeakMap<object, V>` - Runtime-only cache, **not serialized** (GC-friendly)
+- `WeakSet<object>` - Runtime-only object set, **not serialized** (GC-friendly)
 
 **Binary:**
 
@@ -437,6 +441,35 @@ const user = new User({
 });
 ```
 
+### WeakMap & WeakSet (Runtime-only)
+
+Use `WeakMap` and `WeakSet` for runtime-only data that should **not be serialized** (garbage-collection-friendly caches, event listener sets, etc.).
+
+```typescript
+interface ISession {
+	id: string;
+}
+
+@Quick({
+	cache: WeakMap, // Runtime cache — not persisted
+	listeners: WeakSet, // Runtime listener set — not persisted
+})
+class Session extends QModel<ISession> {
+	declare id: string;
+	declare cache: WeakMap<object, any>; // Auto GC when keys die
+	declare listeners: WeakSet<object>; // Auto GC when objects die
+}
+
+const session = new Session({ id: 'abc' });
+
+// WeakMap/WeakSet accept tuples on construction, but toJSON() omits them
+console.log(session.cache); // WeakMap {}
+console.log(session.listeners); // WeakSet {}
+console.log(JSON.stringify(session)); // { "id": "abc" } — WeakMap/WeakSet excluded
+```
+
+> ⚠️ `WeakMap` and `WeakSet` are **never serialized** to JSON. Use `Map`/`Set` if you need persistence.
+
 ### Dot Notation for Nested Properties
 
 QuickModel supports **dot notation** to specify transformations for nested properties without decorating the nested class:
@@ -515,6 +548,50 @@ if (errors.length > 0) {
 }
 ```
 
+## 🔍 Schema Generation
+
+QuickModel can export your model's structure as different schema formats for documentation, validation, and interoperability. Available via the static `getSchema()` method or the instance method:
+
+```typescript
+@Quick({ createdAt: Date, tags: Set })
+class User extends QModel<IUser> {
+	declare id: number;
+	declare name: string;
+	declare createdAt: Date;
+	declare tags: Set<string>;
+}
+
+// Static: generate schema from class definition
+const jsonSchema = User.getSchema('json'); // JSON Schema Draft-07
+const openapiComp = User.getSchema('openapi'); // OpenAPI 3.0 component
+const zodSchema = User.getSchema('zod'); // Zod validator string
+const mongoSchema = User.getSchema('mongo'); // Mongoose SchemaTypes
+const tsInterface = User.getSchema('typescript'); // TypeScript interface
+const graphqlType = User.getSchema('graphql'); // GraphQL SDL type
+const ajvSchema = User.getSchema('ajv'); // AJV validator schema
+
+// Instance: same output, works on a live model
+const user = new User({
+	id: 1,
+	name: 'Alice',
+	createdAt: '2025-01-01',
+	tags: ['ts'],
+});
+const schema = user.getSchema('json');
+```
+
+**Supported formats:**
+
+| Format         | Description                     |
+| -------------- | ------------------------------- |
+| `'json'`       | JSON Schema Draft-07            |
+| `'openapi'`    | OpenAPI 3.0 schema component    |
+| `'zod'`        | Zod validation schema string    |
+| `'mongo'`      | Mongoose / MongoDB SchemaTypes  |
+| `'typescript'` | TypeScript interface string     |
+| `'graphql'`    | GraphQL SDL type definition     |
+| `'ajv'`        | AJV-compatible validator schema |
+
 ## 🎭 Testing with Mocks
 
 ```typescript
@@ -532,6 +609,57 @@ const users = User.mock(5);
 
 Powered by [@faker-js/faker](https://fakerjs.dev/).
 
+## 🤖 MCP Server Integration
+
+QuickModel ships a built-in **Model Context Protocol (MCP) server** that gives AI assistants (Claude, GitHub Copilot, etc.) direct access to QuickModel capabilities.
+
+### Start the MCP server
+
+```bash
+bun run mcp:start
+# or: npx @cartago-git/quickmodel mcp
+```
+
+### Configure in Claude Desktop (`~/.config/claude/claude_desktop_config.json`)
+
+```json
+{
+	"mcpServers": {
+		"quickmodel": {
+			"command": "npx",
+			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
+		}
+	}
+}
+```
+
+### Public tools (10)
+
+| Tool                      | Description                                               |
+| ------------------------- | --------------------------------------------------------- |
+| `create_model`            | Generate TypeScript `QModel` class from properties        |
+| `validate_usage`          | Validate a code snippet against QuickModel best practices |
+| `list_transformers`       | List all available type transformers                      |
+| `generate_mock`           | Generate mock data for a model                            |
+| `inspect_model`           | Inspect a model's properties and transformations          |
+| `search_docs`             | Search the QuickModel documentation                       |
+| `interface_to_model`      | Convert a TypeScript interface to a QModel class          |
+| `export_json_schema`      | Export a model as JSON Schema                             |
+| `explain_error`           | Explain a validation error in plain language              |
+| `simulate_transformation` | Simulate a type transformation on sample data             |
+| `json_to_model`           | Generate a QModel class from a JSON object                |
+
+### AI-guided prompts / skills (4)
+
+| Skill                           | Description                                                  |
+| ------------------------------- | ------------------------------------------------------------ |
+| `quickmodel_from_typescript`    | Generate a QModel from a TypeScript interface (step-by-step) |
+| `quickmodel_debug`              | Diagnose and fix a QuickModel issue                          |
+| `quickmodel_generate_test_data` | Create test data strategies for a model                      |
+| `quickmodel_inspect_and_schema` | Inspect a model and export its schema in all formats         |
+
+> 📚 **[MCP Documentation](https://cartagogit.github.io/quickmodel/en/mcp/)** — Full tool reference and AI integration guide
+
 ## 🏗️ Architecture (SOLID)
 
 - **Single Responsibility**: Each transformer handles one type
@@ -546,10 +674,7 @@ Powered by [@faker-js/faker](https://fakerjs.dev/).
 - [API Reference](https://cartagogit.github.io/quickmodel/tsdoc/)
 - [Architecture](https://cartagogit.github.io/quickmodel/en/guide/contributing#architecture)
 - [Development Guide](https://cartagogit.github.io/quickmodel/en/guide/contributing)
-
-## 📝 License
-
-MIT © Cartago Git
+- [MCP Integration](https://cartagogit.github.io/quickmodel/en/mcp/)
 
 ## 🤝 Contributing
 

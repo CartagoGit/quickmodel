@@ -4,6 +4,26 @@
 
 ### Added
 
+- **WeakMap & WeakSet transformer** (`weak-collections.transformer.ts`):
+    - `WeakMap<object, V>` and `WeakSet<object>` are now supported in `@Quick({})` decorator
+    - Both types are runtime-only: they are **never serialized** to JSON (`toJSON()` omits them)
+    - Useful for GC-friendly caches and event listener sets
+- **Schema Generation API** (`QModel.getSchema(format)`):
+    - Export your model's structure in 7 formats: `'json'` (JSON Schema Draft-07), `'openapi'` (OpenAPI 3.0), `'zod'` (Zod validator string), `'mongo'` (Mongoose SchemaTypes), `'typescript'` (TS interface), `'graphql'` (GraphQL SDL), `'ajv'` (AJV validator)
+    - Available both as static method (`User.getSchema('json')`) and instance method (`user.getSchema('json')`)
+- **MCP Server** (`src/mcp/server.ts`) — AI assistant integration via Model Context Protocol:
+    - 10 public tools: `create_model`, `validate_usage`, `list_transformers`, `generate_mock`, `inspect_model`, `search_docs`, `interface_to_model`, `export_json_schema`, `explain_error`, `simulate_transformation`, `json_to_model`
+    - 11 internal dev tools: `update_docs`, `generate_test`, `check_jsdocs`, `check_health`, `coverage_report`, `check_project_rules`, `check_security`, `sync_docs`, `scaffold_feature`, `check_api_compatibility`, `benchmark_performance`
+    - Start server: `bun run mcp:start` or `npx @cartago-git/quickmodel mcp`
+- **MCP Prompts (skills)** (`src/mcp/prompts/`) — 4 guided AI workflows:
+    - `quickmodel_from_typescript` — Convert TypeScript interfaces to QModel classes
+    - `quickmodel_debug` — Diagnose and fix QuickModel issues
+    - `quickmodel_generate_test_data` — Create test data strategies for a model
+    - `quickmodel_inspect_and_schema` — Inspect model properties and export schemas in all formats
+- **Test suite expanded** from ~700 to 1569 tests, including:
+    - MCP server and tool tests
+    - MCP prompt/skill tests
+    - Coverage gap tests with Proxy-based catch-block validation
 - CI/CD enhancements:
     - Automatic coverage reporting to Codecov
     - Bundle size tracking in PRs
