@@ -39,7 +39,9 @@ import {
  */
 export class MapTransformer<K = string, V = unknown>
 	extends BaseTransformer<
-		Record<string, V> | { __type: 'Map'; entries: [K, V][] },
+		| Record<string, V>
+		| { __type: 'Map'; entries: [K, V][] }
+		| [string, V][],
 		Map<K, V>
 	>
 	implements IQValidator
@@ -134,6 +136,7 @@ export class MapTransformer<K = string, V = unknown>
 			| { __type: 'Map'; entries: [K, V][] }
 			| Map<K, V>
 			| [K, V][]
+			| [string, V][]
 			| null
 			| undefined,
 		propertyKey: string,

@@ -37,8 +37,8 @@ import { QModelError } from '@/core/errors/quickmodel.error';
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap | MDN WeakMap}
  */
 export class WeakMapTransformer implements IQTransformer<
-	WeakMap<object, any>,
-	[any, any][]
+	[any, any][],
+	WeakMap<object, any>
 > {
 	/**
 	 * Deserializes array of tuples into WeakMap
@@ -143,8 +143,8 @@ export class WeakMapTransformer implements IQTransformer<
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet | MDN WeakSet}
  */
 export class WeakSetTransformer implements IQTransformer<
-	WeakSet<object>,
-	object[]
+	object[],
+	WeakSet<object>
 > {
 	/**
 	 * Deserializes array of objects into WeakSet

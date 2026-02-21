@@ -8,6 +8,9 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 
+		// En tests el acceso a elementos de array con índice es ergonómico y esperado
+		"noUncheckedIndexedAccess": false,
+
 		"rootDir": "../"
 	},
 	"include": ["./**/*", "../src/**/*"],

@@ -263,11 +263,11 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		// Validar entities array
 		expect(model.entities).toHaveLength(2);
 		expect(model.entities[0]).toBeInstanceOf(ComplexEntity);
-		expect(model.entities[0]!.id).toBe('e1');
-		expect(model.entities[0]!.amount).toBe(100n);
+		expect(model.entities[0].id).toBe('e1');
+		expect(model.entities[0].amount).toBe(100n);
 		expect(model.entities[1]).toBeInstanceOf(ComplexEntity);
-		expect(model.entities[1]!.id).toBe('e2');
-		expect(model.entities[1]!.lastError?.message).toBe('E2 error');
+		expect(model.entities[1].id).toBe('e2');
+		expect(model.entities[1].lastError?.message).toBe('E2 error');
 
 		// Validar primaryEntity
 		expect(model.primaryEntity).toBeInstanceOf(ComplexEntity);
@@ -277,7 +277,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		// Validar arrays de tipos complejos
 		expect(model.timestamps).toHaveLength(3);
 		expect(model.timestamps[0]).toBeInstanceOf(Date);
-		expect(model.timestamps[2]!.toISOString()).toBe(
+		expect(model.timestamps[2].toISOString()).toBe(
 			'2024-01-03T00:00:00.000Z'
 		);
 
@@ -287,8 +287,8 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 
 		expect(model.patterns).toHaveLength(3);
 		expect(model.patterns[0]).toBeInstanceOf(RegExp);
-		expect(model.patterns[1]!.flags).toBe('g');
-		expect(model.patterns[2]!.flags).toBe('i');
+		expect(model.patterns[1].flags).toBe('g');
+		expect(model.patterns[2].flags).toBe('i');
 
 		// Validar Map de buffers
 		expect(model.buffers).toBeInstanceOf(Map);
@@ -302,7 +302,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		expect(model.errorLog.size).toBe(2);
 		const errors = Array.from(model.errorLog);
 		expect(errors[0]).toBeInstanceOf(Error);
-		expect(errors[1]!.message).toBe('Error 2');
+		expect(errors[1].message).toBe('Error 2');
 	});
 
 	test('serializa y deserializa modelo nested complejo completo', () => {
@@ -345,7 +345,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 		expect(deserialized).toBeInstanceOf(NestedComplexModel);
 		expect(deserialized.name).toBe('Complete Test');
 		expect(deserialized.entities[0]).toBeInstanceOf(ComplexEntity);
-		expect(deserialized.entities[0]!.amount).toBe(1000n);
+		expect(deserialized.entities[0].amount).toBe(1000n);
 		expect(deserialized.primaryEntity).toBeInstanceOf(ComplexEntity);
 		expect(deserialized.primaryEntity.lastError?.message).toBe(
 			'Primary error'

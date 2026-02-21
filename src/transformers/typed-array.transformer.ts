@@ -199,7 +199,7 @@ export class TypedArrayTransformer<T extends ITypedArray>
 		}
 
 		return new (this.ArrayConstructor as Exclude<
-			TypedArrayConstructor,
+			ITypedArrayConstructor,
 			BigInt64ArrayConstructor | BigUint64ArrayConstructor
 		>)(arrayData as number[]) as T;
 	}

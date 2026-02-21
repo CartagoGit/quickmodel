@@ -117,7 +117,7 @@ describe('MockBuilder Interface Methods', () => {
 		expect(Array.isArray(array)).toBe(true);
 		expect(array.length).toBe(count);
 		expect(array[0]).not.toBeInstanceOf(User);
-		expect(typeof (array[0] as IUser).id).toBe('string');
+		expect(typeof array[0].id).toBe('string');
 	});
 
 	test('Overrides should work in interface methods', () => {

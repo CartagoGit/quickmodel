@@ -345,7 +345,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.int8arrays).toHaveLength(2);
 			expect(data.int8arrays[0]).toBeInstanceOf(Int8Array);
-			expect(Array.from(data.int8arrays[0]!)).toEqual([1, 2, 3]);
+			expect(Array.from(data.int8arrays[0])).toEqual([1, 2, 3]);
 		});
 
 		test('Uint8Array[] from number arrays', () => {
@@ -359,7 +359,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			});
 
 			expect(data.uint8arrays[0]).toBeInstanceOf(Uint8Array);
-			expect(Array.from(data.uint8arrays[1]!)).toEqual([40, 50, 60]);
+			expect(Array.from(data.uint8arrays[1])).toEqual([40, 50, 60]);
 		});
 
 		test('Float32Array[] from number arrays', () => {
@@ -373,7 +373,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			});
 
 			expect(data.float32arrays[0]).toBeInstanceOf(Float32Array);
-			expect(Array.from(data.float32arrays[0]!)).toEqual([1.5, 2.5, 3.5]);
+			expect(Array.from(data.float32arrays[0])).toEqual([1.5, 2.5, 3.5]);
 		});
 	});
 
@@ -398,8 +398,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(data.urls).toHaveLength(2);
 			expect(data.urls[0]).toBeInstanceOf(URL);
-			expect(data.urls[0]!.hostname).toBe('example.com');
-			expect(data.urls[1]!.pathname).toBe('/path');
+			expect(data.urls[0].hostname).toBe('example.com');
+			expect(data.urls[1].pathname).toBe('/path');
 		});
 	});
 
@@ -469,8 +469,8 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			expect(user.posts).toHaveLength(2);
 			expect(user.posts[0]).toBeInstanceOf(Post);
-			expect(user.posts[0]!.id).toBe(1);
-			expect(user.posts[1]!.title).toBe('Post 2');
+			expect(user.posts[0].id).toBe(1);
+			expect(user.posts[1].title).toBe('Post 2');
 		});
 
 		test('Model[] with empty array', () => {
@@ -495,9 +495,9 @@ describe('Array Transformations - Exhaustive Tests', () => {
 
 			// Null values should be PRESERVED (Security Fix)
 			expect(user.posts).toHaveLength(3);
-			expect(user.posts[0]!.id).toBe(1);
+			expect(user.posts[0].id).toBe(1);
 			expect(user.posts[1]).toBeNull();
-			expect(user.posts[2]!.id).toBe(2);
+			expect(user.posts[2].id).toBe(2);
 		});
 	});
 

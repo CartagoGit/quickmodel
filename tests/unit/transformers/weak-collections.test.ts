@@ -152,7 +152,6 @@ describe('WeakMap Transformer', () => {
 			}
 
 			const key = {};
-			const _sym = Symbol.for('test'); // Use Symbol.for() to make it retrievable
 			const cache = new Cache({
 				cache: [[key, 'Symbol.for(test)']],
 			});

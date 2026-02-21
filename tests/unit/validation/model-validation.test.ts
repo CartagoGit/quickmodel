@@ -89,6 +89,6 @@ describe('Model Validation', () => {
 		const errors = invalidContact.validate();
 
 		expect(errors).toHaveLength(1);
-		expect(errors[0]!.error).toBe('Invalid email');
+		expect(errors[0].error).toBe('Invalid email');
 	});
 });

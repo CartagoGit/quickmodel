@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { QAbstractTool } from '@/mcp/tools/abstract-tool';
+import { QAbstractTool } from '@mcp/tools/abstract-tool';
 import { z } from 'zod';
 
 class MockTool extends QAbstractTool<z.ZodObject<{ prop: z.ZodString }>> {

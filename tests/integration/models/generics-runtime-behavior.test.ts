@@ -323,11 +323,11 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 		// y encuentra que coinciden con Task
 		expect(list.items).toHaveLength(2);
 		expect(list.items[0]).toBeInstanceOf(Task);
-		expect(list.items[0]!.taskId).toBe('t1');
-		expect(list.items[0]!.completed).toBe(false);
+		expect(list.items[0].taskId).toBe('t1');
+		expect(list.items[0].completed).toBe(false);
 		expect(list.items[1]).toBeInstanceOf(Task);
-		expect(list.items[1]!.description).toBe('Second task');
-		expect(list.items[1]!.completed).toBe(true);
+		expect(list.items[1].description).toBe('Second task');
+		expect(list.items[1].completed).toBe(true);
 	});
 
 	test('Conclusión: Los genéricos son para type-safety, no para runtime', () => {

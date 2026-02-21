@@ -612,11 +612,11 @@ describe('toInterface() - All Types Preservation', () => {
 		// Array con wrappers - debe preservar wrappers
 		expect(Array.isArray(result.arrayWithWrappers)).toBe(true);
 		expect(result.arrayWithWrappers[0]).toBeInstanceOf(Number);
-		expect(result.arrayWithWrappers[0]!.valueOf()).toBe(42);
+		expect(result.arrayWithWrappers[0].valueOf()).toBe(42);
 		expect(result.arrayWithWrappers[1]).toBeInstanceOf(String);
-		expect(result.arrayWithWrappers[1]!.valueOf()).toBe('test');
+		expect(result.arrayWithWrappers[1].valueOf()).toBe('test');
 		expect(result.arrayWithWrappers[2]).toBeInstanceOf(Boolean);
-		expect(result.arrayWithWrappers[2]!.valueOf()).toBe(true);
+		expect(result.arrayWithWrappers[2].valueOf()).toBe(true);
 	});
 
 	test('should preserve Map IQSerialized as array of pairs', () => {

@@ -12,11 +12,11 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { QListTransformersTool } from '@/mcp/tools/public/list-transformers.tool';
-import { QGenerateMockDataTool } from '@/mcp/tools/public/generate-mock.tool';
-import { QExportJsonSchemaTool } from '@/mcp/tools/public/export-schema.tool';
-import { QInterfaceToModelTool } from '@/mcp/tools/public/interface-to-model.tool';
-import { QJsonToModelTool } from '@/mcp/tools/public/json-to-model.tool';
+import { QListTransformersTool } from '@mcp/tools/public/list-transformers.tool';
+import { QGenerateMockDataTool } from '@mcp/tools/public/generate-mock.tool';
+import { QExportJsonSchemaTool } from '@mcp/tools/public/export-schema.tool';
+import { QInterfaceToModelTool } from '@mcp/tools/public/interface-to-model.tool';
+import { QJsonToModelTool } from '@mcp/tools/public/json-to-model.tool';
 
 // ============================================================================
 // LIST TRANSFORMERS TOOL
