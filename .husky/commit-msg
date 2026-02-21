@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+
+bunx --no -- commitlint --edit $1
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "════════════════════════════════════════════════════════════"
+  echo "❌ COMMIT REJECTED - Check the rules:"
+  echo "════════════════════════════════════════════════════════════"
+  echo ""
+  echo "📝 Format: <type>(<scope>): <subject>"
+  echo "                     ↳ scope is optional"
+  echo ""
+  echo "📏 Max 72 characters | lowercase type | no trailing period"
+  echo ""
+  echo "✅ Valid types: feat fix perf refactor docs style test chore ci build"
+  echo ""
+  echo "✅ Examples:"
+  echo "   feat(transformers): add URL transformer support"
+  echo "   fix(serializer): correct BigInt in nested objects"
+  echo "   feat!: remove deprecated serialize() method"
+  echo ""
+  echo "❌ Bad examples:"
+  echo "   'update code'          ← no type"
+  echo "   'Feat: add support.'   ← uppercase + trailing period"
+  echo "   'wip'                  ← not descriptive"
+  echo ""
+  echo "📖 Full guide: .github/COMMIT_CONVENTIONS.md"
+  echo "════════════════════════════════════════════════════════════"
+  echo ""
+  exit 1
+fi
