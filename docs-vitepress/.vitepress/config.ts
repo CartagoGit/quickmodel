@@ -264,6 +264,14 @@ export default defineConfig({
 							text: 'Utils',
 							link: '/tsdoc/@cartago-git/namespaces/Utils/',
 						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
 					],
 				},
 			],
@@ -301,6 +309,14 @@ export default defineConfig({
 						{
 							text: 'Utils',
 							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
 						},
 					],
 				},
@@ -348,6 +364,144 @@ export default defineConfig({
 						{
 							text: 'Advanced',
 							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+					],
+				},
+			],
+			'/tsdoc/@cartago-git/namespaces/Forms/': [
+				{
+					text: 'Forms Namespace',
+					items: [
+						{
+							text: 'Overview',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Functions',
+							collapsed: false,
+							items: [
+								{
+									text: 'qCheckRules',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRules',
+								},
+								{
+									text: 'qCheckRulesAsync',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRulesAsync',
+								},
+								{
+									text: 'qCheckRulesByGroup',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRulesByGroup',
+								},
+								{
+									text: 'qCheckRulesByGroupAsync',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRulesByGroupAsync',
+								},
+								{
+									text: 'qGetGroups',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qGetGroups',
+								},
+								{
+									text: 'qGroups',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qGroups',
+								},
+							],
+						},
+						{
+							text: 'Interfaces',
+							collapsed: true,
+							items: [
+								{
+									text: 'IQCheckRulesAsyncOptions',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/interfaces/IQCheckRulesAsyncOptions',
+								},
+								{
+									text: 'IQCheckRulesOptions',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/interfaces/IQCheckRulesOptions',
+								},
+							],
+						},
+						{
+							text: 'Types',
+							collapsed: true,
+							items: [
+								{
+									text: 'IQGroupsMap',
+									link: '/tsdoc/@cartago-git/namespaces/Forms/type-aliases/IQGroupsMap',
+								},
+							],
+						},
+					],
+				},
+				{
+					text: 'Navigation',
+					items: [
+						{ text: 'Back to Core', link: '/tsdoc/' },
+						{
+							text: 'Types',
+							link: '/tsdoc/@cartago-git/namespaces/Types/',
+						},
+						{
+							text: 'Advanced',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Utils',
+							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+					],
+				},
+			],
+			'/tsdoc/@cartago-git/namespaces/Compat/': [
+				{
+					text: 'Compat (TS5) Namespace',
+					items: [
+						{
+							text: 'Overview',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+						{
+							text: 'Functions',
+							collapsed: false,
+							items: [
+								{
+									text: 'qGroups5',
+									link: '/tsdoc/@cartago-git/namespaces/Compat/functions/qGroups5',
+								},
+							],
+						},
+					],
+				},
+				{
+					text: 'Navigation',
+					items: [
+						{ text: 'Back to Core', link: '/tsdoc/' },
+						{
+							text: 'Types',
+							link: '/tsdoc/@cartago-git/namespaces/Types/',
+						},
+						{
+							text: 'Advanced',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Utils',
+							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
 						},
 					],
 				},
@@ -400,6 +554,14 @@ export default defineConfig({
 						{
 							text: 'Utils',
 							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
 						},
 					],
 				},
@@ -518,32 +680,37 @@ export default defineConfig({
 									link: '/en/guide/mocks',
 								},
 								{
-									text: 'NestJS Integration',
+									text: 'Troubleshooting',
+									link: '/en/guide/troubleshooting',
+								},
+							],
+						},
+						{
+							text: 'Integrations',
+							items: [
+								{
+									text: 'NestJS',
 									link: '/en/guide/nestjs-integration',
 								},
 								{
-									text: 'Angular Integration',
+									text: 'Angular',
 									link: '/en/guide/angular-integration',
 								},
 								{
-									text: 'React Integration',
+									text: 'React / Next.js',
 									link: '/en/guide/react-integration',
 								},
 								{
-									text: 'Vue 3 Integration',
+									text: 'Vue 3 / Nuxt',
 									link: '/en/guide/vue-integration',
 								},
 								{
-									text: 'Svelte 5 Integration',
+									text: 'Svelte 5 / SvelteKit',
 									link: '/en/guide/svelte-integration',
 								},
 								{
 									text: 'Express / Fastify / Hono',
 									link: '/en/guide/backend-integration',
-								},
-								{
-									text: 'Troubleshooting',
-									link: '/en/guide/troubleshooting',
 								},
 							],
 						},
@@ -684,32 +851,37 @@ export default defineConfig({
 									link: '/es/guide/mocks',
 								},
 								{
-									text: 'Integración con NestJS',
+									text: 'Solución de Problemas',
+									link: '/es/guide/troubleshooting',
+								},
+							],
+						},
+						{
+							text: 'Integraciones',
+							items: [
+								{
+									text: 'NestJS',
 									link: '/es/guide/nestjs-integration',
 								},
 								{
-									text: 'Integración con Angular',
+									text: 'Angular',
 									link: '/es/guide/angular-integration',
 								},
 								{
-									text: 'Integración con React',
+									text: 'React / Next.js',
 									link: '/es/guide/react-integration',
 								},
 								{
-									text: 'Integración con Vue 3',
+									text: 'Vue 3 / Nuxt',
 									link: '/es/guide/vue-integration',
 								},
 								{
-									text: 'Integración con Svelte 5',
+									text: 'Svelte 5 / SvelteKit',
 									link: '/es/guide/svelte-integration',
 								},
 								{
 									text: 'Express / Fastify / Hono',
 									link: '/es/guide/backend-integration',
-								},
-								{
-									text: 'Solución de Problemas',
-									link: '/es/guide/troubleshooting',
 								},
 							],
 						},
