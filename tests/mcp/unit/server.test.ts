@@ -178,7 +178,7 @@ describe('QMcpServer', () => {
 
 	it('should get default prompts', () => {
 		const prompts = QMcpServer.getDefaultPrompts();
-		expect(prompts.length).toBe(14);
+		expect(prompts.length).toBe(15);
 		expect(
 			prompts.find((p) => p.name === 'quickmodel_from_typescript')
 		).toBeDefined();
@@ -228,5 +228,39 @@ describe('QMcpServer', () => {
 		server.registerPrompts([p1, p2]);
 
 		expect(mockRegisterPrompt).toHaveBeenCalledTimes(2);
+	});
+
+	it('getDefaultPublicTools should return only public tools', () => {
+		const tools = QMcpServer.getDefaultPublicTools();
+		expect(tools.length).toBeGreaterThan(0);
+		expect(tools.find((t) => t.name === 'create_model')).toBeDefined();
+		// Internal tools must NOT appear
+		expect(tools.find((t) => t.name === 'lint_check')).toBeUndefined();
+		expect(tools.find((t) => t.name === 'typecheck')).toBeUndefined();
+		expect(
+			tools.find((t) => t.name === 'check_project_rules')
+		).toBeUndefined();
+	});
+
+	it('getDefaultInternalTools should return only internal tools', () => {
+		const tools = QMcpServer.getDefaultInternalTools();
+		expect(tools.length).toBeGreaterThan(0);
+		expect(tools.find((t) => t.name === 'lint_check')).toBeDefined();
+		expect(tools.find((t) => t.name === 'typecheck')).toBeDefined();
+		expect(
+			tools.find((t) => t.name === 'check_project_rules')
+		).toBeDefined();
+		expect(tools.find((t) => t.name === 'check_bundle_size')).toBeDefined();
+		expect(tools.find((t) => t.name === 'check_changelog')).toBeDefined();
+		expect(tools.find((t) => t.name === 'list_todos')).toBeDefined();
+		// Public tools must NOT appear
+		expect(tools.find((t) => t.name === 'create_model')).toBeUndefined();
+	});
+
+	it('getDefaultTools should be the union of public + internal tools', () => {
+		const all = QMcpServer.getDefaultTools();
+		const pub = QMcpServer.getDefaultPublicTools();
+		const internal = QMcpServer.getDefaultInternalTools();
+		expect(all.length).toBe(pub.length + internal.length);
 	});
 });

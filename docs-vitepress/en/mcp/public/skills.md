@@ -6,22 +6,23 @@ Use skills when you want the AI to drive the process end-to-end without you havi
 
 ## Available Skills
 
-| Skill name                                                        | Title                                  | Description                                                      |
-| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                      |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues             |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline         |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats        |
-| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`        |
-| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
-| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities        |
-| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                    |
-| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns         |
-| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates      |
-| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation   |
-| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit           |
-| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it         |
-| [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implement Feature (TDD)                | Full TDD cycle enforced by `lint_check` + `typecheck` gates      |
+| Skill name                                                        | Title                                  | Description                                                        |
+| ----------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                        |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues               |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline           |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats          |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`          |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`   |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities          |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                      |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns           |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates        |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation     |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit             |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it           |
+| [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implement Feature (TDD)                | Full TDD cycle enforced by `lint_check` + `typecheck` gates        |
+| [`quickmodel_fix_lint`](#quickmodel_fix_lint)                     | Fix ESLint Errors                      | Step-by-step lint fix with `lint_check` + `pre_commit_check` gates |
 
 ---
 
@@ -416,4 +417,46 @@ file_paths: "src/mcp/tools/internal/typecheck.tool.ts"
 → AI calls typecheck({})
 → AI calls check_project_rules()
 → All pass → feature declared done
+```
+
+---
+
+## `quickmodel_fix_lint`
+
+**Step-by-step guided resolution of ESLint errors after a pre-commit failure or a `lint_check` that returned `passed: false`.**
+
+Explains each violation in plain language, applies the minimal correct fix following the project rules (id-length, max-params, no-implied-eval, require-await, etc.), calls `lint_check` after every change, and only declares done once `pre_commit_check` returns `{ passed: true }`.
+
+### Arguments
+
+| Argument      | Required | Description                                                                                     |
+| ------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `lint_errors` | ✅ Yes   | Full text of the ESLint output from `lint_check`, `pre_commit_check`, or the Husky hook failure |
+| `file_paths`  | ✗ No     | Comma-separated list of files to re-check (defaults to `src/`)                                  |
+
+### Workflow
+
+1. Parse each error from `lint_errors`
+2. Explain the rule that was violated
+3. Apply the correct minimal fix
+4. Run `lint_check` after each file edit — block until `passed: true`
+5. Run `pre_commit_check` as the final gate
+6. Only declared done when `pre_commit_check` returns `{ passed: true }`
+
+### Example
+
+```
+lint_errors: """
+/src/mcp/tools/public/diff-models.tool.ts
+  169:10  error  Identifier name 'tA' is too short (< 3)  id-length
+  170:10  error  Identifier name 'tB' is too short (< 3)  id-length
+"""
+file_paths: "src/mcp/tools/public/diff-models.tool.ts"
+
+→ AI explains: id-length requires names ≥ 3 chars
+→ AI renames: tA → valA, tB → valB
+→ AI calls lint_check({ targetFiles: ["src/mcp/tools/public/diff-models.tool.ts"] })
+→ lint_check returns { passed: true }
+→ AI calls pre_commit_check({ files: ["src/mcp/tools/public/diff-models.tool.ts"] })
+→ pre_commit_check returns { passed: true } → done
 ```

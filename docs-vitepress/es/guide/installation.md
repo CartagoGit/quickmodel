@@ -5,8 +5,22 @@
 Antes de instalar QuickModel, asegúrate de tener:
 
 - **Node.js** >= 18.0.0
-- **TypeScript** >= 5.0.0
+- **TypeScript** >= 4.1.0
 - Un gestor de paquetes: npm, yarn, pnpm o bun
+
+::: details Compatibilidad de versiones de TypeScript
+QuickModel evita usar built-ins de TypeScript que eleven la versión mínima. La tabla muestra cada feature sensible a la versión y cómo se gestiona:
+
+| Feature                              | Dónde se usa                              | Introducido en | Cómo se gestiona                                    |
+| ------------------------------------ | ----------------------------------------- | -------------- | --------------------------------------------------- |
+| Inferencia de template literal types | helper `qGroups()`                        | TS 4.1         | Nativo (marca el mínimo)                            |
+| `ClassFieldDecoratorContext`         | overload TC39 de `@QType` / `@QRule`      | TS 5.0         | Polifilado como `IClassFieldDecoratorCtx` (interno) |
+| Parámetros de tipo `const`           | `qGroups5()` / entry point `forms5`       | TS 5.0         | Aislado en entry point separado `/forms5`           |
+| `NoInfer<T>`                         | `QModel.create()` / `QModel.createMany()` | TS 5.4         | Polifilado como `INoInfer<T>` (interno)             |
+
+El **paquete principal** (`@cartago-git/quickmodel`) funciona con TypeScript **4.1+**.
+El entry point `/forms5` requiere TypeScript **5.0+** por los parámetros de tipo `const`.
+:::
 
 ## Instalar QuickModel
 

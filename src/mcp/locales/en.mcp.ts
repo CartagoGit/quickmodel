@@ -80,5 +80,9 @@ export const enMcp = {
 			'Run ESLint on a directory or specific files. Returns { passed, errors, warnings, total_errors, total_warnings, summary }.',
 		typecheck:
 			'Run TypeScript type checking (tsc --noEmit) on src/. Returns { passed, errors, total, summary }.',
+		pre_commit_check:
+			'Simulate the Husky pre-commit hook: run ESLint (--fix) and Prettier (--write) on the given files or src/. ' +
+			'Returns { passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }. ' +
+			'Run before committing to guarantee the hook will not reject the commit.',
 	},
 };

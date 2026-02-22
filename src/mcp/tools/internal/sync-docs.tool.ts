@@ -25,31 +25,14 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		const cwd = process.cwd();
 
 		// 1. Get Tools via dynamic import to avoid circular dependency
-		// Note: We assume the server exports QMcpServer class
 		const { QMcpServer } = await import('../../server');
-		const allTools = QMcpServer.getDefaultTools();
 
-		// Separate Public vs Internal using an explicit allowlist of internal tool names
-		const internalToolNames = new Set([
-			'benchmark_performance',
-			'check_api_compatibility',
-			'check_jsdocs',
-			'check_project_health',
-			'check_project_rules',
-			'check_security',
-			'generate_test',
-			'get_coverage_report',
-			'scaffold_feature',
-			'update_docs',
-			'update_docs_content',
-		]);
-
-		const internalTools = allTools
-			.filter((tool: any) => internalToolNames.has(tool.name))
-			.sort((valA, valB) => valA.name.localeCompare(valB.name));
-		const publicTools = allTools
-			.filter((tool: any) => !internalToolNames.has(tool.name))
-			.sort((valA, valB) => valA.name.localeCompare(valB.name));
+		const internalTools = QMcpServer.getDefaultInternalTools().sort(
+			(valA, valB) => valA.name.localeCompare(valB.name)
+		);
+		const publicTools = QMcpServer.getDefaultPublicTools().sort(
+			(valA, valB) => valA.name.localeCompare(valB.name)
+		);
 
 		// 2. Generate Transformers Documentation
 		const { TransformerLookupService } =

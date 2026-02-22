@@ -60,6 +60,7 @@ import {
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
 import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
+import type { INoInfer } from '@/core/types/ts-polyfills.type';
 
 /**
  * Combined validation report from both `checkIntegrity()` and `checkRules()`.
@@ -219,7 +220,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		TClass extends QModel<any>,
 		TInterface = TClass extends QModel<infer I> ? I : never,
 		TResult = TClass,
-	>(this: new (data: any) => TClass, data: NoInfer<TInterface>): TResult;
+	>(this: new (data: any) => TClass, data: INoInfer<TInterface>): TResult;
 
 	static create(this: any, data: any): any {
 		// Use generics to cast 'this' to the constructor type
@@ -295,7 +296,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		TResult = TClass,
 	>(
 		this: new (data: any) => TClass,
-		data: NoInfer<TInterface>[],
+		data: INoInfer<TInterface>[],
 		options?: IQCreateManyOptions
 	): IQCreateManyResult<TResult>;
 

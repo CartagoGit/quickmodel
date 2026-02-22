@@ -50,6 +50,21 @@ Genera el código TypeScript para una clase que extiende QModel basado en una li
 }
 ```
 
+## `diff_models`
+
+Compara dos definiciones de clase QuickModel (como cadenas de código fuente) y reporta las diferencias: campos añadidos/eliminados, transformers cambiados, decoradores añadidos/eliminados. Análisis estático puro, sin ejecución de código. Devuelve { added_fields, removed_fields, changed_fields, changed_transformers, added_decorators, removed_decorators, summary }.
+
+```json
+{
+	"model_a": {
+		"description": "Source code of the baseline QuickModel class (the \"before\")"
+	},
+	"model_b": {
+		"description": "Source code of the new QuickModel class (the \"after\")"
+	}
+}
+```
+
 ## `explain_error`
 
 Explica un error de validación de QuickModel en lenguaje humano.
@@ -192,6 +207,25 @@ Busca en la documentación de QuickModel por una cadena de consulta.
 {
 	"query": {
 		"description": "The search term or phrase"
+	}
+}
+```
+
+## `simulate_async_rules`
+
+Ejecuta reglas de lógica de negocio asíncronas a través de la API real instance.checkRulesAsync(). Soporta timeoutMs, timeoutMessage y mode (parallel|serial). Las cadenas de predicado pueden usar async/await y devolver Promises. Devuelve { valid, errors[], evaluated }.
+
+```json
+{
+	"data": {
+		"description": "The data object to validate"
+	},
+	"rules": {
+		"description": "Array of async rules to apply via @QRule + checkRulesAsync()"
+	},
+	"options": {
+		"description": "Options forwarded to checkRulesAsync()",
+		"optional": true
 	}
 }
 ```

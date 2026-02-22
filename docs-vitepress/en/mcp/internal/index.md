@@ -44,6 +44,27 @@ Check for breaking changes in the public API.
 }
 ```
 
+## `check_bundle_size`
+
+Build the project and report the size of all generated dist/ files. Returns { status, files: [{file, bytes}][], total_bytes, summary }.
+
+```json
+{}
+```
+
+## `check_changelog`
+
+Verify that CHANGELOG.md contains an entry for the current package.json version. Returns { found, version, excerpt, status, message? }.
+
+```json
+{
+	"projectDir": {
+		"description": "Project root directory containing package.json and CHANGELOG.md. Defaults to process.cwd().",
+		"optional": true
+	}
+}
+```
+
 ## `check_jsdocs`
 
 Scan the source code for exported members that are missing JSDoc documentation.
@@ -101,6 +122,53 @@ Run tests with coverage and report the summary.
 {}
 ```
 
+## `lint_check`
+
+Run ESLint on a directory or specific files. Returns { passed, errors, warnings, total_errors, total_warnings, summary }.
+
+```json
+{
+	"targetDir": {
+		"description": "Directory to lint (e.g. \"src/mcp/tools\"). Defaults to \"src\" if neither targetDir nor targetFiles is provided.",
+		"optional": true
+	},
+	"targetFiles": {
+		"description": "Array of specific file paths to lint (e.g. [\"src/mcp/tools/public/my-tool.ts\"]).",
+		"optional": true
+	}
+}
+```
+
+## `list_todos`
+
+Scan source files for TODO, FIXME, HACK and XXX comments. Supports custom targetDir and file extensions. Returns { items: [{file, line, type, text}][], total }.
+
+```json
+{
+	"targetDir": {
+		"description": "Directory to scan. Defaults to src/ in the project root.",
+		"optional": true
+	},
+	"extensions": {
+		"description": "File extensions to include (default: [\".ts\", \".js\"]). E.g. [\".ts\", \".tsx\", \".js\"]",
+		"optional": true
+	}
+}
+```
+
+## `pre_commit_check`
+
+Simulate the Husky pre-commit hook: run ESLint (--fix) and Prettier (--write) on the given files or src/. Returns { passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }. Run before committing to guarantee the hook will not reject the commit.
+
+```json
+{
+	"files": {
+		"description": "List of file paths to check. Defaults to all TypeScript/JavaScript files in src/.",
+		"optional": true
+	}
+}
+```
+
 ## `scaffold_feature`
 
 Generate boilerplate code for new features (transformers, tools).
@@ -118,6 +186,14 @@ Generate boilerplate code for new features (transformers, tools).
 		"optional": true
 	}
 }
+```
+
+## `typecheck`
+
+Run TypeScript type checking (tsc --noEmit) on src/. Returns { passed, errors, total, summary }.
+
+```json
+{}
 ```
 
 ## `update_docs`

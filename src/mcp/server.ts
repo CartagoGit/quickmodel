@@ -18,6 +18,7 @@ import {
 	QSecurityReviewPrompt,
 	QTransformerGuidePrompt,
 	QImplementFeaturePrompt,
+	QFixLintPrompt,
 } from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -62,6 +63,7 @@ import {
 	QCheckChangelogTool,
 	QLintCheckTool,
 	QTypecheckTool,
+	QPreCommitCheckTool,
 } from './tools/internal';
 /**
  * Main class for the QuickModel MCP Server.
@@ -96,11 +98,10 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Returns the list of available tools.
+	 * Returns only the public-facing tools (end-user facing).
 	 */
-	public static getDefaultTools(): IQMcpTool[] {
+	public static getDefaultPublicTools(): IQMcpTool[] {
 		return [
-			// Public Tools
 			new QCreateModelTool(),
 			new QValidateUsageTool(),
 			new QListTransformersTool(),
@@ -110,10 +111,8 @@ export class QMcpServer {
 			new QInterfaceToModelTool(),
 			new QExportJsonSchemaTool(),
 			new QExplainErrorTool(),
-			// Core Simulation
 			new QSimulateTransformationTool(),
 			new QSimulateValidationTool(),
-			// Form & Schema Tools
 			new QGetFormSchemaTool(),
 			new QGetModelSchemaTool(),
 			new QCheckIntegrityTool(),
@@ -121,7 +120,15 @@ export class QMcpServer {
 			new QSimulateAsyncRulesTool(),
 			new QRoundtripTool(),
 			new QDiffModelsTool(),
+			new QJsonToModelTool(),
+		];
+	}
 
+	/**
+	 * Returns only the internal development / maintenance tools.
+	 */
+	public static getDefaultInternalTools(): IQMcpTool[] {
+		return [
 			new QUpdateDocsTool(),
 			new QGenerateTestTool(),
 			new QCheckMissingJSDocsTool(),
@@ -134,11 +141,21 @@ export class QMcpServer {
 			new QCheckChangelogTool(),
 			new QLintCheckTool(),
 			new QTypecheckTool(),
-			new QJsonToModelTool(),
+			new QPreCommitCheckTool(),
 			new QSyncDocsTool(),
 			new QScaffoldFeatureTool(),
 			new QCheckApiCompatibilityTool(),
 			new QBenchmarkPerformanceTool(),
+		];
+	}
+
+	/**
+	 * Returns all available tools (public + internal).
+	 */
+	public static getDefaultTools(): IQMcpTool[] {
+		return [
+			...QMcpServer.getDefaultPublicTools(),
+			...QMcpServer.getDefaultInternalTools(),
 		];
 	}
 
@@ -161,6 +178,7 @@ export class QMcpServer {
 			new QSecurityReviewPrompt(),
 			new QTransformerGuidePrompt(),
 			new QImplementFeaturePrompt(),
+			new QFixLintPrompt(),
 		];
 	}
 

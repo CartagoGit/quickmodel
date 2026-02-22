@@ -16,12 +16,12 @@
  *
  * | Call style                                   | TS version | Notes                  |
  * |----------------------------------------------|------------|------------------------|
- * | `qGroups('a', 'b')`                          | TS 4.1+    | Spread, no `as const`  |
- * | `qGroups(['a', 'b'] as const)`               | TS 4.1+    | Array with `as const`  |
+ * | `qGroups('a', 'b')`                          | TS 3.4+    | Spread, no `as const`  |
+ * | `qGroups(['a', 'b'] as const)`               | TS 3.4+    | Array with `as const`  |
  * | `qGroups5(['a', 'b'])` *(mutable array)*     | TS 5.0+    | No `as const` — uses `const` type parameter |
  *
  * The first two overloads are published in the `.d.ts` without any TS5-only
- * syntax (`const T`), so they work in TS 4.1+ consumers.
+ * syntax (`const T`), so they work in TS 3.4+ consumers.
  * The third overload is provided as a separate export (`qGroups5`) via
  * `@cartago-git/quickmodel/forms5`, usable only when the consumer's
  * compiler is TS 5.0+.
@@ -44,7 +44,7 @@
 export type IQGroupsMap<T extends string> = { [K in T]: K };
 
 // ---------------------------------------------------------------------------
-// Overload 1 — spread (TS 4.1+)
+// Overload 1 — spread (TS 3.4+)
 // qGroups('identity', 'security')
 // ---------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ export function qGroups<T extends string[]>(
 ): IQGroupsMap<T[number]>;
 
 // ---------------------------------------------------------------------------
-// Overload 2 — readonly array / as const (TS 4.1+)
+// Overload 2 — readonly array / as const (TS 3.4+)
 // qGroups(['identity', 'security'] as const)
 // ---------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ export function qGroups<T extends string[]>(
  *
  * @example
  * ```ts
- * // TS 4.x — as const required to keep literal types:
+ * // TS 3.4+ — as const required to keep literal types:
  * const Groups = qGroups(['identity', 'security'] as const);
  *
  * // TS 5.x — as const optional (use qGroups5 for cleaner DX):

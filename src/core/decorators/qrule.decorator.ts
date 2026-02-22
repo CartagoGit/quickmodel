@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { createTC39Guard } from './qrule-tc39-registry';
+import type { IClassFieldDecoratorCtx } from '../types/ts-polyfills.type';
 
 /**
  * Metadata key for storing @QRule rules per property.
@@ -255,10 +256,7 @@ export function QRule<T = unknown>(
 	 * allows TypeScript to unify `T` with the decorated field's value type,
 	 * enabling automatic inference of the predicate parameter type.
 	 */
-	<This>(
-		target: undefined,
-		context: ClassFieldDecoratorContext<This, T>
-	): void;
+	<This>(target: undefined, context: IClassFieldDecoratorCtx<This, T>): void;
 } {
 	const rule: IQRule<unknown> = {
 		predicate: predicate as IQRule<unknown>['predicate'],

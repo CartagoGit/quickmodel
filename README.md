@@ -7,7 +7,7 @@
 TypeScript model system with automatic type transformation and SOLID architecture.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.1+-blue.svg)](https://www.typescriptlang.org/)
 [![CI](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml/badge.svg)](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/CartagoGit/quickmodel/branch/main/graph/badge.svg)](https://codecov.io/gh/CartagoGit/quickmodel)
 [![npm version](https://badge.fury.io/js/@cartago-git%2Fquickmodel.svg)](https://www.npmjs.com/package/@cartago-git/quickmodel)
@@ -24,7 +24,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
 - ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `@cartago-git/quickmodel/forms` subpath — no `QModel` required
 - 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
-- 🤖 **MCP Server** - AI assistant integration with 19 public tools and 14 guided prompts (Claude, Copilot, etc.)
+- 🤖 **MCP Server** - AI assistant integration with 19 public tools and 15 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
 - 🧪 **Well Tested** - 2100+ tests covering all features
@@ -748,7 +748,7 @@ bun run mcp:start
 | `roundtrip`               | Verify that `serialize()` → re-create → `serialize()` is lossless; returns `{ lossless, serialized, roundtrip_serialized, diff, summary }`                                  |
 | `diff_models`             | Compare two `QModel` class definitions (as source strings) and report added/removed fields, changed transformers, and decorator changes; pure static analysis               |
 
-### AI-guided prompts / skills (14)
+### AI-guided prompts / skills (15)
 
 | Skill                           | Description                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -766,6 +766,7 @@ bun run mcp:start
 | `quickmodel_security_review`    | Security audit: mass assignment, DoS limits, prototype pollution, ReDoS via `check_security`      |
 | `quickmodel_transformer_guide`  | Choose the right transformer for a TypeScript type and validate it with `simulate_transformation` |
 | `quickmodel_implement_feature`  | Full TDD cycle: write test → implement → `lint_check` gate → `typecheck` gate → done              |
+| `quickmodel_fix_lint`           | Step-by-step ESLint fix with `lint_check` + `pre_commit_check` gates; use after any hook failure  |
 
 > 📚 **[MCP Documentation](https://cartagogit.github.io/quickmodel/en/mcp/)** — Full tool reference and AI integration guide
 

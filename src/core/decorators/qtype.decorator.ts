@@ -31,6 +31,7 @@ import { NATIVE_TYPE_MAP } from '../constants/native-types';
 import { createTC39Guard } from './qrule-tc39-registry';
 import type { IQTypeOptions } from '../interfaces/qtype-options.interface';
 import type { IQSpec } from '../interfaces/quick.interface';
+import type { IClassFieldDecoratorCtx } from '../types/ts-polyfills.type';
 
 // ---------------------------------------------------------------------------
 // TC39 field-decorator context helpers
@@ -624,7 +625,7 @@ export function QType(
 	 */
 	<This, T>(
 		target: undefined,
-		context: ClassFieldDecoratorContext<This, T>
+		context: IClassFieldDecoratorCtx<This, T>
 	): void;
 } {
 	return function (

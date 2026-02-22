@@ -15,3 +15,4 @@ export * from './check-bundle-size.tool';
 export * from './check-changelog.tool';
 export * from './lint-check.tool';
 export * from './typecheck.tool';
+export * from './pre-commit-check.tool';

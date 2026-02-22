@@ -69,7 +69,8 @@ export type {
 	IQMockerFn,
 } from './core/interfaces/transform-options.interface';
 export type { IQAlias } from './core/types/q-alias.type';
-export type { IQCaseOptions } from './core/types/case.type';
+export type { IQCaseOptions, ICaseType } from './core/types/case.type';
+export type { IRecursiveDeserializer } from './core/services/value-transformer.service';
 export type { IQSchemaType } from './core/types/schema-types';
 export type {
 	IQSerializer,

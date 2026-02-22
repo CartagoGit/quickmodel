@@ -14,6 +14,9 @@ import { QAddQGroupPrompt } from '../../../../src/mcp/prompts/public/add-qgroup.
 import { QSecurityReviewPrompt } from '../../../../src/mcp/prompts/public/security-review.prompt';
 import { QTransformerGuidePrompt } from '../../../../src/mcp/prompts/public/transformer-guide.prompt';
 import { QImplementFeaturePrompt } from '../../../../src/mcp/prompts/public/implement-feature.prompt';
+import { QFixLintPrompt } from '../../../../src/mcp/prompts/public/fix-lint.prompt';
+import { QFixTypecheckPrompt } from '../../../../src/mcp/prompts/public/fix-typecheck.prompt';
+import { QRefactorPrompt } from '../../../../src/mcp/prompts/public/refactor.prompt';
 import type { IQPromptResult } from '../../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
@@ -1082,5 +1085,340 @@ describe('QImplementFeaturePrompt', () => {
 		})) as IQPromptResult;
 		const allText = result.messages.map((m) => m.content.text).join(' ');
 		expect(allText).toContain('my-tool.ts');
+	});
+});
+
+// ── QFixLintPrompt ────────────────────────────────────────────────────────────
+describe('QFixLintPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QFixLintPrompt();
+		expect(prompt.name).toBe('quickmodel_fix_lint');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.description.length).toBeGreaterThan(10);
+	});
+
+	it('should have required lint_errors schema field', () => {
+		const prompt = new QFixLintPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.lint_errors).toBeDefined();
+		const parsed = schema.lint_errors.safeParse('some lint errors text');
+		expect(parsed.success).toBe(true);
+	});
+
+	it('should have optional file_paths schema field', () => {
+		const prompt = new QFixLintPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.file_paths).toBeDefined();
+		const parsed = schema.file_paths.safeParse(undefined);
+		expect(parsed.success).toBe(true);
+	});
+
+	it('should return a valid IQPromptResult', async () => {
+		const prompt = new QFixLintPrompt();
+		const result = (await prompt.execute({
+			lint_errors:
+				"src/foo.ts\n  12:3  error  id-length: 'fn' is too short",
+		})) as IQPromptResult;
+		expect(result).toBeDefined();
+		expect(result.messages).toBeDefined();
+		expect(Array.isArray(result.messages)).toBe(true);
+	});
+
+	it('should have at least 3 messages', async () => {
+		const prompt = new QFixLintPrompt();
+		const result = (await prompt.execute({
+			lint_errors: 'src/foo.ts  12:3  error  id-length',
+		})) as IQPromptResult;
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('should reference lint_check in the messages', async () => {
+		const prompt = new QFixLintPrompt();
+		const result = (await prompt.execute({
+			lint_errors: 'src/foo.ts  12:3  error  id-length',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('lint_check');
+	});
+
+	it('should reference pre_commit_check in the messages', async () => {
+		const prompt = new QFixLintPrompt();
+		const result = (await prompt.execute({
+			lint_errors: 'src/foo.ts  12:3  error  id-length',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('pre_commit_check');
+	});
+
+	it('should enforce a DONE gate (passed: true)', async () => {
+		const prompt = new QFixLintPrompt();
+		const result = (await prompt.execute({
+			lint_errors: 'src/foo.ts  12:3  error  id-length',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('passed: true');
+	});
+
+	it('should include the lint_errors content in the messages', async () => {
+		const prompt = new QFixLintPrompt();
+		const errText = 'src/mcp/tools/public/foo.ts  5:3  error  no-console';
+		const result = (await prompt.execute({
+			lint_errors: errText,
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain(errText);
+	});
+
+	it('should mention file_paths in messages when provided', async () => {
+		const prompt = new QFixLintPrompt();
+		const result = (await prompt.execute({
+			lint_errors: 'src/foo.ts  5:3  error  no-console',
+			file_paths: 'src/foo.ts,src/bar.ts',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('foo.ts');
+		expect(allText).toContain('bar.ts');
+	});
+});
+
+// ── QFixTypecheckPrompt ───────────────────────────────────────────────────────
+describe('QFixTypecheckPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QFixTypecheckPrompt();
+		expect(prompt.name).toBe('quickmodel_fix_typecheck');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.description.length).toBeGreaterThan(10);
+	});
+
+	it('should have required type_errors schema field', () => {
+		const prompt = new QFixTypecheckPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.type_errors).toBeDefined();
+		const parsed = schema.type_errors.safeParse('some type errors text');
+		expect(parsed.success).toBe(true);
+		const missing = schema.type_errors.safeParse(undefined);
+		expect(missing.success).toBe(false);
+	});
+
+	it('should have optional file_paths schema field', () => {
+		const prompt = new QFixTypecheckPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.file_paths).toBeDefined();
+		const parsed = schema.file_paths?.safeParse(undefined);
+		expect(parsed?.success).toBe(true);
+	});
+
+	it('should return a valid IQPromptResult', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors:
+				"src/foo.ts(10,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+		})) as IQPromptResult;
+		assertValidResult(result);
+	});
+
+	it('should have at least 3 messages', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors:
+				"src/foo.ts(10,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+		})) as IQPromptResult;
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('should reference typecheck tool in the messages', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors: 'src/foo.ts(10,5): error TS2322',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('typecheck');
+	});
+
+	it('should reference pre_commit_check in the messages', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors: 'src/foo.ts(10,5): error TS2322',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('pre_commit_check');
+	});
+
+	it('should enforce a DONE gate (passed: true)', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors: 'src/foo.ts(10,5): error TS2345',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('passed: true');
+	});
+
+	it('should include the type_errors content in the messages', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const errText =
+			"src/mcp/tools/public/foo.ts(5,3): error TS7006: Parameter 'x' implicitly has an 'any' type.";
+		const result = (await prompt.execute({
+			type_errors: errText,
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain(errText);
+	});
+
+	it('should mention file_paths in messages when provided', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors: 'src/foo.ts(5,3): error TS2322',
+			file_paths: 'src/foo.ts,src/bar.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('foo.ts');
+		expect(allText).toContain('bar.ts');
+	});
+
+	it('should contain common TS error codes in messages', async () => {
+		const prompt = new QFixTypecheckPrompt();
+		const result = (await prompt.execute({
+			type_errors: 'src/foo.ts(5,3): error TS2322',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/TS2322|TS7006|TS2339|TS2345/);
+	});
+});
+
+// ── QRefactorPrompt ───────────────────────────────────────────────────────────
+describe('QRefactorPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QRefactorPrompt();
+		expect(prompt.name).toBe('quickmodel_refactor');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.description.length).toBeGreaterThan(10);
+	});
+
+	it('should have required description schema field', () => {
+		const prompt = new QRefactorPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.description).toBeDefined();
+		const parsed = schema.description.safeParse('Extract helper function');
+		expect(parsed.success).toBe(true);
+		const missing = schema.description.safeParse(undefined);
+		expect(missing.success).toBe(false);
+	});
+
+	it('should have optional file_paths schema field', () => {
+		const prompt = new QRefactorPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.file_paths).toBeDefined();
+		const parsed = schema.file_paths?.safeParse(undefined);
+		expect(parsed?.success).toBe(true);
+	});
+
+	it('should return a valid IQPromptResult', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Extract the parsing logic into a private helper',
+		})) as IQPromptResult;
+		assertValidResult(result);
+	});
+
+	it('should have at least 3 messages', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Move validation logic to a base class',
+		})) as IQPromptResult;
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('should reference lint_check in the messages', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Refactor parseOutput method',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('lint_check');
+	});
+
+	it('should reference typecheck in the messages', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Refactor parseOutput method',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('typecheck');
+	});
+
+	it('should reference check_project_rules in the messages', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Split large tool file into helpers',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('check_project_rules');
+	});
+
+	it('should enforce a DONE gate (passed: true)', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Rename variables to comply with id-length',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('passed: true');
+	});
+
+	it('should include the refactor description in the messages', async () => {
+		const prompt = new QRefactorPrompt();
+		const descText = 'ExtractUniqueHelperFunction9999';
+		const result = (await prompt.execute({
+			description: descText,
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain(descText);
+	});
+
+	it('should mention file_paths in messages when provided', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Refactor helper',
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('my-tool.ts');
+	});
+
+	it('should mention run_tests in messages (refactor must not break tests)', async () => {
+		const prompt = new QRefactorPrompt();
+		const result = (await prompt.execute({
+			description: 'Inline helper functions',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('run_tests');
 	});
 });

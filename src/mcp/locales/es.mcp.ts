@@ -81,5 +81,9 @@ export const esMcp = {
 			'Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve { passed, errors, warnings, total_errors, total_warnings, summary }.',
 		typecheck:
 			'Ejecuta la verificación de tipos de TypeScript (tsc --noEmit) sobre src/. Devuelve { passed, errors, total, summary }.',
+		pre_commit_check:
+			'Simula el hook de pre-commit de Husky: ejecuta ESLint (--fix) y Prettier (--write) sobre los archivos indicados o src/. ' +
+			'Devuelve { passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }. ' +
+			'Ejécutalo antes de hacer commit para garantizar que el hook no lo rechazará.',
 	},
 };

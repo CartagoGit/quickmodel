@@ -10,6 +10,7 @@
 export { QMockGenerator } from './core/services/mock-generator.service';
 export { QTransformerRegistry } from './core/registry/transformer.registry';
 export { QModelConfigService } from './core/config/quick.config';
+export { IntegrityService } from './core/services/integrity.service';
 
 /**
  * Abstract base class for building custom transformers with full type safety.

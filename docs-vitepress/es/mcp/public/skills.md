@@ -7,7 +7,7 @@ Usa los skills cuando quieras que la IA conduzca el proceso de principio a fin s
 ## Skills Disponibles
 
 | Nombre del skill                                                  | Título                                     | Descripción                                                      |
-| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- | --- | --------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------- |
+| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
 | [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS              |
 | [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación     |
 | [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline             |
@@ -20,7 +20,9 @@ Usa los skills cuando quieras que la IA conduzca el proceso de principio a fin s
 | [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos     |
 | [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo |
 | [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                 |
-| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo         |     | [`quickmodel_implement_feature`](#quickmodel_implement_feature) | Implementar Funcionalidad (TDD) | Ciclo TDD completo con puertas `lint_check` + `typecheck` |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo         |
+| [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implementar Funcionalidad (TDD)            | Ciclo TDD completo con puertas `lint_check` + `typecheck`        |
+| [`quickmodel_fix_lint`](#quickmodel_fix_lint)                     | Corregir Errores ESLint                    | Corrección guiada con puertas `lint_check` + `pre_commit_check`  |
 
 ---
 
@@ -528,4 +530,46 @@ file_paths: "src/mcp/tools/internal/typecheck.tool.ts"
 → IA llama a typecheck({})
 → IA llama a check_project_rules()
 → Todo pasa → funcionalidad declarada terminada
+```
+
+---
+
+## `quickmodel_fix_lint`
+
+**Corrección guiada paso a paso de errores ESLint tras un fallo del pre-commit hook o cuando `lint_check` devuelve `passed: false`.**
+
+Explica cada violación en lenguaje llano, aplica la corrección mínima correcta respetando las reglas del proyecto (id-length, max-params, no-implied-eval, require-await, etc.), llama a `lint_check` tras cada cambio, y solo declara terminado cuando `pre_commit_check` devuelve `{ passed: true }`.
+
+### Argumentos
+
+| Argumento     | Obligatorio | Descripción                                                                                  |
+| ------------- | ----------- | -------------------------------------------------------------------------------------------- |
+| `lint_errors` | ✅ Sí       | Texto completo de los errores ESLint: de `lint_check`, `pre_commit_check` o el hook de Husky |
+| `file_paths`  | ✗ No        | Lista de archivos a re-verificar separados por comas (por defecto `src/`)                    |
+
+### Flujo de trabajo
+
+1. Parsea cada error del `lint_errors`
+2. Explica la regla violada
+3. Aplica la corrección mínima correcta
+4. Ejecuta `lint_check` tras cada edición — bloquea hasta `passed: true`
+5. Ejecuta `pre_commit_check` como puerta final
+6. Solo se declara terminado cuando `pre_commit_check` devuelve `{ passed: true }`
+
+### Ejemplo
+
+```
+lint_errors: """
+/src/mcp/tools/public/diff-models.tool.ts
+  169:10  error  Identifier name 'tA' is too short (< 3)  id-length
+  170:10  error  Identifier name 'tB' is too short (< 3)  id-length
+"""
+file_paths: "src/mcp/tools/public/diff-models.tool.ts"
+
+→ IA explica: id-length requiere nombres ≥ 3 chars
+→ IA renombra: tA → valA, tB → valB
+→ IA llama a lint_check({ targetFiles: ["src/mcp/tools/public/diff-models.tool.ts"] })
+→ lint_check devuelve { passed: true }
+→ IA llama a pre_commit_check({ files: ["src/mcp/tools/public/diff-models.tool.ts"] })
+→ pre_commit_check devuelve { passed: true } → hecho
 ```
