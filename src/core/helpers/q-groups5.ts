@@ -27,7 +27,7 @@ import type { IQGroupsMap } from './q-groups';
  * const Groups = qGroups(['identity', 'security'] as const);
  *
  * // TS 5+ — use qGroups5, no as const needed:
- * import { qGroups5 } from '@cartago-git/quickmodel/forms5';
+ * import { qGroups5 } from '@cartago-git/quickmodel/compat/ts5/forms';
  * const Groups = qGroups5(['identity', 'security']);
  * ```
  *

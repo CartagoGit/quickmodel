@@ -56,10 +56,10 @@
 			"import": "./dist/forms.mjs",
 			"require": "./dist/forms.js"
 		},
-		"./forms5": {
-			"types": "./dist/forms5.d.ts",
-			"import": "./dist/forms5.mjs",
-			"require": "./dist/forms5.js"
+		"./compat/ts5/forms": {
+			"types": "./dist/compat/ts5/forms.d.ts",
+			"import": "./dist/compat/ts5/forms.mjs",
+			"require": "./dist/compat/ts5/forms.js"
 		}
 	},
 	"files": [
@@ -138,7 +138,7 @@
 		"vitepress": "^1.6.4"
 	},
 	"peerDependencies": {
-		"typescript": ">=4.1.0"
+		"typescript": ">=3.4.0"
 	},
 	"peerDependenciesMeta": {
 		"typescript": {

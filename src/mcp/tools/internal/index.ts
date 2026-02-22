@@ -16,3 +16,5 @@ export * from './check-changelog.tool';
 export * from './lint-check.tool';
 export * from './typecheck.tool';
 export * from './pre-commit-check.tool';
+export * from './run-tests.tool';
+export * from './get-staged-files.tool';

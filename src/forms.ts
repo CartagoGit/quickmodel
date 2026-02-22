@@ -18,7 +18,7 @@
  *
  * **TS 5.0+ only** (mutable array without `as const`):
  * ```ts
- * import { qGroups5 } from '@cartago-git/quickmodel/forms5';
+ * import { qGroups5 } from '@cartago-git/quickmodel/compat/ts5/forms';
  * const Groups = qGroups5(['identity', 'security']);
  * ```
  *

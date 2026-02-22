@@ -178,7 +178,7 @@ describe('QMcpServer', () => {
 
 	it('should get default prompts', () => {
 		const prompts = QMcpServer.getDefaultPrompts();
-		expect(prompts.length).toBe(15);
+		expect(prompts.length).toBe(17);
 		expect(
 			prompts.find((p) => p.name === 'quickmodel_from_typescript')
 		).toBeDefined();
@@ -218,6 +218,15 @@ describe('QMcpServer', () => {
 		expect(
 			prompts.find((p) => p.name === 'quickmodel_transformer_guide')
 		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_fix_lint')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_fix_typecheck')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_refactor')
+		).toBeDefined();
 	});
 
 	it('should register multiple prompts', () => {
@@ -253,6 +262,9 @@ describe('QMcpServer', () => {
 		expect(tools.find((t) => t.name === 'check_bundle_size')).toBeDefined();
 		expect(tools.find((t) => t.name === 'check_changelog')).toBeDefined();
 		expect(tools.find((t) => t.name === 'list_todos')).toBeDefined();
+		expect(tools.find((t) => t.name === 'pre_commit_check')).toBeDefined();
+		expect(tools.find((t) => t.name === 'run_tests')).toBeDefined();
+		expect(tools.find((t) => t.name === 'get_staged_files')).toBeDefined();
 		// Public tools must NOT appear
 		expect(tools.find((t) => t.name === 'create_model')).toBeUndefined();
 	});

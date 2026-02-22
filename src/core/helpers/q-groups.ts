@@ -18,12 +18,12 @@
  * |----------------------------------------------|------------|------------------------|
  * | `qGroups('a', 'b')`                          | TS 3.4+    | Spread, no `as const`  |
  * | `qGroups(['a', 'b'] as const)`               | TS 3.4+    | Array with `as const`  |
- * | `qGroups5(['a', 'b'])` *(mutable array)*     | TS 5.0+    | No `as const` — uses `const` type parameter |
+ * | `qGroups5(['a', 'b'])` *(mutable array)*     | TS 5.0+    | No `as const` — uses `const` type parameter. Import from `compat/ts5/forms` |
  *
  * The first two overloads are published in the `.d.ts` without any TS5-only
  * syntax (`const T`), so they work in TS 3.4+ consumers.
  * The third overload is provided as a separate export (`qGroups5`) via
- * `@cartago-git/quickmodel/forms5`, usable only when the consumer's
+ * `@cartago-git/quickmodel/compat/ts5/forms`, usable only when the consumer's
  * compiler is TS 5.0+.
  *
  * ## See also

@@ -1841,7 +1841,7 @@ bun test                 # Verificar todos los tests
 - `docs-vitepress/en/guide/forms.md` — nueva guía EN completa con ejemplos Angular/React/Vue
 - `docs-vitepress/es/guide/forms.md` — nueva guía ES completa
 - `docs-vitepress/.vitepress/config.ts` — sidebar EN+ES actualizado con entrada `/forms`
-- `typedoc.json` — `src/forms.ts` y `src/forms5.ts` añadidos a `entryPoints`
+- `typedoc.json` — `src/forms.ts` y `src/compat/ts5/forms.ts` añadidos a `entryPoints`
 - `tests/unit/forms/q-check-rules.test.ts` — tests de herencia y múltiples `@QRule` por campo
 - `tests/unit/forms/q-check-rules-async.test.ts` — edge cases: group+timeout, serial+group, `qCheckRulesByGroupAsync`
 

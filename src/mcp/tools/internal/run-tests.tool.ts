@@ -86,7 +86,8 @@ export class QRunTestsTool extends QAbstractTool<
 	}
 
 	private parseCount(raw: string, label: 'pass' | 'fail'): number {
-		const match = raw.match(new RegExp(`(\\d+)\\s+${label}`));
+		const pattern = label === 'pass' ? /(\d+)\s+pass/ : /(\d+)\s+fail/;
+		const match = raw.match(pattern);
 		return match?.[1] !== undefined ? parseInt(match[1], 10) : 0;
 	}
 

@@ -56,7 +56,7 @@ const Groups = qGroups(grupos);
 ### Forma array sin `as const` (solo TS 5.0+)
 
 ```ts
-import { qGroups5 } from '@cartago-git/quickmodel/forms5';
+import { qGroups5 } from '@cartago-git/quickmodel/compat/ts5/forms';
 
 const Groups = qGroups5(['identidad', 'seguridad']);
 ```
@@ -470,7 +470,7 @@ const result = qCheckRules(form);
 
 ## Compatibilidad con TypeScript
 
-| Entrada                          | TS mínimo | Notas                                                  |
-| -------------------------------- | --------- | ------------------------------------------------------ |
-| `@cartago-git/quickmodel/forms`  | 4.1       | Entrada principal — todos los helpers salvo `qGroups5` |
-| `@cartago-git/quickmodel/forms5` | 5.0       | Añade `qGroups5` (sin necesidad de `as const`)         |
+| Entrada                                    | TS mínimo | Notas                                                  |
+| ------------------------------------------ | --------- | ------------------------------------------------------ |
+| `@cartago-git/quickmodel/forms`            | 4.1       | Entrada principal — todos los helpers salvo `qGroups5` |
+| `@cartago-git/quickmodel/compat/ts5/forms` | 5.0       | Añade `qGroups5` (sin necesidad de `as const`)         |

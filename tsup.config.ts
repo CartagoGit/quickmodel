@@ -7,7 +7,7 @@ export default defineConfig({
 		advanced: 'src/advanced.ts',
 		utils: 'src/utils.ts',
 		forms: 'src/forms.ts',
-		forms5: 'src/forms5.ts',
+		'compat/ts5/forms': 'src/compat/ts5/forms.ts',
 		'core/index': 'src/core/index.ts',
 		'transformers/index': 'src/transformers/index.ts',
 		cli: 'src/mcp-cli.ts',

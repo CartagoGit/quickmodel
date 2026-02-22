@@ -23,6 +23,8 @@ Use skills when you want the AI to drive the process end-to-end without you havi
 | [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it           |
 | [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implement Feature (TDD)                | Full TDD cycle enforced by `lint_check` + `typecheck` gates        |
 | [`quickmodel_fix_lint`](#quickmodel_fix_lint)                     | Fix ESLint Errors                      | Step-by-step lint fix with `lint_check` + `pre_commit_check` gates |
+| [`quickmodel_fix_typecheck`](#quickmodel_fix_typecheck)           | Fix TypeScript Type Errors             | Step-by-step TS fix with `typecheck` + `pre_commit_check` gates    |
+| [`quickmodel_refactor`](#quickmodel_refactor)                     | Safe Refactor (TDD-gated)              | Refactor cycle gated by `run_tests`, `lint_check`, `typecheck`     |
 
 ---
 

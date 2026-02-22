@@ -7,7 +7,7 @@
 TypeScript model system with automatic type transformation and SOLID architecture.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-4.1+-blue.svg)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3.4+-blue.svg)](https://www.typescriptlang.org/)
 [![CI](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml/badge.svg)](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/CartagoGit/quickmodel/branch/main/graph/badge.svg)](https://codecov.io/gh/CartagoGit/quickmodel)
 [![npm version](https://badge.fury.io/js/@cartago-git%2Fquickmodel.svg)](https://www.npmjs.com/package/@cartago-git/quickmodel)
@@ -748,7 +748,7 @@ bun run mcp:start
 | `roundtrip`               | Verify that `serialize()` → re-create → `serialize()` is lossless; returns `{ lossless, serialized, roundtrip_serialized, diff, summary }`                                  |
 | `diff_models`             | Compare two `QModel` class definitions (as source strings) and report added/removed fields, changed transformers, and decorator changes; pure static analysis               |
 
-### AI-guided prompts / skills (15)
+### AI-guided prompts / skills (17)
 
 | Skill                           | Description                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -767,6 +767,8 @@ bun run mcp:start
 | `quickmodel_transformer_guide`  | Choose the right transformer for a TypeScript type and validate it with `simulate_transformation` |
 | `quickmodel_implement_feature`  | Full TDD cycle: write test → implement → `lint_check` gate → `typecheck` gate → done              |
 | `quickmodel_fix_lint`           | Step-by-step ESLint fix with `lint_check` + `pre_commit_check` gates; use after any hook failure  |
+| `quickmodel_fix_typecheck`      | Step-by-step TS type fix with `typecheck` + `pre_commit_check` gates; use after `typecheck` fails |
+| `quickmodel_refactor`           | Safe refactor cycle: green baseline → apply → `run_tests` + `lint_check` + `typecheck` gates      |
 
 > 📚 **[MCP Documentation](https://cartagogit.github.io/quickmodel/en/mcp/)** — Full tool reference and AI integration guide
 

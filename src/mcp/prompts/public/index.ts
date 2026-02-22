@@ -13,3 +13,5 @@ export { QSecurityReviewPrompt } from './security-review.prompt';
 export { QTransformerGuidePrompt } from './transformer-guide.prompt';
 export { QImplementFeaturePrompt } from './implement-feature.prompt';
 export { QFixLintPrompt } from './fix-lint.prompt';
+export { QFixTypecheckPrompt } from './fix-typecheck.prompt';
+export { QRefactorPrompt } from './refactor.prompt';

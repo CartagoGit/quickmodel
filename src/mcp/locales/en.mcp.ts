@@ -84,5 +84,13 @@ export const enMcp = {
 			'Simulate the Husky pre-commit hook: run ESLint (--fix) and Prettier (--write) on the given files or src/. ' +
 			'Returns { passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }. ' +
 			'Run before committing to guarantee the hook will not reject the commit.',
+		run_tests:
+			'Run the Bun test suite (optionally filtered by a path/pattern). ' +
+			'Parses pass/fail counts and returns structured failure details. ' +
+			'Returns { passed, total_pass, total_fail, errors[], summary }.',
+		get_staged_files:
+			'List the files currently staged for commit (`git diff --cached --name-only`). ' +
+			'Use this to discover which files need lint/typecheck validation before committing. ' +
+			'Returns { passed, files[], total, summary }.',
 	},
 };

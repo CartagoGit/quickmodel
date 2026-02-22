@@ -5,21 +5,23 @@
 Before installing QuickModel, ensure you have:
 
 - **Node.js** >= 18.0.0
-- **TypeScript** >= 4.1.0
+- **TypeScript** >= 3.4.0
 - A package manager: npm, yarn, pnpm, or bun
 
 ::: details TypeScript version compatibility
 QuickModel avoids TypeScript built-ins that would raise the minimum version. The table below lists every version-sensitive feature and how it is handled:
 
-| Feature                         | Where used                                | Introduced in | How we handle it                                   |
-| ------------------------------- | ----------------------------------------- | ------------- | -------------------------------------------------- |
-| Template literal type inference | `qGroups()` helper                        | TS 4.1        | Native (sets the floor)                            |
-| `ClassFieldDecoratorContext`    | `@QType` / `@QRule` TC39 overload         | TS 5.0        | Polyfilled as `IClassFieldDecoratorCtx` (internal) |
-| `const` type parameters         | `qGroups5()` / `forms5` entry point       | TS 5.0        | Isolated in separate `/forms5` entry point         |
-| `NoInfer<T>`                    | `QModel.create()` / `QModel.createMany()` | TS 5.4        | Polyfilled as `INoInfer<T>` (internal)             |
+| Feature                                    | Where used                                    | Introduced in | How we handle it                                     |
+| ------------------------------------------ | --------------------------------------------- | ------------- | ---------------------------------------------------- |
+| Mapped types, indexed access (`T[number]`) | `IQGroupsMap<T>`, `qGroups()` return type     | TS 2.1        | Native                                               |
+| Conditional types (`INoInfer<T>`)          | polyfill for `QModel.create()`                | TS 2.8        | Native (our own polyfill, no built-in used)          |
+| `readonly T[]` shorthand in generics       | `qGroups()` overload                          | TS 3.4        | Native (sets the floor)                              |
+| `ClassFieldDecoratorContext`               | `@QType` / `@QRule` TC39 overload             | TS 5.0        | Polyfilled as `IClassFieldDecoratorCtx` (internal)   |
+| `NoInfer<T>` built-in                      | `QModel.create()` / `QModel.createMany()`     | TS 5.4        | Polyfilled as `INoInfer<T>` (internal)               |
+| `const` type parameters                    | `qGroups5()` / `compat/ts5/forms` entry point | TS 5.0        | Isolated in separate `/compat/ts5/forms` entry point |
 
-The **main package** (`@cartago-git/quickmodel`) works with TypeScript **4.1+**.
-The `/forms5` entry point requires TypeScript **5.0+** due to `const` type parameters.
+The **main package** (`@cartago-git/quickmodel`) works with TypeScript **3.4+**.
+The `/compat/ts5/forms` entry point requires TypeScript **5.0+** due to `const` type parameters.
 :::
 
 ## Install QuickModel
