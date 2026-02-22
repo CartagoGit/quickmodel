@@ -10,7 +10,10 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 class UserModel extends QModel<{ name: string; age: number }> {
 	declare name: string;
 
-	@QRule((v: unknown) => typeof v === 'number' && v >= 18, 'Must be adult')
+	@QRule(
+		(value: unknown) => typeof value === 'number' && value >= 18,
+		'Must be adult'
+	)
 	declare age: number;
 }
 
@@ -54,27 +57,27 @@ describe('validationReport()', () => {
 		@Quick({ val: 'number' })
 		class Multi extends QModel<{ val: number }> {
 			@QRule(
-				(v: unknown) => typeof v === 'number' && v > 0,
+				(value: unknown) => typeof value === 'number' && value > 0,
 				'Must be positive'
 			)
 			@QRule(
-				(v: unknown) => typeof v === 'number' && v < 100,
+				(value: unknown) => typeof value === 'number' && value < 100,
 				'Must be less than 100'
 			)
 			declare val: number;
 		}
-		const m = Multi.create({ val: 150 });
-		const { rules } = m.validationReport();
+		const multi = Multi.create({ val: 150 });
+		const { rules } = multi.validationReport();
 		expect(rules.errors.length).toBeGreaterThanOrEqual(1);
 	});
 
 	test('valid:true when no @QRule decorators and no integrity issues', () => {
-		@Quick({ x: 'string' })
-		class Plain extends QModel<{ x: string }> {
-			declare x: string;
+		@Quick({ posX: 'string' })
+		class Plain extends QModel<{ posX: string }> {
+			declare posX: string;
 		}
-		const p = Plain.create({ x: 'hello' });
-		expect(p.validationReport().valid).toBe(true);
+		const plain = Plain.create({ posX: 'hello' });
+		expect(plain.validationReport().valid).toBe(true);
 	});
 
 	test('report.valid equals isValid()', () => {

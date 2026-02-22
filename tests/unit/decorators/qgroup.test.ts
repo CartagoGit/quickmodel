@@ -59,8 +59,8 @@ class ChildContact extends ContactModel {
 describe('@QGroup — getFormSchema() includes group property', () => {
 	test('entries decorated with @QGroup include group in schema', () => {
 		const schema = ContactModel.getFormSchema();
-		const firstName = schema.find((e) => e.field === 'firstName');
-		const street = schema.find((e) => e.field === 'street');
+		const firstName = schema.find((entry) => entry.field === 'firstName');
+		const street = schema.find((entry) => entry.field === 'street');
 
 		expect(firstName?.group).toBe('Personal Info');
 		expect(street?.group).toBe('Address');
@@ -68,13 +68,13 @@ describe('@QGroup — getFormSchema() includes group property', () => {
 
 	test('entry without @QGroup has group === undefined', () => {
 		const schema = ContactModel.getFormSchema();
-		const bio = schema.find((e) => e.field === 'bio');
+		const bio = schema.find((entry) => entry.field === 'bio');
 		expect(bio?.group).toBeUndefined();
 	});
 
 	test('model with no @QGroup at all — all entries have group undefined', () => {
 		const schema = SimpleModel.getFormSchema();
-		expect(schema.every((e) => e.group === undefined)).toBe(true);
+		expect(schema.every((entry) => entry.group === undefined)).toBe(true);
 	});
 
 	test('instance getFormSchema() also includes group', () => {
@@ -86,7 +86,7 @@ describe('@QGroup — getFormSchema() includes group property', () => {
 			bio: '',
 		});
 		const schema = contact.getFormSchema();
-		const lastName = schema.find((e) => e.field === 'lastName');
+		const lastName = schema.find((entry) => entry.field === 'lastName');
 		expect(lastName?.group).toBe('Personal Info');
 	});
 });
@@ -104,30 +104,32 @@ describe('getFormSchemaGrouped()', () => {
 
 	test('each entry has group and fields', () => {
 		const grouped = ContactModel.getFormSchemaGrouped();
-		for (const g of grouped) {
-			expect(g).toHaveProperty('group');
-			expect(g).toHaveProperty('fields');
-			expect(Array.isArray(g.fields)).toBe(true);
+		for (const group of grouped) {
+			expect(group).toHaveProperty('group');
+			expect(group).toHaveProperty('fields');
+			expect(Array.isArray(group.fields)).toBe(true);
 		}
 	});
 
 	test('groups contain correct fields', () => {
 		const grouped = ContactModel.getFormSchemaGrouped();
-		const personal = grouped.find((g) => g.group === 'Personal Info');
-		const address = grouped.find((g) => g.group === 'Address');
+		const personal = grouped.find(
+			(group) => group.group === 'Personal Info'
+		);
+		const address = grouped.find((group) => group.group === 'Address');
 
-		expect(personal?.fields.map((f) => f.field)).toEqual(
+		expect(personal?.fields.map((field) => field.field)).toEqual(
 			expect.arrayContaining(['firstName', 'lastName'])
 		);
-		expect(address?.fields.map((f) => f.field)).toEqual(
+		expect(address?.fields.map((field) => field.field)).toEqual(
 			expect.arrayContaining(['street', 'city'])
 		);
 	});
 
 	test('fields without @QGroup appear in undefined group', () => {
 		const grouped = ContactModel.getFormSchemaGrouped();
-		const ungrouped = grouped.find((g) => g.group === undefined);
-		expect(ungrouped?.fields.map((f) => f.field)).toContain('bio');
+		const ungrouped = grouped.find((group) => group.group === undefined);
+		expect(ungrouped?.fields.map((field) => field.field)).toContain('bio');
 	});
 
 	test('model with no @QGroup at all returns one entry with group undefined', () => {
@@ -139,8 +141,8 @@ describe('getFormSchemaGrouped()', () => {
 
 	test('model with no @QField returns empty array', () => {
 		@Quick()
-		class Empty extends QModel<{ x: string }> {
-			declare x: string;
+		class Empty extends QModel<{ strX: string }> {
+			declare strX: string;
 		}
 		expect(Empty.getFormSchemaGrouped()).toEqual([]);
 	});
@@ -159,7 +161,9 @@ describe('getFormSchemaGrouped()', () => {
 
 	test('field order within group is preserved', () => {
 		const grouped = ContactModel.getFormSchemaGrouped();
-		const personal = grouped.find((g) => g.group === 'Personal Info')!;
+		const personal = grouped.find(
+			(group) => group.group === 'Personal Info'
+		)!;
 		expect(personal.fields[0].field).toBe('firstName');
 		expect(personal.fields[1].field).toBe('lastName');
 	});
@@ -172,10 +176,14 @@ describe('getFormSchemaGrouped()', () => {
 describe('@QGroup — inheritance', () => {
 	test('subclass inherits parent @QGroup entries', () => {
 		const grouped = ChildContact.getFormSchemaGrouped();
-		const personal = grouped.find((g) => g.group === 'Personal Info');
-		const work = grouped.find((g) => g.group === 'Work');
+		const personal = grouped.find(
+			(group) => group.group === 'Personal Info'
+		);
+		const work = grouped.find((group) => group.group === 'Work');
 
-		expect(personal?.fields.map((f) => f.field)).toContain('firstName');
-		expect(work?.fields.map((f) => f.field)).toContain('company');
+		expect(personal?.fields.map((field) => field.field)).toContain(
+			'firstName'
+		);
+		expect(work?.fields.map((field) => field.field)).toContain('company');
 	});
 });

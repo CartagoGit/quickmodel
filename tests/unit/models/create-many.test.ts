@@ -10,7 +10,10 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 class UserModel extends QModel<{ name: string; age: number }> {
 	name: string = '';
 
-	@QRule((v: unknown) => typeof v === 'number' && v >= 18, 'Must be adult')
+	@QRule(
+		(value: unknown) => typeof value === 'number' && value >= 18,
+		'Must be adult'
+	)
 	declare age: number;
 }
 
@@ -95,7 +98,11 @@ describe('createMany() — basic', () => {
 			{ name: 'Carol', age: 40 },
 		];
 		const { instances } = UserModel.createMany(data);
-		expect(instances.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Carol']);
+		expect(instances.map((instance) => instance.name)).toEqual([
+			'Alice',
+			'Bob',
+			'Carol',
+		]);
 	});
 });
 

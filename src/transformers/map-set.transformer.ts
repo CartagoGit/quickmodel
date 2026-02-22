@@ -71,9 +71,9 @@ export class MapTransformer<K = string, V = unknown>
 
 			if (isMapEntries) {
 				// Array of tuples → Map
-				const transformedEntries = value.map(([k, v]) => [
-					this.autoTransformKey(k),
-					this.autoTransformValue(v),
+				const transformedEntries = value.map(([key, val]) => [
+					this.autoTransformKey(key),
+					this.autoTransformValue(val),
 				]);
 				return new Map(transformedEntries as [any, any][]);
 			}
@@ -190,12 +190,12 @@ export class MapTransformer<K = string, V = unknown>
 			// Filter unsafe keys and auto-transform entries
 			const entries = Array.isArray(rawEntries)
 				? rawEntries
-						.filter(([k]) => !isUnsafeKey(k))
+						.filter(([key]) => !isUnsafeKey(key))
 						.map(
-							([k, v]) =>
+							([key, val]) =>
 								[
-									this.autoTransformKey(k),
-									this.autoTransformValue(v),
+									this.autoTransformKey(key),
+									this.autoTransformValue(val),
 								] as [K, V]
 						)
 				: rawEntries;
@@ -228,10 +228,10 @@ export class MapTransformer<K = string, V = unknown>
 			try {
 				// Auto-transform keys and values
 				const transformedEntries = value.map(
-					([k, v]) =>
+					([key, val]) =>
 						[
-							this.autoTransformKey(k),
-							this.autoTransformValue(v),
+							this.autoTransformKey(key),
+							this.autoTransformValue(val),
 						] as [K, V]
 				);
 				return new Map(transformedEntries);
@@ -285,13 +285,13 @@ export class MapTransformer<K = string, V = unknown>
 
 		// Filter unsafe keys and auto-transform for object input
 		const safeEntries = Object.entries(value)
-			.filter(([k]) => !isUnsafeKey(k))
+			.filter(([key]) => !isUnsafeKey(key))
 			.map(
-				([k, v]) =>
-					[this.autoTransformKey(k), this.autoTransformValue(v)] as [
-						K,
-						V,
-					]
+				([key, val]) =>
+					[
+						this.autoTransformKey(key),
+						this.autoTransformValue(val),
+					] as [K, V]
 			);
 		return new Map(safeEntries as Iterable<[K, V]>);
 	}
@@ -315,22 +315,24 @@ export class MapTransformer<K = string, V = unknown>
 
 		// Check if map has Symbol keys
 		const hasSymbolKeys = Array.from(value.keys()).some(
-			(k) => typeof k === 'symbol'
+			(key) => typeof key === 'symbol'
 		);
 
 		// If has Symbol keys, serialize as array of tuples to preserve Symbol info
 		if (hasSymbolKeys) {
 			const entries = Array.from(value.entries())
-				.filter(([k]) => !isUnsafeKey(k))
-				.map(([k, v]) => {
+				.filter(([key]) => !isUnsafeKey(key))
+				.map(([key, val]) => {
 					// Convert Symbol to string (Symbol.keyFor or description)
 					const keyStr =
-						typeof k === 'symbol'
-							? (Symbol.keyFor(k) ?? k.description ?? String(k))
-							: String(k);
+						typeof key === 'symbol'
+							? (Symbol.keyFor(key) ??
+								key.description ??
+								String(key))
+							: String(key);
 
 					// Recursively serialize values
-					const serializedValue = this.serializeValue(v);
+					const serializedValue = this.serializeValue(val);
 
 					return [keyStr, serializedValue] as [string, V];
 				});
@@ -339,8 +341,8 @@ export class MapTransformer<K = string, V = unknown>
 
 		// Filter unsafe keys before Object.fromEntries to prevent Prototype Poisoning
 		const entries = Array.from(value.entries())
-			.filter(([k]) => !isUnsafeKey(k))
-			.map(([k, v]) => [String(k), this.serializeValue(v)]);
+			.filter(([key]) => !isUnsafeKey(key))
+			.map(([key, val]) => [String(key), this.serializeValue(val)]);
 
 		return Object.fromEntries(entries) as Record<string, V>;
 	}
@@ -373,20 +375,20 @@ export class MapTransformer<K = string, V = unknown>
 		// Map → recursively serialize
 		if (value instanceof Map) {
 			const hasSymbols = Array.from(value.keys()).some(
-				(k) => typeof k === 'symbol'
+				(key) => typeof key === 'symbol'
 			);
 			if (hasSymbols) {
-				return Array.from(value.entries()).map(([k, v]) => [
-					typeof k === 'symbol'
-						? (Symbol.keyFor(k) ?? k.description ?? String(k))
-						: String(k),
-					this.serializeValue(v),
+				return Array.from(value.entries()).map(([key, val]) => [
+					typeof key === 'symbol'
+						? (Symbol.keyFor(key) ?? key.description ?? String(key))
+						: String(key),
+					this.serializeValue(val),
 				]);
 			}
 			return Object.fromEntries(
-				Array.from(value.entries()).map(([k, v]) => [
-					String(k),
-					this.serializeValue(v),
+				Array.from(value.entries()).map(([key, val]) => [
+					String(key),
+					this.serializeValue(val),
 				])
 			);
 		}
@@ -490,9 +492,9 @@ export class SetTransformer<V = unknown>
 
 			if (isMapEntries) {
 				// Array of tuples → Map
-				const transformedEntries = value.map(([k, v]) => [
-					k, // Keys in Set values are not transformed (no Symbol keys here)
-					this.autoTransformValue(v),
+				const transformedEntries = value.map(([key, val]) => [
+					key, // Keys in Set values are not transformed (no Symbol keys here)
+					this.autoTransformValue(val),
 				]);
 				return new Map(transformedEntries as [any, any][]);
 			}
@@ -578,7 +580,7 @@ export class SetTransformer<V = unknown>
 			}
 			// Auto-transform values
 			const transformedValues = Array.isArray(values)
-				? values.map((v) => this.autoTransformValue(v) as V)
+				? values.map((val) => this.autoTransformValue(val) as V)
 				: values;
 			return new Set(transformedValues);
 		}
@@ -611,7 +613,7 @@ export class SetTransformer<V = unknown>
 
 		// Auto-transform values
 		const transformedValues = value.map(
-			(v) => this.autoTransformValue(v) as V
+			(val) => this.autoTransformValue(val) as V
 		);
 		return new Set(transformedValues);
 	}
@@ -655,20 +657,20 @@ export class SetTransformer<V = unknown>
 		// Map → array of tuples or object
 		if (value instanceof Map) {
 			const hasSymbols = Array.from(value.keys()).some(
-				(k) => typeof k === 'symbol'
+				(key) => typeof key === 'symbol'
 			);
 			if (hasSymbols) {
-				return Array.from(value.entries()).map(([k, v]) => [
-					typeof k === 'symbol'
-						? (Symbol.keyFor(k) ?? k.description ?? String(k))
-						: String(k),
-					this.serializeSetValue(v),
+				return Array.from(value.entries()).map(([key, val]) => [
+					typeof key === 'symbol'
+						? (Symbol.keyFor(key) ?? key.description ?? String(key))
+						: String(key),
+					this.serializeSetValue(val),
 				]);
 			}
 			return Object.fromEntries(
-				Array.from(value.entries()).map(([k, v]) => [
-					String(k),
-					this.serializeSetValue(v),
+				Array.from(value.entries()).map(([key, val]) => [
+					String(key),
+					this.serializeSetValue(val),
 				])
 			);
 		}

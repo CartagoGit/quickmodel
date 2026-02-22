@@ -128,6 +128,7 @@ describe('System Performance Configuration', () => {
 				{},
 				{
 					performance: { disableSafetyChecks: true },
+					unknownPropertyPolicy: 'keep', // silence v2.0 deprecation warning
 				}
 			)
 			class DangerousModel extends QModel<any> {
@@ -149,6 +150,7 @@ describe('System Performance Configuration', () => {
 				{},
 				{
 					performance: { disableSafetyChecks: true },
+					unknownPropertyPolicy: 'keep', // silence v2.0 deprecation warning
 				}
 			)
 			class UnsafeModel extends QModel<any> {
@@ -165,7 +167,7 @@ describe('System Performance Configuration', () => {
 		test('should NOT warn when disableSafetyChecks is false (default)', () => {
 			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' }) // silence v2.0 deprecation warning
 			class SafeModel extends QModel<any> {
 				declare id: number;
 			}
@@ -186,7 +188,7 @@ describe('System Performance Configuration', () => {
 				},
 			});
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' }) // silence v2.0 deprecation warning
 			class GlobalDangerousModel extends QModel<any> {
 				declare id: number;
 			}
@@ -210,6 +212,7 @@ describe('System Performance Configuration', () => {
 				{},
 				{
 					performance: { disableSafetyChecks: false },
+					unknownPropertyPolicy: 'keep', // silence v2.0 deprecation warning
 				}
 			)
 			class SafeOverrideModel extends QModel<any> {
@@ -226,7 +229,13 @@ describe('System Performance Configuration', () => {
 		test('warning message accurately states prototype pollution protection remains active', () => {
 			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
 
-			@Quick({}, { performance: { disableSafetyChecks: true } })
+			@Quick(
+				{},
+				{
+					performance: { disableSafetyChecks: true },
+					unknownPropertyPolicy: 'keep',
+				}
+			)
 			class AuditModel extends QModel<any> {
 				declare id: number;
 			}

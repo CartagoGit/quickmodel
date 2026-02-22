@@ -121,8 +121,8 @@ describe('disableSafetyChecks: behavior verification', () => {
 			declare created: Date;
 		}
 
-		const e = new Event({ title: 'Meeting', created: '2025-01-01' });
-		expect(e.title).toBe('Meeting');
-		expect(e.created).toBeInstanceOf(Date);
+		const event = new Event({ title: 'Meeting', created: '2025-01-01' });
+		expect(event.title).toBe('Meeting');
+		expect(event.created).toBeInstanceOf(Date);
 	});
 });

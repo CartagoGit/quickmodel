@@ -102,6 +102,13 @@ export default tseslint.config(
 			],
 
 			// OBLIGAR mínimo 3 caracteres en nombres de variables, funciones y parámetros
+			// Alternativas esperadas para nombres cortos prohibidos:
+			//   e   → err          (errores en catch)
+			//   i   → idx          (índice en loops)
+			//   k   → key          (clave en iteración)
+			//   v   → val / value  (valor genérico)
+			//   fn  → func         (callback/función)
+			//   a,b → valA, valB   (comparadores de sort u operandos)
 			'id-length': [
 				'error',
 				{
@@ -112,20 +119,12 @@ export default tseslint.config(
 						'_', // Variable descartada en destructuring
 						'id', // Identificador ubicuo
 						'on', // Método de testing / event listeners
-						'fn', // Función/callback (muy estándar en TS)
 						'fs', // Node.js filesystem module
 						'cb', // Callback
 						'md', // Markdown content (estándar en herramientas de documentación)
-						'a',
-						'b', // Comparadores de sort: (a, b) => a - b
-						'k',
-						'v', // Key/Value en iteración de Map/Object
-						'e', // Error en catch blocks: catch(e)
-						'i', // Index en loops: for(let i = 0; ...)
 					],
 					exceptionPatterns: [
-						'^(posX|posY|idx)$',
-						'^_', // Variables ignoradas con prefijo _ (_e, _err, _val, etc.)
+						'^_', // Variables ignoradas con prefijo _ (_err, _val, etc.)
 					],
 				},
 			],

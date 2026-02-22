@@ -569,24 +569,24 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 		});
 
 		it('create() on each class transforms only its own fields', () => {
-			const a = EmployeeA.create({
+			const valA = EmployeeA.create({
 				username: 'alice',
 				hiredAt: '2020-01-01T00:00:00.000Z',
 			});
-			const b = EmployeeB.create({
+			const valB = EmployeeB.create({
 				username: 'bob',
 				retiredAt: '2025-06-01T00:00:00.000Z',
 				pension: '300000',
 			});
 
-			expect(a.hiredAt).toBeInstanceOf(Date);
-			expect(b.retiredAt).toBeInstanceOf(Date);
-			expect(typeof b.pension).toBe('bigint');
+			expect(valA.hiredAt).toBeInstanceOf(Date);
+			expect(valB.retiredAt).toBeInstanceOf(Date);
+			expect(typeof valB.pension).toBe('bigint');
 
 			// Cross-contamination check: EmployeeA instance has no retiredAt
-			expect((a as any).retiredAt).toBeUndefined();
+			expect((valA as any).retiredAt).toBeUndefined();
 			// EmployeeB instance has no hiredAt
-			expect((b as any).hiredAt).toBeUndefined();
+			expect((valB as any).hiredAt).toBeUndefined();
 		});
 	});
 });

@@ -156,7 +156,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 		});
 
 		expect(timeline.events.length).toBe(3);
-		expect(timeline.events.every((e) => e === null)).toBe(true);
+		expect(timeline.events.every((item) => item === null)).toBe(true);
 	});
 
 	test('should handle array with all undefined', () => {
@@ -165,7 +165,7 @@ describe('Null Safety: Arrays with Null/Undefined', () => {
 		});
 
 		expect(timeline.events.length).toBe(2);
-		expect(timeline.events.every((e) => e === undefined)).toBe(true);
+		expect(timeline.events.every((item) => item === undefined)).toBe(true);
 	});
 });
 

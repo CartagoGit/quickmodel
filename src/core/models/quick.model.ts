@@ -307,9 +307,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		const instances: any[] = [];
 		const errors: Array<IQCreateManyError<any>> = [];
 
-		for (let i = 0; i < data.length; i++) {
+		for (let idx = 0; idx < data.length; idx++) {
 			const Constructor = this;
-			const instance = new Constructor(data[i]);
+			const instance = new Constructor(data[idx]);
 
 			if (instance.isValid()) {
 				instances.push(instance);
@@ -317,13 +317,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 				// Collect all failures
 				const integrityErrors = instance
 					.checkIntegrity()
-					.map((e: IQIntegrityResult) => ({
-						message: e.error ?? 'Integrity check failed',
+					.map((result: IQIntegrityResult) => ({
+						message: result.error ?? 'Integrity check failed',
 					}));
 				const ruleErrors = instance.checkRules().errors;
 
 				errors.push({
-					index: i,
+					index: idx,
 					instance,
 					errors: [...integrityErrors, ...ruleErrors],
 				});
@@ -691,10 +691,14 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			this.constructor.prototype as object
 		);
 		const workData: Record<string, unknown> = {};
-		for (const k in data) {
-			if (k === '__proto__' || k === 'constructor' || k === 'prototype')
+		for (const key in data) {
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype'
+			)
 				continue;
-			workData[k] = (data as Record<string, unknown>)[k];
+			workData[key] = (data as Record<string, unknown>)[key];
 		}
 		if (_aliasMap.size > 0) {
 			for (const [prop, alias] of _aliasMap) {
@@ -821,7 +825,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		// Install lazy getters only for actual property names (not storage keys)
 		const propertyNames = new Set(
 			Array.from(allKeys).filter(
-				(k) => !k.startsWith(QUICK_PROPERTY_KEYS)
+				(key) => !key.startsWith(QUICK_PROPERTY_KEYS)
 			)
 		);
 
@@ -1061,7 +1065,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 								return;
 							}
 						}
-					} catch (e) {
+					} catch (err) {
 						// STRICT MODE: Rethrow validation errors
 						const constructor = this.constructor;
 						const options = Reflect.getMetadata(
@@ -1070,7 +1074,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 						);
 
 						if (options?.strict) {
-							throw e;
+							throw err;
 						}
 
 						// If transformation fails, fall back to raw assignment
@@ -2108,28 +2112,28 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *
 	 * @private
 	 */
-	private deepEqual(a: unknown, b: unknown): boolean {
-		if (a === b) return true;
-		if (a == null || b == null) return false;
-		if (typeof a !== typeof b) return false;
+	private deepEqual(valA: unknown, valB: unknown): boolean {
+		if (valA === valB) return true;
+		if (valA == null || valB == null) return false;
+		if (typeof valA !== typeof valB) return false;
 
 		// Handle arrays
-		if (Array.isArray(a) && Array.isArray(b)) {
-			if (a.length !== b.length) return false;
-			return a.every((val, idx) => this.deepEqual(val, b[idx]));
+		if (Array.isArray(valA) && Array.isArray(valB)) {
+			if (valA.length !== valB.length) return false;
+			return valA.every((val, idx) => this.deepEqual(val, valB[idx]));
 		}
 
 		// Handle objects
-		if (typeof a === 'object' && typeof b === 'object') {
-			const keysA = Object.keys(a);
-			const keysB = Object.keys(b);
+		if (typeof valA === 'object' && typeof valB === 'object') {
+			const keysA = Object.keys(valA);
+			const keysB = Object.keys(valB);
 
 			if (keysA.length !== keysB.length) return false;
 
 			return keysA.every((key) =>
 				this.deepEqual(
-					(a as Record<string, unknown>)[key],
-					(b as Record<string, unknown>)[key]
+					(valA as Record<string, unknown>)[key],
+					(valB as Record<string, unknown>)[key]
 				)
 			);
 		}

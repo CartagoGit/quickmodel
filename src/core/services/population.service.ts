@@ -8,6 +8,7 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_OPTIONS_KEY,
+	QUICK_TYPE_MAP_KEY,
 } from '../constants/metadata-keys';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
@@ -28,6 +29,22 @@ export class PopulationService {
 	private readonly securityInspector = new SecurityInspector();
 	private readonly sizeValidator = new ObjectSizeValidator();
 	private readonly recursionGuard = new RecursionGuard();
+
+	/**
+	 * Tracks which model classes have already received the `unknownPropertyPolicy`
+	 * deprecation warning so it fires at most once per class.
+	 * @internal
+	 */
+	private static readonly _warnedMissingPolicy = new Set<Function>();
+
+	/**
+	 * Clears the per-class cache of deprecation warnings.
+	 * Intended for use in tests only — do not call in production code.
+	 * @internal
+	 */
+	public static _clearWarnedPolicyCache(): void {
+		PopulationService._warnedMissingPolicy.clear();
+	}
 	private readonly dotNotationHandler: DotNotationHandler;
 	private readonly propertyTransformer: PropertyTransformer;
 
@@ -123,6 +140,24 @@ export class PopulationService {
 			options.unknownPropertyPolicy ||
 			globalDefaults.unknownPropertyPolicy ||
 			'keep';
+
+		// Deprecation warning: the default 'keep' will change to 'strip' in v2.0.0.
+		// Only fires for classes explicitly decorated with @Quick, once per class.
+		if (
+			currentDepth === 0 &&
+			Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, modelClass) &&
+			!options.unknownPropertyPolicy &&
+			!globalDefaults.unknownPropertyPolicy &&
+			!PopulationService._warnedMissingPolicy.has(modelClass)
+		) {
+			PopulationService._warnedMissingPolicy.add(modelClass);
+			Logger.warn(
+				`[QuickModel] Deprecation: "${(modelClass as { name?: string }).name ?? 'unknown'}" does not set 'unknownPropertyPolicy'. ` +
+					"Currently defaulting to 'keep' (unknown properties are preserved). " +
+					"In v2.0.0 the default will change to 'strip'. " +
+					"Set it explicitly: @Quick({...}, { unknownPropertyPolicy: 'strip' }) to silence this warning."
+			);
+		}
 
 		// DoS Protection config
 		const maxArrayLength =

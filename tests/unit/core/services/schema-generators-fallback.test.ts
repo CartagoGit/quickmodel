@@ -69,9 +69,13 @@ describe('JsonSchemaGenerator._getJsonSchemaType fallback contract', () => {
 	});
 
 	test('fallback is deterministic — same input, same output every time', () => {
-		const a = (JsonSchemaGenerator as any)['_getJsonSchemaType'](undefined);
-		const b = (JsonSchemaGenerator as any)['_getJsonSchemaType'](undefined);
-		expect(a).toEqual(b);
+		const valA = (JsonSchemaGenerator as any)['_getJsonSchemaType'](
+			undefined
+		);
+		const valB = (JsonSchemaGenerator as any)['_getJsonSchemaType'](
+			undefined
+		);
+		expect(valA).toEqual(valB);
 	});
 });
 

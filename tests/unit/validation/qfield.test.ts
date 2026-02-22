@@ -58,7 +58,7 @@ describe('@QField decorator', () => {
 			active: true,
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
-		const fields = instance.getFormSchema().map((s) => s.field);
+		const fields = instance.getFormSchema().map((schema) => schema.field);
 		expect(fields).toContain('name');
 		expect(fields).toContain('role');
 		expect(fields).toContain('active');
@@ -74,7 +74,7 @@ describe('@QField decorator', () => {
 		});
 		const nameEntry = instance
 			.getFormSchema()
-			.find((s) => s.field === 'name');
+			.find((schema) => schema.field === 'name');
 		expect(nameEntry?.widget).toBe('input');
 		expect(nameEntry?.inputType).toBe('text');
 		expect(nameEntry?.label).toBe('Full name');
@@ -90,7 +90,7 @@ describe('@QField decorator', () => {
 		});
 		const roleEntry = instance
 			.getFormSchema()
-			.find((s) => s.field === 'role');
+			.find((schema) => schema.field === 'role');
 		expect(roleEntry?.widget).toBe('select');
 		expect(roleEntry?.options).toEqual(['admin', 'user', 'guest']);
 	});
@@ -104,7 +104,7 @@ describe('@QField decorator', () => {
 		});
 		const activeEntry = instance
 			.getFormSchema()
-			.find((s) => s.field === 'active');
+			.find((schema) => schema.field === 'active');
 		expect(activeEntry?.widget).toBe('checkbox');
 		expect(activeEntry?.label).toBe('Active');
 	});
@@ -118,7 +118,7 @@ describe('@QField decorator', () => {
 		});
 		const dateEntry = instance
 			.getFormSchema()
-			.find((s) => s.field === 'birthDate');
+			.find((schema) => schema.field === 'birthDate');
 		expect(dateEntry?.widget).toBe('datepicker');
 	});
 
@@ -127,8 +127,8 @@ describe('@QField decorator', () => {
 		class Plain extends QModel<{ val: number }> {
 			declare val: number;
 		}
-		const p = Plain.create({ val: 5 });
-		expect(p.getFormSchema()).toHaveLength(0);
+		const plain = Plain.create({ val: 5 });
+		expect(plain.getFormSchema()).toHaveLength(0);
 	});
 
 	test('static getFormSchema() works without an instance', () => {
@@ -170,7 +170,7 @@ describe('@QField decorator', () => {
 			enabled: true,
 		} as any);
 		const schema = instance.getFormSchema();
-		const fields = schema.map((s) => s.field);
+		const fields = schema.map((schema) => schema.field);
 		expect(fields).toContain('label');
 		expect(fields).toContain('enabled');
 	});

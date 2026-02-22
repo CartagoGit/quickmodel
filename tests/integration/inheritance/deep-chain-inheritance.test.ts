@@ -376,20 +376,20 @@ describe('Integration: Deep Chain Inheritance', () => {
 		@Quick({})
 		class BaseTriple extends QModel<any> {
 			declare label: string;
-			declare ts: string; // will become Date in MidTriple
+			declare timestamp: string; // will become Date in MidTriple
 			declare amount: string; // will become bigint in MidTriple
 			declare pattern: string; // will become RegExp in MidTriple
 		}
 
-		// IQImplements<BaseTriple, { ts: Date; amount: bigint; pattern: RegExp }> — three overrides at once
-		@Quick({ ts: Date, amount: BigInt, pattern: RegExp })
+		// IQImplements<BaseTriple, { timestamp: Date; amount: bigint; pattern: RegExp }> — three overrides at once
+		@Quick({ timestamp: Date, amount: BigInt, pattern: RegExp })
 		class MidTriple extends QModel.extends<
 			IQImplements<
 				BaseTriple,
-				{ ts: Date; amount: bigint; pattern: RegExp }
+				{ timestamp: Date; amount: bigint; pattern: RegExp }
 			>
 		>(BaseTriple) {
-			declare ts: Date; // ✅
+			declare timestamp: Date; // ✅
 			declare amount: bigint; // ✅
 			declare pattern: RegExp; // ✅
 		}
@@ -401,7 +401,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 		it('all three overridden fields have the correct type in the leaf', () => {
 			const instance = LeafTriple.create({
 				label: 'triple',
-				ts: '2025-03-01T00:00:00.000Z',
+				timestamp: '2025-03-01T00:00:00.000Z',
 				amount: '99999999999',
 				pattern: '/foo/gi',
 				extra: 'leaf',
@@ -409,9 +409,9 @@ describe('Integration: Deep Chain Inheritance', () => {
 
 			expect(instance.label).toBe('triple');
 
-			// ts → Date
-			expect(instance.ts).toBeInstanceOf(Date);
-			expect(instance.ts.getFullYear()).toBe(2025);
+			// timestamp → Date
+			expect(instance.timestamp).toBeInstanceOf(Date);
+			expect(instance.timestamp.getFullYear()).toBe(2025);
 
 			// amount → bigint, no cast
 			expect(typeof instance.amount).toBe('bigint');
@@ -428,7 +428,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 		it('instanceof chain is preserved with a 3-field TOmit union', () => {
 			const instance = LeafTriple.create({
 				label: 'x',
-				ts: '2025-01-01T00:00:00.000Z',
+				timestamp: '2025-01-01T00:00:00.000Z',
 				amount: '1',
 				pattern: '/x/',
 				extra: 'y',
@@ -444,41 +444,41 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 6: Accumulated fields — all levels contribute to toJSON
 	// =========================================================================
 	describe('Scenario 6: All ancestor fields appear in toJSON()', () => {
-		@Quick({ ts: Date })
+		@Quick({ timestamp: Date })
 		class AccumA extends QModel<any> {
-			declare a: string;
-			declare ts: Date;
+			declare strA: string;
+			declare timestamp: Date;
 		}
 
 		@Quick({ count: BigInt })
 		class AccumB extends AccumA {
-			declare b: string;
+			declare strB: string;
 			declare count: bigint;
 		}
 
 		@Quick({ pattern: RegExp })
 		class AccumC extends AccumB {
-			declare c: string;
+			declare strC: string;
 			declare pattern: RegExp;
 		}
 
 		it('serialize() should contain fields from all three levels', () => {
 			const instance = AccumC.create({
-				a: 'alpha',
-				ts: '2022-05-20T00:00:00.000Z',
-				b: 'beta',
+				strA: 'alpha',
+				timestamp: '2022-05-20T00:00:00.000Z',
+				strB: 'beta',
 				count: '777',
-				c: 'gamma',
+				strC: 'gamma',
 				pattern: '/test/i',
 			});
 
 			// serialize() returns plain object; toJSON() returns a JSON string
 			const plain = instance.serialize();
 
-			expect(plain).toHaveProperty('a', 'alpha');
-			expect(plain).toHaveProperty('b', 'beta');
-			expect(plain).toHaveProperty('c', 'gamma');
-			expect(plain).toHaveProperty('ts');
+			expect(plain).toHaveProperty('strA', 'alpha');
+			expect(plain).toHaveProperty('strB', 'beta');
+			expect(plain).toHaveProperty('strC', 'gamma');
+			expect(plain).toHaveProperty('timestamp');
 			expect(plain).toHaveProperty('count');
 			expect(plain).toHaveProperty('pattern');
 		});

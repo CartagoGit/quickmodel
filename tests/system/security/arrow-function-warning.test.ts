@@ -26,9 +26,12 @@ describe('Security: Arrow Function Warning & Bypass', () => {
 	});
 
 	test('should ALLOW overwrite if explicitly decorated (Bypass)', () => {
-		@Quick({
-			algo: String, // Explicit decoration authorizes overwrite
-		})
+		@Quick(
+			{
+				algo: String, // Explicit decoration authorizes overwrite
+			},
+			{ unknownPropertyPolicy: 'keep' } // silence v2.0 deprecation warning
+		)
 		class ValidBypass extends QModel<any> {
 			// Arrow function
 			algo: any = () => 'default';

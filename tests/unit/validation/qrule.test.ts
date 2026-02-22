@@ -15,23 +15,23 @@ interface IUser {
 @Quick({ name: 'string', age: 'number', email: 'string' })
 class UserModel extends QModel<IUser> {
 	@QRule(
-		(v: unknown) => typeof v === 'string' && v.length >= 3,
+		(value: unknown) => typeof value === 'string' && value.length >= 3,
 		'Name must be at least 3 chars'
 	)
 	declare name: string;
 
 	@QRule(
-		(v: unknown) => typeof v === 'number' && v >= 0,
+		(value: unknown) => typeof value === 'number' && value >= 0,
 		'Age cannot be negative'
 	)
 	@QRule(
-		(v: unknown) => typeof v === 'number' && v <= 120,
+		(value: unknown) => typeof value === 'number' && value <= 120,
 		'Age must be realistic'
 	)
 	declare age: number;
 
 	@QRule(
-		(v: unknown) => typeof v === 'string' && v.includes('@'),
+		(value: unknown) => typeof value === 'string' && value.includes('@'),
 		'Must be a valid email'
 	)
 	declare email: string;
@@ -103,7 +103,7 @@ describe('@QRule + checkRules()', () => {
 		});
 		const result = user.checkRules();
 		expect(result.valid).toBe(false);
-		const ageErrors = result.errors.filter((e) => e.field === 'age');
+		const ageErrors = result.errors.filter((err) => err.field === 'age');
 		expect(ageErrors).toHaveLength(1); // only "> 120" fails, first rule passes for 999 since 999 >= 0
 	});
 
@@ -114,7 +114,7 @@ describe('@QRule + checkRules()', () => {
 			email: 'notanemail',
 		});
 		const result = user.checkRules();
-		const fields = result.errors.map((e) => e.field);
+		const fields = result.errors.map((err) => err.field);
 		expect(fields).toContain('name');
 		expect(fields).toContain('age');
 		expect(fields).toContain('email');
@@ -131,28 +131,28 @@ describe('@QRule — lazy message (() => string)', () => {
 		en: { 'val.min': 'Too short' },
 		es: { 'val.min': 'Demasiado corto' },
 	};
-	const t = (key: string) => messages[lang]?.[key] ?? key;
+	const translate = (key: string) => messages[lang]?.[key] ?? key;
 
 	@Quick({ name: 'string' })
 	class LocalizedModel extends QModel<{ name: string }> {
 		@QRule(
-			(v: unknown) => typeof v === 'string' && v.length >= 3,
-			() => t('val.min')
+			(value: unknown) => typeof value === 'string' && value.length >= 3,
+			() => translate('val.min')
 		)
 		declare name: string;
 	}
 
 	test('should resolve the message when checkRules() is called (en)', () => {
 		lang = 'en';
-		const m = new LocalizedModel({ name: 'Jo' });
-		const { errors } = m.checkRules();
+		const locModel = new LocalizedModel({ name: 'Jo' });
+		const { errors } = locModel.checkRules();
 		expect(errors[0]?.message).toBe('Too short');
 	});
 
 	test('should resolve a different message at runtime (es)', () => {
 		lang = 'es';
-		const m = new LocalizedModel({ name: 'Jo' });
-		const { errors } = m.checkRules();
+		const locModel = new LocalizedModel({ name: 'Jo' });
+		const { errors } = locModel.checkRules();
 		expect(errors[0]?.message).toBe('Demasiado corto');
 	});
 });
@@ -165,26 +165,28 @@ describe('@QRule — edge cases', () => {
 	test('model with no @QRule decorators returns valid=true', () => {
 		@Quick({ x: 'number' })
 		class Plain extends QModel<{ x: number }> {
-			declare x: number;
+			declare posX: number;
 		}
-		const p = new Plain({ x: 5 });
-		expect(p.checkRules().valid).toBe(true);
-		expect(p.checkRules().errors).toHaveLength(0);
+		const position = new Plain({ posX: 5 });
+		expect(position.checkRules().valid).toBe(true);
+		expect(position.checkRules().errors).toHaveLength(0);
 	});
 
 	test('predicate receiving null/undefined returns the rule message', () => {
 		@Quick({ val: 'string' })
 		class NullModel extends QModel<{ val: string }> {
 			@QRule(
-				(v: unknown) =>
-					v !== null && v !== undefined && (v as string).length > 0,
+				(value: unknown) =>
+					value !== null &&
+					value !== undefined &&
+					(value as string).length > 0,
 				'Required'
 			)
 			declare val: string;
 		}
-		const m = new NullModel({});
-		(m as any).val = null;
-		const { errors } = m.checkRules();
+		const nullModel = new NullModel({});
+		(nullModel as any).val = null;
+		const { errors } = nullModel.checkRules();
 		expect(errors[0]?.message).toBe('Required');
 	});
 
@@ -194,9 +196,9 @@ describe('@QRule — edge cases', () => {
 			age: 30,
 			email: 'valid@email.com',
 		});
-		const r1 = user.checkRules();
-		const r2 = user.checkRules();
-		expect(r1.errors).toHaveLength(r2.errors.length);
+		const rule1 = user.checkRules();
+		const rule2 = user.checkRules();
+		expect(rule1.errors).toHaveLength(rule2.errors.length);
 	});
 });
 
@@ -212,14 +214,14 @@ describe('hasIntegrity()', () => {
 	}
 
 	test('should return true when all field types are correct', () => {
-		const m = new IntegrityModel({ age: 25, active: true });
-		expect(m.hasIntegrity()).toBe(true);
+		const integrityModel = new IntegrityModel({ age: 25, active: true });
+		expect(integrityModel.hasIntegrity()).toBe(true);
 	});
 
 	test('should return false when a field has the wrong type', () => {
-		const m = new IntegrityModel({ age: 25, active: true });
-		(m as any).age = 'not-a-number'; // force type mismatch
-		expect(m.hasIntegrity()).toBe(false);
+		const integrityModel = new IntegrityModel({ age: 25, active: true });
+		(integrityModel as any).age = 'not-a-number'; // force type mismatch
+		expect(integrityModel.hasIntegrity()).toBe(false);
 	});
 
 	test('should be consistent with checkIntegrity().length === 0', () => {
@@ -240,32 +242,32 @@ describe('isValid()', () => {
 	@Quick({ age: 'number' })
 	class ValidatedModel extends QModel<{ age: number }> {
 		@QRule(
-			(v: unknown) => typeof v === 'number' && v >= 18,
+			(value: unknown) => typeof value === 'number' && value >= 18,
 			'Must be adult'
 		)
 		declare age: number;
 	}
 
 	test('should return true when integrity passes and all rules pass', () => {
-		const m = new ValidatedModel({ age: 25 });
-		expect(m.isValid()).toBe(true);
+		const validatedModel = new ValidatedModel({ age: 25 });
+		expect(validatedModel.isValid()).toBe(true);
 	});
 
 	test('should return false when a @QRule fails', () => {
-		const m = new ValidatedModel({ age: 10 }); // underage
-		expect(m.isValid()).toBe(false);
+		const validatedModel = new ValidatedModel({ age: 10 }); // underage
+		expect(validatedModel.isValid()).toBe(false);
 	});
 
 	test('should return false when integrity fails', () => {
-		const m = new ValidatedModel({ age: 25 });
-		(m as any).age = 'broken'; // force type mismatch
-		expect(m.isValid()).toBe(false);
+		const validatedModel = new ValidatedModel({ age: 25 });
+		(validatedModel as any).age = 'broken'; // force type mismatch
+		expect(validatedModel.isValid()).toBe(false);
 	});
 
 	test('should return false when both integrity and rules fail', () => {
-		const m = new ValidatedModel({ age: 25 });
-		(m as any).age = 'not-a-number'; // type mismatch + rule also fails
-		expect(m.isValid()).toBe(false);
+		const validatedModel = new ValidatedModel({ age: 25 });
+		(validatedModel as any).age = 'not-a-number'; // type mismatch + rule also fails
+		expect(validatedModel.isValid()).toBe(false);
 	});
 
 	test('should be equivalent to hasIntegrity() && checkRules().valid', () => {
