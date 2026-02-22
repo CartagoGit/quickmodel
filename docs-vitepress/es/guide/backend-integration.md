@@ -24,7 +24,11 @@ import { QModel } from '@cartago-git/quickmodel';
 export function validateBody<TDto extends QModel<object>>(
 	DtoClass: new (data: object) => TDto
 ) {
-	return (req: Request, res: Response, next: NextFunction) => {
+	return (
+		req: Request & { dto?: TDto },
+		res: Response,
+		next: NextFunction
+	) => {
 		try {
 			const dto = new DtoClass(req.body);
 			const validation = dto.checkRules();
@@ -32,7 +36,7 @@ export function validateBody<TDto extends QModel<object>>(
 				res.status(422).json({ errors: validation.errors });
 				return;
 			}
-			(req as any).dto = dto;
+			req.dto = dto; // TDto — inferido de DtoClass, sin cast
 			next();
 		} catch {
 			res.status(400).json({ error: 'Cuerpo de petición inválido' });
@@ -91,12 +95,16 @@ export class CreateUserDto extends QModel<ICreateUser> {
 
 ```typescript
 // routes/users.ts
-router.post('/users', validateBody(CreateUserDto), (req, res) => {
-	const dto = (req as any).dto as CreateUserDto;
-	// dto está coercionado, validado y sin campos extras
-	res.status(201).json(dto.serialize());
-	// la respuesta incluye @QComputed displayName
-});
+router.post(
+	'/users',
+	validateBody(CreateUserDto),
+	(req: Request & { dto?: CreateUserDto }, res) => {
+		const dto = req.dto!; // CreateUserDto — tipado completo, inferido de validateBody()
+		// dto está coercionado, validado y sin campos extras
+		res.status(201).json(dto.serialize());
+		// la respuesta incluye @QComputed displayName
+	}
+);
 ```
 
 ## Fastify
@@ -108,7 +116,10 @@ router.post('/users', validateBody(CreateUserDto), (req, res) => {
 export function dtoValidator<TDto extends QModel<object>>(
 	DtoClass: new (data: object) => TDto
 ) {
-	return async (request: FastifyRequest, reply: FastifyReply) => {
+	return async (
+		request: FastifyRequest & { dto?: TDto },
+		reply: FastifyReply
+	) => {
 		try {
 			const dto = new DtoClass(request.body as object);
 			const validation = dto.checkRules();
@@ -116,7 +127,7 @@ export function dtoValidator<TDto extends QModel<object>>(
 				reply.code(422).send({ errors: validation.errors });
 				return;
 			}
-			(request as any).dto = dto;
+			request.dto = dto; // TDto — inferido de DtoClass, sin cast
 		} catch {
 			reply.code(400).send({ error: 'Petición malformada' });
 		}
@@ -129,8 +140,11 @@ export function dtoValidator<TDto extends QModel<object>>(
 ```typescript
 fastify.post('/invoices', {
 	preHandler: dtoValidator(CreateInvoiceDto),
-	handler: async (request, reply) => {
-		const dto = (request as any).dto as CreateInvoiceDto;
+	handler: async (
+		request: FastifyRequest & { dto?: CreateInvoiceDto },
+		reply
+	) => {
+		const dto = request.dto!; // CreateInvoiceDto — tipado completo, inferido de dtoValidator()
 		const saved = await invoiceService.save(dto.serialize());
 		reply.code(201).send(saved);
 	},

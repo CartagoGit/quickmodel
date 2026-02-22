@@ -445,7 +445,7 @@ export class UsersService {
 
 	create(data: object): object {
 		const user = new UserModel(data);
-		this.store.set((user as any).id, user);
+		this.store.set(user.id, user); // id is declared as string on UserModel — no cast needed
 		return user.serialize(); // { id, firstName, lastName, ..., fullName, isAdmin }
 	}
 

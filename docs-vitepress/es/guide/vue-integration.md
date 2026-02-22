@@ -101,7 +101,7 @@ export function useQField<T extends object>(form: T, fieldName: keyof T) {
 	const value = ref(form[fieldName]);
 
 	const error = computed(() => {
-		(form as any)[fieldName] = value.value;
+		Object.assign(form, { [fieldName]: value.value }); // typed — compatible with keyof T, no cast
 		const { errors } = qCheckRules(form);
 		return errors.find((e) => e.field === String(fieldName))?.message ?? '';
 	});

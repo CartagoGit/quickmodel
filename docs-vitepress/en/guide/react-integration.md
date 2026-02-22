@@ -225,14 +225,11 @@ const useCartStore = create<ICartStore>((set, get) => ({
 import { useReducer, useCallback } from 'react';
 import { QModel } from '@cartago-git/quickmodel';
 
-export function useQModel<T extends object>(initial: QModel<T>) {
-	const [model, dispatch] = useReducer(
-		(_prev: QModel<T>, next: QModel<T>) => next,
-		initial
-	);
+export function useQModel<T extends object, M extends QModel<T>>(initial: M) {
+	const [model, dispatch] = useReducer((_prev: M, next: M) => next, initial);
 
 	const update = useCallback(
-		(patch: Partial<T>) => dispatch(model.merge(patch as any)),
+		(patch: Partial<T>) => dispatch(model.merge(patch) as M), // as M is safe: M extends QModel<T>
 		[model]
 	);
 

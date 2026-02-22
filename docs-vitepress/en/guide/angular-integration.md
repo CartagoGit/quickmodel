@@ -214,15 +214,23 @@ Wrap `QModel` in a signal for reactive state:
 ```typescript
 import { signal, computed } from '@angular/core';
 
+// Uses UserRecord — defined above, with @QComputed fullName and tier
 const profile = signal(
-	new ProfileModel({ name: 'Alice', bio: 'Dev', followers: 100 })
+	new UserRecord({
+		id: 'u1',
+		firstName: 'Alice',
+		lastName: 'Smith',
+		email: 'alice@example.com',
+		score: 95,
+	})
 );
 
 // Update via immutable merge
-profile.update((prev) => prev.merge({ bio: 'Senior Dev' }));
+profile.update((prev) => prev.merge({ score: 98 }));
 
-// Computed from signal
-const summary = computed(() => (profile().serialize() as any).summary);
+// @QComputed getters are TypeScript class properties — access them directly on the instance
+const fullName = computed(() => profile().fullName); // Signal<string>
+const tier = computed(() => profile().tier); // Signal<'gold' | 'silver' | 'bronze'>
 ```
 
 ## Async Validators

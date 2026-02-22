@@ -58,9 +58,9 @@ let note = $state(new NoteModel({
   pinned: false, createdAt: new Date(),
 }));
 
-// $derived computes from the model's serialize() output
-let preview = $derived((note.serialize() as any).preview);
-let charCount = $derived((note.serialize() as any).charCount);
+// @QComputed getters are TypeScript class getters — access them directly on the instance
+let preview   = $derived(note.preview);    // string — inferred from NoteModel
+let charCount = $derived(note.charCount);  // number — inferred from NoteModel
 
 function updateBody(newBody: string) {
   // merge() is IMMUTABLE — reassign the $state variable
