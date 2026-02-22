@@ -478,8 +478,12 @@ export default defineConfig({
 							text: 'Advanced',
 							items: [
 								{
-									text: 'Strict Mode',
-									link: '/en/guide/strict-mode',
+									text: 'Unknown Property Policy',
+									link: '/en/guide/unknown-property-policy',
+								},
+								{
+									text: 'Dot Notation',
+									link: '/en/guide/dot-notation',
 								},
 								{
 									text: 'Custom Transformers',
@@ -596,8 +600,12 @@ export default defineConfig({
 							text: 'Avanzado',
 							items: [
 								{
-									text: 'Modo Estricto',
-									link: '/es/guide/strict-mode',
+									text: 'Política de Propiedades Desconocidas',
+									link: '/es/guide/unknown-property-policy',
+								},
+								{
+									text: 'Notación por Puntos',
+									link: '/es/guide/dot-notation',
 								},
 								{
 									text: 'Transformadores Personalizados',
