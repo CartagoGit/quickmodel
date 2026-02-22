@@ -1,4 +1,3 @@
-````markdown
 # Validación con @QRule
 
 QuickModel proporciona un sistema de validación declarativo mediante el decorador `@QRule`. Las reglas se definen directamente sobre las propiedades del modelo y se ejecutan con el método `checkRules()`.
@@ -17,16 +16,16 @@ interface IUsuario {
 @Quick()
 class Usuario extends QModel<IUsuario> {
 	@QRule(
-		(v: string) => v.length >= 3,
+		(val: string) => val.length >= 3,
 		'El nombre debe tener al menos 3 caracteres'
 	)
 	declare nombre: string;
 
-	@QRule((v: number) => v >= 0, 'La edad no puede ser negativa')
-	@QRule((v: number) => v <= 120, 'La edad debe ser realista')
+	@QRule((val: number) => val >= 0, 'La edad no puede ser negativa')
+	@QRule((val: number) => val <= 120, 'La edad debe ser realista')
 	declare edad: number;
 
-	@QRule((v: string) => v.includes('@'), 'Debe ser un email válido')
+	@QRule((val: string) => val.includes('@'), 'Debe ser un email válido')
 	declare email: string;
 }
 ```
@@ -54,15 +53,15 @@ Cuando se usan decoradores estándar TC39 (`experimentalDecorators` ausente o `f
 @Quick()
 class Usuario extends QModel<IUsuario> {
 	@QRule(
-		(v: string) => v.length >= 3,
+		(val) => val.length >= 3,
 		'El nombre debe tener al menos 3 caracteres'
 	)
 	nombre!: string; // ✅ TC39: usa !
 
-	@QRule((v: number) => v >= 0, 'La edad no puede ser negativa')
+	@QRule((val) => val >= 0, 'La edad no puede ser negativa')
 	edad!: number; // ✅ TC39: usa !
 
-	@QRule((v: string) => v.includes('@'), 'Debe ser un email válido')
+	@QRule((val) => val.includes('@'), 'Debe ser un email válido')
 	email!: string; // ✅ TC39: usa !
 }
 ```
@@ -99,9 +98,9 @@ console.log(post.checkRules().valid); // true
 Puedes aplicar varios `@QRule` a la misma propiedad. **Se recogen todos los fallos**, no solo el primero.
 
 ```typescript
-@QRule((v: number) => v >= 18, 'Debes tener al menos 18 años')
-@QRule((v: number) => v <= 65, 'Debes tener menos de 65 años')
-@QRule((v: number) => Number.isInteger(v), 'La edad debe ser un número entero')
+@QRule((val: number) => val >= 18, 'Debes tener al menos 18 años')
+@QRule((val: number) => val <= 65, 'Debes tener menos de 65 años')
+@QRule((val: number) => Number.isInteger(val), 'La edad debe ser un número entero')
 declare edad: number;
 ```
 
@@ -162,15 +161,15 @@ import { QRule, QGroup } from '@cartago-git/quickmodel';
 
 @Quick()
 class RegistroModel extends QModel<IRegistro> {
-	@QRule((v: string) => v.length >= 2, 'Nombre demasiado corto')
+	@QRule((val: string) => val.length >= 2, 'Nombre demasiado corto')
 	@QGroup('identidad')
 	declare nombre: string;
 
-	@QRule((v: string) => /^[^@]+@[^@]+\.[^@]+$/.test(v), 'Email inválido')
+	@QRule((val: string) => /^[^@]+@[^@]+\.[^@]+$/.test(val), 'Email inválido')
 	@QGroup('identidad')
 	declare email: string;
 
-	@QRule((v: string) => v.length >= 8, 'Contraseña demasiado corta')
+	@QRule((val: string) => val.length >= 8, 'Contraseña demasiado corta')
 	@QGroup('seguridad')
 	declare password: string;
 }
@@ -252,9 +251,11 @@ const informe = usuario.validationReport();
 
 if (!informe.valid) {
 	// Fallos a nivel de transformer:
-	informe.integrity.forEach((e) => console.error(e.error));
+	informe.integrity.forEach((err) => console.error(err.error));
 	// Fallos de @QRule:
-	informe.rules.errors.forEach((e) => console.error(e.field, e.message));
+	informe.rules.errors.forEach((err) =>
+		console.error(err.field, err.message)
+	);
 }
 ```
 
@@ -278,7 +279,10 @@ import { t } from './i18n'; // tu traductor global
 @Quick({ nombre: 'string' })
 class Usuario extends QModel<IUsuario> {
 	// Lazy: se resuelve cuando se llama a checkRules()
-	@QRule((v) => (v as string).length >= 3, () => t('validation.nombre.min'))
+	@QRule(
+		(val) => (val as string).length >= 3,
+		() => t('validation.nombre.min')
+	)
 	declare nombre: string;
 }
 ```
@@ -290,7 +294,7 @@ Si el usuario cambia de idioma en runtime, la próxima llamada a `checkRules()` 
 También puedes guardar claves i18n como mensaje estático y resolverlas en el template — sin necesidad de función lazy:
 
 ```typescript
-@QRule((v) => (v as string).length >= 3, 'validation.nombre.min')
+@QRule((val) => (val as string).length >= 3, 'validation.nombre.min')
 declare nombre: string;
 ```
 
@@ -330,7 +334,7 @@ Las reglas `@QRule` se heredan: una subclase también ejecutará las reglas defi
 @Quick()
 class Admin extends Usuario {
 	@QRule(
-		(v: string) => v.startsWith('ADMIN_'),
+		(val: string) => val.startsWith('ADMIN_'),
 		'El nombre del admin debe empezar por ADMIN_'
 	)
 	declare nombre: string; // sobreescribe la regla del padre para 'nombre'
@@ -426,7 +430,7 @@ Igual que `checkRules()` pero espera cada predicado. Úsalo cuando algún `@QRul
 ```typescript
 // Predicado async — p. ej. comprueba unicidad en BD
 @QRule(
-	async (v) => !await bd.emailExiste(v as string),
+	async (val) => !(await bd.emailExiste(val as string)),
 	'Email ya registrado'
 )
 declare email: string;
@@ -440,8 +444,43 @@ if (!resultado.valid) {
 
 Los predicados síncronos también funcionan — se envuelven internamente en `Promise.resolve()`.
 
-> [!NOTE]
-> `checkRules()` (síncrono) sigue funcionando como antes y no espera predicados async. Usa `checkRulesAsync()` cuando tengas reglas asíncronas.
+> [!WARNING]
+> **Reglas mixtas: `checkRules()` no puede evaluar predicados async**
+>
+> Si un campo tiene tanto reglas síncronas como asíncronas, `checkRules()` **ignora los predicados que devuelven `Promise`** — los trata siempre como que pasan. Para alertarte de esto, **emite un `console.warn` por cada campo afectado** (deduplicado: solo una vez por clase y campo por sesión).
+>
+> ```typescript
+> class FormularioRegistro {
+> 	@QRule((val: string) => val.length >= 3, 'Demasiado corto') // sync
+> 	@QRule(
+> 		async (val: string) => !(await bd.usernameExiste(val)),
+> 		'Nombre ya registrado' // async — ignorado por checkRules()
+> 	)
+> 	username = '';
+> }
+>
+> const form = new FormularioRegistro();
+> form.username = 'taken_user'; // ≥ 3 chars → sync pasa, async debería fallar
+>
+> form.checkRules().valid;
+> // ⚠️  Consola: [QuickModel] WARN: qCheckRules() skipped an async predicate
+> //              on "FormularioRegistro#username". Use checkRulesAsync() ...
+> // ⚠️  Devuelve true — el fallo async NO se detecta
+>
+> await form.checkRulesAsync().then((r) => r.valid);
+> // ✅  false — detectado correctamente, sin warning
+> ```
+>
+> El warning aparece **solo la primera vez** que se llama a `checkRules()` para esa combinación clase+campo — no inunda la consola en invocaciones repetidas.
+>
+> **Resumen:**
+>
+> | Método              | Reglas sync  | Reglas async                      |
+> | ------------------- | ------------ | --------------------------------- |
+> | `checkRules()`      | ✅ evaluadas | ⚠️ **ignoradas** + `console.warn` |
+> | `checkRulesAsync()` | ✅ evaluadas | ✅ evaluadas                      |
+>
+> Usa `checkRulesAsync()` siempre que tengas aunque sea **una sola regla async** en el modelo.
 
 #### Modo de ejecución
 
@@ -504,8 +543,10 @@ Equivalente async de `validationReport()`. Devuelve `Promise<IQValidationReport>
 ```typescript
 const reporte = await usuario.validationReportAsync();
 if (!reporte.valid) {
-	reporte.integrity.forEach((e) => console.error(e.error));
-	reporte.rules.errors.forEach((e) => console.error(e.field, e.message));
+	reporte.integrity.forEach((err) => console.error(err.error));
+	reporte.rules.errors.forEach((err) =>
+		console.error(err.field, err.message)
+	);
 }
 ```
 
@@ -543,7 +584,7 @@ const Groups = qGroups('identidad', 'seguridad');
 
 class FormularioPerfil {
 	// ← clase plana, sin QModel
-	@QRule((v: string) => v.length >= 2, 'Demasiado corto')
+	@QRule((val: string) => val.length >= 2, 'Demasiado corto')
 	@QGroup(Groups.identidad)
 	nombre = '';
 }
@@ -553,4 +594,3 @@ const result = qCheckRules(form, { group: Groups.identidad });
 ```
 
 > 📖 **[Guía de Validación de Formularios](/es/guide/forms)** — Referencia completa: `qGroups`, `qGetGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync`, ejemplos Angular/React/Vue.
-````

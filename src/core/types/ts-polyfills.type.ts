@@ -57,6 +57,7 @@
  *
  * @typeParam T - The type to prevent inference from.
  * @group Type utilities
+ * @internal
  */
 export type INoInfer<T> = [T][T extends unknown ? 0 : never];
 
@@ -71,6 +72,7 @@ export type INoInfer<T> = [T][T extends unknown ? 0 : never];
  * @typeParam This  - The class instance type.
  * @typeParam Value - The type of the decorated field.
  * @group Type utilities
+ * @internal
  */
 export interface IClassFieldDecoratorCtx<This, Value> {
 	readonly kind: 'field';

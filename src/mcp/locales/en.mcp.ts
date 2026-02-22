@@ -92,5 +92,9 @@ export const enMcp = {
 			'List the files currently staged for commit (`git diff --cached --name-only`). ' +
 			'Use this to discover which files need lint/typecheck validation before committing. ' +
 			'Returns { passed, files[], total, summary }.',
+		project_status:
+			'Run all project health checks simultaneously: tests, lint and typecheck. ' +
+			'Returns a consolidated snapshot with pass/fail status for each layer and a human-readable summary. ' +
+			'Returns { passed, tests, lint, typecheck, summary }.',
 	},
 };

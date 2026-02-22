@@ -18,3 +18,4 @@ export * from './typecheck.tool';
 export * from './pre-commit-check.tool';
 export * from './run-tests.tool';
 export * from './get-staged-files.tool';
+export * from './project-status.tool';

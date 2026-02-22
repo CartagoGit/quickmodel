@@ -77,3 +77,25 @@ export * as Advanced from './advanced';
  * ```
  */
 export * as Utils from './utils';
+
+/**
+ * Form-validation helpers for framework-agnostic use.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/forms';
+ * ```
+ */
+export * as Forms from './forms';
+
+/**
+ * TypeScript 5.0+ compatibility utilities.
+ *
+ * @remarks
+ * Also available via subpath import:
+ * ```typescript
+ * import { ... } from '@cartago-git/quickmodel/compat/ts5/forms';
+ * ```
+ */
+export * as Compat from './compat/ts5/forms';

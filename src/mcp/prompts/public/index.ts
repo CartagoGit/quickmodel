@@ -15,3 +15,5 @@ export { QImplementFeaturePrompt } from './implement-feature.prompt';
 export { QFixLintPrompt } from './fix-lint.prompt';
 export { QFixTypecheckPrompt } from './fix-typecheck.prompt';
 export { QRefactorPrompt } from './refactor.prompt';
+export { QApplySolidPrompt } from './apply-solid.prompt';
+export { QSyncProjectPrompt } from './sync-project.prompt';

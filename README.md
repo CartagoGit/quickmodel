@@ -24,7 +24,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
 - ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `@cartago-git/quickmodel/forms` subpath — no `QModel` required
 - 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
-- 🤖 **MCP Server** - AI assistant integration with 19 public tools and 15 guided prompts (Claude, Copilot, etc.)
+- 🤖 **MCP Server** - AI assistant integration with 19 public tools and 19 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
 - 🧪 **Well Tested** - 2100+ tests covering all features
@@ -589,16 +589,16 @@ import {
 const Groups = qGroups('identity', 'security');
 
 class SignupForm {
-	@QRule((v: string) => v.length >= 2, 'Name too short')
+	@QRule((val: string) => val.length >= 2, 'Name too short')
 	@QGroup(Groups.identity)
 	name = '';
 
-	@QRule((v: string) => /^[^@]+@[^@]+\.[^@]+$/.test(v), 'Invalid email')
+	@QRule((val: string) => /^[^@]+@[^@]+\.[^@]+$/.test(val), 'Invalid email')
 	@QGroup(Groups.identity)
 	email = '';
 
-	@QRule((v: string) => v.length >= 8, 'Password too short')
-	@QRule((v: string) => /[A-Z]/.test(v), 'Must contain uppercase')
+	@QRule((val: string) => val.length >= 8, 'Password too short')
+	@QRule((val: string) => /[A-Z]/.test(val), 'Must contain uppercase')
 	@QGroup(Groups.security)
 	password = '';
 }
@@ -748,7 +748,7 @@ bun run mcp:start
 | `roundtrip`               | Verify that `serialize()` → re-create → `serialize()` is lossless; returns `{ lossless, serialized, roundtrip_serialized, diff, summary }`                                  |
 | `diff_models`             | Compare two `QModel` class definitions (as source strings) and report added/removed fields, changed transformers, and decorator changes; pure static analysis               |
 
-### AI-guided prompts / skills (17)
+### AI-guided prompts / skills (19)
 
 | Skill                           | Description                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -769,6 +769,8 @@ bun run mcp:start
 | `quickmodel_fix_lint`           | Step-by-step ESLint fix with `lint_check` + `pre_commit_check` gates; use after any hook failure  |
 | `quickmodel_fix_typecheck`      | Step-by-step TS type fix with `typecheck` + `pre_commit_check` gates; use after `typecheck` fails |
 | `quickmodel_refactor`           | Safe refactor cycle: green baseline → apply → `run_tests` + `lint_check` + `typecheck` gates      |
+| `quickmodel_apply_solid`        | Guided SOLID review: analyse each principle, propose targeted refactors, gated by all checks      |
+| `quickmodel_sync_project`       | Sync all project layers: `project_status` health snapshot → fix failures → regenerate docs        |
 
 > 📚 **[MCP Documentation](https://cartagogit.github.io/quickmodel/en/mcp/)** — Full tool reference and AI integration guide
 

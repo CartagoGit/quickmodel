@@ -10,8 +10,9 @@ These tools are designed for maintaining and developing the QuickModel project i
 The following tools are used for internal development.
 
 - **Scaffolding**: Generate tests (`generate_test`) and feature skeletons.
-- **Documentation**: Sync docs (`update_docs`), check for missing JSDocs (`check_jsdocs`).
-- **QA**: Check project health (`check_project_health`), coverage (`get_coverage_report`), and API compatibility.
+- **Documentation**: Sync docs (`update_docs`, `update_docs_content`), check for missing JSDocs (`check_jsdocs`).
+- **QA**: Check project health (`check_project_health`), coverage (`get_coverage_report`), API compatibility, bundle size, and CHANGELOG.
+- **CI / Dev workflow**: Run tests (`run_tests`), lint (`lint_check`), typecheck (`typecheck`), pre-commit simulation (`pre_commit_check`), staged files (`get_staged_files`), and full health snapshot (`project_status`).
 - **Performance**: Benchmark performance (`benchmark_performance`).
 
 <!-- TOOLS-START -->
@@ -83,7 +84,7 @@ Run a comprehensive health check: Lint, Typecheck, and Run Tests.
 
 ## `check_project_rules`
 
-Enforce internal project rules: @Quick over @QType in tests, no console.log, id-length (min 3 chars), max-params (max 3), naming-convention (I prefix for interfaces/types), no-restricted-imports.
+Enforce internal project rules: use @Quick over @QType in tests, and no console.log.
 
 ```json
 {
@@ -122,6 +123,14 @@ Run tests with coverage and report the summary.
 {}
 ```
 
+## `get_staged_files`
+
+List the files currently staged for commit (`git diff --cached --name-only`). Use this to discover which files need lint/typecheck validation before committing. Returns { passed, files[], total, summary }.
+
+```json
+{}
+```
+
 ## `lint_check`
 
 Run ESLint on a directory or specific files. Returns { passed, errors, warnings, total_errors, total_warnings, summary }.
@@ -141,7 +150,7 @@ Run ESLint on a directory or specific files. Returns { passed, errors, warnings,
 
 ## `list_todos`
 
-Scan source files for TODO, FIXME, HACK and XXX comments. Supports custom targetDir and file extensions. Returns { items: [{file, line, type, text}][], total }.
+Scan source files for TODO, FIXME, HACK, and XXX comments. Returns a structured list: { file, line, type, text }[] so the agent can prioritize technical debt and outstanding work items. Defaults to scanning src/ in the project root; respects targetDir override.
 
 ```json
 {
@@ -164,6 +173,27 @@ Simulate the Husky pre-commit hook: run ESLint (--fix) and Prettier (--write) on
 {
 	"files": {
 		"description": "List of file paths to check. Defaults to all TypeScript/JavaScript files in src/.",
+		"optional": true
+	}
+}
+```
+
+## `project_status`
+
+Run all project health checks simultaneously: tests, lint and typecheck. Returns a consolidated snapshot with pass/fail status for each layer and a human-readable summary. Returns { passed, tests, lint, typecheck, summary }.
+
+```json
+{}
+```
+
+## `run_tests`
+
+Run the Bun test suite (optionally filtered by a path/pattern). Parses pass/fail counts and returns structured failure details. Returns { passed, total_pass, total_fail, errors[], summary }.
+
+```json
+{
+	"pattern": {
+		"description": "Optional file path or pattern to narrow test execution (e.g. \"tests/mcp/unit/internal\"). Runs the full suite when omitted.",
 		"optional": true
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * @fileoverview Form-validation helpers — **TypeScript 5.0+ only** entry point.
+ * Form-validation helpers — **TypeScript 5.0+ only** entry point.
  *
  * Import from `@cartago-git/quickmodel/compat/ts5/forms` when you need
  * {@link qGroups5}, which accepts a mutable array without `as const`.

@@ -10,8 +10,9 @@ Estas herramientas están diseñadas para **mantenedores** de la librería Quick
 Las siguientes herramientas se usan para desarrollo interno.
 
 - **Scaffolding**: Genera tests (`generate_test`) y esqueletos de funcionalidad.
-- **Documentación**: Sincroniza docs (`update_docs`), comprueba JSDocs faltantes (`check_jsdocs`).
-- **QA**: Comprueba salud del proyecto (`check_project_health`), cobertura (`get_coverage_report`), y compatibilidad de API.
+- **Documentación**: Sincroniza docs (`update_docs`, `update_docs_content`), comprueba JSDocs faltantes (`check_jsdocs`).
+- **QA**: Comprueba salud del proyecto (`check_project_health`), cobertura (`get_coverage_report`), compatibilidad de API, tamaño del bundle y CHANGELOG.
+- **CI / Flujo de desarrollo**: Ejecuta tests (`run_tests`), lint (`lint_check`), typecheck (`typecheck`), simula pre-commit (`pre_commit_check`), archivos en staging (`get_staged_files`) y snapshot consolidado de salud (`project_status`).
 - **Rendimiento**: Benchmarks de rendimiento (`benchmark_performance`).
 
 <!-- TOOLS-START -->
@@ -83,7 +84,7 @@ Ejecuta una verificación completa de salud: Lint, Typecheck y Tests.
 
 ## `check_project_rules`
 
-Hace cumplir reglas internas: @Quick sobre @QType en tests, sin console.log, id-length (mín 3 chars), max-params (máx 3), naming-convention (prefijo I para interfaces/tipos), no-restricted-imports.
+Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y no console.log.
 
 ```json
 {
@@ -122,6 +123,14 @@ Ejecuta pruebas con cobertura y reporta el resumen.
 {}
 ```
 
+## `get_staged_files`
+
+Lista los archivos actualmente en staging (`git diff --cached --name-only`). Úsalo para saber qué archivos necesitan validación lint/typecheck antes de hacer commit. Devuelve { passed, files[], total, summary }.
+
+```json
+{}
+```
+
 ## `lint_check`
 
 Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve { passed, errors, warnings, total_errors, total_warnings, summary }.
@@ -129,11 +138,11 @@ Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve { passed, e
 ```json
 {
 	"targetDir": {
-		"description": "Directory to lint (e.g. \"src/mcp/tools\"). Defaults to \"src\" if neither targetDir nor targetFiles is provided.",
+		"description": "Directorio a analizar (p. ej. \"src/mcp/tools\"). Por defecto \"src\" si no se especifica targetDir ni targetFiles.",
 		"optional": true
 	},
 	"targetFiles": {
-		"description": "Array of specific file paths to lint (e.g. [\"src/mcp/tools/public/my-tool.ts\"]).",
+		"description": "Array de rutas de archivo específicas a analizar (p. ej. [\"src/mcp/tools/public/my-tool.ts\"]).",
 		"optional": true
 	}
 }
@@ -146,11 +155,11 @@ Escanea archivos fuente en busca de comentarios TODO, FIXME, HACK y XXX. Admite 
 ```json
 {
 	"targetDir": {
-		"description": "Directory to scan. Defaults to src/ in the project root.",
+		"description": "Directorio a escanear. Por defecto src/ en la raíz del proyecto.",
 		"optional": true
 	},
 	"extensions": {
-		"description": "File extensions to include (default: [\".ts\", \".js\"]). E.g. [\".ts\", \".tsx\", \".js\"]",
+		"description": "Extensiones de archivo a incluir (por defecto: [\".ts\", \".js\"]). P. ej. [\".ts\", \".tsx\", \".js\"]",
 		"optional": true
 	}
 }
@@ -163,7 +172,28 @@ Simula el hook de pre-commit de Husky: ejecuta ESLint (--fix) y Prettier (--writ
 ```json
 {
 	"files": {
-		"description": "List of file paths to check. Defaults to all TypeScript/JavaScript files in src/.",
+		"description": "Lista de rutas de archivo a comprobar. Por defecto todos los archivos TypeScript/JavaScript en src/.",
+		"optional": true
+	}
+}
+```
+
+## `project_status`
+
+Ejecuta todas las comprobaciones de salud del proyecto simultáneamente: tests, lint y typecheck. Devuelve un snapshot consolidado con estado pass/fail de cada capa y un resumen legible. Devuelve { passed, tests, lint, typecheck, summary }.
+
+```json
+{}
+```
+
+## `run_tests`
+
+Ejecuta la suite de tests de Bun (opcionalmente filtrada por ruta/patrón). Parsea los conteos de pass/fail y devuelve detalles estructurados de fallos. Devuelve { passed, total_pass, total_fail, errors[], summary }.
+
+```json
+{
+	"pattern": {
+		"description": "Ruta de archivo o patrón opcional para filtrar la ejecución (p. ej. \"tests/mcp/unit/internal\"). Ejecuta la suite completa si se omite.",
 		"optional": true
 	}
 }

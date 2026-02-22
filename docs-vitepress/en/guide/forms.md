@@ -37,7 +37,7 @@ And that your `tsconfig.json` has:
 
 `qGroups` creates a **typed map of group name constants** so you get autocomplete and refactoring support across your codebase. It also prevents typos in group names.
 
-### Spread form (TS 4.1+)
+### Spread form (TS 3.4+)
 
 ```ts
 import { qGroups } from '@cartago-git/quickmodel/forms';
@@ -46,7 +46,7 @@ const Groups = qGroups('identity', 'security', 'address');
 // { identity: 'identity', security: 'security', address: 'address' }
 ```
 
-### Array form with `as const` (TS 4.1+)
+### Array form with `as const` (TS 3.4+)
 
 ```ts
 const groups = ['identity', 'security'] as const;
@@ -63,8 +63,8 @@ const Groups = qGroups5(['identity', 'security']);
 
 | Style                          | TS version | Notes                                           |
 | ------------------------------ | ---------- | ----------------------------------------------- |
-| `qGroups('a', 'b')`            | 4.1+       | Spread — explicit, great for short lists        |
-| `qGroups(['a', 'b'] as const)` | 4.1+       | Array with `as const`                           |
+| `qGroups('a', 'b')`            | 3.4+       | Spread — explicit, great for short lists        |
+| `qGroups(['a', 'b'] as const)` | 3.4+       | Array with `as const`                           |
 | `qGroups5(['a', 'b'])`         | 5.0+       | No `as const` needed — uses `const T` parameter |
 
 ## Defining validation rules
@@ -472,5 +472,5 @@ const result = qCheckRules(form);
 
 | Entry point                                | Minimum TS | Notes                                      |
 | ------------------------------------------ | ---------- | ------------------------------------------ |
-| `@cartago-git/quickmodel/forms`            | 4.1        | Main entry — all helpers except `qGroups5` |
+| `@cartago-git/quickmodel/forms`            | 3.4        | Main entry — all helpers except `qGroups5` |
 | `@cartago-git/quickmodel/compat/ts5/forms` | 5.0        | Adds `qGroups5` (no `as const` needed)     |

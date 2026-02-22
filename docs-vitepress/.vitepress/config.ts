@@ -461,6 +461,10 @@ export default defineConfig({
 									link: '/en/guide/qtype-decorator',
 								},
 								{
+									text: 'TC39 Decorators',
+									link: '/en/guide/tc39-decorators',
+								},
+								{
 									text: 'Transformers',
 									link: '/en/guide/transformers',
 								},
@@ -516,6 +520,26 @@ export default defineConfig({
 								{
 									text: 'NestJS Integration',
 									link: '/en/guide/nestjs-integration',
+								},
+								{
+									text: 'Angular Integration',
+									link: '/en/guide/angular-integration',
+								},
+								{
+									text: 'React Integration',
+									link: '/en/guide/react-integration',
+								},
+								{
+									text: 'Vue 3 Integration',
+									link: '/en/guide/vue-integration',
+								},
+								{
+									text: 'Svelte 5 Integration',
+									link: '/en/guide/svelte-integration',
+								},
+								{
+									text: 'Express / Fastify / Hono',
+									link: '/en/guide/backend-integration',
 								},
 								{
 									text: 'Troubleshooting',
@@ -603,6 +627,10 @@ export default defineConfig({
 									link: '/es/guide/qtype-decorator',
 								},
 								{
+									text: 'Decoradores TC39',
+									link: '/es/guide/tc39-decorators',
+								},
+								{
 									text: 'Transformadores',
 									link: '/es/guide/transformers',
 								},
@@ -658,6 +686,26 @@ export default defineConfig({
 								{
 									text: 'Integración con NestJS',
 									link: '/es/guide/nestjs-integration',
+								},
+								{
+									text: 'Integración con Angular',
+									link: '/es/guide/angular-integration',
+								},
+								{
+									text: 'Integración con React',
+									link: '/es/guide/react-integration',
+								},
+								{
+									text: 'Integración con Vue 3',
+									link: '/es/guide/vue-integration',
+								},
+								{
+									text: 'Integración con Svelte 5',
+									link: '/es/guide/svelte-integration',
+								},
+								{
+									text: 'Express / Fastify / Hono',
+									link: '/es/guide/backend-integration',
 								},
 								{
 									text: 'Solución de Problemas',

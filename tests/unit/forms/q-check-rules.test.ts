@@ -14,12 +14,15 @@
  * - **Edge cases**: classes with no rules, no groups, mixed decorated / plain fields.
  */
 
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect, spyOn, beforeEach, afterEach } from 'bun:test';
 import 'reflect-metadata';
 import { QRule } from '@/core/decorators/qrule.decorator';
 import { QGroup } from '@/core/decorators/qgroup.decorator';
 import { qGetGroups } from '@/core/helpers/q-get-groups';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import {
+	qCheckRules,
+	_resetAsyncWarnedKeys,
+} from '@/core/helpers/q-check-rules';
 import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // =============================================================================
@@ -402,6 +405,135 @@ describe('qCheckRules — inheritance', () => {
 		const form = new ChildForm();
 		const groups = qGetGroups(form);
 		expect(groups).toContain('identity');
+	});
+});
+
+// =============================================================================
+// qCheckRules — warning on silently-skipped async predicates
+// =============================================================================
+
+/** Fixture: campo con regla sync + regla async mezcladas. */
+class AsyncMixedForm {
+	@QRule((val: string) => val.length >= 3, 'Too short') // sync
+	@QRule(
+		async (val: string) => Promise.resolve(val !== 'taken'),
+		'Already taken'
+	) // async
+	username = '';
+
+	@QRule((val: string) => val.length >= 2, 'Name too short') // solo sync
+	name = '';
+}
+
+/** Fixture distinta para verificar que el warning no se mezcla entre clases. */
+class AnotherAsyncForm {
+	@QRule(async (_val: string) => Promise.resolve(true), 'Always passes async')
+	field = '';
+}
+
+describe('qCheckRules — warning en predicados async ignorados', () => {
+	let warnSpy: ReturnType<typeof spyOn>;
+
+	beforeEach(() => {
+		_resetAsyncWarnedKeys(); // limpiar estado entre tests
+		warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		warnSpy.mockRestore();
+	});
+
+	test('emite warning cuando detecta un predicado async en el campo', () => {
+		const form = new AsyncMixedForm();
+		form.username = 'taken';
+		form.name = 'Alice';
+
+		qCheckRules(form);
+
+		const calls = (warnSpy.mock.calls as string[][]).flat().join(' ');
+		expect(calls).toContain('async');
+		expect(calls).toContain('AsyncMixedForm#username');
+		expect(calls).toContain('checkRulesAsync');
+	});
+
+	test('no emite warning en campos con solo reglas sincronas', () => {
+		const form = new AsyncMixedForm();
+		form.username = 'ok_user';
+		form.name = 'Alice';
+
+		qCheckRules(form);
+
+		// Solo debería haber warning para username (async), no para name (solo sync)
+		const calls = warnSpy.mock.calls as string[][];
+		const nameWarnings = calls.filter((args) =>
+			args.join(' ').includes('AsyncMixedForm#name')
+		);
+		expect(nameWarnings).toHaveLength(0);
+	});
+
+	test('el warning se emite solo una vez por clase#campo (deduplicado)', () => {
+		const form = new AsyncMixedForm();
+		form.username = 'taken';
+		form.name = 'Alice';
+
+		qCheckRules(form);
+		qCheckRules(form); // segunda llamada — NO debe repetir el warning
+		qCheckRules(form); // tercera
+
+		const asyncFieldWarnings = (warnSpy.mock.calls as string[][]).filter(
+			(args) => args.join(' ').includes('AsyncMixedForm#username')
+		);
+		expect(asyncFieldWarnings).toHaveLength(1);
+	});
+
+	test('diferentes clases emiten sus propios warnings independientes', () => {
+		const formA = new AsyncMixedForm();
+		formA.username = 'taken';
+		formA.name = 'Alice';
+
+		const formB = new AnotherAsyncForm();
+		formB.field = 'hello';
+
+		qCheckRules(formA);
+		qCheckRules(formB);
+
+		const calls = (warnSpy.mock.calls as string[][]).map((args) =>
+			args.join(' ')
+		);
+		expect(
+			calls.some((msg) => msg.includes('AsyncMixedForm#username'))
+		).toBe(true);
+		expect(
+			calls.some((msg) => msg.includes('AnotherAsyncForm#field'))
+		).toBe(true);
+	});
+
+	test('no emite warning si todos los predicados son sincronos', () => {
+		const form = new AsyncMixedForm();
+		form.username = 'ok_user';
+		form.name = 'Alice';
+
+		// Comprobamos field "name" que solo tiene regla sync
+		qCheckRules(form, { group: undefined });
+
+		// El único warning posible proviene de username (que tiene regla async)
+		// pero no debe haber ninguno para name
+		const calls = warnSpy.mock.calls as string[][];
+		const nameWarn = calls.find((args) => args.join(' ').includes('#name'));
+		expect(nameWarn).toBeUndefined();
+	});
+
+	test('el resultado sigue siendo correcto a pesar de emitir el warning', () => {
+		const form = new AsyncMixedForm();
+		form.username = 'ab'; // falla regla sync (< 3 chars)
+		form.name = 'Alice';
+
+		const result = qCheckRules(form);
+
+		expect(result.valid).toBe(false);
+		expect(result.errors[0].message).toBe('Too short');
+		// Y además se emitió el warning por la regla async
+		expect(warnSpy.mock.calls.length).toBeGreaterThan(0);
 	});
 });
 

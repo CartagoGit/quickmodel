@@ -426,7 +426,7 @@ Cuando serialices múltiples modelos, hazlo en una sola pasada:
 
 ```typescript
 const users = [user1, user2, user3];
-const jsonArray = users.map((u) => u.toJSON());
+const jsonArray = users.map((usr) => usr.toJSON());
 ```
 
 ## Filtrado de Campos

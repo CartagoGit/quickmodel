@@ -15,14 +15,17 @@ interface IUser {
 
 @Quick()
 class User extends QModel<IUser> {
-	@QRule((v: string) => v.length >= 3, 'Name must be at least 3 characters')
+	@QRule(
+		(val: string) => val.length >= 3,
+		'Name must be at least 3 characters'
+	)
 	declare name: string;
 
-	@QRule((v: number) => v >= 0, 'Age cannot be negative')
-	@QRule((v: number) => v <= 120, 'Age must be realistic')
+	@QRule((val: number) => val >= 0, 'Age cannot be negative')
+	@QRule((val: number) => val <= 120, 'Age must be realistic')
 	declare age: number;
 
-	@QRule((v: string) => v.includes('@'), 'Must be a valid email')
+	@QRule((val: string) => val.includes('@'), 'Must be a valid email')
 	declare email: string;
 }
 ```
@@ -49,13 +52,13 @@ When using TC39 standard decorators (`experimentalDecorators` absent or `false`)
 // TC39 mode — use ! instead of declare
 @Quick()
 class User extends QModel<IUser> {
-	@QRule((v: string) => v.length >= 3, 'Name must be at least 3 characters')
+	@QRule((val) => val.length >= 3, 'Name must be at least 3 characters')
 	name!: string; // ✅ TC39: use !
 
-	@QRule((v: number) => v >= 0, 'Age cannot be negative')
+	@QRule((val) => val >= 0, 'Age cannot be negative')
 	age!: number; // ✅ TC39: use !
 
-	@QRule((v: string) => v.includes('@'), 'Must be a valid email')
+	@QRule((val) => val.includes('@'), 'Must be a valid email')
 	email!: string; // ✅ TC39: use !
 }
 ```
@@ -92,9 +95,9 @@ console.log(post.checkRules().valid); // true
 You can apply multiple `@QRule` to the same property. **All failing rules are collected** — not just the first one.
 
 ```typescript
-@QRule((v: number) => v >= 18, 'Must be at least 18 years old')
-@QRule((v: number) => v <= 65, 'Must be under 65')
-@QRule((v: number) => Number.isInteger(v), 'Age must be a whole number')
+@QRule((val: number) => val >= 18, 'Must be at least 18 years old')
+@QRule((val: number) => val <= 65, 'Must be under 65')
+@QRule((val: number) => Number.isInteger(val), 'Age must be a whole number')
 declare age: number;
 ```
 
@@ -151,15 +154,15 @@ import { QRule, QGroup } from '@cartago-git/quickmodel';
 
 @Quick()
 class SignupModel extends QModel<ISignup> {
-	@QRule((v: string) => v.length >= 2, 'Name too short')
+	@QRule((val: string) => val.length >= 2, 'Name too short')
 	@QGroup('identity')
 	declare name: string;
 
-	@QRule((v: string) => /^[^@]+@[^@]+\.[^@]+$/.test(v), 'Invalid email')
+	@QRule((val: string) => /^[^@]+@[^@]+\.[^@]+$/.test(val), 'Invalid email')
 	@QGroup('identity')
 	declare email: string;
 
-	@QRule((v: string) => v.length >= 8, 'Password too short')
+	@QRule((val: string) => val.length >= 8, 'Password too short')
 	@QGroup('security')
 	declare password: string;
 }
@@ -241,9 +244,9 @@ const report = user.validationReport();
 
 if (!report.valid) {
 	// transformer-level failures:
-	report.integrity.forEach((e) => console.error(e.error));
+	report.integrity.forEach((err) => console.error(err.error));
 	// @QRule failures:
-	report.rules.errors.forEach((e) => console.error(e.field, e.message));
+	report.rules.errors.forEach((err) => console.error(err.field, err.message));
 }
 ```
 
@@ -267,7 +270,7 @@ import { t } from './i18n'; // your global translator
 @Quick({ name: 'string' })
 class User extends QModel<IUser> {
 	// Lazy: resolved when checkRules() is called
-	@QRule((v) => (v as string).length >= 3, () => t('validation.name.min'))
+	@QRule((val) => (val as string).length >= 3, () => t('validation.name.min'))
 	declare name: string;
 }
 ```
@@ -279,7 +282,7 @@ If the user changes language at runtime, the next `checkRules()` call will refle
 You can also store plain i18n keys as the message and resolve them in the template — no lazy function needed:
 
 ```typescript
-@QRule((v) => (v as string).length >= 3, 'validation.name.min')
+@QRule((val) => (val as string).length >= 3, 'validation.name.min')
 declare name: string;
 ```
 
@@ -315,7 +318,7 @@ console.log(result.errors[0].field); // 'age'
 @Quick()
 class Admin extends User {
 	@QRule(
-		(v: string) => v.startsWith('ADMIN_'),
+		(val: string) => val.startsWith('ADMIN_'),
 		'Admin name must start with ADMIN_'
 	)
 	declare name: string; // overrides parent rule for 'name'
@@ -411,7 +414,7 @@ Like `checkRules()` but awaits each predicate. Use this when any `@QRule` contai
 ```typescript
 // Async predicate — e.g. checks uniqueness against a DB
 @QRule(
-	async (v) => !await db.emailExists(v as string),
+	async (val) => !(await db.emailExists(val as string)),
 	'Email already taken'
 )
 declare email: string;
@@ -486,8 +489,8 @@ Async equivalent of `validationReport()`. Returns `Promise<IQValidationReport>`.
 ```typescript
 const report = await user.validationReportAsync();
 if (!report.valid) {
-	report.integrity.forEach((e) => console.error(e.error));
-	report.rules.errors.forEach((e) => console.error(e.field, e.message));
+	report.integrity.forEach((err) => console.error(err.error));
+	report.rules.errors.forEach((err) => console.error(err.field, err.message));
 }
 ```
 
@@ -525,7 +528,7 @@ const Groups = qGroups('identity', 'security');
 
 class ProfileForm {
 	// ← plain class, no QModel
-	@QRule((v: string) => v.length >= 2, 'Too short')
+	@QRule((val: string) => val.length >= 2, 'Too short')
 	@QGroup(Groups.identity)
 	name = '';
 }

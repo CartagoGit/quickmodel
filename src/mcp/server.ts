@@ -21,6 +21,8 @@ import {
 	QFixLintPrompt,
 	QFixTypecheckPrompt,
 	QRefactorPrompt,
+	QApplySolidPrompt,
+	QSyncProjectPrompt,
 } from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -68,6 +70,7 @@ import {
 	QPreCommitCheckTool,
 	QRunTestsTool,
 	QGetStagedFilesTool,
+	QProjectStatusTool,
 } from './tools/internal';
 /**
  * Main class for the QuickModel MCP Server.
@@ -148,6 +151,7 @@ export class QMcpServer {
 			new QPreCommitCheckTool(),
 			new QRunTestsTool(),
 			new QGetStagedFilesTool(),
+			new QProjectStatusTool(),
 			new QSyncDocsTool(),
 			new QScaffoldFeatureTool(),
 			new QCheckApiCompatibilityTool(),
@@ -187,6 +191,8 @@ export class QMcpServer {
 			new QFixLintPrompt(),
 			new QFixTypecheckPrompt(),
 			new QRefactorPrompt(),
+			new QApplySolidPrompt(),
+			new QSyncProjectPrompt(),
 		];
 	}
 

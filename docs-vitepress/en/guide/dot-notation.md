@@ -158,8 +158,8 @@ class CartItem extends QModel<ICartItem> {
 ```typescript
 // ❌ BAD: Dot notation for complex logic
 @Quick({
-	'user.profile.settings.theme': (v) => validateTheme(v),
-	'user.profile.settings.language': (v) => normalizeLanguage(v),
+	'user.profile.settings.theme': (val) => validateTheme(val),
+	'user.profile.settings.language': (val) => normalizeLanguage(val),
 	'user.profile.settings.notifications.email': Boolean,
 	'user.profile.settings.notifications.push': Boolean,
 })
@@ -169,8 +169,8 @@ class Account extends QModel<IAccount> {
 
 // ✅ GOOD: Separate models with their own transformations
 @Quick({
-	theme: (v) => validateTheme(v),
-	language: (v) => normalizeLanguage(v),
+	theme: (val) => validateTheme(val),
+	language: (val) => normalizeLanguage(val),
 })
 class Settings extends QModel<ISettings> {
 	/* ... */

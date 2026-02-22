@@ -1,5 +1,5 @@
 /**
- * @fileoverview Form-validation helpers for framework-agnostic use.
+ * Form-validation helpers for framework-agnostic use.
  *
  * Import from `@cartago-git/quickmodel/forms` **instead of the root entry**
  * to keep these utilities tree-shakeable and avoid pulling in the full

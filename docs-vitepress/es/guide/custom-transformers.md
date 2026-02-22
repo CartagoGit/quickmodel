@@ -136,21 +136,21 @@ Crea un tipo de color personalizado con conversión hex/RGB:
 ```typescript
 class Color {
 	constructor(
-		public r: number,
-		public g: number,
-		public b: number
+		public red: number,
+		public green: number,
+		public blue: number
 	) {}
 
 	toHex(): string {
-		const toHex = (n: number) => n.toString(16).padStart(2, '0');
-		return `#${toHex(this.r)}${toHex(this.g)}${toHex(this.b)}`;
+		const toHex = (num: number) => num.toString(16).padStart(2, '0');
+		return `#${toHex(this.red)}${toHex(this.green)}${toHex(this.blue)}`;
 	}
 
 	static fromHex(hex: string): Color {
-		const r = parseInt(hex.slice(1, 3), 16);
-		const g = parseInt(hex.slice(3, 5), 16);
-		const b = parseInt(hex.slice(5, 7), 16);
-		return new Color(r, g, b);
+		const red = parseInt(hex.slice(1, 3), 16);
+		const green = parseInt(hex.slice(3, 5), 16);
+		const blue = parseInt(hex.slice(5, 7), 16);
+		return new Color(red, green, blue);
 	}
 }
 

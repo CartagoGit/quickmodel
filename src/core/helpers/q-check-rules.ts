@@ -20,6 +20,14 @@ import {
 	type IQRulesResult,
 } from '@/core/decorators/qrule.decorator';
 import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
+import { Logger } from '@/core/helpers/logger.helper';
+
+/**
+ * Tracks class#field pairs already warned about async predicates.
+ * Avoids flooding the console when checkRules() is called repeatedly.
+ * @internal
+ */
+const _asyncWarnedKeys = new Set<string>();
 
 /**
  * Options accepted by {@link qCheckRules}.
@@ -108,8 +116,24 @@ export function qCheckRules(
 			let passes = false;
 			try {
 				const result = rule.predicate(value);
-				// Async predicates are silently passed on the synchronous path
-				passes = result instanceof Promise ? true : result;
+				if (result instanceof Promise) {
+					// Async predicates are skipped on the synchronous path — warn once per class#field.
+					const className =
+						(proto as { constructor?: { name?: string } })
+							.constructor?.name ?? 'Unknown';
+					const warnKey = `${className}#${field}`;
+					if (!_asyncWarnedKeys.has(warnKey)) {
+						_asyncWarnedKeys.add(warnKey);
+						Logger.warn(
+							`qCheckRules() skipped an async predicate on "${warnKey}". ` +
+								`Async rules are never evaluated by the synchronous path. ` +
+								`Use checkRulesAsync() / qCheckRulesAsync() to evaluate them.`
+						);
+					}
+					passes = true;
+				} else {
+					passes = result;
+				}
 			} catch {
 				passes = false;
 			}
@@ -125,4 +149,16 @@ export function qCheckRules(
 	}
 
 	return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Clears the internal set of already-warned async-predicate keys.
+ *
+ * **For testing only.** Call this in `beforeEach` / `afterEach` to ensure
+ * warning assertions are not affected by previous test runs.
+ *
+ * @internal
+ */
+export function _resetAsyncWarnedKeys(): void {
+	_asyncWarnedKeys.clear();
 }

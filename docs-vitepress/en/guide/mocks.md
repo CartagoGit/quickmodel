@@ -158,7 +158,7 @@ Perfect for populating local databases:
 async function seedKeywords() {
 	const users = User.mock().array(50);
 	await db.insertMany('users', users);
-	console.log('Seeded 50 users!');
+	// output: 'Seeded 50 users!'
 }
 ```
 

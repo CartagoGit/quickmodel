@@ -153,7 +153,7 @@ const posts = [
 ];
 
 // Transform all posts
-const transformedPosts = posts.map((p) => new Post(p));
+const transformedPosts = posts.map((post) => new Post(post));
 
 console.log(transformedPosts[0].publishedAt instanceof Date); // true
 console.log(transformedPosts[0].tags instanceof Set); // true

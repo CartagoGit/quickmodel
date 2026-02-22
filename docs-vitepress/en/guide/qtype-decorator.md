@@ -151,7 +151,7 @@ class Product extends QModel<IProduct> {
 	declare price: number;
 
 	// Override specifically for this field
-	@QType((v) => Number(v) * 100)
+	@QType((val) => Number(val) * 100)
 	declare centAmount: number;
 }
 ```

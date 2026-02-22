@@ -1,5 +1,5 @@
 /**
- * @fileoverview `qGroups5` — TS 5.0+ variant of {@link qGroups} that accepts
+ * `qGroups5` — TS 5.0+ variant of {@link Forms.qGroups} that accepts
  * a **mutable array** without requiring `as const`.
  *
  * This file is intentionally separate from `q-groups.ts` because the
@@ -8,7 +8,7 @@
  * safely use `@cartago-git/quickmodel/forms` without encountering a
  * `.d.ts` parse error from this syntax.
  *
- * @see {@link qGroups} for the TS 4.1-compatible version (spread / `as const`).
+ * @see {@link Forms.qGroups} for the TS 4.1-compatible version (spread / `as const`).
  * @module
  */
 
@@ -19,7 +19,7 @@ import type { IQGroupsMap } from './q-groups';
  * requiring `as const`.
  *
  * Uses `const` type parameters — **requires TypeScript 5.0+**.
- * Consumers on TS < 5.0 should use {@link qGroups} with `as const` instead:
+ * Consumers on TS < 5.0 should use {@link Forms.qGroups} with `as const` instead:
  *
  * ```ts
  * // TS < 5 — use qGroups with as const:

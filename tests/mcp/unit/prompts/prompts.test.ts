@@ -17,6 +17,8 @@ import { QImplementFeaturePrompt } from '../../../../src/mcp/prompts/public/impl
 import { QFixLintPrompt } from '../../../../src/mcp/prompts/public/fix-lint.prompt';
 import { QFixTypecheckPrompt } from '../../../../src/mcp/prompts/public/fix-typecheck.prompt';
 import { QRefactorPrompt } from '../../../../src/mcp/prompts/public/refactor.prompt';
+import { QApplySolidPrompt } from '../../../../src/mcp/prompts/public/apply-solid.prompt';
+import { QSyncProjectPrompt } from '../../../../src/mcp/prompts/public/sync-project.prompt';
 import type { IQPromptResult } from '../../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
@@ -1420,5 +1422,217 @@ describe('QRefactorPrompt', () => {
 			.map((msg) => msg.content.text)
 			.join(' ');
 		expect(allText).toContain('run_tests');
+	});
+});
+
+// ── QApplySolidPrompt ──────────────────────────────────────────────────────
+describe('QApplySolidPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QApplySolidPrompt();
+		expect(prompt.name).toBe('quickmodel_apply_solid');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.description.length).toBeGreaterThan(10);
+	});
+
+	it('should have required file_paths schema field', () => {
+		const prompt = new QApplySolidPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.file_paths).toBeDefined();
+		const parsed = schema.file_paths.safeParse(
+			'src/mcp/tools/internal/my-tool.ts'
+		);
+		expect(parsed.success).toBe(true);
+		const missing = schema.file_paths.safeParse(undefined);
+		expect(missing.success).toBe(false);
+	});
+
+	it('should have optional concern schema field', () => {
+		const prompt = new QApplySolidPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema.concern).toBeDefined();
+		const parsed = schema.concern?.safeParse(undefined);
+		expect(parsed?.success).toBe(true);
+	});
+
+	it('should return a valid IQPromptResult', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		assertValidResult(result);
+	});
+
+	it('should have at least 3 messages', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('should mention all 5 SOLID principles', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('SRP');
+		expect(allText).toContain('OCP');
+		expect(allText).toContain('LSP');
+		expect(allText).toContain('ISP');
+		expect(allText).toContain('DIP');
+	});
+
+	it('should reference lint_check in messages', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('lint_check');
+	});
+
+	it('should reference typecheck in messages', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('typecheck');
+	});
+
+	it('should reference run_tests in messages', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('run_tests');
+	});
+
+	it('should enforce a DONE gate (passed: true)', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('passed: true');
+	});
+
+	it('should include file_paths in messages', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/unique-tool-xyz.ts',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('unique-tool-xyz.ts');
+	});
+
+	it('should include concern in messages when provided', async () => {
+		const prompt = new QApplySolidPrompt();
+		const result = (await prompt.execute({
+			file_paths: 'src/mcp/tools/internal/my-tool.ts',
+			concern: 'The class has too many responsibilities UniqueXYZ',
+		})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('UniqueXYZ');
+	});
+});
+
+// ── QSyncProjectPrompt ──────────────────────────────────────────────────────
+describe('QSyncProjectPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QSyncProjectPrompt();
+		expect(prompt.name).toBe('quickmodel_sync_project');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.description.length).toBeGreaterThan(10);
+	});
+
+	it('should have an empty argsSchema (no required inputs)', () => {
+		const prompt = new QSyncProjectPrompt();
+		const schema = prompt.argsSchema;
+		expect(schema).toBeDefined();
+	});
+
+	it('should return a valid IQPromptResult', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		assertValidResult(result);
+	});
+
+	it('should have at least 3 messages', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('should reference project_status tool in messages', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('project_status');
+	});
+
+	it('should reference sync_docs tool in messages', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('sync_docs');
+	});
+
+	it('should reference run_tests in messages', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('run_tests');
+	});
+
+	it('should reference lint_check in messages', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('lint_check');
+	});
+
+	it('should enforce a clear DONE condition (all passed)', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/passed.*true|all.*green|everything.*pass/i);
+	});
+
+	it('should mention documentation in messages', async () => {
+		const prompt = new QSyncProjectPrompt();
+		const result = (await prompt.execute({})) as IQPromptResult;
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/doc|documentation/i);
 	});
 });

@@ -19,7 +19,7 @@ When working with TypeScript and APIs, you often face challenges like:
 
 ```typescript
 // ❌ Problem: Dates come as strings from APIs
-const user = await fetch('/api/user').then((r) => r.json());
+const user = await fetch('/api/user').then((res) => res.json());
 console.log(user.createdAt instanceof Date); // false! It's a string
 
 // ❌ Problem: Sets and Maps don't survive JSON.stringify

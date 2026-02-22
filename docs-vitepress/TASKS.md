@@ -2,13 +2,13 @@
 
 > **Fecha de revisión:** 22 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 2254 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 2588 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#16, #18–#22, #23–#32 (sprint Feb 2026)
-🔄 En progreso: —
+✅ Completadas: Tasks #1–#16, #18–#22, #23–#33 (sprint Feb 2026)
+🔄 En progreso: Tasks #34–#38 (Framework Integrations Sprint)
 ⏸️  Backlog: Task #17 (benchmarks)
 ```
 
@@ -1822,7 +1822,109 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº9) — Task #33 módulo `./forms` completada | 2097 tests passing | 32+/32+ tareas
+**Última actualización:** 22 de febrero de 2026 (revisión nº11) — Tasks #34–#38 Framework Integrations completadas | 2588 tests passing
+
+---
+
+## 🚀 Sprint Framework Integrations (Tasks #34–#38)
+
+### ⏳ Task #34: Angular integration patterns
+
+**Status:** 🔄 En progreso  
+**Objetivo:** Suite de tests + guía EN+ES para Angular (Reactive Forms, Services, Signals, HttpClient)  
+**Tests a añadir:** ~40 en `tests/integration/patterns/angular-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/angular-integration.md` + ES
+
+**Patrones cubiertos:**
+
+1. Reactive Forms — `@QRule` como validador de `AbstractControl`
+2. Angular Services — repositorio + service layer
+3. Angular Signals (v17+) — estado reactivo con `signal()` + `computed()`
+4. HttpClient — coerción automática en interceptor HTTP
+5. DTOs en APIService — `fromApi()` helper + `serialize()` para PUT/POST
+6. `@QGroup` + `qCheckRulesByGroup()` — formularios multi-paso
+7. Validación async en `AsyncValidatorFn` (unicidad email vs API)
+8. `createMany()` en resolver de lista
+
+---
+
+### ⏳ Task #35: React/Next.js integration patterns
+
+**Status:** 🔄 En progreso  
+**Objetivo:** Suite de tests + guía EN+ES para React y Next.js  
+**Tests a añadir:** ~40 en `tests/integration/patterns/react-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/react-integration.md` + ES
+
+**Patrones cubiertos:**
+
+1. Hook `useQModel` — patrón custom hook
+2. `useState` + `merge()` — mutación controlada
+3. React Hook Form — `resolver` personalizado con `checkRules()`
+4. Server Actions (Next.js 14+) — validación en Server Action
+5. `getFormSchema()` → generación dinámica de campos de UI
+6. `useQRules` hook — validación reactiva por campo
+7. Zustand store con QModel
+8. `createMany()` en tabla con bulk actions
+
+---
+
+### ⏳ Task #36: Vue 3/Nuxt integration patterns
+
+**Status:** 🔄 En progreso  
+**Objetivo:** Suite de tests + guía EN+ES para Vue 3 y Nuxt  
+**Tests a añadir:** ~35 en `tests/integration/patterns/vue-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/vue-integration.md` + ES
+
+**Patrones cubiertos:**
+
+1. Composable `useQModel` — Composition API
+2. `reactive()` / `ref()` con QModel
+3. Pinia store integration
+4. `@QGroup` + `qCheckRulesByGroup()` — wizard multi-step
+5. Nuxt server routes — validación en `defineEventHandler()`
+6. Validación async (unicidad en BD via `$fetch`)
+7. Schema generado → VeeValidate adapter
+8. `@QComputed()` en props computadas
+
+---
+
+### ⏳ Task #37: Svelte 5/SvelteKit integration patterns
+
+**Status:** 🔄 En progreso  
+**Objetivo:** Suite de tests + guía EN+ES para Svelte 5 y SvelteKit  
+**Tests a añadir:** ~35 en `tests/integration/patterns/svelte-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/svelte-integration.md` + ES
+
+**Patrones cubiertos:**
+
+1. Svelte 5 Runes — `$state` / `$derived` con QModel
+2. Writable store (`writable`) con QModel
+3. SvelteKit Form Actions — validación en `actions.default()`
+4. SvelteKit load function — coerción de datos en `load()`
+5. `@QGroup` para formularios multi-sección
+6. `serialize()` como `$derived` para respuesta API
+7. Async validation con `checkRulesAsync()`
+
+---
+
+### ⏳ Task #38: Express/Fastify/Hono backend patterns
+
+**Status:** 🔄 En progreso  
+**Objetivo:** Suite de tests + guía EN+ES para backends ligeros  
+**Tests a añadir:** ~45 en `tests/integration/patterns/backend-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/backend-integration.md` + ES
+
+**Patrones cubiertos:**
+
+1. Express middleware — `validateWith(DtoClass)` factory
+2. Express error handler — shape de error unificado
+3. Express Router — CRUD con QModel
+4. Fastify plugin — `fastify.addHook('preHandler', ...)`
+5. Fastify route schema — `getSchema('json')` como `jsonSchema`
+6. Hono — `validator('json', ...)` adapter
+7. Hono RPC — type-safe API con `createMany()`
+8. `checkRulesAsync()` en cualquier framework — DB uniqueness
+9. `@QComputed()` en serialización de respuestas
 
 ## ✅ Task #33: Módulo `@cartago-git/quickmodel/forms` — Validación standalone
 

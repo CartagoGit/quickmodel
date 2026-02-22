@@ -37,7 +37,7 @@ Y que tu `tsconfig.json` tenga:
 
 `qGroups` crea un **mapa tipado de nombres de grupo** para obtener autocompletado y soporte de refactoring en todo el código base. También evita errores tipográficos en los nombres de grupo.
 
-### Forma spread (TS 4.1+)
+### Forma spread (TS 3.4+)
 
 ```ts
 import { qGroups } from '@cartago-git/quickmodel/forms';
@@ -46,7 +46,7 @@ const Groups = qGroups('identidad', 'seguridad', 'direccion');
 // { identidad: 'identidad', seguridad: 'seguridad', direccion: 'direccion' }
 ```
 
-### Forma array con `as const` (TS 4.1+)
+### Forma array con `as const` (TS 3.4+)
 
 ```ts
 const grupos = ['identidad', 'seguridad'] as const;
@@ -63,8 +63,8 @@ const Groups = qGroups5(['identidad', 'seguridad']);
 
 | Estilo                         | Versión TS | Notas                                        |
 | ------------------------------ | ---------- | -------------------------------------------- |
-| `qGroups('a', 'b')`            | 4.1+       | Spread — explícito, ideal para listas cortas |
-| `qGroups(['a', 'b'] as const)` | 4.1+       | Array con `as const`                         |
+| `qGroups('a', 'b')`            | 3.4+       | Spread — explícito, ideal para listas cortas |
+| `qGroups(['a', 'b'] as const)` | 3.4+       | Array con `as const`                         |
 | `qGroups5(['a', 'b'])`         | 5.0+       | Sin `as const` — usa parámetro `const T`     |
 
 ## Definir reglas de validación
@@ -472,5 +472,5 @@ const result = qCheckRules(form);
 
 | Entrada                                    | TS mínimo | Notas                                                  |
 | ------------------------------------------ | --------- | ------------------------------------------------------ |
-| `@cartago-git/quickmodel/forms`            | 4.1       | Entrada principal — todos los helpers salvo `qGroups5` |
+| `@cartago-git/quickmodel/forms`            | 3.4       | Entrada principal — todos los helpers salvo `qGroups5` |
 | `@cartago-git/quickmodel/compat/ts5/forms` | 5.0       | Añade `qGroups5` (sin necesidad de `as const`)         |

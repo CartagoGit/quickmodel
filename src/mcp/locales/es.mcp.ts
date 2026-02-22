@@ -93,5 +93,9 @@ export const esMcp = {
 			'Lista los archivos actualmente en staging (`git diff --cached --name-only`). ' +
 			'Úsalo para saber qué archivos necesitan validación lint/typecheck antes de hacer commit. ' +
 			'Devuelve { passed, files[], total, summary }.',
+		project_status:
+			'Ejecuta todas las comprobaciones de salud del proyecto simultáneamente: tests, lint y typecheck. ' +
+			'Devuelve un snapshot consolidado con estado pass/fail de cada capa y un resumen legible. ' +
+			'Devuelve { passed, tests, lint, typecheck, summary }.',
 	},
 };
