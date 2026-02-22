@@ -7,9 +7,9 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#16, #18–#22, #23–#38 (sprint Feb 2026)
-🔄 En progreso: Tasks #39–#43 (Ecosystem Integrations Sprint)
-⏳  Backlog:     Tasks #44–#54 (Extended Ecosystem Sprint)
+✅ Completadas: Tasks #1–#16, #18–#22, #23–#38, #39, #44, #45, #46, #49 (sprint Feb 2026)
+🔄 En progreso: Tasks #40–#43 (Ecosystem Integrations Sprint)
+⏳  Backlog:     Tasks #47–#48, #50–#54 (Extended Ecosystem Sprint)
 ⏸️  Pausada:     Task #17 (benchmarks)
 ```
 
@@ -28,7 +28,7 @@
 - ✅ Task #10: Docs `excludeFields` + `omit`/`pick` en guías EN+ES (quick-decorator + serialization)
 - ✅ Task #13: Script `release:check` en package.json (ya presente: `"./scripts/pre-release.sh"`)
 - ✅ Task #20: `@QRule` async predicados — implementado (commit `a714b2e`)
-- ✅ Task #23: `merge()` + `isDirty(field?)` — estado mutable del modelo (commit `a8089a7`)
+- ✅ Task #23: `copy()` + `isDirty(field?)` — estado mutable del modelo (commit `a8089a7`)
 - ✅ Task #24: `@QRule` decorator + `checkRules()` — validación por reglas (commit `8a2910b`)
 - ✅ Task #25: `hasIntegrity()` + `isValid()` — convenience shortcuts (commit `cd30a8b`)
 - ✅ Task #26: `createMany()` — batch creation con validación (commit `3faf88b`)
@@ -40,22 +40,22 @@
 - ✅ Task #33: Módulo `./forms` standalone — `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup` — **COMPLETADA** (22 Feb 2026)
 - ✅ **Sprint #34–#38: Framework Integrations** — Angular (37), React (31), Vue (27), Svelte (21), Backend (25) = **141 nuevos tests** | guías EN+ES para los 5 frameworks | 2406 → 2588 tests (22 Feb 2026)
 
-**Sprint en curso — Ecosystem Integrations (#39–#43):**
+**Sprint en curso — Ecosystem Integrations (#40–#43):**
 
-- ⏳ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `merge()`
+- ✅ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `copy()` — **COMPLETADA** (Feb 2026)
 - ⏳ Task #40: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures
 - ⏳ Task #41: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos
 - ⏳ Task #42: Formik + migración desde Zod/Yup
 - ⏳ Task #43: React Native / Expo — `TextInput`, AsyncStorage, `useQModel` en mobile
 
-**Backlog extendido — Extended Ecosystem Sprint (#44–#54):**
+**Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
-- ⏳ Task #44: React Hook Form — `validate` adapter, `@QRule` sin resolver externo, `getFormSchema()` → campos dinámicos
-- ⏳ Task #45: Zustand — store con `merge()` inmutable, `QModel` como slice, `devtools` + `immer` compat
-- ⏳ Task #46: MSW (Mock Service Worker) — `generate_mock` + `HttpResponse`, fixtures tipados, tests de integración real
-- ⏳ Task #47: Redux Toolkit (RTK) — `createSlice` con QModel, `serialize()` como payload, `merge()` en reducers
+- ✅ Task #44: React Hook Form — `validate` adapter, `@QRule` sin resolver externo, `getFormSchema()` → campos dinámicos — **COMPLETADA** (Feb 2026)
+- ✅ Task #45: Zustand — store con `copy()` inmutable, `QModel` como slice, `devtools` + `immer` compat — **COMPLETADA** (Feb 2026)
+- ✅ Task #46: MSW (Mock Service Worker) — `generate_mock` + `HttpResponse`, fixtures tipados, tests de integración real — **COMPLETADA** (Feb 2026)
+- ⏳ Task #47: Redux Toolkit (RTK) — `createSlice` con QModel, `serialize()` como payload, `copy()` en reducers
 - ⏳ Task #48: Drizzle ORM — DTO desde resultado de query, repositorio, tipos Drizzle → QModel
-- ⏳ Task #49: Vitest Custom Matchers — `toBeValidQModel`, `toHaveQField`, `toMatchQModel`, setup helper
+- ✅ Task #49: Vitest Custom Matchers — `toBeValidQModel`, `toHaveQField`, `toMatchQModel`, setup helper — **COMPLETADA** (Feb 2026)
 - ⏳ Task #50: TypeORM — Entity vs DTO separation, repositorio con QModel, transformación de columnas
 - ⏳ Task #51: GraphQL / Apollo Server — `@InputType()` DTO, resolver tipado, `@QComputed` en respuesta
 - ⏳ Task #52: OpenAPI / Swagger — `getSchema('json')` → `@nestjs/swagger`, `@fastify/swagger`, documentación automática
@@ -1018,7 +1018,7 @@ describe('Computed Properties & Getters', () => {
 
 | #   | Tarea                                                | Prioridad | Estado        | Commit     | Tests |
 | --- | ---------------------------------------------------- | --------- | ------------- | ---------- | ----- |
-| 23  | `merge()` + `isDirty(field?)`                        | 🔴 Alta   | ✅ COMPLETADA | `a8089a7`  | +10   |
+| 23  | `copy()` + `isDirty(field?)`                         | 🔴 Alta   | ✅ COMPLETADA | `a8089a7`  | +10   |
 | 24  | `@QRule` decorator + `checkRules()`                  | 🔴 Alta   | ✅ COMPLETADA | `8a2910b`  | +12   |
 | 25  | `hasIntegrity()` + `isValid()`                       | 🔴 Alta   | ✅ COMPLETADA | `cd30a8b`  | +8    |
 | 26  | `createMany()` con batch validation                  | 🟡 Media  | ✅ COMPLETADA | `3faf88b`  | +14   |
@@ -1622,11 +1622,11 @@ describe('QTransformerRegistry: isolation', () => {
 > Todas las tareas de este sprint fueron completadas en el período 5–22 Feb 2026.
 > Se documentan aquí para registro histórico de lo implementado.
 
-### ✅ Task #23: `merge()` + `isDirty(field?)`
+### ✅ Task #23: `copy()` + `isDirty(field?)`
 
 **Status:** ✅ COMPLETADA  
 **Commit:** `a8089a7`  
-**Resultado:** `merge(partial)` actualiza campos parcialmente; `isDirty(field?)` trackea cambios vs estado inicial; `resetDirty()` limpia el tracking.
+**Resultado:** `copy(partial)` actualiza campos parcialmente; `isDirty(field?)` trackea cambios vs estado inicial; `resetDirty()` limpia el tracking.
 
 ### ✅ Task #24: `@QRule` decorator + `checkRules()`
 
@@ -1676,7 +1676,7 @@ describe('QTransformerRegistry: isolation', () => {
 
 **Status:** ✅ COMPLETADA  
 **Fecha:** 22 de febrero de 2026  
-**Resultado:** Revisada toda la documentación EN+ES — todas las features ya estaban documentadas. Las guias `qmodel.md`, `validation.md`, `qalias.md`, `qfield.md` (EN+ES) cubren completamente `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, `getFormSchemaGrouped()`, `validationReport()`, `checkRulesAsync()`, `merge()`, `isDirty()`, `createMany()`, `hasIntegrity()`, `isValid()`, `createReadonly()`. Sidebar de VitePress actualizado con todos los enlaces.  
+**Resultado:** Revisada toda la documentación EN+ES — todas las features ya estaban documentadas. Las guias `qmodel.md`, `validation.md`, `qalias.md`, `qfield.md` (EN+ES) cubren completamente `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, `getFormSchemaGrouped()`, `validationReport()`, `checkRulesAsync()`, `copy()`, `isDirty()`, `createMany()`, `hasIntegrity()`, `isValid()`, `createReadonly()`. Sidebar de VitePress actualizado con todos los enlaces.  
 **Prioridad:** 🔴 Alta  
 **Esfuerzo:** 0h (ya estaba hecho)  
 **Impacto:** Alto — docs completas EN+ES para todas las features
@@ -1688,7 +1688,7 @@ describe('QTransformerRegistry: isolation', () => {
 - `@QField` — metadatos de formulario
 - `getFormSchema()` — schema para librerías de forms
 - `validationReport()` — reporte de validación detallado
-- `merge()` + `isDirty()` + `resetDirty()` — estado mutable
+- `copy()` + `isDirty()` + `resetDirty()` — estado mutable
 - `createMany()` — creación batch con validación
 - `hasIntegrity()` + `isValid()` — shortcuts de validación
 - `@QRule` async — predicados asíncronos
@@ -1700,7 +1700,7 @@ describe('QTransformerRegistry: isolation', () => {
 - `docs-vitepress/es/guide/validation.md` — ídem en español
 - `docs-vitepress/en/guide/quick-decorator.md` — secciones `@QAlias`, `@QGroup`, `@QField`
 - `docs-vitepress/es/guide/quick-decorator.md` — ídem en español
-- `docs-vitepress/en/guide/qmodel.md` — secciones `merge()`, `isDirty()`, `createMany()`, etc.
+- `docs-vitepress/en/guide/qmodel.md` — secciones `copy()`, `isDirty()`, `createMany()`, etc.
 - `docs-vitepress/es/guide/qmodel.md` — ídem en español
 
 ---
@@ -1717,7 +1717,7 @@ describe('QTransformerRegistry: isolation', () => {
 
 4. ✅ **Tarea #13:** `release:check` en package.json → ya estaba presente
 5. ✅ **Tarea #20:** `@QRule` async predicates → implementado
-6. ✅ **Tarea #23:** `merge()` + `isDirty()` — commit `a8089a7`
+6. ✅ **Tarea #23:** `copy()` + `isDirty()` — commit `a8089a7`
 7. ✅ **Tarea #24:** `@QRule` + `checkRules()` — commit `8a2910b`
 8. ✅ **Tarea #25:** `hasIntegrity()` + `isValid()` — commit `cd30a8b`
 9. ✅ **Tarea #26:** `createMany()` batch validation — commit `3faf88b`
@@ -1795,7 +1795,7 @@ Antes de hacer merge a `main` y release:
 - [x] Edge cases compuestos (Map/Set/Array anidados)
 - [x] WeakMap/WeakSet transformers
 - [x] `excludeFields` en serialización
-- [x] `merge()` + `isDirty()` — estado mutable (Task #23)
+- [x] `copy()` + `isDirty()` — estado mutable (Task #23)
 - [x] `@QRule` + `checkRules()` — validación por reglas (Tasks #24, #20)
 - [x] `hasIntegrity()` + `isValid()` + `createMany()` (Tasks #25, #26)
 - [x] `@QField` + `validationReport()` + `getFormSchema()` (Task #27)
@@ -1847,7 +1847,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº13) — Tasks #34–#38 completadas (141 nuevos tests) | Tasks #39–#43 en curso | Tasks #44–#54 añadidas al backlog extendido | 2588 tests passing
+**Última actualización:** 22 de febrero de 2026 (revisión nº14) — Tasks #39, #44, #45, #46, #49 completadas (130 nuevos tests de integración) | Tasks #40–#43 en curso | src/matchers.ts: quickmodelMatchers para Vitest/bun | 2718 tests passing
 
 ---
 
@@ -1863,8 +1863,8 @@ bun test                 # Verificar todos los tests
 **Patrones entregados:**
 
 1. Reactive Forms — `qCheckRules()` como validador de formulario
-2. `UserDataService` — repositorio con `merge()` inmutable
-3. Angular Signals (v17+) — `signal(new Model())` + `update(prev => prev.merge(patch))`
+2. `UserDataService` — repositorio con `copy()` inmutable
+3. Angular Signals (v17+) — `signal(new Model())` + `update(prev => prev.copy(patch))`
 4. HttpClient interceptor — coerción automática con `unknownPropertyPolicy: 'strip'`
 5. `@QGroup` + `qCheckRulesByGroup()` — wizard multi-paso
 6. Validación async — `AsyncValidatorFn` con unicidad de email
@@ -1885,7 +1885,7 @@ bun test                 # Verificar todos los tests
 1. `useState` controlado + `qCheckRules()` — formulario reactivo
 2. React Hook Form — `createQuickResolver()` adapter
 3. Next.js Server Actions — DTO + `coercionStrategy: 'loose'` para FormData
-4. Zustand store — `merge()` inmutable en `updateQty()`
+4. Zustand store — `copy()` inmutable en `updateQty()`
 5. `useQModel` hook — `update()` + `validate()` + `isDirty`
 6. Validación async — `qCheckRulesAsync()` para unicidad de email
 7. `@QComputed()` en `OrderItemDto.total`
@@ -1902,7 +1902,7 @@ bun test                 # Verificar todos los tests
 **Patrones entregados:**
 
 1. Composition API — `useProfileForm()` con `reactive()` + `computed()`
-2. Pinia store — `useUserStore` con `merge()` inmutable
+2. Pinia store — `useUserStore` con `copy()` inmutable
 3. VeeValidate adapter — `useQField()` composable por campo
 4. `v-model` / `defineModel` — binding directo con QModel
 5. Nuxt `useAsyncData` + `createMany()` — coerción en masa
@@ -1921,7 +1921,7 @@ bun test                 # Verificar todos los tests
 **Patrones entregados:**
 
 1. Svelte 5 Runes — `$state` + `$derived` simulados con QModel
-2. Writable store — `createUserStore()` con `merge()` inmutable
+2. Writable store — `createUserStore()` con `copy()` inmutable
 3. SvelteKit Form Actions — `coercionStrategy: 'loose'` para FormData
 4. SvelteKit `load()` — `createMany()` para coerción en masa
 5. `@QComputed` — `durationDays` calculado en `EventModel`
@@ -1944,7 +1944,7 @@ bun test                 # Verificar todos los tests
 4. Fastify — `InvoiceDto` con `@QComputed` `formattedAmount` + `isOverdue`
 5. Hono — `honoValidator()` middleware con `onSuccess` callback
 6. `checkRulesAsync()` + `{ mode: 'parallel' }` — DB uniqueness
-7. `BlogPostRepository` — patrón repositorio con `merge()` inmutable
+7. `BlogPostRepository` — patrón repositorio con `copy()` inmutable
 8. `getSchema('json')` — integración OpenAPI/Swagger
 9. `coercionStrategy: 'loose'` para raw HTTP bodies
 
@@ -1952,9 +1952,9 @@ bun test                 # Verificar todos los tests
 
 ## 🚀 Sprint Ecosystem Integrations (Tasks #39–#43)
 
-### ⏳ Task #39: TanStack Query integration patterns
+### ✅ Task #39: TanStack Query integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para TanStack Query (React, Vue, Svelte)  
 **Tests a añadir:** ~30 en `tests/integration/patterns/tanstack-query-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/tanstack-query-integration.md` + ES
@@ -1963,7 +1963,7 @@ bun test                 # Verificar todos los tests
 
 1. `queryFn` — fetch + coerción con `ProductDto.createMany()`
 2. `useMutation` — `mutationFn` recibe DTO + `dto.serialize()` para payload
-3. Optimistic updates — `merge()` inmutable en `onMutate`
+3. Optimistic updates — `copy()` inmutable en `onMutate`
 4. `queryClient.setQueryData()` — normalización de caché con QModel
 5. `select` option — transformar respuesta con `dto.toInterface()`
 6. Infinite queries — `createMany()` en cada página
@@ -2007,7 +2007,7 @@ bun test                 # Verificar todos los tests
 4. Patrón repositorio con Prisma Client + QModel
 5. Transformación de tipos Prisma → QModel (Decimal, DateTime, Json)
 6. `@QComputed()` para campos derivados no almacenados en DB
-7. `merge()` + `prisma.user.update()` — update parcial inmutable
+7. `copy()` + `prisma.user.update()` — update parcial inmutable
 8. Validación antes de `prisma.create()` — `checkRules()` como guard
 
 ---
@@ -2052,9 +2052,9 @@ bun test                 # Verificar todos los tests
 
 ## 🚀 Sprint Extended Ecosystem (Tasks #44–#54)
 
-### ⏳ Task #44: React Hook Form integration patterns
+### ✅ Task #44: React Hook Form integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para React Hook Form  
 **Tests a añadir:** ~25 en `tests/integration/patterns/react-hook-form-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/react-hook-form-integration.md` + ES
@@ -2072,9 +2072,9 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #45: Zustand integration patterns
+### ✅ Task #45: Zustand integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para Zustand  
 **Tests a añadir:** ~20 en `tests/integration/patterns/zustand-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/zustand-integration.md` + ES
@@ -2082,19 +2082,19 @@ bun test                 # Verificar todos los tests
 **Patrones a cubrir:**
 
 1. Slice básico — `create<{ user: UserModel; update: (p: Partial<IUser>) => void }>`
-2. `merge()` inmutable como updater — `set(s => ({ user: s.user.merge(patch) }))`
+2. `copy()` inmutable como updater — `set(s => ({ user: s.user.copy(patch) }))`
 3. Multi-slice store — separar entities QModel de UI state
 4. `devtools` middleware — `serialize()` como estado inspeccionable
 5. Persistencia — `persist` middleware + `serialize()`/`populate()` roundtrip
 6. `shallow` selector con `serialize()` — rendimiento en re-renders
 7. Store de lista — `createMany()` + `Map<id, QModel>` normalizado
-8. `immer` compat — por qué `merge()` es preferible a `produce()`
+8. `immer` compat — por qué `copy()` es preferible a `produce()`
 
 ---
 
-### ⏳ Task #46: MSW (Mock Service Worker) integration patterns
+### ✅ Task #46: MSW (Mock Service Worker) integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para MSW v2  
 **Tests a añadir:** ~20 en `tests/integration/patterns/msw-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/msw-integration.md` + ES
@@ -2122,7 +2122,7 @@ bun test                 # Verificar todos los tests
 **Patrones a cubrir:**
 
 1. `createSlice` — estado con `serialize()` como forma serializable en Redux
-2. Reducer con `merge()` — `state.users[id] = action.payload.model.merge(patch).serialize()`
+2. Reducer con `copy()` — `state.users[id] = action.payload.model.copy(patch).serialize()`
 3. `createAsyncThunk` — fetch + `new UserDto(response)` tipado
 4. `createEntityAdapter` — `id` de cada QModel como normalized key
 5. RTK Query — `transformResponse: (data) => new UserDto(data).serialize()`
@@ -2147,14 +2147,14 @@ bun test                 # Verificar todos los tests
 4. Tipos Drizzle → QModel — `Date`, `number` (Drizzle no tiene Decimal por defecto)
 5. `createMany()` para seed / bulk import
 6. `unknownPropertyPolicy: 'strip'` — eliminar columnas internas (timestamps, etc.)
-7. `merge()` + `db.update().set(...)` — update parcial inmutable
+7. `copy()` + `db.update().set(...)` — update parcial inmutable
 8. `@QComputed()` para campos calculados no almacenados
 
 ---
 
-### ⏳ Task #49: Vitest Custom Matchers
+### ✅ Task #49: Vitest Custom Matchers
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Matchers propios para Vitest que mejoran el DX de tests con QModel  
 **Tests a añadir:** ~20 en `tests/unit/vitest-matchers.test.ts`  
 **Docs:** `docs-vitepress/en/guide/vitest-matchers.md` + ES
@@ -2187,7 +2187,7 @@ bun test                 # Verificar todos los tests
 4. `createMany()` para seed con `DataSource.initialize()`
 5. `@Column({ transformer })` — TypeORM value transformer + QModel coerción
 6. Repositorio tipado — `UserRepository` con QModel como capa de negocio
-7. `merge()` + `repository.update()` — update parcial
+7. `copy()` + `repository.update()` — update parcial
 8. `@QComputed()` en DTO vs `@VirtualColumn()` en Entity — comparativa
 
 ---
@@ -2266,7 +2266,7 @@ bun test                 # Verificar todos los tests
 3. `ObjectId` → `string` — coerción con `coercionStrategy: 'loose'`
 4. Repositorio — `MongoUserRepository` con QModel como capa de negocio
 5. `dto.toInterface()` como payload de `Model.create()`
-6. `merge()` + `Model.findByIdAndUpdate()` — update parcial inmutable
+6. `copy()` + `Model.findByIdAndUpdate()` — update parcial inmutable
 7. `createMany()` para seed / `insertMany()`
 8. `@QComputed()` para campos calculados no persistidos en MongoDB
 
