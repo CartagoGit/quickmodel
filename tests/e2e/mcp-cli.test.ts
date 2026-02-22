@@ -30,30 +30,31 @@ describe('CLI E2E', () => {
 		let output = '';
 		let found = false;
 
-		// Kill process after 3 seconds if not found
-		const timeout = setTimeout(() => {
-			proc.kill();
-		}, 3000);
+		const readLoop = async (): Promise<void> => {
+			try {
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
 
-		try {
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
+					const chunk = new TextDecoder().decode(value);
+					output += chunk;
 
-				const chunk = new TextDecoder().decode(value);
-				output += chunk;
-
-				if (output.includes('QuickModel MCP Server running on StdIO')) {
-					found = true;
-					break;
+					if (
+						output.includes(
+							'QuickModel MCP Server running on StdIO'
+						)
+					) {
+						found = true;
+						break;
+					}
 				}
+			} catch (_err) {
+				// Ignore read errors on kill
 			}
-		} catch (_e) {
-			// Ignore read errors on kill
-		} finally {
-			clearTimeout(timeout);
-			proc.kill();
-		}
+		};
+
+		await Promise.race([readLoop(), Bun.sleep(3000)]);
+		proc.kill();
 
 		expect(found).toBe(true);
 	}, 5000); // Increase timeout for this test

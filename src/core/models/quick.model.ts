@@ -1273,7 +1273,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		const errors: IQRulesResult['errors'] = [];
 
 		for (const field of fields) {
-			const rules: IQRule[] =
+			const rules: IQRule<unknown>[] =
 				Reflect.getMetadata(QRULE_METADATA_KEY, proto, field) ?? [];
 			const value = (this as unknown as Record<string, unknown>)[field];
 
@@ -1396,7 +1396,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		const errors: IQRulesResult['errors'] = [];
 
 		for (const field of fields) {
-			const rules: IQRule[] =
+			const rules: IQRule<unknown>[] =
 				Reflect.getMetadata(QRULE_METADATA_KEY, proto, field) ?? [];
 			const value = (this as unknown as Record<string, unknown>)[field];
 

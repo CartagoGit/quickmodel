@@ -8,41 +8,32 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 
 /** Simulates a DB uniqueness check */
 async function isEmailUnique(email: string): Promise<boolean> {
-	await new Promise((resolve) => setTimeout(resolve, 1));
+	await Bun.sleep(1);
 	return !email.includes('taken');
 }
 
 @Quick()
 class UserAsync extends QModel<{ name: string; email: string; age: number }> {
-	@QRule((value) => (value as string).length >= 2, 'Name too short')
+	@QRule((value: string) => value.length >= 2, 'Name too short')
 	declare name: string;
 
-	@QRule(
-		async (value) => isEmailUnique(value as string),
-		'Email already taken'
-	)
+	@QRule(async (value: string) => isEmailUnique(value), 'Email already taken')
 	declare email: string;
 
-	@QRule((value) => Promise.resolve((value as number) >= 18), 'Must be 18+')
-	@QRule(
-		(value) => Promise.resolve((value as number) <= 120),
-		'Age unrealistic'
-	)
+	@QRule((value: number) => Promise.resolve(value >= 18), 'Must be 18+')
+	@QRule((value: number) => Promise.resolve(value <= 120), 'Age unrealistic')
 	declare age: number;
 }
 
 @Quick()
 class OnlySyncRules extends QModel<{ name: string }> {
-	@QRule((value) => (value as string).length >= 2, 'Name too short')
+	@QRule((value: string) => value.length >= 2, 'Name too short')
 	declare name: string;
 }
 
 @Quick()
 class OnlyAsyncRules extends QModel<{ email: string }> {
-	@QRule(
-		async (value) => isEmailUnique(value as string),
-		'Email already taken'
-	)
+	@QRule(async (value: string) => isEmailUnique(value), 'Email already taken')
 	declare email: string;
 }
 

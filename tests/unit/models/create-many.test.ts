@@ -10,10 +10,7 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 class UserModel extends QModel<{ name: string; age: number }> {
 	name: string = '';
 
-	@QRule(
-		(value: unknown) => typeof value === 'number' && value >= 18,
-		'Must be adult'
-	)
+	@QRule((value: number) => value >= 18, 'Must be adult')
 	declare age: number;
 }
 

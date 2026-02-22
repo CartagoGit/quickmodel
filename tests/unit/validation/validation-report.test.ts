@@ -10,10 +10,7 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 class UserModel extends QModel<{ name: string; age: number }> {
 	declare name: string;
 
-	@QRule(
-		(value: unknown) => typeof value === 'number' && value >= 18,
-		'Must be adult'
-	)
+	@QRule((value: number) => value >= 18, 'Must be adult')
 	declare age: number;
 }
 
@@ -56,14 +53,8 @@ describe('validationReport()', () => {
 	test('all three rule errors are present in report.rules.errors', () => {
 		@Quick({ val: 'number' })
 		class Multi extends QModel<{ val: number }> {
-			@QRule(
-				(value: unknown) => typeof value === 'number' && value > 0,
-				'Must be positive'
-			)
-			@QRule(
-				(value: unknown) => typeof value === 'number' && value < 100,
-				'Must be less than 100'
-			)
+			@QRule((value: number) => value > 0, 'Must be positive')
+			@QRule((value: number) => value < 100, 'Must be less than 100')
 			declare val: number;
 		}
 		const multi = Multi.create({ val: 150 });

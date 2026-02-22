@@ -14,14 +14,16 @@ export const QRULE_FIELDS_KEY = '__qrule_fields__';
 
 /**
  * A single business rule attached to a model property.
+ *
+ * @typeParam T - Type of the property value this rule validates.
  */
-export interface IQRule {
+export interface IQRule<T = unknown> {
 	/**
 	 * Predicate that must return `true` for the rule to pass.
 	 * Can be synchronous or asynchronous.
 	 * Use `checkRulesAsync()` to evaluate async predicates.
 	 */
-	predicate: (value: unknown) => boolean | Promise<boolean>;
+	predicate: (value: T) => boolean | Promise<boolean>;
 	/**
 	 * Error message when the rule fails.
 	 * - `string`: static message (or i18n key for later translation, e.g. `e.message | translate`)
@@ -61,24 +63,26 @@ export interface IQRulesResult {
  *
  * ```typescript
  * // Static string (can also be used as Angular pipe key: `e.message | translate`)
- * @QRule((v) => (v as string).length >= 3, 'validation.name.min')
+ * @QRule((value: string) => value.length >= 3, 'validation.name.min')
  *
  * // Lazy — resolved when checkRules() is called
- * @QRule((v) => (v as string).length >= 3, () => i18n.t('validation.name.min'))
+ * @QRule((value: string) => value.length >= 3, () => i18n.t('validation.name.min'))
  * ```
  *
- * @param predicate - Function receiving the current property value; must return `true` to pass.
+ * @param predicate - Function receiving the current property value typed as `T`; must return `true` to pass.
  * @param message   - Error message (string) or lazy resolver `() => string`.
+ *
+ * @typeParam T - Type of the property value being validated. Inferred from the predicate parameter type.
  *
  * @example
  * ```typescript
  * @Quick({ name: 'string', age: 'number' })
  * class User extends QModel<IUser> {
- *   @QRule((v) => (v as string).length >= 3, 'Name must be at least 3 characters')
+ *   @QRule((value: string) => value.length >= 3, 'Name must be at least 3 characters')
  *   declare name: string;
  *
- *   @QRule((v) => (v as number) >= 0, 'Age cannot be negative')
- *   @QRule((v) => (v as number) <= 120, 'Age must be realistic')
+ *   @QRule((value: number) => value >= 0, 'Age cannot be negative')
+ *   @QRule((value: number) => value <= 120, 'Age must be realistic')
  *   declare age: number;
  * }
  *
@@ -88,17 +92,22 @@ export interface IQRulesResult {
  * // result.errors → [{ field: 'name', message: '…', value: 'Jo' }, { field: 'age', message: '…', value: -1 }]
  * ```
  */
-export function QRule(
-	predicate: (value: unknown) => boolean | Promise<boolean>,
+export function QRule<T = unknown>(
+	predicate: (value: T) => boolean | Promise<boolean>,
 	message: string | (() => string)
 ): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol): void => {
 		const key = String(propertyKey);
 
-		// Append this rule to the existing list for this property
-		const existing: IQRule[] =
+		// Append this rule to the existing list for this property.
+		// Cast to IQRule<unknown> so heterogeneous rules on different fields
+		// can be stored in the same metadata array.
+		const existing: IQRule<unknown>[] =
 			Reflect.getMetadata(QRULE_METADATA_KEY, target, key) ?? [];
-		existing.push({ predicate, message });
+		existing.push({
+			predicate: predicate as IQRule<unknown>['predicate'],
+			message,
+		});
 		Reflect.defineMetadata(QRULE_METADATA_KEY, existing, target, key);
 
 		// Track which fields have at least one @QRule on this class

@@ -15,25 +15,16 @@ interface IUser {
 @Quick({ name: 'string', age: 'number', email: 'string' })
 class UserModel extends QModel<IUser> {
 	@QRule(
-		(value: unknown) => typeof value === 'string' && value.length >= 3,
+		(value: string) => value.length >= 3,
 		'Name must be at least 3 chars'
 	)
 	declare name: string;
 
-	@QRule(
-		(value: unknown) => typeof value === 'number' && value >= 0,
-		'Age cannot be negative'
-	)
-	@QRule(
-		(value: unknown) => typeof value === 'number' && value <= 120,
-		'Age must be realistic'
-	)
+	@QRule((value: number) => value >= 0, 'Age cannot be negative')
+	@QRule((value: number) => value <= 120, 'Age must be realistic')
 	declare age: number;
 
-	@QRule(
-		(value: unknown) => typeof value === 'string' && value.includes('@'),
-		'Must be a valid email'
-	)
+	@QRule((value: string) => value.includes('@'), 'Must be a valid email')
 	declare email: string;
 }
 
@@ -135,10 +126,7 @@ describe('@QRule — lazy message (() => string)', () => {
 
 	@Quick({ name: 'string' })
 	class LocalizedModel extends QModel<{ name: string }> {
-		@QRule(
-			(value: unknown) => typeof value === 'string' && value.length >= 3,
-			() => translate('val.min')
-		)
+		@QRule((value: string) => value.length >= 3, () => translate('val.min'))
 		declare name: string;
 	}
 
@@ -176,10 +164,8 @@ describe('@QRule — edge cases', () => {
 		@Quick({ val: 'string' })
 		class NullModel extends QModel<{ val: string }> {
 			@QRule(
-				(value: unknown) =>
-					value !== null &&
-					value !== undefined &&
-					(value as string).length > 0,
+				(value: string | null | undefined) =>
+					value !== null && value !== undefined && value.length > 0,
 				'Required'
 			)
 			declare val: string;
@@ -241,10 +227,7 @@ describe('hasIntegrity()', () => {
 describe('isValid()', () => {
 	@Quick({ age: 'number' })
 	class ValidatedModel extends QModel<{ age: number }> {
-		@QRule(
-			(value: unknown) => typeof value === 'number' && value >= 18,
-			'Must be adult'
-		)
+		@QRule((value: number) => value >= 18, 'Must be adult')
 		declare age: number;
 	}
 
