@@ -22,11 +22,13 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 🎯 **Simple API** - Use `@Quick({})` decorator to specify transformations explicitly
 - 💡 **Type-Safe** - Full TypeScript support with interface segregation
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
+- ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `@cartago-git/quickmodel/forms` subpath — no `QModel` required
 - 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
 - 🤖 **MCP Server** - AI assistant integration with 10 public tools and 4 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
-- 🧪 **Well Tested** - 1500+ tests covering all features- 🏷️ **TC39 Decorator Support** - Works with both legacy (`experimentalDecorators: true`) and TC39 standard decorators (TypeScript 5+ default mode)
+- 🧪 **Well Tested** - 2100+ tests covering all features
+- 🏷️ **TC39 Decorator Support** - Works with both legacy (`experimentalDecorators: true`) and TC39 standard decorators (TypeScript 5+ default mode)
 
 ## 📦 Installation
 
@@ -544,7 +546,11 @@ QuickModel includes built-in protections for robust serialization:
 
 ## ✅ Validation
 
-QuickModel provides built-in validation to ensure runtime integrity. The `validate()` method checks that all transformed properties contain valid values according to their transformers.
+QuickModel has two independent validation layers:
+
+### 1. Transformer integrity — `checkIntegrity()` / `validate()`
+
+Checks that each property value conforms to its declared transformer type (no type mismatches, no DoS limits exceeded).
 
 ```typescript
 @Quick({
@@ -556,26 +562,80 @@ class User extends QModel<IUser> {
 	declare tags: Set<string>[];
 }
 
-// 1. Valid data
-const user = new User({
-	birthDate: '2024-01-01',
-	tags: [['a', 'b']],
-});
-console.log(user.validate()); // [] (Empty array = valid)
-
-// 2. Invalid data
 const invalidUser = new User({
 	birthDate: 'invalid-date',
-	tags: 'not-an-array', // Should be array of arrays of strings
+	tags: 'not-an-array',
 });
 
 const errors = invalidUser.validate();
-if (errors.length > 0) {
-	console.log(errors);
-	// [
-	//   { isValid: false, error: "User.birthDate: Invalid Date string: invalid-date" },
-	//   { isValid: false, error: "User.tags: Expected array for Set[], got string" }
-	// ]
+// [
+//   { isValid: false, error: "User.birthDate: Invalid Date string: invalid-date" },
+//   { isValid: false, error: "User.tags: Expected array for Set[], got string" }
+// ]
+```
+
+### 2. Business rules — `@QRule` + `checkRules()`
+
+Declarative per-field rules for your own business logic. Works on **any class** — no need to extend `QModel`.
+
+```typescript
+import { QRule, QGroup } from '@cartago-git/quickmodel';
+import {
+	qGroups,
+	qCheckRules,
+	qCheckRulesByGroup,
+} from '@cartago-git/quickmodel/forms';
+
+const Groups = qGroups('identity', 'security');
+
+class SignupForm {
+	@QRule((v: string) => v.length >= 2, 'Name too short')
+	@QGroup(Groups.identity)
+	name = '';
+
+	@QRule((v: string) => /^[^@]+@[^@]+\.[^@]+$/.test(v), 'Invalid email')
+	@QGroup(Groups.identity)
+	email = '';
+
+	@QRule((v: string) => v.length >= 8, 'Password too short')
+	@QRule((v: string) => /[A-Z]/.test(v), 'Must contain uppercase')
+	@QGroup(Groups.security)
+	password = '';
+}
+
+const form = new SignupForm();
+form.name = 'A';
+form.email = 'alice@example.com';
+form.password = 'weak';
+
+// All rules:
+const result = qCheckRules(form);
+// { valid: false, errors: [{ field: 'name', message: 'Name too short', value: 'A' }, ...] }
+
+// Only a specific group (e.g. step-by-step form):
+const identityResult = qCheckRules(form, { group: Groups.identity });
+// { valid: false, errors: [{ field: 'name', ... }] }
+
+// All groups as a map — one entry per @QGroup:
+const byGroup = qCheckRulesByGroup(form);
+// { identity: { valid: false, errors: [...] }, security: { valid: false, errors: [...] } }
+```
+
+Async rules (e.g. DB uniqueness checks), timeout per predicate, and serial/parallel execution modes are supported via `qCheckRulesAsync`.
+
+> 📖 **[Form Validation guide](https://cartagogit.github.io/quickmodel/en/guide/forms)** — Full reference for the `/forms` subpath: `qGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync`
+
+### Combining both layers — `isValid()` / `validationReport()`
+
+When using `QModel` subclasses, `isValid()` and `validationReport()` combine both checks in a single call:
+
+```typescript
+const user = new User({ name: 'Alice', age: -1, email: 'alice@example.com' });
+
+if (!user.isValid()) {
+	const report = user.validationReport();
+	report.integrity; // transformer-level failures
+	report.rules.errors; // @QRule business failures
 }
 ```
 
@@ -703,6 +763,8 @@ bun run mcp:start
 
 - [Installation](https://cartagogit.github.io/quickmodel/en/guide/installation)
 - [API Reference](https://cartagogit.github.io/quickmodel/tsdoc/)
+- [Validation (@QRule)](https://cartagogit.github.io/quickmodel/en/guide/validation)
+- [Form Validation (/forms)](https://cartagogit.github.io/quickmodel/en/guide/forms)
 - [Architecture](https://cartagogit.github.io/quickmodel/en/guide/contributing#architecture)
 - [Development Guide](https://cartagogit.github.io/quickmodel/en/guide/contributing)
 - [MCP Integration](https://cartagogit.github.io/quickmodel/en/mcp/)

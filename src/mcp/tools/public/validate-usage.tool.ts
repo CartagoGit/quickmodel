@@ -1,9 +1,19 @@
 import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 
+const QUICKMODEL_DECORATORS = [
+	'@Quick',
+	'@QType',
+	'@QRule',
+	'@QField',
+	'@QAlias',
+	'@QGroup',
+	'@QComputed',
+	'@QConfig',
+] as const;
+
 /**
  * Tool to validate if code snippets seem to be using QuickModel correctly.
- * (Simple implementation for now)
  */
 export class QValidateUsageTool extends QAbstractTool<
 	z.ZodObject<{ code: z.ZodString }>
@@ -18,9 +28,11 @@ export class QValidateUsageTool extends QAbstractTool<
 	async execute(args: { code: string }): Promise<{
 		valid: boolean;
 		issues: string[];
+		detectedDecorators: string[];
 	}> {
 		await Promise.resolve();
 		const issues: string[] = [];
+
 		if (!args.code.includes('extends QModel')) {
 			issues.push('Class should extend QModel<Interface>');
 		}
@@ -29,15 +41,32 @@ export class QValidateUsageTool extends QAbstractTool<
 				'Properties in QModel classes should be defined with "declare"'
 			);
 		}
-		if (!args.code.includes('@Quick')) {
+
+		const detectedDecorators = QUICKMODEL_DECORATORS.filter((dec) =>
+			args.code.includes(dec)
+		);
+
+		const hasAnyDecorator = detectedDecorators.length > 0;
+		if (!hasAnyDecorator) {
 			issues.push(
-				'Class should be decorated with @Quick (or properties with @QType)'
+				'Class should use at least one QuickModel decorator: @Quick, @QRule, @QField, @QAlias, @QGroup, @QComputed or @QConfig'
+			);
+		}
+
+		const hasQField = args.code.includes('@QField');
+		const hasQRule = args.code.includes('@QRule');
+		if (hasQField && !hasQRule) {
+			issues.push(
+				'@QField used without @QRule: form field metadata defined but no validation rules will run'
 			);
 		}
 
 		return {
-			valid: issues.length === 0,
+			valid:
+				issues.filter((iss) => !iss.startsWith('@QField used without'))
+					.length === 0,
 			issues,
+			detectedDecorators,
 		};
 	}
 }

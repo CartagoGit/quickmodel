@@ -44,7 +44,7 @@ export const enMcp = {
 			'Run a comprehensive health check: Lint, Typecheck, and Run Tests.',
 		get_coverage_report: 'Run tests with coverage and report the summary.',
 		check_project_rules:
-			'Enforce internal project rules: use @Quick over @QType in tests, and no console.log.',
+			'Enforce internal project rules: @Quick over @QType in tests, no console.log, id-length (min 3 chars), max-params (max 3), naming-convention (I prefix for interfaces/types), no-restricted-imports.',
 		update_docs_content:
 			'Auto-generate documentation files for Tools and Transformers based on current code.',
 		scaffold_feature:

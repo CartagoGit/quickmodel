@@ -18,7 +18,7 @@ class FakeType {
 	constructor(public value: string) {}
 }
 
-const fakeTransformer: IQTransformer<FakeType, string> = {
+const fakeTransformer: IQTransformer<string, FakeType> = {
 	deserialize: (raw: unknown) => new FakeType(String(raw)),
 	serialize: (fakeType: FakeType) => fakeType.value,
 };
@@ -108,11 +108,11 @@ describe('QTransformerRegistry.restore()', () => {
 	test('restore replaces the ENTIRE registry (removes additions, re-adds removals)', () => {
 		class TypeA {}
 		class TypeB {}
-		const xfA: IQTransformer<TypeA, string> = {
+		const xfA: IQTransformer<string, TypeA> = {
 			deserialize: (_raw) => new TypeA(),
 			serialize: () => 'a',
 		};
-		const xfB: IQTransformer<TypeB, string> = {
+		const xfB: IQTransformer<string, TypeB> = {
 			deserialize: (_raw) => new TypeB(),
 			serialize: () => 'b',
 		};
@@ -171,7 +171,7 @@ describe('QTransformerRegistry.snapshot() integration with QModel', () => {
 			) {}
 		}
 
-		const euroTransformer: IQTransformer<Euro, string> = {
+		const euroTransformer: IQTransformer<string, Euro> = {
 			deserialize: (raw: unknown) =>
 				new Euro(Math.round(parseFloat(String(raw)) * 100)),
 			serialize: (val: Euro) => (val.cents / 100).toFixed(2),

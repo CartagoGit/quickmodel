@@ -46,7 +46,7 @@ export const esMcp = {
 		get_coverage_report:
 			'Ejecuta pruebas con cobertura y reporta el resumen.',
 		check_project_rules:
-			'Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y no console.log.',
+			'Hace cumplir reglas internas: @Quick sobre @QType en tests, sin console.log, id-length (mín 3 chars), max-params (máx 3), naming-convention (prefijo I para interfaces/tipos), no-restricted-imports.',
 		update_docs_content:
 			'Genera automáticamente archivos de documentación para Herramientas y Transformadores basado en el código actual.',
 		scaffold_feature:

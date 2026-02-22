@@ -72,6 +72,66 @@ describe('MCP Public Tools', () => {
 			expect(result.name).toBe('Unknown');
 			expect(result.transformers).toBeArray();
 		});
+
+		it('should detect @Quick in decorators list', async () => {
+			const tool = new QInspectModelTool();
+			const code = `
+				@Quick({ name: 'string' })
+				export class User extends QModel<IUser> {
+					declare name: string;
+				}
+			`;
+			const result = await tool.execute({ code });
+			expect(result.decorators).toBeDefined();
+			expect(result.decorators).toContain('@Quick');
+			expect(result.decorators).not.toContain('@QRule');
+		});
+
+		it('should detect @QRule, @QField, @QGroup in decorators list', async () => {
+			const tool = new QInspectModelTool();
+			const code = `
+				@Quick({ name: 'string' })
+				export class User extends QModel<IUser> {
+					@QRule((s) => s.name.length > 0, 'required')
+					@QField({ label: 'Name', required: true })
+					@QGroup('identity')
+					declare name: string;
+				}
+			`;
+			const result = await tool.execute({ code });
+			expect(result.decorators).toContain('@Quick');
+			expect(result.decorators).toContain('@QRule');
+			expect(result.decorators).toContain('@QField');
+			expect(result.decorators).toContain('@QGroup');
+		});
+
+		it('should detect @QComputed and @QAlias', async () => {
+			const tool = new QInspectModelTool();
+			const code = `
+				export class User extends QModel<IUser> {
+					declare name: string;
+					@QAlias('user_name')
+					declare userName: string;
+					@QComputed((self) => self.name.toUpperCase())
+					declare displayName: string;
+				}
+			`;
+			const result = await tool.execute({ code });
+			expect(result.decorators).toContain('@QAlias');
+			expect(result.decorators).toContain('@QComputed');
+		});
+
+		it('should return empty decorators for plain class', async () => {
+			const tool = new QInspectModelTool();
+			const code = `
+				export class User extends QModel<IUser> {
+					declare name: string;
+				}
+			`;
+			const result = await tool.execute({ code });
+			expect(result.decorators).toBeArray();
+			expect(result.decorators).toHaveLength(0);
+		});
 	});
 
 	describe('QJsonToModelTool', () => {

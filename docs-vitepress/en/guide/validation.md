@@ -142,6 +142,61 @@ interface IQRulesResult {
 }
 ```
 
+#### Group filtering with `@QGroup`
+
+Decorate fields with `@QGroup('name')` to assign them to a named group. Then pass `{ group }` to `checkRules()` to evaluate only that subset — useful for multi-step forms.
+
+```typescript
+import { QRule, QGroup } from '@cartago-git/quickmodel';
+
+@Quick()
+class SignupModel extends QModel<ISignup> {
+	@QRule((v: string) => v.length >= 2, 'Name too short')
+	@QGroup('identity')
+	declare name: string;
+
+	@QRule((v: string) => /^[^@]+@[^@]+\.[^@]+$/.test(v), 'Invalid email')
+	@QGroup('identity')
+	declare email: string;
+
+	@QRule((v: string) => v.length >= 8, 'Password too short')
+	@QGroup('security')
+	declare password: string;
+}
+
+const model = new SignupModel({
+	name: 'A',
+	email: 'a@b.com',
+	password: 'Secret1!',
+});
+
+// All rules:
+model.checkRules();
+// { valid: false, errors: [{ field: 'name', message: 'Name too short', ... }] }
+
+// Only 'identity' group — ignore 'security' (e.g. step 1 of 2):
+model.checkRules({ group: 'identity' });
+// { valid: false, errors: [{ field: 'name', ... }] }
+
+// 'security' group only:
+model.checkRules({ group: 'security' });
+// { valid: true, errors: [] }
+```
+
+Use `qGroups()` from the `/forms` subpath to get **typed group name constants** with autocomplete:
+
+```typescript
+import { qGroups } from '@cartago-git/quickmodel/forms';
+
+const Groups = qGroups('identity', 'security');
+// Groups.identity === 'identity'  (fully typed — no typos possible)
+
+model.checkRules({ group: Groups.identity });
+```
+
+> [!NOTE]
+> Without a group filter `checkRules()` evaluates **all** `@QRule`-decorated fields, including ungrouped ones. With a group filter only fields carrying `@QGroup(name)` matching that group are evaluated.
+
 ### `hasIntegrity()`
 
 Boolean shortcut for `checkIntegrity().length === 0`.
@@ -451,3 +506,32 @@ if (!report.valid) {
 | `mode`           | `'parallel' \| 'serial'` | `'parallel'` | Execution order of predicates                     |
 | `timeoutMs`      | `number`                 | —            | Max ms per predicate; exceeded → `timedOut: true` |
 | `timeoutMessage` | `string \| () => string` | rule message | Message used when a predicate times out           |
+
+## Validating without `QModel` — the `/forms` subpath
+
+All helpers on this page (`checkRules`, `checkRulesAsync`, group filtering…) are also available as **standalone functions** that work on any plain class — no need to extend `QModel`. Import them from the `/forms` entry point:
+
+```typescript
+import { QRule, QGroup } from '@cartago-git/quickmodel';
+import {
+	qGroups,
+	qCheckRules,
+	qCheckRulesAsync,
+	qCheckRulesByGroup,
+	qCheckRulesByGroupAsync,
+} from '@cartago-git/quickmodel/forms';
+
+const Groups = qGroups('identity', 'security');
+
+class ProfileForm {
+	// ← plain class, no QModel
+	@QRule((v: string) => v.length >= 2, 'Too short')
+	@QGroup(Groups.identity)
+	name = '';
+}
+
+const form = new ProfileForm();
+const result = qCheckRules(form, { group: Groups.identity });
+```
+
+> 📖 **[Form Validation guide](/en/guide/forms)** — Full reference: `qGroups`, `qGetGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync`, Angular/React/Vue examples.

@@ -68,7 +68,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const json = user.toJSON() as Record<string, unknown>;
+		const json = JSON.parse(user.toJSON()) as Record<string, unknown>;
 		expect(json).not.toHaveProperty('initials');
 	});
 
