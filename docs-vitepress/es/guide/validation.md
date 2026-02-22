@@ -131,12 +131,38 @@ if (!usuario.isValid()) {
 }
 ```
 
-| Método             | Devuelve              | Qué comprueba                                     |
-| ------------------ | --------------------- | ------------------------------------------------- |
-| `checkIntegrity()` | `IQIntegrityResult[]` | Restricciones de transformer (tipos, límites DoS) |
-| `hasIntegrity()`   | `boolean`             | Atajo: `checkIntegrity().length === 0`            |
-| `checkRules()`     | `IQRulesResult`       | Reglas de negocio (predicados `@QRule`)           |
-| `isValid()`        | `boolean`             | Ambos: integridad + reglas                        |
+| Método               | Devuelve              | Qué comprueba                                     |
+| -------------------- | --------------------- | ------------------------------------------------- |
+| `checkIntegrity()`   | `IQIntegrityResult[]` | Restricciones de transformer (tipos, límites DoS) |
+| `hasIntegrity()`     | `boolean`             | Atajo: `checkIntegrity().length === 0`            |
+| `checkRules()`       | `IQRulesResult`       | Reglas de negocio (predicados `@QRule`)           |
+| `isValid()`          | `boolean`             | Ambos: integridad + reglas                        |
+| `validationReport()` | `IQValidationReport`  | Ambos, devuelve informe completo                  |
+
+### `validationReport()`
+
+Una sola llamada que ejecuta ambas comprobaciones y devuelve resultados detallados.
+
+```typescript
+const informe = usuario.validationReport();
+
+if (!informe.valid) {
+	// Fallos a nivel de transformer:
+	informe.integrity.forEach((e) => console.error(e.error));
+	// Fallos de @QRule:
+	informe.rules.errors.forEach((e) => console.error(e.field, e.message));
+}
+```
+
+**Devuelve:** `IQValidationReport`
+
+```typescript
+interface IQValidationReport {
+	valid: boolean;
+	integrity: IQIntegrityResult[]; // vacío = todo OK
+	rules: IQRulesResult; // { valid, errors[] }
+}
+```
 
 ## Soporte para i18n
 
@@ -209,4 +235,79 @@ class Admin extends Usuario {
 
 > [!WARNING]
 > Si una subclase redeclara una propiedad con `@QRule`, solo se aplican las **reglas de la subclase** para ese campo (las reglas del padre para ese campo se sobreescriben). Los campos no redeclarados mantienen sus reglas del padre.
+
+## Esquema de formulario (`@QField`)
+
+Usa `@QField` para anotar propiedades del modelo con metadatos de formulario. Luego llama a `getFormSchema()` para obtener un array de esquema listo para pasarlo a cualquier librería de formularios (Angular, React, etc.).
+
+```typescript
+import { QField } from '@cartago-git/quickmodel';
+
+@Quick({ fechaNacimiento: Date })
+class PerfilModel extends QModel<IPerfil> {
+	@QField({
+		widget: 'input',
+		inputType: 'email',
+		label: 'Email',
+		required: true,
+	})
+	declare email: string;
+
+	@QField({
+		widget: 'select',
+		label: 'Rol',
+		options: ['admin', 'usuario', 'invitado'],
+	})
+	declare rol: string;
+
+	@QField({ widget: 'checkbox', label: 'Activo' })
+	declare activo: boolean;
+
+	@QField({ widget: 'datepicker', label: 'Fecha de nacimiento' })
+	declare fechaNacimiento: Date;
+}
+
+// Estático — no necesita instancia:
+const esquema = PerfilModel.getFormSchema();
+// [
+//   { field: 'email',           widget: 'input',      inputType: 'email', label: 'Email', required: true },
+//   { field: 'rol',             widget: 'select',     options: [...],     label: 'Rol' },
+//   { field: 'activo',          widget: 'checkbox',   label: 'Activo' },
+//   { field: 'fechaNacimiento', widget: 'datepicker', label: 'Fecha de nacimiento' },
+// ]
+```
+
+### Widgets disponibles
+
+| Widget        | Uso típico                               |
+| ------------- | ---------------------------------------- |
+| `input`       | Texto, email, contraseña                 |
+| `textarea`    | Texto multilínea                         |
+| `select`      | Lista desplegable                        |
+| `checkbox`    | Toggle booleano                          |
+| `radio`       | Selección única de una lista             |
+| `datepicker`  | Selector de fecha / datetime             |
+| `number`      | Entrada numérica                         |
+| `switch`      | Toggle tipo Material/UI                  |
+| `'mi-widget'` | Cualquier cadena personalizada es válida |
+
+### Metadatos extra
+
+Cualquier propiedad adicional que pases se conserva:
+
+```typescript
+@QField({
+	widget: 'input',
+	inputType: 'email',
+	label: 'Email',
+	placeholder: 'tu@ejemplo.com',
+	hint: 'Debe ser único en el sistema',
+	cssClas: 'full-width',
+})
+declare email: string;
+```
+
+### Herencia
+
+Las subclases heredan las entradas `@QField` de sus clases padre. Redeclarar un campo lo sobreescribe.
 ````

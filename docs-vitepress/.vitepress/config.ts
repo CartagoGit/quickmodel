@@ -498,6 +498,10 @@ export default defineConfig({
 									link: '/en/guide/validation',
 								},
 								{
+									text: 'Form Schema (@QField)',
+									link: '/en/guide/qfield',
+								},
+								{
 									text: 'Mock Generation',
 									link: '/en/guide/mocks',
 								},
@@ -622,6 +626,10 @@ export default defineConfig({
 								{
 									text: 'Validación (@QRule)',
 									link: '/es/guide/validation',
+								},
+								{
+									text: 'Esquema de Formulario (@QField)',
+									link: '/es/guide/qfield',
 								},
 								{
 									text: 'Generación de Mocks',

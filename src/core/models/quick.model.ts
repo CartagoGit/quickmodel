@@ -36,6 +36,14 @@ import {
 } from '@/core/decorators/qrule.decorator';
 import type { IQRulesResult, IQRule } from '@/core/decorators/qrule.decorator';
 import {
+	QFIELD_METADATA_KEY,
+	QFIELD_FIELDS_KEY,
+} from '@/core/decorators/qfield.decorator';
+import type {
+	IQFieldMeta,
+	IQFormSchemaEntry,
+} from '@/core/decorators/qfield.decorator';
+import {
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
 	QUICK_TYPE_MAP_KEY,
@@ -45,6 +53,22 @@ import {
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
 import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
+
+/**
+ * Combined validation report from both `checkIntegrity()` and `checkRules()`.
+ * Returned by {@link QModel.validationReport}.
+ */
+export interface IQValidationReport {
+	/**
+	 * `true` when both integrity checks and all `@QRule` predicates pass.
+	 * Equivalent to `checkIntegrity().length === 0 && checkRules().valid`.
+	 */
+	valid: boolean;
+	/** Results from transformer-level integrity checks. Empty array = all pass. */
+	integrity: IQIntegrityResult[];
+	/** Results from `@QRule` business-logic predicates. */
+	rules: IQRulesResult;
+}
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -439,18 +463,19 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
 	 *
 	 * **TypeScript partial inference requirement:**
-	 * TypeScript cannot infer the second type parameter when the first is specified explicitly
+	 * TypeScript cannot infer `TBase` when `TInterface` is specified explicitly
 	 * ([microsoft/TypeScript#26242](https://github.com/microsoft/TypeScript/issues/26242)).
-	 * **Both generics are required** to get full typing of both QModel methods and the external
-	 * base class methods on the instance:
-	 * `QModel.extends<TInterface, ExternalClass>(ExternalClass)`.
+	 * `TInterface` and `TBase` are always required. `TOverrides` is optional (default `{}`).
 	 *
 	 * @template TInterface - The plain-object / serialized interface (same as first generic of QModel<T>)
-	 * @template TBase - The instance type of the external base class (provide for full method typing)
+	 * @template TBase - The instance type of the external base class (for full method typing)
+	 * @template TOverrides - Fields to override from TBase with new types (uses {@link IQImplements}).
+	 *   Pass an object type `{ field: NewType }` to remove the field from TBase and replace it.
 	 * @param ExternalBase - The external class to extend
 	 * @returns A mixin base class ready to be extended
 	 *
 	 * @example
+	 * Basic usage — external base, no field overrides
 	 * ```typescript
 	 * class NgComponent { ngOnInit(): void {} }
 	 * interface IUser { name: string; createdAt: string; }
@@ -460,23 +485,31 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *   declare name: string;
 	 *   declare createdAt: Date;
 	 * }
+	 * instance.ngOnInit(); // ✅ TypeScript knows about NgComponent methods
+	 * ```
 	 *
-	 * const user = UserModel.create({ name: 'Alice', createdAt: '2024-01-01T00:00:00.000Z' });
-	 * user.createdAt instanceof Date; // true
-	 * user instanceof NgComponent;   // true
-	 * user.ngOnInit();               // ✅ TypeScript knows about NgComponent methods
+	 * @example
+	 * Overriding inherited field types — use TOverrides (same shape as IQImplements)
+	 * ```typescript
+	 * @Quick({ value: Date })
+	 * class BaseModel extends QModel<any> { declare value: Date; }
+	 *
+	 * @Quick({ value: BigInt })
+	 * class Derived extends QModel.extends<ISerial, BaseModel, { value: bigint }>(BaseModel) {
+	 *   declare value: bigint; // ✅ no conflict, TypeScript knows the correct type
+	 * }
 	 * ```
 	 */
 	static extends<
 		TInterface extends IQAnyRecord,
 		TBase extends object,
-		TOmit extends keyof TBase = never,
+		TOverrides extends Partial<Record<keyof TBase, unknown>> = {},
 	>(
 		ExternalBase: new (...args: any[]) => TBase
 	): typeof QModel<TInterface> &
 		(abstract new (
 			...args: any[]
-		) => QModel<TInterface> & Omit<TBase, TOmit>) {
+		) => QModel<TInterface> & IQImplements<TBase, TOverrides>) {
 		// ── 1. Create the mixin class that extends the external base ────────────
 		// TypeScript does not allow `class Foo extends GenericTypeParam` when the
 		// type param is introduced at the method level. The idiomatic workaround is
@@ -547,7 +580,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		}
 
 		return QModelMixed as unknown as typeof QModel<TInterface> &
-			(abstract new (...args: any[]) => QModel<TInterface> & TBase);
+			(abstract new (
+				...args: any[]
+			) => QModel<TInterface> & IQImplements<TBase, TOverrides>);
 	}
 
 	/**
@@ -1276,6 +1311,102 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 */
 	isValid(): boolean {
 		return this.hasIntegrity() && this.checkRules().valid;
+	}
+
+	/**
+	 * Returns a combined validation report from both `checkIntegrity()` and `checkRules()`.
+	 *
+	 * Single call instead of invoking both methods separately.
+	 *
+	 * @returns `{ valid, integrity, rules }` — see {@link IQValidationReport}
+	 *
+	 * @example
+	 * ```typescript
+	 * const report = user.validationReport();
+	 *
+	 * if (!report.valid) {
+	 *   // transformer-level failures:
+	 *   console.log(report.integrity);
+	 *   // @QRule failures:
+	 *   console.log(report.rules.errors);
+	 * }
+	 * ```
+	 */
+	validationReport(): IQValidationReport {
+		const integrity = this.checkIntegrity();
+		const rules = this.checkRules();
+		return {
+			valid: integrity.length === 0 && rules.valid,
+			integrity,
+			rules,
+		};
+	}
+
+	/**
+	 * Returns the form schema for this instance, built from `@QField` decorators.
+	 * Traverses the full prototype chain to include inherited fields.
+	 *
+	 * @returns Ordered array of {@link IQFormSchemaEntry} — one per `@QField`-decorated property.
+	 *
+	 * @example
+	 * ```typescript
+	 * const schema = instance.getFormSchema();
+	 * // [{ field: 'email', widget: 'input', label: 'Email', ... }, ...]
+	 * ```
+	 */
+	getFormSchema(): IQFormSchemaEntry[] {
+		return QModel._collectFormSchema(Object.getPrototypeOf(this));
+	}
+
+	/**
+	 * Static version of `getFormSchema()` — no instance required.
+	 *
+	 * @returns Ordered array of {@link IQFormSchemaEntry} — one per `@QField`-decorated property.
+	 *
+	 * @example
+	 * ```typescript
+	 * const schema = ProfileModel.getFormSchema();
+	 * ```
+	 */
+	static getFormSchema(): IQFormSchemaEntry[] {
+		return QModel._collectFormSchema(this.prototype);
+	}
+
+	/**
+	 * Internal helper: walks the prototype chain collecting @QField entries.
+	 * @internal
+	 */
+	private static _collectFormSchema(startProto: object): IQFormSchemaEntry[] {
+		// Collect from root → leaf so leaf overrides parent if same field name
+		const chain: object[] = [];
+		let proto = startProto;
+		while (proto && proto !== Object.prototype) {
+			chain.unshift(proto);
+			proto = Object.getPrototypeOf(proto);
+		}
+
+		// Merged map: field → entry (later levels override earlier)
+		const merged = new Map<string, IQFormSchemaEntry>();
+		// Preserve declaration order per level
+		const order: string[] = [];
+
+		for (const char of chain) {
+			const fields: string[] =
+				Reflect.getMetadata(QFIELD_FIELDS_KEY, char) ?? [];
+			for (const field of fields) {
+				const meta: IQFieldMeta | undefined = Reflect.getMetadata(
+					QFIELD_METADATA_KEY,
+					char,
+					field
+				);
+				if (meta) {
+					if (!merged.has(field)) order.push(field);
+					merged.set(field, { field, ...meta });
+				}
+			}
+		}
+
+		return order.map((field) => merged.get(field)!);
 	}
 
 	/**

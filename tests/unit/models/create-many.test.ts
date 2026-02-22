@@ -61,7 +61,7 @@ describe('createMany() — basic', () => {
 		const data = [{ name: 'Minor', age: 10 }];
 		const { errors } = UserModel.createMany(data);
 		expect(errors[0].instance).toBeInstanceOf(UserModel);
-		expect((errors[0].instance as any).name).toBe('Minor');
+		expect(errors[0].instance.name).toBe('Minor');
 	});
 
 	test('errors should contain the validation errors', () => {

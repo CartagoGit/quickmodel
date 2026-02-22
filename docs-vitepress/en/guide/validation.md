@@ -123,12 +123,38 @@ if (!user.isValid()) {
 }
 ```
 
-| Method             | Returns               | What it checks                              |
-| ------------------ | --------------------- | ------------------------------------------- |
-| `checkIntegrity()` | `IQIntegrityResult[]` | Transformer constraints (types, DoS limits) |
-| `hasIntegrity()`   | `boolean`             | Shortcut: `checkIntegrity().length === 0`   |
-| `checkRules()`     | `IQRulesResult`       | Business rules (`@QRule` predicates)        |
-| `isValid()`        | `boolean`             | Both: integrity + rules                     |
+| Method               | Returns               | What it checks                              |
+| -------------------- | --------------------- | ------------------------------------------- |
+| `checkIntegrity()`   | `IQIntegrityResult[]` | Transformer constraints (types, DoS limits) |
+| `hasIntegrity()`     | `boolean`             | Shortcut: `checkIntegrity().length === 0`   |
+| `checkRules()`       | `IQRulesResult`       | Business rules (`@QRule` predicates)        |
+| `isValid()`          | `boolean`             | Both: integrity + rules                     |
+| `validationReport()` | `IQValidationReport`  | Both, but returns full detail               |
+
+### `validationReport()`
+
+Single call that runs both checks and returns detailed results.
+
+```typescript
+const report = user.validationReport();
+
+if (!report.valid) {
+	// transformer-level failures:
+	report.integrity.forEach((e) => console.error(e.error));
+	// @QRule failures:
+	report.rules.errors.forEach((e) => console.error(e.field, e.message));
+}
+```
+
+**Returns:** `IQValidationReport`
+
+```typescript
+interface IQValidationReport {
+	valid: boolean;
+	integrity: IQIntegrityResult[]; // empty = all pass
+	rules: IQRulesResult; // { valid, errors[] }
+}
+```
 
 ## i18n Support
 
@@ -197,3 +223,78 @@ class Admin extends User {
 
 > [!WARNING]
 > If a subclass re-declares a property with `@QRule`, only the **subclass rules** apply to that field (the parent rules for that field are overridden). Fields not re-declared keep their parent rules.
+
+## Form Schema (`@QField`)
+
+Use `@QField` to annotate model properties with form metadata. Then call `getFormSchema()` to get a schema array ready to pass to any form library (Angular, React, etc.).
+
+```typescript
+import { QField } from '@cartago-git/quickmodel';
+
+@Quick({ birthDate: Date })
+class ProfileModel extends QModel<IProfile> {
+	@QField({
+		widget: 'input',
+		inputType: 'email',
+		label: 'Email',
+		required: true,
+	})
+	declare email: string;
+
+	@QField({
+		widget: 'select',
+		label: 'Role',
+		options: ['admin', 'user', 'guest'],
+	})
+	declare role: string;
+
+	@QField({ widget: 'checkbox', label: 'Active' })
+	declare active: boolean;
+
+	@QField({ widget: 'datepicker', label: 'Birth date' })
+	declare birthDate: Date;
+}
+
+// Static — no instance needed:
+const schema = ProfileModel.getFormSchema();
+// [
+//   { field: 'email',     widget: 'input',     inputType: 'email', label: 'Email', required: true },
+//   { field: 'role',      widget: 'select',    options: ['admin','user','guest'], label: 'Role' },
+//   { field: 'active',    widget: 'checkbox',  label: 'Active' },
+//   { field: 'birthDate', widget: 'datepicker',label: 'Birth date' },
+// ]
+```
+
+### Supported widgets
+
+| Widget        | Typical use                     |
+| ------------- | ------------------------------- |
+| `input`       | Text, email, password fields    |
+| `textarea`    | Multi-line text                 |
+| `select`      | Dropdown list                   |
+| `checkbox`    | Boolean toggle                  |
+| `radio`       | Single-choice from a list       |
+| `datepicker`  | Date / datetime picker          |
+| `number`      | Numeric input                   |
+| `switch`      | Material/UI toggle switch       |
+| `'my-widget'` | Any custom string is also valid |
+
+### Extra metadata
+
+Any additional property you pass is preserved:
+
+```typescript
+@QField({
+	widget: 'input',
+	inputType: 'email',
+	label: 'Email',
+	placeholder: 'you@example.com',
+	hint: 'Must be unique in the system',
+	cssClass: 'full-width',
+})
+declare email: string;
+```
+
+### Inheritance
+
+Subclasses inherit their parent's `@QField` entries. Re-declaring a field overrides it.
