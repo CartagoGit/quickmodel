@@ -31,6 +31,9 @@ export type {
 	IQFormSchemaEntry,
 	IQFieldWidget,
 } from './core/decorators/qfield.decorator';
+export { QAlias } from './core/decorators/qalias.decorator';
+export { QGroup } from './core/decorators/qgroup.decorator';
+export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
 export { QConfig } from './core/config/quick.config';
 
 // ============================================================================

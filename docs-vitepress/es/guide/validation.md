@@ -310,4 +310,62 @@ declare email: string;
 ### Herencia
 
 Las subclases heredan las entradas `@QField` de sus clases padre. Redeclarar un campo lo sobreescribe.
+
+## Validación Asíncrona
+
+Todos los métodos síncronos tienen equivalentes asíncronos que aceptan predicados que devuelven `Promise<boolean>`.
+
+### `checkRulesAsync()`
+
+Igual que `checkRules()` pero espera cada predicado. Úsalo cuando algún `@QRule` contiene una función async (p. ej. una consulta de unicidad a base de datos).
+
+```typescript
+// Predicado async — p. ej. comprueba unicidad en BD
+@QRule(
+	async (v) => !await bd.emailExiste(v as string),
+	'Email ya registrado'
+)
+declare email: string;
+
+// Evaluar
+const resultado = await usuario.checkRulesAsync();
+if (!resultado.valid) {
+	console.log(resultado.errors); // [{ field: 'email', message: '...', value: '...' }]
+}
+```
+
+Los predicados síncronos también funcionan — se envuelven internamente en `Promise.resolve()`.
+
+> [!NOTE]
+> `checkRules()` (síncrono) sigue funcionando como antes y no espera predicados async. Usa `checkRulesAsync()` cuando tengas reglas asíncronas.
+
+### `isValidAsync()`
+
+Equivalente async de `isValid()`. Devuelve `Promise<boolean>`.
+
+```typescript
+if (await usuario.isValidAsync()) {
+	// integridad OK + todos los predicados @QRule (incluso async) pasan
+}
+```
+
+### `validationReportAsync()`
+
+Equivalente async de `validationReport()`. Devuelve `Promise<IQValidationReport>`.
+
+```typescript
+const reporte = await usuario.validationReportAsync();
+if (!reporte.valid) {
+	reporte.integrity.forEach((e) => console.error(e.error));
+	reporte.rules.errors.forEach((e) => console.error(e.field, e.message));
+}
+```
+
+### Resumen API async
+
+| Método                    | Devuelve                      | Notas                               |
+| ------------------------- | ----------------------------- | ----------------------------------- |
+| `checkRulesAsync()`       | `Promise<IQRulesResult>`      | Espera predicados síncronos y async |
+| `isValidAsync()`          | `Promise<boolean>`            | Integridad + reglas async           |
+| `validationReportAsync()` | `Promise<IQValidationReport>` | Reporte completo, compatible async  |
 ````

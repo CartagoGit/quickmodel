@@ -7,9 +7,9 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: todas las tareas críticas
-🔄 En progreso: —
-⏳ Pendientes: mejoras continuas / QoL
+✅ Completadas: todas las tareas críticas hasta Task #10
+🔄 En progreso: Tasks #11–#14 (sprint seguridad/robustez)
+⏳ Pendientes: Tasks #15–#22 (coverage gaps + features nuevas)
 ```
 
 **Hitos recientes:**
@@ -25,6 +25,21 @@
 - ✅ Task #8: Refactor sidebar `buildMcpSidebar` helper (commit `55e2a59`)
 - ✅ Task #9: Console.log DEBUG eliminados de `config.ts`, imports huérfanos limpiados
 - ✅ Task #10: Docs `excludeFields` + `omit`/`pick` en guías EN+ES (quick-decorator + serialization)
+
+**Revisión completa 22 Feb 2026 — Nuevas tareas identificadas (#11–#22):**
+
+- ⏳ Task #11: Truncar `safeStringify` — prevención de info-leak en mensajes de error
+- ⏳ Task #12: Warning activo cuando `disableSafetyChecks` está habilitado
+- ⏳ Task #13: Corregir script `release:check` (alias en package.json faltante)
+- ⏳ Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer
+- ⏳ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning)
+- ⏳ Task #16: Tests de `transformCase` con herencia multinivel
+- ⏳ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
+- ⏳ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización
+- ⏳ Task #19: `QTransformerRegistry.snapshot()/restore()` — aislamiento de estado en tests
+- ⏳ Task #20: `@QRule` async — soporte de predicados asíncronos
+- ⏳ Task #21: Guía de integración NestJS
+- ⏳ Task #22: Cambiar default de `unknownPropertyPolicy` a `'strip'` en v2.0.0
 
 ---
 
@@ -881,24 +896,608 @@ describe('Computed Properties & Getters', () => {
 
 ## 📊 RESUMEN DE TAREAS
 
-| #   | Tarea                  | Prioridad | Estado     | Esfuerzo | Impacto    | Fecha Est. |
-| --- | ---------------------- | --------- | ---------- | -------- | ---------- | ---------- |
-| 1   | Remover console.log    | 🔴 Alta   | ✅ HECHO   | 10min    | Alto       | —          |
-| 2   | Cobertura MCP tools    | 🟡 Media  | ✅ HECHO   | 2-3h     | Alto       | —          |
-| 2.5 | Schema Generation API  | 🟡 Media  | ✅ HECHO   | 4h       | Muy Alto   | —          |
-| 3   | Casos edge compuestos  | 🟡 Media  | ⏳ TODO    | 3-4h     | Medio-Alto | Feb 7-8    |
-| 4   | WeakMap/WeakSet docs   | 🟡 Media  | ⏳ TODO    | 1-2h     | Medio      | Feb 9-10   |
-| 5   | Performance benchmarks | 🟢 Baja   | ⏸️ BACKLOG | 4-6h     | Bajo       | Mar 2026   |
-| 6   | Computed properties    | 🟢 Baja   | ⏸️ BACKLOG | 2-3h     | Bajo       | Mar 2026   |
+### Tareas históricas (v1.0.0)
+
+| #   | Tarea                         | Prioridad | Estado   | Esfuerzo | Impacto  |
+| --- | ----------------------------- | --------- | -------- | -------- | -------- |
+| 1   | Remover console.log           | 🔴 Alta   | ✅ HECHO | 10min    | Alto     |
+| 2   | Cobertura MCP tools           | 🟡 Media  | ✅ HECHO | 2-3h     | Alto     |
+| 2.5 | Schema Generation API         | 🟡 Media  | ✅ HECHO | 4h       | Muy Alto |
+| 3   | Casos edge compuestos         | 🟡 Media  | ✅ HECHO | 1.5h     | Alto     |
+| 4   | WeakMap/WeakSet transformers  | 🟡 Media  | ✅ HECHO | 1.5h     | Medio    |
+| 5   | MCP Prompts documentados      | 🟡 Media  | ✅ HECHO | 2h       | Alto     |
+| 6   | `excludeFields` serialización | 🟡 Media  | ✅ HECHO | 2h       | Alto     |
+| 7   | Error path coverage MCP       | 🟡 Media  | ✅ HECHO | 2h       | Medio    |
+| 8   | Refactor sidebar MCP          | 🟢 Baja   | ✅ HECHO | 1h       | Bajo     |
+| 9   | Debug console.log config      | 🔴 Alta   | ✅ HECHO | 30min    | Medio    |
+| 10  | Docs excludeFields EN+ES      | 🟡 Media  | ✅ HECHO | 2h       | Medio    |
+
+### Tareas sprint seguridad/robustez (Feb 2026 — identificadas en revisión completa)
+
+| #   | Tarea                                         | Prioridad | Estado     | Esfuerzo | Impacto         | Fecha Est. |
+| --- | --------------------------------------------- | --------- | ---------- | -------- | --------------- | ---------- |
+| 11  | `safeStringify` truncado 500 chars            | 🔴 Alta   | ⏳ TODO    | 30min    | Alto (seg.)     | Feb 22-23  |
+| 12  | Warning `disableSafetyChecks` activo          | 🔴 Alta   | ⏳ TODO    | 30min    | Alto (seg.)     | Feb 22-23  |
+| 13  | Script `release:check` alias en package.json  | 🔴 Alta   | ⏳ TODO    | 15min    | Medio (DX)      | Feb 22-23  |
+| 14  | Tests negativos `JsonSchemaGenerator`         | 🟡 Media  | ⏳ TODO    | 1-2h     | Medio           | Feb 24-25  |
+| 15  | Tests `disableSafetyChecks` (flag + warning)  | 🟡 Media  | ⏳ TODO    | 1h       | Medio           | Feb 24-25  |
+| 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ⏳ TODO    | 2h       | Medio           | Feb 24-25  |
+| 17  | Performance benchmarks baseline               | 🟡 Media  | ⏳ TODO    | 4-6h     | Alto (mktg.)    | Mar 2026   |
+| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG | 3-4h     | Alto (DX)       | Mar 2026   |
+| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ⏸️ BACKLOG | 2h       | Medio (DX)      | Mar 2026   |
+| 20  | `@QRule` async predicates                     | 🟢 Baja   | ⏸️ BACKLOG | 4-6h     | Medio           | Abr 2026   |
+| 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG | 3-4h     | Alto (adop.)    | Mar 2026   |
+| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG | 1h       | Alto (breaking) | v2.0.0     |
 
 **Progreso:**
 
-- ✅ Completadas: 3/6 (50%)
-- ⏳ Pendientes: 2/6 (33%)
-- ⏸️ Backlog: 2/6 (17%)
+- ✅ Completadas: 10/22 (45%)
+- ⏳ Pendientes activas: 7/22 (32%)
+- ⏸️ Backlog: 5/22 (23%)
 
-**Tiempo invertido:** ~6.5 horas  
-**Tiempo restante estimado:** 4-6 horas (solo tareas activas)
+**Tiempo invertido (histórico):** ~15h  
+**Tiempo restante estimado (activas):** ~10-15h
+
+---
+
+## � SPRINT SEGURIDAD/ROBUSTEZ (22-25 Feb 2026)
+
+### Contexto
+
+Revisión completa del 22 de febrero identificó vulnerabilidades de seguridad y gaps de cobertura. Estas tareas son prioritarias antes de cualquier feature nueva.
+
+---
+
+### Task #11: Truncar `safeStringify` a 500 chars
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🔴 Alta — seguridad  
+**Esfuerzo:** 30 minutos  
+**Impacto:** Alto — prevención de info-leak de datos sensibles en mensajes de error + DoS via logs
+
+**Problema:**  
+`safeStringify` se usa en todos los transformers para mensajes de error. Sin límite de longitud, un payload de 100MB válido JSON-serializable genera mensajes de error del mismo tamaño, saturando logs y exponiendo datos sensibles.
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/core/helpers/transform-helpers.test.ts (agregar casos)
+describe('safeStringify: output truncation', () => {
+	test('should truncate output at 500 chars by default', () => {
+		const huge = { data: 'x'.repeat(1000) };
+		const result = safeStringify(huge);
+		expect(result.length).toBeLessThanOrEqual(503); // 500 + '...'
+		expect(result).toMatch(/\.\.\.\[truncated\]$/);
+	});
+
+	test('should allow custom maxLength', () => {
+		const result = safeStringify({ a: 'x'.repeat(200) }, undefined, 100);
+		expect(result.length).toBeLessThanOrEqual(103);
+	});
+
+	test('should not truncate short values', () => {
+		const result = safeStringify({ id: 1, name: 'test' });
+		expect(result).not.toContain('[truncated]');
+	});
+});
+```
+
+**Implementación:**
+
+```typescript
+// src/core/helpers/transform-helpers.ts
+export function safeStringify(
+	value: unknown,
+	space?: number,
+	maxLength = 500
+): string {
+	const visited = new WeakSet();
+	try {
+		const result = JSON.stringify(
+			value,
+			(_key, val) => {
+				if (typeof val === 'object' && val !== null) {
+					if (visited.has(val)) return '[Circular]';
+					visited.add(val);
+				}
+				return val;
+			},
+			space
+		);
+		if (result && result.length > maxLength) {
+			return result.slice(0, maxLength) + '...[truncated]';
+		}
+		return result ?? 'undefined';
+	} catch {
+		return `[Unserializable: ${typeof value}]`;
+	}
+}
+```
+
+**JSDoc a actualizar:** `safeStringify` en `src/core/helpers/transform-helpers.ts`  
+**Docs a actualizar:** ninguna doc pública (es helper interno)
+
+---
+
+### Task #12: Warning cuando `disableSafetyChecks` está activo
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🔴 Alta — seguridad  
+**Esfuerzo:** 30 minutos  
+**Impacto:** Alto — el flag desactiva prototype pollution, recursion guards, array limits y object size de un golpe; el usuario debe ser consciente
+
+**Problema:**  
+`performance.disableSafetyChecks: true` en `@Quick()` o `QConfig.configure()` desactiva **todas** las protecciones de seguridad silenciosamente. Un developer de back-end que lo active "para performance" en producción abre un vector de prototype pollution y DoS.
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/core/services/population-safety-warning.test.ts
+import { Logger } from '@/core/helpers/logger.helper';
+
+describe('disableSafetyChecks warning', () => {
+	test('should emit Logger.warn when disableSafetyChecks is true', () => {
+		const warnSpy = vi.spyOn(Logger, 'warn').mockImplementation(() => {});
+
+		@Quick({ performance: { disableSafetyChecks: true } })
+		class Dangerous extends QModel<any> {
+			declare id: number;
+		}
+
+		new Dangerous({ id: 1 });
+
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks')
+		);
+		warnSpy.mockRestore();
+	});
+
+	test('should NOT warn when disableSafetyChecks is false (default)', () => {
+		const warnSpy = vi.spyOn(Logger, 'warn').mockImplementation(() => {});
+
+		@Quick()
+		class Safe extends QModel<any> {
+			declare id: number;
+		}
+
+		new Safe({ id: 1 });
+		expect(warnSpy).not.toHaveBeenCalled();
+		warnSpy.mockRestore();
+	});
+});
+```
+
+**Implementación** en `src/core/services/population.service.ts` y `src/core/models/quick.model.ts`:
+
+```typescript
+if (disableSafetyChecks) {
+	Logger.warn(
+		'QuickModel [SECURITY]: disableSafetyChecks is ENABLED on ' +
+			`"${(modelClass as Function).name}". ` +
+			'All security protections (prototype pollution, recursion limits, size limits) are bypassed. ' +
+			'Do NOT use this in production with untrusted input.'
+	);
+}
+```
+
+**JSDoc a actualizar:** `IQAdvancedOptions.performance.disableSafetyChecks` en `src/core/interfaces/quick-options.interface.ts` y `IQConfig.defaults.performance.disableSafetyChecks` en `src/core/config/quick.config.ts` — añadir `@remarks` con advertencia de seguridad.  
+**Docs a actualizar:** guía de configuration EN+ES → añadir sección de advertencia con `:::danger` adblock de VitePress.
+
+---
+
+### Task #13: Script `release:check` como alias en package.json
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🔴 Alta — DX/proceso  
+**Esfuerzo:** 15 minutos  
+**Impacto:** Medio — la doc de releasing referencia `bun run release:check` pero ese script no existe en package.json
+
+**Problema:**  
+`docs-vitepress/en/guide/releasing.md` y `docs-vitepress/es/guide/releasing.md` documentan el comando `bun run release:check` como obligatorio antes de un release, pero el script no está declarado en `package.json`. Solo existe `scripts/pre-release.sh` que no es invocable vía `bun run release:check`.
+
+**Fix (no requiere TDD, es config):**
+
+```json
+// package.json — añadir en "scripts":
+"release:check": "bash scripts/pre-release.sh",
+```
+
+**Docs a actualizar:** verificar que releasing.md EN+ES usan exactamente `bun run release:check`.
+
+---
+
+### Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🟡 Media  
+**Esfuerzo:** 1-2 horas  
+**Impacto:** Medio — el default `{ type: 'string' }` para props con transformer `undefined` es incorrecto para `number`/`boolean`
+
+**Problema:**  
+En `schema-generators.service.ts`, el método `_getJsonSchemaType` devuelve `{ type: 'string' }` cuando no hay transformer. Esto causa que un modelo con `declare id: number` sin transformer explícito genere un JSON Schema con `id: { type: 'string' }`, que es incorrecto.
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/core/services/schema-generators.test.ts (agregar casos)
+describe('JsonSchemaGenerator: tipos sin transformer', () => {
+	test('number property without transformer should NOT produce type:string', () => {
+		@Quick()
+		class Item extends QModel<any> {
+			declare id: number;
+			declare name: string;
+			declare active: boolean;
+		}
+
+		const schema = Item.getSchema('json');
+		// Debe inferir de design:type metadata en lugar de devolver string
+		expect(schema.properties.id.type).not.toBe('string');
+		expect(schema.properties.active.type).not.toBe('string');
+	});
+
+	test('should throw or return unknown type for completely unresolvable types', () => {
+		// Asegurar que el fallback está documentado y es predecible
+		const result = JsonSchemaGenerator['_getJsonSchemaType'](undefined);
+		// Al menos debe ser consistente (no random)
+		expect(result).toBeDefined();
+	});
+});
+```
+
+**Implementación sugerida** en `schema-generators.service.ts`:
+
+- Usar `Reflect.getMetadata('design:type', prototype, key)` como fallback antes de devolver `{ type: 'string' }`
+- Si no hay metadata de diseño, devolver `{}` (schema vacío, acepta cualquier tipo) en lugar de `{ type: 'string' }`
+
+**JSDoc a actualizar:** `JsonSchemaGenerator._getJsonSchemaType` — documentar el comportamiento de fallback explícitamente.
+
+---
+
+### Task #15: Tests específicos para la flag `disableSafetyChecks`
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🟡 Media  
+**Esfuerzo:** 1 hora  
+**Impacto:** Medio — verificar que la flag desactiva correctamente los checks (y solo esos)
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/security/disable-safety-checks.test.ts
+describe('disableSafetyChecks: behavior verification', () => {
+	test('should bypass maxArrayLength limit when disableSafetyChecks is true', () => {
+		@Quick({ performance: { disableSafetyChecks: true } })
+		class BigModel extends QModel<any> {
+			declare items: unknown[];
+		}
+
+		// Con 10001 items (supera el límite de 10000)
+		const bigArray = Array(10001).fill('x');
+		expect(() => new BigModel({ items: bigArray })).not.toThrow();
+	});
+
+	test('should still throw prototype pollution even with disableSafetyChecks', () => {
+		// ⚠️ Verificar que al menos prototype pollution sigue bloqueada
+		// O documentar explícitamente que TAMBIÉN se desactiva
+		@Quick({ performance: { disableSafetyChecks: true } })
+		class Risky extends QModel<any> {
+			declare id: number;
+		}
+
+		// Este test define qué pasa — puede ser throw o silencioso — pero debe ser explícito
+		const dangerous = { id: 1, __proto__: { hacked: true } };
+		const result = () => new Risky(dangerous as any);
+		// Documentar el comportamiento real aquí
+		expect(result).not.toThrow(); // o expect(result).toThrow() — lo que sea, pero documentado
+	});
+});
+```
+
+**Docs a actualizar:** guía de seguridad EN+ES — tabla con qué checks se desactivan/mantienen con `disableSafetyChecks: true`.
+
+---
+
+### Task #16: Tests de `transformCase` con herencia multinivel
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🟡 Media  
+**Esfuerzo:** 2 horas  
+**Impacto:** Medio — garantizar que la transformación de case funciona correctamente en jerarquías
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/integration/inheritance/transform-case-inheritance.test.ts
+describe('transformCase with multi-level inheritance', () => {
+	test('snake_case in -> camelCase out with 3-level inheritance', () => {
+		QConfig.configure({
+			defaults: { transformCase: { in: 'snake_case', out: 'camelCase' } },
+		});
+
+		class Base extends QModel<any> {
+			declare base_field: string;
+		}
+
+		class Middle extends Base {
+			declare middle_field: string;
+		}
+
+		@Quick()
+		class Child extends Middle {
+			declare child_field: string;
+		}
+
+		const child = new Child({
+			base_field: 'a',
+			middle_field: 'b',
+			child_field: 'c',
+		} as any);
+
+		const serialized = child.serialize() as any;
+		expect(serialized.baseField).toBe('a');
+		expect(serialized.middleField).toBe('b');
+		expect(serialized.childField).toBe('c');
+
+		QConfig.reset();
+	});
+});
+```
+
+**JSDoc a actualizar:** `IQConfig.defaults.transformCase` — añadir ejemplo con herencia.  
+**Docs a actualizar:** guía de configuration EN+ES — sección de transformCase con nota sobre herencia.
+
+---
+
+## 🟡 SPRINT COVERAGE GAPS + FEATURES (Mar 2026)
+
+---
+
+### Task #17: Performance benchmarks baseline
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🟡 Media  
+**Esfuerzo:** 4-6 horas  
+**Impacto:** Alto — credibilidad del proyecto, detección de regresiones
+
+**Métricas objetivo:**
+
+- 10k `Date` objects transformados en < 100ms
+- Roundtrip serialize/deserialize de 1k models en < 50ms
+- Sin memory leaks en referencias circulares (< 10MB de diferencia tras GC)
+- Comparativa vs `class-transformer`, `Zod` pura
+
+**Nuevo script package.json:**
+
+```json
+"bench": "bun --expose-gc test tests/performance",
+"bench:compare": "bun run scripts/compare-libs.ts"
+```
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/performance/transformation-benchmarks.test.ts
+describe('Performance Benchmarks', () => {
+	test('should transform 10k Date objects under 100ms', () => {
+		@Quick({ dates: [Date] })
+		class Data extends QModel<any> {
+			declare dates: Date[];
+		}
+		const start = performance.now();
+		new Data({ dates: Array(10000).fill('2024-01-01T00:00:00Z') });
+		expect(performance.now() - start).toBeLessThan(100);
+	});
+
+	test('should roundtrip 1k models serialize+deserialize under 50ms', () => {
+		@Quick({ created: Date, balance: BigInt })
+		class User extends QModel<any> {
+			declare id: number;
+			declare created: Date;
+			declare balance: bigint;
+		}
+		const users = Array.from({ length: 1000 }, (_, i) => ({
+			id: i,
+			created: '2024-01-01',
+			balance: '9999999999',
+		}));
+		const start = performance.now();
+		const models = users.map((u) => new User(u));
+		models.forEach((m) => m.serialize());
+		expect(performance.now() - start).toBeLessThan(50);
+	});
+});
+```
+
+**Docs a actualizar:** README.md — sección de performance con tabla de resultados (una vez obtenidos los números reales).
+
+---
+
+### Task #18: `@QComputed()` / `exposeComputedFields`
+
+**Status:** ⏸️ BACKLOG  
+**Prioridad:** 🟡 Media  
+**Esfuerzo:** 3-4 horas  
+**Impacto:** Alto (DX) — feature muy solicitada en librerías similares
+
+**Propósito:** Permitir que getters/propiedades computadas se incluyan en `serialize()` y `toJSON()` opcionalmente.
+
+**API propuesta:**
+
+```typescript
+// Opción A — decorator por propiedad
+@Quick({ birthDate: Date })
+class User extends QModel<IUser> {
+	declare birthDate: Date;
+	declare firstName: string;
+	declare lastName: string;
+
+	@QComputed() // Se incluye en serialize()
+	get fullName(): string {
+		return `${this.firstName} ${this.lastName}`;
+	}
+}
+
+// Opción B — en opciones de @Quick
+@Quick({ birthDate: Date }, { exposeComputedFields: ['fullName', 'age'] })
+class User extends QModel<IUser> { ... }
+```
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/serialization/computed-properties.test.ts
+describe('Computed Properties', () => {
+	test('getters NOT serialized by default', () => {
+		@Quick()
+		class User extends QModel<any> {
+			declare name: string;
+			get upper(): string {
+				return this.name.toUpperCase();
+			}
+		}
+		const user = new User({ name: 'alice' });
+		expect(user.serialize()).not.toHaveProperty('upper');
+	});
+
+	test('@QComputed() includes getter in serialize()', () => {
+		@Quick()
+		class User extends QModel<any> {
+			declare name: string;
+			@QComputed()
+			get upper(): string {
+				return this.name.toUpperCase();
+			}
+		}
+		const user = new User({ name: 'alice' });
+		expect(user.serialize()).toHaveProperty('upper', 'ALICE');
+	});
+});
+```
+
+**JSDoc a actualizar:** `QModel.serialize()` — mencionar que getters no se incluyen salvo `@QComputed()`.  
+**Docs a actualizar:** guía serialization EN+ES — nueva sección "Computed Fields".
+
+---
+
+### Task #19: `QTransformerRegistry.snapshot()/restore()`
+
+**Status:** ⏸️ BACKLOG  
+**Prioridad:** 🟡 Media  
+**Esfuerzo:** 2 horas  
+**Impacto:** Medio (DX tests) — evita polución de estado entre test files cuando se registran transformers custom
+
+**Propósito:** Los tests que registran transformers custom en `QTransformerRegistry` pueden contaminar otros test files si no hay forma de limpiar el estado.
+
+**API propuesta:**
+
+```typescript
+QTransformerRegistry.snapshot(); // Guarda estado actual
+// ... registrar transformers en tests ...
+QTransformerRegistry.restore(); // Revierte al snapshot
+// O:
+QTransformerRegistry.clear(); // Limpia todo (para afterEach)
+```
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/core/registry/transformer-registry.test.ts (agregar casos)
+describe('QTransformerRegistry: isolation', () => {
+	test('snapshot/restore round-trip preserves original state', () => {
+		const snap = QTransformerRegistry.snapshot();
+		QTransformerRegistry.register('custom', mockTransformer);
+		expect(QTransformerRegistry.has('custom')).toBe(true);
+		QTransformerRegistry.restore(snap);
+		expect(QTransformerRegistry.has('custom')).toBe(false);
+	});
+});
+```
+
+**JSDoc a actualizar:** `QTransformerRegistry` clase — documentar los métodos nuevos.  
+**Docs a actualizar:** guía de advanced usage EN+ES — sección "Testing con transformers custom".
+
+---
+
+### Task #20: `@QRule` async predicates
+
+**Status:** ⏸️ BACKLOG  
+**Prioridad:** 🟢 Baja  
+**Esfuerzo:** 4-6 horas  
+**Impacto:** Medio — casos de uso como validación de email contra API, etc.
+
+**API propuesta:**
+
+```typescript
+// Async predicate + checkRulesAsync()
+@QRule(async (v) => await emailExists(v as string), 'Email already registered')
+declare email: string;
+
+const result = await user.checkRulesAsync();
+```
+
+**Pasos TDD:**
+
+```typescript
+// Test: tests/unit/decorators/qrule-async.test.ts
+describe('@QRule async predicates', () => {
+	test('checkRulesAsync() resolves async predicates', async () => {
+		@Quick()
+		class User extends QModel<any> {
+			@QRule(async (v) => (v as string).length > 3, 'Too short')
+			declare name: string;
+		}
+		const user = new User({ name: 'ab' });
+		const result = await user.checkRulesAsync();
+		expect(result.valid).toBe(false);
+		expect(result.errors[0].field).toBe('name');
+	});
+});
+```
+
+**JSDoc a actualizar:** `@QRule` — documentar soporte async.  
+**Docs a actualizar:** guía validation EN+ES — nueva sección "Async rules".
+
+---
+
+### Task #21: Guía integración NestJS
+
+**Status:** ⏸️ BACKLOG  
+**Prioridad:** 🟢 Baja  
+**Esfuerzo:** 3-4 horas  
+**Impacto:** Alto (adopción) — NestJS es el ecosistema más grande de TypeScript backend; no hay guía oficial
+
+**Contenido mínimo de la guía:**
+
+1. Instalación con `reflect-metadata` (compatible con NestJS)
+2. Uso como DTO de entrada con `ValidationPipe`
+3. Integración con `@nestjs/swagger` y `getSchema('openapi')`
+4. `@QRule` como sustituto de `class-validator`
+5. Ejemplo de módulo NestJS que usa `QModel` en service layer
+
+**Docs a crear:**
+
+- `docs-vitepress/en/guide/nestjs-integration.md`
+- `docs-vitepress/es/guide/nestjs-integration.md`
+- Actualizar sidebar EN+ES para incluir la nueva guía
+
+---
+
+### Task #22: Default `unknownPropertyPolicy: 'strip'` en v2.0.0
+
+**Status:** ⏸️ BACKLOG  
+**Prioridad:** 🟢 Baja — breaking change planificado para v2.0.0  
+**Esfuerzo:** 1 hora  
+**Impacto:** Alto (seguridad) — el default actual `'keep'` es inconsistente con el enfoque de seguridad del proyecto
+
+**Problema:** El proyecto tiene protección de prototype pollution, límites DoS, y method shadowing... pero por defecto permite que propiedades no declaradas entren al modelo sin filtrar. Esto puede exponer datos inesperados al serializar de vuelta.
+
+**Plan:**
+
+1. v1.x: Mantener `'keep'` como default. **Añadir deprecation warning** si no se configura explícitamente.
+2. v2.0.0: Cambiar default a `'strip'`.
+3. Documentar la migration guide.
+
+**Docs a actualizar (ahora, v1.x):** guía configuration EN+ES — añadir nota con `:::warning` recomendando establecer `unknownPropertyPolicy: 'strip'` explícitamente para mayor seguridad.
 
 ---
 
@@ -910,29 +1509,29 @@ describe('Computed Properties & Getters', () => {
 2. ✅ **Tarea #2:** Cobertura MCP tools → 2.5h
 3. ✅ **Tarea #2.5:** Schema Generation API → 4h
 
-### 🎯 Esta semana (7-8 Feb 2026):
+### 🎯 Esta semana (7-8 Feb 2026 → movido a 22-25 Feb):
 
-4. ⏳ **Tarea #3:** Casos edge compuestos → 3-4h
-    - Map<Symbol, Date>
-    - Set<Map<string, BigInt>>
-    - Array<Set<Date>>
-    - Validación de tipos compuestos
+4. ⏳ **Tarea #11:** `safeStringify` truncado → 30min
+5. ⏳ **Tarea #12:** Warning `disableSafetyChecks` → 30min
+6. ⏳ **Tarea #13:** Script `release:check` en package.json → 15min
 
-### 📅 Próxima semana (9-13 Feb 2026):
+### 📅 Próxima semana (24-28 Feb 2026):
 
-5. ⏳ **Tarea #4:** WeakMap/WeakSet decisión + docs → 1-2h
-    - Decisión: ¿Implementar o documentar limitación?
-    - Documentar en README + SECURITY.md
-    - Ejemplos de uso (si aplica)
+7. ⏳ **Tarea #14:** Tests negativos `JsonSchemaGenerator` → 1-2h
+8. ⏳ **Tarea #15:** Tests `disableSafetyChecks` (activación + warning) → 1h
+9. ⏳ **Tarea #16:** Tests `transformCase` herencia multinivel → 2h
 
 ### 🗂️ Backlog (Marzo 2026+):
 
-6. ⏸️ **Tarea #5:** Performance benchmarks → 4-6h
-    - Esperar release 1.1.0
+10. ⏸️ **Tarea #17:** Performance benchmarks baseline → 4-6h
     - Comparar con class-transformer, io-ts, zod
-7. ⏸️ **Tarea #6:** Computed properties → 2-3h
+    - Integrar en CI como regression test
+11. ⏸️ **Tarea #18:** `@QComputed()` / `exposeComputedFields` → 3-4h
     - Esperar feedback de comunidad
-    - Feature request potencial
+12. ⏸️ **Tarea #19:** `QTransformerRegistry.snapshot()/restore()` → 2h
+13. ⏸️ **Tarea #20:** `@QRule` async predicates → 4-6h
+14. ⏸️ **Tarea #21:** Guía integración NestJS → 3-4h
+15. ⏸️ **Tarea #22:** Default `unknownPropertyPolicy: 'strip'` (v2.0.0) → 1h
 
 ---
 
@@ -945,34 +1544,45 @@ describe('Computed Properties & Getters', () => {
 
 ---
 
-## ✅ CHECKLIST PRE-RELEASE v1.1.0
+## ✅ CHECKLIST PRE-RELEASE v1.0.0
+
+> ⚠️ **Este proyecto aún NO está en producción.** v1.0.0 es el primer release público.
 
 Antes de hacer merge a `main` y release:
 
 **Tests & Calidad:**
 
-- [x] Todas las tareas 🔴 Alta prioridad completadas (3/3)
-- [x] Cobertura de tests >90% (actual: >90%, 1352 tests)
-- [ ] Tarea #3 completada (casos edge compuestos)
-- [ ] Tarea #4 completada (WeakMap/WeakSet docs)
+- [x] Todas las tareas 🔴 Alta prioridad completadas (Tasks #1–#10)
+- [x] Cobertura de tests >97% (actual: >97%, 1602 tests)
+- [x] Edge cases compuestos validados (Task #3)
+- [x] WeakMap/WeakSet transformers implementados (Task #4)
+- [ ] Task #11 completada (`safeStringify` truncado)
+- [ ] Task #12 completada (warning `disableSafetyChecks`)
+- [ ] Task #13 completada (script `release:check`)
 - [ ] `bun run check` pasa sin errores
 - [ ] `bun run lint` sin warnings
-- [ ] `bun test` 100% passing
+- [x] `bun test` 100% passing
 
 **Release Process:**
 
-- [ ] `bun run release:check` revisado
+- [ ] `bun run release:check` funcionando (⚠️ Task #13 pendiente)
 - [ ] Documentación actualizada (README, guides)
-- [ ] CHANGELOG.md actualizado con nuevas features
-- [ ] Versión bumpeada correctamente (1.0.0 → 1.1.0)
-- [ ] Git tag creado: `v1.1.0`
+- [ ] CHANGELOG.md completo
+- [ ] Git tag creado: `v1.0.0`
 
-**Features Nuevas en v1.1.0:**
+**Features incluidas en v1.0.0:**
 
-- [x] Schema Generation API (7 formatos)
-- [x] MCP tools coverage mejorada
-- [ ] Edge cases compuestos validados
-- [ ] WeakMap/WeakSet documentados
+- [x] Sistema de serialización/deserialización con 30+ tipos
+- [x] Schema Generation API (7 formatos: JSON, Zod, Mongo, TS, GraphQL, OpenAPI, AJV)
+- [x] Servidor MCP con 10 herramientas públicas y 4 prompts
+- [x] MCP tools coverage >80%
+- [x] Edge cases compuestos (Map/Set/Array anidados)
+- [x] WeakMap/WeakSet transformers
+- [x] `excludeFields` en serialización
+- [x] Documentación bilingüe EN+ES
+- [ ] `safeStringify` truncado (Task #11)
+- [ ] Warning `disableSafetyChecks` (Task #12)
+- [ ] Script `release:check` en package.json (Task #13)
 
 ---
 
@@ -996,7 +1606,7 @@ Antes de hacer merge a `main` y release:
 
 **3. Task #5 & #6: Backlog** (POSTPONER)
 
-- **Por qué esperar:** No son críticos para v1.1.0
+- **Por qué esperar:** No son críticos para el primer release v1.0.0
 - **Timing:** Mejor después de feedback de usuarios en producción
 - **Beneficio:** Features guiadas por necesidades reales
 
@@ -1024,4 +1634,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 6 de febrero de 2026 - 07:22 UTC
+**Última actualización:** 22 de febrero de 2026 - Revisión completa del proyecto (11 nuevas tareas identificadas #11–#22)

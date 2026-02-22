@@ -26,6 +26,10 @@ import { Quick, QType, QModel } from '@/index';
  *  8. serialize() includes fields from external base AND from the QModel mixin class
  *  9. Deep chain: ExternalBase → Mixin → Child → GrandChild
  * 10. @QType explicit decorator works alongside @Quick
+ * 11. createReadonly() is available and returns a frozen instance
+ * 12. getDirtyFields() and reset() work on mixin instances
+ * 13. deserializeJson() roundtrip (string → instance)
+ * 14. Two independent mixins over the same ExternalBase have isolated metadata
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -399,6 +403,190 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 			expect(typeof instance.salary).toBe('bigint');
 			expect(instance.salary).toBe(55000000n);
 			expect(instance.pattern).toBeInstanceOf(RegExp);
+		});
+	});
+
+	// =========================================================================
+	// Scenario 11: createReadonly() is available on mixin class
+	// =========================================================================
+	describe('Scenario 11: createReadonly() returns a deep-frozen instance', () => {
+		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
+
+		@Quick({ promotedAt: Date })
+		class AdminRO extends AdminBase {
+			declare username: string;
+			declare promotedAt: Date;
+		}
+
+		it('createReadonly() should be a static method on the mixin class', () => {
+			expect(typeof AdminRO.createReadonly).toBe('function');
+		});
+
+		it('instance from createReadonly() should be frozen — mutating a field throws in strict mode', () => {
+			const instance = AdminRO.createReadonly({
+				username: 'readonly-user',
+				promotedAt: '2024-06-01T00:00:00.000Z',
+			});
+
+			expect(instance.username).toBe('readonly-user');
+			expect(instance.promotedAt).toBeInstanceOf(Date);
+
+			// Strict mode (Bun runs tests as ES modules — always strict)
+			expect(() => {
+				(instance as any).username = 'mutated';
+			}).toThrow();
+		});
+	});
+
+	// =========================================================================
+	// Scenario 12: getDirtyFields() and reset() on mixin instance
+	// =========================================================================
+	describe('Scenario 12: getDirtyFields() and reset() work on mixin instances', () => {
+		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
+
+		@Quick({ promotedAt: Date })
+		class AdminDirty extends AdminBase {
+			declare username: string;
+			declare promotedAt: Date;
+		}
+
+		it('getDirtyFields() should return empty set after create()', () => {
+			const instance = AdminDirty.create({
+				username: 'clean',
+				promotedAt: '2024-01-01T00:00:00.000Z',
+			});
+
+			expect(typeof instance.getDirtyFields).toBe('function');
+			const dirty = instance.getDirtyFields();
+			expect(dirty.size).toBe(0);
+		});
+
+		it('getDirtyFields() should list fields modified via patch()', () => {
+			const instance = AdminDirty.create({
+				username: 'clean',
+				promotedAt: '2024-01-01T00:00:00.000Z',
+			});
+
+			instance.patch({ username: 'dirty' });
+
+			const dirty = instance.getDirtyFields();
+			expect(dirty.has('username')).toBe(true);
+		});
+
+		it('reset() should clear dirty state and restore original values', () => {
+			const instance = AdminDirty.create({
+				username: 'original',
+				promotedAt: '2024-01-01T00:00:00.000Z',
+			});
+
+			instance.patch({ username: 'modified' });
+			expect(instance.isDirty()).toBe(true);
+
+			instance.reset();
+			expect(instance.isDirty()).toBe(false);
+			expect(instance.username).toBe('original');
+		});
+	});
+
+	// =========================================================================
+	// Scenario 13: deserializeJson() roundtrip
+	// =========================================================================
+	describe('Scenario 13: deserializeJson() roundtrip (JSON string → instance)', () => {
+		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
+
+		@Quick({ promotedAt: Date, salary: BigInt })
+		class AdminJson extends AdminBase {
+			declare username: string;
+			declare promotedAt: Date;
+			declare salary: bigint;
+		}
+
+		it('deserializeJson() should be a static method', () => {
+			expect(typeof AdminJson.deserializeJson).toBe('function');
+		});
+
+		it('deserializeJson(toJSON()) should restore transformed fields', () => {
+			const original = AdminJson.create({
+				username: 'json-user',
+				promotedAt: '2025-07-04T00:00:00.000Z',
+				salary: '123456789',
+			});
+
+			// toJSON() serializes to string (bigint → string, Date → ISO string)
+			const json = original.toJSON();
+			expect(typeof json).toBe('string');
+
+			// deserializeJson() parses the JSON and re-applies transformers
+			const restored = AdminJson.deserializeJson(json);
+
+			expect(restored.username).toBe('json-user');
+			expect(restored.promotedAt).toBeInstanceOf(Date);
+			expect(restored.promotedAt.getFullYear()).toBe(2025);
+			expect(typeof restored.salary).toBe('bigint');
+			expect(restored.salary).toBe(123456789n);
+		});
+	});
+
+	// =========================================================================
+	// Scenario 14: Two independent mixins over the same ExternalBase
+	//              must have completely isolated metadata
+	// =========================================================================
+	describe('Scenario 14: two mixins on the same ExternalBase have isolated metadata', () => {
+		// Both classes extend QModel.extends(ExternalUser) independently.
+		// Each has its own @Quick map. Metadata of one must not bleed into the other.
+		const BaseA = QModel.extends<ExternalUser>(ExternalUser);
+		const BaseB = QModel.extends<ExternalUser>(ExternalUser);
+
+		@Quick({ hiredAt: Date })
+		class EmployeeA extends BaseA {
+			declare username: string;
+			declare hiredAt: Date;
+		}
+
+		@Quick({ retiredAt: Date, pension: BigInt })
+		class EmployeeB extends BaseB {
+			declare username: string;
+			declare retiredAt: Date;
+			declare pension: bigint;
+		}
+
+		it('EmployeeA metadata should only contain its own transformed fields', () => {
+			const meta = EmployeeA.getMetadata();
+
+			expect(meta.has('hiredAt')).toBe(true);
+			// EmployeeB-only fields must NOT appear in EmployeeA
+			expect(meta.has('retiredAt')).toBe(false);
+			expect(meta.has('pension')).toBe(false);
+		});
+
+		it('EmployeeB metadata should only contain its own transformed fields', () => {
+			const meta = EmployeeB.getMetadata();
+
+			expect(meta.has('retiredAt')).toBe(true);
+			expect(meta.has('pension')).toBe(true);
+			// EmployeeA-only fields must NOT appear in EmployeeB
+			expect(meta.has('hiredAt')).toBe(false);
+		});
+
+		it('create() on each class transforms only its own fields', () => {
+			const a = EmployeeA.create({
+				username: 'alice',
+				hiredAt: '2020-01-01T00:00:00.000Z',
+			});
+			const b = EmployeeB.create({
+				username: 'bob',
+				retiredAt: '2025-06-01T00:00:00.000Z',
+				pension: '300000',
+			});
+
+			expect(a.hiredAt).toBeInstanceOf(Date);
+			expect(b.retiredAt).toBeInstanceOf(Date);
+			expect(typeof b.pension).toBe('bigint');
+
+			// Cross-contamination check: EmployeeA instance has no retiredAt
+			expect((a as any).retiredAt).toBeUndefined();
+			// EmployeeB instance has no hiredAt
+			expect((b as any).hiredAt).toBeUndefined();
 		});
 	});
 });

@@ -298,3 +298,61 @@ declare email: string;
 ### Inheritance
 
 Subclasses inherit their parent's `@QField` entries. Re-declaring a field overrides it.
+
+## Async Validation
+
+All sync methods have async equivalents that handle predicates returning `Promise<boolean>`.
+
+### `checkRulesAsync()`
+
+Like `checkRules()` but awaits each predicate. Use this when any `@QRule` contains an async function (e.g. a database uniqueness check).
+
+```typescript
+// Async predicate — e.g. checks uniqueness against a DB
+@QRule(
+	async (v) => !await db.emailExists(v as string),
+	'Email already taken'
+)
+declare email: string;
+
+// Evaluate
+const result = await user.checkRulesAsync();
+if (!result.valid) {
+	console.log(result.errors); // [{ field: 'email', message: '...', value: '...' }]
+}
+```
+
+Sync predicates also work seamlessly — they are wrapped in `Promise.resolve()` internally.
+
+> [!NOTE]
+> `checkRules()` (sync) still works as before and ignores async predicates — it does NOT await them. Use `checkRulesAsync()` when async rules are present.
+
+### `isValidAsync()`
+
+Async equivalent of `isValid()`. Returns `Promise<boolean>`.
+
+```typescript
+if (await user.isValidAsync()) {
+	// integrity OK + all async @QRule predicates pass
+}
+```
+
+### `validationReportAsync()`
+
+Async equivalent of `validationReport()`. Returns `Promise<IQValidationReport>`.
+
+```typescript
+const report = await user.validationReportAsync();
+if (!report.valid) {
+	report.integrity.forEach((e) => console.error(e.error));
+	report.rules.errors.forEach((e) => console.error(e.field, e.message));
+}
+```
+
+### Async API summary
+
+| Method                    | Returns                       | Notes                          |
+| ------------------------- | ----------------------------- | ------------------------------ |
+| `checkRulesAsync()`       | `Promise<IQRulesResult>`      | Awaits sync + async predicates |
+| `isValidAsync()`          | `Promise<boolean>`            | Integrity + async rules        |
+| `validationReportAsync()` | `Promise<IQValidationReport>` | Full report, async-safe        |

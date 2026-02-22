@@ -502,6 +502,10 @@ export default defineConfig({
 									link: '/en/guide/qfield',
 								},
 								{
+									text: 'Key Aliases (@QAlias)',
+									link: '/en/guide/qalias',
+								},
+								{
 									text: 'Mock Generation',
 									link: '/en/guide/mocks',
 								},
@@ -630,6 +634,10 @@ export default defineConfig({
 								{
 									text: 'Esquema de Formulario (@QField)',
 									link: '/es/guide/qfield',
+								},
+								{
+									text: 'Alias de Claves (@QAlias)',
+									link: '/es/guide/qalias',
 								},
 								{
 									text: 'Generación de Mocks',

@@ -238,11 +238,13 @@ import type {
 	IQFieldMeta,
 	IQFormSchemaEntry,
 	IQFieldWidget,
+	IQFormSchemaGroup,
 } from '@cartago-git/quickmodel';
 
 // Una entrada del esquema:
 interface IQFormSchemaEntry extends IQFieldMeta {
 	field: string; // nombre de la propiedad tal como se declara en el modelo
+	group?: string; // presente si se aplica @QGroup
 }
 
 // Metadata del campo:
@@ -267,4 +269,119 @@ type IQFieldWidget =
 	| 'number'
 	| 'switch'
 	| (string & {}); // permite cualquier otra cadena
+
+// Entrada agrupada (de getFormSchemaGrouped):
+interface IQFormSchemaGroup {
+	group: string | undefined; // undefined para campos sin grupo
+	fields: IQFormSchemaEntry[];
+}
 ```
+
+## Agrupación de Campos (`@QGroup`)
+
+Usa `@QGroup('Nombre de sección')` junto a `@QField` para organizar los campos en secciones. Llama a `getFormSchemaGrouped()` para obtener el esquema ya agrupado y listo para renderizar sección por sección.
+
+### Uso básico
+
+```typescript
+import { Quick, QModel, QField, QGroup } from '@cartago-git/quickmodel';
+
+interface IConfiguracion {
+	usuario: string;
+	email: string;
+	passwordActual: string;
+	passwordNuevo: string;
+	tema: string;
+	idioma: string;
+}
+
+@Quick()
+class ConfiguracionModel extends QModel<IConfiguracion> {
+	@QGroup('Cuenta')
+	@QField({ widget: 'input', label: 'Usuario' })
+	declare usuario: string;
+
+	@QGroup('Cuenta')
+	@QField({ widget: 'input', inputType: 'email', label: 'Email' })
+	declare email: string;
+
+	@QGroup('Seguridad')
+	@QField({
+		widget: 'input',
+		inputType: 'password',
+		label: 'Contraseña actual',
+	})
+	declare passwordActual: string;
+
+	@QGroup('Seguridad')
+	@QField({
+		widget: 'input',
+		inputType: 'password',
+		label: 'Nueva contraseña',
+	})
+	declare passwordNuevo: string;
+
+	@QField({ widget: 'select', label: 'Tema', options: ['claro', 'oscuro'] })
+	declare tema: string;
+
+	@QField({ widget: 'select', label: 'Idioma', options: ['es', 'en'] })
+	declare idioma: string;
+}
+```
+
+### `getFormSchemaGrouped()`
+
+Devuelve un array de objetos `IQFormSchemaGroup`. Los campos sin `@QGroup` se recogen en `group: undefined`.
+
+```typescript
+const grupos = ConfiguracionModel.getFormSchemaGrouped();
+// [
+//   { group: 'Cuenta',    fields: [ { field: 'usuario', ... }, { field: 'email', ... } ] },
+//   { group: 'Seguridad', fields: [ { field: 'passwordActual', ... }, { field: 'passwordNuevo', ... } ] },
+//   { group: undefined,   fields: [ { field: 'tema', ... }, { field: 'idioma', ... } ] },
+// ]
+```
+
+El orden de los grupos sigue el orden de aparición de los valores `@QGroup` en la clase (de arriba hacia abajo).
+
+### Plantilla Angular
+
+```typescript
+export class FormularioConfigComponent {
+	grupos = ConfiguracionModel.getFormSchemaGrouped();
+}
+```
+
+```html
+<section *ngFor="let seccion of grupos">
+	<h3 *ngIf="seccion.group">{{ seccion.group }}</h3>
+	<ng-container *ngFor="let campo of seccion.fields">
+		<!-- renderizar campo.widget ... -->
+	</ng-container>
+</section>
+```
+
+### React
+
+```tsx
+const grupos = ConfiguracionModel.getFormSchemaGrouped();
+
+function FormularioConfig() {
+	return (
+		<>
+			{grupos.map((seccion) => (
+				<section key={seccion.group ?? '__sin-grupo__'}>
+					{seccion.group && <h3>{seccion.group}</h3>}
+					{seccion.fields.map((f) => (
+						<div key={f.field}>{/* renderizar f.widget */}</div>
+					))}
+				</section>
+			))}
+		</>
+	);
+}
+```
+
+### Herencia
+
+Las subclases heredan las anotaciones `@QGroup` junto con `@QField`. Sobreescribir un campo en una subclase también sobreescribe su grupo.

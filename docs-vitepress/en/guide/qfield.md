@@ -234,11 +234,13 @@ import type {
 	IQFieldMeta,
 	IQFormSchemaEntry,
 	IQFieldWidget,
+	IQFormSchemaGroup,
 } from '@cartago-git/quickmodel';
 
 // A schema entry:
 interface IQFormSchemaEntry extends IQFieldMeta {
 	field: string; // property name as declared on the model
+	group?: string; // set when @QGroup is applied
 }
 
 // Field metadata:
@@ -263,4 +265,115 @@ type IQFieldWidget =
 	| 'number'
 	| 'switch'
 	| (string & {}); // allow any other string
+
+// Group entry (from getFormSchemaGrouped):
+interface IQFormSchemaGroup {
+	group: string | undefined; // undefined for ungrouped fields
+	fields: IQFormSchemaEntry[];
+}
 ```
+
+## Grouping Fields (`@QGroup`)
+
+Use `@QGroup('Section Name')` alongside `@QField` to organise fields into named sections. Call `getFormSchemaGrouped()` to get the schema pre-grouped and ready to render section-by-section.
+
+### Basic usage
+
+```typescript
+import { Quick, QModel, QField, QGroup } from '@cartago-git/quickmodel';
+
+interface ISettings {
+	username: string;
+	email: string;
+	oldPassword: string;
+	newPassword: string;
+	theme: string;
+	language: string;
+}
+
+@Quick()
+class SettingsModel extends QModel<ISettings> {
+	@QGroup('Account')
+	@QField({ widget: 'input', label: 'Username' })
+	declare username: string;
+
+	@QGroup('Account')
+	@QField({ widget: 'input', inputType: 'email', label: 'Email' })
+	declare email: string;
+
+	@QGroup('Security')
+	@QField({
+		widget: 'input',
+		inputType: 'password',
+		label: 'Current password',
+	})
+	declare oldPassword: string;
+
+	@QGroup('Security')
+	@QField({ widget: 'input', inputType: 'password', label: 'New password' })
+	declare newPassword: string;
+
+	@QField({ widget: 'select', label: 'Theme', options: ['light', 'dark'] })
+	declare theme: string;
+
+	@QField({ widget: 'select', label: 'Language', options: ['en', 'es'] })
+	declare language: string;
+}
+```
+
+### `getFormSchemaGrouped()`
+
+Returns an array of `IQFormSchemaGroup` objects. Fields without `@QGroup` are collected under `group: undefined`.
+
+```typescript
+const groups = SettingsModel.getFormSchemaGrouped();
+// [
+//   { group: 'Account',   fields: [ { field: 'username', ... }, { field: 'email', ... } ] },
+//   { group: 'Security',  fields: [ { field: 'oldPassword', ... }, { field: 'newPassword', ... } ] },
+//   { group: undefined,   fields: [ { field: 'theme', ... }, { field: 'language', ... } ] },
+// ]
+```
+
+Group order matches the order in which `@QGroup` values first appear in the class (top-to-bottom).
+
+### Angular template
+
+```typescript
+export class SettingsFormComponent {
+	groups = SettingsModel.getFormSchemaGrouped();
+}
+```
+
+```html
+<section *ngFor="let section of groups">
+	<h3 *ngIf="section.group">{{ section.group }}</h3>
+	<ng-container *ngFor="let field of section.fields">
+		<!-- render field.widget ... -->
+	</ng-container>
+</section>
+```
+
+### React
+
+```tsx
+const groups = SettingsModel.getFormSchemaGrouped();
+
+function SettingsForm() {
+	return (
+		<>
+			{groups.map((section) => (
+				<section key={section.group ?? '__ungrouped__'}>
+					{section.group && <h3>{section.group}</h3>}
+					{section.fields.map((f) => (
+						<div key={f.field}>{/* render f.widget */}</div>
+					))}
+				</section>
+			))}
+		</>
+	);
+}
+```
+
+### Inheritance
+
+Subclasses inherit `@QGroup` annotations alongside `@QField`. Overriding a field in a subclass also overrides its group.

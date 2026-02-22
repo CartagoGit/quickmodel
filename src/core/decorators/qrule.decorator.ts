@@ -16,8 +16,12 @@ export const QRULE_FIELDS_KEY = '__qrule_fields__';
  * A single business rule attached to a model property.
  */
 export interface IQRule {
-	/** Predicate that must return `true` for the rule to pass. */
-	predicate: (value: unknown) => boolean;
+	/**
+	 * Predicate that must return `true` for the rule to pass.
+	 * Can be synchronous or asynchronous.
+	 * Use `checkRulesAsync()` to evaluate async predicates.
+	 */
+	predicate: (value: unknown) => boolean | Promise<boolean>;
 	/**
 	 * Error message when the rule fails.
 	 * - `string`: static message (or i18n key for later translation, e.g. `e.message | translate`)
@@ -85,7 +89,7 @@ export interface IQRulesResult {
  * ```
  */
 export function QRule(
-	predicate: (value: unknown) => boolean,
+	predicate: (value: unknown) => boolean | Promise<boolean>,
 	message: string | (() => string)
 ): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol): void => {

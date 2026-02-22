@@ -44,6 +44,12 @@ import type {
 	IQFormSchemaEntry,
 } from '@/core/decorators/qfield.decorator';
 import {
+	QALIAS_METADATA_KEY,
+	QALIAS_FIELDS_KEY,
+} from '@/core/decorators/qalias.decorator';
+import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
+import type { IQFormSchemaGroup } from '@/core/decorators/qgroup.decorator';
+import {
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
 	QUICK_TYPE_MAP_KEY,
@@ -680,10 +686,29 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			return;
 		}
 
+		// @QAlias: remap aliased input keys → property keys before processing
+		const _aliasMap = QModel._getAliasMap(
+			this.constructor.prototype as object
+		);
+		const workData: Record<string, unknown> = {};
+		for (const k in data) {
+			if (k === '__proto__' || k === 'constructor' || k === 'prototype')
+				continue;
+			workData[k] = (data as Record<string, unknown>)[k];
+		}
+		if (_aliasMap.size > 0) {
+			for (const [prop, alias] of _aliasMap) {
+				if (alias in workData) {
+					workData[prop] = workData[alias];
+					delete workData[alias];
+				}
+			}
+		}
+
 		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
 		// IMPORTANT: Must be done BEFORE deserialization to preserve original types
 		const initDataClone: Record<string, unknown> = {};
-		for (const key in data) {
+		for (const key in workData) {
 			// SECURITY: Prevent Prototype Pollution
 			if (
 				key === '__proto__' ||
@@ -693,7 +718,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 				continue;
 			}
 
-			const value = (data as Record<string, unknown>)[key];
+			const value = workData[key];
 			// Symbols and functions cannot be cloned, keep reference
 			// QModel instances should also be kept by reference to avoid structuredClone corruption of getters
 			if (
@@ -725,7 +750,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		type IDataAsInterface = Record<string, unknown>;
 		type IThisConstructor = new (data: IDataAsInterface) => this;
 		const deserialized = QModel.deserializer.deserialize(
-			data as unknown as IDataAsInterface,
+			workData as unknown as IDataAsInterface,
 			this.constructor as IThisConstructor
 		);
 
@@ -1117,20 +1142,33 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		options?: IQSerializationOptions
 	): IQSerializedInterface<TInterface> {
 		type IModelAsRecord = Record<string, unknown>;
-		const result = QModel.serializer.serialize(
+		const rawResult = QModel.serializer.serialize(
 			this as unknown as IModelAsRecord,
 			seen,
 			options
-		) as IQSerializedInterface<TInterface>;
+		);
+
+		// @QAlias: remap property keys → alias keys in output
+		const _aliasMap = QModel._getAliasMap(
+			this.constructor.prototype as object
+		);
+		let result: Record<string, unknown> = rawResult;
+		if (_aliasMap.size > 0) {
+			result = { ...rawResult };
+			for (const [prop, alias] of _aliasMap) {
+				if (prop in result) {
+					result[alias] = result[prop];
+					delete result[prop];
+				}
+			}
+		}
 
 		// pick takes precedence over omit
 		if (options?.pick) {
 			const filtered = {} as IQSerializedInterface<TInterface>;
 			for (const key of options.pick) {
 				if (key in result) {
-					(filtered as Record<string, unknown>)[key] = (
-						result as Record<string, unknown>
-					)[key];
+					(filtered as Record<string, unknown>)[key] = result[key];
 				}
 			}
 			return filtered;
@@ -1144,7 +1182,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			return filtered as IQSerializedInterface<TInterface>;
 		}
 
-		return result;
+		return result as IQSerializedInterface<TInterface>;
 	}
 
 	/**
@@ -1165,11 +1203,8 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 */
 	toJSON(_key?: string, options?: IQSerializationOptions): string {
-		type IModelAsRecord = Record<string, unknown>;
-		return QModel.serializer.serializeToJson(
-			this as unknown as IModelAsRecord,
-			options
-		);
+		// Delegate to serialize() so @QAlias remapping is applied before JSON encoding
+		return JSON.stringify(this.serialize(undefined, options));
 	}
 
 	/**
@@ -1332,6 +1367,78 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
+	 * Async version of `checkRules()`. Evaluates all `@QRule` predicates, including async ones,
+	 * and returns a Promise with the combined result.
+	 *
+	 * Sync predicates are wrapped with `Promise.resolve()`, so you can mix sync and async rules
+	 * freely on the same model.
+	 *
+	 * @returns `Promise<IQRulesResult>`
+	 *
+	 * @example
+	 * ```typescript
+	 * const result = await user.checkRulesAsync();
+	 * if (!result.valid) console.log(result.errors);
+	 * ```
+	 */
+	async checkRulesAsync(): Promise<IQRulesResult> {
+		const proto = Object.getPrototypeOf(this);
+		const fields: string[] =
+			Reflect.getMetadata(QRULE_FIELDS_KEY, proto) ?? [];
+
+		const errors: IQRulesResult['errors'] = [];
+
+		for (const field of fields) {
+			const rules: IQRule[] =
+				Reflect.getMetadata(QRULE_METADATA_KEY, proto, field) ?? [];
+			const value = (this as unknown as Record<string, unknown>)[field];
+
+			for (const rule of rules) {
+				let passes = false;
+				try {
+					passes = await Promise.resolve(rule.predicate(value));
+				} catch {
+					passes = false;
+				}
+				if (!passes) {
+					const message =
+						typeof rule.message === 'function'
+							? rule.message()
+							: rule.message;
+					errors.push({ field, message, value });
+				}
+			}
+		}
+
+		return { valid: errors.length === 0, errors };
+	}
+
+	/**
+	 * Async version of `isValid()`. Returns `true` when both integrity and async rules pass.
+	 *
+	 * @returns `Promise<boolean>`
+	 */
+	async isValidAsync(): Promise<boolean> {
+		return this.hasIntegrity() && (await this.checkRulesAsync()).valid;
+	}
+
+	/**
+	 * Async version of `validationReport()`. Runs `checkIntegrity()` synchronously
+	 * and `checkRulesAsync()` for async predicate support.
+	 *
+	 * @returns `Promise<IQValidationReport>`
+	 */
+	async validationReportAsync(): Promise<IQValidationReport> {
+		const integrity = this.checkIntegrity();
+		const rules = await this.checkRulesAsync();
+		return {
+			valid: integrity.length === 0 && rules.valid,
+			integrity,
+			rules,
+		};
+	}
+
+	/**
 	 * Returns the form schema for this instance, built from `@QField` decorators.
 	 * Traverses the full prototype chain to include inherited fields.
 	 *
@@ -1362,6 +1469,35 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
+	 * Returns the form schema grouped by `@QGroup` sections.
+	 * Fields without `@QGroup` are placed in a group with `group: undefined`.
+	 *
+	 * @returns Ordered array of `{ group, fields }` entries.
+	 *
+	 * @example
+	 * ```typescript
+	 * ContactModel.getFormSchemaGrouped();
+	 * // [
+	 * //   { group: 'Personal Info', fields: [{ field: 'firstName', ... }] },
+	 * //   { group: 'Address',       fields: [{ field: 'street', ... }] },
+	 * //   { group: undefined,       fields: [{ field: 'bio', ... }] },
+	 * // ]
+	 * ```
+	 */
+	getFormSchemaGrouped(): IQFormSchemaGroup[] {
+		return QModel._buildGrouped(
+			QModel._collectFormSchema(Object.getPrototypeOf(this))
+		);
+	}
+
+	/**
+	 * Static version of `getFormSchemaGrouped()` — no instance required.
+	 */
+	static getFormSchemaGrouped(): IQFormSchemaGroup[] {
+		return QModel._buildGrouped(QModel._collectFormSchema(this.prototype));
+	}
+
+	/**
 	 * Internal helper: walks the prototype chain collecting @QField entries.
 	 * @internal
 	 */
@@ -1389,13 +1525,76 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 					field
 				);
 				if (meta) {
+					const group: string | undefined = Reflect.getMetadata(
+						QGROUP_METADATA_KEY,
+						char,
+						field
+					);
 					if (!merged.has(field)) order.push(field);
-					merged.set(field, { field, ...meta });
+					merged.set(field, {
+						field,
+						...meta,
+						...(group !== undefined ? { group } : {}),
+					});
 				}
 			}
 		}
 
 		return order.map((field) => merged.get(field)!);
+	}
+
+	/**
+	 * Internal helper: groups a flat schema array by `@QGroup` section.
+	 * @internal
+	 */
+	private static _buildGrouped(
+		flat: IQFormSchemaEntry[]
+	): IQFormSchemaGroup[] {
+		if (flat.length === 0) return [];
+
+		const groupOrder: Array<string | undefined> = [];
+		const groupMap = new Map<string | undefined, IQFormSchemaEntry[]>();
+
+		for (const entry of flat) {
+			const group = (entry as Record<string, unknown>).group as
+				| string
+				| undefined;
+			if (!groupMap.has(group)) {
+				groupMap.set(group, []);
+				groupOrder.push(group);
+			}
+			groupMap.get(group)!.push(entry);
+		}
+
+		return groupOrder.map((groupKey) => ({
+			group: groupKey,
+			fields: groupMap.get(groupKey)!,
+		}));
+	}
+
+	/**
+	 * Internal helper: builds a Map of propertyName → alias by walking the prototype chain.
+	 * @internal
+	 */
+	private static _getAliasMap(startProto: object): Map<string, string> {
+		const map = new Map<string, string>();
+		let proto = startProto;
+		while (proto && proto !== Object.prototype) {
+			const fields: string[] =
+				Reflect.getMetadata(QALIAS_FIELDS_KEY, proto) ?? [];
+			for (const field of fields) {
+				if (!map.has(field)) {
+					const alias = Reflect.getMetadata(
+						QALIAS_METADATA_KEY,
+						proto,
+						field
+					) as string | undefined;
+					if (alias) map.set(field, alias);
+				}
+			}
+			proto = Object.getPrototypeOf(proto);
+		}
+		return map;
 	}
 
 	/**
@@ -1469,7 +1668,34 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		this: new (data: IQModelData<IQAnyRecord>) => T,
 		json: string
 	): T {
-		return QModel.deserializer.deserializeFromJson(json, this);
+		// Use `new this()` (not the deserializer directly) so that @QAlias remapping
+		// in initialize() is applied before deserialization.
+		return new this(JSON.parse(json) as IQModelData<IQAnyRecord>);
+	}
+
+	/**
+	 * Alias for {@link fromJSON}. Creates a model instance from a JSON string.
+	 *
+	 * Parses a JSON string and deserializes it into a fully typed model instance.
+	 * Use this when you prefer a `deserialize`-style naming convention.
+	 *
+	 * @template T - The model class type
+	 * @param json - JSON string representation of the model
+	 * @returns A new, fully typed model instance
+	 *
+	 * @example
+	 * ```typescript
+	 * const json = user.toJSON();
+	 * const restored = User.deserializeJson(json);
+	 * restored.createdAt instanceof Date; // true
+	 * ```
+	 */
+	static deserializeJson<T extends QModel<IQAnyRecord>>(
+		this: new (data: IQModelData<IQAnyRecord>) => T,
+		json: string
+	): T {
+		// Delegates to fromJSON for consistent @QAlias remapping
+		return new this(JSON.parse(json) as IQModelData<IQAnyRecord>);
 	}
 
 	/**
@@ -1650,6 +1876,29 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		// Considered dirty if it now has a defined value
 		const currentVal = (this as unknown as Record<string, unknown>)[field];
 		return currentVal !== undefined;
+	}
+
+	/**
+	 * Returns a `Set` of field names that have changed since the instance was created.
+	 *
+	 * Equivalent to {@link getChangedFields} but returns a `Set<string>` instead
+	 * of an array, making membership checks O(1).
+	 *
+	 * @returns Set of field names that differ from their initial value
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ name: 'John', age: 30 });
+	 * user.patch({ name: 'Jane' });
+	 *
+	 * const dirty = user.getDirtyFields();
+	 * dirty.has('name'); // true
+	 * dirty.has('age');  // false
+	 * dirty.size;        // 1
+	 * ```
+	 */
+	getDirtyFields(): Set<string> {
+		return new Set(this.getChangedFields());
 	}
 
 	/**
