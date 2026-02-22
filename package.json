@@ -50,6 +50,16 @@
 			"types": "./dist/core/index.d.ts",
 			"import": "./dist/core/index.mjs",
 			"require": "./dist/core/index.js"
+		},
+		"./forms": {
+			"types": "./dist/forms.d.ts",
+			"import": "./dist/forms.mjs",
+			"require": "./dist/forms.js"
+		},
+		"./forms5": {
+			"types": "./dist/forms5.d.ts",
+			"import": "./dist/forms5.mjs",
+			"require": "./dist/forms5.js"
 		}
 	},
 	"files": [
@@ -73,7 +83,9 @@
 		"typecheck:watch": "concurrently \"bun run typecheck:src:watch\" \"bun run typecheck:tests:watch\"",
 		"typecheck:src": "tsc --noEmit",
 		"typecheck:src:watch": "bun run typecheck:src --watch",
-		"typecheck:tests": "tsc --noEmit -p ./tests/tsconfig.json",
+		"typecheck:tests": "bun run typecheck:tests:legacy && bun run typecheck:tests:tc39",
+		"typecheck:tests:legacy": "tsc --noEmit -p ./tests/tsconfig.json",
+		"typecheck:tests:tc39": "tsc --noEmit -p ./tests/unit/decorators/tc39/tsconfig.json",
 		"typecheck:tests:watch": "bun run typecheck:tests --watch",
 		"lint": "eslint src tests",
 		"lint:fix": "eslint src tests --fix",
@@ -126,7 +138,12 @@
 		"vitepress": "^1.6.4"
 	},
 	"peerDependencies": {
-		"typescript": ">=5.0.0"
+		"typescript": ">=4.1.0"
+	},
+	"peerDependenciesMeta": {
+		"typescript": {
+			"optional": true
+		}
 	},
 	"engines": {
 		"node": ">=18.0.0"

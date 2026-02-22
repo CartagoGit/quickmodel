@@ -8,8 +8,7 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 
 /** Simulates a DB uniqueness check */
 async function isEmailUnique(email: string): Promise<boolean> {
-	await Bun.sleep(1);
-	return !email.includes('taken');
+	return Promise.resolve(!email.includes('taken'));
 }
 
 @Quick()
@@ -245,4 +244,348 @@ describe('validationReportAsync()', () => {
 		]);
 		expect(report.valid).toBe(isValid);
 	});
+});
+
+// ---------------------------------------------------------------------------
+// Timed async predicates (deferred promises)
+// Bun 1.x does not implement jest.runAllTimers(), so we simulate latency
+// with manually-controlled deferred promises: the predicate hangs until
+// the test explicitly resolves/rejects it, giving full control over timing
+// without any real waiting.
+// ---------------------------------------------------------------------------
+
+/** Returns a promise and its external resolve/reject handles */
+function deferred<T>(): {
+	promise: Promise<T>;
+	resolve: (val: T) => void;
+	reject: (err: unknown) => void;
+} {
+	let resolve!: (val: T) => void;
+	let reject!: (err: unknown) => void;
+	const promise = new Promise<T>((res, rej) => {
+		resolve = res;
+		reject = rej;
+	});
+	return { promise, resolve, reject };
+}
+
+describe('checkRulesAsync() — timed predicates with deferred promises', () => {
+	test('rule passes once the deferred predicate resolves true', async () => {
+		const gate = deferred<boolean>();
+
+		@Quick()
+		class SlowEmailModel extends QModel<{ email: string }> {
+			@QRule(() => gate.promise, 'Email already taken')
+			declare email: string;
+		}
+
+		const model = SlowEmailModel.create({ email: 'available@example.com' });
+		const resultPromise = model.checkRulesAsync();
+
+		// Simulate DB latency: resolve the predicate now
+		gate.resolve(true);
+
+		const result = await resultPromise;
+		expect(result.valid).toBe(true);
+		expect(result.errors).toHaveLength(0);
+	});
+
+	test('rule fails once the deferred predicate resolves false', async () => {
+		const gate = deferred<boolean>();
+
+		@Quick()
+		class SlowEmailModel extends QModel<{ email: string }> {
+			@QRule(() => gate.promise, 'Email already taken')
+			declare email: string;
+		}
+
+		const model = SlowEmailModel.create({ email: 'taken@example.com' });
+		const resultPromise = model.checkRulesAsync();
+
+		// Simulate DB saying "email is taken"
+		gate.resolve(false);
+
+		const result = await resultPromise;
+		expect(result.valid).toBe(false);
+		expect(result.errors[0]?.field).toBe('email');
+		expect(result.errors[0]?.message).toBe('Email already taken');
+	});
+
+	test('collects all failures when multiple deferred predicates resolve false', async () => {
+		const gateUsername = deferred<boolean>();
+		const gateBio = deferred<boolean>();
+
+		@Quick()
+		class MultiSlowModel extends QModel<{ username: string; bio: string }> {
+			@QRule(() => gateUsername.promise, 'Username too short')
+			declare username: string;
+
+			@QRule(() => gateBio.promise, 'Bio too short')
+			declare bio: string;
+		}
+
+		const model = MultiSlowModel.create({ username: 'Jo', bio: 'Hi' });
+		const resultPromise = model.checkRulesAsync();
+
+		// Both predicates resolve independently (simulating different response times)
+		gateUsername.resolve(false);
+		gateBio.resolve(false);
+
+		const result = await resultPromise;
+		expect(result.valid).toBe(false);
+		const fields = result.errors.map((err) => err.field);
+		expect(fields).toContain('username');
+		expect(fields).toContain('bio');
+	});
+
+	test('rejected deferred predicate is treated as rule failure', async () => {
+		const gate = deferred<boolean>();
+
+		@Quick()
+		class UnstableModel extends QModel<{ token: string }> {
+			@QRule(() => gate.promise, 'Auth service unavailable')
+			declare token: string;
+		}
+
+		const model = UnstableModel.create({ token: 'abc' });
+		const resultPromise = model.checkRulesAsync();
+
+		// Simulate service crash
+		gate.reject(new Error('Connection timeout'));
+
+		const result = await resultPromise;
+		expect(result.valid).toBe(false);
+		expect(result.errors[0]?.field).toBe('token');
+		expect(result.errors[0]?.message).toBe('Auth service unavailable');
+	});
+});
+
+// ---------------------------------------------------------------------------
+// checkRulesAsync() — timeout option (real delays with Bun.sleep)
+// These tests use actual async latency to verify that:
+//   1. Predicates slower than timeoutMs fail with timedOut: true
+//   2. Predicates faster than timeoutMs resolve normally
+//   3. Without timeoutMs the call waits as long as needed
+// Test-level timeout is raised above the sum of delays in each test.
+// ---------------------------------------------------------------------------
+
+describe('checkRulesAsync() — timeout option', () => {
+	test(
+		'slow predicate exceeding timeoutMs fails with timedOut:true and default rule message',
+		async () => {
+			@Quick()
+			class SlowModel extends QModel<{ email: string }> {
+				@QRule(async () => {
+					await Bun.sleep(100);
+					return true;
+				}, 'Email check failed')
+				declare email: string;
+			}
+
+			const model = SlowModel.create({ email: 'ok@example.com' });
+			const result = await model.checkRulesAsync({ timeoutMs: 20 });
+
+			expect(result.valid).toBe(false);
+			expect(result.errors[0]?.field).toBe('email');
+			expect(result.errors[0]?.timedOut).toBe(true);
+			// When no timeoutMessage provided, falls back to the rule message
+			expect(result.errors[0]?.message).toBe('Email check failed');
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'slow predicate exceeding timeoutMs uses custom timeoutMessage when provided',
+		async () => {
+			@Quick()
+			class SlowModel extends QModel<{ email: string }> {
+				@QRule(async () => {
+					await Bun.sleep(100);
+					return true;
+				}, 'Email check failed')
+				declare email: string;
+			}
+
+			const model = SlowModel.create({ email: 'ok@example.com' });
+			const result = await model.checkRulesAsync({
+				timeoutMs: 20,
+				timeoutMessage:
+					'Validation service unavailable — try again later',
+			});
+
+			expect(result.valid).toBe(false);
+			expect(result.errors[0]?.timedOut).toBe(true);
+			expect(result.errors[0]?.message).toBe(
+				'Validation service unavailable — try again later'
+			);
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'lazy timeoutMessage function is evaluated at call time',
+		async () => {
+			let lang = 'en';
+			const msgs: Record<string, string> = {
+				en: 'Service unavailable',
+				es: 'Servicio no disponible',
+			};
+
+			@Quick()
+			class SlowModel extends QModel<{ email: string }> {
+				@QRule(async () => {
+					await Bun.sleep(100);
+					return true;
+				}, 'fallback')
+				declare email: string;
+			}
+
+			lang = 'es';
+			const model = SlowModel.create({ email: 'x@x.com' });
+			const result = await model.checkRulesAsync({
+				timeoutMs: 20,
+				timeoutMessage: () => msgs[lang] ?? 'unavailable',
+			});
+
+			expect(result.errors[0]?.timedOut).toBe(true);
+			expect(result.errors[0]?.message).toBe('Servicio no disponible');
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'fast predicate within timeoutMs passes normally',
+		async () => {
+			@Quick()
+			class FastModel extends QModel<{ email: string }> {
+				@QRule(async () => {
+					await Bun.sleep(10);
+					return true;
+				}, 'Email check failed')
+				declare email: string;
+			}
+
+			const model = FastModel.create({ email: 'ok@example.com' });
+			const result = await model.checkRulesAsync({ timeoutMs: 200 });
+
+			expect(result.valid).toBe(true);
+			expect(result.errors).toHaveLength(0);
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'fast predicate returning false within timeoutMs still reports failure (not timedOut)',
+		async () => {
+			@Quick()
+			class FastModel extends QModel<{ age: number }> {
+				@QRule(async (value: number) => {
+					await Bun.sleep(10);
+					return value >= 18;
+				}, 'Must be adult')
+				declare age: number;
+			}
+
+			const model = FastModel.create({ age: 10 });
+			const result = await model.checkRulesAsync({ timeoutMs: 200 });
+
+			expect(result.valid).toBe(false);
+			expect(result.errors[0]?.timedOut).toBeUndefined();
+			expect(result.errors[0]?.message).toBe('Must be adult');
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'without timeoutMs, slow predicate resolves fully even with real latency',
+		async () => {
+			@Quick()
+			class SlowModel extends QModel<{ code: string }> {
+				@QRule(async (value: string) => {
+					await Bun.sleep(50);
+					return value === 'valid';
+				}, 'Invalid code')
+				declare code: string;
+			}
+
+			const model = SlowModel.create({ code: 'valid' });
+			const result = await model.checkRulesAsync(); // no timeout
+
+			expect(result.valid).toBe(true);
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'mixed fields: timed-out rule + fast-failing rule both appear in errors',
+		async () => {
+			@Quick()
+			class MixedModel extends QModel<{ email: string; age: number }> {
+				@QRule(async () => {
+					await Bun.sleep(100);
+					return true;
+				}, 'Email timed out')
+				declare email: string;
+
+				@QRule(async (value: number) => {
+					await Bun.sleep(10);
+					return value >= 18;
+				}, 'Must be adult')
+				declare age: number;
+			}
+
+			const model = MixedModel.create({ email: 'ok@x.com', age: 10 });
+			const result = await model.checkRulesAsync({ timeoutMs: 30 });
+
+			expect(result.valid).toBe(false);
+			const emailErr = result.errors.find((err) => err.field === 'email');
+			const ageErr = result.errors.find((err) => err.field === 'age');
+
+			expect(emailErr?.timedOut).toBe(true);
+			expect(ageErr?.timedOut).toBeUndefined();
+			expect(ageErr?.message).toBe('Must be adult');
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'isValidAsync with timeoutMs returns false when a rule times out',
+		async () => {
+			@Quick()
+			class SlowModel extends QModel<{ email: string }> {
+				@QRule(async () => {
+					await Bun.sleep(100);
+					return true;
+				}, 'Email check failed')
+				declare email: string;
+			}
+
+			const model = SlowModel.create({ email: 'ok@x.com' });
+			const valid = await model.isValidAsync({ timeoutMs: 20 });
+
+			expect(valid).toBe(false);
+		},
+		{ timeout: 500 }
+	);
+
+	test(
+		'validationReportAsync with timeoutMs includes timedOut errors in report.rules',
+		async () => {
+			@Quick()
+			class SlowModel extends QModel<{ email: string }> {
+				@QRule(async () => {
+					await Bun.sleep(100);
+					return true;
+				}, 'Email check failed')
+				declare email: string;
+			}
+
+			const model = SlowModel.create({ email: 'ok@x.com' });
+			const report = await model.validationReportAsync({ timeoutMs: 20 });
+
+			expect(report.valid).toBe(false);
+			expect(report.rules.errors[0]?.timedOut).toBe(true);
+		},
+		{ timeout: 500 }
+	);
 });

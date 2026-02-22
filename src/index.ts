@@ -24,7 +24,11 @@ export type {
 export { Quick } from './core/decorators/quick.decorator';
 export { QType } from './core/decorators/qtype.decorator';
 export { QRule } from './core/decorators/qrule.decorator';
-export type { IQRulesResult, IQRule } from './core/decorators/qrule.decorator';
+export type {
+	IQRulesResult,
+	IQRule,
+	IQRulesAsyncOptions,
+} from './core/decorators/qrule.decorator';
 export { QField } from './core/decorators/qfield.decorator';
 export type {
 	IQFieldMeta,

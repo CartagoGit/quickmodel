@@ -34,7 +34,11 @@ import {
 	QRULE_METADATA_KEY,
 	QRULE_FIELDS_KEY,
 } from '@/core/decorators/qrule.decorator';
-import type { IQRulesResult, IQRule } from '@/core/decorators/qrule.decorator';
+import type {
+	IQRulesResult,
+	IQRule,
+	IQRulesAsyncOptions,
+} from '@/core/decorators/qrule.decorator';
 import {
 	QFIELD_METADATA_KEY,
 	QFIELD_FIELDS_KEY,
@@ -1380,20 +1384,62 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * Sync predicates are wrapped with `Promise.resolve()`, so you can mix sync and async rules
 	 * freely on the same model.
 	 *
+	 * **Execution modes** (`options.mode`):
+	 * - `'parallel'` *(default)* — all predicates start simultaneously via `Promise.all`.
+	 *   Total time ≈ `max(individual times)`. Best for independent I/O calls.
+	 * - `'serial'` — predicates run one at a time in field-declaration order.
+	 *   Total time ≈ `Σ(individual times)`. Useful when predicates have side-effects
+	 *   or must respect a strict evaluation order.
+	 *
+	 * **Timeout** (`options.timeoutMs`): each predicate is individually raced against a
+	 * per-call timer. Predicates that exceed the budget fail with `timedOut: true` in the
+	 * error entry. A custom message can be supplied via `options.timeoutMessage`.
+	 *
+	 * @param options - Optional execution settings (mode, timeoutMs, timeoutMessage).
 	 * @returns `Promise<IQRulesResult>`
 	 *
-	 * @example
+	 * @example Basic usage
 	 * ```typescript
 	 * const result = await user.checkRulesAsync();
 	 * if (!result.valid) console.log(result.errors);
 	 * ```
+	 *
+	 * @example With timeout
+	 * ```typescript
+	 * const result = await user.checkRulesAsync({ timeoutMs: 200, timeoutMessage: 'Service unavailable' });
+	 * result.errors.forEach((err) => {
+	 *   if (err.timedOut) console.warn(`${err.field} timed out`);
+	 * });
+	 * ```
+	 *
+	 * @example Serial execution (e.g. check format first, then uniqueness)
+	 * ```typescript
+	 * const result = await user.checkRulesAsync({ mode: 'serial' });
+	 * ```
 	 */
-	async checkRulesAsync(): Promise<IQRulesResult> {
+	async checkRulesAsync(
+		options?: IQRulesAsyncOptions
+	): Promise<IQRulesResult> {
 		const proto = Object.getPrototypeOf(this);
 		const fields: string[] =
 			Reflect.getMetadata(QRULE_FIELDS_KEY, proto) ?? [];
 
-		const errors: IQRulesResult['errors'] = [];
+		// Sentinel value that signals a timeout — unique per call so no cross-call collision
+		const TIMED_OUT = Symbol('timed_out');
+
+		// ---------------------------------------------------------------------------
+		// Task descriptor — stores everything needed to run a predicate, but does
+		// NOT start it yet. This lets parallel mode start all at once while serial
+		// mode starts each only after the previous settles.
+		// ---------------------------------------------------------------------------
+		type ITaskDescriptor = {
+			field: string;
+			value: unknown;
+			message: string | (() => string);
+			rule: IQRule<unknown>;
+		};
+
+		const descriptors: ITaskDescriptor[] = [];
 
 		for (const field of fields) {
 			const rules: IQRule<unknown>[] =
@@ -1401,19 +1447,84 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			const value = (this as unknown as Record<string, unknown>)[field];
 
 			for (const rule of rules) {
-				let passes = false;
-				try {
-					passes = await Promise.resolve(rule.predicate(value));
-				} catch {
-					passes = false;
-				}
-				if (!passes) {
-					const message =
-						typeof rule.message === 'function'
-							? rule.message()
-							: rule.message;
-					errors.push({ field, message, value });
-				}
+				descriptors.push({ field, value, message: rule.message, rule });
+			}
+		}
+
+		// ---------------------------------------------------------------------------
+		// Helpers — shared between both execution modes
+		// ---------------------------------------------------------------------------
+
+		/** Starts a single predicate and wraps it with an optional per-predicate timeout. */
+		const runPredicate = (
+			descriptor: ITaskDescriptor
+		): Promise<boolean | typeof TIMED_OUT> => {
+			// Wrap predicate so rejections become `false` — keeps outcomes clean
+			const predicatePromise: Promise<boolean> = Promise.resolve()
+				.then(() => descriptor.rule.predicate(descriptor.value))
+				.catch(() => false as boolean);
+
+			return options?.timeoutMs !== undefined
+				? Promise.race([
+						predicatePromise,
+						new Promise<typeof TIMED_OUT>((resolve) =>
+							setTimeout(
+								() => resolve(TIMED_OUT),
+								options.timeoutMs
+							)
+						),
+					])
+				: predicatePromise;
+		};
+
+		/** Converts a settled outcome + descriptor into an error entry (if it failed). */
+		const collectError = (
+			descriptor: ITaskDescriptor,
+			result: boolean | typeof TIMED_OUT,
+			errors: IQRulesResult['errors']
+		): void => {
+			const timedOut = result === TIMED_OUT;
+			const passes = !timedOut && result === true;
+
+			if (!passes) {
+				const rawMessage =
+					typeof descriptor.message === 'function'
+						? descriptor.message()
+						: descriptor.message;
+				const message = timedOut
+					? typeof options?.timeoutMessage === 'function'
+						? options.timeoutMessage()
+						: (options?.timeoutMessage ?? rawMessage)
+					: rawMessage;
+				errors.push({
+					field: descriptor.field,
+					message,
+					value: descriptor.value,
+					...(timedOut ? { timedOut: true as const } : {}),
+				});
+			}
+		};
+
+		// ---------------------------------------------------------------------------
+		// Execution — parallel (default) or serial
+		// ---------------------------------------------------------------------------
+
+		const errors: IQRulesResult['errors'] = [];
+
+		if (options?.mode === 'serial') {
+			// Serial: start each predicate only after the previous one has settled.
+			// Total time ≈ Σ(individual predicate times).
+			// Useful when predicates have side-effects or must respect a strict order.
+			for (const descriptor of descriptors) {
+				const result = await runPredicate(descriptor);
+				collectError(descriptor, result, errors);
+			}
+		} else {
+			// Parallel (default): all predicates start simultaneously.
+			// Total time ≈ max(individual predicate times).
+			const results = await Promise.all(descriptors.map(runPredicate));
+			for (let idx = 0; idx < descriptors.length; idx++) {
+				collectError(descriptors[idx]!, results[idx]!, errors);
 			}
 		}
 
@@ -1423,10 +1534,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	/**
 	 * Async version of `isValid()`. Returns `true` when both integrity and async rules pass.
 	 *
+	 * @param options - Optional timeout and message settings forwarded to `checkRulesAsync()`.
 	 * @returns `Promise<boolean>`
 	 */
-	async isValidAsync(): Promise<boolean> {
-		return this.hasIntegrity() && (await this.checkRulesAsync()).valid;
+	async isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
+		return (
+			this.hasIntegrity() && (await this.checkRulesAsync(options)).valid
+		);
 	}
 
 	/**
@@ -1435,9 +1549,11 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *
 	 * @returns `Promise<IQValidationReport>`
 	 */
-	async validationReportAsync(): Promise<IQValidationReport> {
+	async validationReportAsync(
+		options?: IQRulesAsyncOptions
+	): Promise<IQValidationReport> {
 		const integrity = this.checkIntegrity();
-		const rules = await this.checkRulesAsync();
+		const rules = await this.checkRulesAsync(options);
 		return {
 			valid: integrity.length === 0 && rules.valid,
 			integrity,

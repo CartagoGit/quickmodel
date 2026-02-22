@@ -2,14 +2,13 @@
 
 > **Fecha de revisión:** 22 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 1836 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 2002 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#13, #18–#22, #23–#30 (features sprint Feb 2026)
+✅ Completadas: Tasks #1–#16, #18–#22, #23–#32 (sprint Feb 2026)
 🔄 En progreso: —
-⏳ Pendientes: Task #14 (docs JsonSchemaGenerator)
 ⏸️  Backlog: Task #17 (benchmarks)
 ```
 
@@ -36,6 +35,7 @@
 - ✅ Task #28: `QModel.extends()` — simplificación de generics (commit `4ff1d55`)
 - ✅ Task #29: `@QAlias` + `@QGroup` — alias y agrupación de campos (commit `a714b2e`)
 - ✅ Task #30: `createReadonly()` refactor + async predicates en `checkRules()` (commit `05bcb8c`)
+- ✅ Task #32: `checkRulesAsync` — timeout, modo serial/paralelo, IQRule\<T\> genérico — **COMPLETADA** (22 Feb 2026)
 
 **Revisión completa 22 Feb 2026 — Tareas actualizadas:**
 
@@ -52,6 +52,53 @@
 - ✅ Task #21: Guía de integración NestJS — **COMPLETADA**
 - ✅ Task #22: Deprecation warning para `unknownPropertyPolicy` + docs :::warning v2.0.0 — **COMPLETADA**
 - ✅ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc. — **COMPLETADA** (docs ya presentes)
+- ✅ Task #32: `checkRulesAsync` avanzado — timeout + modo serial/paralelo — **COMPLETADA** (ver detalles abajo)
+
+---
+
+---
+
+## ✅ Task #32: `checkRulesAsync` — timeout, modo serial/paralelo, `IQRule<T>` genérico
+
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests añadidos:** +99 tests (1903 → 2002)  
+**Archivos modificados:**
+
+- `src/core/decorators/qrule.decorator.ts` — `IQRule<T>`, `IQRulesAsyncOptions` con `mode`
+- `src/core/models/quick.model.ts` — `checkRulesAsync` paralelo+serial, timeout por predicado
+- `src/index.ts` — export `IQRulesAsyncOptions`
+- `docs-vitepress/en/guide/validation.md` — sección async ampliada
+- `docs-vitepress/es/guide/validation.md` — ídem en español
+
+**Funcionalidad entregada:**
+
+1. **`IQRule<T>` genérico** — el predicado está tipado con el valor del campo (`(value: T) => boolean | Promise<boolean>`). El usuario puede anotar el parámetro en lugar de castear: `(value: string) => ...`.
+
+2. **`IQRulesAsyncOptions.mode`** — `'parallel'` (default) | `'serial'`:
+    - `parallel`: todos los predicados arrancan simultáneamente (`Promise.all`). Tiempo total ≈ `max(tiempos)`.
+    - `serial`: los predicados se ejecutan uno tras otro en orden de declaración. Tiempo total ≈ `Σ(tiempos)`. Útil cuando hay efectos secundarios o el orden importa.
+
+3. **`IQRulesAsyncOptions.timeoutMs`** — presupuesto máximo por predicado. Predicados que superan el límite fallan con `timedOut: true` en la entrada de error.
+
+4. **`IQRulesAsyncOptions.timeoutMessage`** — `string | (() => string)`. Mensaje estático o lazy que reemplaza el de la regla cuando se produce timeout.
+
+5. **`isValidAsync(options?)` y `validationReportAsync(options?)`** — propagan `options` a `checkRulesAsync`.
+
+**Semántica de errores:**
+
+| Situación                                     | `timedOut` | `message`                                                     |
+| --------------------------------------------- | ---------- | ------------------------------------------------------------- |
+| Predicado falla lógicamente dentro del budget | ausente    | mensaje de la regla                                           |
+| Predicado rechaza (throw) dentro del budget   | ausente    | mensaje de la regla                                           |
+| Predicado supera `timeoutMs`                  | `true`     | `timeoutMessage` si se proporcionó, si no mensaje de la regla |
+
+**Tests cubiertos:**
+
+- `tests/unit/validation/async-qrule.test.ts` — deferred helpers, timeout básico
+- `tests/integration/models/qrule-timeout.test.ts` — 13 tests (delays reales, abandon semantics)
+- `tests/integration/models/qrule-async-combinations.test.ts` — 40 tests (matriz completa: sin timeout, budget uniforme, budget variable, múltiples reglas por campo, crash vs timeout, instant, sync+async, timeoutMessage, combinación heterogénea, isValidAsync/validationReportAsync)
+- `tests/integration/models/qrule-execution-mode.test.ts` — 35 tests (parallel/serial: corrección, orden, timing O(Σ) vs O(max), crash, múltiples reglas, serial+timeout)
 
 ---
 

@@ -22,6 +22,8 @@
 		"../src/mcp/**/*",
 		"unit/mcp/**/*",
 		"integration/mcp/**/*",
-		"e2e/mcp/**/*"
+		"e2e/mcp/**/*",
+		// TC39 test folder has its own tsconfig (experimentalDecorators: false)
+		"unit/decorators/tc39/**/*"
 	]
 }

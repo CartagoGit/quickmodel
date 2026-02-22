@@ -279,7 +279,7 @@ export class AuthService {
 	async register(data: object): Promise<object> {
 		const dto = new RegisterDto(data);
 
-		// evaluates both sync AND async predicates
+		// evaluates both sync AND async predicates — all in parallel by default
 		const result = await dto.checkRulesAsync();
 		if (!result.valid) {
 			throw new BadRequestException({
@@ -292,6 +292,41 @@ export class AuthService {
 	}
 }
 ```
+
+### Timeout and execution mode
+
+`checkRulesAsync()` accepts an optional `IQRulesAsyncOptions` object:
+
+```typescript
+// Give each DB predicate a 300 ms budget — prevents hanging requests
+const result = await dto.checkRulesAsync({
+	timeoutMs: 300,
+	timeoutMessage: 'Service temporarily unavailable',
+});
+
+// Check which fields timed out vs. failed logically
+result.errors.forEach((err) => {
+	if (err.timedOut) {
+		// predicate exceeded the 300 ms budget
+		this.logger.warn(`${err.field}: async check timed out`);
+	}
+});
+```
+
+By default all predicates run **in parallel**. Use `mode: 'serial'` when predicates must run in order (e.g. validate format locally before making a DB call):
+
+```typescript
+// Serial: format check runs first, DB call only happens if format passes
+const result = await dto.checkRulesAsync({ mode: 'serial', timeoutMs: 300 });
+```
+
+| Option           | Type                     | Default      | Description                                       |
+| ---------------- | ------------------------ | ------------ | ------------------------------------------------- |
+| `mode`           | `'parallel' \| 'serial'` | `'parallel'` | Execution order of predicates                     |
+| `timeoutMs`      | `number`                 | —            | Max ms per predicate; exceeded → `timedOut: true` |
+| `timeoutMessage` | `string \| () => string` | rule message | Message on timeout                                |
+
+````
 
 ## Bulk Endpoints with createMany
 
@@ -323,7 +358,7 @@ export class UsersService {
 		};
 	}
 }
-```
+````
 
 ::: tip Partial success
 Pass `{ includeErrorInstances: true }` to `createMany()` to include failed instances in `instances[]` alongside valid ones — useful for bulk-insert-with-partial-failure endpoints.
@@ -526,7 +561,7 @@ describe('CreateUserDto', () => {
 | ------------------- | ----------------------------------------- | ------------------------------------------------ |
 | Type coercion       | `class-transformer` + `@Type()`           | Automatic via `@Quick({ field: Date })`          |
 | Field validation    | `@IsEmail()`, `@IsNotEmpty()`, …          | `@QRule(predicate, message)`                     |
-| Async validation    | `@ValidatorConstraint({ async: true })`   | `async` predicate + `checkRulesAsync()`          |
+| Async validation    | `@ValidatorConstraint({ async: true })`   | `async` predicate + `checkRulesAsync(options?)`  |
 | Nested models       | `@Type(() => NestedDto)`                  | `@Quick({ field: NestedModel })`                 |
 | Serialization       | `instanceToPlain()` / `plainToInstance()` | `.serialize()` / `.toJSON()`                     |
 | Schema export       | Manual `@ApiProperty()` per field         | `.getSchema('openapi')`                          |

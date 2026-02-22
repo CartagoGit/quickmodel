@@ -327,6 +327,47 @@ Sync predicates also work seamlessly — they are wrapped in `Promise.resolve()`
 > [!NOTE]
 > `checkRules()` (sync) still works as before and ignores async predicates — it does NOT await them. Use `checkRulesAsync()` when async rules are present.
 
+#### Execution mode
+
+By default all predicates run **in parallel** (`mode: 'parallel'`), so total time ≈ the slowest individual predicate. Pass `mode: 'serial'` when predicates must run one after the other (e.g. checking format before hitting the database):
+
+```typescript
+// Parallel (default) — all predicates race simultaneously
+const result = await user.checkRulesAsync();
+
+// Serial — predicates run in field-declaration order
+const result = await user.checkRulesAsync({ mode: 'serial' });
+```
+
+| Mode                     | Total time              | When to use                              |
+| ------------------------ | ----------------------- | ---------------------------------------- |
+| `'parallel'` _(default)_ | `max(individual times)` | Independent I/O calls                    |
+| `'serial'`               | `Σ(individual times)`   | Side-effects or strict ordering required |
+
+#### Per-predicate timeout
+
+Pass `timeoutMs` to give each predicate a maximum budget. Predicates that exceed it fail with `timedOut: true` in the error entry. Optionally provide a custom `timeoutMessage`:
+
+```typescript
+const result = await user.checkRulesAsync({
+	timeoutMs: 200,
+	timeoutMessage: 'Service unavailable', // or () => i18n.t('errors.timeout')
+});
+
+result.errors.forEach((err) => {
+	if (err.timedOut) {
+		console.warn(`${err.field}: predicate timed out after 200 ms`);
+	}
+});
+```
+
+Options can be combined freely:
+
+```typescript
+// Serial execution with a 300 ms budget per predicate
+const result = await user.checkRulesAsync({ mode: 'serial', timeoutMs: 300 });
+```
+
 ### `isValidAsync()`
 
 Async equivalent of `isValid()`. Returns `Promise<boolean>`.
@@ -351,8 +392,16 @@ if (!report.valid) {
 
 ### Async API summary
 
-| Method                    | Returns                       | Notes                          |
-| ------------------------- | ----------------------------- | ------------------------------ |
-| `checkRulesAsync()`       | `Promise<IQRulesResult>`      | Awaits sync + async predicates |
-| `isValidAsync()`          | `Promise<boolean>`            | Integrity + async rules        |
-| `validationReportAsync()` | `Promise<IQValidationReport>` | Full report, async-safe        |
+| Method                            | Returns                       | Notes                          |
+| --------------------------------- | ----------------------------- | ------------------------------ |
+| `checkRulesAsync(options?)`       | `Promise<IQRulesResult>`      | Awaits sync + async predicates |
+| `isValidAsync(options?)`          | `Promise<boolean>`            | Integrity + async rules        |
+| `validationReportAsync(options?)` | `Promise<IQValidationReport>` | Full report, async-safe        |
+
+**`options` (`IQRulesAsyncOptions`)**
+
+| Option           | Type                     | Default      | Description                                       |
+| ---------------- | ------------------------ | ------------ | ------------------------------------------------- |
+| `mode`           | `'parallel' \| 'serial'` | `'parallel'` | Execution order of predicates                     |
+| `timeoutMs`      | `number`                 | —            | Max ms per predicate; exceeded → `timedOut: true` |
+| `timeoutMessage` | `string \| () => string` | rule message | Message used when a predicate times out           |

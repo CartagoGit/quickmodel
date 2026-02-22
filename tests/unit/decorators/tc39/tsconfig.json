@@ -1,0 +1,26 @@
+{
+	"extends": "../../../../tsconfig.json",
+	"compilerOptions": {
+		// TC39 standard decorators (Stage 3 / TS 5+)
+		// Overrides the root experimentalDecorators:true so that @decorator
+		// syntax in this folder is compiled as TC39 ClassFieldDecoratorContext,
+		// not as legacy PropertyDecorator.
+		"experimentalDecorators": false,
+		"emitDecoratorMetadata": false,
+
+		// Tests do not emit files
+		"noEmit": true,
+
+		// Strict unused-variable checks in tests
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+
+		// Array index access ergonomics in tests
+		"noUncheckedIndexedAccess": false,
+
+		// rootDir must cover both src/ and tests/ from the project root
+		"rootDir": "../../../../"
+	},
+	"include": ["qrule-tc39.test.ts", "../../../../src/**/*"],
+	"exclude": ["../../../../node_modules", "../../../../dist"]
+}

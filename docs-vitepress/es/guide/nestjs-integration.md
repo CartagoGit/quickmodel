@@ -294,7 +294,7 @@ export class AuthService {
 	async register(data: object): Promise<object> {
 		const dto = new RegisterDto(data);
 
-		// evalúa tanto predicados síncronos como asíncronos
+		// evalúa predicados síncronos y asíncronos — todos en paralelo por defecto
 		const result = await dto.checkRulesAsync();
 		if (!result.valid) {
 			throw new BadRequestException({
@@ -307,6 +307,41 @@ export class AuthService {
 	}
 }
 ```
+
+### Timeout y modo de ejecución
+
+`checkRulesAsync()` acepta un objeto `IQRulesAsyncOptions` opcional:
+
+```typescript
+// Dar a cada predicado BD un presupuesto de 300 ms — evita requests colgados
+const result = await dto.checkRulesAsync({
+	timeoutMs: 300,
+	timeoutMessage: 'Servicio temporalmente no disponible',
+});
+
+// Distinguir qué campos fallaron por timeout vs. por lógica
+result.errors.forEach((err) => {
+	if (err.timedOut) {
+		// el predicado superó los 300 ms
+		this.logger.warn(`${err.field}: comprobación async expiró`);
+	}
+});
+```
+
+Por defecto todos los predicados se ejecutan **en paralelo**. Usa `mode: 'serial'` cuando deban ejecutarse en orden (p. ej. validar formato localmente antes de hacer la consulta a BD):
+
+```typescript
+// Serie: comprobación de formato primero, la BD solo si el formato es correcto
+const result = await dto.checkRulesAsync({ mode: 'serial', timeoutMs: 300 });
+```
+
+| Opción           | Tipo                     | Por defecto         | Descripción                                                |
+| ---------------- | ------------------------ | ------------------- | ---------------------------------------------------------- |
+| `mode`           | `'parallel' \| 'serial'` | `'parallel'`        | Orden de ejecución de los predicados                       |
+| `timeoutMs`      | `number`                 | —                   | Tiempo máx. por predicado; si se supera → `timedOut: true` |
+| `timeoutMessage` | `string \| () => string` | mensaje de la regla | Mensaje usado al expirar                                   |
+
+````
 
 ## Endpoints bulk con createMany
 
@@ -338,7 +373,7 @@ export class UsersService {
 		};
 	}
 }
-```
+````
 
 ::: tip Éxito parcial
 Pasa `{ includeErrorInstances: true }` a `createMany()` para incluir las instancias fallidas en `instances[]` junto con las válidas — útil para endpoints de inserción bulk con fallo parcial.
@@ -541,7 +576,7 @@ describe('CreateUserDto', () => {
 | --------------------- | ----------------------------------------- | ------------------------------------------------ |
 | Coerción de tipos     | `class-transformer` + `@Type()`           | Automática con `@Quick({ field: Date })`         |
 | Validación de campos  | `@IsEmail()`, `@IsNotEmpty()`, …          | `@QRule(predicado, mensaje)`                     |
-| Validación async      | `@ValidatorConstraint({ async: true })`   | Predicado `async` + `checkRulesAsync()`          |
+| Validación async      | `@ValidatorConstraint({ async: true })`   | Predicado `async` + `checkRulesAsync(options?)`  |
 | Modelos anidados      | `@Type(() => NestedDto)`                  | `@Quick({ field: NestedModel })`                 |
 | Serialización         | `instanceToPlain()` / `plainToInstance()` | `.serialize()` / `.toJSON()`                     |
 | Exportar schema       | `@ApiProperty()` manual por campo         | `.getSchema('openapi')`                          |

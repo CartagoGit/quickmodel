@@ -339,6 +339,50 @@ Los predicados síncronos también funcionan — se envuelven internamente en `P
 > [!NOTE]
 > `checkRules()` (síncrono) sigue funcionando como antes y no espera predicados async. Usa `checkRulesAsync()` cuando tengas reglas asíncronas.
 
+#### Modo de ejecución
+
+Por defecto todos los predicados se ejecutan **en paralelo** (`mode: 'parallel'`), así el tiempo total ≈ el predicado más lento. Usa `mode: 'serial'` cuando los predicados deban ejecutarse uno tras otro (p. ej. comprobar formato antes de consultar la base de datos):
+
+```typescript
+// Paralelo (por defecto) — todos los predicados arran simultáneamente
+const resultado = await usuario.checkRulesAsync();
+
+// Serie — los predicados se ejecutan en orden de declaración
+const resultado = await usuario.checkRulesAsync({ mode: 'serial' });
+```
+
+| Modo                         | Tiempo total                | Cuándo usarlo                        |
+| ---------------------------- | --------------------------- | ------------------------------------ |
+| `'parallel'` _(por defecto)_ | `max(tiempos individuales)` | Llamadas I/O independientes          |
+| `'serial'`                   | `Σ(tiempos individuales)`   | Efectos secundarios u orden estricto |
+
+#### Timeout por predicado
+
+Pasa `timeoutMs` para darle a cada predicado un presupuesto máximo. Los que lo superen fallan con `timedOut: true` en la entrada de error. Opcionalmente puedes indicar un `timeoutMessage` personalizado:
+
+```typescript
+const resultado = await usuario.checkRulesAsync({
+	timeoutMs: 200,
+	timeoutMessage: 'Servicio no disponible', // o () => i18n.t('errores.timeout')
+});
+
+resultado.errors.forEach((err) => {
+	if (err.timedOut) {
+		console.warn(`${err.field}: predicado superó los 200 ms`);
+	}
+});
+```
+
+Las opciones se pueden combinar libremente:
+
+```typescript
+// Ejecución en serie con presupuesto de 300 ms por predicado
+const resultado = await usuario.checkRulesAsync({
+	mode: 'serial',
+	timeoutMs: 300,
+});
+```
+
 ### `isValidAsync()`
 
 Equivalente async de `isValid()`. Devuelve `Promise<boolean>`.
@@ -363,9 +407,17 @@ if (!reporte.valid) {
 
 ### Resumen API async
 
-| Método                    | Devuelve                      | Notas                               |
-| ------------------------- | ----------------------------- | ----------------------------------- |
-| `checkRulesAsync()`       | `Promise<IQRulesResult>`      | Espera predicados síncronos y async |
-| `isValidAsync()`          | `Promise<boolean>`            | Integridad + reglas async           |
-| `validationReportAsync()` | `Promise<IQValidationReport>` | Reporte completo, compatible async  |
+| Método                            | Devuelve                      | Notas                               |
+| --------------------------------- | ----------------------------- | ----------------------------------- |
+| `checkRulesAsync(options?)`       | `Promise<IQRulesResult>`      | Espera predicados síncronos y async |
+| `isValidAsync(options?)`          | `Promise<boolean>`            | Integridad + reglas async           |
+| `validationReportAsync(options?)` | `Promise<IQValidationReport>` | Reporte completo, compatible async  |
+
+**`options` (`IQRulesAsyncOptions`)**
+
+| Opción           | Tipo                     | Por defecto         | Descripción                                                |
+| ---------------- | ------------------------ | ------------------- | ---------------------------------------------------------- |
+| `mode`           | `'parallel' \| 'serial'` | `'parallel'`        | Orden de ejecución de los predicados                       |
+| `timeoutMs`      | `number`                 | —                   | Tiempo máx. por predicado; si se supera → `timedOut: true` |
+| `timeoutMessage` | `string \| () => string` | mensaje de la regla | Mensaje usado cuando un predicado supera el timeout        |
 ````
