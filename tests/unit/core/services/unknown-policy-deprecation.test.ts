@@ -71,7 +71,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 	test('emits a deprecation warning when unknownPropertyPolicy is not set', () => {
 		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasDeprecation = warnings.some((msg) =>
 			msg.includes('unknownPropertyPolicy')
@@ -82,7 +82,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 	test('deprecation warning mentions v2.0.0', () => {
 		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasVersion = warnings.some(
 			(msg) => msg.includes('v2.0.0') || msg.includes('v2')
@@ -93,7 +93,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 	test('deprecation warning mentions the model class name', () => {
 		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasClassName = warnings.some((msg) =>
 			msg.includes('ProductNoPolicyModel')
@@ -106,7 +106,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 	test('does NOT warn when unknownPropertyPolicy is explicitly set to "keep"', () => {
 		ProductKeepModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasDeprecation = warnings.some((msg) =>
 			msg.includes('unknownPropertyPolicy')
@@ -117,7 +117,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 	test('does NOT warn when unknownPropertyPolicy is explicitly set to "strip"', () => {
 		ProductStripModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasDeprecation = warnings.some((msg) =>
 			msg.includes('unknownPropertyPolicy')
@@ -129,7 +129,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 		// Pass only declared properties to avoid the error policy throwing
 		ProductErrorModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasDeprecation = warnings.some((msg) =>
 			msg.includes('unknownPropertyPolicy')
@@ -144,7 +144,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 
 		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasDeprecation = warnings.some((msg) =>
 			msg.includes('unknownPropertyPolicy')
@@ -168,7 +168,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 
 		OrderModel.create({ id: 1, product: { name: 'Widget', price: 9.99 } });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const deprecationWarnings = calls.filter((args) =>
 			String(args[0]).includes('unknownPropertyPolicy')
 		);
@@ -183,7 +183,7 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 	test('deprecation warning recommends setting the policy explicitly', () => {
 		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
 
-		const calls = warnSpy.mock.calls;
+		const calls = warnSpy.mock.calls as string[][];
 		const warnings = calls.map((args) => String(args[0]));
 		const hasRecommendation = warnings.some(
 			(msg) =>

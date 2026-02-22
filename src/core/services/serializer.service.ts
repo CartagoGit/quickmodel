@@ -494,18 +494,20 @@ export class Serializer<
 
 			// Check if Map has Symbol keys
 			const hasSymbolKeys = Array.from(value.keys()).some(
-				(k) => typeof k === 'symbol'
+				(key) => typeof key === 'symbol'
 			);
 
 			// If has Symbol keys, serialize as array of tuples to preserve Symbol info
 			if (hasSymbolKeys) {
 				const entries: [string, unknown][] = [];
-				for (const [k, v] of value) {
+				for (const [key, val] of value) {
 					// Convert Symbol to string (Symbol.keyFor or description)
 					const keyStr =
-						typeof k === 'symbol'
-							? (Symbol.keyFor(k) ?? k.description ?? String(k))
-							: String(k);
+						typeof key === 'symbol'
+							? (Symbol.keyFor(key) ??
+								key.description ??
+								String(key))
+							: String(key);
 
 					// SECURITY: Prevent Prototype Poisoning
 					if (
@@ -517,7 +519,7 @@ export class Serializer<
 					}
 
 					// Recursive call ensures values (like BigInt, Date) are IQSerialized
-					const serializedValue = this.serializeValue(v, visited, {
+					const serializedValue = this.serializeValue(val, visited, {
 						...options,
 						_depth: depth + 1,
 					});
@@ -529,8 +531,8 @@ export class Serializer<
 
 			// Standard Map serialization (object format)
 			const result: Record<string, unknown> = {};
-			for (const [k, v] of value) {
-				const keyStr = String(k);
+			for (const [key, val] of value) {
+				const keyStr = String(key);
 				// SECURITY: Prevent Prototype Poisoning
 				if (
 					keyStr === '__proto__' ||
@@ -541,7 +543,7 @@ export class Serializer<
 				}
 
 				// Recursive call ensures values (like BigInt) are IQSerialized
-				result[keyStr] = this.serializeValue(v, visited, {
+				result[keyStr] = this.serializeValue(val, visited, {
 					...options,
 					_depth: depth + 1,
 				});
@@ -708,7 +710,7 @@ export class Serializer<
 				value instanceof BigInt64Array ||
 				value instanceof BigUint64Array
 			) {
-				return Array.from(value, (v: bigint) => v.toString());
+				return Array.from(value, (val: bigint) => val.toString());
 			}
 			// TypedArrays tienen iterator pero TypeScript necesita type assertion
 			if (value instanceof Int8Array) return Array.from(value);

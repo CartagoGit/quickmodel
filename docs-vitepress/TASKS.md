@@ -50,7 +50,7 @@
 - ✅ Task #19: `QTransformerRegistry.snapshot()/restore()` — **COMPLETADA**
 - ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
 - ⏸️ Task #21: Guía de integración NestJS
-- ⏸️ Task #22: Cambiar default de `unknownPropertyPolicy` a `'strip'` en v2.0.0
+- ✅ Task #22: Deprecation warning para `unknownPropertyPolicy` + docs :::warning v2.0.0 — **COMPLETADA**
 - ✅ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc. — **COMPLETADA** (docs ya presentes)
 
 ---
@@ -957,7 +957,7 @@ describe('Computed Properties & Getters', () => {
 
 **Progreso:**
 
-- ✅ Completadas: 27/31 (87%) — 1817 tests passing
+- ✅ Completadas: 28/31 (90%) — 1826 tests passing
 - ⏳ Pendientes activas: 0/31 (0%)
 - ⏸️ Backlog: 4/31 (13%)
 
@@ -1511,22 +1511,26 @@ describe('QTransformerRegistry: isolation', () => {
 
 ---
 
-### Task #22: Default `unknownPropertyPolicy: 'strip'` en v2.0.0
+### ✅ Task #22: Default `unknownPropertyPolicy: 'strip'` en v2.0.0
 
-**Status:** ⏸️ BACKLOG  
+**Status:** ✅ COMPLETADA (v1.x — deprecation warning)  
+**Fecha:** 22 de febrero de 2026  
 **Prioridad:** 🟢 Baja — breaking change planificado para v2.0.0  
-**Esfuerzo:** 1 hora  
-**Impacto:** Alto (seguridad) — el default actual `'keep'` es inconsistente con el enfoque de seguridad del proyecto
+**Esfuerzo real:** 2 horas  
+**Resultado:** Deprecation warning implementado + docs `:::warning` EN+ES
 
-**Problema:** El proyecto tiene protección de prototype pollution, límites DoS, y method shadowing... pero por defecto permite que propiedades no declaradas entren al modelo sin filtrar. Esto puede exponer datos inesperados al serializar de vuelta.
+**Implementación v1.x:**
 
-**Plan:**
+1. `src/core/services/population.service.ts` — deprecation warning al detectar ausencia de `unknownPropertyPolicy`:
+    - Solo para clases con `@Quick` explícito (detectado via `QUICK_TYPE_MAP_KEY` metadata)
+    - Deduplicación por clase con `Set<Function>` estático
+    - Se emite una vez por clase, en llamadas root (depth === 0)
+    - Mensaje incluye nombre de clase, v2.0.0 y recomendación de `'strip'`
+2. `tests/unit/core/services/unknown-policy-deprecation.test.ts` — 9 tests TDD
+3. Docs `:::warning` en `unknown-property-policy.md` EN+ES
+4. Tests afectados actualizados: `system-performance.test.ts`, `arrow-function-warning.test.ts`
 
-1. v1.x: Mantener `'keep'` como default. **Añadir deprecation warning** si no se configura explícitamente.
-2. v2.0.0: Cambiar default a `'strip'`.
-3. Documentar la migration guide.
-
-**Docs a actualizar (ahora, v1.x):** guía configuration EN+ES — añadir nota con `:::warning` recomendando establecer `unknownPropertyPolicy: 'strip'` explícitamente para mayor seguridad.
+**Pendiente para v2.0.0:** Cambiar el default de `'keep'` a `'strip'` en `population.service.ts`.
 
 ---
 
@@ -1761,4 +1765,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº7) — Task #19 snapshot()/restore() completada | 1817 tests passing | 27/31 tareas (87%)
+**Última actualización:** 22 de febrero de 2026 (revisión nº8) — Task #22 deprecation warning completada | 1826 tests passing | 28/31 tareas (90%)

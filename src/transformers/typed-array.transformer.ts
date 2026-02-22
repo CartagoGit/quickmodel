@@ -181,12 +181,13 @@ export class TypedArrayTransformer<T extends ITypedArray>
 		}
 
 		if (this.isBigInt) {
-			const bigIntArray = arrayData.map((v: unknown) => {
-				if (typeof v === 'bigint') return v;
-				if (v === null || v === undefined || v === '') return BigInt(0);
-				if (typeof v === 'string' || typeof v === 'number') {
+			const bigIntArray = arrayData.map((val: unknown) => {
+				if (typeof val === 'bigint') return val;
+				if (val === null || val === undefined || val === '')
+					return BigInt(0);
+				if (typeof val === 'string' || typeof val === 'number') {
 					try {
-						return BigInt(v);
+						return BigInt(val);
 					} catch {
 						return BigInt(0);
 					}
@@ -215,7 +216,9 @@ export class TypedArrayTransformer<T extends ITypedArray>
 	 */
 	serialize(value: T): number[] | string[] {
 		if (this.isBigInt) {
-			return Array.from(value as Iterable<bigint>, (v) => v.toString());
+			return Array.from(value as Iterable<bigint>, (val) =>
+				val.toString()
+			);
 		}
 		return Array.from(value as Iterable<number>);
 	}

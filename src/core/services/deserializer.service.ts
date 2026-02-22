@@ -189,7 +189,7 @@ export class Deserializer<
 				{ modelClass }
 			);
 			if (errors.length > 0) {
-				const errorMsgs = errors.map((e) => e.error).join('; ');
+				const errorMsgs = errors.map((err) => err.error).join('; ');
 				throw new QModelError(
 					`Integrity check failed during construction: ${errorMsgs}`
 				);

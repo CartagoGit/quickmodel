@@ -22,8 +22,8 @@ export class CaseHelper {
 				return words.join('-');
 			case 'camelCase':
 				return words
-					.map((word, i) =>
-						i === 0
+					.map((word, idx) =>
+						idx === 0
 							? word
 							: word.charAt(0).toUpperCase() + word.slice(1)
 					)

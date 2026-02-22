@@ -27,8 +27,8 @@ export class DotNotationHandler {
 		const parts = path.split('.');
 		let current: Record<string, unknown> = instance;
 
-		for (let i = 0; i < parts.length - 1; i++) {
-			const part = parts[i];
+		for (let idx = 0; idx < parts.length - 1; idx++) {
+			const part = parts[idx];
 			// SECURITY: Prevent accessing/creating prototype properties via dot notation
 			if (
 				part === '__proto__' ||

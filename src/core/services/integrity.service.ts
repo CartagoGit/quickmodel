@@ -347,9 +347,9 @@ export class IntegrityService {
 								if (failFast) return results;
 							}
 						}
-					} catch (e) {
+					} catch (err) {
 						// Ignore errors in child to prevent crash
-						console.error('Caught integrity error:', e);
+						console.error('Caught integrity error:', err);
 					}
 				}
 
