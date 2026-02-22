@@ -282,7 +282,7 @@ console.log(updated.isDirty('name')); // true  — cambió tras el merge
 ```
 
 > [!NOTE]
-> `copy()` usa `new Constructor(data)` internamente, garantizando que la instancia devuelta tiene tracking completo (`isDirty`, `reset`, `getChanges`) relativo al **estado merged** como baseline.
+> `copy()` devuelve una instancia completamente independiente con su propio tracking de cambios. El estado copiado se convierte en el nuevo baseline — `isDirty()` es `false` inmediatamente tras `copy()`, y `reset()` revierte al estado copiado (no al original).
 
 ### `copy()`
 

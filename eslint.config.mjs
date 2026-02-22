@@ -13,7 +13,6 @@ export default tseslint.config(
 			'docs/',
 			'docs-vitepress/',
 			'coverage/',
-			'scripts/',
 			'**/*.js',
 			'**/*.mjs',
 			'**/*.d.ts',
@@ -37,6 +36,7 @@ export default tseslint.config(
 			parserOptions: {
 				project: [
 					'./tsconfig.json',
+					'./tsconfig.scripts.json',
 					'./tests/tsconfig.json',
 					'./tests/unit/decorators/tc39/tsconfig.json',
 				],

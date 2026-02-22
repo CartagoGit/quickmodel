@@ -169,7 +169,7 @@ const mutation = useMutation({
 });
 ```
 
-`copy()` marca el resultado como sucio (`isDirty() === true`), facilitando detectar cambios
+`copy()` retorna una nueva instancia con `isDirty() === false` — el estado copiado es el nuevo baseline. Eso facilita detectar cambios
 pendientes antes de persistirlos.
 
 ## Normalización de Caché

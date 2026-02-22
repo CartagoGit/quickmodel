@@ -204,8 +204,7 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 }
 ```
 
-> Tras `copy()`, la instancia resultante tiene `isDirty() === true` porque los valores
-> mergeados difieren del snapshot original. Llama a `reset()` tras persistir para limpiar el flag.
+> Tras `copy()`, la instancia resultante tiene `isDirty() === false` — el estado copiado se convierte en el nuevo baseline. Llama a `reset()` en la nueva instancia para revertir al estado en el momento de la copia.
 
 ## Validación Asíncrona (Servidor)
 

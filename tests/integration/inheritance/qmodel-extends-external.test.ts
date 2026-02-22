@@ -227,7 +227,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// =========================================================================
 	// Scenario 7: instance methods are available
 	// =========================================================================
-	describe('Scenario 7: instance methods serialize(), toJSON(), isDirty(), merge()', () => {
+	describe('Scenario 7: instance methods serialize(), toJSON(), isDirty(), copy()', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
@@ -259,8 +259,8 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 			expect(instance.isDirty()).toBe(false);
 		});
 
-		it('merge() should be available and return updated instance', () => {
-			expect(typeof instance.merge).toBe('function');
+		it('copy() should be available and return updated instance', () => {
+			expect(typeof instance.copy).toBe('function');
 			const merged = instance.copy({ username: 'eve-updated' });
 			expect(merged.username).toBe('eve-updated');
 		});

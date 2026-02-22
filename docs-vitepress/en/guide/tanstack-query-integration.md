@@ -185,7 +185,7 @@ function useOptimisticUpdate() {
 }
 ```
 
-`copy()` marks the result as dirty (`isDirty() === true`), making it easy to detect
+`copy()` returns a new instance with `isDirty() === false` — the copied state is the new baseline. This makes it easy to detect
 pending changes before they are persisted.
 
 ## Cache Normalization

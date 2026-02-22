@@ -140,7 +140,9 @@ function toMatchQModel(received: object, expected: object): IMatcherResult {
 		received instanceof QModel ? received.serialize() : received;
 	const expectedData =
 		expected instanceof QModel ? expected.serialize() : expected;
-	const pass = JSON.stringify(receivedData) === JSON.stringify(expectedData);
+	const sortKeys = (obj: object): string =>
+		JSON.stringify(obj, Object.keys(obj).sort());
+	const pass = sortKeys(receivedData) === sortKeys(expectedData);
 	return {
 		pass,
 		message: () =>

@@ -240,8 +240,7 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 }
 ```
 
-> After `copy()`, the resulting instance has `isDirty() === true` because the merged
-> values differ from its original snapshot. Call `reset()` after persisting to clear the flag.
+> After `copy()`, the resulting instance has `isDirty() === false` — the copied state becomes the new baseline. Call `reset()` on the new instance to revert to the state at the time of the copy.
 
 ## Async Field Validation (Server-Side)
 

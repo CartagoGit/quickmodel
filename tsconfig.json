@@ -22,7 +22,8 @@
 		"paths": {
 			"@/*": ["src/*"],
 			"@tests/*": ["tests/*"],
-			"@mcp/*": ["src/mcp/*"]
+			"@mcp/*": ["src/mcp/*"],
+			"@scripts/*": ["scripts/*"]
 		},
 
 		// Interoperabilidad

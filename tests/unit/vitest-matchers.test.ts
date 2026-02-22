@@ -241,7 +241,7 @@ describe('toMatchQModel(expected)', () => {
 		expect(objA).toMatchQModel(objB);
 	});
 
-	test('merge() result matches updated data', () => {
+	test('copy() result matches updated data', () => {
 		const original = makeValidProfile();
 		const updated = original.copy({ score: 80 });
 		const expected = new ProfileModel({

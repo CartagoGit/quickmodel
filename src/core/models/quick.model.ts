@@ -2112,12 +2112,26 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 */
 	copy(partial?: Partial<IQModelData<TInterface>>): this {
-		const Constructor = this.constructor as unknown as new (
-			data: IQModelData<TInterface>
-		) => this;
+		// Use deserialize() (Object.create) instead of new Constructor() to avoid
+		// TypeScript property initializers (e.g. `id!: string` compiles to
+		// `this.id = undefined`) overwriting QModel's lazy getters after construction.
+		const Constructor = this
+			.constructor as unknown as IModelConstructor<this>;
 		const current = this.serialize();
 		const data = partial ? { ...current, ...partial } : { ...current };
-		return new Constructor(data as unknown as IQModelData<TInterface>);
+		const instance = Constructor.deserialize(
+			data as unknown as IQModelData<IQAnyRecord>
+		);
+		// Inject __initData so isDirty() / reset() work correctly on the copy.
+		// deserialize() bypasses the constructor so __initData is never set — we
+		// set it here to the merged state so reset() reverts to this snapshot.
+		Object.defineProperty(instance, '__initData', {
+			value: { ...data },
+			writable: false,
+			enumerable: false,
+			configurable: true,
+		});
+		return instance;
 	}
 
 	/**
