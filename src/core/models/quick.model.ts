@@ -462,15 +462,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * - Works with `@Quick` and `@QType` decorators on the derived class
 	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
 	 *
-	 * **TypeScript partial inference requirement:**
-	 * TypeScript cannot infer `TBase` when `TInterface` is specified explicitly
-	 * ([microsoft/TypeScript#26242](https://github.com/microsoft/TypeScript/issues/26242)).
-	 * `TInterface` and `TBase` are always required. `TOverrides` is optional (default `{}`).
+	 * Pass a **single** `TRuntime` generic describing the expected instance type:
+	 * - For an external base with no field-type changes: pass the class directly.
+	 * - To change the type of inherited fields: compose with {@link IQImplements}.
 	 *
-	 * @template TInterface - The plain-object / serialized interface (same as first generic of QModel<T>)
-	 * @template TBase - The instance type of the external base class (for full method typing)
-	 * @template TOverrides - Fields to override from TBase with new types (uses {@link IQImplements}).
-	 *   Pass an object type `{ field: NewType }` to remove the field from TBase and replace it.
+	 * @template TRuntime - The instance type of the resulting mixin. Use the external base class
+	 *   directly when there are no field overrides, or `IQImplements<Base, { field: NewType }>`
+	 *   to change the type of specific inherited fields.
 	 * @param ExternalBase - The external class to extend
 	 * @returns A mixin base class ready to be extended
 	 *
@@ -478,10 +476,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * Basic usage — external base, no field overrides
 	 * ```typescript
 	 * class NgComponent { ngOnInit(): void {} }
-	 * interface IUser { name: string; createdAt: string; }
 	 *
 	 * @Quick({ createdAt: Date })
-	 * class UserModel extends QModel.extends<IUser, NgComponent>(NgComponent) {
+	 * class UserModel extends QModel.extends<NgComponent>(NgComponent) {
 	 *   declare name: string;
 	 *   declare createdAt: Date;
 	 * }
@@ -489,27 +486,21 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * ```
 	 *
 	 * @example
-	 * Overriding inherited field types — use TOverrides (same shape as IQImplements)
+	 * Overriding inherited field types with {@link IQImplements}
 	 * ```typescript
 	 * @Quick({ value: Date })
 	 * class BaseModel extends QModel<any> { declare value: Date; }
 	 *
 	 * @Quick({ value: BigInt })
-	 * class Derived extends QModel.extends<ISerial, BaseModel, { value: bigint }>(BaseModel) {
-	 *   declare value: bigint; // ✅ no conflict, TypeScript knows the correct type
+	 * class Derived extends QModel.extends<IQImplements<BaseModel, { value: bigint }>>(BaseModel) {
+	 *   declare value: bigint; // ✅ no conflict — value: Date removed from intersection
 	 * }
 	 * ```
 	 */
-	static extends<
-		TInterface extends IQAnyRecord,
-		TBase extends object,
-		TOverrides extends Partial<Record<keyof TBase, unknown>> = {},
-	>(
-		ExternalBase: new (...args: any[]) => TBase
-	): typeof QModel<TInterface> &
-		(abstract new (
-			...args: any[]
-		) => QModel<TInterface> & IQImplements<TBase, TOverrides>) {
+	static extends<TRuntime extends object = object>(
+		ExternalBase: new (...args: any[]) => any
+	): typeof QModel<IQAnyRecord> &
+		(abstract new (...args: any[]) => TRuntime & QModel<IQAnyRecord>) {
 		// ── 1. Create the mixin class that extends the external base ────────────
 		// TypeScript does not allow `class Foo extends GenericTypeParam` when the
 		// type param is introduced at the method level. The idiomatic workaround is
@@ -579,10 +570,8 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			}
 		}
 
-		return QModelMixed as unknown as typeof QModel<TInterface> &
-			(abstract new (
-				...args: any[]
-			) => QModel<TInterface> & IQImplements<TBase, TOverrides>);
+		return QModelMixed as unknown as typeof QModel<IQAnyRecord> &
+			(abstract new (...args: any[]) => TRuntime & QModel<IQAnyRecord>);
 	}
 
 	/**

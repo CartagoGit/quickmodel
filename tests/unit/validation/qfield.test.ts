@@ -11,7 +11,7 @@ class ProfileModel extends QModel<{
 	name: string;
 	role: string;
 	active: boolean;
-	birthDate: Date;
+	birthDate: string | Date;
 }> {
 	@QField({
 		widget: 'input',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { Quick, QType, QModel } from '@/index';
+import { Quick, QType, QModel, IQImplements } from '@/index';
 
 /**
  * Tests for deep inheritance chains (3+ levels).
@@ -244,14 +244,10 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 5: Override in the middle level
 	// =========================================================================
 	describe('Scenario 5: Override in middle level — B overrides A field, C inherits override', () => {
-		// When a subclass needs to CHANGE THE TYPE of an inherited field, use
-		// QModel.extends<TInterface, TBase, TOverrides>(Base) — the third generic uses
-		// IQImplements<TBase, TOverrides> to remove the conflicting fields from TBase
-		// and replace them with the new types. The external base stays untouched.
-		interface IOverrideBSerial {
-			label: string;
-			value: string;
-		}
+		// When a subclass needs to CHANGE THE TYPE of an inherited field, compose
+		// IQImplements<Base, { field: NewType }> as the single TRuntime generic.
+		// IQImplements removes `value: Date` from the intersection and replaces it
+		// with `value: bigint`. The external base (OverrideA) stays untouched.
 
 		@Quick({ value: Date })
 		class OverrideA extends QModel<any> {
@@ -259,12 +255,10 @@ describe('Integration: Deep Chain Inheritance', () => {
 			declare value: Date;
 		}
 
-		// TOverrides = { value: bigint } → removes value: Date from OverrideA, adds value: bigint
+		// IQImplements<OverrideA, { value: bigint }> → Omit<OverrideA, 'value'> & { value: bigint }
 		@Quick({ value: BigInt })
 		class OverrideB extends QModel.extends<
-			IOverrideBSerial,
-			OverrideA,
-			{ value: bigint }
+			IQImplements<OverrideA, { value: bigint }>
 		>(OverrideA) {
 			declare label: string;
 			declare value: bigint; // ✅ no conflict, TypeScript knows the correct type
@@ -314,23 +308,19 @@ describe('Integration: Deep Chain Inheritance', () => {
 			declare count: string; // will be overridden to bigint in MidLevel
 		}
 
-		// TOverrides = { count: bigint } → removes count: string, adds count: bigint
+		// IQImplements<MultiBase, { count: bigint }> → removes count: string, adds count: bigint
 		@Quick({ count: BigInt })
 		class MultiMid extends QModel.extends<
-			any,
-			MultiBase,
-			{ count: bigint }
+			IQImplements<MultiBase, { count: bigint }>
 		>(MultiBase) {
 			declare count: bigint; // ✅ overridden, TypeScript knows it
 			declare pattern: string; // will be overridden to RegExp in LeafLevel
 		}
 
-		// TOverrides = { pattern: RegExp } → removes pattern: string, adds pattern: RegExp
+		// IQImplements<MultiMid, { pattern: RegExp }> → removes pattern: string, adds pattern: RegExp
 		@Quick({ pattern: RegExp })
 		class MultiLeaf extends QModel.extends<
-			any,
-			MultiMid,
-			{ pattern: RegExp }
+			IQImplements<MultiMid, { pattern: RegExp }>
 		>(MultiMid) {
 			declare pattern: RegExp; // ✅ overridden, TypeScript knows it
 			declare extra: string;
@@ -391,12 +381,13 @@ describe('Integration: Deep Chain Inheritance', () => {
 			declare pattern: string; // will become RegExp in MidTriple
 		}
 
-		// TOverrides = { ts: Date; amount: bigint; pattern: RegExp } — three overrides at once
+		// IQImplements<BaseTriple, { ts: Date; amount: bigint; pattern: RegExp }> — three overrides at once
 		@Quick({ ts: Date, amount: BigInt, pattern: RegExp })
 		class MidTriple extends QModel.extends<
-			any,
-			BaseTriple,
-			{ ts: Date; amount: bigint; pattern: RegExp }
+			IQImplements<
+				BaseTriple,
+				{ ts: Date; amount: bigint; pattern: RegExp }
+			>
 		>(BaseTriple) {
 			declare ts: Date; // ✅
 			declare amount: bigint; // ✅
