@@ -196,3 +196,119 @@ const { instances, errors } = MyDto.createMany(rawArray);
 
 Los errores contienen los índices de los elementos que fallaron la coerción.
 :::
+
+## QModel dentro de Vue `reactive()` — Compatibilidad con Proxy
+
+Vue envuelve los objetos pasados a `reactive()` en un `Proxy`. QuickModel instala lazy getters en las instancias mediante `Object.defineProperty`. Esta combinación tiene algunas fricciones concretas que debes conocer.
+
+### Lectura y escritura a través de un Proxy reactivo
+
+El acceso y la asignación de propiedades funcionan correctamente:
+
+```typescript
+import { reactive } from 'vue';
+
+const user = new User({ name: 'Alice', age: 30, createdAt: '2024-01-01' });
+const reactiveUser = reactive(user);
+
+// Lecturas a través del Proxy ✅
+console.log(reactiveUser.name); // 'Alice'
+console.log(reactiveUser.age); // 30
+console.log(reactiveUser.createdAt); // instancia de Date
+
+// Escrituras se propagan al modelo original ✅
+reactiveUser.name = 'Alice Actualizada';
+console.log(user.name); // 'Alice Actualizada'
+```
+
+### Llamar métodos en un modelo reactivo — usa `toRaw()`
+
+El `Proxy` de Vue intercepta las llamadas a métodos. Cuando `this` dentro de un método de QuickModel apunta al Proxy en lugar de la instancia original, el backing store interno no es accesible. Siempre desenvuelve el modelo con `toRaw()` antes de invocar métodos de QuickModel:
+
+```typescript
+import { reactive, toRaw } from 'vue';
+
+const user = new User({ name: 'Alice', createdAt: '2024-01-01' });
+const reactiveUser = reactive(user);
+
+// ❌ Evitar — `this` dentro de serialize() apunta al Proxy
+const data = reactiveUser.serialize();
+
+// ✅ Correcto — toRaw() devuelve la instancia original sin envolver
+const data = toRaw(reactiveUser).serialize();
+const json = JSON.stringify(toRaw(reactiveUser).serialize());
+```
+
+::: danger `JSON.stringify(reactiveProxy)` codifica doble
+`QModel.toJSON()` devuelve un **string** (no un objeto plano). Si llamas a `JSON.stringify(reactiveProxy)` directamente, el Proxy de Vue invoca `toJSON()`, obtiene un string, y `JSON.stringify` lo vuelve a envolver entre comillas.
+
+```typescript
+// ❌ Resultado: doble codificación
+JSON.stringify(reactiveUser);
+
+// ✅ Correcto: serializar primero a objeto plano y después stringify
+JSON.stringify(toRaw(reactiveUser).serialize());
+```
+
+:::
+
+### `createReadonly()` + `reactive()` — evita esta combinación
+
+`createReadonly()` llama a `Object.freeze()` sobre la instancia. Vue detecta objetos congelados y se niega a envolverlos — emite un aviso en consola y devuelve el objeto tal cual, **sin tracking de dependencias**:
+
+```typescript
+const frozenUser = User.createReadonly({
+	name: 'Bob',
+	age: 25,
+	createdAt: '2024-01-01',
+});
+
+// ⚠️ Vue advierte: "[Vue warn] Target is non-extensible."
+// reactive() devuelve el objeto congelado sin reactividad
+const reactiveUser = reactive(frozenUser);
+```
+
+Las lecturas siguen funcionando a través del Proxy, pero las mutaciones lanzan en strict mode y no provocan re-renders. Usa `createReadonly()` solo para datos de solo lectura. Para estado reactivo en vivo, usa una instancia mutable.
+
+### Modelos anidados
+
+Vue envuelve automáticamente en Proxy los objetos anidados al acceder a ellos:
+
+```typescript
+const user = new User({
+	name: 'Alice',
+	address: { city: 'Madrid', zip: '28001' },
+});
+const reactiveUser = reactive(user);
+
+// ✅ Lecturas en modelos anidados funcionan
+console.log(reactiveUser.address?.city); // 'Madrid'
+console.log(reactiveUser.address instanceof Address); // true
+
+// ✅ Escrituras en modelos anidados se propagan a la instancia original
+reactiveUser.address!.city = 'Barcelona';
+console.log(user.address?.city); // 'Barcelona'
+```
+
+### Pinia — patrón recomendado
+
+El estado de Pinia ya es reactivo. Usa `toRaw()` dentro de las acciones antes de llamar a `merge()` para que `this` interno de QuickModel siempre sea la instancia real:
+
+```typescript
+// stores/articles.ts
+actions: {
+  updateArticle(id: string, partial: Partial<IArticle>) {
+    const prev = this.articles.get(id);
+    if (!prev) return;
+    // toRaw() → desenvuelve del proxy antes de llamar merge()
+    // merge() → devuelve una nueva instancia; Pinia detecta el cambio de referencia
+    this.articles.set(id, toRaw(prev).merge(partial) as ArticleModel);
+  },
+},
+
+getters: {
+  // Serializar via toRaw() para evitar el overhead del Proxy en la serialización
+  articleList: (state) =>
+    [...state.articles.values()].map((art) => toRaw(art).serialize()),
+},
+```

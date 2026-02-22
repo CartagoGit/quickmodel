@@ -277,11 +277,33 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		errors: string[]
 	): void {
 		const lines = content.split('\n');
+		let insideDeclareModule = false;
+		let braceDepth = 0;
 
 		for (let idx = 0; idx < lines.length; idx++) {
 			const line = lines[idx]!;
 			const trimmed = line.trim();
 			if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
+
+			// Track declare module blocks — augmentation interfaces need exact library names
+			if (/\bdeclare\s+module\s+['"][^'"]+['"]/.test(line)) {
+				insideDeclareModule = true;
+				braceDepth = 0;
+			}
+			if (insideDeclareModule) {
+				braceDepth += (line.match(/\{/g) ?? []).length;
+				braceDepth -= (line.match(/\}/g) ?? []).length;
+				if (braceDepth <= 0) insideDeclareModule = false;
+				continue;
+			}
+
+			// Respect eslint-disable-next-line comments from the preceding non-empty line
+			const prevLine =
+				lines
+					.slice(0, idx)
+					.filter((lne) => lne.trim() !== '')
+					.at(-1) ?? '';
+			if (prevLine.trim().startsWith('// eslint-disable')) continue;
 
 			// Interface without I prefix: interface Word { (where Word doesn't start with I)
 			const ifaceMatch =

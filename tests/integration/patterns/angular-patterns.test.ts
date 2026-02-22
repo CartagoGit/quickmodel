@@ -320,7 +320,7 @@ class UserDataService {
 	update(idArg: string, patch: Partial<IUserRecord>): object | null {
 		const record = this.store.get(idArg);
 		if (!record) return null;
-		const updated = record.merge(patch);
+		const updated = record.copy(patch);
 		this.store.set(idArg, updated);
 		return updated.serialize();
 	}
@@ -425,7 +425,7 @@ describe('Angular — Service / Repository pattern', () => {
 			email: 'ivan@example.com',
 			score: 70,
 		});
-		const updated = record.merge({ score: 90 });
+		const updated = record.copy({ score: 90 });
 		// Original untouched
 		expect(record.isDirty()).toBe(false);
 		expect(record.score).toBe(70);
@@ -598,7 +598,7 @@ describe('Angular — Signals reactive state (v17+)', () => {
 		const sig = new QSignal(
 			new ProfileModel({ name: 'Bob', bio: 'Designer', followers: 500 })
 		);
-		sig.update((prev) => prev.merge({ followers: 600 }));
+		sig.update((prev) => prev.copy({ followers: 600 }));
 		expect(sig.read().followers).toBe(600);
 	});
 

@@ -231,7 +231,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane' });
+			const merged = user.copy({ name: 'Jane' });
 			expect(merged).not.toBe(user);
 		});
 
@@ -244,7 +244,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane' });
+			const merged = user.copy({ name: 'Jane' });
 			expect(merged).toBeInstanceOf(User);
 		});
 
@@ -257,7 +257,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			user.merge({ name: 'Jane', age: 99 });
+			user.copy({ name: 'Jane', age: 99 });
 			expect(user.name).toBe('John');
 			expect(user.age).toBe(30);
 		});
@@ -273,7 +273,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane', age: 31 });
+			const merged = user.copy({ name: 'Jane', age: 31 });
 			expect(merged.name).toBe('Jane');
 			expect(merged.age).toBe(31);
 		});
@@ -287,7 +287,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane' });
+			const merged = user.copy({ name: 'Jane' });
 			expect(merged.id).toBe('1');
 			expect(merged.email).toBe('j@e.com');
 			expect(merged.active).toBe(true);
@@ -302,7 +302,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({
+			const merged = user.copy({
 				createdAt: '2025-06-15T00:00:00.000Z',
 			});
 			expect(merged.createdAt).toBeInstanceOf(Date);
@@ -313,7 +313,7 @@ describe('QModel — merge(partial)', () => {
 
 		test('los campos de tipo BigInt se transforman correctamente', () => {
 			const order = new Order({ id: 1, total: '1000' });
-			const merged = order.merge({ total: '9999' });
+			const merged = order.copy({ total: '9999' });
 			expect(typeof merged.total).toBe('bigint');
 			expect(merged.total).toBe(9999n);
 		});
@@ -327,7 +327,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({});
+			const merged = user.copy({});
 			expect(merged).not.toBe(user);
 			expect(merged.name).toBe(user.name);
 			expect(merged.age).toBe(user.age);
@@ -345,7 +345,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane' });
+			const merged = user.copy({ name: 'Jane' });
 			expect(merged.isDirty()).toBe(false);
 		});
 
@@ -358,7 +358,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane' });
+			const merged = user.copy({ name: 'Jane' });
 
 			merged.name = 'Bob';
 			expect(merged.isDirty()).toBe(true);
@@ -378,8 +378,8 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const user2 = user.merge({ name: 'Jane' });
-			const user3 = user2.merge({ age: 99 });
+			const user2 = user.copy({ name: 'Jane' });
+			const user3 = user2.copy({ age: 99 });
 
 			expect(user3.name).toBe('Jane');
 			expect(user3.age).toBe(99);
@@ -400,7 +400,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane', age: 31 });
+			const merged = user.copy({ name: 'Jane', age: 31 });
 			const serialized = merged.serialize();
 			expect(serialized.name).toBe('Jane');
 			expect(serialized.age).toBe(31);
@@ -416,7 +416,7 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const merged = user.merge({ name: 'Jane' });
+			const merged = user.copy({ name: 'Jane' });
 			const differences = user.diff(merged);
 			expect(Object.keys(differences)).toEqual(['name']);
 			expect(differences.name).toEqual({ before: 'John', after: 'Jane' });

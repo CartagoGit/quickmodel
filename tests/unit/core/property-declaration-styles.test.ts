@@ -299,7 +299,7 @@ describe('Property Declaration Styles', () => {
 	describe('Cloning', () => {
 		test('declare: should clone correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const clone = user.clone();
+			const clone = user.copy();
 
 			expect(clone).toBeInstanceOf(UserWithDeclare);
 			expect(clone.id).toBe(user.id);
@@ -311,7 +311,7 @@ describe('Property Declaration Styles', () => {
 
 		test('!: should clone correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const clone = user.clone();
+			const clone = user.copy();
 
 			expect(clone).toBeInstanceOf(UserWithExclamation);
 			expect(clone.id).toBe(user.id);
@@ -323,7 +323,7 @@ describe('Property Declaration Styles', () => {
 
 		test('?: should clone correctly', () => {
 			const user = new UserWithOptional(testData);
-			const clone = user.clone();
+			const clone = user.copy();
 
 			expect(clone).toBeInstanceOf(UserWithOptional);
 			expect(clone.id).toBe(user.id);

@@ -56,6 +56,11 @@
 			"import": "./dist/forms.mjs",
 			"require": "./dist/forms.js"
 		},
+		"./matchers": {
+			"types": "./dist/matchers.d.ts",
+			"import": "./dist/matchers.mjs",
+			"require": "./dist/matchers.js"
+		},
 		"./compat/ts5/forms": {
 			"types": "./dist/compat/ts5/forms.d.ts",
 			"import": "./dist/compat/ts5/forms.mjs",

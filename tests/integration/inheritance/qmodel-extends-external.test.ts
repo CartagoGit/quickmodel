@@ -261,7 +261,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 
 		it('merge() should be available and return updated instance', () => {
 			expect(typeof instance.merge).toBe('function');
-			const merged = instance.merge({ username: 'eve-updated' });
+			const merged = instance.copy({ username: 'eve-updated' });
 			expect(merged.username).toBe('eve-updated');
 		});
 	});

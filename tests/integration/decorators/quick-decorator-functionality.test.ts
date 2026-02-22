@@ -312,7 +312,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			date: new Date('2024-01-01'),
 		});
 
-		const cloned = original.clone();
+		const cloned = original.copy();
 
 		expect(cloned).not.toBe(original);
 		expect(cloned.id).toBe(original.id);

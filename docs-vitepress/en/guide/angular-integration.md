@@ -233,6 +233,171 @@ const fullName = computed(() => profile().fullName); // Signal<string>
 const tier = computed(() => profile().tier); // Signal<'gold' | 'silver' | 'bronze'>
 ```
 
+### `merge()` vs `patch()` — critical distinction for signals
+
+| Method           | Returns                   | Triggers Angular CD    | Use with signals |
+| ---------------- | ------------------------- | ---------------------- | ---------------- |
+| `merge(partial)` | New instance              | ✅ Yes — new reference | ✅ Always        |
+| `patch(partial)` | `void` (mutates in place) | ❌ No                  | ❌ Never         |
+
+```typescript
+// ❌ Anti-pattern: patch() mutates in place, signal version does NOT increment
+//    Angular template will NOT re-render
+signal.update((model) => {
+	model.patch({ score: 98 }); // void — original instance mutated
+	return model; // same reference → no change detection
+});
+
+// ✅ Correct: merge() returns a new instance → signal version increments → re-render
+signal.update((model) => model.merge({ score: 98 }));
+```
+
+::: warning Direct mutation is invisible to Angular signals
+Even without `.update()`, mutating a model's property directly (`model.score = 98`) does NOT notify the signal. Angular's change detection only fires when `.set()` or `.update()` are called:
+
+```typescript
+const cartSignal = signal(new Cart({ userId: 'u1', total: 50 }));
+
+// ❌ Silent mutation — template will NOT update
+cartSignal().total = 100;
+
+// ✅ Signal-aware update — template updates correctly
+cartSignal.update((cart) => cart.merge({ total: 100 }));
+```
+
+:::
+
+### `reactiveModel()` — make direct mutation reactive
+
+You can turn direct mutation into a signal notification by wrapping the model in a `Proxy` that intercepts every `set` trap and internally calls `sig.update(m => m.merge({...}))`. This creates a new instance on every assignment, which Angular detects as a reference change.
+
+Copy this utility into your Angular project (Angular is not a QuickModel dependency, so it cannot ship here directly):
+
+```typescript
+// utils/reactive-model.ts
+import { signal, type WritableSignal } from '@angular/core';
+import { QModel } from '@cartago-git/quickmodel';
+
+type IReactiveModel<T extends QModel<any>> = T & {
+	/** The underlying WritableSignal. Use for computed() / effect(). */
+	readonly $signal: WritableSignal<T>;
+};
+
+export function reactiveModel<T extends QModel<any>>(
+	instance: T
+): IReactiveModel<T> {
+	const sig = signal(instance);
+
+	return new Proxy(instance, {
+		get(_, key) {
+			if (key === '$signal') return sig;
+			const current = sig();
+			const val = (current as Record<string, unknown>)[key as string];
+			if (typeof val === 'function')
+				return (val as Function).bind(current);
+			return val;
+		},
+		set(_, key, value) {
+			if (typeof key !== 'string') return false;
+			// merge() → new instance → new reference → Angular detects the change
+			sig.update((mdl) => mdl.merge({ [key]: value } as Partial<T>));
+			return true;
+		},
+	}) as IReactiveModel<T>;
+}
+```
+
+Usage in a component:
+
+```typescript
+@Component({ ... })
+export class CartComponent {
+	readonly cart = reactiveModel(
+		new Cart({ userId: 'u1', total: 0, updatedAt: new Date() })
+	);
+
+	// ✅ Direct assignment — Angular re-renders automatically
+	addItem(price: number): void {
+		this.cart.total += price; // internally: sig.update(m => m.merge({ total: ... }))
+	}
+
+	// Computed derived from the underlying signal
+	readonly totalWithTax = computed(() => this.cart.$signal().total * 1.21);
+
+	// For bulk updates, use $signal directly
+	replaceCart(data: ICart): void {
+		this.cart.$signal.set(new Cart(data));
+	}
+}
+```
+
+::: details How it works
+
+1. Every `this.cart.total = x` hits the Proxy `set` trap.
+2. The trap calls `sig.update(m => m.merge({ total: x }))`, which produces a **new instance**.
+3. Angular detects the new reference and schedules a re-render.
+4. Every `this.cart.total` read hits the Proxy `get` trap, which reads from `sig()` — always the latest value.
+
+**Tradeoff:** each assignment creates a new model instance via `merge()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.merge({...}))` call.
+:::
+
+### `computed()` — derived state from a model signal
+
+```typescript
+import { signal, computed } from '@angular/core';
+
+const cart = signal(
+	new Cart({ userId: 'u1', total: 60, updatedAt: '2025-01-01' })
+);
+
+// Derived values update automatically when the cart signal updates
+const totalWithTax = computed(() => cart().total * 1.21);
+const label = computed(() => `Cart for ${cart().userId}: $${cart().total}`);
+
+// Serialize for API calls
+const payload = computed(() => cart().serialize());
+
+cart.update((c) => c.merge({ total: 80 }));
+console.log(totalWithTax()); // 96.8
+console.log(payload().updatedAt); // ISO string — serialized Date
+```
+
+### Complex types (Date, Set, BigInt) survive signal updates
+
+`merge()` runs the full QuickModel deserialization pipeline. Passing a `Date` or `Set` directly in the partial preserves the type:
+
+```typescript
+const product = signal(
+	new Product({
+		sku: 'X1',
+		price: 50,
+		releasedAt: '2024-01-01',
+		tags: ['sale'],
+	})
+);
+
+// Passing a Date → stays a Date in the new instance ✅
+product.update((p) => p.merge({ releasedAt: new Date('2025-06-01') }));
+console.log(product().releasedAt instanceof Date); // true
+
+// Passing a Set → stays a Set ✅
+product.update((p) => p.merge({ tags: new Set(['sale', 'featured']) }));
+console.log(product().tags instanceof Set); // true
+```
+
+### Multiple signals — composition
+
+```typescript
+const cart = signal(new Cart({ userId: 'u1', total: 200 }));
+const discount = signal(0.1); // 10%
+
+// Composed computed — reacts to changes in either signal
+const finalPrice = computed(() => cart().total * (1 - discount()));
+
+discount.set(0.2);
+console.log(finalPrice()); // 160
+```
+
 ## Async Validators
 
 ```typescript

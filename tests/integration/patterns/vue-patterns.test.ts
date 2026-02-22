@@ -178,7 +178,7 @@ class ArticlePiniaStore {
 	updateArticle(idArg: string, patch: Partial<IArticle>): boolean {
 		const article = this.articles.get(idArg);
 		if (!article) return false;
-		const updated = article.merge(patch);
+		const updated = article.copy(patch);
 		this.articles.set(idArg, updated);
 		return true;
 	}

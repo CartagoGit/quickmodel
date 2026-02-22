@@ -675,7 +675,7 @@ class BlogPostRepository {
 	publish(idArg: string): object | null {
 		const post = this.store.get(idArg);
 		if (!post) return null;
-		const published = post.merge({ publishedAt: new Date() });
+		const published = post.copy({ publishedAt: new Date() });
 		this.store.set(idArg, published);
 		return published.serialize();
 	}

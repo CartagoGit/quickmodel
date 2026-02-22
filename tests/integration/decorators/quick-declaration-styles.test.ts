@@ -535,7 +535,7 @@ describe('@Quick() with declaration styles', () => {
 			const config = new ConfigDeclare(configData);
 
 			// Clone
-			const cloned = config.clone();
+			const cloned = config.copy();
 			expect(cloned).toBeInstanceOf(ConfigDeclare);
 			expect(cloned.apiUrl).toBe(config.apiUrl);
 			expect(cloned.timeout).toBe(config.timeout);
@@ -553,7 +553,7 @@ describe('@Quick() with declaration styles', () => {
 		test('!: should clone and reset', () => {
 			const config = new ConfigExclamation(configData);
 
-			const cloned = config.clone();
+			const cloned = config.copy();
 			expect(cloned).toBeInstanceOf(ConfigExclamation);
 			expect(cloned.apiUrl).toBe(config.apiUrl);
 
@@ -568,7 +568,7 @@ describe('@Quick() with declaration styles', () => {
 		test('?: should clone and reset', () => {
 			const config = new ConfigOptional(configData);
 
-			const cloned = config.clone();
+			const cloned = config.copy();
 			expect(cloned).toBeInstanceOf(ConfigOptional);
 			expect(cloned.apiUrl).toBe(config.apiUrl);
 

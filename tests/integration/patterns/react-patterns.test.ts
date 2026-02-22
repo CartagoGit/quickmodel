@@ -370,7 +370,7 @@ class CartStore {
 		const item = this.items.get(sku);
 		if (!item) return false;
 		// Use merge (immutable) to get new state, update store
-		const updated = item.merge({ qty });
+		const updated = item.copy({ qty });
 		this.items.set(sku, updated);
 		return true;
 	}
@@ -584,7 +584,7 @@ describe('React — useQModel hook simulation', () => {
 				avatarUrl: '',
 			})
 		);
-		hook.update((prev) => prev.merge({ bio: 'New bio' }));
+		hook.update((prev) => prev.copy({ bio: 'New bio' }));
 		expect(hook.getSnapshot().bio).toBe('New bio');
 	});
 
@@ -612,7 +612,7 @@ describe('React — useQModel hook simulation', () => {
 		hook.subscribe(() => {
 			callCount++;
 		});
-		hook.update((prev) => prev.merge({ displayName: 'David' }));
+		hook.update((prev) => prev.copy({ displayName: 'David' }));
 		expect(callCount).toBe(1);
 	});
 
@@ -630,7 +630,7 @@ describe('React — useQModel hook simulation', () => {
 			callCount++;
 		});
 		unsub();
-		hook.update((prev) => prev.merge({ bio: 'updated' }));
+		hook.update((prev) => prev.copy({ bio: 'updated' }));
 		expect(callCount).toBe(0);
 	});
 

@@ -185,7 +185,7 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 			tags: new Set(['important']),
 		});
 
-		const cloned = entity.clone();
+		const cloned = entity.copy();
 
 		expect(cloned).toBeInstanceOf(ComplexEntity);
 		expect(cloned).not.toBe(entity);

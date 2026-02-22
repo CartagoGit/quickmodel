@@ -624,7 +624,7 @@ describe('QModel.equals()', () => {
 			balance: '100',
 		});
 
-		expect(user.equals(user.clone())).toBe(true);
+		expect(user.equals(user.copy())).toBe(true);
 	});
 
 	test('equals with plain models and arrays', () => {

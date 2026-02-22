@@ -59,6 +59,60 @@ function effect(func: () => void): IEffectCleanup {
 	};
 }
 
+// ─── reactiveModel() — Proxy utility that bridges QModel ↔ Angular signals ──
+//
+// Rather than requiring `signal.update(m => m.copy({...}))` everywhere,
+// this utility wraps a QModel + signal into a single Proxy object.
+// Assigning any property directly triggers `sig.update(m => m.copy({...}))`,
+// which creates a NEW instance (new reference) → Angular detects the change.
+//
+// Usage in a real Angular component:
+//   import { reactiveModel } from './utils/reactive-model';
+//   readonly user = reactiveModel(new UserRecord({ name: 'Alice', score: 50 }));
+//   this.user.score = 75;   // ← Angular re-renders automatically
+
+type IReactiveModel<T extends QModel<any>> = T & {
+	/** The underlying WritableSignal. Use for computed() / effect() subscriptions. */
+	readonly $signal: ISignal<T>;
+};
+
+function reactiveModel<T extends QModel<any>>(instance: T): IReactiveModel<T> {
+	const sig = signal(instance);
+
+	return new Proxy(instance, {
+		get(_, key) {
+			if (key === '$signal') return sig;
+
+			// Always read from the signal's CURRENT value so that computed()
+			// that calls reactiveModel.prop naturally tracks the signal version.
+			const current = sig();
+			const val = (current as Record<string, unknown>)[key as string];
+
+			// Bind methods to the raw instance, not the proxy.
+			if (typeof val === 'function') {
+				return (val as (...args: unknown[]) => unknown).bind(current);
+			}
+			return val;
+		},
+		set(_, key, value) {
+			if (typeof key !== 'string') return false;
+			// merge() produces a new instance → new reference → signal version ++
+			// Angular's change detection fires because the reference changed.
+			sig.update((mdl) => mdl.copy({ [key]: value } as Partial<T>));
+			return true;
+		},
+		has(_, key) {
+			return Reflect.has(sig(), key);
+		},
+		ownKeys(_) {
+			return Reflect.ownKeys(sig());
+		},
+		getOwnPropertyDescriptor(_, key) {
+			return Reflect.getOwnPropertyDescriptor(sig(), key);
+		},
+	}) as IReactiveModel<T>;
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 interface IProduct {
@@ -143,7 +197,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			// Angular pattern: immutable update via merge()
 			// patch() mutates in-place and returns void — merge() returns a new instance
 			cartSignal.update((current) =>
-				current.merge({ total: current.total + 25 })
+				current.copy({ total: current.total + 25 })
 			);
 
 			expect(cartSignal().total).toBe(75);
@@ -213,7 +267,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			const versionBefore = cartSignal.version();
 
 			// ✅ Correct Angular pattern → always triggers re-render
-			cartSignal.update((cart) => cart.merge({ total: 120 }));
+			cartSignal.update((cart) => cart.copy({ total: 120 }));
 
 			expect(cartSignal.version()).toBe(versionBefore + 1);
 			expect(cartSignal().total).toBe(120);
@@ -252,7 +306,7 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			expect(priceLabel()).toBe('COMP-001: $50');
 
-			productSignal.update((prod) => prod.merge({ price: 75 }));
+			productSignal.update((prod) => prod.copy({ price: 75 }));
 
 			expect(priceLabel()).toBe('COMP-001: $75');
 		});
@@ -308,7 +362,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			cartSignal.update((cart) =>
-				cart.merge({ updatedAt: new Date('2025-12-31T23:59:59.000Z') })
+				cart.copy({ updatedAt: new Date('2025-12-31T23:59:59.000Z') })
 			);
 
 			expect(cartSignal().updatedAt).toBeInstanceOf(Date);
@@ -326,7 +380,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			productSignal.update((prod) =>
-				prod.merge({ tags: new Set(['beta', 'gamma']) })
+				prod.copy({ tags: new Set(['beta', 'gamma']) })
 			);
 
 			expect(productSignal().tags).toBeInstanceOf(Set);
@@ -371,6 +425,172 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			discountSignal.set(0.2);
 			expect(finalPrice()).toBe(160);
+		});
+	});
+
+	// ─── reactiveModel() ─────────────────────────────────────────────────────
+	// The Proxy-based bridge that makes direct property assignment reactive.
+
+	describe('reactiveModel() — direct mutation that IS reactive', () => {
+		it('direct property assignment increments the signal version', () => {
+			const user = reactiveModel(
+				new Cart({
+					userId: 'user-A',
+					total: 0,
+					updatedAt: '2025-01-01',
+				})
+			);
+
+			const versionBefore = user.$signal.version();
+
+			// ✅ This assignment automatically calls sig.update(m => m.copy({total: 50}))
+			user.total = 50;
+
+			// Signal version must have incremented → Angular would re-render
+			expect(user.$signal.version()).toBe(versionBefore + 1);
+		});
+
+		it('direct property read returns the latest value after assignment', () => {
+			const user = reactiveModel(
+				new Cart({
+					userId: 'user-B',
+					total: 10,
+					updatedAt: '2025-01-01',
+				})
+			);
+
+			user.total = 99;
+			expect(user.total).toBe(99);
+
+			user.userId = 'user-B-updated';
+			expect(user.userId).toBe('user-B-updated');
+		});
+
+		it('multiple sequential assignments each increment the version', () => {
+			const product = reactiveModel(
+				new Product({
+					sku: 'P1',
+					price: 10,
+					releasedAt: '2024-01-01',
+					tags: ['a'],
+				})
+			);
+
+			const vBefore = product.$signal.version();
+
+			product.price = 20;
+			product.sku = 'P1-v2';
+
+			// Two separate merges → two version increments
+			expect(product.$signal.version()).toBe(vBefore + 2);
+			expect(product.price).toBe(20);
+			expect(product.sku).toBe('P1-v2');
+		});
+
+		it('$signal can be used for computed() subscriptions', () => {
+			const cart = reactiveModel(
+				new Cart({
+					userId: 'user-C',
+					total: 60,
+					updatedAt: '2025-01-01',
+				})
+			);
+
+			// Angular component field pattern:
+			//   readonly totalWithTax = computed(() => this.cart.$signal().total * 1.21);
+			const totalWithTax = computed(() => cart.$signal().total * 1.21);
+
+			expect(totalWithTax()).toBeCloseTo(72.6, 1);
+
+			cart.total = 100;
+			expect(totalWithTax()).toBeCloseTo(121, 1);
+		});
+
+		it('unrelated properties are preserved after a single-field assignment', () => {
+			const cart = reactiveModel(
+				new Cart({
+					userId: 'user-D',
+					total: 30,
+					updatedAt: '2025-06-01',
+				})
+			);
+
+			cart.total = 45;
+
+			// merge() carries through the rest of the model state
+			expect(cart.userId).toBe('user-D');
+			expect(cart.updatedAt).toBeInstanceOf(Date);
+		});
+
+		it('Date fields stay Date after direct assignment of a Date', () => {
+			const cart = reactiveModel(
+				new Cart({
+					userId: 'user-E',
+					total: 0,
+					updatedAt: '2025-01-01',
+				})
+			);
+
+			const newDate = new Date('2025-12-31T23:59:59.000Z');
+			cart.updatedAt = newDate;
+
+			expect(cart.updatedAt).toBeInstanceOf(Date);
+			expect(cart.updatedAt.getFullYear()).toBe(2025);
+		});
+
+		it('Set fields stay Set after direct assignment', () => {
+			const product = reactiveModel(
+				new Product({
+					sku: 'S1',
+					price: 5,
+					releasedAt: '2024-01-01',
+					tags: ['x'],
+				})
+			);
+
+			product.tags = new Set(['y', 'z']);
+
+			expect(product.tags).toBeInstanceOf(Set);
+			expect(product.tags.has('y')).toBe(true);
+		});
+
+		it('serialize() works on a reactiveModel instance', () => {
+			const cart = reactiveModel(
+				new Cart({
+					userId: 'user-F',
+					total: 50,
+					updatedAt: '2025-03-01',
+				})
+			);
+
+			cart.total = 75;
+
+			const json = cart.serialize();
+			expect(json.total).toBe(75);
+			expect(typeof json.updatedAt).toBe('string'); // Date serialized
+		});
+
+		it('$signal.set() still works for bulk replacements', () => {
+			const cart = reactiveModel(
+				new Cart({
+					userId: 'user-G',
+					total: 0,
+					updatedAt: '2025-01-01',
+				})
+			);
+
+			const vBefore = cart.$signal.version();
+
+			cart.$signal.set(
+				new Cart({
+					userId: 'user-G',
+					total: 500,
+					updatedAt: '2025-11-01',
+				})
+			);
+
+			expect(cart.$signal.version()).toBe(vBefore + 1);
+			expect(cart.total).toBe(500);
 		});
 	});
 });

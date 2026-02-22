@@ -485,7 +485,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * - Exposes all static QModel methods: `create()`, `createReadonly()`, `mock()`,
 	 *   `getMetadata()`, `deserialize()`, `deserializeJson()`
 	 * - Exposes all instance QModel methods: `serialize()`, `toJSON()`, `toInterface()`,
-	 *   `isDirty()`, `getDirtyFields()`, `reset()`, `patch()`, `merge()`
+	 *   `isDirty()`, `getDirtyFields()`, `reset()`, `patch()`, `copy()`
 	 * - Works with `@Quick` and `@QType` decorators on the derived class
 	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
 	 *
@@ -2069,44 +2069,55 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
-	 * Returns a **new instance** with the given partial data merged into the current state.
+	 * Returns a **new instance** that is an immutable copy of the current state,
+	 * optionally overriding specific fields.
 	 *
-	 * Unlike `patch()` which mutates in place, `merge()` is **immutable**: the original
-	 * instance is never modified. The new instance is completely independent and its
-	 * initial state is set to the merged data, so:
-	 * - `isDirty()` on the new instance returns `false`
-	 * - `reset()` on the new instance reverts to the merged state (not the original)
+	 * - `copy()` — deep copy with identical data (new reference).
+	 * - `copy({ key: value })` — new instance with partial fields overridden.
 	 *
-	 * All type transformations (Date, BigInt, etc.) are applied to the merged values.
+	 * The new instance has its initial state set to the copied data, so:
+	 * - `isDirty()` returns `false`
+	 * - `reset()` reverts to the copied state (not the original)
 	 *
-	 * @param partial - Fields to override in the new instance
-	 * @returns A new model instance with current + partial data
+	 * All type transformations (Date, BigInt, Set, etc.) are applied.
+	 *
+	 * **Framework reactivity:** Because `copy()` always returns a new reference,
+	 * it is safe to use with any signal / store / ref system:
+	 * ```typescript
+	 * // Angular
+	 * userSignal.update(u => u.copy({ name: 'Bob' }))
+	 * // Vue
+	 * userRef.value = user.copy({ name: 'Bob' })
+	 * // React
+	 * setUser(user.copy({ name: 'Bob' }))
+	 * // patch() batch + copy() to emit
+	 * user.patch({ name: 'Bob', age: 31 })
+	 * userSignal.set(user.copy())
+	 * ```
+	 *
+	 * @param partial - Optional fields to override in the new instance
+	 * @returns A new model instance
 	 *
 	 * @example
 	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', age: 30 });
+	 * const user = new User({ name: 'John', age: 30 });
 	 *
-	 * const updated = user.merge({ name: 'Jane' });
+	 * const clone   = user.copy();                 // identical copy
+	 * const updated = user.copy({ name: 'Jane' }); // copy with override
 	 *
-	 * user.name;     // 'John'   ← original unchanged
-	 * updated.name;  // 'Jane'   ← new instance
-	 * updated.age;   // 30       ← fields not in partial are preserved
-	 * updated.isDirty(); // false ← clean initial state
-	 *
-	 * // Chaining
-	 * const v3 = user.merge({ name: 'Jane' }).merge({ age: 99 });
+	 * user.name;     // 'John'  ← original unchanged
+	 * updated.name;  // 'Jane'
+	 * updated.age;   // 30      ← fields not in partial are preserved
+	 * updated.isDirty(); // false
 	 * ```
 	 */
-	merge(partial: Partial<IQModelData<TInterface>>): this {
-		// Use `new Constructor()` (not deserialize) so that __initData is set correctly.
-		// deserialize() bypasses the constructor via Object.create, losing __initData,
-		// which would break isDirty() / reset() on the returned instance.
+	copy(partial?: Partial<IQModelData<TInterface>>): this {
 		const Constructor = this.constructor as unknown as new (
 			data: IQModelData<TInterface>
 		) => this;
 		const current = this.serialize();
-		const merged = { ...current, ...partial };
-		return new Constructor(merged as unknown as IQModelData<TInterface>);
+		const data = partial ? { ...current, ...partial } : { ...current };
+		return new Constructor(data as unknown as IQModelData<TInterface>);
 	}
 
 	/**
@@ -2203,52 +2214,6 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 */
 	equals(other: this): boolean {
 		return Object.keys(this.diff(other)).length === 0;
-	}
-
-	/**
-	 * Creates a deep clone of the model instance.
-	 *
-	 * Performs a complete deep clone by serializing to interface and deserializing back.
-	 * All nested models and arrays are also cloned, ensuring complete independence
-	 * from the original instance.
-	 *
-	 * **SOLID - Single Responsibility:** Leverages existing serialization services for cloning.
-	 *
-	 * @returns A new instance with the same data but completely independent references
-	 *
-	 * @example
-	 * Simple model cloning
-	 * ```typescript
-	 * const user1 = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const user2 = user1.clone();
-	 *
-	 * console.log(user2).not.toBe(user1); // true (different instances)
-	 * console.log(user2.name === user1.name); // true (same data)
-	 * ```
-	 *
-	 * @example
-	 * Nested model cloning
-	 * ```typescript
-	 * const company = new Company({
-	 *   id: '1',
-	 *   employees: [
-	 *     { id: '1', name: 'Alice' },
-	 *     { id: '2', name: 'Bob' }
-	 *   ]
-	 * });
-	 *
-	 * const cloned = company.clone();
-	 *
-	 * // Different instances
-	 * console.log(cloned).not.toBe(company);
-	 * console.log(cloned.employees).not.toBe(company.employees);
-	 * console.log(cloned.employees[0]).not.toBe(company.employees[0]);
-	 * ```
-	 */
-	clone(): this {
-		const Constructor = this
-			.constructor as unknown as IModelConstructor<this>;
-		return Constructor.deserialize(this.serialize());
 	}
 
 	// ==========================================================================

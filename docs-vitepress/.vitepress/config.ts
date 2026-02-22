@@ -1,49 +1,33 @@
 import { defineConfig } from 'vitepress';
+import { getTranslations, type ILocale } from './i18n';
 
 /**
  * Build the MCP sidebar section for a given locale.
- * Single source of truth — add items here and both EN/ES sidebars update automatically.
+ * Single source of truth — add items here and all locale sidebars update automatically.
  */
-const buildMcpSidebar = (locale: 'en' | 'es') => {
-	const isEs = locale === 'es';
+const buildMcpSidebar = (locale: ILocale) => {
+	const { mcp: t } = getTranslations(locale);
 	const prefix = `/${locale}/mcp`;
 	const showInternal = process.env.VITE_SHOW_INTERNAL_DOCS === 'true';
 	return [
 		{
-			text: isEs
-				? 'Protocolo de Contexto de Modelo'
-				: 'Model Context Protocol',
+			text: t.title,
 			items: [
-				{
-					text: isEs ? 'Descripción General' : 'Overview',
-					link: `${prefix}/`,
-				},
-				{
-					text: isEs ? 'Herramientas Públicas' : 'Public Tools',
-					link: `${prefix}/public/`,
-				},
-				{
-					text: isEs ? 'Skills Públicos' : 'Public Skills',
-					link: `${prefix}/public/skills`,
-				},
+				{ text: t.overview, link: `${prefix}/` },
+				{ text: t.publicTools, link: `${prefix}/public/` },
+				{ text: t.publicSkills, link: `${prefix}/public/skills` },
 				...(showInternal
 					? [
 							{
-								text: isEs
-									? 'Instalación (Mantenedores)'
-									: 'Installation (Maintainers)',
+								text: t.installationMaintainers,
 								link: `${prefix}/internal/setup`,
 							},
 							{
-								text: isEs
-									? 'Herramientas Internas (Mantenedores)'
-									: 'Internal Tools (Maintainers)',
+								text: t.internalToolsMaintainers,
 								link: `${prefix}/internal/`,
 							},
 							{
-								text: isEs
-									? 'Skills Internos (Mantenedores)'
-									: 'Internal Skills (Maintainers)',
+								text: t.internalSkillsMaintainers,
 								link: `${prefix}/internal/skills`,
 							},
 						]
@@ -721,6 +705,26 @@ export default defineConfig({
 									text: 'Vue 3 / Nuxt',
 									link: '/en/guide/vue-integration',
 								},
+								{
+									text: 'MSW (Mock Service Worker)',
+									link: '/en/guide/msw-integration',
+								},
+								{
+									text: 'React Hook Form',
+									link: '/en/guide/react-hook-form-integration',
+								},
+								{
+									text: 'TanStack Query',
+									link: '/en/guide/tanstack-query-integration',
+								},
+								{
+									text: 'Vitest Custom Matchers',
+									link: '/en/guide/vitest-matchers',
+								},
+								{
+									text: 'Zustand',
+									link: '/en/guide/zustand-integration',
+								},
 							],
 						},
 					],
@@ -891,6 +895,26 @@ export default defineConfig({
 								{
 									text: 'Vue 3 / Nuxt',
 									link: '/es/guide/vue-integration',
+								},
+								{
+									text: 'MSW (Mock Service Worker)',
+									link: '/es/guide/msw-integration',
+								},
+								{
+									text: 'React Hook Form',
+									link: '/es/guide/react-hook-form-integration',
+								},
+								{
+									text: 'TanStack Query',
+									link: '/es/guide/tanstack-query-integration',
+								},
+								{
+									text: 'Matchers Personalizados para Vitest',
+									link: '/es/guide/vitest-matchers',
+								},
+								{
+									text: 'Zustand',
+									link: '/es/guide/zustand-integration',
 								},
 							],
 						},
