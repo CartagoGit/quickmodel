@@ -1,10 +1,14 @@
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';
-import { describe, expect, test, beforeEach } from 'bun:test';
+import { Logger } from '@/core/helpers/logger.helper';
+import { describe, expect, test, beforeEach, spyOn, afterEach } from 'bun:test';
 
 describe('System Performance Configuration', () => {
 	beforeEach(() => {
+		QConfig.reset();
+	});
+	afterEach(() => {
 		QConfig.reset();
 	});
 
@@ -114,5 +118,109 @@ describe('System Performance Configuration', () => {
 		});
 
 		expect(user.tags).toHaveLength(3);
+	});
+
+	describe('disableSafetyChecks: security warning', () => {
+		test('should emit Logger.warn when disableSafetyChecks is true via decorator', () => {
+			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
+			@Quick(
+				{},
+				{
+					performance: { disableSafetyChecks: true },
+				}
+			)
+			class DangerousModel extends QModel<any> {
+				declare id: number;
+			}
+
+			new DangerousModel({ id: 1 });
+
+			expect(warnSpy).toHaveBeenCalledTimes(1);
+			expect(warnSpy.mock.calls[0][0]).toContain('disableSafetyChecks');
+
+			warnSpy.mockRestore();
+		});
+
+		test('should include model class name in warning message', () => {
+			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
+			@Quick(
+				{},
+				{
+					performance: { disableSafetyChecks: true },
+				}
+			)
+			class UnsafeModel extends QModel<any> {
+				declare value: string;
+			}
+
+			new UnsafeModel({ value: 'x' });
+
+			expect(warnSpy.mock.calls[0][0]).toContain('UnsafeModel');
+
+			warnSpy.mockRestore();
+		});
+
+		test('should NOT warn when disableSafetyChecks is false (default)', () => {
+			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
+			@Quick()
+			class SafeModel extends QModel<any> {
+				declare id: number;
+			}
+
+			new SafeModel({ id: 1 });
+
+			expect(warnSpy).not.toHaveBeenCalled();
+
+			warnSpy.mockRestore();
+		});
+
+		test('should emit Logger.warn when disableSafetyChecks is true globally', () => {
+			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
+			QConfig.configure({
+				defaults: {
+					performance: { disableSafetyChecks: true },
+				},
+			});
+
+			@Quick()
+			class GlobalDangerousModel extends QModel<any> {
+				declare id: number;
+			}
+
+			new GlobalDangerousModel({ id: 1 });
+
+			expect(warnSpy).toHaveBeenCalledTimes(1);
+			expect(warnSpy.mock.calls[0][0]).toContain('disableSafetyChecks');
+
+			warnSpy.mockRestore();
+		});
+
+		test('should NOT warn when safety checks are re-enabled via decorator override', () => {
+			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
+			QConfig.configure({
+				defaults: { performance: { disableSafetyChecks: true } },
+			});
+
+			@Quick(
+				{},
+				{
+					performance: { disableSafetyChecks: false },
+				}
+			)
+			class SafeOverrideModel extends QModel<any> {
+				declare id: number;
+			}
+
+			new SafeOverrideModel({ id: 1 });
+
+			expect(warnSpy).not.toHaveBeenCalled();
+
+			warnSpy.mockRestore();
+		});
 	});
 });

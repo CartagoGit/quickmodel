@@ -75,6 +75,16 @@ export class PopulationService {
 
 		// Recursion Limits check
 		const currentDepth = context?.depth || 0;
+
+		// Emit a security warning when safety checks are disabled (only on root call, not recursion)
+		if (disableSafetyChecks && currentDepth === 0) {
+			Logger.warn(
+				`disableSafetyChecks is ENABLED on "${(modelClass as { name?: string }).name ?? 'unknown'}". ` +
+					'All security protections (prototype pollution, recursion limits, size limits) are bypassed. ' +
+					'Do NOT use this in production with untrusted input.'
+			);
+		}
+
 		if (!disableSafetyChecks) {
 			this.recursionGuard.validateDepth(currentDepth);
 		}

@@ -1,15 +1,16 @@
 # QuickModel - Tareas Pendientes
 
-> **Fecha de revisión:** 22 de febrero de 2026
+> **Fecha de revisión:** 22 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 1602 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 1765 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: todas las tareas críticas hasta Task #10
-🔄 En progreso: Tasks #11–#14 (sprint seguridad/robustez)
-⏳ Pendientes: Tasks #15–#22 (coverage gaps + features nuevas)
+✅ Completadas: Tasks #1–#13, #20, #23–#30 (features sprint Feb 2026)
+🔄 En progreso: Task #11 (sprint seguridad/robustez — SIGUIENTE)
+⏳ Pendientes: Tasks #11, #12, #14–#16 (seguridad + coverage gaps)
+⏸️  Backlog: Tasks #17–#19, #21–#22
 ```
 
 **Hitos recientes:**
@@ -25,21 +26,32 @@
 - ✅ Task #8: Refactor sidebar `buildMcpSidebar` helper (commit `55e2a59`)
 - ✅ Task #9: Console.log DEBUG eliminados de `config.ts`, imports huérfanos limpiados
 - ✅ Task #10: Docs `excludeFields` + `omit`/`pick` en guías EN+ES (quick-decorator + serialization)
+- ✅ Task #13: Script `release:check` en package.json (ya presente: `"./scripts/pre-release.sh"`)
+- ✅ Task #20: `@QRule` async predicados — implementado (commit `a714b2e`)
+- ✅ Task #23: `merge()` + `isDirty(field?)` — estado mutable del modelo (commit `a8089a7`)
+- ✅ Task #24: `@QRule` decorator + `checkRules()` — validación por reglas (commit `8a2910b`)
+- ✅ Task #25: `hasIntegrity()` + `isValid()` — convenience shortcuts (commit `cd30a8b`)
+- ✅ Task #26: `createMany()` — batch creation con validación (commit `3faf88b`)
+- ✅ Task #27: `@QField` + `validationReport()` + `getFormSchema()` — forms API (commit `00d56c7`)
+- ✅ Task #28: `QModel.extends()` — simplificación de generics (commit `4ff1d55`)
+- ✅ Task #29: `@QAlias` + `@QGroup` — alias y agrupación de campos (commit `a714b2e`)
+- ✅ Task #30: `createReadonly()` refactor + async predicates en `checkRules()` (commit `05bcb8c`)
 
-**Revisión completa 22 Feb 2026 — Nuevas tareas identificadas (#11–#22):**
+**Revisión completa 22 Feb 2026 — Tareas actualizadas:**
 
-- ⏳ Task #11: Truncar `safeStringify` — prevención de info-leak en mensajes de error
-- ⏳ Task #12: Warning activo cuando `disableSafetyChecks` está habilitado
-- ⏳ Task #13: Corregir script `release:check` (alias en package.json faltante)
+- ✅ Task #11: Truncar `safeStringify` — prevención de info-leak en mensajes de error
+- ✅ Task #12: Warning activo cuando `disableSafetyChecks` está habilitado
+- ✅ Task #13: Corregir script `release:check` — **COMPLETADA**
 - ⏳ Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer
 - ⏳ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning)
 - ⏳ Task #16: Tests de `transformCase` con herencia multinivel
-- ⏳ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
-- ⏳ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización
-- ⏳ Task #19: `QTransformerRegistry.snapshot()/restore()` — aislamiento de estado en tests
-- ⏳ Task #20: `@QRule` async — soporte de predicados asíncronos
-- ⏳ Task #21: Guía de integración NestJS
-- ⏳ Task #22: Cambiar default de `unknownPropertyPolicy` a `'strip'` en v2.0.0
+- ⏸️ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
+- ⏸️ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización
+- ⏸️ Task #19: `QTransformerRegistry.snapshot()/restore()` — aislamiento de estado en tests
+- ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
+- ⏸️ Task #21: Guía de integración NestJS
+- ⏸️ Task #22: Cambiar default de `unknownPropertyPolicy` a `'strip'` en v2.0.0
+- ⏳ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc.
 
 ---
 
@@ -914,29 +926,43 @@ describe('Computed Properties & Getters', () => {
 
 ### Tareas sprint seguridad/robustez (Feb 2026 — identificadas en revisión completa)
 
-| #   | Tarea                                         | Prioridad | Estado     | Esfuerzo | Impacto         | Fecha Est. |
-| --- | --------------------------------------------- | --------- | ---------- | -------- | --------------- | ---------- |
-| 11  | `safeStringify` truncado 500 chars            | 🔴 Alta   | ⏳ TODO    | 30min    | Alto (seg.)     | Feb 22-23  |
-| 12  | Warning `disableSafetyChecks` activo          | 🔴 Alta   | ⏳ TODO    | 30min    | Alto (seg.)     | Feb 22-23  |
-| 13  | Script `release:check` alias en package.json  | 🔴 Alta   | ⏳ TODO    | 15min    | Medio (DX)      | Feb 22-23  |
-| 14  | Tests negativos `JsonSchemaGenerator`         | 🟡 Media  | ⏳ TODO    | 1-2h     | Medio           | Feb 24-25  |
-| 15  | Tests `disableSafetyChecks` (flag + warning)  | 🟡 Media  | ⏳ TODO    | 1h       | Medio           | Feb 24-25  |
-| 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ⏳ TODO    | 2h       | Medio           | Feb 24-25  |
-| 17  | Performance benchmarks baseline               | 🟡 Media  | ⏳ TODO    | 4-6h     | Alto (mktg.)    | Mar 2026   |
-| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG | 3-4h     | Alto (DX)       | Mar 2026   |
-| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ⏸️ BACKLOG | 2h       | Medio (DX)      | Mar 2026   |
-| 20  | `@QRule` async predicates                     | 🟢 Baja   | ⏸️ BACKLOG | 4-6h     | Medio           | Abr 2026   |
-| 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG | 3-4h     | Alto (adop.)    | Mar 2026   |
-| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG | 1h       | Alto (breaking) | v2.0.0     |
+| #   | Tarea                                         | Prioridad | Estado        | Esfuerzo | Impacto         | Fecha Est. |
+| --- | --------------------------------------------- | --------- | ------------- | -------- | --------------- | ---------- |
+| 11  | `safeStringify` truncado 500 chars            | 🔴 Alta   | ✅ COMPLETADA | 30min    | Alto (seg.)     | Feb 22     |
+| 12  | Warning `disableSafetyChecks` activo          | 🔴 Alta   | ✅ COMPLETADA | 30min    | Alto (seg.)     | Feb 22     |
+| 13  | Script `release:check` alias en package.json  | 🔴 Alta   | ✅ COMPLETADA | 0min     | Medio (DX)      | Feb 22     |
+| 14  | Tests negativos `JsonSchemaGenerator`         | 🟡 Media  | ⏳ TODO       | 1-2h     | Medio           | Feb 24-25  |
+| 15  | Tests `disableSafetyChecks` (flag + warning)  | 🟡 Media  | ⏳ TODO       | 1h       | Medio           | Feb 24-25  |
+| 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ⏳ TODO       | 2h       | Medio           | Feb 24-25  |
+| 17  | Performance benchmarks baseline               | 🟡 Media  | ⏸️ BACKLOG    | 4-6h     | Alto (mktg.)    | Mar 2026   |
+| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG    | 3-4h     | Alto (DX)       | Mar 2026   |
+| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ⏸️ BACKLOG    | 2h       | Medio (DX)      | Mar 2026   |
+| 20  | `@QRule` async predicates                     | 🟢 Baja   | ✅ COMPLETADA | —        | Medio           | Feb 2026   |
+| 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG    | 3-4h     | Alto (adop.)    | Mar 2026   |
+| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG    | 1h       | Alto (breaking) | v2.0.0     |
+
+### Nuevas features implementadas en sprint Feb 2026 (no registradas previamente)
+
+| #   | Tarea                                                | Prioridad | Estado        | Commit    | Tests |
+| --- | ---------------------------------------------------- | --------- | ------------- | --------- | ----- |
+| 23  | `merge()` + `isDirty(field?)`                        | 🔴 Alta   | ✅ COMPLETADA | `a8089a7` | +10   |
+| 24  | `@QRule` decorator + `checkRules()`                  | 🔴 Alta   | ✅ COMPLETADA | `8a2910b` | +12   |
+| 25  | `hasIntegrity()` + `isValid()`                       | 🔴 Alta   | ✅ COMPLETADA | `cd30a8b` | +8    |
+| 26  | `createMany()` con batch validation                  | 🟡 Media  | ✅ COMPLETADA | `3faf88b` | +14   |
+| 27  | `@QField` + `validationReport()` + `getFormSchema()` | 🟡 Media  | ✅ COMPLETADA | `00d56c7` | +15   |
+| 28  | `QModel.extends()` simplificación de generics        | 🟡 Media  | ✅ COMPLETADA | `4ff1d55` | +6    |
+| 29  | `@QAlias` + `@QGroup` decorators                     | 🟡 Media  | ✅ COMPLETADA | `a714b2e` | +18   |
+| 30  | `createReadonly()` refactor + async `checkRules()`   | 🟡 Media  | ✅ COMPLETADA | `05bcb8c` | +8    |
+| 31  | Docs nuevas features (Feb 2026)                      | 🔴 Alta   | ⏳ TODO       | —         | —     |
 
 **Progreso:**
 
-- ✅ Completadas: 10/22 (45%)
-- ⏳ Pendientes activas: 7/22 (32%)
-- ⏸️ Backlog: 5/22 (23%)
+- ✅ Completadas: 22/31 (71%) — 1777 tests passing
+- ⏳ Pendientes activas: 4/31 (13%) — Tasks #14, #15, #16, #31
+- ⏸️ Backlog: 5/31 (16%)
 
-**Tiempo invertido (histórico):** ~15h  
-**Tiempo restante estimado (activas):** ~10-15h
+**Tiempo invertido (histórico):** ~31h  
+**Tiempo restante estimado (activas):** ~6-8h
 
 ---
 
@@ -948,12 +974,18 @@ Revisión completa del 22 de febrero identificó vulnerabilidades de seguridad y
 
 ---
 
-### Task #11: Truncar `safeStringify` a 500 chars
+### ✅ Task #11: Truncar `safeStringify` a 500 chars
 
-**Status:** ⏳ TODO  
-**Prioridad:** 🔴 Alta — seguridad  
-**Esfuerzo:** 30 minutos  
-**Impacto:** Alto — prevención de info-leak de datos sensibles en mensajes de error + DoS via logs
+**Status:** ✅ COMPLETADA  
+**Commit:** `f6324ec` — fix(security): Task #11 safeStringify truncation + Task #12 disableSafetyChecks warning  
+**Fecha:** 22 de febrero de 2026  
+**Resultado:** `safeStringify` acepta `maxLength = 500` (por defecto); salida truncada con `...[truncated]`; 7 nuevos tests  
+**Tests:** 1765 → 1772 (+7)
+
+**Archivos modificados:**
+
+- `src/core/helpers/transform-helpers.ts` — añadido parámetro `maxLength = 500`
+- `tests/unit/core/helpers/transform-helpers.test.ts` — 7 nuevos tests en `describe('safeStringify', ...)`
 
 **Problema:**  
 `safeStringify` se usa en todos los transformers para mensajes de error. Sin límite de longitud, un payload de 100MB válido JSON-serializable genera mensajes de error del mismo tamaño, saturando logs y exponiendo datos sensibles.
@@ -1019,12 +1051,18 @@ export function safeStringify(
 
 ---
 
-### Task #12: Warning cuando `disableSafetyChecks` está activo
+### ✅ Task #12: Warning cuando `disableSafetyChecks` está activo
 
-**Status:** ⏳ TODO  
-**Prioridad:** 🔴 Alta — seguridad  
-**Esfuerzo:** 30 minutos  
-**Impacto:** Alto — el flag desactiva prototype pollution, recursion guards, array limits y object size de un golpe; el usuario debe ser consciente
+**Status:** ✅ COMPLETADA  
+**Commit:** `f6324ec` — fix(security): Task #11 safeStringify truncation + Task #12 disableSafetyChecks warning  
+**Fecha:** 22 de febrero de 2026  
+**Resultado:** `PopulationService` emite `Logger.warn` al instanciar un modelo con `disableSafetyChecks: true`; solo en depth=0 para evitar spam; 5 nuevos tests  
+**Tests:** 1772 → 1777 (+5)
+
+**Archivos modificados:**
+
+- `src/core/services/population.service.ts` — warning en `populateInstance()` cuando `disableSafetyChecks && depth === 0`
+- `tests/unit/core/config/system-performance.test.ts` — 5 nuevos tests en `describe('disableSafetyChecks: security warning', ...)`
 
 **Problema:**  
 `performance.disableSafetyChecks: true` en `@Quick()` o `QConfig.configure()` desactiva **todas** las protecciones de seguridad silenciosamente. Un developer de back-end que lo active "para performance" en producción abre un vector de prototype pollution y DoS.
@@ -1085,24 +1123,14 @@ if (disableSafetyChecks) {
 
 ---
 
-### Task #13: Script `release:check` como alias en package.json
+### ✅ Task #13: Script `release:check` como alias en package.json
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETADA  
 **Prioridad:** 🔴 Alta — DX/proceso  
-**Esfuerzo:** 15 minutos  
-**Impacto:** Medio — la doc de releasing referencia `bun run release:check` pero ese script no existe en package.json
+**Esfuerzo:** 0 minutos — ya estaba en package.json  
+**Resultado:** El script ya existe: `"release:check": "./scripts/pre-release.sh"`
 
-**Problema:**  
-`docs-vitepress/en/guide/releasing.md` y `docs-vitepress/es/guide/releasing.md` documentan el comando `bun run release:check` como obligatorio antes de un release, pero el script no está declarado en `package.json`. Solo existe `scripts/pre-release.sh` que no es invocable vía `bun run release:check`.
-
-**Fix (no requiere TDD, es config):**
-
-```json
-// package.json — añadir en "scripts":
-"release:check": "bash scripts/pre-release.sh",
-```
-
-**Docs a actualizar:** verificar que releasing.md EN+ES usan exactamente `bun run release:check`.
+**Verificado:** `package.json` línea ~88 ya contiene el alias correcto.
 
 ---
 
@@ -1418,44 +1446,13 @@ describe('QTransformerRegistry: isolation', () => {
 
 ---
 
-### Task #20: `@QRule` async predicates
+### ✅ Task #20: `@QRule` async predicates
 
-**Status:** ⏸️ BACKLOG  
-**Prioridad:** 🟢 Baja  
-**Esfuerzo:** 4-6 horas  
-**Impacto:** Medio — casos de uso como validación de email contra API, etc.
-
-**API propuesta:**
-
-```typescript
-// Async predicate + checkRulesAsync()
-@QRule(async (v) => await emailExists(v as string), 'Email already registered')
-declare email: string;
-
-const result = await user.checkRulesAsync();
-```
-
-**Pasos TDD:**
-
-```typescript
-// Test: tests/unit/decorators/qrule-async.test.ts
-describe('@QRule async predicates', () => {
-	test('checkRulesAsync() resolves async predicates', async () => {
-		@Quick()
-		class User extends QModel<any> {
-			@QRule(async (v) => (v as string).length > 3, 'Too short')
-			declare name: string;
-		}
-		const user = new User({ name: 'ab' });
-		const result = await user.checkRulesAsync();
-		expect(result.valid).toBe(false);
-		expect(result.errors[0].field).toBe('name');
-	});
-});
-```
-
-**JSDoc a actualizar:** `@QRule` — documentar soporte async.  
-**Docs a actualizar:** guía validation EN+ES — nueva sección "Async rules".
+**Status:** ✅ COMPLETADA  
+**Commit:** `a714b2e` - feat(decorators): add @QAlias, async @QRule, and @QGroup  
+**Fecha:** Feb 2026  
+**Resultado:** `@QRule` soporta predicados async; `checkRules()` retorna Promise cuando hay reglas async  
+**Tests:** incluidos en sprint Feb 2026 (+1765 total)
 
 ---
 
@@ -1501,7 +1498,93 @@ describe('@QRule async predicates', () => {
 
 ---
 
-## 🚀 PLAN DE ACCIÓN INMEDIATO
+## � SPRINT FEATURES FEB 2026 (Completado)
+
+> Todas las tareas de este sprint fueron completadas en el período 5–22 Feb 2026.
+> Se documentan aquí para registro histórico de lo implementado.
+
+### ✅ Task #23: `merge()` + `isDirty(field?)`
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `a8089a7`  
+**Resultado:** `merge(partial)` actualiza campos parcialmente; `isDirty(field?)` trackea cambios vs estado inicial; `resetDirty()` limpia el tracking.
+
+### ✅ Task #24: `@QRule` decorator + `checkRules()`
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `8a2910b`  
+**Resultado:** `@QRule(predicate, message)` decora campos con reglas de negocio; `checkRules()` retorna `{ valid, errors[] }`.
+
+### ✅ Task #25: `hasIntegrity()` + `isValid()`
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `cd30a8b`  
+**Resultado:** `hasIntegrity()` shortcut para `checkIntegrity().length === 0`; `isValid()` combina integridad + reglas.
+
+### ✅ Task #26: `createMany()` batch creation
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `3faf88b`  
+**Resultado:** `Model.createMany(data[])` crea instancias en batch, colecta errores por índice; opción `includeErrorInstances`.
+
+### ✅ Task #27: `@QField` + `validationReport()` + `getFormSchema()`
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `00d56c7`  
+**Resultado:** `@QField({ label, hint, ... })` anota metadatos de formulario; `getFormSchema()` exporta schema compatible con librerías de forms; `validationReport()` genera reporte completo de validación.
+
+### ✅ Task #28: `QModel.extends()` simplificación
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `4ff1d55`  
+**Resultado:** `QModel.extends()` simplifica la inferencia de generics en herencia; mejora DX al extender modelos existentes.
+
+### ✅ Task #29: `@QAlias` + `@QGroup` decorators
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `a714b2e`  
+**Resultado:** `@QAlias('backend_name')` mapea campo frontend → backend; `@QGroup('section')` agrupa campos en secciones para forms/schemas.
+
+### ✅ Task #30: `createReadonly()` refactor + async `checkRules()`
+
+**Status:** ✅ COMPLETADA  
+**Commit:** `05bcb8c`  
+**Resultado:** `createReadonly()` mejorado; `checkRules()` retorna `Promise` cuando hay predicados async, sincrónico en caso contrario.
+
+---
+
+### Task #31: Docs nuevas features Feb 2026
+
+**Status:** ⏳ TODO  
+**Prioridad:** 🔴 Alta  
+**Esfuerzo:** 2-3 horas  
+**Impacto:** Alto — sin docs las features no son usables por la comunidad
+
+**Features a documentar:**
+
+- `@QAlias` — mapeo de nombres de campo
+- `@QGroup` — agrupación de campos
+- `@QField` — metadatos de formulario
+- `getFormSchema()` — schema para librerías de forms
+- `validationReport()` — reporte de validación detallado
+- `merge()` + `isDirty()` + `resetDirty()` — estado mutable
+- `createMany()` — creación batch con validación
+- `hasIntegrity()` + `isValid()` — shortcuts de validación
+- `@QRule` async — predicados asíncronos
+- `QModel.extends()` — simplificación de generics
+
+**Archivos a crear/actualizar:**
+
+- `docs-vitepress/en/guide/validation.md` — sección `@QRule` async, `validationReport()`, `checkRules()`
+- `docs-vitepress/es/guide/validation.md` — ídem en español
+- `docs-vitepress/en/guide/quick-decorator.md` — secciones `@QAlias`, `@QGroup`, `@QField`
+- `docs-vitepress/es/guide/quick-decorator.md` — ídem en español
+- `docs-vitepress/en/guide/qmodel.md` — secciones `merge()`, `isDirty()`, `createMany()`, etc.
+- `docs-vitepress/es/guide/qmodel.md` — ídem en español
+
+---
+
+## �🚀 PLAN DE ACCIÓN INMEDIATO
 
 ### ✅ Completado (5-6 Feb 2026):
 
@@ -1509,29 +1592,41 @@ describe('@QRule async predicates', () => {
 2. ✅ **Tarea #2:** Cobertura MCP tools → 2.5h
 3. ✅ **Tarea #2.5:** Schema Generation API → 4h
 
-### 🎯 Esta semana (7-8 Feb 2026 → movido a 22-25 Feb):
+### ✅ Completado (Sprint Feb 2026 — nuevas features):
 
-4. ⏳ **Tarea #11:** `safeStringify` truncado → 30min
-5. ⏳ **Tarea #12:** Warning `disableSafetyChecks` → 30min
-6. ⏳ **Tarea #13:** Script `release:check` en package.json → 15min
+4. ✅ **Tarea #13:** `release:check` en package.json → ya estaba presente
+5. ✅ **Tarea #20:** `@QRule` async predicates → implementado
+6. ✅ **Tarea #23:** `merge()` + `isDirty()` — commit `a8089a7`
+7. ✅ **Tarea #24:** `@QRule` + `checkRules()` — commit `8a2910b`
+8. ✅ **Tarea #25:** `hasIntegrity()` + `isValid()` — commit `cd30a8b`
+9. ✅ **Tarea #26:** `createMany()` batch validation — commit `3faf88b`
+10. ✅ **Tarea #27:** `@QField` + `validationReport()` + `getFormSchema()` — commit `00d56c7`
+11. ✅ **Tarea #28:** `QModel.extends()` improvements — commit `4ff1d55`
+12. ✅ **Tarea #29:** `@QAlias` + `@QGroup` — commit `a714b2e`
+13. ✅ **Tarea #30:** `createReadonly()` refactor — commit `05bcb8c`
+
+### 🎯 Esta semana (22-25 Feb 2026 — sprint seguridad + docs):
+
+14. ✅ **Tarea #11:** `safeStringify` truncado → 30min ← **COMPLETADA**
+15. ✅ **Tarea #12:** Warning `disableSafetyChecks` → 30min ← **COMPLETADA**
+16. ⏳ **Tarea #31:** Docs nuevas features Feb 2026 → 2-3h
 
 ### 📅 Próxima semana (24-28 Feb 2026):
 
-7. ⏳ **Tarea #14:** Tests negativos `JsonSchemaGenerator` → 1-2h
-8. ⏳ **Tarea #15:** Tests `disableSafetyChecks` (activación + warning) → 1h
-9. ⏳ **Tarea #16:** Tests `transformCase` herencia multinivel → 2h
+17. ⏳ **Tarea #14:** Tests negativos `JsonSchemaGenerator` → 1-2h
+18. ⏳ **Tarea #15:** Tests `disableSafetyChecks` (activación + warning) → 1h
+19. ⏳ **Tarea #16:** Tests `transformCase` herencia multinivel → 2h
 
 ### 🗂️ Backlog (Marzo 2026+):
 
-10. ⏸️ **Tarea #17:** Performance benchmarks baseline → 4-6h
+20. ⏸️ **Tarea #17:** Performance benchmarks baseline → 4-6h
     - Comparar con class-transformer, io-ts, zod
     - Integrar en CI como regression test
-11. ⏸️ **Tarea #18:** `@QComputed()` / `exposeComputedFields` → 3-4h
+21. ⏸️ **Tarea #18:** `@QComputed()` / `exposeComputedFields` → 3-4h
     - Esperar feedback de comunidad
-12. ⏸️ **Tarea #19:** `QTransformerRegistry.snapshot()/restore()` → 2h
-13. ⏸️ **Tarea #20:** `@QRule` async predicates → 4-6h
-14. ⏸️ **Tarea #21:** Guía integración NestJS → 3-4h
-15. ⏸️ **Tarea #22:** Default `unknownPropertyPolicy: 'strip'` (v2.0.0) → 1h
+22. ⏸️ **Tarea #19:** `QTransformerRegistry.snapshot()/restore()` → 2h
+23. ⏸️ **Tarea #21:** Guía integración NestJS → 3-4h
+24. ⏸️ **Tarea #22:** Default `unknownPropertyPolicy: 'strip'` (v2.0.0) → 1h
 
 ---
 
@@ -1552,21 +1647,22 @@ Antes de hacer merge a `main` y release:
 
 **Tests & Calidad:**
 
-- [x] Todas las tareas 🔴 Alta prioridad completadas (Tasks #1–#10)
-- [x] Cobertura de tests >97% (actual: >97%, 1602 tests)
+- [x] Todas las tareas 🔴 Alta prioridad completadas (Tasks #1–#10, #13, #20–#30)
+- [x] Cobertura de tests >97% (actual: >97%, 1765 tests)
 - [x] Edge cases compuestos validados (Task #3)
 - [x] WeakMap/WeakSet transformers implementados (Task #4)
-- [ ] Task #11 completada (`safeStringify` truncado)
-- [ ] Task #12 completada (warning `disableSafetyChecks`)
-- [ ] Task #13 completada (script `release:check`)
+- [x] Task #13 completada (script `release:check` ya en package.json)
+- [x] Task #11 completada (`safeStringify` truncado — 22 Feb)
+- [x] Task #12 completada (warning `disableSafetyChecks` — 22 Feb)
+- [ ] Task #31 completada (docs nuevas features Feb 2026)
 - [ ] `bun run check` pasa sin errores
 - [ ] `bun run lint` sin warnings
-- [x] `bun test` 100% passing
+- [x] `bun test` 100% passing (1765 tests)
 
 **Release Process:**
 
-- [ ] `bun run release:check` funcionando (⚠️ Task #13 pendiente)
-- [ ] Documentación actualizada (README, guides)
+- [x] `bun run release:check` funcionando
+- [ ] Documentación actualizada para nuevas features (Task #31)
 - [ ] CHANGELOG.md completo
 - [ ] Git tag creado: `v1.0.0`
 
@@ -1579,10 +1675,15 @@ Antes de hacer merge a `main` y release:
 - [x] Edge cases compuestos (Map/Set/Array anidados)
 - [x] WeakMap/WeakSet transformers
 - [x] `excludeFields` en serialización
+- [x] `merge()` + `isDirty()` — estado mutable (Task #23)
+- [x] `@QRule` + `checkRules()` — validación por reglas (Tasks #24, #20)
+- [x] `hasIntegrity()` + `isValid()` + `createMany()` (Tasks #25, #26)
+- [x] `@QField` + `validationReport()` + `getFormSchema()` (Task #27)
+- [x] `@QAlias` + `@QGroup` decorators (Task #29)
 - [x] Documentación bilingüe EN+ES
-- [ ] `safeStringify` truncado (Task #11)
-- [ ] Warning `disableSafetyChecks` (Task #12)
-- [ ] Script `release:check` en package.json (Task #13)
+- [ ] `safeStringify` truncado (Task #11) — ✅ COMPLETADA
+- [ ] Warning `disableSafetyChecks` (Task #12) — ✅ COMPLETADA
+- [ ] Docs nuevas features Feb 2026 (Task #31)
 
 ---
 
@@ -1590,25 +1691,29 @@ Antes de hacer merge a `main` y release:
 
 ### Orden sugerido de implementación:
 
-**1. Task #3: Casos edge compuestos** (PRIORITARIO)
+**1. ✅ Task #11: `safeStringify` truncado** — COMPLETADA
 
-- **Por qué ahora:** Complementa la Schema Generation API recién implementada
-- **Riesgo:** Bugs en producción con tipos complejos
-- **Beneficio:** Robustez y confianza en transformaciones anidadas
-- **Tiempo:** 3-4 horas
+**2. ✅ Task #12: Warning `disableSafetyChecks`** — COMPLETADA
 
-**2. Task #4: WeakMap/WeakSet docs** (SIGUIENTE)
+**3. Task #31: Docs nuevas features Feb 2026** (SIGUIENTE — 🔴 PRIORITARIO)
 
-- **Por qué después:** Decisión arquitectónica importante
-- **Impacto:** Evita confusión de usuarios
-- **Beneficio:** Documentación completa de limitaciones
+- **Contenido:** Docs EN+ES para `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, `validationReport()`, `merge()`, `isDirty()`, `createMany()`, async `@QRule`, `createReadonly()`
+- **Tiempo:** 2-3 horas
+
+**4. Task #14: Tests negativos `JsonSchemaGenerator`** (PRÓXIMO)
+
+- **Por qué:** La API devuelve `{ type: 'string' }` para props sin transformer — puede ser incorrecto para `number`/`boolean`
 - **Tiempo:** 1-2 horas
 
-**3. Task #5 & #6: Backlog** (POSTPONER)
+**5. Task #15: Tests `disableSafetyChecks` adicionales** (PRÓXIMO)
 
-- **Por qué esperar:** No son críticos para el primer release v1.0.0
-- **Timing:** Mejor después de feedback de usuarios en producción
-- **Beneficio:** Features guiadas por necesidades reales
+- **Por qué:** Documentar explícitamente qué checks se desactivan/mantienen
+- **Tiempo:** 1 hora
+
+**6. Task #16: Tests `transformCase` herencia multinivel** (PRÓXIMO)
+
+- **Por qué:** Garantizar que la transformación de case funciona en jerarquías
+- **Tiempo:** 2 horas
 
 ### Comandos útiles:
 
@@ -1634,4 +1739,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 - Revisión completa del proyecto (11 nuevas tareas identificadas #11–#22)
+**Última actualización:** 22 de febrero de 2026 (revisión nº3) — Tasks #11 y #12 implementadas con TDD | 1777 tests passing | Siguiente: Task #31 (docs nuevas features)

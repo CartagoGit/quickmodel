@@ -116,4 +116,56 @@ describe('Transform Helpers', () => {
 				1, 2,
 			]));
 	});
+
+	describe('safeStringify', () => {
+		it('should truncate output at 500 chars by default', () => {
+			const huge = { data: 'x'.repeat(1000) };
+			const result = h.safeStringify(huge);
+			// 500 chars + '...[truncated]' (14 chars) = 514 max
+			expect(result.length).toBeLessThanOrEqual(514);
+			expect(result).toMatch(/\.\.\.\[truncated\]$/);
+		});
+
+		it('should allow custom maxLength via third argument', () => {
+			const result = h.safeStringify(
+				{ a: 'x'.repeat(200) },
+				undefined,
+				100
+			);
+			expect(result.length).toBeLessThanOrEqual(114); // 100 + '...[truncated]'
+			expect(result).toMatch(/\.\.\.\[truncated\]$/);
+		});
+
+		it('should not truncate short values', () => {
+			const result = h.safeStringify({ id: 1, name: 'test' });
+			expect(result).toBe('{"id":1,"name":"test"}');
+			expect(result).not.toContain('[truncated]');
+		});
+
+		it('should still handle circular references', () => {
+			const circular: any = { id: 1 };
+			circular.self = circular;
+			const result = h.safeStringify(circular);
+			expect(result).toContain('[Circular]');
+		});
+
+		it('should still return [Unserializable] for BigInt', () => {
+			const result = h.safeStringify(42n);
+			expect(result).toContain('[Unserializable');
+		});
+
+		it('should handle undefined input', () => {
+			const result = h.safeStringify(undefined);
+			// undefined → JSON.stringify returns undefined → fallback
+			expect(typeof result).toBe('string');
+		});
+
+		it('should truncate with default maxLength=500 on huge payload', () => {
+			const payload = {
+				items: Array(100).fill({ name: 'longname', value: 12345 }),
+			};
+			const result = h.safeStringify(payload);
+			expect(result.length).toBeLessThanOrEqual(514); // 500 + '...[truncated]'
+		});
+	});
 });

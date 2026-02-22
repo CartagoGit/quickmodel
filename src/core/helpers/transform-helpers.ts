@@ -60,12 +60,30 @@ export const trimEnd = (str: string): string => str.trimEnd();
 
 /**
  * Safely stringifies a value, handling circular references and limiting length.
- * Use this for error messages to prevent DoS via circular objects.
+ * Use this for error messages to prevent DoS via circular objects and info-leak
+ * via large payloads.
+ *
+ * @param value - The value to stringify
+ * @param space - Optional JSON indentation spaces
+ * @param maxLength - Maximum output length before truncation (default: 500).
+ *   Set to `0` to disable truncation.
+ * @returns A safe JSON string, truncated with `...[truncated]` if too long.
+ *
+ * @example
+ * ```ts
+ * safeStringify({ name: 'test' }) // '{"name":"test"}'
+ * safeStringify({ data: 'x'.repeat(1000) }) // '{"data":"xxxxx...[truncated]'
+ * safeStringify({ data: 'x' }, undefined, 100) // Custom max length
+ * ```
  */
-export function safeStringify(value: unknown, space?: number): string {
+export function safeStringify(
+	value: unknown,
+	space?: number,
+	maxLength = 500
+): string {
 	const visited = new WeakSet();
 	try {
-		return JSON.stringify(
+		const result = JSON.stringify(
 			value,
 			(_key, val) => {
 				if (typeof val === 'object' && val !== null) {
@@ -78,6 +96,11 @@ export function safeStringify(value: unknown, space?: number): string {
 			},
 			space
 		);
+		const str = result ?? 'undefined';
+		if (maxLength > 0 && str.length > maxLength) {
+			return str.slice(0, maxLength) + '...[truncated]';
+		}
+		return str;
 	} catch {
 		return `[Unserializable: ${typeof value}]`;
 	}
