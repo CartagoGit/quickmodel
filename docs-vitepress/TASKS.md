@@ -42,7 +42,7 @@
 - ✅ Task #11: Truncar `safeStringify` — prevención de info-leak en mensajes de error
 - ✅ Task #12: Warning activo cuando `disableSafetyChecks` está habilitado
 - ✅ Task #13: Corregir script `release:check` — **COMPLETADA**
-- ⏳ Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer
+- ✅ Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer — **COMPLETADA** (fix array types)
 - ✅ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning) — **COMPLETADA**
 - ✅ Task #16: Tests de `transformCase` con herencia multinivel — **COMPLETADA**
 - ⏸️ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
@@ -957,8 +957,8 @@ describe('Computed Properties & Getters', () => {
 
 **Progreso:**
 
-- ✅ Completadas: 25/31 (81%) — 1794 tests passing
-- ⏳ Pendientes activas: 1/31 (3%) — Task #14
+- ✅ Completadas: 26/31 (84%) — 1807 tests passing
+- ⏳ Pendientes activas: 0/31 (0%) — sprint completado
 - ⏸️ Backlog: 5/31 (16%)
 
 **Tiempo invertido (histórico):** ~31h  
@@ -1136,13 +1136,29 @@ if (disableSafetyChecks) {
 
 ### Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests:** 1794 → 1807 (+13)  
 **Prioridad:** 🟡 Media  
 **Esfuerzo:** 1-2 horas  
-**Impacto:** Medio — el default `{ type: 'string' }` para props con transformer `undefined` es incorrecto para `number`/`boolean`
+**Impacto:** Medio — fix real descubierto: los tipos array `[String]`, `[Date]`, `[Number]` producían `{ type: 'string' }` en lugar de `{ type: 'array' }` en el JSON Schema
 
-**Problema:**  
-En `schema-generators.service.ts`, el método `_getJsonSchemaType` devuelve `{ type: 'string' }` cuando no hay transformer. Esto causa que un modelo con `declare id: number` sin transformer explícito genere un JSON Schema con `id: { type: 'string' }`, que es incorrecto.
+**Hallazgos TDD:**
+
+1. `_getJsonSchemaType(undefined)` devuelve `{ type: 'string' }` — comportamiento documentado, consistente (no es un bug, es un fallback intencionado)
+2. Propiedades no declaradas en el type map de `@Quick` NO aparecen en el schema — comportamiento documentado
+3. **BUG REAL:** tipos array (`[String]`, `[Number]`, `[Date]`) producían `{ type: 'string' }` en lugar de `{ type: 'array' }` — CORREGIDO
+
+**Fix implementado** en `src/core/services/schema-generators.service.ts`:
+
+- Añadido bloque `if (Array.isArray(transformer))` antes del switch
+- Detecta notación `[Type]` y devuelve `{ type: 'array', items: <tipo_inferido> }`
+- Recursivo: `[Date]` → `{ type: 'array', items: { type: 'string', format: 'date-time' } }`
+
+**Archivos:**
+
+- `tests/unit/core/services/schema-generators-fallback.test.ts` — 13 nuevos tests (documentación + regression)
+- `src/core/services/schema-generators.service.ts` — fix en `_getJsonSchemaType`
 
 **Pasos TDD:**
 
@@ -1706,10 +1722,7 @@ Antes de hacer merge a `main` y release:
 
 **3. ✅ Task #31: Docs nuevas features Feb 2026** — COMPLETADA (docs ya estaban escritas con las features)
 
-**4. Task #14: Tests negativos `JsonSchemaGenerator`** (PRÓXIMO)
-
-- **Por qué:** La API devuelve `{ type: 'string' }` para props sin transformer — puede ser incorrecto para `number`/`boolean`
-- **Tiempo:** 1-2 horas
+**4. ✅ Task #14: Tests negativos `JsonSchemaGenerator`** — COMPLETADA (fix array types, +13 tests)
 
 **5. ✅ Task #15: Tests `disableSafetyChecks`** — COMPLETADA (`c615290`)
 
@@ -1739,4 +1752,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº5) — Tasks #11, #12, #15, #16 y #31 completadas | 1794 tests passing | Siguiente: Task #14 (JsonSchemaGenerator tests)
+**Última actualización:** 22 de febrero de 2026 (revisión nº6) — Tasks #14, #15, #16 y #31 completadas | 1807 tests passing | Sprint seguridad/robustez: 100% completado

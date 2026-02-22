@@ -45,6 +45,15 @@ export class JsonSchemaGenerator {
 			return { type: 'string' }; // Default
 		}
 
+		// Handle array notation: [String], [Date], [Number], [MyClass], etc.
+		if (Array.isArray(transformer)) {
+			const itemTransformer = transformer[0];
+			const itemSchema = itemTransformer
+				? this._getJsonSchemaType(itemTransformer)
+				: { type: 'string' };
+			return { type: 'array', items: itemSchema };
+		}
+
 		const transformerName =
 			typeof transformer === 'function'
 				? transformer.name
