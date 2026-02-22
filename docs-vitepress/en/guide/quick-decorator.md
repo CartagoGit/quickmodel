@@ -67,6 +67,7 @@ class MyModel extends QModel<IMyInterface> { ... }
 - **[`serializers`](#2-custom-serializers)**: Custom serialization logic.
 - **[`mockers`](#3-custom-mockers)**: Custom mock generation.
 - **[`discriminators`](#4-discriminators-polymorphism)**: Polymorphic type handling.
+- **[`excludeFields`](#6-excludefields-permanent-field-exclusion)**: Permanently exclude fields from every `serialize()`/`toJSON()` call.
 
 ### Property Modifiers (`!` vs `declare`)
 
@@ -188,6 +189,49 @@ class User extends QModel<IUser> {}
 // Throws Error: "Property 'unknownProp' is not allowed in strict mode"
 new User({ name: 'John', unknownProp: 123 });
 ```
+
+---
+
+### 6. excludeFields — Permanent Field Exclusion
+
+Declare fields that should **never appear in `serialize()` / `toJSON()`** output, regardless of any runtime options.
+
+```typescript
+@Quick(
+	{
+		id: 'string',
+		name: 'string',
+		password: 'string',
+		internalCache: WeakMap,
+	},
+	{
+		excludeFields: ['password', 'internalCache'],
+	}
+)
+class Account extends QModel<IAccount> {
+	declare id: string;
+	declare name: string;
+	declare password: string; // set on instance, never serialized
+	declare internalCache: WeakMap<object, any>;
+}
+
+const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
+
+console.log(account.password); // 's3cr3t' — still accessible
+console.log(account.toJSON()); // { id: '1', name: 'Alice' } — password excluded
+```
+
+::: tip Deserialization is unaffected
+`excludeFields` only removes fields from the **output** (serialization). The field is still populated from input data when you construct the model. This makes it safe for passwords, tokens and private caches.
+:::
+
+::: info Permanent vs. runtime filtering
+| Approach | Where declared | Applied | Use case |
+|---|---|---|---|
+| `excludeFields` | decorator 2nd arg | always | passwords, internal state |
+| `omit` | `serialize({ omit: [...] })` | on that call | response shaping |
+| `pick` | `serialize({ pick: [...] })` | on that call | sparse projection |
+:::
 
 ---
 

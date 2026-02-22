@@ -428,6 +428,65 @@ const users = [user1, user2, user3];
 const jsonArray = users.map((u) => u.toJSON());
 ```
 
+## Field Filtering
+
+QuickModel provides three ways to control which fields appear in serialized output.
+
+### Runtime: `omit` and `pick`
+
+Pass options to `serialize()` (or `toJSON()`) to filter fields on a per-call basis:
+
+```typescript
+const user = new User({
+	id: 1,
+	name: 'Alice',
+	password: 's3cr3t',
+	role: 'admin',
+});
+
+// omit — exclude specific fields
+const public = user.serialize({ omit: ['password', 'role'] });
+// → { id: 1, name: 'Alice' }
+
+// pick — only include specific fields
+const minimal = user.serialize({ pick: ['id', 'name'] });
+// → { id: 1, name: 'Alice' }
+```
+
+### Permanent: `excludeFields`
+
+Declare which fields should **always** be excluded from every serialization call, directly in the `@Quick()` decorator:
+
+```typescript
+@Quick(
+	{
+		id: 'string',
+		name: 'string',
+		password: 'string',
+	},
+	{
+		excludeFields: ['password'], // never in JSON output
+	}
+)
+class Account extends QModel<IAccount> {
+	declare id: string;
+	declare name: string;
+	declare password: string;
+}
+
+const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
+assert(account.password === 's3cr3t'); // still on the instance
+assert(account.toJSON().password === undefined); // excluded
+```
+
+::: info When to use each approach
+| Approach | Declared | Applied | Best for |
+|---|---|---|---|
+| `excludeFields` | `@Quick()` decorator | always, every call | passwords, secrets, WeakMap caches |
+| `omit` | `serialize({ omit })` | that call only | API response shaping |
+| `pick` | `serialize({ pick })` | that call only | sparse projection / partial updates |
+:::
+
 ## Next Steps
 
 - [Transformers](/en/guide/transformers) - See all transformation rules

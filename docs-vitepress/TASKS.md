@@ -1,15 +1,15 @@
 # QuickModel - Tareas Pendientes
 
-> **Fecha de revisión:** 6 de febrero de 2026  
-> **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)  
-> **Estado actual:** 1381 tests passing | Cobertura >90% | v1.0.0
+> **Fecha de revisión:** 22 de febrero de 2026
+> **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
+> **Estado actual:** 1602 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: 5/6 tareas (83%)
-🔄 En progreso: 0/6 tareas
-⏳ Pendientes: 1/6 tareas (17%)
+✅ Completadas: todas las tareas críticas
+🔄 En progreso: —
+⏳ Pendientes: mejoras continuas / QoL
 ```
 
 **Hitos recientes:**
@@ -18,7 +18,13 @@
 - ✅ Task #2: MCP tools coverage 50%→80% (commit `5e80d64`)
 - ✅ Task #2.5: Schema Generation API con 7 formatos (commit `b9bb875`)
 - ✅ Task #3: Composed transformers edge cases (commit `1c44266`, +15 tests)
-- ✅ Task #4: WeakMap/WeakSet transformers (commit PENDING, +14 tests)
+- ✅ Task #4: WeakMap/WeakSet transformers (+14 tests)
+- ✅ Task #5: MCP Prompts/Skills documentados EN+ES (commit `4457821`)
+- ✅ Task #6: `excludeFields` en `@Quick()` — serialización permanente (commit `6de834f`, +9 tests)
+- ✅ Task #7: Error path coverage MCP public tools (commit `d698566`, 1578→1602 tests)
+- ✅ Task #8: Refactor sidebar `buildMcpSidebar` helper (commit `55e2a59`)
+- ✅ Task #9: Console.log DEBUG eliminados de `config.ts`, imports huérfanos limpiados
+- ✅ Task #10: Docs `excludeFields` + `omit`/`pick` en guías EN+ES (quick-decorator + serialization)
 
 ---
 

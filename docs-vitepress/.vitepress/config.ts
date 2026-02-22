@@ -1,12 +1,4 @@
-import { defineConfig, loadEnv } from 'vitepress';
-import { fileURLToPath, URL } from 'node:url';
-
-const env = loadEnv('', process.cwd());
-console.log('DEBUG: VITE_SHOW_INTERNAL_DOCS =', env.VITE_SHOW_INTERNAL_DOCS);
-console.log(
-	'DEBUG: process.env.VITE_SHOW_INTERNAL_DOCS =',
-	process.env.VITE_SHOW_INTERNAL_DOCS
-);
+import { defineConfig } from 'vitepress';
 
 /**
  * Build the MCP sidebar section for a given locale.

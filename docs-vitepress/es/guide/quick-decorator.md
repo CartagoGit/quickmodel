@@ -68,6 +68,7 @@ class MyModel extends QModel<IMyInterface> { ... }
 - **[`serializers`](#2-serializadores-personalizados)**: Lógica de serialización personalizada.
 - **[`mockers`](#3-mocks-personalizados)**: Generación de mocks personalizada.
 - **[`discriminators`](#4-discriminadores-polimorfismo)**: Manejo de tipos polimórficos.
+- **[`excludeFields`](#6-excludefields-exclusion-permanente-de-campos)**: Excluye permanentemente campos de cada llamada a `serialize()`/`toJSON()`.
 
 ### Modificadores de Propiedad (`!` vs `declare`)
 
@@ -189,6 +190,49 @@ class User extends QModel<IUser> {}
 // Lanza Error: "Property 'unknownProp' is not allowed in strict mode"
 new User({ name: 'John', unknownProp: 123 });
 ```
+
+---
+
+### 6. excludeFields — Exclusión Permanente de Campos
+
+Declara campos que **nunca deben aparecer en la salida de `serialize()` / `toJSON()`**, independientemente de las opciones en tiempo de ejecución.
+
+```typescript
+@Quick(
+	{
+		id: 'string',
+		name: 'string',
+		password: 'string',
+		internalCache: WeakMap,
+	},
+	{
+		excludeFields: ['password', 'internalCache'],
+	}
+)
+class Account extends QModel<IAccount> {
+	declare id: string;
+	declare name: string;
+	declare password: string; // accesible en la instancia, nunca serializado
+	declare internalCache: WeakMap<object, any>;
+}
+
+const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
+
+console.log(account.password); // 's3cr3t' — sigue accesible
+console.log(account.toJSON()); // { id: '1', name: 'Alice' } — password excluido
+```
+
+::: tip La deserialización no se ve afectada
+`excludeFields` solo elimina campos de la **salida** (serialización). El campo sigue siendo poblado desde los datos de entrada al construir el modelo. Esto lo hace seguro para contraseñas, tokens y cachés privados.
+:::
+
+::: info Exclusión permanente vs. filtrado en tiempo de ejecución
+| Enfoque | Dónde se declara | Se aplica | Caso de uso |
+|---|---|---|---|
+| `excludeFields` | 2º argumento del decorador | siempre | contraseñas, estado interno |
+| `omit` | `serialize({ omit: [...] })` | en esa llamada | dar forma a la respuesta |
+| `pick` | `serialize({ pick: [...] })` | en esa llamada | proyección dispersa |
+:::
 
 ---
 

@@ -429,6 +429,65 @@ const users = [user1, user2, user3];
 const jsonArray = users.map((u) => u.toJSON());
 ```
 
+## Filtrado de Campos
+
+QuickModel ofrece tres formas de controlar qué campos aparecen en la salida serializada.
+
+### En tiempo de ejecución: `omit` y `pick`
+
+Pasa opciones a `serialize()` (o `toJSON()`) para filtrar campos de forma puntual:
+
+```typescript
+const user = new User({
+	id: 1,
+	name: 'Alice',
+	password: 's3cr3t',
+	role: 'admin',
+});
+
+// omit — excluir campos específicos
+const publico = user.serialize({ omit: ['password', 'role'] });
+// → { id: 1, name: 'Alice' }
+
+// pick — incluir solo campos específicos
+const minimal = user.serialize({ pick: ['id', 'name'] });
+// → { id: 1, name: 'Alice' }
+```
+
+### Permanente: `excludeFields`
+
+Declara qué campos deben **siempre** ser excluidos de cada llamada a serialización, directamente en el decorador `@Quick()`:
+
+```typescript
+@Quick(
+	{
+		id: 'string',
+		name: 'string',
+		password: 'string',
+	},
+	{
+		excludeFields: ['password'], // nunca en la salida JSON
+	}
+)
+class Account extends QModel<IAccount> {
+	declare id: string;
+	declare name: string;
+	declare password: string;
+}
+
+const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
+assert(account.password === 's3cr3t'); // sigue en la instancia
+assert(account.toJSON().password === undefined); // excluido
+```
+
+::: info ¿Cuándo usar cada enfoque?
+| Enfoque | Declarado | Se aplica | Ideal para |
+|---|---|---|---|
+| `excludeFields` | decorador `@Quick()` | siempre, cada llamada | contraseñas, secretos, cachés WeakMap |
+| `omit` | `serialize({ omit })` | solo esa llamada | dar forma a la respuesta API |
+| `pick` | `serialize({ pick })` | solo esa llamada | proyección dispersa / actualizaciones parciales |
+:::
+
 ## Próximos Pasos
 
 - [Transformadores](/es/guide/transformers) - Ve todas las reglas de transformación
