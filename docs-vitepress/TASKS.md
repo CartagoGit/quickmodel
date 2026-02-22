@@ -7,8 +7,8 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#16, #18–#22, #23–#33 (sprint Feb 2026)
-🔄 En progreso: Tasks #34–#38 (Framework Integrations Sprint)
+✅ Completadas: Tasks #1–#16, #18–#22, #23–#38 (sprint Feb 2026)
+🔄 En progreso: Tasks #39–#43 (Ecosystem Integrations Sprint)
 ⏸️  Backlog: Task #17 (benchmarks)
 ```
 
@@ -36,6 +36,16 @@
 - ✅ Task #29: `@QAlias` + `@QGroup` — alias y agrupación de campos (commit `a714b2e`)
 - ✅ Task #30: `createReadonly()` refactor + async predicates en `checkRules()` (commit `05bcb8c`)
 - ✅ Task #32: `checkRulesAsync` — timeout, modo serial/paralelo, IQRule\<T\> genérico — **COMPLETADA** (22 Feb 2026)
+- ✅ Task #33: Módulo `./forms` standalone — `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup` — **COMPLETADA** (22 Feb 2026)
+- ✅ **Sprint #34–#38: Framework Integrations** — Angular (37), React (31), Vue (27), Svelte (21), Backend (25) = **141 nuevos tests** | guías EN+ES para los 5 frameworks | 2406 → 2588 tests (22 Feb 2026)
+
+**Próximo sprint — Ecosystem Integrations (#39–#43):**
+
+- ⏳ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `merge()`
+- ⏳ Task #40: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures
+- ⏳ Task #41: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos
+- ⏳ Task #42: Formik + migración desde Zod/Yup
+- ⏳ Task #43: React Native / Expo — `TextInput`, AsyncStorage, `useQModel` en mobile
 
 **Revisión completa 22 Feb 2026 — Tareas actualizadas:**
 
@@ -1822,109 +1832,206 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº11) — Tasks #34–#38 Framework Integrations completadas | 2588 tests passing
+**Última actualización:** 22 de febrero de 2026 (revisión nº12) — Tasks #34–#38 completadas (141 nuevos tests) | Tasks #39–#43 añadidas al backlog | 2588 tests passing
 
 ---
 
 ## 🚀 Sprint Framework Integrations (Tasks #34–#38)
 
-### ⏳ Task #34: Angular integration patterns
+### ✅ Task #34: Angular integration patterns
 
-**Status:** 🔄 En progreso  
-**Objetivo:** Suite de tests + guía EN+ES para Angular (Reactive Forms, Services, Signals, HttpClient)  
-**Tests a añadir:** ~40 en `tests/integration/patterns/angular-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/angular-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests añadidos:** 37 en `tests/integration/patterns/angular-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/angular-integration.md` + `docs-vitepress/es/guide/angular-integration.md`
 
-**Patrones cubiertos:**
+**Patrones entregados:**
 
-1. Reactive Forms — `@QRule` como validador de `AbstractControl`
-2. Angular Services — repositorio + service layer
-3. Angular Signals (v17+) — estado reactivo con `signal()` + `computed()`
-4. HttpClient — coerción automática en interceptor HTTP
-5. DTOs en APIService — `fromApi()` helper + `serialize()` para PUT/POST
-6. `@QGroup` + `qCheckRulesByGroup()` — formularios multi-paso
-7. Validación async en `AsyncValidatorFn` (unicidad email vs API)
-8. `createMany()` en resolver de lista
-
----
-
-### ⏳ Task #35: React/Next.js integration patterns
-
-**Status:** 🔄 En progreso  
-**Objetivo:** Suite de tests + guía EN+ES para React y Next.js  
-**Tests a añadir:** ~40 en `tests/integration/patterns/react-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/react-integration.md` + ES
-
-**Patrones cubiertos:**
-
-1. Hook `useQModel` — patrón custom hook
-2. `useState` + `merge()` — mutación controlada
-3. React Hook Form — `resolver` personalizado con `checkRules()`
-4. Server Actions (Next.js 14+) — validación en Server Action
-5. `getFormSchema()` → generación dinámica de campos de UI
-6. `useQRules` hook — validación reactiva por campo
-7. Zustand store con QModel
-8. `createMany()` en tabla con bulk actions
+1. Reactive Forms — `qCheckRules()` como validador de formulario
+2. `UserDataService` — repositorio con `merge()` inmutable
+3. Angular Signals (v17+) — `signal(new Model())` + `update(prev => prev.merge(patch))`
+4. HttpClient interceptor — coerción automática con `unknownPropertyPolicy: 'strip'`
+5. `@QGroup` + `qCheckRulesByGroup()` — wizard multi-paso
+6. Validación async — `AsyncValidatorFn` con unicidad de email
+7. `createMany()` en resolver de lista
+8. `QSignal<T>` — simulación de señal con `subscribe()`
 
 ---
 
-### ⏳ Task #36: Vue 3/Nuxt integration patterns
+### ✅ Task #35: React/Next.js integration patterns
 
-**Status:** 🔄 En progreso  
-**Objetivo:** Suite de tests + guía EN+ES para Vue 3 y Nuxt  
-**Tests a añadir:** ~35 en `tests/integration/patterns/vue-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/vue-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests añadidos:** 31 en `tests/integration/patterns/react-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/react-integration.md` + `docs-vitepress/es/guide/react-integration.md`
 
-**Patrones cubiertos:**
+**Patrones entregados:**
 
-1. Composable `useQModel` — Composition API
-2. `reactive()` / `ref()` con QModel
-3. Pinia store integration
-4. `@QGroup` + `qCheckRulesByGroup()` — wizard multi-step
-5. Nuxt server routes — validación en `defineEventHandler()`
-6. Validación async (unicidad en BD via `$fetch`)
-7. Schema generado → VeeValidate adapter
-8. `@QComputed()` en props computadas
-
----
-
-### ⏳ Task #37: Svelte 5/SvelteKit integration patterns
-
-**Status:** 🔄 En progreso  
-**Objetivo:** Suite de tests + guía EN+ES para Svelte 5 y SvelteKit  
-**Tests a añadir:** ~35 en `tests/integration/patterns/svelte-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/svelte-integration.md` + ES
-
-**Patrones cubiertos:**
-
-1. Svelte 5 Runes — `$state` / `$derived` con QModel
-2. Writable store (`writable`) con QModel
-3. SvelteKit Form Actions — validación en `actions.default()`
-4. SvelteKit load function — coerción de datos en `load()`
-5. `@QGroup` para formularios multi-sección
-6. `serialize()` como `$derived` para respuesta API
-7. Async validation con `checkRulesAsync()`
+1. `useState` controlado + `qCheckRules()` — formulario reactivo
+2. React Hook Form — `createQuickResolver()` adapter
+3. Next.js Server Actions — DTO + `coercionStrategy: 'loose'` para FormData
+4. Zustand store — `merge()` inmutable en `updateQty()`
+5. `useQModel` hook — `update()` + `validate()` + `isDirty`
+6. Validación async — `qCheckRulesAsync()` para unicidad de email
+7. `@QComputed()` en `OrderItemDto.total`
 
 ---
 
-### ⏳ Task #38: Express/Fastify/Hono backend patterns
+### ✅ Task #36: Vue 3/Nuxt integration patterns
 
-**Status:** 🔄 En progreso  
-**Objetivo:** Suite de tests + guía EN+ES para backends ligeros  
-**Tests a añadir:** ~45 en `tests/integration/patterns/backend-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/backend-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests añadidos:** 27 en `tests/integration/patterns/vue-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/vue-integration.md` + `docs-vitepress/es/guide/vue-integration.md`
 
-**Patrones cubiertos:**
+**Patrones entregados:**
 
-1. Express middleware — `validateWith(DtoClass)` factory
-2. Express error handler — shape de error unificado
-3. Express Router — CRUD con QModel
-4. Fastify plugin — `fastify.addHook('preHandler', ...)`
-5. Fastify route schema — `getSchema('json')` como `jsonSchema`
-6. Hono — `validator('json', ...)` adapter
-7. Hono RPC — type-safe API con `createMany()`
-8. `checkRulesAsync()` en cualquier framework — DB uniqueness
-9. `@QComputed()` en serialización de respuestas
+1. Composition API — `useProfileForm()` con `reactive()` + `computed()`
+2. Pinia store — `useUserStore` con `merge()` inmutable
+3. VeeValidate adapter — `useQField()` composable por campo
+4. `v-model` / `defineModel` — binding directo con QModel
+5. Nuxt `useAsyncData` + `createMany()` — coerción en masa
+6. Nuxt server routes — `defineEventHandler()` + `checkRules()`
+7. Validación async — `qCheckRulesAsync()` para unicidad de username
+
+---
+
+### ✅ Task #37: Svelte 5/SvelteKit integration patterns
+
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests añadidos:** 21 en `tests/integration/patterns/svelte-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/svelte-integration.md` + `docs-vitepress/es/guide/svelte-integration.md`
+
+**Patrones entregados:**
+
+1. Svelte 5 Runes — `$state` + `$derived` simulados con QModel
+2. Writable store — `createUserStore()` con `merge()` inmutable
+3. SvelteKit Form Actions — `coercionStrategy: 'loose'` para FormData
+4. SvelteKit `load()` — `createMany()` para coerción en masa
+5. `@QComputed` — `durationDays` calculado en `EventModel`
+6. Validación async — `qCheckRulesAsync()` para unicidad de slug
+
+---
+
+### ✅ Task #38: Express/Fastify/Hono backend patterns
+
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests añadidos:** 25 en `tests/integration/patterns/backend-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/backend-integration.md` + `docs-vitepress/es/guide/backend-integration.md`
+
+**Patrones entregados:**
+
+1. Express — `validateBody(DtoClass)` middleware factory con `req.dto`
+2. Express — `checkRules()` 422 shape unificado
+3. Fastify — `dtoValidator()` preHandler hook
+4. Fastify — `InvoiceDto` con `@QComputed` `formattedAmount` + `isOverdue`
+5. Hono — `honoValidator()` middleware con `onSuccess` callback
+6. `checkRulesAsync()` + `{ mode: 'parallel' }` — DB uniqueness
+7. `BlogPostRepository` — patrón repositorio con `merge()` inmutable
+8. `getSchema('json')` — integración OpenAPI/Swagger
+9. `coercionStrategy: 'loose'` para raw HTTP bodies
+
+---
+
+## 🚀 Sprint Ecosystem Integrations (Tasks #39–#43)
+
+### ⏳ Task #39: TanStack Query integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para TanStack Query (React, Vue, Svelte)  
+**Tests a añadir:** ~30 en `tests/integration/patterns/tanstack-query-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/tanstack-query-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. `queryFn` — fetch + coerción con `ProductDto.createMany()`
+2. `useMutation` — `mutationFn` recibe DTO + `dto.serialize()` para payload
+3. Optimistic updates — `merge()` inmutable en `onMutate`
+4. `queryClient.setQueryData()` — normalización de caché con QModel
+5. `select` option — transformar respuesta con `dto.toInterface()`
+6. Infinite queries — `createMany()` en cada página
+7. Error handling — `checkRules()` antes de mutación
+8. Stale-while-revalidate con `isDirty()` para detectar cambios
+
+---
+
+### ⏳ Task #40: tRPC integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para tRPC v11  
+**Tests a añadir:** ~25 en `tests/integration/patterns/trpc-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/trpc-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Input validation — `QModel` como schema de input en `.input()` de procedure
+2. Output serialization — `dto.serialize()` como output tipado
+3. Middleware — `t.middleware()` con coerción de contexto
+4. `createMany()` para batch queries
+5. `checkRulesAsync()` en procedures con validación DB
+6. `@QComputed()` en respuesta de query
+7. Error mapping — `TRPCError` desde `errors` de `checkRules()`
+8. Router tipado — input/output con interfaces de QModel
+
+---
+
+### ⏳ Task #41: Prisma ORM integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Prisma  
+**Tests a añadir:** ~25 en `tests/integration/patterns/prisma-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/prisma-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. DTO desde resultado Prisma — `new UserDto(prismaUser)` con `strip`
+2. Create input — `dto.toInterface()` como `prisma.user.create({ data: ... })`
+3. `createMany()` para seed / bulk import desde CSV
+4. Patrón repositorio con Prisma Client + QModel
+5. Transformación de tipos Prisma → QModel (Decimal, DateTime, Json)
+6. `@QComputed()` para campos derivados no almacenados en DB
+7. `merge()` + `prisma.user.update()` — update parcial inmutable
+8. Validación antes de `prisma.create()` — `checkRules()` como guard
+
+---
+
+### ⏳ Task #42: Formik + comparativa con Zod / Yup
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía de migración desde Zod/Yup hacia QuickModel  
+**Tests a añadir:** ~20 en `tests/integration/patterns/formik-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/formik-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Formik `validate` adapter — `qCheckRules()` → objeto `errors` de Formik
+2. Field-level validation — `qCheckRules(instance, { group: 'field' })`
+3. Migración desde Zod schema → `@QRule` + `@QField`
+4. Migración desde Yup schema → `@QRule` + `@QField`
+5. Tabla comparativa Zod vs QuickModel (verbosidad, type-safety, coerción)
+6. `getFormSchema()` → generación dinámica de campos de UI
+7. `validationReport()` → trazabilidad completa de reglas
+
+---
+
+### ⏳ Task #43: React Native / Expo integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para React Native con Expo  
+**Tests a añadir:** ~20 en `tests/integration/patterns/react-native-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/react-native-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. `TextInput` — coerción de string a number/boolean con `coercionStrategy: 'loose'`
+2. `useQModel` hook — reutilización del hook de React
+3. Expo Router — validación en route handlers (similar a Server Actions)
+4. AsyncStorage — serializar/deserializar QModel desde almacenamiento local
+5. Formularios con `KeyboardAvoidingView` + `checkRules()` on submit
+6. Validación async — llamada a API REST con `qCheckRulesAsync()`
+7. `createMany()` para listas planas de `FlatList`
 
 ## ✅ Task #33: Módulo `@cartago-git/quickmodel/forms` — Validación standalone
 
