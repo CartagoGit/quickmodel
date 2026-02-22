@@ -52,6 +52,48 @@ export { Quick } from '@/core/decorators/quick.decorator';
 export type { IQImplements } from '@/core/interfaces/model.interface';
 
 /**
+ * Options accepted by {@link QModel.createMany}.
+ */
+export interface IQCreateManyOptions {
+	/**
+	 * When `true`, instances that fail validation are also included in `instances[]`
+	 * (in addition to being in `errors[]`).
+	 *
+	 * Default: `false` — invalid instances are excluded from `instances[]`.
+	 */
+	includeErrorInstances?: boolean;
+}
+
+/**
+ * A single validation error entry produced by {@link QModel.createMany}.
+ */
+export interface IQCreateManyError<TInstance> {
+	/** Zero-based position in the original input array. */
+	index: number;
+	/** The model instance that failed validation. */
+	instance: TInstance;
+	/**
+	 * Combined list of failures for this instance.
+	 * - `field` and `value` are present for `@QRule` failures.
+	 * - Integrity failures only provide `message`.
+	 */
+	errors: Array<{ field?: string; message: string; value?: unknown }>;
+}
+
+/**
+ * Return type of {@link QModel.createMany}.
+ */
+export interface IQCreateManyResult<TInstance> {
+	/**
+	 * Successfully validated instances.
+	 * When `includeErrorInstances: true`, failed instances are also included here.
+	 */
+	instances: TInstance[];
+	/** Entries for every instance that failed `isValid()`. */
+	errors: Array<IQCreateManyError<TInstance>>;
+}
+
+/**
  * Base abstract class for type-safe models with automatic serialization and type transformation.
  *
  * `QModel` is the heart of the library. It provides a declarative way to define TypeScript models
@@ -192,6 +234,77 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		}
 
 		return deepFreeze(instance) as unknown as Readonly<TResult>;
+	}
+
+	/**
+	 * Creates multiple model instances from an array of plain objects.
+	 *
+	 * All items are processed regardless of validation failures — no fail-fast.
+	 * Items that fail `isValid()` (integrity checks or `@QRule` violations) are
+	 * collected in `errors[]` and **excluded** from `instances[]` by default.
+	 *
+	 * @param data - Array of plain objects to deserialize
+	 * @param options - Optional configuration
+	 * @returns `{ instances, errors }` — see {@link IQCreateManyResult}
+	 *
+	 * @example
+	 * ```typescript
+	 * const { instances, errors } = UserModel.createMany(rawList);
+	 * // errors[n].index   — position in original array
+	 * // errors[n].instance — the (invalid) model instance
+	 * // errors[n].errors  — combined integrity + rule failures
+	 *
+	 * // Include invalid instances in the result too:
+	 * const { instances } = UserModel.createMany(rawList, { includeErrorInstances: true });
+	 * ```
+	 */
+	static createMany<
+		TClass extends QModel<any>,
+		TInterface = TClass extends QModel<infer I> ? I : never,
+		TResult = TClass,
+	>(
+		this: new (data: any) => TClass,
+		data: NoInfer<TInterface>[],
+		options?: IQCreateManyOptions
+	): IQCreateManyResult<TResult>;
+
+	static createMany(
+		this: any,
+		data: any[],
+		options?: IQCreateManyOptions
+	): IQCreateManyResult<any> {
+		const includeErrorInstances = options?.includeErrorInstances ?? false;
+		const instances: any[] = [];
+		const errors: Array<IQCreateManyError<any>> = [];
+
+		for (let i = 0; i < data.length; i++) {
+			const Constructor = this;
+			const instance = new Constructor(data[i]);
+
+			if (instance.isValid()) {
+				instances.push(instance);
+			} else {
+				// Collect all failures
+				const integrityErrors = instance
+					.checkIntegrity()
+					.map((e: IQIntegrityResult) => ({
+						message: e.error ?? 'Integrity check failed',
+					}));
+				const ruleErrors = instance.checkRules().errors;
+
+				errors.push({
+					index: i,
+					instance,
+					errors: [...integrityErrors, ...ruleErrors],
+				});
+
+				if (includeErrorInstances) {
+					instances.push(instance);
+				}
+			}
+		}
+
+		return { instances, errors };
 	}
 
 	/**
@@ -354,10 +467,16 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * user.ngOnInit();               // ✅ TypeScript knows about NgComponent methods
 	 * ```
 	 */
-	static extends<TInterface extends IQAnyRecord, TBase extends object>(
+	static extends<
+		TInterface extends IQAnyRecord,
+		TBase extends object,
+		TOmit extends keyof TBase = never,
+	>(
 		ExternalBase: new (...args: any[]) => TBase
 	): typeof QModel<TInterface> &
-		(abstract new (...args: any[]) => QModel<TInterface> & TBase) {
+		(abstract new (
+			...args: any[]
+		) => QModel<TInterface> & Omit<TBase, TOmit>) {
 		// ── 1. Create the mixin class that extends the external base ────────────
 		// TypeScript does not allow `class Foo extends GenericTypeParam` when the
 		// type param is introduced at the method level. The idiomatic workaround is

@@ -244,18 +244,31 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 5: Override in the middle level
 	// =========================================================================
 	describe('Scenario 5: Override in middle level — B overrides A field, C inherits override', () => {
-		// OverrideA uses a generic for `value` so subclasses can specialise the type
-		// without violating TypeScript's structural compatibility rules.
-		@Quick({ value: Date })
-		class OverrideA<TValue = Date> extends QModel<any> {
-			declare label: string;
-			declare value: TValue;
+		// When a subclass needs to CHANGE THE TYPE of an inherited field, use
+		// QModel.extends<TInterface, TBase, TOmit>(Base) — the third generic removes
+		// the field from the TBase intersection, allowing the subclass to redeclare
+		// it with the correct type. The external base (OverrideA) stays untouched.
+		interface IOverrideBSerial {
+			label: string;
+			value: string;
 		}
 
-		// By specialising OverrideA<bigint>, B can legally redeclare `value` as bigint.
-		// TypeScript now knows `value` is bigint here and in all descendants.
+		@Quick({ value: Date })
+		class OverrideA extends QModel<any> {
+			declare label: string;
+			declare value: Date;
+		}
+
+		// 'value' is Omit'd from OverrideA in the intersection → declare value: bigint works
 		@Quick({ value: BigInt })
-		class OverrideB extends OverrideA<bigint> {}
+		class OverrideB extends QModel.extends<
+			IOverrideBSerial,
+			OverrideA,
+			'value'
+		>(OverrideA) {
+			declare label: string;
+			declare value: bigint; // ✅ no conflict, TypeScript knows the correct type
+		}
 
 		class OverrideC extends OverrideB {
 			declare extra: string;
@@ -268,10 +281,168 @@ describe('Integration: Deep Chain Inheritance', () => {
 				extra: 'leaf field',
 			});
 
-			// `value` is correctly typed as bigint — no cast needed.
+			// No cast needed — TypeScript already knows instance.value is bigint
 			expect(typeof instance.value).toBe('bigint');
 			expect(instance.value).toBe(9999999999999999n);
 			expect(instance.extra).toBe('leaf field');
+		});
+
+		it('instance should still be instanceof OverrideA through the mixin chain', () => {
+			const instance = OverrideC.create({
+				label: 'test',
+				value: '9999999999999999',
+				extra: 'leaf field',
+			});
+
+			expect(instance).toBeInstanceOf(OverrideA);
+		});
+	});
+
+	// =========================================================================
+	// Scenario 5b: Multiple field type overrides across levels
+	// =========================================================================
+	describe('Scenario 5b: Multiple fields overridden at each hop (A → B → C)', () => {
+		// BaseLevel has `count: string` (no transformer) and `startDate: Date`.
+		// MidLevel overrides `count` → bigint (changes type).
+		// LeafLevel overrides `pattern` → RegExp (pattern was declared string in Mid).
+		// Each QModel.extends<T, Base, 'field1' | 'field2'> removes the conflicting
+		// fields from the intersection so the subclass can redeclare them freely.
+
+		@Quick({ startDate: Date })
+		class MultiBase extends QModel<any> {
+			declare label: string;
+			declare startDate: Date;
+			declare count: string; // will be overridden to bigint in MidLevel
+		}
+
+		// TOmit = 'count' — removes count: string from MultiBase intersection
+		@Quick({ count: BigInt })
+		class MultiMid extends QModel.extends<any, MultiBase, 'count'>(
+			MultiBase
+		) {
+			declare count: bigint; // ✅ overridden, TypeScript knows it
+			declare pattern: string; // will be overridden to RegExp in LeafLevel
+		}
+
+		// TOmit = 'pattern' — removes pattern: string from MultiMid intersection
+		@Quick({ pattern: RegExp })
+		class MultiLeaf extends QModel.extends<any, MultiMid, 'pattern'>(
+			MultiMid
+		) {
+			declare pattern: RegExp; // ✅ overridden, TypeScript knows it
+			declare extra: string;
+		}
+
+		it('each level override wins: count is bigint, pattern is RegExp', () => {
+			const instance = MultiLeaf.create({
+				label: 'test',
+				startDate: '2024-01-15T00:00:00.000Z',
+				count: '42',
+				pattern: '/hello/gi',
+				extra: 'leaf field',
+			});
+
+			// startDate from MultiBase — untouched
+			expect(instance.startDate).toBeInstanceOf(Date);
+			expect(instance.startDate.getFullYear()).toBe(2024);
+
+			// count from MultiMid override — bigint, no cast
+			expect(typeof instance.count).toBe('bigint');
+			expect(instance.count).toBe(42n);
+
+			// pattern from MultiLeaf override — RegExp, no cast
+			expect(instance.pattern).toBeInstanceOf(RegExp);
+			expect(instance.pattern.source).toBe('hello');
+
+			expect(instance.extra).toBe('leaf field');
+		});
+
+		it('instanceof chain is preserved through each QModel.extends hop', () => {
+			const instance = MultiLeaf.create({
+				label: 'test',
+				startDate: '2024-01-15T00:00:00.000Z',
+				count: '1',
+				pattern: '/x/',
+				extra: 'y',
+			});
+
+			expect(instance).toBeInstanceOf(MultiBase);
+			expect(instance).toBeInstanceOf(MultiMid);
+			expect(instance).toBeInstanceOf(MultiLeaf);
+		});
+	});
+
+	// =========================================================================
+	// Scenario 5c: 3 fields overridden in a single hop
+	// =========================================================================
+	describe('Scenario 5c: Three fields overridden simultaneously in one hop (A → B → C)', () => {
+		// BaseTriple declares ts: string, amount: string, pattern: string.
+		// MidTriple overrides all three at once via TOmit union → Date, bigint, RegExp.
+		// LeafTriple extends normally and adds its own extra field.
+
+		@Quick({})
+		class BaseTriple extends QModel<any> {
+			declare label: string;
+			declare ts: string; // will become Date in MidTriple
+			declare amount: string; // will become bigint in MidTriple
+			declare pattern: string; // will become RegExp in MidTriple
+		}
+
+		// Three fields removed from BaseTriple intersection at once
+		@Quick({ ts: Date, amount: BigInt, pattern: RegExp })
+		class MidTriple extends QModel.extends<
+			any,
+			BaseTriple,
+			'ts' | 'amount' | 'pattern'
+		>(BaseTriple) {
+			declare ts: Date; // ✅
+			declare amount: bigint; // ✅
+			declare pattern: RegExp; // ✅
+		}
+
+		class LeafTriple extends MidTriple {
+			declare extra: string;
+		}
+
+		it('all three overridden fields have the correct type in the leaf', () => {
+			const instance = LeafTriple.create({
+				label: 'triple',
+				ts: '2025-03-01T00:00:00.000Z',
+				amount: '99999999999',
+				pattern: '/foo/gi',
+				extra: 'leaf',
+			});
+
+			expect(instance.label).toBe('triple');
+
+			// ts → Date
+			expect(instance.ts).toBeInstanceOf(Date);
+			expect(instance.ts.getFullYear()).toBe(2025);
+
+			// amount → bigint, no cast
+			expect(typeof instance.amount).toBe('bigint');
+			expect(instance.amount).toBe(99999999999n);
+
+			// pattern → RegExp, no cast
+			expect(instance.pattern).toBeInstanceOf(RegExp);
+			expect(instance.pattern.source).toBe('foo');
+			expect(instance.pattern.flags).toContain('g');
+
+			expect(instance.extra).toBe('leaf');
+		});
+
+		it('instanceof chain is preserved with a 3-field TOmit union', () => {
+			const instance = LeafTriple.create({
+				label: 'x',
+				ts: '2025-01-01T00:00:00.000Z',
+				amount: '1',
+				pattern: '/x/',
+				extra: 'y',
+			});
+
+			expect(instance).toBeInstanceOf(BaseTriple);
+			expect(instance).toBeInstanceOf(MidTriple);
+			expect(instance).toBeInstanceOf(LeafTriple);
 		});
 	});
 

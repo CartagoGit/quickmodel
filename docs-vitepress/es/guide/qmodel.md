@@ -85,6 +85,41 @@ const readonlyUser = User.createReadonly({
 // readonlyUser.name = 'Ana'; // ¡Error!
 ```
 
+### 6. Creación masiva (`createMany`)
+
+Crea múltiples instancias a partir de un array. Todos los items se procesan aunque algunos fallen — los que no superan `isValid()` van a `errors[]` y quedan **excluidos** de `instances[]` por defecto.
+
+```typescript
+const rawList = [
+	{ name: 'Alice', age: 30 },
+	{ name: 'Menor', age: 10 }, // falla @QRule
+	{ name: 'Bob', age: 25 },
+];
+
+const { instances, errors } = UsuarioModel.createMany(rawList);
+
+console.log(instances.length); // 2  (Alice + Bob)
+console.log(errors.length); // 1
+
+console.log(errors[0].index); // 1
+console.log(errors[0].instance.name); // 'Menor'
+console.log(errors[0].errors); // [{ field: 'age', message: 'Debe ser mayor de edad', value: 10 }]
+```
+
+Para incluir las instancias inválidas también en el resultado:
+
+```typescript
+const { instances, errors } = UsuarioModel.createMany(rawList, {
+	includeErrorInstances: true,
+});
+// instances.length === 3 — las tres, incluyendo Menor
+// errors.length   === 1 — la lista de errores sigue informada
+```
+
+| Opción                  | Tipo      | Por defecto | Descripción                                           |
+| ----------------------- | --------- | ----------- | ----------------------------------------------------- |
+| `includeErrorInstances` | `boolean` | `false`     | Incluir instancias inválidas también en `instances[]` |
+
 ## Ciclo de Vida
 
 Cuando se instancia un modelo, sucede lo siguiente:

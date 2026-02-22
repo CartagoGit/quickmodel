@@ -14,6 +14,11 @@
  */
 export type { IQImplements } from './core/interfaces/model.interface';
 export { QModel } from './core/models/quick.model';
+export type {
+	IQCreateManyOptions,
+	IQCreateManyError,
+	IQCreateManyResult,
+} from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';
 export { QType } from './core/decorators/qtype.decorator';

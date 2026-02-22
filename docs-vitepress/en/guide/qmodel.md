@@ -91,6 +91,41 @@ Creates a deep copy of an existing instance.
 const clone = user.clone();
 ```
 
+### 6. Bulk Creation (`createMany`)
+
+Creates multiple instances from an array. All items are processed regardless of individual failures — items that fail `isValid()` are collected in `errors[]` and excluded from `instances[]` by default.
+
+```typescript
+const rawList = [
+	{ name: 'Alice', age: 30 },
+	{ name: 'Minor', age: 10 }, // fails @QRule
+	{ name: 'Bob', age: 25 },
+];
+
+const { instances, errors } = UserModel.createMany(rawList);
+
+console.log(instances.length); // 2  (Alice + Bob)
+console.log(errors.length); // 1
+
+console.log(errors[0].index); // 1
+console.log(errors[0].instance.name); // 'Minor'
+console.log(errors[0].errors); // [{ field: 'age', message: 'Must be adult', value: 10 }]
+```
+
+To include invalid instances in the result too:
+
+```typescript
+const { instances, errors } = UserModel.createMany(rawList, {
+	includeErrorInstances: true,
+});
+// instances.length === 3 — all three, including Minor
+// errors.length   === 1 — error list still populated
+```
+
+| Option                  | Type      | Default | Description                                 |
+| ----------------------- | --------- | ------- | ------------------------------------------- |
+| `includeErrorInstances` | `boolean` | `false` | Also put invalid instances in `instances[]` |
+
 ## Lifecycle
 
 When a model is instantiated, the following happens:
