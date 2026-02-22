@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: prefer-quick
+// This file tests @QType directly — opt-out from the prefer-quick rule.
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';

@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: prefer-quick
+// This file tests @QType directly — opt-out from the prefer-quick rule.
 /**
  * @fileoverview Integration tests for TC39 dual-mode support of @QType and @Quick.
  *

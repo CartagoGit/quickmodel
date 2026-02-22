@@ -77,7 +77,7 @@ Genera datos simulados (mock) para una definición de esquema dada usando QuickM
 
 ## `inspect_model`
 
-Analiza una definición de clase QuickModel y explica su estructura.
+Analiza una definición de clase QuickModel y explica su estructura. Retorna `name`, `transformers`, `structure` y `decorators` — la lista de decoradores QuickModel detectados en el código (`@Quick`, `@QRule`, `@QField`, `@QAlias`, `@QGroup`, `@QComputed`, `@QConfig`, `@QType`).
 
 ```json
 {
@@ -152,7 +152,7 @@ Simula una transformación de datos QuickModel dado un objeto de entrada y un ma
 
 ## `validate_usage`
 
-Analiza un fragmento de código para verificar errores comunes de uso de QuickModel (ej. falta de declare, herencia incorrecta).
+Analiza un fragmento de código para verificar errores comunes de uso de QuickModel (ej. falta de declare, herencia incorrecta). Reconoce la API completa de decoradores — `@Quick`, `@QRule`, `@QField`, `@QAlias`, `@QGroup`, `@QComputed`, `@QConfig` — como decoradores válidos. Retorna `valid`, `issues` y `detectedDecorators[]`. Emite una advertencia cuando se usa `@QField` sin `@QRule`.
 
 ```json
 {

@@ -24,7 +24,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
 - ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `@cartago-git/quickmodel/forms` subpath — no `QModel` required
 - 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
-- 🤖 **MCP Server** - AI assistant integration with 10 public tools and 4 guided prompts (Claude, Copilot, etc.)
+- 🤖 **MCP Server** - AI assistant integration with 11 public tools and 4 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
 - 🧪 **Well Tested** - 2100+ tests covering all features
@@ -724,21 +724,21 @@ bun run mcp:start
 }
 ```
 
-### Public tools (10)
+### Public tools (11)
 
-| Tool                      | Description                                               |
-| ------------------------- | --------------------------------------------------------- |
-| `create_model`            | Generate TypeScript `QModel` class from properties        |
-| `validate_usage`          | Validate a code snippet against QuickModel best practices |
-| `list_transformers`       | List all available type transformers                      |
-| `generate_mock`           | Generate mock data for a model                            |
-| `inspect_model`           | Inspect a model's properties and transformations          |
-| `search_docs`             | Search the QuickModel documentation                       |
-| `interface_to_model`      | Convert a TypeScript interface to a QModel class          |
-| `export_json_schema`      | Export a model as JSON Schema                             |
-| `explain_error`           | Explain a validation error in plain language              |
-| `simulate_transformation` | Simulate a type transformation on sample data             |
-| `json_to_model`           | Generate a QModel class from a JSON object                |
+| Tool                      | Description                                                                                                                                                           |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create_model`            | Generate TypeScript `QModel` class from properties                                                                                                                    |
+| `validate_usage`          | Validate a snippet: detects `@Quick`, `@QRule`, `@QField`, `@QAlias`, `@QGroup`, `@QComputed`; returns `detectedDecorators[]` and warns on `@QField` without `@QRule` |
+| `list_transformers`       | List all available type transformers                                                                                                                                  |
+| `generate_mock`           | Generate mock data for a model                                                                                                                                        |
+| `inspect_model`           | Inspect a model's structure, transformers, and detected QuickModel decorators (`decorators[]`)                                                                        |
+| `search_docs`             | Search the QuickModel documentation                                                                                                                                   |
+| `interface_to_model`      | Convert a TypeScript interface to a QModel class                                                                                                                      |
+| `export_json_schema`      | Export a model as JSON Schema                                                                                                                                         |
+| `explain_error`           | Explain a validation error in plain language                                                                                                                          |
+| `simulate_transformation` | Simulate a type transformation on sample data                                                                                                                         |
+| `json_to_model`           | Generate a QModel class from a JSON object                                                                                                                            |
 
 ### AI-guided prompts / skills (4)
 

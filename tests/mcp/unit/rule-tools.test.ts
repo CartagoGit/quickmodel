@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: prefer-quick
+// This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect, afterEach, beforeEach } from 'bun:test';
 import { QCheckProjectRulesTool } from '../../../src/mcp/tools/internal';
 import { writeFileSync, mkdirSync, rmSync } from 'fs';
@@ -46,6 +48,50 @@ describe('QCheckProjectRulesTool', () => {
 			(e: string) =>
 				e.includes('Found @QType usage') &&
 				e.includes('violation.test.ts')
+		);
+		expect(hasError).toBe(true);
+	});
+
+	it('should NOT flag @QType in a file with @quickmodel-rule-ignore pragma', async () => {
+		const optOutFile = join(mockTestsDir, 'qtype-specific.test.ts');
+		writeFileSync(
+			optOutFile,
+			`// @quickmodel-rule-ignore: prefer-quick
+// This file tests @QType directly — opt-out from the prefer-quick rule.
+import { QType } from '...';
+class Test {
+    @QType('string')
+    prop: string;
+}
+`
+		);
+
+		const result = await tool.execute({ targetDir: mockProjectRoot });
+		const hasError = result.errors.some(
+			(err: string) =>
+				err.includes('Found @QType usage') &&
+				err.includes('qtype-specific.test.ts')
+		);
+		expect(hasError).toBe(false);
+	});
+
+	it('should flag @QType in a test file that lacks the pragma', async () => {
+		const noOptOutFile = join(mockTestsDir, 'missing-pragma.test.ts');
+		writeFileSync(
+			noOptOutFile,
+			`import { QType } from '...';
+class Test {
+    @QType('string')
+    prop: string;
+}
+`
+		);
+
+		const result = await tool.execute({ targetDir: mockProjectRoot });
+		const hasError = result.errors.some(
+			(err: string) =>
+				err.includes('Found @QType usage') &&
+				err.includes('missing-pragma.test.ts')
 		);
 		expect(hasError).toBe(true);
 	});

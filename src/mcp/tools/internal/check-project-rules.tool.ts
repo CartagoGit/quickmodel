@@ -60,11 +60,17 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		}
 
 		// ── Rule 1: Tests must favor @Quick over @QType ─────────────────────
+		// Files that legitimately test @QType directly must opt-out with:
+		//   // @quickmodel-rule-ignore: prefer-quick
+		// at the top of the file (anywhere in the first 10 lines).
 		const testDir = join(absRoot, 'tests');
 		const testFiles = this.getAllFiles(testDir, '.ts');
 
 		for (const file of testFiles) {
 			const content = readFileSync(file, 'utf-8');
+			const firstLines = content.split('\n').slice(0, 10).join('\n');
+			if (firstLines.includes('@quickmodel-rule-ignore: prefer-quick'))
+				continue;
 			if (/@QType\(/.test(content)) {
 				errors.push(
 					`[Rule: Prefer @Quick] Found @QType usage in test file: ${file.replace(absRoot, '')}. Please use @Quick({...}) instead.`

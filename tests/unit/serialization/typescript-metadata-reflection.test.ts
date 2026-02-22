@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: prefer-quick
+// This file tests @QType directly — opt-out from the prefer-quick rule.
 /**
  * Test: ¿Qué metadata emite TypeScript para bigint?
  */

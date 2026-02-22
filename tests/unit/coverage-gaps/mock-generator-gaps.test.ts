@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: prefer-quick
+// This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect } from 'bun:test';
 import { QMockGenerator } from '../../../src/core/services/mock-generator.service';
 import { QType } from '../../../src/core/decorators/qtype.decorator';

@@ -24,10 +24,10 @@ Run performance benchmarks for QuickModel transformations.
 
 ```json
 {
-  "iterations": {
-    "description": "Number of iterations for each test case",
-    "optional": true
-  }
+	"iterations": {
+		"description": "Number of iterations for each test case",
+		"optional": true
+	}
 }
 ```
 
@@ -37,10 +37,10 @@ Check for breaking changes in the public API.
 
 ```json
 {
-  "baselineFile": {
-    "description": "Path to the API baseline JSON file. Defaults to api-baseline.json.",
-    "optional": true
-  }
+	"baselineFile": {
+		"description": "Path to the API baseline JSON file. Defaults to api-baseline.json.",
+		"optional": true
+	}
 }
 ```
 
@@ -62,14 +62,14 @@ Run a comprehensive health check: Lint, Typecheck, and Run Tests.
 
 ## `check_project_rules`
 
-Enforce internal project rules: use @Quick over @QType in tests, and no console.log.
+Enforce internal project rules: `@Quick` over `@QType` in tests, no `console.log`, `id-length` (min 3 chars), `max-params` (max 3), naming-convention (`I` prefix for interfaces/types), no-restricted-imports.
 
 ```json
 {
-  "targetDir": {
-    "description": "Directory to scan (defaults to project root)",
-    "optional": true
-  }
+	"targetDir": {
+		"description": "Directory to scan (defaults to project root)",
+		"optional": true
+	}
 }
 ```
 
@@ -87,9 +87,9 @@ Internal tool to generate a starter test file for a source component.
 
 ```json
 {
-  "sourceFile": {
-    "description": "Absolute path to the source file (e.g., src/core/user.ts)"
-  }
+	"sourceFile": {
+		"description": "Absolute path to the source file (e.g., src/core/user.ts)"
+	}
 }
 ```
 
@@ -107,16 +107,16 @@ Generate boilerplate code for new features (transformers, tools).
 
 ```json
 {
-  "type": {
-    "description": "Type of feature to scaffold"
-  },
-  "name": {
-    "description": "Name of the feature (e.g., \"email\", \"validate-user\")"
-  },
-  "location": {
-    "description": "Target directory (relative to project root). Defaults to standard locations.",
-    "optional": true
-  }
+	"type": {
+		"description": "Type of feature to scaffold"
+	},
+	"name": {
+		"description": "Name of the feature (e.g., \"email\", \"validate-user\")"
+	},
+	"location": {
+		"description": "Target directory (relative to project root). Defaults to standard locations.",
+		"optional": true
+	}
 }
 ```
 
@@ -126,9 +126,9 @@ Internal tool to run documentation build scripts.
 
 ```json
 {
-  "action": {
-    "description": "The action to perform"
-  }
+	"action": {
+		"description": "The action to perform"
+	}
 }
 ```
 
@@ -139,4 +139,3 @@ Auto-generate documentation files for Tools and Transformers based on current co
 ```json
 {}
 ```
-
