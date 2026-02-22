@@ -13,9 +13,9 @@ describe('Security: TypedArray Resource Limits', () => {
 
 		try {
 			transformer.deserialize(hugeArray, 'data', 'TestClass');
-		} catch (e: any) {
-			expect(e.message).toContain('TypedArray input too large');
-			expect(e).toBeInstanceOf(QModelError);
+		} catch (err: any) {
+			expect(err.message).toContain('TypedArray input too large');
+			expect(err).toBeInstanceOf(QModelError);
 		}
 	});
 
@@ -34,8 +34,8 @@ describe('Security: TypedArray Resource Limits', () => {
 		};
 
 		const mediumObject: any = {};
-		for (let i = 0; i < 150; i++) {
-			mediumObject[i] = i;
+		for (let idx = 0; idx < 150; idx++) {
+			mediumObject[idx] = idx;
 		}
 
 		expect(() => {
@@ -44,9 +44,9 @@ describe('Security: TypedArray Resource Limits', () => {
 
 		try {
 			transformer.deserialize(mediumObject, 'data', 'TestClass', context);
-		} catch (e: any) {
-			expect(e.message).toContain('TypedArray input object too large');
-			expect(e).toBeInstanceOf(QModelError);
+		} catch (err: any) {
+			expect(err.message).toContain('TypedArray input object too large');
+			expect(err).toBeInstanceOf(QModelError);
 		}
 	});
 });

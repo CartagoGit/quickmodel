@@ -9,8 +9,8 @@ describe('Security: Limits Bypass Attempts', () => {
 		class Data extends QModel<IData> {}
 
 		const massiveObj: any = {};
-		for (let i = 0; i < 50005; i++) {
-			massiveObj[`key${i}`] = i;
+		for (let idx = 0; idx < 50005; idx++) {
+			massiveObj[`key${idx}`] = idx;
 		}
 
 		expect(() => {
@@ -25,8 +25,8 @@ describe('Security: Limits Bypass Attempts', () => {
 		class Data extends QModel<IData> {}
 
 		const massiveObj: any = {};
-		for (let i = 0; i < 50005; i++) {
-			massiveObj[`key${i}`] = i;
+		for (let idx = 0; idx < 50005; idx++) {
+			massiveObj[`key${idx}`] = idx;
 		}
 
 		// Even though root object is small, nested object is massive
@@ -51,7 +51,7 @@ describe('Security: Limits Bypass Attempts', () => {
 
 		let jsonStr = '{"end":true}';
 		// 513 levels to trigger limit (512 is max)
-		for (let i = 0; i < 515; i++) {
+		for (let idx = 0; idx < 515; idx++) {
 			jsonStr = `{"next":${jsonStr}}`;
 		}
 
@@ -59,8 +59,8 @@ describe('Security: Limits Bypass Attempts', () => {
 			Node.fromJSON(jsonStr);
 			// Verify it failed
 			expect(true).toBe(false); // Should not reach here
-		} catch (e: any) {
-			expect(e.message).toContain('recursion depth');
+		} catch (err: any) {
+			expect(err.message).toContain('recursion depth');
 		}
 	});
 });

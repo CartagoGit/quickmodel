@@ -12,7 +12,7 @@ describe('Collections Security (DoS Prevention)', () => {
 		// We will inject a custom limit via context if supported, or just mock expected behavior.
 
 		// Let's create a smaller array but pass a small limit in context to verify the check logic
-		const data = Array.from({ length: 110 }, (_, i) => i);
+		const data = Array.from({ length: 110 }, (_, idx) => idx);
 
 		const context = {
 			metadata: {
@@ -31,7 +31,7 @@ describe('Collections Security (DoS Prevention)', () => {
 
 		const data = Array.from(
 			{ length: 110 },
-			(_, i) => [`key${i}`, i] as [string, number]
+			(_, idx) => [`key${idx}`, idx] as [string, number]
 		);
 
 		const context = {

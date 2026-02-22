@@ -2,15 +2,15 @@
 
 > **Fecha de revisión:** 22 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 1765 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 1836 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#13, #20, #23–#30 (features sprint Feb 2026)
-🔄 En progreso: Task #11 (sprint seguridad/robustez — SIGUIENTE)
-⏳ Pendientes: Tasks #11, #12, #14–#16 (seguridad + coverage gaps)
-⏸️  Backlog: Tasks #17–#19, #21–#22
+✅ Completadas: Tasks #1–#13, #18–#20, #22–#30 (features sprint Feb 2026)
+🔄 En progreso: —
+⏳ Pendientes: Tasks #14, #21 (docs NestJS)
+⏸️  Backlog: Task #17 (benchmarks)
 ```
 
 **Hitos recientes:**
@@ -46,7 +46,7 @@
 - ✅ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning) — **COMPLETADA**
 - ✅ Task #16: Tests de `transformCase` con herencia multinivel — **COMPLETADA**
 - ⏸️ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
-- ⏸️ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización
+- ✅ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización — **COMPLETADA**
 - ✅ Task #19: `QTransformerRegistry.snapshot()/restore()` — **COMPLETADA**
 - ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
 - ⏸️ Task #21: Guía de integración NestJS
@@ -935,7 +935,7 @@ describe('Computed Properties & Getters', () => {
 | 15  | Tests `disableSafetyChecks` (flag + warning)  | 🟡 Media  | ✅ COMPLETADA | `c615290` | +7              |
 | 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ✅ COMPLETADA | pendiente | +10             |
 | 17  | Performance benchmarks baseline               | 🟡 Media  | ⏸️ BACKLOG    | 4-6h      | Alto (mktg.)    | Mar 2026   |
-| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG    | 3-4h      | Alto (DX)       | Mar 2026   |
+| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ✅ COMPLETADA | 3h        | Alto (DX)       | Feb 2026   |
 | 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ✅ COMPLETADA | pendiente | +10             |
 | 20  | `@QRule` async predicates                     | 🟢 Baja   | ✅ COMPLETADA | —         | Medio           | Feb 2026   |
 | 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG    | 3-4h      | Alto (adop.)    | Mar 2026   |
@@ -1365,10 +1365,21 @@ describe('Performance Benchmarks', () => {
 
 ### Task #18: `@QComputed()` / `exposeComputedFields`
 
-**Status:** ⏸️ BACKLOG  
+**Status:** ✅ COMPLETADA  
 **Prioridad:** 🟡 Media  
-**Esfuerzo:** 3-4 horas  
+**Esfuerzo:** 3 horas  
 **Impacto:** Alto (DX) — feature muy solicitada en librerías similares
+
+**Implementación:**
+
+- `QCOMPUTED_METADATA_KEY` en `src/core/constants/metadata-keys.ts`
+- `QComputed()` decorator en `src/core/decorators/qcomputed.decorator.ts`
+- Export añadido en `src/index.ts`
+- `serializer.service.ts`: prototype traversal incluye `isQTypeGenerated || isQComputed`
+- `population.service.ts`: skip assignment a getters `@QComputed` durante deserialización
+- 10 tests TDD en `tests/unit/core/services/computed-properties.test.ts`
+- Docs EN+ES en guía serialization — sección "Computed Fields"
+- Suite total: 1836 tests passing
 
 **Propósito:** Permitir que getters/propiedades computadas se incluyan en `serialize()` y `toJSON()` opcionalmente.
 

@@ -487,6 +487,73 @@ assert(account.toJSON().password === undefined); // excluded
 | `pick` | `serialize({ pick })` | that call only | sparse projection / partial updates |
 :::
 
+## Computed Fields (`@QComputed()`)
+
+By default, prototype-level getters (computed properties) are **not** included in `serialize()` or `toJSON()` output. This prevents accidental exposure of internal logic. Use `@QComputed()` to explicitly opt-in a getter.
+
+```typescript
+import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+
+interface IUser {
+	firstName: string;
+	lastName: string;
+}
+
+@Quick({ firstName: String, lastName: String })
+class User extends QModel<IUser> {
+	declare firstName: string;
+	declare lastName: string;
+
+	@QComputed()
+	get fullName(): string {
+		return `${this.firstName} ${this.lastName}`;
+	}
+
+	// NOT decorated — excluded from serialization
+	get initials(): string {
+		return `${this.firstName[0]}.${this.lastName[0]}.`;
+	}
+}
+
+const user = User.create({ firstName: 'Alice', lastName: 'Smith' });
+
+user.serialize();
+// { firstName: 'Alice', lastName: 'Smith', fullName: 'Alice Smith' }
+// Notice: 'initials' is NOT included
+```
+
+### Key behaviors
+
+- **Read-only**: Computed getters are never assigned during `create()` or `deserialize()`. Any incoming data for a `@QComputed()` property is silently ignored.
+- **Inheritance**: `@QComputed()` on a parent class getter is automatically visible in child serialization.
+- **Multiple fields**: You can decorate as many getters as needed.
+
+```typescript
+@Quick({ firstName: String, lastName: String, birthYear: Number })
+class User extends QModel<IUser> {
+	declare firstName: string;
+	declare lastName: string;
+	declare birthYear: number;
+
+	@QComputed()
+	get fullName(): string {
+		return `${this.firstName} ${this.lastName}`;
+	}
+
+	@QComputed()
+	get age(): number {
+		return new Date().getFullYear() - this.birthYear;
+	}
+}
+
+user.serialize();
+// { firstName: 'Alice', lastName: 'Smith', birthYear: 1990, fullName: 'Alice Smith', age: 35 }
+```
+
+::: tip `toJSON()` and `JSON.stringify()`
+`@QComputed()` fields are also included in `toJSON()` output, which means they appear in `JSON.stringify(user)` as well — since `JSON.stringify` calls `toJSON()` automatically.
+:::
+
 ## Next Steps
 
 - [Transformers](/en/guide/transformers) - See all transformation rules

@@ -7,7 +7,7 @@ describe('Mock Generator Coverage Gaps', () => {
 		// Covers generateByDesignType gaps (lines 419-444)
 		class ImplicitBinaryModel extends QModel<any> {
 			@QType()
-			i8: Int8Array;
+			int8Arr: Int8Array;
 
 			@QType()
 			buf: ArrayBuffer;
@@ -18,7 +18,7 @@ describe('Mock Generator Coverage Gaps', () => {
 			@QType()
 			date: Date;
 
-			@QType() u8: Uint8Array;
+			@QType() uint8Arr: Uint8Array;
 			@QType() u8c: Uint8ClampedArray;
 			@QType() i16: Int16Array;
 			@QType() u16: Uint16Array;
@@ -31,11 +31,11 @@ describe('Mock Generator Coverage Gaps', () => {
 		}
 
 		const mock = ImplicitBinaryModel.mock().random();
-		expect(mock.i8).toBeInstanceOf(Int8Array);
+		expect(mock.int8Arr).toBeInstanceOf(Int8Array);
 		expect(mock.buf).toBeInstanceOf(ArrayBuffer);
 		expect(mock.view).toBeInstanceOf(DataView);
 		expect(mock.date).toBeInstanceOf(Date);
-		expect(mock.u8).toBeInstanceOf(Uint8Array);
+		expect(mock.uint8Arr).toBeInstanceOf(Uint8Array);
 		expect(mock.u8c).toBeInstanceOf(Uint8ClampedArray);
 		expect(mock.i16).toBeInstanceOf(Int16Array);
 		expect(mock.u16).toBeInstanceOf(Uint16Array);
@@ -50,11 +50,11 @@ describe('Mock Generator Coverage Gaps', () => {
 	it('should generate sample values for all types', () => {
 		// Covers getSampleValue gaps (lines 530-548)
 		@Quick({
-			bi: 'bigint',
+			bigintVal: 'bigint',
 			sym: 'symbol',
-			re: 'regexp',
+			regexpVal: 'regexp',
 			err: 'error',
-			u: 'url',
+			unknownVal: 'url',
 			usp: 'urlsearchparams',
 			map: 'map',
 			set: 'set',
@@ -62,11 +62,11 @@ describe('Mock Generator Coverage Gaps', () => {
 			obj: 'object',
 		})
 		class SampleModel extends QModel<any> {
-			declare bi: bigint;
+			declare bigintVal: bigint;
 			declare sym: symbol;
-			declare re: RegExp;
+			declare regexpVal: RegExp;
 			declare err: Error;
-			declare u: URL;
+			declare unknownVal: URL;
 			declare usp: URLSearchParams;
 			declare map: Map<any, any>;
 			declare set: Set<any>;
@@ -76,11 +76,11 @@ describe('Mock Generator Coverage Gaps', () => {
 
 		const mock = SampleModel.mock().sample();
 
-		expect(typeof mock.bi).toBe('bigint');
+		expect(typeof mock.bigintVal).toBe('bigint');
 		expect(typeof mock.sym).toBe('symbol');
-		expect(mock.re).toBeInstanceOf(RegExp);
+		expect(mock.regexpVal).toBeInstanceOf(RegExp);
 		expect(mock.err).toBeInstanceOf(Error);
-		expect(mock.u).toBeInstanceOf(URL);
+		expect(mock.unknownVal).toBeInstanceOf(URL);
 		expect(mock.usp).toBeInstanceOf(URLSearchParams);
 		expect(mock.map).toBeInstanceOf(Map);
 		expect(mock.set).toBeInstanceOf(Set);
@@ -90,21 +90,21 @@ describe('Mock Generator Coverage Gaps', () => {
 	it('should generate random values for all types', () => {
 		// Covers getRandomValue gaps (lines 595, 605-613, etc)
 		@Quick({
-			bi: 'bigint',
+			bigintVal: 'bigint',
 			sym: 'symbol',
-			re: 'regexp',
+			regexpVal: 'regexp',
 			err: 'error',
-			u: 'url',
+			unknownVal: 'url',
 			usp: 'urlsearchparams',
 			map: 'map',
 			set: 'set',
 		})
 		class RandomModel extends QModel<any> {
-			declare bi: bigint;
+			declare bigintVal: bigint;
 			declare sym: symbol;
-			declare re: RegExp;
+			declare regexpVal: RegExp;
 			declare err: Error;
-			declare u: URL;
+			declare unknownVal: URL;
 			declare usp: URLSearchParams;
 			declare map: Map<any, any>;
 			declare set: Set<any>;
@@ -113,11 +113,11 @@ describe('Mock Generator Coverage Gaps', () => {
 		// Random is default
 		const mock = RandomModel.mock().random();
 
-		expect(typeof mock.bi).toBe('bigint');
+		expect(typeof mock.bigintVal).toBe('bigint');
 		expect(typeof mock.sym).toBe('symbol');
-		expect(mock.re).toBeInstanceOf(RegExp);
+		expect(mock.regexpVal).toBeInstanceOf(RegExp);
 		expect(mock.err).toBeInstanceOf(Error);
-		expect(mock.u).toBeInstanceOf(URL);
+		expect(mock.unknownVal).toBeInstanceOf(URL);
 		expect(mock.usp).toBeInstanceOf(URLSearchParams);
 		expect(mock.map).toBeInstanceOf(Map);
 		expect(mock.set).toBeInstanceOf(Set);

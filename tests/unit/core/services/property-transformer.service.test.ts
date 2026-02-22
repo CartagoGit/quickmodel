@@ -72,7 +72,7 @@ describe('PropertyTransformer', () => {
 	});
 
 	it('should delegate to custom transformer from options', () => {
-		const customFn = mock((v) => 'custom ' + v);
+		const customFn = mock((value) => 'custom ' + value);
 		const context: any = {
 			decoratedFields: ['customField'],
 			designTypes: {},

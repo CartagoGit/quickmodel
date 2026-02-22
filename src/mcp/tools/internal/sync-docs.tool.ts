@@ -44,7 +44,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			.filter((tool: any) =>
 				internalPrefixes.some((prefix) => tool.name.startsWith(prefix))
 			)
-			.sort((a, b) => a.name.localeCompare(b.name));
+			.sort((valA, valB) => valA.name.localeCompare(valB.name));
 		const publicTools = allTools
 			.filter(
 				(tool: any) =>
@@ -52,7 +52,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 						tool.name.startsWith(prefix)
 					)
 			)
-			.sort((a, b) => a.name.localeCompare(b.name));
+			.sort((valA, valB) => valA.name.localeCompare(valB.name));
 
 		// 2. Generate Transformers Documentation
 		const { TransformerLookupService } =

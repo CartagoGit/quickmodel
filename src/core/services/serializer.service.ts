@@ -116,6 +116,7 @@ import {
 	QUICK_OPTIONS_KEY,
 	QUICK_DECORATOR_KEY,
 	QUICK_VALUES_KEY,
+	QCOMPUTED_METADATA_KEY,
 } from '../constants/metadata-keys';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
@@ -322,12 +323,22 @@ export class Serializer<
 		while (proto && proto !== Object.prototype) {
 			for (const key of Object.getOwnPropertyNames(proto)) {
 				const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-				if (
-					descriptor &&
-					(descriptor.get || descriptor.set) &&
-					key !== 'constructor'
-				) {
-					keys.add(key);
+				if (descriptor && descriptor.get && key !== 'constructor') {
+					// Include @QType-generated getters (virtual fields backed by __qProps__ storage)
+					const isQTypeGenerated = Reflect.hasMetadata(
+						'qtype:generated',
+						proto,
+						key
+					);
+					// Include explicit @QComputed() computed property getters
+					const isQComputed = Reflect.hasMetadata(
+						QCOMPUTED_METADATA_KEY,
+						proto,
+						key
+					);
+					if (isQTypeGenerated || isQComputed) {
+						keys.add(key);
+					}
 				}
 			}
 			proto = Object.getPrototypeOf(proto);

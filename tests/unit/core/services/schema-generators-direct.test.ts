@@ -221,33 +221,33 @@ describe('MongoSchemaGenerator — direct coverage', () => {
 // ===========================================================================
 describe('TypeScriptSchemaGenerator — direct coverage', () => {
 	test('null transformer → string default', () => {
-		const ts = TypeScriptSchemaGenerator.generate(nullConfig());
-		expect(ts).toContain('field: string;');
+		const tsSchema = TypeScriptSchemaGenerator.generate(nullConfig());
+		expect(tsSchema).toContain('field: string;');
 	});
 
 	test('unknown transformer → string default', () => {
-		const ts = TypeScriptSchemaGenerator.generate(unknownConfig());
-		expect(ts).toContain('field: string;');
+		const tsSchema = TypeScriptSchemaGenerator.generate(unknownConfig());
+		expect(tsSchema).toContain('field: string;');
 	});
 
 	test('Boolean transformer → boolean', () => {
-		const ts = TypeScriptSchemaGenerator.generate(allTypesConfig());
-		expect(ts).toContain('flag: boolean;');
+		const tsSchema = TypeScriptSchemaGenerator.generate(allTypesConfig());
+		expect(tsSchema).toContain('flag: boolean;');
 	});
 
 	test('Object transformer → object', () => {
-		const ts = TypeScriptSchemaGenerator.generate(allTypesConfig());
-		expect(ts).toContain('obj: object;');
+		const tsSchema = TypeScriptSchemaGenerator.generate(allTypesConfig());
+		expect(tsSchema).toContain('obj: object;');
 	});
 
 	test('Map transformer → Map<string, any>', () => {
-		const ts = TypeScriptSchemaGenerator.generate(allTypesConfig());
-		expect(ts).toContain('mp: Map<string, any>;');
+		const tsSchema = TypeScriptSchemaGenerator.generate(allTypesConfig());
+		expect(tsSchema).toContain('mp: Map<string, any>;');
 	});
 
 	test('Array transformer → any[]', () => {
-		const ts = TypeScriptSchemaGenerator.generate(allTypesConfig());
-		expect(ts).toContain('arr: any[];');
+		const tsSchema = TypeScriptSchemaGenerator.generate(allTypesConfig());
+		expect(tsSchema).toContain('arr: any[];');
 	});
 });
 

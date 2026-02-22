@@ -454,8 +454,8 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 	test('should roundtrip buffers exactly', () => {
 		const original = new ArrayBuffer(16);
 		const view = new Uint8Array(original);
-		for (let i = 0; i < 16; i++) {
-			view[i] = i * 16;
+		for (let idx = 0; idx < 16; idx++) {
+			view[idx] = idx * 16;
 		}
 
 		const data = new BufferData({
@@ -470,8 +470,8 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 		const originalView = new Uint8Array(data.empty);
 		const restoredView = new Uint8Array(restored.empty);
 
-		for (let i = 0; i < 16; i++) {
-			expect(restoredView[i]).toBe(originalView[i]);
+		for (let idx = 0; idx < 16; idx++) {
+			expect(restoredView[idx]).toBe(originalView[idx]);
 		}
 	});
 });

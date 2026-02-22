@@ -34,6 +34,7 @@ export type {
 export { QAlias } from './core/decorators/qalias.decorator';
 export { QGroup } from './core/decorators/qgroup.decorator';
 export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
+export { QComputed } from './core/decorators/qcomputed.decorator';
 export { QConfig } from './core/config/quick.config';
 
 // ============================================================================

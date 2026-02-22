@@ -398,7 +398,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 				},
 			];
 
-			const userModels = users.map((u) => new User(u));
+			const userModels = users.map((userData) => new User(userData));
 
 			// Nivel 1: Array de Users
 			expect(userModels).toHaveLength(2);
@@ -536,7 +536,9 @@ describe('Mezcla de arrays y objetos anidados', () => {
 				},
 			];
 
-			const reportModels = reports.map((r) => new Report(r));
+			const reportModels = reports.map(
+				(reportData) => new Report(reportData)
+			);
 
 			// Nivel 1: Array de Reports
 			expect(reportModels).toHaveLength(1);

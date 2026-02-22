@@ -66,7 +66,7 @@ interface ICompleteModel {
 	nested?: unknown;
 }
 
-type CompleteModelTransforms = {
+type ICompleteModelTransforms = {
 	amount: bigint;
 	key: symbol;
 	pattern: RegExp;
@@ -104,7 +104,7 @@ class NestedModel extends QModel<INestedModel> {
 // ============================================================================
 class CompleteModel
 	extends QModel<ICompleteModel>
-	implements IQImplements<ICompleteModel, CompleteModelTransforms>
+	implements IQImplements<ICompleteModel, ICompleteModelTransforms>
 {
 	// Primitives
 	@QType() id!: string;

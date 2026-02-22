@@ -4,14 +4,14 @@ import { QTransformerRegistry } from '@/core/registry/transformer.registry';
 
 describe('Nested Model Validation', () => {
 	class ValidatingTransformer {
-		serialize(v: any) {
-			return v;
+		serialize(value: any) {
+			return value;
 		}
-		deserialize(v: any) {
-			return v;
+		deserialize(value: any) {
+			return value;
 		}
-		checkIntegrity(v: any) {
-			if (v === 'INVALID_VALUE')
+		checkIntegrity(value: any) {
+			if (value === 'INVALID_VALUE')
 				return { isValid: false, error: 'Value is invalid' };
 			return { isValid: true };
 		}

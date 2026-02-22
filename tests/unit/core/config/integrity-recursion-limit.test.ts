@@ -69,7 +69,7 @@ describe('Integrity: Recursion Limit', () => {
 		// Generate deep object > 50 levels
 		const data: any = {};
 		let current = data;
-		for (let i = 0; i < 55; i++) {
+		for (let idx = 0; idx < 55; idx++) {
 			current.next = {};
 			current = current.next;
 		}

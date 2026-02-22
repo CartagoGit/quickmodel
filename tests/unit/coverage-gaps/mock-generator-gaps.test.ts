@@ -79,16 +79,16 @@ describe('QMockGenerator Coverage Gaps', () => {
 			bu64: 'biguint64array',
 		})
 		class TypedArrayModel {
-			declare i8: Int8Array;
-			declare u8: Uint8Array;
-			declare i16: Int16Array;
-			declare u16: Uint16Array;
-			declare i32: Int32Array;
-			declare u32: Uint32Array;
-			declare f32: Float32Array;
-			declare f64: Float64Array;
-			declare bi64: BigInt64Array;
-			declare bu64: BigUint64Array;
+			declare i8a: Int8Array;
+			declare ui8a: Uint8Array;
+			declare i16a: Int16Array;
+			declare u16a: Uint16Array;
+			declare i32a: Int32Array;
+			declare u32a: Uint32Array;
+			declare f32a: Float32Array;
+			declare f64a: Float64Array;
+			declare bi64a: BigInt64Array;
+			declare bu64a: BigUint64Array;
 		}
 
 		const mock = generator.generate(TypedArrayModel, 'random');
@@ -141,12 +141,12 @@ describe('QMockGenerator Coverage Gaps', () => {
 
 		// Define a custom transformer object
 		const CustomTransformer = {
-			to: (v: any) => v,
-			from: (v: any) => v,
+			to: (value: any) => value,
+			from: (value: any) => value,
 			// No 'serialize'/'deserialize' method names used in QType check?
 			// QType checks for object with 'serialize' or 'deserialize'.
-			deserialize: (v: any) => v,
-			serialize: (v: any) => v,
+			deserialize: (value: any) => value,
+			serialize: (value: any) => value,
 		};
 
 		// We use @Quick to define the property with a custom transformer

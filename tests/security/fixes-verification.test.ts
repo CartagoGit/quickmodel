@@ -11,9 +11,9 @@ describe('Security Fixes Verification', () => {
 		}
 
 		it('should allow http/https protocols by default', () => {
-			const m = new UrlModel({ url: 'https://example.com' });
-			expect(m.url).toBeInstanceOf(URL);
-			expect(m.url.toString()).toBe('https://example.com/');
+			const urlModel = new UrlModel({ url: 'https://example.com' });
+			expect(urlModel.url).toBeInstanceOf(URL);
+			expect(urlModel.url.toString()).toBe('https://example.com/');
 		});
 
 		it('should block javascript: protocol', () => {
@@ -22,9 +22,9 @@ describe('Security Fixes Verification', () => {
 				new UrlModel({ url: 'javascript:alert(1)' });
 				// If it doesn't throw, we fail the test to show it needs fixing
 				expect(true).toBe(false);
-			} catch (e: any) {
-				expect(e).toBeInstanceOf(QModelError);
-				expect(e.message).toContain('protocol');
+			} catch (err: any) {
+				expect(err).toBeInstanceOf(QModelError);
+				expect(err.message).toContain('protocol');
 			}
 		});
 	});
@@ -56,8 +56,8 @@ describe('Security Fixes Verification', () => {
 
 	// Issue 5: Silent Discriminator Failure
 	describe('Issue 5: Silent Discriminator Failure', () => {
-		class A extends QModel<{ type: 'a' }> {}
-		class B extends QModel<{ type: 'b' }> {}
+		class ModelA extends QModel<{ type: 'a' }> {}
+		class ModelB extends QModel<{ type: 'b' }> {}
 
 		const thrower = () => {
 			throw new Error('Malicious error');
@@ -65,7 +65,7 @@ describe('Security Fixes Verification', () => {
 
 		@Quick(
 			{
-				items: [A, B],
+				items: [ModelA, ModelB],
 			},
 			{
 				discriminators: {
@@ -73,8 +73,8 @@ describe('Security Fixes Verification', () => {
 				},
 			}
 		)
-		class Container extends QModel<{ items: (A | B)[] }> {
-			declare items: (A | B)[];
+		class Container extends QModel<{ items: (ModelA | ModelB)[] }> {
+			declare items: (ModelA | ModelB)[];
 		}
 
 		it('should throw when discriminator fails instead of silencing', () => {
@@ -82,9 +82,9 @@ describe('Security Fixes Verification', () => {
 			try {
 				new Container({ items: [{ type: 'b' }] });
 				expect(true).toBe(false); // Should have thrown
-			} catch (e: any) {
+			} catch (err: any) {
 				// We expect the error to propagate
-				expect(e.message).toContain('Malicious error');
+				expect(err.message).toContain('Malicious error');
 			}
 		});
 	});

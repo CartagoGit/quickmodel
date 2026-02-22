@@ -167,26 +167,26 @@ describe('Configuration: integrityErrorStrategy', () => {
 		}
 
 		@Quick(
-			{ c1: Child, c2: Child },
+			{ child1: Child, child2: Child },
 			{ integrityErrorStrategy: 'accumulate' }
 		)
 		class Parent extends QModel<any> {
-			declare c1: Child;
-			declare c2: Child;
+			declare child1: Child;
+			declare child2: Child;
 		}
 
-		const p = new Parent({});
+		const parentModel = new Parent({});
 		// Child 1 has 2 errors
-		p.c1 = new Child({});
-		(p.c1 as any).val = 'err';
-		(p.c1 as any).val2 = 'err'; // failFast should only report 1 from here
+		parentModel.child1 = new Child({});
+		(parentModel.child1 as any).val = 'err';
+		(parentModel.child1 as any).val2 = 'err'; // failFast should only report 1 from here
 
 		// Child 2 has 2 errors
-		p.c2 = new Child({});
-		(p.c2 as any).val = 'err';
-		(p.c2 as any).val2 = 'err'; // failFast should only report 1 from here
+		parentModel.child2 = new Child({});
+		(parentModel.child2 as any).val = 'err';
+		(parentModel.child2 as any).val2 = 'err'; // failFast should only report 1 from here
 
-		const errors = p.checkIntegrity();
+		const errors = parentModel.checkIntegrity();
 		// Child 1 returns 1 error (stopped early)
 		// Child 2 returns 1 error (stopped early)
 		// Parent accumulates -> Total 2 errors

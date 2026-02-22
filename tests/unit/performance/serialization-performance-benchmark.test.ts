@@ -27,14 +27,14 @@ describe('Performance: Costo de serialización/deserialización', () => {
 		const iterations = 10000;
 		const start = performance.now();
 
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			// Creating plain object for performance baseline
 			void {
-				id: `user-${i}`,
-				name: `User ${i}`,
-				email: `user${i}@test.com`,
-				age: 20 + (i % 50),
-				active: i % 2 === 0,
+				id: `user-${idx}`,
+				name: `User ${idx}`,
+				email: `user${idx}@test.com`,
+				age: 20 + (idx % 50),
+				active: idx % 2 === 0,
 			};
 		}
 
@@ -54,14 +54,14 @@ describe('Performance: Costo de serialización/deserialización', () => {
 		const iterations = 10000;
 		const start = performance.now();
 
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			// Creating QModel instance for performance test
 			void new User({
-				id: `user-${i}`,
-				name: `User ${i}`,
-				email: `user${i}@test.com`,
-				age: 20 + (i % 50),
-				active: i % 2 === 0,
+				id: `user-${idx}`,
+				name: `User ${idx}`,
+				email: `user${idx}@test.com`,
+				age: 20 + (idx % 50),
+				active: idx % 2 === 0,
 			});
 		}
 
@@ -80,14 +80,14 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 	test('Performance: Serialización (serialize)', () => {
 		const users: User[] = [];
-		for (let i = 0; i < 1000; i++) {
+		for (let idx = 0; idx < 1000; idx++) {
 			users.push(
 				new User({
-					id: `user-${i}`,
-					name: `User ${i}`,
-					email: `user${i}@test.com`,
-					age: 20 + (i % 50),
-					active: i % 2 === 0,
+					id: `user-${idx}`,
+					name: `User ${idx}`,
+					email: `user${idx}@test.com`,
+					age: 20 + (idx % 50),
+					active: idx % 2 === 0,
 				})
 			);
 		}
@@ -111,13 +111,13 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 	test('Performance: Deserialización (deserialize)', () => {
 		const plainUsers = [];
-		for (let i = 0; i < 1000; i++) {
+		for (let idx = 0; idx < 1000; idx++) {
 			plainUsers.push({
-				id: `user-${i}`,
-				name: `User ${i}`,
-				email: `user${i}@test.com`,
-				age: 20 + (i % 50),
-				active: i % 2 === 0,
+				id: `user-${idx}`,
+				name: `User ${idx}`,
+				email: `user${idx}@test.com`,
+				age: 20 + (idx % 50),
+				active: idx % 2 === 0,
 			});
 		}
 
@@ -177,16 +177,16 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const iterations = 1000;
 		const data = {
 			cartId: 'cart-1',
-			items: Array.from({ length: 10 }, (_, i) => ({
-				productId: `p${i}`,
-				title: `Product ${i}`,
-				price: 10 + i,
+			items: Array.from({ length: 10 }, (_, idx) => ({
+				productId: `p${idx}`,
+				title: `Product ${idx}`,
+				price: 10 + idx,
 			})),
 			total: 145,
 		};
 
 		const start = performance.now();
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			new Cart(data as unknown as ICart);
 		}
 		const end = performance.now();
@@ -206,16 +206,16 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const iterations = 1000;
 		const data = {
 			cartId: 'cart-1',
-			items: Array.from({ length: 10 }, (_, i) => ({
-				productId: `p${i}`,
-				title: `Product ${i}`,
-				price: 10 + i,
+			items: Array.from({ length: 10 }, (_, idx) => ({
+				productId: `p${idx}`,
+				title: `Product ${idx}`,
+				price: 10 + idx,
 			})),
 			total: 145,
 		};
 
 		const start = performance.now();
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			new CartExplicit(data as unknown as ICart);
 		}
 		const end = performance.now();
@@ -235,16 +235,16 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const iterations = 100;
 		const data = {
 			cartId: 'cart-1',
-			items: Array.from({ length: 100 }, (_, i) => ({
-				productId: `p${i}`,
-				title: `Product ${i}`,
-				price: 10 + i,
+			items: Array.from({ length: 100 }, (_, idx) => ({
+				productId: `p${idx}`,
+				title: `Product ${idx}`,
+				price: 10 + idx,
 			})),
 			total: 5450,
 		};
 
 		const start = performance.now();
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			new Cart(data as unknown as ICart);
 		}
 		const end = performance.now();
@@ -265,10 +265,10 @@ describe('Performance: Costo de inferencia de arrays', () => {
 	test('Performance: Array muy grande (1000 items)', () => {
 		const data = {
 			cartId: 'cart-1',
-			items: Array.from({ length: 1000 }, (_, i) => ({
-				productId: `p${i}`,
-				title: `Product ${i}`,
-				price: 10 + i,
+			items: Array.from({ length: 1000 }, (_, idx) => ({
+				productId: `p${idx}`,
+				title: `Product ${idx}`,
+				price: 10 + idx,
 			})),
 			total: 504500,
 		};
@@ -341,9 +341,9 @@ describe('Performance: Costo de anidación profunda', () => {
 			level2: {
 				level3: {
 					container: {
-						items: Array.from({ length: 10 }, (_, i) => ({
-							id: `user-${i}`,
-							name: `User ${i}`,
+						items: Array.from({ length: 10 }, (_, idx) => ({
+							id: `user-${idx}`,
+							name: `User ${idx}`,
 						})),
 					},
 				},
@@ -351,7 +351,7 @@ describe('Performance: Costo de anidación profunda', () => {
 		};
 
 		const start = performance.now();
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			new Level1<User>(data as unknown as ILevel1<User>);
 		}
 		const end = performance.now();
@@ -375,9 +375,9 @@ describe('Performance: Costo de anidación profunda', () => {
 			level2: {
 				level3: {
 					container: {
-						items: Array.from({ length: 100 }, (_, i) => ({
-							id: `user-${i}`,
-							name: `User ${i}`,
+						items: Array.from({ length: 100 }, (_, idx) => ({
+							id: `user-${idx}`,
+							name: `User ${idx}`,
 						})),
 					},
 				},
@@ -385,7 +385,7 @@ describe('Performance: Costo de anidación profunda', () => {
 		};
 
 		const start = performance.now();
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			new Level1<User>(data as unknown as ILevel1<User>);
 		}
 		const end = performance.now();
@@ -437,7 +437,7 @@ describe('Performance: Tipos complejos', () => {
 		};
 
 		const start = performance.now();
-		for (let i = 0; i < iterations; i++) {
+		for (let idx = 0; idx < iterations; idx++) {
 			new ComplexModel(data);
 		}
 		const end = performance.now();

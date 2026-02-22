@@ -51,9 +51,9 @@ describe('MockGeneratorService Coverage Gaps', () => {
 		// 4. arrSyntax: [String] -> Should be array of strings (or String objects due to MockGenerator treating String as class)
 		expect(Array.isArray(mock.arrSyntax)).toBe(true);
 		if (mock.arrSyntax.length > 0) {
-			const el = mock.arrSyntax[0];
+			const element = mock.arrSyntax[0];
 			// It should be object wrappers around strings
-			expect(typeof el).toBe('object');
+			expect(typeof element).toBe('object');
 		}
 	});
 });

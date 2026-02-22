@@ -17,7 +17,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 		// 50,000 layers deep
 		let deepArray: any = 'bottom';
 		const DEPTH = 50000;
-		for (let i = 0; i < DEPTH; i++) {
+		for (let idx = 0; idx < DEPTH; idx++) {
 			deepArray = [deepArray];
 		}
 
@@ -27,12 +27,12 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 		try {
 			new Data({ items: deepArray });
 			console.log('Finished without error');
-		} catch (e: any) {
-			console.log('Error caught: ' + e.message);
+		} catch (err: any) {
+			console.log('Error caught: ' + err.message);
 			// We want it to throw a controlled error, NOT a stack overflow
 			if (
-				e.message &&
-				e.message.includes('Maximum call stack size exceeded')
+				err.message &&
+				err.message.includes('Maximum call stack size exceeded')
 			) {
 				throw new Error(
 					'Vulnerability confirmed: Stack Overflow via Nested Arrays'
@@ -55,7 +55,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 		// Manually build deep structure bypassing ingestion checks
 		let current = data.meta;
 		const DEPTH = 1000;
-		for (let i = 0; i < DEPTH; i++) {
+		for (let idx = 0; idx < DEPTH; idx++) {
 			current.next = {};
 			current = current.next;
 		}
@@ -79,7 +79,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 		// Hack to bypass type checking for rapid construction
 
 		// Build chain of models
-		for (let i = 0; i < DEPTH; i++) {
+		for (let idx = 0; idx < DEPTH; idx++) {
 			const next = new Node({});
 			current.child = next;
 			current = next;

@@ -8,32 +8,41 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 
 /** Simulates a DB uniqueness check */
 async function isEmailUnique(email: string): Promise<boolean> {
-	await new Promise((r) => setTimeout(r, 1));
+	await new Promise((resolve) => setTimeout(resolve, 1));
 	return !email.includes('taken');
 }
 
 @Quick()
 class UserAsync extends QModel<{ name: string; email: string; age: number }> {
-	@QRule((v) => (v as string).length >= 2, 'Name too short')
+	@QRule((value) => (value as string).length >= 2, 'Name too short')
 	declare name: string;
 
-	@QRule(async (v) => isEmailUnique(v as string), 'Email already taken')
+	@QRule(
+		async (value) => isEmailUnique(value as string),
+		'Email already taken'
+	)
 	declare email: string;
 
-	@QRule((v) => Promise.resolve((v as number) >= 18), 'Must be 18+')
-	@QRule((v) => Promise.resolve((v as number) <= 120), 'Age unrealistic')
+	@QRule((value) => Promise.resolve((value as number) >= 18), 'Must be 18+')
+	@QRule(
+		(value) => Promise.resolve((value as number) <= 120),
+		'Age unrealistic'
+	)
 	declare age: number;
 }
 
 @Quick()
 class OnlySyncRules extends QModel<{ name: string }> {
-	@QRule((v) => (v as string).length >= 2, 'Name too short')
+	@QRule((value) => (value as string).length >= 2, 'Name too short')
 	declare name: string;
 }
 
 @Quick()
 class OnlyAsyncRules extends QModel<{ email: string }> {
-	@QRule(async (v) => isEmailUnique(v as string), 'Email already taken')
+	@QRule(
+		async (value) => isEmailUnique(value as string),
+		'Email already taken'
+	)
 	declare email: string;
 }
 
@@ -77,7 +86,7 @@ describe('checkRulesAsync() — async predicates', () => {
 		const result = await user.checkRulesAsync();
 
 		expect(result.valid).toBe(false);
-		const emailError = result.errors.find((e) => e.field === 'email');
+		const emailError = result.errors.find((err) => err.field === 'email');
 		expect(emailError?.message).toBe('Email already taken');
 	});
 
@@ -115,7 +124,7 @@ describe('checkRulesAsync() — async predicates', () => {
 		const result = await user.checkRulesAsync();
 
 		expect(result.valid).toBe(false);
-		const ageErrors = result.errors.filter((e) => e.field === 'age');
+		const ageErrors = result.errors.filter((err) => err.field === 'age');
 		expect(ageErrors).toHaveLength(1); // only 'Age unrealistic' fails
 	});
 
@@ -133,16 +142,16 @@ describe('checkRulesAsync() — async predicates', () => {
 
 	test('rejected async predicate is treated as rule failure', async () => {
 		@Quick()
-		class Broken extends QModel<{ x: number }> {
+		class Broken extends QModel<{ posX: number }> {
 			@QRule(() => Promise.reject(new Error('DB down')), 'DB error')
-			declare x: number;
+			declare posX: number;
 		}
 
-		const m = Broken.create({ x: 1 });
-		const result = await m.checkRulesAsync();
+		const broken = Broken.create({ posX: 1 });
+		const result = await broken.checkRulesAsync();
 
 		expect(result.valid).toBe(false);
-		expect(result.errors[0].field).toBe('x');
+		expect(result.errors[0].field).toBe('posX');
 	});
 });
 
@@ -203,10 +212,10 @@ describe('validationReportAsync()', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		const p = user.validationReportAsync();
-		expect(p).toBeInstanceOf(Promise);
+		const validationReportAsync = user.validationReportAsync();
+		expect(validationReportAsync).toBeInstanceOf(Promise);
 
-		const report = await p;
+		const report = await validationReportAsync;
 		expect(report).toHaveProperty('valid');
 		expect(report).toHaveProperty('integrity');
 		expect(report).toHaveProperty('rules');

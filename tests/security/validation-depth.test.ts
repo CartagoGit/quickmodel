@@ -24,7 +24,7 @@ describe('Security: Validation Recursion & Depth', () => {
 		// If validation is recursive without depth limit, this should crash.
 		const DEPTH = 2000;
 
-		for (let i = 0; i < DEPTH; i++) {
+		for (let idx = 0; idx < DEPTH; idx++) {
 			const next = new Node({});
 			current.child = next;
 			current = next;
@@ -37,9 +37,9 @@ describe('Security: Validation Recursion & Depth', () => {
 
 		// We expect at least one error about recursion depth because DEPTH (2000) > LIMIT (200)
 		const depthError = errors.find(
-			(e) =>
-				e.error?.includes('Maximum recursion depth') ||
-				e.error?.includes('depth')
+			(err) =>
+				err.error?.includes('Maximum recursion depth') ||
+				err.error?.includes('depth')
 		);
 		expect(depthError).toBeDefined();
 	});

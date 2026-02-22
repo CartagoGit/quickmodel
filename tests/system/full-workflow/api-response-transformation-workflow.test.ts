@@ -270,7 +270,7 @@ describe('System: API Response Transformation', () => {
 
 		const user = User.deserialize(_parsed1.user);
 
-		const posts = _parsed1.posts.map((p: any) => Post.deserialize(p));
+		const posts = _parsed1.posts.map((post: any) => Post.deserialize(post));
 
 		const stats = Stats.deserialize(_parsed1.stats);
 

@@ -8,9 +8,9 @@ describe('Serializer Coverage Gaps', () => {
 		class Simple extends QModel<any> {
 			declare name: string;
 		}
-		const s = new Simple({ name: 'test' });
+		const simpleModel = new Simple({ name: 'test' });
 		const serializer = new Serializer();
-		const json = serializer.serializeToJson(s as any);
+		const json = serializer.serializeToJson(simpleModel as any);
 		expect(json).toBe('{"name":"test"}');
 	});
 
@@ -27,45 +27,45 @@ describe('Serializer Coverage Gaps', () => {
 		// We can create a dummy model and inject values.
 
 		@Quick({
-			d: 'any',
-			u: 'any',
+			dateVal: 'any',
+			urlVal: 'any',
 			usp: 'any',
-			bi: 'any',
+			bigintVal: 'any',
 			sym: 'any',
-			re: 'any',
+			regexpVal: 'any',
 			err: 'any',
 			buf: 'any',
 		})
 		class FallbackModel extends QModel<any> {
-			declare d: any;
-			declare u: any;
+			declare dateVal: any;
+			declare urlVal: any;
 			declare usp: any;
-			declare bi: any;
+			declare bigintVal: any;
 			declare sym: any;
-			declare re: any;
+			declare regexpVal: any;
 			declare err: any;
 			declare buf: any;
 		}
 
-		const m = new FallbackModel({
-			d: date,
-			u: new URL('https://example.com'),
+		const model = new FallbackModel({
+			dateVal: date,
+			urlVal: new URL('https://example.com'),
 			usp: new URLSearchParams('q=test'),
-			bi: 123n,
+			bigintVal: 123n,
 			sym: Symbol.for('key'),
-			re: /test/g,
+			regexpVal: /test/g,
 			err: new Error('oops'),
 			buf: new ArrayBuffer(2),
 		});
 
-		const res = serializer.serialize(m as any);
+		const res = serializer.serialize(model as any);
 
-		expect(res.d).toBe(date.toISOString());
-		expect(res.u).toBe('https://example.com/');
+		expect(res.dateVal).toBe(date.toISOString());
+		expect(res.urlVal).toBe('https://example.com/');
 		expect(res.usp).toBe('q=test');
-		expect(res.bi).toBe('123');
+		expect(res.bigintVal).toBe('123');
 		expect(res.sym).toBe('key');
-		expect(res.re).toEqual({ source: 'test', flags: 'g' });
+		expect(res.regexpVal).toEqual({ source: 'test', flags: 'g' });
 		expect(res.err).toEqual({
 			message: 'oops',
 			name: 'Error',

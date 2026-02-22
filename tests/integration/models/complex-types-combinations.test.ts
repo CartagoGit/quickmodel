@@ -593,8 +593,8 @@ describe('Edge cases: combinaciones extremas', () => {
 
 	test('buffers muy grandes y patterns complejos', () => {
 		const largeBuffer = new Int8Array(1000);
-		for (let i = 0; i < 1000; i++) {
-			largeBuffer[i] = (i % 256) - 128;
+		for (let idx = 0; idx < 1000; idx++) {
+			largeBuffer[idx] = (idx % 256) - 128;
 		}
 
 		const entity = new ComplexEntity({
@@ -607,9 +607,12 @@ describe('Edge cases: combinaciones extremas', () => {
 			lastError: new Error('Very long error message '.repeat(50)),
 			buffer: largeBuffer,
 			metadata: new Map(
-				Array.from({ length: 100 }, (_, i) => [`key${i}`, `value${i}`])
+				Array.from({ length: 100 }, (_, idx) => [
+					`key${idx}`,
+					`value${idx}`,
+				])
 			),
-			tags: new Set(Array.from({ length: 50 }, (_, i) => `tag${i}`)),
+			tags: new Set(Array.from({ length: 50 }, (_, idx) => `tag${idx}`)),
 		});
 
 		const IQSerialized = entity.serialize();

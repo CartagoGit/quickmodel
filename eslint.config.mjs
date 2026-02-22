@@ -118,6 +118,8 @@ export default tseslint.config(
 					exceptions: [
 						'_', // Variable descartada en destructuring
 						'id', // Identificador ubicuo
+						'err', // Error en catch,
+						'ts', // Timestamp o timespan o typescript (contexto claro)
 						'on', // Método de testing / event listeners
 						'fs', // Node.js filesystem module
 						'cb', // Callback

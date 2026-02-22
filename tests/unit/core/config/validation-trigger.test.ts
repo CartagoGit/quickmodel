@@ -131,14 +131,14 @@ describe('Validation Trigger Configuration', () => {
 
 	test('should work with integrityErrorStrategy: failFast', () => {
 		interface IMulti {
-			v1: string;
-			v2: string;
+			val1: string;
+			val2: string;
 		}
 
 		@Quick(
 			{
-				v1: 'lax',
-				v2: 'lax',
+				val1: 'lax',
+				val2: 'lax',
 			},
 			{
 				validationTrigger: 'construction',
@@ -146,14 +146,14 @@ describe('Validation Trigger Configuration', () => {
 			}
 		)
 		class FailFastLax extends QModel<IMulti> {
-			declare v1: string;
-			declare v2: string;
+			declare val1: string;
+			declare val2: string;
 		}
 
 		try {
-			new FailFastLax({ v1: 'invalid', v2: 'invalid' });
-		} catch (e: any) {
-			expect(e.message).toContain('Integrity check failed');
+			new FailFastLax({ val1: 'invalid', val2: 'invalid' });
+		} catch (err: any) {
+			expect(err.message).toContain('Integrity check failed');
 			// Verifying we stopped early is hard without mocking IntegrityService
 			// But at least we ensure it throws locally.
 		}

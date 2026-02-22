@@ -48,14 +48,14 @@ class Product extends QModel<IProduct> {
 }
 
 interface IChild {
-	x: number;
+	numItem: number;
 	internal: string;
 }
 
 /** No excludeFields on this class */
 @Quick({})
 class PlainModel extends QModel<IChild> {
-	declare x: number;
+	declare numItem: number;
 	declare internal: string;
 }
 
@@ -146,9 +146,9 @@ describe('@Quick() excludeFields option', () => {
 
 	describe('models without excludeFields are unaffected', () => {
 		test('all fields appear when no excludeFields is set', () => {
-			const model = new PlainModel({ x: 5, internal: 'data' });
+			const model = new PlainModel({ numItem: 5, internal: 'data' });
 			const json = JSON.parse(model.toJSON());
-			expect(json).toMatchObject({ x: 5, internal: 'data' });
+			expect(json).toMatchObject({ numItem: 5, internal: 'data' });
 		});
 	});
 

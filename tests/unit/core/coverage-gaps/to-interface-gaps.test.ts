@@ -15,15 +15,15 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 
 		// Initialize with null
-		const p = new Parent({ child: null });
-		expect(p.toInterface()).toEqual({ child: null });
+		const parent = new Parent({ child: null });
+		expect(parent.toInterface()).toEqual({ child: null });
 
 		// Update to instance
-		p.child = new Child({ name: 'New' });
+		parent.child = new Child({ name: 'New' });
 
 		// toInterface should now recurse into custom model serialization
 		// The uncovered lines at 402-413 handle this case: original is null, current is object with toInterface
-		expect(p.toInterface()).toEqual({ child: { name: 'New' } });
+		expect(parent.toInterface()).toEqual({ child: { name: 'New' } });
 	});
 
 	it('should handle circular reference in conversion', () => {
@@ -33,8 +33,8 @@ describe('ToInterface Coverage Gaps', () => {
 			declare self: Circular;
 		}
 
-		const c = new Circular({ self: null });
-		c.self = c;
+		const circular = new Circular({ self: null });
+		circular.self = circular;
 
 		// In production, it might log or return value.
 		// In dev/test (NODE_ENV!=production), it should throw.
@@ -43,7 +43,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const originalEnv = process.env.NODE_ENV;
 		process.env.NODE_ENV = 'test'; // Ensure throws
 
-		expect(() => c.toInterface()).toThrow('Circular reference');
+		expect(() => circular.toInterface()).toThrow('Circular reference');
 
 		process.env.NODE_ENV = originalEnv;
 	});
@@ -63,10 +63,10 @@ describe('ToInterface Coverage Gaps', () => {
 			declare items: any[];
 		}
 
-		const w = new Wrapper({ items: [] });
-		w.items.push(new Map([['a', 1]]));
+		const mapWrapper = new Wrapper({ items: [] });
+		mapWrapper.items.push(new Map([['a', 1]]));
 
-		expect(w.toInterface()).toEqual({ items: [[['a', 1]]] });
+		expect(mapWrapper.toInterface()).toEqual({ items: [[['a', 1]]] });
 	});
 
 	it('should handle BigInt conversion from string original', () => {
@@ -75,9 +75,9 @@ describe('ToInterface Coverage Gaps', () => {
 		class Mixed extends QModel<any> {
 			declare val: any;
 		}
-		const m = new Mixed({ val: '100' });
-		m.val = 100n;
-		expect(m.toInterface()).toEqual({ val: '100' });
+		const mixedModel = new Mixed({ val: '100' });
+		mixedModel.val = 100n;
+		expect(mixedModel.toInterface()).toEqual({ val: '100' });
 	});
 
 	it('should handle Object.create(null)', () => {
@@ -90,8 +90,8 @@ describe('ToInterface Coverage Gaps', () => {
 		const noProto = Object.create(null);
 		noProto.a = 1;
 
-		const n = new NullProto({ obj: noProto });
-		expect(n.toInterface()).toEqual({ obj: { a: 1 } });
+		const nullProtoModel = new NullProto({ obj: noProto });
+		expect(nullProtoModel.toInterface()).toEqual({ obj: { a: 1 } });
 	});
 	it('should handle Set to Array conversion in nested array', () => {
 		// Covers line 155: return Array.from(currentValue);
@@ -100,10 +100,10 @@ describe('ToInterface Coverage Gaps', () => {
 			declare items: any[];
 		}
 
-		const w = new Wrapper({ items: [] });
-		w.items.push(new Set(['a', 'b']));
+		const setWrapper = new Wrapper({ items: [] });
+		setWrapper.items.push(new Set(['a', 'b']));
 
-		expect(w.toInterface()).toEqual({ items: [['a', 'b']] });
+		expect(setWrapper.toInterface()).toEqual({ items: [['a', 'b']] });
 	});
 
 	it('should preserve Date string if already string', () => {
@@ -114,10 +114,14 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 
 		// Initialized with ISO string, updated to different ISO string
-		const w = new DateWrapper({ date: '2023-01-01T00:00:00.000Z' });
-		w.date = '2024-01-01T00:00:00.000Z'; // Still a string
+		const dateStrModel = new DateWrapper({
+			date: '2023-01-01T00:00:00.000Z',
+		});
+		dateStrModel.date = '2024-01-01T00:00:00.000Z'; // Still a string
 
-		expect(w.toInterface()).toEqual({ date: '2024-01-01T00:00:00.000Z' });
+		expect(dateStrModel.toInterface()).toEqual({
+			date: '2024-01-01T00:00:00.000Z',
+		});
 	});
 
 	it('should fallback to String(date) if not a Date object or string', () => {
@@ -128,10 +132,10 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 
 		// Initialized with Date, changed to number
-		const d = new DateFallback({ date: new Date() });
-		d.date = 123456789;
+		const dateFallbackModel = new DateFallback({ date: new Date() });
+		dateFallbackModel.date = 123456789;
 
-		expect(d.toInterface()).toEqual({ date: '123456789' });
+		expect(dateFallbackModel.toInterface()).toEqual({ date: '123456789' });
 	});
 
 	it('should serialize custom class instance using properties matching original', () => {
@@ -153,13 +157,15 @@ describe('ToInterface Coverage Gaps', () => {
 
 		// Initialize with a simple object to set "originalValue" structure
 		// NOTE: if original is generic object, we enter the block.
-		const m = new CustomModel({ data: { a: 1, b: 'orig' } });
+		const customModel = new CustomModel({ data: { a: 1, b: 'orig' } });
 
 		// Update to instance of CustomData
-		m.data = new CustomData(99, 'updated');
+		customModel.data = new CustomData(99, 'updated');
 
 		// Expect serialization to extract properties 'a' and 'b' and ignore 'method'
-		expect(m.toInterface()).toEqual({ data: { a: 99, b: 'updated' } });
+		expect(customModel.toInterface()).toEqual({
+			data: { a: 99, b: 'updated' },
+		});
 	});
 
 	it('should serialize nested model when original value is null', () => {
@@ -173,36 +179,36 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 
 		// Init with null
-		const p = new Parent({ child: null });
+		const parentNull = new Parent({ child: null });
 		// Set to instance
-		p.child = new Nested({ val: 'test' });
+		parentNull.child = new Nested({ val: 'test' });
 
-		expect(p.toInterface()).toEqual({ child: { val: 'test' } });
+		expect(parentNull.toInterface()).toEqual({ child: { val: 'test' } });
 	});
 
 	it('should handle wrapper objects (Number, String, Boolean)', () => {
 		// Covers lines 256-284
-		@Quick({ n: 'any', s: 'any', b: 'any' })
+		@Quick({ numWrapper: 'any', strWrapper: 'any', boolWrapper: 'any' })
 		class Wrappers extends QModel<any> {
-			declare n: any;
-			declare s: any;
-			declare b: any;
+			declare numWrapper: any;
+			declare strWrapper: any;
+			declare boolWrapper: any;
 		}
 		// Init with wrapper objects
 		// Note: QModel by default unwraps primitives? No, not if ANY.
 		// Actually if input was wrapper, toInterface should try to return wrapper?
 		// Logic at 256 checks "instanceof Number".
-		const w = new Wrappers({
-			n: new Number(123),
-			s: new String('str'),
-			b: new Boolean(true),
+		const wrappersModel = new Wrappers({
+			numWrapper: new Number(123),
+			strWrapper: new String('str'),
+			boolWrapper: new Boolean(true),
 		});
 
 		// If we keep them as wrappers
-		expect(w.toInterface().n).toBeInstanceOf(Number);
-		expect(w.toInterface().s).toBeInstanceOf(String);
-		expect(w.toInterface().b).toBeInstanceOf(Boolean);
-		expect(w.toInterface().n.valueOf()).toBe(123);
+		expect(wrappersModel.toInterface().numWrapper).toBeInstanceOf(Number);
+		expect(wrappersModel.toInterface().strWrapper).toBeInstanceOf(String);
+		expect(wrappersModel.toInterface().boolWrapper).toBeInstanceOf(Boolean);
+		expect(wrappersModel.toInterface().numWrapper.valueOf()).toBe(123);
 	});
 
 	it('should throw/log error on object type mismatch in development', () => {
@@ -212,18 +218,20 @@ describe('ToInterface Coverage Gaps', () => {
 			declare obj: object;
 		}
 
-		const m = new Mismatch({ obj: { a: 1 } });
+		const mismatchModel = new Mismatch({ obj: { a: 1 } });
 		// Force invalid type (ts-ignore or any)
-		(m as any).obj = 'not-an-object';
+		(mismatchModel as any).obj = 'not-an-object';
 
 		const originalEnv = process.env.NODE_ENV;
 		process.env.NODE_ENV = 'test'; // Not production
 
-		expect(() => m.toInterface()).toThrow('Cannot convert property');
+		expect(() => mismatchModel.toInterface()).toThrow(
+			'Cannot convert property'
+		);
 
 		process.env.NODE_ENV = 'production';
 		// Should not throw, should return current value (string)
-		const res = m.toInterface();
+		const res = mismatchModel.toInterface();
 		expect(res).toEqual({ obj: 'not-an-object' });
 
 		process.env.NODE_ENV = originalEnv;
@@ -237,12 +245,12 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 		// Init with symbol to set originalValue type
 		const originalSym = Symbol('orig');
-		const w = new SymbolWrapper({ sym: originalSym });
+		const symbolWrapperModel = new SymbolWrapper({ sym: originalSym });
 
 		// Update to string
-		w.sym = 'new-symbol-desc';
+		symbolWrapperModel.sym = 'new-symbol-desc';
 
-		const res = w.toInterface();
+		const res = symbolWrapperModel.toInterface();
 		expect(typeof res.sym).toBe('symbol');
 		expect(res.sym.toString()).toBe('Symbol(new-symbol-desc)');
 	});
@@ -275,13 +283,13 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 
 		const orig = new CustomData(1);
-		const m = new CustomModel({ data: orig });
+		const customModel2 = new CustomModel({ data: orig });
 
 		// Update to new instance
-		m.data = new CustomData(2);
+		customModel2.data = new CustomData(2);
 
 		// Should effectively clone it as plain object?
-		expect(m.toInterface()).toEqual({ data: { a: 2 } });
+		expect(customModel2.toInterface()).toEqual({ data: { a: 2 } });
 	});
 
 	it('should handle String original with BigInt current', () => {
@@ -290,15 +298,15 @@ describe('ToInterface Coverage Gaps', () => {
 		class StringBigInt extends QModel<any> {
 			declare val: any;
 		}
-		const m = new StringBigInt({ val: 'initial' });
-		m.val = 999n;
+		const stringBigIntModel = new StringBigInt({ val: 'initial' });
+		stringBigIntModel.val = 999n;
 
-		expect(m.toInterface()).toEqual({ val: '999' });
+		expect(stringBigIntModel.toInterface()).toEqual({ val: '999' });
 	});
 	it('should throw on maximum recursion depth', () => {
 		const deepObj: any = {};
 		let current = deepObj;
-		for (let i = 0; i < 600; i++) {
+		for (let idx = 0; idx < 600; idx++) {
 			current.next = {};
 			current = current.next;
 		}
@@ -308,8 +316,8 @@ describe('ToInterface Coverage Gaps', () => {
 			declare root: any;
 		}
 
-		const m = new Deep({ root: deepObj });
-		expect(() => m.toInterface()).toThrow(
+		const deepModel = new Deep({ root: deepObj });
+		expect(() => deepModel.toInterface()).toThrow(
 			'QuickModel Security: Maximum recursion depth'
 		);
 	});
@@ -323,7 +331,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const head = new Node({ next: null });
 		let current = head;
 
-		for (let i = 0; i < 600; i++) {
+		for (let idx = 0; idx < 600; idx++) {
 			const next = new Node({ next: null });
 			current.next = next;
 			current = next;

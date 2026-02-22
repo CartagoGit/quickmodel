@@ -9,8 +9,8 @@ describe('Transformer Registry Coverage', () => {
 
 	it('should register and retrieve transformer by string key', () => {
 		const mockTransformer: IQTransformer<any, any> = {
-			serialize: (v) => v,
-			deserialize: (v) => v,
+			serialize: (val) => val,
+			deserialize: (val) => val,
 		};
 		QTransformerRegistry.register('test', mockTransformer);
 		expect(QTransformerRegistry.get('test')).toBe(mockTransformer);
@@ -21,8 +21,8 @@ describe('Transformer Registry Coverage', () => {
 	it('should register and retrieve transformer by constructor key', () => {
 		class MyClass {}
 		const mockTransformer: IQTransformer<any, any> = {
-			serialize: (v) => v,
-			deserialize: (v) => v,
+			serialize: (val) => val,
+			deserialize: (val) => val,
 		};
 		QTransformerRegistry.register(MyClass, mockTransformer);
 		expect(QTransformerRegistry.get(MyClass)).toBe(mockTransformer);
@@ -32,8 +32,8 @@ describe('Transformer Registry Coverage', () => {
 	it('should register and retrieve transformer by object key (with name)', () => {
 		const objKey = { name: 'ObjKey' };
 		const mockTransformer: IQTransformer<any, any> = {
-			serialize: (v) => v,
-			deserialize: (v) => v,
+			serialize: (val) => val,
+			deserialize: (val) => val,
 		};
 		QTransformerRegistry.register(objKey, mockTransformer);
 		expect(QTransformerRegistry.get(objKey)).toBe(mockTransformer);

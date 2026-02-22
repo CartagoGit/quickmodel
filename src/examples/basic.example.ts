@@ -293,7 +293,7 @@ const logTests = (obj: User) => {
 		'→ Address[]',
 		Array.isArray(obj.addresses) &&
 			obj.addresses.length === 2 &&
-			obj.addresses.every((a) => a instanceof Address)
+			obj.addresses.every((address) => address instanceof Address)
 			? '✅'
 			: '❌'
 	);
@@ -324,7 +324,7 @@ const allCorrect =
 	user.profile instanceof Profile &&
 	Array.isArray(user.addresses) &&
 	user.addresses.length === 2 &&
-	user.addresses.every((a) => a instanceof Address);
+	user.addresses.every((address) => address instanceof Address);
 
 console.log(
 	allCorrect ? '✅ ALL CORRECT - Both options work' : '❌ ERRORS FOUND'

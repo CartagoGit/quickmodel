@@ -6,15 +6,15 @@ describe('Security: Recursion limits', () => {
 	test('deepFreeze should not stack overflow on deep objects', () => {
 		let deep: any = { end: true };
 		const DEPTH = 20000;
-		for (let i = 0; i < DEPTH; i++) {
+		for (let idx = 0; idx < DEPTH; idx++) {
 			deep = { next: deep };
 		}
 
 		try {
 			deepFreeze(deep);
-		} catch (e: any) {
+		} catch (err: any) {
 			// Should catch recursion limit, NOT crash
-			expect(e.message).toContain('recursion depth');
+			expect(err.message).toContain('recursion depth');
 		}
 	});
 
@@ -28,7 +28,7 @@ describe('Security: Recursion limits', () => {
 
 		const deepData: Record<string, any> = {};
 		let current = deepData;
-		for (let i = 0; i < 20000; i++) {
+		for (let idx = 0; idx < 20000; idx++) {
 			current.next = {};
 			current = current.next;
 		}

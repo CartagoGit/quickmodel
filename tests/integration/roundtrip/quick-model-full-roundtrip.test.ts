@@ -9,13 +9,13 @@ interface IUser {
 	createdAt: string;
 }
 
-type UserTransforms = {
+type IUserTransforms = {
 	createdAt: Date;
 };
 
 class User
 	extends QModel<IUser>
-	implements IQImplements<IUser, UserTransforms>
+	implements IQImplements<IUser, IUserTransforms>
 {
 	@QType() id!: string;
 	@QType() name!: string;

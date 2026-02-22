@@ -7,7 +7,7 @@ describe('QType Decorator Coverage Gaps', () => {
 			@QType(Boolean)
 			flag: boolean;
 		}
-		const m = new BoolModel({ flag: true });
+		const model = new BoolModel({ flag: true });
 		// QType(Boolean) sets fieldType='boolean'. BaseTransformer should handle it?
 		// Actually QType sets metadata, Deserializer uses it.
 		// We just need to ensure the metadata is set correctly (coverage hit)
@@ -16,21 +16,21 @@ describe('QType Decorator Coverage Gaps', () => {
 		// So just defining the class executes the lines!
 		// But to validat it worked, we might checking functionality.
 
-		expect(m.flag).toBe(true);
+		expect(model.flag).toBe(true);
 	});
 
 	it('should handle WeakMap, WeakSet, Promise', () => {
 		class SpecialModel extends QModel<any> {
-			@QType(WeakMap) wm: WeakMap<any, any>;
-			@QType(WeakSet) ws: WeakSet<any>;
-			@QType(Promise) p: Promise<any>;
+			@QType(WeakMap) weakMap: WeakMap<any, any>;
+			@QType(WeakSet) weakSet: WeakSet<any>;
+			@QType(Promise) promiseProp: Promise<any>;
 		}
 
 		// Just definition covers the lines.
 		// But let's check metadata if we want to be thorough.
 
-		const m = new SpecialModel({});
-		expect(m).toBeInstanceOf(SpecialModel);
+		const model = new SpecialModel({});
+		expect(model).toBeInstanceOf(SpecialModel);
 	});
 
 	it('should handle Math methods as transformers', () => {
@@ -38,23 +38,23 @@ describe('QType Decorator Coverage Gaps', () => {
 			@QType(Math.round) rounded: number;
 		}
 
-		const m = new MathModel({ rounded: 1.9 });
-		expect(m.rounded).toBe(2);
+		const model = new MathModel({ rounded: 1.9 });
+		expect(model.rounded).toBe(2);
 	});
 
 	it('should handle arrow functions as transformers', () => {
 		class TransformModel extends QModel<any> {
-			@QType((x: number) => x * 2) doubled: number;
+			@QType((num: number) => num * 2) doubled: number;
 		}
 
-		const m = new TransformModel({ doubled: 10 });
-		expect(m.doubled).toBe(20);
+		const model = new TransformModel({ doubled: 10 });
+		expect(model.doubled).toBe(20);
 	});
 
 	it('should handle object method shorthand as transformer', () => {
 		const obj = {
-			transformer(x: number) {
-				return x * 3;
+			transformer(num: number) {
+				return num * 3;
 			},
 		};
 		// obj.transformer.prototype is undefined for method shorthand!
@@ -65,7 +65,7 @@ describe('QType Decorator Coverage Gaps', () => {
 			@QType(obj.transformer) val: number;
 		}
 
-		const m = new MethodModel({ val: 10 });
-		expect(m.val).toBe(30);
+		const model = new MethodModel({ val: 10 });
+		expect(model.val).toBe(30);
 	});
 });

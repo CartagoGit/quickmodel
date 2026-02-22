@@ -45,7 +45,7 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 
 		// 1. Instantiation Benchmark
 		const startInst = performance.now();
-		for (let i = 0; i < count; i++) {
+		for (let idx = 0; idx < count; idx++) {
 			new BenchmarkModel({});
 		}
 		results['instantiation_avg_ms'] =
@@ -60,7 +60,7 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 			tags: ['a', 'b'],
 		};
 		const startTrans = performance.now();
-		for (let i = 0; i < count; i++) {
+		for (let idx = 0; idx < count; idx++) {
 			BenchmarkModel.create(payload as any);
 		}
 		results['transformation_avg_ms'] =
@@ -69,7 +69,7 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 		// 3. Serialization (Model -> Plain Object)
 		const instance = BenchmarkModel.create(payload as any);
 		const startSer = performance.now();
-		for (let i = 0; i < count; i++) {
+		for (let idx = 0; idx < count; idx++) {
 			instance.toJSON();
 		}
 		results['serialization_avg_ms'] =

@@ -84,8 +84,8 @@ describe('Default Value Overwrite Bug', () => {
 			get name() {
 				return this._name;
 			}
-			set name(v) {
-				this._name = v;
+			set name(val) {
+				this._name = val;
 			}
 		}
 
@@ -113,13 +113,13 @@ describe('Default Value Overwrite Bug', () => {
 		}
 
 		// Subcase A: Default used when no data provided
-		const c1 = new Config({});
-		expect(c1.retries).toBe(3);
-		expect(c1.timeout).toBeUndefined();
+		const copy1 = new Config({});
+		expect(copy1.retries).toBe(3);
+		expect(copy1.timeout).toBeUndefined();
 
 		// Subcase B: Data overrides default
-		const c2 = new Config({ retries: 5 });
-		expect(c2.retries).toBe(5);
+		const copy2 = new Config({ retries: 5 });
+		expect(copy2.retries).toBe(5);
 	});
 
 	// Case 8: Explicit undefined behavior
@@ -141,10 +141,10 @@ describe('Default Value Overwrite Bug', () => {
 		// NOTE: QModel filters undefined values during hydration?
 		// Implementation detail: QModel hydration iterates explicitly over keys passed.
 
-		const s1 = new Settings({ theme: undefined as any });
+		const snap1 = new Settings({ theme: undefined as any });
 
 		// If the user EXPLICITLY passes undefined, we expect undefined
 		// (overwriting the default 'light' which runs before constructor)
-		expect(s1.theme).toBeUndefined();
+		expect(snap1.theme).toBeUndefined();
 	});
 });

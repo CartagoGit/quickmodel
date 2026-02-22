@@ -29,19 +29,19 @@ describe('IntegrityService Coverage Gaps', () => {
 			declare children: Child[];
 		}
 
-		const p = new Parent();
-		const c1 = new Child();
-		c1.name = 'valid';
+		const parent = new Parent();
+		const child1 = new Child();
+		child1.name = 'valid';
 
 		// Simulate an invalid child.
 		// We force invalid data that violates 'string' type expectation.
 		const cFail = new Child();
 		(cFail as any).name = 123; // Error: should be string
 
-		p.children = [cFail];
+		parent.children = [cFail];
 
 		// We are testing that checkIntegrity() called on Parent recursively checks children array elements
-		const results = service.checkIntegrity(p);
+		const results = service.checkIntegrity(parent);
 
 		expect(results.length).toBeGreaterThan(0);
 		// The service flattens the path: children[0].name
@@ -55,8 +55,8 @@ describe('IntegrityService Coverage Gaps', () => {
 		const BROKEN_KEY = 'brokenvalidatortype_test_unique';
 		const brokenTransformer: IQTransformer<unknown, unknown> &
 			IQIntegrityChecker = {
-			deserialize: (v: unknown) => v,
-			serialize: (v: unknown) => v,
+			deserialize: (value: unknown) => value,
+			serialize: (value: unknown) => value,
 			checkIntegrity(
 				_value: unknown,
 				_ctx: IQIntegrityContext
@@ -83,7 +83,9 @@ describe('IntegrityService Coverage Gaps', () => {
 		// The service should have caught the error and returned an error result
 		expect(results.length).toBeGreaterThan(0);
 		expect(
-			results.some((r) => r.error?.includes('validator exploded'))
+			results.some((result) =>
+				result.error?.includes('validator exploded')
+			)
 		).toBe(true);
 	});
 });

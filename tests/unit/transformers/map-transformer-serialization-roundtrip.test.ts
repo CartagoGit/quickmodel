@@ -112,8 +112,8 @@ describe('Unit: Map Transformer', () => {
 
 	test('Should handle large map', () => {
 		const map = new Map<string, unknown>();
-		for (let i = 0; i < 1000; i++) {
-			map.set(`key-${i}`, `value-${i}`);
+		for (let idx = 0; idx < 1000; idx++) {
+			map.set(`key-${idx}`, `value-${idx}`);
 		}
 
 		const model = new MapData({ map });

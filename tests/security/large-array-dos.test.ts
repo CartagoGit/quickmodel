@@ -22,7 +22,9 @@ class List extends QModel<IList> {
 describe('Large Array DoS', () => {
 	test('should allow processing arrays within default limit (10k)', () => {
 		const SIZE = 9000;
-		const largeArray = Array.from({ length: SIZE }, (_, i) => ({ id: i }));
+		const largeArray = Array.from({ length: SIZE }, (_, idx) => ({
+			id: idx,
+		}));
 
 		const start = performance.now();
 		const list = new List({ items: largeArray });
@@ -53,7 +55,7 @@ describe('Large Array DoS', () => {
 		}
 
 		const SIZE = 15000;
-		const array = Array.from({ length: SIZE }, (_, i) => ({ id: i }));
+		const array = Array.from({ length: SIZE }, (_, idx) => ({ id: idx }));
 		const list = new CustomList({ items: array });
 
 		expect(list.items.length).toBe(SIZE);
@@ -72,8 +74,8 @@ describe('Large Array DoS', () => {
 			new MediumList({ items: hugeArray });
 			// Should have thrown
 			expect(true).toBe(false);
-		} catch (e: any) {
-			expect(e).toBeDefined();
+		} catch (err: any) {
+			expect(err).toBeDefined();
 		}
 	});
 });

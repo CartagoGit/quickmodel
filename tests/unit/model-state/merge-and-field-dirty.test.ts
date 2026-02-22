@@ -378,15 +378,15 @@ describe('QModel — merge(partial)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			const v2 = user.merge({ name: 'Jane' });
-			const v3 = v2.merge({ age: 99 });
+			const user2 = user.merge({ name: 'Jane' });
+			const user3 = user2.merge({ age: 99 });
 
-			expect(v3.name).toBe('Jane');
-			expect(v3.age).toBe(99);
-			expect(v3.email).toBe('j@e.com');
+			expect(user3.name).toBe('Jane');
+			expect(user3.age).toBe(99);
+			expect(user3.email).toBe('j@e.com');
 			// Todos son independientes
 			expect(user.name).toBe('John');
-			expect(v2.age).toBe(30);
+			expect(user2.age).toBe(30);
 		});
 	});
 
@@ -417,9 +417,9 @@ describe('QModel — merge(partial)', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 			const merged = user.merge({ name: 'Jane' });
-			const d = user.diff(merged);
-			expect(Object.keys(d)).toEqual(['name']);
-			expect(d.name).toEqual({ before: 'John', after: 'Jane' });
+			const differences = user.diff(merged);
+			expect(Object.keys(differences)).toEqual(['name']);
+			expect(differences.name).toEqual({ before: 'John', after: 'Jane' });
 		});
 	});
 });

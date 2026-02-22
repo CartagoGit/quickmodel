@@ -63,3 +63,10 @@ export const QUICK_OPTIONS_KEY = '__quickOptions__';
  * @internal
  */
 export const FORCE_HYDRATION_KEY = Symbol('__forceHydration__');
+
+/**
+ * Metadata key applied by `@QComputed()` to getter properties.
+ * Getters marked with this key are included in `serialize()` and `toJSON()` output.
+ * Unmarked prototype getters are excluded by default.
+ */
+export const QCOMPUTED_METADATA_KEY = '__qComputed__';

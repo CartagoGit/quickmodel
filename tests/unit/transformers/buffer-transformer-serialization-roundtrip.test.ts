@@ -67,8 +67,8 @@ describe('Unit: Buffer Transformer', () => {
 		const size = 100 * 1024; // 100KB (Security limit is 1MB)
 		const buffer = new ArrayBuffer(size);
 		const view = new Uint8Array(buffer);
-		for (let i = 0; i < 100; i++) {
-			view[i] = i % 256;
+		for (let idx = 0; idx < 100; idx++) {
+			view[idx] = idx % 256;
 		}
 
 		const model = new BufferData({ buffer: buffer as unknown as number[] });
@@ -76,8 +76,8 @@ describe('Unit: Buffer Transformer', () => {
 
 		expect(deserialized.buffer.byteLength).toBe(size);
 		const resultView = new Uint8Array(deserialized.buffer);
-		for (let i = 0; i < 100; i++) {
-			expect(resultView[i]).toBe(i % 256);
+		for (let idx = 0; idx < 100; idx++) {
+			expect(resultView[idx]).toBe(idx % 256);
 		}
 	});
 

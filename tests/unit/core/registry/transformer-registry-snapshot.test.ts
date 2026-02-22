@@ -20,7 +20,7 @@ class FakeType {
 
 const fakeTransformer: IQTransformer<FakeType, string> = {
 	deserialize: (raw: unknown) => new FakeType(String(raw)),
-	serialize: (v: FakeType) => v.value,
+	serialize: (fakeType: FakeType) => fakeType.value,
 };
 
 // ---------------------------------------------------------------------------
@@ -174,7 +174,7 @@ describe('QTransformerRegistry.snapshot() integration with QModel', () => {
 		const euroTransformer: IQTransformer<Euro, string> = {
 			deserialize: (raw: unknown) =>
 				new Euro(Math.round(parseFloat(String(raw)) * 100)),
-			serialize: (v: Euro) => (v.cents / 100).toFixed(2),
+			serialize: (val: Euro) => (val.cents / 100).toFixed(2),
 		};
 
 		const snap = QTransformerRegistry.snapshot();

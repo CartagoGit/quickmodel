@@ -37,7 +37,7 @@ interface IComplexTypes {
 	tags: ITag[];
 }
 
-type ComplexTypesTransforms = {
+type IComplexTypesTransforms = {
 	pattern: RegExp;
 	error: Error;
 	buffer: ArrayBuffer;
@@ -49,7 +49,7 @@ type ComplexTypesTransforms = {
 // SIN especificar symbols - solo @QType()
 class ComplexTypesModel
 	extends QModel<IComplexTypes>
-	implements IQImplements<IComplexTypes, ComplexTypesTransforms>
+	implements IQImplements<IComplexTypes, IComplexTypesTransforms>
 {
 	@QType() pattern!: RegExp; // Sin QRegExp
 	@QType() error!: Error; // Sin QError

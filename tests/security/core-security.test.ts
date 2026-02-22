@@ -7,7 +7,7 @@ import { TypedArrayTransformer } from '../../src/transformers/typed-array.transf
 // Mock Recursive Deserializer
 const mockRecursiveDeserializer = {
 	deserialize: () => ({}),
-	transformValue: (v: any) => v,
+	transformValue: (value: any) => value,
 } as any;
 
 describe('Core Security Standards', () => {

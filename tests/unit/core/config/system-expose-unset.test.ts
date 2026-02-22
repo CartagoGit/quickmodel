@@ -101,17 +101,17 @@ describe('Expose Unset Fields Configuration', () => {
 			declare child: HiddenChild;
 		}
 
-		const p = new ExposedParent({
+		const parent = new ExposedParent({
 			exposed: undefined,
 			child: { hidden: undefined },
 		});
 		// Assign to ensure they exist on instance
-		p.exposed = undefined;
-		p.child.hidden = undefined;
+		parent.exposed = undefined;
+		parent.child.hidden = undefined;
 
 		// Use toInterface() to check the object structure before JSON stringification
 		// (JSON.stringify removes undefined, so we test the interface object)
-		const output = p.toInterface();
+		const output = parent.toInterface();
 
 		// Parent exposes unset
 		expect(output).toHaveProperty('exposed');
@@ -120,7 +120,7 @@ describe('Expose Unset Fields Configuration', () => {
 		// Child hides unset (when serialized individually)
 		// Note: Parent.toInterface() returns the child Model instance as-is,
 		// so we must call toInterface() on the child to verify its serialization logic.
-		const childOutput = p.child.toInterface();
+		const childOutput = parent.child.toInterface();
 		expect(childOutput).not.toHaveProperty('hidden');
 	});
 });

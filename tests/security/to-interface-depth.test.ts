@@ -22,7 +22,7 @@ describe('Security: toInterface Recursion Depth', () => {
 		const deepOriginal: any = [1];
 		let ptr2 = deepOriginal;
 
-		for (let i = 0; i < 600; i++) {
+		for (let idx = 0; idx < 600; idx++) {
 			ptr1[0] = [1];
 			ptr1 = ptr1[0];
 
@@ -45,7 +45,7 @@ describe('Security: toInterface Recursion Depth', () => {
 		const deepOriginal: any = { a: 1 };
 		let ptr2 = deepOriginal;
 
-		for (let i = 0; i < 600; i++) {
+		for (let idx = 0; idx < 600; idx++) {
 			ptr1.a = { a: 1 };
 			ptr1 = ptr1.a;
 

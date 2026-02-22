@@ -109,20 +109,20 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 				return this._count;
 			}
 
-			set count(v: number) {
-				if (v < 0) throw new Error('Negative count not allowed');
-				this._count = v;
+			set count(val: number) {
+				if (val < 0) throw new Error('Negative count not allowed');
+				this._count = val;
 			}
 		}
 
-		const c = new Counter({ count: 10 });
-		expect(c.count).toBe(10);
+		const counterModel = new Counter({ count: 10 });
+		expect(counterModel.count).toBe(10);
 
-		c.count = 20;
-		expect(c.count).toBe(20);
+		counterModel.count = 20;
+		expect(counterModel.count).toBe(20);
 
 		expect(() => {
-			c.count = -5;
+			counterModel.count = -5;
 		}).toThrow('Negative count not allowed');
 	});
 });

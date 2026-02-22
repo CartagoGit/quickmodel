@@ -10,8 +10,8 @@ describe('Security: Population Limits', () => {
 
 		const massiveObj: any = {};
 		// Default limit is 50,000
-		for (let i = 0; i < 50005; i++) {
-			massiveObj[`key${i}`] = i;
+		for (let idx = 0; idx < 50005; idx++) {
+			massiveObj[`key${idx}`] = idx;
 		}
 
 		expect(() => {

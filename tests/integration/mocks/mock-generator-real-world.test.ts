@@ -276,9 +276,10 @@ describe('Integration: Mock Generator - Real World', () => {
 	});
 
 	test('should generate array with custom indexed data', () => {
-		const mocks = Order.mock().array(3, 'random', (i) => ({
-			id: `ORDER-${i}`,
-			status: i === 0 ? 'pending' : i === 1 ? 'processing' : 'shipped',
+		const mocks = Order.mock().array(3, 'random', (idx) => ({
+			id: `ORDER-${idx}`,
+			status:
+				idx === 0 ? 'pending' : idx === 1 ? 'processing' : 'shipped',
 		}));
 
 		expect(mocks[0].id).toBe('ORDER-0');

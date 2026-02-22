@@ -173,7 +173,7 @@ describe('Sin lazy getters', () => {
 		console.log('\n✅ Ventaja 4: Object.keys() correcto');
 		console.log(
 			'   Object.keys(model).filter(k => !k.startsWith("__")):',
-			Object.keys(model).filter((k) => !k.startsWith('__'))
+			Object.keys(model).filter((key) => !key.startsWith('__'))
 		);
 
 		console.log('\n✅ Ventaja 5: Spreads funcionan');

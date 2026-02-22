@@ -488,7 +488,72 @@ assert(account.toJSON().password === undefined); // excluido
 | `pick` | `serialize({ pick })` | solo esa llamada | proyección dispersa / actualizaciones parciales |
 :::
 
-## Próximos Pasos
+## Campos Calculados (`@QComputed()`)
+
+Por defecto, los getters definidos en el prototipo (propiedades calculadas) **no** se incluyen en la salida de `serialize()` ni de `toJSON()`. Esto evita la exposición accidental de lógica interna. Usa `@QComputed()` para incluir explícitamente un getter.
+
+```typescript
+import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+
+interface IUser {
+	firstName: string;
+	lastName: string;
+}
+
+@Quick({ firstName: String, lastName: String })
+class User extends QModel<IUser> {
+	declare firstName: string;
+	declare lastName: string;
+
+	@QComputed()
+	get fullName(): string {
+		return `${this.firstName} ${this.lastName}`;
+	}
+
+	// SIN decorar — excluido de la serialización
+	get initials(): string {
+		return `${this.firstName[0]}.${this.lastName[0]}.`;
+	}
+}
+
+const user = User.create({ firstName: 'Alice', lastName: 'Smith' });
+
+user.serialize();
+// { firstName: 'Alice', lastName: 'Smith', fullName: 'Alice Smith' }
+// Nota: 'initials' NO está incluido
+```
+
+### Comportamientos clave
+
+- **Solo lectura**: Los getters calculados nunca se asignan durante `create()` ni `deserialize()`. Cualquier dato entrante para una propiedad `@QComputed()` se ignora silenciosamente.
+- **Herencia**: `@QComputed()` en un getter de clase padre es automáticamente visible en la serialización de las clases hijas.
+- **Múltiples campos**: Puedes decorar tantos getters como necesites.
+
+```typescript
+@Quick({ firstName: String, lastName: String, birthYear: Number })
+class User extends QModel<IUser> {
+	declare firstName: string;
+	declare lastName: string;
+	declare birthYear: number;
+
+	@QComputed()
+	get fullName(): string {
+		return `${this.firstName} ${this.lastName}`;
+	}
+
+	@QComputed()
+	get age(): number {
+		return new Date().getFullYear() - this.birthYear;
+	}
+}
+
+user.serialize();
+// { firstName: 'Alice', lastName: 'Smith', birthYear: 1990, fullName: 'Alice Smith', age: 35 }
+```
+
+::: tip `toJSON()` y `JSON.stringify()`
+Los campos `@QComputed()` también se incluyen en la salida de `toJSON()`, lo que significa que aparecen en `JSON.stringify(user)` — ya que `JSON.stringify` llama a `toJSON()` automáticamente.
+:::
 
 - [Transformadores](/es/guide/transformers) - Ve todas las reglas de transformación
 - [Modelos Anidados](/es/guide/nested-models) - Trabaja con estructuras complejas

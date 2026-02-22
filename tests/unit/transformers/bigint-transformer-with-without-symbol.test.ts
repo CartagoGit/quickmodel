@@ -17,14 +17,14 @@ interface IAccountWithSymbol {
 	balance: string;
 }
 
-type AccountWithSymbolTransforms = {
+type IAccountWithSymbolTransforms = {
 	balance: bigint;
 };
 
 // ✅ CON BigInt symbol
 class AccountWithSymbol
 	extends QModel<IAccountWithSymbol>
-	implements IQImplements<IAccountWithSymbol, AccountWithSymbolTransforms>
+	implements IQImplements<IAccountWithSymbol, IAccountWithSymbolTransforms>
 {
 	@QType() id!: string;
 	@QType(BigInt) balance!: bigint; // 👈 CON symbol
@@ -33,7 +33,7 @@ class AccountWithSymbol
 // ❌ SIN QBigInt symbol (solo @QType())
 class AccountWithoutSymbol
 	extends QModel<IAccountWithSymbol>
-	implements IQImplements<IAccountWithSymbol, AccountWithSymbolTransforms>
+	implements IQImplements<IAccountWithSymbol, IAccountWithSymbolTransforms>
 {
 	@QType() id!: string;
 	@QType() balance!: bigint; // 👈 SIN symbol

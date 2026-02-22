@@ -97,8 +97,8 @@ describe('Unit: Set Transformer', () => {
 
 	test('Should handle large set', () => {
 		const set = new Set<number>();
-		for (let i = 0; i < 1000; i++) {
-			set.add(i);
+		for (let idx = 0; idx < 1000; idx++) {
+			set.add(idx);
 		}
 
 		const model = new SetData({ set });

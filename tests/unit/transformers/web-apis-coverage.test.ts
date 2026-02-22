@@ -242,8 +242,8 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			try {
 				transformer.deserialize('invalid-encoding-xyz', 'dec', 'TC');
 			} catch (err: unknown) {
-				const e = err as Error;
-				expect(e.message).toContain('Invalid encoding');
+				const errTyped = err as Error;
+				expect(errTyped.message).toContain('Invalid encoding');
 			}
 		});
 
@@ -255,8 +255,8 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 					'TC'
 				);
 			} catch (err: unknown) {
-				const e = err as Error;
-				expect(e.message).toContain('Invalid encoding');
+				const errTyped = err as Error;
+				expect(errTyped.message).toContain('Invalid encoding');
 			}
 		});
 

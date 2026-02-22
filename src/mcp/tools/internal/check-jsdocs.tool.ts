@@ -38,8 +38,8 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 					const content = self._fs.readFileSync(fullPath, 'utf-8');
 					const lines = content.split('\n');
 					let inComment = false;
-					for (let i = 0; i < lines.length; i++) {
-						const line = (lines[i] || '').trim();
+					for (let idx = 0; idx < lines.length; idx++) {
+						const line = (lines[idx] || '').trim();
 						if (line.startsWith('/**')) inComment = true;
 						if (line.endsWith('*/')) inComment = false;
 
@@ -50,14 +50,14 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 						) {
 							// Check if previous line end was */
 							let hasDoc = false;
-							if (i > 0) {
-								const prev = lines[i - 1];
+							if (idx > 0) {
+								const prev = lines[idx - 1];
 								if (prev && prev.trim().endsWith('*/'))
 									hasDoc = true;
 							}
 							if (!hasDoc) {
 								missingDocs.push(
-									`${fullPath}:${i + 1} ${line}`
+									`${fullPath}:${idx + 1} ${line}`
 								);
 							}
 						}
@@ -71,10 +71,10 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 			// Start scan on src
 			// Note: "src" is hardcoded here relative to cwd
 			scanDir(join(process.cwd(), 'src'));
-		} catch (e: any) {
+		} catch (err: any) {
 			return {
 				filesWithMissingDocs: [],
-				summary: 'Failed to scan: ' + e.message,
+				summary: 'Failed to scan: ' + err.message,
 			};
 		}
 

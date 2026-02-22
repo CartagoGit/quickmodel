@@ -9,6 +9,7 @@ import {
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_OPTIONS_KEY,
 	QUICK_TYPE_MAP_KEY,
+	QCOMPUTED_METADATA_KEY,
 } from '../constants/metadata-keys';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
@@ -322,6 +323,24 @@ export class PopulationService {
 				}
 				// 'keep': Proceed normally
 			}
+
+			// @QComputed() properties are read-only computed getters — skip deserialization assignment
+			let isComputedGetter = false;
+			let checkProto = Object.getPrototypeOf(instance);
+			while (checkProto && checkProto !== Object.prototype) {
+				if (
+					Reflect.hasMetadata(
+						QCOMPUTED_METADATA_KEY,
+						checkProto,
+						targetKey
+					)
+				) {
+					isComputedGetter = true;
+					break;
+				}
+				checkProto = Object.getPrototypeOf(checkProto);
+			}
+			if (isComputedGetter) continue;
 
 			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
 			const template =

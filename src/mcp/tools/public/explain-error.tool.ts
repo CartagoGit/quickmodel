@@ -31,15 +31,15 @@ export class QExplainErrorTool extends QAbstractTool<
 
 		const explanations: string[] = [];
 
-		const processError = (e: any) => {
-			if (e.code === 'INVALID_TYPE') {
-				return `Field '${e.path}' expected ${e.expected} but got ${e.received}.`;
+		const processError = (err: any) => {
+			if (err.code === 'INVALID_TYPE') {
+				return `Field '${err.path}' expected ${err.expected} but got ${err.received}.`;
 			}
-			if (e.code === 'REQUIRED') {
-				return `Field '${e.path}' is required but was missing.`;
+			if (err.code === 'REQUIRED') {
+				return `Field '${err.path}' is required but was missing.`;
 			}
-			if (e.message) return e.message;
-			return JSON.stringify(e);
+			if (err.message) return err.message;
+			return JSON.stringify(err);
 		};
 
 		if (Array.isArray(errObj)) {

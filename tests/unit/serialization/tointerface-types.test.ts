@@ -2,7 +2,7 @@ import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
 // Interface con TODOS los tipos posibles
-interface AllTypesInterface {
+interface IAllTypesInterface {
 	// Números
 	numPrimitive: number;
 	numWrapper: number;
@@ -95,7 +95,7 @@ interface AllTypesInterface {
 }
 
 @Quick({ dateISO: Date, dateNow: Date })
-class AllTypesModel extends QModel<AllTypesInterface> {
+class AllTypesModel extends QModel<IAllTypesInterface> {
 	declare numPrimitive: number;
 	declare numWrapper: number;
 	declare numNaN: number;

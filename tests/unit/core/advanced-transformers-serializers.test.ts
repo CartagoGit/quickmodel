@@ -262,9 +262,9 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 			},
 			{
 				transformers: {
-					val: (v) => {
+					val: (val) => {
 						transformerCalled = true;
-						return v;
+						return val;
 					},
 				},
 			}

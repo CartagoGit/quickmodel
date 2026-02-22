@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'bun:test';
-import * as h from '../../../../src/core/helpers/transform-helpers';
+import * as helpers from '../../../../src/core/helpers/transform-helpers';
 
 describe('Transform Helpers', () => {
 	describe('Object Helpers', () => {
 		it('should deep freeze object', () => {
 			const obj = { prop: 'value', nested: { prop: 'value' } };
-			const frozen = h.deepFreeze(obj);
+			const frozen = helpers.deepFreeze(obj);
 			expect(Object.isFrozen(frozen)).toBe(true);
 			expect(Object.isFrozen(frozen.nested)).toBe(true);
 		});
@@ -13,121 +13,129 @@ describe('Transform Helpers', () => {
 		it('should handle circular references gracefully in deepFreeze', () => {
 			const obj: any = { prop: 'value' };
 			obj.self = obj;
-			h.deepFreeze(obj);
+			helpers.deepFreeze(obj);
 			expect(Object.isFrozen(obj)).toBe(true);
 			expect(Object.isFrozen(obj.self)).toBe(true);
 		});
 
 		it('should return primitives as-is', () => {
-			expect(h.deepFreeze(123)).toBe(123);
-			expect(h.deepFreeze(null)).toBe(null);
-			expect(h.deepFreeze(undefined)).toBe(undefined);
+			expect(helpers.deepFreeze(123)).toBe(123);
+			expect(helpers.deepFreeze(null)).toBe(null);
+			expect(helpers.deepFreeze(undefined)).toBe(undefined);
 		});
 	});
 
 	describe('String Helpers', () => {
-		it('trim works', () => expect(h.trim(' s ')).toBe('s'));
-		it('trimStart works', () => expect(h.trimStart(' s ')).toBe('s '));
-		it('trimEnd works', () => expect(h.trimEnd(' s ')).toBe(' s'));
-		it('uppercase works', () => expect(h.uppercase('s')).toBe('S'));
-		it('lowercase works', () => expect(h.lowercase('S')).toBe('s'));
+		it('trim works', () => expect(helpers.trim(' s ')).toBe('s'));
+		it('trimStart works', () =>
+			expect(helpers.trimStart(' s ')).toBe('s '));
+		it('trimEnd works', () => expect(helpers.trimEnd(' s ')).toBe(' s'));
+		it('uppercase works', () => expect(helpers.uppercase('s')).toBe('S'));
+		it('lowercase works', () => expect(helpers.lowercase('S')).toBe('s'));
 		it('capitalize works', () =>
-			expect(h.capitalize('hello')).toBe('Hello'));
+			expect(helpers.capitalize('hello')).toBe('Hello'));
 		it('capitalizeWords works', () =>
-			expect(h.capitalizeWords('hello world')).toBe('Hello World'));
+			expect(helpers.capitalizeWords('hello world')).toBe('Hello World'));
 		it('slugify works', () =>
-			expect(h.slugify('Hello World!')).toBe('hello-world'));
+			expect(helpers.slugify('Hello World!')).toBe('hello-world'));
 		it('slugify removes special chars', () =>
-			expect(h.slugify('a#b')).toBe('ab'));
+			expect(helpers.slugify('a#b')).toBe('ab'));
 		it('camelCase works', () =>
-			expect(h.camelCase('hello world')).toBe('helloWorld'));
+			expect(helpers.camelCase('hello world')).toBe('helloWorld'));
 		it('snakeCase works', () =>
-			expect(h.snakeCase('helloWorld')).toBe('hello_world'));
+			expect(helpers.snakeCase('helloWorld')).toBe('hello_world'));
 		it('kebabCase works', () =>
-			expect(h.kebabCase('helloWorld')).toBe('hello-world'));
-		it('reverse works', () => expect(h.reverse('abc')).toBe('cba'));
+			expect(helpers.kebabCase('helloWorld')).toBe('hello-world'));
+		it('reverse works', () => expect(helpers.reverse('abc')).toBe('cba'));
 		it('truncate works', () =>
-			expect(h.truncate(3)('hello')).toBe('hel...'));
+			expect(helpers.truncate(3)('hello')).toBe('hel...'));
 		it('removeSpaces works', () =>
-			expect(h.removeSpaces(' a b ')).toBe('ab'));
+			expect(helpers.removeSpaces(' a b ')).toBe('ab'));
 		it('normalizeWhitespace works', () =>
-			expect(h.normalizeWhitespace(' a  b ')).toBe('a b'));
+			expect(helpers.normalizeWhitespace(' a  b ')).toBe('a b'));
 	});
 
 	describe('Number Helpers', () => {
-		it('round works', () => expect(h.round(1)(1.23)).toBe(1.2));
-		it('floor works', () => expect(h.floor(1.9)).toBe(1));
-		it('ceil works', () => expect(h.ceil(1.1)).toBe(2));
-		it('trunc works', () => expect(h.trunc(1.9)).toBe(1));
-		it('abs works', () => expect(h.abs(-1)).toBe(1));
-		it('clamp works', () => expect(h.clamp(0, 10)(15)).toBe(10));
-		it('percentage works', () => expect(h.percentage(150)).toBe(100));
-		it('toFixed works', () => expect(h.toFixed(2)(1.234)).toBe('1.23'));
-		it('multiply works', () => expect(h.multiply(2)(3)).toBe(6));
-		it('divide works', () => expect(h.divide(2)(6)).toBe(3));
-		it('add works', () => expect(h.add(1)(2)).toBe(3));
-		it('subtract works', () => expect(h.subtract(1)(3)).toBe(2));
+		it('round works', () => expect(helpers.round(1)(1.23)).toBe(1.2));
+		it('floor works', () => expect(helpers.floor(1.9)).toBe(1));
+		it('ceil works', () => expect(helpers.ceil(1.1)).toBe(2));
+		it('trunc works', () => expect(helpers.trunc(1.9)).toBe(1));
+		it('abs works', () => expect(helpers.abs(-1)).toBe(1));
+		it('clamp works', () => expect(helpers.clamp(0, 10)(15)).toBe(10));
+		it('percentage works', () => expect(helpers.percentage(150)).toBe(100));
+		it('toFixed works', () =>
+			expect(helpers.toFixed(2)(1.234)).toBe('1.23'));
+		it('multiply works', () => expect(helpers.multiply(2)(3)).toBe(6));
+		it('divide works', () => expect(helpers.divide(2)(6)).toBe(3));
+		it('add works', () => expect(helpers.add(1)(2)).toBe(3));
+		it('subtract works', () => expect(helpers.subtract(1)(3)).toBe(2));
 	});
 
 	describe('Encoding', () => {
 		it('base64Encode works', () =>
-			expect(h.base64Encode('a')).toBe('YQ=='));
+			expect(helpers.base64Encode('a')).toBe('YQ=='));
 		it('base64Decode works', () =>
-			expect(h.base64Decode('YQ==')).toBe('a'));
+			expect(helpers.base64Decode('YQ==')).toBe('a'));
 		it('jsonParse works', () =>
-			expect(h.jsonParse<Record<string, number>>('{"a":1}')).toEqual({
+			expect(
+				helpers.jsonParse<Record<string, number>>('{"a":1}')
+			).toEqual({
 				a: 1,
 			}));
 		it('jsonStringify works', () =>
-			expect(h.jsonStringify({ a: 1 })).toBe('{"a":1}'));
+			expect(helpers.jsonStringify({ a: 1 })).toBe('{"a":1}'));
 		it('encodeURIString works', () =>
-			expect(h.encodeURIString(' ')).toBe('%20'));
+			expect(helpers.encodeURIString(' ')).toBe('%20'));
 		it('decodeURIString works', () =>
-			expect(h.decodeURIString('%20')).toBe(' '));
+			expect(helpers.decodeURIString('%20')).toBe(' '));
 	});
 
 	describe('Composition', () => {
 		it('compose works', () => {
-			const fn = h.compose(h.trim, h.uppercase);
-			expect(fn(' a ')).toBe('A');
+			const func = helpers.compose(helpers.trim, helpers.uppercase);
+			expect(func(' a ')).toBe('A');
 		});
 		it('pipe alias works', () => {
-			const fn = h.pipe(h.trim, h.uppercase);
-			expect(fn(' a ')).toBe('A');
+			const func = helpers.pipe(helpers.trim, helpers.uppercase);
+			expect(func(' a ')).toBe('A');
 		});
 	});
 
 	describe('Business', () => {
-		it('tax works', () => expect(h.tax(0.1)(100)).toBe(10));
-		it('discount works', () => expect(h.discount(0.1)(100)).toBe(90.0));
-		it('vat works', () => expect(h.vat(100)).toBe(21));
+		it('tax works', () => expect(helpers.tax(0.1)(100)).toBe(10));
+		it('discount works', () =>
+			expect(helpers.discount(0.1)(100)).toBe(90.0));
+		it('vat works', () => expect(helpers.vat(100)).toBe(21));
 		it('formatCurrency works', () =>
-			expect(h.formatCurrency('$', 1)(10.5)).toBe('$10.5'));
+			expect(helpers.formatCurrency('$', 1)(10.5)).toBe('$10.5'));
 	});
 
 	describe('Array', () => {
-		it('unique works', () => expect(h.unique([1, 1, 2])).toEqual([1, 2]));
-		it('sortAsc works', () => expect(h.sortAsc([2, 1])).toEqual([1, 2]));
-		it('sortDesc works', () => expect(h.sortDesc([1, 2])).toEqual([2, 1]));
-		it('first works', () => expect(h.first([1, 2])).toBe(1));
-		it('last works', () => expect(h.last([1, 2])).toBe(2));
+		it('unique works', () =>
+			expect(helpers.unique([1, 1, 2])).toEqual([1, 2]));
+		it('sortAsc works', () =>
+			expect(helpers.sortAsc([2, 1])).toEqual([1, 2]));
+		it('sortDesc works', () =>
+			expect(helpers.sortDesc([1, 2])).toEqual([2, 1]));
+		it('first works', () => expect(helpers.first([1, 2])).toBe(1));
+		it('last works', () => expect(helpers.last([1, 2])).toBe(2));
 		it('compact works', () =>
-			expect(h.compact([0, 1, false, 2, '', null, undefined])).toEqual([
-				1, 2,
-			]));
+			expect(
+				helpers.compact([0, 1, false, 2, '', null, undefined])
+			).toEqual([1, 2]));
 	});
 
 	describe('safeStringify', () => {
 		it('should truncate output at 500 chars by default', () => {
 			const huge = { data: 'x'.repeat(1000) };
-			const result = h.safeStringify(huge);
+			const result = helpers.safeStringify(huge);
 			// 500 chars + '...[truncated]' (14 chars) = 514 max
 			expect(result.length).toBeLessThanOrEqual(514);
 			expect(result).toMatch(/\.\.\.\[truncated\]$/);
 		});
 
 		it('should allow custom maxLength via third argument', () => {
-			const result = h.safeStringify(
+			const result = helpers.safeStringify(
 				{ a: 'x'.repeat(200) },
 				undefined,
 				100
@@ -137,7 +145,7 @@ describe('Transform Helpers', () => {
 		});
 
 		it('should not truncate short values', () => {
-			const result = h.safeStringify({ id: 1, name: 'test' });
+			const result = helpers.safeStringify({ id: 1, name: 'test' });
 			expect(result).toBe('{"id":1,"name":"test"}');
 			expect(result).not.toContain('[truncated]');
 		});
@@ -145,17 +153,17 @@ describe('Transform Helpers', () => {
 		it('should still handle circular references', () => {
 			const circular: any = { id: 1 };
 			circular.self = circular;
-			const result = h.safeStringify(circular);
+			const result = helpers.safeStringify(circular);
 			expect(result).toContain('[Circular]');
 		});
 
 		it('should still return [Unserializable] for BigInt', () => {
-			const result = h.safeStringify(42n);
+			const result = helpers.safeStringify(42n);
 			expect(result).toContain('[Unserializable');
 		});
 
 		it('should handle undefined input', () => {
-			const result = h.safeStringify(undefined);
+			const result = helpers.safeStringify(undefined);
 			// undefined → JSON.stringify returns undefined → fallback
 			expect(typeof result).toBe('string');
 		});
@@ -164,7 +172,7 @@ describe('Transform Helpers', () => {
 			const payload = {
 				items: Array(100).fill({ name: 'longname', value: 12345 }),
 			};
-			const result = h.safeStringify(payload);
+			const result = helpers.safeStringify(payload);
 			expect(result.length).toBeLessThanOrEqual(514); // 500 + '...[truncated]'
 		});
 	});

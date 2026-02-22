@@ -32,8 +32,8 @@ describe('Security: MapTransformer DoS', () => {
 		let error: any;
 		try {
 			transformer.deserialize(inputObject, 'map', 'Test', context);
-		} catch (e) {
-			error = e;
+		} catch (err) {
+			error = err;
 		}
 
 		// If 'error' is undefined, it means it happily processed the oversized input

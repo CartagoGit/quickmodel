@@ -14,11 +14,11 @@ describe('Safe Error Reporting (Circular Reference)', () => {
 		try {
 			transformer.deserialize(circular, 'date', 'TestClass');
 			throw new Error('Should have thrown');
-		} catch (e: any) {
-			expect(e.message).not.toContain(
+		} catch (err: any) {
+			expect(err.message).not.toContain(
 				'Converting circular structure to JSON'
 			);
-			expect(e.message).toContain('Date transformer ONLY accepts'); // Expected error part
+			expect(err.message).toContain('Date transformer ONLY accepts'); // Expected error part
 		}
 	});
 
@@ -27,11 +27,11 @@ describe('Safe Error Reporting (Circular Reference)', () => {
 		try {
 			transformer.deserialize(circular, 'url', 'TestClass');
 			throw new Error('Should have thrown');
-		} catch (e: any) {
-			expect(e.message).not.toContain(
+		} catch (err: any) {
+			expect(err.message).not.toContain(
 				'Converting circular structure to JSON'
 			);
-			expect(e.message).toContain('URL transformer ONLY accepts');
+			expect(err.message).toContain('URL transformer ONLY accepts');
 		}
 	});
 
@@ -40,11 +40,11 @@ describe('Safe Error Reporting (Circular Reference)', () => {
 		try {
 			transformer.deserialize(circular, 'sym', 'TestClass');
 			throw new Error('Should have thrown');
-		} catch (e: any) {
-			expect(e.message).not.toContain(
+		} catch (err: any) {
+			expect(err.message).not.toContain(
 				'Converting circular structure to JSON'
 			);
-			expect(e.message).toContain('Symbol transformer ONLY accepts');
+			expect(err.message).toContain('Symbol transformer ONLY accepts');
 		}
 	});
 
@@ -53,11 +53,11 @@ describe('Safe Error Reporting (Circular Reference)', () => {
 		try {
 			transformer.deserialize(circular, 'err', 'TestClass');
 			throw new Error('Should have thrown');
-		} catch (e: any) {
-			expect(e.message).not.toContain(
+		} catch (err: any) {
+			expect(err.message).not.toContain(
 				'Converting circular structure to JSON'
 			);
-			expect(e.message).toContain('Error transformer ONLY accepts');
+			expect(err.message).toContain('Error transformer ONLY accepts');
 		}
 	});
 });

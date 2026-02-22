@@ -160,7 +160,7 @@ describe('QModel.toPlain()', () => {
 		const plain = user.toPlain();
 		const keys = Object.keys(plain);
 
-		expect(keys.every((k) => !k.startsWith('__'))).toBe(true);
+		expect(keys.every((key) => !key.startsWith('__'))).toBe(true);
 	});
 
 	test('should work with plain (non-transformed) models', () => {
@@ -309,7 +309,7 @@ describe('QModel.serialize() with pick/omit options', () => {
 
 describe('QModel.diff()', () => {
 	test('should return empty object when both instances are equal', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -317,7 +317,7 @@ describe('QModel.diff()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -326,11 +326,11 @@ describe('QModel.diff()', () => {
 			balance: '100',
 		});
 
-		expect(a.diff(b)).toEqual({});
+		expect(userA.diff(userB)).toEqual({});
 	});
 
 	test('should return changed primitive fields with before/after', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -338,7 +338,7 @@ describe('QModel.diff()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'Jane',
 			age: 31,
@@ -347,7 +347,7 @@ describe('QModel.diff()', () => {
 			balance: '100',
 		});
 
-		const diff = a.diff(b);
+		const diff = userA.diff(userB);
 
 		expect(Object.keys(diff).sort()).toEqual(['age', 'name']);
 		expect(diff.name).toEqual({ before: 'John', after: 'Jane' });
@@ -355,7 +355,7 @@ describe('QModel.diff()', () => {
 	});
 
 	test('should detect changes in serialized form (Date → ISO string comparison)', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -363,7 +363,7 @@ describe('QModel.diff()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -372,7 +372,7 @@ describe('QModel.diff()', () => {
 			balance: '100',
 		});
 
-		const diff = a.diff(b);
+		const diff = userA.diff(userB);
 
 		expect('createdAt' in diff).toBe(true);
 		expect(diff.createdAt.before).toBe('2024-01-01T00:00:00.000Z');
@@ -380,7 +380,7 @@ describe('QModel.diff()', () => {
 	});
 
 	test('diff is asymmetric: a.diff(b) has before=a, after=b', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'Alice',
 			age: 20,
@@ -388,7 +388,7 @@ describe('QModel.diff()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '1',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'Bob',
 			age: 25,
@@ -397,8 +397,8 @@ describe('QModel.diff()', () => {
 			balance: '1',
 		});
 
-		const diffAB = a.diff(b);
-		const diffBA = b.diff(a);
+		const diffAB = userA.diff(userB);
+		const diffBA = userB.diff(userA);
 
 		// From a's perspective: before=Alice, after=Bob
 		expect(diffAB.name).toEqual({ before: 'Alice', after: 'Bob' });
@@ -407,7 +407,7 @@ describe('QModel.diff()', () => {
 	});
 
 	test('should detect bigint changes', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -415,7 +415,7 @@ describe('QModel.diff()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -424,13 +424,13 @@ describe('QModel.diff()', () => {
 			balance: '9999',
 		});
 
-		const diff = a.diff(b);
+		const diff = userA.diff(userB);
 
 		expect('balance' in diff).toBe(true);
 	});
 
 	test('should NOT include id in diff when both instances have same id', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -438,7 +438,7 @@ describe('QModel.diff()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'Jane',
 			age: 30,
@@ -447,17 +447,21 @@ describe('QModel.diff()', () => {
 			balance: '100',
 		});
 
-		const diff = a.diff(b);
+		const diff = userA.diff(userB);
 
 		expect('id' in diff).toBe(false);
 		expect('name' in diff).toBe(true);
 	});
 
 	test('diff with plain (non-transformed) models', () => {
-		const a = new Product({ sku: 'ABC', price: 10, tags: ['a'] });
-		const b = new Product({ sku: 'ABC', price: 20, tags: ['a', 'b'] });
+		const productA = new Product({ sku: 'ABC', price: 10, tags: ['a'] });
+		const productB = new Product({
+			sku: 'ABC',
+			price: 20,
+			tags: ['a', 'b'],
+		});
 
-		const diff = a.diff(b);
+		const diff = productA.diff(productB);
 
 		expect('price' in diff).toBe(true);
 		expect(diff.price).toEqual({ before: 10, after: 20 });
@@ -471,7 +475,7 @@ describe('QModel.diff()', () => {
 
 describe('QModel.equals()', () => {
 	test('should return true for two equal instances', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -479,7 +483,7 @@ describe('QModel.equals()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -488,11 +492,11 @@ describe('QModel.equals()', () => {
 			balance: '100',
 		});
 
-		expect(a.equals(b)).toBe(true);
+		expect(userA.equals(userB)).toBe(true);
 	});
 
 	test('should return false when any field differs', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -500,7 +504,7 @@ describe('QModel.equals()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 31, // age differs
@@ -509,11 +513,11 @@ describe('QModel.equals()', () => {
 			balance: '100',
 		});
 
-		expect(a.equals(b)).toBe(false);
+		expect(userA.equals(userB)).toBe(false);
 	});
 
 	test('equals is symmetric: a.equals(b) === b.equals(a)', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'Alice',
 			age: 20,
@@ -521,7 +525,7 @@ describe('QModel.equals()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '1',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'Alice',
 			age: 20,
@@ -530,11 +534,11 @@ describe('QModel.equals()', () => {
 			balance: '1',
 		});
 
-		expect(a.equals(b)).toBe(b.equals(a));
+		expect(userA.equals(userB)).toBe(userB.equals(userA));
 	});
 
 	test('equals is reflexive: a.equals(a) === true', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -543,12 +547,12 @@ describe('QModel.equals()', () => {
 			balance: '1',
 		});
 
-		expect(a.equals(a)).toBe(true);
+		expect(userA.equals(userA)).toBe(true);
 	});
 
 	test('equals should compare Dates correctly (same moment → true)', () => {
 		const isoDate = '2024-06-01T12:00:00.000Z';
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -556,7 +560,7 @@ describe('QModel.equals()', () => {
 			createdAt: isoDate,
 			balance: '1',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -565,11 +569,11 @@ describe('QModel.equals()', () => {
 			balance: '1',
 		});
 
-		expect(a.equals(b)).toBe(true);
+		expect(userA.equals(userB)).toBe(true);
 	});
 
 	test('equals should compare Dates correctly (different moment → false)', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -577,7 +581,7 @@ describe('QModel.equals()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '1',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -586,11 +590,11 @@ describe('QModel.equals()', () => {
 			balance: '1',
 		});
 
-		expect(a.equals(b)).toBe(false);
+		expect(userA.equals(userB)).toBe(false);
 	});
 
 	test('equals should compare bigint correctly', () => {
-		const a = new User({
+		const userA = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -598,7 +602,7 @@ describe('QModel.equals()', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 			balance: '100',
 		});
-		const b = new User({
+		const userB = new User({
 			id: '1',
 			name: 'John',
 			age: 30,
@@ -607,7 +611,7 @@ describe('QModel.equals()', () => {
 			balance: '999',
 		});
 
-		expect(a.equals(b)).toBe(false);
+		expect(userA.equals(userB)).toBe(false);
 	});
 
 	test('clone() result should equal original via equals()', () => {
@@ -624,11 +628,11 @@ describe('QModel.equals()', () => {
 	});
 
 	test('equals with plain models and arrays', () => {
-		const a = new Product({ sku: 'X', price: 5, tags: ['a', 'b'] });
-		const b = new Product({ sku: 'X', price: 5, tags: ['a', 'b'] });
-		const c = new Product({ sku: 'X', price: 5, tags: ['a'] });
+		const productA = new Product({ sku: 'X', price: 5, tags: ['a', 'b'] });
+		const productB = new Product({ sku: 'X', price: 5, tags: ['a', 'b'] });
+		const productC = new Product({ sku: 'X', price: 5, tags: ['a'] });
 
-		expect(a.equals(b)).toBe(true);
-		expect(a.equals(c)).toBe(false);
+		expect(productA.equals(productB)).toBe(true);
+		expect(productA.equals(productC)).toBe(false);
 	});
 });

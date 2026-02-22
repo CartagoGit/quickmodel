@@ -40,8 +40,8 @@ class _User extends QModel<IUser> {
 // Test Models
 // ============================================================================
 
-type Role = 'admin' | 'user' | 'guest';
-type Status = 'active' | 'inactive';
+type IRole = 'admin' | 'user' | 'guest';
+type IStatus = 'active' | 'inactive';
 
 interface IArraysAndUnions {
 	// Arrays de diferentes tipos
@@ -50,8 +50,8 @@ interface IArraysAndUnions {
 	modelArray: ITag[];
 
 	// Union types
-	role: Role;
-	status: Status;
+	role: IRole;
+	status: IStatus;
 
 	// Literal types
 	literalStr: 'pepe' | 'maria';
@@ -71,8 +71,8 @@ class ArraysAndUnionsModel extends QModel<IArraysAndUnions> {
 	declare numArray: number[];
 	declare modelArray: Tag[];
 
-	declare role: Role;
-	declare status: Status;
+	declare role: IRole;
+	declare status: IStatus;
 
 	declare literalStr: 'pepe' | 'maria';
 	declare literalNum: 1 | 2 | 3;

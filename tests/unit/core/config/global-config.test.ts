@@ -50,7 +50,7 @@ describe('Global Configuration', () => {
 		}
 
 		// Should NOT throw
-		const u = new LooselyTypedUser({ id: 1, allowedExtra: true });
-		expect(u.id).toBe(1);
+		const user = new LooselyTypedUser({ id: 1, allowedExtra: true });
+		expect(user.id).toBe(1);
 	});
 });

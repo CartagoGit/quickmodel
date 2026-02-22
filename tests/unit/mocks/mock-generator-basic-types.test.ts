@@ -81,9 +81,9 @@ describe('Unit: Mock Generator - Basic Types', () => {
 	});
 
 	test('should generate array with indexed overrides', () => {
-		const mocks = User.mock().array(3, 'random', (i) => ({
-			name: `User${i}`,
-			age: 20 + i,
+		const mocks = User.mock().array(3, 'random', (idx) => ({
+			name: `User${idx}`,
+			age: 20 + idx,
 		}));
 
 		expect(mocks[0].name).toBe('User0');
