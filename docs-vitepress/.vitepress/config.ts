@@ -510,6 +510,10 @@ export default defineConfig({
 									link: '/en/guide/mocks',
 								},
 								{
+									text: 'NestJS Integration',
+									link: '/en/guide/nestjs-integration',
+								},
+								{
 									text: 'Troubleshooting',
 									link: '/en/guide/troubleshooting',
 								},
@@ -642,6 +646,10 @@ export default defineConfig({
 								{
 									text: 'Generación de Mocks',
 									link: '/es/guide/mocks',
+								},
+								{
+									text: 'Integración con NestJS',
+									link: '/es/guide/nestjs-integration',
 								},
 								{
 									text: 'Solución de Problemas',

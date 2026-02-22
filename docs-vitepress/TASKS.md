@@ -7,9 +7,9 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#13, #18–#20, #22–#30 (features sprint Feb 2026)
+✅ Completadas: Tasks #1–#13, #18–#22, #23–#30 (features sprint Feb 2026)
 🔄 En progreso: —
-⏳ Pendientes: Tasks #14, #21 (docs NestJS)
+⏳ Pendientes: Task #14 (docs JsonSchemaGenerator)
 ⏸️  Backlog: Task #17 (benchmarks)
 ```
 
@@ -49,7 +49,7 @@
 - ✅ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización — **COMPLETADA**
 - ✅ Task #19: `QTransformerRegistry.snapshot()/restore()` — **COMPLETADA**
 - ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
-- ⏸️ Task #21: Guía de integración NestJS
+- ✅ Task #21: Guía de integración NestJS — **COMPLETADA**
 - ✅ Task #22: Deprecation warning para `unknownPropertyPolicy` + docs :::warning v2.0.0 — **COMPLETADA**
 - ✅ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc. — **COMPLETADA** (docs ya presentes)
 
@@ -938,8 +938,8 @@ describe('Computed Properties & Getters', () => {
 | 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ✅ COMPLETADA | 3h        | Alto (DX)       | Feb 2026   |
 | 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ✅ COMPLETADA | pendiente | +10             |
 | 20  | `@QRule` async predicates                     | 🟢 Baja   | ✅ COMPLETADA | —         | Medio           | Feb 2026   |
-| 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG    | 3-4h      | Alto (adop.)    | Mar 2026   |
-| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG    | 1h        | Alto (breaking) | v2.0.0     |
+| 21  | Guía integración NestJS                       | 🟢 Baja   | ✅ COMPLETADA | 3h        | Alto (adop.)    | Feb 2026   |
+| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ✅ COMPLETADA | 2h        | Alto (breaking) | Feb 2026   |
 
 ### Nuevas features implementadas en sprint Feb 2026 (no registradas previamente)
 
@@ -1501,24 +1501,23 @@ describe('QTransformerRegistry: isolation', () => {
 
 ### Task #21: Guía integración NestJS
 
-**Status:** ⏸️ BACKLOG  
+**Status:** ✅ COMPLETADA  
 **Prioridad:** 🟢 Baja  
-**Esfuerzo:** 3-4 horas  
+**Esfuerzo:** 3 horas  
 **Impacto:** Alto (adopción) — NestJS es el ecosistema más grande de TypeScript backend; no hay guía oficial
 
-**Contenido mínimo de la guía:**
+**Implementación:**
 
-1. Instalación con `reflect-metadata` (compatible con NestJS)
-2. Uso como DTO de entrada con `ValidationPipe`
-3. Integración con `@nestjs/swagger` y `getSchema('openapi')`
-4. `@QRule` como sustituto de `class-validator`
-5. Ejemplo de módulo NestJS que usa `QModel` en service layer
+- `docs-vitepress/en/guide/nestjs-integration.md` — guía completa EN
+- `docs-vitepress/es/guide/nestjs-integration.md` — guía completa ES
+- Sidebar EN+ES actualizado — entrada "NestJS Integration" en sección Advanced
+- Contenido: instalación, DTOs, `@QRule` como sustito de class-validator, ValidationPipe personalizado, `@nestjs/swagger` + `getSchema('openapi')`, `@QComputed()` en respuestas API, tabla resumen de patrones
 
-**Docs a crear:**
+**Docs creadas:**
 
 - `docs-vitepress/en/guide/nestjs-integration.md`
 - `docs-vitepress/es/guide/nestjs-integration.md`
-- Actualizar sidebar EN+ES para incluir la nueva guía
+- Sidebar actualizado en `.vitepress/config.ts`
 
 ---
 
@@ -1671,11 +1670,10 @@ describe('QTransformerRegistry: isolation', () => {
 20. ⏸️ **Tarea #17:** Performance benchmarks baseline → 4-6h
     - Comparar con class-transformer, io-ts, zod
     - Integrar en CI como regression test
-21. ⏸️ **Tarea #18:** `@QComputed()` / `exposeComputedFields` → 3-4h
-    - Esperar feedback de comunidad
+21. ✅ **Tarea #18:** `@QComputed()` / `exposeComputedFields` ← **COMPLETADA**
 22. ✅ **Tarea #19:** `QTransformerRegistry.snapshot()/restore()` ← **COMPLETADA**
-23. ⏸️ **Tarea #21:** Guía integración NestJS → 3-4h
-24. ⏸️ **Tarea #22:** Default `unknownPropertyPolicy: 'strip'` (v2.0.0) → 1h
+23. ✅ **Tarea #21:** Guía integración NestJS ← **COMPLETADA**
+24. ✅ **Tarea #22:** Default `unknownPropertyPolicy: 'strip'` ← **COMPLETADA** (deprecation warning v1.x)
 
 ---
 
