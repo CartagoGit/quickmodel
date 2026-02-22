@@ -12,6 +12,7 @@ Al conectar un agente de IA a este servidor, le permites:
 ## Herramientas Disponibles
 
 - **[Herramientas Públicas](./public/)**: Para usuarios construyendo aplicaciones con QuickModel.
+- **[Prompts / Skills](./public/skills)**: Flujos de trabajo de IA guiados que orquestan múltiples herramientas para resolver tareas completas de extremo a extremo.
 - **[Herramientas Internas](./internal/)**: Para contribuidores trabajando en el código base de QuickModel.
 
 ## Instalación y Configuración

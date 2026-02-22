@@ -68,6 +68,10 @@ export default defineConfig({
 					items: [
 						{ text: 'Overview', link: '/en/mcp/' },
 						{ text: 'Public Tools', link: '/en/mcp/public/' },
+						{
+							text: 'Prompts / Skills',
+							link: '/en/mcp/public/skills',
+						},
 						...(process.env.SHOW_INTERNAL_DOCS
 							? [
 									{
@@ -491,6 +495,10 @@ export default defineConfig({
 									text: 'Public Tools',
 									link: '/en/mcp/public/',
 								},
+								{
+									text: 'Prompts / Skills',
+									link: '/en/mcp/public/skills',
+								},
 								...(process.env.VITE_SHOW_INTERNAL_DOCS ===
 								'true'
 									? [
@@ -635,6 +643,10 @@ export default defineConfig({
 								{
 									text: 'Herramientas Públicas',
 									link: '/es/mcp/public/',
+								},
+								{
+									text: 'Prompts / Skills',
+									link: '/es/mcp/public/skills',
 								},
 								...(process.env.VITE_SHOW_INTERNAL_DOCS ===
 								'true'

@@ -12,6 +12,10 @@ Las siguientes herramientas están disponibles para uso público.
 - **Mocking**: Genera datos simulados realistas para pruebas.
 - **Inspección**: Analiza estructuras de modelos y transformadores disponibles.
 
+::: tip Flujos de trabajo guiados (Prompts / Skills)
+¿Necesitas que la IA gestione una tarea completa automáticamente? Consulta los **[Prompts / Skills](./skills)** — flujos de trabajo guiados que encadenan múltiples herramientas para convertir interfaces, depurar modelos, generar datos de prueba o exportar schemas.
+:::
+
 <!-- TOOLS-START -->
 
 <!-- _Generado automáticamente por QSyncDocsTool. No editar manualmente._ -->
@@ -22,12 +26,12 @@ Genera el código TypeScript para una clase que extiende QModel basado en una li
 
 ```json
 {
-  "className": {
-    "description": "The name of the class (e.g., \"User\")"
-  },
-  "properties": {
-    "description": "Key-value pairs where key is property name and value is the type (e.g., \"string\", \"Date\")"
-  }
+	"className": {
+		"description": "The name of the class (e.g., \"User\")"
+	},
+	"properties": {
+		"description": "Key-value pairs where key is property name and value is the type (e.g., \"string\", \"Date\")"
+	}
 }
 ```
 
@@ -37,9 +41,9 @@ Explica un error de validación de QuickModel en lenguaje humano.
 
 ```json
 {
-  "error": {
-    "description": "The JSON string of the validation error"
-  }
+	"error": {
+		"description": "The JSON string of the validation error"
+	}
 }
 ```
 
@@ -49,9 +53,9 @@ Genera una definición de JSON Schema a partir de una clase QuickModel.
 
 ```json
 {
-  "code": {
-    "description": "The QuickModel class code"
-  }
+	"code": {
+		"description": "The QuickModel class code"
+	}
 }
 ```
 
@@ -61,13 +65,13 @@ Genera datos simulados (mock) para una definición de esquema dada usando QuickM
 
 ```json
 {
-  "schema": {
-    "description": "Key-value pairs where key is field name and value is transformer type (e.g. { \"birth\": \"date\", \"name\": \"string\" })"
-  },
-  "count": {
-    "description": "Number of mock objects to generate",
-    "optional": true
-  }
+	"schema": {
+		"description": "Key-value pairs where key is field name and value is transformer type (e.g. { \"birth\": \"date\", \"name\": \"string\" })"
+	},
+	"count": {
+		"description": "Number of mock objects to generate",
+		"optional": true
+	}
 }
 ```
 
@@ -77,9 +81,9 @@ Analiza una definición de clase QuickModel y explica su estructura.
 
 ```json
 {
-  "code": {
-    "description": "The TypeScript code of the model class"
-  }
+	"code": {
+		"description": "The TypeScript code of the model class"
+	}
 }
 ```
 
@@ -89,9 +93,9 @@ Convierte una definición de interfaz TypeScript en una clase QuickModel.
 
 ```json
 {
-  "code": {
-    "description": "The TypeScript interface code"
-  }
+	"code": {
+		"description": "The TypeScript interface code"
+	}
 }
 ```
 
@@ -101,13 +105,13 @@ Convierte una cadena JSON en una definición de clase QuickModel con tipos infer
 
 ```json
 {
-  "json": {
-    "description": "The JSON string to convert"
-  },
-  "className": {
-    "description": "The name of the generated class",
-    "optional": true
-  }
+	"json": {
+		"description": "The JSON string to convert"
+	},
+	"className": {
+		"description": "The name of the generated class",
+		"optional": true
+	}
 }
 ```
 
@@ -125,9 +129,9 @@ Busca en la documentación de QuickModel por una cadena de consulta.
 
 ```json
 {
-  "query": {
-    "description": "The search term or phrase"
-  }
+	"query": {
+		"description": "The search term or phrase"
+	}
 }
 ```
 
@@ -137,12 +141,12 @@ Simula una transformación de datos QuickModel dado un objeto de entrada y un ma
 
 ```json
 {
-  "data": {
-    "description": "The raw input data object"
-  },
-  "options": {
-    "description": "The configuration object typically passed to @Quick() (e.g. { field: \"Date\", list: [\"Date\"] })"
-  }
+	"data": {
+		"description": "The raw input data object"
+	},
+	"options": {
+		"description": "The configuration object typically passed to @Quick() (e.g. { field: \"Date\", list: [\"Date\"] })"
+	}
 }
 ```
 
@@ -152,9 +156,8 @@ Analiza un fragmento de código para verificar errores comunes de uso de QuickMo
 
 ```json
 {
-  "code": {
-    "description": "The TypeScript code to analyze"
-  }
+	"code": {
+		"description": "The TypeScript code to analyze"
+	}
 }
 ```
-
