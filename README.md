@@ -450,25 +450,54 @@ interface ISession {
 	id: string;
 }
 
-@Quick({
-	cache: WeakMap, // Runtime cache — not persisted
-	listeners: WeakSet, // Runtime listener set — not persisted
-})
+@Quick(
+	{ cache: WeakMap, listeners: WeakSet },
+	{ excludeFields: ['cache', 'listeners'] } // never appear in toJSON()
+)
 class Session extends QModel<ISession> {
 	declare id: string;
 	declare cache: WeakMap<object, any>; // Auto GC when keys die
 	declare listeners: WeakSet<object>; // Auto GC when objects die
 }
 
-const session = new Session({ id: 'abc' });
+const session = new Session({ id: 'abc', cache: [], listeners: [] } as any);
 
-// WeakMap/WeakSet accept tuples on construction, but toJSON() omits them
-console.log(session.cache); // WeakMap {}
-console.log(session.listeners); // WeakSet {}
+console.log(session.cache); // WeakMap {} — available on instance
 console.log(JSON.stringify(session)); // { "id": "abc" } — WeakMap/WeakSet excluded
 ```
 
 > ⚠️ `WeakMap` and `WeakSet` are **never serialized** to JSON. Use `Map`/`Set` if you need persistence.
+
+### `excludeFields` — Permanent Field Exclusion
+
+Use `excludeFields` in `@Quick()` options to permanently exclude fields from all serialization output. Unlike `omit` (which is per-call), `excludeFields` is declared once and always applied.
+
+```typescript
+@Quick({}, { excludeFields: ['password', '_checksum'] })
+class User extends QModel<IUser> {
+	declare id: number;
+	declare name: string;
+	declare password: string; // always excluded from toJSON() / serialize()
+	declare _checksum: string; // always excluded
+}
+
+const user = new User({
+	id: 1,
+	name: 'Alice',
+	password: 'secret',
+	_checksum: 'abc',
+});
+
+user.password; // ✅ 'secret'  — available on instance
+JSON.stringify(user); // ✅ { "id": 1, "name": "Alice" } — no password/checksum
+user.serialize(undefined, { omit: ['name'] }); // also applies omit at runtime
+```
+
+| Option          | Scope                                 | Declaration                                   |
+| --------------- | ------------------------------------- | --------------------------------------------- |
+| `excludeFields` | Always excluded (per-model decorator) | `@Quick({}, { excludeFields: [...] })`        |
+| `omit`          | Excluded per-call                     | `model.serialize(undefined, { omit: [...] })` |
+| `pick`          | Keep only these per-call              | `model.serialize(undefined, { pick: [...] })` |
 
 ### Dot Notation for Nested Properties
 

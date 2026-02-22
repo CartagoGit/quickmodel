@@ -4,6 +4,11 @@
 
 ### Added
 
+- **`excludeFields` option in `@Quick()`** — Permanently exclude fields from serialization:
+    - Declared once in the decorator: `@Quick({}, { excludeFields: ['password', 'cache'] })`
+    - Applied on every `serialize()` / `toJSON()` call automatically
+    - Deserialization is NOT affected — the field is still populated on the instance
+    - Complements existing runtime `omit`/`pick` options in `IQSerializationOptions`
 - **WeakMap & WeakSet transformer** (`weak-collections.transformer.ts`):
     - `WeakMap<object, V>` and `WeakSet<object>` are now supported in `@Quick({})` decorator
     - Both types are runtime-only: they are **never serialized** to JSON (`toJSON()` omits them)

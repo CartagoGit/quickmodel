@@ -500,6 +500,34 @@ export interface IQAdvancedOptions<
 	};
 
 	/**
+	 * Fields to permanently exclude from serialization (`serialize()` / `toJSON()`).
+	 *
+	 * Useful for WeakMap/WeakSet properties, passwords, internal caches,
+	 * or any field that should never appear in the output regardless of how the model is serialized.
+	 *
+	 * Unlike the runtime `omit` option (which is per-call), `excludeFields` is declared once
+	 * in the decorator and is always applied automatically.
+	 *
+	 * **Deserialization is NOT affected** — the fields are still populated on the instance.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({ cache: WeakMap }, { excludeFields: ['cache'] })
+	 * class Session extends QModel<ISession> {
+	 *   declare id: string;
+	 *   declare cache: WeakMap<object, any>; // runtime only — never in JSON
+	 * }
+	 *
+	 * @Quick({}, { excludeFields: ['password', '_checksum'] })
+	 * class User extends QModel<IUser> {
+	 *   declare id: number;
+	 *   declare password: string; // never serialized
+	 * }
+	 * ```
+	 */
+	excludeFields?: string[];
+
+	/**
 	 * Performance optimization settings.
 	 */
 	performance?: {

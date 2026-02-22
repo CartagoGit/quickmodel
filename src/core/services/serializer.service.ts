@@ -226,6 +226,17 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): TInterface {
+		// Always read model-level advanced options (needed for excludeFields and others)
+		const modelOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			model.constructor
+		) as IQAdvancedOptions;
+
+		// excludeFields: fields permanently excluded from serialization output.
+		// Set once in @Quick({}, { excludeFields: ['password', 'cache'] }) — never appear in toJSON().
+		// Deserialization is NOT affected — the instance still has the values.
+		const modelExcludeFields: string[] = modelOptions?.excludeFields ?? [];
+
 		// Resolve Configuration (DateStrategy, Case, etc.)
 		let activeOptions = options;
 		// Combine incoming options with model defaults if options are missing properties
@@ -234,11 +245,6 @@ export class Serializer<
 		// DateStrategy was fixed. transformCase should probably follow similar logic.
 
 		if (!options?.dateStrategy || !options?.transformCase) {
-			const modelOptions = Reflect.getMetadata(
-				QUICK_OPTIONS_KEY,
-				model.constructor
-			) as IQAdvancedOptions;
-
 			const globalDefaults = QConfig.get().defaults;
 
 			const dateStrategy =
@@ -335,6 +341,14 @@ export class Serializer<
 				if (!activeOptions?.includeDoubleUnderscore) continue;
 			} else if (key.startsWith('_')) {
 				if (!activeOptions?.includeUnderscore) continue;
+			}
+
+			// excludeFields: permanently excluded by @Quick() decorator (e.g. WeakMap, passwords)
+			if (
+				modelExcludeFields.length > 0 &&
+				modelExcludeFields.includes(key)
+			) {
+				continue;
 			}
 
 			const value = (model as unknown as Record<string, unknown>)[key];
