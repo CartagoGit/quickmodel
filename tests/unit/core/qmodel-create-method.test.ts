@@ -7,7 +7,6 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { IQTransform } from '@/types';
 
 describe('QModel.create() factory method', () => {
 	describe('Basic usage', () => {
@@ -375,105 +374,6 @@ describe('QModel.create() factory method', () => {
 			expect(record.balance).toEqual(123456789n);
 			expect(record.tags).toBeInstanceOf(Set);
 			expect(record.tags.size).toBe(2);
-		});
-	});
-
-	describe('IQTransform helper with generic overriding (Option B)', () => {
-		test('should work by passing explicit output type to create()', () => {
-			interface IPost {
-				id: number;
-				title: string;
-				createdAt: string; // Backend sends string
-			}
-
-			@Quick({ createdAt: Date })
-			class Post extends QModel<IPost> {}
-
-			// Pass IQTransform as 2nd type parameter to create()
-			// create<TClass, TInterface>
-			const post = Post.create<
-				Post,
-				IPost,
-				IQTransform<
-					IPost,
-					{
-						createdAt: Date;
-					}
-				>
-			>({
-				id: 1,
-				title: 'My Post',
-				createdAt: '2026-01-10T00:00:00.000Z',
-			});
-
-			// TypeScript knows createdAt is Date (not string)
-			expect(post.createdAt).toBeInstanceOf(Date);
-			expect(post.createdAt.getFullYear()).toBe(2026);
-		});
-
-		test('should work with IQTransform for multiple transformations', () => {
-			interface IAccount {
-				id: string;
-				balance: string; // Backend sends string
-				createdAt: string; // Backend sends string
-				tags: string[]; // Backend sends array
-			}
-
-			@Quick({
-				balance: BigInt,
-				createdAt: Date,
-				tags: Set,
-			})
-			class Account extends QModel<IAccount> {}
-
-			const account = Account.create<
-				Account,
-				IAccount,
-				IQTransform<
-					IAccount,
-					{
-						balance: bigint;
-						createdAt: Date;
-						tags: Set<string>;
-					}
-				>
-			>({
-				id: 'ACC-1',
-				balance: '999999999999999',
-				createdAt: '2026-01-10T00:00:00.000Z',
-				tags: ['vip', 'verified'],
-			});
-
-			// All types are correctly inferred via IQTransform
-			expect(typeof account.balance).toBe('bigint');
-			expect(account.createdAt).toBeInstanceOf(Date);
-			expect(account.tags).toBeInstanceOf(Set);
-		});
-
-		test('Generic overriding should match runtime behavior', () => {
-			interface IData {
-				value: string;
-			}
-
-			@Quick({ value: BigInt })
-			class Data extends QModel<IData> {}
-
-			const data = Data.create<
-				Data,
-				IData,
-				IQTransform<
-					IData,
-					{
-						value: bigint;
-					}
-				>
-			>({
-				value: '12345',
-			});
-
-			// Type-safe: TypeScript knows it's bigint
-			const result: bigint = data.value;
-			expect(result).toBe(12345n);
 		});
 	});
 

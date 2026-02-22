@@ -69,4 +69,3 @@ export type {
 	IQMockerFn,
 } from './core/interfaces/transform-options.interface';
 export type { IQAlias } from './core/types/q-alias.type';
-export type { IQTransform } from './core/interfaces/model.interface';

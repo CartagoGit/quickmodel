@@ -20,35 +20,11 @@ export interface IModelConstructor<TModel> {
 }
 
 /**
- * Quick transform helper - merges base interface with transformed properties.
+ * Quick transform helper — merges a base interface with overridden properties.
  *
- * Use this with @Quick() decorator for simple type-safe transformations without
- * needing to define a separate transform interface.
- *
+ * @internal
  * @template T - Base interface (backend data structure)
  * @template Transforms - Object with only the properties that change types
- *
- * @example
- * ```typescript
- * interface IUser {
- *   id: number;
- *   name: string;
- *   createdAt: string;  // Backend sends ISO string
- *   balance: string;    // Backend sends string
- * }
- *
- * @Quick()
- * class User extends QModel<IUser> implements IQTransform<IUser, {
- *   createdAt: Date;
- *   balance: bigint;
- * }> {
- *   declare id: number;
- *   declare name: string;
- *   declare createdAt: Date;
- *   declare balance: bigint;
- * }
- * ```
- * @group Types
  */
 export type IQTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
 

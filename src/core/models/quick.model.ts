@@ -44,10 +44,7 @@ import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interfac
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';
-export type {
-	IQImplements,
-	IQTransform,
-} from '@/core/interfaces/model.interface';
+export type { IQImplements } from '@/core/interfaces/model.interface';
 
 /**
  * Base abstract class for type-safe models with automatic serialization and type transformation.
@@ -110,124 +107,30 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	/**
 	 * Factory method to create model instances with type-safe access to all properties.
 	 *
-	 * **IMPORTANT: This method provides TWO different approaches for type-safety:**
+	 * Use `declare` in your class to inform TypeScript of transformed runtime types.
+	 * Works identically to `new ModelClass(data)`.
 	 *
-	 * 1. **RECOMMENDED (Option A)**: Use `declare` keyword in your class
-	 *    - Standard TypeScript pattern
-	 *    - Works with both `new` constructor and `create()` method
-	 *    - Explicit and clear
-	 *    - Most common approach
-	 *
-	 * 2. **ALTERNATIVE (Option B)**: Use `IQTransform` helper or generic overriding
-	 *    - ONLY if you specifically want to avoid `declare` keyword
-	 *    - Requires passing type explicitly
-	 *    - Less common, more verbose
-	 *
-	 * **⚠️ CRITICAL: TypeScript CANNOT auto-infer transformations**
-	 * You MUST specify transformed types using ONE of the two approaches above.
-	 * There is no "magic" automatic inference.
-	 *
-	 * @template T - Backend interface type (JSON-serializable types)
-	 * @template TClass - The concrete model class type
-	 * @template TResult - The final return type (defaults to class & interface, but can be overridden)
-	 *
-	 * @param data - Data to initialize the model
+	 * @param data - Data matching the model interface
 	 * @returns Model instance with type-safe property access
 	 *
 	 * @example
-	 * **OPTION A (RECOMMENDED): Using `declare` keyword**
 	 * ```typescript
 	 * interface IPost {
 	 *   id: number;
 	 *   title: string;
-	 *   createdAt: string;  // Backend sends ISO string
-	 *   balance: string;    // Backend sends string
+	 *   createdAt: string; // Backend sends ISO string
 	 * }
 	 *
-	 * @Quick({ createdAt: Date, balance: BigInt })
+	 * @Quick({ createdAt: Date })
 	 * class Post extends QModel<IPost> {
-	 *   declare id: number;        // ← Explicit declaration
-	 *   declare title: string;     // ← Explicit declaration
-	 *   declare createdAt: Date;   // ← Runtime type (transformed)
-	 *   declare balance: bigint;   // ← Runtime type (transformed)
+	 *   declare id: number;
+	 *   declare title: string;
+	 *   declare createdAt: Date; // Runtime type after transformation
 	 * }
 	 *
-	 * // Usage is simple and clean
-	 * const post = Post.create({
-	 *   id: 1,
-	 *   title: 'My Post',
-	 *   createdAt: '2026-01-10T00:00:00.000Z',
-	 *   balance: '999999999999999'
-	 * });
-	 *
-	 * post.id         // ✅ number (type-safe)
-	 * post.title      // ✅ string (type-safe)
-	 * post.createdAt  // ✅ Date (type-safe, transformed)
-	 * post.balance    // ✅ bigint (type-safe, transformed)
-	 *
-	 * // Also works with `new` constructor
-	 * const post2 = new Post({ ... });  // ✅ Same type-safety
+	 * const post = Post.create({ id: 1, title: 'Hello', createdAt: '2026-01-10T00:00:00.000Z' });
+	 * post.createdAt instanceof Date; // true
 	 * ```
-	 *
-	 * @example
-	 * **OPTION B (ALTERNATIVE): Using IQTransform type helper with generic override**
-	 *
-	 * ⚠️ ONLY use this if you specifically don't want to use `declare` keyword.
-	 * This approach is MORE VERBOSE and ONLY WORKS with `create()`, not with `new`.
-	 *
-	 * ```typescript
-	 * interface IPost {
-	 *   id: number;
-	 *   title: string;
-	 *   createdAt: string;  // Backend: ISO string
-	 *   balance: string;    // Backend: string
-	 * }
-	 *
-	 * @Quick({ createdAt: Date, balance: BigInt })
-	 * class Post extends QModel<IPost> {
-	 *   // No declare needed
-	 * }
-	 *
-	 * // Pass IQTransform as 3rd type parameter to create()
-	 * const post = Post.create<IPost, Post, IQTransform<IPost, {
-	 *   createdAt: Date;
-	 *   balance: bigint;
-	 * }>>({
-	 *   id: 1,
-	 *   title: 'My Post',
-	 *   createdAt: '2026-01-10T00:00:00.000Z',
-	 *   balance: '999999999999999'
-	 * });
-	 *
-	 * post.id         // ✅ number (type-safe)
-	 * post.title      // ✅ string (type-safe)
-	 * post.createdAt  // ✅ Date (type-safe via IQTransform)
-	 * post.balance    // ✅ bigint (type-safe via IQTransform)
-	 *
-	 * // ❌ Does NOT work with `new` constructor
-	 * const post2 = new Post({ ... });  // ❌ No type-safety for transforms
-	 * ```
-	 *
-	 * @remarks
-	 * **When to use each approach:**
-	 *
-	 * | Aspect | Option A: `declare` | Option B: `IQTransform` |
-	 * |--------|---------------------|------------------------|
-	 * | **Recommendation** | ✅ RECOMMENDED | ⚠️ ALTERNATIVE |
-	 * | **Syntax complexity** | Simple | Simple (but manual generic) |
-	 * | **Works with `new`** | ✅ Yes | ❌ No |
-	 * | **Works with `create()`** | ✅ Yes | ✅ Yes (with generic) |
-	 * | **Input Validation** | ✅ Strict | ⚠️ Loose (unless 2nd generic used) |
-	 *
-	 * **Example Usage Details:**
-	 *
-	 * | Usage Pattern | Input (Data) | Output (Instance) |
-	 * |---------------|--------------|-------------------|
-	 * | `User.create(data)` | `IUser` | `User` (requires `declare`) |
-	 * | `User.create<User>(data)` | Loose | `User` |
-	 * | `User.create<IQTransform<...>>(data)` | Loose | Transformed Type |
-	 *
-	 * @see {@link QModel} for main class documentation
 	 */
 	/**
 	 * Creates a new instance of the model with STRICT type checking.
@@ -1221,12 +1124,43 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
-	 * Alias for hasChanges(). Checks if the model is dirty (has unsaved changes).
+	 * Checks if the model (or a specific field) has been modified since construction.
 	 *
-	 * @returns true if the model has been modified, false otherwise
+	 * When called without arguments, equivalent to `hasChanges()` — returns `true` if
+	 * **any** field has changed.
+	 *
+	 * When called with a field name, returns `true` only if that specific field has
+	 * changed since the instance was created.
+	 *
+	 * @param field - Optional field name to check. If omitted, checks all fields.
+	 * @returns `true` if the field (or any field) has been modified, `false` otherwise
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', age: 30 });
+	 * user.name = 'Jane';
+	 *
+	 * user.isDirty();        // true  (any field changed)
+	 * user.isDirty('name');  // true  (name changed)
+	 * user.isDirty('age');   // false (age unchanged)
+	 * ```
 	 */
-	isDirty(): boolean {
-		return this.hasChanges();
+	isDirty(field?: string): boolean {
+		if (field === undefined) {
+			return this.hasChanges();
+		}
+		const current = this.toInterface() as Record<string, unknown>;
+		const initial = this.getInitInterface() as Record<string, unknown>;
+
+		// Field existed in initial data — compare values directly
+		if (field in initial) {
+			return !this.deepEqual(current[field], initial[field]);
+		}
+
+		// Field was NOT in initial data (optional field added after construction)
+		// Considered dirty if it now has a defined value
+		const currentVal = (this as unknown as Record<string, unknown>)[field];
+		return currentVal !== undefined;
 	}
 
 	/**
@@ -1385,6 +1319,47 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 				updated as unknown as IQAnyRecord
 			)[key];
 		}
+	}
+
+	/**
+	 * Returns a **new instance** with the given partial data merged into the current state.
+	 *
+	 * Unlike `patch()` which mutates in place, `merge()` is **immutable**: the original
+	 * instance is never modified. The new instance is completely independent and its
+	 * initial state is set to the merged data, so:
+	 * - `isDirty()` on the new instance returns `false`
+	 * - `reset()` on the new instance reverts to the merged state (not the original)
+	 *
+	 * All type transformations (Date, BigInt, etc.) are applied to the merged values.
+	 *
+	 * @param partial - Fields to override in the new instance
+	 * @returns A new model instance with current + partial data
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', age: 30 });
+	 *
+	 * const updated = user.merge({ name: 'Jane' });
+	 *
+	 * user.name;     // 'John'   ← original unchanged
+	 * updated.name;  // 'Jane'   ← new instance
+	 * updated.age;   // 30       ← fields not in partial are preserved
+	 * updated.isDirty(); // false ← clean initial state
+	 *
+	 * // Chaining
+	 * const v3 = user.merge({ name: 'Jane' }).merge({ age: 99 });
+	 * ```
+	 */
+	merge(partial: Partial<IQModelData<TInterface>>): this {
+		// Use `new Constructor()` (not deserialize) so that __initData is set correctly.
+		// deserialize() bypasses the constructor via Object.create, losing __initData,
+		// which would break isDirty() / reset() on the returned instance.
+		const Constructor = this.constructor as unknown as new (
+			data: IQModelData<TInterface>
+		) => this;
+		const current = this.serialize();
+		const merged = { ...current, ...partial };
+		return new Constructor(merged as unknown as IQModelData<TInterface>);
 	}
 
 	/**
