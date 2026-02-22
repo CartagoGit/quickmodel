@@ -24,7 +24,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
 - ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `@cartago-git/quickmodel/forms` subpath — no `QModel` required
 - 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
-- 🤖 **MCP Server** - AI assistant integration with 11 public tools and 4 guided prompts (Claude, Copilot, etc.)
+- 🤖 **MCP Server** - AI assistant integration with 15 public tools and 7 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
 - 🧪 **Well Tested** - 2100+ tests covering all features
@@ -724,7 +724,7 @@ bun run mcp:start
 }
 ```
 
-### Public tools (11)
+### Public tools (17)
 
 | Tool                      | Description                                                                                                                                                           |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -739,15 +739,27 @@ bun run mcp:start
 | `explain_error`           | Explain a validation error in plain language                                                                                                                          |
 | `simulate_transformation` | Simulate a type transformation on sample data                                                                                                                         |
 | `json_to_model`           | Generate a QModel class from a JSON object                                                                                                                            |
+| `simulate_validation`     | Simulate `@QRule`-style predicate validation on a data object; returns `{ valid, errors[], evaluated }`                                                               |
+| `get_model_schema`        | Generate a model schema in any of the 7 formats (json, openapi, zod, mongo, typescript, graphql, ajv) using the real `QModel.getSchema()` API                         |
+| `get_form_schema`         | Extract form schema from `@QField` / `@QGroup` decorators using the real `QModel.getFormSchema()` / `getFormSchemaGrouped()` API                                      |
+| `check_integrity`         | Run transformer-level integrity checks (invalid Date, BigInt range, RegExp) using `instance.checkIntegrity()`; returns `{ valid, errors[], evaluated, summary }`      |
+| `simulate_rules`          | Run business-logic rules via the real `instance.checkRules()` API; predicates have access to `value` and `data`; returns `{ valid, errors[], evaluated }`             |
+| `roundtrip`               | Verify that `serialize()` → re-create → `serialize()` is lossless; returns `{ lossless, serialized, roundtrip_serialized, diff, summary }`                            |
 
-### AI-guided prompts / skills (4)
+### AI-guided prompts / skills (10)
 
-| Skill                           | Description                                                  |
-| ------------------------------- | ------------------------------------------------------------ |
-| `quickmodel_from_typescript`    | Generate a QModel from a TypeScript interface (step-by-step) |
-| `quickmodel_debug`              | Diagnose and fix a QuickModel issue                          |
-| `quickmodel_generate_test_data` | Create test data strategies for a model                      |
-| `quickmodel_inspect_and_schema` | Inspect a model and export its schema in all formats         |
+| Skill                           | Description                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `quickmodel_from_typescript`    | Generate a QModel from a TypeScript interface (step-by-step)                                     |
+| `quickmodel_debug`              | Diagnose and fix a QuickModel issue                                                              |
+| `quickmodel_generate_test_data` | Create test data strategies for a model                                                          |
+| `quickmodel_inspect_and_schema` | Inspect a model and export its schema in all formats                                             |
+| `quickmodel_form_validation`    | Guided workflow to add `@QField`, `@QRule` and `@QGroup` to a model                              |
+| `quickmodel_full_pipeline`      | Walk the complete pipeline: `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`     |
+| `quickmodel_mixin`              | Extend a base class (TypeORM entity, NestJS DTO) with QModel via `QModel.extends(BaseClass)`     |
+| `quickmodel_alias_computed`     | Explain and apply `@QAlias` (field name remapping) and `@QComputed` (getter in serialize output) |
+| `quickmodel_migration`          | Migrate legacy classes / v1 code to idiomatic QuickModel v2 patterns                             |
+| `quickmodel_async_rules`        | ⚠️ Async-only: guide `checkRulesAsync()` with `timeoutMs`, parallel/serial mode, NestJS context  |
 
 > 📚 **[MCP Documentation](https://cartagogit.github.io/quickmodel/en/mcp/)** — Full tool reference and AI integration guide
 

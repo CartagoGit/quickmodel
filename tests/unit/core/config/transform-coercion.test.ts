@@ -1,9 +1,6 @@
-// @quickmodel-rule-ignore: prefer-quick
-// This file tests @QType directly — opt-out from the prefer-quick rule.
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';
-import { QType } from '@/core/decorators/qtype.decorator';
 import { describe, it, expect, beforeEach } from 'bun:test';
 
 describe('Transformation: Coercion Strategy', () => {
@@ -19,7 +16,7 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should throw on string -> number mismatch', () => {
 			@Quick({ age: Number })
 			class User extends QModel<any> {
-				@QType() declare age: number;
+				declare age: number;
 			}
 
 			expect(() => {
@@ -30,7 +27,7 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should throw on number -> string mismatch', () => {
 			@Quick({ name: String })
 			class User extends QModel<any> {
-				@QType() declare name: string;
+				declare name: string;
 			}
 
 			expect(() => {
@@ -41,7 +38,7 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should throw on string -> boolean mismatch', () => {
 			@Quick({ active: Boolean })
 			class User extends QModel<any> {
-				@QType() declare active: boolean;
+				declare active: boolean;
 			}
 
 			expect(() => {
@@ -58,7 +55,7 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should coerce string -> number', () => {
 			@Quick({ age: Number })
 			class User extends QModel<any> {
-				@QType() declare age: number;
+				declare age: number;
 			}
 
 			const user = User.create({ age: '25' } as any);
@@ -69,7 +66,7 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should coerce number -> string', () => {
 			@Quick({ name: String })
 			class User extends QModel<any> {
-				@QType() declare name: string;
+				declare name: string;
 			}
 
 			const user = User.create({ name: 123 } as any);
@@ -80,8 +77,8 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should coerce boolean strings -> boolean', () => {
 			@Quick({ active: Boolean, disabled: Boolean })
 			class User extends QModel<any> {
-				@QType() declare active: boolean;
-				@QType() declare disabled: boolean;
+				declare active: boolean;
+				declare disabled: boolean;
 			}
 
 			const user = User.create({
@@ -95,8 +92,8 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should coerce 0/1 -> boolean', () => {
 			@Quick({ active: Boolean, disabled: Boolean })
 			class User extends QModel<any> {
-				@QType() declare active: boolean;
-				@QType() declare disabled: boolean;
+				declare active: boolean;
+				declare disabled: boolean;
 			}
 
 			const user = User.create({ active: 1, disabled: 0 } as any);
@@ -107,7 +104,7 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should throw on invalid number coercion', () => {
 			@Quick({ age: Number })
 			class User extends QModel<any> {
-				@QType() declare age: number;
+				declare age: number;
 			}
 
 			expect(() => {
@@ -121,9 +118,9 @@ describe('Transformation: Coercion Strategy', () => {
 		it('should allow decorator override', () => {
 			QConfig.configure({ defaults: { coercionStrategy: 'strict' } });
 
-			@Quick({}, { coercionStrategy: 'loose' })
+			@Quick({ age: Number }, { coercionStrategy: 'loose' })
 			class User extends QModel<any> {
-				@QType(Number) declare age: number;
+				declare age: number;
 			}
 
 			const user = User.create({ age: '25' } as any);

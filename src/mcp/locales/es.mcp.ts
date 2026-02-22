@@ -34,6 +34,18 @@ export const esMcp = {
 			'Simula una transformación de datos QuickModel dado un objeto de entrada y un mapa de configuración.',
 		json_to_model:
 			'Convierte una cadena JSON en una definición de clase QuickModel con tipos inferidos.',
+		simulate_validation:
+			'Simula validación de predicados estilo @QRule sobre un objeto de datos. Cada regla tiene un predicado (expresión JS con variables `value` y `data`) y un mensaje. Retorna { valid, errors[], evaluated }.',
+		get_model_schema:
+			'Genera el schema de un modelo en cualquier formato soportado a partir de una clase QuickModel. Soporta los 7 formatos: json, openapi, zod, mongo, typescript, graphql, ajv. Usa la API real QModel.getSchema().',
+		get_form_schema:
+			'Extrae el schema de formulario de los decoradores @QField / @QGroup usando la API real QModel.getFormSchema() / getFormSchemaGrouped(). Devuelve metadatos de campo (widget, label, placeholder, required, inputType, options) como array estructurado.',
+		check_integrity:
+			'Ejecuta comprobaciones de integridad a nivel de transformer sobre un objeto de datos usando la API real instance.checkIntegrity(). Detecta Date inválidos, BigInt fuera de rango, RegExp malformados y otros fallos a nivel de transformer. Devuelve { valid, errors[], evaluated, summary }.',
+		simulate_rules:
+			'Ejecuta reglas de lógica de negocio a través de la API real instance.checkRules(). Aplica las reglas mediante metadatos @QRule para que el formato del resultado coincida exactamente con el IQRulesResult de producción. Las cadenas de predicado tienen acceso a `value` (valor del campo) y `data` (objeto completo). Usa simulate_validation para evaluaciones independientes de predicados; usa esta herramienta cuando necesites verificar que la salida de @QRule + checkRules() es exactamente la que producirá tu código en runtime. Devuelve { valid, errors[], evaluated }.',
+		roundtrip:
+			'Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. Ejecuta: s1 = new Model(data).serialize() → s2 = new Model(s1).serialize() y comprueba si s1 === s2. Devuelve { lossless, input, serialized, roundtrip_serialized, diff, summary }.',
 
 		update_docs:
 			'Herramienta interna para ejecutar scripts de construcción de documentación.',

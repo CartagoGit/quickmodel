@@ -1,5 +1,5 @@
 // @quickmodel-rule-ignore: prefer-quick
-// This file tests @QType directly — opt-out from the prefer-quick rule.
+// @QType( appears only in doc comments — not as a decorator.
 /**
  * Test: Verificar metadata de arrays y tipos union
  *

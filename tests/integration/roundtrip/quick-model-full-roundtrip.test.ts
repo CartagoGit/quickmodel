@@ -1,8 +1,5 @@
-// @quickmodel-rule-ignore: prefer-quick
-// This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, test, expect } from 'bun:test';
-import { QModel, IQImplements } from '@/index';
-import { QType } from '@/utils';
+import { QModel, Quick, IQImplements } from '@/index';
 
 interface IUser {
 	id: string;
@@ -15,14 +12,15 @@ type IUserTransforms = {
 	createdAt: Date;
 };
 
+@Quick({ createdAt: Date })
 class User
 	extends QModel<IUser>
 	implements IQImplements<IUser, IUserTransforms>
 {
-	@QType() id!: string;
-	@QType() name!: string;
-	@QType() age!: number;
-	@QType() createdAt!: Date;
+	declare id: string;
+	declare name: string;
+	declare age: number;
+	declare createdAt: Date;
 }
 
 const userData: IUser = {

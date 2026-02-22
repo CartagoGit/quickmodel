@@ -62,7 +62,7 @@ Run a comprehensive health check: Lint, Typecheck, and Run Tests.
 
 ## `check_project_rules`
 
-Enforce internal project rules: `@Quick` over `@QType` in tests, no `console.log`, `id-length` (min 3 chars), `max-params` (max 3), naming-convention (`I` prefix for interfaces/types), no-restricted-imports.
+Enforce internal project rules: @Quick over @QType in tests, no console.log, id-length (min 3 chars), max-params (max 3), naming-convention (I prefix for interfaces/types), no-restricted-imports.
 
 ```json
 {

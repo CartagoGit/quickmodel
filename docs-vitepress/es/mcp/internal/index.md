@@ -62,7 +62,7 @@ Ejecuta una verificación completa de salud: Lint, Typecheck y Tests.
 
 ## `check_project_rules`
 
-Hace cumplir reglas internas del proyecto: `@Quick` sobre `@QType` en tests, sin `console.log`, `id-length` (mín 3 chars), `max-params` (máx 3), naming-convention (prefijo `I` en interfaces/tipos), no-restricted-imports.
+Hace cumplir reglas internas: @Quick sobre @QType en tests, sin console.log, id-length (mín 3 chars), max-params (máx 3), naming-convention (prefijo I para interfaces/tipos), no-restricted-imports.
 
 ```json
 {

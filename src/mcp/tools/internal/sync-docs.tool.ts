@@ -29,29 +29,26 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		const { QMcpServer } = await import('../../server');
 		const allTools = QMcpServer.getDefaultTools();
 
-		// Separate Public vs Internal using Heuristic
-		// Heuristic: internal tools start with internal prefixes
-		const internalPrefixes = [
-			'check_',
-			'update_',
+		// Separate Public vs Internal using an explicit allowlist of internal tool names
+		const internalToolNames = new Set([
+			'benchmark_performance',
+			'check_api_compatibility',
+			'check_jsdocs',
+			'check_project_health',
+			'check_project_rules',
+			'check_security',
 			'generate_test',
-			'get_coverage',
-			'scaffold_',
-			'benchmark_',
-		];
+			'get_coverage_report',
+			'scaffold_feature',
+			'update_docs',
+			'update_docs_content',
+		]);
 
 		const internalTools = allTools
-			.filter((tool: any) =>
-				internalPrefixes.some((prefix) => tool.name.startsWith(prefix))
-			)
+			.filter((tool: any) => internalToolNames.has(tool.name))
 			.sort((valA, valB) => valA.name.localeCompare(valB.name));
 		const publicTools = allTools
-			.filter(
-				(tool: any) =>
-					!internalPrefixes.some((prefix) =>
-						tool.name.startsWith(prefix)
-					)
-			)
+			.filter((tool: any) => !internalToolNames.has(tool.name))
 			.sort((valA, valB) => valA.name.localeCompare(valB.name));
 
 		// 2. Generate Transformers Documentation

@@ -34,6 +34,19 @@ export const enMcp = {
 		json_to_model:
 			'Convert a JSON string into a QuickModel class definition with inferred types.',
 
+		simulate_validation:
+			'Simulate @QRule-style predicate validation on a data object. Each rule has a predicate (JS expression with `value` and `data` variables) and a message. Returns { valid, errors[], evaluated }.',
+		get_model_schema:
+			'Generate a model schema in any supported format from a QuickModel class definition. Supports all 7 formats: json, openapi, zod, mongo, typescript, graphql, ajv. Uses the real QModel.getSchema() API.',
+		get_form_schema:
+			'Extract the form schema from @QField / @QGroup decorators using the real QModel.getFormSchema() / getFormSchemaGrouped() API. Returns field metadata (widget, label, placeholder, required, inputType, options) as a structured array.',
+		check_integrity:
+			'Run transformer-level integrity checks on a data object using the real instance.checkIntegrity() API. Detects invalid Date objects, out-of-range BigInt values, malformed RegExp patterns, and other transformer-level failures. Returns { valid, errors[], evaluated, summary }.',
+		simulate_rules:
+			'Run business-logic rules through the real instance.checkRules() API. Applies rules via @QRule metadata so the result format matches production IQRulesResult exactly. Predicate strings have access to `value` (field value) and `data` (full data object). Use simulate_validation for standalone predicate evaluation; use this when you need to verify the exact @QRule + checkRules() output your code will produce at runtime. Returns { valid, errors[], evaluated }.',
+		roundtrip:
+			'Verifies that serializing and re-creating a QuickModel instance is lossless. Runs: s1 = new Model(data).serialize() → s2 = new Model(s1).serialize() and reports whether s1 === s2. Returns { lossless, input, serialized, roundtrip_serialized, diff, summary }.',
+
 		// Internal
 		update_docs: 'Internal tool to run documentation build scripts.',
 		generate_test:

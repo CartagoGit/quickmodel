@@ -8,6 +8,12 @@ import {
 	QDebugModelPrompt,
 	QGenerateTestDataPrompt,
 	QInspectAndSchemaPrompt,
+	QFormValidationPrompt,
+	QFullPipelinePrompt,
+	QMixinPrompt,
+	QAliasComputedPrompt,
+	QMigrationPrompt,
+	QAsyncRulesPrompt,
 } from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -25,6 +31,12 @@ import {
 	QSimulateTransformationTool,
 	QCreateModelTool,
 	QValidateUsageTool,
+	QCheckIntegrityTool,
+	QSimulateRulesTool,
+	QRoundtripTool,
+	QGetFormSchemaTool,
+	QGetModelSchemaTool,
+	QSimulateValidationTool,
 } from './tools/public';
 
 import {
@@ -89,8 +101,14 @@ export class QMcpServer {
 			new QExplainErrorTool(),
 			// Core Simulation
 			new QSimulateTransformationTool(),
+			new QSimulateValidationTool(),
+			// Form & Schema Tools
+			new QGetFormSchemaTool(),
+			new QGetModelSchemaTool(),
+			new QCheckIntegrityTool(),
+			new QSimulateRulesTool(),
+			new QRoundtripTool(),
 
-			// Internal Dev Tools
 			new QUpdateDocsTool(),
 			new QGenerateTestTool(),
 			new QCheckMissingJSDocsTool(),
@@ -115,6 +133,12 @@ export class QMcpServer {
 			new QDebugModelPrompt(),
 			new QGenerateTestDataPrompt(),
 			new QInspectAndSchemaPrompt(),
+			new QFormValidationPrompt(),
+			new QFullPipelinePrompt(),
+			new QMixinPrompt(),
+			new QAliasComputedPrompt(),
+			new QMigrationPrompt(),
+			new QAsyncRulesPrompt(),
 		];
 	}
 

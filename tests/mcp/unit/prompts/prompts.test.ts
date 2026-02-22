@@ -4,6 +4,12 @@ import { QFromTypescriptPrompt } from '../../../../src/mcp/prompts/public/from-t
 import { QDebugModelPrompt } from '../../../../src/mcp/prompts/public/debug-model.prompt';
 import { QGenerateTestDataPrompt } from '../../../../src/mcp/prompts/public/generate-test-data.prompt';
 import { QInspectAndSchemaPrompt } from '../../../../src/mcp/prompts/public/inspect-and-schema.prompt';
+import { QFormValidationPrompt } from '../../../../src/mcp/prompts/public/form-validation.prompt';
+import { QFullPipelinePrompt } from '../../../../src/mcp/prompts/public/full-pipeline.prompt';
+import { QMixinPrompt } from '../../../../src/mcp/prompts/public/mixin.prompt';
+import { QAliasComputedPrompt } from '../../../../src/mcp/prompts/public/alias-computed.prompt';
+import { QMigrationPrompt } from '../../../../src/mcp/prompts/public/migration.prompt';
+import { QAsyncRulesPrompt } from '../../../../src/mcp/prompts/public/async-rules.prompt';
 import type { IQPromptResult } from '../../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
@@ -312,5 +318,473 @@ export class ProductModel extends QModel<IProduct> {
 		// Should mention multiple formats (the defaults)
 		const allText = result.messages.map((m) => m.content.text).join(' ');
 		expect(allText).toMatch(/json|openapi|zod|typescript/i);
+	});
+});
+
+// ── QFormValidationPrompt ─────────────────────────────────────────────────────
+
+describe('QFormValidationPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QFormValidationPrompt();
+		expect(prompt.name).toBe('quickmodel_form_validation');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema.form_description).toBeDefined();
+	});
+
+	it('argsSchema.fields is optional', () => {
+		const prompt = new QFormValidationPrompt();
+		expect(() => prompt.argsSchema.fields?.parse(undefined)).not.toThrow();
+	});
+
+	it('execute() returns a valid result with only form_description', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'User registration form with name, email and age',
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() returns multiple messages (at least 3)', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'Login form',
+		});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() references validate_usage tool', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'Contact form',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('validate_usage');
+	});
+
+	it('execute() references simulate_validation tool', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'Payment form',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('simulate_validation');
+	});
+
+	it('execute() mentions @QRule in messages', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'Profile form',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@QRule');
+	});
+
+	it('execute() mentions @QField in messages', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'Settings form',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@QField');
+	});
+
+	it('execute() includes the form_description in messages', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'Unique survey form ABC123',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('Unique survey form ABC123');
+	});
+
+	it('execute() includes provided fields when fields param is given', async () => {
+		const prompt = new QFormValidationPrompt();
+		const result = await prompt.execute({
+			form_description: 'User form',
+			fields: 'username, email, birthDate',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('username');
+		expect(allText).toContain('email');
+	});
+});
+
+// ── QFullPipelinePrompt ───────────────────────────────────────────────────────
+
+const PIPELINE_CODE = `
+@Quick({ createdAt: Date })
+class Order extends QModel<any> {
+  declare id: string;
+  declare createdAt: Date;
+  declare total: number;
+}
+`;
+
+describe('QFullPipelinePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QFullPipelinePrompt();
+		expect(prompt.name).toBe('quickmodel_full_pipeline');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema.model_code).toBeDefined();
+	});
+
+	it('argsSchema.sample_data is optional', () => {
+		const prompt = new QFullPipelinePrompt();
+		expect(() =>
+			prompt.argsSchema.sample_data?.parse(undefined)
+		).not.toThrow();
+	});
+
+	it('execute() returns a valid result with only model_code', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() references create() in messages', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('create(');
+	});
+
+	it('execute() references check_integrity tool', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('check_integrity');
+	});
+
+	it('execute() references simulate_validation tool', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('simulate_validation');
+	});
+
+	it('execute() references serialize() or toJSON() in messages', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/serialize\(\)|toJSON\(\)/);
+	});
+
+	it('execute() includes sample_data in messages when provided', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({
+			model_code: PIPELINE_CODE,
+			sample_data: '{"id":"1","createdAt":"2024-01-01","total":99.9}',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('2024-01-01');
+	});
+
+	it('execute() references simulate_transformation tool', async () => {
+		const prompt = new QFullPipelinePrompt();
+		const result = await prompt.execute({ model_code: PIPELINE_CODE });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('simulate_transformation');
+	});
+});
+
+// ── QMixinPrompt ──────────────────────────────────────────────────────────────
+
+describe('QMixinPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QMixinPrompt();
+		expect(prompt.name).toBe('quickmodel_mixin');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema.base_class).toBeDefined();
+	});
+
+	it('argsSchema.model_fields is optional', () => {
+		const prompt = new QMixinPrompt();
+		expect(() =>
+			prompt.argsSchema.model_fields?.parse(undefined)
+		).not.toThrow();
+	});
+
+	it('execute() returns a valid result with only base_class', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({ base_class: 'NgComponent' });
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({ base_class: 'NgComponent' });
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() references QModel.extends() in messages', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({ base_class: 'NgComponent' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('QModel.extends(');
+	});
+
+	it('execute() references validate_usage tool', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({ base_class: 'NgComponent' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('validate_usage');
+	});
+
+	it('execute() mentions IQImplements in messages', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({ base_class: 'NgComponent' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('IQImplements');
+	});
+
+	it('execute() includes the base_class name in messages', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({
+			base_class: 'SpecialBaseClass999',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('SpecialBaseClass999');
+	});
+
+	it('execute() mentions instanceof caveat about QModel', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({ base_class: 'NgComponent' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/instanceof/);
+	});
+
+	it('execute() includes model_fields in messages when provided', async () => {
+		const prompt = new QMixinPrompt();
+		const result = await prompt.execute({
+			base_class: 'MyBase',
+			model_fields: 'createdAt: Date, status: string',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('createdAt');
+	});
+});
+
+// ── QAliasComputedPrompt ─────────────────────────────────────────────────────
+
+describe('QAliasComputedPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QAliasComputedPrompt();
+		expect(prompt.name).toBe('quickmodel_alias_computed');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('argsSchema.model_code is optional', () => {
+		const prompt = new QAliasComputedPrompt();
+		expect(prompt.argsSchema.model_code).toBeDefined();
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({});
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mentions @QAlias in messages', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@QAlias');
+	});
+
+	it('execute() mentions @QComputed in messages', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@QComputed');
+	});
+
+	it('execute() references serialize() in messages', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/serialize\(\)|toJSON\(\)/);
+	});
+
+	it('execute() references validate_usage tool', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('validate_usage');
+	});
+
+	it('execute() includes model_code when provided', async () => {
+		const prompt = new QAliasComputedPrompt();
+		const result = await prompt.execute({
+			model_code: 'class UniqueModelXYZ extends QModel',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('UniqueModelXYZ');
+	});
+});
+
+// ── QMigrationPrompt ─────────────────────────────────────────────────────────
+
+describe('QMigrationPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QMigrationPrompt();
+		expect(prompt.name).toBe('quickmodel_migration');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({
+			legacy_code: 'class OldModel {}',
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({
+			legacy_code: 'class OldModel {}',
+		});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mentions declare in messages', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({
+			legacy_code: 'class OldModel {}',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('declare');
+	});
+
+	it('execute() mentions @Quick in messages', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({
+			legacy_code: 'class OldModel {}',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@Quick');
+	});
+
+	it('execute() references validate_usage tool', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({
+			legacy_code: 'class OldModel {}',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('validate_usage');
+	});
+
+	it('execute() includes the legacy_code in messages', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({
+			legacy_code: 'class LegacyModelXYZ9 {}',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('LegacyModelXYZ9');
+	});
+
+	it('execute() mentions migration or v2 pattern', async () => {
+		const prompt = new QMigrationPrompt();
+		const result = await prompt.execute({ legacy_code: 'class Old {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/migrat|v2|upgrade|update/i);
+	});
+});
+
+// ── QAsyncRulesPrompt ─────────────────────────────────────────────────────────
+
+describe('QAsyncRulesPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QAsyncRulesPrompt();
+		expect(prompt.name).toBe('quickmodel_async_rules');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('argsSchema.context is optional', () => {
+		const prompt = new QAsyncRulesPrompt();
+		expect(prompt.argsSchema.context).toBeDefined();
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({
+			model_code: 'class M extends QModel {}',
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({
+			model_code: 'class M extends QModel {}',
+		});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() CLEARLY states this is only for async contexts', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		// Must explicitly warn: only use when predicates are truly async
+		expect(allText).toMatch(/only|async.*predicate|predicate.*async/i);
+	});
+
+	it('execute() references checkRulesAsync()', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('checkRulesAsync(');
+	});
+
+	it('execute() explains timeoutMs option', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('timeoutMs');
+	});
+
+	it('execute() explains parallel vs serial mode', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/parallel|serial/);
+	});
+
+	it('execute() mentions NestJS or async context', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/NestJS|async context|database|API call/i);
+	});
+
+	it('execute() includes context in messages when provided', async () => {
+		const prompt = new QAsyncRulesPrompt();
+		const result = await prompt.execute({
+			model_code: 'class M {}',
+			context: 'NestJS service with TypeORM uniqueness check',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('TypeORM uniqueness check');
 	});
 });

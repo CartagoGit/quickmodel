@@ -6,12 +6,18 @@ Use skills when you want the AI to drive the process end-to-end without you havi
 
 ## Available Skills
 
-| Skill name                                                        | Title                                  | Description                                               |
-| ----------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface               |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues      |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline  |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats |
+| Skill name                                                        | Title                                  | Description                                                      |
+| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------- |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                      |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues             |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline         |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats        |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`        |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities        |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                    |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns         |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates      |
 
 ---
 
@@ -159,4 +165,213 @@ formats: "json,zod,openapi"
 → AI calls export_json_schema({ code: "...", format: "zod" })
 → AI calls export_json_schema({ code: "...", format: "openapi" })
 → Returns all 3 schemas + integration examples for each
+```
+
+---
+
+## `quickmodel_form_validation`
+
+**Add `@QField`, `@QRule`, and `@QGroup` to a QuickModel class with guided validation.**
+
+Walks the AI step-by-step through declaring field metadata with `@QField`, adding business-logic predicates with `@QRule`, grouping sections with `@QGroup`, verifying with `validate_usage`, and testing live with `simulate_validation`.
+
+### Arguments
+
+| Argument           | Required | Description                                                                |
+| ------------------ | -------- | -------------------------------------------------------------------------- |
+| `form_description` | ✅ Yes   | Description of the form and its validation requirements                    |
+| `fields`           | ✗ No     | Comma-separated list of field names to include (e.g. `"name, email, age"`) |
+
+### Workflow
+
+1. Explains `@QField` usage (widget, label, required, hint)
+2. Shows `@QRule` predicate syntax
+3. Demonstrates `@QGroup` grouping
+4. Calls `validate_usage` to verify the model code
+5. Calls `simulate_validation` with representative data to test predicates live
+6. Shows how to use `getFormSchema()`, `getFormSchemaGrouped()`, and `checkRules()` at runtime
+
+### Example
+
+```
+form_description: "User registration form with name, email and password confirmation"
+fields: "name, email, password, confirmPassword"
+
+→ AI generates model with @QField and @QRule decorators
+→ AI calls validate_usage to check for errors
+→ AI calls simulate_validation with { name: "Jo", email: "not-valid", password: "abc", confirmPassword: "xyz" }
+→ Returns validation report + final model code
+```
+
+---
+
+## `quickmodel_full_pipeline`
+
+**Walk the complete QuickModel data lifecycle end-to-end.**
+
+Guides the AI through every stage: raw data → `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` / `toJSON()`. Uses `check_integrity`, `simulate_validation`, and `simulate_transformation` to verify each step with real data.
+
+### Arguments
+
+| Argument      | Required | Description                                                                                     |
+| ------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `model_code`  | ✅ Yes   | The QuickModel class definition to walk through                                                 |
+| `sample_data` | ✗ No     | Optional JSON string with sample data to use at each step (e.g. `'{"createdAt":"2024-01-01"}'`) |
+
+### Workflow
+
+1. **Stage 1 — Hydration**: `create()` / `new Model(data)` — calls `simulate_transformation`
+2. **Stage 2 — Integrity**: `checkIntegrity()` — calls `check_integrity`
+3. **Stage 3 — Rules**: `checkRules()` — calls `simulate_validation`
+4. **Stage 4 — Serialization**: `serialize()` / `toJSON()`
+
+### Example
+
+```
+model_code: "
+  @Quick({ createdAt: Date, score: Number })
+  class OrderModel extends QModel<OrderModel> {
+    declare createdAt: Date;
+    declare score: number;
+  }
+"
+sample_data: '{"createdAt":"2024-06-15","score":"42"}'
+
+→ AI calls simulate_transformation with sample data
+→ AI calls check_integrity to verify Date is valid
+→ AI calls simulate_validation for any @QRule predicates
+→ Returns full pipeline report with serialized output
+```
+
+---
+
+## `quickmodel_mixin`
+
+**Extend any non-QModel base class with QuickModel capabilities.**
+
+Explains the `QModel.extends(BaseClass)` mixin pattern used in Angular (TypeORM entities) and NestJS (DTOs). Covers `IQImplements` typing, the `instanceof` caveat, and uses `validate_usage` to verify correctness.
+
+### Arguments
+
+| Argument       | Required | Description                                                                                           |
+| -------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `base_class`   | ✅ Yes   | The name of the base class to extend (e.g. `"BaseEntity"`, `"TypeORMUser"`)                           |
+| `model_fields` | ✗ No     | Optional comma-separated field declarations (e.g. `"createdAt: Date, status: string, score: number"`) |
+
+### Workflow
+
+1. Shows `QModel.extends(BaseClass)` wiring with `@Quick`
+2. Adds `IQImplements<typeof MyModel>` for strong static typing
+3. Explains the `instanceof QModel` caveat and `isQModel()` alternative
+4. Calls `validate_usage` to check the generated code for common mistakes
+
+### Example
+
+```
+base_class: "BaseEntity"
+model_fields: "createdAt: Date, updatedAt: Date, status: string"
+
+→ AI generates MyModel extends QModel.extends(BaseEntity)
+→ AI calls validate_usage to verify the mixin is correct
+→ Returns final model code with explanations for instanceof behaviour
+```
+
+---
+
+## `quickmodel_alias_computed`
+
+**Explain and apply `@QAlias` and `@QComputed` decorators.**
+
+Covers how to remap field names during serialization (`snake_case ↔ camelCase`) with `@QAlias`, and how to include computed getter values in `serialize()` / `toJSON()` output with `@QComputed`. Ends with a `validate_usage` call.
+
+### Arguments
+
+| Argument     | Required | Description                                                                       |
+| ------------ | -------- | --------------------------------------------------------------------------------- |
+| `model_code` | ✗ No     | Optional QuickModel class code to analyze or enrich with `@QAlias` / `@QComputed` |
+
+### Workflow
+
+1. Explains `@QAlias` — field rename on `serialize()` and `create()` key lookup
+2. Explains `@QComputed` — opts a getter into the serialized output
+3. Shows common mistakes (using `@QComputed` on a `declare` field instead of a getter)
+4. Calls `validate_usage` to confirm the model is correct
+
+### Example
+
+```
+model_code: "@Quick({})\nclass User extends QModel<User> { declare firstName: string; }"
+
+→ AI adds @QAlias("first_name") and @QComputed() fullName getter
+→ AI calls validate_usage
+→ Returns corrected model with explanation of serialize() / toJSON() output
+```
+
+---
+
+## `quickmodel_migration`
+
+**Migrate legacy TypeScript classes or old QuickModel v1 code to idiomatic v2 patterns.**
+
+Guides the AI through converting property assignments to `declare` fields, wrapping the class with `@Quick({})`, adding transformer types, removing manual constructors, and calling `validate_usage` to confirm correctness.
+
+### Arguments
+
+| Argument      | Required | Description                                                      |
+| ------------- | -------- | ---------------------------------------------------------------- |
+| `legacy_code` | ✅ Yes   | The legacy TypeScript class or v1 code to migrate to v2 patterns |
+
+### Workflow
+
+1. Identifies all fields that need `declare` prefix
+2. Determines which fields need transformer entries in `@Quick({})`
+3. Removes any manual constructors that assign fields
+4. Wraps class with `@Quick({})` extending `QModel<T>`
+5. Calls `validate_usage` to verify the migrated code
+
+### Example
+
+```
+legacy_code: "class User { name: string = ''; createdAt: Date = new Date(); }"
+
+→ AI generates: @Quick({ createdAt: Date }) class User extends QModel<User> { declare name: string; declare createdAt: Date; }
+→ AI calls validate_usage
+→ Returns migrated code with per-change explanation
+```
+
+---
+
+## `quickmodel_async_rules`
+
+> ⚠️ **Async-only**: Use this skill only when your `@QRule` predicates genuinely require asynchronous operations (database lookups, external API calls, async validators). For synchronous rules, use `checkRules()` — it is simpler and faster.
+
+**Guide usage of `checkRulesAsync()` for async business-logic predicates.**
+
+Covers the `timeoutMs` safety net, `parallel` vs `serial` execution mode, and NestJS / HTTP-request integration patterns.
+
+### Arguments
+
+| Argument     | Required | Description                                                                                                 |
+| ------------ | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `model_code` | ✅ Yes   | The QuickModel class with `@QRule` decorators to make async                                                 |
+| `context`    | ✗ No     | Optional description of the async context (e.g. "NestJS service with TypeORM", "database uniqueness check") |
+
+### Workflow
+
+1. Clearly warns that this is async-only (sync rules should use `checkRules()`)
+2. Shows `checkRulesAsync()` with `timeoutMs` and `parallel` / `serial` mode
+3. Demonstrates NestJS / async context injection pattern
+4. Shows `async (value) => Promise<boolean>` predicate syntax
+5. Calls `validate_usage` to verify the model
+
+### Example
+
+```
+model_code: "@Quick({}) class User extends QModel<User> { @QRule(...) declare email: string; }"
+context: "NestJS service with TypeORM repository"
+
+→ AI warns: async-only, use checkRules() for sync predicates
+→ AI shows: await instance.checkRulesAsync({ timeoutMs: 5000, mode: "parallel" })
+→ AI shows NestJS @Injectable() integration
+→ Returns async-ready model with usage guidance
 ```

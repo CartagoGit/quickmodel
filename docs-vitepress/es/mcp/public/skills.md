@@ -6,12 +6,18 @@ Usa los skills cuando quieras que la IA conduzca el proceso de principio a fin s
 
 ## Skills Disponibles
 
-| Nombre del skill                                                  | Título                                     | Descripción                                                     |
-| ----------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS             |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación    |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline            |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspeccionar Modelo y Exportar Schema      | Inspecciona un modelo y exporta su schema en múltiples formatos |
+| Nombre del skill                                                  | Título                                     | Descripción                                                      |
+| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS              |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación     |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline             |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspeccionar Modelo y Exportar Schema      | Inspecciona un modelo y exporta su schema en múltiples formatos  |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Añadir Validación de Formulario            | Flujo guiado para añadir `@QField`, `@QRule` y `@QGroup`         |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Recorrer el Pipeline Completo              | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extender Clase Base con Mixin QModel       | `QModel.extends(BaseClass)` para entidades TypeORM / NestJS      |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                  | Remapeo de nombres de campo y serialización de getters           |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código v1 a patrones idiomáticos v2    |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos     |
 
 ---
 
@@ -159,4 +165,213 @@ formats: "json,zod,openapi"
 → IA llama a export_json_schema({ code: "...", format: "zod" })
 → IA llama a export_json_schema({ code: "...", format: "openapi" })
 → Devuelve los 3 schemas + ejemplos de integración para cada uno
+```
+
+---
+
+## `quickmodel_form_validation`
+
+**Añade `@QField`, `@QRule` y `@QGroup` a una clase QuickModel con validación guiada.**
+
+Guía a la IA paso a paso para declarar metadatos de campo con `@QField`, añadir predicados de lógica de negocio con `@QRule`, agrupar secciones con `@QGroup`, verificar con `validate_usage` y probar en vivo con `simulate_validation`.
+
+### Argumentos
+
+| Argumento          | Obligatorio | Descripción                                                                  |
+| ------------------ | ----------- | ---------------------------------------------------------------------------- |
+| `form_description` | ✅ Sí       | Descripción del formulario y sus requisitos de validación                    |
+| `fields`           | ✗ No        | Lista de nombres de campos separados por comas (ej. `"nombre, email, edad"`) |
+
+### Flujo de trabajo
+
+1. Explica el uso de `@QField` (widget, label, required, hint)
+2. Muestra la sintaxis del predicado `@QRule`
+3. Demuestra la agrupación con `@QGroup`
+4. Llama a `validate_usage` para verificar el código del modelo
+5. Llama a `simulate_validation` con datos representativos para probar predicados
+6. Muestra cómo usar `getFormSchema()`, `getFormSchemaGrouped()` y `checkRules()` en runtime
+
+### Ejemplo
+
+```
+form_description: "Formulario de registro con nombre, email y confirmación de contraseña"
+fields: "nombre, email, contraseña, confirmarContraseña"
+
+→ IA genera modelo con decoradores @QField y @QRule
+→ IA llama a validate_usage para comprobarlo
+→ IA llama a simulate_validation con { nombre: "Jo", email: "no-valido", contraseña: "abc", confirmarContraseña: "xyz" }
+→ Devuelve informe de validación + código del modelo final
+```
+
+---
+
+## `quickmodel_full_pipeline`
+
+**Recorre el ciclo de vida completo de datos QuickModel de principio a fin.**
+
+Guía a la IA por cada etapa: datos brutos → `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` / `toJSON()`. Usa `check_integrity`, `simulate_validation` y `simulate_transformation` para verificar cada paso con datos reales.
+
+### Argumentos
+
+| Argumento     | Obligatorio | Descripción                                                                                   |
+| ------------- | ----------- | --------------------------------------------------------------------------------------------- |
+| `model_code`  | ✅ Sí       | Definición de la clase QuickModel a recorrer                                                  |
+| `sample_data` | ✗ No        | Cadena JSON opcional con datos de ejemplo para cada paso (ej. `'{"createdAt":"2024-01-01"}'`) |
+
+### Flujo de trabajo
+
+1. **Etapa 1 — Hidratación**: `create()` / `new Model(data)` — llama a `simulate_transformation`
+2. **Etapa 2 — Integridad**: `checkIntegrity()` — llama a `check_integrity`
+3. **Etapa 3 — Reglas**: `checkRules()` — llama a `simulate_validation`
+4. **Etapa 4 — Serialización**: `serialize()` / `toJSON()`
+
+### Ejemplo
+
+```
+model_code: "
+  @Quick({ createdAt: Date, score: Number })
+  class OrderModel extends QModel<OrderModel> {
+    declare createdAt: Date;
+    declare score: number;
+  }
+"
+sample_data: '{"createdAt":"2024-06-15","score":"42"}'
+
+→ IA llama a simulate_transformation con los datos
+→ IA llama a check_integrity para verificar que la Date es válida
+→ IA llama a simulate_validation para los predicados @QRule
+→ Devuelve informe completo del pipeline con salida serializada
+```
+
+---
+
+## `quickmodel_mixin`
+
+**Extiende cualquier clase base (no QModel) con las capacidades de QuickModel.**
+
+Explica el patrón de mixin `QModel.extends(BaseClass)` usado en Angular (entidades TypeORM) y NestJS (DTOs). Cubre el tipado con `IQImplements`, la advertencia sobre `instanceof` y usa `validate_usage` para verificar la corrección.
+
+### Argumentos
+
+| Argumento      | Obligatorio | Descripción                                                                                          |
+| -------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| `base_class`   | ✅ Sí       | Nombre de la clase base a extender (ej. `"BaseEntity"`, `"TypeORMUser"`)                             |
+| `model_fields` | ✗ No        | Declaraciones de campos separadas por comas (ej. `"createdAt: Date, status: string, score: number"`) |
+
+### Flujo de trabajo
+
+1. Muestra el cableado `QModel.extends(BaseClass)` con `@Quick`
+2. Añade `IQImplements<typeof MyModel>` para tipado estático fuerte
+3. Explica la advertencia de `instanceof QModel` y la alternativa `isQModel()`
+4. Llama a `validate_usage` para comprobar el código generado
+
+### Ejemplo
+
+```
+base_class: "BaseEntity"
+model_fields: "createdAt: Date, updatedAt: Date, status: string"
+
+→ IA genera MyModel extends QModel.extends(BaseEntity)
+→ IA llama a validate_usage para verificar que el mixin es correcto
+→ Devuelve código del modelo final con explicaciones sobre el comportamiento de instanceof
+```
+
+---
+
+## `quickmodel_alias_computed`
+
+**Explica y aplica los decoradores `@QAlias` y `@QComputed`.**
+
+Cubre cómo remapear nombres de campo durante la serialización (`snake_case ↔ camelCase`) con `@QAlias`, y cómo incluir valores de getters calculados en la salida de `serialize()` / `toJSON()` con `@QComputed`. Termina con una llamada a `validate_usage`.
+
+### Argumentos
+
+| Argumento    | Obligatorio | Descripción                                                                                 |
+| ------------ | ----------- | ------------------------------------------------------------------------------------------- |
+| `model_code` | ✗ No        | Código opcional de clase QuickModel para analizar o enriquecer con `@QAlias` / `@QComputed` |
+
+### Flujo de trabajo
+
+1. Explica `@QAlias` — renombrado de campo en `serialize()` y búsqueda de clave en `create()`
+2. Explica `@QComputed` — incluye un getter en la salida serializada
+3. Muestra errores comunes (usar `@QComputed` en un campo `declare` en lugar de un getter)
+4. Llama a `validate_usage` para confirmar que el modelo es correcto
+
+### Ejemplo
+
+```
+model_code: "@Quick({})\nclass User extends QModel<User> { declare firstName: string; }"
+
+→ IA añade @QAlias("first_name") y getter @QComputed() fullName
+→ IA llama a validate_usage
+→ Devuelve modelo corregido con explicación de la salida de serialize() / toJSON()
+```
+
+---
+
+## `quickmodel_migration`
+
+**Migra clases TypeScript legadas o código antiguo de QuickModel v1 a patrones idiomáticos v2.**
+
+Guía a la IA para convertir asignaciones de propiedades a campos `declare`, envolver la clase con `@Quick({})`, añadir tipos de transformer, eliminar constructores manuales y llamar a `validate_usage`.
+
+### Argumentos
+
+| Argumento     | Obligatorio | Descripción                                                |
+| ------------- | ----------- | ---------------------------------------------------------- |
+| `legacy_code` | ✅ Sí       | Clase TypeScript legada o código v1 a migrar a patrones v2 |
+
+### Flujo de trabajo
+
+1. Identifica todos los campos que necesitan prefijo `declare`
+2. Determina qué campos necesitan entradas de transformer en `@Quick({})`
+3. Elimina constructores manuales que asignan campos
+4. Envuelve la clase con `@Quick({})` extendiendo `QModel<T>`
+5. Llama a `validate_usage` para verificar el código migrado
+
+### Ejemplo
+
+```
+legacy_code: "class User { name: string = ''; createdAt: Date = new Date(); }"
+
+→ IA genera: @Quick({ createdAt: Date }) class User extends QModel<User> { declare name: string; declare createdAt: Date; }
+→ IA llama a validate_usage
+→ Devuelve código migrado con explicación de cada cambio
+```
+
+---
+
+## `quickmodel_async_rules`
+
+> ⚠️ **Solo async**: Usa este skill únicamente cuando tus predicados `@QRule` requieran genuinamente operaciones asíncronas (consultas a BD, llamadas a APIs externas, validadores async). Para reglas síncronas, usa `checkRules()` — es más simple y rápido.
+
+**Guía el uso de `checkRulesAsync()` para predicados de reglas de negocio asíncronos.**
+
+Cubre la red de seguridad `timeoutMs`, el modo de ejecución `parallel` vs `serial` y los patrones de integración con NestJS / peticiones HTTP.
+
+### Argumentos
+
+| Argumento    | Obligatorio | Descripción                                                                                                   |
+| ------------ | ----------- | ------------------------------------------------------------------------------------------------------------- |
+| `model_code` | ✅ Sí       | Clase QuickModel con decoradores `@QRule` a convertir en async                                                |
+| `context`    | ✗ No        | Descripción opcional del contexto async (ej. "servicio NestJS con TypeORM", "verificación de unicidad en BD") |
+
+### Flujo de trabajo
+
+1. Advierte claramente que es solo para uso async (las reglas síncronas deben usar `checkRules()`)
+2. Muestra `checkRulesAsync()` con `timeoutMs` y modo `parallel` / `serial`
+3. Demuestra el patrón de inyección en contexto NestJS / async
+4. Muestra la sintaxis de predicado `async (value) => Promise<boolean>`
+5. Llama a `validate_usage` para verificar el modelo
+
+### Ejemplo
+
+```
+model_code: "@Quick({}) class User extends QModel<User> { @QRule(...) declare email: string; }"
+context: "Servicio NestJS con repositorio TypeORM"
+
+→ IA advierte: solo async, usa checkRules() para predicados síncronos
+→ IA muestra: await instance.checkRulesAsync({ timeoutMs: 5000, mode: "parallel" })
+→ IA muestra integración con @Injectable() de NestJS
+→ Devuelve modelo async con guía de uso
 ```

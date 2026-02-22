@@ -1,8 +1,5 @@
-// @quickmodel-rule-ignore: prefer-quick
-// This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
-import { QType } from '@/core/decorators/qtype.decorator'; // Import from source as it's not exported in index
 
 describe('Strict Mode Verification', () => {
 	test('Strict Mode (DISABLED by default): requires explicit decorators still good practice', () => {
@@ -12,7 +9,6 @@ describe('Strict Mode Verification', () => {
 
 		@Quick() // Strict is NOT default anymore
 		class User extends QModel<IUser> {
-			@QType() // Still good practice
 			declare name: string;
 		}
 
@@ -27,7 +23,6 @@ describe('Strict Mode Verification', () => {
 
 		@Quick()
 		class User extends QModel<IUser> {
-			@QType()
 			declare name: string;
 		}
 
