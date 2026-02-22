@@ -1,8 +1,8 @@
 # Integración con NestJS
 
-QuickModel funciona perfectamente con **NestJS** como reemplazo directo de las clases DTO. Dado que tanto QuickModel como NestJS dependen de `reflect-metadata` y los decoradores de TypeScript, la integración no requiere configuración adicional.
+QuickModel funciona perfectamente con **NestJS** como reemplazo directo de las clases DTO respaldadas por `class-validator` + `class-transformer`. Dado que ambos dependen de `reflect-metadata` y los decoradores de TypeScript, la integración no requiere configuración adicional.
 
-## Requisitos Previos
+## Requisitos previos
 
 Todos los proyectos NestJS ya importan `reflect-metadata` en `main.ts`. QuickModel usa el mismo mecanismo, por lo que no es necesario ningún paso adicional.
 
@@ -10,13 +10,7 @@ Todos los proyectos NestJS ya importan `reflect-metadata` en `main.ts`. QuickMod
 Si tu `main.ts` ya contiene `import 'reflect-metadata'` (estándar en cualquier app NestJS), QuickModel lo detecta automáticamente.
 :::
 
-## Instalación
-
-```bash
-npm install @cartago-git/quickmodel
-```
-
-Asegúrate de que `experimentalDecorators` y `emitDecoratorMetadata` estén activados en tu `tsconfig.json` — ya lo están en cualquier proyecto NestJS estándar:
+Asegúrate de que `experimentalDecorators` y `emitDecoratorMetadata` estén activados — ya lo están en cualquier proyecto NestJS estándar:
 
 ```json
 // tsconfig.json
@@ -28,9 +22,15 @@ Asegúrate de que `experimentalDecorators` y `emitDecoratorMetadata` estén acti
 }
 ```
 
+## Instalación
+
+```bash
+npm install @cartago-git/quickmodel
+```
+
 ## Usando QModel como DTO
 
-Define tus DTOs extendiendo `QModel` en lugar de usar clases planas. Obtienes coerción de tipos automática, validación y serialización de forma gratuita:
+Define tus DTOs extendiendo `QModel` en lugar de clases planas. Obtienes **coerción de tipos automática**, validación y serialización de forma gratuita — sin `class-transformer`:
 
 ```typescript
 // create-user.dto.ts
@@ -39,66 +39,86 @@ import { QModel, Quick } from '@cartago-git/quickmodel';
 interface ICreateUserBody {
 	name: string;
 	email: string;
-	birthDate: string;
+	birthDate: string | Date;
 	age: number;
+	active: boolean;
 }
 
-@Quick({ birthDate: Date })
+@Quick(
+	{ birthDate: Date, active: 'boolean' },
+	{ unknownPropertyPolicy: 'strip' }
+)
 export class CreateUserDto extends QModel<ICreateUserBody> {
 	declare name: string;
 	declare email: string;
 	declare birthDate: Date; // convertido automáticamente desde string ISO
 	declare age: number;
+	declare active: boolean;
 }
 ```
+
+::: tip Coerción de tipos
+`@Quick({ birthDate: Date })` indica a QuickModel que llame a `new Date(value)` al poblar el campo. El string del body JSON `"1994-06-15T00:00:00.000Z"` se convierte en un `Date` real — sin `new Date(dto.birthDate)` manual.
+:::
+
+::: warning Campos booleanos
+Usa `'boolean'` (literal de string) en `@Quick` para declarar un campo booleano — **no** el constructor `Boolean`. El literal activa el `PrimitiveTransformer` que valida que el valor sea un booleano real. En un body JSON estándar de NestJS, `true`/`false` ya llegan como booleanos reales desde el parser JSON.
+:::
 
 En tu controlador:
 
 ```typescript
 // users.controller.ts
 import { Body, Controller, Post } from '@nestjs/common';
-import { CreateUserDto } from './create-user.dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
+	constructor(private readonly usersService: UsersService) {}
+
 	@Post()
-	create(@Body() body: CreateUserDto) {
-		// body.birthDate ya es un objeto Date — sin parseo manual
-		const user = new CreateUserDto(body);
-		return user.serialize();
+	create(@Body() body: object) {
+		return this.usersService.create(body);
 	}
 }
 ```
 
 ## Validación con @QRule
 
-Reemplaza `class-validator` con `@QRule` para la validación de reglas de negocio. Los predicados de `@QRule` se ejecutan de forma síncrona o asíncrona:
+Reemplaza `class-validator` con `@QRule` para la validación de reglas de negocio. Los predicados son completamente tipados usando genéricos — sin más casts `(value as string)`:
 
 ```typescript
 // create-user.dto.ts
 import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
 
-@Quick({ birthDate: Date })
+@Quick(
+	{ birthDate: Date, active: 'boolean' },
+	{ unknownPropertyPolicy: 'strip' }
+)
 export class CreateUserDto extends QModel<ICreateUserBody> {
+	@QRule((value: string) => value.trim().length > 0, 'El nombre es requerido')
 	@QRule(
-		(v) => typeof v === 'string' && v.length > 0,
-		'El nombre es requerido'
+		(value: string) => value.trim().length <= 100,
+		'Nombre demasiado largo'
 	)
-	@QRule((v) => (v as string).length <= 100, 'Nombre demasiado largo')
 	declare name: string;
 
 	@QRule(
-		(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v as string),
+		(value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
 		'Formato de email inválido'
 	)
 	declare email: string;
 
-	declare birthDate: Date;
+	@QRule((value: number) => value >= 0, 'La edad no puede ser negativa')
+	@QRule((value: number) => value <= 130, 'La edad debe ser realista')
 	declare age: number;
+
+	declare birthDate: Date;
+	declare active: boolean;
 }
 ```
 
-Valida en un pipe de NestJS o en un servicio:
+Valida en la capa de servicio:
 
 ```typescript
 // users.service.ts
@@ -107,23 +127,27 @@ import { CreateUserDto } from './create-user.dto';
 
 @Injectable()
 export class UsersService {
-	async create(data: object): Promise<object> {
+	create(data: object): object {
 		const dto = new CreateUserDto(data);
 
 		const result = dto.checkRules();
 		if (!result.valid) {
-			throw new BadRequestException(result.errors);
+			throw new BadRequestException({
+				message: 'Validación fallida',
+				errors: result.errors, // [{ field, message, value }, ...]
+			});
 		}
 
-		// continúa con el modelo limpio y coercionado
 		return dto.serialize();
 	}
 }
 ```
 
-## Pipe de Validación Personalizado
+`result.errors` tiene la misma forma que los errores de `class-validator`, compatible con cualquier filtro de excepciones NestJS.
 
-Puedes encapsular la validación de QuickModel en un `PipeTransform` estándar de NestJS para inyección automática:
+## ValidationPipe personalizado
+
+Envuelve la validación de QuickModel en un `PipeTransform` estándar de NestJS para inyección automática a nivel de controlador:
 
 ```typescript
 // quickmodel-validation.pipe.ts
@@ -157,7 +181,7 @@ export class QuickModelValidationPipe implements PipeTransform {
 			});
 		}
 
-		return instance;
+		return instance; // el controlador recibe una instancia QModel coercionada y validada
 	}
 }
 ```
@@ -178,109 +202,266 @@ async function bootstrap() {
 bootstrap();
 ```
 
-## Integración con @nestjs/swagger
+## DTOs anidados
 
-El método `getSchema('openapi')` de QuickModel genera un esquema OpenAPI compatible con el decorador Swagger:
+Usa una clase `QModel` anidada en `@Quick` para instanciar y validar automáticamente objetos anidados:
 
 ```typescript
-// create-user.dto.ts
-import { ApiProperty } from '@nestjs/swagger';
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+// address.dto.ts
+@Quick({}, { unknownPropertyPolicy: 'strip' })
+export class AddressDto extends QModel<IAddress> {
+	@QRule((value: string) => value.trim().length > 0, 'La calle es requerida')
+	declare street: string;
 
-@Quick({ birthDate: Date })
-export class CreateUserDto extends QModel<ICreateUserBody> {
-	@ApiProperty({ example: 'Alice Smith' })
-	declare name: string;
+	@QRule((value: string) => value.trim().length > 0, 'La ciudad es requerida')
+	declare city: string;
 
-	@ApiProperty({ example: 'alice@example.com' })
-	declare email: string;
+	@QRule(
+		(value: string) => /^\d{5}$/.test(value),
+		'El ZIP debe tener 5 dígitos'
+	)
+	declare zip: string;
+}
 
-	@ApiProperty({ example: '1990-06-15T00:00:00.000Z' })
-	declare birthDate: Date;
+// create-order.dto.ts
+@Quick({ shippingAddress: AddressDto }, { unknownPropertyPolicy: 'strip' })
+export class CreateOrderDto extends QModel<ICreateOrderBody> {
+	@QRule(
+		(value: string) => value.trim().length > 0,
+		'El ID de producto es requerido'
+	)
+	declare productId: string;
+
+	@QRule((value: number) => value >= 1, 'La cantidad debe ser al menos 1')
+	declare quantity: number;
+
+	declare shippingAddress: AddressDto; // instanciado automáticamente como AddressDto
 }
 ```
 
-O genera el esquema completo de forma programática:
+```typescript
+// En tu servicio:
+const order = new CreateOrderDto(body);
+// order.shippingAddress ya es una instancia de AddressDto
+const addrResult = order.shippingAddress.checkRules();
+if (!addrResult.valid) {
+	throw new BadRequestException({ errors: addrResult.errors });
+}
+```
+
+## @QRule asíncrono (unicidad en BD)
+
+Usa `checkRulesAsync()` cuando algún predicado `@QRule` es asíncrono — típico en comprobaciones de unicidad en base de datos:
 
 ```typescript
-import { CreateUserDto } from './create-user.dto';
+// register.dto.ts
+@Quick({}, { unknownPropertyPolicy: 'strip' })
+export class RegisterDto extends QModel<IRegisterBody> {
+	@QRule((value: string) => value.length >= 3, 'Username mínimo 3 caracteres')
+	@QRule(
+		(value: string) => /^[a-zA-Z0-9_]+$/.test(value),
+		'Solo letras, números y guiones bajos'
+	)
+	declare username: string;
 
-// Genera un esquema compatible con OpenAPI 3.x
-const schema = CreateUserDto.getSchema('openapi');
-console.log(JSON.stringify(schema, null, 2));
+	// Predicado async — consulta la BD
+	@QRule(async (value: string) => {
+		const exists = await db.users.findOne({ email: value });
+		return !exists;
+	}, 'Email ya registrado')
+	declare email: string;
+
+	@QRule(
+		(value: string) => value.length >= 8,
+		'Contraseña mínimo 8 caracteres'
+	)
+	@QRule(
+		(value: string) => /[A-Z]/.test(value),
+		'Contraseña necesita una mayúscula'
+	)
+	@QRule(
+		(value: string) => /[0-9]/.test(value),
+		'Contraseña necesita un dígito'
+	)
+	declare password: string;
+}
+```
+
+```typescript
+// auth.service.ts
+@Injectable()
+export class AuthService {
+	async register(data: object): Promise<object> {
+		const dto = new RegisterDto(data);
+
+		// evalúa tanto predicados síncronos como asíncronos
+		const result = await dto.checkRulesAsync();
+		if (!result.valid) {
+			throw new BadRequestException({
+				message: 'Registro fallido',
+				errors: result.errors,
+			});
+		}
+
+		return this.saveUser(dto.serialize());
+	}
+}
+```
+
+## Endpoints bulk con createMany
+
+Usa `createMany()` para endpoints POST en bulk. Devuelve `{ instances, errors }`, separando limpiamente los elementos válidos de los inválidos:
+
+```typescript
+// users.service.ts
+@Injectable()
+export class UsersService {
+	createMany(data: object[]): object {
+		const { instances, errors } = CreateUserDto.createMany(data);
+
+		// instances → DTOs coercionados + validados listos para persistir
+		// errors    → [{ index, instance, errors: [...] }]
+
+		if (errors.length > 0) {
+			throw new BadRequestException({
+				message: `${errors.length} elementos fallaron la validación`,
+				errors: errors.map((entry) => ({
+					index: entry.index,
+					errors: entry.errors,
+				})),
+			});
+		}
+
+		return {
+			created: instances.length,
+			items: instances.map((dto) => dto.serialize()),
+		};
+	}
+}
+```
+
+::: tip Éxito parcial
+Pasa `{ includeErrorInstances: true }` a `createMany()` para incluir las instancias fallidas en `instances[]` junto con las válidas — útil para endpoints de inserción bulk con fallo parcial.
+:::
+
+## Integración con @nestjs/swagger
+
+`getSchema('openapi')` genera un schema compatible con OpenAPI 3.x a partir del mapa de tipos de `@Quick()`. Úsalo programáticamente o junto con `@ApiProperty`:
+
+```typescript
+import { ApiProperty } from '@nestjs/swagger';
+import { QModel, Quick } from '@cartago-git/quickmodel';
+
+@Quick(
+	{ title: 'string', price: 'number', available: 'boolean', createdAt: Date },
+	{ unknownPropertyPolicy: 'strip' }
+)
+export class ProductDto extends QModel<IProduct> {
+	@ApiProperty({ example: 'Laptop Pro' })
+	declare title: string;
+
+	@ApiProperty({ example: 999.99 })
+	declare price: number;
+
+	@ApiProperty({ example: true })
+	declare available: boolean;
+
+	@ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
+	declare createdAt: Date;
+}
+```
+
+O genera el schema completo automáticamente:
+
+```typescript
+const schema = ProductDto.getSchema('openapi');
 // {
 //   "type": "object",
 //   "properties": {
-//     "name": { "type": "string" },
-//     "email": { "type": "string" },
-//     "birthDate": { "type": "string", "format": "date-time" }
+//     "title":     { "type": "string" },
+//     "price":     { "type": "number" },
+//     "available": { "type": "boolean" },
+//     "createdAt": { "type": "string", "format": "date-time" }
 //   }
 // }
 ```
 
-## Usando QModel en la Capa de Servicio
+::: info Alcance de la generación de schemas
+`getSchema()` genera entradas solo para campos tipados explícitamente en `@Quick()` o `@QType()`. Los campos declarados con `declare name: string` sin una entrada `@Quick({ name: 'string' })` correspondiente no se incluyen. Agrega mapas de tipos explícitos para cobertura completa del schéma.
 
-QuickModel brilla en la capa de servicio para la validación y transformación de modelos de dominio:
+Formatos disponibles: `'openapi'`, `'json'` (JSON Schema Draft-07), `'ajv'`, `'zod'`, `'mongo'`, `'graphql'`, `'typescript'`.
+:::
+
+## Capa de servicio con patrón repositorio
 
 ```typescript
-// users.module.ts
-import { Module } from '@nestjs/common';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-
-@Module({
-	controllers: [UsersController],
-	providers: [UsersService],
-})
-export class UsersModule {}
-
 // users.service.ts
-import { Injectable } from '@nestjs/common';
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
 
-interface IUser {
-	id: string;
-	name: string;
-	email: string;
-	createdAt: string;
-}
-
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'strip' })
 class UserModel extends QModel<IUser> {
 	declare id: string;
-	declare name: string;
+	declare firstName: string;
+	declare lastName: string;
 	declare email: string;
+	declare role: 'admin' | 'user';
 	declare createdAt: Date;
+
+	@QComputed()
+	get fullName(): string {
+		return `${this.firstName} ${this.lastName}`;
+	}
+
+	@QComputed()
+	get isAdmin(): boolean {
+		return this.role === 'admin';
+	}
 }
 
 @Injectable()
 export class UsersService {
-	private users: UserModel[] = [];
+	private readonly store = new Map<string, UserModel>();
 
 	create(data: object): object {
 		const user = new UserModel(data);
-		this.users.push(user);
-		return user.serialize(); // retorna un objeto plano seguro para JSON
+		this.store.set((user as any).id, user);
+		return user.serialize(); // { id, firstName, lastName, ..., fullName, isAdmin }
+	}
+
+	findById(id: string): object {
+		const user = this.store.get(id);
+		if (!user) throw new NotFoundException(`Usuario ${id} no encontrado`);
+		return user.serialize();
 	}
 
 	findAll(): object[] {
-		return this.users.map((u) => u.serialize());
+		return [...this.store.values()].map((usr) => usr.serialize());
 	}
 }
 ```
 
-## Campos Calculados en Respuestas API
+## Campos calculados en respuestas API (@QComputed)
 
-Usa `@QComputed()` para incluir datos derivados en la respuesta serializada sin modificar el modelo almacenado:
+Usa `@QComputed()` para incluir campos derivados en la respuesta API **sin guardarlos en base de datos**:
 
 ```typescript
 import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
 
-@Quick({ firstName: String, lastName: String, birthYear: Number })
+@Quick(
+	{
+		firstName: 'string',
+		lastName: 'string',
+		birthYear: 'number',
+		score: 'number',
+	},
+	{ unknownPropertyPolicy: 'strip' }
+)
 export class UserResponseDto extends QModel<IUserResponse> {
 	declare firstName: string;
 	declare lastName: string;
 	declare birthYear: number;
+	declare score: number;
 
 	@QComputed()
 	get fullName(): string {
@@ -291,26 +472,87 @@ export class UserResponseDto extends QModel<IUserResponse> {
 	get age(): number {
 		return new Date().getFullYear() - this.birthYear;
 	}
+
+	@QComputed()
+	get scoreLabel(): 'excellent' | 'good' | 'average' | 'poor' {
+		if (this.score >= 90) return 'excellent';
+		if (this.score >= 70) return 'good';
+		if (this.score >= 50) return 'average';
+		return 'poor';
+	}
 }
 
-// En el controlador:
-// user.serialize() → { firstName, lastName, birthYear, fullName, age }
+// user.serialize() → { firstName, lastName, birthYear, score, fullName, age, scoreLabel }
 ```
 
-## Resumen de Patrones
+::: tip @QComputed vs getter simple
+Un `get fullName()` **sin** `@QComputed()` existe en el prototipo pero es invisible para `serialize()` y `toJSON()`. El decorador es el opt-in que le indica al serializador que incluya el getter en el output.
+:::
 
-| Aspecto             | NestJS (class-validator)      | QuickModel                        |
-| ------------------- | ----------------------------- | --------------------------------- |
-| Coerción de tipos   | Manual / class-transformer    | Automático vía `@Quick`           |
-| Validación de campo | `@IsEmail()`, `@IsNotEmpty()` | `@QRule(predicado, mensaje)`      |
-| Modelos anidados    | `@Type(() => NestedDto)`      | `@Quick({ campo: ModelAnidado })` |
-| Serialización       | `plainToInstance()`           | `.serialize()` / `.toJSON()`      |
-| Exportar esquema    | Decoradores swagger manuales  | `.getSchema('openapi')`           |
-| Campos calculados   | No integrado                  | `@QComputed()`                    |
+## Testing de servicios NestJS
 
-## Próximos Pasos
+Prueba la lógica de tu servicio sin arrancar una aplicación NestJS — los DTOs de QuickModel funcionan en cualquier test runner:
 
-- [Validación (@QRule)](./validation) — API completa de predicados
+```typescript
+// create-user.dto.test.ts
+import { describe, test, expect } from 'bun:test'; // o jest/vitest
+
+describe('CreateUserDto', () => {
+	test('convierte birthDate desde string ISO', () => {
+		const dto = new CreateUserDto({
+			name: 'Alice',
+			email: 'alice@example.com',
+			age: 30,
+			birthDate: '1994-06-15T00:00:00.000Z',
+			active: true,
+		});
+		expect(dto.birthDate).toBeInstanceOf(Date);
+	});
+
+	test('checkRules() valida todos los campos', () => {
+		const invalid = new CreateUserDto({
+			name: '',
+			email: 'bad',
+			age: -1,
+			birthDate: '1994-06-15',
+			active: true,
+		});
+		const { valid, errors } = invalid.checkRules();
+		expect(valid).toBe(false);
+		expect(errors.length).toBeGreaterThan(0);
+	});
+
+	test('serialize() produce un objeto plano seguro para JSON', () => {
+		const dto = new CreateUserDto({
+			name: 'Alice',
+			email: 'alice@example.com',
+			age: 30,
+			birthDate: '1994-06-15T00:00:00.000Z',
+			active: true,
+		});
+		expect(() => JSON.stringify(dto.serialize())).not.toThrow();
+	});
+});
+```
+
+## Tabla resumen de patrones
+
+| Concern               | NestJS (class-validator)                  | QuickModel                                       |
+| --------------------- | ----------------------------------------- | ------------------------------------------------ |
+| Coerción de tipos     | `class-transformer` + `@Type()`           | Automática con `@Quick({ field: Date })`         |
+| Validación de campos  | `@IsEmail()`, `@IsNotEmpty()`, …          | `@QRule(predicado, mensaje)`                     |
+| Validación async      | `@ValidatorConstraint({ async: true })`   | Predicado `async` + `checkRulesAsync()`          |
+| Modelos anidados      | `@Type(() => NestedDto)`                  | `@Quick({ field: NestedModel })`                 |
+| Serialización         | `instanceToPlain()` / `plainToInstance()` | `.serialize()` / `.toJSON()`                     |
+| Exportar schema       | `@ApiProperty()` manual por campo         | `.getSchema('openapi')`                          |
+| Campos API calculados | No integrado                              | `@QComputed()` getters                           |
+| Creación bulk         | Bucle manual                              | `createMany(array)` → `{ instances, errors }`    |
+| Strip unknown props   | `@Exclude()` + `excludeExtraneousValues`  | `@Quick({}, { unknownPropertyPolicy: 'strip' })` |
+
+## Próximos pasos
+
+- [Validación (@QRule)](./validation) — API completa de predicados, reglas async, mensajes i18n
 - [Campos Calculados (@QComputed)](./serialization#campos-calculados-qcomputed) — datos derivados en respuestas
 - [Serialización](./serialization) — opciones serialize / toJSON / toPlain
-- [Generación de Esquemas](./qmodel#getschema) — exportación de esquemas en múltiples formatos
+- [Generación de Esquemas](./qmodel#getschema) — exportación en múltiples formatos (`openapi`, `json`, `ajv`, `zod`, …)
+- [Generación de Mocks](./mocks) — generación automática de fixtures de test
