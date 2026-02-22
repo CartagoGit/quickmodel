@@ -43,8 +43,8 @@
 - ✅ Task #12: Warning activo cuando `disableSafetyChecks` está habilitado
 - ✅ Task #13: Corregir script `release:check` — **COMPLETADA**
 - ⏳ Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer
-- ⏳ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning)
-- ⏳ Task #16: Tests de `transformCase` con herencia multinivel
+- ✅ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning) — **COMPLETADA**
+- ✅ Task #16: Tests de `transformCase` con herencia multinivel — **COMPLETADA**
 - ⏸️ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
 - ⏸️ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización
 - ⏸️ Task #19: `QTransformerRegistry.snapshot()/restore()` — aislamiento de estado en tests
@@ -926,20 +926,20 @@ describe('Computed Properties & Getters', () => {
 
 ### Tareas sprint seguridad/robustez (Feb 2026 — identificadas en revisión completa)
 
-| #   | Tarea                                         | Prioridad | Estado        | Esfuerzo | Impacto         | Fecha Est. |
-| --- | --------------------------------------------- | --------- | ------------- | -------- | --------------- | ---------- |
-| 11  | `safeStringify` truncado 500 chars            | 🔴 Alta   | ✅ COMPLETADA | 30min    | Alto (seg.)     | Feb 22     |
-| 12  | Warning `disableSafetyChecks` activo          | 🔴 Alta   | ✅ COMPLETADA | 30min    | Alto (seg.)     | Feb 22     |
-| 13  | Script `release:check` alias en package.json  | 🔴 Alta   | ✅ COMPLETADA | 0min     | Medio (DX)      | Feb 22     |
-| 14  | Tests negativos `JsonSchemaGenerator`         | 🟡 Media  | ⏳ TODO       | 1-2h     | Medio           | Feb 24-25  |
-| 15  | Tests `disableSafetyChecks` (flag + warning)  | 🟡 Media  | ⏳ TODO       | 1h       | Medio           | Feb 24-25  |
-| 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ⏳ TODO       | 2h       | Medio           | Feb 24-25  |
-| 17  | Performance benchmarks baseline               | 🟡 Media  | ⏸️ BACKLOG    | 4-6h     | Alto (mktg.)    | Mar 2026   |
-| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG    | 3-4h     | Alto (DX)       | Mar 2026   |
-| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ⏸️ BACKLOG    | 2h       | Medio (DX)      | Mar 2026   |
-| 20  | `@QRule` async predicates                     | 🟢 Baja   | ✅ COMPLETADA | —        | Medio           | Feb 2026   |
-| 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG    | 3-4h     | Alto (adop.)    | Mar 2026   |
-| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG    | 1h       | Alto (breaking) | v2.0.0     |
+| #   | Tarea                                         | Prioridad | Estado        | Esfuerzo  | Impacto         | Fecha Est. |
+| --- | --------------------------------------------- | --------- | ------------- | --------- | --------------- | ---------- |
+| 11  | `safeStringify` truncado 500 chars            | 🔴 Alta   | ✅ COMPLETADA | 30min     | Alto (seg.)     | Feb 22     |
+| 12  | Warning `disableSafetyChecks` activo          | 🔴 Alta   | ✅ COMPLETADA | 30min     | Alto (seg.)     | Feb 22     |
+| 13  | Script `release:check` alias en package.json  | 🔴 Alta   | ✅ COMPLETADA | 0min      | Medio (DX)      | Feb 22     |
+| 14  | Tests negativos `JsonSchemaGenerator`         | 🟡 Media  | ⏳ TODO       | 1-2h      | Medio           | Feb 24-25  |
+| 15  | Tests `disableSafetyChecks` (flag + warning)  | 🟡 Media  | ✅ COMPLETADA | `c615290` | +7              |
+| 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ✅ COMPLETADA | pendiente | +10             |
+| 17  | Performance benchmarks baseline               | 🟡 Media  | ⏸️ BACKLOG    | 4-6h      | Alto (mktg.)    | Mar 2026   |
+| 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG    | 3-4h      | Alto (DX)       | Mar 2026   |
+| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ⏸️ BACKLOG    | 2h        | Medio (DX)      | Mar 2026   |
+| 20  | `@QRule` async predicates                     | 🟢 Baja   | ✅ COMPLETADA | —         | Medio           | Feb 2026   |
+| 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG    | 3-4h      | Alto (adop.)    | Mar 2026   |
+| 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG    | 1h        | Alto (breaking) | v2.0.0     |
 
 ### Nuevas features implementadas en sprint Feb 2026 (no registradas previamente)
 
@@ -957,8 +957,8 @@ describe('Computed Properties & Getters', () => {
 
 **Progreso:**
 
-- ✅ Completadas: 22/31 (71%) — 1777 tests passing
-- ⏳ Pendientes activas: 4/31 (13%) — Tasks #14, #15, #16, #31
+- ✅ Completadas: 24/31 (77%) — 1794 tests passing
+- ⏳ Pendientes activas: 2/31 (6%) — Tasks #14, #31
 - ⏸️ Backlog: 5/31 (16%)
 
 **Tiempo invertido (histórico):** ~31h  
@@ -1183,10 +1183,14 @@ describe('JsonSchemaGenerator: tipos sin transformer', () => {
 
 ### Task #15: Tests específicos para la flag `disableSafetyChecks`
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETADA  
+**Commit:** `c615290`  
+**Fecha:** 22 de febrero de 2026  
+**Resultado:** 7 tests documentando comportamiento exacto: prototype pollution siempre bloqueada (3 casos), checks de tamaño bypasseados (2 casos), mensaje de warning correcto (1 caso), funcionalidad normal con flag (1 caso)  
+**Tests:** 1784 → 1794 (en sesión, +10 con Task #16)  
 **Prioridad:** 🟡 Media  
 **Esfuerzo:** 1 hora  
-**Impacto:** Medio — verificar que la flag desactiva correctamente los checks (y solo esos)
+**Impacto:** Medio — documenta explícitamente qué checks se desactivan/mantienen con `disableSafetyChecks: true`
 
 **Pasos TDD:**
 
@@ -1227,10 +1231,13 @@ describe('disableSafetyChecks: behavior verification', () => {
 
 ### Task #16: Tests de `transformCase` con herencia multinivel
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Resultado:** 10 tests — 2-level (3 tests), 3-level (5 tests globales/decorator/overrides), kebab-case (1 test); la implementación ya soportaba herencia correctamente; los tests sirven como regresión y documentación  
+**Tests:** +10 sobre base de 1784  
 **Prioridad:** 🟡 Media  
 **Esfuerzo:** 2 horas  
-**Impacto:** Medio — garantizar que la transformación de case funciona correctamente en jerarquías
+**Impacto:** Medio — garantiza que la transformación de case funciona correctamente en jerarquías
 
 **Pasos TDD:**
 
@@ -1705,15 +1712,9 @@ Antes de hacer merge a `main` y release:
 - **Por qué:** La API devuelve `{ type: 'string' }` para props sin transformer — puede ser incorrecto para `number`/`boolean`
 - **Tiempo:** 1-2 horas
 
-**5. Task #15: Tests `disableSafetyChecks` adicionales** (PRÓXIMO)
+**5. ✅ Task #15: Tests `disableSafetyChecks`** — COMPLETADA (`c615290`)
 
-- **Por qué:** Documentar explícitamente qué checks se desactivan/mantienen
-- **Tiempo:** 1 hora
-
-**6. Task #16: Tests `transformCase` herencia multinivel** (PRÓXIMO)
-
-- **Por qué:** Garantizar que la transformación de case funciona en jerarquías
-- **Tiempo:** 2 horas
+**6. ✅ Task #16: Tests `transformCase` herencia multinivel** — COMPLETADA
 
 ### Comandos útiles:
 
@@ -1739,4 +1740,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº3) — Tasks #11 y #12 implementadas con TDD | 1777 tests passing | Siguiente: Task #31 (docs nuevas features)
+**Última actualización:** 22 de febrero de 2026 (revisión nº4) — Tasks #11, #12, #15 y #16 implementadas con TDD | 1794 tests passing | Siguiente: Task #31 (docs nuevas features)
