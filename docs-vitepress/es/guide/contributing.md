@@ -390,9 +390,69 @@ interface IUser {
 	name: string;
 }
 
-// ✅ Usar type para unions, tuples, utilities
+// ✅ Usar type para unions, tuples, utilities — siempre con prefijo I
+type IStatus = 'active' | 'inactive';
+type IPoint = [number, number];
+
+// ❌ Type aliases sin prefijo I están prohibidos
 type Status = 'active' | 'inactive';
-type Point = [number, number];
+```
+
+**Longitud de identificadores (ESLint `id-length`):**
+
+```typescript
+// ✅ Mínimo 3 caracteres requerido
+const age = 25;
+const idx = 0;
+const err = new Error();
+
+// ✅ Nombres cortos permitidos: id, on, fs, cb, md, ts, err, _
+const id = model.id;
+const cb = () => {};
+const [_, second] = list;
+
+// ❌ Violaciones de nombre corto
+const a = 1;
+const fn = () => {};
+```
+
+**Máximo parámetros por función (ESLint `max-params`):**
+
+```typescript
+// ✅ Hasta 3 parámetros ok
+function create(name: string, age: number, active: boolean) {}
+
+// ✅ Más de 3 — usar objeto de opciones
+function create(options: ICreateOptions) {}
+
+// ❌ 4+ parámetros posicionales prohibido (excepto en src/transformers/ y src/core/bases/)
+function process(a: string, b: number, c: boolean, d: object) {}
+```
+
+**Imports restringidos:**
+
+```typescript
+// ✅ Usar path aliases internos
+import { QModel } from '@/core/models/quick.model';
+import { McpServer } from '@mcp/server';
+
+// ❌ Nunca auto-importar el paquete publicado desde src/
+import { QModel } from '@cartago-git/quickmodel';
+
+// ❌ Nunca importar el barrel @mcp sin ruta
+import { something } from '@mcp';
+```
+
+### Validación automática rápida
+
+Usar la herramienta MCP `check_project_rules` antes de completar cualquier tarea. Verifica estáticamente todas las reglas anteriores sin ejecutar ESLint:
+
+```bash
+# Via herramienta MCP (rápido, sin proceso externo)
+mcp: check_project_rules
+
+# Validación completa (lint + typecheck + tests)
+bun run check
 ```
 
 **Property Declaration:**

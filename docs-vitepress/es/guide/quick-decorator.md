@@ -76,7 +76,7 @@ Debido a que `@Quick()` envuelve el constructor de tu clase, maneja automáticam
 
 - ✅ **`!` (Asignación Definitiva)**: Seguro de usar. El decorador soluciona automáticamente el problema de "sobrescritura con undefined".
 - ✅ **`?` (Opcional)**: Seguro de usar.
-- ✅ **`declare`**: Seguro de usar (y estrictamente requerido si usas `@QType` _sin_ `@Quick`).
+- ✅ **`declare`**: Seguro de usar (y estrictamente requerido si usas `@QType` _sin_ `@Quick` en modo legacy).
 
 ```typescript
 @Quick({ name: String })
@@ -91,6 +91,40 @@ class User extends QModel<IUser> {
 ::: tip ROBUSTEZ
 **Recomendación**: Siempre usa `@Quick()` en la clase (aunque sea vacío) si vas a definir valores por defecto (`prop = 123`) o usas modificadores estrictos. Esto garantiza un comportamiento robusto y evita errores de inicialización.
 :::
+
+### Compatibilidad con modo TC39
+
+`@Quick` es un **decorador de clase** y funciona idénticamente en modo legacy (`experimentalDecorators: true`) y en modo TC39 (estándar, TypeScript 5+). No se requiere ningún cambio de configuración.
+
+La única diferencia al cambiar a TC39 afecta a las **declaraciones de campo** cuando también se usa `@QType`:
+
+| Modo   | Sintaxis de campo con `@QType` |
+| ------ | ------------------------------ |
+| Legacy | `declare nombreCampo: Tipo`    |
+| TC39   | `nombreCampo!: Tipo`           |
+
+`@Quick` en sí no se ve afectado — los tres modificadores (`!`, `?`, `declare`) siguen funcionando con `@Quick` en ambos modos.
+
+```typescript
+// Modo TC39 — @Quick funciona igual
+@Quick({ createdAt: Date })
+class User extends QModel<IUser> {
+	declare id: number; // ✅ funciona en ambos modos
+	declare createdAt: Date; // ✅ funciona en ambos modos
+}
+
+// Modo TC39 — los campos con @QType requieren ! en lugar de declare
+@Quick()
+class Post extends QModel<IPost> {
+	@QType(Date)
+	createdAt!: Date; // ✅ TC39: usa ! para campos decorados con @QType
+
+	@QType(String)
+	title!: string; // ✅
+}
+```
+
+Consulta [Instalación — Modo TC39](./installation) para la configuración completa de `tsconfig.json`.
 
 ---
 

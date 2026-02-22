@@ -18,9 +18,13 @@
 		// Array index access ergonomics in tests
 		"noUncheckedIndexedAccess": false,
 
-		// rootDir must cover both src/ and tests/ from the project root
+		// rootDir must cover both src/ and tests/ from the project root.
+		// Note: src/**/* is intentionally NOT listed in `include` — TypeScript
+		// follows import chains automatically. Including it explicitly caused
+		// TS2300 "Duplicate identifier" errors when qmodel-tc39.test.ts imports
+		// @/index and the same src files were also matched by the glob.
 		"rootDir": "../../../../"
 	},
-	"include": ["qrule-tc39.test.ts", "../../../../src/**/*"],
+	"include": ["qrule-tc39.test.ts", "qmodel-tc39.test.ts"],
 	"exclude": ["../../../../node_modules", "../../../../dist"]
 }

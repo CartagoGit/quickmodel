@@ -34,23 +34,73 @@ bun add @cartago-git/quickmodel
 
 ## Configuración de TypeScript
 
-QuickModel usa decoradores, por lo que debes habilitarlos en tu `tsconfig.json`:
+QuickModel admite **dos modos de decoradores**. Elige el que se adapte a tu proyecto:
+
+### Modo 1 — Decoradores legacy (clásico, mayor compatibilidad con herramientas)
 
 ```json
 {
 	"compilerOptions": {
 		"experimentalDecorators": true,
-		"target": "ES2020",
-		"lib": ["ES2020"],
+		"target": "ES2022",
+		"lib": ["ES2022"],
 		"module": "ESNext",
 		"moduleResolution": "node"
 	}
 }
 ```
 
+### Modo 2 — Decoradores estándar TC39 (TypeScript 5+, sin flags legacy)
+
+```json
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2022"],
+		"module": "ESNext",
+		"moduleResolution": "node"
+	}
+}
+```
+
+::: info Modo TC39 — ¿qué cambia?
+Cuando `experimentalDecorators` está **ausente o es `false`**, TypeScript compila los decoradores con la especificación TC39 Stage-3. QuickModel lo gestiona de forma transparente:
+
+- **`@Quick`** — sin cambios. Los decoradores de clase siguen recibiendo el constructor como primer argumento.
+- **`@QType`** — los metadatos se registran dentro de un callback `addInitializer` que se ejecuta en la **primera creación de instancia**, en vez de en tiempo de definición de clase. En la práctica esto es invisible: los metadatos siempre están disponibles antes de que `QModel.initialize()` los lea.
+- **`@QRule`** — el tipo del parámetro del predicado se **infiere automáticamente** desde el tipo del campo. No se necesita anotación manual:
+
+```typescript
+// Modo TC39 — val infiere tipo Date automáticamente ✅
+@QRule((val) => val > new Date('2000-01-01'), 'Debe ser posterior al año 2000')
+createdAt!: Date;
+
+// Modo legacy — se requiere anotación
+@QRule((val: Date) => val > new Date('2000-01-01'), 'Debe ser posterior al año 2000')
+declare createdAt: Date;
+```
+
+:::
+
+::: warning La sintaxis de campos cambia con TC39
+En **modo TC39**, los decoradores de campo (`@QType`, `@QRule`) **no pueden aplicarse a campos `declare`** — usa `!` (aserción de asignación definitiva) en su lugar:
+
+```typescript
+// ✅ Modo TC39
+@QType(Date)
+createdAt!: Date;
+
+// ✅ Modo legacy (experimentalDecorators: true)
+@QType(Date)
+declare createdAt: Date;
+```
+
+Los campos sin decorar que solo necesitan seguimiento de tipos (sin `@QType` / `@QRule`) pueden seguir usando `declare` en ambos modos.
+:::
+
 ### Opciones Requeridas
 
-- **`experimentalDecorators: true`** - Habilita la sintaxis de decoradores (`@Quick()`)
+- **`experimentalDecorators: true`** _(solo modo legacy)_ — habilita la sintaxis PropertyDecorator legacy. Omítela (o ponla en `false`) para usar el modo TC39.
 
 ### Opciones Recomendadas
 

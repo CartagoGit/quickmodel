@@ -75,7 +75,7 @@ Because `@Quick()` wraps your class constructor, it automatically handles proper
 
 - ✅ **`!` (Definite Assignment)**: Safe to use. The decorator fixes the "undefined overwrite" issue automatically.
 - ✅ **`?` (Optional)**: Safe to use.
-- ✅ **`declare`**: Safe to use (and strictly required if using `@QType` _without_ `@Quick`).
+- ✅ **`declare`**: Safe to use (and strictly required if using `@QType` _without_ `@Quick` in legacy mode).
 
 ```typescript
 @Quick({ name: String })
@@ -90,6 +90,40 @@ class User extends QModel<IUser> {
 ::: tip ROBUSTNESS
 **Recommendation**: Even if you use `@QType` for individual fields, adding `@Quick()` (even empty) to the class is recommended if you use default values (`prop = 123`). It guarantees that QuickModel's logic runs _before_ accidental overwrites occur.
 :::
+
+### TC39 decorator mode compatibility
+
+`@Quick` is a **class decorator** and works identically in both legacy (`experimentalDecorators: true`) and TC39 (standard, TypeScript 5+) modes. No configuration change is required.
+
+The only difference when switching to TC39 mode affects **field declarations** when `@QType` is also used:
+
+| Mode   | `@QType` field syntax     |
+| ------ | ------------------------- |
+| Legacy | `declare fieldName: Type` |
+| TC39   | `fieldName!: Type`        |
+
+`@Quick` itself is unaffected — all three modifiers (`!`, `?`, `declare`) continue to work with `@Quick` in both modes.
+
+```typescript
+// TC39 mode — @Quick works unchanged
+@Quick({ createdAt: Date })
+class User extends QModel<IUser> {
+	declare id: number; // ✅ works in both modes
+	declare createdAt: Date; // ✅ works in both modes
+}
+
+// TC39 mode — @QType fields require ! instead of declare
+@Quick()
+class Post extends QModel<IPost> {
+	@QType(Date)
+	createdAt!: Date; // ✅ TC39: use ! for @QType-decorated fields
+
+	@QType(String)
+	title!: string; // ✅
+}
+```
+
+See [Installation — TC39 Mode](./installation) for the full `tsconfig.json` setup.
 
 ---
 

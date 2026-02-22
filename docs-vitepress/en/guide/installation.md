@@ -34,23 +34,73 @@ bun add @cartago-git/quickmodel
 
 ## TypeScript Configuration
 
-QuickModel uses decorators, so you need to enable them in your `tsconfig.json`:
+QuickModel supports **two decorator modes**. Pick whichever matches your project:
+
+### Mode 1 — Legacy decorators (classic, widest tooling compatibility)
 
 ```json
 {
 	"compilerOptions": {
 		"experimentalDecorators": true,
-		"target": "ES2020",
-		"lib": ["ES2020"],
+		"target": "ES2022",
+		"lib": ["ES2022"],
 		"module": "ESNext",
 		"moduleResolution": "node"
 	}
 }
 ```
 
+### Mode 2 — TC39 standard decorators (TypeScript 5+, no legacy flags)
+
+```json
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2022"],
+		"module": "ESNext",
+		"moduleResolution": "node"
+	}
+}
+```
+
+::: info TC39 mode — what changes?
+When `experimentalDecorators` is **absent or `false`**, TypeScript compiles decorators using the TC39 Stage-3 spec. QuickModel handles this transparently:
+
+- **`@Quick`** — unchanged. Class decorators still receive the class constructor as their first argument.
+- **`@QType`** — metadata is now registered inside an `addInitializer` callback that fires on **first instance creation** instead of at class-definition time. For practical purposes this is invisible — the metadata is always ready before `QModel.initialize()` reads it.
+- **`@QRule`** — the predicate parameter type is **automatically inferred** from the field type. No manual annotation needed:
+
+```typescript
+// TC39 mode — val inferred as Date automatically ✅
+@QRule((val) => val > new Date('2000-01-01'), 'Must be after 2000')
+createdAt!: Date;
+
+// Legacy mode — annotation required
+@QRule((val: Date) => val > new Date('2000-01-01'), 'Must be after 2000')
+declare createdAt: Date;
+```
+
+:::
+
+::: warning Field syntax changes with TC39
+In **TC39 mode**, field decorators (`@QType`, `@QRule`) **cannot be applied to `declare` fields** — use `!` (definite assignment assertion) instead:
+
+```typescript
+// ✅ TC39 mode
+@QType(Date)
+createdAt!: Date;
+
+// ✅ Legacy mode (experimentalDecorators: true)
+@QType(Date)
+declare createdAt: Date;
+```
+
+Undecorated fields that only need type-tracking (no `@QType` / `@QRule`) can still use `declare` in both modes.
+:::
+
 ### Required Compiler Options
 
-- **`experimentalDecorators: true`** - Enables decorator syntax (`@Quick()`)
+- **`experimentalDecorators: true`** _(legacy mode only)_ — enables legacy PropertyDecorator syntax. Omit it (or set to `false`) to use TC39 mode.
 
 ### Recommended Options
 

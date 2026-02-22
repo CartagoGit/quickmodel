@@ -498,6 +498,10 @@ export default defineConfig({
 									link: '/en/guide/validation',
 								},
 								{
+									text: 'Form Validation (/forms)',
+									link: '/en/guide/forms',
+								},
+								{
 									text: 'Form Schema (@QField)',
 									link: '/en/guide/qfield',
 								},
@@ -634,6 +638,10 @@ export default defineConfig({
 								{
 									text: 'Validación (@QRule)',
 									link: '/es/guide/validation',
+								},
+								{
+									text: 'Validación de Formularios (/forms)',
+									link: '/es/guide/forms',
 								},
 								{
 									text: 'Esquema de Formulario (@QField)',

@@ -26,7 +26,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 🤖 **MCP Server** - AI assistant integration with 10 public tools and 4 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
-- 🧪 **Well Tested** - 1500+ tests covering all features
+- 🧪 **Well Tested** - 1500+ tests covering all features- 🏷️ **TC39 Decorator Support** - Works with both legacy (`experimentalDecorators: true`) and TC39 standard decorators (TypeScript 5+ default mode)
 
 ## 📦 Installation
 
@@ -343,7 +343,7 @@ Nesting depth is explicit:
 
 ### Property Declaration
 
-**All three TypeScript property declaration styles work identically:**
+**All three TypeScript property declaration styles work identically with `@Quick`:**
 
 ```typescript
 // ✅ Style 1: declare (cleaner, no runtime code)
@@ -372,6 +372,8 @@ class User extends QModel<IUser> {
 ```
 
 All three styles produce **identical behavior** - choose based on your preference or team conventions.
+
+> **TC39 mode note:** When using `@QType` as a **field decorator** in TC39 mode (`experimentalDecorators` absent), decorated fields require `!` instead of `declare`. Fields decorated only via the `@Quick` class decorator work with all three styles in both modes. See [TC39 decorator support](#tc39-decorator-mode) below.
 
 ### Collections Example
 

@@ -53,6 +53,7 @@
 - ✅ Task #22: Deprecation warning para `unknownPropertyPolicy` + docs :::warning v2.0.0 — **COMPLETADA**
 - ✅ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc. — **COMPLETADA** (docs ya presentes)
 - ✅ Task #32: `checkRulesAsync` avanzado — timeout + modo serial/paralelo — **COMPLETADA** (ver detalles abajo)
+- ✅ Task #33: Módulo `./forms` standalone — `qGroups`, `qGetGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync` — **COMPLETADA** (22 Feb 2026)
 
 ---
 
@@ -1821,4 +1822,43 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº8) — Task #22 deprecation warning completada | 1826 tests passing | 28/31 tareas (90%)
+**Última actualización:** 22 de febrero de 2026 (revisión nº9) — Task #33 módulo `./forms` completada | 2097 tests passing | 32+/32+ tareas
+
+## ✅ Task #33: Módulo `@cartago-git/quickmodel/forms` — Validación standalone
+
+**Status:** ✅ COMPLETADA
+**Fecha:** 22 de febrero de 2026
+**Tests añadidos:** +83 tests en `tests/unit/forms/` (q-groups: 24, q-check-rules: 35, q-check-rules-async: 24+)
+**Archivos creados/modificados:**
+
+- `src/core/helpers/q-get-groups.ts` — lee `@QGroup` metadata, devuelve nombres de grupo únicos
+- `src/core/helpers/q-check-rules.ts` — validación síncrona standalone con filtro de grupo opcional
+- `src/core/helpers/q-check-rules-async.ts` — validación asíncrona con grupo, timeout y modos serie/paralelo
+- `src/core/helpers/q-check-rules-by-group.ts` — devuelve `Record<group, IQRulesResult>` síncrono
+- `src/core/helpers/q-check-rules-by-group-async.ts` — ídem, async (nueva en esta tarea)
+- `src/forms.ts` — barrel con todos los helpers + tipos exportados
+- `src/core/models/quick.model.ts` — refactor SOLID: `checkRules()` y `checkRulesAsync()` delegan a los helpers
+- `docs-vitepress/en/guide/forms.md` — nueva guía EN completa con ejemplos Angular/React/Vue
+- `docs-vitepress/es/guide/forms.md` — nueva guía ES completa
+- `docs-vitepress/.vitepress/config.ts` — sidebar EN+ES actualizado con entrada `/forms`
+- `typedoc.json` — `src/forms.ts` y `src/forms5.ts` añadidos a `entryPoints`
+- `tests/unit/forms/q-check-rules.test.ts` — tests de herencia y múltiples `@QRule` por campo
+- `tests/unit/forms/q-check-rules-async.test.ts` — edge cases: group+timeout, serial+group, `qCheckRulesByGroupAsync`
+
+**Funcionalidad entregada:**
+
+1. **Helpers standalone** — cualquier clase puede usar `@QRule`/`@QGroup` y validar sin extender `QModel`.
+
+2. **`qGroups` / `qGroups5`** — mapa tipado de nombres de grupo para autocompletado y seguridad de tipos.
+
+3. **`qGetGroups(instance)`** — devuelve los grupos declarados en una instancia.
+
+4. **`qCheckRules(instance, { group? })`** — validación síncrona, opcionalmente filtrada por grupo.
+
+5. **`qCheckRulesAsync(instance, { group?, timeoutMs?, mode?, timeoutMessage? })`** — validación asíncrona con timeout por predicado y modos `'parallel'` / `'serial'`.
+
+6. **`qCheckRulesByGroup(instance)`** — mapa síncrono `{ [grupo]: IQRulesResult }` — útil para formularios por pasos.
+
+7. **`qCheckRulesByGroupAsync(instance, options?)`** — mapa asíncrono equivalente; todos los grupos se evalúan concurrentemente.
+
+8. **SOLID** — `QModel.checkRules()` y `checkRulesAsync()` delegan a los helpers (0 duplicación de lógica).

@@ -464,7 +464,12 @@ export function Quick<
 		);
 	}
 
-	return function <T extends Function>(target: T): T {
+	// TC39 class decorators receive a second `ClassDecoratorContext` argument.
+	// We accept it as `_context` (unused) so TypeScript compiles the decorator
+	// without error in both legacy (`experimentalDecorators: true`) and TC39
+	// (`experimentalDecorators: false`) modes. The class constructor (`target`)
+	// is still the first argument in both APIs, so no internal logic changes.
+	return function <T extends Function>(target: T, _context?: unknown): T {
 		// Mark class as using @Quick() for auto-registration
 		Reflect.defineMetadata(QUICK_DECORATOR_KEY, true, target);
 

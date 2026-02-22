@@ -41,6 +41,52 @@ console.log(result.errors);
 // ]
 ```
 
+## TC39 mode
+
+When using TC39 standard decorators (`experimentalDecorators` absent or `false`), replace `declare` with `!` for fields decorated with `@QRule`. The decorator logic is identical in both modes.
+
+```typescript
+// TC39 mode — use ! instead of declare
+@Quick()
+class User extends QModel<IUser> {
+	@QRule((v: string) => v.length >= 3, 'Name must be at least 3 characters')
+	name!: string; // ✅ TC39: use !
+
+	@QRule((v: number) => v >= 0, 'Age cannot be negative')
+	age!: number; // ✅ TC39: use !
+
+	@QRule((v: string) => v.includes('@'), 'Must be a valid email')
+	email!: string; // ✅ TC39: use !
+}
+```
+
+### `@QType` + `@QRule` in TC39 mode — automatic type inference
+
+When `@QType` is combined with `@QRule` on the same field, the runtime type metadata is registered automatically. Place `@QType` **below** `@QRule` so it fires first (TC39 decorators on a field evaluate bottom-up).
+
+```typescript
+// TC39 mode — @QType registers field type → @QRule inherits it
+@Quick()
+class Post extends QModel<IPost> {
+	@QRule(
+		(val) => val instanceof Date && !isNaN((val as Date).getTime()),
+		'Invalid date'
+	)
+	@QType(Date) // bottom = runs first in TC39
+	publishedAt!: Date;
+
+	@QRule(
+		(val) => typeof val === 'string' && (val as string).length > 0,
+		'Title required'
+	)
+	@QType(String)
+	title!: string;
+}
+
+const post = Post.create({ publishedAt: '2025-01-01', title: 'Hello' });
+console.log(post.checkRules().valid); // true
+```
+
 ## Stacking Multiple Rules
 
 You can apply multiple `@QRule` to the same property. **All failing rules are collected** — not just the first one.

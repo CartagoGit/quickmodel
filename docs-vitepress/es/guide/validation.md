@@ -45,6 +45,55 @@ console.log(result.errors);
 // ]
 ```
 
+## Modo TC39
+
+Cuando se usan decoradores estándar TC39 (`experimentalDecorators` ausente o `false`), sustituye `declare` por `!` en los campos decorados con `@QRule`. La lógica del decorador es idéntica en ambos modos.
+
+```typescript
+// Modo TC39 — usa ! en lugar de declare
+@Quick()
+class Usuario extends QModel<IUsuario> {
+	@QRule(
+		(v: string) => v.length >= 3,
+		'El nombre debe tener al menos 3 caracteres'
+	)
+	nombre!: string; // ✅ TC39: usa !
+
+	@QRule((v: number) => v >= 0, 'La edad no puede ser negativa')
+	edad!: number; // ✅ TC39: usa !
+
+	@QRule((v: string) => v.includes('@'), 'Debe ser un email válido')
+	email!: string; // ✅ TC39: usa !
+}
+```
+
+### `@QType` + `@QRule` en modo TC39 — inferencia automática de tipo
+
+Cuando `@QType` se combina con `@QRule` en el mismo campo, los metadatos de tipo en runtime se registran automáticamente. Coloca `@QType` **debajo** de `@QRule` para que se ejecute primero (los decoradores TC39 en un campo se evalúan de abajo hacia arriba).
+
+```typescript
+// Modo TC39 — @QType registra el tipo del campo → @QRule lo hereda
+@Quick()
+class Post extends QModel<IPost> {
+	@QRule(
+		(val) => val instanceof Date && !isNaN((val as Date).getTime()),
+		'Fecha inválida'
+	)
+	@QType(Date) // abajo = se ejecuta primero en TC39
+	publishedAt!: Date;
+
+	@QRule(
+		(val) => typeof val === 'string' && (val as string).length > 0,
+		'El título es obligatorio'
+	)
+	@QType(String)
+	title!: string;
+}
+
+const post = Post.create({ publishedAt: '2025-01-01', title: 'Hola' });
+console.log(post.checkRules().valid); // true
+```
+
 ## Apilar múltiples reglas
 
 Puedes aplicar varios `@QRule` a la misma propiedad. **Se recogen todos los fallos**, no solo el primero.

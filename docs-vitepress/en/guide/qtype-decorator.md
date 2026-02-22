@@ -32,59 +32,109 @@ class User extends QModel<IUser> {
 }
 ```
 
-## The `declare` Keyword (CRITICAL)
+## Field Syntax — `declare` vs `!`
 
-When using `@QType` (or `@Quick`), you **MUST** use the `declare` keyword for your properties.
+The correct field syntax depends on which TypeScript decorator mode you are using.
 
-### ✅ Correct Usage
+| Mode       | `tsconfig.json`                | Required field syntax     |
+| ---------- | ------------------------------ | ------------------------- |
+| **Legacy** | `experimentalDecorators: true` | `declare fieldName: Type` |
+| **TC39**   | _(no flag needed)_             | `fieldName!: Type`        |
+
+### Legacy mode — use `declare`
+
+When `experimentalDecorators: true` is set, decorated fields **must** use the `declare` keyword.
 
 ```typescript
+// Legacy mode (experimentalDecorators: true)
 class User extends QModel<IUser> {
 	@QType(String)
-	declare name: string; // ✅ Creates a metadata definition, NO JavaScript code
+	declare name: string; // ✅ Emits metadata only — no JS initializer code
 }
 ```
 
 This ensures TypeScript emits the type metadata but does **not** generate property initialization code that would overwrite QuickModel's getters/setters.
 
-### ❌ Incorrect Usage
+#### ❌ Incorrect in legacy mode
 
-**Do NOT use `!` (Definite Assignment Assertion) or `=` (Initializers).**
-
-````typescript
-// ❌ BAD: Without `@Quick`, this fails!
-// The '!' operator (with useDefineForClassFields: true) creates a property initializer
-// that runs AFTER the decorator, overwriting your getter with 'undefined'.
+```typescript
+// ❌ BAD: Without `@Quick`, the '!' initializer runs AFTER the decorator
+// and overwrites the getter/setter QuickModel placed on the prototype.
 class User extends QModel<IUser> {
 	@QType(String)
-	name!: string;
+	name!: string; // initializer sets this.name = undefined → shadows getter ❌
 }
 
-// ✅ OK: If you use `@Quick` on the class, it fixes this automatically!
+// ✅ OK: @Quick() cleans up initializer side-effects.
 @Quick()
 class User extends QModel<IUser> {
-  @QType(String)
-  name!: string; // Works because @Quick cleans up the instance
+	@QType(String)
+	name!: string; // Works — @Quick handles the lifecycle
 }
 
-// ❌ BAD: Initializers run AFTER the model is created.
-// This overwrites deserialized data with "Default".
+// ❌ BAD: Value initializers also run after deserialization.
 class User extends QModel<IUser> {
-  @QType(String)
-  status = 'Default';
+	@QType(String)
+	status = 'Default'; // overwrites deserialized data ❌
 }
+```
 
 ::: tip RECOMMENDATION
-**Always use `@Quick()` on the class** if you plan to define default values (`name = "default"`) or use strict initialization (`name!`). This ensures robust behavior by letting QuickModel manage the property lifecycle.
+**Always use `@Quick()` on the class** if you define default values (`name = "default"`) or strict initialization (`name!`). This ensures robust behaviour by letting QuickModel manage the property lifecycle.
 :::
 
-### Why does this fail?
+#### Why does this fail?
 
-1.  **Decorators run first**: QuickModel replaces your property with a Getter/Setter to intercept reads/writes and handle the underlying data.
-2.  **Initializers run second**: When you do `name!: string` or `name = "x"`, TypeScript/Babel generates code in the constructor: `this.name = void 0` or `this.name = "x"`.
-3.  **Shadowing**: This direct assignment on the instance **shadows** (hides) the Getter/Setter defined on the prototype. Your property becomes a dumb, plain property again, disconnected from QuickModel.
+1. **Decorators run first** — QuickModel replaces the property with a getter/setter on the prototype.
+2. **Initializers run second** — `name!: string` or `name = "x"` generates `this.name = void 0` / `this.name = "x"` inside the constructor.
+3. **Shadowing** — The direct instance assignment hides the prototype getter/setter. The property becomes a plain, disconnected property.
 
-**Always use `declare`.**
+### TC39 mode — use `!`
+
+In TC39 decorator mode (`experimentalDecorators` absent or `false`), TypeScript **does not call field decorators on `declare` fields**. You must use `!` for every field decorated with `@QType`.
+
+```typescript
+// TC39 mode (no experimentalDecorators flag)
+@Quick()
+class User extends QModel<IUser> {
+	@QType(Date)
+	createdAt!: Date; // ✅ TC39 mode — use ! (not declare)
+
+	@QType(String)
+	name!: string; // ✅
+}
+```
+
+::: warning TC39 without `@Quick`
+Even in TC39 mode, omitting `@Quick()` combined with `useDefineForClassFields: true` (default for ES2022+ targets) can cause the field initializer to shadow QuickModel's getter. Always pair `@Quick()` with `@QType()` in TC39 mode.
+:::
+
+## TC39 mode — `addInitializer` behaviour
+
+In TC39 mode `@QType` registers field metadata via the `addInitializer` callback provided by the TC39 decorator context. This means:
+
+- Metadata is registered **on first instance creation**, not at class-definition time.
+- Subsequent instantiations are protected by an internal deduplication guard (WeakSet), so the metadata is only written once per class.
+- The timing is safe: `addInitializer` fires before `QModel.initialize()` reads the metadata.
+
+```typescript
+// TC39 mode — metadata is registered when the first instance is created
+@Quick()
+class Post extends QModel<IPost> {
+	@QType(Date)
+	publishedAt!: Date;
+
+	@QType([String]) // array of strings
+	tags!: string[];
+}
+
+// ← At this point the class is defined but metadata is NOT yet set
+const post = Post.create({
+	publishedAt: '2025-01-01',
+	tags: ['ts', 'decorators'],
+});
+// ← addInitializer ran: metadata is now registered → publishedAt is a Date ✅
+```
 
 ## When to use @QType?
 
@@ -104,7 +154,7 @@ class Product extends QModel<IProduct> {
 	@QType((v) => Number(v) * 100)
 	declare centAmount: number;
 }
-````
+```
 
 ### 2. Manual Control
 
