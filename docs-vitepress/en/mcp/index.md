@@ -12,8 +12,9 @@ By connecting an AI agent to this server, you enable it to:
 ## Available Tools
 
 - **[Public Tools](./public/)**: For users building applications with QuickModel.
-- **[Prompts / Skills](./public/skills)**: Guided AI workflows in two groups: **Public skills** (convert, debug, validate, migrate) and **Maintainer skills** (TDD, lint, refactor, SOLID, sync).
+- **[Public Skills](./public/skills)**: Guided AI workflows for developers — convert, debug, validate, migrate, and more.
 - **[Internal Tools](./internal/)**: For contributors working on the QuickModel codebase itself.
+- **[Internal Skills](./internal/skills)**: Guided TDD, lint, refactor, SOLID, and sync workflows for contributors.
 
 ## Installation & Setup
 

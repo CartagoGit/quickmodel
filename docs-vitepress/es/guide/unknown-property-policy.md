@@ -101,6 +101,10 @@ class LegacyData extends QModel<any> {
 
 ## Ejemplos de Uso
 
+::: tip `new` vs `create`
+`User.create(data)` es un alias de conveniencia para `new User(data)` — ambas formas son completamente equivalentes. Puedes usar la que prefieras en tu aplicación.
+:::
+
 ### Política: `'error'` (Más Estricto)
 
 ```typescript
@@ -109,13 +113,18 @@ class User extends QModel<IUser> {
 	declare name: string;
 }
 
-// Uso correcto
+// Uso correcto — ambas formas son idénticas
+new User({ name: 'Alice' }); // ✅ OK
 User.create({ name: 'Alice' }); // ✅ OK
 
 // Uso incorrecto - Lanza Error
-User.create({
+new User({
 	name: 'Alice',
 	isAdmin: true, // ❌ Error: Strict Mode: Property 'isAdmin' is not defined in model User
+});
+User.create({
+	name: 'Alice',
+	isAdmin: true, // ❌ Mismo error
 });
 ```
 
@@ -127,13 +136,20 @@ class User extends QModel<IUser> {
 	declare name: string;
 }
 
-const user = User.create({
+// Usando new
+const user1 = new User({
 	name: 'Alice',
 	isAdmin: true, // Será eliminado silenciosamente
 });
 
-console.log(user.name); // 'Alice'
-console.log((user as any).isAdmin); // undefined (eliminado)
+// Usando create (equivalente)
+const user2 = User.create({
+	name: 'Alice',
+	isAdmin: true, // Será eliminado silenciosamente
+});
+
+console.log(user1.name); // 'Alice'
+console.log((user1 as any).isAdmin); // undefined (eliminado)
 ```
 
 ### Política: `'keep'` (Predeterminado - Flexible)
@@ -144,13 +160,20 @@ class User extends QModel<IUser> {
 	declare name: string;
 }
 
-const user = User.create({
+// Usando new
+const user1 = new User({
 	name: 'Alice',
 	isAdmin: true, // Será preservado
 });
 
-console.log(user.name); // 'Alice'
-console.log((user as any).isAdmin); // true (mantenido)
+// Usando create (equivalente)
+const user2 = User.create({
+	name: 'Alice',
+	isAdmin: true, // Será preservado
+});
+
+console.log(user1.name); // 'Alice'
+console.log((user1 as any).isAdmin); // true (mantenido)
 ```
 
 ## Requisitos de Propiedades para Política `'error'`
@@ -204,7 +227,8 @@ class Product extends QModel<IProduct> {
 }
 
 // ❌ Esto fallará porque 'id' es 'declare' y no está en @Quick
-Product.create({ id: 1, tags: ['a'] });
+new Product({ id: 1, tags: ['a'] });
+Product.create({ id: 1, tags: ['a'] }); // mismo error
 
 // ✅ Solución Correcta:
 @Quick(
@@ -218,6 +242,10 @@ class ProductFixed extends QModel<IProduct> {
 	declare id: number;
 	declare tags: string[];
 }
+
+// Ambas formas funcionan:
+const p1 = new ProductFixed({ id: 1, tags: ['a', 'b'] });
+const p2 = ProductFixed.create({ id: 1, tags: ['a', 'b'] });
 ```
 
 ## Migración desde la opción `strict` deprecada

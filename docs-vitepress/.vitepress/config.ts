@@ -22,7 +22,10 @@ const buildMcpSidebar = (locale: 'en' | 'es') => {
 					text: isEs ? 'Herramientas Públicas' : 'Public Tools',
 					link: `${prefix}/public/`,
 				},
-				{ text: 'Prompts / Skills', link: `${prefix}/public/skills` },
+				{
+					text: isEs ? 'Skills Públicos' : 'Public Skills',
+					link: `${prefix}/public/skills`,
+				},
 				...(showInternal
 					? [
 							{
@@ -36,6 +39,12 @@ const buildMcpSidebar = (locale: 'en' | 'es') => {
 									? 'Herramientas Internas (Mantenedores)'
 									: 'Internal Tools (Maintainers)',
 								link: `${prefix}/internal/`,
+							},
+							{
+								text: isEs
+									? 'Skills Internos (Mantenedores)'
+									: 'Internal Skills (Maintainers)',
+								link: `${prefix}/internal/skills`,
 							},
 						]
 					: []),
@@ -99,6 +108,28 @@ export default defineConfig({
 		],
 		sidebar: {
 			'/tsdoc/@cartago-git/namespaces/Types/': [
+				{
+					text: 'Navigation',
+					items: [
+						{ text: 'Back to Core', link: '/tsdoc/' },
+						{
+							text: 'Advanced',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Utils',
+							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+					],
+				},
 				{
 					text: 'Types Namespace',
 					items: [
@@ -252,52 +283,8 @@ export default defineConfig({
 						},
 					],
 				},
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
-						},
-					],
-				},
 			],
 			'/tsdoc/@cartago-git/namespaces/Advanced/': [
-				{
-					text: 'Advanced Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
-						},
-						{
-							text: 'Classes',
-							items: [
-								{
-									text: 'QMockGenerator',
-									link: '/tsdoc/@cartago-git/namespaces/Advanced/classes/QMockGenerator',
-								},
-								{
-									text: 'QTransformerRegistry',
-									link: '/tsdoc/@cartago-git/namespaces/Advanced/classes/QTransformerRegistry',
-								},
-							],
-						},
-					],
-				},
 				{
 					text: 'Navigation',
 					items: [
@@ -320,8 +307,52 @@ export default defineConfig({
 						},
 					],
 				},
+				{
+					text: 'Advanced Namespace',
+					items: [
+						{
+							text: 'Overview',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Classes',
+							items: [
+								{
+									text: 'QMockGenerator',
+									link: '/tsdoc/@cartago-git/namespaces/Advanced/classes/QMockGenerator',
+								},
+								{
+									text: 'QTransformerRegistry',
+									link: '/tsdoc/@cartago-git/namespaces/Advanced/classes/QTransformerRegistry',
+								},
+							],
+						},
+					],
+				},
 			],
 			'/tsdoc/@cartago-git/namespaces/Utils/': [
+				{
+					text: 'Navigation',
+					items: [
+						{ text: 'Back to Core', link: '/tsdoc/' },
+						{
+							text: 'Types',
+							link: '/tsdoc/@cartago-git/namespaces/Types/',
+						},
+						{
+							text: 'Advanced',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+					],
+				},
 				{
 					text: 'Utils Namespace',
 					items: [
@@ -353,6 +384,8 @@ export default defineConfig({
 						},
 					],
 				},
+			],
+			'/tsdoc/@cartago-git/namespaces/Forms/': [
 				{
 					text: 'Navigation',
 					items: [
@@ -366,8 +399,8 @@ export default defineConfig({
 							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
 						},
 						{
-							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							text: 'Utils',
+							link: '/tsdoc/@cartago-git/namespaces/Utils/',
 						},
 						{
 							text: 'Compat (TS5)',
@@ -375,8 +408,6 @@ export default defineConfig({
 						},
 					],
 				},
-			],
-			'/tsdoc/@cartago-git/namespaces/Forms/': [
 				{
 					text: 'Forms Namespace',
 					items: [
@@ -440,49 +471,8 @@ export default defineConfig({
 						},
 					],
 				},
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
-						},
-						{
-							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
-						},
-					],
-				},
 			],
 			'/tsdoc/@cartago-git/namespaces/Compat/': [
-				{
-					text: 'Compat (TS5) Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
-						},
-						{
-							text: 'Functions',
-							collapsed: false,
-							items: [
-								{
-									text: 'qGroups5',
-									link: '/tsdoc/@cartago-git/namespaces/Compat/functions/qGroups5',
-								},
-							],
-						},
-					],
-				},
 				{
 					text: 'Navigation',
 					items: [
@@ -505,8 +495,52 @@ export default defineConfig({
 						},
 					],
 				},
+				{
+					text: 'Compat (TS5) Namespace',
+					items: [
+						{
+							text: 'Overview',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+						{
+							text: 'Functions',
+							collapsed: false,
+							items: [
+								{
+									text: 'qGroups5',
+									link: '/tsdoc/@cartago-git/namespaces/Compat/functions/qGroups5',
+								},
+							],
+						},
+					],
+				},
 			],
 			'/tsdoc/': [
+				{
+					text: 'Navigation',
+					items: [
+						{
+							text: 'Advanced',
+							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+						},
+						{
+							text: 'Types',
+							link: '/tsdoc/@cartago-git/namespaces/Types/',
+						},
+						{
+							text: 'Utils',
+							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+						},
+						{
+							text: 'Forms',
+							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+						},
+						{
+							text: 'Compat (TS5)',
+							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+						},
+					],
+				},
 				{
 					text: 'API Reference',
 					items: [
@@ -537,31 +571,6 @@ export default defineConfig({
 									link: '/tsdoc/type-aliases/IQImplements',
 								},
 							],
-						},
-					],
-				},
-				{
-					text: 'Navigation',
-					items: [
-						{
-							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
-						},
-						{
-							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
 						},
 					],
 				},
@@ -689,28 +698,28 @@ export default defineConfig({
 							text: 'Integrations',
 							items: [
 								{
-									text: 'NestJS',
-									link: '/en/guide/nestjs-integration',
-								},
-								{
 									text: 'Angular',
 									link: '/en/guide/angular-integration',
+								},
+								{
+									text: 'Express / Fastify / Hono',
+									link: '/en/guide/backend-integration',
+								},
+								{
+									text: 'NestJS',
+									link: '/en/guide/nestjs-integration',
 								},
 								{
 									text: 'React / Next.js',
 									link: '/en/guide/react-integration',
 								},
 								{
-									text: 'Vue 3 / Nuxt',
-									link: '/en/guide/vue-integration',
-								},
-								{
 									text: 'Svelte 5 / SvelteKit',
 									link: '/en/guide/svelte-integration',
 								},
 								{
-									text: 'Express / Fastify / Hono',
-									link: '/en/guide/backend-integration',
+									text: 'Vue 3 / Nuxt',
+									link: '/en/guide/vue-integration',
 								},
 							],
 						},
@@ -860,28 +869,28 @@ export default defineConfig({
 							text: 'Integraciones',
 							items: [
 								{
-									text: 'NestJS',
-									link: '/es/guide/nestjs-integration',
-								},
-								{
 									text: 'Angular',
 									link: '/es/guide/angular-integration',
+								},
+								{
+									text: 'Express / Fastify / Hono',
+									link: '/es/guide/backend-integration',
+								},
+								{
+									text: 'NestJS',
+									link: '/es/guide/nestjs-integration',
 								},
 								{
 									text: 'React / Next.js',
 									link: '/es/guide/react-integration',
 								},
 								{
-									text: 'Vue 3 / Nuxt',
-									link: '/es/guide/vue-integration',
-								},
-								{
 									text: 'Svelte 5 / SvelteKit',
 									link: '/es/guide/svelte-integration',
 								},
 								{
-									text: 'Express / Fastify / Hono',
-									link: '/es/guide/backend-integration',
+									text: 'Vue 3 / Nuxt',
+									link: '/es/guide/vue-integration',
 								},
 							],
 						},

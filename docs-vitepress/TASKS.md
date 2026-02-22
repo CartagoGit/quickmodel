@@ -9,7 +9,8 @@
 ```
 ✅ Completadas: Tasks #1–#16, #18–#22, #23–#38 (sprint Feb 2026)
 🔄 En progreso: Tasks #39–#43 (Ecosystem Integrations Sprint)
-⏸️  Backlog: Task #17 (benchmarks)
+⏳  Backlog:     Tasks #44–#54 (Extended Ecosystem Sprint)
+⏸️  Pausada:     Task #17 (benchmarks)
 ```
 
 **Hitos recientes:**
@@ -39,13 +40,27 @@
 - ✅ Task #33: Módulo `./forms` standalone — `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup` — **COMPLETADA** (22 Feb 2026)
 - ✅ **Sprint #34–#38: Framework Integrations** — Angular (37), React (31), Vue (27), Svelte (21), Backend (25) = **141 nuevos tests** | guías EN+ES para los 5 frameworks | 2406 → 2588 tests (22 Feb 2026)
 
-**Próximo sprint — Ecosystem Integrations (#39–#43):**
+**Sprint en curso — Ecosystem Integrations (#39–#43):**
 
 - ⏳ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `merge()`
 - ⏳ Task #40: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures
 - ⏳ Task #41: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos
 - ⏳ Task #42: Formik + migración desde Zod/Yup
 - ⏳ Task #43: React Native / Expo — `TextInput`, AsyncStorage, `useQModel` en mobile
+
+**Backlog extendido — Extended Ecosystem Sprint (#44–#54):**
+
+- ⏳ Task #44: React Hook Form — `validate` adapter, `@QRule` sin resolver externo, `getFormSchema()` → campos dinámicos
+- ⏳ Task #45: Zustand — store con `merge()` inmutable, `QModel` como slice, `devtools` + `immer` compat
+- ⏳ Task #46: MSW (Mock Service Worker) — `generate_mock` + `HttpResponse`, fixtures tipados, tests de integración real
+- ⏳ Task #47: Redux Toolkit (RTK) — `createSlice` con QModel, `serialize()` como payload, `merge()` en reducers
+- ⏳ Task #48: Drizzle ORM — DTO desde resultado de query, repositorio, tipos Drizzle → QModel
+- ⏳ Task #49: Vitest Custom Matchers — `toBeValidQModel`, `toHaveQField`, `toMatchQModel`, setup helper
+- ⏳ Task #50: TypeORM — Entity vs DTO separation, repositorio con QModel, transformación de columnas
+- ⏳ Task #51: GraphQL / Apollo Server — `@InputType()` DTO, resolver tipado, `@QComputed` en respuesta
+- ⏳ Task #52: OpenAPI / Swagger — `getSchema('json')` → `@nestjs/swagger`, `@fastify/swagger`, documentación automática
+- ⏳ Task #53: Electron IPC — `serialize()`/`populate()` en boundary main↔renderer, tipado cross-context
+- ⏳ Task #54: Mongoose — ODM sobre MongoDB, DTO encima del documento Mongoose, coerción de `ObjectId`
 
 **Revisión completa 22 Feb 2026 — Tareas actualizadas:**
 
@@ -1832,7 +1847,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº12) — Tasks #34–#38 completadas (141 nuevos tests) | Tasks #39–#43 añadidas al backlog | 2588 tests passing
+**Última actualización:** 22 de febrero de 2026 (revisión nº13) — Tasks #34–#38 completadas (141 nuevos tests) | Tasks #39–#43 en curso | Tasks #44–#54 añadidas al backlog extendido | 2588 tests passing
 
 ---
 
@@ -2032,6 +2047,230 @@ bun test                 # Verificar todos los tests
 5. Formularios con `KeyboardAvoidingView` + `checkRules()` on submit
 6. Validación async — llamada a API REST con `qCheckRulesAsync()`
 7. `createMany()` para listas planas de `FlatList`
+
+---
+
+## 🚀 Sprint Extended Ecosystem (Tasks #44–#54)
+
+### ⏳ Task #44: React Hook Form integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para React Hook Form  
+**Tests a añadir:** ~25 en `tests/integration/patterns/react-hook-form-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/react-hook-form-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. `validate` adapter — `qCheckRules()` como función `validate` nativa de RHF (sin resolver externo)
+2. `useForm<IUser>()` + `handleSubmit` — DTO construido en el submit handler
+3. `@QRule` field-level — errores por campo mapeados a `setError()` de RHF
+4. `getFormSchema()` → campos dinámicos con `register()` iterado
+5. `Controller` + QModel — `field.onChange` con coerción `'loose'`
+6. Validación async — `qCheckRulesAsync()` + `shouldValidate: true` en `trigger()`
+7. `isDirty()` vs `formState.isDirty` — comparativa y complementariedad
+8. Migración desde `zodResolver` / `yupResolver` hacia `qCheckRules` directo
+
+---
+
+### ⏳ Task #45: Zustand integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Zustand  
+**Tests a añadir:** ~20 en `tests/integration/patterns/zustand-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/zustand-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Slice básico — `create<{ user: UserModel; update: (p: Partial<IUser>) => void }>`
+2. `merge()` inmutable como updater — `set(s => ({ user: s.user.merge(patch) }))`
+3. Multi-slice store — separar entities QModel de UI state
+4. `devtools` middleware — `serialize()` como estado inspeccionable
+5. Persistencia — `persist` middleware + `serialize()`/`populate()` roundtrip
+6. `shallow` selector con `serialize()` — rendimiento en re-renders
+7. Store de lista — `createMany()` + `Map<id, QModel>` normalizado
+8. `immer` compat — por qué `merge()` es preferible a `produce()`
+
+---
+
+### ⏳ Task #46: MSW (Mock Service Worker) integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para MSW v2  
+**Tests a añadir:** ~20 en `tests/integration/patterns/msw-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/msw-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Handler básico — `http.get('/api/users/:id', () => HttpResponse.json(new UserDto(seedData).serialize()))`
+2. `createMany()` en handler de lista — fixtures automáticos tipados
+3. Mock de errores de validación — `checkRules()` + `HttpResponse.json(errors, { status: 422 })`
+4. `setupServer()` en Vitest/Jest — integración con test suite
+5. Fixtures reutilizables — `MockUserFactory` con QModel
+6. Mutation handler — `http.post` + `new CreateUserDto(await request.json())`
+7. Mock de `checkRulesAsync` response — simulación de DB uniqueness
+8. `passthrough()` para requests no mockeados
+
+---
+
+### ⏳ Task #47: Redux Toolkit (RTK) integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Redux Toolkit  
+**Tests a añadir:** ~20 en `tests/integration/patterns/redux-toolkit-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/redux-toolkit-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. `createSlice` — estado con `serialize()` como forma serializable en Redux
+2. Reducer con `merge()` — `state.users[id] = action.payload.model.merge(patch).serialize()`
+3. `createAsyncThunk` — fetch + `new UserDto(response)` tipado
+4. `createEntityAdapter` — `id` de cada QModel como normalized key
+5. RTK Query — `transformResponse: (data) => new UserDto(data).serialize()`
+6. `checkRules()` antes de dispatch — validación client-side
+7. Selector tipado — `selectUser` devuelve `IUser` desde `serialize()`
+8. DevTools — payloads legibles gracias a `serialize()`
+
+---
+
+### ⏳ Task #48: Drizzle ORM integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Drizzle ORM  
+**Tests a añadir:** ~25 en `tests/integration/patterns/drizzle-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/drizzle-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. DTO desde resultado de query — `new UserDto(await db.select().from(users).where(...))`
+2. Create input — `dto.toInterface()` como `db.insert(users).values(...)`
+3. Patrón repositorio — `DrizzleUserRepository` con QModel layer
+4. Tipos Drizzle → QModel — `Date`, `number` (Drizzle no tiene Decimal por defecto)
+5. `createMany()` para seed / bulk import
+6. `unknownPropertyPolicy: 'strip'` — eliminar columnas internas (timestamps, etc.)
+7. `merge()` + `db.update().set(...)` — update parcial inmutable
+8. `@QComputed()` para campos calculados no almacenados
+
+---
+
+### ⏳ Task #49: Vitest Custom Matchers
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Matchers propios para Vitest que mejoran el DX de tests con QModel  
+**Tests a añadir:** ~20 en `tests/unit/vitest-matchers.test.ts`  
+**Docs:** `docs-vitepress/en/guide/vitest-matchers.md` + ES
+
+**Matchers a implementar:**
+
+1. `toBeValidQModel()` — `checkRules().valid === true`
+2. `toHaveQRuleError(field, message?)` — error concreto en campo
+3. `toHaveQField(fieldName)` — campo declarado con `@QField`
+4. `toMatchQModel(expected)` — deep equality de `serialize()` outputs
+5. `toBeIntact()` — `hasIntegrity() === true`
+6. `toHaveDirtyField(field)` — `isDirty(field) === true`
+7. Setup helper — `import '@cartago-git/quickmodel/vitest'` en `setupFiles`
+8. TypeScript augmentation — `interface Assertion` para autocompletado
+
+---
+
+### ⏳ Task #50: TypeORM integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para TypeORM  
+**Tests a añadir:** ~20 en `tests/integration/patterns/typeorm-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/typeorm-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Entity vs DTO separation — `UserEntity` (TypeORM) + `UserDto` (QModel)
+2. `new UserDto(userEntity)` — coerción de entity a DTO con `strip`
+3. `dto.toInterface()` como payload de `repository.save()`
+4. `createMany()` para seed con `DataSource.initialize()`
+5. `@Column({ transformer })` — TypeORM value transformer + QModel coerción
+6. Repositorio tipado — `UserRepository` con QModel como capa de negocio
+7. `merge()` + `repository.update()` — update parcial
+8. `@QComputed()` en DTO vs `@VirtualColumn()` en Entity — comparativa
+
+---
+
+### ⏳ Task #51: GraphQL / Apollo Server integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Apollo Server / GraphQL Yoga  
+**Tests a añadir:** ~20 en `tests/integration/patterns/graphql-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/graphql-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Input DTO — QModel como tipo de entrada en resolver, `checkRules()` antes de persistir
+2. Output serialization — `dto.serialize()` como respuesta de query tipada
+3. NestJS Code First — `@InputType()` + QModel (compatibilidad decoradores)
+4. Mutation resolver — `new CreateUserDto(args.input)` + `checkRulesAsync()`
+5. `@QComputed()` en respuesta — campos calculados sin lógica en resolver
+6. Error mapping — `checkRules().errors` → `GraphQLError` con `extensions`
+7. `createMany()` en query de lista — coerción en masa desde DB
+8. GraphQL Yoga `useValidation` + QModel — middleware de validación
+
+---
+
+### ⏳ Task #52: OpenAPI / Swagger auto-generation
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para generación automática de documentación OpenAPI  
+**Tests a añadir:** ~15 en `tests/integration/patterns/openapi-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/openapi-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. `getSchema('json')` → body OpenAPI `requestBody` schema
+2. `getSchema('json')` → `@ApiProperty()` con NestJS Swagger
+3. `@QField({ label, required })` → `description` + `required[]` en OpenAPI spec
+4. `@QComputed()` → campo en `properties` marcado como `readOnly: true`
+5. Fastify + `@fastify/swagger` — `schema.body` desde `getSchema('json')`
+6. Express + `swagger-jsdoc` — `#/components/schemas/CreateUserDto` reutilizable
+7. Hono + `@hono/zod-openapi` compat — adaptación del schema JSON
+8. Generación automática en CI — `getSchema('json')` → archivo `.openapi.json`
+
+---
+
+### ⏳ Task #53: Electron IPC integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Electron con IPC serializado  
+**Tests a añadir:** ~15 en `tests/integration/patterns/electron-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/electron-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. IPC boundary — `ipcMain.handle` + `new UserDto(event.sender)` en main
+2. `serialize()` en renderer → envío JSON seguro por IPC
+3. `populate()` en main — reconstrucción de QModel desde JSON IPC
+4. `unknownPropertyPolicy: 'strip'` — prevención de prototype pollution cross-context
+5. `checkRules()` en main antes de persistir — validación en el proceso seguro
+6. `contextBridge.exposeInMainWorld` — tipos compartidos con QModel interfaces
+7. `createMany()` para carga de archivos CSV/JSON locales
+8. `isDirty()` en renderer para confirmación de cambios no guardados
+
+---
+
+### ⏳ Task #54: Mongoose integration patterns
+
+**Status:** 📋 Pendiente  
+**Objetivo:** Suite de tests + guía EN+ES para Mongoose + MongoDB  
+**Tests a añadir:** ~20 en `tests/integration/patterns/mongoose-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/mongoose-integration.md` + ES
+
+**Patrones a cubrir:**
+
+1. Document vs DTO — `UserDocument` (Mongoose) + `UserDto` (QModel)
+2. `new UserDto(doc.toObject())` — coerción de documento Mongoose a DTO
+3. `ObjectId` → `string` — coerción con `coercionStrategy: 'loose'`
+4. Repositorio — `MongoUserRepository` con QModel como capa de negocio
+5. `dto.toInterface()` como payload de `Model.create()`
+6. `merge()` + `Model.findByIdAndUpdate()` — update parcial inmutable
+7. `createMany()` para seed / `insertMany()`
+8. `@QComputed()` para campos calculados no persistidos en MongoDB
+
+---
 
 ## ✅ Task #33: Módulo `@cartago-git/quickmodel/forms` — Validación standalone
 

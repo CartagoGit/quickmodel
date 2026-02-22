@@ -161,7 +161,9 @@ export interface IQCreateManyResult<TInstance> {
  *   declare createdAt: Date; // Transformed to Date object
  * }
  *
+ * // Both forms are equivalent:
  * const user = User.create({ id: '1', createdAt: '2024-01-01' });
+ * const user2 = new User({ id: '2', createdAt: '2024-01-01' });
  * console.log(user.createdAt instanceof Date); // true
  * ```
  */
@@ -184,13 +186,20 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	protected [QUICK_VALUES_KEY]: Record<string, unknown> = {};
 
 	/**
-	 * Factory method to create model instances with type-safe access to all properties.
+	 * Factory method to create a model instance. Functionally identical to `new ModelClass(data)`.
 	 *
-	 * Use `declare` in your class to inform TypeScript of transformed runtime types.
-	 * Works identically to `new ModelClass(data)`.
+	 * The main benefit over the constructor is **stricter type inference** — TypeScript will
+	 * enforce that `data` matches `TInterface` exactly (no extra unknown properties at the
+	 * call-site when `unknownPropertyPolicy: 'error'` is active).
 	 *
-	 * @param data - Data matching the model interface
+	 * Use `declare` in your class to inform TypeScript of the transformed runtime types.
+	 *
+	 * @param data - Data strictly matching the model interface
 	 * @returns Model instance with type-safe property access
+	 *
+	 * @see {@link QModel.constructor} — equivalent low-level form
+	 * @see {@link QModel.createReadonly} — immutable variant
+	 * @see {@link QModel.createMany} — batch variant
 	 *
 	 * @example
 	 * ```typescript
@@ -207,14 +216,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *   declare createdAt: Date; // Runtime type after transformation
 	 * }
 	 *
-	 * const post = Post.create({ id: 1, title: 'Hello', createdAt: '2026-01-10T00:00:00.000Z' });
-	 * post.createdAt instanceof Date; // true
-	 * ```
-	 */
-	/**
-	 * Creates a new instance of the model with STRICT type checking.
+	 * // Both forms are completely equivalent:
+	 * const post1 = Post.create({ id: 1, title: 'Hello', createdAt: '2026-01-10T00:00:00.000Z' });
+	 * const post2 = new Post({ id: 2, title: 'World', createdAt: '2026-01-10T00:00:00.000Z' });
 	 *
-	 * @param data - Data strictly matching the model interface
+	 * post1.createdAt instanceof Date; // true
+	 * post2.createdAt instanceof Date; // true
+	 * ```
 	 */
 	static create<
 		TClass extends QModel<any>,
@@ -232,13 +240,24 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * Creates a READ-ONLY (immutable) instance of the model.
 	 * The instance and all nested properties will be recursively frozen.
 	 *
+	 * Equivalent to `Object.freeze(new Model(data))` but applied deeply — all
+	 * nested objects are frozen recursively. Use this when you want compile-time
+	 * and runtime guarantees that the instance cannot be mutated.
+	 *
 	 * @param data - Data to initialize the model
 	 * @returns Deeply frozen model instance
 	 *
+	 * @see {@link QModel.create} — mutable variant (`new Model(data)` equivalent)
+	 *
 	 * @example
 	 * ```typescript
+	 * // createReadonly is equivalent to a deep-frozen `new User(data)`:
 	 * const user = User.createReadonly({ name: 'John' });
 	 * user.name = 'Jane'; // ❌ Throws TypeError in strict mode
+	 *
+	 * // For a mutable instance use `new` or `create`:
+	 * const mutableUser = new User({ name: 'John' });
+	 * mutableUser.name = 'Jane'; // ✅ OK
 	 * ```
 	 */
 	static createReadonly<
@@ -616,7 +635,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * Constructs a new model instance from interface data or another instance.
 	 * Automatically deserializes complex types (Date, BigInt, etc.) based on `@QType` decorators.
 	 *
+	 * `new Model(data)` and `Model.create(data)` are exactly equivalent — `create` is a
+	 * typed wrapper that adds stricter inference at the call-site.
+	 * Both respect `unknownPropertyPolicy` and all `@Quick` options.
+	 *
 	 * @param data - Either a plain interface object or another model instance (for cloning)
+	 *
+	 * @see {@link QModel.create} — preferred factory alias with stricter type inference
 	 *
 	 * @example
 	 * ```typescript
@@ -626,6 +651,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 *   name: 'John',
 	 *   createdAt: new Date() // or '2024-01-01T00:00:00.000Z'
 	 * });
+	 *
+	 * // Equivalent using the factory:
+	 * const user2 = User.create({ id: '2', name: 'Jane', createdAt: new Date() });
 	 *
 	 * // Clone from another instance
 	 * const clonedUser = new User(user);

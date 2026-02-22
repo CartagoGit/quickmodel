@@ -195,3 +195,129 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
 		expect(hasRecommendation).toBe(true);
 	});
 });
+
+// ─── Tests con `new` — comportamiento idéntico a `create` ───────────────────
+//
+// `Model.create(data)` es un alias de `new Model(data)`.
+// Todas las políticas deben funcionar igual usando el constructor directamente.
+
+describe('Task #22 — unknownPropertyPolicy deprecation warning (via `new`)', () => {
+	let warnSpy: ReturnType<typeof spyOn>;
+
+	beforeEach(() => {
+		warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+		QConfig.reset();
+		PopulationService._clearWarnedPolicyCache();
+	});
+
+	afterEach(() => {
+		warnSpy.mockRestore();
+		QConfig.reset();
+		PopulationService._clearWarnedPolicyCache();
+	});
+
+	test('emits a deprecation warning when using `new` and policy is not set', () => {
+		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
+		).toBe(true);
+	});
+
+	test('deprecation warning via `new` mentions v2.0.0', () => {
+		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('v2.0.0') || msg.includes('v2'))
+		).toBe(true);
+	});
+
+	test('deprecation warning via `new` mentions the model class name', () => {
+		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('ProductNoPolicyModel'))
+		).toBe(true);
+	});
+
+	test('does NOT warn via `new` when policy is explicitly "keep"', () => {
+		new ProductKeepModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
+		).toBe(false);
+	});
+
+	test('does NOT warn via `new` when policy is explicitly "strip"', () => {
+		new ProductStripModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
+		).toBe(false);
+	});
+
+	test('does NOT warn via `new` when policy is explicitly "error"', () => {
+		new ProductErrorModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
+		).toBe(false);
+	});
+
+	test('global config suppresses warning when using `new`', () => {
+		QConfig.configure({ defaults: { unknownPropertyPolicy: 'strip' } });
+
+		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
+
+		const calls = warnSpy.mock.calls as string[][];
+		const warnings = calls.map((args) => String(args[0]));
+		expect(
+			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
+		).toBe(false);
+	});
+
+	// ── Comportamiento funcional de cada política con `new` ───────────────
+
+	test('policy "error" via `new` throws on unknown properties', () => {
+		expect(
+			() =>
+				new ProductErrorModel({
+					name: 'Widget',
+					price: 9.99,
+					extra: true,
+				} as any)
+		).toThrow();
+	});
+
+	test('policy "strip" via `new` removes unknown properties silently', () => {
+		const instance = new ProductStripModel({
+			name: 'Widget',
+			price: 9.99,
+			extra: true,
+		} as any);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBeUndefined();
+	});
+
+	test('policy "keep" via `new` preserves unknown properties', () => {
+		const instance = new ProductKeepModel({
+			name: 'Widget',
+			price: 9.99,
+			extra: true,
+		} as any);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBe(true);
+	});
+});
