@@ -222,5 +222,26 @@ describe('System Performance Configuration', () => {
 
 			warnSpy.mockRestore();
 		});
+
+		test('warning message accurately states prototype pollution protection remains active', () => {
+			const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
+			@Quick({}, { performance: { disableSafetyChecks: true } })
+			class AuditModel extends QModel<any> {
+				declare id: number;
+			}
+
+			new AuditModel({ id: 1 });
+
+			const msg: string = warnSpy.mock.calls[0][0];
+			// Must NOT say prototype pollution is bypassed
+			expect(msg).not.toContain('All security protections');
+			// Must document that prototype pollution protection remains active
+			expect(msg).toContain('remain active');
+			// Must list what IS bypassed for developer clarity
+			expect(msg).toContain('bypassed');
+
+			warnSpy.mockRestore();
+		});
 	});
 });

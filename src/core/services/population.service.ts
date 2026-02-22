@@ -80,7 +80,8 @@ export class PopulationService {
 		if (disableSafetyChecks && currentDepth === 0) {
 			Logger.warn(
 				`disableSafetyChecks is ENABLED on "${(modelClass as { name?: string }).name ?? 'unknown'}". ` +
-					'All security protections (prototype pollution, recursion limits, size limits) are bypassed. ' +
+					'Performance checks bypassed: initial recursion depth limit, array size limit, nested object size limit. ' +
+					'Prototype pollution protection, method shadowing protection, and circular reference detection remain active. ' +
 					'Do NOT use this in production with untrusted input.'
 			);
 		}
