@@ -8,7 +8,7 @@ describe('Security: Primitive String Limit', () => {
 
 		// 1MB string - should be fine (below limit)
 		const safeString = 'a'.repeat(1024 * 1024);
-		const result1 = transformer.validate(safeString, {
+		const result1 = transformer.checkIntegrity(safeString, {
 			className: 'Test',
 			propertyKey: 'prop',
 			value: safeString,
@@ -17,7 +17,7 @@ describe('Security: Primitive String Limit', () => {
 
 		// 6MB string - should happen to be REJECTED (limit is 5MB)
 		const hugeString = 'a'.repeat(6 * 1024 * 1024);
-		const result2 = transformer.validate(hugeString, {
+		const result2 = transformer.checkIntegrity(hugeString, {
 			className: 'Test',
 			propertyKey: 'prop',
 			value: 'TRUNCATED',

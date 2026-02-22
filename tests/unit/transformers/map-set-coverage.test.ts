@@ -3,7 +3,7 @@ import {
 	MapTransformer,
 	SetTransformer,
 } from '@/transformers/map-set.transformer';
-import type { IQValidationContext } from '@/core/interfaces/transformer.interface';
+import type { IQIntegrityContext } from '@/core/interfaces/transformer.interface';
 
 describe('Transformer Coverage: Map & Set', () => {
 	const className = 'TestClass';
@@ -83,28 +83,30 @@ describe('Transformer Coverage: Map & Set', () => {
 			});
 		});
 
-		describe('validate', () => {
+		describe('checkIntegrity', () => {
 			test('should validate Map', () => {
 				expect(
-					transformer.validate(new Map(), { propertyKey, target: {} })
-						.isValid
+					transformer.checkIntegrity(new Map(), {
+						propertyKey,
+						target: {},
+					}).isValid
 				).toBe(true);
 			});
 			test('should validate object', () => {
 				expect(
-					transformer.validate({}, { propertyKey, target: {} })
+					transformer.checkIntegrity({}, { propertyKey, target: {} })
 						.isValid
 				).toBe(true);
 			});
 			test('should validate array', () => {
 				expect(
-					transformer.validate([], { propertyKey, target: {} })
+					transformer.checkIntegrity([], { propertyKey, target: {} })
 						.isValid
 				).toBe(true);
 			});
 			test('should fail for number', () => {
 				expect(
-					transformer.validate(123, { propertyKey, target: {} })
+					transformer.checkIntegrity(123, { propertyKey, target: {} })
 						.isValid
 				).toBe(false);
 			});
@@ -161,22 +163,24 @@ describe('Transformer Coverage: Map & Set', () => {
 			});
 		});
 
-		describe('validate', () => {
+		describe('checkIntegrity', () => {
 			test('should validate Set', () => {
 				expect(
-					transformer.validate(new Set(), { propertyKey, target: {} })
-						.isValid
+					transformer.checkIntegrity(new Set(), {
+						propertyKey,
+						target: {},
+					}).isValid
 				).toBe(true);
 			});
 			test('should validate array', () => {
 				expect(
-					transformer.validate([], { propertyKey, target: {} })
+					transformer.checkIntegrity([], { propertyKey, target: {} })
 						.isValid
 				).toBe(true);
 			});
 			test('should validate __type wrapper', () => {
 				expect(
-					transformer.validate(
+					transformer.checkIntegrity(
 						{ __type: 'Set', values: [] },
 						{ propertyKey, target: {} }
 					).isValid
@@ -185,7 +189,7 @@ describe('Transformer Coverage: Map & Set', () => {
 			test('should fail for plain object', () => {
 				// Plain object that is not a wrapper
 				expect(
-					transformer.validate(
+					transformer.checkIntegrity(
 						{ foo: 'bar' },
 						{ propertyKey, target: {} }
 					).isValid
@@ -193,7 +197,7 @@ describe('Transformer Coverage: Map & Set', () => {
 			});
 			test('should fail for number', () => {
 				expect(
-					transformer.validate(123, { propertyKey, target: {} })
+					transformer.checkIntegrity(123, { propertyKey, target: {} })
 						.isValid
 				).toBe(false);
 			});
@@ -202,31 +206,31 @@ describe('Transformer Coverage: Map & Set', () => {
 });
 
 // ===========================================================================
-// Coverage gaps: MapTransformer — validate, serializeValue complex types,
+// Coverage gaps: MapTransformer — checkIntegrity, serializeValue complex types,
 // autoTransformValue nested Map/BigInt, serialize with Symbol keys
 // ===========================================================================
 
 describe('MapTransformer — coverage gaps', () => {
-	const ctx: IQValidationContext = {
+	const ctx: IQIntegrityContext = {
 		propertyKey: 'testProp',
 		className: 'TestClass',
 	};
 	const transformer = new MapTransformer<any, any>();
 
-	describe('validate()', () => {
+	describe('checkIntegrity()', () => {
 		test('should return isValid=true for an array input', () => {
-			const result = transformer.validate([['a', 1]], ctx);
+			const result = transformer.checkIntegrity([['a', 1]], ctx);
 			expect(result.isValid).toBe(true);
 		});
 
 		test('should return isValid=false for a number', () => {
-			const result = transformer.validate(42, ctx);
+			const result = transformer.checkIntegrity(42, ctx);
 			expect(result.isValid).toBe(false);
 			expect(result.error).toBeDefined();
 		});
 
 		test('should return isValid=false for a string', () => {
-			const result = transformer.validate('not-a-map', ctx);
+			const result = transformer.checkIntegrity('not-a-map', ctx);
 			expect(result.isValid).toBe(false);
 		});
 	});

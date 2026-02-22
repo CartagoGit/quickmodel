@@ -63,7 +63,7 @@ describe('Transformer Coverage: SymbolTransformer', () => {
 
 	describe('validate', () => {
 		test('should validate symbol', () => {
-			const result = transformer.validate(Symbol(), {
+			const result = transformer.checkIntegrity(Symbol(), {
 				propertyKey,
 				target: {},
 			});
@@ -71,7 +71,7 @@ describe('Transformer Coverage: SymbolTransformer', () => {
 		});
 
 		test('should validate string', () => {
-			const result = transformer.validate('key', {
+			const result = transformer.checkIntegrity('key', {
 				propertyKey,
 				target: {},
 			});
@@ -79,7 +79,7 @@ describe('Transformer Coverage: SymbolTransformer', () => {
 		});
 
 		test('should validate object wrapper', () => {
-			const result = transformer.validate(
+			const result = transformer.checkIntegrity(
 				{ __type: 'symbol', description: 'ok' },
 				{ propertyKey, target: {} }
 			);
@@ -87,7 +87,7 @@ describe('Transformer Coverage: SymbolTransformer', () => {
 		});
 
 		test('should fail validation for invalid type', () => {
-			const result = transformer.validate(123, {
+			const result = transformer.checkIntegrity(123, {
 				propertyKey,
 				target: {},
 			});

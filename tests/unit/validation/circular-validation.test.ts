@@ -49,7 +49,7 @@ describe('Validation Robustness: Circular References', () => {
 		console.log('Test: calling validate on circular structure...');
 
 		// This SHOULD crash if not protected
-		const errors = parent.validate();
+		const errors = parent.checkIntegrity();
 
 		expect(errors).toBeArray();
 	});

@@ -1,9 +1,9 @@
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
@@ -43,7 +43,7 @@ export class BigIntTransformer
 		string | number | { __type: 'bigint'; value: string },
 		bigint
 	>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a string, number, or object with __type to bigint.
@@ -147,7 +147,10 @@ export class BigIntTransformer
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result indicating success or failure
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (typeof value === 'bigint') {
 			return { isValid: true };
 		}

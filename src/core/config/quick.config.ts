@@ -94,11 +94,11 @@ export interface IQConfig {
 		};
 
 		/**
-		 * Strategy for reporting validation errors.
+		 * Strategy for reporting integrity errors.
 		 * - 'failFast': Throws on first error.
 		 * - 'accumulate': Collects all errors (Default).
 		 */
-		validationErrorStrategy?: 'failFast' | 'accumulate';
+		integrityErrorStrategy?: 'failFast' | 'accumulate';
 
 		/**
 		 * When to run validation.

@@ -2,9 +2,9 @@ import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
@@ -44,7 +44,7 @@ export class MapTransformer<K = string, V = unknown>
 		| [string, V][],
 		Map<K, V>
 	>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a plain object or __type format to Map.
@@ -411,7 +411,10 @@ export class MapTransformer<K = string, V = unknown>
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof Map) {
 			return { isValid: true };
 		}
@@ -461,7 +464,7 @@ export class MapTransformer<K = string, V = unknown>
  */
 export class SetTransformer<V = unknown>
 	extends BaseTransformer<V[] | { __type: 'Set'; values: V[] }, Set<V>>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts an array or __type format to Set.
@@ -692,7 +695,10 @@ export class SetTransformer<V = unknown>
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof Set || Array.isArray(value)) {
 			return { isValid: true };
 		}

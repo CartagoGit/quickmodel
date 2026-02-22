@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'bun:test';
-import { ValidationService } from '../../../src/core/services/validation.service';
+import { IntegrityService } from '../../../src/core/services/integrity.service';
 import { Quick } from '../../../src/core/decorators/quick.decorator';
 import { QTransformerRegistry } from '../../../src/core/registry/transformer.registry';
 import type {
 	IQTransformer,
-	IQValidator,
-	IQValidationContext,
-	IQValidationResult,
+	IQIntegrityChecker,
+	IQIntegrityContext,
+	IQIntegrityResult,
 } from '../../../src/core/interfaces/transformer.interface';
 import 'reflect-metadata';
 
-describe('ValidationService Coverage Gaps', () => {
-	const service = new ValidationService();
+describe('IntegrityService Coverage Gaps', () => {
+	const service = new IntegrityService();
 
 	it('should recursively validate nested array of models', () => {
 		@Quick({
@@ -40,8 +40,8 @@ describe('ValidationService Coverage Gaps', () => {
 
 		p.children = [cFail];
 
-		// We are testing that validate() called on Parent recursively checks children array elements
-		const results = service.validate(p);
+		// We are testing that checkIntegrity() called on Parent recursively checks children array elements
+		const results = service.checkIntegrity(p);
 
 		expect(results.length).toBeGreaterThan(0);
 		// The service flattens the path: children[0].name
@@ -51,19 +51,19 @@ describe('ValidationService Coverage Gaps', () => {
 
 	it('should catch errors thrown by validators and return error result', () => {
 		// Create a transformer whose validate() always throws to test the catch block.
-		// We register it under a unique string key so ValidationService can find it via fieldType.
+		// We register it under a unique string key so IntegrityService can find it via fieldType.
 		const BROKEN_KEY = 'brokenvalidatortype_test_unique';
-		const brokenTransformer: IQTransformer<unknown, unknown> & IQValidator =
-			{
-				deserialize: (v: unknown) => v,
-				serialize: (v: unknown) => v,
-				validate(
-					_value: unknown,
-					_ctx: IQValidationContext
-				): IQValidationResult {
-					throw new Error('validator exploded');
-				},
-			};
+		const brokenTransformer: IQTransformer<unknown, unknown> &
+			IQIntegrityChecker = {
+			deserialize: (v: unknown) => v,
+			serialize: (v: unknown) => v,
+			checkIntegrity(
+				_value: unknown,
+				_ctx: IQIntegrityContext
+			): IQIntegrityResult {
+				throw new Error('validator exploded');
+			},
+		};
 
 		// Register under a string key — string keys go through fieldType lookup in getTransformer
 		QTransformerRegistry.register(BROKEN_KEY, brokenTransformer as any);
@@ -78,7 +78,7 @@ describe('ValidationService Coverage Gaps', () => {
 		const instance = new ModelWithBrokenValidator();
 		(instance as any).field = 'some-value';
 
-		const results = service.validate(instance as any);
+		const results = service.checkIntegrity(instance as any);
 
 		// The service should have caught the error and returned an error result
 		expect(results.length).toBeGreaterThan(0);

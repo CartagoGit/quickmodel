@@ -10,7 +10,7 @@ describe('Nested Model Validation', () => {
 		deserialize(v: any) {
 			return v;
 		}
-		validate(v: any) {
+		checkIntegrity(v: any) {
 			if (v === 'INVALID_VALUE')
 				return { isValid: false, error: 'Value is invalid' };
 			return { isValid: true };
@@ -38,10 +38,10 @@ describe('Nested Model Validation', () => {
 		});
 
 		// The nested model itself should be invalid
-		expect(parent.nested.validate().length).toBeGreaterThan(0);
+		expect(parent.nested.checkIntegrity().length).toBeGreaterThan(0);
 
 		// The parent validation SHOULD trigger the nested validation and report it
-		const parentErrors = parent.validate();
+		const parentErrors = parent.checkIntegrity();
 
 		console.log('Parent Errors:', parentErrors);
 

@@ -33,12 +33,12 @@ export type {
 	IQSerialized,
 } from './core/interfaces/serialization-types.interface';
 
-// Validation Types
+// Integrity Types
 export type {
-	IQValidationResult,
+	IQIntegrityResult,
 	IQTransformer as IQTransformer,
 	IQTransformContext,
-	IQValidationContext,
+	IQIntegrityContext,
 } from './core/interfaces/transformer.interface';
 export type { IQTransformerKey } from './core/registry/transformer.registry';
 

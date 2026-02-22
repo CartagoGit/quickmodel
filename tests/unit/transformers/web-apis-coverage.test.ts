@@ -64,25 +64,28 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 
 		test('validate should return valid for URL instance', () => {
 			expect(
-				transformer.validate(new URL('https://example.com'), context)
-					.isValid
+				transformer.checkIntegrity(
+					new URL('https://example.com'),
+					context
+				).isValid
 			).toBe(true);
 		});
 
 		test('validate should return valid for valid URL string', () => {
 			expect(
-				transformer.validate('https://example.com', context).isValid
+				transformer.checkIntegrity('https://example.com', context)
+					.isValid
 			).toBe(true);
 		});
 
 		test('validate should return invalid for invalid URL string', () => {
-			const result = transformer.validate('not-a-url', context);
+			const result = transformer.checkIntegrity('not-a-url', context);
 			expect(result.isValid).toBe(false);
 			expect(result.error).toContain('Invalid URL value');
 		});
 
 		test('validate should return invalid for non-string', () => {
-			const result = transformer.validate(123, context);
+			const result = transformer.checkIntegrity(123, context);
 			expect(result.isValid).toBe(false);
 			expect(result.error).toContain('Expected string/URL');
 		});
@@ -150,12 +153,15 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 
 		test('validate should pass for valid inputs', () => {
 			expect(
-				transformer.validate(new URLSearchParams(), context).isValid
+				transformer.checkIntegrity(new URLSearchParams(), context)
+					.isValid
 			).toBe(true);
-			expect(transformer.validate('foo=bar', context).isValid).toBe(true);
-			expect(transformer.validate({ foo: 'bar' }, context).isValid).toBe(
+			expect(transformer.checkIntegrity('foo=bar', context).isValid).toBe(
 				true
 			);
+			expect(
+				transformer.checkIntegrity({ foo: 'bar' }, context).isValid
+			).toBe(true);
 		});
 
 		test('validate should fail for invalid string', () => {
@@ -165,7 +171,9 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			// Or maybe URLSearchParams constructor is very lenient.
 			// The catch block in validation might be unreachable for standard strings.
 			// But let's checking non-object types.
-			expect(transformer.validate(123, context).isValid).toBe(false);
+			expect(transformer.checkIntegrity(123, context).isValid).toBe(
+				false
+			);
 		});
 	});
 

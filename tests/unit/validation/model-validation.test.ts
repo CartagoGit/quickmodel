@@ -32,7 +32,7 @@ describe('Model Validation', () => {
 			birthDate: '2000-01-01T00:00:00.000Z',
 		});
 
-		const errors = user.validate();
+		const errors = user.checkIntegrity();
 		expect(errors).toBeArray();
 		expect(errors).toHaveLength(0);
 	});
@@ -60,7 +60,7 @@ describe('Model Validation', () => {
 				return val;
 			}
 
-			validate(val: any, _context: any) {
+			checkIntegrity(val: any, _context: any) {
 				// Strict check
 				if (typeof val !== 'string' || !val.includes('@')) {
 					return { isValid: false, error: 'Invalid email' };
@@ -83,10 +83,10 @@ describe('Model Validation', () => {
 		}
 
 		const validContact = Contact.create({ email: 'test@test.com' });
-		expect(validContact.validate()).toHaveLength(0);
+		expect(validContact.checkIntegrity()).toHaveLength(0);
 
 		const invalidContact = Contact.create({ email: 'invalid' });
-		const errors = invalidContact.validate();
+		const errors = invalidContact.checkIntegrity();
 
 		expect(errors).toHaveLength(1);
 		expect(errors[0].error).toBe('Invalid email');

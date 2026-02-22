@@ -115,6 +115,7 @@ import {
 	QUICK_TYPE_MAP_KEY,
 	QUICK_OPTIONS_KEY,
 	QUICK_DECORATOR_KEY,
+	QUICK_VALUES_KEY,
 } from '../constants/metadata-keys';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
@@ -303,6 +304,18 @@ export class Serializer<
 		const keys = new Set<string>();
 		for (const key of Object.keys(model as object)) {
 			keys.add(key);
+		}
+
+		// Also collect keys from the internal backup storage (QUICK_VALUES_KEY).
+		// This ensures fields from ancestor classes that did not receive their own
+		// enumerable property slot during construction are always serialized.
+		const quickValues = (model as Record<string, unknown>)[
+			QUICK_VALUES_KEY
+		];
+		if (quickValues && typeof quickValues === 'object') {
+			for (const key of Object.keys(quickValues)) {
+				keys.add(key);
+			}
 		}
 
 		let proto = Object.getPrototypeOf(model);

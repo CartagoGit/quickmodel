@@ -4,7 +4,7 @@ import {
 	NumberTransformer,
 	BooleanTransformer,
 } from '@/transformers/primitive.transformer';
-import { IQValidationContext } from '@/core/interfaces/transformer.interface';
+import { IQIntegrityContext } from '@/core/interfaces/transformer.interface';
 
 describe('Transformer Coverage: Primitives', () => {
 	const className = 'TestClass';
@@ -23,17 +23,17 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should validate valid string', () => {
 			expect(
-				StringTransformer.validate(
+				StringTransformer.checkIntegrity(
 					'ok',
-					{} as unknown as IQValidationContext
+					{} as unknown as IQIntegrityContext
 				).isValid
 			).toBe(true);
 		});
 		test('should ALLOW null (validation passes)', () => {
 			expect(
-				StringTransformer.validate(
+				StringTransformer.checkIntegrity(
 					null,
-					{} as unknown as IQValidationContext
+					{} as unknown as IQIntegrityContext
 				).isValid
 			).toBe(true);
 		});
@@ -55,9 +55,9 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should validate valid number', () => {
 			expect(
-				NumberTransformer.validate(
+				NumberTransformer.checkIntegrity(
 					123,
-					{} as unknown as IQValidationContext
+					{} as unknown as IQIntegrityContext
 				).isValid
 			).toBe(true);
 		});
@@ -76,9 +76,9 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should validate valid boolean', () => {
 			expect(
-				BooleanTransformer.validate(
+				BooleanTransformer.checkIntegrity(
 					false,
-					{} as unknown as IQValidationContext
+					{} as unknown as IQIntegrityContext
 				).isValid
 			).toBe(true);
 		});

@@ -3,9 +3,9 @@ import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQTransformContext,
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -37,7 +37,7 @@ import {
  */
 export class DateTransformer
 	extends BaseTransformer<string | number | Date, Date>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a string, number (Unix timestamp), or Date to Date object.
@@ -137,13 +137,13 @@ export class DateTransformer
 	 * Validates if a value is a valid Date or date string.
 	 *
 	 * @param value - The value to validate
-	 * @param _context - Validation context (unused)
-	 * @returns Validation result
+	 * @param _context - Integrity context (unused)
+	 * @returns Integrity check result
 	 */
-	validate(
+	checkIntegrity(
 		value: unknown,
-		_context: IQValidationContext
-	): IQValidationResult {
+		_context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof Date) {
 			return { isValid: true };
 		}

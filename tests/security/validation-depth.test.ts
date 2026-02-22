@@ -32,7 +32,7 @@ describe('Security: Validation Recursion & Depth', () => {
 
 		// Validate
 		// Should return errors about recursion depth, NOT crash
-		const errors = root.validate();
+		const errors = root.checkIntegrity();
 		expect(Array.isArray(errors)).toBe(true);
 
 		// We expect at least one error about recursion depth because DEPTH (2000) > LIMIT (200)

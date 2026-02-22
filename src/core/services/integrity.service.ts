@@ -1,23 +1,23 @@
 /**
- * Service for validating model instances.
+ * Service for checking type integrity of model instances.
  *
  * @remarks
  * This class follows SOLID principles:
- * - **Single Responsibility**: Only handles model validation
+ * - **Single Responsibility**: Only handles model type integrity checks
  *
  * @example
  * ```typescript
- * const service = new ValidationService();
+ * const service = new IntegrityService();
  *
  * class User extends QuickModel<IUser> {
  *   @QType('date') birthDate!: Date;
  * }
  *
  * const user = new User({ birthDate: "invalid" });
- * const results = service.validate(user, { modelClass: User });
+ * const results = service.checkIntegrity(user, { modelClass: User });
  *
  * if (results.length > 0) {
- *   console.error('Validation errors:', results);
+ *   console.error('Integrity errors:', results);
  * }
  *
  * // Or use convenience method
@@ -30,8 +30,8 @@
 import 'reflect-metadata';
 import { QConfig } from '../config/quick.config';
 import {
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 	IQTransformer,
 } from '../interfaces/transformer.interface';
 import {
@@ -65,7 +65,7 @@ import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
 /** @internal Context passed between recursive calls to track cycle detection and depth. */
-type IValidationContext = {
+type IIntegrityContext = {
 	/** Tracks already-visited objects to prevent infinite cycles. */
 	seen: WeakSet<object>;
 	/** Current recursion depth; validated against MAX_DEPTH. */
@@ -73,19 +73,19 @@ type IValidationContext = {
 };
 
 /**
- * Options accepted by {@link ValidationService.validate}.
+ * Options accepted by {@link IntegrityService.checkIntegrity}.
  */
-export interface IValidationOptions {
+export interface IIntegrityOptions {
 	/**
 	 * The model class constructor. Used to resolve metadata and configuration.
 	 * When omitted, the constructor is inferred from the instance.
 	 */
 	modelClass?: Function;
 	/** @internal Recursion context — do not pass externally. */
-	ctx?: IValidationContext;
+	ctx?: IIntegrityContext;
 }
 
-export class ValidationService {
+export class IntegrityService {
 	private transformers = new Map<string, IQTransformer<unknown, unknown>>();
 
 	/**
@@ -225,13 +225,13 @@ export class ValidationService {
 	 *
 	 * @example
 	 * ```typescript
-	 * const errors = service.validate(user, { modelClass: UserModel });
+	 * const errors = service.checkIntegrity(user, { modelClass: UserModel });
 	 * ```
 	 */
-	validate(
+	checkIntegrity(
 		instance: Record<string, unknown>,
-		options: IValidationOptions = {}
-	): IQValidationResult[] {
+		options: IIntegrityOptions = {}
+	): IQIntegrityResult[] {
 		const { modelClass, ctx = { seen: new WeakSet(), depth: 0 } } = options;
 		const { depth, seen } = ctx;
 		// SECURITY: Prevent Stack Overflow via deep recursion
@@ -240,7 +240,7 @@ export class ValidationService {
 			return [
 				{
 					isValid: false,
-					error: `Validation error: Maximum recursion depth (${MAX_DEPTH}) exceeded.`,
+					error: `Integrity error: Maximum recursion depth (${MAX_DEPTH}) exceeded.`,
 				},
 			];
 		}
@@ -252,7 +252,7 @@ export class ValidationService {
 			seen.add(instance);
 		}
 
-		const results: IQValidationResult[] = [];
+		const results: IQIntegrityResult[] = [];
 		const className = modelClass
 			? modelClass.name
 			: instance.constructor.name;
@@ -263,8 +263,8 @@ export class ValidationService {
 			Reflect.getMetadata(QUICK_OPTIONS_KEY, configClass) || {};
 		const globalDefaults = QConfig.get().defaults || {};
 		const strategy =
-			localOptions.validationErrorStrategy ||
-			globalDefaults.validationErrorStrategy ||
+			localOptions.integrityErrorStrategy ||
+			globalDefaults.integrityErrorStrategy ||
 			'accumulate';
 		const failFast = strategy === 'failFast';
 
@@ -291,49 +291,50 @@ export class ValidationService {
 			if (fieldType) {
 				const transformer = this.getTransformer(fieldType);
 
-				// Check if transformer implements IQValidator (has validate method)
+				// Check if transformer implements IQIntegrityChecker (has checkIntegrity method)
 				if (
 					transformer &&
-					'validate' in transformer &&
-					typeof (transformer as unknown as IQValidator).validate ===
-						'function'
+					'checkIntegrity' in transformer &&
+					typeof (transformer as unknown as IQIntegrityChecker)
+						.checkIntegrity === 'function'
 				) {
-					const validator = transformer as unknown as IQValidator;
+					const checker =
+						transformer as unknown as IQIntegrityChecker;
 					const context = {
 						propertyKey: key,
 						className: className,
 					};
 
 					try {
-						const result = validator.validate(value, context);
+						const result = checker.checkIntegrity(value, context);
 						if (!result.isValid) {
 							results.push(result);
 							if (failFast) return results;
 						}
 					} catch (error) {
-						// Catch errors during validation to prevent crash
+						// Catch errors during integrity check to prevent crash
 						results.push({
 							isValid: false,
-							error: `Validation error for ${className}.${key}: ${error instanceof Error ? error.message : String(error)}`,
+							error: `Integrity error for ${className}.${key}: ${error instanceof Error ? error.message : String(error)}`,
 						});
 						if (failFast) return results;
 					}
 				}
 			}
 
-			// RECURSIVE VALIDATION for Nested Models
-			// Checks if the value itself is validatable (has a validate method)
+			// RECURSIVE INTEGRITY CHECK for Nested Models
+			// Checks if the value itself is checkable (has a checkIntegrity method)
 			if (value) {
 				// 1. Single Nested Model
 				if (
 					typeof value === 'object' &&
-					'validate' in value &&
-					typeof (value as any).validate === 'function'
+					'checkIntegrity' in value &&
+					typeof (value as any).checkIntegrity === 'function'
 				) {
 					try {
 						// Pass 'seen' set to recursive call
 						// to preserve cycle detection context.
-						const nestedErrors = this.validate(
+						const nestedErrors = this.checkIntegrity(
 							value as Record<string, unknown>,
 							{ ctx: { seen, depth: depth + 1 } }
 						);
@@ -347,8 +348,8 @@ export class ValidationService {
 							}
 						}
 					} catch (e) {
-						// Ignore validation errors in child to prevent crash
-						console.error('Caught validation error:', e);
+						// Ignore errors in child to prevent crash
+						console.error('Caught integrity error:', e);
 					}
 				}
 
@@ -366,7 +367,7 @@ export class ValidationService {
 								))
 						) {
 							try {
-								const nestedErrors = this.validate(
+								const nestedErrors = this.checkIntegrity(
 									item as Record<string, unknown>,
 									{ ctx: { seen, depth: depth + 1 } }
 								);
@@ -391,13 +392,13 @@ export class ValidationService {
 	}
 
 	/**
-	 * Checks if a model instance is valid.
+	 * Checks if a model instance passes all integrity checks.
 	 *
 	 * @param instance - The model instance to check
 	 * @param modelClass - The model class constructor
-	 * @returns True if all validations pass, false if any fail
+	 * @returns True if all integrity checks pass, false if any fail
 	 */
 	isValid(instance: Record<string, unknown>, modelClass?: Function): boolean {
-		return this.validate(instance, { modelClass }).length === 0;
+		return this.checkIntegrity(instance, { modelClass }).length === 0;
 	}
 }

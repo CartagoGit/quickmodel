@@ -51,18 +51,18 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 	});
 
 	test('validate: should reject null', () => {
-		expect(transformer.validate(null, context).isValid).toBe(false);
+		expect(transformer.checkIntegrity(null, context).isValid).toBe(false);
 	});
 
 	test('validate: should reject invalid types', () => {
-		expect(transformer.validate(123, context).isValid).toBe(false);
+		expect(transformer.checkIntegrity(123, context).isValid).toBe(false);
 	});
 
 	test('validate: should accept valid types', () => {
-		expect(transformer.validate(/abc/, context).isValid).toBe(true);
-		expect(transformer.validate('/abc/', context).isValid).toBe(true);
-		expect(transformer.validate({ source: 'abc' }, context).isValid).toBe(
-			true
-		);
+		expect(transformer.checkIntegrity(/abc/, context).isValid).toBe(true);
+		expect(transformer.checkIntegrity('/abc/', context).isValid).toBe(true);
+		expect(
+			transformer.checkIntegrity({ source: 'abc' }, context).isValid
+		).toBe(true);
 	});
 });

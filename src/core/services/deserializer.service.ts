@@ -28,7 +28,7 @@ import {
 	ValueTransformerService,
 	IRecursiveDeserializer,
 } from './value-transformer.service';
-import { ValidationService } from './validation.service';
+import { IntegrityService } from './integrity.service';
 import { QConfig } from '../config/quick.config';
 import { QModelError } from '../errors/quickmodel.error';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
@@ -43,15 +43,15 @@ export class Deserializer<
 	private readonly instanceFactory: InstanceFactoryService;
 	private readonly populationService: PopulationService;
 	private readonly valueTransformer: ValueTransformerService;
-	private readonly validationService: ValidationService;
+	private readonly integrityService: IntegrityService;
 
 	/**
 	 * Creates a model deserializer.
 	 */
-	constructor(validationService?: ValidationService) {
+	constructor(integrityService?: IntegrityService) {
 		this.transformerLookup = new TransformerLookupService();
 		this.instanceFactory = new InstanceFactoryService();
-		this.validationService = validationService || new ValidationService();
+		this.integrityService = integrityService || new IntegrityService();
 		this.valueTransformer = new ValueTransformerService(
 			this.transformerLookup,
 			this
@@ -184,14 +184,14 @@ export class Deserializer<
 			'manual';
 
 		if (trigger === 'construction') {
-			const errors = this.validationService.validate(
+			const errors = this.integrityService.checkIntegrity(
 				instance as Record<string, unknown>,
 				{ modelClass }
 			);
 			if (errors.length > 0) {
 				const errorMsgs = errors.map((e) => e.error).join('; ');
 				throw new QModelError(
-					`Validation failed during construction: ${errorMsgs}`
+					`Integrity check failed during construction: ${errorMsgs}`
 				);
 			}
 		}

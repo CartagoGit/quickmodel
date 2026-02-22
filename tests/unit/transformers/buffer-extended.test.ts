@@ -41,14 +41,20 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 		test('validate: should accept valid types', () => {
 			expect(
-				transformer.validate(new ArrayBuffer(1), context).isValid
+				transformer.checkIntegrity(new ArrayBuffer(1), context).isValid
 			).toBe(true);
-			expect(transformer.validate([1, 2], context).isValid).toBe(true);
+			expect(transformer.checkIntegrity([1, 2], context).isValid).toBe(
+				true
+			);
 		});
 
 		test('validate: should reject invalid types', () => {
-			expect(transformer.validate('string', context).isValid).toBe(false);
-			expect(transformer.validate(123, context).isValid).toBe(false);
+			expect(transformer.checkIntegrity('string', context).isValid).toBe(
+				false
+			);
+			expect(transformer.checkIntegrity(123, context).isValid).toBe(
+				false
+			);
 		});
 	});
 
@@ -91,17 +97,21 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 		test('validate: should accept valid types', () => {
 			expect(
-				transformer.validate(new DataView(new ArrayBuffer(1)), context)
-					.isValid
+				transformer.checkIntegrity(
+					new DataView(new ArrayBuffer(1)),
+					context
+				).isValid
 			).toBe(true);
 			expect(
-				transformer.validate(new ArrayBuffer(1), context).isValid
+				transformer.checkIntegrity(new ArrayBuffer(1), context).isValid
 			).toBe(true);
-			expect(transformer.validate([], context).isValid).toBe(true);
+			expect(transformer.checkIntegrity([], context).isValid).toBe(true);
 		});
 
 		test('validate: should reject invalid types', () => {
-			expect(transformer.validate(123, context).isValid).toBe(false);
+			expect(transformer.checkIntegrity(123, context).isValid).toBe(
+				false
+			);
 		});
 	});
 
@@ -144,15 +154,21 @@ describe('Unit: Buffer Transformers Coverage', () => {
 
 			test('validate: should accept valid types', () => {
 				expect(
-					transformer.validate(new SharedArrayBuffer(1), context)
-						.isValid
+					transformer.checkIntegrity(
+						new SharedArrayBuffer(1),
+						context
+					).isValid
 				).toBe(true);
-				expect(transformer.validate([], context).isValid).toBe(true);
+				expect(transformer.checkIntegrity([], context).isValid).toBe(
+					true
+				);
 			});
 		}
 
 		test('validate: should reject invalid types', () => {
-			expect(transformer.validate('bad', context).isValid).toBe(false);
+			expect(transformer.checkIntegrity('bad', context).isValid).toBe(
+				false
+			);
 		});
 	});
 });

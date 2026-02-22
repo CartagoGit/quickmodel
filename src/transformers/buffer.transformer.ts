@@ -2,9 +2,9 @@ import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '../core/errors/quickmodel.error';
 import {
 	IQTransformContext,
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -36,7 +36,7 @@ import {
  */
 export class ArrayBufferTransformer
 	extends BaseTransformer<number[], ArrayBuffer>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a byte array to ArrayBuffer.
@@ -112,7 +112,10 @@ export class ArrayBufferTransformer
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof ArrayBuffer || Array.isArray(value)) {
 			return { isValid: true };
 		}
@@ -153,7 +156,7 @@ export class ArrayBufferTransformer
  */
 export class DataViewTransformer
 	extends BaseTransformer<number[], DataView>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a byte array or ArrayBuffer to DataView.
@@ -232,7 +235,10 @@ export class DataViewTransformer
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (
 			value instanceof DataView ||
 			value instanceof ArrayBuffer ||
@@ -260,7 +266,7 @@ export class DataViewTransformer
  */
 export class SharedArrayBufferTransformer
 	extends BaseTransformer<number[], SharedArrayBuffer>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	deserialize(
 		value: number[] | SharedArrayBuffer | null | undefined,
@@ -314,7 +320,10 @@ export class SharedArrayBufferTransformer
 		return Array.from(new Uint8Array(value));
 	}
 
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof SharedArrayBuffer || Array.isArray(value)) {
 			return { isValid: true };
 		}

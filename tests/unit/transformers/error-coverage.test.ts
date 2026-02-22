@@ -83,7 +83,7 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 
 	describe('validate', () => {
 		test('should validate Error instance', () => {
-			const result = transformer.validate(new Error(), {
+			const result = transformer.checkIntegrity(new Error(), {
 				propertyKey,
 				target: {},
 			});
@@ -91,7 +91,7 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 		});
 
 		test('should validate string', () => {
-			const result = transformer.validate('my error', {
+			const result = transformer.checkIntegrity('my error', {
 				propertyKey,
 				target: {},
 			});
@@ -99,7 +99,7 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 		});
 
 		test('should validate valid object', () => {
-			const result = transformer.validate(
+			const result = transformer.checkIntegrity(
 				{ message: 'ok' },
 				{ propertyKey, target: {} }
 			);
@@ -107,7 +107,7 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 		});
 
 		test('should fail validation for invalid type', () => {
-			const result = transformer.validate(123, {
+			const result = transformer.checkIntegrity(123, {
 				propertyKey,
 				target: {},
 			});
@@ -115,7 +115,7 @@ describe('Transformer Coverage: ErrorTransformer', () => {
 		});
 
 		test('should fail validation for object without message', () => {
-			const result = transformer.validate(
+			const result = transformer.checkIntegrity(
 				{ other: 'prop' },
 				{ propertyKey, target: {} }
 			);

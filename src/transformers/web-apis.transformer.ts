@@ -2,9 +2,9 @@ import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
@@ -16,7 +16,7 @@ import {
  */
 export class URLTransformer
 	extends BaseTransformer<string, URL>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	deserialize(
 		value: string | URL | null | undefined,
@@ -98,7 +98,10 @@ export class URLTransformer
 		return value.toString();
 	}
 
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof URL) {
 			return { isValid: true };
 		}
@@ -130,7 +133,7 @@ export class URLTransformer
  */
 export class URLSearchParamsTransformer
 	extends BaseTransformer<string | Record<string, string>, URLSearchParams>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	deserialize(
 		value:
@@ -186,7 +189,10 @@ export class URLSearchParamsTransformer
 		return value.toString();
 	}
 
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof URLSearchParams) {
 			return { isValid: true };
 		}

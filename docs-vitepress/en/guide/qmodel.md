@@ -161,17 +161,25 @@ if (errors.length) {
 
 QModel includes powerful built-in tools to track changes, compare states, and manage updates.
 
-### `hasChanges()` / `isDirty()`
+### `hasChanges()` / `isDirty(field?)`
 
-Returns `true` if the model has been modified since it was instantiated (or since the last save/reset).
+Without arguments, returns `true` if **any** field has changed since instantiation.
+
+With a field name, returns `true` if **that specific field** is dirty.
 
 ```typescript
-const user = new User({ name: 'John' });
-console.log(user.hasChanges()); // false
+const user = new User({ name: 'John', age: 30 });
+console.log(user.isDirty()); // false
+console.log(user.isDirty('name')); // false
 
 user.name = 'Jane';
-console.log(user.hasChanges()); // true
+console.log(user.isDirty()); // true  — something changed
+console.log(user.isDirty('name')); // true  — 'name' changed
+console.log(user.isDirty('age')); // false — 'age' did NOT change
 ```
+
+> [!TIP]
+> `hasChanges()` and `isDirty()` (no argument) are equivalent. `isDirty(field)` is the new per-field variant.
 
 ### `getChanges()`
 
@@ -223,6 +231,29 @@ Returns the **original data** used to create the instance, in its original forma
 const original = user.getInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
+
+### `merge(partial)`
+
+Creates a **new instance** (immutable) by merging current state with the provided partial data. The original instance is never modified.
+
+```typescript
+const user = new User({ id: 1, name: 'John', age: 30 });
+
+const updated = user.merge({ age: 31 });
+
+console.log(user.age); // 30  — original untouched
+console.log(updated.age); // 31  — new instance
+console.log(updated.name); // 'John' — preserved
+
+// The new instance has its own change tracking
+updated.name = 'Jane';
+console.log(updated.isDirty()); // true
+console.log(updated.isDirty('age')); // false — 31 is its baseline
+console.log(updated.isDirty('name')); // true  — changed after merge
+```
+
+> [!NOTE]
+> `merge()` uses `new Constructor(data)` internally, ensuring the returned instance has full change tracking (`isDirty`, `reset`, `getChanges`) relative to the **merged state** as its baseline.
 
 ### `clone()`
 

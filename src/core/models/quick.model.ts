@@ -14,7 +14,7 @@ import { Serializer } from '@/core/services/serializer.service';
 import type { IQSerializationOptions } from '@/core/interfaces/serializer.interface';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
 import { QMockGenerator } from '@/core/services/mock-generator.service';
-import { ValidationService } from '@/core/services/validation.service';
+import { IntegrityService } from '@/core/services/integrity.service';
 import { QMockBuilder } from '@/core/services/mock-builder.service';
 import type {
 	IQModelInstance,
@@ -24,7 +24,7 @@ import type {
 	IQSerializedInterface,
 	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
-import type { IQValidationResult } from '@/core/interfaces/transformer.interface';
+import type { IQIntegrityResult } from '@/core/interfaces/transformer.interface';
 import type {
 	IQAnyRecord,
 	IModelConstructor,
@@ -92,7 +92,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	private static readonly serializer = new Serializer();
 	private static readonly toInterfaceService = new ToInterfaceService();
 	private static readonly QMockGenerator = new QMockGenerator();
-	private static readonly validation = new ValidationService();
+	private static readonly validation = new IntegrityService();
 
 	// Store initial state for change tracking and reset
 	private __initData?: IQSerializedInterface<TInterface>;
@@ -244,26 +244,40 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			string,
 			{ type: string; transformer: unknown }
 		>();
-		const prototype = this.prototype;
 
-		// Get all registered qtypes using the correct symbol
-		const qtypes =
-			Reflect.getMetadata(QTYPES_METADATA_KEY, prototype) || [];
+		// Walk the FULL prototype chain so fields from ancestor classes are included.
+		// Reflect.getOwnMetadata (not getMetadata) is used to avoid re-reading inherited
+		// metadata arrays — we want each level's own list and merge them manually.
+		const allFieldNames = new Set<string>();
+		let proto = this.prototype;
+		while (proto && proto !== Object.prototype) {
+			const qtypes = Reflect.getOwnMetadata(
+				QTYPES_METADATA_KEY,
+				proto
+			) as Array<string | symbol> | undefined;
+			if (Array.isArray(qtypes)) {
+				for (const key of qtypes) {
+					allFieldNames.add(String(key));
+				}
+			}
+			proto = Object.getPrototypeOf(proto);
+		}
 
-		for (const fieldName of qtypes) {
+		for (const fieldName of allFieldNames) {
+			// Resolve metadata from the most-derived class first (closest override wins).
 			const fieldType = Reflect.getMetadata(
 				'fieldType',
-				prototype,
+				this.prototype,
 				fieldName
 			);
 			const arrayElementClass = Reflect.getMetadata(
 				'arrayElementClass',
-				prototype,
+				this.prototype,
 				fieldName
 			);
 			const customTransformer = Reflect.getMetadata(
 				'customTransformer',
-				prototype,
+				this.prototype,
 				fieldName
 			);
 
@@ -284,10 +298,115 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 				transformer = QModel.deserializer.getTransformer(fieldType);
 			}
 
-			result.set(fieldName as string, { type, transformer });
+			result.set(fieldName, { type, transformer });
 		}
 
 		return result;
+	}
+
+	/**
+	 * Mixin factory that injects full QModel functionality into a class that must extend
+	 * an **external** (third-party / framework) base class.
+	 *
+	 * Use this when you cannot extend `QModel` directly because you already need to extend
+	 * another class (e.g. an Angular component, a NestJS entity, a custom base).
+	 *
+	 * The returned class:
+	 * - Extends `ExternalBase` (prototype chain intact: `instance instanceof ExternalBase === true`)
+	 * - Exposes all static QModel methods: `create()`, `createReadonly()`, `mock()`,
+	 *   `getMetadata()`, `deserialize()`, `deserializeJson()`
+	 * - Exposes all instance QModel methods: `serialize()`, `toJSON()`, `toInterface()`,
+	 *   `isDirty()`, `getDirtyFields()`, `reset()`, `patch()`, `merge()`
+	 * - Works with `@Quick` and `@QType` decorators on the derived class
+	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
+	 *
+	 * @template TInterface - The plain-object / serialized interface (same as first generic of QModel<T>)
+	 * @param ExternalBase - The external class to extend
+	 * @returns A mixin base class ready to be extended
+	 *
+	 * @example
+	 * ```typescript
+	 * // External class from a framework
+	 * class NgComponent { onInit() {} }
+	 *
+	 * interface IUser { name: string; createdAt: string; }
+	 *
+	 * @Quick({ createdAt: Date })
+	 * class UserModel extends QModel.extends<IUser>(NgComponent) {
+	 *   declare name: string;
+	 *   declare createdAt: Date;
+	 * }
+	 *
+	 * const user = UserModel.create({ name: 'Alice', createdAt: '2024-01-01T00:00:00.000Z' });
+	 * user.createdAt instanceof Date; // true
+	 * user instanceof NgComponent;   // true
+	 * ```
+	 */
+	static extends<TInterface extends IQAnyRecord>(
+		ExternalBase: new (...args: any[]) => any
+	): typeof QModel<TInterface> {
+		// ── 1. Create the mixin class that extends the external base ────────────
+		class QModelMixed extends ExternalBase {
+			constructor(...args: any[]) {
+				// Call external base with no args — QModel hydration fills all fields
+				super();
+				const data = args[0];
+				Object.defineProperty(this, '__tempData', {
+					value: data,
+					writable: false,
+					enumerable: false,
+					configurable: true,
+				});
+				// Delegate to QModel's initialization logic (declared `protected`)
+				(QModel.prototype as any)['initialize'].call(this);
+			}
+		}
+
+		// ── 2. Copy all INSTANCE methods from QModel.prototype ─────────────────
+		// This includes: serialize, toJSON, toInterface, isDirty, reset, patch, merge,
+		// getMetadata (instance), initialize, installLazyGetters, hasAccessor, etc.
+		for (const name of Object.getOwnPropertyNames(QModel.prototype)) {
+			if (name === 'constructor') continue;
+			const descriptor = Object.getOwnPropertyDescriptor(
+				QModel.prototype,
+				name
+			);
+			if (descriptor) {
+				Object.defineProperty(QModelMixed.prototype, name, descriptor);
+			}
+		}
+
+		// Also copy the QUICK_VALUES_KEY property definition from QModel.prototype
+		// (it is a prototype-level property defined as a class field in legacy TS mode)
+		const quickValuesDescriptor = Object.getOwnPropertyDescriptor(
+			QModel.prototype,
+			QUICK_VALUES_KEY
+		);
+		if (quickValuesDescriptor) {
+			Object.defineProperty(
+				QModelMixed.prototype,
+				QUICK_VALUES_KEY,
+				quickValuesDescriptor
+			);
+		}
+
+		// ── 3. Copy all STATIC methods from QModel ─────────────────────────────
+		const staticsToCopy = [
+			'create',
+			'createReadonly',
+			'mock',
+			'getMetadata',
+			'deserialize',
+			'deserializeJson',
+		] as const;
+		for (const name of staticsToCopy) {
+			const descriptor = Object.getOwnPropertyDescriptor(QModel, name);
+			if (descriptor) {
+				Object.defineProperty(QModelMixed, name, descriptor);
+			}
+		}
+
+		return QModelMixed as unknown as typeof QModel<TInterface>;
 	}
 
 	/**
@@ -889,24 +1008,27 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
-	 * Validates the model instance against defined transformers.
+	 * Checks the model instance for type integrity.
 	 *
-	 * Checks each property that has a transformer with validation logic.
+	 * Runs each property through its transformer's integrity check (e.g.
+	 * valid Date range, safe RegExp, BigInt size limits).
 	 *
-	 * @returns Array of validation errors (empty if valid)
+	 * @returns Array of integrity errors (empty if all pass)
 	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ email: 'invalid-email' });
-	 * const errors = user.validate();
+	 * const errors = user.checkIntegrity();
 	 * if (errors.length > 0) {
-	 *   console.error('Validation failed:', errors);
+	 *   console.error('Integrity check failed:', errors);
 	 * }
 	 * ```
 	 */
-	validate(): IQValidationResult[] {
+	checkIntegrity(): IQIntegrityResult[] {
 		type IModelAsRecord = Record<string, unknown>;
-		return QModel.validation.validate(this as unknown as IModelAsRecord);
+		return QModel.validation.checkIntegrity(
+			this as unknown as IModelAsRecord
+		);
 	}
 
 	/**

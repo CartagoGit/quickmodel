@@ -2,7 +2,7 @@ import { describe, test, expect, afterEach } from 'bun:test';
 import { Quick, QModel, QConfig, Advanced } from '../../../../src';
 import {
 	IQTransformer,
-	IQValidationResult,
+	IQIntegrityResult,
 } from '../../../../src/core/interfaces/transformer.interface';
 
 const { QTransformerRegistry } = Advanced;
@@ -18,7 +18,7 @@ class LaxTransformer implements IQTransformer<string, string> {
 		return value;
 	}
 
-	validate(value: unknown): IQValidationResult {
+	checkIntegrity(value: unknown): IQIntegrityResult {
 		if (value === 'invalid') {
 			return { isValid: false, error: 'Value is invalid' };
 		}
@@ -53,7 +53,7 @@ describe('Validation Trigger Configuration', () => {
 		expect(instance).toBeInstanceOf(ManualLax);
 
 		// Manual validation detects it
-		const errors = instance.validate();
+		const errors = instance.checkIntegrity();
 		expect(errors.length).toBeGreaterThan(0);
 		expect(errors[0]?.error).toContain('Value is invalid');
 	});
@@ -74,7 +74,7 @@ describe('Validation Trigger Configuration', () => {
 		// Should throw now
 		expect(() => {
 			new AutoLax({ value: 'invalid' });
-		}).toThrow(/Validation failed during construction/);
+		}).toThrow(/Integrity check failed during construction/);
 	});
 
 	test('should pass construction validation with valid data', () => {
@@ -109,7 +109,7 @@ describe('Validation Trigger Configuration', () => {
 
 		expect(() => {
 			new GlobalLax({ value: 'invalid' });
-		}).toThrow(/Validation failed/);
+		}).toThrow(/Integrity check failed/);
 	});
 
 	test('local config should override global config', () => {
@@ -129,7 +129,7 @@ describe('Validation Trigger Configuration', () => {
 		expect(instance).toBeInstanceOf(LocalLax);
 	});
 
-	test('should work with validationErrorStrategy: failFast', () => {
+	test('should work with integrityErrorStrategy: failFast', () => {
 		interface IMulti {
 			v1: string;
 			v2: string;
@@ -142,7 +142,7 @@ describe('Validation Trigger Configuration', () => {
 			},
 			{
 				validationTrigger: 'construction',
-				validationErrorStrategy: 'failFast',
+				integrityErrorStrategy: 'failFast',
 			}
 		)
 		class FailFastLax extends QModel<IMulti> {
@@ -153,17 +153,17 @@ describe('Validation Trigger Configuration', () => {
 		try {
 			new FailFastLax({ v1: 'invalid', v2: 'invalid' });
 		} catch (e: any) {
-			expect(e.message).toContain('Validation failed');
-			// Validate that we stopped early might be hard without mocking ValidationService
+			expect(e.message).toContain('Integrity check failed');
+			// Verifying we stopped early is hard without mocking IntegrityService
 			// But at least we ensure it throws locally.
 		}
 
 		// To verify failFast, we can check how many errors are in the message
 		// Accumulate would list both "Value is invalid" errors (if keys are processed in order)
-		// But ValidationService iterates internally.
+		// But IntegrityService iterates internally.
 		// If failFast strategy is working (tested in other file), Deserializer just catches the error thrown or result returned.
-		// Actually Deserializer calls `this.validationService.validate(...)`.
-		// `validationService` respects `failFast` and returns [firstError].
+		// Actually Deserializer calls `this.integrityService.checkIntegrity(...)`.
+		// `integrityService` respects `failFast` and returns [firstError].
 		// Deserializer formats it.
 	});
 });

@@ -72,7 +72,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 
 	describe('validate', () => {
 		test('should validate Date instance', () => {
-			const result = transformer.validate(new Date(), {
+			const result = transformer.checkIntegrity(new Date(), {
 				propertyKey,
 				target: {},
 			});
@@ -80,15 +80,18 @@ describe('Transformer Coverage: DateTransformer', () => {
 		});
 
 		test('should validate valid ISO string', () => {
-			const result = transformer.validate('2023-01-01T00:00:00.000Z', {
-				propertyKey,
-				target: {},
-			});
+			const result = transformer.checkIntegrity(
+				'2023-01-01T00:00:00.000Z',
+				{
+					propertyKey,
+					target: {},
+				}
+			);
 			expect(result.isValid).toBe(true);
 		});
 
 		test('should validate valid timestamp', () => {
-			const result = transformer.validate(1672574400000, {
+			const result = transformer.checkIntegrity(1672574400000, {
 				propertyKey,
 				target: {},
 			});
@@ -96,7 +99,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 		});
 
 		test('should fail validation for invalid string', () => {
-			const result = transformer.validate('invalid-date', {
+			const result = transformer.checkIntegrity('invalid-date', {
 				propertyKey,
 				target: {},
 			});
@@ -104,7 +107,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 		});
 
 		test('should fail validation for invalid type', () => {
-			const result = transformer.validate({} as unknown as string, {
+			const result = transformer.checkIntegrity({} as unknown as string, {
 				propertyKey,
 				target: {},
 			});
@@ -112,7 +115,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 		});
 
 		test('should fail validation for NaN', () => {
-			const result = transformer.validate(NaN, {
+			const result = transformer.checkIntegrity(NaN, {
 				propertyKey,
 				target: {},
 			});

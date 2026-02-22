@@ -2,9 +2,9 @@ import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQTransformContext,
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 } from '../core/interfaces/transformer.interface';
 
 type IPrimitiveType = 'string' | 'number' | 'boolean';
@@ -58,7 +58,7 @@ type IPrimitiveTypeMap = {
  */
 export class PrimitiveTransformer<T extends IPrimitiveType>
 	extends BaseTransformer<IPrimitiveTypeMap[T], IPrimitiveTypeMap[T]>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Creates a transformer for a specific primitive type.
@@ -127,7 +127,7 @@ export class PrimitiveTransformer<T extends IPrimitiveType>
 			}
 		}
 
-		const validationResult = this.validate(value, {
+		const validationResult = this.checkIntegrity(value, {
 			propertyKey,
 			className,
 			value,
@@ -169,7 +169,10 @@ export class PrimitiveTransformer<T extends IPrimitiveType>
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		// Passthrough null/undefined
 		if (value === null || value === undefined) {
 			return { isValid: true };

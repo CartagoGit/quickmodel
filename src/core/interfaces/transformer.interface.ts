@@ -27,11 +27,14 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 
 export type IQTransformerKey = string | Function | object;
 
-export interface IQValidator {
+export interface IQIntegrityChecker {
 	/**
-	 * Validates that the value is of the correct type
+	 * Checks that the value meets type integrity constraints
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult;
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult;
 }
 
 export interface IQTransformContext {
@@ -40,14 +43,14 @@ export interface IQTransformContext {
 	metadata?: Record<string, unknown>;
 }
 
-export interface IQValidationContext {
+export interface IQIntegrityContext {
 	propertyKey: string;
 	className?: string;
 	value?: unknown;
 	target?: unknown;
 }
 
-export interface IQValidationResult {
+export interface IQIntegrityResult {
 	isValid: boolean;
 	error?: string;
 }

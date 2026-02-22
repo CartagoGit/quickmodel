@@ -3,9 +3,9 @@ import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQTransformContext,
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -55,7 +55,7 @@ interface IErrorData {
  */
 export class ErrorTransformer
 	extends BaseTransformer<string | IErrorData, Error>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a string or object to Error.
@@ -178,7 +178,10 @@ export class ErrorTransformer
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof Error) {
 			return { isValid: true };
 		}

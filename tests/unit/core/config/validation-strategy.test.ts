@@ -2,14 +2,14 @@ import { QModel, Quick } from '@/index';
 import { QConfig } from '@/core/config/quick.config';
 import { describe, test, expect, beforeEach } from 'bun:test';
 
-describe('Configuration: validationErrorStrategy', () => {
+describe('Configuration: integrityErrorStrategy', () => {
 	beforeEach(() => {
 		QConfig.configure({ defaults: {} });
 	});
 
 	// Strategy: accumulate (Default)
 	test('should accumulate errors by default', () => {
-		@Quick({}, { validationErrorStrategy: 'accumulate' })
+		@Quick({}, { integrityErrorStrategy: 'accumulate' })
 		class User extends QModel<any> {
 			declare age: number;
 			declare isActive: boolean;
@@ -18,7 +18,7 @@ describe('Configuration: validationErrorStrategy', () => {
 		// Force invalid state by assigning wrong types manually
 		// (bypassing deseralizer coercion to ensure validation failure)
 		const user = new User({});
-		// We add metadata that QuickModel's validate() expects
+		// We add metadata that QModel's checkIntegrity() expects
 		Reflect.defineMetadata('fieldType', 'number', user, 'age');
 		Reflect.defineMetadata('fieldType', 'boolean', user, 'isActive');
 
@@ -41,7 +41,7 @@ describe('Configuration: validationErrorStrategy', () => {
 		(user as any).age = 'not-a-number';
 		(user as any).isActive = 123;
 
-		const errors = user.validate();
+		const errors = user.checkIntegrity();
 		// PrimitiveTransformer for 'number' checks typeof value === 'number'
 		expect(errors.length).toBeGreaterThanOrEqual(1);
 		// "not-a-number" is string, expected number. Error.
@@ -54,7 +54,7 @@ describe('Configuration: validationErrorStrategy', () => {
 				age: 'number',
 				isActive: 'boolean',
 			},
-			{ validationErrorStrategy: 'accumulate' }
+			{ integrityErrorStrategy: 'accumulate' }
 		)
 		class AccUser extends QModel<any> {
 			declare age: number;
@@ -65,7 +65,7 @@ describe('Configuration: validationErrorStrategy', () => {
 		(user as any).age = 'NaN';
 		(user as any).isActive = 123;
 
-		const errors = user.validate();
+		const errors = user.checkIntegrity();
 		expect(errors.length).toBe(2);
 	});
 
@@ -75,7 +75,7 @@ describe('Configuration: validationErrorStrategy', () => {
 				age: 'number',
 				isActive: 'boolean',
 			},
-			{ validationErrorStrategy: 'failFast' }
+			{ integrityErrorStrategy: 'failFast' }
 		)
 		class FastUser extends QModel<any> {
 			declare age: number;
@@ -90,13 +90,13 @@ describe('Configuration: validationErrorStrategy', () => {
 		// but relies on decorator execution order for 'decoratedFields'.
 		// Regardless, we expect exactly 1 error.
 
-		const errors = user.validate();
+		const errors = user.checkIntegrity();
 		expect(errors.length).toBe(1);
 	});
 
 	test('should respect global failFast config', () => {
 		QConfig.configure({
-			defaults: { validationErrorStrategy: 'failFast' },
+			defaults: { integrityErrorStrategy: 'failFast' },
 		});
 
 		@Quick({
@@ -112,7 +112,7 @@ describe('Configuration: validationErrorStrategy', () => {
 		(user as any).age = 'NaN';
 		(user as any).isActive = 123;
 
-		const errors = user.validate();
+		const errors = user.checkIntegrity();
 		expect(errors.length).toBe(1);
 	});
 
@@ -121,7 +121,7 @@ describe('Configuration: validationErrorStrategy', () => {
 			{
 				val: 'number',
 			},
-			{ validationErrorStrategy: 'failFast' }
+			{ integrityErrorStrategy: 'failFast' }
 		)
 		class Child extends QModel<any> {
 			declare val: number;
@@ -132,7 +132,7 @@ describe('Configuration: validationErrorStrategy', () => {
 				child1: Child,
 				child2: Child,
 			},
-			{ validationErrorStrategy: 'failFast' }
+			{ integrityErrorStrategy: 'failFast' }
 		)
 		class Parent extends QModel<any> {
 			declare child1: Child;
@@ -146,7 +146,7 @@ describe('Configuration: validationErrorStrategy', () => {
 		parent.child2 = new Child({});
 		(parent.child2 as any).val = 'bad';
 
-		const errors = parent.validate();
+		const errors = parent.checkIntegrity();
 		// Should find error in child1 and stop before checking child2?
 		// Or if nested returns array of 1, parent pushes it to results.
 		// Parent loop checks child1 -> returns [error].
@@ -159,7 +159,7 @@ describe('Configuration: validationErrorStrategy', () => {
 	test('should handle mixed strategies (Parent: accumulate, Child: failFast)', () => {
 		@Quick(
 			{ val: 'number', val2: 'number' },
-			{ validationErrorStrategy: 'failFast' }
+			{ integrityErrorStrategy: 'failFast' }
 		)
 		class Child extends QModel<any> {
 			declare val: number;
@@ -168,7 +168,7 @@ describe('Configuration: validationErrorStrategy', () => {
 
 		@Quick(
 			{ c1: Child, c2: Child },
-			{ validationErrorStrategy: 'accumulate' }
+			{ integrityErrorStrategy: 'accumulate' }
 		)
 		class Parent extends QModel<any> {
 			declare c1: Child;
@@ -186,7 +186,7 @@ describe('Configuration: validationErrorStrategy', () => {
 		(p.c2 as any).val = 'err';
 		(p.c2 as any).val2 = 'err'; // failFast should only report 1 from here
 
-		const errors = p.validate();
+		const errors = p.checkIntegrity();
 		// Child 1 returns 1 error (stopped early)
 		// Child 2 returns 1 error (stopped early)
 		// Parent accumulates -> Total 2 errors

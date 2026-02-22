@@ -2,9 +2,9 @@ import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {
 	IQTransformContext,
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 } from '../core/interfaces/transformer.interface';
 
 type ITypedArrayConstructor =
@@ -75,7 +75,7 @@ type ITypedArray =
  */
 export class TypedArrayTransformer<T extends ITypedArray>
 	extends BaseTransformer<number[] | string[], T>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Creates a transformer for a specific TypedArray type.
@@ -227,7 +227,10 @@ export class TypedArrayTransformer<T extends ITypedArray>
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof this.ArrayConstructor) {
 			return { isValid: true };
 		}

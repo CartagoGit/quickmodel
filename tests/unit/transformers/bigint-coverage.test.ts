@@ -70,7 +70,7 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 
 	describe('validate', () => {
 		test('should validate bigint instance', () => {
-			const result = transformer.validate(123n, {
+			const result = transformer.checkIntegrity(123n, {
 				propertyKey,
 				target: {},
 			});
@@ -78,7 +78,7 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should validate numeric string', () => {
-			const result = transformer.validate('123456', {
+			const result = transformer.checkIntegrity('123456', {
 				propertyKey,
 				target: {},
 			});
@@ -86,7 +86,7 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should validate number', () => {
-			const result = transformer.validate(123, {
+			const result = transformer.checkIntegrity(123, {
 				propertyKey,
 				target: {},
 			});
@@ -94,7 +94,7 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should fail validation for non-numeric string', () => {
-			const result = transformer.validate('abc', {
+			const result = transformer.checkIntegrity('abc', {
 				propertyKey,
 				target: {},
 			});
@@ -102,7 +102,7 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should fail validation for boolean', () => {
-			const result = transformer.validate(true, {
+			const result = transformer.checkIntegrity(true, {
 				propertyKey,
 				target: {},
 			});
@@ -110,7 +110,7 @@ describe('Transformer Coverage: BigIntTransformer', () => {
 		});
 
 		test('should fail validation for object', () => {
-			const result = transformer.validate(
+			const result = transformer.checkIntegrity(
 				{},
 				{ propertyKey, target: {} }
 			);

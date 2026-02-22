@@ -350,18 +350,18 @@ export interface IQAdvancedOptions<
 	transformCase?: IQCaseOptions;
 
 	/**
-	 * Strategy for reporting validation errors.
+	 * Strategy for reporting integrity errors.
 	 *
 	 * - **failFast**: Returns immediately on the first error encountered (optimized).
-	 * - **accumulate** (default): Collects and returns all validation errors.
+	 * - **accumulate** (default): Collects and returns all integrity errors.
 	 */
-	validationErrorStrategy?: 'failFast' | 'accumulate';
+	integrityErrorStrategy?: 'failFast' | 'accumulate';
 
 	/**
-	 * When to run validation.
+	 * When to run integrity check.
 	 *
-	 * - **manual** (default): Validation must be triggered explicitly via `.validate()`.
-	 * - **construction**: Validation runs automatically after population. Throws if invalid.
+	 * - **manual** (default): Check must be triggered explicitly via `.checkIntegrity()`.
+	 * - **construction**: Check runs automatically after population. Throws if it fails.
 	 */
 	validationTrigger?: 'manual' | 'construction';
 

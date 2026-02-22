@@ -3,9 +3,9 @@ import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
 	IQTransformContext,
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 } from '../core/interfaces/transformer.interface';
 
 /**
@@ -39,7 +39,7 @@ export class SymbolTransformer
 		string | symbol | { __type: 'symbol'; description: string },
 		symbol
 	>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a string or object with __type to a global symbol using Symbol.for().
@@ -159,7 +159,10 @@ export class SymbolTransformer
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (typeof value === 'symbol' || typeof value === 'string') {
 			return { isValid: true };
 		}

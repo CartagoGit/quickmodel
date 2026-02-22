@@ -2,9 +2,9 @@ import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';
 import {
-	IQValidationContext,
-	IQValidationResult,
-	IQValidator,
+	IQIntegrityContext,
+	IQIntegrityResult,
+	IQIntegrityChecker,
 	IQTransformContext,
 } from '../core/interfaces/transformer.interface';
 
@@ -55,7 +55,7 @@ export class RegExpTransformer
 		| IRegExpData,
 		RegExp
 	>
-	implements IQValidator
+	implements IQIntegrityChecker
 {
 	/**
 	 * Converts a string or object to RegExp.
@@ -228,7 +228,10 @@ export class RegExpTransformer
 	 * @param context - Validation context with property and class information
 	 * @returns Validation result
 	 */
-	validate(value: unknown, context: IQValidationContext): IQValidationResult {
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
 		if (value instanceof RegExp) {
 			return { isValid: true };
 		}

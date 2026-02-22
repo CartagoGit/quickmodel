@@ -77,7 +77,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 	describe('validate', () => {
 		test('should validate instance', () => {
 			expect(
-				transformer.validate(new BigInt64Array(), {
+				transformer.checkIntegrity(new BigInt64Array(), {
 					propertyKey,
 					target: {},
 				}).isValid
@@ -85,17 +85,20 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 		});
 		test('should validate array', () => {
 			expect(
-				transformer.validate([], { propertyKey, target: {} }).isValid
+				transformer.checkIntegrity([], { propertyKey, target: {} })
+					.isValid
 			).toBe(true);
 		});
 		test('should validate object (array like)', () => {
 			expect(
-				transformer.validate({}, { propertyKey, target: {} }).isValid
+				transformer.checkIntegrity({}, { propertyKey, target: {} })
+					.isValid
 			).toBe(true);
 		});
 		test('should reject invalid primitive', () => {
 			expect(
-				transformer.validate(123, { propertyKey, target: {} }).isValid
+				transformer.checkIntegrity(123, { propertyKey, target: {} })
+					.isValid
 			).toBe(false);
 		});
 	});
