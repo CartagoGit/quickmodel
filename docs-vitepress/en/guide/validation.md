@@ -72,9 +72,9 @@ const result = user.checkRules();
 
 ### `@QRule(fn, message)`
 
-| Parameter | Type                          | Description                                                                                 |
-| --------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `fn`      | `(value: unknown) => boolean` | Validation function. Return `true` to pass.                                                 |
+| Parameter | Type                          | Description                                                                         |
+| --------- | ----------------------------- | ----------------------------------------------------------------------------------- |
+| `fn`      | `(value: unknown) => boolean` | Validation function. Return `true` to pass.                                         |
 | `message` | `string \| (() => string)`    | Static message, i18n key, or lazy resolver evaluated when `checkRules()` is called. |
 
 Can be stacked — applies one rule per decorator call.
@@ -89,12 +89,46 @@ Runs all `@QRule` rules declared on the model's properties.
 interface IQRulesResult {
 	valid: boolean;
 	errors: Array<{
-		field: string;   // property name
+		field: string; // property name
 		message: string; // resolved message (string or return value of () => string)
-		value: unknown;  // current value of the field
+		value: unknown; // current value of the field
 	}>;
 }
 ```
+
+### `hasIntegrity()`
+
+Boolean shortcut for `checkIntegrity().length === 0`.
+
+Returns `true` when every field value conforms to its declared transformer type (no DoS limits exceeded, no type mismatches).
+
+```typescript
+if (!user.hasIntegrity()) {
+	const errors = user.checkIntegrity();
+	// handle transformer-level violations...
+}
+```
+
+### `isValid()`
+
+Single boolean gate that combines both checks: `hasIntegrity() && checkRules().valid`.
+
+Returns `true` only when the instance has **full type integrity** and **all business rules pass**.
+
+```typescript
+if (!user.isValid()) {
+	// dig into specific failures:
+	const integrityErrors = user.checkIntegrity(); // type-level
+	const ruleErrors = user.checkRules().errors; // business-logic
+}
+```
+
+| Method             | Returns               | What it checks                              |
+| ------------------ | --------------------- | ------------------------------------------- |
+| `checkIntegrity()` | `IQIntegrityResult[]` | Transformer constraints (types, DoS limits) |
+| `hasIntegrity()`   | `boolean`             | Shortcut: `checkIntegrity().length === 0`   |
+| `checkRules()`     | `IQRulesResult`       | Business rules (`@QRule` predicates)        |
+| `isValid()`        | `boolean`             | Both: integrity + rules                     |
 
 ## i18n Support
 
@@ -124,12 +158,11 @@ declare name: string;
 
 ```html
 <!-- In your Angular template -->
-<span *ngFor="let e of result.errors">
-  {{ e.message | translate }}
-</span>
+<span *ngFor="let e of result.errors">{{ e.message | translate }}</span>
 ```
 
 Both approaches are valid; pick the one that fits your architecture.
+
 > [!NOTE]
 > `checkRules()` is separate from `checkIntegrity()`. `checkIntegrity()` checks transformer-level constraints (DoS limits, type ranges). `checkRules()` is for your business logic.
 

@@ -16,7 +16,10 @@ interface IUsuario {
 
 @Quick()
 class Usuario extends QModel<IUsuario> {
-	@QRule((v: string) => v.length >= 3, 'El nombre debe tener al menos 3 caracteres')
+	@QRule(
+		(v: string) => v.length >= 3,
+		'El nombre debe tener al menos 3 caracteres'
+	)
 	declare nombre: string;
 
 	@QRule((v: number) => v >= 0, 'La edad no puede ser negativa')
@@ -64,7 +67,11 @@ const result = u.checkRules();
 Cuando todas las reglas pasan, `checkRules()` devuelve `{ valid: true, errors: [] }`.
 
 ```typescript
-const user = new Usuario({ nombre: 'Alice', edad: 30, email: 'alice@example.com' });
+const user = new Usuario({
+	nombre: 'Alice',
+	edad: 30,
+	email: 'alice@example.com',
+});
 const result = user.checkRules();
 // { valid: true, errors: [] }
 ```
@@ -73,9 +80,9 @@ const result = user.checkRules();
 
 ### `@QRule(fn, message)`
 
-| Parámetro | Tipo                          | Descripción                                                                                             |
-| --------- | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `fn`      | `(value: unknown) => boolean` | Función de validación. Debe devolver `true` para que la regla pase.                                     |
+| Parámetro | Tipo                          | Descripción                                                                                     |
+| --------- | ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| `fn`      | `(value: unknown) => boolean` | Función de validación. Debe devolver `true` para que la regla pase.                             |
 | `message` | `string \| (() => string)`    | Mensaje estático, clave i18n, o función lazy evaluada en el momento de llamar a `checkRules()`. |
 
 Se puede apilar — cada decorador aplica una sola regla.
@@ -90,12 +97,46 @@ Ejecuta todas las reglas `@QRule` declaradas en las propiedades del modelo.
 interface IQRulesResult {
 	valid: boolean;
 	errors: Array<{
-		field: string;   // nombre de la propiedad
+		field: string; // nombre de la propiedad
 		message: string; // mensaje resuelto (string o valor retornado por () => string)
-		value: unknown;  // valor actual del campo en el momento de la validación
+		value: unknown; // valor actual del campo en el momento de la validación
 	}>;
 }
 ```
+
+### `hasIntegrity()`
+
+Atajo booleano para `checkIntegrity().length === 0`.
+
+Devuelve `true` cuando todos los valores de campo se ajustan al tipo de transformer declarado (sin límites DoS superados, sin incompatibilidades de tipo).
+
+```typescript
+if (!usuario.hasIntegrity()) {
+	const errors = usuario.checkIntegrity();
+	// gestionar violaciones a nivel de transformer...
+}
+```
+
+### `isValid()`
+
+Comprobación booleana unificada que combina ambos niveles: `hasIntegrity() && checkRules().valid`.
+
+Devuelve `true` solo cuando la instancia tiene **integridad de tipo completa** y **todas las reglas de negocio pasan**.
+
+```typescript
+if (!usuario.isValid()) {
+	// desglosar fallos específicos:
+	const integrityErrors = usuario.checkIntegrity(); // nivel tipo
+	const ruleErrors = usuario.checkRules().errors; // lógica de negocio
+}
+```
+
+| Método             | Devuelve              | Qué comprueba                                     |
+| ------------------ | --------------------- | ------------------------------------------------- |
+| `checkIntegrity()` | `IQIntegrityResult[]` | Restricciones de transformer (tipos, límites DoS) |
+| `hasIntegrity()`   | `boolean`             | Atajo: `checkIntegrity().length === 0`            |
+| `checkRules()`     | `IQRulesResult`       | Reglas de negocio (predicados `@QRule`)           |
+| `isValid()`        | `boolean`             | Ambos: integridad + reglas                        |
 
 ## Soporte para i18n
 
@@ -125,9 +166,7 @@ declare nombre: string;
 
 ```html
 <!-- En tu template Angular -->
-<span *ngFor="let e of result.errors">
-  {{ e.message | translate }}
-</span>
+<span *ngFor="let e of result.errors">{{ e.message | translate }}</span>
 ```
 
 Ambos enfoques son válidos; elige el que mejor se adapte a tu arquitectura.
@@ -140,7 +179,11 @@ Ambos enfoques son válidos; elige el que mejor se adapte a tu arquitectura.
 `@QRule` y `checkRules()` funcionan a la perfección junto con `isDirty()`, `merge()` y `patch()`.
 
 ```typescript
-const user = new Usuario({ nombre: 'Alice', edad: 30, email: 'alice@example.com' });
+const user = new Usuario({
+	nombre: 'Alice',
+	edad: 30,
+	email: 'alice@example.com',
+});
 
 const updated = user.merge({ edad: -5 });
 const result = updated.checkRules();

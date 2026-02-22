@@ -325,19 +325,25 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * - Works with `@Quick` and `@QType` decorators on the derived class
 	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
 	 *
+	 * **TypeScript partial inference requirement:**
+	 * TypeScript cannot infer the second type parameter when the first is specified explicitly
+	 * ([microsoft/TypeScript#26242](https://github.com/microsoft/TypeScript/issues/26242)).
+	 * **Both generics are required** to get full typing of both QModel methods and the external
+	 * base class methods on the instance:
+	 * `QModel.extends<TInterface, ExternalClass>(ExternalClass)`.
+	 *
 	 * @template TInterface - The plain-object / serialized interface (same as first generic of QModel<T>)
+	 * @template TBase - The instance type of the external base class (provide for full method typing)
 	 * @param ExternalBase - The external class to extend
 	 * @returns A mixin base class ready to be extended
 	 *
 	 * @example
 	 * ```typescript
-	 * // External class from a framework
-	 * class NgComponent { onInit() {} }
-	 *
+	 * class NgComponent { ngOnInit(): void {} }
 	 * interface IUser { name: string; createdAt: string; }
 	 *
 	 * @Quick({ createdAt: Date })
-	 * class UserModel extends QModel.extends<IUser>(NgComponent) {
+	 * class UserModel extends QModel.extends<IUser, NgComponent>(NgComponent) {
 	 *   declare name: string;
 	 *   declare createdAt: Date;
 	 * }
@@ -345,18 +351,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * const user = UserModel.create({ name: 'Alice', createdAt: '2024-01-01T00:00:00.000Z' });
 	 * user.createdAt instanceof Date; // true
 	 * user instanceof NgComponent;   // true
+	 * user.ngOnInit();               // ✅ TypeScript knows about NgComponent methods
 	 * ```
 	 */
-	static extends<TInterface extends IQAnyRecord, TBase extends object = object>(
+	static extends<TInterface extends IQAnyRecord, TBase extends object>(
 		ExternalBase: new (...args: any[]) => TBase
-	): (abstract new (data: TInterface) => QModel<TInterface> & TBase) & {
-			create(data: TInterface): QModel<TInterface> & TBase;
-			createReadonly(data: TInterface): Readonly<QModel<TInterface> & TBase>;
-			mock(): ReturnType<(typeof QModel)['mock']>;
-			getMetadata(): Map<string, { type: string; transformer: unknown }>;
-			deserialize(data: object): QModel<TInterface> & TBase;
-			deserializeJson(json: string): QModel<TInterface> & TBase;
-		} {
+	): typeof QModel<TInterface> &
+		(abstract new (...args: any[]) => QModel<TInterface> & TBase) {
 		// ── 1. Create the mixin class that extends the external base ────────────
 		// TypeScript does not allow `class Foo extends GenericTypeParam` when the
 		// type param is introduced at the method level. The idiomatic workaround is
@@ -426,14 +427,8 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			}
 		}
 
-		return QModelMixed as unknown as (abstract new (data: TInterface) => QModel<TInterface> & TBase) & {
-			create(data: TInterface): QModel<TInterface> & TBase;
-			createReadonly(data: TInterface): Readonly<QModel<TInterface> & TBase>;
-			mock(): ReturnType<(typeof QModel)['mock']>;
-			getMetadata(): Map<string, { type: string; transformer: unknown }>;
-			deserialize(data: object): QModel<TInterface> & TBase;
-			deserializeJson(json: string): QModel<TInterface> & TBase;
-		};
+		return QModelMixed as unknown as typeof QModel<TInterface> &
+			(abstract new (...args: any[]) => QModel<TInterface> & TBase);
 	}
 
 	/**
@@ -1119,6 +1114,49 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		}
 
 		return { valid: errors.length === 0, errors };
+	}
+
+	/**
+	 * Returns `true` if all transformer-level integrity checks pass.
+	 *
+	 * Shortcut for `checkIntegrity().length === 0`.
+	 *
+	 * @returns `true` when every field value matches its declared transformer type
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ age: 30, active: true });
+	 * if (!user.hasIntegrity()) {
+	 *   console.error('Type integrity violated');
+	 * }
+	 * ```
+	 */
+	hasIntegrity(): boolean {
+		return this.checkIntegrity().length === 0;
+	}
+
+	/**
+	 * Returns `true` if both transformer-level integrity checks **and** all `@QRule`
+	 * business-logic rules pass.
+	 *
+	 * Equivalent to `hasIntegrity() && checkRules().valid`.
+	 *
+	 * Use this as a single boolean gate before persisting or processing a model.
+	 *
+	 * @returns `true` when the instance has full type integrity and all rules are satisfied
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
+	 * if (!user.isValid()) {
+	 *   const integrityErrors = user.checkIntegrity();
+	 *   const ruleErrors = user.checkRules().errors;
+	 *   // handle errors...
+	 * }
+	 * ```
+	 */
+	isValid(): boolean {
+		return this.hasIntegrity() && this.checkRules().valid;
 	}
 
 	/**

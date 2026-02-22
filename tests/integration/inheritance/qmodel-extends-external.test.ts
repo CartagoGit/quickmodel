@@ -8,7 +8,7 @@ import { Quick, QType, QModel } from '@/index';
  * from an external class that is not part of the QModel hierarchy.
  *
  * Usage:
- *   const Base = QModel.extends<IAdmin>(ExternalUser);
+ *   const Base = QModel.extends<IAdmin, ExternalUser>(ExternalUser);
  *
  *   @Quick({ promotedAt: Date })
  *   class Admin extends Base {
@@ -67,7 +67,9 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 1: QModel.extends() returns a usable base class', () => {
 		it('should return a value that can be used in "extends"', () => {
 			// If QModel.extends is not implemented this will throw at class definition time
-			const MixinBase = QModel.extends<{ name: string }>(ExternalEntity);
+			const MixinBase = QModel.extends<{ name: string }, ExternalEntity>(
+				ExternalEntity
+			);
 			expect(MixinBase).toBeDefined();
 			expect(typeof MixinBase).toBe('function');
 		});
@@ -77,11 +79,14 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 2 & 3: prototype chain
 	// =========================================================================
 	describe('Scenario 2-3: prototype chain checks', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			email: string;
-			promotedAt: string;
-		}>(ExternalUser);
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				email: string;
+				promotedAt: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
 		class Admin extends AdminBase {
@@ -118,10 +123,16 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 4: external base constructor is invoked
 	// =========================================================================
 	describe('Scenario 4: external base constructor properties are available', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			promotedAt: string;
-		}>(ExternalUser);
+		// Both generics are required: QModel.extends<TInterface, TBase>(BaseClass).
+		// TypeScript cannot infer TBase when TInterface is specified (partial inference
+		// limitation — microsoft/TypeScript#26242), so both must always be provided.
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				promotedAt: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
 		class Admin extends AdminBase {
@@ -135,8 +146,8 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				promotedAt: '2025-03-01T00:00:00.000Z',
 			});
 
-			// TBase is inferred from ExternalUser, so greet() and isExternal() are
-			// directly available on the instance type — no cast needed.
+			// With TBase = ExternalUser, greet() and isExternal() are directly
+			// visible in the instance type — no cast needed.
 			expect(typeof instance.greet).toBe('function');
 			expect(instance.isExternal()).toBe(true);
 		});
@@ -146,11 +157,14 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 5: @Quick type transformations work
 	// =========================================================================
 	describe('Scenario 5: @Quick type transformations work on mixin class', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			promotedAt: string;
-			salary: string;
-		}>(ExternalUser);
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				promotedAt: string;
+				salary: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date, salary: BigInt })
 		class Admin extends AdminBase {
@@ -196,10 +210,13 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 6: static methods are available
 	// =========================================================================
 	describe('Scenario 6: static methods create(), mock(), getMetadata()', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			promotedAt: string;
-		}>(ExternalUser);
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				promotedAt: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
 		class AdminStatic extends AdminBase {
@@ -236,10 +253,13 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 7: instance methods are available
 	// =========================================================================
 	describe('Scenario 7: instance methods serialize(), toJSON(), isDirty(), merge()', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			promotedAt: string;
-		}>(ExternalUser);
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				promotedAt: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
 		class AdminInstance extends AdminBase {
@@ -281,12 +301,15 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 8: serialize() includes fields from both external base and mixin
 	// =========================================================================
 	describe('Scenario 8: serialize() includes external base fields AND mixin fields', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			email: string;
-			promotedAt: string;
-			role: string;
-		}>(ExternalUser);
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				email: string;
+				promotedAt: string;
+				role: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
 		class AdminFull extends AdminBase {
@@ -334,10 +357,13 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 9: deep chain — ExternalBase → Mixin → Child → GrandChild
 	// =========================================================================
 	describe('Scenario 9: deep chain ExternalBase → Mixin → Child → GrandChild', () => {
-		const MixinBase = QModel.extends<{
-			username: string;
-			createdAt: string;
-		}>(ExternalUser);
+		const MixinBase = QModel.extends<
+			{
+				username: string;
+				createdAt: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ createdAt: Date })
 		class UserModel extends MixinBase {
@@ -398,12 +424,15 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// Scenario 10: @QType explicit decorator works alongside @Quick on mixin class
 	// =========================================================================
 	describe('Scenario 10: @QType explicit decorator works on mixin class', () => {
-		const AdminBase = QModel.extends<{
-			username: string;
-			promotedAt: string;
-			salary: string;
-			pattern: string;
-		}>(ExternalUser);
+		const AdminBase = QModel.extends<
+			{
+				username: string;
+				promotedAt: string;
+				salary: string;
+				pattern: string;
+			},
+			ExternalUser
+		>(ExternalUser);
 
 		@Quick({ promotedAt: Date })
 		class AdminQType extends AdminBase {

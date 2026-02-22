@@ -244,15 +244,18 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 5: Override in the middle level
 	// =========================================================================
 	describe('Scenario 5: Override in middle level — B overrides A field, C inherits override', () => {
+		// OverrideA uses a generic for `value` so subclasses can specialise the type
+		// without violating TypeScript's structural compatibility rules.
 		@Quick({ value: Date })
-		class OverrideA extends QModel<any> {
+		class OverrideA<TValue = Date> extends QModel<any> {
 			declare label: string;
-			declare value: Date;
+			declare value: TValue;
 		}
 
-		// B overrides "value" to BigInt — C should follow B's override, not A's
+		// By specialising OverrideA<bigint>, B can legally redeclare `value` as bigint.
+		// TypeScript now knows `value` is bigint here and in all descendants.
 		@Quick({ value: BigInt })
-		class OverrideB extends OverrideA {}
+		class OverrideB extends OverrideA<bigint> {}
 
 		class OverrideC extends OverrideB {
 			declare extra: string;
@@ -265,7 +268,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 				extra: 'leaf field',
 			});
 
-			// Should be bigint (B's override), not Date (A's definition)
+			// `value` is correctly typed as bigint — no cast needed.
 			expect(typeof instance.value).toBe('bigint');
 			expect(instance.value).toBe(9999999999999999n);
 			expect(instance.extra).toBe('leaf field');
