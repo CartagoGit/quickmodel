@@ -72,10 +72,10 @@ const result = user.checkRules();
 
 ### `@QRule(fn, message)`
 
-| Parameter | Type                          | Description                                 |
-| --------- | ----------------------------- | ------------------------------------------- |
-| `fn`      | `(value: unknown) => boolean` | Validation function. Return `true` to pass. |
-| `message` | `string`                      | Error message shown when the rule fails.    |
+| Parameter | Type                          | Description                                                                                 |
+| --------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `fn`      | `(value: unknown) => boolean` | Validation function. Return `true` to pass.                                                 |
+| `message` | `string \| (() => string)`    | Static message, i18n key, or lazy resolver evaluated when `checkRules()` is called. |
 
 Can be stacked — applies one rule per decorator call.
 
@@ -86,20 +86,52 @@ Runs all `@QRule` rules declared on the model's properties.
 **Returns:** `IQRuleValidationResult`
 
 ```typescript
-interface IQRuleValidationResult {
+interface IQRulesResult {
 	valid: boolean;
-	errors: IQRuleError[];
-}
-
-interface IQRuleError {
-	field: string; // property name
-	message: string; // from @QRule(fn, message)
-	value: unknown; // current value of the field
+	errors: Array<{
+		field: string;   // property name
+		message: string; // resolved message (string or return value of () => string)
+		value: unknown;  // current value of the field
+	}>;
 }
 ```
 
+## i18n Support
+
+The `message` parameter accepts `string | (() => string)`. The function form is evaluated **lazily** — at `checkRules()` call-time — which makes it suitable for runtime i18n:
+
+```typescript
+import { t } from './i18n'; // your global translator
+
+@Quick({ name: 'string' })
+class User extends QModel<IUser> {
+	// Lazy: resolved when checkRules() is called
+	@QRule((v) => (v as string).length >= 3, () => t('validation.name.min'))
+	declare name: string;
+}
+```
+
+If the user changes language at runtime, the next `checkRules()` call will reflect the new language.
+
+### Angular: plain keys + `| translate` pipe
+
+You can also store plain i18n keys as the message and resolve them in the template — no lazy function needed:
+
+```typescript
+@QRule((v) => (v as string).length >= 3, 'validation.name.min')
+declare name: string;
+```
+
+```html
+<!-- In your Angular template -->
+<span *ngFor="let e of result.errors">
+  {{ e.message | translate }}
+</span>
+```
+
+Both approaches are valid; pick the one that fits your architecture.
 > [!NOTE]
-> `checkRules()` is separate from `validate()`. The existing `validate()` checks transformer-level constraints (DoS limits, type ranges). `checkRules()` is for your business logic.
+> `checkRules()` is separate from `checkIntegrity()`. `checkIntegrity()` checks transformer-level constraints (DoS limits, type ranges). `checkRules()` is for your business logic.
 
 ## Combining with Change Tracking
 

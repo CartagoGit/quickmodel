@@ -31,6 +31,11 @@ import type {
 } from '@/core/interfaces/model.interface';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import {
+	QRULE_METADATA_KEY,
+	QRULE_FIELDS_KEY,
+} from '@/core/decorators/qrule.decorator';
+import type { IQRulesResult, IQRule } from '@/core/decorators/qrule.decorator';
+import {
 	QUICK_VALUES_KEY,
 	QUICK_PROPERTY_KEYS,
 	QUICK_TYPE_MAP_KEY,
@@ -342,25 +347,40 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 * user instanceof NgComponent;   // true
 	 * ```
 	 */
-	static extends<TInterface extends IQAnyRecord>(
-		ExternalBase: new (...args: any[]) => any
-	): typeof QModel<TInterface> {
+	static extends<TInterface extends IQAnyRecord, TBase extends object = object>(
+		ExternalBase: new (...args: any[]) => TBase
+	): (abstract new (data: TInterface) => QModel<TInterface> & TBase) & {
+			create(data: TInterface): QModel<TInterface> & TBase;
+			createReadonly(data: TInterface): Readonly<QModel<TInterface> & TBase>;
+			mock(): ReturnType<(typeof QModel)['mock']>;
+			getMetadata(): Map<string, { type: string; transformer: unknown }>;
+			deserialize(data: object): QModel<TInterface> & TBase;
+			deserializeJson(json: string): QModel<TInterface> & TBase;
+		} {
 		// ── 1. Create the mixin class that extends the external base ────────────
-		class QModelMixed extends ExternalBase {
-			constructor(...args: any[]) {
-				// Call external base with no args — QModel hydration fills all fields
-				super();
-				const data = args[0];
-				Object.defineProperty(this, '__tempData', {
-					value: data,
-					writable: false,
-					enumerable: false,
-					configurable: true,
-				});
-				// Delegate to QModel's initialization logic (declared `protected`)
-				(QModel.prototype as any)['initialize'].call(this);
+		// TypeScript does not allow `class Foo extends GenericTypeParam` when the
+		// type param is introduced at the method level. The idiomatic workaround is
+		// a locally-scoped generic helper function whose parameter IS the concrete
+		// constructor — the compiler can then verify the relationship at each call-site.
+		const makeMixed = <T extends new (...args: any[]) => any>(Base: T) => {
+			class QModelMixed extends Base {
+				constructor(...args: any[]) {
+					// Call external base with no args — QModel hydration fills all fields
+					super();
+					const data = args[0];
+					Object.defineProperty(this, '__tempData', {
+						value: data,
+						writable: false,
+						enumerable: false,
+						configurable: true,
+					});
+					// Delegate to QModel's initialization logic (declared `protected`)
+					(QModel.prototype as any)['initialize'].call(this);
+				}
 			}
-		}
+			return QModelMixed;
+		};
+		const QModelMixed = makeMixed(ExternalBase);
 
 		// ── 2. Copy all INSTANCE methods from QModel.prototype ─────────────────
 		// This includes: serialize, toJSON, toInterface, isDirty, reset, patch, merge,
@@ -406,7 +426,14 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			}
 		}
 
-		return QModelMixed as unknown as typeof QModel<TInterface>;
+		return QModelMixed as unknown as (abstract new (data: TInterface) => QModel<TInterface> & TBase) & {
+			create(data: TInterface): QModel<TInterface> & TBase;
+			createReadonly(data: TInterface): Readonly<QModel<TInterface> & TBase>;
+			mock(): ReturnType<(typeof QModel)['mock']>;
+			getMetadata(): Map<string, { type: string; transformer: unknown }>;
+			deserialize(data: object): QModel<TInterface> & TBase;
+			deserializeJson(json: string): QModel<TInterface> & TBase;
+		};
 	}
 
 	/**
@@ -1029,6 +1056,69 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		return QModel.validation.checkIntegrity(
 			this as unknown as IModelAsRecord
 		);
+	}
+
+	/**
+	 * Evaluates all `@QRule` business-logic rules defined on this model's properties.
+	 *
+	 * Unlike `checkIntegrity()` (transformer-level type safety), `checkRules()` checks
+	 * user-defined predicates — e.g. length constraints, format validation, business invariants.
+	 *
+	 * **All failing rules are collected** (no fail-fast). Multiple `@QRule` decorators
+	 * on the same property are all evaluated.
+	 *
+	 * The `message` in each error is already resolved: if the rule was declared with a
+	 * `() => string` lazy resolver, it is called at this point — perfect for runtime i18n.
+	 * For Angular, you can also store i18n keys as plain strings and apply `e.message | translate`
+	 * directly in the template.
+	 *
+	 * @returns `{ valid: boolean, errors: Array<{ field, message, value }> }`
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ name: 'Jo', age: -1, email: 'notanemail' });
+	 * const result = user.checkRules();
+	 *
+	 * console.log(result.valid); // false
+	 * console.log(result.errors);
+	 * // [
+	 * //   { field: 'name',  message: 'Name must be at least 3 characters', value: 'Jo' },
+	 * //   { field: 'age',   message: 'Age cannot be negative',             value: -1 },
+	 * //   { field: 'email', message: 'Must be a valid email',              value: 'notanemail' }
+	 * // ]
+	 * ```
+	 */
+	checkRules(): IQRulesResult {
+		const proto = Object.getPrototypeOf(this);
+		const fields: string[] =
+			Reflect.getMetadata(QRULE_FIELDS_KEY, proto) ?? [];
+
+		const errors: IQRulesResult['errors'] = [];
+
+		for (const field of fields) {
+			const rules: IQRule[] =
+				Reflect.getMetadata(QRULE_METADATA_KEY, proto, field) ?? [];
+			const value = (this as unknown as Record<string, unknown>)[field];
+
+			for (const rule of rules) {
+				let passes = false;
+				try {
+					passes = rule.predicate(value);
+				} catch {
+					// Predicate threw — treat as failure
+					passes = false;
+				}
+				if (!passes) {
+					const message =
+						typeof rule.message === 'function'
+							? rule.message()
+							: rule.message;
+					errors.push({ field, message, value });
+				}
+			}
+		}
+
+		return { valid: errors.length === 0, errors };
 	}
 
 	/**

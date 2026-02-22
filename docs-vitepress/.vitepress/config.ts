@@ -494,6 +494,10 @@ export default defineConfig({
 									link: '/en/guide/nested-models',
 								},
 								{
+									text: 'Validation (@QRule)',
+									link: '/en/guide/validation',
+								},
+								{
 									text: 'Mock Generation',
 									link: '/en/guide/mocks',
 								},
@@ -614,6 +618,10 @@ export default defineConfig({
 								{
 									text: 'Modelos Anidados',
 									link: '/es/guide/nested-models',
+								},
+								{
+									text: 'Validación (@QRule)',
+									link: '/es/guide/validation',
 								},
 								{
 									text: 'Generación de Mocks',

@@ -135,7 +135,8 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				promotedAt: '2025-03-01T00:00:00.000Z',
 			});
 
-			// ExternalUser.greet() should be accessible
+			// TBase is inferred from ExternalUser, so greet() and isExternal() are
+			// directly available on the instance type — no cast needed.
 			expect(typeof instance.greet).toBe('function');
 			expect(instance.isExternal()).toBe(true);
 		});
@@ -357,6 +358,9 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 		}
 
 		it('should transform fields from all levels in the chain', () => {
+			// SuperAdmin accumulates fields from 3 subclass levels on top of the mixin.
+			// TypeScript infers TInterface from the root MixinBase, so extra fields
+			// from child classes require a cast — the runtime behaviour is what we test.
 			const instance = SuperAdmin.create({
 				username: 'grace',
 				createdAt: '2018-01-01T00:00:00.000Z',
@@ -364,7 +368,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				promotedAt: '2020-05-05T00:00:00.000Z',
 				level: 9,
 				bannedAt: '2025-12-31T00:00:00.000Z',
-			});
+			} as any);
 
 			expect(instance.username).toBe('grace');
 			expect(instance.createdAt).toBeInstanceOf(Date);
@@ -383,7 +387,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				promotedAt: '2020-05-05T00:00:00.000Z',
 				level: 9,
 				bannedAt: '2025-12-31T00:00:00.000Z',
-			});
+			} as any);
 
 			expect(instance).toBeInstanceOf(ExternalUser);
 			expect(instance).toBeInstanceOf(ExternalEntity);

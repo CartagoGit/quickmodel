@@ -17,6 +17,8 @@ export { QModel } from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';
 export { QType } from './core/decorators/qtype.decorator';
+export { QRule } from './core/decorators/qrule.decorator';
+export type { IQRulesResult, IQRule } from './core/decorators/qrule.decorator';
 export { QConfig } from './core/config/quick.config';
 
 // ============================================================================
