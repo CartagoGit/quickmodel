@@ -1,32 +1,50 @@
 # MCP Prompts / Skills
 
-**Prompts** (also called **skills**) are guided AI workflows built on top of the [Public Tools](./). Instead of calling individual tools manually, a skill orchestrates a sequence of tool calls to solve a complete task — given just a few inputs from you.
+**Prompts** (also called **skills**) are guided AI workflows built on top of the MCP tools. Instead of calling individual tools manually, a skill orchestrates a sequence of tool calls, enforces gates, and drives the AI through a complete task — given just a few inputs from you.
 
-Use skills when you want the AI to drive the process end-to-end without you having to chain tools yourself.
+Skills exist in two groups:
 
-## Available Skills
+- **Public skills** — for developers using QuickModel in their projects. These help you convert interfaces, debug models, build form schemas, migrate legacy code, review security, and more.
+- **Maintainer skills** — for contributors working on the QuickModel codebase itself. These enforce TDD, lint/typecheck gates, SOLID design, and documentation sync.
 
-| Skill name                                                        | Title                                  | Description                                                                     |
-| ----------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                                     |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues                            |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline                        |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats                       |
-| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`                       |
-| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`                |
-| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities                       |
-| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                                   |
-| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns                        |
-| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates                     |
-| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation                  |
-| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit                          |
-| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it                        |
-| [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implement Feature (TDD)                | Full TDD cycle enforced by `lint_check` + `typecheck` gates                     |
-| [`quickmodel_fix_lint`](#quickmodel_fix_lint)                     | Fix ESLint Errors                      | Step-by-step lint fix with `lint_check` + `pre_commit_check` gates              |
-| [`quickmodel_fix_typecheck`](#quickmodel_fix_typecheck)           | Fix TypeScript Type Errors             | Step-by-step TS fix with `typecheck` + `pre_commit_check` gates                 |
-| [`quickmodel_refactor`](#quickmodel_refactor)                     | Safe Refactor (TDD-gated)              | Refactor cycle gated by `run_tests`, `lint_check`, `typecheck`                  |
-| [`quickmodel_apply_solid`](#quickmodel_apply_solid)               | Apply SOLID Principles (guided)        | Structured per-principle review gated by `run_tests`, `lint_check`, `typecheck` |
-| [`quickmodel_sync_project`](#quickmodel_sync_project)             | Sync Project (health + docs)           | `project_status` snapshot → fix failures → regenerate docs via `sync_docs`      |
+::: tip When to use a skill vs a tool
+Use a **tool** when you need a single, precise operation (e.g. `simulate_transformation`, `check_integrity`). Use a **skill** when you want the AI to handle a complete workflow end-to-end — reasoning, fixing, and verifying at each step automatically.
+:::
+
+---
+
+## Public Skills
+
+> For developers **using** QuickModel in their applications.
+
+| Skill name                                                        | Title                                  | Description                                                      |
+| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------- |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                      |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues             |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline         |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats        |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`        |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities        |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                    |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns         |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates      |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation   |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit           |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it         |
+
+## Maintainer Skills
+
+> For **contributors** working on the QuickModel codebase. These skills use [Internal Tools](../internal/) and enforce project rules automatically.
+
+| Skill name                                                      | Title                           | Description                                                                     |
+| --------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------- |
+| [`quickmodel_implement_feature`](#quickmodel_implement_feature) | Implement Feature (TDD)         | Full TDD cycle enforced by `lint_check` + `typecheck` gates                     |
+| [`quickmodel_fix_lint`](#quickmodel_fix_lint)                   | Fix ESLint Errors               | Step-by-step lint fix with `lint_check` + `pre_commit_check` gates              |
+| [`quickmodel_fix_typecheck`](#quickmodel_fix_typecheck)         | Fix TypeScript Type Errors      | Step-by-step TS fix with `typecheck` + `pre_commit_check` gates                 |
+| [`quickmodel_refactor`](#quickmodel_refactor)                   | Safe Refactor (TDD-gated)       | Refactor cycle gated by `run_tests`, `lint_check`, `typecheck`                  |
+| [`quickmodel_apply_solid`](#quickmodel_apply_solid)             | Apply SOLID Principles (guided) | Structured per-principle review gated by `run_tests`, `lint_check`, `typecheck` |
+| [`quickmodel_sync_project`](#quickmodel_sync_project)           | Sync Project (health + docs)    | `project_status` snapshot → fix failures → regenerate docs via `sync_docs`      |
 
 ---
 

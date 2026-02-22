@@ -11,5 +11,8 @@
 	"groupOrder": ["*"],
 	"exclude": ["**/*.test.ts", "**/*.spec.ts", "src/examples/**", "tests/**"],
 	"skipErrorChecking": true,
-	"excludeInternal": true
+	"excludeInternal": true,
+	"validation": {
+		"notExported": false
+	}
 }

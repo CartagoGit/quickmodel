@@ -1,32 +1,50 @@
 # Prompts / Skills de MCP
 
-Los **prompts** (también llamados **skills**) son flujos de trabajo de IA guiados, construidos sobre las [Herramientas Públicas](./). En lugar de encadenar herramientas manualmente, un skill orquesta una secuencia de llamadas para resolver una tarea completa con solo unos pocos datos de entrada.
+Los **prompts** (también llamados **skills**) son flujos de trabajo de IA guiados, construidos sobre las herramientas MCP. En lugar de llamar a herramientas individuales manualmente, un skill orquesta una secuencia de llamadas, aplica puertas de verificación y conduce a la IA por una tarea completa con solo unos pocos datos de entrada.
 
-Usa los skills cuando quieras que la IA conduzca el proceso de principio a fin sin tener que encadenar herramientas tú mismo.
+Los skills existen en dos grupos:
 
-## Skills Disponibles
+- **Skills públicos** — para desarrolladores que usan QuickModel en sus proyectos. Ayudan a convertir interfaces, depurar modelos, construir schemas de formularios, migrar código legado, revisar seguridad y más.
+- **Skills de mantenimiento** — para contribuidores que trabajan en el código base de QuickModel. Aplican TDD, puertas de lint/typecheck, diseño SOLID y sincronización de documentación.
 
-| Nombre del skill                                                  | Título                                     | Descripción                                                                  |
-| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS                          |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación                 |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline                         |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspeccionar Modelo y Exportar Schema      | Inspecciona un modelo y exporta su schema en múltiples formatos              |
-| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Añadir Validación de Formulario            | Flujo guiado para añadir `@QField`, `@QRule` y `@QGroup`                     |
-| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Recorrer el Pipeline Completo              | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`             |
-| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extender Clase Base con Mixin QModel       | `QModel.extends(BaseClass)` para entidades TypeORM / NestJS                  |
-| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                  | Remapeo de nombres de campo y serialización de getters                       |
-| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código v1 a patrones idiomáticos v2                |
-| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos                 |
-| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo             |
-| [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                             |
-| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo                     |
-| [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implementar Funcionalidad (TDD)            | Ciclo TDD completo con puertas `lint_check` + `typecheck`                    |
-| [`quickmodel_fix_lint`](#quickmodel_fix_lint)                     | Corregir Errores ESLint                    | Corrección guiada con puertas `lint_check` + `pre_commit_check`              |
-| [`quickmodel_fix_typecheck`](#quickmodel_fix_typecheck)           | Corregir Errores de Tipos TypeScript       | Corrección TS guiada con puertas `typecheck` + `pre_commit_check`            |
-| [`quickmodel_refactor`](#quickmodel_refactor)                     | Refactor Seguro (con puertas TDD)          | Ciclo de refactor con puertas `run_tests`, `lint_check`, `typecheck`         |
-| [`quickmodel_apply_solid`](#quickmodel_apply_solid)               | Aplicar Principios SOLID (guiado)          | Revisión por principio con puertas `run_tests`, `lint_check`, `typecheck`    |
-| [`quickmodel_sync_project`](#quickmodel_sync_project)             | Sincronizar Proyecto (salud + docs)        | Snapshot `project_status` → corregir fallos → regenerar docs con `sync_docs` |
+::: tip ¿Cuándo usar un skill en lugar de una herramienta?
+Usa una **herramienta** cuando necesites una operación única y precisa (ej. `simulate_transformation`, `check_integrity`). Usa un **skill** cuando quieras que la IA gestione un flujo completo de principio a fin — razonando, corrigiendo y verificando en cada paso automáticamente.
+:::
+
+---
+
+## Skills Públicos
+
+> Para desarrolladores que **usan** QuickModel en sus aplicaciones.
+
+| Nombre del skill                                                  | Título                                     | Descripción                                                      |
+| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS              |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación     |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline             |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspeccionar Modelo y Exportar Schema      | Inspecciona un modelo y exporta su schema en múltiples formatos  |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Añadir Validación de Formulario            | Flujo guiado para añadir `@QField`, `@QRule` y `@QGroup`         |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Recorrer el Pipeline Completo              | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extender Clase Base con Mixin QModel       | `QModel.extends(BaseClass)` para entidades TypeORM / NestJS      |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                  | Remapeo de nombres de campo y serialización de getters           |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código v1 a patrones idiomáticos v2    |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos     |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                 |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo         |
+
+## Skills de Mantenimiento
+
+> Para **contribuidores** que trabajan en el código base de QuickModel. Estos skills usan las [Herramientas Internas](../internal/) y aplican las reglas del proyecto automáticamente.
+
+| Nombre del skill                                                | Título                              | Descripción                                                                  |
+| --------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------- |
+| [`quickmodel_implement_feature`](#quickmodel_implement_feature) | Implementar Funcionalidad (TDD)     | Ciclo TDD completo con puertas `lint_check` + `typecheck`                    |
+| [`quickmodel_fix_lint`](#quickmodel_fix_lint)                   | Corregir Errores ESLint             | Corrección guiada con puertas `lint_check` + `pre_commit_check`              |
+| [`quickmodel_fix_typecheck`](#quickmodel_fix_typecheck)         | Corregir Errores de Tipos TS        | Corrección TS guiada con puertas `typecheck` + `pre_commit_check`            |
+| [`quickmodel_refactor`](#quickmodel_refactor)                   | Refactor Seguro (con puertas TDD)   | Ciclo de refactor con puertas `run_tests`, `lint_check`, `typecheck`         |
+| [`quickmodel_apply_solid`](#quickmodel_apply_solid)             | Aplicar Principios SOLID (guiado)   | Revisión por principio con puertas `run_tests`, `lint_check`, `typecheck`    |
+| [`quickmodel_sync_project`](#quickmodel_sync_project)           | Sincronizar Proyecto (salud + docs) | Snapshot `project_status` → corregir fallos → regenerar docs con `sync_docs` |
 
 ---
 

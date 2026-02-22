@@ -13,7 +13,7 @@ The following tools are available for public use.
 - **Inspection**: Analyze model structures and available transformers.
 
 ::: tip Guided workflows (Prompts / Skills)
-Need the AI to handle a complete task automatically? Check out **[Prompts / Skills](./skills)** — guided workflows that chain multiple tools together to convert interfaces, debug models, generate test data, or export schemas.
+Need the AI to handle a complete task automatically? Check out **[Prompts / Skills](./skills)** — guided workflows in two groups: **Public skills** for converting, debugging, and validating models; **Maintainer skills** for TDD cycles, lint/typecheck fixes, refactoring, and documentation sync.
 :::
 
 <!-- TOOLS-START -->

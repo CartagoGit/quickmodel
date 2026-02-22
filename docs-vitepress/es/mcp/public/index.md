@@ -13,7 +13,7 @@ Las siguientes herramientas están disponibles para uso público.
 - **Inspección**: Analiza estructuras de modelos y transformadores disponibles.
 
 ::: tip Flujos de trabajo guiados (Prompts / Skills)
-¿Necesitas que la IA gestione una tarea completa automáticamente? Consulta los **[Prompts / Skills](./skills)** — flujos de trabajo guiados que encadenan múltiples herramientas para convertir interfaces, depurar modelos, generar datos de prueba o exportar schemas.
+¿Necesitas que la IA gestione una tarea completa automáticamente? Consulta los **[Prompts / Skills](./skills)** — flujos de trabajo guiados en dos grupos: **Skills públicos** para convertir, depurar y validar modelos; **Skills de mantenimiento** para ciclos TDD, correcciones de lint/typecheck, refactoring y sincronización de documentación.
 :::
 
 <!-- TOOLS-START -->
