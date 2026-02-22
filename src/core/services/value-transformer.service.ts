@@ -9,6 +9,7 @@ import { Logger } from '../helpers/logger.helper';
 import { QModelError } from '../errors/quickmodel.error';
 
 // Interface to avoid circular dependency
+/** @internal */
 export interface IRecursiveDeserializer {
 	deserialize(
 		data: Record<string, unknown>,

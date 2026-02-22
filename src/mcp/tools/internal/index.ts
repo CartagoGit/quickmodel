@@ -10,3 +10,8 @@ export * from './check-api-compat.tool';
 export * from './benchmark-perf.tool';
 export * from './check-project-rules.tool';
 export * from './check-security.tool';
+export * from './list-todos.tool';
+export * from './check-bundle-size.tool';
+export * from './check-changelog.tool';
+export * from './lint-check.tool';
+export * from './typecheck.tool';

@@ -14,4 +14,6 @@ export * from './get-model-schema.tool';
 export * from './get-form-schema.tool';
 export * from './check-integrity.tool';
 export * from './simulate-rules.tool';
+export * from './simulate-async-rules.tool';
 export * from './roundtrip.tool';
+export * from './diff-models.tool';

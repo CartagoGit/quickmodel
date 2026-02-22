@@ -10,5 +10,6 @@
 	"sort": ["alphabetical"],
 	"groupOrder": ["*"],
 	"exclude": ["**/*.test.ts", "**/*.spec.ts", "src/examples/**", "tests/**"],
-	"skipErrorChecking": true
+	"skipErrorChecking": true,
+	"excludeInternal": true
 }

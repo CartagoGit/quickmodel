@@ -18,6 +18,10 @@ Use skills when you want the AI to drive the process end-to-end without you havi
 | [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                    |
 | [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns         |
 | [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates      |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation   |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit           |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it         |
+| [`quickmodel_implement_feature`](#quickmodel_implement_feature)   | Implement Feature (TDD)                | Full TDD cycle enforced by `lint_check` + `typecheck` gates      |
 
 ---
 
@@ -374,4 +378,42 @@ context: "NestJS service with TypeORM repository"
 → AI shows: await instance.checkRulesAsync({ timeoutMs: 5000, mode: "parallel" })
 → AI shows NestJS @Injectable() integration
 → Returns async-ready model with usage guidance
+```
+
+---
+
+## `quickmodel_implement_feature`
+
+**Full TDD cycle for any new QuickModel feature, with mandatory lint and typecheck gates.**
+
+This skill drives the AI through the complete red‑green‑refactor loop enforced by three automated gates: `lint_check`, `typecheck`, and `check_project_rules`. The AI **cannot** declare the feature done until all three gates return `passed: true`.
+
+### Arguments
+
+| Argument              | Required | Description                                                                    |
+| --------------------- | -------- | ------------------------------------------------------------------------------ |
+| `feature_description` | ✅ Yes   | Plain-text description of the feature to implement                             |
+| `file_paths`          | ✗ No     | Space-separated list of files to lint (defaults to the whole `src/` directory) |
+
+### Workflow
+
+1. 🔴 **Red** — Write a failing test that describes the expected behaviour
+2. 🟢 **Green** — Implement the minimum code to make the test pass
+3. 🚦 **lint_check gate** — Run `lint_check`; block until `passed: true`
+4. 🚦 **typecheck gate** — Run `typecheck`; block until `passed: true`
+5. 🚦 **check_project_rules gate** — Verify naming, id-length, max-params, etc.
+6. ✅ **Done** — Only declared complete when all three gates pass
+
+### Example
+
+```
+feature_description: "Add a QTypecheckTool that runs tsc --noEmit and returns parsed errors"
+file_paths: "src/mcp/tools/internal/typecheck.tool.ts"
+
+→ AI writes tests/mcp/unit/internal/typecheck.test.ts (red)
+→ AI creates src/mcp/tools/internal/typecheck.tool.ts (green)
+→ AI calls lint_check({ targetFiles: ["src/mcp/tools/internal/typecheck.tool.ts"] })
+→ AI calls typecheck({})
+→ AI calls check_project_rules()
+→ All pass → feature declared done
 ```

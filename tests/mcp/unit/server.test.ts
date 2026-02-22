@@ -178,7 +178,7 @@ describe('QMcpServer', () => {
 
 	it('should get default prompts', () => {
 		const prompts = QMcpServer.getDefaultPrompts();
-		expect(prompts.length).toBe(10);
+		expect(prompts.length).toBe(14);
 		expect(
 			prompts.find((p) => p.name === 'quickmodel_from_typescript')
 		).toBeDefined();
@@ -208,6 +208,15 @@ describe('QMcpServer', () => {
 		).toBeDefined();
 		expect(
 			prompts.find((p) => p.name === 'quickmodel_async_rules')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_add_qgroup')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_security_review')
+		).toBeDefined();
+		expect(
+			prompts.find((p) => p.name === 'quickmodel_transformer_guide')
 		).toBeDefined();
 	});
 

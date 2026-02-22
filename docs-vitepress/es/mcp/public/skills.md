@@ -7,7 +7,7 @@ Usa los skills cuando quieras que la IA conduzca el proceso de principio a fin s
 ## Skills Disponibles
 
 | Nombre del skill                                                  | Título                                     | Descripción                                                      |
-| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- | --- | --------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------- |
 | [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS              |
 | [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación     |
 | [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline             |
@@ -18,6 +18,9 @@ Usa los skills cuando quieras que la IA conduzca el proceso de principio a fin s
 | [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                  | Remapeo de nombres de campo y serialización de getters           |
 | [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código v1 a patrones idiomáticos v2    |
 | [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos     |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                 |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo         |     | [`quickmodel_implement_feature`](#quickmodel_implement_feature) | Implementar Funcionalidad (TDD) | Ciclo TDD completo con puertas `lint_check` + `typecheck` |
 
 ---
 
@@ -374,4 +377,155 @@ context: "Servicio NestJS con repositorio TypeORM"
 → IA muestra: await instance.checkRulesAsync({ timeoutMs: 5000, mode: "parallel" })
 → IA muestra integración con @Injectable() de NestJS
 → Devuelve modelo async con guía de uso
+```
+
+---
+
+## `quickmodel_add_qgroup`
+
+**Añade agrupación de campos con `@QGroup` y activa la validación por grupo con `checkGroups()`.**
+
+Explica cómo anotar campos con `@QGroup`, cómo apilar múltiples grupos en un mismo campo, cómo llamar a `checkGroups()` para validar un subconjunto de campos, y la diferencia entre `checkGroups()` y `checkRules()`. Llama a `validate_usage` para verificar el modelo anotado.
+
+### Argumentos
+
+| Argumento    | Requerido | Descripción                                                  |
+| ------------ | --------- | ------------------------------------------------------------ |
+| `model_code` | ✅ Sí     | La clase QuickModel a anotar con `@QGroup`                   |
+| `group_name` | ✗ No      | Nombre de grupo opcional (ej. `"personal"`, `"facturación"`) |
+
+### Flujo de trabajo
+
+1. Muestra el decorador `@QGroup("nombre")` encima de `@QField` / `@QRule`
+2. Demuestra el apilado multi-grupo: `@QGroup("a") @QGroup("b") declare campo`
+3. Muestra `instance.checkGroups(["grupo"])` para validación por grupo
+4. Llama a `validate_usage` para verificar el modelo resultante
+
+### Ejemplo
+
+```
+model_code: "@Quick({}) class User extends QModel<IUser> { declare name: string; declare email: string; }"
+group_name: "contacto"
+
+→ IA anota campos con @QGroup("contacto")
+→ IA explica checkGroups(["contacto"]) vs checkRules()
+→ IA llama a validate_usage
+→ Devuelve modelo anotado + ejemplos de uso
+```
+
+---
+
+## `quickmodel_security_review`
+
+**Audita una clase QuickModel para detectar vulnerabilidades de seguridad comunes.**
+
+Orquesta `check_security` para verificar que la suite de tests de seguridad pasa, y luego explica las cuatro áreas clave: endurecimiento contra mass assignment (`unknownPropertyPolicy: 'strip'`), prevención de DoS con `populationLimit`, prevención de prototype pollution y protección contra ReDoS.
+
+### Argumentos
+
+| Argumento    | Requerido | Descripción                                                     |
+| ------------ | --------- | --------------------------------------------------------------- |
+| `model_code` | ✗ No      | Código del modelo opcional para revisión de seguridad por clase |
+
+### Flujo de trabajo
+
+1. Llama a `check_security` para ejecutar la suite completa de tests de seguridad
+2. Explica mass assignment: `unknownPropertyPolicy: 'strip'` en `@Quick`
+3. Explica límites de DoS: `populationLimit` y límites de arrays/strings
+4. Explica prototype pollution: tipado estricto bloquea `__proto__`, `constructor`
+5. Explica ReDoS: límites del transformer RegExp y verificaciones de complejidad
+6. Si se proporciona `model_code`, muestra recomendaciones específicas de la clase
+
+### Ejemplo
+
+```
+→ IA llama a check_security
+→ IA explica: establece unknownPropertyPolicy: 'strip' para bloquear mass assignment
+→ IA explica: populationLimit por defecto (5000), cómo reducirlo
+→ IA explica: claves __proto__ y constructor están bloqueadas
+→ Devuelve resumen de seguridad + checklist de endurecimiento
+```
+
+---
+
+## `quickmodel_transformer_guide`
+
+**Elige el transformer correcto para un tipo TypeScript y valídalo en tiempo real.**
+
+Proporciona una tabla de referencia rápida tipo→transformer, llama a `simulate_transformation` con datos de muestra y explica los problemas habituales por tipo de transformer.
+
+### Argumentos
+
+| Argumento         | Requerido | Descripción                                                                             |
+| ----------------- | --------- | --------------------------------------------------------------------------------------- |
+| `typescript_type` | ✅ Sí     | El tipo TypeScript (ej. `Date`, `bigint`, `Map<string, number>`, `RegExp`)              |
+| `sample_data`     | ✗ No      | Valor de muestra opcional para probar el transformer (ej. `"2024-01-15T00:00:00.000Z"`) |
+
+### Referencia rápida de transformers
+
+| Tipo TypeScript       | Entrada en `@Quick`                                         |
+| --------------------- | ----------------------------------------------------------- |
+| `Date`                | `@Quick({ campo: Date })`                                   |
+| `bigint`              | `@Quick({ campo: BigInt })`                                 |
+| `Set<T>`              | `@Quick({ campo: Set })`                                    |
+| `Map<K,V>`            | `@Quick({ campo: Map })`                                    |
+| `RegExp`              | `@Quick({ campo: RegExp })`                                 |
+| `Symbol`              | `@Quick({ campo: Symbol })`                                 |
+| `ArrayBuffer`         | `@Quick({ campo: ArrayBuffer })`                            |
+| `WeakMap` / `WeakSet` | `@Quick({ campo: WeakMap })` / `@Quick({ campo: WeakSet })` |
+
+### Flujo de trabajo
+
+1. Muestra la entrada correcta de `@Quick` para el tipo solicitado
+2. Llama a `simulate_transformation` con los datos de muestra proporcionados o generados
+3. Destaca problemas habituales (ej. `Date` requiere ISO, `BigInt` requiere cadena de dígitos)
+
+### Ejemplo
+
+```
+typescript_type: "Date"
+sample_data: "2024-06-01T10:00:00.000Z"
+
+→ IA muestra: @Quick({ createdAt: Date }) class Model extends QModel<...>
+→ IA llama a simulate_transformation({ data: { createdAt: "2024-06-01T..." }, ... })
+→ IA advierte: cadenas no ISO pueden producir Invalid Date
+→ Devuelve guía del transformer + resultado de simulación
+```
+
+---
+
+## `quickmodel_implement_feature`
+
+**Ciclo TDD completo para cualquier funcionalidad nueva de QuickModel, con puertas obligatorias de lint y typecheck.**
+
+Este skill conduce a la IA por el bucle completo rojo‑verde‑refactor, reforzado por tres puertas automatizadas: `lint_check`, `typecheck` y `check_project_rules`. La IA **no puede** declarar la funcionalidad terminada hasta que las tres puertas devuelvan `passed: true`.
+
+### Argumentos
+
+| Argumento             | Obligatorio | Descripción                                                                 |
+| --------------------- | ----------- | --------------------------------------------------------------------------- |
+| `feature_description` | ✅ Sí       | Descripción en lenguaje natural de la funcionalidad a implementar           |
+| `file_paths`          | ✗ No        | Lista separada por espacios de archivos a lintear (por defecto todo `src/`) |
+
+### Flujo de trabajo
+
+1. 🔴 **Rojo** — Escribe un test que falla describiendo el comportamiento esperado
+2. 🟢 **Verde** — Implementa el código mínimo para que el test pase
+3. 🚦 **Puerta lint_check** — Ejecuta `lint_check`; bloquea hasta `passed: true`
+4. 🚦 **Puerta typecheck** — Ejecuta `typecheck`; bloquea hasta `passed: true`
+5. 🚦 **Puerta check_project_rules** — Verifica naming, id-length, max-params, etc.
+6. ✅ **Hecho** — Solo se declara terminado cuando las tres puertas pasan
+
+### Ejemplo
+
+```
+feature_description: "Añadir un QTypecheckTool que ejecute tsc --noEmit y devuelva errores parseados"
+file_paths: "src/mcp/tools/internal/typecheck.tool.ts"
+
+→ IA escribe tests/mcp/unit/internal/typecheck.test.ts (rojo)
+→ IA crea src/mcp/tools/internal/typecheck.tool.ts (verde)
+→ IA llama a lint_check({ targetFiles: ["src/mcp/tools/internal/typecheck.tool.ts"] })
+→ IA llama a typecheck({})
+→ IA llama a check_project_rules()
+→ Todo pasa → funcionalidad declarada terminada
 ```

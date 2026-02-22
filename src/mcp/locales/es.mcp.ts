@@ -44,8 +44,12 @@ export const esMcp = {
 			'Ejecuta comprobaciones de integridad a nivel de transformer sobre un objeto de datos usando la API real instance.checkIntegrity(). Detecta Date inválidos, BigInt fuera de rango, RegExp malformados y otros fallos a nivel de transformer. Devuelve { valid, errors[], evaluated, summary }.',
 		simulate_rules:
 			'Ejecuta reglas de lógica de negocio a través de la API real instance.checkRules(). Aplica las reglas mediante metadatos @QRule para que el formato del resultado coincida exactamente con el IQRulesResult de producción. Las cadenas de predicado tienen acceso a `value` (valor del campo) y `data` (objeto completo). Usa simulate_validation para evaluaciones independientes de predicados; usa esta herramienta cuando necesites verificar que la salida de @QRule + checkRules() es exactamente la que producirá tu código en runtime. Devuelve { valid, errors[], evaluated }.',
+		simulate_async_rules:
+			'Ejecuta reglas de lógica de negocio asíncronas a través de la API real instance.checkRulesAsync(). Soporta timeoutMs, timeoutMessage y mode (parallel|serial). Las cadenas de predicado pueden usar async/await y devolver Promises. Devuelve { valid, errors[], evaluated }.',
 		roundtrip:
 			'Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. Ejecuta: s1 = new Model(data).serialize() → s2 = new Model(s1).serialize() y comprueba si s1 === s2. Devuelve { lossless, input, serialized, roundtrip_serialized, diff, summary }.',
+		diff_models:
+			'Compara dos definiciones de clase QuickModel (como cadenas de código fuente) y reporta las diferencias: campos añadidos/eliminados, transformers cambiados, decoradores añadidos/eliminados. Análisis estático puro, sin ejecución de código. Devuelve { added_fields, removed_fields, changed_fields, changed_transformers, added_decorators, removed_decorators, summary }.',
 
 		update_docs:
 			'Herramienta interna para ejecutar scripts de construcción de documentación.',
@@ -67,5 +71,15 @@ export const esMcp = {
 			'Verifica la compatibilidad de la API pública.',
 		benchmark_performance:
 			'Ejecuta pruebas de rendimiento para las transformaciones de QuickModel.',
+		list_todos:
+			'Escanea archivos fuente en busca de comentarios TODO, FIXME, HACK y XXX. Admite targetDir personalizado y extensiones de archivo. Devuelve { items: [{file, line, type, text}][], total }.',
+		check_bundle_size:
+			'Compila el proyecto y reporta el tamaño de los archivos generados en dist/. Devuelve { status, files: [{file, bytes}][], total_bytes, summary }.',
+		check_changelog:
+			'Verifica que CHANGELOG.md contiene una entrada para la versión actual de package.json. Devuelve { found, version, excerpt, status, message? }.',
+		lint_check:
+			'Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve { passed, errors, warnings, total_errors, total_warnings, summary }.',
+		typecheck:
+			'Ejecuta la verificación de tipos de TypeScript (tsc --noEmit) sobre src/. Devuelve { passed, errors, total, summary }.',
 	},
 };

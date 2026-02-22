@@ -10,6 +10,10 @@ import { QMixinPrompt } from '../../../../src/mcp/prompts/public/mixin.prompt';
 import { QAliasComputedPrompt } from '../../../../src/mcp/prompts/public/alias-computed.prompt';
 import { QMigrationPrompt } from '../../../../src/mcp/prompts/public/migration.prompt';
 import { QAsyncRulesPrompt } from '../../../../src/mcp/prompts/public/async-rules.prompt';
+import { QAddQGroupPrompt } from '../../../../src/mcp/prompts/public/add-qgroup.prompt';
+import { QSecurityReviewPrompt } from '../../../../src/mcp/prompts/public/security-review.prompt';
+import { QTransformerGuidePrompt } from '../../../../src/mcp/prompts/public/transformer-guide.prompt';
+import { QImplementFeaturePrompt } from '../../../../src/mcp/prompts/public/implement-feature.prompt';
 import type { IQPromptResult } from '../../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
@@ -786,5 +790,297 @@ describe('QAsyncRulesPrompt', () => {
 		});
 		const allText = result.messages.map((m) => m.content.text).join(' ');
 		expect(allText).toContain('TypeORM uniqueness check');
+	});
+});
+
+// ── QAddQGroupPrompt ──────────────────────────────────────────────────────────
+
+describe('QAddQGroupPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QAddQGroupPrompt();
+		expect(prompt.name).toBe('quickmodel_add_qgroup');
+		expect(prompt.description).toBeDefined();
+	});
+
+	it('argsSchema.model_code is required', () => {
+		const prompt = new QAddQGroupPrompt();
+		expect(prompt.argsSchema.model_code).toBeDefined();
+	});
+
+	it('argsSchema.group_name is optional', () => {
+		const prompt = new QAddQGroupPrompt();
+		expect(prompt.argsSchema.group_name).toBeDefined();
+		const parsed = (
+			prompt.argsSchema.group_name as z.ZodOptional<z.ZodString>
+		).safeParse(undefined);
+		expect(parsed.success).toBe(true);
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QAddQGroupPrompt();
+		const result = await prompt.execute({
+			model_code:
+				'@Quick({}) class M extends QModel<M> { declare name: string; }',
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QAddQGroupPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mentions @QGroup in messages', async () => {
+		const prompt = new QAddQGroupPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@QGroup');
+	});
+
+	it('execute() mentions checkGroups() in messages', async () => {
+		const prompt = new QAddQGroupPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('checkGroups');
+	});
+
+	it('execute() references validate_usage tool', async () => {
+		const prompt = new QAddQGroupPrompt();
+		const result = await prompt.execute({ model_code: 'class M {}' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('validate_usage');
+	});
+
+	it('execute() includes group_name when provided', async () => {
+		const prompt = new QAddQGroupPrompt();
+		const result = await prompt.execute({
+			model_code: 'class M {}',
+			group_name: 'addressGroup',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('addressGroup');
+	});
+});
+
+// ── QSecurityReviewPrompt ─────────────────────────────────────────────────────
+
+describe('QSecurityReviewPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QSecurityReviewPrompt();
+		expect(prompt.name).toBe('quickmodel_security_review');
+		expect(prompt.description).toBeDefined();
+	});
+
+	it('argsSchema.model_code is optional', () => {
+		const prompt = new QSecurityReviewPrompt();
+		const parsed = (
+			prompt.argsSchema.model_code as z.ZodOptional<z.ZodString>
+		).safeParse(undefined);
+		expect(parsed.success).toBe(true);
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QSecurityReviewPrompt();
+		const result = await prompt.execute({});
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QSecurityReviewPrompt();
+		const result = await prompt.execute({});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mentions check_security tool', async () => {
+		const prompt = new QSecurityReviewPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('check_security');
+	});
+
+	it('execute() mentions unknownPropertyPolicy hardening', async () => {
+		const prompt = new QSecurityReviewPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toMatch(/unknownPropertyPolicy|strip|mass.?assign/i);
+	});
+
+	it('execute() includes model_code when provided', async () => {
+		const prompt = new QSecurityReviewPrompt();
+		const result = await prompt.execute({
+			model_code:
+				'@Quick({}) class UserModel extends QModel<UserModel> {}',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('UserModel');
+	});
+});
+
+// ── QTransformerGuidePrompt ───────────────────────────────────────────────────
+
+describe('QTransformerGuidePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QTransformerGuidePrompt();
+		expect(prompt.name).toBe('quickmodel_transformer_guide');
+		expect(prompt.description).toBeDefined();
+	});
+
+	it('argsSchema.typescript_type is required', () => {
+		const prompt = new QTransformerGuidePrompt();
+		expect(prompt.argsSchema.typescript_type).toBeDefined();
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QTransformerGuidePrompt();
+		const result = await prompt.execute({ typescript_type: 'Date' });
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QTransformerGuidePrompt();
+		const result = await prompt.execute({ typescript_type: 'Date' });
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mentions @Quick decorator in messages', async () => {
+		const prompt = new QTransformerGuidePrompt();
+		const result = await prompt.execute({ typescript_type: 'Date' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('@Quick');
+	});
+
+	it('execute() references simulate_transformation tool', async () => {
+		const prompt = new QTransformerGuidePrompt();
+		const result = await prompt.execute({
+			typescript_type: 'Map<string, Date>',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('simulate_transformation');
+	});
+
+	it('execute() mentions the requested type in messages', async () => {
+		const prompt = new QTransformerGuidePrompt();
+		const result = await prompt.execute({ typescript_type: 'Set<number>' });
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('Set');
+	});
+
+	it('execute() includes sample_data hint when provided', async () => {
+		const prompt = new QTransformerGuidePrompt();
+		const result = await prompt.execute({
+			typescript_type: 'Date',
+			sample_data: '{ "created": "2024-01-01" }',
+		});
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('2024-01-01');
+	});
+});
+
+// ── QImplementFeaturePrompt ───────────────────────────────────────────────────
+describe('QImplementFeaturePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QImplementFeaturePrompt();
+		expect(prompt.name).toBe('quickmodel_implement_feature');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+	});
+
+	it('argsSchema.feature_description is required', () => {
+		const prompt = new QImplementFeaturePrompt();
+		const schema = prompt.argsSchema;
+		const res = schema.feature_description.safeParse(undefined);
+		expect(res.success).toBe(false);
+	});
+
+	it('argsSchema.file_paths is optional', () => {
+		const prompt = new QImplementFeaturePrompt();
+		const schema = prompt.argsSchema;
+		const res = schema.file_paths?.safeParse(undefined);
+		expect(res?.success).toBe(true);
+	});
+
+	it('execute() returns a valid result', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = await prompt.execute({
+			feature_description: 'Add email validation to UserModel',
+		});
+		const typed = result as IQPromptResult;
+		expect(typed).toBeDefined();
+		expect(Array.isArray(typed.messages)).toBe(true);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add email validation',
+		})) as IQPromptResult;
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mandates lint_check in messages', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add email validation',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('lint_check');
+	});
+
+	it('execute() mandates typecheck in messages', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add email validation',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('typecheck');
+	});
+
+	it('execute() mandates check_project_rules in messages', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add email validation',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('check_project_rules');
+	});
+
+	it('execute() mentions TDD workflow (write test first)', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add email validation',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText.toLowerCase()).toMatch(
+			/test|tdd|red.*green|failing test/
+		);
+	});
+
+	it('execute() includes DONE gate message (refuses to skip lint)', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add email validation',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText.toLowerCase()).toMatch(/done|complete|finish|ready/);
+	});
+
+	it('execute() includes feature_description in messages', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'AddUniqueEmailRule',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('AddUniqueEmailRule');
+	});
+
+	it('execute() includes file_paths when provided', async () => {
+		const prompt = new QImplementFeaturePrompt();
+		const result = (await prompt.execute({
+			feature_description: 'Add validation',
+			file_paths: 'src/mcp/tools/public/my-tool.ts',
+		})) as IQPromptResult;
+		const allText = result.messages.map((m) => m.content.text).join(' ');
+		expect(allText).toContain('my-tool.ts');
 	});
 });

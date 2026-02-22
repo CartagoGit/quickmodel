@@ -1478,7 +1478,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	}
 
 	/**
-	 * Internal helper: walks the prototype chain collecting @QField entries.
+	 * Internal helper: walks the prototype chain collecting `@QField` entries.
 	 * @internal
 	 */
 	private static _collectFormSchema(startProto: object): IQFormSchemaEntry[] {

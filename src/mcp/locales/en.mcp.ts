@@ -44,8 +44,12 @@ export const enMcp = {
 			'Run transformer-level integrity checks on a data object using the real instance.checkIntegrity() API. Detects invalid Date objects, out-of-range BigInt values, malformed RegExp patterns, and other transformer-level failures. Returns { valid, errors[], evaluated, summary }.',
 		simulate_rules:
 			'Run business-logic rules through the real instance.checkRules() API. Applies rules via @QRule metadata so the result format matches production IQRulesResult exactly. Predicate strings have access to `value` (field value) and `data` (full data object). Use simulate_validation for standalone predicate evaluation; use this when you need to verify the exact @QRule + checkRules() output your code will produce at runtime. Returns { valid, errors[], evaluated }.',
+		simulate_async_rules:
+			'Run async business-logic rules through the real instance.checkRulesAsync() API. Supports timeoutMs, timeoutMessage and mode (parallel|serial). Predicate strings can use async/await and return Promises. Returns { valid, errors[], evaluated }.',
 		roundtrip:
 			'Verifies that serializing and re-creating a QuickModel instance is lossless. Runs: s1 = new Model(data).serialize() → s2 = new Model(s1).serialize() and reports whether s1 === s2. Returns { lossless, input, serialized, roundtrip_serialized, diff, summary }.',
+		diff_models:
+			'Compare two QuickModel class definitions (as source strings) and report differences: added/removed fields, changed transformers, added/removed decorators. Pure static analysis — no code execution. Returns { added_fields, removed_fields, changed_fields, changed_transformers, added_decorators, removed_decorators, summary }.',
 
 		// Internal
 		update_docs: 'Internal tool to run documentation build scripts.',
@@ -66,5 +70,15 @@ export const enMcp = {
 			'Check for breaking changes in the public API.',
 		benchmark_performance:
 			'Run performance benchmarks for QuickModel transformations.',
+		list_todos:
+			'Scan source files for TODO, FIXME, HACK and XXX comments. Supports custom targetDir and file extensions. Returns { items: [{file, line, type, text}][], total }.',
+		check_bundle_size:
+			'Build the project and report the size of all generated dist/ files. Returns { status, files: [{file, bytes}][], total_bytes, summary }.',
+		check_changelog:
+			'Verify that CHANGELOG.md contains an entry for the current package.json version. Returns { found, version, excerpt, status, message? }.',
+		lint_check:
+			'Run ESLint on a directory or specific files. Returns { passed, errors, warnings, total_errors, total_warnings, summary }.',
+		typecheck:
+			'Run TypeScript type checking (tsc --noEmit) on src/. Returns { passed, errors, total, summary }.',
 	},
 };

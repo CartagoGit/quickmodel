@@ -85,6 +85,7 @@ export interface IIntegrityOptions {
 	ctx?: IIntegrityContext;
 }
 
+/** @internal */
 export class IntegrityService {
 	private transformers = new Map<string, IQTransformer<unknown, unknown>>();
 

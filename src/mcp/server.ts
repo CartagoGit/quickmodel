@@ -14,6 +14,10 @@ import {
 	QAliasComputedPrompt,
 	QMigrationPrompt,
 	QAsyncRulesPrompt,
+	QAddQGroupPrompt,
+	QSecurityReviewPrompt,
+	QTransformerGuidePrompt,
+	QImplementFeaturePrompt,
 } from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -33,7 +37,9 @@ import {
 	QValidateUsageTool,
 	QCheckIntegrityTool,
 	QSimulateRulesTool,
+	QSimulateAsyncRulesTool,
 	QRoundtripTool,
+	QDiffModelsTool,
 	QGetFormSchemaTool,
 	QGetModelSchemaTool,
 	QSimulateValidationTool,
@@ -51,6 +57,11 @@ import {
 	QBenchmarkPerformanceTool,
 	QCheckProjectRulesTool,
 	QCheckSecurityTool,
+	QListTodosTool,
+	QCheckBundleSizeTool,
+	QCheckChangelogTool,
+	QLintCheckTool,
+	QTypecheckTool,
 } from './tools/internal';
 /**
  * Main class for the QuickModel MCP Server.
@@ -107,7 +118,9 @@ export class QMcpServer {
 			new QGetModelSchemaTool(),
 			new QCheckIntegrityTool(),
 			new QSimulateRulesTool(),
+			new QSimulateAsyncRulesTool(),
 			new QRoundtripTool(),
+			new QDiffModelsTool(),
 
 			new QUpdateDocsTool(),
 			new QGenerateTestTool(),
@@ -116,6 +129,11 @@ export class QMcpServer {
 			new QGetCoverageReportTool(),
 			new QCheckProjectRulesTool(),
 			new QCheckSecurityTool(),
+			new QListTodosTool(),
+			new QCheckBundleSizeTool(),
+			new QCheckChangelogTool(),
+			new QLintCheckTool(),
+			new QTypecheckTool(),
 			new QJsonToModelTool(),
 			new QSyncDocsTool(),
 			new QScaffoldFeatureTool(),
@@ -139,6 +157,10 @@ export class QMcpServer {
 			new QAliasComputedPrompt(),
 			new QMigrationPrompt(),
 			new QAsyncRulesPrompt(),
+			new QAddQGroupPrompt(),
+			new QSecurityReviewPrompt(),
+			new QTransformerGuidePrompt(),
+			new QImplementFeaturePrompt(),
 		];
 	}
 

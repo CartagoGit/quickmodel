@@ -10,7 +10,7 @@ import { z } from 'zod';
 /**
  * Base schema generator configuration
  */
-interface ISchemaGeneratorConfig {
+export interface ISchemaGeneratorConfig {
 	className: string;
 	decoratorConfig: Record<string, any>;
 	properties: string[];

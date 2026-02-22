@@ -69,3 +69,10 @@ export type {
 	IQMockerFn,
 } from './core/interfaces/transform-options.interface';
 export type { IQAlias } from './core/types/q-alias.type';
+export type { IQCaseOptions } from './core/types/case.type';
+export type { IQSchemaType } from './core/types/schema-types';
+export type {
+	IQSerializer,
+	IQDeserializer,
+} from './core/interfaces/serializer.interface';
+export type { ISchemaGeneratorConfig } from './core/services/schema-generators.service';
