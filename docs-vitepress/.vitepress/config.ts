@@ -8,6 +8,50 @@ console.log(
 	process.env.VITE_SHOW_INTERNAL_DOCS
 );
 
+/**
+ * Build the MCP sidebar section for a given locale.
+ * Single source of truth — add items here and both EN/ES sidebars update automatically.
+ */
+const buildMcpSidebar = (locale: 'en' | 'es') => {
+	const isEs = locale === 'es';
+	const prefix = `/${locale}/mcp`;
+	const showInternal = process.env.VITE_SHOW_INTERNAL_DOCS === 'true';
+	return [
+		{
+			text: isEs
+				? 'Protocolo de Contexto de Modelo'
+				: 'Model Context Protocol',
+			items: [
+				{
+					text: isEs ? 'Descripción General' : 'Overview',
+					link: `${prefix}/`,
+				},
+				{
+					text: isEs ? 'Herramientas Públicas' : 'Public Tools',
+					link: `${prefix}/public/`,
+				},
+				{ text: 'Prompts / Skills', link: `${prefix}/public/skills` },
+				...(showInternal
+					? [
+							{
+								text: isEs
+									? 'Instalación (Mantenedores)'
+									: 'Installation (Maintainers)',
+								link: `${prefix}/internal/setup`,
+							},
+							{
+								text: isEs
+									? 'Herramientas Internas (Mantenedores)'
+									: 'Internal Tools (Maintainers)',
+								link: `${prefix}/internal/`,
+							},
+						]
+					: []),
+			],
+		},
+	];
+};
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
 	title: 'QuickModel',
@@ -62,27 +106,6 @@ export default defineConfig({
 			{ icon: 'npm', link: 'https://www.npmjs.com/~cartago-git' },
 		],
 		sidebar: {
-			'/en/mcp/': [
-				{
-					text: 'Model Context Protocol',
-					items: [
-						{ text: 'Overview', link: '/en/mcp/' },
-						{ text: 'Public Tools', link: '/en/mcp/public/' },
-						{
-							text: 'Prompts / Skills',
-							link: '/en/mcp/public/skills',
-						},
-						...(process.env.SHOW_INTERNAL_DOCS
-							? [
-									{
-										text: 'Internal Tools',
-										link: '/en/mcp/internal/',
-									},
-								]
-							: []),
-					],
-				},
-			],
 			'/tsdoc/@cartago-git/namespaces/Types/': [
 				{
 					text: 'Types Namespace',
@@ -486,35 +509,7 @@ export default defineConfig({
 						},
 					],
 
-					'/en/mcp/': [
-						{
-							text: 'Model Context Protocol',
-							items: [
-								{ text: 'Overview', link: '/en/mcp/' },
-								{
-									text: 'Public Tools',
-									link: '/en/mcp/public/',
-								},
-								{
-									text: 'Prompts / Skills',
-									link: '/en/mcp/public/skills',
-								},
-								...(process.env.VITE_SHOW_INTERNAL_DOCS ===
-								'true'
-									? [
-											{
-												text: 'Installation (Maintainers)',
-												link: '/en/mcp/internal/setup',
-											},
-											{
-												text: 'Internal Tools (Maintainers)',
-												link: '/en/mcp/internal/',
-											},
-										]
-									: []),
-							],
-						},
-					],
+					'/en/mcp/': buildMcpSidebar('en'),
 					'/en/examples/': [
 						{
 							text: 'Examples',
@@ -632,38 +627,7 @@ export default defineConfig({
 						},
 					],
 
-					'/es/mcp/': [
-						{
-							text: 'Protocolo de Contexto de Modelo',
-							items: [
-								{
-									text: 'Descripción General',
-									link: '/es/mcp/',
-								},
-								{
-									text: 'Herramientas Públicas',
-									link: '/es/mcp/public/',
-								},
-								{
-									text: 'Prompts / Skills',
-									link: '/es/mcp/public/skills',
-								},
-								...(process.env.VITE_SHOW_INTERNAL_DOCS ===
-								'true'
-									? [
-											{
-												text: 'Instalación (Mantenedores)',
-												link: '/es/mcp/internal/setup',
-											},
-											{
-												text: 'Herramientas Internas (Mantenedores)',
-												link: '/es/mcp/internal/',
-											},
-										]
-									: []),
-							],
-						},
-					],
+					'/es/mcp/': buildMcpSidebar('es'),
 					'/es/examples/': [
 						{
 							text: 'Ejemplos',
