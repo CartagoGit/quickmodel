@@ -1,6 +1,6 @@
 # QuickModel - Tareas Pendientes
 
-> **Fecha de revisión:** 22 de febrero de 2026 (actualizado)
+> **Fecha de revisión:** 23 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
 > **Estado actual:** 2588 tests passing | Cobertura >97% líneas | v1.0.0
 
@@ -46,7 +46,7 @@
 - ⏳ Task #40: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures
 - ⏳ Task #41: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos
 - ⏳ Task #42: Formik + migración desde Zod/Yup
-- ⏳ Task #43: React Native / Expo — `TextInput`, AsyncStorage, `useQModel` en mobile
+- ⏳ Task #43: Mobile Integrations — React Native/Expo, Capacitor, Cordova, Ionic — `TextInput`, storage nativo, `useQModel` en mobile
 
 **Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
@@ -1847,7 +1847,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº14) — Tasks #39, #44, #45, #46, #49 completadas (130 nuevos tests de integración) | Tasks #40–#43 en curso | src/matchers.ts: quickmodelMatchers para Vitest/bun | 2718 tests passing
+**Última actualización:** 23 de febrero de 2026 (revisión nº15) — Tasks #39, #44, #45, #46, #49 completadas (130 nuevos tests de integración) | Tasks #40–#43 en curso | Task #43 ampliada: React Native + Expo + Capacitor + Cordova + Ionic | src/matchers.ts: quickmodelMatchers para Vitest/bun | 2718 tests passing
 
 ---
 
@@ -2031,22 +2031,45 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #43: React Native / Expo integration patterns
+### ⏳ Task #43: Mobile Integrations (React Native / Expo / Capacitor / Cordova / Ionic)
 
 **Status:** 📋 Pendiente  
-**Objetivo:** Suite de tests + guía EN+ES para React Native con Expo  
-**Tests a añadir:** ~20 en `tests/integration/patterns/react-native-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/react-native-integration.md` + ES
+**Objetivo:** Suite de tests + guías EN+ES para los principales stacks mobile (React Native, Expo, Capacitor, Cordova, Ionic)  
+**Tests a añadir:** ~35 en `tests/integration/patterns/mobile-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/mobile-integration.md` + ES
 
-**Patrones a cubrir:**
+**React Native / Expo:**
 
 1. `TextInput` — coerción de string a number/boolean con `coercionStrategy: 'loose'`
 2. `useQModel` hook — reutilización del hook de React
 3. Expo Router — validación en route handlers (similar a Server Actions)
-4. AsyncStorage — serializar/deserializar QModel desde almacenamiento local
+4. `AsyncStorage` — serializar/deserializar QModel (`serialize()`/`populate()`) desde almacenamiento local
 5. Formularios con `KeyboardAvoidingView` + `checkRules()` on submit
 6. Validación async — llamada a API REST con `qCheckRulesAsync()`
 7. `createMany()` para listas planas de `FlatList`
+
+**Capacitor:**
+
+8. `@capacitor/preferences` — `Preferences.set({ value: JSON.stringify(dto.serialize()) })` + roundtrip con `populate()`
+9. Native plugin typed wrapper — DTO como contrato de entrada/salida de plugins Capacitor
+10. Capacitor HTTP plugin — `new UserDto(response.data)` con coerción automática
+11. `checkRulesAsync()` con simulación de llamada nativa asíncrona
+12. `copy()` inmutable para actualizar estado en `@capacitor/app` lifecycle events
+
+**Ionic:**
+
+13. `ion-input` + coerción `'loose'` — valores de string a tipos nativos
+14. `IonList` + `createMany()` — listas tipadas de modelos
+15. Ionic `AlertInput` — validación con `qCheckRules()` antes de confirmar diálogo
+16. `getFormSchema()` → campos dinámicos en formularios Ionic (`IonItem` / `IonLabel`)
+17. Ionic + Angular — `ReactiveFormsModule` + QModel como alternativa a Zod validators
+18. Ionic + React — reutilización de `useQModel` hook con `IonPage`
+
+**Cordova (legacy):**
+
+19. `localStorage` + `serialize()`/`populate()` — persistencia en Cordova WebView
+20. Cordova `deviceready` — inicialización de DTOs en evento nativo
+21. Migración Cordova → Capacitor — mismo patrón de storage, sin cambios en QModel layer
 
 ---
 
