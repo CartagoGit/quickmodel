@@ -93,4 +93,57 @@ export class QTransformerRegistry {
 	public static clear(): void {
 		this.transformers.clear();
 	}
+
+	/**
+	 * Takes a snapshot of the current registry state.
+	 *
+	 * Returns an opaque token that can be passed to `restore()` to bring
+	 * the registry back to exactly this point in time.  Use in `beforeEach`/
+	 * `afterEach` blocks when tests register custom transformers so they do not
+	 * leak into other test files.
+	 *
+	 * @returns A frozen copy of the current transformer map.
+	 *
+	 * @example
+	 * ```typescript
+	 * let snap: ReturnType<typeof QTransformerRegistry.snapshot>;
+	 *
+	 * beforeEach(() => { snap = QTransformerRegistry.snapshot(); });
+	 * afterEach(()  => { QTransformerRegistry.restore(snap); });
+	 *
+	 * test('my transformer test', () => {
+	 *   QTransformerRegistry.register(MyType, new MyTransformer());
+	 *   // … test …
+	 * }); // registry is clean again after afterEach
+	 * ```
+	 */
+	public static snapshot(): Map<string, IQTransformer<unknown, unknown>> {
+		return new Map(this.transformers);
+	}
+
+	/**
+	 * Restores the registry to a previously taken snapshot.
+	 *
+	 * Replaces the entire current registry with the contents of `snap`.
+	 * Any transformers registered after the snapshot was taken are removed;
+	 * any that were removed since are re-added.
+	 *
+	 * @param snap - The snapshot returned by a previous `snapshot()` call.
+	 *
+	 * @example
+	 * ```typescript
+	 * const snap = QTransformerRegistry.snapshot();
+	 * QTransformerRegistry.register(Money, moneyTransformer);
+	 * // … do work …
+	 * QTransformerRegistry.restore(snap); // Money transformer removed
+	 * ```
+	 */
+	public static restore(
+		snap: Map<string, IQTransformer<unknown, unknown>>
+	): void {
+		this.transformers.clear();
+		for (const [key, value] of snap) {
+			this.transformers.set(key, value);
+		}
+	}
 }

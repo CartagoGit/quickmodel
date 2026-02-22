@@ -59,5 +59,10 @@ export default {
 
 		// Header max length disabled — descriptive messages are welcome
 		'header-max-length': [0],
+
+		// Body rules — no line-length limit to allow rich descriptions
+		'body-max-line-length': [0],
+		'body-max-length': [0],
+		'footer-max-line-length': [0],
 	},
 };

@@ -149,17 +149,15 @@ export default tseslint.config(
 			],
 		},
 	},
-	// Override para ficheros de test: relajar reglas que dificultan el testing
+	// Override para ficheros de test: relajar solo reglas que genuinamente dificultan el testing
 	{
 		files: ['**/*.test.ts', '**/*.spec.ts'],
 		rules: {
 			'@typescript-eslint/no-empty-function': 'off',
 			'@typescript-eslint/no-explicit-any': 'off',
-			'max-params': 'off',
-			'id-length': 'off',
-			'@typescript-eslint/naming-convention': 'off',
 			// Los tests importan desde el barrel público para probar la API expuesta
 			'no-restricted-imports': 'off',
+			// id-length, max-params y naming-convention aplican igual que en src/
 		},
 	},
 	// Override para ejemplos: demuestran la API pública, importan desde el barrel raíz a propósito

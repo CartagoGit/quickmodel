@@ -47,7 +47,7 @@
 - ✅ Task #16: Tests de `transformCase` con herencia multinivel — **COMPLETADA**
 - ⏸️ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
 - ⏸️ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización
-- ⏸️ Task #19: `QTransformerRegistry.snapshot()/restore()` — aislamiento de estado en tests
+- ✅ Task #19: `QTransformerRegistry.snapshot()/restore()` — **COMPLETADA**
 - ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
 - ⏸️ Task #21: Guía de integración NestJS
 - ⏸️ Task #22: Cambiar default de `unknownPropertyPolicy` a `'strip'` en v2.0.0
@@ -936,7 +936,7 @@ describe('Computed Properties & Getters', () => {
 | 16  | Tests `transformCase` herencia multinivel     | 🟡 Media  | ✅ COMPLETADA | pendiente | +10             |
 | 17  | Performance benchmarks baseline               | 🟡 Media  | ⏸️ BACKLOG    | 4-6h      | Alto (mktg.)    | Mar 2026   |
 | 18  | `@QComputed()` / `exposeComputedFields`       | 🟡 Media  | ⏸️ BACKLOG    | 3-4h      | Alto (DX)       | Mar 2026   |
-| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ⏸️ BACKLOG    | 2h        | Medio (DX)      | Mar 2026   |
+| 19  | `QTransformerRegistry.snapshot()/restore()`   | 🟡 Media  | ✅ COMPLETADA | pendiente | +10             |
 | 20  | `@QRule` async predicates                     | 🟢 Baja   | ✅ COMPLETADA | —         | Medio           | Feb 2026   |
 | 21  | Guía integración NestJS                       | 🟢 Baja   | ⏸️ BACKLOG    | 3-4h      | Alto (adop.)    | Mar 2026   |
 | 22  | Default `unknownPropertyPolicy: 'strip'` v2.0 | 🟢 Baja   | ⏸️ BACKLOG    | 1h        | Alto (breaking) | v2.0.0     |
@@ -957,9 +957,9 @@ describe('Computed Properties & Getters', () => {
 
 **Progreso:**
 
-- ✅ Completadas: 26/31 (84%) — 1807 tests passing
-- ⏳ Pendientes activas: 0/31 (0%) — sprint completado
-- ⏸️ Backlog: 5/31 (16%)
+- ✅ Completadas: 27/31 (87%) — 1817 tests passing
+- ⏳ Pendientes activas: 0/31 (0%)
+- ⏸️ Backlog: 4/31 (13%)
 
 **Tiempo invertido (histórico):** ~31h  
 **Tiempo restante estimado (activas):** ~6-8h
@@ -1432,10 +1432,19 @@ describe('Computed Properties', () => {
 
 ### Task #19: `QTransformerRegistry.snapshot()/restore()`
 
-**Status:** ⏸️ BACKLOG  
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Tests:** 1807 → 1817 (+10)  
 **Prioridad:** 🟡 Media  
 **Esfuerzo:** 2 horas  
 **Impacto:** Medio (DX tests) — evita polución de estado entre test files cuando se registran transformers custom
+
+**Implementación:**
+
+- `snapshot()` devuelve `Map<string, IQTransformer>` — copia independiente del estado actual
+- `restore(snap)` reemplaza el registry completo con el contenido del snapshot
+- 10 tests en `tests/unit/core/registry/transformer-registry-snapshot.test.ts`
+- JSDoc completo con ejemplos de `beforeEach`/`afterEach`
 
 **Propósito:** Los tests que registran transformers custom en `QTransformerRegistry` pueden contaminar otros test files si no hay forma de limpiar el estado.
 
@@ -1649,7 +1658,7 @@ describe('QTransformerRegistry: isolation', () => {
     - Integrar en CI como regression test
 21. ⏸️ **Tarea #18:** `@QComputed()` / `exposeComputedFields` → 3-4h
     - Esperar feedback de comunidad
-22. ⏸️ **Tarea #19:** `QTransformerRegistry.snapshot()/restore()` → 2h
+22. ✅ **Tarea #19:** `QTransformerRegistry.snapshot()/restore()` ← **COMPLETADA**
 23. ⏸️ **Tarea #21:** Guía integración NestJS → 3-4h
 24. ⏸️ **Tarea #22:** Default `unknownPropertyPolicy: 'strip'` (v2.0.0) → 1h
 
@@ -1752,4 +1761,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº6) — Tasks #14, #15, #16 y #31 completadas | 1807 tests passing | Sprint seguridad/robustez: 100% completado
+**Última actualización:** 22 de febrero de 2026 (revisión nº7) — Task #19 snapshot()/restore() completada | 1817 tests passing | 27/31 tareas (87%)
