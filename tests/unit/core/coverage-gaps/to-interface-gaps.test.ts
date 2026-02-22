@@ -288,7 +288,7 @@ describe('ToInterface Coverage Gaps', () => {
 		// Update to new instance
 		customModel2.data = new CustomData(2);
 
-		// Should effectively clone it as plain object?
+		// Should effectively copied it as plain object?
 		expect(customModel2.toInterface()).toEqual({ data: { a: 2 } });
 	});
 

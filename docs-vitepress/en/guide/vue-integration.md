@@ -7,7 +7,7 @@ QuickModel integrates with **Vue 3** and **Nuxt** through the Composition API. U
 | Use case                        | Approach                                    |
 | ------------------------------- | ------------------------------------------- |
 | Composition API form validation | Plain TS class + `@QRule` + `qCheckRules()` |
-| Pinia store state               | `QModel` + `merge()` (immutable actions)    |
+| Pinia store state               | `QModel` + `copy()` (immutable actions)     |
 | VeeValidate adapter             | `qCheckRules()` as field-level validator    |
 | Nuxt server routes / API        | `QModel` + `unknownPropertyPolicy: 'strip'` |
 
@@ -144,16 +144,16 @@ export const useArticleStore = defineStore('articles', {
 		updateArticle(id: string, patch: Partial<IArticle>) {
 			const article = this.articles.get(id);
 			if (!article) return;
-			// merge() is IMMUTABLE — always capture the new instance
-			const updated = article.merge(patch);
+			// copy() is IMMUTABLE — always capture the new instance
+			const updated = article.copy(patch);
 			this.articles.set(id, updated);
 		},
 	},
 });
 ```
 
-::: warning merge() is immutable
-Always assign the result of `merge()` back to the store. The original model is never mutated.
+::: warning copy() is immutable
+Always assign the result of `copy()` back to the store. The original model is never mutated.
 :::
 
 ## VeeValidate Adapter
@@ -272,7 +272,7 @@ export default defineEventHandler(async (event) => {
 ```typescript
 const original = new ArticleModel({ ... });
 // user edits
-const edited = original.merge({ title: 'New Title' });
+const edited = original.copy({ title: 'New Title' });
 
 const changes = original.diff(edited);
 // { title: { before: 'Old Title', after: 'New Title' } }
@@ -376,7 +376,7 @@ console.log(user.address?.city); // 'Barcelona'
 
 ### Pinia store — recommended pattern
 
-Pinia state is automatically reactive. Use `toRaw()` inside actions before calling `merge()` so QuickModel's internal `this` is always the real instance:
+Pinia state is automatically reactive. Use `toRaw()` inside actions before calling `copy()` so QuickModel's internal `this` is always the real instance:
 
 ```typescript
 // stores/articles.ts
@@ -384,9 +384,9 @@ actions: {
   updateArticle(id: string, partial: Partial<IArticle>) {
     const prev = this.articles.get(id);
     if (!prev) return;
-    // toRaw() → unwrap from reactive proxy before calling merge()
-    // merge() → returns a new instance; Pinia detects the reference change
-    this.articles.set(id, toRaw(prev).merge(partial) as ArticleModel);
+    // toRaw() → unwrap from reactive proxy before calling copy()
+    // copy() → returns a new instance; Pinia detects the reference change
+    this.articles.set(id, toRaw(prev).copy(partial) as ArticleModel);
   },
 },
 

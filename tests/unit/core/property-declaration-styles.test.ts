@@ -297,40 +297,40 @@ describe('Property Declaration Styles', () => {
 	// Tests: Cloning
 	// ============================================================================
 	describe('Cloning', () => {
-		test('declare: should clone correctly', () => {
+		test('declare: should copied correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const clone = user.copy();
+			const copied = user.copy();
 
-			expect(clone).toBeInstanceOf(UserWithDeclare);
-			expect(clone.id).toBe(user.id);
-			expect(clone.name).toBe(user.name);
-			expect(clone.age).toBe(user.age);
-			expect(clone.email).toBe(user.email);
-			expect(clone.createdAt.getTime()).toBe(user.createdAt.getTime());
+			expect(copied).toBeInstanceOf(UserWithDeclare);
+			expect(copied.id).toBe(user.id);
+			expect(copied.name).toBe(user.name);
+			expect(copied.age).toBe(user.age);
+			expect(copied.email).toBe(user.email);
+			expect(copied.createdAt.getTime()).toBe(user.createdAt.getTime());
 		});
 
-		test('!: should clone correctly', () => {
+		test('!: should copied correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const clone = user.copy();
+			const copied = user.copy();
 
-			expect(clone).toBeInstanceOf(UserWithExclamation);
-			expect(clone.id).toBe(user.id);
-			expect(clone.name).toBe(user.name);
-			expect(clone.age).toBe(user.age);
-			expect(clone.email).toBe(user.email);
-			expect(clone.createdAt.getTime()).toBe(user.createdAt.getTime());
+			expect(copied).toBeInstanceOf(UserWithExclamation);
+			expect(copied.id).toBe(user.id);
+			expect(copied.name).toBe(user.name);
+			expect(copied.age).toBe(user.age);
+			expect(copied.email).toBe(user.email);
+			expect(copied.createdAt.getTime()).toBe(user.createdAt.getTime());
 		});
 
-		test('?: should clone correctly', () => {
+		test('?: should copied correctly', () => {
 			const user = new UserWithOptional(testData);
-			const clone = user.copy();
+			const copied = user.copy();
 
-			expect(clone).toBeInstanceOf(UserWithOptional);
-			expect(clone.id).toBe(user.id);
-			expect(clone.name).toBe(user.name);
-			expect(clone.age).toBe(user.age);
-			expect(clone.email).toBe(user.email);
-			expect(clone.createdAt.getTime()).toBe(user.createdAt.getTime());
+			expect(copied).toBeInstanceOf(UserWithOptional);
+			expect(copied.id).toBe(user.id);
+			expect(copied.name).toBe(user.name);
+			expect(copied.age).toBe(user.age);
+			expect(copied.email).toBe(user.email);
+			expect(copied.createdAt.getTime()).toBe(user.createdAt.getTime());
 		});
 	});
 });

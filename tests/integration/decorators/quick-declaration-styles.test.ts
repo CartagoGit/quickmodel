@@ -531,18 +531,18 @@ describe('@Quick() with declaration styles', () => {
 			retries: 3,
 		};
 
-		test('declare: should clone and reset', () => {
+		test('declare: should copied and reset', () => {
 			const config = new ConfigDeclare(configData);
 
 			// Clone
-			const cloned = config.copy();
-			expect(cloned).toBeInstanceOf(ConfigDeclare);
-			expect(cloned.apiUrl).toBe(config.apiUrl);
-			expect(cloned.timeout).toBe(config.timeout);
+			const copied = config.copy();
+			expect(copied).toBeInstanceOf(ConfigDeclare);
+			expect(copied.apiUrl).toBe(config.apiUrl);
+			expect(copied.timeout).toBe(config.timeout);
 
 			// Modify original
 			config.timeout = 10000;
-			expect(cloned.timeout).toBe(5000); // Clone unchanged
+			expect(copied.timeout).toBe(5000); // Clone unchanged
 
 			// Reset
 			config.reset();
@@ -550,30 +550,30 @@ describe('@Quick() with declaration styles', () => {
 			expect(config.hasChanges()).toBe(false);
 		});
 
-		test('!: should clone and reset', () => {
+		test('!: should copied and reset', () => {
 			const config = new ConfigExclamation(configData);
 
-			const cloned = config.copy();
-			expect(cloned).toBeInstanceOf(ConfigExclamation);
-			expect(cloned.apiUrl).toBe(config.apiUrl);
+			const copied = config.copy();
+			expect(copied).toBeInstanceOf(ConfigExclamation);
+			expect(copied.apiUrl).toBe(config.apiUrl);
 
 			config.timeout = 10000;
-			expect(cloned.timeout).toBe(5000);
+			expect(copied.timeout).toBe(5000);
 
 			config.reset();
 			expect(config.timeout).toBe(5000);
 			expect(config.hasChanges()).toBe(false);
 		});
 
-		test('?: should clone and reset', () => {
+		test('?: should copied and reset', () => {
 			const config = new ConfigOptional(configData);
 
-			const cloned = config.copy();
-			expect(cloned).toBeInstanceOf(ConfigOptional);
-			expect(cloned.apiUrl).toBe(config.apiUrl);
+			const copied = config.copy();
+			expect(copied).toBeInstanceOf(ConfigOptional);
+			expect(copied.apiUrl).toBe(config.apiUrl);
 
 			config.timeout = 10000;
-			expect(cloned.timeout).toBe(5000);
+			expect(copied.timeout).toBe(5000);
 
 			config.reset();
 			expect(config.timeout).toBe(5000);

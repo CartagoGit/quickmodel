@@ -530,12 +530,12 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	});
 
 	describe('12. Clone functionality', () => {
-		test('clone from instance', () => {
-			const cloned = new TestUser(user);
-			expect(cloned).not.toBe(user);
-			expect(cloned.id).toBe(user.id);
-			expect(cloned.name).toBe(user.name);
-			expect(cloned.createdAt).toEqual(user.createdAt);
+		test('copied from instance', () => {
+			const copied = new TestUser(user);
+			expect(copied).not.toBe(user);
+			expect(copied.id).toBe(user.id);
+			expect(copied.name).toBe(user.name);
+			expect(copied.createdAt).toEqual(user.createdAt);
 		});
 	});
 

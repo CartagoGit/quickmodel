@@ -235,14 +235,18 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 
 			// Only check lines that look like actual function/method declarations
 			// (line must start with a declaration keyword or known access modifier)
+			/* eslint-disable security/detect-unsafe-regex -- reviewed: no exponential backtracking */
 			const isDeclLine =
 				/^\s*(?:function\s+\w+|(?:public|private|protected|static|async|override|abstract)\s+(?:\w+\s+)?\w+)\s*\(/.test(
 					line
 				);
+			/* eslint-enable security/detect-unsafe-regex */
 			if (!isDeclLine) continue;
 
+			/* eslint-disable security/detect-unsafe-regex -- reviewed: no exponential backtracking */
 			const funcRegex =
 				/(?:function\s+\w+|(?:public|private|protected|static|async|override|abstract)\s+(?:\w+\s+)?\w+)\s*\(([^)]+)\)/g;
+			/* eslint-enable security/detect-unsafe-regex */
 			let match: RegExpExecArray | null;
 
 			while ((match = funcRegex.exec(line)) !== null) {
@@ -318,8 +322,10 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 			}
 
 			// Type alias without I prefix: type Word = (where Word doesn't start with I)
+			/* eslint-disable security/detect-unsafe-regex -- reviewed: no exponential backtracking */
 			const typeMatch =
 				/\btype\s+([A-Z][a-zA-Z0-9_]*)\s*(?:<[^=]*>)?\s*=/.exec(line);
+			/* eslint-enable security/detect-unsafe-regex */
 			if (typeMatch) {
 				const name = typeMatch[1];
 				if (name && !name.startsWith('I')) {

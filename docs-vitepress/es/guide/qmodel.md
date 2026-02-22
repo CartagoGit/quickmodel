@@ -69,7 +69,7 @@ const user = User.fromJSON(json);
 Crea una copia profunda de una instancia existente.
 
 ```typescript
-const clone = user.clone();
+const clone = user.copy();
 ```
 
 ### 5. Instancia de Solo Lectura (Readonly)
@@ -261,14 +261,14 @@ const original = user.getInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
 
-### `merge(partial)`
+### `copy(partial)`
 
 Crea una **nueva instancia** (inmutable) fusionando el estado actual con los datos parciales proporcionados. La instancia original nunca se modifica.
 
 ```typescript
 const user = new User({ id: 1, name: 'John', age: 30 });
 
-const updated = user.merge({ age: 31 });
+const updated = user.copy({ age: 31 });
 
 console.log(user.age); // 30  — original intacto
 console.log(updated.age); // 31  — nueva instancia
@@ -282,14 +282,14 @@ console.log(updated.isDirty('name')); // true  — cambió tras el merge
 ```
 
 > [!NOTE]
-> `merge()` usa `new Constructor(data)` internamente, garantizando que la instancia devuelta tiene tracking completo (`isDirty`, `reset`, `getChanges`) relativo al **estado merged** como baseline.
+> `copy()` usa `new Constructor(data)` internamente, garantizando que la instancia devuelta tiene tracking completo (`isDirty`, `reset`, `getChanges`) relativo al **estado merged** como baseline.
 
-### `clone()`
+### `copy()`
 
 Crea una copia profunda (deep copy) de la instancia del modelo. La nueva instancia es completamente independiente.
 
 ```typescript
-const copy = user.clone();
+const copy = user.copy();
 ```
 
 ## Mocking

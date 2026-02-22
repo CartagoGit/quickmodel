@@ -339,10 +339,10 @@ console.log(user.name); // 'John' (el original no cambia)
 console.log(copy.name); // 'Jane'
 ```
 
-O usa el método incorporado `clone()`:
+O usa el método incorporado `copy()`:
 
 ```typescript
-const copy = user.clone(); // Equivalente a new User(user.toJSON())
+const copy = user.copy(); // Equivalente a new User(user.toJSON())
 ```
 
 ## Manejo de Null y Undefined

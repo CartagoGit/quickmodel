@@ -63,8 +63,8 @@ let preview   = $derived(note.preview);    // string — inferred from NoteModel
 let charCount = $derived(note.charCount);  // number — inferred from NoteModel
 
 function updateBody(newBody: string) {
-  // merge() is IMMUTABLE — reassign the $state variable
-  note = note.merge({ body: newBody });
+  // copy() is IMMUTABLE — reassign the $state variable
+  note = note.copy({ body: newBody });
 }
 </script>
 
@@ -77,7 +77,7 @@ function updateBody(newBody: string) {
 ```
 
 ::: tip Immutable merge with $state
-Since `merge()` returns a new instance, Svelte's `$state` reactivity fires automatically when you reassign the variable. This is the recommended pattern.
+Since `copy()` returns a new instance, Svelte's `$state` reactivity fires automatically when you reassign the variable. This is the recommended pattern.
 :::
 
 ## Svelte Stores (Svelte 4 / compatible with Svelte 5)
@@ -102,8 +102,8 @@ function createTaskStore(initial: ITask) {
 
 	return {
 		subscribe,
-		toggle: () => update((task) => task.merge({ done: !task.done })),
-		setLabel: (label: string) => update((task) => task.merge({ label })),
+		toggle: () => update((task) => task.copy({ done: !task.done })),
+		setLabel: (label: string) => update((task) => task.copy({ label })),
 	};
 }
 
@@ -237,7 +237,7 @@ const result = await qCheckRulesAsync(form, { mode: 'serial' });
 ```typescript
 const original = new ArticleModel({ ... });
 // User edits
-const edited = original.merge({ title: 'Updated Title' });
+const edited = original.copy({ title: 'Updated Title' });
 
 original.diff(edited);
 // → { title: { before: 'Old Title', after: 'Updated Title' } }

@@ -69,7 +69,7 @@ const user = User.fromJSON(json);
 Creates a deep copy of an existing instance.
 
 ```typescript
-const clone = user.clone();
+const clone = user.copy();
 ```
 
 ### 5. Readonly Instance
@@ -88,7 +88,7 @@ const readonlyUser = User.createReadonly({
 Creates a deep copy of an existing instance.
 
 ```typescript
-const clone = user.clone();
+const clone = user.copy();
 ```
 
 ### 6. Bulk Creation (`createMany`)
@@ -267,14 +267,14 @@ const original = user.getInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
 
-### `merge(partial)`
+### `copy(partial)`
 
 Creates a **new instance** (immutable) by merging current state with the provided partial data. The original instance is never modified.
 
 ```typescript
 const user = new User({ id: 1, name: 'John', age: 30 });
 
-const updated = user.merge({ age: 31 });
+const updated = user.copy({ age: 31 });
 
 console.log(user.age); // 30  — original untouched
 console.log(updated.age); // 31  — new instance
@@ -288,14 +288,14 @@ console.log(updated.isDirty('name')); // true  — changed after merge
 ```
 
 > [!NOTE]
-> `merge()` uses `new Constructor(data)` internally, ensuring the returned instance has full change tracking (`isDirty`, `reset`, `getChanges`) relative to the **merged state** as its baseline.
+> `copy()` uses `new Constructor(data)` internally, ensuring the returned instance has full change tracking (`isDirty`, `reset`, `getChanges`) relative to the **merged state** as its baseline.
 
-### `clone()`
+### `copy()`
 
 Creates a deep copy of the model instance. The new instance is completely independent.
 
 ```typescript
-const copy = user.clone();
+const copy = user.copy();
 ```
 
 ## Mocking

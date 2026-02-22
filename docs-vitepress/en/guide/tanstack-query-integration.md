@@ -1,7 +1,7 @@
 # TanStack Query Integration
 
 QuickModel pairs naturally with TanStack Query v5. Use `createMany()` in `queryFn` to coerce
-API responses into typed DTOs, `merge()` for optimistic updates, and `serialize()` for cache
+API responses into typed DTOs, `copy()` for optimistic updates, and `serialize()` for cache
 normalization.
 
 ## Key Patterns
@@ -10,7 +10,7 @@ normalization.
 | ----------------------- | ------------------------------- |
 | `queryFn` coercion      | `Dto.createMany(rawData)`       |
 | Mutation validation     | `dto.checkRules()` / `@QRule`   |
-| Optimistic updates      | `dto.merge(patch)`              |
+| Optimistic updates      | `dto.copy(patch)`               |
 | Cache normalization     | `dto.serialize()` / `new Dto()` |
 | `select` transformation | `createMany()` on cached data   |
 | Infinite queries        | `createMany()` per page         |
@@ -143,9 +143,9 @@ function AddProductForm() {
 }
 ```
 
-## Optimistic Updates with merge()
+## Optimistic Updates with copy()
 
-`merge()` returns a **new immutable instance** — perfect for optimistic UI updates without
+`copy()` returns a **new immutable instance** — perfect for optimistic UI updates without
 mutating the cache directly.
 
 ```typescript
@@ -167,7 +167,7 @@ function useOptimisticUpdate() {
 
 			queryClient.setQueryData<ProductDto[]>(['products'], (old = []) =>
 				old.map((item) =>
-					item.id === patch.id ? item.merge(patch) : item
+					item.id === patch.id ? item.copy(patch) : item
 				)
 			);
 
@@ -185,7 +185,7 @@ function useOptimisticUpdate() {
 }
 ```
 
-`merge()` marks the result as dirty (`isDirty() === true`), making it easy to detect
+`copy()` marks the result as dirty (`isDirty() === true`), making it easy to detect
 pending changes before they are persisted.
 
 ## Cache Normalization

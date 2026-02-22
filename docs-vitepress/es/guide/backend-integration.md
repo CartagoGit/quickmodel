@@ -251,8 +251,8 @@ export class BlogPostRepository {
 	publish(id: string): object | null {
 		const post = this.store.get(id);
 		if (!post) return null;
-		// merge() es INMUTABLE — captura la nueva instancia
-		const published = post.merge({ publishedAt: new Date() });
+		// copy() es INMUTABLE — captura la nueva instancia
+		const published = post.copy({ publishedAt: new Date() });
 		this.store.set(id, published);
 		return published.serialize();
 	}

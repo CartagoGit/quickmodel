@@ -8,7 +8,7 @@ QuickModel integrates naturally with **Angular** applications. Use plain TypeScr
 | ---------------------------- | ------------------------------------------- |
 | Reactive Forms validation    | Plain TS class + `@QRule` + `qCheckRules()` |
 | HTTP coercion / sanitization | `QModel` subclass + `@Quick()`              |
-| State / repository           | `QModel` subclass + `merge()` / `patch()`   |
+| State / repository           | `QModel` subclass + `copy()` / `patch()`    |
 
 ## Installation
 
@@ -147,16 +147,16 @@ export class UsersService {
 	update(id: string, patch: Partial<IUserRecord>): object | null {
 		const record = this.store.get(id);
 		if (!record) return null;
-		// merge() is IMMUTABLE: returns a new instance
-		const updated = record.merge(patch);
+		// copy() is IMMUTABLE: returns a new instance
+		const updated = record.copy(patch);
 		this.store.set(id, updated);
 		return updated.serialize();
 	}
 }
 ```
 
-::: warning merge() is immutable
-`merge()` returns a **new instance** — always capture the return value and update the store. The original instance is never modified.
+::: warning copy() is immutable
+`copy()` returns a **new instance** — always capture the return value and update the store. The original instance is never modified.
 :::
 
 ## HttpClient HTTP Interceptor Coercion
@@ -226,18 +226,18 @@ const profile = signal(
 );
 
 // Update via immutable merge
-profile.update((prev) => prev.merge({ score: 98 }));
+profile.update((prev) => prev.copy({ score: 98 }));
 
 // @QComputed getters are TypeScript class properties — access them directly on the instance
 const fullName = computed(() => profile().fullName); // Signal<string>
 const tier = computed(() => profile().tier); // Signal<'gold' | 'silver' | 'bronze'>
 ```
 
-### `merge()` vs `patch()` — critical distinction for signals
+### `copy()` vs `patch()` — critical distinction for signals
 
 | Method           | Returns                   | Triggers Angular CD    | Use with signals |
 | ---------------- | ------------------------- | ---------------------- | ---------------- |
-| `merge(partial)` | New instance              | ✅ Yes — new reference | ✅ Always        |
+| `copy(partial)`  | New instance              | ✅ Yes — new reference | ✅ Always        |
 | `patch(partial)` | `void` (mutates in place) | ❌ No                  | ❌ Never         |
 
 ```typescript
@@ -248,8 +248,8 @@ signal.update((model) => {
 	return model; // same reference → no change detection
 });
 
-// ✅ Correct: merge() returns a new instance → signal version increments → re-render
-signal.update((model) => model.merge({ score: 98 }));
+// ✅ Correct: copy() returns a new instance → signal version increments → re-render
+signal.update((model) => model.copy({ score: 98 }));
 ```
 
 ::: warning Direct mutation is invisible to Angular signals
@@ -262,14 +262,14 @@ const cartSignal = signal(new Cart({ userId: 'u1', total: 50 }));
 cartSignal().total = 100;
 
 // ✅ Signal-aware update — template updates correctly
-cartSignal.update((cart) => cart.merge({ total: 100 }));
+cartSignal.update((cart) => cart.copy({ total: 100 }));
 ```
 
 :::
 
 ### `reactiveModel()` — make direct mutation reactive
 
-You can turn direct mutation into a signal notification by wrapping the model in a `Proxy` that intercepts every `set` trap and internally calls `sig.update(m => m.merge({...}))`. This creates a new instance on every assignment, which Angular detects as a reference change.
+You can turn direct mutation into a signal notification by wrapping the model in a `Proxy` that intercepts every `set` trap and internally calls `sig.update(m => m.copy({...}))`. This creates a new instance on every assignment, which Angular detects as a reference change.
 
 Copy this utility into your Angular project (Angular is not a QuickModel dependency, so it cannot ship here directly):
 
@@ -299,8 +299,8 @@ export function reactiveModel<T extends QModel<any>>(
 		},
 		set(_, key, value) {
 			if (typeof key !== 'string') return false;
-			// merge() → new instance → new reference → Angular detects the change
-			sig.update((mdl) => mdl.merge({ [key]: value } as Partial<T>));
+			// copy() → new instance → new reference → Angular detects the change
+			sig.update((mdl) => mdl.copy({ [key]: value } as Partial<T>));
 			return true;
 		},
 	}) as IReactiveModel<T>;
@@ -318,7 +318,7 @@ export class CartComponent {
 
 	// ✅ Direct assignment — Angular re-renders automatically
 	addItem(price: number): void {
-		this.cart.total += price; // internally: sig.update(m => m.merge({ total: ... }))
+		this.cart.total += price; // internally: sig.update(m => m.copy({ total: ... }))
 	}
 
 	// Computed derived from the underlying signal
@@ -334,11 +334,11 @@ export class CartComponent {
 ::: details How it works
 
 1. Every `this.cart.total = x` hits the Proxy `set` trap.
-2. The trap calls `sig.update(m => m.merge({ total: x }))`, which produces a **new instance**.
+2. The trap calls `sig.update(m => m.copy({ total: x }))`, which produces a **new instance**.
 3. Angular detects the new reference and schedules a re-render.
 4. Every `this.cart.total` read hits the Proxy `get` trap, which reads from `sig()` — always the latest value.
 
-**Tradeoff:** each assignment creates a new model instance via `merge()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.merge({...}))` call.
+**Tradeoff:** each assignment creates a new model instance via `copy()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.copy({...}))` call.
 :::
 
 ### `computed()` — derived state from a model signal
@@ -357,14 +357,14 @@ const label = computed(() => `Cart for ${cart().userId}: $${cart().total}`);
 // Serialize for API calls
 const payload = computed(() => cart().serialize());
 
-cart.update((c) => c.merge({ total: 80 }));
+cart.update((c) => c.copy({ total: 80 }));
 console.log(totalWithTax()); // 96.8
 console.log(payload().updatedAt); // ISO string — serialized Date
 ```
 
 ### Complex types (Date, Set, BigInt) survive signal updates
 
-`merge()` runs the full QuickModel deserialization pipeline. Passing a `Date` or `Set` directly in the partial preserves the type:
+`copy()` runs the full QuickModel deserialization pipeline. Passing a `Date` or `Set` directly in the partial preserves the type:
 
 ```typescript
 const product = signal(
@@ -377,11 +377,11 @@ const product = signal(
 );
 
 // Passing a Date → stays a Date in the new instance ✅
-product.update((p) => p.merge({ releasedAt: new Date('2025-06-01') }));
+product.update((p) => p.copy({ releasedAt: new Date('2025-06-01') }));
 console.log(product().releasedAt instanceof Date); // true
 
 // Passing a Set → stays a Set ✅
-product.update((p) => p.merge({ tags: new Set(['sale', 'featured']) }));
+product.update((p) => p.copy({ tags: new Set(['sale', 'featured']) }));
 console.log(product().tags instanceof Set); // true
 ```
 

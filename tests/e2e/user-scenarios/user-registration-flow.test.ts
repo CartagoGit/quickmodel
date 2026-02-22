@@ -182,7 +182,7 @@ describe('E2E: User Registration Flow', () => {
 		expect(retrievedUser.getFullName()).toBe('Alice Wonderland');
 		expect(retrievedUser.isAdult()).toBe(true);
 
-		// STEP 10: Test clone functionality
+		// STEP 10: Test copied functionality
 		const clonedUser = retrievedUser.copy();
 		expect(clonedUser).not.toBe(retrievedUser);
 		expect(clonedUser.email).toBe(retrievedUser.email);

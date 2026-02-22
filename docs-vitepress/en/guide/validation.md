@@ -298,12 +298,12 @@ Both approaches are valid; pick the one that fits your architecture.
 
 ## Combining with Change Tracking
 
-`@QRule` and `checkRules()` work seamlessly alongside `isDirty()`, `merge()`, and `patch()`.
+`@QRule` and `checkRules()` work seamlessly alongside `isDirty()`, `copy()`, and `patch()`.
 
 ```typescript
 const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
 
-const updated = user.merge({ age: -5 });
+const updated = user.copy({ age: -5 });
 const result = updated.checkRules();
 
 console.log(result.valid); // false

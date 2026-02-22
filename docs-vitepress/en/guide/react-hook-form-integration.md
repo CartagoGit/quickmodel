@@ -240,7 +240,7 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 }
 ```
 
-> After `merge()`, the resulting instance has `isDirty() === true` because the merged
+> After `copy()`, the resulting instance has `isDirty() === true` because the merged
 > values differ from its original snapshot. Call `reset()` after persisting to clear the flag.
 
 ## Async Field Validation (Server-Side)

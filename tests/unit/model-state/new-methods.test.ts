@@ -614,7 +614,7 @@ describe('QModel.equals()', () => {
 		expect(userA.equals(userB)).toBe(false);
 	});
 
-	test('clone() result should equal original via equals()', () => {
+	test('copied() result should equal original via equals()', () => {
 		const user = new User({
 			id: '1',
 			name: 'John',

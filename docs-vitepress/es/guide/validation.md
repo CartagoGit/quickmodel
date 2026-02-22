@@ -310,7 +310,7 @@ Ambos enfoques son válidos; elige el que mejor se adapte a tu arquitectura.
 
 ## Combinando con seguimiento de cambios
 
-`@QRule` y `checkRules()` funcionan a la perfección junto con `isDirty()`, `merge()` y `patch()`.
+`@QRule` y `checkRules()` funcionan a la perfección junto con `isDirty()`, `copy()` y `patch()`.
 
 ```typescript
 const user = new Usuario({
@@ -319,7 +319,7 @@ const user = new Usuario({
 	email: 'alice@example.com',
 });
 
-const updated = user.merge({ edad: -5 });
+const updated = user.copy({ edad: -5 });
 const result = updated.checkRules();
 
 console.log(result.valid); // false

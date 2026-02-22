@@ -1,7 +1,7 @@
 /**
  * TDD Tests: copy(partial?) method
  *
- * copy() unifies merge() and clone() into a single immutable method:
+ * copy() unifies merge() and copied() into a single immutable method:
  * - copy()           → identical deep copy (new reference)
  * - copy({ ... })    → new instance with partial fields overridden
  *
@@ -76,7 +76,7 @@ const BASE_USER = {
 };
 
 // ============================================================
-// SUITE: copy() sin argumentos — equivale al antiguo clone()
+// SUITE: copy() sin argumentos — equivale al antiguo copied()
 // ============================================================
 describe('QModel — copy() sin argumentos', () => {
 	test('devuelve una instancia diferente (nueva referencia)', () => {

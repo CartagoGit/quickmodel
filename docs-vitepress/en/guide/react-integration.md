@@ -8,7 +8,7 @@ QuickModel works with React using plain TypeScript classes for form validation a
 | ----------------------------------- | ------------------------------------------- |
 | Controlled form validation          | Plain TS class + `@QRule` + `qCheckRules()` |
 | Server Actions / API coercion       | `QModel` subclass + `@Quick()`              |
-| Global state (Zustand / useReducer) | `QModel` + `merge()` (immutable updates)    |
+| Global state (Zustand / useReducer) | `QModel` + `copy()` (immutable updates)     |
 | Custom hooks                        | Wrap `QModel` in a `useQModel` hook         |
 
 ## Installation
@@ -206,8 +206,8 @@ const useCartStore = create<ICartStore>((set, get) => ({
 			const current = state.items.get(sku);
 			if (!current) return state;
 			const items = new Map(state.items);
-			// merge() is IMMUTABLE — always capture the returned new instance
-			items.set(sku, current.merge({ qty }));
+			// copy() is IMMUTABLE — always capture the returned new instance
+			items.set(sku, current.copy({ qty }));
 			return { items };
 		}),
 
@@ -229,7 +229,7 @@ export function useQModel<T extends object, M extends QModel<T>>(initial: M) {
 	const [model, dispatch] = useReducer((_prev: M, next: M) => next, initial);
 
 	const update = useCallback(
-		(patch: Partial<T>) => dispatch(model.merge(patch) as M), // as M is safe: M extends QModel<T>
+		(patch: Partial<T>) => dispatch(model.copy(patch) as M), // as M is safe: M extends QModel<T>
 		[model]
 	);
 

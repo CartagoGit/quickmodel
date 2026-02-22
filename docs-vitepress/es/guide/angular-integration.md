@@ -7,7 +7,7 @@ QuickModel funciona como capa de validación y tipo en cualquier versión de Ang
 | Caso de uso              | Solución QuickModel                      |
 | ------------------------ | ---------------------------------------- |
 | Reactive Forms           | Clase plana + `qCheckRules()`            |
-| Servicios / Repositorios | `QModel` + `merge()` inmutable           |
+| Servicios / Repositorios | `QModel` + `copy()` inmutable            |
 | Signals                  | `signal(new Model(data))` + `update()`   |
 | Interceptores HTTP       | DTO con `unknownPropertyPolicy: 'strip'` |
 | Validación asíncrona     | `@QRule` async + `qCheckRulesAsync()`    |
@@ -92,8 +92,8 @@ export class UserDataService {
 	update(id: string, patch: Partial<IUser>): boolean {
 		const record = this.store.get(id);
 		if (!record) return false;
-		// merge() es INMUTABLE — captura la nueva instancia
-		const updated = record.merge(patch);
+		// copy() es INMUTABLE — captura la nueva instancia
+		const updated = record.copy(patch);
 		this.store.set(id, updated);
 		return true;
 	}
@@ -110,8 +110,8 @@ export class ProfileComponent {
   profile = signal(new ProfileModel({ bio: '', followers: 0 }));
 
   updateFollowers(count: number): void {
-    this.profile.update(prev => prev.merge({ followers: count }));
-    //                              ↑ merge() devuelve nueva instancia
+    this.profile.update(prev => prev.copy({ followers: count }));
+    //                              ↑ copy() devuelve nueva instancia
   }
 
   isBioDirty(): boolean {
@@ -122,11 +122,11 @@ export class ProfileComponent {
 }
 ```
 
-### `merge()` vs `patch()` — distinción crítica para señales
+### `copy()` vs `patch()` — distinción crítica para señales
 
 | Método           | Retorna                | ¿Dispara Change Detection? | Uso con señales |
 | ---------------- | ---------------------- | -------------------------- | --------------- |
-| `merge(partial)` | Nueva instancia        | ✅ Sí — nueva referencia   | ✅ Siempre      |
+| `copy(partial)`  | Nueva instancia        | ✅ Sí — nueva referencia   | ✅ Siempre      |
 | `patch(partial)` | `void` (muta in-place) | ❌ No                      | ❌ Nunca        |
 
 ```typescript
@@ -137,8 +137,8 @@ signal.update((model) => {
 	return model; // misma referencia → sin change detection
 });
 
-// ✅ Correcto: merge() devuelve nueva instancia → incrementa versión → re-render
-signal.update((model) => model.merge({ score: 98 }));
+// ✅ Correcto: copy() devuelve nueva instancia → incrementa versión → re-render
+signal.update((model) => model.copy({ score: 98 }));
 ```
 
 ::: warning La mutación directa es invisible para las señales de Angular
@@ -151,14 +151,14 @@ const cartSignal = signal(new Cart({ userId: 'u1', total: 50 }));
 cartSignal().total = 100;
 
 // ✅ Actualización consciente de la señal — el template se actualiza
-cartSignal.update((cart) => cart.merge({ total: 100 }));
+cartSignal.update((cart) => cart.copy({ total: 100 }));
 ```
 
 :::
 
 ### `reactiveModel()` — hacer que la mutación directa sea reactiva
 
-Puedes convertir la mutación directa en una notificación de la señal envolviendo el modelo en un `Proxy` que intercepta cada trap `set` y llama internamente a `sig.update(m => m.merge({...}))`. Esto crea una nueva instancia en cada asignación, que Angular detecta como cambio de referencia.
+Puedes convertir la mutación directa en una notificación de la señal envolviendo el modelo en un `Proxy` que intercepta cada trap `set` y llama internamente a `sig.update(m => m.copy({...}))`. Esto crea una nueva instancia en cada asignación, que Angular detecta como cambio de referencia.
 
 Copia esta utilidad en tu proyecto Angular (Angular no es una dependencia de QuickModel, por lo que no puede incluirse directamente en la librería):
 
@@ -188,8 +188,8 @@ export function reactiveModel<T extends QModel<any>>(
 		},
 		set(_, key, value) {
 			if (typeof key !== 'string') return false;
-			// merge() → nueva instancia → nueva referencia → Angular detecta el cambio
-			sig.update((mdl) => mdl.merge({ [key]: value } as Partial<T>));
+			// copy() → nueva instancia → nueva referencia → Angular detecta el cambio
+			sig.update((mdl) => mdl.copy({ [key]: value } as Partial<T>));
 			return true;
 		},
 	}) as IReactiveModel<T>;
@@ -207,7 +207,7 @@ export class CartComponent {
 
 	// ✅ Asignación directa — Angular re-renderiza automáticamente
 	addItem(price: number): void {
-		this.cart.total += price; // internamente: sig.update(m => m.merge({ total: ... }))
+		this.cart.total += price; // internamente: sig.update(m => m.copy({ total: ... }))
 	}
 
 	// Derived desde la señal subyacente
@@ -223,11 +223,11 @@ export class CartComponent {
 ::: details Cómo funciona
 
 1. Cada `this.cart.total = x` activa el trap `set` del Proxy.
-2. El trap llama a `sig.update(m => m.merge({ total: x }))`, que produce una **nueva instancia**.
+2. El trap llama a `sig.update(m => m.copy({ total: x }))`, que produce una **nueva instancia**.
 3. Angular detecta la nueva referencia y programa un re-render.
 4. Cada lectura `this.cart.total` activa el trap `get`, que lee de `sig()` — siempre el valor más reciente.
 
-**Contrapartida:** cada asignación crea una nueva instancia del modelo mediante `merge()`. Para actualizaciones de alta frecuencia (eventos de puntero, audio...) agrupa los cambios en una sola llamada `$signal.update(m => m.merge({...}))`.
+**Contrapartida:** cada asignación crea una nueva instancia del modelo mediante `copy()`. Para actualizaciones de alta frecuencia (eventos de puntero, audio...) agrupa los cambios en una sola llamada `$signal.update(m => m.copy({...}))`.
 :::
 
 ### `computed()` — estado derivado desde una señal de modelo
@@ -248,14 +248,14 @@ const etiqueta = computed(
 // Serializado para llamadas a la API
 const payload = computed(() => cart().serialize());
 
-cart.update((c) => c.merge({ total: 80 }));
+cart.update((c) => c.copy({ total: 80 }));
 console.log(totalConIva()); // 96.8
 console.log(payload().updatedAt); // string ISO — Date serializado
 ```
 
 ### Los tipos complejos (Date, Set, BigInt) sobreviven a los updates de señal
 
-`merge()` ejecuta el pipeline completo de deserialización de QuickModel. Pasar un `Date` o `Set` directamente en el partial preserva el tipo:
+`copy()` ejecuta el pipeline completo de deserialización de QuickModel. Pasar un `Date` o `Set` directamente en el partial preserva el tipo:
 
 ```typescript
 const product = signal(
@@ -268,11 +268,11 @@ const product = signal(
 );
 
 // Pasando un Date → sigue siendo Date en la nueva instancia ✅
-product.update((p) => p.merge({ releasedAt: new Date('2025-06-01') }));
+product.update((p) => p.copy({ releasedAt: new Date('2025-06-01') }));
 console.log(product().releasedAt instanceof Date); // true
 
 // Pasando un Set → sigue siendo Set ✅
-product.update((p) => p.merge({ tags: new Set(['oferta', 'destacado']) }));
+product.update((p) => p.copy({ tags: new Set(['oferta', 'destacado']) }));
 console.log(product().tags instanceof Set); // true
 ```
 
@@ -339,11 +339,11 @@ const result = await qCheckRulesAsync(dto);
 // result.valid, result.errors
 ```
 
-::: tip merge() es inmutable
-`merge()` devuelve una **nueva instancia** — la original no se modifica. Siempre captura el resultado:
+::: tip copy() es inmutable
+`copy()` devuelve una **nueva instancia** — la original no se modifica. Siempre captura el resultado:
 
 ```typescript
-const updated = record.merge({ score: 90 });
+const updated = record.copy({ score: 90 });
 this.store.set(id, updated); // guarda la nueva instancia
 ```
 

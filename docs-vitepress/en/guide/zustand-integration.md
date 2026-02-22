@@ -1,13 +1,13 @@
 # Zustand Integration
 
-QuickModel's `merge()` method is a natural fit for Zustand stores — it returns a **new
+QuickModel's `copy()` method is a natural fit for Zustand stores — it returns a **new
 immutable instance**, keeping state updates predictable and avoiding the need for Immer.
 
 ## Key Patterns
 
 | Pattern                  | QuickModel API                            |
 | ------------------------ | ----------------------------------------- |
-| Immutable state update   | `item.merge(patch)` → new instance        |
+| Immutable state update   | `item.copy(patch)` → new instance         |
 | Normalized Map store     | `createMany()` → `Map<id, instance>`      |
 | Persist middleware       | `serialize()` / `new Dto(stored)`         |
 | Reactive computed values | `@QComputed` — recalculates on every read |
@@ -56,7 +56,7 @@ class UserModel extends QModel<IUser> {
 }
 ```
 
-## Basic Store — merge() as Immutable Updater
+## Basic Store — copy() as Immutable Updater
 
 `merge(patch)` returns a **new instance** with patched fields. The original is never mutated,
 and `@QComputed` values recalculate automatically on the new instance.
@@ -78,7 +78,7 @@ const useUserStore = create<IUserStore>((set, get) => ({
 	updateUser: (patch) => {
 		const current = get().user;
 		if (!current) return;
-		set({ user: current.merge(patch) }); // immutable update — no Immer needed
+		set({ user: current.copy(patch) }); // immutable update — no Immer needed
 	},
 }));
 
@@ -117,7 +117,7 @@ const useCartStore = create<ICartStore>((set, get) => ({
 			const existing = state.items.get(productId);
 			if (!existing) return state;
 			const next = new Map(state.items);
-			next.set(productId, existing.merge({ qty })); // immutable merge
+			next.set(productId, existing.copy({ qty })); // immutable merge
 			return { items: next };
 		}),
 
@@ -162,7 +162,7 @@ const usePersistedUserStore = create<IUserStore>()(
 			updateUser: (patch) => {
 				const current = get().user;
 				if (!current) return;
-				set({ user: current.merge(patch) });
+				set({ user: current.copy(patch) });
 			},
 		}),
 		{
@@ -215,9 +215,9 @@ async function loadUsersIntoStore() {
 }
 ```
 
-## merge() vs Immer
+## copy() vs Immer
 
-Immer requires a `produce()` wrapper to enable structural sharing. With QuickModel, `merge()`
+Immer requires a `produce()` wrapper to enable structural sharing. With QuickModel, `copy()`
 is already immutable and returns a typed instance with recalculated `@QComputed` fields:
 
 ```typescript
@@ -228,9 +228,9 @@ set(
 	})
 );
 
-// ✅ With QuickModel merge()
+// ✅ With QuickModel copy()
 const current = get().user;
-set({ user: current.merge({ plan: 'pro' }) });
+set({ user: current.copy({ plan: 'pro' }) });
 // @QComputed values recalculate automatically — no stale references
 ```
 

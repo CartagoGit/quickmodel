@@ -136,7 +136,7 @@ expect(dto).not.toHaveDirtyField('id');
 
 > **Note**: `toHaveDirtyField` uses `isDirty(fieldName)` which only tracks fields mutated
 > directly (`dto.field = value`). Use `toBeIntact()` / `not.toBeIntact()` to check if the
-> model has any pending changes (including changes via `merge()`).
+> model has any pending changes (including changes via `copy()`).
 
 ## Full Example
 

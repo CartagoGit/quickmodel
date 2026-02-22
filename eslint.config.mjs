@@ -13,6 +13,7 @@ export default tseslint.config(
 			'docs/',
 			'docs-vitepress/',
 			'coverage/',
+			'scripts/',
 			'**/*.js',
 			'**/*.mjs',
 			'**/*.d.ts',

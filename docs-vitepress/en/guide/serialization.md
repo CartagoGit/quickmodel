@@ -338,10 +338,10 @@ console.log(user.name); // 'John' (original unchanged)
 console.log(copy.name); // 'Jane'
 ```
 
-Or use the built-in `clone()` method:
+Or use the built-in `copy()` method:
 
 ```typescript
-const copy = user.clone(); // Equivalent to new User(user.toJSON())
+const copy = user.copy(); // Equivalent to new User(user.toJSON())
 ```
 
 ## Null and Undefined Handling

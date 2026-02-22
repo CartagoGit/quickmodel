@@ -172,7 +172,7 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 	});
 
 	test('clona entidad compleja preservando todos los tipos', () => {
-		const symbolKey = Symbol('clone-test');
+		const symbolKey = Symbol('copied-test');
 		const entity = new ComplexEntity({
 			id: 'entity-2',
 			createdAt: new Date('2024-02-20T15:45:00Z'),
@@ -185,21 +185,21 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 			tags: new Set(['important']),
 		});
 
-		const cloned = entity.copy();
+		const copied = entity.copy();
 
-		expect(cloned).toBeInstanceOf(ComplexEntity);
-		expect(cloned).not.toBe(entity);
-		expect(cloned.id).toBe(entity.id);
-		expect(cloned.createdAt.getTime()).toBe(entity.createdAt.getTime());
-		expect(cloned.createdAt).not.toBe(entity.createdAt); // Nueva instancia
-		expect(cloned.amount).toBe(entity.amount);
-		expect(cloned.pattern.source).toBe(entity.pattern.source);
-		expect(cloned.pattern).not.toBe(entity.pattern); // Nueva instancia
-		expect(typeof cloned.uniqueKey).toBe('symbol');
-		expect(cloned.lastError?.message).toBe(entity.lastError?.message);
-		expect(cloned.buffer).toBeInstanceOf(Int8Array);
-		expect(cloned.buffer).not.toBe(entity.buffer); // Nuevo buffer
-		expect(Array.from(cloned.buffer)).toEqual(Array.from(entity.buffer));
+		expect(copied).toBeInstanceOf(ComplexEntity);
+		expect(copied).not.toBe(entity);
+		expect(copied.id).toBe(entity.id);
+		expect(copied.createdAt.getTime()).toBe(entity.createdAt.getTime());
+		expect(copied.createdAt).not.toBe(entity.createdAt); // Nueva instancia
+		expect(copied.amount).toBe(entity.amount);
+		expect(copied.pattern.source).toBe(entity.pattern.source);
+		expect(copied.pattern).not.toBe(entity.pattern); // Nueva instancia
+		expect(typeof copied.uniqueKey).toBe('symbol');
+		expect(copied.lastError?.message).toBe(entity.lastError?.message);
+		expect(copied.buffer).toBeInstanceOf(Int8Array);
+		expect(copied.buffer).not.toBe(entity.buffer); // Nuevo buffer
+		expect(Array.from(copied.buffer)).toEqual(Array.from(entity.buffer));
 	});
 });
 

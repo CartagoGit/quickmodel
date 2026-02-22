@@ -136,7 +136,7 @@ expect(dto).not.toHaveDirtyField('id');
 
 > **Nota**: `toHaveDirtyField` usa `isDirty(campo)` que solo rastrea campos mutados
 > directamente (`dto.campo = valor`). Usa `toBeIntact()` / `not.toBeIntact()` para comprobar
-> si el modelo tiene algún cambio pendiente (incluyendo cambios vía `merge()`).
+> si el modelo tiene algún cambio pendiente (incluyendo cambios vía `copy()`).
 
 ## Ejemplo Completo
 

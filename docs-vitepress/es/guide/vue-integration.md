@@ -7,7 +7,7 @@ QuickModel encaja con la Composition API de Vue, stores Pinia, adaptadores VeeVa
 | Caso de uso               | Solución QuickModel                   |
 | ------------------------- | ------------------------------------- |
 | Composition API           | Clase plana + `qCheckRules()`         |
-| Pinia store               | `QModel` + `merge()` inmutable        |
+| Pinia store               | `QModel` + `copy()` inmutable         |
 | VeeValidate               | Adaptador de campo personalizado      |
 | `v-model` / `defineModel` | Binding directo                       |
 | Nuxt `useAsyncData`       | `createMany()`                        |
@@ -83,8 +83,8 @@ export const useUserStore = defineStore('user', {
 		update(id: string, patch: Partial<IUser>) {
 			const record = this.records.get(id);
 			if (!record) return;
-			// merge() es INMUTABLE — captura la nueva instancia
-			this.records.set(id, record.merge(patch) as UserRecord);
+			// copy() es INMUTABLE — captura la nueva instancia
+			this.records.set(id, record.copy(patch) as UserRecord);
 		},
 	},
 });
@@ -292,7 +292,7 @@ console.log(user.address?.city); // 'Barcelona'
 
 ### Pinia — patrón recomendado
 
-El estado de Pinia ya es reactivo. Usa `toRaw()` dentro de las acciones antes de llamar a `merge()` para que `this` interno de QuickModel siempre sea la instancia real:
+El estado de Pinia ya es reactivo. Usa `toRaw()` dentro de las acciones antes de llamar a `copy()` para que `this` interno de QuickModel siempre sea la instancia real:
 
 ```typescript
 // stores/articles.ts
@@ -300,9 +300,9 @@ actions: {
   updateArticle(id: string, partial: Partial<IArticle>) {
     const prev = this.articles.get(id);
     if (!prev) return;
-    // toRaw() → desenvuelve del proxy antes de llamar merge()
-    // merge() → devuelve una nueva instancia; Pinia detecta el cambio de referencia
-    this.articles.set(id, toRaw(prev).merge(partial) as ArticleModel);
+    // toRaw() → desenvuelve del proxy antes de llamar copy()
+    // copy() → devuelve una nueva instancia; Pinia detecta el cambio de referencia
+    this.articles.set(id, toRaw(prev).copy(partial) as ArticleModel);
   },
 },
 

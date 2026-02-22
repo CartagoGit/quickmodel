@@ -1,7 +1,7 @@
 # Integración con TanStack Query
 
 QuickModel encaja de forma natural con TanStack Query v5. Usa `createMany()` en `queryFn` para
-convertir respuestas de la API en DTOs con tipos, `merge()` para actualizaciones optimistas y
+convertir respuestas de la API en DTOs con tipos, `copy()` para actualizaciones optimistas y
 `serialize()` para normalización de caché.
 
 ## Patrones Clave
@@ -10,7 +10,7 @@ convertir respuestas de la API en DTOs con tipos, `merge()` para actualizaciones
 | --------------------------- | --------------------------------- |
 | Coerción en `queryFn`       | `Dto.createMany(rawData)`         |
 | Validación en mutaciones    | `dto.checkRules()` / `@QRule`     |
-| Actualizaciones optimistas  | `dto.merge(patch)`                |
+| Actualizaciones optimistas  | `dto.copy(patch)`                 |
 | Normalización de caché      | `dto.serialize()` / `new Dto()`   |
 | Transformación con `select` | `createMany()` en datos cacheados |
 | Consultas infinitas         | `createMany()` por página         |
@@ -137,9 +137,9 @@ async function crearProducto(data: object): Promise<IProducto> {
 }
 ```
 
-## Actualizaciones Optimistas con merge()
+## Actualizaciones Optimistas con copy()
 
-`merge()` devuelve una **nueva instancia inmutable** — ideal para actualizaciones optimistas
+`copy()` devuelve una **nueva instancia inmutable** — ideal para actualizaciones optimistas
 sin mutar el caché directamente.
 
 ```typescript
@@ -155,7 +155,7 @@ const mutation = useMutation({
 		const anterior = queryClient.getQueryData<ProductoDto[]>(['productos']);
 
 		queryClient.setQueryData<ProductoDto[]>(['productos'], (old = []) =>
-			old.map((item) => (item.id === patch.id ? item.merge(patch) : item))
+			old.map((item) => (item.id === patch.id ? item.copy(patch) : item))
 		);
 
 		return { anterior };
@@ -169,7 +169,7 @@ const mutation = useMutation({
 });
 ```
 
-`merge()` marca el resultado como sucio (`isDirty() === true`), facilitando detectar cambios
+`copy()` marca el resultado como sucio (`isDirty() === true`), facilitando detectar cambios
 pendientes antes de persistirlos.
 
 ## Normalización de Caché

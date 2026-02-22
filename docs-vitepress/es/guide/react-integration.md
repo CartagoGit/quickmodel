@@ -9,7 +9,7 @@ QuickModel proporciona una capa de validación y tipo para aplicaciones React �
 | `useState` / formularios controlados | Clase plana + `qCheckRules()`         |
 | React Hook Form resolver             | Adaptador personalizado               |
 | Next.js Server Actions               | DTO en el servidor                    |
-| Store Zustand                        | `merge()` inmutable                   |
+| Store Zustand                        | `copy()` inmutable                    |
 | Validación asíncrona                 | `@QRule` async + `qCheckRulesAsync()` |
 | Hook personalizado                   | `useQModel()`                         |
 
@@ -164,8 +164,8 @@ const useCartStore = create<ICartStore>((set) => ({
 		set((state) => {
 			const item = state.items.get(id);
 			if (!item) return state;
-			// merge() es INMUTABLE — guarda la nueva instancia
-			state.items.set(id, item.merge({ qty }));
+			// copy() es INMUTABLE — guarda la nueva instancia
+			state.items.set(id, item.copy({ qty }));
 			return { items: new Map(state.items) };
 		}),
 }));
@@ -199,7 +199,7 @@ export function useQModel<T extends QModel<object>>(
 	const [model, setModel] = useState(() => new ModelClass(initialData));
 
 	const update = useCallback((patch: Partial<object>) => {
-		setModel((prev) => prev.merge(patch) as T);
+		setModel((prev) => prev.copy(patch) as T);
 	}, []);
 
 	const validate = useCallback(() => model.checkRules(), [model]);

@@ -312,13 +312,13 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			date: new Date('2024-01-01'),
 		});
 
-		const cloned = original.copy();
+		const copied = original.copy();
 
-		expect(cloned).not.toBe(original);
-		expect(cloned.id).toBe(original.id);
-		expect(cloned.value).toBe(original.value);
-		expect(cloned.date).toBeInstanceOf(Date);
-		expect(cloned.date.getTime()).toBe(original.date.getTime());
+		expect(copied).not.toBe(original);
+		expect(copied.id).toBe(original.id);
+		expect(copied.value).toBe(original.value);
+		expect(copied.date).toBeInstanceOf(Date);
+		expect(copied.date.getTime()).toBe(original.date.getTime());
 	});
 
 	test('Comparison: @Quick() vs manual @QType()', () => {
