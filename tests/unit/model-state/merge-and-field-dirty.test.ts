@@ -44,24 +44,6 @@ class Order extends QModel<IOrder> {
 	declare note?: string;
 }
 
-interface IAddress {
-	street: string;
-	city: string;
-}
-
-interface IEmployee {
-	id: string;
-	name: string;
-	address: IAddress;
-}
-
-@Quick({ address: Object })
-class Employee extends QModel<IEmployee> {
-	declare id: string;
-	declare name: string;
-	declare address: IAddress;
-}
-
 // ============================================================
 // SUITE: isDirty(field?)
 // ============================================================

@@ -33,8 +33,24 @@ class ProfileModel extends QModel<{
 	declare birthDate: Date; // no alias
 }
 
+interface IChildModel {
+	firstName: string;
+	lastName: string;
+	emailAddress: string;
+	phoneNumber: string;
+}
+
 @Quick()
-class ChildModel extends UserModel {
+class ChildModel extends QModel<IChildModel> {
+	@QAlias('first_name')
+	declare firstName: string;
+
+	@QAlias('last_name')
+	declare lastName: string;
+
+	@QAlias('email_address')
+	declare emailAddress: string;
+
 	@QAlias('phone_number')
 	declare phoneNumber: string;
 }
@@ -190,12 +206,13 @@ describe('@QAlias — inheritance', () => {
 	});
 
 	test('subclass serialize() includes all aliased keys', () => {
-		const child = ChildModel.create({
+		const data = {
 			firstName: 'Dan',
 			lastName: 'Lee',
 			emailAddress: 'dan@example.com',
 			phoneNumber: '555-1234',
-		});
+		};
+		const child = ChildModel.create(data);
 
 		const output = child.serialize();
 

@@ -433,7 +433,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 
 			// Strict mode (Bun runs tests as ES modules — always strict)
 			expect(() => {
-				(instance as any).username = 'mutated';
+				(instance as { username: string }).username = 'mutated';
 			}).toThrow();
 		});
 	});

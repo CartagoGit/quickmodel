@@ -241,9 +241,9 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	 */
 	static createReadonly<
 		T extends IQAnyRecord = IQAnyRecord,
-		TClass extends QModel<T> = QModel<T>,
+		TClass extends object = object,
 		TResult = TClass,
-	>(this: new (data: T) => TClass, data: T): Readonly<TResult> {
+	>(this: new (...args: any[]) => TClass, data: T): Readonly<TResult> {
 		// Instantiate directly using the logic from create() to avoid abstract type issues
 		const Constructor = this as unknown as new (data: T) => TClass;
 		const instance = new Constructor(data) as unknown as TResult;
@@ -1276,7 +1276,10 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			for (const rule of rules) {
 				let passes = false;
 				try {
-					passes = rule.predicate(value);
+					const result = rule.predicate(value);
+					// Async predicates are silently skipped by the sync path —
+					// use checkRulesAsync() to evaluate them.
+					passes = result instanceof Promise ? true : result;
 				} catch {
 					// Predicate threw — treat as failure
 					passes = false;

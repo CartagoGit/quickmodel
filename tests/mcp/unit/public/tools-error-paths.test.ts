@@ -2,7 +2,7 @@
  * Error path coverage for MCP public tools.
  * Covers branches and exception paths not exercised in all-tools.test.ts.
  */
-import { describe, it, expect, spyOn, mock } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
 import { QInterfaceToModelTool } from '../../../../src/mcp/tools/public/interface-to-model.tool';
 import { QJsonToModelTool } from '../../../../src/mcp/tools/public/json-to-model.tool';
 import { QInspectModelTool } from '../../../../src/mcp/tools/public/inspect-model.tool';
