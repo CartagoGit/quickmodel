@@ -51,7 +51,7 @@
 - ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
 - ⏸️ Task #21: Guía de integración NestJS
 - ⏸️ Task #22: Cambiar default de `unknownPropertyPolicy` a `'strip'` en v2.0.0
-- ⏳ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc.
+- ✅ Task #31: Docs nuevas features (Feb 2026) — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, etc. — **COMPLETADA** (docs ya presentes)
 
 ---
 
@@ -943,22 +943,22 @@ describe('Computed Properties & Getters', () => {
 
 ### Nuevas features implementadas en sprint Feb 2026 (no registradas previamente)
 
-| #   | Tarea                                                | Prioridad | Estado        | Commit    | Tests |
-| --- | ---------------------------------------------------- | --------- | ------------- | --------- | ----- |
-| 23  | `merge()` + `isDirty(field?)`                        | 🔴 Alta   | ✅ COMPLETADA | `a8089a7` | +10   |
-| 24  | `@QRule` decorator + `checkRules()`                  | 🔴 Alta   | ✅ COMPLETADA | `8a2910b` | +12   |
-| 25  | `hasIntegrity()` + `isValid()`                       | 🔴 Alta   | ✅ COMPLETADA | `cd30a8b` | +8    |
-| 26  | `createMany()` con batch validation                  | 🟡 Media  | ✅ COMPLETADA | `3faf88b` | +14   |
-| 27  | `@QField` + `validationReport()` + `getFormSchema()` | 🟡 Media  | ✅ COMPLETADA | `00d56c7` | +15   |
-| 28  | `QModel.extends()` simplificación de generics        | 🟡 Media  | ✅ COMPLETADA | `4ff1d55` | +6    |
-| 29  | `@QAlias` + `@QGroup` decorators                     | 🟡 Media  | ✅ COMPLETADA | `a714b2e` | +18   |
-| 30  | `createReadonly()` refactor + async `checkRules()`   | 🟡 Media  | ✅ COMPLETADA | `05bcb8c` | +8    |
-| 31  | Docs nuevas features (Feb 2026)                      | 🔴 Alta   | ⏳ TODO       | —         | —     |
+| #   | Tarea                                                | Prioridad | Estado        | Commit     | Tests |
+| --- | ---------------------------------------------------- | --------- | ------------- | ---------- | ----- |
+| 23  | `merge()` + `isDirty(field?)`                        | 🔴 Alta   | ✅ COMPLETADA | `a8089a7`  | +10   |
+| 24  | `@QRule` decorator + `checkRules()`                  | 🔴 Alta   | ✅ COMPLETADA | `8a2910b`  | +12   |
+| 25  | `hasIntegrity()` + `isValid()`                       | 🔴 Alta   | ✅ COMPLETADA | `cd30a8b`  | +8    |
+| 26  | `createMany()` con batch validation                  | 🟡 Media  | ✅ COMPLETADA | `3faf88b`  | +14   |
+| 27  | `@QField` + `validationReport()` + `getFormSchema()` | 🟡 Media  | ✅ COMPLETADA | `00d56c7`  | +15   |
+| 28  | `QModel.extends()` simplificación de generics        | 🟡 Media  | ✅ COMPLETADA | `4ff1d55`  | +6    |
+| 29  | `@QAlias` + `@QGroup` decorators                     | 🟡 Media  | ✅ COMPLETADA | `a714b2e`  | +18   |
+| 30  | `createReadonly()` refactor + async `checkRules()`   | 🟡 Media  | ✅ COMPLETADA | `05bcb8c`  | +8    |
+| 31  | Docs nuevas features (Feb 2026)                      | 🔴 Alta   | ✅ COMPLETADA | ya escrita | —     |
 
 **Progreso:**
 
-- ✅ Completadas: 24/31 (77%) — 1794 tests passing
-- ⏳ Pendientes activas: 2/31 (6%) — Tasks #14, #31
+- ✅ Completadas: 25/31 (81%) — 1794 tests passing
+- ⏳ Pendientes activas: 1/31 (3%) — Task #14
 - ⏸️ Backlog: 5/31 (16%)
 
 **Tiempo invertido (histórico):** ~31h  
@@ -1562,10 +1562,12 @@ describe('QTransformerRegistry: isolation', () => {
 
 ### Task #31: Docs nuevas features Feb 2026
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETADA  
+**Fecha:** 22 de febrero de 2026  
+**Resultado:** Revisada toda la documentación EN+ES — todas las features ya estaban documentadas. Las guias `qmodel.md`, `validation.md`, `qalias.md`, `qfield.md` (EN+ES) cubren completamente `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, `getFormSchemaGrouped()`, `validationReport()`, `checkRulesAsync()`, `merge()`, `isDirty()`, `createMany()`, `hasIntegrity()`, `isValid()`, `createReadonly()`. Sidebar de VitePress actualizado con todos los enlaces.  
 **Prioridad:** 🔴 Alta  
-**Esfuerzo:** 2-3 horas  
-**Impacto:** Alto — sin docs las features no son usables por la comunidad
+**Esfuerzo:** 0h (ya estaba hecho)  
+**Impacto:** Alto — docs completas EN+ES para todas las features
 
 **Features a documentar:**
 
@@ -1616,7 +1618,7 @@ describe('QTransformerRegistry: isolation', () => {
 
 14. ✅ **Tarea #11:** `safeStringify` truncado → 30min ← **COMPLETADA**
 15. ✅ **Tarea #12:** Warning `disableSafetyChecks` → 30min ← **COMPLETADA**
-16. ⏳ **Tarea #31:** Docs nuevas features Feb 2026 → 2-3h
+16. ✅ **Tarea #31:** Docs nuevas features Feb 2026 — ya estaban escritas ← **COMPLETADA**
 
 ### 📅 Próxima semana (24-28 Feb 2026):
 
@@ -1702,10 +1704,7 @@ Antes de hacer merge a `main` y release:
 
 **2. ✅ Task #12: Warning `disableSafetyChecks`** — COMPLETADA
 
-**3. Task #31: Docs nuevas features Feb 2026** (SIGUIENTE — 🔴 PRIORITARIO)
-
-- **Contenido:** Docs EN+ES para `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`, `validationReport()`, `merge()`, `isDirty()`, `createMany()`, async `@QRule`, `createReadonly()`
-- **Tiempo:** 2-3 horas
+**3. ✅ Task #31: Docs nuevas features Feb 2026** — COMPLETADA (docs ya estaban escritas con las features)
 
 **4. Task #14: Tests negativos `JsonSchemaGenerator`** (PRÓXIMO)
 
@@ -1740,4 +1739,4 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 22 de febrero de 2026 (revisión nº4) — Tasks #11, #12, #15 y #16 implementadas con TDD | 1794 tests passing | Siguiente: Task #31 (docs nuevas features)
+**Última actualización:** 22 de febrero de 2026 (revisión nº5) — Tasks #11, #12, #15, #16 y #31 completadas | 1794 tests passing | Siguiente: Task #14 (JsonSchemaGenerator tests)
