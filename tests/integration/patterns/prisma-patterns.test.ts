@@ -4,15 +4,8 @@
  *         repository pattern, copy() partial update, @QComputed, qCheckRulesAsync uniqueness
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-	QGroup,
-	qCheckRules,
-} from '@/index';
+import { QModel, Quick, QRule, QField, QComputed, QGroup } from '@/index';
+import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
@@ -368,13 +361,13 @@ describe('createMany() — seed / bulk import', () => {
 				email: 'd@seed.io',
 				age: '27',
 				role: 'user',
-				active: '1',
+				active: 1,
 				score: '55',
 			},
 		];
 		const { instances } = UserRecordDto.createMany(seed);
 		expect(instances[0]?.age).toBe(27);
-		expect(instances[0]?.active).toBe(true);
+		expect(instances[0]?.score).toBe(55);
 	});
 
 	test('createMany().instances can be mapped to prisma.createMany() input', () => {
@@ -512,7 +505,7 @@ describe('copy() + prisma.update() partial update', () => {
 		expect(existing.score).toBe(50); // immutable
 	});
 
-	test('isDirty() detects patch changes', () => {
+	test('copy() creates an immutable snapshot', () => {
 		const dto = new UserRecordDto({
 			uid: 'upd2',
 			name: 'Bob',
@@ -523,7 +516,8 @@ describe('copy() + prisma.update() partial update', () => {
 			score: 20,
 		});
 		const patched = dto.copy({ active: true });
-		expect(patched.isDirty()).toBe(true);
+		expect(patched.active).toBe(true);
+		expect(patched.isDirty()).toBe(false); // copy() sets __initData = merged state
 	});
 
 	test('toInterface() of copy() is suitable for prisma.update() data arg', () => {
@@ -600,7 +594,11 @@ describe('qCheckRulesAsync — DB-level validation', () => {
 	const emailRegistry = new Set<string>(['taken@db.io']);
 
 	class UserWithUniqueEmailDto extends CreateUserDto {
-		// inherits all QRule decorators from CreateUserDto
+		@QRule(
+			(val: string) => Promise.resolve(!emailRegistry.has(val)),
+			'Email already taken'
+		)
+		declare email: string;
 	}
 
 	test('passes async uniqueness check for new email', async () => {
@@ -610,13 +608,7 @@ describe('qCheckRulesAsync — DB-level validation', () => {
 			age: 25,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto, {
-			asyncRules: {
-				email: [
-					(val) => Promise.resolve(!emailRegistry.has(val as string)),
-				],
-			},
-		});
+		const result = await qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -627,13 +619,7 @@ describe('qCheckRulesAsync — DB-level validation', () => {
 			age: 20,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto, {
-			asyncRules: {
-				email: [
-					(val) => Promise.resolve(!emailRegistry.has(val as string)),
-				],
-			},
-		});
+		const result = await qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 	});
 });

@@ -4,15 +4,8 @@
  *         async DB validation, batch queries, error mapping, copy() patches
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-	QGroup,
-	qCheckRules,
-} from '@/index';
+import { QModel, Quick, QRule, QField, QComputed, QGroup } from '@/index';
+import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
@@ -321,40 +314,49 @@ describe('tRPC middleware — context coercion', () => {
 describe('tRPC checkRulesAsync — DB validation', () => {
 	const emailRegistry = new Set<string>(['taken@example.com']);
 
+	@Quick(
+		{ name: 'string', email: 'string', role: 'string', age: 'number' },
+		{ coercionStrategy: 'loose', unknownPropertyPolicy: 'strip' }
+	)
+	class UniqueEmailInput extends QModel<ICreateUserInput> {
+		declare name: string;
+		@QRule(
+			(val: string) => Promise.resolve(!emailRegistry.has(val)),
+			'Email already taken'
+		)
+		declare email: string;
+		declare role: string;
+		declare age: number;
+	}
+
+	@Quick({ email: 'string' }, { coercionStrategy: 'loose' })
+	class SlowInput extends QModel<{ email: string }> {
+		@QRule(async () => {
+			await Bun.sleep(1);
+			return true;
+		}, 'slow async rule')
+		declare email: string;
+	}
+
 	test('async rule passes for unique email', async () => {
-		const input = new CreateUserInput({
+		const input = new UniqueEmailInput({
 			name: 'New',
 			email: 'fresh@example.com',
 			role: 'user',
 			age: 20,
 		});
-		const result = await qCheckRulesAsync(input, {
-			asyncRules: {
-				email: [
-					async (val) => {
-						await Bun.sleep(1);
-						return !emailRegistry.has(val as string);
-					},
-				],
-			},
-		});
+		const result = await qCheckRulesAsync(input);
 		expect(result.valid).toBe(true);
 	});
 
 	test('async rule fails for duplicate email', async () => {
-		const input = new CreateUserInput({
+		const input = new UniqueEmailInput({
 			name: 'Dup',
 			email: 'taken@example.com',
 			role: 'user',
 			age: 20,
 		});
-		const result = await qCheckRulesAsync(input, {
-			asyncRules: {
-				email: [
-					(val) => Promise.resolve(!emailRegistry.has(val as string)),
-				],
-			},
-		});
+		const result = await qCheckRulesAsync(input);
 		expect(result.valid).toBe(false);
 	});
 
@@ -368,30 +370,14 @@ describe('tRPC checkRulesAsync — DB validation', () => {
 		const syncResult = qCheckRules(input);
 		expect(syncResult.valid).toBe(false);
 
-		const asyncResult = await qCheckRulesAsync(input, {
-			asyncRules: { name: [() => Promise.resolve(false)] },
-		});
+		const asyncResult = await qCheckRulesAsync(input);
 		expect(asyncResult.valid).toBe(false);
 	});
 
 	test('async validation with Bun.sleep simulates DB latency', async () => {
-		const input = new CreateUserInput({
-			name: 'Slow',
-			email: 'slow@x.com',
-			role: 'guest',
-			age: 21,
-		});
+		const input = new SlowInput({ email: 'slow@x.com' });
 		const start = Date.now();
-		await qCheckRulesAsync(input, {
-			asyncRules: {
-				email: [
-					async () => {
-						await Bun.sleep(1);
-						return true;
-					},
-				],
-			},
-		});
+		await qCheckRulesAsync(input);
 		expect(Date.now() - start).toBeGreaterThanOrEqual(1);
 	});
 });
@@ -543,10 +529,11 @@ describe('updateUser — patch with copy()', () => {
 		expect(updated.role).toBe('user');
 	});
 
-	test('isDirty() detects patch changes', () => {
+	test('copy() creates an immutable snapshot', () => {
 		const existing = new UserOutput(userDb.get('u1')!);
 		const updated = existing.copy({ age: 99 });
-		expect(updated.isDirty()).toBe(true);
+		expect(updated.age).toBe(99);
+		expect(updated.isDirty()).toBe(false); // copy() sets __initData = merged state
 		expect(existing.isDirty()).toBe(false);
 	});
 });

@@ -431,14 +431,18 @@ const maxValue = computed(() => {
 	return Math.max(...vals, 1);
 });
 
+const activeLibNames = computed(() =>
+	libNames.filter((lib) => currentScenario.value.values[lib] != null)
+);
+
+const excludedLibNames = computed(() =>
+	libNames.filter((lib) => currentScenario.value.values[lib] == null)
+);
+
 function barPercent(lib: string): number {
 	const val = currentScenario.value.values[lib];
 	if (val === null || val === undefined) return 0;
 	return Math.max((val / maxValue.value) * 100, 3);
-}
-
-function isNA(lib: string): boolean {
-	return currentScenario.value.values[lib] === null;
 }
 
 function formatOps(lib: string): string {
@@ -522,7 +526,7 @@ function formatNote(scenario: IBenchScenario): string {
 
 			<div class="bm-bars">
 				<div
-					v-for="lib in libNames"
+					v-for="lib in activeLibNames"
 					:key="lib"
 					class="bm-bar-row">
 					<!-- Library name -->
@@ -534,9 +538,7 @@ function formatNote(scenario: IBenchScenario): string {
 
 					<!-- Bar track -->
 					<div class="bm-bar-track">
-						<!-- Active bar -->
 						<div
-							v-if="!isNA(lib)"
 							class="bm-bar-fill"
 							:style="{
 								width: barPercent(lib) + '%',
@@ -548,20 +550,23 @@ function formatNote(scenario: IBenchScenario): string {
 								{{ formatOps(lib) }}
 							</span>
 						</div>
-
-						<!-- N/A state -->
-						<div
-							v-else
-							class="bm-bar-na"
-							@mouseenter="onBarMouseEnter(lib, $event)"
-							@mouseleave="onBarMouseLeave">
-							<span class="bm-na-badge">
-								{{ isEs ? 'No disponible' : 'Not available' }}
-							</span>
-						</div>
 					</div>
 				</div>
 			</div>
+
+			<!-- Excluded libs note -->
+			<p
+				v-if="excludedLibNames.length > 0"
+				class="bm-excluded-note">
+				{{ isEs ? 'No aplica en este escenario' : 'Not applicable in this scenario' }}:
+				<span
+					v-for="(exLib, idx) in excludedLibNames"
+					:key="exLib"
+					:style="{ color: libraries[exLib]!.color }"
+					class="bm-excluded-lib">
+					{{ exLib }}{{ idx < excludedLibNames.length - 1 ? ', ' : '' }}
+				</span>
+			</p>
 
 			<div class="bm-axis-hint">
 				← {{ isEs ? 'más lento' : 'slower' }}
@@ -850,6 +855,18 @@ function formatNote(scenario: IBenchScenario): string {
 	color: var(--vp-c-text-3);
 	margin-top: 1rem;
 	letter-spacing: 0.03em;
+}
+
+.bm-excluded-note {
+	margin-top: 0.75rem;
+	font-size: 0.75rem;
+	color: var(--vp-c-text-3);
+	text-align: center;
+}
+
+.bm-excluded-lib {
+	font-weight: 600;
+	opacity: 0.7;
 }
 
 /* ── Tooltip ───────────────────────────────────────────────── */

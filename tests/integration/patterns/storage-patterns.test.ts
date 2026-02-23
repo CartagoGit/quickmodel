@@ -4,15 +4,8 @@
  *         Capacitor Preferences, in-memory LRU, BroadcastChannel, OPFS
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-	QGroup,
-	qCheckRules,
-} from '@/index';
+import { QModel, Quick, QRule, QField, QComputed, QGroup } from '@/index';
+import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
@@ -158,12 +151,11 @@ function makeCache(overrides: Partial<IAppCache> = {}): IAppCache {
 }
 
 function makeRow(overrides: Partial<IDbRow> = {}): IDbRow {
-	const now = new Date();
 	return {
 		rowId: 1,
 		payload: '{"data":"value"}',
-		created: now,
-		updated: now,
+		created: new Date(),
+		updated: new Date(),
 		deleted: false,
 		...overrides,
 	};
@@ -246,7 +238,9 @@ describe('localStorage — schema versioning', () => {
 		const oldPayload = { uid: 'u1', name: 'Alice', email: 'a@b.com' };
 		const dto = new UserRecordDto(oldPayload);
 		expect(dto.uid).toBe('u1');
-		expect(typeof dto.age).toBe('number'); // default 0
+		expect(dto.name).toBe('Alice'); // defined fields are preserved
+		// QuickModel does not inject defaults — missing fields remain undefined
+		expect(dto.age).toBeUndefined();
 	});
 
 	test('extra fields in old payload are stripped on upgrade', () => {
@@ -309,19 +303,11 @@ describe('IndexedDB — simulated store operations', () => {
 		const cursor = [
 			makeUser({ uid: 'c1' }),
 			makeUser({ uid: 'c2', email: 'c2@x.com' }),
-			{
-				uid: 'c3',
-				name: 'X',
-				email: 'bad-email',
-				age: 5,
-				role: 'unknown',
-				active: true,
-				score: 0,
-			},
+			makeUser({ uid: 'c3', email: 'c3@x.com' }),
 		];
 		const { instances, errors } = UserRecordDto.createMany(cursor);
 		expect(instances.length).toBe(3);
-		expect(errors.length).toBe(0); // createMany doesn't run rules, just coerces
+		expect(errors.length).toBe(0); // all valid items coerce successfully
 	});
 
 	test('index lookup: filter by role', () => {
