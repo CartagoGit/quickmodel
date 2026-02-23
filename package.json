@@ -41,10 +41,75 @@
 			"import": "./dist/utils.mjs",
 			"require": "./dist/utils.js"
 		},
+		"./validators": {
+			"types": "./dist/validators.d.ts",
+			"import": "./dist/validators.mjs",
+			"require": "./dist/validators.js"
+		},
 		"./transformers": {
 			"types": "./dist/transformers/index.d.ts",
 			"import": "./dist/transformers/index.mjs",
 			"require": "./dist/transformers/index.js"
+		},
+		"./transformers/bigint": {
+			"types": "./dist/transformers/bigint.d.ts",
+			"import": "./dist/transformers/bigint.mjs",
+			"require": "./dist/transformers/bigint.js"
+		},
+		"./transformers/buffer": {
+			"types": "./dist/transformers/buffer.d.ts",
+			"import": "./dist/transformers/buffer.mjs",
+			"require": "./dist/transformers/buffer.js"
+		},
+		"./transformers/date": {
+			"types": "./dist/transformers/date.d.ts",
+			"import": "./dist/transformers/date.mjs",
+			"require": "./dist/transformers/date.js"
+		},
+		"./transformers/error": {
+			"types": "./dist/transformers/error.d.ts",
+			"import": "./dist/transformers/error.mjs",
+			"require": "./dist/transformers/error.js"
+		},
+		"./transformers/map-set": {
+			"types": "./dist/transformers/map-set.d.ts",
+			"import": "./dist/transformers/map-set.mjs",
+			"require": "./dist/transformers/map-set.js"
+		},
+		"./transformers/primitive": {
+			"types": "./dist/transformers/primitive.d.ts",
+			"import": "./dist/transformers/primitive.mjs",
+			"require": "./dist/transformers/primitive.js"
+		},
+		"./transformers/regexp": {
+			"types": "./dist/transformers/regexp.d.ts",
+			"import": "./dist/transformers/regexp.mjs",
+			"require": "./dist/transformers/regexp.js"
+		},
+		"./transformers/special-float": {
+			"types": "./dist/transformers/special-float.d.ts",
+			"import": "./dist/transformers/special-float.mjs",
+			"require": "./dist/transformers/special-float.js"
+		},
+		"./transformers/symbol": {
+			"types": "./dist/transformers/symbol.d.ts",
+			"import": "./dist/transformers/symbol.mjs",
+			"require": "./dist/transformers/symbol.js"
+		},
+		"./transformers/typed-array": {
+			"types": "./dist/transformers/typed-array.d.ts",
+			"import": "./dist/transformers/typed-array.mjs",
+			"require": "./dist/transformers/typed-array.js"
+		},
+		"./transformers/weak-collections": {
+			"types": "./dist/transformers/weak-collections.d.ts",
+			"import": "./dist/transformers/weak-collections.mjs",
+			"require": "./dist/transformers/weak-collections.js"
+		},
+		"./transformers/web-apis": {
+			"types": "./dist/transformers/web-apis.d.ts",
+			"import": "./dist/transformers/web-apis.mjs",
+			"require": "./dist/transformers/web-apis.js"
 		},
 		"./core": {
 			"types": "./dist/core/index.d.ts",

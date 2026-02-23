@@ -1,4 +1,5 @@
 export * from './list-transformers.tool';
+export * from './list-validators.tool';
 export * from './generate-mock.tool';
 export * from './inspect-model.tool';
 export * from './search-docs.tool';

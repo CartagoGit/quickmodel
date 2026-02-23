@@ -30,6 +30,7 @@ import { safeStringify } from '../core/helpers/transform-helpers';
 
 import {
 	QListTransformersTool,
+	QListValidatorsTool,
 	QGenerateMockDataTool,
 	QInspectModelTool,
 	QSearchDocsTool,
@@ -112,6 +113,7 @@ export class QMcpServer {
 			new QCreateModelTool(),
 			new QValidateUsageTool(),
 			new QListTransformersTool(),
+			new QListValidatorsTool(),
 			new QGenerateMockDataTool(),
 			new QInspectModelTool(),
 			new QSearchDocsTool(),

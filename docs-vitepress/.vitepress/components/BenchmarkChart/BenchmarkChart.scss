@@ -435,16 +435,155 @@
 		color: var(--vp-c-text-3);
 	}
 
+	&__filters {
+		padding: 0.875rem 1.5rem;
+		border-bottom: 1px solid var(--vp-c-divider);
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		background: var(--vp-c-bg);
+	}
+
+	&__filter-row {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	&__filter-label {
+		font-size: 0.73rem;
+		color: var(--vp-c-text-2);
+		font-weight: 500;
+		white-space: nowrap;
+		min-width: 72px;
+	}
+
+	&__type-pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+
+	&__type-pill {
+		padding: 0.18rem 0.65rem;
+		border-radius: 999px;
+		border: 1px solid var(--vp-c-divider);
+		background: transparent;
+		color: var(--vp-c-text-2);
+		font-size: 0.72rem;
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			border-color: var(--vp-c-brand-2);
+			color: var(--vp-c-brand-1);
+		}
+
+		&--active {
+			background: var(--vp-c-brand-soft);
+			border-color: var(--vp-c-brand-2);
+			color: var(--vp-c-brand-1);
+			font-weight: 600;
+		}
+	}
+
+	&__badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+
+	&__badge {
+		padding: 0.18rem 0.65rem;
+		border-radius: 999px;
+		border: 1px solid var(--badge-color, var(--vp-c-divider));
+		background: color-mix(in srgb, var(--badge-color, transparent) 15%, transparent);
+		color: var(--badge-color, var(--vp-c-text-2));
+		font-size: 0.72rem;
+		cursor: pointer;
+		transition: all 0.2s;
+		font-weight: 500;
+
+		&--cat {
+			--badge-color: var(--vp-c-brand-2);
+			color: var(--vp-c-brand-1);
+			border-color: var(--vp-c-brand-2);
+			background: var(--vp-c-brand-soft);
+		}
+
+		&:hover {
+			background: color-mix(in srgb, var(--badge-color, transparent) 28%, transparent);
+		}
+
+		&--off {
+			background: transparent;
+			border-color: var(--vp-c-divider);
+			color: var(--vp-c-text-3);
+			text-decoration: line-through;
+			opacity: 0.45;
+		}
+	}
+
 	&__scroll {
+		display: block;
+		width: 100%;
 		overflow-x: auto;
+		overflow-y: hidden;
 	}
 
 	&__table {
+		display: table;
 		width: 100%;
-		border-collapse: collapse;
+		min-width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
 		font-size: 0.84rem;
 
+		tbody {
+			tr {
+				td {
+					max-height: 200px;
+					overflow: hidden;
+					transition:
+						max-height 0.25s ease,
+						padding 0.25s ease,
+						font-size 0.25s ease,
+						line-height 0.25s ease,
+						opacity 0.2s ease,
+						border-width 0.25s ease,
+						border-color 0.25s ease;
+				}
+			}
+
+			tr.bm-matrix__tr--hidden {
+				pointer-events: none;
+
+				td {
+					max-height: 0 !important;
+					padding: 0 !important;
+					font-size: 0 !important;
+					line-height: 0 !important;
+					opacity: 0;
+					border: 0 !important;
+					overflow: hidden;
+				}
+			}
+		}
+
+		thead tr th {
+			position: sticky;
+			top: 0;
+			z-index: 2;
+			background: var(--vp-c-bg-soft);
+			border-bottom: 1px solid var(--vp-c-divider);
+		}
+
 		tbody tr {
+			td {
+				border-bottom: 1px solid var(--vp-c-divider);
+			}
+
 			&:nth-child(even) {
 				background: var(--vp-c-bg);
 			}
@@ -460,10 +599,16 @@
 		padding: 0.5rem 1rem;
 		text-align: left;
 		color: var(--vp-c-text-2);
+		position: sticky;
+		left: 0;
+		z-index: 1;
+		background: var(--vp-c-bg-soft);
+		white-space: nowrap;
 	}
 
+	// La celda de esquina (th de feature) tiene mayor z-index para quedar sobre las th de librería
 	&__th-feature {
-		font-weight: 600;
+		z-index: 3;
 	}
 
 	&__th-lib {
@@ -472,6 +617,21 @@
 		font-weight: 700;
 		white-space: nowrap;
 		min-width: 130px;
+		max-width: 200px;
+		vertical-align: middle;
+		border: 0;
+		transition: opacity 0.25s ease, max-width 0.3s ease,
+			min-width 0.3s ease, padding 0.3s ease;
+		overflow: hidden;
+
+		&--hidden {
+			max-width: 0 !important;
+			min-width: 0 !important;
+			padding: 0 !important;
+			border: 0 !important;
+			opacity: 0;
+			pointer-events: none;
+		}
 
 		&--ours {
 			background: color-mix(in srgb, currentColor 12%, transparent);
@@ -484,8 +644,22 @@
 
 	&__td-check {
 		text-align: center;
+		vertical-align: middle;
 		padding: 0.45rem;
 		font-size: 1rem;
+		border: 0;
+		transition: opacity 0.25s ease, max-width 0.3s ease,
+			min-width 0.3s ease, padding 0.3s ease;
+		overflow: hidden;
+
+		&--hidden {
+			max-width: 0 !important;
+			min-width: 0 !important;
+			padding: 0 !important;
+			border: 0 !important;
+			opacity: 0;
+			pointer-events: none;
+		}
 
 		&--ours {
 			background: color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent);
@@ -495,6 +669,21 @@
 				color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
 		}
 	}
+}
+
+// ── Library badge transitions (TransitionGroup) ──────────────
+
+.bm-badge-enter-active {
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bm-badge-enter-from {
+	opacity: 0;
+	transform: scale(0.7);
+}
+
+.bm-badge-leave-active {
+	display: none;
 }
 
 // ── Mobile ───────────────────────────────────────────────────

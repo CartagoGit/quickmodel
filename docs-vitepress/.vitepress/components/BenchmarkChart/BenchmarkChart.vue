@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { featureRows, libNames } from './benchmark-chart.constants';
 import { useBenchmarkChart } from './BenchmarkChart';
 
 const {
 	libraries,
+	featureRows,
 	appTypeOptions,
+	matrixTypeOptions,
+	featureCategoryOptions,
 	activeAppType,
 	activeScenario,
+	activeMatrixType,
+	disabledMatrixLibs,
+	disabledFeatureCategories,
 	hoveredLib,
 	tooltipX,
 	tooltipY,
@@ -15,7 +20,12 @@ const {
 	currentScenario,
 	activeLibNames,
 	excludedLibNames,
-	matrixLibNames,
+	matrixLibsByType,
+	visibleMatrixLibNames,
+	toggleMatrixLib,
+	toggleFeatureCategory,
+	isLibHidden,
+	isCategoryHidden,
 	isOverflow,
 	barPercent,
 	formatOps,

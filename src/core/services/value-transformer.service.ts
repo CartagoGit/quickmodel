@@ -260,11 +260,13 @@ export class ValueTransformerService {
 		designType: Function | undefined,
 		context: IQTransformContext
 	): unknown {
-		// Log debug info
-		Logger.debug(
-			`Transforming '${context.propertyKey}' using design:type '${designType?.name || 'unknown'}'`,
-			context.className
-		);
+		// Log debug info — guard avoids template-string allocation when debug is off
+		if (Logger.globalDebugEnabled) {
+			Logger.debug(
+				`Transforming '${context.propertyKey}' using design:type '${designType?.name || 'unknown'}'`,
+				context.className
+			);
+		}
 
 		// Null/Undefined check - Pass through
 		if (value === null || value === undefined) {

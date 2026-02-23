@@ -117,6 +117,39 @@ const result = user.checkRules();
 // { valid: true, errors: [] }
 ```
 
+## Built-in Validators
+
+QuickModel ships a set of ready-to-use decorator validators that mirror the `class-validator` API, implemented as thin wrappers over `@QRule`. Import them from the main entry point:
+
+```typescript
+import { IsEmail, Min, IsNotEmpty } from '@cartago-git/quickmodel';
+// or tree-shake to a smaller bundle:
+import { IsEmail } from '@cartago-git/quickmodel/validators';
+```
+
+```typescript
+@Quick()
+class User extends QModel<IUser> {
+	@IsEmail()
+	declare email: string;
+
+	@Min(0)
+	@Max(120)
+	@IsInt()
+	declare age: number;
+
+	@MinLength(3)
+	@IsNotEmpty()
+	declare name: string;
+}
+
+const user = new User({ email: 'bad', age: -1, name: '' });
+user.checkRules();
+// errors → [ email invalid, age too small, name too short, name empty ]
+```
+
+> 📖 **[Built-in Validators reference](./validators.md)** — Full list of all 14 validators (`IsEmail`, `IsUrl`, `Min`, `Max`, `IsInt`, `Matches`, `IsUuid`, `IsDateString`, …) with signatures and examples.
+
 ## API Reference
 
 ### `@QRule(fn, message)`

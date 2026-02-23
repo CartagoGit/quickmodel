@@ -8,8 +8,8 @@
 		<p class="bm-header__subtitle">
 			{{
 				isEs
-					? 'QuickModel vs TypeBox vs valibot vs Zod vs class-transformer vs yup vs faker'
-					: 'QuickModel vs TypeBox vs valibot vs Zod vs class-transformer vs yup vs faker'
+					? 'QuickModel vs otras librerías con características similares'
+					: 'QuickModel vs other libraries with similar features'
 			}}
 		</p>
 	</div>
@@ -32,15 +32,65 @@
 				}}
 			</p>
 		</div>
+		<!-- Matrix filters: type selector + library badges -->
+		<div class="bm-matrix__filters">
+			<div class="bm-matrix__filter-row">
+				<span class="bm-matrix__filter-label">
+					{{ isEs ? 'Tipo:' : 'Type:' }}
+				</span>
+				<div class="bm-matrix__type-pills">
+					<button
+						v-for="opt in matrixTypeOptions"
+						:key="opt.key"
+						:class="['bm-matrix__type-pill', { 'bm-matrix__type-pill--active': activeMatrixType === opt.key }]"
+						@click="activeMatrixType = opt.key">
+						{{ isEs ? opt.labelEs : opt.labelEn }}
+					</button>
+				</div>
+			</div>
+			<div class="bm-matrix__filter-row">
+				<span class="bm-matrix__filter-label">
+					{{ isEs ? 'Librerías:' : 'Libraries:' }}
+				</span>
+				<TransitionGroup tag="div" class="bm-matrix__badges" name="bm-badge">
+					<button
+						v-for="lib in matrixLibsByType.filter((lib) => lib !== 'QuickModel')"
+						:key="lib"
+						:class="['bm-matrix__badge', { 'bm-matrix__badge--off': disabledMatrixLibs.includes(lib) }]"
+						:style="{ '--badge-color': libraries[lib]?.color }"
+						@click="toggleMatrixLib(lib)">
+						{{ lib }}
+					</button>
+				</TransitionGroup>
+			</div>
+			<div class="bm-matrix__filter-row">
+				<span class="bm-matrix__filter-label">
+					{{ isEs ? 'Features:' : 'Features:' }}
+				</span>
+				<div class="bm-matrix__badges">
+					<button
+						v-for="cat in featureCategoryOptions.filter((opt) => opt.key !== 'all')"
+						:key="cat.key"
+						:class="['bm-matrix__badge bm-matrix__badge--cat', { 'bm-matrix__badge--off': disabledFeatureCategories.includes(cat.key) }]"
+						@click="toggleFeatureCategory(cat.key)">
+						{{ isEs ? cat.labelEs : cat.labelEn }}
+					</button>
+				</div>
+			</div>
+		</div>
 		<div class="bm-matrix__scroll">
 			<table class="bm-matrix__table">
 				<thead>
 					<tr>
 						<th class="bm-matrix__th-feature">Feature</th>
 						<th
-							v-for="lib in matrixLibNames"
+							v-for="lib in visibleMatrixLibNames"
 							:key="lib"
-							:class="['bm-matrix__th-lib', { 'bm-matrix__th-lib--ours': lib === 'QuickModel' }]"
+							:class="[
+								'bm-matrix__th-lib',
+								{ 'bm-matrix__th-lib--ours': lib === 'QuickModel' },
+								{ 'bm-matrix__th-lib--hidden': isLibHidden(lib) },
+							]"
 							:style="{ color: libraries[lib]?.color }">
 							{{ lib }}
 						</th>
@@ -49,14 +99,19 @@
 				<tbody>
 					<tr
 						v-for="row in featureRows"
-						:key="row.featureEn">
+						:key="row.featureEn"
+						:class="{ 'bm-matrix__tr--hidden': isCategoryHidden(row.category) }">
 						<td class="bm-matrix__td-feature">
 							{{ isEs ? row.featureEs : row.featureEn }}
 						</td>
 						<td
-							v-for="lib in matrixLibNames"
+							v-for="lib in visibleMatrixLibNames"
 							:key="lib"
-							:class="['bm-matrix__td-check', { 'bm-matrix__td-check--ours': lib === 'QuickModel' }]">
+							:class="[
+								'bm-matrix__td-check',
+								{ 'bm-matrix__td-check--ours': lib === 'QuickModel' },
+								{ 'bm-matrix__td-check--hidden': isLibHidden(lib) },
+							]">
 							{{ featureIcon(row.values[lib]) }}
 						</td>
 					</tr>

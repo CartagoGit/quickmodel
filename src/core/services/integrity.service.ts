@@ -64,6 +64,31 @@ import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
+// ---------------------------------------------------------------------------
+// Module-level per-class caches — built once on first validation, reused after
+// ---------------------------------------------------------------------------
+
+/** @internal Static metadata that never changes after class decoration. */
+interface IQIntegrityClassMeta {
+	/** Result of Reflect.getMetadata(QUICK_OPTIONS_KEY, configClass) */
+	localOptions: Record<string, unknown>;
+	/** List of property names decorated with @QType / @Quick */
+	decoratedFields: string[];
+	/** fieldType metadata per decorated field — static after decoration */
+	fieldTypes: Map<string, unknown>;
+}
+
+/** @internal Per-class merged/runtime options, invalidated when QConfig reference changes. */
+interface IQIntegrityMergedOpts {
+	/** Reference snapshot of QConfig used when this entry was built. */
+	configRef: unknown;
+	/** Resolved strategy: true = failFast, false = accumulate. */
+	failFast: boolean;
+}
+
+const _INTEGRITY_CLASS_META = new WeakMap<Function, IQIntegrityClassMeta>();
+const _INTEGRITY_MERGED_OPTS = new WeakMap<Function, IQIntegrityMergedOpts>();
+
 /** @internal Context passed between recursive calls to track cycle detection and depth. */
 type IIntegrityContext = {
 	/** Tracks already-visited objects to prevent infinite cycles. */
@@ -88,6 +113,10 @@ export interface IIntegrityOptions {
 /** @internal */
 export class IntegrityService {
 	private transformers = new Map<string, IQTransformer<unknown, unknown>>();
+	/** @internal Cache for string-key toLowerCase() results inside getTransformer() */
+	private readonly _strKeyCache = new Map<string, string>();
+	/** @internal Cache for function/object-key toLowerCase() results inside getTransformer() */
+	private readonly _fnKeyCache = new WeakMap<object, string>();
 
 	/**
 	 * Creates a validation service.
@@ -198,11 +227,26 @@ export class IntegrityService {
 		let lookupKey: string | undefined;
 
 		if (typeof key === 'string') {
-			lookupKey = key.toLowerCase();
+			let cached = this._strKeyCache.get(key);
+			if (cached === undefined) {
+				cached = key.toLowerCase();
+				this._strKeyCache.set(key, cached);
+			}
+			lookupKey = cached;
 		} else if (typeof key === 'function' && 'name' in key) {
-			lookupKey = (key as { name: string }).name.toLowerCase();
+			let cached = this._fnKeyCache.get(key);
+			if (cached === undefined) {
+				cached = (key as { name: string }).name.toLowerCase();
+				this._fnKeyCache.set(key, cached);
+			}
+			lookupKey = cached;
 		} else if (typeof key === 'object' && key !== null && 'name' in key) {
-			lookupKey = (key as { name: string }).name.toLowerCase();
+			let cached = this._fnKeyCache.get(key as object);
+			if (cached === undefined) {
+				cached = (key as { name: string }).name.toLowerCase();
+				this._fnKeyCache.set(key as object, cached);
+			}
+			lookupKey = cached;
 		}
 
 		if (lookupKey && this.transformers.has(lookupKey)) {
@@ -254,30 +298,60 @@ export class IntegrityService {
 		}
 
 		const results: IQIntegrityResult[] = [];
-		const className = modelClass
-			? modelClass.name
-			: instance.constructor.name;
-
-		// Configuration
 		const configClass = modelClass || instance.constructor;
-		const localOptions =
-			Reflect.getMetadata(QUICK_OPTIONS_KEY, configClass) || {};
-		const globalDefaults = QConfig.get().defaults || {};
-		const strategy =
-			localOptions.integrityErrorStrategy ||
-			globalDefaults.integrityErrorStrategy ||
-			'accumulate';
-		const failFast = strategy === 'failFast';
+		const className = configClass.name;
 
-		// Get list of properties decorated with @QType() (or implicit via @Quick)
-		// These are the fields we know how to validate
-		const decoratedFields: string[] =
-			Reflect.getMetadata(QTYPES_METADATA_KEY, instance) ||
-			Reflect.getMetadata(
-				QTYPES_METADATA_KEY,
-				Object.getPrototypeOf(instance)
-			) ||
-			[];
+		// --- per-class static metadata cache ---
+		let classMeta = _INTEGRITY_CLASS_META.get(configClass);
+		if (!classMeta) {
+			const rawLocalOptions =
+				(Reflect.getMetadata(QUICK_OPTIONS_KEY, configClass) as
+					| Record<string, unknown>
+					| undefined) ?? {};
+			const proto: object =
+				(configClass as { prototype?: object }).prototype ??
+				configClass;
+			const rawFields: string[] =
+				Reflect.getMetadata(QTYPES_METADATA_KEY, proto) ??
+				Reflect.getMetadata(QTYPES_METADATA_KEY, configClass) ??
+				[];
+			const fldTypes = new Map<string, unknown>();
+			for (const fld of rawFields) {
+				const ftype: unknown = Reflect.getMetadata(
+					'fieldType',
+					proto,
+					fld
+				);
+				if (ftype !== undefined) fldTypes.set(fld, ftype);
+			}
+			classMeta = {
+				localOptions: rawLocalOptions,
+				decoratedFields: rawFields,
+				fieldTypes: fldTypes,
+			};
+			_INTEGRITY_CLASS_META.set(configClass, classMeta);
+		}
+		const { localOptions, decoratedFields, fieldTypes } = classMeta;
+
+		// --- merged runtime options (config-invalidation aware) ---
+		const globalConfig = QConfig.get();
+		let mergedOpts = _INTEGRITY_MERGED_OPTS.get(configClass);
+		if (!mergedOpts || mergedOpts.configRef !== globalConfig) {
+			const globalDefaults = (globalConfig.defaults ?? {}) as Record<
+				string,
+				unknown
+			>;
+			const strategy =
+				(localOptions.integrityErrorStrategy as string | undefined) ??
+				(globalDefaults.integrityErrorStrategy as string | undefined) ??
+				'accumulate';
+			mergedOpts = {
+				configRef: globalConfig,
+				failFast: strategy === 'failFast',
+			};
+			_INTEGRITY_MERGED_OPTS.set(configClass, mergedOpts);
+		}
+		const failFast = mergedOpts.failFast;
 
 		for (const key of decoratedFields) {
 			// Ignore internal props just in case
@@ -286,11 +360,13 @@ export class IntegrityService {
 			// Get current value (accessing via getter if applicable)
 			const value = instance[key];
 
-			// Get metadata from the instance
-			const fieldType = Reflect.getMetadata('fieldType', instance, key);
+			// Get fieldType from cache (populated at class-build time)
+			const fieldType = fieldTypes.get(key);
 
 			if (fieldType) {
-				const transformer = this.getTransformer(fieldType);
+				const transformer = this.getTransformer(
+					fieldType as IQTransformerKey
+				);
 
 				// Check if transformer implements IQIntegrityChecker (has checkIntegrity method)
 				if (

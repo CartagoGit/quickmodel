@@ -9,6 +9,7 @@ export * from './error.transformer';
 export * from './map-set.transformer';
 export * from './primitive.transformer';
 export * from './regexp.transformer';
+export * from './special-float.transformer';
 export * from './symbol.transformer';
 export * from './typed-array.transformer';
 export * from './weak-collections.transformer';

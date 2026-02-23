@@ -7,6 +7,28 @@ import 'reflect-metadata';
  */
 export class Logger {
 	/**
+	 * Cached config reference for fast global-debug check.
+	 * When the config reference changes (QConfig.reconfigure()), the cache is invalidated.
+	 * @internal
+	 */
+	private static _cachedConfigRef: unknown = undefined;
+	/** Cached value of defaults.enableDebugLogs for the last seen config. @internal */
+	private static _cachedGlobalDebug = false;
+
+	/**
+	 * Fast inline check: true when global debug logging is enabled.
+	 * Callers can gate expensive string-building behind this to avoid allocations in the hot path.
+	 */
+	public static get globalDebugEnabled(): boolean {
+		const cfg = QConfig.get();
+		if (cfg !== Logger._cachedConfigRef) {
+			Logger._cachedConfigRef = cfg;
+			Logger._cachedGlobalDebug = !!cfg.defaults?.enableDebugLogs;
+		}
+		return Logger._cachedGlobalDebug;
+	}
+
+	/**
 	 * Logs a debug message if debug mode is enabled globally or for the specific context.
 	 *
 	 * @param message - The message to log
@@ -37,9 +59,8 @@ export class Logger {
 	 * Checks if debug logging is enabled.
 	 */
 	private static isEnabled(context?: any): boolean {
-		// 1. Check global config
-		const defaults = QConfig.get().defaults;
-		if (defaults?.enableDebugLogs) return true;
+		// 1. Check global config (cached per config reference to avoid QConfig.get() overhead)
+		if (Logger.globalDebugEnabled) return true;
 
 		// 2. Check local config if context is provided
 		if (context) {

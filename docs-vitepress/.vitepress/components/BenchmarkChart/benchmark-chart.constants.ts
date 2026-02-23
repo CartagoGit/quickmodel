@@ -27,6 +27,7 @@ export type IFeatureValue = boolean | 'partial';
 export interface IFeatureRow {
 	featureEn: string;
 	featureEs: string;
+	category: string;
 	values: Record<string, IFeatureValue>;
 }
 
@@ -45,7 +46,7 @@ export const scenarios: IBenchScenario[] = [
 			'10k validations — TypeBox compiles to raw JSON Schema checks (fastest), valibot is tree-shakeable, Zod is the most popular, yup is mature. QM adds auto-coercion on top of validation. Plain JS and class-transformer excluded: no schema validation. arktype is fastest TypeScript-native validator. joi is mature but slower.',
 		notesEs:
 			'10k validaciones — TypeBox compila a checks JSON Schema nativo (más rápido), valibot es tree-shakeable, Zod es el más popular, yup es maduro. QM añade coerción automática sobre la validación. Plain JS y class-transformer excluidos: sin validación de esquemas. arktype es el validador TypeScript-nativo más rápido. joi es maduro pero más lento.',
-		appTypes: ['all', 'api', 'testing', 'data'],
+		appTypes: ['all', 'api'],
 		values: {
 			TypeBox: 1_500_000,
 			arktype: 5_500_000,
@@ -70,7 +71,7 @@ export const scenarios: IBenchScenario[] = [
 			'1k objects — auto vs manual coercion. QM: one decorator, zero extra code. Zod/valibot: manual transform per field. class-transformer: only Date via @Type, not BigInt/Map/Set. Plain JS, TypeBox, yup, joi, vest, superjson and arktype cannot do model-level coercion.',
 		notesEs:
 			'1k objetos — coerción automática vs manual. QM: un decorador, cero código extra. Zod/valibot: transform manual por campo. class-transformer: solo Date via @Type, no BigInt/Map/Set. Plain JS, TypeBox, yup, joi, vest, superjson y arktype no hacen coerción a nivel de modelo.',
-		appTypes: ['all', 'api', 'ddd', 'data'],
+		appTypes: ['all', 'ddd'],
 		values: {
 			valibot: 6_000,
 			'class-transformer': 5_000,
@@ -95,7 +96,7 @@ export const scenarios: IBenchScenario[] = [
 			'1k round-trips. Plain JS (JSON.parse/stringify) is the fastest but loses Date→string, BigInt→error, Map/Set→{}. class-transformer preserves Date only via @Type. superjson preserves Date, BigInt, Set, Map, RegExp and more. QuickModel preserves all types natively — bars for Plain JS and arktype are clipped for readability.',
 		notesEs:
 			'1k roundtrips. Plain JS (JSON.parse/stringify) es el más rápido pero pierde Date→string, BigInt→error, Map/Set→{}. class-transformer preserva solo Date via @Type. superjson preserva Date, BigInt, Set, Map, RegExp y más. QuickModel preserva todos los tipos nativamente — barras de Plain JS y arktype recortadas para legibilidad.',
-		appTypes: ['all', 'api', 'ddd', 'data'],
+		appTypes: ['all', 'data'],
 		values: {
 			'Plain JS': 480_000,
 			'class-transformer': 100_000,
@@ -120,7 +121,7 @@ export const scenarios: IBenchScenario[] = [
 			'10 cycles of 1k objects — throughput validation. class-transformer excluded (not a validator — needs class-validator separately). Plain JS excluded (no validation). arktype is fastest native TS validator. joi and vest are focused on form/business logic rules.',
 		notesEs:
 			'10 ciclos de 1k objetos — rendimiento de validación en masa. class-transformer excluido (no es validador — necesita class-validator por separado). Plain JS excluido (sin validación). arktype es el validador TypeScript-nativo más rápido. joi y vest están orientados a reglas de negocio/formularios.',
-		appTypes: ['all', 'api', 'data'],
+		appTypes: ['all', 'data'],
 		values: {
 			TypeBox: 1_500_000,
 			arktype: 850_000,
@@ -145,7 +146,7 @@ export const scenarios: IBenchScenario[] = [
 			'100 typed instances per cycle. faker (manual) is raw-faster but requires 10-20 lines of per-model factory code, no type constraints, needs manual maintenance on schema changes. QM is built-in: zero setup, fully typed, respects field constraints automatically. Bar for faker is clipped — it runs at 80k ops/s. arktype, joi, superjson, class-validator and vest have no built-in mock generation.',
 		notesEs:
 			'100 instancias tipadas por ciclo. faker (manual) es más rápido en bruto pero requiere 10-20 líneas de factory por modelo, sin restricciones de tipo, requiere mantenimiento manual al cambiar el schema. QM está integrado: cero setup, totalmente tipado, respeta restricciones automáticamente. La barra de faker está recortada — corre a 80k ops/s. arktype, joi, superjson, class-validator y vest no tienen generación de mocks integrada.',
-		appTypes: ['all', 'testing', 'ddd', 'mock'],
+		appTypes: ['all', 'testing', 'mock'],
 		values: {
 			'faker (manual)': 80_000,
 			QuickModel: 1_200,
@@ -620,8 +621,9 @@ export const libraries: Record<string, ILibraryInfo> = {
 
 export const featureRows: IFeatureRow[] = [
 	{
-		featureEn: 'Auto coercion (Date/BigInt/Map/Set)',
-		featureEs: 'Coerción automática (Date/BigInt/Map/Set)',
+		featureEn: 'Auto coercion',
+		featureEs: 'Coerción automática',
+		category: 'serialization',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -641,6 +643,7 @@ export const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Native serialization (toJSON)',
 		featureEs: 'Serialización nativa (toJSON)',
+		category: 'serialization',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -660,6 +663,7 @@ export const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Typed mock generation',
 		featureEs: 'Generación de mocks tipados',
+		category: 'exclusive',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -679,6 +683,7 @@ export const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Built-in AI / MCP Server',
 		featureEs: 'IA / Servidor MCP integrado',
+		category: 'exclusive',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -696,8 +701,9 @@ export const featureRows: IFeatureRow[] = [
 		},
 	},
 	{
-		featureEn: 'Polymorphic JSON (subclass auto-instantiation)',
-		featureEs: 'JSON polimórfico (subclases automáticas)',
+		featureEn: 'Polymorphic JSON',
+		featureEs: 'JSON polimórfico',
+		category: 'serialization',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -715,8 +721,9 @@ export const featureRows: IFeatureRow[] = [
 		},
 	},
 	{
-		featureEn: 'Model state: copy() / isDirty()',
-		featureEs: 'Estado del modelo: copy() / isDirty()',
+		featureEn: 'copy() / isDirty()',
+		featureEs: 'copy() / isDirty()',
+		category: 'model',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -734,8 +741,9 @@ export const featureRows: IFeatureRow[] = [
 		},
 	},
 	{
-		featureEn: 'Form schemas (@QField / @QGroup)',
-		featureEs: 'Form schemas (@QField / @QGroup)',
+		featureEn: 'Form schemas (@QField)',
+		featureEs: 'Form schemas (@QField)',
+		category: 'forms',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -755,6 +763,7 @@ export const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Computed fields (@QComputed)',
 		featureEs: 'Campos computados (@QComputed)',
+		category: 'exclusive',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -774,6 +783,7 @@ export const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Async business rules (@QRule)',
 		featureEs: 'Reglas de negocio async (@QRule)',
+		category: 'forms',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -791,8 +801,9 @@ export const featureRows: IFeatureRow[] = [
 		},
 	},
 	{
-		featureEn: 'Runtime integrity (hasIntegrity)',
-		featureEs: 'Integridad en runtime (hasIntegrity)',
+		featureEn: 'Runtime integrity',
+		featureEs: 'Integridad en runtime',
+		category: 'validation',
 		values: {
 			'Plain JS': false,
 			TypeBox: true,
@@ -812,6 +823,7 @@ export const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Multi-level inheritance inference',
 		featureEs: 'Herencia multinivel con inferencia',
+		category: 'model',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -829,8 +841,9 @@ export const featureRows: IFeatureRow[] = [
 		},
 	},
 	{
-		featureEn: 'Schema export (JSON / Zod / OpenAPI / GraphQL)',
-		featureEs: 'Exportar schema (JSON / Zod / OpenAPI / GraphQL)',
+		featureEn: 'Schema export (JSON/Zod/OpenAPI)',
+		featureEs: 'Exportar schema (JSON/Zod/OpenAPI)',
+		category: 'validation',
 		values: {
 			'Plain JS': false,
 			TypeBox: true,
@@ -847,6 +860,106 @@ export const featureRows: IFeatureRow[] = [
 			'faker (manual)': false,
 		},
 	},
+	{
+		featureEn: 'Compile-time TS inference',
+		featureEs: 'Inferencia TS compile-time',
+		category: 'validation',
+		values: {
+			'Plain JS': false,
+			TypeBox: true,
+			valibot: true,
+			Zod: true,
+			'class-transformer': false,
+			QuickModel: true,
+			yup: false,
+			arktype: true,
+			superjson: false,
+			'class-validator': false,
+			vest: false,
+			joi: false,
+			'faker (manual)': false,
+		},
+	},
+	{
+		featureEn: 'Tree-shakeable',
+		featureEs: 'Tree-shakeable',
+		category: 'validation',
+		values: {
+			'Plain JS': true,
+			TypeBox: 'partial',
+			valibot: true,
+			Zod: false,
+			'class-transformer': false,
+			QuickModel: true,
+			yup: false,
+			arktype: true,
+			superjson: false,
+			'class-validator': false,
+			vest: false,
+			joi: false,
+			'faker (manual)': true,
+		},
+	},
+	{
+		featureEn: 'Decorator constraints (@IsEmail…)',
+		featureEs: 'Restricciones (@IsEmail…)',
+		category: 'validation',
+		values: {
+			'Plain JS': false,
+			TypeBox: false,
+			valibot: false,
+			Zod: false,
+			'class-transformer': false,
+			QuickModel: true,
+			yup: false,
+			arktype: false,
+			superjson: false,
+			'class-validator': true,
+			vest: false,
+			joi: false,
+			'faker (manual)': false,
+		},
+	},
+	{
+		featureEn: 'Preserves RegExp/undefined/NaN',
+		featureEs: 'Preserva RegExp/undefined/NaN',
+		category: 'serialization',
+		values: {
+			'Plain JS': false,
+			TypeBox: false,
+			valibot: false,
+			Zod: false,
+			'class-transformer': false,
+			QuickModel: true,
+			yup: false,
+			arktype: false,
+			superjson: true,
+			'class-validator': false,
+			vest: false,
+			joi: false,
+			'faker (manual)': false,
+		},
+	},
+	{
+		featureEn: 'Validation groups / suites',
+		featureEs: 'Grupos de validación',
+		category: 'forms',
+		values: {
+			'Plain JS': false,
+			TypeBox: false,
+			valibot: false,
+			Zod: false,
+			'class-transformer': false,
+			QuickModel: true,
+			yup: false,
+			arktype: false,
+			superjson: false,
+			'class-validator': 'partial',
+			vest: true,
+			joi: false,
+			'faker (manual)': false,
+		},
+	},
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -855,13 +968,71 @@ export const featureRows: IFeatureRow[] = [
 
 export const libNames: string[] = [
 	'TypeBox',
+	'arktype',
 	'valibot',
 	'Zod',
 	'class-transformer',
+	'class-validator',
 	'yup',
+	'joi',
+	'superjson',
+	'vest',
 	'QuickModel',
 	'Plain JS',
 	'faker (manual)',
+];
+
+// ─────────────────────────────────────────────────────────────
+// CATEGORÍAS DE LIBRERÍAS (para filtro de la tabla de características)
+// ─────────────────────────────────────────────────────────────
+
+export const matrixTypeOptions = [
+	{ key: 'all', labelEn: 'All libraries', labelEs: 'Todas las librerías' },
+	{ key: 'validation', labelEn: 'Validators', labelEs: 'Validadores' },
+	{
+		key: 'serialization',
+		labelEn: 'Serialization',
+		labelEs: 'Serialización',
+	},
+	{ key: 'forms', labelEn: 'Forms / Rules', labelEs: 'Formularios / Reglas' },
+	{ key: 'mocks', labelEn: 'Mocks', labelEs: 'Mocks' },
+];
+
+export const libCategories: Record<string, string[]> = {
+	'Plain JS': ['serialization'],
+	TypeBox: ['validation'],
+	valibot: ['validation'],
+	Zod: ['validation'],
+	'class-transformer': ['serialization'],
+	yup: ['validation', 'forms'],
+	arktype: ['validation'],
+	superjson: ['serialization'],
+	'class-validator': ['validation', 'forms'],
+	vest: ['forms'],
+	joi: ['validation', 'forms'],
+	QuickModel: ['validation', 'serialization', 'forms', 'mocks'],
+	'faker (manual)': ['mocks'],
+};
+
+export const featureCategoryOptions = [
+	{
+		key: 'all',
+		labelEn: 'All features',
+		labelEs: 'Todas las características',
+	},
+	{ key: 'validation', labelEn: 'Validation', labelEs: 'Validación' },
+	{
+		key: 'serialization',
+		labelEn: 'Serialization',
+		labelEs: 'Serialización',
+	},
+	{ key: 'forms', labelEn: 'Forms & Rules', labelEs: 'Formularios y Reglas' },
+	{ key: 'model', labelEn: 'Model State', labelEs: 'Estado del Modelo' },
+	{
+		key: 'exclusive',
+		labelEn: 'QuickModel Only',
+		labelEs: 'Solo QuickModel',
+	},
 ];
 
 // ─────────────────────────────────────────────────────────────

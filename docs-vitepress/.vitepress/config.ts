@@ -667,6 +667,10 @@ export default defineConfig({
 									link: '/en/guide/validation',
 								},
 								{
+									text: 'Built-in Validators',
+									link: '/en/guide/validators',
+								},
+								{
 									text: 'Form Validation (/forms)',
 									link: '/en/guide/forms',
 								},
@@ -927,6 +931,10 @@ export default defineConfig({
 								{
 									text: 'Validación (@QRule)',
 									link: '/es/guide/validation',
+								},
+								{
+									text: 'Validadores Integrados',
+									link: '/es/guide/validators',
 								},
 								{
 									text: 'Validación de Formularios (/forms)',

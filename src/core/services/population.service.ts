@@ -46,6 +46,75 @@ interface IQPopulateClassMeta {
 	isArrowMethodCache: Map<string, boolean>;
 }
 const _POPULATE_CLASS_META = new WeakMap<Function, IQPopulateClassMeta>();
+
+// ─── Merged runtime options cache ────────────────────────────────────────────
+// Merges model-level @Quick options with QConfig.get().defaults once per
+// (class, globalConfig reference). Invalidated automatically when QConfig
+// is reconfigured (detect via object identity comparison).
+interface IQMergedRuntimeOptions {
+	disableSafetyChecks: boolean;
+	unknownPolicy: 'keep' | 'strip' | 'error';
+	/** true when model or global config explicitly set unknownPropertyPolicy */
+	unknownPolicyExplicit: boolean;
+	maxArrayLength: number;
+	normalization: { trimStrings?: boolean; emptyStringAsNull?: boolean };
+	coercionStrategy: 'strict' | 'loose';
+	nullToUndefined: boolean;
+	transformCase: IQAdvancedOptions['transformCase'] | undefined;
+	stripInternal: IQAdvancedOptions['stripInternalIdentifiers'] | undefined;
+	/** Cached maxRecursionDepth — avoids extra QConfig.get() in validateDepth */
+	maxRecursionDepth: number;
+}
+interface IQMergedMetaCacheEntry {
+	/** Reference to the QConfig.defaults at build time — used for change detection */
+	configRef: IQAdvancedOptions | undefined;
+	merged: IQMergedRuntimeOptions;
+}
+const _MERGED_RUNTIME_META = new WeakMap<Function, IQMergedMetaCacheEntry>();
+
+/** Builds and caches the merged (model + global) runtime options for a class */
+function _getMergedRuntimeOptions(
+	modelClass: Function,
+	options: IQAdvancedOptions
+): IQMergedRuntimeOptions {
+	const rawGlobalDefaults = QConfig.get().defaults;
+	const globalDefaults = rawGlobalDefaults as IQAdvancedOptions | undefined;
+	const cached = _MERGED_RUNTIME_META.get(modelClass);
+	if (cached && cached.configRef === globalDefaults) {
+		return cached.merged;
+	}
+	const gDef = globalDefaults || ({} as IQAdvancedOptions);
+	const merged: IQMergedRuntimeOptions = {
+		disableSafetyChecks:
+			options?.performance?.disableSafetyChecks ??
+			gDef?.performance?.disableSafetyChecks ??
+			false,
+		unknownPolicy:
+			options.unknownPropertyPolicy ||
+			gDef.unknownPropertyPolicy ||
+			'keep',
+		/** true when at least one of model or global explicitly sets the policy */
+		unknownPolicyExplicit: !!(
+			options.unknownPropertyPolicy || gDef.unknownPropertyPolicy
+		),
+		maxArrayLength:
+			options.maxArrayLength ?? gDef.maxArrayLength ?? 5000000,
+		normalization: {
+			...gDef.normalization,
+			...options.normalization,
+		},
+		coercionStrategy:
+			options.coercionStrategy || gDef.coercionStrategy || 'strict',
+		nullToUndefined:
+			options.nullToUndefined ?? gDef.nullToUndefined ?? false,
+		transformCase: options.transformCase || gDef.transformCase,
+		stripInternal:
+			options.stripInternalIdentifiers ?? gDef.stripInternalIdentifiers,
+		maxRecursionDepth: rawGlobalDefaults?.maxRecursionDepth ?? 50,
+	};
+	_MERGED_RUNTIME_META.set(modelClass, { configRef: globalDefaults, merged });
+	return merged;
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -103,7 +172,6 @@ export class PopulationService {
 		}
 	): void {
 		const { modelClass, context } = params;
-		const visited = context?.visited || new WeakSet();
 
 		// ── Per-class metadata cache ─────────────────────────────────────────
 		// All Reflect.getMetadata calls on modelClass are static after decorators run.
@@ -160,14 +228,21 @@ export class PopulationService {
 			_POPULATE_CLASS_META.set(modelClass, classMeta);
 		}
 
-		// Model-level options (cached) + global defaults (runtime — can change via QConfig)
+		// Model-level options (cached). Merged with global defaults via per-class cache
+		// invalidated automatically when QConfig is reconfigured (reference comparison).
 		const options = classMeta.options;
-		const globalDefaults = QConfig.get().defaults || {};
-
-		const disableSafetyChecks =
-			options?.performance?.disableSafetyChecks ??
-			globalDefaults?.performance?.disableSafetyChecks ??
-			false;
+		const {
+			disableSafetyChecks,
+			unknownPolicy,
+			unknownPolicyExplicit,
+			maxArrayLength,
+			normalization,
+			coercionStrategy,
+			nullToUndefined,
+			transformCase,
+			stripInternal,
+			maxRecursionDepth,
+		} = _getMergedRuntimeOptions(modelClass, options);
 
 		// Recursion Limits check
 		const currentDepth = context?.depth || 0;
@@ -182,17 +257,23 @@ export class PopulationService {
 			);
 		}
 
-		if (!disableSafetyChecks) {
-			this.recursionGuard.validateDepth(currentDepth);
+		if (!disableSafetyChecks && currentDepth > maxRecursionDepth) {
+			throw new Error(
+				`QuickModel Security: Maximum recursion depth (${maxRecursionDepth}) exceeded during population.`
+			);
 		}
 
-		// Circular reference detection
-		if (this.recursionGuard.hasCircularReference(data, visited)) {
+		// Circular reference detection — reuse recursionContext.visited to avoid a second new WeakSet()
+		const recursionContext = this.recursionGuard.createContext(context);
+		if (
+			this.recursionGuard.hasCircularReference(
+				data,
+				recursionContext.visited
+			)
+		) {
 			// Prevent infinite recursion on circular structures
 			return;
 		}
-
-		const recursionContext = this.recursionGuard.createContext(context);
 
 		// Use cached class metadata — all static after decorators run
 		const {
@@ -202,20 +283,12 @@ export class PopulationService {
 			designTypes,
 		} = classMeta;
 
-		// Determine Unknown Property Policy
-		// Priority: Model Config > Global Config > Default ('keep')
-		const unknownPolicy =
-			options.unknownPropertyPolicy ||
-			globalDefaults.unknownPropertyPolicy ||
-			'keep';
-
 		// Deprecation warning: the default 'keep' will change to 'strip' in v2.0.0.
 		// Only fires for classes explicitly decorated with @Quick, once per class.
 		if (
 			currentDepth === 0 &&
 			classMeta.hasTypeMapKey &&
-			!options.unknownPropertyPolicy &&
-			!globalDefaults.unknownPropertyPolicy &&
+			!unknownPolicyExplicit &&
 			!PopulationService._warnedMissingPolicy.has(modelClass)
 		) {
 			PopulationService._warnedMissingPolicy.add(modelClass);
@@ -226,35 +299,6 @@ export class PopulationService {
 					"Set it explicitly: @Quick({...}, { unknownPropertyPolicy: 'strip' }) to silence this warning."
 			);
 		}
-
-		// DoS Protection config
-		const maxArrayLength =
-			options.maxArrayLength ?? globalDefaults.maxArrayLength ?? 5000000;
-
-		// Internal Identifiers Policy
-		const stripInternal =
-			options.stripInternalIdentifiers ??
-			globalDefaults.stripInternalIdentifiers;
-
-		// Normalization Config
-		const normalization = {
-			...globalDefaults.normalization,
-			...options.normalization,
-		};
-
-		// Coercion Strategy
-		const coercionStrategy =
-			options.coercionStrategy ||
-			globalDefaults.coercionStrategy ||
-			'strict';
-
-		// Null to Undefined
-		const nullToUndefined =
-			options.nullToUndefined ?? globalDefaults.nullToUndefined ?? false;
-
-		// Case Transformation Config
-		const transformCase =
-			options.transformCase || globalDefaults.transformCase;
 
 		// SECURITY: Prevent Stack Overflow via Deep Recursion
 		this.recursionGuard.validateDepth(recursionContext.depth);
@@ -462,6 +506,7 @@ export class PopulationService {
 					instance,
 					modelClass,
 					decoratedFields,
+					decoratedFieldsSet,
 					designTypes,
 					options,
 					discriminators,

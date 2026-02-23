@@ -33,6 +33,21 @@ import { QConfig } from '../config/quick.config';
 import { QModelError } from '../errors/quickmodel.error';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
+// ---------------------------------------------------------------------------
+// Module-level per-class cache for validationTrigger — avoids
+// Reflect.getMetadata + QConfig.get() on every deserialize() call.
+// ---------------------------------------------------------------------------
+interface IQDeserializeTriggerCache {
+	/** QConfig snapshot for invalidation */
+	configRef: unknown;
+	/** True when the resolved trigger is 'construction' */
+	triggerOnConstruction: boolean;
+}
+const _DESERIALIZE_TRIGGER_CACHE = new WeakMap<
+	Function,
+	IQDeserializeTriggerCache
+>();
+
 export class Deserializer<
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 	TModel = unknown,
@@ -175,15 +190,27 @@ export class Deserializer<
 		);
 
 		// 3. Validation (Trigger: 'construction')
-		const localOptions =
-			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
-		const globalDefaults = QConfig.get().defaults || {};
-		const trigger =
-			localOptions.validationTrigger ||
-			globalDefaults.validationTrigger ||
-			'manual';
+		const globalConfig = QConfig.get();
+		let triggerCache = _DESERIALIZE_TRIGGER_CACHE.get(modelClass);
+		if (!triggerCache || triggerCache.configRef !== globalConfig) {
+			const localOptions =
+				(Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) as
+					| Record<string, unknown>
+					| undefined) ?? {};
+			const trigger =
+				(localOptions.validationTrigger as string | undefined) ??
+				(globalConfig.defaults?.validationTrigger as
+					| string
+					| undefined) ??
+				'manual';
+			triggerCache = {
+				configRef: globalConfig,
+				triggerOnConstruction: trigger === 'construction',
+			};
+			_DESERIALIZE_TRIGGER_CACHE.set(modelClass, triggerCache);
+		}
 
-		if (trigger === 'construction') {
+		if (triggerCache.triggerOnConstruction) {
 			const errors = this.integrityService.checkIntegrity(
 				instance as Record<string, unknown>,
 				{ modelClass }

@@ -1,7 +1,7 @@
 import { computed, type Ref } from 'vue';
 import type { IBenchScenario } from './benchmark-chart.constants';
 
-const OVERFLOW_RATIO = 4;
+const OVERFLOW_RATIO = 3.5;
 const OVERFLOW_SCALE_FACTOR = 1.8;
 const MIN_BAR_PERCENT = 3;
 const OVERFLOW_BAR_PERCENT = 92;
@@ -13,26 +13,38 @@ export interface IBenchmarkScaleResult {
 
 /**
  * Calcula la escala visual del gráfico (SRP: sólo responsable de la escala y overflow).
- * Si la barra top supera 4x la segunda, se recorta para preservar la legibilidad.
+ * Clipping iterativo: si la barra top supera OVERFLOW_RATIO veces la segunda,
+ * se recorta y se repite hasta que el restante sea estable. Así múltiples barras
+ * outlier (p.ej. arktype + TypeBox) quedan recortadas preservando la legibilidad.
  */
 export function useBenchmarkScale(
 	currentScenario: Ref<IBenchScenario>,
 	activeLibNames: Ref<string[]>
 ): IBenchmarkScaleResult {
 	const visualMax = computed(() => {
-		const sorted = [...activeLibNames.value]
+		const allVals = [...activeLibNames.value]
 			.map((lib) => currentScenario.value.values[lib] ?? 0)
+			.filter((val) => val > 0)
 			.sort((aVal, bVal) => bVal - aVal);
 
-		if (sorted.length < 2) return sorted[0] ?? 1;
+		if (allVals.length === 0) return 1;
+		if (allVals.length === 1) return allVals[0]!;
 
-		const top = sorted[0]!;
-		const second = sorted[1]!;
-
-		if (second === 0) return top;
-		return top / second > OVERFLOW_RATIO
-			? second * OVERFLOW_SCALE_FACTOR
-			: top;
+		// Clipping iterativo: recortar el top mientras supere OVERFLOW_RATIO * segundo.
+		let threshold = allVals[0]!;
+		for (let pass = 0; pass < allVals.length; pass++) {
+			const visible = allVals.filter((val) => val <= threshold);
+			if (visible.length < 2) break;
+			const top = visible[0]!;
+			const second = visible[1]!;
+			if (second === 0) break;
+			if (top / second > OVERFLOW_RATIO) {
+				threshold = second * OVERFLOW_SCALE_FACTOR;
+			} else {
+				break; // estable
+			}
+		}
+		return threshold;
 	});
 
 	function isOverflow(lib: string): boolean {

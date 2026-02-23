@@ -29,6 +29,22 @@ export type {
 	IQRule,
 	IQRulesAsyncOptions,
 } from './core/decorators/qrule.decorator';
+export {
+	IsEmail,
+	IsUrl,
+	IsNotEmpty,
+	MinLength,
+	MaxLength,
+	Matches,
+	IsUuid,
+	IsDateString,
+	Min,
+	Max,
+	IsInt,
+	IsPositive,
+	IsNegative,
+	IsIn,
+} from './core/decorators/validators';
 export { QField } from './core/decorators/qfield.decorator';
 export type {
 	IQFieldMeta,

@@ -4,7 +4,11 @@ import {
 	scenarios,
 	libraries,
 	libNames,
+	featureRows,
 	appTypeOptions,
+	matrixTypeOptions,
+	featureCategoryOptions,
+	libCategories,
 } from './benchmark-chart.constants';
 import { useBenchmarkScale } from './useBenchmarkScale';
 import { useBenchmarkFormatters } from './useBenchmarkFormatters';
@@ -17,6 +21,9 @@ export function useBenchmarkChart() {
 
 	const activeAppType = ref('all');
 	const activeScenario = ref(scenarios[0]!.key);
+	const activeMatrixType = ref('all');
+	const disabledMatrixLibs = ref<string[]>([]);
+	const disabledFeatureCategories = ref<string[]>([]);
 
 	// ─── Computados ───────────────────────────────────────────
 
@@ -59,11 +66,77 @@ export function useBenchmarkChart() {
 		libNames.filter((lib) => currentScenario.value.values[lib] == null)
 	);
 
-	/** Feature matrix: QuickModel siempre en primera columna */
-	const matrixLibNames = computed(() => [
+	/** Feature matrix: librerías del tipo seleccionado (QuickModel siempre incluida) */
+	const matrixLibsByType = computed(() =>
+		activeMatrixType.value === 'all'
+			? libNames
+			: libNames.filter(
+					(lib) =>
+						lib === 'QuickModel' ||
+						(libCategories[lib]?.includes(activeMatrixType.value) ??
+							false)
+				)
+	);
+
+	/**
+	 * Feature matrix: todas las librerías siempre en el DOM.
+	 * La visibilidad se controla con --hidden (CSS), no eliminando del DOM.
+	 */
+	const visibleMatrixLibNames = computed(() => [
 		'QuickModel',
 		...libNames.filter((lib) => lib !== 'QuickModel'),
 	]);
+
+	// Al cambiar el tipo, resetear las librerías desactivadas
+	watch(activeMatrixType, () => {
+		disabledMatrixLibs.value = [];
+	});
+
+	function toggleMatrixLib(lib: string): void {
+		if (disabledMatrixLibs.value.includes(lib)) {
+			disabledMatrixLibs.value = disabledMatrixLibs.value.filter(
+				(cur) => cur !== lib
+			);
+		} else {
+			disabledMatrixLibs.value = [...disabledMatrixLibs.value, lib];
+		}
+	}
+
+	function isLibHidden(lib: string): boolean {
+		if (disabledMatrixLibs.value.includes(lib)) return true;
+		if (lib !== 'QuickModel' && !matrixLibsByType.value.includes(lib))
+			return true;
+		return false;
+	}
+
+	/** Filas visibles en la tabla de características según categorías activas */
+	const visibleFeatureRows = computed(() =>
+		disabledFeatureCategories.value.length === 0
+			? featureRows
+			: featureRows.filter(
+					(row) =>
+						!disabledFeatureCategories.value.includes(row.category)
+				)
+	);
+
+	function toggleFeatureCategory(cat: string): void {
+		const allKeys = featureCategoryOptions
+			.filter((opt) => opt.key !== 'all')
+			.map((opt) => opt.key);
+		if (disabledFeatureCategories.value.includes(cat)) {
+			disabledFeatureCategories.value =
+				disabledFeatureCategories.value.filter((cur) => cur !== cat);
+		} else {
+			const next = [...disabledFeatureCategories.value, cat];
+			// At least one category must remain visible
+			if (next.length >= allKeys.length) return;
+			disabledFeatureCategories.value = next;
+		}
+	}
+
+	function isCategoryHidden(cat: string): boolean {
+		return disabledFeatureCategories.value.includes(cat);
+	}
 
 	// ─── Sub-composables (SRP) ────────────────────────────────
 
@@ -89,11 +162,17 @@ export function useBenchmarkChart() {
 	return {
 		// Datos estáticos
 		libraries,
+		featureRows,
 		appTypeOptions,
+		matrixTypeOptions,
+		featureCategoryOptions,
 
 		// Estado reactivo
 		activeAppType,
 		activeScenario,
+		activeMatrixType,
+		disabledMatrixLibs,
+		disabledFeatureCategories,
 		hoveredLib,
 		tooltipX,
 		tooltipY,
@@ -105,7 +184,15 @@ export function useBenchmarkChart() {
 		currentScenario,
 		activeLibNames,
 		excludedLibNames,
-		matrixLibNames,
+		matrixLibsByType,
+		visibleMatrixLibNames,
+		visibleFeatureRows,
+
+		// Funciones
+		toggleMatrixLib,
+		toggleFeatureCategory,
+		isLibHidden,
+		isCategoryHidden,
 
 		// Escala (useBenchmarkScale)
 		isOverflow,

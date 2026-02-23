@@ -145,7 +145,7 @@ body {
 	overflow-x: auto;
 	border-collapse: collapse;
 	width: 100%;
-	margin: 1.5rem 0;
+	margin-top: 1.5rem;
 	border-radius: 8px;
 	border: 1px solid var(--vp-c-divider);
 
@@ -383,6 +383,11 @@ body {
 			justify-content: flex-end;
 			padding-right: 1rem;
 		}
+	}
+
+	// Compatibility for redirecting pages
+	.VPHome .vp-doc {
+		padding-top: 0rem;
 	}
 
 	// Home Page Grid Layout (Hero Left / Features Right)

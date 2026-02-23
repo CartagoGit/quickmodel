@@ -8,6 +8,78 @@ import { IQTransformContext } from '../interfaces/transformer.interface';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QTransformerRegistry } from '../registry/transformer.registry';
 import { QUICK_TYPE_MAP_KEY } from '../constants/metadata-keys';
+import {
+	isQMSpecialToken,
+	decodeQMSpecialToken,
+} from '@/transformers/special-float.transformer';
+
+// ---------------------------------------------------------------------------
+// Module-level per-(constructor, key) cache for transformProperty() hot path
+// Safe because decorator metadata is immutable after class definition
+// ---------------------------------------------------------------------------
+interface IQPropTransformMeta {
+	customTransformer: any;
+
+	fieldType: any;
+
+	arrayElementClass: any;
+
+	arrayElementTypes: any;
+
+	designType: any;
+
+	arrayNestingDepth: any;
+	/** Whether the cache entry has been built */
+	built: true;
+}
+
+const _PROP_TRANSFORM_META = new WeakMap<
+	Function,
+	Map<string, IQPropTransformMeta>
+>();
+
+function _getPropTransformMeta(
+	ctor: Function,
+	targetKey: string
+): IQPropTransformMeta {
+	let classMap = _PROP_TRANSFORM_META.get(ctor);
+	if (!classMap) {
+		classMap = new Map();
+		_PROP_TRANSFORM_META.set(ctor, classMap);
+	}
+	let meta = classMap.get(targetKey);
+	if (!meta) {
+		// Use the prototype to read decorator metadata (same as reading from any instance)
+		const proto = (ctor as { prototype: object }).prototype;
+		meta = {
+			customTransformer: Reflect.getMetadata(
+				'customTransformer',
+				proto,
+				targetKey
+			),
+			fieldType: Reflect.getMetadata('fieldType', proto, targetKey),
+			arrayElementClass: Reflect.getMetadata(
+				'arrayElementClass',
+				proto,
+				targetKey
+			),
+			arrayElementTypes: Reflect.getMetadata(
+				'arrayElementTypes',
+				proto,
+				targetKey
+			),
+			designType: Reflect.getMetadata('design:type', proto, targetKey),
+			arrayNestingDepth: Reflect.getMetadata(
+				'arrayNestingDepth',
+				proto,
+				targetKey
+			),
+			built: true,
+		};
+		classMap.set(targetKey, meta);
+	}
+	return meta;
+}
 
 export class PropertyTransformer {
 	constructor(
@@ -23,6 +95,7 @@ export class PropertyTransformer {
 			instance: any;
 			modelClass: Function;
 			decoratedFields: string[];
+			decoratedFieldsSet?: Set<string>;
 			designTypes: Record<string, any>;
 			options: IQAdvancedOptions;
 			discriminators: any; // IQDiscriminatorConfig
@@ -36,6 +109,7 @@ export class PropertyTransformer {
 			instance,
 			modelClass,
 			decoratedFields,
+			decoratedFieldsSet,
 			designTypes,
 			options,
 			discriminators,
@@ -47,8 +121,18 @@ export class PropertyTransformer {
 
 		const targetKey = transformContext.propertyKey;
 
+		// Auto-decode QM special float tokens produced by Serializer
+		// (handles NaN, Infinity, -Infinity encoded as { __qm: 'nan' | 'inf' | '-inf' })
+		if (isQMSpecialToken(value)) {
+			return decodeQMSpecialToken(value);
+		}
+
 		// 1. If property is NOT decorated with @QType()
-		if (!decoratedFields.includes(key)) {
+		if (
+			decoratedFieldsSet
+				? !decoratedFieldsSet.has(key)
+				: !decoratedFields.includes(key)
+		) {
 			const expectedType = designTypes[key];
 			if (expectedType) {
 				value = this.valueTransformer.validateOrCoercePrimitive({
@@ -77,6 +161,46 @@ export class PropertyTransformer {
 			normalization: options.normalization, // Pass normalization options to transformers
 		};
 
+		// Per-(constructor, key) cache: eliminates Reflect.getMetadata calls per decorated field
+		// Falls back to direct instance lookup for plain objects (unit tests / dynamic metadata)
+		const _ctor = instance.constructor as Function;
+		const _propMeta: IQPropTransformMeta =
+			_ctor !== Object
+				? _getPropTransformMeta(_ctor, targetKey)
+				: {
+						customTransformer: Reflect.getMetadata(
+							'customTransformer',
+							instance,
+							targetKey
+						),
+						fieldType: Reflect.getMetadata(
+							'fieldType',
+							instance,
+							targetKey
+						),
+						arrayElementClass: Reflect.getMetadata(
+							'arrayElementClass',
+							instance,
+							targetKey
+						),
+						arrayElementTypes: Reflect.getMetadata(
+							'arrayElementTypes',
+							instance,
+							targetKey
+						),
+						designType: Reflect.getMetadata(
+							'design:type',
+							instance,
+							targetKey
+						),
+						arrayNestingDepth: Reflect.getMetadata(
+							'arrayNestingDepth',
+							instance,
+							targetKey
+						),
+						built: true,
+					};
+
 		// 0. 🔥 CHECK: Custom transformer from options (High Priority)
 		const customTransformerFn = options.transformers?.[targetKey];
 		if (typeof customTransformerFn === 'function') {
@@ -84,17 +208,13 @@ export class PropertyTransformer {
 		}
 
 		// 1. Check for custom transformer function from @Quick()
-		const customTransformer = Reflect.getMetadata(
-			'customTransformer',
-			instance,
-			targetKey
-		);
+		const customTransformer = _propMeta.customTransformer;
 		if (customTransformer && typeof customTransformer === 'function') {
 			return customTransformer(value);
 		}
 
 		// 2. Check for custom transformer via fieldType metadata
-		const fieldType = Reflect.getMetadata('fieldType', instance, targetKey);
+		const fieldType = _propMeta.fieldType;
 		if (fieldType) {
 			const transformer =
 				this.transformerLookup.getTransformer(fieldType);
@@ -126,11 +246,7 @@ export class PropertyTransformer {
 		}
 
 		// 3. Check for array of models or nested model
-		let arrayElementClass = Reflect.getMetadata(
-			'arrayElementClass',
-			instance,
-			targetKey
-		);
+		let arrayElementClass = _propMeta.arrayElementClass;
 
 		// FALLBACK: Implicit Primitive Handling for @QType() (no args)
 		if (!fieldType && !arrayElementClass) {
@@ -169,11 +285,7 @@ export class PropertyTransformer {
 			}
 		}
 
-		let arrayElementTypes = Reflect.getMetadata(
-			'arrayElementTypes',
-			instance,
-			targetKey
-		);
+		let arrayElementTypes = _propMeta.arrayElementTypes;
 
 		// FALLBACK: Resolve from Quick TypeMap
 		if (!arrayElementClass) {
@@ -213,7 +325,8 @@ export class PropertyTransformer {
 		}
 
 		if (arrayElementClass) {
-			let designType = Reflect.getMetadata('design:type', instance, key);
+			// Use cached metadata from _propMeta — eliminates 2 Reflect.getMetadata calls per decorated array field
+			let designType = _propMeta.designType;
 			if (!designType) {
 				const typeMap = Reflect.getMetadata(
 					QUICK_TYPE_MAP_KEY,
@@ -224,11 +337,7 @@ export class PropertyTransformer {
 				}
 			}
 
-			const arrayNestingDepth = Reflect.getMetadata(
-				'arrayNestingDepth',
-				instance,
-				key
-			);
+			const arrayNestingDepth = _propMeta.arrayNestingDepth;
 			const isArrayType = designType === Array;
 
 			// Validation: If it's a singular model/type (not array syntax), value must NOT be an array
@@ -446,11 +555,7 @@ export class PropertyTransformer {
 		}
 
 		// 4. Auto-detection via design:type
-		const designType = Reflect.getMetadata(
-			'design:type',
-			instance,
-			targetKey
-		);
+		const designType = _propMeta.designType;
 
 		if (designType && designType !== Array && designType !== Object) {
 			return this.valueTransformer.transformByDesignType(

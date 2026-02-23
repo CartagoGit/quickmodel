@@ -124,6 +124,39 @@ const result = user.checkRules();
 // { valid: true, errors: [] }
 ```
 
+## Validadores integrados
+
+QuickModel incluye un conjunto de decoradores validadores listos para usar que replican la API de `class-validator`, implementados como wrappers sobre `@QRule`. Impórtalos desde el entry point principal:
+
+```typescript
+import { IsEmail, Min, IsNotEmpty } from '@cartago-git/quickmodel';
+// o con tree-shaking para un bundle más pequeño:
+import { IsEmail } from '@cartago-git/quickmodel/validators';
+```
+
+```typescript
+@Quick()
+class Usuario extends QModel<IUsuario> {
+	@IsEmail()
+	declare email: string;
+
+	@Min(0)
+	@Max(120)
+	@IsInt()
+	declare edad: number;
+
+	@MinLength(3)
+	@IsNotEmpty()
+	declare nombre: string;
+}
+
+const user = new Usuario({ email: 'malo', edad: -1, nombre: '' });
+user.checkRules();
+// errors → [ email inválido, edad muy pequeña, nombre muy corto, nombre vacío ]
+```
+
+> 📖 **[Referencia de validadores integrados](./validators.md)** — Lista completa de los 14 validadores (`IsEmail`, `IsUrl`, `Min`, `Max`, `IsInt`, `Matches`, `IsUuid`, `IsDateString`, …) con firmas y ejemplos.
+
 ## Referencia API
 
 ### `@QRule(fn, message)`

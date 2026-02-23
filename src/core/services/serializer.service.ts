@@ -120,6 +120,113 @@ import {
 } from '../constants/metadata-keys';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
+import { QM_SPECIAL_TOKEN_KEY } from '@/transformers/special-float.transformer';
+
+// ---------------------------------------------------------------------------
+// Module-level per-constructor cache for serialize() hot path
+// Safe because decorator metadata is immutable after class definition
+// ---------------------------------------------------------------------------
+interface IQSerializeClassMeta {
+	modelOptions: IQAdvancedOptions | undefined;
+	typeMap: Record<string, unknown> | null | undefined;
+	excludeFields: string[];
+	/** Getter keys from prototype chain that should be included (qtype:generated + QComputed) */
+	getterKeys: string[];
+}
+
+const _SERIALIZE_CLASS_META = new WeakMap<Function, IQSerializeClassMeta>();
+
+// ---------------------------------------------------------------------------
+// QModel constructor detection cache — Reflect.hasMetadata is called in
+// serializeValue() per object-type field. Caching per constructor eliminates
+// the reflection cost on repeated serializations of the same model types.
+// ---------------------------------------------------------------------------
+const _IS_QMODEL_CTOR = new WeakMap<Function, boolean>();
+
+function _isQModelCtor(ctor: Function): boolean {
+	let cached = _IS_QMODEL_CTOR.get(ctor);
+	if (cached === undefined) {
+		cached =
+			Reflect.hasMetadata(QUICK_DECORATOR_KEY, ctor) ||
+			Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, ctor);
+		_IS_QMODEL_CTOR.set(ctor, cached);
+	}
+	return cached;
+}
+
+// ---------------------------------------------------------------------------
+// Merged serialization options (QConfig-aware) — cached per constructor,
+// invalidated when QConfig reference changes. Only used on the base call
+// (no explicit options). Avoids QConfig.get() + object spread every call.
+// ---------------------------------------------------------------------------
+interface IQSerializeMergedOpts {
+	configRef: unknown;
+	/**
+	 * Pre-resolved options to use when serialize() is called without user options.
+	 * `undefined` means all defaults apply (no object needed at all).
+	 */
+	baseOptions: IQSerializationOptions | undefined;
+}
+const _SERIALIZE_MERGED_OPTS = new WeakMap<Function, IQSerializeMergedOpts>();
+
+// ---------------------------------------------------------------------------
+// Depth-only options cache for serializeValue() Map/Set/Array inner-element
+// paths. When options === undefined (common case), avoids `{ ...options, _depth: N }`
+// object allocation per element. Objects are frozen to prevent accidental mutation.
+// ---------------------------------------------------------------------------
+const _DEPTH_ONLY_OPTS: ReadonlyArray<
+	Readonly<IQSerializationOptions & { _depth: number }>
+> = Array.from({ length: 32 }, (_, idx) => Object.freeze({ _depth: idx }));
+
+/**
+ * @internal Returns child options for container-element recursion in serializeValue().
+ * When options is undefined, returns a pre-allocated frozen depth-only object.
+ * When options is provided, creates a new merged object (slow path, rare).
+ */
+function _nextDepthOpts(
+	options: IQSerializationOptions | undefined,
+	depth: number
+): IQSerializationOptions {
+	if (options === undefined) {
+		return _DEPTH_ONLY_OPTS[depth + 1] ?? { _depth: depth + 1 };
+	}
+	return { ...options, _depth: depth + 1 };
+}
+
+function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
+	let meta = _SERIALIZE_CLASS_META.get(ctor);
+	if (!meta) {
+		const modelOptions = Reflect.getMetadata(QUICK_OPTIONS_KEY, ctor) as
+			| IQAdvancedOptions
+			| undefined;
+		const typeMap = (Reflect.getMetadata(QUICK_TYPE_MAP_KEY, ctor) ??
+			null) as Record<string, unknown> | null;
+		const excludeFields: string[] = modelOptions?.excludeFields ?? [];
+
+		// Walk prototype chain once to collect getter keys
+		const getterKeys: string[] = [];
+		let proto = (ctor as { prototype: object }).prototype as object | null;
+		while (proto && proto !== Object.prototype) {
+			for (const key of Object.getOwnPropertyNames(proto)) {
+				if (key === 'constructor') continue;
+				const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+				if (descriptor?.get) {
+					if (
+						Reflect.hasMetadata('qtype:generated', proto, key) ||
+						Reflect.hasMetadata(QCOMPUTED_METADATA_KEY, proto, key)
+					) {
+						getterKeys.push(key);
+					}
+				}
+			}
+			proto = Object.getPrototypeOf(proto) as object | null;
+		}
+
+		meta = { modelOptions, typeMap, excludeFields, getterKeys };
+		_SERIALIZE_CLASS_META.set(ctor, meta);
+	}
+	return meta;
+}
 
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -228,55 +335,66 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): TInterface {
-		// Always read model-level advanced options (needed for excludeFields and others)
-		const modelOptions = Reflect.getMetadata(
-			QUICK_OPTIONS_KEY,
-			model.constructor
-		) as IQAdvancedOptions;
-
-		// excludeFields: fields permanently excluded from serialization output.
-		// Set once in @Quick({}, { excludeFields: ['password', 'cache'] }) — never appear in toJSON().
-		// Deserialization is NOT affected — the instance still has the values.
-		const modelExcludeFields: string[] = modelOptions?.excludeFields ?? [];
+		// Per-constructor cache: eliminates Reflect.getMetadata + proto chain walk per call
+		const {
+			modelOptions,
+			typeMap,
+			excludeFields: modelExcludeFields,
+			getterKeys,
+		} = _getSerializeClassMeta(model.constructor);
 
 		// Resolve Configuration (DateStrategy, Case, etc.)
 		let activeOptions = options;
-		// Combine incoming options with model defaults if options are missing properties
-		// This handles the first call (no options) and recursive calls (inheriting options)
-		// But recursive calls should preferably respect Child Model config for some things?
-		// DateStrategy was fixed. transformCase should probably follow similar logic.
 
-		if (!options?.dateStrategy || !options?.transformCase) {
+		if (!options) {
+			// Fast path: no user options — use per-class cached base options.
+			// Avoids QConfig.get() + object allocation on every serialize() call.
+			const globalConfig = QConfig.get();
+			let merged = _SERIALIZE_MERGED_OPTS.get(model.constructor);
+			if (!merged || merged.configRef !== globalConfig) {
+				const gDef = globalConfig.defaults;
+				const dateStrategy =
+					modelOptions?.dateStrategy ?? gDef?.dateStrategy ?? 'iso';
+				const transformCase =
+					modelOptions?.transformCase ?? gDef?.transformCase;
+				const exposeUnsetFields =
+					modelOptions?.exposeUnsetFields ?? gDef?.exposeUnsetFields;
+				let baseOpts: IQSerializationOptions | undefined;
+				if (
+					dateStrategy !== 'iso' ||
+					transformCase ||
+					exposeUnsetFields !== undefined
+				) {
+					baseOpts = {} as IQSerializationOptions;
+					if (dateStrategy !== 'iso')
+						baseOpts.dateStrategy = dateStrategy;
+					if (transformCase) baseOpts.transformCase = transformCase;
+					if (exposeUnsetFields !== undefined)
+						baseOpts.exposeUnsetFields = exposeUnsetFields;
+				}
+				merged = { configRef: globalConfig, baseOptions: baseOpts };
+				_SERIALIZE_MERGED_OPTS.set(model.constructor, merged);
+			}
+			activeOptions = merged.baseOptions;
+		} else if (!options.dateStrategy || !options.transformCase) {
+			// Partial options: merge with model defaults + global config.
 			const globalDefaults = QConfig.get().defaults;
-
 			const dateStrategy =
 				modelOptions?.dateStrategy ??
 				globalDefaults?.dateStrategy ??
 				'iso';
-
 			const transformCase =
 				modelOptions?.transformCase ?? globalDefaults?.transformCase;
-
 			const exposeUnsetFields =
 				modelOptions?.exposeUnsetFields ??
 				globalDefaults?.exposeUnsetFields;
-
-			const newOptions: IQSerializationOptions = { ...(options || {}) };
-
-			if (!options?.dateStrategy && dateStrategy !== 'iso') {
+			const newOptions: IQSerializationOptions = { ...options };
+			if (!options.dateStrategy && dateStrategy !== 'iso')
 				newOptions.dateStrategy = dateStrategy;
-			}
-			if (!options?.transformCase && transformCase) {
+			if (!options.transformCase && transformCase)
 				newOptions.transformCase = transformCase;
-			}
-			if (
-				!options?.exposeUnsetFields &&
-				exposeUnsetFields !== undefined
-			) {
+			if (!options.exposeUnsetFields && exposeUnsetFields !== undefined)
 				newOptions.exposeUnsetFields = exposeUnsetFields;
-			}
-			// Only update if something changed (to avoid object creation spam if optimization needed)
-			// But here simplistic approach is safer
 			activeOptions = newOptions;
 		}
 
@@ -319,36 +437,10 @@ export class Serializer<
 			}
 		}
 
-		let proto = Object.getPrototypeOf(model);
-		while (proto && proto !== Object.prototype) {
-			for (const key of Object.getOwnPropertyNames(proto)) {
-				const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-				if (descriptor && descriptor.get && key !== 'constructor') {
-					// Include @QType-generated getters (virtual fields backed by __qProps__ storage)
-					const isQTypeGenerated = Reflect.hasMetadata(
-						'qtype:generated',
-						proto,
-						key
-					);
-					// Include explicit @QComputed() computed property getters
-					const isQComputed = Reflect.hasMetadata(
-						QCOMPUTED_METADATA_KEY,
-						proto,
-						key
-					);
-					if (isQTypeGenerated || isQComputed) {
-						keys.add(key);
-					}
-				}
-			}
-			proto = Object.getPrototypeOf(proto);
+		// Add getter keys pre-computed from prototype chain (cached per constructor)
+		for (const key of getterKeys) {
+			keys.add(key);
 		}
-
-		// Get TypeMap from model constructor
-		const typeMap = Reflect.getMetadata(
-			QUICK_TYPE_MAP_KEY,
-			model.constructor
-		);
 
 		// Serialize with transformers
 		for (const key of keys) {
@@ -530,10 +622,11 @@ export class Serializer<
 					}
 
 					// Recursive call ensures values (like BigInt, Date) are IQSerialized
-					const serializedValue = this.serializeValue(val, visited, {
-						...options,
-						_depth: depth + 1,
-					});
+					const serializedValue = this.serializeValue(
+						val,
+						visited,
+						_nextDepthOpts(options, depth)
+					);
 
 					entries.push([keyStr, serializedValue]);
 				}
@@ -554,10 +647,11 @@ export class Serializer<
 				}
 
 				// Recursive call ensures values (like BigInt) are IQSerialized
-				result[keyStr] = this.serializeValue(val, visited, {
-					...options,
-					_depth: depth + 1,
-				});
+				result[keyStr] = this.serializeValue(
+					val,
+					visited,
+					_nextDepthOpts(options, depth)
+				);
 			}
 			return result;
 		}
@@ -571,10 +665,11 @@ export class Serializer<
 
 			// Recursive call ensures values (like Date) are IQSerialized
 			return Array.from(value).map((item) =>
-				this.serializeValue(item, visited, {
-					...options,
-					_depth: depth + 1,
-				})
+				this.serializeValue(
+					item,
+					visited,
+					_nextDepthOpts(options, depth)
+				)
 			);
 		}
 
@@ -586,10 +681,11 @@ export class Serializer<
 			visited.add(value);
 
 			return value.map((item) =>
-				this.serializeValue(item, visited, {
-					...options,
-					_depth: depth + 1,
-				})
+				this.serializeValue(
+					item,
+					visited,
+					_nextDepthOpts(options, depth)
+				)
 			);
 		}
 
@@ -775,10 +871,7 @@ export class Serializer<
 
 			// If it is a QModel (has metadata), we should strip the dateStrategy
 			// to allow it to use its own configuration
-			if (
-				Reflect.hasMetadata(QUICK_DECORATOR_KEY, value.constructor) ||
-				Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, value.constructor)
-			) {
+			if (_isQModelCtor(value.constructor)) {
 				delete childOptions.dateStrategy;
 				delete childOptions.transformCase; // Strip case config too
 				// Force explicit removal via type assertion if needed
@@ -802,8 +895,7 @@ export class Serializer<
 			typeof value === 'object' &&
 			value !== null &&
 			value.constructor &&
-			(Reflect.hasMetadata(QUICK_DECORATOR_KEY, value.constructor) ||
-				Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, value.constructor))
+			_isQModelCtor(value.constructor)
 		) {
 			const visited = seen || new WeakSet<object>();
 			// Recursively serialize the nested model
@@ -840,10 +932,18 @@ export class Serializer<
 				result[key] = this.serializeValue(
 					(value as Record<string, unknown>)[key],
 					visited,
-					{ ...options, _depth: depth + 1 }
+					_nextDepthOpts(options, depth)
 				);
 			}
 			return result;
+		}
+
+		// Special float values: NaN, Infinity, -Infinity → JSON-safe QM tokens
+		// Ensures these values survive JSON.stringify → JSON.parse losslessly
+		if (typeof value === 'number') {
+			if (Number.isNaN(value)) return { [QM_SPECIAL_TOKEN_KEY]: 'nan' };
+			if (value === Infinity) return { [QM_SPECIAL_TOKEN_KEY]: 'inf' };
+			if (value === -Infinity) return { [QM_SPECIAL_TOKEN_KEY]: '-inf' };
 		}
 
 		// Primitive

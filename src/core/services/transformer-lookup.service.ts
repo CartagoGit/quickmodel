@@ -29,6 +29,7 @@ import {
 	TextDecoderTransformer,
 } from '@/transformers/web-apis.transformer';
 import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
+import { SpecialFloatTransformer } from '@/transformers/special-float.transformer';
 
 /**
  * Service responsible for looking up and managing transformers.
@@ -38,6 +39,10 @@ import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
  */
 export class TransformerLookupService {
 	private readonly transformers: Map<string, IQTransformer<unknown, unknown>>;
+	/** Cache: normalized lowercase key per string input to avoid repeated .toLowerCase() calls */
+	private readonly _strKeyCache = new Map<string, string>();
+	/** Cache: normalized lowercase name per constructor Function */
+	private readonly _fnKeyCache = new WeakMap<Function, string>();
 
 	constructor() {
 		this.transformers = new Map();
@@ -79,9 +84,19 @@ export class TransformerLookupService {
 		let lookupKey: string | undefined;
 
 		if (typeof key === 'string') {
-			lookupKey = key.toLowerCase();
-		} else if (typeof key === 'function' && 'name' in key) {
-			lookupKey = (key as { name: string }).name.toLowerCase();
+			// Cache normalized string keys to avoid repeated .toLowerCase() allocations
+			lookupKey = this._strKeyCache.get(key);
+			if (!lookupKey) {
+				lookupKey = key.toLowerCase();
+				this._strKeyCache.set(key, lookupKey);
+			}
+		} else if (typeof key === 'function') {
+			// Cache constructor name lookups via WeakMap
+			lookupKey = this._fnKeyCache.get(key);
+			if (!lookupKey) {
+				lookupKey = (key as { name: string }).name.toLowerCase();
+				this._fnKeyCache.set(key, lookupKey);
+			}
 		} else if (typeof key === 'object' && key !== null && 'name' in key) {
 			// Handle object with name property (like a class constructor viewed as object)
 			lookupKey = (key as { name: string }).name.toLowerCase();
@@ -199,5 +214,12 @@ export class TransformerLookupService {
 		this.transformers.set('urlsearchparams', urlSearchParamsTransformer);
 		this.transformers.set('textencoder', textEncoderTransformer);
 		this.transformers.set('textdecoder', textDecoderTransformer);
+
+		// Register special float transformers (NaN, Infinity, -Infinity)
+		const specialFloatTransformer = new SpecialFloatTransformer();
+		this.transformers.set('nan', specialFloatTransformer);
+		this.transformers.set('infinity', specialFloatTransformer);
+		this.transformers.set('-infinity', specialFloatTransformer);
+		this.transformers.set('special-float', specialFloatTransformer);
 	}
 }
