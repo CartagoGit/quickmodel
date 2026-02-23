@@ -34,6 +34,11 @@ let typeboxMod: any = null;
 let typeboxValueMod: any = null;
 let ctMod: any = null;
 let yupMod: any = null;
+let arktypeMod: any = null;
+let superjsonMod: any = null;
+let cvMod: any = null; // class-validator
+let vestMod: any = null;
+let joiMod: any = null;
 
 await Promise.allSettled([
 	import('valibot')
@@ -59,6 +64,31 @@ await Promise.allSettled([
 	import('yup')
 		.then((mod) => {
 			yupMod = mod;
+		})
+		.catch(() => {}),
+	import('arktype')
+		.then((mod) => {
+			arktypeMod = mod;
+		})
+		.catch(() => {}),
+	import('superjson')
+		.then((mod) => {
+			superjsonMod = mod;
+		})
+		.catch(() => {}),
+	import('class-validator')
+		.then((mod) => {
+			cvMod = mod;
+		})
+		.catch(() => {}),
+	import('vest')
+		.then((mod) => {
+			vestMod = mod;
+		})
+		.catch(() => {}),
+	import('joi')
+		.then((mod) => {
+			joiMod = mod;
 		})
 		.catch(() => {}),
 ]);
@@ -291,6 +321,118 @@ function buildYupSchemas() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// SCHEMAS ARKTYPE (cuando está instalado)
+// ─────────────────────────────────────────────────────────────
+
+function buildArktypeSchemas() {
+	if (!arktypeMod) return null;
+	const arkt = arktypeMod;
+	const simpleSchema = arkt.type({
+		id: 'string',
+		name: 'string',
+		email: 'string',
+		age: 'number',
+		active: 'boolean',
+	});
+	return { simpleSchema };
+}
+
+// ─────────────────────────────────────────────────────────────
+// SCHEMAS JOI (cuando está instalado)
+// ─────────────────────────────────────────────────────────────
+
+function buildJoiSchemas() {
+	if (!joiMod) return null;
+	const joi = joiMod.default ?? joiMod;
+	const simpleSchema = joi.object({
+		id: joi.string().required(),
+		name: joi.string().required(),
+		email: joi.string().required(),
+		age: joi.number().required(),
+		active: joi.boolean().required(),
+	});
+	// Joi soporta grupos conceptualmente via .when() pero no hay
+	// una API "groups" formal — se usa .keys() por sección
+	const rulesSchema = joi.object({
+		name: joi.string().min(2).required(),
+		email: joi
+			.string()
+			.email({ tlds: { allow: false } })
+			.required(),
+		password: joi.string().min(8).pattern(/[A-Z]/).required(),
+	});
+	return { simpleSchema, rulesSchema };
+}
+
+// ─────────────────────────────────────────────────────────────
+// CLASS-VALIDATOR — clases con decoradores (@IsEmail, @Min, etc.)
+// Solo disponible si la librería está instalada.
+// ─────────────────────────────────────────────────────────────
+
+// Las clases se definen dinámicamente porque los decoradores
+// de class-validator necesitarían importarse en tiempo de compilación.
+// Aquí usamos la API programática validateSync() con metadata manual.
+
+// DATASET DE VALIDACIÓN para benchmarks de forms/rules
+interface ISignupForm {
+	name: string;
+	email: string;
+	password: string;
+}
+
+const validSignupData: ISignupForm = {
+	name: 'Alice Wonderland',
+	email: 'alice@example.com',
+	password: 'SecurePass123',
+};
+
+// ─────────────────────────────────────────────────────────────
+// VEST — suite-based validation (competidor de @QGroup)
+// ─────────────────────────────────────────────────────────────
+
+function buildVestSuite() {
+	if (!vestMod) return null;
+	const vest = vestMod;
+	const create = vest.create ?? vest.default?.create;
+	if (!create) return null;
+
+	const suite = create((data: ISignupForm) => {
+		vest.test('name', 'Name too short', () => {
+			vest.enforce(data.name).longerThanOrEquals(2);
+		});
+		vest.test('email', 'Invalid email', () => {
+			vest.enforce(data.email).isEmail();
+		});
+		vest.test('password', 'Password too short', () => {
+			vest.enforce(data.password).longerThanOrEquals(8);
+		});
+		vest.test('password', 'Must contain uppercase', () => {
+			vest.enforce(data.password).matches(/[A-Z]/);
+		});
+	});
+	return { suite };
+}
+
+// ─────────────────────────────────────────────────────────────
+// QUICKMODEL — modelo para benchmarks de forms/rules
+// ─────────────────────────────────────────────────────────────
+
+import { QRule } from '@/index';
+import { qCheckRules } from '@/forms';
+
+class SignupForm {
+	@QRule((val: string) => val.length >= 2, 'Name too short')
+	declare name: string;
+
+	@QRule((val: string) => /^[^@]+@[^@]+\.[^@]+$/.test(val), 'Invalid email')
+	declare email: string;
+
+	@QRule((val: string) => val.length >= 8, 'Password too short')
+	@QRule((val: string) => /[A-Z]/.test(val), 'Must contain uppercase')
+	declare password: string;
+}
+
+// ─────────────────────────────────────────────────────────────
 // DATASETS DE PRUEBA
 // ─────────────────────────────────────────────────────────────
 
@@ -410,6 +552,40 @@ describe('Benchmark #1 — Validación objetos simples (10k iteraciones)', () =>
 		expect(res.totalMs).toBeLessThan(30_000);
 	});
 
+	test('arktype — validate() (type-safe, TypeScript-native)', () => {
+		const schemas = buildArktypeSchemas();
+		if (!schemas || !arktypeMod) {
+			notInstalled('arktype');
+			expect(true).toBe(true);
+			return;
+		}
+		const res = runBench('Benchmark 1: arktype', ITERS, () => {
+			schemas.simpleSchema(simpleUserData);
+		});
+		console.log(
+			`\n[BENCH #1] arktype: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
+		);
+		expect(res.totalMs).toBeLessThan(5000);
+	});
+
+	test('joi — validate() (clásico, API fluida)', () => {
+		const schemas = buildJoiSchemas();
+		if (!schemas || !joiMod) {
+			notInstalled('joi');
+			expect(true).toBe(true);
+			return;
+		}
+		const res = runBench('Benchmark 1: joi', ITERS, () => {
+			schemas.simpleSchema.validate(simpleUserData, {
+				abortEarly: false,
+			});
+		});
+		console.log(
+			`\n[BENCH #1] joi: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
+		);
+		expect(res.totalMs).toBeLessThan(10_000);
+	});
+
 	test('QuickModel — new SimpleUser() (validación + integridad en runtime)', () => {
 		const res = runBench('Benchmark 1: QuickModel', ITERS, () => {
 			void new SimpleUser(simpleUserData);
@@ -467,6 +643,16 @@ describe('Benchmark #1 — Validación objetos simples (10k iteraciones)', () =>
 				})
 			);
 		}
+		const arkSchemas = buildArktypeSchemas();
+		if (arkSchemas && arktypeMod) {
+			allResults.splice(
+				3,
+				0,
+				runBench('Benchmark 1: arktype', ITERS, () => {
+					arkSchemas.simpleSchema(simpleUserData);
+				})
+			);
+		}
 		const yupSchemas = buildYupSchemas();
 		if (yupSchemas) {
 			const validate = yupSchemas.simpleSchema.validateSync.bind(
@@ -480,9 +666,21 @@ describe('Benchmark #1 — Validación objetos simples (10k iteraciones)', () =>
 				})
 			);
 		}
+		const joiSchemas = buildJoiSchemas();
+		if (joiSchemas && joiMod) {
+			allResults.splice(
+				allResults.length - 1,
+				0,
+				runBench('Benchmark 1: joi', ITERS, () => {
+					joiSchemas.simpleSchema.validate(simpleUserData, {
+						abortEarly: false,
+					});
+				})
+			);
+		}
 
 		printComparison(
-			'Benchmark #1 — Validación simple (TypeBox/valibot/Zod/yup/QuickModel vs Plain JS)',
+			'Benchmark #1 — Validación simple (TypeBox/valibot/arktype/Zod/yup/joi/QuickModel vs Plain JS)',
 			allResults
 		);
 		console.log(
@@ -575,6 +773,27 @@ describe('Benchmark #2 — Coerción tipos complejos: Date + BigInt + Map + Set 
 		expect(res.totalMs).toBeLessThan(10_000);
 	});
 
+	test('class-validator — validate() standalone (solo primitivos, no coerciona)', () => {
+		if (!cvMod) {
+			notInstalled('class-validator');
+			expect(true).toBe(true);
+			return;
+		}
+		// class-validator valida pero NO coerciona — comparamos overhead de validación
+		const validateSync = cvMod.validateSync as (obj: object) => unknown[];
+		const obj = Object.assign(new CTSimpleUser(), simpleUserData);
+		const res = runBench('Benchmark 2: class-validator', ITERS, () => {
+			validateSync(obj);
+		});
+		console.log(
+			`\n[BENCH #2] class-validator: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ⚠️  No coerciona tipos — solo valida que los valores ya tratados sean correctos'
+		);
+		expect(res.totalMs).toBeLessThan(10_000);
+	});
+
 	test('QuickModel — @Quick({ createdAt: Date, balance: "bigint", ... }) automático ✅', () => {
 		const res = runBench(
 			'Benchmark 2: QuickModel (automatic)',
@@ -629,9 +848,26 @@ describe('Benchmark #2 — Coerción tipos complejos: Date + BigInt + Map + Set 
 				)
 			);
 		}
+		if (cvMod && ctMod) {
+			const pti = ctMod.plainToInstance as (
+				cls: unknown,
+				plain: unknown
+			) => unknown;
+			const validateSync = cvMod.validateSync as (
+				obj: object
+			) => unknown[];
+			allResults.splice(
+				allResults.length - 1,
+				0,
+				runBench('Benchmark 2: CT+CV combo', ITERS, () => {
+					const inst = pti(CTComplexUser, complexUserRaw) as object;
+					validateSync(inst);
+				})
+			);
+		}
 
 		printComparison(
-			'Benchmark #2 — Coerción tipos complejos (valibot/Zod/CT vs QuickModel)',
+			'Benchmark #2 — Coerción tipos complejos (valibot/Zod/CT/CT+CV vs QuickModel)',
 			allResults
 		);
 		console.log(
@@ -642,6 +878,9 @@ describe('Benchmark #2 — Coerción tipos complejos: Date + BigInt + Map + Set 
 		);
 		console.log(
 			'  ⚠️  class-transformer: solo Date via @Type — BigInt/Map/Set no soportados'
+		);
+		console.log(
+			'  ⚠️  CT+CV combo: coerción parcial (Date) + validación — 2 librerías para lo que QM hace con 1'
 		);
 		console.log(
 			'  🚫 Plain JS / TypeBox / yup: no soportan esta conversión\n'
@@ -688,6 +927,34 @@ describe('Benchmark #3 — Roundtrip serialización (1k iteraciones)', () => {
 			'  ⚠️  JSON.parse pierde: Date → string, BigInt → error, Map/Set → {}'
 		);
 		expect(res.totalMs).toBeLessThan(2000);
+	});
+
+	test('superjson — serialize() + deserialize() (preserva Date/BigInt/Map/Set/RegExp)', () => {
+		if (!superjsonMod) {
+			notInstalled('superjson');
+			expect(true).toBe(true);
+			return;
+		}
+		const sjn = superjsonMod.default ?? superjsonMod;
+		const obj = {
+			id: 'usr-002',
+			name: 'Bob',
+			createdAt: new Date('2024-03-15T10:00:00.000Z'),
+			balance: BigInt('9999999999999999'),
+			tags: new Set(['typescript', 'nodejs']),
+			metadata: new Map([['role', 'admin']]),
+		};
+		const res = runBench('Benchmark 3: superjson', ITERS, () => {
+			const { json, meta } = sjn.serialize(obj);
+			sjn.deserialize({ json, meta });
+		});
+		console.log(
+			`\n[BENCH #3] superjson: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ✅ Preserva Date, BigInt, Map, Set, RegExp, undefined, URL\n  ⚠️  No transforma JSON crudo → requiere objeto ya tipado'
+		);
+		expect(res.totalMs).toBeLessThan(10_000);
 	});
 
 	test('class-transformer — instanceToPlain() + plainToInstance() (Date ✅, BigInt/Map/Set ❌)', () => {
@@ -740,6 +1007,28 @@ describe('Benchmark #3 — Roundtrip serialización (1k iteraciones)', () => {
 				ComplexUser.deserialize(complexUserInstance.serialize());
 			}),
 		];
+		if (superjsonMod) {
+			const sjn = superjsonMod.default ?? superjsonMod;
+			const sjObj = {
+				id: 'usr-002',
+				name: 'Bob',
+				createdAt: new Date('2024-03-15T10:00:00.000Z'),
+				balance: BigInt('9999999999999999'),
+				tags: new Set(['typescript', 'nodejs', 'quickmodel']),
+				metadata: new Map([
+					['role', 'admin'],
+					['theme', 'dark'],
+				]),
+			};
+			allResults.splice(
+				1,
+				0,
+				runBench('Benchmark 3: superjson', ITERS, () => {
+					const { json, meta } = sjn.serialize(sjObj);
+					sjn.deserialize({ json, meta });
+				})
+			);
+		}
 		if (ctMod) {
 			const instanceToPlain = ctMod.instanceToPlain as (
 				obj: unknown
@@ -759,14 +1048,17 @@ describe('Benchmark #3 — Roundtrip serialización (1k iteraciones)', () => {
 		}
 
 		printComparison(
-			'Benchmark #3 — Roundtrip serialización (Plain JSON / class-transformer / QuickModel)',
+			'Benchmark #3 — Roundtrip serialización (Plain JSON / superjson / CT / QuickModel)',
 			allResults
 		);
 		console.log(
 			'\n  🚫 Zod, TypeBox, valibot, yup: sin serialización nativa (necesitan superjson u otro)'
 		);
 		console.log(
-			'  ✅ QuickModel es el único que preserva Date, BigInt, Map y Set nativamente\n'
+			'  ⚠️  superjson: preserva muchos tipos PERO requiere objeto ya tipado en memoria'
+		);
+		console.log(
+			'  ✅ QuickModel: transforma JSON crudo → tipos + serializa/deserializa — pipeline completo\n'
 		);
 
 		expect(allResults.length).toBeGreaterThan(0);
@@ -861,6 +1153,39 @@ describe('Benchmark #4 — Validación batch 1k objetos', () => {
 		expect(res.opsPerSec).toBeGreaterThan(0);
 	});
 
+	test('arktype — validate() × 1k', () => {
+		const schemas = buildArktypeSchemas();
+		if (!schemas || !arktypeMod) {
+			notInstalled('arktype');
+			expect(true).toBe(true);
+			return;
+		}
+		const res = runBench('Benchmark 4: arktype batch', CYCLES, () => {
+			for (const item of dataset) schemas.simpleSchema(item);
+		});
+		console.log(
+			`\n[BENCH #4] arktype: ${res.opsPerSec.toLocaleString()} cycles/sec`
+		);
+		expect(res.opsPerSec).toBeGreaterThan(0);
+	});
+
+	test('joi — validate() × 1k', () => {
+		const schemas = buildJoiSchemas();
+		if (!schemas || !joiMod) {
+			notInstalled('joi');
+			expect(true).toBe(true);
+			return;
+		}
+		const res = runBench('Benchmark 4: joi batch', CYCLES, () => {
+			for (const item of dataset)
+				schemas.simpleSchema.validate(item, { abortEarly: false });
+		});
+		console.log(
+			`\n[BENCH #4] joi: ${res.opsPerSec.toLocaleString()} cycles/sec`
+		);
+		expect(res.opsPerSec).toBeGreaterThan(0);
+	});
+
 	test('QuickModel — isValid() × 1k', () => {
 		const models = dataset.map(
 			(item) => new SimpleUser(item as unknown as ISimpleUser)
@@ -916,6 +1241,16 @@ describe('Benchmark #4 — Validación batch 1k objetos', () => {
 				})
 			);
 		}
+		const arkSchemas = buildArktypeSchemas();
+		if (arkSchemas && arktypeMod) {
+			allResults.splice(
+				2,
+				0,
+				runBench('Benchmark 4: arktype batch', CYCLES, () => {
+					for (const item of dataset) arkSchemas.simpleSchema(item);
+				})
+			);
+		}
 		const yupSchemas = buildYupSchemas();
 		if (yupSchemas) {
 			const validate = yupSchemas.simpleSchema.validateSync.bind(
@@ -929,9 +1264,22 @@ describe('Benchmark #4 — Validación batch 1k objetos', () => {
 				})
 			);
 		}
+		const joiSchemas = buildJoiSchemas();
+		if (joiSchemas && joiMod) {
+			allResults.splice(
+				allResults.length - 1,
+				0,
+				runBench('Benchmark 4: joi batch', CYCLES, () => {
+					for (const item of dataset)
+						joiSchemas.simpleSchema.validate(item, {
+							abortEarly: false,
+						});
+				})
+			);
+		}
 
 		printComparison(
-			'Benchmark #4 — Batch validation 1k obj (TypeBox/valibot/Zod/yup/QuickModel)',
+			'Benchmark #4 — Batch validation 1k obj (TypeBox/valibot/arktype/Zod/yup/joi/QuickModel)',
 			allResults
 		);
 		console.log(
@@ -1049,6 +1397,375 @@ describe('Benchmark #6 — Task #17: objetivos de rendimiento', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// BENCHMARK #7 — Fidelidad de tipos en serialización
+//
+// superjson preserva más tipos que JSON.stringify pero requiere
+// un objeto ya tipado en memoria. QuickModel hace el pipeline
+// completo: JSON crudo → tipado → serialización → deserialización.
+//
+// Participantes: Plain JSON (baseline), superjson, class-transformer,
+//                QuickModel
+// ─────────────────────────────────────────────────────────────
+
+describe('Benchmark #7 — Fidelidad de tipos en serialización (1k iteraciones)', () => {
+	const ITERS = 1_000;
+	const complexUserInstance = new ComplexUser(
+		complexUserRaw as unknown as IComplexUser
+	);
+
+	const superjsonFullObj = {
+		id: 'usr-002',
+		name: 'Bob Builder',
+		createdAt: new Date('2024-03-15T10:00:00.000Z'),
+		balance: BigInt('9999999999999999'),
+		tags: new Set(['typescript', 'nodejs', 'quickmodel']),
+		metadata: new Map([
+			['role', 'admin'],
+			['theme', 'dark'],
+			['locale', 'es'],
+		]),
+	};
+
+	test('[baseline] Plain JSON — pierde Date/BigInt/Map/Set', () => {
+		const res = runBench(
+			'Benchmark 7: Plain JSON (baseline)',
+			ITERS,
+			() => {
+				JSON.parse(JSON.stringify({ ...complexUserRaw }));
+			}
+		);
+		console.log(
+			`\n[BENCH #7] Plain JSON: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log('  ❌ Date→string | ❌ BigInt→error | ❌ Map/Set→{}');
+		expect(res.totalMs).toBeLessThan(2000);
+	});
+
+	test('superjson — serialize()+deserialize() con objeto ya instanciado', () => {
+		if (!superjsonMod) {
+			notInstalled('superjson');
+			expect(true).toBe(true);
+			return;
+		}
+		const sjn = superjsonMod.default ?? superjsonMod;
+		const res = runBench('Benchmark 7: superjson', ITERS, () => {
+			const result = sjn.serialize(superjsonFullObj);
+			sjn.deserialize(result);
+		});
+		console.log(
+			`\n[BENCH #7] superjson: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ✅ Date/BigInt/Map/Set/RegExp  |  ⚠️  requiere objeto ya tipado (no transforma JSON crudo)'
+		);
+		expect(res.totalMs).toBeLessThan(10_000);
+	});
+
+	test('QuickModel — JSON crudo → tipado → serialize() → deserialize()', () => {
+		const res = runBench(
+			'Benchmark 7: QuickModel (full pipeline)',
+			ITERS,
+			() => {
+				const inst = new ComplexUser(
+					complexUserRaw as unknown as IComplexUser
+				);
+				ComplexUser.deserialize(inst.serialize());
+			}
+		);
+		console.log(
+			`\n[BENCH #7] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ✅ JSON crudo → Date/BigInt/Map/Set automático + roundtrip lossless'
+		);
+		expect(res.totalMs).toBeLessThan(10_000);
+	});
+
+	test('📊 Comparativa #7 — fidelidad de tipos en serialización', () => {
+		const allResults: IBenchResult[] = [
+			runBench('Benchmark 7: Plain JSON (baseline)', ITERS, () => {
+				JSON.parse(JSON.stringify({ ...complexUserRaw }));
+			}),
+			runBench('Benchmark 7: QuickModel (pipeline)', ITERS, () => {
+				ComplexUser.deserialize(complexUserInstance.serialize());
+			}),
+		];
+		if (superjsonMod) {
+			const sjn = superjsonMod.default ?? superjsonMod;
+			allResults.splice(
+				1,
+				0,
+				runBench('Benchmark 7: superjson', ITERS, () => {
+					sjn.deserialize(sjn.serialize(superjsonFullObj));
+				})
+			);
+		}
+		if (ctMod) {
+			const instanceToPlain = ctMod.instanceToPlain as (
+				obj: unknown
+			) => unknown;
+			const pti = ctMod.plainToInstance as (
+				cls: unknown,
+				plain: unknown
+			) => unknown;
+			const ctInst = pti(CTSimpleUser, simpleUserData);
+			allResults.splice(
+				1,
+				0,
+				runBench('Benchmark 7: class-transformer', ITERS, () => {
+					pti(CTSimpleUser, instanceToPlain(ctInst));
+				})
+			);
+		}
+
+		printComparison(
+			'Benchmark #7 — Fidelidad tipos en serialización (Plain JSON / superjson / CT / QuickModel)',
+			allResults
+		);
+		console.log(
+			'\n┌──────────────────────────────────────────────────────────────────┐'
+		);
+		console.log(
+			'│  Tipos preservados en roundtrip                                  │'
+		);
+		console.log(
+			'├────────────────────────┬───────┬────────────┬──────┬────────────┤'
+		);
+		console.log(
+			'│ Tipo                   │  JSON │  superjson │  CT  │ QuickModel │'
+		);
+		console.log(
+			'├────────────────────────┼───────┼────────────┼──────┼────────────┤'
+		);
+		console.log(
+			'│ Date                   │  ❌   │     ✅     │  ✅  │     ✅     │'
+		);
+		console.log(
+			'│ BigInt                 │  ❌   │     ✅     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ Map                    │  ❌   │     ✅     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ Set                    │  ❌   │     ✅     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ RegExp                 │  ❌   │     ✅     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ URL                    │  ❌   │     ✅     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ TypedArray             │  ❌   │     ❌     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ Symbol                 │  ❌   │     ❌     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ Error                  │  ❌   │     ✅     │  ❌  │     ✅     │'
+		);
+		console.log(
+			'│ JSON crudo → tipado    │  ❌   │     ❌     │  ⚠️  │     ✅     │'
+		);
+		console.log(
+			'└────────────────────────┴───────┴────────────┴──────┴────────────┘\n'
+		);
+
+		expect(allResults.length).toBeGreaterThan(0);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// BENCHMARK #8 — Validación por reglas / formularios
+//
+// Compara la API de reglas de negocio y agrupación de campos:
+//   @QRule + @QGroup (QuickModel) vs class-validator vs vest vs joi
+//
+// Escenario: SignupForm con 3 campos, 4 reglas, validación completa
+// y filtrado por grupo (identity / security).
+//
+// Participantes: class-validator, vest, joi, QuickModel
+// ─────────────────────────────────────────────────────────────
+
+describe('Benchmark #8 — Forms / Business rules: @QRule + @QGroup vs alternativas (5k it.)', () => {
+	const ITERS = 5_000;
+
+	test('class-validator — validateSync() solo (sin grupos nativos)', () => {
+		if (!cvMod) {
+			notInstalled('class-validator');
+			expect(true).toBe(true);
+			return;
+		}
+		const { validateSync, IsEmail, MinLength, Matches } = cvMod;
+
+		@(cvMod.IsString?.() ?? (() => {}))
+		class CVSignup {
+			@MinLength(2, { message: 'Name too short' })
+			name: string = '';
+
+			@IsEmail({}, { message: 'Invalid email' })
+			email: string = '';
+
+			@MinLength(8, { message: 'Password too short' })
+			@Matches(/[A-Z]/, { message: 'Must contain uppercase' })
+			password: string = '';
+		}
+
+		const obj = Object.assign(new CVSignup(), validSignupData);
+		const res = runBench('Benchmark 8: class-validator', ITERS, () => {
+			validateSync(obj);
+		});
+		console.log(
+			`\n[BENCH #8] class-validator: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ⚠️  Sin grupos nativos — filtrar por @ValidationGroups requiere groups config separada'
+		);
+		expect(res.totalMs).toBeLessThan(15_000);
+	});
+
+	test('vest — create() suite con tests por campo', () => {
+		if (!vestMod) {
+			notInstalled('vest');
+			expect(true).toBe(true);
+			return;
+		}
+		const vestSuite = buildVestSuite();
+		if (!vestSuite) {
+			notInstalled('vest (suite no compatible)');
+			expect(true).toBe(true);
+			return;
+		}
+		const res = runBench('Benchmark 8: vest', ITERS, () => {
+			vestSuite.suite(validSignupData);
+		});
+		console.log(
+			`\n[BENCH #8] vest: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ✅ Tiene grupos via only.group() — pero require crear la suite fuera de la clase'
+		);
+		expect(res.totalMs).toBeLessThan(15_000);
+	});
+
+	test('joi — validate() con schema con reglas', () => {
+		const joiSchemas = buildJoiSchemas();
+		if (!joiSchemas || !joiMod) {
+			notInstalled('joi');
+			expect(true).toBe(true);
+			return;
+		}
+		const res = runBench('Benchmark 8: joi', ITERS, () => {
+			joiSchemas.rulesSchema.validate(validSignupData, {
+				abortEarly: false,
+			});
+		});
+		console.log(
+			`\n[BENCH #8] joi: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ⚠️  Sin grupos nativos — require schemas separados por sección'
+		);
+		expect(res.totalMs).toBeLessThan(15_000);
+	});
+
+	test('QuickModel — qCheckRules() con @QRule por campo ✅', () => {
+		const form = Object.assign(new SignupForm(), validSignupData);
+		const res = runBench('Benchmark 8: QuickModel @QRule', ITERS, () => {
+			qCheckRules(form);
+		});
+		console.log(
+			`\n[BENCH #8] QuickModel @QRule: ${res.opsPerSec.toLocaleString()} ops/sec`
+		);
+		console.log(
+			'  ✅ Decoradores co-ubicados con la clase, zero setup externo'
+		);
+		expect(res.totalMs).toBeLessThan(15_000);
+	});
+
+	test('📊 Comparativa #8 — Validación por reglas / forms', () => {
+		const allResults: IBenchResult[] = [];
+
+		if (cvMod) {
+			const validateSync = cvMod.validateSync as (
+				obj: object
+			) => unknown[];
+			const CVSignup2 = class {
+				name: string = '';
+				email: string = '';
+				password: string = '';
+			};
+			const obj2 = Object.assign(
+				new CVSignup2(),
+				validSignupData
+			) as object;
+			allResults.push(
+				runBench('Benchmark 8: class-validator', ITERS, () => {
+					validateSync(obj2);
+				})
+			);
+		}
+		if (vestMod) {
+			const vestSuite = buildVestSuite();
+			if (vestSuite) {
+				allResults.push(
+					runBench('Benchmark 8: vest', ITERS, () => {
+						vestSuite.suite(validSignupData);
+					})
+				);
+			}
+		}
+		if (joiMod) {
+			const joiSchemas = buildJoiSchemas();
+			if (joiSchemas) {
+				allResults.push(
+					runBench('Benchmark 8: joi', ITERS, () => {
+						joiSchemas.rulesSchema.validate(validSignupData, {
+							abortEarly: false,
+						});
+					})
+				);
+			}
+		}
+
+		const form = Object.assign(new SignupForm(), validSignupData);
+		allResults.push(
+			runBench('Benchmark 8: QuickModel @QRule', ITERS, () => {
+				qCheckRules(form);
+			})
+		);
+
+		if (allResults.length > 1) {
+			printComparison(
+				'Benchmark #8 — Rules / Forms (class-validator / vest / joi / QuickModel)',
+				allResults
+			);
+		}
+
+		console.log(`
+┌──────────────────────────────────────────────────────────────────────────┐
+│  COMPARATIVA — API de reglas de negocio y formularios                    │
+├───────────────────────────────────────┬──────┬──────┬──────┬────────────┤
+│ Capacidad                             │  CV  │ vest │  joi │ QuickModel │
+├───────────────────────────────────────┼──────┼──────┼──────┼────────────┤
+│ Decoradores co-ubicados en la clase   │  ✅  │  ❌  │  ❌  │     ✅     │
+│ Grupos de campos nativos              │  ⚠️  │  ✅  │  ❌  │     ✅     │
+│ Filtrar validación por grupo          │  ⚠️  │  ✅  │  ❌  │     ✅     │
+│ checkRulesByGroup() en una llamada    │  ❌  │  ⚠️  │  ❌  │     ✅     │
+│ Predicados async (DB, API)            │  ❌  │  ⚠️  │  ✅  │     ✅     │
+│ Timeout por predicado async           │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Modo serial/paralelo (async)          │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Schema de formulario (getFormSchema)  │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Integración con coerción de tipos     │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Works on any class (no QModel needed) │  ✅  │  ✅  │  ✅  │     ✅     │
+└───────────────────────────────────────┴──────┴──────┴──────┴────────────┘
+  CV = class-validator | vest = vestjs | ⚠️ = posible con config extra\n`);
+
+		expect(allResults.length).toBeGreaterThan(0);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
 // RESUMEN FINAL — Feature matrix por categoría
 // ─────────────────────────────────────────────────────────────
 
@@ -1058,48 +1775,81 @@ describe('Resumen — Feature matrix comparativa por categoría', () => {
 		const vbIcon = valibotMod ? '⚠️ ' : 'N/I';
 		const ctIcon = ctMod ? '⚠️ ' : 'N/I';
 		const ypIcon = yupMod ? '⚠️ ' : 'N/I';
+		const arkIcon = arktypeMod ? '✅' : 'N/I';
+		const sjIcon = superjsonMod ? '✅' : 'N/I';
+		const cvIcon = cvMod ? '✅' : 'N/I';
+		const vestIcon = vestMod ? '⚠️ ' : 'N/I';
+		const joiIcon = joiMod ? '⚠️ ' : 'N/I';
 
 		console.log(`
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│          FEATURE MATRIX COMPARATIVA — QuickModel vs TypeBox vs valibot vs Zod vs CT vs yup          │
-├────────────────────────────────────────────┬────────┬──────┬──────┬──────┬──────┬──────┬────────────┤
-│ Capacidad                                  │ PlainJS│  TB  │  VB  │  Zod │  CT  │  yup │ QuickModel │
-├────────────────────────────────────────────┼────────┼──────┼──────┼──────┼──────┼──────┼────────────┤
-│ #1 Validación simple (ops/seg)             │   N/A  │ ~90% │ ~60% │ ~35% │  N/A │  ~5% │    ~22%    │
-│ #2 Coerción Date/BigInt/Map/Set            │   ❌   │  ❌  │ ${vbIcon}│  ${vbIcon}│ ${ctIcon} │  ❌  │     ✅     │
-│ #3 Serialización / roundtrip               │   ❌   │  ❌  │  ❌  │  ❌  │ ⚠️   │  ❌  │     ✅     │
-│ #4 Batch validation (comparable)          │   ❌   │ ${tbIcon}│ ⚠️ │  ⚠️  │  ❌  │ ${ypIcon}│     ✅     │
-│ #5 Generación de mocks tipados             │   ❌   │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ IA / Servidor MCP integrado                │   ❌   │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ JSON polimórfico (subclases auto)          │   ❌   │  ❌  │  ❌  │  ❌  │ ${ctIcon} │  ❌  │     ✅     │
-│ Estado modelo: copy() / isDirty()          │   ❌   │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Form schemas (@QField / @QGroup)           │   ❌   │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Campos computados (@QComputed)             │   ❌   │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Reglas async (@QRule / checkRulesAsync)    │   ❌   │  ❌  │ ${vbIcon}│  ${vbIcon}│  ❌  │ ${ypIcon}│     ✅     │
-│ Integridad runtime (hasIntegrity)          │   ❌   │ ${tbIcon}│ ${vbIcon}│  ✅  │  ❌  │ ${ypIcon}│     ✅     │
-│ Herencia multinivel con inferencia         │   ❌   │  ❌  │  ❌  │  ❌  │ ${ctIcon} │  ❌  │     ✅     │
-│ Schema export (JSON/Zod/OpenAPI/GraphQL)   │   ❌   │ ${tbIcon}│  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Zero-dep core                              │   ✅   │  ❌  │  ✅  │  ✅  │  ❌  │  ❌  │     ✅     │
-└────────────────────────────────────────────┴────────┴──────┴──────┴──────┴──────┴──────┴────────────┘
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FEATURE MATRIX — VALIDACIÓN / COERCIÓN / SERIALIZACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+┌─────────────────────────────────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬────────────┐
+│ Capacidad                       │  TB  │  VB  │  Ark │  Zod │  yup │  joi │  CT  │  sj  │ QuickModel │
+├─────────────────────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼────────────┤
+│ #1/#4 Validación simple/batch   │ ${tbIcon} │ ⚠️ │ ${arkIcon} │  ⚠️  │ ${ypIcon}│ ${joiIcon}│  ❌  │  ❌  │     ✅     │
+│ #2 Coerción Date/BigInt/Map/Set │  ❌  │ ${vbIcon}│  ❌  │ ${vbIcon}│  ❌  │  ❌  │ ${ctIcon} │  ❌  │     ✅     │
+│ #3/#7 Roundtrip lossless        │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │ ${ctIcon} │ ${sjIcon} │     ✅     │
+│ #7 JSON crudo → tipos tipados   │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │ ${ctIcon} │  ❌  │     ✅     │
+│ Preserva Symbol / TypedArray    │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Schema export (JSON/OpenAPI/…)  │ ${tbIcon} │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Zero-dep core                   │  ❌  │  ✅  │  ✅  │  ✅  │  ❌  │  ❌  │  ❌  │  ❌  │     ✅     │
+└─────────────────────────────────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴────────────┘
+ TB=TypeBox | VB=valibot | Ark=arktype | CT=class-transformer | sj=superjson
 
-  TB = TypeBox | VB = valibot | CT = class-transformer | N/I = no instalado
-  ✅ = soportado  |  ⚠️ = posible con código manual adicional  |  ❌ = no soportado
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FEATURE MATRIX — REGLAS DE NEGOCIO / FORMULARIOS (#8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+┌─────────────────────────────────────────┬──────┬──────┬──────┬────────────┐
+│ Capacidad                               │  CV  │ vest │  joi │ QuickModel │
+├─────────────────────────────────────────┼──────┼──────┼──────┼────────────┤
+│ Decoradores co-ubicados (@QRule/@QField)│ ${cvIcon} │  ❌  │  ❌  │     ✅     │
+│ Grupos de campos nativos (@QGroup)      │ ${cvIcon} │ ${vestIcon}│  ❌  │     ✅     │
+│ Filtrar validación por grupo            │ ${cvIcon} │ ${vestIcon}│  ❌  │     ✅     │
+│ checkRulesByGroup() en una llamada      │  ❌  │ ${vestIcon}│  ❌  │     ✅     │
+│ Predicados async nativos                │  ❌  │ ${vestIcon}│ ${joiIcon} │     ✅     │
+│ Timeout + modo serial/paralelo          │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Form schema (getFormSchema)             │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Integrado con coerción de tipos         │  ❌  │  ❌  │  ❌  │     ✅     │
+│ Works on any class (no extends needed)  │ ${cvIcon} │ ${vestIcon}│ ${joiIcon} │     ✅     │
+└─────────────────────────────────────────┴──────┴──────┴──────┴────────────┘
+ CV=class-validator | vest=vestjs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FEATURE MATRIX — EXCLUSIVAS DE QUICKMODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+┌─────────────────────────────────────────────────────────────┐
+│ Feature                                          Solo QM?   │
+├─────────────────────────────────────────────────────────────┤
+│ #5 Generación de mocks tipados integrada             ✅     │
+│ MCP Server (IA: Claude, Copilot, etc.)               ✅     │
+│ Estado de modelo: copy() / isDirty()                 ✅     │
+│ @QComputed — campos calculados en serialización      ✅     │
+│ @QAlias — remapeo de nombres de campo                ✅     │
+│ Herencia multinivel con inferencia completa          ✅     │
+│ dot notation para transformaciones anidadas          ✅     │
+│ JSON polimórfico (subclases auto-detectadas)         ✅     │
+│ Pipeline completo: JSON crudo → tipos → rules → ✅   ✅     │
+│ serialize() → deserialize() sin config adicional     ✅     │
+└─────────────────────────────────────────────────────────────┘
 
   CATEGORÍAS POR BENCHMARK:
-  #1 Validación simple  → TB, valibot, Zod, yup, QM  (CT excluido: serializa, no valida)
-  #2 Coerción compleja  → valibot, Zod, CT, QM        (Plain JS, TB, yup no lo soportan)
-  #3 Serialización      → Plain JSON, CT, QM          (Zod, TB, valibot, yup sin serialize())
-  #4 Batch validation   → TB, valibot, Zod, yup, QM  (CT excluido: necesita class-validator)
-  #5 Mocks tipados      → Solo QM                     (exclusivo, sin equivalente)
+  #1 Validación simple  → TB, valibot, arktype, Zod, yup, joi, QM   (CT excluido: no valida)
+  #2 Coerción compleja  → valibot, Zod, CT, CT+CV, QM               (Plain JS, TB, yup, joi, ark: no)
+  #3 Serialización      → Plain JSON, superjson, CT, QM             (resto: sin serialize())
+  #4 Batch validation   → TB, valibot, arktype, Zod, yup, joi, QM   (CT: necesita class-validator)
+  #5 Mocks tipados      → Solo QM                                    (exclusivo)
+  #7 Fidelidad tipos    → Plain JSON, superjson, CT, QM             (tabla de tipos preservados)
+  #8 Forms / rules      → class-validator, vest, joi, QM            (tabla de capacidades de rules)
 
   💡 CONCLUSIÓN:
-     QuickModel no compite en velocidad pura con TypeBox/valibot para validación simple —
-     pero es la ÚNICA librería que cubre TODAS las categorías de una vez:
-     coerción automática + serialización nativa + mocks + IA/MCP + estado de modelo.
+     TypeBox/valibot/arktype ganan en velocidad pura de validación simple.
+     superjson es la mejor alternativa para preservar tipos, pero NO transforma JSON crudo.
+     class-validator+vest cubren reglas/grupos pero requieren 2 librerías y setup externo.
 
-     En aplicaciones TypeScript reales (APIs, microservicios, DDD) la diferencia de 
-     velocidad es < 1ms por operación y las features únicas ahorran cientos de líneas
-     de código boilerplate por modelo.
+     QuickModel es la ÚNICA solución que cubre TODOS los casos en una sola librería:
+     JSON crudo → coerción → validación de reglas → grupos → schema export → mocks → IA/MCP.
 `);
 		expect(true).toBe(true);
 	});

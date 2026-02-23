@@ -1,9 +1,31 @@
 import { useRoute } from 'vitepress';
 import { watch, onMounted, onUnmounted, nextTick, ref } from 'vue';
+import { STORAGE_KEY_LANG } from '../../constants/storage-keys.constants';
+import { NAV_TRANSLATIONS } from './nav-translations.constants';
+
+/**
+ * Aplica las traducciones de nav al DOM según el idioma activo.
+ * Función pura: no depende de estado Vue (OCP — extiende mediante NAV_TRANSLATIONS).
+ */
+function applyNavTranslations(lang: string): void {
+	const navLinks = document.querySelectorAll('.VPNavBarMenuLink');
+	navLinks.forEach((link) => {
+		const text = link.textContent?.trim();
+		for (const entry of NAV_TRANSLATIONS) {
+			if (lang === 'es' && text === entry.en) {
+				link.textContent = entry.es;
+				break;
+			} else if (lang !== 'es' && text === entry.es) {
+				link.textContent = entry.en;
+				break;
+			}
+		}
+	});
+}
 
 export function useNavTranslator() {
 	const route = useRoute();
-	const STORAGE_KEY_LANG = 'vitepress-theme-lang';
+
 	const currentLang = ref(
 		(typeof localStorage !== 'undefined' &&
 			localStorage.getItem(STORAGE_KEY_LANG)) ||
@@ -12,32 +34,8 @@ export function useNavTranslator() {
 
 	const translateNav = async () => {
 		await nextTick();
-
-		const currentPath = route.path;
-		if (currentPath.includes('/tsdoc/')) {
-			const savedLang = currentLang.value;
-
-			const navLinks = document.querySelectorAll('.VPNavBarMenuLink');
-			navLinks.forEach((link) => {
-				const text = link.textContent?.trim();
-
-				if (savedLang === 'es') {
-					if (text === 'Guide') link.textContent = 'Guía';
-					if (text === 'AI (MCP/Skills)')
-						link.textContent = 'IA (MCP/Skills)';
-					if (text === 'Examples') link.textContent = 'Ejemplos';
-					if (text === 'Integrations')
-						link.textContent = 'Integraciones';
-				} else {
-					if (text === 'Guía') link.textContent = 'Guide';
-					if (text === 'IA (MCP/Skills)')
-						link.textContent = 'AI (MCP/Skills)';
-					if (text === 'Ejemplos') link.textContent = 'Examples';
-					if (text === 'Integraciones')
-						link.textContent = 'Integrations';
-				}
-			});
-		}
+		if (!route.path.includes('/tsdoc/')) return;
+		applyNavTranslations(currentLang.value);
 	};
 
 	const handleStorageChange = (evt: StorageEvent) => {
@@ -71,14 +69,6 @@ export function useNavTranslator() {
 		);
 	});
 
-	watch(
-		() => route.path,
-		() => {
-			translateNav();
-		}
-	);
-
-	watch(currentLang, () => {
-		translateNav();
-	});
+	watch(() => route.path, translateNav);
+	watch(currentLang, translateNav);
 }

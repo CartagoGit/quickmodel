@@ -3,8 +3,8 @@ layout: home
 
 hero:
     name: QuickModel
-    text: AI-Ready Data Models
-    tagline: The first TypeScript modeling library with a built-in AI Brain (MCP). Serialize, validate, mock, and generate code automatically.
+    text: The Complete TypeScript Modeling Kit
+    tagline: 30+ type transformers, two-layer validation, mocks, 7 schema formats, and a built-in MCP server for AI — all driven by a single `@Quick` decorator.
     actions:
         - theme: brand
           text: Get Started
@@ -15,32 +15,9 @@ hero:
         - theme: alt
           text: GitHub
           link: https://github.com/CartagoGit/quickmodel
-
-features:
-    - icon: 🧠
-      title: Smart Models
-      details: Single @Quick decorator for complex data structures including maps and dates.
-
-    - icon: 🤖
-      title: Built-in AI Brain (MCP)
-      details: Connect Claude, Cursor, VS Code, or Antigravity directly to your codebase.
-
-    - icon: 🧪
-      title: Instant Mocks
-      details: Infinite, type-safe mock objects derived directly from your class definitions.
-
-    - icon: 🛡️
-      title: Runtime Integrity
-      details: Validates that API responses actually match your TypeScript definitions at runtime.
-
-    - icon: 🧩
-      title: Automatic Polymorphism
-      details: Instantiates correct subclasses automatically based on the shape of data.
-
-    - icon: ⚡
-      title: High Performance
-      details: Native JSON parsing with zero-copy architecture where possible.
 ---
+
+<FeaturesCarousel />
 
 <style>
 /* Make the logo inline with the title */
@@ -109,26 +86,82 @@ onMounted(() => {
 
 <BenchmarkChart />
 
-## Why QuickModel?
+## 💡 Why QuickModel? {.landing-title}
 
-QuickModel is more than just a library; it's a **development platform** for data-heavy applications.
+QuickModel is more than a serialization library; it's a **development platform** for data-intensive applications.
 
-### 🌟 Development Superpowers
+### 🔄 Type Transformation
 
-- **✨ @Quick Decorator**: The magic wand. One decorator to rule them all. Define complex data structures, handle nesting, dates, and maps automatically with a single line of code.
-- **🚀 QModel Class**: The base class that gives your objects superpowers (`toJSON`, `fromJSON`, `validate`, `mock`).
-- **🎭 Zero-Boilerplate Mocks**: Stop writing fixtures manually. Just call `User.mock().random()` and get a valid, populated User object. Perfect for UI development before the API is ready.
-- **🛡️ Runtime Integrity**: TypeScript types disappear at runtime. QuickModel stays to ensure API responses actually match what you expect. It eliminates "undefined is not a function" errors caused by unparsed API responses.
-- **🧩 Polymorphic JSON**: APIs often return different objects in the same list (e.g., `Payment` can be `Card` or `PayPal`). QuickModel automatically instantiates the correct class for each item.
+- **30+ Transformers**: `Date`, `BigInt`, `Set`, `Map`, `RegExp`, `Symbol`, `Error`, `WeakMap`, `WeakSet`, `ArrayBuffer`, `TypedArray`, `URL`… Each type has its own specialized transformer.
+- **Multi-dimensional arrays**: explicit syntax `[Date]`, `[[Post]]`, `[[[Map]]]` for 1D, 2D or 3D.
+- **WeakMap / WeakSet**: in-memory caches that are never serialized. Perfect for GC-friendly runtime references.
+- **Dot notation**: transform nested properties directly in the parent decorator, without decorating external classes.
 
-### 🧠🤖 What is this "MCP" thing?
+### 🧠 Decorator System
 
-**MCP (Model Context Protocol)** is like a "universal driver" for AI Tools.
+- **`@Quick`**: class-level decorator that configures all transformers at once.
+- **`@QType`**: property-level decorator for specific cases or different contexts.
+- **`@QAlias`**: renames fields between incoming JSON and the instance. Perfect for snake_case ↔ camelCase.
+- **`@QComputed`**: defines getters that appear in `serialize()` without existing in the original JSON.
+- **`excludeFields`**: permanently excludes fields from all serialization (`password`, `_checksum`, etc.).
 
-QuickModel comes with an **MCP Server** built-in. This means you can plug your favorite AI (Claude, Cursor, Antigravity) directly into the library.
+### ✅ Two-Layer Validation
 
-- **For Beginners**: It's like having a senior engineer explaining the library to your AI. The AI _knows_ how to write valid QuickModel code because the library tells it how.
-- **For Pros**: Generate robust models from JSON responses in milliseconds, create test suites automatically, and validate your architecture without context switching.
+- **Layer 1 — Integrity**: `checkIntegrity()` verifies each value matches its transformer (invalid dates, BigInt out of range, dangerous RegExp).
+- **Layer 2 — Business**: `@QRule` applies declarative predicates per field. `checkRules()` iterates all rules and returns errors with field and message.
+- **Combined**: `isValid()` runs both layers in a single call. `validationReport()` separates errors by origin.
+
+### 📋 Forms and Group Validation
+
+- **Works on any class**: `@QField`, `@QRule` and `@QGroup` don't require extending `QModel`. Useful for DTOs, Angular/Vue/React forms…
+- **Groups as wizard steps**: `qCheckRulesByGroup()` validates only the active group, perfect for multi-step forms.
+- **Async rules**: `qCheckRulesAsync()` supports predicates returning `Promise<boolean>` with `timeoutMs` and `serial`/`parallel` mode.
+
+### 🗂️ 7 Schema Formats
+
+A single `getSchema(format)` call exports your model as:
+`json` · `zod` · `openapi` · `mongo` · `typescript` · `graphql` · `ajv`
+
+Documentation, validation, and API contracts always in sync with your code.
+
+### 🤖 MCP Server — Native AI Integration
+
+**MCP (Model Context Protocol)** is Anthropic's open standard for connecting AIs to external tools. Think of it as a **USB protocol**: any MCP client (Claude, Cursor, VS Code) connects without ad-hoc configuration.
+
+QuickModel includes **19 tools** and **19 guided prompts**:
+
+- `create_model`, `interface_to_model`, `json_to_model` — generate models from different sources
+- `get_model_schema`, `export_json_schema` — export in 7 formats
+- `simulate_validation`, `simulate_rules`, `simulate_async_rules` — test rules without running code
+- `diff_models`, `roundtrip`, `check_integrity` — auditing and comparison
+- `generate_mock`, `inspect_model`, `validate_usage`, `explain_error`…
+
+- **For beginners**: your AI knows exactly how to write valid QuickModel code because the library tells it.
+- **For pros**: generate models from JSON in milliseconds and validate architecture without context switching.
+
+### 🧪 Zero-Boilerplate Mocks
+
+- `User.mock()` → valid, typed object with realistic data.
+- `User.mock(5)` → array of 5 instances.
+- `User.mock({ name: 'Alice' })` → object with overridden fields.
+- Powered by `@faker-js/faker`. Perfect for building UI before the API exists.
+
+### 🧩 Automatic Polymorphism
+
+APIs return different object shapes in the same list (`Payment` can be `Card` or `PayPal`). QuickModel instantiates the correct subclass **automatically** based on the data shape. No switch, no factories.
+
+### 🔒 Security and Protection
+
+- **Circular references**: `toJSON()` doesn't crash, returns `{ __circular: true }`.
+- **Injection**: validates URLs (blocks `javascript:`) and limits RegExp length.
+- **Prototype pollution**: `__proto__` properties automatically excluded.
+- **Strict mode**: `unknownPropertyPolicy: 'error'` throws on unexpected properties in public APIs.
+
+### 🔗 Compatibility
+
+- **Mixin `QModel.extends(BaseClass)`**: adds superpowers to TypeORM entities, NestJS DTOs, or any class without touching the hierarchy.
+- **TC39 + Legacy**: compatible with `experimentalDecorators` (TS 3.4+) and TC39 standard (TS 5+).
+- **Three property styles**: `declare`, `!` and `?` all work identically.
 
 ## Quick Example
 

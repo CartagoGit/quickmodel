@@ -3,8 +3,8 @@ layout: home
 
 hero:
     name: QuickModel
-    text: Modelos de Datos Listos para IA
-    tagline: La primera librería de modelado TypeScript con Cerebro IA (MCP) integrado. Serializa, valida, mockea y genera código automáticamente.
+    text: El Kit Completo de Modelado TypeScript
+    tagline: 30+ transformadores de tipos, validación en dos capas, mocks, 7 formatos de schema y servidor MCP para IA — desde un único decorador `@Quick`.
     actions:
         - theme: brand
           text: Comenzar
@@ -15,32 +15,9 @@ hero:
         - theme: alt
           text: GitHub
           link: https://github.com/CartagoGit/quickmodel
-
-features:
-    - icon: 🧠
-      title: Modelos Inteligentes
-      details: Un solo decorador @Quick para estructuras complejas, incluyendo mapas y fechas.
-
-    - icon: 🤖
-      title: Cerebro IA Integrado (MCP/Skills)
-      details: Conecta Claude, Cursor, VS Code o Antigravity directamente a tu base de código.
-
-    - icon: 🧪
-      title: Mocks Instantáneos
-      details: Objetos mock infinitos y tipados derivados directamente de tus definiciones.
-
-    - icon: 🛡️
-      title: Integridad en Runtime
-      details: Valida en tiempo de ejecución que las respuestas de API coinciden con tus definiciones.
-
-    - icon: 🧩
-      title: Polimorfismo Automático
-      details: Instancia automáticamente la subclase correcta basándose en la forma de los datos.
-
-    - icon: ⚡
-      title: Alto Rendimiento
-      details: Parseo JSON nativo con arquitectura zero-copy donde es posible.
 ---
+
+<FeaturesCarousel />
 
 <style>
 /* Make the logo inline with the title */
@@ -109,26 +86,80 @@ onMounted(() => {
 
 ## 💡 ¿Por qué QuickModel? {.landing-title}
 
-QuickModel es más que una simple librería de serialización; es una **plataforma de desarrollo** para aplicaciones intensivas en datos.
+QuickModel es más que una librería de serialización; es una **plataforma de desarrollo** para aplicaciones intensivas en datos.
 
-### 🌟 Superpoderes de Desarrollo
+### 🔄 Transformación de Tipos
 
-- **Decorador @Quick**: La varita mágica. Un decorador para gobernarlos a todos (tipos, validación, transformación). Define estructuras complejas, anidamiento, fechas y mapas automáticamente.
-- **Clase QModel**: La clase base que da superpoderes a tus objetos (`toJSON`, `fromJSON`, `validate`, `mock`).
-- **Mocks Sin Boilerplate**: Deja de escribir fixtures a mano. Simplemente llama a `User.mock().random()` y obtén un objeto User válido y poblado. Perfecto para desarrollar UI antes de que la API esté lista.
-- **Verdadera Integridad en Runtime**: Los tipos TypeScript desaparecen al compilar. QuickModel se queda para asegurar que la API devuelve realmente lo que esperas. Elimina errores de "undefined is not a function".
-- **JSON Polimórfico**: Las APIs a menudo devuelven objetos variados en la misma lista (e.g., `Payment` puede ser `Card` o `PayPal`). QuickModel instancia la clase correcta automáticamente segun la forma de los datos.
+- **30+ Transformadores**: `Date`, `BigInt`, `Set`, `Map`, `RegExp`, `Symbol`, `Error`, `WeakMap`, `WeakSet`, `ArrayBuffer`, `TypedArray`, `URL`… Cada tipo tiene su propio transformer especializado.
+- **Arrays multi-dimensionales**: sintaxis explícita `[Date]`, `[[Post]]`, `[[[Map]]]` para 1D, 2D o 3D.
+- **WeakMap / WeakSet**: cachés en memoria que nunca se serializan. Perfecto para referencias runtime GC-friendly.
+- **Notación de punto**: transforma propiedades anidadas directamente en el decorador padre, sin decorar clases externas.
 
-### 🤖 ¿Qué es esto del "MCP"?
+### 🧠 Sistema de Decoradores
 
-**MCP (Model Context Protocol)** es un estándar abierto creado por Anthropic que define cómo las IAs se comunican con herramientas externas. Piensa en él como un **protocolo USB**: cualquier IA compatible (cliente MCP) puede conectarse a cualquier herramienta compatible (servidor MCP) sin configuración ad-hoc. En lugar de integrar cada IA con cada herramienta por separado, MCP ofrece un contrato único universal.
+- **`@Quick`**: decorador de clase que configura todos los transformadores de golpe.
+- **`@QType`**: decorador de propiedad para casos concretos o contextos distintos.
+- **`@QAlias`**: renombra campos entre el JSON de entrada y la instancia. Perfecto para snake_case ↔ camelCase.
+- **`@QComputed`**: define getters que aparecen en `serialize()` sin existir en el JSON original.
+- **`excludeFields`**: excluye campos permanentemente de toda serialización (`password`, `_checksum`, etc.).
 
-En la práctica, un servidor MCP expone **Skills** (herramientas/acciones) y **contexto** (recursos, prompts) que la IA puede invocar. La IA no adivina — llama a funciones concretas con parámetros tipados y recibe resultados estructurados.
+### ✅ Validación en Dos Capas
 
-QuickModel trae un **Servidor MCP** integrado con sus propios Skills. Esto significa que puedes conectar tu IA favorita (Claude, Cursor, Antigravity) directamente a la librería.
+- **Capa 1 — Integridad**: `checkIntegrity()` verifica que cada valor coincide con su transformer (fechas inválidas, BigInt fuera de rango, RegExp peligroso).
+- **Capa 2 — Negocio**: `@QRule` aplica predicados declarativos por campo. `checkRules()` recorre todas las reglas y devuelve errores con campo y mensaje.
+- **Combinado**: `isValid()` ejecuta ambas capas en una sola llamada. `validationReport()` separa los errores por origen.
 
-- **Para Principiantes**: Es como darle a tu IA el manual de instrucciones de tu código. En lugar de adivinar, la IA _sabe_ exactamente cómo escribir código QuickModel válido.
-- **Para Pros**: Genera modelos robustos desde JSON en milisegundos, crea suites de tests automáticamente y valida tu arquitectura sin cambiar de contexto.
+### 📋 Formularios y Validación por Grupos
+
+- **Funciona en cualquier clase**: `@QField`, `@QRule` y `@QGroup` no requieren extender `QModel`. Sirve para DTOs, formularios Angular/Vue/React…
+- **Grupos como wizard**: `qCheckRulesByGroup()` valida solo el grupo activo, perfecto para formularios multi-paso.
+- **Reglas async**: `qCheckRulesAsync()` soporta predicados que retornan `Promise<boolean>` con `timeoutMs` y modo `serial`/`parallel`.
+
+### 🗂️ 7 Formatos de Schema
+
+Un solo método `getSchema(format)` exporta tu modelo como:
+`json` · `zod` · `openapi` · `mongo` · `typescript` · `graphql` · `ajv`
+
+Documentación, validación y contratos de API siempre sincronizados con tu código.
+
+### 🤖 Servidor MCP — IA Integrada
+
+**MCP (Model Context Protocol)** es el estándar abierto de Anthropic para conectar IAs con herramientas externas. Piensa en él como un **protocolo USB**: cualquier cliente MCP (Claude, Cursor, VS Code) se conecta sin configuración ad-hoc.
+
+QuickModel incluye **19 herramientas** y **19 prompts guiados**:
+
+- `create_model`, `interface_to_model`, `json_to_model` — genera modelos desde distintos orígenes
+- `get_model_schema`, `export_json_schema` — exporta en 7 formatos
+- `simulate_validation`, `simulate_rules`, `simulate_async_rules` — prueba reglas sin ejecutar
+- `diff_models`, `roundtrip`, `check_integrity` — auditoría y comparación
+- `generate_mock`, `inspect_model`, `validate_usage`, `explain_error`…
+
+- **Para novatos**: la IA sabe exactamente cómo escribir QuickModel válido porque la librería se lo dice.
+- **Para pros**: genera modelos desde JSON en milisegundos y valida arquitectura sin cambiar de contexto.
+
+### 🧪 Mocks Sin Fixtures
+
+- `User.mock()` → objeto válido y tipado con datos realistas.
+- `User.mock(5)` → array de 5 instancias.
+- `User.mock({ name: 'Alice' })` → objeto con campos sobreescritos.
+- Powered by `@faker-js/faker`. Perfecto para desarrollar UI antes de que la API exista.
+
+### 🧩 Polimorfismo Automático
+
+Las APIs devuelven objetos variados en la misma lista (`Payment` puede ser `Card` o `PayPal`). QuickModel instancia la subclase correcta **automáticamente** según la forma del dato. Sin switch, sin factories.
+
+### 🔒 Seguridad y Protección
+
+- **Referencias circulares**: `toJSON()` no crashea, devuelve `{ __circular: true }`.
+- **Inyección**: valida URLs (bloquea `javascript:`) y limita longitud de RegExp.
+- **Contaminación de prototipos**: propiedades `__proto__` excluidas automáticamente.
+- **Modo estricto**: `unknownPropertyPolicy: 'error'` lanza error ante propiedades inesperadas en APIs públicas.
+
+### 🔗 Compatibilidad
+
+- **Mixin `QModel.extends(BaseClass)`**: añade superpoderes a entidades TypeORM, DTOs de NestJS o cualquier clase sin tocar la jerarquía.
+- **TC39 + Legacy**: compatible con `experimentalDecorators` (TS 3.4+) y el estándar TC39 (TS 5+).
+- **Tres estilos de propiedad**: `declare`, `!` y `?` funcionan igual.
 
 <BenchmarkChart />
 

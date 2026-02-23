@@ -211,20 +211,25 @@ console.log(user instanceof User); // true
 Generate test data easily:
 
 ```typescript
-// Single mock
-const mockUser = User.mock();
-console.log(mockUser.createdAt instanceof Date); // true
+// Single mock with random values
+const mockUser = User.mock().random();
+console.log(mockUser.createdAt instanceof Date); // true ✅ respects transformations
 
-// Multiple mocks
-const mockUsers = User.mock(5);
+// Multiple random mocks
+const mockUsers = User.mock().array(5);
 console.log(mockUsers.length); // 5
 
-// Mock with overrides
-const customUser = User.mock({
+// Mock with overrides on specific fields
+const customUser = User.mock().random({
 	name: 'Test User',
 	email: 'test@example.com',
 });
 console.log(customUser.name); // 'Test User'
+
+// Empty mock
+const emptyUser = User.mock().empty();
+// Predictable mock (for snapshots)
+const sampleUser = User.mock().sample();
 ```
 
 ## Complete Example
@@ -283,7 +288,7 @@ const updatedData = user.toJSON();
 console.log('Updated data:', updatedData);
 
 // Generate mocks for testing
-const testUsers = User.mock(3, { tags: ['test'] });
+const testUsers = User.mock().array(3, 'random', () => ({ tags: ['test'] }));
 console.log('Test users:', testUsers.length);
 ```
 

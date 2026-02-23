@@ -29,5 +29,3 @@ const {
 <template src="./BenchmarkChart.html" />
 
 <style lang="scss" src="./BenchmarkChart.scss" scoped />
-
-<style lang="scss" src="./BenchmarkChart.scss" scoped />

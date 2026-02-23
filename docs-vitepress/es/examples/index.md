@@ -1,54 +1,112 @@
 # Ejemplos
 
-Bienvenido a los ejemplos de QuickModel! Estos ejemplos prácticos demuestran patrones de uso del mundo real y mejores prácticas.
+Bienvenido a los ejemplos de QuickModel. Estos ejemplos prácticos demuestran patrones de uso del mundo real y mejores prácticas para todas las funcionalidades del framework.
 
-## Ejemplos Disponibles
+## Fundamentos
 
 ### [Uso Básico](/es/examples/basic)
 
-Aprende los fundamentos de QuickModel con ejemplos simples y directos que cubren:
+Aprende los fundamentos con ejemplos simples y directos:
 
-- Crear tu primer modelo
-- Transformaciones de propiedades
-- Serialización y deserialización
-- Trabajar con arrays
+- Crear tu primer modelo con `@Quick`
+- Transformaciones de propiedades (Date, BigInt, Set, Map)
+- Serialización con `toJSON()`
+- Trabajar con arrays de tipos transformados
 
 ### [Modelos de API](/es/examples/api-models)
 
-Ve cómo integrar QuickModel con APIs REST:
+Integra QuickModel con APIs REST:
 
 - Obtener y transformar respuestas de API
-- Enviar datos a APIs
-- Manejar formatos de fecha de API
-- Trabajar con paginación
+- Enviar datos con `toJSON()`
+- Manejar paginación y anidamiento
+- Patrones de servicio (CRUD completo)
 
 ### [Tipos Complejos](/es/examples/complex-types)
 
-Explora transformaciones de tipos avanzadas:
+Transformaciones de tipos avanzadas:
 
 - Modelos anidados y anidamiento profundo
 - Colecciones (Set, Map)
-- Datos binarios (ArrayBuffer, TypedArrays)
-- Transformadores personalizados
+- BigInt para números grandes
 - Modelos polimórficos
 
-## Enlaces Rápidos
+## Decoradores y Funcionalidades
 
-- [Instalación](/es/guide/installation) - Comienza con QuickModel
-- [Inicio Rápido](/es/guide/quick-start) - Introducción de 5 minutos
-- [Referencia API](/tsdoc/) - Documentación completa de la API
+### [Validación con @QRule](/es/examples/validation)
 
-## Estructura de los Ejemplos
+Define reglas de negocio y valida datos:
 
-Cada ejemplo sigue esta estructura:
+- `@QRule` para reglas sobre propiedades
+- `checkRules()`, `isValid()`, `validationReport()`
+- Validación asincrónica con `checkRulesAsync()`
+- `createMany()` con separación de válidos e inválidos
+- Mensajes dinámicos para i18n
 
-1. **Problema** - El desafío que estás tratando de resolver
-2. **Solución** - Cómo QuickModel lo resuelve
-3. **Código** - Código completo y ejecutable
-4. **Explicación** - Desglose paso a paso
-5. **Mejores Prácticas** - Consejos y recomendaciones
+### [Formularios con @QField y @QGroup](/es/examples/forms)
 
-## Ejecutar Ejemplos
+Genera schemas de formulario dinámicamente:
+
+- `@QField` para metadatos de widget (input, select, datepicker...)
+- `@QGroup` para agrupar campos en secciones
+- `getFormSchema()` y `getFormSchemaGrouped()`
+- Integración con React (formulario dinámico)
+- Metadatos personalizados para tu framework
+
+### [Alias y Mapeo con @QAlias](/es/examples/alias-mapping)
+
+Mapea entre snake_case y camelCase:
+
+- `@QAlias` para renombrar propiedades
+- Roundtrip completo (entrada y salida)
+- Modelos anidados con aliases
+- Combinar con `@QField` y `@QRule`
+
+### [Campos Computados con @QComputed](/es/examples/computed)
+
+Propiedades derivadas incluidas en la serialización:
+
+- `@QComputed` para getters serializables
+- Cálculos de precio, IVA, descuentos
+- Edad, estado, etiquetas formateadas
+- Diferencia entre getters con y sin `@QComputed`
+
+## Creación y Testing
+
+### [Mocks y Testing](/es/examples/mocks)
+
+Genera datos de prueba con la API `mock()`:
+
+- `mock().random()`, `mock().empty()`, `mock().sample()`
+- `mock().array(n)` con overrides por índice
+- `mock().interfaceRandom()` para fixtures de API
+- Tests unitarios con Vitest / Jest
+- Storybook: generar props de ejemplo
+
+### [Creación en Lote e Inmutabilidad](/es/examples/batch-readonly)
+
+Procesa arrays y crea instancias inmutables:
+
+- `createMany()` para importaciones masivas
+- Separación de válidos e inválidos con `errors[]`
+- `createReadonly()` para configuración y constantes
+- Fixtures inmutables para tests
+
+## Referencias Rápidas
+
+| Quiero...                       | Uso...                                           |
+| ------------------------------- | ------------------------------------------------ |
+| Transformar fechas/BigInt       | `@Quick({ field: Date })`                        |
+| Validar datos de negocio        | `@QRule({ predicate, message })`                 |
+| Mapear snake_case → camelCase   | `@QAlias('field_name')`                          |
+| Generar schema de formulario    | `@QField({ widget, label })` + `getFormSchema()` |
+| Agrupar campos del formulario   | `@QGroup('Sección')` + `getFormSchemaGrouped()`  |
+| Incluir getter en serialización | `@QComputed()`                                   |
+| Generar datos de prueba         | `Model.mock().random()`                          |
+| Proceso masivo con validación   | `Model.createMany(array)`                        |
+| Instancia inmutable             | `Model.createReadonly(data)`                     |
+
+## Ejecutar los Ejemplos
 
 Todos los ejemplos son TypeScript y pueden ejecutarse con:
 
@@ -58,11 +116,4 @@ bun run example.ts
 
 # Usando ts-node
 npx ts-node example.ts
-
-# Usando tsx
-npx tsx example.ts
 ```
-
-## Contribuir con Ejemplos
-
-¿Tienes un gran ejemplo? ¡Nos encantaría verlo! Consulta nuestra [guía de contribución](https://github.com/CartagoGit/quickmodel/blob/main/CONTRIBUTING.md).

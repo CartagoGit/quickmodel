@@ -211,20 +211,25 @@ console.log(user instanceof User); // true
 Genera datos de prueba fácilmente:
 
 ```typescript
-// Mock único
-const mockUser = User.mock();
-console.log(mockUser.createdAt instanceof Date); // true
+// Mock único con datos aleatorios
+const mockUser = User.mock().random();
+console.log(mockUser.createdAt instanceof Date); // true ✅ respeta transformaciones
 
-// Múltiples mocks
-const mockUsers = User.mock(5);
+// Múltiples mocks aleatorios
+const mockUsers = User.mock().array(5);
 console.log(mockUsers.length); // 5
 
-// Mock con sobrescrituras
-const customUser = User.mock({
+// Mock con sobrescrituras de campos específicos
+const customUser = User.mock().random({
 	name: 'Usuario Test',
 	email: 'test@example.com',
 });
 console.log(customUser.name); // 'Usuario Test'
+
+// Mock vacío
+const emptyUser = User.mock().empty();
+// Mock con valores predecibles (para snapshots)
+const sampleUser = User.mock().sample();
 ```
 
 ## Ejemplo Completo
@@ -283,7 +288,7 @@ const updatedData = user.toJSON();
 console.log('Datos actualizados:', updatedData);
 
 // Generar mocks para testing
-const testUsers = User.mock(3, { tags: ['test'] });
+const testUsers = User.mock().array(3, 'random', () => ({ tags: ['test'] }));
 console.log('Usuarios de prueba:', testUsers.length);
 ```
 

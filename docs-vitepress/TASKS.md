@@ -8,6 +8,7 @@
 
 ```
 ✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #47, #49, #55, #40, #41, #42 (sprint Feb 2026)
+✅ Completada:  Task #56 — benchmarks extendidos: superjson, arktype, class-validator, vest, joi + Bench #7/#8
 ⏳  Backlog:     Tasks #48, #50–#54 (Extended Ecosystem Sprint)
 ✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
@@ -47,6 +48,7 @@
 - ✅ **Task #40**: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures — 30 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 - ✅ **Task #41**: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos — 32 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 - ✅ **Task #42**: Formik + migración desde Zod/Yup — 26 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
+- ✅ **Task #56**: Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 — **COMPLETADA** (23 Feb 2026)
 
 **Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
@@ -2367,3 +2369,49 @@ bun test                 # Verificar todos los tests
 7. **`qCheckRulesByGroupAsync(instance, options?)`** — mapa asíncrono equivalente; todos los grupos se evalúan concurrentemente.
 
 8. **SOLID** — `QModel.checkRules()` y `checkRulesAsync()` delegan a los helpers (0 duplicación de lógica).
+
+---
+
+## ✅ Task #56: Benchmarks extendidos — nuevos competidores + Bench #7/#8
+
+**Status:** ✅ COMPLETADA
+**Fecha:** 23 de febrero de 2026
+**Archivo modificado:** `tests/performance/comparison-benchmarks.test.ts`
+**Tests añadidos:** 11 nuevos benchmarks (31 → 42)
+
+**Nuevas librerías incorporadas (5):**
+
+| Librería          | Versión | Categoría                    | Benchmarks |
+| ----------------- | ------- | ---------------------------- | ---------- |
+| `superjson`       | 2.2.6   | Serialización                | #3, #7     |
+| `arktype`         | 2.1.29  | Validación TypeScript-native | #1, #4     |
+| `class-validator` | 0.14.3  | Reglas con decoradores       | #2, #8     |
+| `vest`            | 5.4.6   | Suites + grupos              | #8         |
+| `joi`             | 18.0.2  | Validación clásica           | #1, #4, #8 |
+
+**Nuevas secciones añadidas:**
+
+- **Benchmark #7 — Fidelidad de tipos en serialización** — Tabla comparativa de tipos preservados por Plain JSON / superjson / class-transformer / QuickModel. Demuestra que QuickModel es el único que hace el pipeline completo: JSON crudo → tipado → roundtrip lossless, incluyendo Symbol, TypedArray y tipos no soportados por superjson.
+
+- **Benchmark #8 — Forms / Business rules** — Comparativa de `@QRule`/`@QGroup` vs `class-validator`/`vest`/`joi`. Resultado: QuickModel @QRule es 6× más rápido que class-validator y ~150× más rápido que vest, además de ser el único con grupos + timeout async + form schema + coerción integrada.
+
+**Secciones extendidas:**
+
+- **Benchmark #1 y #4** — añadidos `arktype` y `joi`
+- **Benchmark #2** — añadido `class-validator` standalone + combo CT+CV
+- **Benchmark #3** — añadido `superjson` con nota de diferenciación
+
+**Feature matrix original reescrita:** Dividida en 3 tablas:
+
+1. Validación / Coerción / Serialización (10 librerías)
+2. Forms / Reglas de negocio (CV, vest, joi, QM)
+3. Features exclusivas de QuickModel (10 features únicas)
+
+**Resultados destacados Benchmark #8 (5k iteraciones):**
+
+```
+QuickModel @QRule:   755k ops/sec  ← referencia
+class-validator:     121k ops/sec  ← 6× más lento
+joi:                 116k ops/sec  ← 7× más lento
+vest:                  5k ops/sec  ← ~150× más lento
+```
