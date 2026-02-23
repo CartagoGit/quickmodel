@@ -2,12 +2,12 @@
 
 > **Fecha de revisión:** 23 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 2966 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 2976 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #49, #55 (sprint Feb–Mar 2026)
+✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #49, #55, #40, #41, #42 (sprint Feb 2026)
 ⏳  Backlog:     Tasks #47–#48, #50–#54 (Extended Ecosystem Sprint)
 ✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
@@ -44,9 +44,9 @@
 - ✅ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `copy()` — **COMPLETADA** (Feb 2026)
 - ✅ **Task #43**: Mobile Integrations — React Native/Expo, Capacitor, Cordova, Ionic — 33 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 - ✅ **Task #55**: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching — 39 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
-- ✅ **Task #40**: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures — 52 tests | guías EN+ES — **COMPLETADA** (Mar 2026)
-- ✅ **Task #41**: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos — 52 tests | guías EN+ES — **COMPLETADA** (Mar 2026)
-- ✅ **Task #42**: Formik + migración desde Zod/Yup — 26 tests | guías EN+ES — **COMPLETADA** (Mar 2026)
+- ✅ **Task #40**: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures — 30 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
+- ✅ **Task #41**: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos — 32 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
+- ✅ **Task #42**: Formik + migración desde Zod/Yup — 26 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 
 **Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
@@ -57,10 +57,10 @@
 - ⏳ Task #48: Drizzle ORM — DTO desde resultado de query, repositorio, tipos Drizzle → QModel
 - ✅ Task #49: Vitest Custom Matchers — `toBeValidQModel`, `toHaveQField`, `toMatchQModel`, setup helper — **COMPLETADA** (Feb 2026)
 - ✅ Task #50: TypeORM — Entity vs DTO separation, repositorio con QModel, transformación de columnas — **COMPLETADA** (Feb 2026)
-- ⏳ Task #51: GraphQL / Apollo Server — `@InputType()` DTO, resolver tipado, `@QComputed` en respuesta
+- ✅ Task #51: GraphQL / Apollo Server — `@InputType()` DTO, resolver tipado, `@QComputed` en respuesta — **COMPLETADA** (Feb 2026)
 - ✅ Task #52: OpenAPI / Swagger — `getSchema('json')` → `@nestjs/swagger`, `@fastify/swagger`, documentación automática — **COMPLETADA** (Feb 2026)
-- ⏳ Task #53: Electron IPC — `serialize()`/`populate()` en boundary main↔renderer, tipado cross-context
-- ⏳ Task #54: Mongoose — ODM sobre MongoDB, DTO encima del documento Mongoose, coerción de `ObjectId`
+- ✅ Task #53: Electron IPC — `serialize()`/`populate()` en boundary main↔renderer, tipado cross-context — **COMPLETADA** (Feb 2026)
+- ✅ Task #54: Mongoose — ODM sobre MongoDB, DTO encima del documento Mongoose, coerción de `ObjectId` — **COMPLETADA** (Feb 2026)
 - ✅ Task #55: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching layers — **COMPLETADA** (23 Feb 2026)
 
 **Revisión completa 22 Feb 2026 — Tareas actualizadas:**
@@ -1861,7 +1861,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 23 de febrero de 2026 (revisión nº17) — Task #43 COMPLETADA: 33 tests (React Native, Expo, Capacitor, Ionic, Cordova) + guías EN+ES | Task #55 COMPLETADA: 39 tests (localStorage, IndexedDB, SQLite, Capacitor Preferences, LRU cache, BroadcastChannel, OPFS) + guías EN+ES | 2966 tests passing
+**Última actualización:** 23 de febrero de 2026 (revisión nº20) — Tasks #40–#42 COMPLETADAS: tRPC (30t), Prisma (32t), Formik (26t) | Sprint Ecosystem Integrations ✅ completo | 2976 tests passing
 
 ---
 
@@ -1986,12 +1986,12 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #40: tRPC integration patterns
+### ✅ Task #40: tRPC integration patterns
 
-**Status:** 📋 Pendiente  
-**Objetivo:** Suite de tests + guía EN+ES para tRPC v11  
-**Tests a añadir:** ~25 en `tests/integration/patterns/trpc-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/trpc-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 23 de febrero de 2026  
+**Tests añadidos:** 30 en `tests/integration/patterns/trpc-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/trpc-integration.md` + `docs-vitepress/es/guide/trpc-integration.md`
 
 **Patrones a cubrir:**
 
@@ -2006,12 +2006,12 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #41: Prisma ORM integration patterns
+### ✅ Task #41: Prisma ORM integration patterns
 
-**Status:** 📋 Pendiente  
-**Objetivo:** Suite de tests + guía EN+ES para Prisma  
-**Tests a añadir:** ~25 en `tests/integration/patterns/prisma-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/prisma-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 23 de febrero de 2026  
+**Tests añadidos:** 32 en `tests/integration/patterns/prisma-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/prisma-integration.md` + `docs-vitepress/es/guide/prisma-integration.md`
 
 **Patrones a cubrir:**
 
@@ -2026,12 +2026,12 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #42: Formik + comparativa con Zod / Yup
+### ✅ Task #42: Formik + comparativa con Zod / Yup
 
-**Status:** 📋 Pendiente  
-**Objetivo:** Suite de tests + guía de migración desde Zod/Yup hacia QuickModel  
-**Tests a añadir:** ~20 en `tests/integration/patterns/formik-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/formik-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 23 de febrero de 2026  
+**Tests añadidos:** 26 en `tests/integration/patterns/formik-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/formik-integration.md` + `docs-vitepress/es/guide/formik-integration.md`
 
 **Patrones a cubrir:**
 
@@ -2249,9 +2249,9 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #51: GraphQL / Apollo Server integration patterns
+### ✅ Task #51: GraphQL / Apollo Server integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para Apollo Server / GraphQL Yoga  
 **Tests a añadir:** ~20 en `tests/integration/patterns/graphql-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/graphql-integration.md` + ES
@@ -2289,9 +2289,9 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #53: Electron IPC integration patterns
+### ✅ Task #53: Electron IPC integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para Electron con IPC serializado  
 **Tests a añadir:** ~15 en `tests/integration/patterns/electron-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/electron-integration.md` + ES
@@ -2309,9 +2309,9 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #54: Mongoose integration patterns
+### ✅ Task #54: Mongoose integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para Mongoose + MongoDB  
 **Tests a añadir:** ~20 en `tests/integration/patterns/mongoose-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/mongoose-integration.md` + ES

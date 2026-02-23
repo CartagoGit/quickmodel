@@ -753,10 +753,21 @@ export default defineConfig({
 									text: 'TypeORM',
 									link: '/en/guide/typeorm-integration',
 								},
+								{
+									text: 'GraphQL / Apollo Server',
+									link: '/en/guide/graphql-integration',
+								},
+								{
+									text: 'Electron IPC',
+									link: '/en/guide/electron-integration',
+								},
+								{
+									text: 'Mongoose',
+									link: '/en/guide/mongoose-integration',
+								},
 							],
 						},
 					],
-
 					'/en/mcp/': buildMcpSidebar('en'),
 					'/en/examples/': [
 						{
@@ -972,10 +983,21 @@ export default defineConfig({
 									text: 'TypeORM',
 									link: '/es/guide/typeorm-integration',
 								},
+								{
+									text: 'GraphQL / Apollo Server',
+									link: '/es/guide/graphql-integration',
+								},
+								{
+									text: 'Electron IPC',
+									link: '/es/guide/electron-integration',
+								},
+								{
+									text: 'Mongoose',
+									link: '/es/guide/mongoose-integration',
+								},
 							],
 						},
 					],
-
 					'/es/mcp/': buildMcpSidebar('es'),
 					'/es/examples/': [
 						{
