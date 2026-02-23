@@ -4,9 +4,11 @@
 //
 // Bloques:
 //   .bm-wrapper    — contenedor raíz
-//   .bm-header     — título y subtítulo
-//   .bm-apptype    — filtro de tipo de app + select de escenario
-//   (bm-tabs eliminado — reemplazado por bm-apptype__select)
+//   .bm-tabs       — barra de tabs con indicador deslizante
+//   .bm-tab-panel  — panel animado de contenido de tab
+//   .bm-panel-header — título y subtítulo dentro de cada tab
+//   .bm-header     — título y subtítulo (legacy, aún used por .bm-panel-header)
+//   .bm-scenario-badges — selector de escenario mediante badges
 //   .bm-chart      — contenedor del gráfico
 //   .bm-bar        — fila de barra (una por librería)
 //   .bm-tooltip    — tooltip flotante
@@ -19,7 +21,137 @@
 	margin: 2.5rem 0 3rem;
 }
 
-// ── Header ───────────────────────────────────────────────────
+// ── Tab Bar ───────────────────────────────────────────────────
+
+.bm-tabs {
+	position: relative;
+	display: flex;
+	align-items: center;
+	background: var(--vp-c-bg-soft);
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 12px;
+	padding: 4px;
+	margin-bottom: 2rem;
+	gap: 0;
+
+	&__tab {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 10px 12px;
+		border: none;
+		background: transparent;
+		border-radius: 8px;
+		cursor: pointer;
+		color: var(--vp-c-text-2);
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.3;
+		position: relative;
+		z-index: 1;
+		white-space: nowrap;
+		transition: color 0.25s ease;
+
+		&--active {
+			color: var(--vp-c-text-1);
+			font-weight: 600;
+		}
+
+		&:hover:not(&--active) {
+			color: var(--vp-c-brand-1);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--vp-c-brand-1);
+			outline-offset: 2px;
+			border-radius: 8px;
+		}
+	}
+
+	&__tab-icon {
+		font-size: 1.05rem;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+
+	&__tab-label {
+		flex: 1;
+		text-align: left;
+	}
+
+	// Sliding pill indicator — moves via CSS transform driven by --tab-idx
+	&__indicator {
+		position: absolute;
+		top: 4px;
+		left: 4px;
+		width: calc((100% - 8px) / 3);
+		height: calc(100% - 8px);
+		background: var(--vp-c-bg);
+		border-radius: 8px;
+		border: 1px solid var(--vp-c-divider);
+		box-shadow:
+			0 1px 4px rgba(0, 0, 0, 0.07),
+			0 2px 8px rgba(0, 0, 0, 0.04);
+		transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+		transform: translateX(calc(var(--tab-idx, 0) * 100%));
+		pointer-events: none;
+	}
+}
+
+// ── Panel header ──────────────────────────────────────────────
+
+.bm-panel-header {
+	text-align: center;
+	margin-bottom: 1.75rem;
+}
+
+// ── Tab panel (content wrapper) ───────────────────────────────
+
+.bm-tab-panel {
+	min-height: 200px; // Prevent layout jump during transition
+}
+
+// ── Tab slide transitions ─────────────────────────────────────
+
+// Forward: enter from right, leave to left
+.bm-tab-forward-enter-active,
+.bm-tab-forward-leave-active {
+	transition:
+		opacity 0.22s ease,
+		transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bm-tab-forward-enter-from {
+	opacity: 0;
+	transform: translateX(40px);
+}
+
+.bm-tab-forward-leave-to {
+	opacity: 0;
+	transform: translateX(-40px);
+}
+
+// Backward: enter from left, leave to right
+.bm-tab-backward-enter-active,
+.bm-tab-backward-leave-active {
+	transition:
+		opacity 0.22s ease,
+		transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bm-tab-backward-enter-from {
+	opacity: 0;
+	transform: translateX(-40px);
+}
+
+.bm-tab-backward-leave-to {
+	opacity: 0;
+	transform: translateX(40px);
+}
+
+
 
 .bm-header {
 	text-align: center;
@@ -46,92 +178,37 @@
 
 // ── App-type filter ──────────────────────────────────────────
 
-.bm-apptype {
+// ── Scenario badges ──────────────────────────────────────────
+
+.bm-scenario-badges {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
 	flex-wrap: wrap;
-	gap: 0.75rem;
+	gap: 0.5rem;
 	margin-bottom: 1.25rem;
 	padding: 0 0.5rem;
+}
 
-	&__group {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex-wrap: wrap;
+.bm-scenario-badge {
+	padding: 0.3rem 0.85rem;
+	border-radius: 999px;
+	border: 1px solid var(--vp-c-divider);
+	background: transparent;
+	color: var(--vp-c-text-2);
+	font-size: 0.75rem;
+	cursor: pointer;
+	transition: all 0.15s;
+	white-space: nowrap;
+
+	&:hover {
+		border-color: var(--vp-c-brand-2);
+		color: color-mix(in srgb, var(--vp-c-brand-1) 60%, #000);
 	}
 
-	&__scenario {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex-shrink: 0;
-	}
-
-	&__label {
-		font-size: 0.75rem;
-		color: var(--vp-c-text-2);
-		white-space: nowrap;
-		font-weight: 500;
-	}
-
-	&__pill {
-		padding: 0.2rem 0.7rem;
-		border-radius: 999px;
-		border: 1px solid var(--vp-c-divider);
-		background: transparent;
-		color: var(--vp-c-text-2);
-		font-size: 0.73rem;
-		cursor: pointer;
-		transition: all 0.15s;
-
-		&:hover {
-			border-color: var(--vp-c-brand-2);
-			color: color-mix(in srgb, var(--vp-c-brand-1) 60%, #000);
-		}
-
-		&--active {
-			background: var(--vp-c-brand-soft);
-			border-color: var(--vp-c-brand-2);
-			color: var(--vp-c-brand-1);
-			font-weight: 600;
-		}
-	}
-
-	&__select {
-		appearance: none;
-		-webkit-appearance: none;
-		background-color: var(--vp-c-bg-soft);
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-		background-repeat: no-repeat;
-		background-position: right 0.6rem center;
-		border: 1px solid var(--vp-c-divider);
-		border-radius: 8px;
-		color: var(--vp-c-text-2);
-		font-size: 0.78rem;
-		padding: 0.3rem 2rem 0.3rem 0.75rem;
-		cursor: pointer;
-		max-width: 260px;
-		transition:
-			border-color 0.15s,
-			box-shadow 0.15s;
-
-		&:hover {
-			border-color: var(--vp-c-brand-2);
-		}
-
-		&:focus {
-			outline: none;
-			border-color: var(--vp-c-brand-1);
-			box-shadow: 0 0 0 2px
-				color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
-		}
-
-		option {
-			background-color: var(--vp-c-bg-elv);
-			color: var(--vp-c-text-2);
-		}
+	&--active {
+		background: var(--vp-c-brand-soft);
+		border-color: var(--vp-c-brand-2);
+		color: var(--vp-c-brand-1);
+		font-weight: 600;
 	}
 }
 
@@ -410,7 +487,7 @@
 	border-radius: 12px;
 	overflow: hidden;
 	background: var(--vp-c-bg-soft);
-	margin-bottom: 1.5rem;
+	margin-bottom: 3rem;
 
 	&__header {
 		background: var(--vp-c-bg);
@@ -498,7 +575,11 @@
 		padding: 0.18rem 0.65rem;
 		border-radius: 999px;
 		border: 1px solid var(--badge-color, var(--vp-c-divider));
-		background: color-mix(in srgb, var(--badge-color, transparent) 15%, transparent);
+		background: color-mix(
+			in srgb,
+			var(--badge-color, transparent) 15%,
+			transparent
+		);
 		color: var(--badge-color, var(--vp-c-text-2));
 		font-size: 0.72rem;
 		cursor: pointer;
@@ -513,7 +594,11 @@
 		}
 
 		&:hover {
-			background: color-mix(in srgb, var(--badge-color, transparent) 28%, transparent);
+			background: color-mix(
+				in srgb,
+				var(--badge-color, transparent) 28%,
+				transparent
+			);
 		}
 
 		&--off {
@@ -620,8 +705,11 @@
 		max-width: 200px;
 		vertical-align: middle;
 		border: 0;
-		transition: opacity 0.25s ease, max-width 0.3s ease,
-			min-width 0.3s ease, padding 0.3s ease;
+		transition:
+			opacity 0.25s ease,
+			max-width 0.3s ease,
+			min-width 0.3s ease,
+			padding 0.3s ease;
 		overflow: hidden;
 
 		&--hidden {
@@ -648,9 +736,11 @@
 		padding: 0.45rem;
 		font-size: 1rem;
 		border: 0;
-		transition: opacity 0.25s ease, max-width 0.3s ease,
-			min-width 0.3s ease, padding 0.3s ease;
-		overflow: hidden;
+		transition:
+			opacity 0.25s ease,
+			max-width 0.3s ease,
+			min-width 0.3s ease,
+			padding 0.3s ease;
 
 		&--hidden {
 			max-width: 0 !important;
@@ -659,6 +749,7 @@
 			border: 0 !important;
 			opacity: 0;
 			pointer-events: none;
+			overflow: hidden;
 		}
 
 		&--ours {
@@ -669,12 +760,44 @@
 				color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
 		}
 	}
+
+	&__icon {
+		display: inline-block;
+		line-height: 1;
+
+		&--warning {
+			position: relative;
+			cursor: help;
+		}
+	}
+}
+
+// ── Warning tooltip (feature matrix) ────────────────────────
+
+.bm-warning-tooltip {
+	position: fixed;
+	z-index: 9999;
+	max-width: 300px;
+	padding: 0.4rem 0.75rem;
+	border-radius: 6px;
+	border: 1px solid var(--vp-c-divider);
+	background: var(--vp-c-bg-elv);
+	color: var(--vp-c-text-1);
+	font-size: 0.78rem;
+	line-height: 1.45;
+	box-shadow: 0 4px 14px rgb(0 0 0 / 18%);
+	pointer-events: none;
+	white-space: normal;
+	word-break: break-word;
+	transform: translateX(-50%);
 }
 
 // ── Library badge transitions (TransitionGroup) ──────────────
 
 .bm-badge-enter-active {
-	transition: opacity 0.2s ease, transform 0.2s ease;
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s ease;
 }
 
 .bm-badge-enter-from {
@@ -686,9 +809,166 @@
 	display: none;
 }
 
+// ── Coverage Map ─────────────────────────────────────────────
+
+.bm-coverage {
+	margin-bottom: 2.5rem;
+
+	&__scroll {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	&__grid {
+		display: grid;
+		// 1 columna de nombre de lib + N columnas de escenario (iguales)
+		grid-template-columns: 160px repeat(var(--scn-count), minmax(80px, 1fr));
+		gap: 4px;
+		min-width: 600px;
+	}
+
+	&__header-cell {
+		font-size: 0.68rem;
+		font-weight: 600;
+		color: var(--vp-c-text-2);
+		text-align: center;
+		padding: 6px 4px;
+		line-height: 1.2;
+		word-break: break-word;
+	}
+
+	&__lib-col {
+		text-align: left;
+	}
+
+	&__scn-label {
+		border-bottom: 1px solid var(--vp-c-divider);
+		margin-bottom: 2px;
+	}
+
+	&__lib-name {
+		display: flex;
+		align-items: center;
+		font-size: 0.78rem;
+		font-weight: 600;
+		padding-right: 8px;
+		white-space: nowrap;
+	}
+
+	&__chip {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 32px;
+		min-width: 60px;
+		border-radius: 6px;
+		border: 1px solid transparent;
+		cursor: pointer;
+		transition:
+			transform 0.12s ease,
+			box-shadow 0.12s ease,
+			opacity 0.12s ease;
+		font-size: 0.68rem;
+		font-weight: 700;
+		padding: 0 6px;
+
+		// Estado activo: librería tiene datos en ese escenario
+		&--on {
+			background: color-mix(
+				in srgb,
+				var(--chip-color, #888) 15%,
+				transparent
+			);
+			border-color: color-mix(
+				in srgb,
+				var(--chip-color, #888) 40%,
+				transparent
+			);
+			color: var(--chip-color, var(--vp-c-text-1));
+
+			&:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 3px 8px
+					color-mix(in srgb, var(--chip-color, #888) 30%, transparent);
+			}
+
+			&:active {
+				transform: translateY(0);
+			}
+		}
+
+		// Estado actual resaltado
+		&--active {
+			border-color: var(--chip-color, #888);
+			box-shadow: 0 0 0 2px
+				color-mix(in srgb, var(--chip-color, #888) 25%, transparent);
+		}
+
+		// Estado inactivo: librería no tiene datos
+		&--off {
+			background: var(--vp-c-bg-alt);
+			border-color: var(--vp-c-divider);
+			color: var(--vp-c-text-3);
+			cursor: default;
+			opacity: 0.55;
+		}
+	}
+
+	&__chip-speed {
+		letter-spacing: 0.01em;
+	}
+}
+
+// ── Tablet (641px – 959px) ────────────────────────────────────
+
+@media (min-width: 641px) and (max-width: 959px) {
+	.bm-bar {
+		&__label {
+			width: 96px;
+			font-size: 0.82rem;
+		}
+	}
+
+	.bm-header {
+		&__title {
+			font-size: 1.45rem;
+		}
+	}
+
+	// Coverage map — tablet: slightly smaller chips for more columns
+	.bm-coverage {
+		&__lib-name {
+			font-size: 0.72rem;
+			min-width: 88px;
+		}
+
+		&__chip {
+			min-width: 52px;
+			height: 30px;
+			font-size: 0.65rem;
+		}
+	}
+}
+
 // ── Mobile ───────────────────────────────────────────────────
 
 @media (max-width: 640px) {
+	// Compact tab bar: icon only on very small screens
+	.bm-tabs {
+		&__tab {
+			padding: 8px 6px;
+			gap: 4px;
+			font-size: 0.78rem;
+		}
+
+		&__tab-label {
+			display: none; // Hide text labels, show only emoji icon
+		}
+
+		&__tab-icon {
+			font-size: 1.2rem;
+		}
+	}
 	.bm-bar {
 		&__label {
 			width: 80px;
@@ -702,21 +982,32 @@
 		}
 	}
 
-	.bm-apptype {
-		flex-direction: column;
-		align-items: flex-start;
-
-		&__scenario {
-			width: 100%;
-		}
-
-		&__select {
-			max-width: 100%;
-			width: 100%;
-		}
+	.bm-scenario-badge {
+		font-size: 0.7rem;
+		padding: 0.25rem 0.65rem;
 	}
 
 	.bm-tooltip {
 		width: 290px;
+	}
+
+	// ── Coverage map — mobile
+	.bm-coverage {
+		&__lib-name {
+			font-size: 0.7rem;
+			padding-right: 6px;
+			min-width: 80px;
+		}
+
+		&__scn-label {
+			font-size: 0.6rem;
+			padding: 4px 2px;
+		}
+
+		&__chip {
+			min-width: 48px;
+			height: 28px;
+			font-size: 0.62rem;
+		}
 	}
 }

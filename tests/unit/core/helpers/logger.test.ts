@@ -5,7 +5,7 @@
  *  - getName() with string / function / object / fallback
  */
 
-import { describe, test, expect, afterEach, spyOn } from 'bun:test';
+import { describe, test, expect, afterEach, beforeEach, spyOn } from 'bun:test';
 import { Logger } from '@/core/helpers/logger.helper';
 import { QConfig } from '@/core/config/quick.config';
 import { QUICK_OPTIONS_KEY } from '@/core/constants/metadata-keys';
@@ -196,6 +196,59 @@ describe('Logger getName() branches', () => {
 		const noPrototype = Object.create(null) as object;
 		Logger.warn('msg', noPrototype);
 		expect(spy.mock.calls[0][0]).toContain('Unknown');
+		spy.mockRestore();
+	});
+});
+
+// ===========================================================================
+// Logger.globalDebugEnabled — cached config reference
+// ===========================================================================
+
+describe('Logger.globalDebugEnabled', () => {
+	beforeEach(() => {
+		// configure() merges — use reset() to fully clear enableDebugLogs between tests
+		QConfig.reset();
+	});
+
+	test('returns false by default (debug not configured)', () => {
+		expect(Logger.globalDebugEnabled).toBe(false);
+	});
+
+	test('returns true when enableDebugLogs is set globally', () => {
+		QConfig.configure({ defaults: { enableDebugLogs: true } });
+		expect(Logger.globalDebugEnabled).toBe(true);
+	});
+
+	test('updates when QConfig is reconfigured (cache invalidation)', () => {
+		QConfig.configure({ defaults: { enableDebugLogs: true } });
+		expect(Logger.globalDebugEnabled).toBe(true);
+
+		QConfig.reset();
+		expect(Logger.globalDebugEnabled).toBe(false);
+	});
+
+	test('returns false after toggling back to no debug config', () => {
+		QConfig.configure({ defaults: { enableDebugLogs: true } });
+		expect(Logger.globalDebugEnabled).toBe(true);
+
+		QConfig.configure({ defaults: { enableDebugLogs: false } });
+		expect(Logger.globalDebugEnabled).toBe(false);
+	});
+
+	test('is consistent with Logger.debug() not calling console.debug when false', () => {
+		const spy = spyOn(console, 'debug').mockImplementation(() => {});
+		expect(Logger.globalDebugEnabled).toBe(false);
+		Logger.debug('should be silent');
+		expect(spy).not.toHaveBeenCalled();
+		spy.mockRestore();
+	});
+
+	test('is consistent with Logger.debug() calling console.debug when true', () => {
+		QConfig.configure({ defaults: { enableDebugLogs: true } });
+		const spy = spyOn(console, 'debug').mockImplementation(() => {});
+		expect(Logger.globalDebugEnabled).toBe(true);
+		Logger.debug('should appear');
+		expect(spy).toHaveBeenCalledTimes(1);
 		spy.mockRestore();
 	});
 });

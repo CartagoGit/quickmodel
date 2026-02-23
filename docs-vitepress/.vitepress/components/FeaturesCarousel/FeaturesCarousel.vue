@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useData } from 'vitepress'
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useData } from 'vitepress';
 
 interface IFeature {
-	icon: string
-	title: string
-	details: string
+	icon: string;
+	title: string;
+	details: string;
 }
 
 const esFeatures: IFeature[] = [
@@ -81,7 +81,7 @@ const esFeatures: IFeature[] = [
 		details:
 			'serialize() y fromJSON() son inversos exactos. WeakMap/WeakSet quedan fuera del JSON (GC-friendly). Roundtrip verificable con la herramienta roundtrip del servidor MCP.',
 	},
-]
+];
 
 const enFeatures: IFeature[] = [
 	{
@@ -156,88 +156,91 @@ const enFeatures: IFeature[] = [
 		details:
 			'serialize() / fromJSON() are exact inverses. WeakMap/WeakSet stay out of JSON (GC-friendly). Roundtrip verifiable with the MCP roundtrip tool.',
 	},
-]
+];
 
-const { lang } = useData()
+const { lang } = useData();
 
-const features = computed(() => (lang.value.startsWith('es') ? esFeatures : enFeatures))
+const features = computed(() =>
+	lang.value.startsWith('es') ? esFeatures : enFeatures
+);
 
-const ITEMS_PER_PAGE = 4
-const currentPage = ref(0)
-const isTransitioning = ref(false)
+const ITEMS_PER_PAGE = 4;
+const currentPage = ref(0);
+const isTransitioning = ref(false);
 
-const totalPages = computed(() => Math.ceil(features.value.length / ITEMS_PER_PAGE))
+const totalPages = computed(() =>
+	Math.ceil(features.value.length / ITEMS_PER_PAGE)
+);
 
 const pageFeatures = (page: number) => {
-	const start = page * ITEMS_PER_PAGE
-	return features.value.slice(start, start + ITEMS_PER_PAGE)
-}
+	const start = page * ITEMS_PER_PAGE;
+	return features.value.slice(start, start + ITEMS_PER_PAGE);
+};
 
 const allPages = computed(() =>
-	Array.from({ length: totalPages.value }, (_, idx) => pageFeatures(idx)),
-)
+	Array.from({ length: totalPages.value }, (_, idx) => pageFeatures(idx))
+);
 
 function goTo(page: number) {
-	if (isTransitioning.value) return
-	isTransitioning.value = true
-	currentPage.value = ((page % totalPages.value) + totalPages.value) % totalPages.value
+	if (isTransitioning.value) return;
+	isTransitioning.value = true;
+	currentPage.value =
+		((page % totalPages.value) + totalPages.value) % totalPages.value;
 	setTimeout(() => {
-		isTransitioning.value = false
-	}, 450)
+		isTransitioning.value = false;
+	}, 450);
 }
 
 function next() {
-	goTo(currentPage.value + 1)
+	goTo(currentPage.value + 1);
 }
 
 function prev() {
-	goTo(currentPage.value - 1)
+	goTo(currentPage.value - 1);
 }
 
-const paused = ref(false)
-let timer: ReturnType<typeof setInterval> | null = null
+const paused = ref(false);
+let timer: ReturnType<typeof setInterval> | null = null;
 
 function startTimer() {
 	timer = setInterval(() => {
-		if (!paused.value) next()
-	}, 5000)
+		if (!paused.value) next();
+	}, 5000);
 }
 
 function stopTimer() {
-	if (timer) clearInterval(timer)
+	if (timer) clearInterval(timer);
 }
 
-onMounted(startTimer)
-onUnmounted(stopTimer)
+onMounted(startTimer);
+onUnmounted(stopTimer);
 </script>
 
 <template>
 	<div
 		class="features-carousel"
 		@mouseenter="paused = true"
-		@mouseleave="paused = false"
-	>
+		@mouseleave="paused = false">
 		<!-- track -->
 		<div class="carousel-viewport">
 			<div
 				class="carousel-track"
-				:style="{ transform: `translateX(-${currentPage * 100}%)` }"
-			>
+				:style="{ transform: `translateX(-${currentPage * 100}%)` }">
 				<div
 					v-for="(page, pageIdx) in allPages"
 					:key="pageIdx"
-					class="carousel-page"
-				>
+					class="carousel-page">
 					<div class="features-grid">
 						<div
 							v-for="(feature, fIdx) in page"
 							:key="fIdx"
-							class="feature-card"
-						>
+							class="feature-card">
 							<div class="feature-icon">{{ feature.icon }}</div>
 							<div class="feature-body">
 								<p class="feature-title">{{ feature.title }}</p>
-								<p class="feature-details">{{ feature.details }}</p>
+								<p class="feature-details">
+									{{ feature.details }}
+								</p>
 							</div>
 						</div>
 					</div>
@@ -247,8 +250,15 @@ onUnmounted(stopTimer)
 
 		<!-- controls -->
 		<div class="carousel-controls">
-			<button class="carousel-arrow" aria-label="Previous" @click="prev">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+			<button
+				class="carousel-arrow"
+				aria-label="Previous"
+				@click="prev">
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.5">
 					<polyline points="15 18 9 12 15 6" />
 				</svg>
 			</button>
@@ -260,12 +270,18 @@ onUnmounted(stopTimer)
 					class="carousel-dot"
 					:class="{ active: idx === currentPage }"
 					:aria-label="`Page ${idx + 1}`"
-					@click="goTo(idx)"
-				/>
+					@click="goTo(idx)" />
 			</div>
 
-			<button class="carousel-arrow" aria-label="Next" @click="next">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+			<button
+				class="carousel-arrow"
+				aria-label="Next"
+				@click="next">
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.5">
 					<polyline points="9 18 15 12 9 6" />
 				</svg>
 			</button>
@@ -309,6 +325,7 @@ onUnmounted(stopTimer)
 	@media (max-width: 640px) {
 		grid-template-columns: 1fr;
 		grid-template-rows: none;
+		gap: 10px;
 	}
 }
 
@@ -333,6 +350,12 @@ onUnmounted(stopTimer)
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 		transform: translateY(-2px);
 	}
+
+	@media (max-width: 640px) {
+		padding: 14px 16px;
+		gap: 12px;
+		border-radius: 10px;
+	}
 }
 
 .feature-icon {
@@ -340,6 +363,10 @@ onUnmounted(stopTimer)
 	line-height: 1;
 	flex-shrink: 0;
 	margin-top: 2px;
+
+	@media (max-width: 640px) {
+		font-size: 22px;
+	}
 }
 
 .feature-body {
@@ -354,6 +381,10 @@ onUnmounted(stopTimer)
 	font-weight: 600;
 	color: var(--vp-c-text-1);
 	line-height: 1.4;
+
+	@media (max-width: 640px) {
+		font-size: 13px;
+	}
 }
 
 .feature-details {
@@ -361,6 +392,11 @@ onUnmounted(stopTimer)
 	font-size: 13px;
 	color: var(--vp-c-text-2);
 	line-height: 1.6;
+
+	@media (max-width: 640px) {
+		font-size: 12px;
+		line-height: 1.5;
+	}
 }
 
 /* ── Controls ─────────────────────────────────── */

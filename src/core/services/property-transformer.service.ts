@@ -29,6 +29,19 @@ interface IQPropTransformMeta {
 	designType: any;
 
 	arrayNestingDepth: any;
+	/**
+	 * Resolved arrayElementClass: includes QUICK_TYPE_MAP_KEY fallback, computed once at cache build.
+	 * Avoids Reflect.getMetadata(QUICK_TYPE_MAP_KEY) in the hot path.
+	 */
+	resolvedArrayElementClass: any;
+	/** Resolved arrayElementTypes from typeMap, if applicable. */
+	resolvedArrayElementTypes: any;
+	/**
+	 * Resolved designType: may be set to Array when typeMap contains an array mapping
+	 * and design:type was not set by the decorator. Avoids a second QUICK_TYPE_MAP_KEY
+	 * lookup inside the arrayElementClass branch.
+	 */
+	resolvedDesignType: any;
 	/** Whether the cache entry has been built */
 	built: true;
 }
@@ -51,6 +64,65 @@ function _getPropTransformMeta(
 	if (!meta) {
 		// Use the prototype to read decorator metadata (same as reading from any instance)
 		const proto = (ctor as { prototype: object }).prototype;
+		const rawArrayElementClass = Reflect.getMetadata(
+			'arrayElementClass',
+			proto,
+			targetKey
+		);
+		const rawArrayElementTypes = Reflect.getMetadata(
+			'arrayElementTypes',
+			proto,
+			targetKey
+		);
+		const rawDesignType = Reflect.getMetadata(
+			'design:type',
+			proto,
+			targetKey
+		);
+
+		// Resolve QUICK_TYPE_MAP_KEY fallback once — avoids per-call Reflect.getMetadata in hot path
+		let resolvedArrayElementClass = rawArrayElementClass;
+		let resolvedArrayElementTypes = rawArrayElementTypes;
+		let resolvedDesignType = rawDesignType;
+
+		if (!resolvedArrayElementClass) {
+			const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, ctor);
+			if (typeMap && typeMap[targetKey]) {
+				const mappedType = typeMap[targetKey];
+				if (Array.isArray(mappedType) && mappedType.length > 0) {
+					resolvedArrayElementClass = mappedType[0];
+					if (mappedType.length > 1) {
+						resolvedArrayElementTypes = mappedType;
+					}
+					// If no designType set, Array type is implied by the typeMap array notation
+					if (!resolvedDesignType) {
+						resolvedDesignType = Array;
+					}
+				} else if (typeof mappedType === 'function') {
+					const hasPrototype =
+						mappedType.prototype &&
+						mappedType.prototype.constructor === mappedType;
+					const name = mappedType.name.toLowerCase();
+					const isKnownNative =
+						[
+							'date',
+							'regexp',
+							'set',
+							'map',
+							'bigint',
+							'url',
+							'error',
+							'symbol',
+							'arraybuffer',
+							'dataview',
+						].includes(name) || name.includes('array');
+					if (hasPrototype && !isKnownNative) {
+						resolvedArrayElementClass = mappedType;
+					}
+				}
+			}
+		}
+
 		meta = {
 			customTransformer: Reflect.getMetadata(
 				'customTransformer',
@@ -58,22 +130,17 @@ function _getPropTransformMeta(
 				targetKey
 			),
 			fieldType: Reflect.getMetadata('fieldType', proto, targetKey),
-			arrayElementClass: Reflect.getMetadata(
-				'arrayElementClass',
-				proto,
-				targetKey
-			),
-			arrayElementTypes: Reflect.getMetadata(
-				'arrayElementTypes',
-				proto,
-				targetKey
-			),
-			designType: Reflect.getMetadata('design:type', proto, targetKey),
+			arrayElementClass: rawArrayElementClass,
+			arrayElementTypes: rawArrayElementTypes,
+			designType: rawDesignType,
 			arrayNestingDepth: Reflect.getMetadata(
 				'arrayNestingDepth',
 				proto,
 				targetKey
 			),
+			resolvedArrayElementClass,
+			resolvedArrayElementTypes,
+			resolvedDesignType,
 			built: true,
 		};
 		classMap.set(targetKey, meta);
@@ -198,6 +265,22 @@ export class PropertyTransformer {
 							instance,
 							targetKey
 						),
+						// Plain-object fallback: no class-level QUICK_TYPE_MAP_KEY, resolved = raw
+						resolvedArrayElementClass: Reflect.getMetadata(
+							'arrayElementClass',
+							instance,
+							targetKey
+						),
+						resolvedArrayElementTypes: Reflect.getMetadata(
+							'arrayElementTypes',
+							instance,
+							targetKey
+						),
+						resolvedDesignType: Reflect.getMetadata(
+							'design:type',
+							instance,
+							targetKey
+						),
 						built: true,
 					};
 
@@ -246,7 +329,8 @@ export class PropertyTransformer {
 		}
 
 		// 3. Check for array of models or nested model
-		let arrayElementClass = _propMeta.arrayElementClass;
+		// Use pre-resolved values from cache (includes QUICK_TYPE_MAP_KEY fallback computed once)
+		const arrayElementClass = _propMeta.resolvedArrayElementClass;
 
 		// FALLBACK: Implicit Primitive Handling for @QType() (no args)
 		if (!fieldType && !arrayElementClass) {
@@ -285,57 +369,13 @@ export class PropertyTransformer {
 			}
 		}
 
-		let arrayElementTypes = _propMeta.arrayElementTypes;
+		const arrayElementTypes = _propMeta.resolvedArrayElementTypes;
 
-		// FALLBACK: Resolve from Quick TypeMap
-		if (!arrayElementClass) {
-			const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, modelClass);
-			if (typeMap && typeMap[targetKey]) {
-				const mappedType = typeMap[targetKey];
-				if (Array.isArray(mappedType) && mappedType.length > 0) {
-					arrayElementClass = mappedType[0];
-					if (mappedType.length > 1) {
-						arrayElementTypes = mappedType;
-					}
-				} else if (typeof mappedType === 'function') {
-					// Prototype check logic
-					const hasPrototype =
-						mappedType.prototype &&
-						mappedType.prototype.constructor === mappedType;
-					const name = mappedType.name.toLowerCase();
-					const isKnownNative =
-						[
-							'date',
-							'regexp',
-							'set',
-							'map',
-							'bigint',
-							'url',
-							'error',
-							'symbol',
-							'arraybuffer',
-							'dataview',
-						].includes(name) || name.includes('array');
-
-					if (hasPrototype && !isKnownNative) {
-						arrayElementClass = mappedType;
-					}
-				}
-			}
-		}
+		// FALLBACK already resolved at cache build time — removed per-call Reflect.getMetadata
 
 		if (arrayElementClass) {
-			// Use cached metadata from _propMeta — eliminates 2 Reflect.getMetadata calls per decorated array field
-			let designType = _propMeta.designType;
-			if (!designType) {
-				const typeMap = Reflect.getMetadata(
-					QUICK_TYPE_MAP_KEY,
-					modelClass
-				);
-				if (typeMap && Array.isArray(typeMap[key])) {
-					designType = Array;
-				}
-			}
+			// Use cached metadata from _propMeta — includes designType inferred from typeMap
+			const designType = _propMeta.resolvedDesignType;
 
 			const arrayNestingDepth = _propMeta.arrayNestingDepth;
 			const isArrayType = designType === Array;

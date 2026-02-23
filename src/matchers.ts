@@ -239,7 +239,7 @@ export const quickmodelMatchers = {
 
 // @ts-expect-error — vitest is an optional peer dependency; augmentation is a no-op if not installed
 declare module 'vitest' {
-	// eslint-disable-next-line
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	interface Assertion<_Res = any> {
 		/** Asserts that all `@QRule` validations pass. */
 		toBeValidQModel(): void;

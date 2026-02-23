@@ -24,11 +24,19 @@ export interface ILibraryInfo {
 
 export type IFeatureValue = boolean | 'partial';
 
+export interface IFeatureNote {
+	textEn: string;
+	textEs: string;
+}
+
 export interface IFeatureRow {
 	featureEn: string;
 	featureEs: string;
 	category: string;
 	values: Record<string, IFeatureValue>;
+	notes?: Record<string, IFeatureNote>;
+	/** Key del escenario de benchmark asociado a esta feature, para el coverage map */
+	scenarioKey?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -48,13 +56,13 @@ export const scenarios: IBenchScenario[] = [
 			'10k validaciones — TypeBox compila a checks JSON Schema nativo (más rápido), valibot es tree-shakeable, Zod es el más popular, yup es maduro. QM añade coerción automática sobre la validación. Plain JS y class-transformer excluidos: sin validación de esquemas. arktype es el validador TypeScript-nativo más rápido. joi es maduro pero más lento.',
 		appTypes: ['all', 'api'],
 		values: {
-			TypeBox: 1_500_000,
-			arktype: 5_500_000,
-			valibot: 800_000,
-			Zod: 32_000,
-			yup: 10_000,
-			joi: 200_000,
-			QuickModel: 18_000,
+			TypeBox: 2_082_986,
+			arktype: 6_719_527,
+			valibot: 3_864_734,
+			Zod: 1_221_717,
+			yup: 64_157,
+			joi: 204_429,
+			QuickModel: 94_960,
 			'Plain JS': null,
 			'class-transformer': null,
 			'class-validator': null,
@@ -73,10 +81,10 @@ export const scenarios: IBenchScenario[] = [
 			'1k objetos — coerción automática vs manual. QM: un decorador, cero código extra. Zod/valibot: transform manual por campo. class-transformer: solo Date via @Type, no BigInt/Map/Set. Plain JS, TypeBox, yup, joi, vest, superjson y arktype no hacen coerción a nivel de modelo.',
 		appTypes: ['all', 'ddd'],
 		values: {
-			valibot: 6_000,
-			'class-transformer': 5_000,
-			Zod: 9_500,
-			QuickModel: 8_200,
+			valibot: 524_686,
+			'class-transformer': 63_422,
+			Zod: 216_085,
+			QuickModel: 38_622,
 			'Plain JS': null,
 			TypeBox: null,
 			yup: null,
@@ -98,10 +106,10 @@ export const scenarios: IBenchScenario[] = [
 			'1k roundtrips. Plain JS (JSON.parse/stringify) es el más rápido pero pierde Date→string, BigInt→error, Map/Set→{}. class-transformer preserva solo Date via @Type. superjson preserva Date, BigInt, Set, Map, RegExp y más. QuickModel preserva todos los tipos nativamente — barras de Plain JS y arktype recortadas para legibilidad.',
 		appTypes: ['all', 'data'],
 		values: {
-			'Plain JS': 480_000,
-			'class-transformer': 100_000,
-			superjson: 30_000,
-			QuickModel: 28_000,
+			'Plain JS': 1_669_449,
+			'class-transformer': 50_434,
+			superjson: 45_600,
+			QuickModel: 37_698,
 			TypeBox: null,
 			valibot: null,
 			Zod: null,
@@ -123,14 +131,14 @@ export const scenarios: IBenchScenario[] = [
 			'10 ciclos de 1k objetos — rendimiento de validación en masa. class-transformer excluido (no es validador — necesita class-validator por separado). Plain JS excluido (sin validación). arktype es el validador TypeScript-nativo más rápido. joi y vest están orientados a reglas de negocio/formularios.',
 		appTypes: ['all', 'data'],
 		values: {
-			TypeBox: 1_500_000,
-			arktype: 850_000,
-			valibot: 850_000,
-			Zod: 34_000,
+			TypeBox: 5_373,
+			arktype: 44_248,
+			valibot: 8_062,
+			Zod: 3_473,
 			'class-validator': 120_000,
-			joi: 8_000,
-			yup: 10_000,
-			QuickModel: 27_000,
+			joi: 325,
+			yup: 111,
+			QuickModel: 2_377,
 			'Plain JS': null,
 			'class-transformer': null,
 			superjson: null,
@@ -149,7 +157,7 @@ export const scenarios: IBenchScenario[] = [
 		appTypes: ['all', 'testing', 'mock'],
 		values: {
 			'faker (manual)': 80_000,
-			QuickModel: 1_200,
+			QuickModel: 101_657,
 			'Plain JS': null,
 			TypeBox: null,
 			valibot: null,
@@ -161,6 +169,31 @@ export const scenarios: IBenchScenario[] = [
 			superjson: null,
 			'class-validator': null,
 			vest: null,
+		},
+	},
+	{
+		key: 'rules',
+		labelEn: 'Business Rules / @QRule (5k iterations)',
+		labelEs: 'Reglas de Negocio / @QRule (5k iteraciones)',
+		notesEn:
+			'5k iterations. QuickModel @QRule: inline co-located decorators, zero external setup. class-validator: @IsEmail/@MinLength/@Matches with validateSync(). joi: schema.validate() with fluent API. vest: new suite per field via create() + test() assertions.',
+		notesEs:
+			'5k iteraciones. QuickModel @QRule: decoradores co-localizados, sin setup externo. class-validator: @IsEmail/@MinLength/@Matches con validateSync(). joi: schema.validate() con API fluida. vest: nueva suite por campo con create() + aserciones test().',
+		appTypes: ['all', 'api'],
+		values: {
+			QuickModel: 1_249_750,
+			'class-validator': 130_378,
+			joi: 112_905,
+			vest: 8_218,
+			'Plain JS': null,
+			TypeBox: null,
+			valibot: null,
+			Zod: null,
+			'class-transformer': null,
+			yup: null,
+			arktype: null,
+			superjson: null,
+			'faker (manual)': null,
 		},
 	},
 ];
@@ -624,6 +657,7 @@ export const featureRows: IFeatureRow[] = [
 		featureEn: 'Auto coercion',
 		featureEs: 'Coerción automática',
 		category: 'serialization',
+		scenarioKey: 'coercion',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -639,11 +673,26 @@ export const featureRows: IFeatureRow[] = [
 			joi: false,
 			'faker (manual)': false,
 		},
+		notes: {
+			valibot: {
+				textEn: 'Requires manual pipe + transform per field',
+				textEs: 'Requiere pipe + transform manual por campo',
+			},
+			Zod: {
+				textEn: 'Requires z.coerce or .transform() per field',
+				textEs: 'Requiere z.coerce o .transform() por campo',
+			},
+			'class-transformer': {
+				textEn: 'Only Date via @Type — no BigInt, Map or Set',
+				textEs: 'Solo Date mediante @Type — sin BigInt, Map ni Set',
+			},
+		},
 	},
 	{
 		featureEn: 'Native serialization (toJSON)',
 		featureEs: 'Serialización nativa (toJSON)',
 		category: 'serialization',
+		scenarioKey: 'serialization',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -659,11 +708,18 @@ export const featureRows: IFeatureRow[] = [
 			joi: false,
 			'faker (manual)': false,
 		},
+		notes: {
+			'class-transformer': {
+				textEn: 'Only Date via @Type — no BigInt, Map, Set or RegExp',
+				textEs: 'Solo Date mediante @Type — sin BigInt, Map, Set ni RegExp',
+			},
+		},
 	},
 	{
 		featureEn: 'Typed mock generation',
 		featureEs: 'Generación de mocks tipados',
 		category: 'exclusive',
+		scenarioKey: 'mocks',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -719,6 +775,16 @@ export const featureRows: IFeatureRow[] = [
 			joi: false,
 			'faker (manual)': false,
 		},
+		notes: {
+			'class-transformer': {
+				textEn: 'Possible with custom discriminator but requires extra boilerplate',
+				textEs: 'Posible con discriminador custom pero requiere boilerplate extra',
+			},
+			superjson: {
+				textEn: 'Preserves types but requires an already-typed object in memory',
+				textEs: 'Preserva tipos pero necesita el objeto ya tipado en memoria',
+			},
+		},
 	},
 	{
 		featureEn: 'copy() / isDirty()',
@@ -759,6 +825,12 @@ export const featureRows: IFeatureRow[] = [
 			joi: false,
 			'faker (manual)': false,
 		},
+		notes: {
+			vest: {
+				textEn: 'Suite-based form structure but no decorator integration with model classes',
+				textEs: 'Estructura de formulario basada en suites, sin integración con decoradores de clase',
+			},
+		},
 	},
 	{
 		featureEn: 'Computed fields (@QComputed)',
@@ -784,6 +856,7 @@ export const featureRows: IFeatureRow[] = [
 		featureEn: 'Async business rules (@QRule)',
 		featureEs: 'Reglas de negocio async (@QRule)',
 		category: 'forms',
+		scenarioKey: 'rules',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -799,11 +872,34 @@ export const featureRows: IFeatureRow[] = [
 			joi: 'partial',
 			'faker (manual)': false,
 		},
+		notes: {
+			Zod: {
+				textEn: 'Async refinements supported but not co-located with model definition',
+				textEs: 'Soporta refinements async pero no están co-localizados con la definición del modelo',
+			},
+			yup: {
+				textEn: 'Async .test() supported but defined separately from the model',
+				textEs: 'Soporta .test() async pero se define separado del modelo',
+			},
+			'class-validator': {
+				textEn: 'Via @ValidateIf + async custom validators; extra dependency required',
+				textEs: 'Mediante @ValidateIf + validadores async; requiere dependencia extra',
+			},
+			vest: {
+				textEn: 'External validation suite, not integrated with model class',
+				textEs: 'Suite de validación externa, no integrada con la clase del modelo',
+			},
+			joi: {
+				textEn: 'External validation suite, not integrated with model class',
+				textEs: 'Suite de validación externa, no integrada con la clase del modelo',
+			},
+		},
 	},
 	{
 		featureEn: 'Runtime integrity',
 		featureEs: 'Integridad en runtime',
 		category: 'validation',
+		scenarioKey: 'validation',
 		values: {
 			'Plain JS': false,
 			TypeBox: true,
@@ -818,6 +914,28 @@ export const featureRows: IFeatureRow[] = [
 			vest: 'partial',
 			joi: 'partial',
 			'faker (manual)': false,
+		},
+		notes: {
+			valibot: {
+				textEn: 'Possible with manual parse calls, not enforced by the model itself',
+				textEs: 'Posible con llamadas parse manuales, no aplicado por el modelo',
+			},
+			yup: {
+				textEn: 'Possible with manual .validate() calls, not built into the model lifecycle',
+				textEs: 'Posible con llamadas .validate() manuales, no integrado en el ciclo de vida del modelo',
+			},
+			'class-validator': {
+				textEn: 'Requires explicit validate() call; not automatic on assignment',
+				textEs: 'Requiere llamada explícita a validate(); no automático en la asignación',
+			},
+			vest: {
+				textEn: 'External suite — must be called manually, not bound to model lifecycle',
+				textEs: 'Suite externa — debe llamarse manualmente, no está ligada al ciclo de vida del modelo',
+			},
+			joi: {
+				textEn: 'External suite — must be called manually, not bound to model lifecycle',
+				textEs: 'Suite externa — debe llamarse manualmente, no está ligada al ciclo de vida del modelo',
+			},
 		},
 	},
 	{
@@ -899,6 +1017,12 @@ export const featureRows: IFeatureRow[] = [
 			joi: false,
 			'faker (manual)': true,
 		},
+		notes: {
+			TypeBox: {
+				textEn: 'Most types are tree-shakeable but the internal compiler/runtime is always included',
+				textEs: 'La mayoría de tipos son tree-shakeable pero el compilador/runtime interno siempre se incluye',
+			},
+		},
 	},
 	{
 		featureEn: 'Decorator constraints (@IsEmail…)',
@@ -958,6 +1082,12 @@ export const featureRows: IFeatureRow[] = [
 			vest: true,
 			joi: false,
 			'faker (manual)': false,
+		},
+		notes: {
+			'class-validator': {
+				textEn: 'Supported via groups option but requires verbose @ValidateIf setup',
+				textEs: 'Soportado mediante la opción groups pero requiere configuración verbosa con @ValidateIf',
+			},
 		},
 	},
 ];

@@ -4,6 +4,7 @@ const TOOLTIP_MIN_RIGHT_SPACE = 360;
 const TOOLTIP_OFFSET_RIGHT = 12;
 const TOOLTIP_WIDTH = 352;
 const TOOLTIP_MAX_BOTTOM_OFFSET = 420;
+const WARNING_TOOLTIP_OFFSET_Y = 12;
 
 export interface IBenchmarkInteractionsResult {
 	hoveredLib: Ref<string | null>;
@@ -12,6 +13,11 @@ export interface IBenchmarkInteractionsResult {
 	tooltipIsRight: Ref<boolean>;
 	onBarMouseEnter: (lib: string, evt: MouseEvent) => void;
 	onBarMouseLeave: () => void;
+	warningTooltipText: Ref<string | null>;
+	warningTooltipX: Ref<number>;
+	warningTooltipY: Ref<number>;
+	onWarningMouseEnter: (text: string, evt: MouseEvent) => void;
+	onWarningMouseLeave: () => void;
 }
 
 /**
@@ -23,6 +29,10 @@ export function useBenchmarkInteractions(): IBenchmarkInteractionsResult {
 	const tooltipX = ref(0);
 	const tooltipY = ref(0);
 	const tooltipIsRight = ref(true);
+
+	const warningTooltipText = ref<string | null>(null);
+	const warningTooltipX = ref(0);
+	const warningTooltipY = ref(0);
 
 	function onBarMouseEnter(lib: string, evt: MouseEvent): void {
 		hoveredLib.value = lib;
@@ -42,6 +52,16 @@ export function useBenchmarkInteractions(): IBenchmarkInteractionsResult {
 		hoveredLib.value = null;
 	}
 
+	function onWarningMouseEnter(text: string, evt: MouseEvent): void {
+		warningTooltipText.value = text;
+		warningTooltipX.value = evt.clientX;
+		warningTooltipY.value = evt.clientY + WARNING_TOOLTIP_OFFSET_Y;
+	}
+
+	function onWarningMouseLeave(): void {
+		warningTooltipText.value = null;
+	}
+
 	return {
 		hoveredLib,
 		tooltipX,
@@ -49,5 +69,10 @@ export function useBenchmarkInteractions(): IBenchmarkInteractionsResult {
 		tooltipIsRight,
 		onBarMouseEnter,
 		onBarMouseLeave,
+		warningTooltipText,
+		warningTooltipX,
+		warningTooltipY,
+		onWarningMouseEnter,
+		onWarningMouseLeave,
 	};
 }

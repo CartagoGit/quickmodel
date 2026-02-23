@@ -117,3 +117,120 @@ describe('PropertyTransformer', () => {
 		expect(result).toBeInstanceOf(Date);
 	});
 });
+
+// ===========================================================================
+// decoratedFieldsSet fast path — O(1) Set.has() vs O(n) Array.includes()
+// ===========================================================================
+
+describe('PropertyTransformer — decoratedFieldsSet fast path', () => {
+	let service: PropertyTransformer;
+
+	beforeEach(() => {
+		mockValidateOrCoercePrimitive.mockClear();
+		mockTransformByDesignType.mockClear();
+		service = new PropertyTransformer(
+			mockValueTransformer,
+			mockTransformerLookup,
+			mockRecursiveDeserializer as any
+		);
+	});
+
+	it('uses Set.has() when decoratedFieldsSet is provided: undecorated field routes to coercion', () => {
+		// 'name' is NOT in the Set → should call coercePrimitive + transformByDesignType
+		const result = service.transformProperty('name', 'Alice', {
+			instance: {},
+			modelClass: class TestModel {},
+			decoratedFields: ['other'],
+			decoratedFieldsSet: new Set(['other']),
+			designTypes: { name: String },
+			options: {},
+			discriminators: {},
+			transformContext: { propertyKey: 'name', className: 'TestModel' },
+			recursionContext: { visited: new WeakSet(), depth: 0 },
+			maxArrayLength: 1000,
+			coercionStrategy: 'strict',
+		});
+
+		expect(mockValidateOrCoercePrimitive).toHaveBeenCalledTimes(1);
+		expect(mockTransformByDesignType).toHaveBeenCalledTimes(1);
+		// decoratedFieldsSet.has('name') === false → went through undecorated path
+		expect(result).toBe('Alice');
+	});
+
+	it('uses Set.has() when decoratedFieldsSet is provided: decorated field skips coercion', () => {
+		const customFn = mock((val: unknown) => `transformed:${val}`);
+		// 'title' IS in the Set → decorated path → custom transformer from options
+		service.transformProperty('title', 'hello', {
+			instance: {},
+			modelClass: class TestModel {},
+			decoratedFields: ['title'],
+			decoratedFieldsSet: new Set(['title']),
+			designTypes: {},
+			options: { transformers: { title: customFn } },
+			discriminators: {},
+			transformContext: { propertyKey: 'title', className: 'TestModel' },
+			recursionContext: { visited: new WeakSet(), depth: 0 },
+			maxArrayLength: 1000,
+			coercionStrategy: 'strict',
+		});
+
+		expect(mockValidateOrCoercePrimitive).not.toHaveBeenCalled();
+		expect(customFn).toHaveBeenCalledWith('hello');
+	});
+
+	it('falls back to Array.includes() when decoratedFieldsSet is omitted (backwards compat)', () => {
+		// Callers that don't pass decoratedFieldsSet (e.g. unit tests, external) still work
+		const result = service.transformProperty('score', 99, {
+			instance: {},
+			modelClass: class LegacyModel {},
+			decoratedFields: [],
+			// decoratedFieldsSet intentionally omitted
+			designTypes: { score: Number },
+			options: {},
+			discriminators: {},
+			transformContext: {
+				propertyKey: 'score',
+				className: 'LegacyModel',
+			},
+			recursionContext: { visited: new WeakSet(), depth: 0 },
+			maxArrayLength: 1000,
+			coercionStrategy: 'strict',
+		} as any);
+
+		// 'score' not in decoratedFields → coercion path
+		expect(mockValidateOrCoercePrimitive).toHaveBeenCalledTimes(1);
+		expect(result).toBe(99);
+	});
+
+	it('produces the same result with decoratedFieldsSet as without it', () => {
+		const baseContext = {
+			instance: {},
+			modelClass: class SameModel {},
+			decoratedFields: ['active'],
+			designTypes: { active: Boolean },
+			options: {},
+			discriminators: {},
+			transformContext: { propertyKey: 'active', className: 'SameModel' },
+			recursionContext: { visited: new WeakSet(), depth: 0 },
+			maxArrayLength: 1000,
+			coercionStrategy: 'strict' as const,
+		};
+
+		mockValidateOrCoercePrimitive.mockClear();
+		service.transformProperty('active', true, {
+			...baseContext,
+			// without Set
+		});
+		const callsWithoutSet = mockValidateOrCoercePrimitive.mock.calls.length;
+
+		mockValidateOrCoercePrimitive.mockClear();
+		service.transformProperty('active', true, {
+			...baseContext,
+			decoratedFieldsSet: new Set(['active']),
+		});
+		const callsWithSet = mockValidateOrCoercePrimitive.mock.calls.length;
+
+		// Both paths must produce the same call count — Set.has() must not change behaviour
+		expect(callsWithSet).toBe(callsWithoutSet);
+	});
+});

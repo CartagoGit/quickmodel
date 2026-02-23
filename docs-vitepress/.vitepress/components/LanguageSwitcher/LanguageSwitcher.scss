@@ -96,3 +96,24 @@
 		flex: 1;
 	}
 }
+
+// ── Responsive ───────────────────────────────────────────────
+
+// On very small screens: compact toggle (flag icon only, no label)
+@media (max-width: 430px) {
+	.lang-switcher {
+		&__toggle {
+			padding: 0 8px;
+			gap: 0.3rem;
+		}
+
+		&__label {
+			display: none;
+		}
+
+		&__arrow {
+			width: 10px;
+			height: 10px;
+		}
+	}
+}

@@ -287,10 +287,17 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		for (let idx = 0; idx < lines.length; idx++) {
 			const line = lines[idx]!;
 			const trimmed = line.trim();
-			if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
 
-			// Track declare module blocks — augmentation interfaces need exact library names
-			if (/\bdeclare\s+module\s+['"][^'"]+['"]/.test(line)) {
+			// Track declare module / declare global blocks — augmentation interfaces
+			// need exact library names, so skip naming checks inside these blocks.
+			// NOTE: do NOT skip comment lines before brace-tracking when inside the
+			// block, otherwise the brace depth gets out of sync (e.g. the
+			// `// eslint-disable-next-line` comment right before `interface Assertion`
+			// would bypass the depth counter and leave the interface line uncovered).
+			const isDeclareBlock =
+				/\bdeclare\s+module\s+["'][^"']+["']/.test(line) ||
+				/\bdeclare\s+global\b/.test(line);
+			if (isDeclareBlock) {
 				insideDeclareModule = true;
 				braceDepth = 0;
 			}
@@ -300,6 +307,9 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 				if (braceDepth <= 0) insideDeclareModule = false;
 				continue;
 			}
+
+			// Skip pure comment lines only when outside ambient declaration blocks
+			if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
 
 			// Respect eslint-disable-next-line comments from the preceding non-empty line
 			const prevLine =

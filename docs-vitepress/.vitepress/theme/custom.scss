@@ -268,6 +268,13 @@ body {
 	}
 }
 
+// Reduce hero top distance to half of VitePress default (80px → 40px)
+.VPHero {
+	padding-top: calc(
+		var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 40px
+	) !important;
+}
+
 // --- Landing Page Section Headers ---
 // Mirrors the visual style of BenchmarkChart section titles (.bm-header__title)
 .VPHome .vp-doc h2.landing-title {
@@ -324,6 +331,24 @@ body {
 // 3. RESPONSIVE LAYOUTS & OVERRIDES
 // ============================================================================
 
+// --- Extra Small Mobile (max 430px) ---
+@media (max-width: 430px) {
+	// Reduce search bar so LanguageSwitcher doesn't squeeze out
+	.VPNavBar .VPNavBarSearch .DocSearch-Button {
+		width: 180px !important;
+	}
+
+	// Smaller hero image on very small screens
+	.VPHero .VPImage {
+		max-width: 200px !important;
+	}
+
+	// Carousel padding tighter on phones
+	.features-carousel {
+		padding-bottom: 16px;
+	}
+}
+
 // --- Mobile / Tablet (max 768px) ---
 @media (max-width: 768px) {
 	.vp-doc table {
@@ -332,6 +357,27 @@ body {
 		th {
 			padding: 0.5rem;
 		}
+	}
+
+	// Hero image sensible max on narrow screens
+	.VPHero .VPImage {
+		max-width: 260px !important;
+	}
+
+	// Tighten LanguageSwitcher in the navbar
+	#language-switcher-mount {
+		margin-right: 4px;
+	}
+
+	// Prevent carousel and marquee from adding extra vertical space
+	.features-carousel {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.integration-marquee {
+		margin-left: 0;
+		margin-right: 0;
 	}
 }
 
@@ -355,6 +401,16 @@ body {
 		@media (max-width: 1279px) {
 			grid-template-columns: repeat(3, 1fr);
 			gap: 16px;
+		}
+	}
+
+	// Carousel at tablet/laptop: ensure proper width and no rogue margins
+	.features-carousel {
+		@media (max-width: 1279px) {
+			width: 100%;
+			max-width: 100%;
+			margin-left: auto !important;
+			margin-right: auto !important;
 		}
 	}
 }
@@ -396,7 +452,7 @@ body {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: 24px;
-		align-items: start;
+		align-items: center;
 		max-width: 1440px;
 		margin: 0 auto;
 		padding: 0 48px;
@@ -422,20 +478,31 @@ body {
 			.items {
 				grid-template-columns: repeat(2, 50%);
 				gap: 16px;
-				padding-top: calc(
-					var(--vp-nav-height) + var(--vp-layout-top-height, 0px)
-				);
+				padding-top: 0;
 			}
 		}
 
 		// Carousel positioned in the same right column as VPFeatures was
+		// margin-top compensates for VPHero's asymmetric padding (top: nav+80px, bottom: 64px)
+		// so the carousel center aligns with the hero content center.
+		// offset = (nav-height + layout-top + 80 - 64) / 2 = (nav-height + layout-top + 16) / 2
 		.features-carousel {
 			grid-column: 2;
-			align-self: start;
+			align-self: center;
 			margin: 0 !important;
-			padding-top: calc(
-				var(--vp-nav-height) + var(--vp-layout-top-height, 0px)
+			margin-top: calc(
+				(
+						var(--vp-nav-height) +
+							var(--vp-layout-top-height, 0px) + 16px
+					) /
+					2
 			) !important;
+			padding-top: 0 !important;
+		}
+
+		// Marquee spans both columns, full width
+		.integration-marquee {
+			grid-column: 1 / -1;
 		}
 
 		.vp-doc {

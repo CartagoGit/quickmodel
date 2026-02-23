@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { useData } from 'vitepress';
+import { useI18n } from '../../composables/useI18n';
 import {
 	scenarios,
 	libraries,
@@ -14,20 +14,35 @@ import { useBenchmarkScale } from './useBenchmarkScale';
 import { useBenchmarkFormatters } from './useBenchmarkFormatters';
 import { useBenchmarkInteractions } from './useBenchmarkInteractions';
 
-export function useBenchmarkChart() {
-	const { lang } = useData();
+const TAB_ORDER = ['features', 'coverage', 'performance'] as const;
+type ITab = (typeof TAB_ORDER)[number];
 
-	// ─── Estado reactivo ──────────────────────────────────────
+export function useBenchmarkChart() {
+	const { lang, t, lp, lpArr } = useI18n();
+
+	// ─── Tab navigation ───────────────────────────
+
+	const activeTab = ref<ITab>('features');
+	const prevTabIndex = ref(0);
+
+	const activeTabIndex = computed(() => TAB_ORDER.indexOf(activeTab.value));
+
+	const tabDirection = computed(() =>
+		activeTabIndex.value >= prevTabIndex.value ? 'forward' : 'backward'
+	);
+
+	function setTab(tab: ITab): void {
+		prevTabIndex.value = TAB_ORDER.indexOf(activeTab.value);
+		activeTab.value = tab;
+	}
+
+	// ─── Estado reactivo ──────────────────────────
 
 	const activeAppType = ref('all');
 	const activeScenario = ref(scenarios[0]!.key);
 	const activeMatrixType = ref('all');
 	const disabledMatrixLibs = ref<string[]>([]);
 	const disabledFeatureCategories = ref<string[]>([]);
-
-	// ─── Computados ───────────────────────────────────────────
-
-	const isEs = computed(() => lang.value === 'es');
 
 	const filteredScenarios = computed(() =>
 		activeAppType.value === 'all'
@@ -87,6 +102,11 @@ export function useBenchmarkChart() {
 		...libNames.filter((lib) => lib !== 'QuickModel'),
 	]);
 
+	const coverageLibNames: string[] = [
+		'QuickModel',
+		...libNames.filter((lib) => lib !== 'QuickModel'),
+	];
+
 	// Al cambiar el tipo, resetear las librerías desactivadas
 	watch(activeMatrixType, () => {
 		disabledMatrixLibs.value = [];
@@ -138,6 +158,21 @@ export function useBenchmarkChart() {
 		return disabledFeatureCategories.value.includes(cat);
 	}
 
+	/** Formatea un valor numérico como badge compacto: 1249750 → "1.2M/s", 130378 → "130k/s" */
+	function formatBadgeSpeed(val: number): string {
+		if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M/s`;
+		if (val >= 1_000) return `${Math.round(val / 1_000)}k/s`;
+		return `${val}/s`;
+	}
+
+	/** Salta al escenario indicado y activa el tab de Performance */
+	function goToScenario(key: string): void {
+		activeScenario.value = key;
+		setTab('performance');
+		const el = document.querySelector('.bm-wrapper');
+		if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
 	// ─── Sub-composables (SRP) ────────────────────────────────
 
 	const { isOverflow, barPercent } = useBenchmarkScale(
@@ -147,7 +182,7 @@ export function useBenchmarkChart() {
 
 	const { formatOps, featureIcon, formatNote } = useBenchmarkFormatters(
 		currentScenario,
-		isEs
+		lang
 	);
 
 	const {
@@ -157,12 +192,25 @@ export function useBenchmarkChart() {
 		tooltipIsRight,
 		onBarMouseEnter,
 		onBarMouseLeave,
+		warningTooltipText,
+		warningTooltipX,
+		warningTooltipY,
+		onWarningMouseEnter,
+		onWarningMouseLeave,
 	} = useBenchmarkInteractions();
 
 	return {
+		// Tab navigation
+		activeTab,
+		activeTabIndex,
+		tabDirection,
+		setTab,
+
 		// Datos estáticos
 		libraries,
 		featureRows,
+		scenarios,
+		libNames,
 		appTypeOptions,
 		matrixTypeOptions,
 		featureCategoryOptions,
@@ -178,14 +226,27 @@ export function useBenchmarkChart() {
 		tooltipY,
 		tooltipIsRight,
 
+		// Warning tooltip (feature matrix)
+		warningTooltipText,
+		warningTooltipX,
+		warningTooltipY,
+		onWarningMouseEnter,
+		onWarningMouseLeave,
+
+		// Traducciones
+		lang,
+		t,
+		lp,
+		lpArr,
+
 		// Computados
-		isEs,
 		filteredScenarios,
 		currentScenario,
 		activeLibNames,
 		excludedLibNames,
 		matrixLibsByType,
 		visibleMatrixLibNames,
+		coverageLibNames,
 		visibleFeatureRows,
 
 		// Funciones
@@ -193,6 +254,8 @@ export function useBenchmarkChart() {
 		toggleFeatureCategory,
 		isLibHidden,
 		isCategoryHidden,
+		formatBadgeSpeed,
+		goToScenario,
 
 		// Escala (useBenchmarkScale)
 		isOverflow,

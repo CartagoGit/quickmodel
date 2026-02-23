@@ -2,12 +2,18 @@
 import { useBenchmarkChart } from './BenchmarkChart';
 
 const {
+	// Tab navigation
+	activeTab,
+	activeTabIndex,
+	tabDirection,
+	setTab,
+
 	libraries,
 	featureRows,
-	appTypeOptions,
+	scenarios,
+	libNames,
 	matrixTypeOptions,
 	featureCategoryOptions,
-	activeAppType,
 	activeScenario,
 	activeMatrixType,
 	disabledMatrixLibs,
@@ -15,13 +21,16 @@ const {
 	hoveredLib,
 	tooltipX,
 	tooltipY,
-	isEs,
-	filteredScenarios,
+	lang,
+	t,
+	lp,
+	lpArr,
 	currentScenario,
 	activeLibNames,
 	excludedLibNames,
 	matrixLibsByType,
 	visibleMatrixLibNames,
+	coverageLibNames,
 	toggleMatrixLib,
 	toggleFeatureCategory,
 	isLibHidden,
@@ -31,11 +40,18 @@ const {
 	formatOps,
 	featureIcon,
 	formatNote,
+	formatBadgeSpeed,
+	goToScenario,
 	onBarMouseEnter,
 	onBarMouseLeave,
+	warningTooltipText,
+	warningTooltipX,
+	warningTooltipY,
+	onWarningMouseEnter,
+	onWarningMouseLeave,
 } = useBenchmarkChart();
 </script>
 
-<template src="./BenchmarkChart.html" />
+<template src="./BenchmarkChart.html"></template>
 
 <style lang="scss" src="./BenchmarkChart.scss" scoped />

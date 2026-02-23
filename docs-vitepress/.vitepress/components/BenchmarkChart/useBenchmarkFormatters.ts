@@ -18,7 +18,7 @@ export interface IBenchmarkFormattersResult {
  */
 export function useBenchmarkFormatters(
 	currentScenario: Ref<IBenchScenario>,
-	isEs: Ref<boolean>
+	lang: Ref<string>
 ): IBenchmarkFormattersResult {
 	function formatOps(lib: string): string {
 		const val = currentScenario.value.values[lib];
@@ -37,7 +37,10 @@ export function useBenchmarkFormatters(
 	}
 
 	function formatNote(scenario: IBenchScenario): string {
-		return isEs.value ? scenario.notesEs : scenario.notesEn;
+		const key = ('notes' +
+			lang.value.charAt(0).toUpperCase() +
+			lang.value.slice(1)) as keyof IBenchScenario;
+		return (scenario[key] as string | undefined) ?? scenario.notesEn;
 	}
 
 	return { formatOps, featureIcon, formatNote };
