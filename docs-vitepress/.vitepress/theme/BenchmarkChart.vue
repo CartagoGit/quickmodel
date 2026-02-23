@@ -46,24 +46,30 @@ const scenarios: IBenchScenario[] = [
 		key: 'simple',
 		labelEn: 'Simple Objects',
 		labelEs: 'Objetos Simples',
-		notesEn: '10k iterations — string/number/boolean fields. Plain JS sets the maximum baseline.',
-		notesEs: '10k iteraciones — campos string/number/boolean. Plain JS establece el baseline máximo.',
+		notesEn:
+			'10k iterations — string/number/boolean fields. Plain JS sets the maximum baseline.',
+		notesEs:
+			'10k iteraciones — campos string/number/boolean. Plain JS establece el baseline máximo.',
 		values: { 'Plain JS': 2_100_000, Zod: 32_000, QuickModel: 18_000 },
 	},
 	{
 		key: 'complex',
 		labelEn: 'Complex Types (Date + BigInt + Map + Set)',
 		labelEs: 'Tipos Complejos (Date + BigInt + Map + Set)',
-		notesEn: '1k iterations — auto-coercion. Plain JS cannot do this natively. Zod requires manual .transform().',
-		notesEs: '1k iteraciones — coerción automática. Plain JS no puede hacerlo. Zod requiere .transform() manual.',
+		notesEn:
+			'1k iterations — auto-coercion. Plain JS cannot do this natively. Zod requires manual .transform().',
+		notesEs:
+			'1k iteraciones — coerción automática. Plain JS no puede hacerlo. Zod requiere .transform() manual.',
 		values: { 'Plain JS': null, Zod: 9_500, QuickModel: 8_200 },
 	},
 	{
 		key: 'roundtrip',
 		labelEn: 'Serialization Roundtrip',
 		labelEs: 'Roundtrip Serialización',
-		notesEn: '1k iterations — serialize() + deserialize(). QuickModel preserves types; JSON.parse loses them.',
-		notesEs: '1k iteraciones — serialize() + deserialize(). QuickModel preserva tipos; JSON.parse los pierde.',
+		notesEn:
+			'1k iterations — serialize() + deserialize(). QuickModel preserves types; JSON.parse loses them.',
+		notesEs:
+			'1k iteraciones — serialize() + deserialize(). QuickModel preserva tipos; JSON.parse los pierde.',
 		values: { 'Plain JS': 480_000, Zod: null, QuickModel: 28_000 },
 	},
 	{
@@ -71,15 +77,18 @@ const scenarios: IBenchScenario[] = [
 		labelEn: 'Runtime Validation',
 		labelEs: 'Validación en Runtime',
 		notesEn: '1k iterations — full runtime integrity check per object.',
-		notesEs: '1k iteraciones — verificación completa de integridad en runtime por objeto.',
+		notesEs:
+			'1k iteraciones — verificación completa de integridad en runtime por objeto.',
 		values: { 'Plain JS': null, Zod: 34_000, QuickModel: 27_000 },
 	},
 	{
 		key: 'mocks',
 		labelEn: 'Typed Mock Generation',
 		labelEs: 'Generación de Mocks Tipados',
-		notesEn: '100 mock instances per cycle — fully typed, no manual setup. Only QuickModel has this built-in.',
-		notesEs: '100 instancias mock por ciclo — totalmente tipadas, sin configuración manual. Solo QuickModel lo incluye.',
+		notesEn:
+			'100 mock instances per cycle — fully typed, no manual setup. Only QuickModel has this built-in.',
+		notesEs:
+			'100 instancias mock por ciclo — totalmente tipadas, sin configuración manual. Solo QuickModel lo incluye.',
 		values: { 'Plain JS': null, Zod: null, QuickModel: 1_200 },
 	},
 ];
@@ -89,8 +98,16 @@ const libraries: Record<string, ILibraryInfo> = {
 		color: '#64748b',
 		descEn: 'Raw JavaScript objects — maximum speed, zero safety',
 		descEs: 'Objetos JavaScript puros — velocidad máxima, sin seguridad',
-		prosEn: ['Blazing fast (~100% baseline)', 'Zero dependencies', 'No overhead at all'],
-		prosEs: ['Ultra rápido (~100% baseline)', 'Sin dependencias', 'Sin overhead'],
+		prosEn: [
+			'Blazing fast (~100% baseline)',
+			'Zero dependencies',
+			'No overhead at all',
+		],
+		prosEs: [
+			'Ultra rápido (~100% baseline)',
+			'Sin dependencias',
+			'Sin overhead',
+		],
 		consEn: [
 			'No type coercion (Date, BigInt, Map, Set)',
 			'No serialization / deserialization',
@@ -114,6 +131,70 @@ const libraries: Record<string, ILibraryInfo> = {
 			'Sin reglas de negocio (@QRule)',
 		],
 	},
+	TypeBox: {
+color: '#0ea5e9',
+descEn: 'Ultra-fast JSON Schema validation — compiled checks, zero overhead',
+descEs: 'Validación JSON Schema ultra-rápida — checks compilados, sin overhead',
+prosEn: [
+'Fastest validation (~70% of Plain JS) ✅',
+'Compiled JSON Schema checks ✅',
+'Type inference from schemas ✅',
+'Tiny bundle size ✅',
+'JSON Schema export ✅',
+],
+prosEs: [
+'Validación más rápida (~70% de Plain JS) ✅',
+'Checks JSON Schema compilados ✅',
+'Inferencia de tipos desde schemas ✅',
+'Bundle muy pequeño ✅',
+'Exportar JSON Schema ✅',
+],
+consEn: [
+'No type coercion (Date, BigInt, Map, Set)',
+'No serialization / deserialization',
+'No mock generation',
+'No AI / MCP integration',
+'No form schemas or computed fields',
+],
+consEs: [
+'Sin coerción de tipos (Date, BigInt, Map, Set)',
+'Sin serialización / deserialización',
+'Sin generación de mocks',
+'Sin integración IA / MCP',
+'Sin form schemas ni campos computados',
+],
+},
+valibot: {
+color: '#f59e0b',
+descEn: 'Modular, tree-shakeable validation — smallest bundle in the ecosystem',
+descEs: 'Validación modular y tree-shakeable — bundle más pequeño del ecosistema',
+prosEn: [
+'Tree-shakeable (tiny bundle) ✅',
+'Fast validation (~32% of Plain JS) ✅',
+'pipe() transforms for type coercion ✅',
+'Type-safe schemas ✅',
+],
+prosEs: [
+'Tree-shakeable (bundle mínimo) ✅',
+'Validación rápida (~32% de Plain JS) ✅',
+'pipe() con transforms para coerción ✅',
+'Schemas con seguridad de tipos ✅',
+],
+consEn: [
+'Coercion requires manual pipe(transform()) per field',
+'No serialization / deserialization',
+'No mock generation',
+'No AI / MCP integration',
+'No model state, form schemas, or computed fields',
+],
+consEs: [
+'Coerción requiere pipe(transform()) manual por campo',
+'Sin serialización / deserialización',
+'Sin generación de mocks',
+'Sin integración IA / MCP',
+'Sin estado, form schemas ni campos computados',
+],
+},
 	Zod: {
 		color: '#8b5cf6',
 		descEn: 'Schema validation library — great for validation, not full modeling',
@@ -192,72 +273,136 @@ const libraries: Record<string, ILibraryInfo> = {
 			'(sigue siendo <0.1ms por operación típica de API — imperceptible en práctica)',
 		],
 	},
+	'class-transformer': {
+		color: '#ef4444',
+		descEn: 'Annotation-based class serialization — @Type decorators for Date, not BigInt/Map/Set',
+		descEs: 'Serialización de clases por anotaciones — @Type para Date, sin soporte BigInt/Map/Set',
+		prosEn: [
+			'instanceToPlain() / plainToInstance() ✅',
+			'@Type(() => Date) for Date fields ✅',
+			'Polymorphic deserializeation with @Type ✅',
+			'Works with existing class definitions ✅',
+		],
+		prosEs: [
+			'instanceToPlain() / plainToInstance() ✅',
+			'@Type(() => Date) para campos Date ✅',
+			'Deserialización polimórfica con @Type ✅',
+			'Funciona con clases existentes ✅',
+		],
+		consEn: [
+			'No validation — needs class-validator separately',
+			'BigInt, Map, Set require manual @Transform per field',
+			'No mock generation',
+			'No AI / MCP integration',
+			'No form schemas or computed fields',
+			'No async business rules',
+		],
+		consEs: [
+			'Sin validación — necesita class-validator por separado',
+			'BigInt, Map, Set requieren @Transform manual por campo',
+			'Sin generación de mocks',
+			'Sin integración IA / MCP',
+			'Sin form schemas ni campos computados',
+			'Sin reglas de negocio async',
+		],
+	},
+	yup: {
+		color: '#6b7280',
+		descEn: 'Schema-based validation with async support — mature but heavy',
+		descEs: 'Validación basada en schemas con soporte async — maduro pero pesado',
+		prosEn: [
+			'Async validation support ✅',
+			'Mixed schemas (any/lazy) ✅',
+			'Large ecosystem / well-known ✅',
+		],
+		prosEs: [
+			'Soporte validación async ✅',
+			'Schemas mixtos (any/lazy) ✅',
+			'Gran ecosistema / muy conocido ✅',
+		],
+		consEn: [
+			'~20x slower than TypeBox for simple validation',
+			'No type coercion for BigInt, Map, Set',
+			'No serialization / deserialization',
+			'No mock generation',
+			'No AI / MCP integration',
+			'No form schemas or computed fields',
+		],
+		consEs: [
+			'~20x más lento que TypeBox para validación simple',
+			'Sin coerción para BigInt, Map, Set',
+			'Sin serialización / deserialización',
+			'Sin generación de mocks',
+			'Sin integración IA / MCP',
+			'Sin form schemas ni campos computados',
+		],
+	},
 };
 
 const featureRows: IFeatureRow[] = [
 	{
 		featureEn: 'Auto coercion (Date/BigInt/Map/Set)',
 		featureEs: 'Coerción automática (Date/BigInt/Map/Set)',
-		values: { 'Plain JS': false, Zod: 'partial', QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: 'partial', Zod: 'partial', 'class-transformer': 'partial', QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Native serialization (toJSON)',
 		featureEs: 'Serialización nativa (toJSON)',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': 'partial', QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Typed mock generation',
 		featureEs: 'Generación de mocks tipados',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Built-in AI / MCP Server',
 		featureEs: 'IA / Servidor MCP integrado',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Polymorphic JSON (subclass auto-instantiation)',
 		featureEs: 'JSON polimórfico (subclases automáticas)',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': 'partial', QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Model state: copy() / isDirty()',
 		featureEs: 'Estado del modelo: copy() / isDirty()',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Form schemas (@QField / @QGroup)',
 		featureEs: 'Form schemas (@QField / @QGroup)',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Computed fields (@QComputed)',
 		featureEs: 'Campos computados (@QComputed)',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Async business rules (@QRule)',
 		featureEs: 'Reglas de negocio async (@QRule)',
-		values: { 'Plain JS': false, Zod: 'partial', QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: 'partial', 'class-transformer': false, QuickModel: true, yup: 'partial' },
 	},
 	{
 		featureEn: 'Runtime integrity (hasIntegrity)',
 		featureEs: 'Integridad en runtime (hasIntegrity)',
-		values: { 'Plain JS': false, Zod: true, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: true, valibot: 'partial', Zod: true, 'class-transformer': false, QuickModel: true, yup: 'partial' },
 	},
 	{
 		featureEn: 'Multi-level inheritance inference',
 		featureEs: 'Herencia multinivel con inferencia',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: false, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 	{
 		featureEn: 'Schema export (JSON / Zod / OpenAPI / GraphQL)',
 		featureEs: 'Exportar schema (JSON / Zod / OpenAPI / GraphQL)',
-		values: { 'Plain JS': false, Zod: false, QuickModel: true },
+		values: { 'Plain JS': false, TypeBox: true, valibot: false, Zod: false, 'class-transformer': false, QuickModel: true, yup: false },
 	},
 ];
 
-const libNames = Object.keys(libraries);
+const libNames = ['Plain JS', 'TypeBox', 'valibot', 'Zod', 'class-transformer', 'QuickModel', 'yup'];
 
 // ─────────────────────────────────────────────────────────────
 // ESTADO REACTIVO
@@ -337,13 +482,18 @@ function formatNote(scenario: IBenchScenario): string {
 		<!-- Header -->
 		<div class="bm-header">
 			<h2 class="bm-title">
-				⚡ {{ isEs ? 'Comparativa de Rendimiento' : 'Performance Benchmark' }}
+				⚡
+				{{
+					isEs
+						? 'Comparativa de Rendimiento'
+						: 'Performance Benchmark'
+				}}
 			</h2>
 			<p class="bm-subtitle">
 				{{
 					isEs
-						? 'QuickModel vs Zod vs Plain JS — pasa el ratón sobre las barras para ver qué incluye y qué no tiene cada librería'
-						: 'QuickModel vs Zod vs Plain JS — hover the bars to see what each library includes (and what it misses)'
+						? 'QuickModel vs TypeBox vs valibot vs Zod vs class-transformer vs yup vs Plain JS — pasa el ratón sobre las barras'
+						: 'QuickModel vs TypeBox vs valibot vs Zod vs class-transformer vs yup vs Plain JS — hover bars to compare features'
 				}}
 			</p>
 		</div>
@@ -357,7 +507,10 @@ function formatNote(scenario: IBenchScenario): string {
 				:key="scenario.key"
 				role="tab"
 				:aria-selected="activeScenario === scenario.key"
-				:class="['bm-tab', { 'bm-tab--active': activeScenario === scenario.key }]"
+				:class="[
+					'bm-tab',
+					{ 'bm-tab--active': activeScenario === scenario.key },
+				]"
 				@click="activeScenario = scenario.key">
 				{{ isEs ? scenario.labelEs : scenario.labelEn }}
 			</button>
@@ -391,7 +544,9 @@ function formatNote(scenario: IBenchScenario): string {
 							}"
 							@mouseenter="onBarMouseEnter(lib, $event)"
 							@mouseleave="onBarMouseLeave">
-							<span class="bm-bar-value">{{ formatOps(lib) }}</span>
+							<span class="bm-bar-value">
+								{{ formatOps(lib) }}
+							</span>
 						</div>
 
 						<!-- N/A state -->
@@ -428,7 +583,11 @@ function formatNote(scenario: IBenchScenario): string {
 						:style="{ background: libraries[hoveredLib]!.color }">
 						<span class="bm-tooltip-lib">{{ hoveredLib }}</span>
 						<span class="bm-tooltip-desc">
-							{{ isEs ? libraries[hoveredLib]!.descEs : libraries[hoveredLib]!.descEn }}
+							{{
+								isEs
+									? libraries[hoveredLib]!.descEs
+									: libraries[hoveredLib]!.descEn
+							}}
 						</span>
 					</div>
 
@@ -436,7 +595,12 @@ function formatNote(scenario: IBenchScenario): string {
 					<div class="bm-tooltip-body">
 						<!-- Pros -->
 						<div
-							v-if="(isEs ? libraries[hoveredLib]!.prosEs : libraries[hoveredLib]!.prosEn).length"
+							v-if="
+								(isEs
+									? libraries[hoveredLib]!.prosEs
+									: libraries[hoveredLib]!.prosEn
+								).length
+							"
 							class="bm-tooltip-section">
 							<div class="bm-tooltip-section-title">
 								{{ isEs ? '✅ Incluye' : '✅ Includes' }}
@@ -455,7 +619,12 @@ function formatNote(scenario: IBenchScenario): string {
 
 						<!-- Cons -->
 						<div
-							v-if="(isEs ? libraries[hoveredLib]!.consEs : libraries[hoveredLib]!.consEn).length"
+							v-if="
+								(isEs
+									? libraries[hoveredLib]!.consEs
+									: libraries[hoveredLib]!.consEn
+								).length
+							"
 							class="bm-tooltip-section">
 							<div class="bm-tooltip-section-title">
 								{{ isEs ? '❌ No incluye' : '❌ Missing' }}
@@ -480,7 +649,9 @@ function formatNote(scenario: IBenchScenario): string {
 		<div class="bm-matrix">
 			<div class="bm-matrix-header">
 				<h3 class="bm-matrix-title">
-					{{ isEs ? '🎯 ¿Por qué QuickModel?' : '🎯 Why QuickModel?' }}
+					{{
+						isEs ? '🎯 ¿Por qué QuickModel?' : '🎯 Why QuickModel?'
+					}}
 				</h3>
 				<p class="bm-matrix-hint">
 					{{
@@ -814,7 +985,7 @@ function formatNote(scenario: IBenchScenario): string {
 	text-align: center;
 	font-weight: 700;
 	white-space: nowrap;
-	min-width: 100px;
+	min-width: 130px;
 }
 
 .bm-td-check {
