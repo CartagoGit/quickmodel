@@ -83,7 +83,7 @@ export default defineConfig({
 		nav: [
 			{ text: 'Guide', link: '/en/guide/getting-started' },
 			{ text: 'AI (MCP/Skills)', link: '/en/mcp/' },
-			{ text: 'API Reference', link: '/tsdoc/' },
+			{ text: 'API', link: '/tsdoc/' },
 			{ text: 'Examples', link: '/en/examples/' },
 			{ text: 'Integrations', link: '/en/integrations/' },
 		],
@@ -586,7 +586,7 @@ export default defineConfig({
 				nav: [
 					{ text: 'Guide', link: '/en/guide/getting-started' },
 					{ text: 'AI (MCP/Skills)', link: '/en/mcp/' },
-					{ text: 'API Reference', link: '/tsdoc/' },
+					{ text: 'API', link: '/tsdoc/' },
 					{ text: 'Examples', link: '/en/examples/' },
 					{ text: 'Integrations', link: '/en/integrations/' },
 				],
@@ -848,7 +848,7 @@ export default defineConfig({
 				nav: [
 					{ text: 'Guía', link: '/es/guide/getting-started' },
 					{ text: 'IA (MCP/Skills)', link: '/es/mcp/' },
-					{ text: 'Referencia API', link: '/tsdoc/' },
+					{ text: 'API', link: '/tsdoc/' },
 					{ text: 'Ejemplos', link: '/es/examples/' },
 					{ text: 'Integraciones', link: '/es/integrations/' },
 				],

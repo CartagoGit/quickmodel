@@ -23,14 +23,18 @@ export function useNavTranslator() {
 
 				if (savedLang === 'es') {
 					if (text === 'Guide') link.textContent = 'Guía';
-					if (text === 'API Reference')
-						link.textContent = 'Referencia API';
+					if (text === 'AI (MCP/Skills)')
+						link.textContent = 'IA (MCP/Skills)';
 					if (text === 'Examples') link.textContent = 'Ejemplos';
+					if (text === 'Integrations')
+						link.textContent = 'Integraciones';
 				} else {
 					if (text === 'Guía') link.textContent = 'Guide';
-					if (text === 'Referencia API')
-						link.textContent = 'API Reference';
+					if (text === 'IA (MCP/Skills)')
+						link.textContent = 'AI (MCP/Skills)';
 					if (text === 'Ejemplos') link.textContent = 'Examples';
+					if (text === 'Integraciones')
+						link.textContent = 'Integrations';
 				}
 			});
 		}
