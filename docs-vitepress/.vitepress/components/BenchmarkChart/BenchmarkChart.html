@@ -3,11 +3,7 @@
 	<div class="bm-header">
 		<h2 class="bm-header__title">
 			🎯
-			{{
-				isEs
-					? 'Comparativa de características'
-					: 'Feature Comparison'
-			}}
+			{{ isEs ? 'Comparativa de características' : 'Feature Comparison' }}
 		</h2>
 		<p class="bm-header__subtitle">
 			{{
@@ -23,7 +19,9 @@
 		<div class="bm-matrix__header">
 			<h3 class="bm-matrix__title">
 				{{
-					isEs ? '🎯 Características ofrecidas por cada librería' : '🎯 Features offered by each library'
+					isEs
+						? '🎯 Características ofrecidas por cada librería'
+						: '🎯 Features offered by each library'
 				}}
 			</h3>
 			<p class="bm-matrix__hint">
@@ -71,11 +69,7 @@
 	<div class="bm-header bm-header--perf">
 		<h2 class="bm-header__title">
 			⚡
-			{{
-				isEs
-					? 'Comparativa de rendimiento'
-					: 'Performance Benchmark'
-			}}
+			{{ isEs ? 'Comparativa de rendimiento' : 'Performance Benchmark' }}
 		</h2>
 		<p class="bm-header__subtitle">
 			{{
@@ -122,7 +116,10 @@
 	<div class="bm-chart">
 		<p class="bm-chart__note">{{ formatNote(currentScenario) }}</p>
 
-		<TransitionGroup name="bm-bar" tag="div" class="bm-chart__bars">
+		<TransitionGroup
+			name="bm-bar"
+			tag="div"
+			class="bm-chart__bars">
 			<div
 				v-for="lib in activeLibNames"
 				:key="lib"
@@ -165,9 +162,13 @@
 						<div
 							class="bm-bar__overflow-fill"
 							:style="{ background: libraries[lib]?.color }">
-							<span class="bm-bar__value">{{ formatOps(lib) }}</span>
+							<span class="bm-bar__value">
+								{{ formatOps(lib) }}
+							</span>
 						</div>
-						<div class="bm-bar__overflow-ext" :style="{ color: libraries[lib]?.color }">
+						<div
+							class="bm-bar__overflow-ext"
+							:style="{ color: libraries[lib]?.color }">
 							›› {{ isEs ? 'mucho más rápido' : 'much faster' }}
 							<span class="bm-bar__overflow-caveat">
 								{{ isEs ? '(ver nota ↑)' : '(see note ↑)' }}

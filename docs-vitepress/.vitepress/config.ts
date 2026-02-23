@@ -46,6 +46,13 @@ export default defineConfig({
 	ignoreDeadLinks: true,
 	srcExclude: ['**/TASKS.md'],
 	vite: {
+		css: {
+			preprocessorOptions: {
+				scss: {
+					api: 'modern',
+				},
+			},
+		},
 		server: {
 			fs: {
 				allow: ['..'],
@@ -75,9 +82,10 @@ export default defineConfig({
 		},
 		nav: [
 			{ text: 'Guide', link: '/en/guide/getting-started' },
-			{ text: 'MCP', link: '/en/mcp/' },
+			{ text: 'AI (MCP/Skills)', link: '/en/mcp/' },
 			{ text: 'API Reference', link: '/tsdoc/' },
 			{ text: 'Examples', link: '/en/examples/' },
+			{ text: 'Integrations', link: '/en/integrations/' },
 		],
 		socialLinks: [
 			{
@@ -577,9 +585,10 @@ export default defineConfig({
 				},
 				nav: [
 					{ text: 'Guide', link: '/en/guide/getting-started' },
-					{ text: 'MCP', link: '/en/mcp/' },
+					{ text: 'AI (MCP/Skills)', link: '/en/mcp/' },
 					{ text: 'API Reference', link: '/tsdoc/' },
 					{ text: 'Examples', link: '/en/examples/' },
+					{ text: 'Integrations', link: '/en/integrations/' },
 				],
 				sidebar: {
 					'/en/guide/': [
@@ -679,101 +688,128 @@ export default defineConfig({
 								},
 							],
 						},
+					],
+					'/en/mcp/': buildMcpSidebar('en'),
+					'/en/integrations/': [
 						{
-							text: 'Integrations',
+							text: 'Frontend Frameworks',
 							items: [
 								{
 									text: 'Angular',
-									link: '/en/guide/angular-integration',
-								},
-								{
-									text: 'Express / Fastify / Hono',
-									link: '/en/guide/backend-integration',
-								},
-								{
-									text: 'NestJS',
-									link: '/en/guide/nestjs-integration',
+									link: '/en/integrations/angular-integration',
 								},
 								{
 									text: 'React / Next.js',
-									link: '/en/guide/react-integration',
+									link: '/en/integrations/react-integration',
 								},
 								{
 									text: 'Svelte 5 / SvelteKit',
-									link: '/en/guide/svelte-integration',
+									link: '/en/integrations/svelte-integration',
 								},
 								{
 									text: 'Vue 3 / Nuxt',
-									link: '/en/guide/vue-integration',
+									link: '/en/integrations/vue-integration',
+								},
+							],
+						},
+						{
+							text: 'Backend',
+							items: [
+								{
+									text: 'Express / Fastify / Hono',
+									link: '/en/integrations/backend-integration',
 								},
 								{
-									text: 'MSW (Mock Service Worker)',
-									link: '/en/guide/msw-integration',
-								},
-								{
-									text: 'React Hook Form',
-									link: '/en/guide/react-hook-form-integration',
-								},
-								{
-									text: 'TanStack Query',
-									link: '/en/guide/tanstack-query-integration',
-								},
-								{
-									text: 'Vitest Custom Matchers',
-									link: '/en/guide/vitest-matchers',
-								},
-								{
-									text: 'Zustand',
-									link: '/en/guide/zustand-integration',
-								},
-								{
-									text: 'Redux Toolkit (RTK)',
-									link: '/en/guide/redux-toolkit-integration',
-								},
-								{
-									text: 'Formik',
-									link: '/en/guide/formik-integration',
-								},
-								{
-									text: 'Mobile (React Native / Capacitor)',
-									link: '/en/guide/mobile-integration',
-								},
-								{
-									text: 'Prisma ORM',
-									link: '/en/guide/prisma-integration',
-								},
-								{
-									text: 'Storage & Persistence',
-									link: '/en/guide/storage-integration',
+									text: 'NestJS',
+									link: '/en/integrations/nestjs-integration',
 								},
 								{
 									text: 'tRPC',
-									link: '/en/guide/trpc-integration',
-								},
-								{
-									text: 'OpenAPI / Swagger',
-									link: '/en/guide/openapi-integration',
-								},
-								{
-									text: 'TypeORM',
-									link: '/en/guide/typeorm-integration',
+									link: '/en/integrations/trpc-integration',
 								},
 								{
 									text: 'GraphQL / Apollo Server',
-									link: '/en/guide/graphql-integration',
+									link: '/en/integrations/graphql-integration',
 								},
 								{
-									text: 'Electron IPC',
-									link: '/en/guide/electron-integration',
+									text: 'OpenAPI / Swagger',
+									link: '/en/integrations/openapi-integration',
+								},
+							],
+						},
+						{
+							text: 'ORM & Databases',
+							items: [
+								{
+									text: 'Prisma ORM',
+									link: '/en/integrations/prisma-integration',
+								},
+								{
+									text: 'TypeORM',
+									link: '/en/integrations/typeorm-integration',
 								},
 								{
 									text: 'Mongoose',
-									link: '/en/guide/mongoose-integration',
+									link: '/en/integrations/mongoose-integration',
+								},
+							],
+						},
+						{
+							text: 'State Management & Forms',
+							items: [
+								{
+									text: 'Redux Toolkit (RTK)',
+									link: '/en/integrations/redux-toolkit-integration',
+								},
+								{
+									text: 'Zustand',
+									link: '/en/integrations/zustand-integration',
+								},
+								{
+									text: 'React Hook Form',
+									link: '/en/integrations/react-hook-form-integration',
+								},
+								{
+									text: 'Formik',
+									link: '/en/integrations/formik-integration',
+								},
+							],
+						},
+						{
+							text: 'Testing & Tooling',
+							items: [
+								{
+									text: 'MSW (Mock Service Worker)',
+									link: '/en/integrations/msw-integration',
+								},
+								{
+									text: 'Vitest Custom Matchers',
+									link: '/en/integrations/vitest-matchers',
+								},
+								{
+									text: 'TanStack Query',
+									link: '/en/integrations/tanstack-query-integration',
+								},
+							],
+						},
+						{
+							text: 'Other',
+							items: [
+								{
+									text: 'Mobile (React Native / Capacitor)',
+									link: '/en/integrations/mobile-integration',
+								},
+								{
+									text: 'Storage & Persistence',
+									link: '/en/integrations/storage-integration',
+								},
+								{
+									text: 'Electron IPC',
+									link: '/en/integrations/electron-integration',
 								},
 							],
 						},
 					],
-					'/en/mcp/': buildMcpSidebar('en'),
 					'/en/examples/': [
 						{
 							text: 'Examples',
@@ -811,9 +847,10 @@ export default defineConfig({
 				},
 				nav: [
 					{ text: 'Guía', link: '/es/guide/getting-started' },
-					{ text: 'MCP', link: '/es/mcp/' },
+					{ text: 'IA (MCP/Skills)', link: '/es/mcp/' },
 					{ text: 'Referencia API', link: '/tsdoc/' },
 					{ text: 'Ejemplos', link: '/es/examples/' },
+					{ text: 'Integraciones', link: '/es/integrations/' },
 				],
 				sidebar: {
 					'/es/guide/': [
@@ -913,101 +950,128 @@ export default defineConfig({
 								},
 							],
 						},
+					],
+					'/es/mcp/': buildMcpSidebar('es'),
+					'/es/integrations/': [
 						{
-							text: 'Integraciones',
+							text: 'Frameworks Frontend',
 							items: [
 								{
 									text: 'Angular',
-									link: '/es/guide/angular-integration',
-								},
-								{
-									text: 'Express / Fastify / Hono',
-									link: '/es/guide/backend-integration',
-								},
-								{
-									text: 'NestJS',
-									link: '/es/guide/nestjs-integration',
+									link: '/es/integrations/angular-integration',
 								},
 								{
 									text: 'React / Next.js',
-									link: '/es/guide/react-integration',
+									link: '/es/integrations/react-integration',
 								},
 								{
 									text: 'Svelte 5 / SvelteKit',
-									link: '/es/guide/svelte-integration',
+									link: '/es/integrations/svelte-integration',
 								},
 								{
 									text: 'Vue 3 / Nuxt',
-									link: '/es/guide/vue-integration',
+									link: '/es/integrations/vue-integration',
+								},
+							],
+						},
+						{
+							text: 'Backend',
+							items: [
+								{
+									text: 'Express / Fastify / Hono',
+									link: '/es/integrations/backend-integration',
 								},
 								{
-									text: 'MSW (Mock Service Worker)',
-									link: '/es/guide/msw-integration',
-								},
-								{
-									text: 'React Hook Form',
-									link: '/es/guide/react-hook-form-integration',
-								},
-								{
-									text: 'TanStack Query',
-									link: '/es/guide/tanstack-query-integration',
-								},
-								{
-									text: 'Matchers Personalizados para Vitest',
-									link: '/es/guide/vitest-matchers',
-								},
-								{
-									text: 'Zustand',
-									link: '/es/guide/zustand-integration',
-								},
-								{
-									text: 'Redux Toolkit (RTK)',
-									link: '/es/guide/redux-toolkit-integration',
-								},
-								{
-									text: 'Formik',
-									link: '/es/guide/formik-integration',
-								},
-								{
-									text: 'Mobile (React Native / Capacitor)',
-									link: '/es/guide/mobile-integration',
-								},
-								{
-									text: 'Prisma ORM',
-									link: '/es/guide/prisma-integration',
-								},
-								{
-									text: 'Storage & Persistence',
-									link: '/es/guide/storage-integration',
+									text: 'NestJS',
+									link: '/es/integrations/nestjs-integration',
 								},
 								{
 									text: 'tRPC',
-									link: '/es/guide/trpc-integration',
-								},
-								{
-									text: 'OpenAPI / Swagger',
-									link: '/es/guide/openapi-integration',
-								},
-								{
-									text: 'TypeORM',
-									link: '/es/guide/typeorm-integration',
+									link: '/es/integrations/trpc-integration',
 								},
 								{
 									text: 'GraphQL / Apollo Server',
-									link: '/es/guide/graphql-integration',
+									link: '/es/integrations/graphql-integration',
 								},
 								{
-									text: 'Electron IPC',
-									link: '/es/guide/electron-integration',
+									text: 'OpenAPI / Swagger',
+									link: '/es/integrations/openapi-integration',
+								},
+							],
+						},
+						{
+							text: 'ORM y Bases de Datos',
+							items: [
+								{
+									text: 'Prisma ORM',
+									link: '/es/integrations/prisma-integration',
+								},
+								{
+									text: 'TypeORM',
+									link: '/es/integrations/typeorm-integration',
 								},
 								{
 									text: 'Mongoose',
-									link: '/es/guide/mongoose-integration',
+									link: '/es/integrations/mongoose-integration',
+								},
+							],
+						},
+						{
+							text: 'Estado y Formularios',
+							items: [
+								{
+									text: 'Redux Toolkit (RTK)',
+									link: '/es/integrations/redux-toolkit-integration',
+								},
+								{
+									text: 'Zustand',
+									link: '/es/integrations/zustand-integration',
+								},
+								{
+									text: 'React Hook Form',
+									link: '/es/integrations/react-hook-form-integration',
+								},
+								{
+									text: 'Formik',
+									link: '/es/integrations/formik-integration',
+								},
+							],
+						},
+						{
+							text: 'Testing y Herramientas',
+							items: [
+								{
+									text: 'MSW (Mock Service Worker)',
+									link: '/es/integrations/msw-integration',
+								},
+								{
+									text: 'Matchers Personalizados para Vitest',
+									link: '/es/integrations/vitest-matchers',
+								},
+								{
+									text: 'TanStack Query',
+									link: '/es/integrations/tanstack-query-integration',
+								},
+							],
+						},
+						{
+							text: 'Otras Integraciones',
+							items: [
+								{
+									text: 'Mobile (React Native / Capacitor)',
+									link: '/es/integrations/mobile-integration',
+								},
+								{
+									text: 'Storage & Persistence',
+									link: '/es/integrations/storage-integration',
+								},
+								{
+									text: 'Electron IPC',
+									link: '/es/integrations/electron-integration',
 								},
 							],
 						},
 					],
-					'/es/mcp/': buildMcpSidebar('es'),
 					'/es/examples/': [
 						{
 							text: 'Ejemplos',

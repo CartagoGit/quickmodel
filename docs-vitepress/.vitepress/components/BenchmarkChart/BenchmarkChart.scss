@@ -124,7 +124,8 @@
 		&:focus {
 			outline: none;
 			border-color: var(--vp-c-brand-1);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
+			box-shadow: 0 0 0 2px
+				color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
 		}
 
 		option {
@@ -196,7 +197,9 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 0.3rem;
-		transition: background 0.2s, border-color 0.2s;
+		transition:
+			background 0.2s,
+			border-color 0.2s;
 
 		&--ours {
 			font-size: 0.9rem;
@@ -472,8 +475,10 @@
 
 		&--ours {
 			background: color-mix(in srgb, currentColor 12%, transparent);
-			border-left: 2px solid color-mix(in srgb, currentColor 35%, transparent);
-			border-right: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+			border-left: 2px solid
+				color-mix(in srgb, currentColor 35%, transparent);
+			border-right: 2px solid
+				color-mix(in srgb, currentColor 35%, transparent);
 		}
 	}
 
@@ -484,8 +489,10 @@
 
 		&--ours {
 			background: color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent);
-			border-left: 2px solid color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
-			border-right: 2px solid color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
+			border-left: 2px solid
+				color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
+			border-right: 2px solid
+				color-mix(in srgb, var(--vp-c-brand-1) 25%, transparent);
 		}
 	}
 }

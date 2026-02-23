@@ -3,6 +3,11 @@
  * Overrides VitePress default theme: https://github.com/vuejs/vitepress/tree/main/src/client/theme-default
  */
 
+/* Hide VitePress default footer (replaced by CustomFooter component) */
+.VPFooter {
+	display: none !important;
+}
+
 // ============================================================================
 // 1. VARIABLES & RESET
 // ============================================================================
