@@ -23,6 +23,31 @@ import { DotNotationHandler } from './dot-notation-handler.service';
 import { PropertyTransformer } from './property-transformer.service';
 import { Logger } from '../helpers/logger.helper';
 
+// ─── Performance caches ───────────────────────────────────────────────────────
+// Model-class metadata is immutable after decorators run. Caching per class
+// avoids repeated Reflect.getMetadata calls on every model construction.
+interface IQPopulateClassMeta {
+	options: IQAdvancedOptions;
+	decoratedFields: string[];
+	decoratedFieldsSet: Set<string>;
+	discriminators: unknown;
+	designTypes: Record<string, unknown>;
+	hasTypeMapKey: boolean;
+	/** Set of property names decorated with @QComputed — skip on deserialization. */
+	computedKeysSet: Set<string>;
+	/**
+	 * Lazy cache: isMethodOnPrototype(proto, key) result per key.
+	 * Populated on first construction — saved for all subsequent constructions.
+	 */
+	isMethodCache: Map<string, boolean>;
+	/**
+	 * Lazy cache: isArrowFunctionMethod(key, template, decoratedFields) result per key.
+	 */
+	isArrowMethodCache: Map<string, boolean>;
+}
+const _POPULATE_CLASS_META = new WeakMap<Function, IQPopulateClassMeta>();
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Service responsible for populating an instance with data.
  */
@@ -80,10 +105,63 @@ export class PopulationService {
 		const { modelClass, context } = params;
 		const visited = context?.visited || new WeakSet();
 
-		// Get strict mode configuration
-		const options: IQAdvancedOptions =
-			Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+		// ── Per-class metadata cache ─────────────────────────────────────────
+		// All Reflect.getMetadata calls on modelClass are static after decorators run.
+		// We build and cache them once, then reuse across every construction.
+		let classMeta = _POPULATE_CLASS_META.get(modelClass);
+		if (!classMeta) {
+			const rawOptions: IQAdvancedOptions =
+				Reflect.getMetadata(QUICK_OPTIONS_KEY, modelClass) || {};
+			const rawDecorated: string[] =
+				Reflect.getMetadata(
+					QTYPES_METADATA_KEY,
+					modelClass.prototype
+				) || [];
+			const rawDiscriminators = Reflect.getMetadata(
+				QUICK_DISCRIMINATORS_KEY,
+				modelClass
+			);
+			const rawDesignTypes: Record<string, unknown> =
+				Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
+			const rawHasTypeMapKey = Reflect.hasMetadata(
+				QUICK_TYPE_MAP_KEY,
+				modelClass
+			);
 
+			// Build computed keys set by walking prototype chain once per class
+			const computedKeysSet = new Set<string>();
+			let proto = modelClass.prototype;
+			while (proto && proto !== Object.prototype) {
+				for (const propKey of Object.getOwnPropertyNames(proto)) {
+					if (
+						Reflect.hasMetadata(
+							QCOMPUTED_METADATA_KEY,
+							proto,
+							propKey
+						)
+					) {
+						computedKeysSet.add(propKey);
+					}
+				}
+				proto = Object.getPrototypeOf(proto);
+			}
+
+			classMeta = {
+				options: rawOptions,
+				decoratedFields: rawDecorated,
+				decoratedFieldsSet: new Set(rawDecorated),
+				discriminators: rawDiscriminators,
+				designTypes: rawDesignTypes,
+				hasTypeMapKey: rawHasTypeMapKey,
+				computedKeysSet,
+				isMethodCache: new Map(),
+				isArrowMethodCache: new Map(),
+			};
+			_POPULATE_CLASS_META.set(modelClass, classMeta);
+		}
+
+		// Model-level options (cached) + global defaults (runtime — can change via QConfig)
+		const options = classMeta.options;
 		const globalDefaults = QConfig.get().defaults || {};
 
 		const disableSafetyChecks =
@@ -116,24 +194,13 @@ export class PopulationService {
 
 		const recursionContext = this.recursionGuard.createContext(context);
 
-		// Get list of properties decorated with @QType()
-		const decoratedFields =
-			Reflect.getMetadata(QTYPES_METADATA_KEY, instance) ||
-			Reflect.getMetadata(
-				QTYPES_METADATA_KEY,
-				Object.getPrototypeOf(instance)
-			) ||
-			[];
-
-		// Get discriminator configuration if exists
-		const discriminators = Reflect.getMetadata(
-			QUICK_DISCRIMINATORS_KEY,
-			modelClass
-		);
-
-		// Get design:type metadata (captured by @Quick) for validation of non-decorated fields
-		const designTypes =
-			Reflect.getMetadata(QUICK_DESIGN_TYPES_KEY, modelClass) || {};
+		// Use cached class metadata — all static after decorators run
+		const {
+			decoratedFields,
+			decoratedFieldsSet,
+			discriminators,
+			designTypes,
+		} = classMeta;
 
 		// Determine Unknown Property Policy
 		// Priority: Model Config > Global Config > Default ('keep')
@@ -146,7 +213,7 @@ export class PopulationService {
 		// Only fires for classes explicitly decorated with @Quick, once per class.
 		if (
 			currentDepth === 0 &&
-			Reflect.hasMetadata(QUICK_TYPE_MAP_KEY, modelClass) &&
+			classMeta.hasTypeMapKey &&
 			!options.unknownPropertyPolicy &&
 			!globalDefaults.unknownPropertyPolicy &&
 			!PopulationService._warnedMissingPolicy.has(modelClass)
@@ -213,7 +280,7 @@ export class PopulationService {
 
 				// Check if normalized key is a known property on the model
 				const isNormalizedKnown =
-					decoratedFields.includes(normalizedKey) ||
+					decoratedFieldsSet.has(normalizedKey) ||
 					Object.prototype.hasOwnProperty.call(
 						designTypes,
 						normalizedKey
@@ -225,7 +292,7 @@ export class PopulationService {
 
 				// Check if original key is a known property on the model
 				const isOriginalKnown =
-					decoratedFields.includes(key) ||
+					decoratedFieldsSet.has(key) ||
 					Object.prototype.hasOwnProperty.call(designTypes, key) ||
 					Object.prototype.hasOwnProperty.call(instance, key);
 
@@ -255,14 +322,17 @@ export class PopulationService {
 			}
 
 			// SECURITY: Prevent Method Shadowing (Logic Bomb / DoS)
-			// Check TARGET key because that's what will be assigned
-			if (
-				this.securityInspector.isMethodOnPrototype(
+			// Check TARGET key because that's what will be assigned (result cached per class.key)
+			let isMethod = classMeta.isMethodCache.get(targetKey);
+			if (isMethod === undefined) {
+				isMethod = this.securityInspector.isMethodOnPrototype(
 					Object.getPrototypeOf(instance),
 					targetKey,
 					decoratedFields
-				)
-			) {
+				);
+				classMeta.isMethodCache.set(targetKey, isMethod);
+			}
+			if (isMethod) {
 				Logger.debug(
 					`[SECURITY] Skipped shadowing attempt for: ${targetKey} (mapped from ${key})`,
 					modelClass
@@ -299,7 +369,7 @@ export class PopulationService {
 			}
 
 			// Unknown Property Handling
-			const isDecorated = decoratedFields.includes(targetKey);
+			const isDecorated = decoratedFieldsSet.has(targetKey);
 
 			const hasDesignType = targetKey in designTypes;
 			const isDeclared =
@@ -324,34 +394,23 @@ export class PopulationService {
 				// 'keep': Proceed normally
 			}
 
-			// @QComputed() properties are read-only computed getters — skip deserialization assignment
-			let isComputedGetter = false;
-			let checkProto = Object.getPrototypeOf(instance);
-			while (checkProto && checkProto !== Object.prototype) {
-				if (
-					Reflect.hasMetadata(
-						QCOMPUTED_METADATA_KEY,
-						checkProto,
-						targetKey
-					)
-				) {
-					isComputedGetter = true;
-					break;
-				}
-				checkProto = Object.getPrototypeOf(checkProto);
-			}
-			if (isComputedGetter) continue;
+			// @QComputed() properties are skip on deserialization (cached per class)
+			if (classMeta.computedKeysSet.has(targetKey)) continue;
 
 			// SECURITY: Prevent Instance Method Shadowing (Arrow Functions)
-			const template =
-				this.securityInspector.getTemplateInstance(modelClass);
-			if (
-				this.securityInspector.isArrowFunctionMethod(
+			// Result cached per (class, key) — static after class definition
+			let isArrow = classMeta.isArrowMethodCache.get(targetKey);
+			if (isArrow === undefined) {
+				const template =
+					this.securityInspector.getTemplateInstance(modelClass);
+				isArrow = this.securityInspector.isArrowFunctionMethod(
 					targetKey,
 					template,
 					decoratedFields
-				)
-			) {
+				);
+				classMeta.isArrowMethodCache.set(targetKey, isArrow);
+			}
+			if (isArrow) {
 				if (unknownPolicy === 'error') {
 					throw new QModelError(
 						`Strict Mode: Blocked attempt to overwrite instance method '${targetKey}' with data.`,
@@ -424,7 +483,7 @@ export class PopulationService {
 
 		for (const dotKey of dotNotationFields) {
 			this.dotNotationHandler.apply(instance, {
-				path: dotKey as string,
+				path: dotKey,
 				modelClass,
 				recursionContext,
 			});

@@ -276,9 +276,7 @@ onUnmounted(stopTimer)
 <style scoped lang="scss">
 .features-carousel {
 	width: 100%;
-	max-width: 1152px;
-	margin: 0 auto;
-	padding: 0 24px 48px;
+	padding: 0 0 32px;
 	user-select: none;
 }
 
@@ -297,15 +295,20 @@ onUnmounted(stopTimer)
 	flex: 0 0 100%;
 	min-width: 100%;
 	padding: 4px 2px;
+	display: flex;
+	flex-direction: column;
 }
 
 .features-grid {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, 1fr);
 	gap: 16px;
+	flex: 1;
 
 	@media (max-width: 640px) {
 		grid-template-columns: 1fr;
+		grid-template-rows: none;
 	}
 }
 
@@ -317,12 +320,13 @@ onUnmounted(stopTimer)
 	border: 1px solid var(--vp-c-divider);
 	border-radius: 12px;
 	padding: 20px 22px;
+	height: 100%;
+	box-sizing: border-box;
 	transition:
 		border-color 0.25s,
 		box-shadow 0.25s,
 		transform 0.2s;
 	cursor: default;
-	min-height: 110px;
 
 	&:hover {
 		border-color: var(--vp-c-brand-1);

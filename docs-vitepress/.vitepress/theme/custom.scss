@@ -423,6 +423,16 @@ body {
 			}
 		}
 
+		// Carousel positioned in the same right column as VPFeatures was
+		.features-carousel {
+			grid-column: 2;
+			align-self: start;
+			margin: 0 !important;
+			padding-top: calc(
+				var(--vp-nav-height) + var(--vp-layout-top-height, 0px)
+			) !important;
+		}
+
 		.vp-doc {
 			grid-column: 1 / -1;
 		}

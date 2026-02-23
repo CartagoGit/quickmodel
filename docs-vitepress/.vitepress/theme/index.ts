@@ -17,6 +17,7 @@ export default {
 			'nav-bar-content-after': () => h(LanguageSwitcher),
 			'layout-bottom': () => h(CustomFooter),
 			'layout-top': () => h(NavTranslator),
+			'home-features-before': () => h(FeaturesCarousel),
 		});
 	},
 	enhanceApp({ app, router }) {

@@ -17,8 +17,6 @@ hero:
           link: https://github.com/CartagoGit/quickmodel
 ---
 
-<FeaturesCarousel />
-
 <style>
 /* Make the logo inline with the title */
 .VPHero .name {
