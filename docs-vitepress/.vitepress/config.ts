@@ -725,6 +725,34 @@ export default defineConfig({
 									text: 'Zustand',
 									link: '/en/guide/zustand-integration',
 								},
+								{
+									text: 'Formik',
+									link: '/en/guide/formik-integration',
+								},
+								{
+									text: 'Mobile (React Native / Capacitor)',
+									link: '/en/guide/mobile-integration',
+								},
+								{
+									text: 'Prisma ORM',
+									link: '/en/guide/prisma-integration',
+								},
+								{
+									text: 'Storage & Persistence',
+									link: '/en/guide/storage-integration',
+								},
+								{
+									text: 'tRPC',
+									link: '/en/guide/trpc-integration',
+								},
+								{
+									text: 'OpenAPI / Swagger',
+									link: '/en/guide/openapi-integration',
+								},
+								{
+									text: 'TypeORM',
+									link: '/en/guide/typeorm-integration',
+								},
 							],
 						},
 					],
@@ -915,6 +943,34 @@ export default defineConfig({
 								{
 									text: 'Zustand',
 									link: '/es/guide/zustand-integration',
+								},
+								{
+									text: 'Formik',
+									link: '/es/guide/formik-integration',
+								},
+								{
+									text: 'Mobile (React Native / Capacitor)',
+									link: '/es/guide/mobile-integration',
+								},
+								{
+									text: 'Prisma ORM',
+									link: '/es/guide/prisma-integration',
+								},
+								{
+									text: 'Storage & Persistence',
+									link: '/es/guide/storage-integration',
+								},
+								{
+									text: 'tRPC',
+									link: '/es/guide/trpc-integration',
+								},
+								{
+									text: 'OpenAPI / Swagger',
+									link: '/es/guide/openapi-integration',
+								},
+								{
+									text: 'TypeORM',
+									link: '/es/guide/typeorm-integration',
 								},
 							],
 						},

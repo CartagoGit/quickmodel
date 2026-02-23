@@ -2,14 +2,13 @@
 
 > **Fecha de revisión:** 23 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 2588 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 2966 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#22, #23–#38, #39, #44, #45, #46, #49 (sprint Feb 2026)
-🔄 En progreso: Tasks #43, #55, #40–#42 (Ecosystem Integrations Sprint)
-⏳  Backlog:     Tasks #47–#48, #50–#54, #55 (Extended Ecosystem Sprint)
+✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #49, #55 (sprint Feb–Mar 2026)
+⏳  Backlog:     Tasks #47–#48, #50–#54 (Extended Ecosystem Sprint)
 ✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
 
@@ -43,11 +42,11 @@
 **Sprint en curso — Ecosystem Integrations (orden de ejecución):**
 
 - ✅ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `copy()` — **COMPLETADA** (Feb 2026)
-- ⏳ **Task #43** _(primero)_: Mobile Integrations — React Native/Expo, Capacitor, Cordova, Ionic — `TextInput`, storage nativo, `useQModel` en mobile
-- ⏳ **Task #55** _(segundo)_: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching
-- ⏳ Task #40: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures
-- ⏳ Task #41: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos
-- ⏳ Task #42: Formik + migración desde Zod/Yup
+- ✅ **Task #43**: Mobile Integrations — React Native/Expo, Capacitor, Cordova, Ionic — 33 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
+- ✅ **Task #55**: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching — 39 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
+- ✅ **Task #40**: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures — 52 tests | guías EN+ES — **COMPLETADA** (Mar 2026)
+- ✅ **Task #41**: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos — 52 tests | guías EN+ES — **COMPLETADA** (Mar 2026)
+- ✅ **Task #42**: Formik + migración desde Zod/Yup — 26 tests | guías EN+ES — **COMPLETADA** (Mar 2026)
 
 **Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
@@ -57,12 +56,12 @@
 - ⏳ Task #47: Redux Toolkit (RTK) — `createSlice` con QModel, `serialize()` como payload, `copy()` en reducers
 - ⏳ Task #48: Drizzle ORM — DTO desde resultado de query, repositorio, tipos Drizzle → QModel
 - ✅ Task #49: Vitest Custom Matchers — `toBeValidQModel`, `toHaveQField`, `toMatchQModel`, setup helper — **COMPLETADA** (Feb 2026)
-- ⏳ Task #50: TypeORM — Entity vs DTO separation, repositorio con QModel, transformación de columnas
+- ✅ Task #50: TypeORM — Entity vs DTO separation, repositorio con QModel, transformación de columnas — **COMPLETADA** (Feb 2026)
 - ⏳ Task #51: GraphQL / Apollo Server — `@InputType()` DTO, resolver tipado, `@QComputed` en respuesta
-- ⏳ Task #52: OpenAPI / Swagger — `getSchema('json')` → `@nestjs/swagger`, `@fastify/swagger`, documentación automática
+- ✅ Task #52: OpenAPI / Swagger — `getSchema('json')` → `@nestjs/swagger`, `@fastify/swagger`, documentación automática — **COMPLETADA** (Feb 2026)
 - ⏳ Task #53: Electron IPC — `serialize()`/`populate()` en boundary main↔renderer, tipado cross-context
 - ⏳ Task #54: Mongoose — ODM sobre MongoDB, DTO encima del documento Mongoose, coerción de `ObjectId`
-- ⏳ Task #55: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching layers
+- ✅ Task #55: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching layers — **COMPLETADA** (23 Feb 2026)
 
 **Revisión completa 22 Feb 2026 — Tareas actualizadas:**
 
@@ -1862,7 +1861,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 23 de febrero de 2026 (revisión nº16) — Task #43 ampliada: React Native + Expo + Capacitor + Cordova + Ionic | Task #55 añadida: Storage & Persistence (localStorage, IndexedDB, SQLite, caching) | Sprint reordenado: #43 → #55 → #40 → #41 → #42 | 2718 tests passing
+**Última actualización:** 23 de febrero de 2026 (revisión nº17) — Task #43 COMPLETADA: 33 tests (React Native, Expo, Capacitor, Ionic, Cordova) + guías EN+ES | Task #55 COMPLETADA: 39 tests (localStorage, IndexedDB, SQLite, Capacitor Preferences, LRU cache, BroadcastChannel, OPFS) + guías EN+ES | 2966 tests passing
 
 ---
 
@@ -2046,12 +2045,12 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #43: Mobile Integrations (React Native / Expo / Capacitor / Cordova / Ionic)
+### ✅ Task #43: Mobile Integrations (React Native / Expo / Capacitor / Cordova / Ionic)
 
-**Status:** 📋 Pendiente  
-**Objetivo:** Suite de tests + guías EN+ES para los principales stacks mobile (React Native, Expo, Capacitor, Cordova, Ionic)  
-**Tests a añadir:** ~35 en `tests/integration/patterns/mobile-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/mobile-integration.md` + ES
+**Status:** ✅ COMPLETADA  
+**Fecha:** 23 de febrero de 2026  
+**Tests añadidos:** 33 en `tests/integration/patterns/mobile-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/mobile-integration.md` + `docs-vitepress/es/guide/mobile-integration.md`
 
 **React Native / Expo:**
 
@@ -2085,6 +2084,26 @@ bun test                 # Verificar todos los tests
 19. `localStorage` + `serialize()`/`populate()` — persistencia en Cordova WebView
 20. Cordova `deviceready` — inicialización de DTOs en evento nativo
 21. Migración Cordova → Capacitor — mismo patrón de storage, sin cambios en QModel layer
+
+---
+
+### ✅ Task #55: Storage & Persistence
+
+**Status:** ✅ COMPLETADA  
+**Fecha:** 23 de febrero de 2026  
+**Tests añadidos:** 39 en `tests/integration/patterns/storage-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/storage-integration.md` + `docs-vitepress/es/guide/storage-integration.md`
+
+**Patrones cubiertos:**
+
+1. `localStorage` básico — `serialize()`/`populate()` roundtrip + manejo de claves ausentes
+2. `localStorage` — schema versioning con campo `__v` para migraciones
+3. `IndexedDB` — object store simulado, `getAll()` → `createMany()`, `put()` con `serialize()`
+4. `SQLite` — mapeo de filas a DTOs, `createMany()` para resultsets, coerción de tipos SQL
+5. Capacitor Preferences — `Preferences.set/get` + TTL pattern + roundtrip tipado
+6. In-memory LRU cache — `copy()` inmutable, `isDirty()` desde caché, `createMany()` en caché
+7. `BroadcastChannel` — cross-tab sync con `serialize()`/`populate()` como mensaje
+8. OPFS & Service Worker cache — `serialize()` → OPFS write, restore + `qCheckRulesAsync()`
 
 ---
 
@@ -2210,9 +2229,9 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #50: TypeORM integration patterns
+### ✅ Task #50: TypeORM integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para TypeORM  
 **Tests a añadir:** ~20 en `tests/integration/patterns/typeorm-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/typeorm-integration.md` + ES
@@ -2250,9 +2269,9 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #52: OpenAPI / Swagger auto-generation
+### ✅ Task #52: OpenAPI / Swagger auto-generation
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para generación automática de documentación OpenAPI  
 **Tests a añadir:** ~15 en `tests/integration/patterns/openapi-patterns.test.ts`  
 **Docs:** `docs-vitepress/en/guide/openapi-integration.md` + ES
