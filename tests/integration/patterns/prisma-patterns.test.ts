@@ -12,8 +12,8 @@ import {
 	QComputed,
 	QGroup,
 	qCheckRules,
-	qCheckRulesAsync,
 } from '@/index';
+import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
