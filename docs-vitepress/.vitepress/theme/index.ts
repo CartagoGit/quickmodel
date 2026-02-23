@@ -2,10 +2,10 @@
 import { h } from 'vue';
 import type { Theme } from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
-import LanguageSwitcher from './LanguageSwitcher.vue';
-import CustomFooter from './CustomFooter.vue';
-import NavTranslator from './NavTranslator.vue';
-import BenchmarkChart from './BenchmarkChart.vue';
+import LanguageSwitcher from '../components/LanguageSwitcher/LanguageSwitcher.vue';
+import CustomFooter from '../components/CustomFooter/CustomFooter.vue';
+import NavTranslator from '../components/NavTranslator/NavTranslator.vue';
+import BenchmarkChart from '../components/BenchmarkChart/BenchmarkChart.vue';
 import './custom.scss';
 
 export default {

@@ -587,6 +587,142 @@ describe('@QComputed() for derived fields', () => {
 });
 
 // ---------------------------------------------------------------------------
+// 5. Prisma type coercion — Decimal, DateTime, Json
+// ---------------------------------------------------------------------------
+
+interface IPrismaTypedRecord {
+	rid: string;
+	price: number;
+	createdAt: string;
+	metadata: string;
+	tags: string;
+}
+
+@Quick(
+	{
+		rid: 'string',
+		price: 'number',
+		createdAt: 'string',
+		metadata: 'string',
+		tags: 'string',
+	},
+	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
+)
+class PrismaTypedDto extends QModel<IPrismaTypedRecord> {
+	declare rid: string;
+
+	// Prisma Decimal arrives as string — coerced to number via 'loose'
+	@QRule((val: number) => val >= 0, 'Price must be non-negative')
+	declare price: number;
+
+	// Prisma DateTime arrives as ISO string
+	declare createdAt: string;
+
+	// Prisma Json serialized to string (JSON.stringify before storing)
+	declare metadata: string;
+
+	// Prisma Json array serialized to string
+	declare tags: string;
+
+	@QComputed()
+	get parsedMetadata(): Record<string, unknown> {
+		try {
+			return JSON.parse(this.metadata) as Record<string, unknown>;
+		} catch {
+			return {};
+		}
+	}
+
+	@QComputed()
+	get parsedTags(): string[] {
+		try {
+			return JSON.parse(this.tags) as string[];
+		} catch {
+			return [];
+		}
+	}
+}
+
+describe('Prisma type coercion — Decimal, DateTime, Json', () => {
+	test('Prisma Decimal (string) is coerced to number via loose strategy', () => {
+		const row = {
+			rid: 'r1',
+			price: '19.99', // Prisma Decimal arrives as string
+			createdAt: '2026-02-23T10:00:00.000Z',
+			metadata: '{"currency":"USD"}',
+			tags: '["sale","featured"]',
+		};
+		const dto = new PrismaTypedDto(row);
+		expect(dto.price).toBe(19.99);
+		expect(typeof dto.price).toBe('number');
+	});
+
+	test('Prisma DateTime ISO string is preserved and accessible', () => {
+		const iso = '2026-01-15T08:30:00.000Z';
+		const dto = new PrismaTypedDto({
+			rid: 'r2',
+			price: '9.99',
+			createdAt: iso,
+			metadata: '{}',
+			tags: '[]',
+		});
+		expect(dto.createdAt).toBe(iso);
+		// Can be converted to Date when needed
+		expect(new Date(dto.createdAt).getFullYear()).toBe(2026);
+	});
+
+	test('Prisma Json field round-trips via @QComputed parsedMetadata', () => {
+		const dto = new PrismaTypedDto({
+			rid: 'r3',
+			price: '5.00',
+			createdAt: '2026-02-23T00:00:00.000Z',
+			metadata: '{"plan":"pro","seats":5}',
+			tags: '[]',
+		});
+		const parsed = dto.parsedMetadata;
+		expect(parsed['plan']).toBe('pro');
+		expect(parsed['seats']).toBe(5);
+	});
+
+	test('Prisma Json array field round-trips via @QComputed parsedTags', () => {
+		const dto = new PrismaTypedDto({
+			rid: 'r4',
+			price: '0',
+			createdAt: '2026-02-23T00:00:00.000Z',
+			metadata: '{}',
+			tags: '["typescript","orm","quickmodel"]',
+		});
+		expect(dto.parsedTags).toEqual(['typescript', 'orm', 'quickmodel']);
+	});
+
+	test('serialize() keeps typed fields in plain-object form for Prisma update', () => {
+		const dto = new PrismaTypedDto({
+			rid: 'r5',
+			price: '29.99',
+			createdAt: '2026-02-23T12:00:00.000Z',
+			metadata: '{"key":"val"}',
+			tags: '["a","b"]',
+		});
+		const payload = dto.serialize() as Record<string, unknown>;
+		expect(payload['price']).toBe(29.99);
+		expect(payload['metadata']).toBe('{"key":"val"}');
+	});
+
+	test('@QRule validates Decimal-coerced price', () => {
+		const dto = new PrismaTypedDto({
+			rid: 'r6',
+			price: '-5', // negative — should fail
+			createdAt: '2026-02-23T00:00:00.000Z',
+			metadata: '{}',
+			tags: '[]',
+		});
+		const result = qCheckRules(dto);
+		expect(result.valid).toBe(false);
+		expect(result.errors.some((err) => err.field === 'price')).toBe(true);
+	});
+});
+
+// ---------------------------------------------------------------------------
 // 7. qCheckRulesAsync — DB-level validation
 // ---------------------------------------------------------------------------
 

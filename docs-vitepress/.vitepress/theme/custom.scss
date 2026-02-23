@@ -193,7 +193,7 @@ body {
 // --- Navigation Bar ---
 .VPNavBar {
 	position: relative;
-	.VPNNavBar:not(.home.top) .conent-body {
+	&:not(.home.top) .content-body {
 		background: transparent;
 	}
 	// Force solid background (except home if needed, but safer to force per user request)
@@ -202,7 +202,7 @@ body {
 		.content,
 		.container,
 		.title {
-			.background-color: var(--vp-c-bg);
+			background-color: var(--vp-c-bg);
 		}
 	}
 	&:not(.home) {
@@ -261,6 +261,18 @@ body {
 	&:hover {
 		box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
 	}
+}
+
+// --- Landing Page Section Headers ---
+// Mirrors the visual style of BenchmarkChart section titles (.bm-header__title)
+.VPHome .vp-doc h2.landing-title {
+	text-align: center;
+	font-size: 1.65rem;
+	font-weight: 700;
+	margin: 2.5rem 0 1.75rem;
+	color: var(--vp-c-text-1);
+	border-top: none;
+	padding-top: 0;
 }
 
 // --- Home Page Features ---

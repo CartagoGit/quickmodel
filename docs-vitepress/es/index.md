@@ -22,7 +22,7 @@ features:
       details: Un solo decorador @Quick para estructuras complejas, incluyendo mapas y fechas.
 
     - icon: 🤖
-      title: Cerebro IA Integrado (MCP)
+      title: Cerebro IA Integrado (MCP/Skills)
       details: Conecta Claude, Cursor, VS Code o Antigravity directamente a tu base de código.
 
     - icon: 🧪
@@ -107,9 +107,7 @@ onMounted(() => {
 })
 </script>
 
-<BenchmarkChart />
-
-## ¿Por qué QuickModel?
+## 💡 ¿Por qué QuickModel? {.landing-title}
 
 QuickModel es más que una simple librería de serialización; es una **plataforma de desarrollo** para aplicaciones intensivas en datos.
 
@@ -123,14 +121,18 @@ QuickModel es más que una simple librería de serialización; es una **platafor
 
 ### 🤖 ¿Qué es esto del "MCP"?
 
-**MCP (Model Context Protocol)** es como un "driver universal" para Herramientas de IA.
+**MCP (Model Context Protocol)** es un estándar abierto creado por Anthropic que define cómo las IAs se comunican con herramientas externas. Piensa en él como un **protocolo USB**: cualquier IA compatible (cliente MCP) puede conectarse a cualquier herramienta compatible (servidor MCP) sin configuración ad-hoc. En lugar de integrar cada IA con cada herramienta por separado, MCP ofrece un contrato único universal.
 
-QuickModel trae un **Servidor MCP** integrado. Esto significa que puedes conectar tu IA favorita (Claude, Cursor, Antigravity) directamente a la librería.
+En la práctica, un servidor MCP expone **Skills** (herramientas/acciones) y **contexto** (recursos, prompts) que la IA puede invocar. La IA no adivina — llama a funciones concretas con parámetros tipados y recibe resultados estructurados.
+
+QuickModel trae un **Servidor MCP** integrado con sus propios Skills. Esto significa que puedes conectar tu IA favorita (Claude, Cursor, Antigravity) directamente a la librería.
 
 - **Para Principiantes**: Es como darle a tu IA el manual de instrucciones de tu código. En lugar de adivinar, la IA _sabe_ exactamente cómo escribir código QuickModel válido.
 - **Para Pros**: Genera modelos robustos desde JSON en milisegundos, crea suites de tests automáticamente y valida tu arquitectura sin cambiar de contexto.
 
-## Ejemplo Rápido
+<BenchmarkChart />
+
+## 🚀 Ejemplo Rápido {.landing-title}
 
 ```typescript
 import { QModel, Quick } from '@cartago-git/quickmodel';

@@ -44,6 +44,7 @@ export default defineConfig({
 	base: '/quickmodel/',
 	outDir: '../docs-vitepress/dist',
 	ignoreDeadLinks: true,
+	srcExclude: ['**/TASKS.md'],
 	vite: {
 		server: {
 			fs: {
@@ -726,6 +727,10 @@ export default defineConfig({
 									link: '/en/guide/zustand-integration',
 								},
 								{
+									text: 'Redux Toolkit (RTK)',
+									link: '/en/guide/redux-toolkit-integration',
+								},
+								{
 									text: 'Formik',
 									link: '/en/guide/formik-integration',
 								},
@@ -954,6 +959,10 @@ export default defineConfig({
 								{
 									text: 'Zustand',
 									link: '/es/guide/zustand-integration',
+								},
+								{
+									text: 'Redux Toolkit (RTK)',
+									link: '/es/guide/redux-toolkit-integration',
 								},
 								{
 									text: 'Formik',

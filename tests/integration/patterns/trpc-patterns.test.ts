@@ -107,7 +107,7 @@ class UserOutput extends QModel<IUserOutput> {
 
 @Quick(
 	{ uid: 'string', name: 'string', age: 'number' },
-	{ coercionStrategy: 'loose' }
+	{ coercionStrategy: 'loose', unknownPropertyPolicy: 'strip' }
 )
 class UpdateUserInput extends QModel<IUpdateUserInput> {
 	declare uid: string;
@@ -494,6 +494,99 @@ describe('tRPC error mapping', () => {
 // ---------------------------------------------------------------------------
 // 7. updateUser — patch with copy()
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// 8. tRPC router — typed procedure chain
+// ---------------------------------------------------------------------------
+
+describe('tRPC router — typed procedure chain', () => {
+	// Simulated tRPC procedure executor (mirrors t.procedure.input().query/mutation)
+	function simulateProcedure<TInput extends object, TOutput>(
+		input: TInput,
+		handler: (inp: TInput) => TOutput
+	): { ok: true; data: TOutput } | { ok: false; errors: string[] } {
+		const dto = new CreateUserInput(input as object);
+		const validation = qCheckRules(dto);
+		if (!validation.valid) {
+			return {
+				ok: false,
+				errors: validation.errors.map((err) => err.message),
+			};
+		}
+		return { ok: true, data: handler(input) };
+	}
+
+	test('procedure returns typed output for valid input', () => {
+		const result = simulateProcedure(
+			{ name: 'Alice', email: 'alice@x.com', role: 'user', age: 25 },
+			(inp) =>
+				new UserOutput({
+					uid: 'gen-1',
+					...inp,
+				}).serialize()
+		);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			const data = result.data as Record<string, unknown>;
+			expect(data['uid']).toBe('gen-1');
+			expect(data['label']).toBe('Alice (user)');
+		}
+	});
+
+	test('procedure short-circuits and returns errors for invalid input', () => {
+		const result = simulateProcedure(
+			{ name: 'A', email: 'bad', role: 'root', age: 15 },
+			() => ({})
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.errors.length).toBeGreaterThanOrEqual(3);
+		}
+	});
+
+	test('chained procedures share the same QModel contract', () => {
+		// Step 1: validate create input
+		const createInput = new CreateUserInput({
+			name: 'Bob',
+			email: 'bob@x.com',
+			role: 'admin',
+			age: 30,
+		});
+		const valid = qCheckRules(createInput);
+		expect(valid.valid).toBe(true);
+
+		// Step 2: build output DTO from the validated input
+		const outputDto = new UserOutput({
+			uid: 'gen-2',
+			...createInput.toInterface(),
+		});
+		expect(outputDto.label).toBe('Bob (admin)');
+
+		// Step 3: simulate an update mutation
+		const patch = new UpdateUserInput({
+			uid: 'gen-2',
+			name: 'Bob Jr',
+			age: 31,
+		});
+		const updated = outputDto.copy({ name: patch.name, age: patch.age });
+		expect(updated.name).toBe('Bob Jr');
+		expect(updated.email).toBe('bob@x.com'); // unchanged
+	});
+
+	test('serialize() output from procedure is JSON-safe', () => {
+		const out = new UserOutput({
+			uid: 'u-safe',
+			name: 'JSON Test',
+			email: 'json@x.com',
+			role: 'user',
+			age: 22,
+		});
+		const serialized = JSON.stringify(out.serialize());
+		const restored = JSON.parse(serialized) as Record<string, unknown>;
+		expect(restored['name']).toBe('JSON Test');
+		expect(restored['label']).toBe('JSON Test (user)');
+	});
+});
 
 describe('updateUser — patch with copy()', () => {
 	const userDb = new Map<string, IUserOutput>();

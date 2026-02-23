@@ -2,13 +2,13 @@
 
 > **Fecha de revisión:** 23 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 2976 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 3126 tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #49, #55, #40, #41, #42 (sprint Feb 2026)
-⏳  Backlog:     Tasks #47–#48, #50–#54 (Extended Ecosystem Sprint)
+✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #47, #49, #55, #40, #41, #42 (sprint Feb 2026)
+⏳  Backlog:     Tasks #48, #50–#54 (Extended Ecosystem Sprint)
 ✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
 
@@ -53,7 +53,7 @@
 - ✅ Task #44: React Hook Form — `validate` adapter, `@QRule` sin resolver externo, `getFormSchema()` → campos dinámicos — **COMPLETADA** (Feb 2026)
 - ✅ Task #45: Zustand — store con `copy()` inmutable, `QModel` como slice, `devtools` + `immer` compat — **COMPLETADA** (Feb 2026)
 - ✅ Task #46: MSW (Mock Service Worker) — `generate_mock` + `HttpResponse`, fixtures tipados, tests de integración real — **COMPLETADA** (Feb 2026)
-- ⏳ Task #47: Redux Toolkit (RTK) — `createSlice` con QModel, `serialize()` como payload, `copy()` en reducers
+- ✅ **Task #47**: Redux Toolkit (RTK) — `createSlice`, `copy()` en reducers, async thunks, normalized store — 27 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 - ⏳ Task #48: Drizzle ORM — DTO desde resultado de query, repositorio, tipos Drizzle → QModel
 - ✅ Task #49: Vitest Custom Matchers — `toBeValidQModel`, `toHaveQField`, `toMatchQModel`, setup helper — **COMPLETADA** (Feb 2026)
 - ✅ Task #50: TypeORM — Entity vs DTO separation, repositorio con QModel, transformación de columnas — **COMPLETADA** (Feb 2026)
@@ -1861,7 +1861,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 23 de febrero de 2026 (revisión nº20) — Tasks #40–#42 COMPLETADAS: tRPC (30t), Prisma (32t), Formik (26t) | Sprint Ecosystem Integrations ✅ completo | 2976 tests passing
+**Última actualización:** 23 de febrero de 2026 (revisión nº21) — Task #47 COMPLETADA: Redux Toolkit RTK (27t) | guías EN+ES | sidebar actualizado | 3126 tests passing
 
 ---
 
@@ -2169,12 +2169,12 @@ bun test                 # Verificar todos los tests
 
 ---
 
-### ⏳ Task #47: Redux Toolkit (RTK) integration patterns
+### ✅ Task #47: Redux Toolkit (RTK) integration patterns
 
-**Status:** 📋 Pendiente  
+**Status:** ✅ Completada (23 Feb 2026)  
 **Objetivo:** Suite de tests + guía EN+ES para Redux Toolkit  
-**Tests a añadir:** ~20 en `tests/integration/patterns/redux-toolkit-patterns.test.ts`  
-**Docs:** `docs-vitepress/en/guide/redux-toolkit-integration.md` + ES
+**Tests:** 27 en `tests/integration/patterns/redux-toolkit-patterns.test.ts`  
+**Docs:** `docs-vitepress/en/guide/redux-toolkit-integration.md` + `es/guide/redux-toolkit-integration.md`
 
 **Patrones a cubrir:**
 

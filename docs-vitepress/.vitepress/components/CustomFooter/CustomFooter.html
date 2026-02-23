@@ -1,0 +1,17 @@
+<div class="custom-footer">
+	<div class="custom-footer__container">
+		<p
+			class="custom-footer__message"
+			v-html="footerMessage"></p>
+		<p
+			class="custom-footer__copyright"
+			v-html="footerCopyright"></p>
+		<div class="custom-footer__links">
+			<VPSocialLink
+				v-for="link in socialLinks"
+				:key="link.link"
+				:icon="link.icon"
+				:link="link.link" />
+		</div>
+	</div>
+</div>

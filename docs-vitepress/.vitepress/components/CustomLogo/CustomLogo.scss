@@ -1,0 +1,27 @@
+/* VitePress override — must target the framework class */
+.VPNavBarTitle {
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid transparent;
+	width: 100%;
+	height: var(--vp-nav-height);
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--vp-c-text-1);
+	transition: opacity 0.25s;
+
+	&:hover {
+		opacity: 0.6;
+	}
+}
+
+.custom-logo {
+	/* block — inherits .VPNavBarTitle layout styles above */
+
+	&__title {
+		flex-shrink: 0;
+		font-size: 16px;
+		font-weight: 600;
+		line-height: var(--vp-nav-height);
+	}
+}
