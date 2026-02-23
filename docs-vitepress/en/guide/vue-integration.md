@@ -86,6 +86,58 @@ function onSubmit() {
 </template>
 ```
 
+::: tip Two available patterns
+
+- **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance required.
+- **With `QModel` + `@Quick`** (below): also unlocks `copy()`, `serialize()`, `checkIntegrity()`, and `diff()`.
+  :::
+
+### With QModel + @Quick
+
+```typescript
+// composables/useContactForm.ts
+import { reactive, toRaw } from 'vue';
+import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+
+@Quick({ name: 'string', email: 'string' })
+class ContactForm extends QModel<IContactForm> {
+	@QField({ label: 'Name', required: true })
+	@QRule((v: string) => v.trim().length >= 2, 'Name must be at least 2 chars')
+	declare name: string;
+
+	@QField({ label: 'Email', widget: 'email' })
+	@QRule((v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Invalid email')
+	declare email: string;
+}
+
+export function useContactForm() {
+	const form = reactive(new ContactForm({}));
+
+	// toRaw() needed so QModel's internal `this` is not the Vue Proxy
+	function validate() {
+		return toRaw(form).checkRules();
+	}
+
+	function fieldError(field: keyof IContactForm): string | null {
+		const result = toRaw(form).checkRules();
+		return (
+			result.errors.find((e) => e.field === String(field))?.message ??
+			null
+		);
+	}
+
+	function patch(data: Partial<IContactForm>) {
+		return toRaw(form).copy(data) as ContactForm;
+	}
+
+	return { form, validate, fieldError, patch };
+}
+```
+
+::: warning `toRaw()` with QModel methods
+Vue wraps instances in a `Proxy`. Always call `toRaw(form).checkRules()` / `toRaw(form).copy(...)` to prevent QuickModel's internal `this` from pointing to the Proxy instead of the real instance. See [Proxy compatibility](#qmodel-in-vue-reactive-proxy-compatibility).
+:::
+
 ## Pinia Store — QModel as State
 
 ```typescript

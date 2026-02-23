@@ -86,6 +86,12 @@ if (!groups['identity']?.valid) {
 }
 ```
 
+::: tip Two patterns available
+
+- **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance. Ideal for Reactive Forms with pure validation.
+- **`QModel` + `@Quick`** (below): adds type coercion, immutable `copy()`, `serialize()`, and `@QComputed`. Ideal for services, repositories, and HTTP interceptors.
+  :::
+
 ## Service / Repository Pattern
 
 Use `QModel` for data stored in Angular services. The `unknownPropertyPolicy: 'strip'` option prevents injection of unexpected fields.

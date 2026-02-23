@@ -82,6 +82,8 @@
 		"dev": "tsup --watch",
 		"test": "bun test",
 		"test:coverage": "bun test --coverage",
+		"bench": "bun --expose-gc test tests/performance",
+		"bench:compare": "bun --expose-gc test tests/performance/comparison-benchmarks.test.ts",
 		"prepublishOnly": "bun run build",
 		"clean": "rm -rf dist",
 		"typecheck": "bun run typecheck:src && bun run typecheck:tests",

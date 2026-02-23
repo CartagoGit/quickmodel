@@ -49,6 +49,50 @@ const { form, validation } = useProfileForm();
 </template>
 ```
 
+::: tip Dos patrones disponibles
+
+- **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`.
+- **Con `QModel` + `@Quick`** (abajo): accedes además a `copy()`, `serialize()`, `checkIntegrity()` y `diff()`.
+  :::
+
+### Con QModel + @Quick
+
+```typescript
+// composables/useProfileForm.ts
+import { reactive, toRaw } from 'vue';
+import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+
+@Quick({ bio: 'string', website: 'string' })
+class ProfileForm extends QModel<IProfileForm> {
+	@QField({ label: 'Bio', required: true })
+	@QRule((v: string) => v.length >= 10, 'Bio muy corta')
+	declare bio: string;
+
+	@QField({ label: 'Website', widget: 'url' })
+	@QRule((v: string) => !v || /^https?:\/\//.test(v), 'URL inválida')
+	declare website: string;
+}
+
+export function useProfileForm() {
+	const form = reactive(new ProfileForm({}));
+
+	// toRaw() necesario para que `this` interno de QModel no sea el Proxy
+	function validate() {
+		return toRaw(form).checkRules();
+	}
+
+	function patch(data: Partial<IProfileForm>) {
+		return toRaw(form).copy(data) as ProfileForm;
+	}
+
+	return { form, validate, patch };
+}
+```
+
+::: warning `toRaw()` con métodos de QModel
+Vue envuelve las instancias en un `Proxy`. Llama siempre a `toRaw(form).checkRules()` / `toRaw(form).copy(...)` para evitar que `this` interno apunte al Proxy en vez de a la instancia real. Ver [compatibilidad con Proxy](#qmodel-dentro-de-vue-reactive-compatibilidad-con-proxy).
+:::
+
 ## Pinia Store
 
 ```typescript

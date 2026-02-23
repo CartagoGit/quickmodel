@@ -80,6 +80,41 @@ function updateBody(newBody: string) {
 Since `copy()` returns a new instance, Svelte's `$state` reactivity fires automatically when you reassign the variable. This is the recommended pattern.
 :::
 
+### Form Validation — Plain Class
+
+For lighter form validation without coercion or serialization, use a plain class with `@QRule`:
+
+```svelte
+<!-- ContactForm.svelte -->
+<script lang="ts">
+import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+
+class ContactForm {
+  @QField({ label: 'Name', required: true })
+  @QRule((v: string) => v.trim().length >= 2, 'Name must be at least 2 characters')
+  name = '';
+
+  @QField({ label: 'Email', widget: 'email' })
+  @QRule((v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Invalid email')
+  email = '';
+}
+
+let form = $state(new ContactForm());
+let validation = $derived(qCheckRules(form));
+</script>
+
+<input bind:value={form.name} />
+{#if validation.errors.find(e => e.field === 'name')}
+  <span>{validation.errors.find(e => e.field === 'name')?.message}</span>
+{/if}
+```
+
+::: info Two patterns
+
+- **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance. Minimum overhead for form validation.
+- **`QModel` + `@Quick`** (above): adds coercion, `copy()`, `serialize()`, `@QComputed`. Use for reactive state management.
+  :::
+
 ## Svelte Stores (Svelte 4 / compatible with Svelte 5)
 
 ```typescript

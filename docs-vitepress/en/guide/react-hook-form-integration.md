@@ -94,6 +94,10 @@ class UserSignupDto extends QModel<IUserSignup> {
 > **`coercionStrategy: 'loose'`** — HTML form inputs send all values as strings. This option
 > coerces `"25"` → `25` for number fields automatically, preventing construction errors.
 
+::: tip Two patterns available
+This guide shows the **`QModel` + `@Quick`** pattern, which includes coercion, serialization, and `@QComputed`. If you only need validation without those features, you can use a **plain class** with `@QRule` and a generic resolver. See [React integration — Plain class resolver](./react-integration#react-hook-form-custom-resolver).
+:::
+
 ## validate Adapter for React Hook Form
 
 Create a custom validator that runs `checkRules()` and maps errors to RHF's format:

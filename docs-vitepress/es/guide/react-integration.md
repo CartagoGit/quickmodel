@@ -50,6 +50,49 @@ const handleChange = (field: keyof ContactForm, value: string) => {
 const { valid, errors } = qCheckRules(form);
 ```
 
+::: tip Dos patrones disponibles
+
+- **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`.
+- **Con `QModel` + `@Quick`** (abajo): accedes además a `copy()`, `serialize()`, `checkIntegrity()` y actualizaciones inmutables.
+  :::
+
+### Con QModel + @Quick
+
+```typescript
+// models/contact-form.ts
+import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+
+@Quick({ name: 'string', email: 'string', message: 'string' })
+class ContactForm extends QModel<IContactForm> {
+	@QField({ label: 'Nombre', required: true })
+	@QRule((v: string) => v.length >= 2, 'Nombre muy corto')
+	declare name: string;
+
+	@QField({ label: 'Email', widget: 'email' })
+	@QRule(
+		(v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+		'Email inválido'
+	)
+	declare email: string;
+
+	@QField({ label: 'Mensaje' })
+	@QRule((v: string) => v.length >= 10, 'Mensaje muy corto')
+	declare message: string;
+}
+```
+
+```tsx
+// components/ContactForm.tsx
+const [form, setForm] = useState(() => new ContactForm({}));
+
+// copy() es inmutable — devuelve una nueva instancia
+const handleChange = (field: keyof IContactForm, value: string) => {
+	setForm((prev) => prev.copy({ [field]: value }) as ContactForm);
+};
+
+const { valid, errors } = form.checkRules();
+```
+
 ## React Hook Form — Adaptador resolver
 
 ```typescript
@@ -86,6 +129,47 @@ const {
 	formState: { errors },
 } = useForm({ resolver });
 ```
+
+### Variante tipada con QModel
+
+Si usas `QModel`, puedes tiparlo más estrictamente y usar `instance.checkRules()` directamente:
+
+```typescript
+// hooks/useQuickResolver.ts — variante QModel
+import type { Resolver } from 'react-hook-form';
+import { QModel } from '@cartago-git/quickmodel';
+
+export function createQModelResolver<T extends QModel<object>>(
+	FormClass: new (data?: object) => T
+): Resolver<T> {
+	return (values) => {
+		const instance = new FormClass(values);
+		const { valid, errors } = instance.checkRules();
+		if (valid) return { values, errors: {} };
+		return {
+			values: {},
+			errors: Object.fromEntries(
+				errors.map((e) => [
+					e.field,
+					{ type: 'validation', message: e.message },
+				])
+			),
+		};
+	};
+}
+```
+
+```tsx
+// RegistrationForm debe extender QModel
+const resolver = createQModelResolver(RegistrationForm);
+```
+
+::: info ¿Cuál usar?
+| Objetivo | Función |
+|---|---|
+| Solo validar con `@QRule`, sin herencia | `createQuickResolver` — acepta cualquier clase |
+| `QModel` completo con coerción y serialización | `createQModelResolver` — tipado fuerte |
+:::
 
 ## Next.js Server Actions
 

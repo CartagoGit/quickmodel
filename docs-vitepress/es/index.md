@@ -107,6 +107,8 @@ onMounted(() => {
 })
 </script>
 
+<BenchmarkChart />
+
 ## ¿Por qué QuickModel?
 
 QuickModel es más que una simple librería de serialización; es una **plataforma de desarrollo** para aplicaciones intensivas en datos.

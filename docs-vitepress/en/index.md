@@ -107,6 +107,8 @@ onMounted(() => {
 })
 </script>
 
+<BenchmarkChart />
+
 ## Why QuickModel?
 
 QuickModel is more than just a library; it's a **development platform** for data-heavy applications.

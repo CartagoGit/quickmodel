@@ -88,6 +88,61 @@ function LoginPage() {
 }
 ```
 
+::: tip Two available patterns
+
+- **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance required.
+- **With `QModel` + `@Quick`** (below): also unlocks `copy()`, `serialize()`, `checkIntegrity()`, and immutable updates.
+  :::
+
+### With QModel + @Quick
+
+```typescript
+// models/login-form.ts
+import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+
+@Quick({ email: 'string', password: 'string' })
+class LoginForm extends QModel<ILoginForm> {
+	@QField({ label: 'Email', widget: 'email', required: true })
+	@QRule(
+		(v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+		'Invalid email address'
+	)
+	declare email: string;
+
+	@QField({ label: 'Password', widget: 'password', required: true })
+	@QRule(
+		(v: string) => v.length >= 8,
+		'Password must be at least 8 characters'
+	)
+	@QRule((v: string) => /[A-Z]/.test(v), 'Password needs an uppercase letter')
+	declare password: string;
+}
+```
+
+```tsx
+// LoginPage.tsx
+const [form, setForm] = useState(() => new LoginForm({}));
+
+const handleChange = (field: keyof ILoginForm, value: string) => {
+	// copy() is IMMUTABLE — captures the new instance
+	setForm((prev) => prev.copy({ [field]: value }) as LoginForm);
+};
+
+const handleSubmit = (e: FormEvent) => {
+	e.preventDefault();
+	const { valid, errors: ruleErrors } = form.checkRules();
+	if (!valid) {
+		const map: Record<string, string> = {};
+		ruleErrors.forEach((err) => {
+			map[err.field] = err.message;
+		});
+		setErrors(map);
+		return;
+	}
+	// proceed with form.email, form.password
+};
+```
+
 ## React Hook Form — Custom Resolver
 
 ```typescript
@@ -118,6 +173,47 @@ const { register, handleSubmit, formState } = useForm({
 	resolver: qModelResolver(ProductForm),
 });
 ```
+
+### Typed variant with QModel
+
+If your form class extends `QModel`, you can enforce a stricter type contract and call `instance.checkRules()` directly:
+
+```typescript
+// hooks/useQModelResolver.ts
+import type { Resolver } from 'react-hook-form';
+import { QModel } from '@cartago-git/quickmodel';
+
+export function createQModelResolver<T extends QModel<object>>(
+	FormClass: new (data?: object) => T
+): Resolver<T> {
+	return (values) => {
+		const instance = new FormClass(values);
+		const { valid, errors } = instance.checkRules();
+		if (valid) return { values, errors: {} };
+		return {
+			values: {},
+			errors: Object.fromEntries(
+				errors.map((e) => [
+					e.field,
+					{ type: 'validation', message: e.message },
+				])
+			),
+		};
+	};
+}
+```
+
+```tsx
+// ProductForm must extend QModel
+const resolver = createQModelResolver(ProductForm);
+```
+
+::: info Which one should I use?
+| Goal | Function |
+|---|---|
+| Validate with `@QRule` only, no inheritance | `qModelResolver` — accepts any class |
+| Full `QModel` with coercion and serialization | `createQModelResolver` — strong typing |
+:::
 
 ## Next.js Server Actions
 

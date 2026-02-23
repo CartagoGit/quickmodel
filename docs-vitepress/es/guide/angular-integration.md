@@ -56,6 +56,12 @@ export class UserFormComponent {
 }
 ```
 
+::: tip Dos patrones disponibles
+
+- **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`. Ideal para Reactive Forms con validación pura.
+- **Con `QModel` + `@Quick`** (abajo): añade coerción de tipos, `copy()` inmutable, `serialize()` y `@QComputed`. Ideal para servicios, repositorios e interceptores HTTP.
+  :::
+
 ## Servicio con QModel
 
 ```typescript

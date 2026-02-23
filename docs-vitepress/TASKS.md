@@ -7,10 +7,10 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#16, #18–#22, #23–#38, #39, #44, #45, #46, #49 (sprint Feb 2026)
-🔄 En progreso: Tasks #40–#43 (Ecosystem Integrations Sprint)
-⏳  Backlog:     Tasks #47–#48, #50–#54 (Extended Ecosystem Sprint)
-⏸️  Pausada:     Task #17 (benchmarks)
+✅ Completadas: Tasks #1–#22, #23–#38, #39, #44, #45, #46, #49 (sprint Feb 2026)
+🔄 En progreso: Tasks #43, #55, #40–#42 (Ecosystem Integrations Sprint)
+⏳  Backlog:     Tasks #47–#48, #50–#54, #55 (Extended Ecosystem Sprint)
+✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
 
 **Hitos recientes:**
@@ -40,13 +40,14 @@
 - ✅ Task #33: Módulo `./forms` standalone — `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup` — **COMPLETADA** (22 Feb 2026)
 - ✅ **Sprint #34–#38: Framework Integrations** — Angular (37), React (31), Vue (27), Svelte (21), Backend (25) = **141 nuevos tests** | guías EN+ES para los 5 frameworks | 2406 → 2588 tests (22 Feb 2026)
 
-**Sprint en curso — Ecosystem Integrations (#40–#43):**
+**Sprint en curso — Ecosystem Integrations (orden de ejecución):**
 
 - ✅ Task #39: TanStack Query — `queryFn`, `useMutation`, optimistic updates con `copy()` — **COMPLETADA** (Feb 2026)
+- ⏳ **Task #43** _(primero)_: Mobile Integrations — React Native/Expo, Capacitor, Cordova, Ionic — `TextInput`, storage nativo, `useQModel` en mobile
+- ⏳ **Task #55** _(segundo)_: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching
 - ⏳ Task #40: tRPC — input/output DTOs, middleware, `checkRulesAsync` en procedures
 - ⏳ Task #41: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos
 - ⏳ Task #42: Formik + migración desde Zod/Yup
-- ⏳ Task #43: Mobile Integrations — React Native/Expo, Capacitor, Cordova, Ionic — `TextInput`, storage nativo, `useQModel` en mobile
 
 **Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
@@ -61,6 +62,7 @@
 - ⏳ Task #52: OpenAPI / Swagger — `getSchema('json')` → `@nestjs/swagger`, `@fastify/swagger`, documentación automática
 - ⏳ Task #53: Electron IPC — `serialize()`/`populate()` en boundary main↔renderer, tipado cross-context
 - ⏳ Task #54: Mongoose — ODM sobre MongoDB, DTO encima del documento Mongoose, coerción de `ObjectId`
+- ⏳ Task #55: Storage & Persistence — localStorage, IndexedDB, SQLite, Capacitor Preferences, caching layers
 
 **Revisión completa 22 Feb 2026 — Tareas actualizadas:**
 
@@ -70,7 +72,7 @@
 - ✅ Task #14: Tests negativos para `JsonSchemaGenerator` con tipos sin transformer — **COMPLETADA** (fix array types)
 - ✅ Task #15: Tests específicos para `disableSafetyChecks` (activación + warning) — **COMPLETADA**
 - ✅ Task #16: Tests de `transformCase` con herencia multinivel — **COMPLETADA**
-- ⏸️ Task #17: Performance benchmarks baseline (comparativa vs class-transformer, Zod)
+- ✅ **Task #17**: Performance benchmarks comparativos (Zod + PlainJS) + gráfica interactiva en landing — **COMPLETADA** (23 Feb 2026)
 - ✅ Task #18: `@QComputed()` / `exposeComputedFields` — computed props en serialización — **COMPLETADA**
 - ✅ Task #19: `QTransformerRegistry.snapshot()/restore()` — **COMPLETADA**
 - ✅ Task #20: `@QRule` async — **COMPLETADA** (commit `a714b2e`)
@@ -1378,10 +1380,23 @@ describe('transformCase with multi-level inheritance', () => {
 
 ### Task #17: Performance benchmarks baseline
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETADA  
+**Fecha:** 23 de febrero de 2026  
 **Prioridad:** 🟡 Media  
-**Esfuerzo:** 4-6 horas  
+**Esfuerzo real:** 3 horas  
 **Impacto:** Alto — credibilidad del proyecto, detección de regresiones
+
+**Archivos creados:**
+
+- `tests/performance/comparison-benchmarks.test.ts` — 6 escenarios: objetos simples, tipos complejos, roundtrip, validación batch, mock generation, objetivos #17
+- `docs-vitepress/.vitepress/theme/BenchmarkChart.vue` — gráfica interactiva con tabs por escenario, barras animadas, tooltips hover con feature matrix
+
+**Archivos modificados:**
+
+- `package.json` — scripts `bench` y `bench:compare`
+- `docs-vitepress/en/index.md` — `<BenchmarkChart />` entre hero y "Why QuickModel?"
+- `docs-vitepress/es/index.md` — ídem en español
+- `docs-vitepress/.vitepress/theme/index.ts` — registro global del componente
 
 **Métricas objetivo:**
 
@@ -1847,7 +1862,7 @@ bun test                 # Verificar todos los tests
 
 ---
 
-**Última actualización:** 23 de febrero de 2026 (revisión nº15) — Tasks #39, #44, #45, #46, #49 completadas (130 nuevos tests de integración) | Tasks #40–#43 en curso | Task #43 ampliada: React Native + Expo + Capacitor + Cordova + Ionic | src/matchers.ts: quickmodelMatchers para Vitest/bun | 2718 tests passing
+**Última actualización:** 23 de febrero de 2026 (revisión nº16) — Task #43 ampliada: React Native + Expo + Capacitor + Cordova + Ionic | Task #55 añadida: Storage & Persistence (localStorage, IndexedDB, SQLite, caching) | Sprint reordenado: #43 → #55 → #40 → #41 → #42 | 2718 tests passing
 
 ---
 

@@ -143,6 +143,43 @@ function AddProductForm() {
 }
 ```
 
+::: tip Two patterns available
+
+- **`QModel` + `@Quick`** (above): automatic type coercion, `serialize()`, and `@QComputed`. Use when the API or form sends strings that need converting to numbers/booleans.
+- **Plain class** (below): `@QRule` only — no inheritance. If types are already correct, this is enough.
+  :::
+
+### Plain Class Variant
+
+```typescript
+import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+
+class CreateProductForm {
+	@QField({ label: 'Product Name', required: true })
+	@QRule((v: string) => v.length >= 2, 'Name must be at least 2 characters')
+	name = '';
+
+	@QField({ label: 'Price' })
+	@QRule((v: number) => v > 0, 'Price must be positive')
+	price = 0;
+}
+
+async function createProductSimple(data: object): Promise<IProduct> {
+	const form = Object.assign(new CreateProductForm(), data);
+	const { valid, errors } = qCheckRules(form);
+	if (!valid) {
+		throw new Error(
+			errors.map((e) => `${e.field}: ${e.message}`).join(', ')
+		);
+	}
+	const res = await fetch('/api/products', {
+		method: 'POST',
+		body: JSON.stringify(data),
+	});
+	return res.json();
+}
+```
+
 ## Optimistic Updates with copy()
 
 `copy()` returns a **new immutable instance** — perfect for optimistic UI updates without

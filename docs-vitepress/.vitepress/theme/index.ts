@@ -5,6 +5,7 @@ import DefaultTheme from 'vitepress/theme';
 import LanguageSwitcher from './LanguageSwitcher.vue';
 import CustomFooter from './CustomFooter.vue';
 import NavTranslator from './NavTranslator.vue';
+import BenchmarkChart from './BenchmarkChart.vue';
 import './custom.scss';
 
 export default {
@@ -20,6 +21,7 @@ export default {
 		app.component('LanguageSwitcher', LanguageSwitcher);
 		app.component('CustomFooter', CustomFooter);
 		app.component('NavTranslator', NavTranslator);
+		app.component('BenchmarkChart', BenchmarkChart);
 
 		// Intercept logo clicks to use SPA navigation
 		if (typeof window !== 'undefined') {

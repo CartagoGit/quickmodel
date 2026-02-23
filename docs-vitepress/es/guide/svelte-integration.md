@@ -40,6 +40,52 @@ QuickModel funciona con las runes de Svelte 5 (`$state`, `$derived`), stores esc
 {/if}
 ```
 
+::: tip Dos patrones disponibles
+
+- **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`. Ideal para formularios ligeros.
+- **Con `QModel` + `@Quick`** (abajo): añade coerción, `copy()`, `serialize()` y `@QComputed`. Ideal para estado reactivo.
+  :::
+
+### Con QModel + @Quick
+
+```svelte
+<!-- NoteEditor.svelte -->
+<script lang="ts">
+  import { QModel, Quick, QField, QRule, QComputed } from '@cartago-git/quickmodel';
+
+  @Quick(
+    { id: 'string', title: 'string', body: 'string' },
+    { unknownPropertyPolicy: 'strip' }
+  )
+  class NoteModel extends QModel<INote> {
+    declare id: string;
+
+    @QField({ label: 'Título', required: true })
+    @QRule((v: string) => v.trim().length >= 2, 'Título muy corto')
+    declare title: string;
+
+    declare body: string;
+
+    @QComputed()
+    get preview(): string { return this.body.slice(0, 60); }
+  }
+
+  let note = $state(new NoteModel({ id: 'n1', title: 'Hola', body: '' }));
+
+  // copy() es INMUTABLE — la reactividad de $state se activa al reasignar
+  function update(patch: Partial<INote>) {
+    note = note.copy(patch) as NoteModel;
+  }
+
+  let preview = $derived(note.preview);
+  let { valid, errors } = $derived(note.checkRules());
+</script>
+
+<input bind:value={note.title} />
+{#if !valid}<p>{errors[0]?.message}</p>{/if}
+<p>Preview: {preview}</p>
+```
+
 ## Stores escribibles
 
 ```typescript

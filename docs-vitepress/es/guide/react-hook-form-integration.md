@@ -89,6 +89,10 @@ class RegistroDto extends QModel<IRegistro> {
 > **`coercionStrategy: 'loose'`** — Los inputs HTML envían todos los valores como strings.
 > Esta opción convierte `"25"` → `25` para campos numéricos automáticamente.
 
+::: tip Dos patrones disponibles
+Esta guía muestra el patrón **`QModel` + `@Quick`** que incluye coerción, serialización y `@QComputed`. Si solo necesitas validación sin coerción ni serialización, puedes usar una **clase plana** con `@QRule` y el resolver genérico. Ver [React integration — Resolver con clase plana](./react-integration#react-hook-form-adaptador-resolver).
+:::
+
 ## Adaptador para React Hook Form
 
 ```typescript
