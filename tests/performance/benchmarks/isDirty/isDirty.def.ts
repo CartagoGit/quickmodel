@@ -7,8 +7,9 @@ export const scenario: IBenchScenario = {
 	values: {
 		QuickModel: 900_000,
 		'Plain JS': 250_000,
-		'Plain JS JSON.stringify': 7_193_210,
-		'QuickModel isDirty': 112_492,
+		'Plain JS JSON.stringify': 6_321_113,
+		'QuickModel isDirty': 100_527,
+		Immer: 394_474,
 		TypeBox: null,
 		valibot: null,
 		Zod: null,

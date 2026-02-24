@@ -22,6 +22,7 @@ export let cvMod: any = null;
 export let vestMod: any = null;
 export let joiMod: any = null;
 export let fakerMod: any = null;
+export let immerMod: any = null;
 
 await Promise.allSettled([
 	import('valibot')
@@ -77,6 +78,11 @@ await Promise.allSettled([
 	import('@faker-js/faker')
 		.then((mod) => {
 			fakerMod = mod;
+		})
+		.catch(() => {}),
+	import('immer')
+		.then((mod) => {
+			immerMod = mod;
 		})
 		.catch(() => {}),
 ]);

@@ -53,6 +53,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			arktype: null,
 			superjson: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -82,6 +83,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			vest: null,
 			joi: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'yup async': null,
 			'joi async': null,
@@ -110,6 +112,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			'class-validator': null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -134,6 +137,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			'class-validator': null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -161,6 +165,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			'class-validator': null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -178,6 +183,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			'Plain JS': 2_004_008,
 			QuickModel: 103_659,
 			'faker (manual)': 28_577,
+			Immer: null,
 			TypeBox: null,
 			valibot: null,
 			Zod: null,
@@ -215,6 +221,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			superjson: null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -243,6 +250,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			vest: null,
 			joi: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -269,6 +277,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			'class-validator': null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -296,6 +305,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			vest: null,
 			joi: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -324,6 +334,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			vest: null,
 			joi: null,
 			'faker (manual)': null,
+			Immer: null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
 			'yup async': null,
@@ -350,6 +361,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			vest: null,
 			joi: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -377,6 +389,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			superjson: null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -404,6 +417,7 @@ const _legacyScenariosArchive: IBenchScenario[] = [
 			superjson: null,
 			vest: null,
 			'faker (manual)': null,
+			Immer: null,
 			'QuickModel @QAlias': null,
 			'Plain JS JSON.stringify': null,
 			'QuickModel isDirty': null,
@@ -434,6 +448,7 @@ export const libraries: Record<string, ILibraryInfo> = {
 	'class-validator': { color: '#ec4899', i18nKey: 'classValidator' },
 	vest: { color: '#6366f1', i18nKey: 'vest' },
 	joi: { color: '#84cc16', i18nKey: 'joi' },
+	Immer: { color: '#a78bfa', i18nKey: 'immer' },
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -460,6 +475,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: {
 			valibot: 'valibot',
@@ -485,6 +501,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: { 'class-transformer': 'classTransformer' },
 	},
@@ -506,6 +523,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -525,6 +543,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -544,6 +563,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: {
 			'class-transformer': 'classTransformer',
@@ -567,7 +587,9 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: 'partial',
 		},
+		notes: { Immer: 'immer' },
 	},
 	{
 		i18nKey: 'formSchemas',
@@ -586,6 +608,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: 'partial',
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: { vest: 'vest' },
 	},
@@ -606,6 +629,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -626,6 +650,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: 'partial',
 			joi: 'partial',
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: {
 			Zod: 'zod',
@@ -653,6 +678,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: 'partial',
 			joi: 'partial',
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: {
 			valibot: 'valibot',
@@ -679,6 +705,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -698,6 +725,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -717,13 +745,15 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: 'partial',
 		},
+		notes: { Immer: 'immer' },
 	},
 	{
 		i18nKey: 'treeShakeable',
 		category: 'validation',
 		values: {
-			'Plain JS': true,
+			'Plain JS': false,
 			TypeBox: 'partial',
 			valibot: true,
 			Zod: false,
@@ -736,6 +766,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': true,
+			Immer: true,
 		},
 		notes: { TypeBox: 'typebox' },
 	},
@@ -756,6 +787,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -775,6 +807,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: false,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 	},
 	{
@@ -794,6 +827,7 @@ export const featureRows: IFeatureRow[] = [
 			vest: true,
 			joi: false,
 			'faker (manual)': false,
+			Immer: false,
 		},
 		notes: { 'class-validator': 'classValidator' },
 	},
@@ -816,6 +850,7 @@ export const libNames: string[] = [
 	'vest',
 	'QuickModel',
 	'faker (manual)',
+	'Immer',
 	'Plain JS', // baseline de referencia — aparece al final en coverage map y chart
 ];
 
@@ -825,7 +860,6 @@ export const libNames: string[] = [
 // ─────────────────────────────────────────────────────────────
 
 export const matrixTypeOptions = [
-	{ key: 'all' },
 	{ key: 'validation' },
 	{ key: 'serialization' },
 	{ key: 'forms' },
@@ -846,6 +880,7 @@ export const libCategories: Record<string, string[]> = {
 	joi: ['validation', 'forms'],
 	QuickModel: ['validation', 'serialization', 'forms', 'mocks'],
 	'faker (manual)': ['mocks'],
+	Immer: ['serialization'],
 };
 
 export const featureCategoryOptions = [

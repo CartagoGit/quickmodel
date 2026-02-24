@@ -65,6 +65,7 @@ export const enLocale = {
 		typeLabel: 'Type:',
 		librariesLabel: 'Libraries:',
 		featuresLabel: 'Features:',
+		featureColumnHeader: 'Feature',
 		perfTitle: 'Performance Benchmark',
 		perfSubtitle: 'Hover the bars to see details',
 		scenarioLabel: 'Scenario:',
@@ -384,6 +385,23 @@ export const enLocale = {
 					'No decorator-based approach',
 				],
 			},
+			immer: {
+				desc: 'Immutable state management via structural sharing — produce() detects changes via reference comparison',
+				pros: [
+					'O(1) change detection via produce() + reference check ✅',
+					'Structural sharing — untouched branches are reused ✅',
+					'TypeScript-first with Draft<T> inference ✅',
+					'Tree-shakeable and tiny (~6KB) ✅',
+				],
+				cons: [
+					'No field-level tracking (no getDirtyFields())',
+					'No patch() / reset() / model lifecycle',
+					'No schema validation or type coercion',
+					'No mock generation',
+					'No AI / MCP integration',
+					'No serialization of BigInt, Map, Set',
+				],
+			},
 		},
 
 		// ─── Feature row labels and per-lib warning notes ─────────
@@ -415,7 +433,12 @@ export const enLocale = {
 						'Preserves types but requires an already-typed object in memory',
 				},
 			},
-			copyIsDirty: { label: 'copy() / isDirty()' },
+			copyIsDirty: {
+				label: 'copy() / isDirty()',
+				notes: {
+					immer: 'Change detection via reference comparison only (produce()) — no getDirtyFields() or model lifecycle',
+				},
+			},
 			formSchemas: {
 				label: 'Form schemas (@QField)',
 				notes: {
@@ -448,7 +471,12 @@ export const enLocale = {
 			},
 			inheritance: { label: 'Multi-level inheritance inference' },
 			schemaExport: { label: 'Schema export (JSON/Zod/OpenAPI)' },
-			tsInference: { label: 'Compile-time TS inference' },
+			tsInference: {
+				label: 'Compile-time TS inference',
+				notes: {
+					immer: 'Only Draft<T> inference inside produce() — no automatic model-level TS inference',
+				},
+			},
 			treeShakeable: {
 				label: 'Tree-shakeable',
 				notes: {

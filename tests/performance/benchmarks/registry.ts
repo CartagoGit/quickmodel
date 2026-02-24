@@ -30,8 +30,8 @@ import { scenario as validationDef } from './validation/validation.def';
 /**
  * Calcula el ratio QuickModel / mejor_competidor para un escenario.
  * - Excluye claves que empiezan por 'QuickModel' (son variantes propias, no competidores).
- * - Excluye 'Plain JS' (referencia baseline, no competitor real de librería).
- * - Devuelve Infinity si no hay competidor (escenario exclusivo de QM).
+ * - Excluye claves que empiezan por 'Plain JS' (baseline de referencia, no librería competidora).
+ * - Devuelve Infinity si no hay competidor real (escenario exclusivo de QM).
  * - Devuelve 0 si QM no tiene valor (null).
  * Usado para ordenar los escenarios de mayor a menor ventaja de QuickModel.
  */
@@ -43,12 +43,22 @@ function qmRatio(scenario: IBenchScenario): number {
 		.filter(
 			([key, val]) =>
 				!key.startsWith('QuickModel') &&
-				key !== 'Plain JS' &&
+				!key.startsWith('Plain JS') &&
 				val !== null
 		)
 		.reduce<number>((max, [, val]) => Math.max(max, val as number), 0);
 
 	return bestCompetitor === 0 ? Infinity : qmValue / bestCompetitor;
+}
+
+/**
+ * Clave de ordenación: los escenarios exclusivos de QM (sin competidores reales, ratio=Infinity)
+ * van al final — no tiene sentido mostrarlos primero en una tabla comparativa.
+ * Orden resultante: QM gana → QM pierde → sin comparación posible.
+ */
+function qmSortKey(scenario: IBenchScenario): number {
+	const ratio = qmRatio(scenario);
+	return ratio === Infinity ? -1 : ratio;
 }
 
 const _rawScenarios: IBenchScenario[] = [
@@ -70,10 +80,12 @@ const _rawScenarios: IBenchScenario[] = [
 ];
 
 /**
- * Escenarios comparativos ordenados automáticamente por ratio QM / mejor_competidor descendente.
- * Cuanto mayor el ratio, más ventajosa es la posición de QuickModel en ese benchmark.
+ * Escenarios comparativos ordenados automáticamente:
+ * 1. QM gana a competidores reales → ratio > 1 → más a la izquierda.
+ * 2. QM pierde contra competidores reales → ratio < 1 → más a la derecha.
+ * 3. QM sin competidores reales (feature exclusiva) → siempre al final.
  * Al añadir nuevos benchmarks solo hay que agregar su `.def.ts` a `_rawScenarios` — el orden se calcula solo.
  */
 export const scenarios: IBenchScenario[] = [..._rawScenarios].sort(
-	(aScenario, bScenario) => qmRatio(bScenario) - qmRatio(aScenario)
+	(aScenario, bScenario) => qmSortKey(bScenario) - qmSortKey(aScenario)
 );

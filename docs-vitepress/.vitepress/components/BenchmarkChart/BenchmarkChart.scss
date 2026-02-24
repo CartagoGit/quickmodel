@@ -636,6 +636,12 @@
 			z-index: 2;
 			background: var(--vp-c-bg-soft);
 			border-bottom: 1px solid var(--vp-c-divider);
+
+			// La celda de esquina necesita ganar la especificidad del selector "thead tr th"
+			// (0,1,3) para que su z-index supere al de las cabeceras de librería.
+			&.bm-matrix__th-feature {
+				z-index: 4;
+			}
 		}
 
 		tbody tr {
@@ -665,10 +671,8 @@
 		white-space: nowrap;
 	}
 
-	// La celda de esquina (th de feature) tiene mayor z-index para quedar sobre las th de librería
-	&__th-feature {
-		z-index: 3;
-	}
+	// Nota: el z-index principal de la celda de esquina se define dentro de
+	// &__table thead tr th &.bm-matrix__th-feature para ganar en especificidad CSS.
 
 	&__th-lib {
 		padding: 0.5rem 1rem;
@@ -679,6 +683,7 @@
 		max-width: 200px;
 		vertical-align: middle;
 		border: 0;
+		cursor: help;
 		transition:
 			opacity 0.25s ease,
 			max-width 0.3s ease,
@@ -846,6 +851,7 @@
 		font-weight: 600;
 		padding-right: 8px;
 		white-space: nowrap;
+		cursor: help;
 	}
 
 	&__chip {

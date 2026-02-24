@@ -213,8 +213,13 @@ function addI18nStub(filepath: string, key: string, label: string): void {
 	const source = readFileSync(filepath, 'utf-8');
 	const scenIdx = source.indexOf('scenarios: {');
 	if (scenIdx === -1) return;
-	// Key already present in scenarios block? Check with literal string match.
-	const chunk = source.slice(scenIdx, scenIdx + 4000);
+	// Key already present in scenarios block? Search up to the end of the block.
+	const PATTERN = '\t\t},\n\n\t\t// ─── Library';
+	const blockEnd = source.indexOf(PATTERN, scenIdx);
+	const chunk =
+		blockEnd !== -1
+			? source.slice(scenIdx, blockEnd)
+			: source.slice(scenIdx);
 	if (
 		chunk.includes(`\n\t\t\t${key}:`) ||
 		chunk.includes(`\n\t\t\t\t${key}:`)
@@ -222,8 +227,7 @@ function addI18nStub(filepath: string, key: string, label: string): void {
 		return;
 
 	// Find insertion point: just before \t\t},\n\n\t\t// --- Library
-	const PATTERN = '\t\t},\n\n\t\t// ─── Library';
-	const insertAt = source.indexOf(PATTERN, scenIdx);
+	const insertAt = blockEnd;
 	if (insertAt === -1) {
 		console.warn(
 			`  ⚠️  Cannot place i18n stub for "${key}" in ${filepath.split('/').pop()}`

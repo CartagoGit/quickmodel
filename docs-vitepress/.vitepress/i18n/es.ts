@@ -67,6 +67,7 @@ export const esLocale = {
 		typeLabel: 'Tipo:',
 		librariesLabel: 'Librerías:',
 		featuresLabel: 'Características:',
+		featureColumnHeader: 'Característica',
 		perfTitle: 'Comparativa de rendimiento',
 		perfSubtitle: 'Pasa el ratón sobre las barras para ver detalles',
 		scenarioLabel: 'Escenario:',
@@ -386,6 +387,23 @@ export const esLocale = {
 					'Sin enfoque basado en decoradores',
 				],
 			},
+			immer: {
+				desc: 'Gestión de estado inmutable con structural sharing — produce() detecta cambios vía comparación de referencias',
+				pros: [
+					'Detección de cambios O(1) con produce() + comparación de ref ✅',
+					'Structural sharing — las ramas no modificadas se reutilizan ✅',
+					'TypeScript-first con inferencia Draft<T> ✅',
+					'Tree-shakeable y ligero (~6KB) ✅',
+				],
+				cons: [
+					'Sin tracking por campo (no hay getDirtyFields())',
+					'Sin patch() / reset() / ciclo de vida del modelo',
+					'Sin validación de schema ni coerción',
+					'Sin generación de mocks',
+					'Sin integración IA / MCP',
+					'Sin serialización de BigInt, Map, Set',
+				],
+			},
 		},
 
 		// ─── Feature row labels and per-lib warning notes ─────────
@@ -417,7 +435,12 @@ export const esLocale = {
 						'Preserva tipos pero necesita el objeto ya tipado en memoria',
 				},
 			},
-			copyIsDirty: { label: 'copy() / isDirty()' },
+			copyIsDirty: {
+				label: 'copy() / isDirty()',
+				notes: {
+					immer: 'Solo detecta cambios por comparación de referencia (produce()) — sin getDirtyFields() ni ciclo de vida del modelo',
+				},
+			},
 			formSchemas: {
 				label: 'Form schemas (@QField)',
 				notes: {
@@ -450,7 +473,12 @@ export const esLocale = {
 			},
 			inheritance: { label: 'Herencia multinivel con inferencia' },
 			schemaExport: { label: 'Exportar schema (JSON/Zod/OpenAPI)' },
-			tsInference: { label: 'Inferencia TS compile-time' },
+			tsInference: {
+				label: 'Inferencia TS compile-time',
+				notes: {
+					immer: 'Solo inferencia Draft<T> dentro de produce() — sin inferencia automática a nivel de modelo',
+				},
+			},
 			treeShakeable: {
 				label: 'Tree-shakeable',
 				notes: {

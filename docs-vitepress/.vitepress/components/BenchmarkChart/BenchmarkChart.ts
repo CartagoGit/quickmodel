@@ -23,6 +23,19 @@ export function useBenchmarkChart() {
 
 	const bmt = computed(() => t.value.benchmark);
 
+	/** Scenarios ordenados por etiqueta traducida (para los badges del tab Rendimiento) */
+	const sortedScenarios = computed(() =>
+		[...scenarios].sort((scnA, scnB) => {
+			const scnLabels = bmt.value.scenarios as unknown as Record<
+				string,
+				{ label: string }
+			>;
+			const labelA = scnLabels[scnA.key]?.label ?? scnA.key;
+			const labelB = scnLabels[scnB.key]?.label ?? scnB.key;
+			return labelA.localeCompare(labelB, lang.value);
+		})
+	);
+
 	/** Helper tipado para acceder a las notas de warning de una feature row */
 	type IBmtFeaturesMap = Record<
 		string,
@@ -81,8 +94,13 @@ export function useBenchmarkChart() {
 	// ─── Estado reactivo ──────────────────────────
 
 	const activeAppType = ref('all');
-	const activeScenario = ref(scenarios[0].key);
-	const activeMatrixType = ref('all');
+	const activeScenario = ref(
+		sortedScenarios.value[0]?.key ?? scenarios[0].key
+	);
+	/** Tipos de librería activos (multi-select). Todos activos por defecto. */
+	const activeMatrixTypes = ref<string[]>(
+		matrixTypeOptions.map((opt) => opt.key)
+	);
 	const disabledMatrixLibs = ref<string[]>([]);
 	const disabledFeatureCategories = ref<string[]>([]);
 
@@ -94,9 +112,18 @@ export function useBenchmarkChart() {
 				)
 	);
 
-	// Al cambiar el tipo, seleccionar siempre el primer escenario disponible
+	// Al cambiar el tipo, seleccionar el primer escenario disponible (orden alfabético)
 	watch(activeAppType, () => {
-		const first = filteredScenarios.value[0];
+		const scnLabels = bmt.value.scenarios as unknown as Record<
+			string,
+			{ label: string }
+		>;
+		const sorted = [...filteredScenarios.value].sort((scnA, scnB) => {
+			const labelA = scnLabels[scnA.key]?.label ?? scnA.key;
+			const labelB = scnLabels[scnB.key]?.label ?? scnB.key;
+			return labelA.localeCompare(labelB, lang.value);
+		});
+		const first = sorted[0];
 		if (first) activeScenario.value = first.key;
 	});
 
@@ -137,36 +164,66 @@ export function useBenchmarkChart() {
 		libNames.filter((lib) => currentScenario.value.values[lib] == null)
 	);
 
-	/** Feature matrix: librerías del tipo seleccionado (QuickModel siempre incluida) */
-	const matrixLibsByType = computed(() =>
-		activeMatrixType.value === 'all'
-			? libNames
-			: libNames.filter(
-					(lib) =>
-						lib === 'QuickModel' ||
-						(libCategories[lib]?.includes(activeMatrixType.value) ??
-							false)
-				)
+	/** Ordenación estándar: QuickModel primero, Plain JS siempre al final, resto alfabético */
+	function sortLibsDisplay(libs: string[]): string[] {
+		return [...libs].sort((libA, libB) => {
+			if (libA === 'QuickModel') return -1;
+			if (libB === 'QuickModel') return 1;
+			if (libA === 'Plain JS') return 1;
+			if (libB === 'Plain JS') return -1;
+			return libA.localeCompare(libB, lang.value);
+		});
+	}
+
+	/** Tipos de librería ordenados alfabéticamente por etiqueta traducida */
+	const sortedMatrixTypeOptions = computed(() =>
+		[...matrixTypeOptions].sort((optA, optB) => {
+			const types = bmt.value.matrixTypes as Record<string, string>;
+			return (types[optA.key] ?? optA.key).localeCompare(
+				types[optB.key] ?? optB.key,
+				lang.value
+			);
+		})
 	);
+
+	/** Feature matrix: librerías de los tipos activos (QuickModel siempre incluida), ordenadas alfabéticamente */
+	const matrixLibsByType = computed(() => {
+		const base = libNames.filter(
+			(lib) =>
+				lib === 'QuickModel' ||
+				(libCategories[lib]?.some((cat) =>
+					activeMatrixTypes.value.includes(cat)
+				) ??
+					false)
+		);
+		return sortLibsDisplay(base);
+	});
 
 	/**
 	 * Feature matrix: todas las librerías siempre en el DOM.
+	 * QuickModel primero, Plain JS último, resto alfabético.
 	 * La visibilidad se controla con --hidden (CSS), no eliminando del DOM.
 	 */
-	const visibleMatrixLibNames = computed(() => [
-		'QuickModel',
-		...libNames.filter((lib) => lib !== 'QuickModel'),
-	]);
+	const visibleMatrixLibNames = computed(() => sortLibsDisplay(libNames));
 
-	const coverageLibNames: string[] = [
-		'QuickModel',
-		...libNames.filter((lib) => lib !== 'QuickModel'),
-	];
+	const coverageLibNames = computed(() => sortLibsDisplay(libNames));
 
-	// Al cambiar el tipo, resetear las librerías desactivadas
-	watch(activeMatrixType, () => {
+	// Al cambiar los tipos activos, resetear las librerías desactivadas
+	watch(activeMatrixTypes, () => {
 		disabledMatrixLibs.value = [];
 	});
+
+	/** Activa/desactiva un tipo de librería; siempre queda al menos uno activo */
+	function toggleMatrixType(typeKey: string): void {
+		if (activeMatrixTypes.value.includes(typeKey)) {
+			if (activeMatrixTypes.value.length <= 1) return;
+			activeMatrixTypes.value = activeMatrixTypes.value.filter(
+				(cur) => cur !== typeKey
+			);
+		} else {
+			activeMatrixTypes.value = [...activeMatrixTypes.value, typeKey];
+		}
+	}
 
 	function toggleMatrixLib(lib: string): void {
 		if (disabledMatrixLibs.value.includes(lib)) {
@@ -185,15 +242,25 @@ export function useBenchmarkChart() {
 		return false;
 	}
 
-	/** Filas visibles en la tabla de características según categorías activas */
-	const visibleFeatureRows = computed(() =>
-		disabledFeatureCategories.value.length === 0
-			? featureRows
-			: featureRows.filter(
-					(row) =>
-						!disabledFeatureCategories.value.includes(row.category)
-				)
-	);
+	/** Filas visibles en la tabla de características según categorías activas, ordenadas alfabéticamente */
+	const visibleFeatureRows = computed(() => {
+		const rows =
+			disabledFeatureCategories.value.length === 0
+				? featureRows
+				: featureRows.filter(
+						(row) =>
+							!disabledFeatureCategories.value.includes(
+								row.category
+							)
+					);
+		const featMap = bmt.value.features as unknown as IBmtFeaturesMap;
+		return [...rows].sort((rowA, rowB) =>
+			(featMap[rowA.i18nKey]?.label ?? rowA.i18nKey).localeCompare(
+				featMap[rowB.i18nKey]?.label ?? rowB.i18nKey,
+				lang.value
+			)
+		);
+	});
 
 	function toggleFeatureCategory(cat: string): void {
 		const allKeys = featureCategoryOptions
@@ -229,7 +296,7 @@ export function useBenchmarkChart() {
 		const val = scn.values[lib];
 		if (val == null) return false;
 		const max = Math.max(
-			...coverageLibNames
+			...coverageLibNames.value
 				.filter((name) => !PLAIN_JS_REFS.has(name))
 				.map((name) => scn.values[name])
 				.filter((val): val is number => val != null)
@@ -280,6 +347,12 @@ export function useBenchmarkChart() {
 		onWarningMouseLeave,
 	} = useBenchmarkInteractions();
 
+	// Cerrar cualquier tooltip abierto al cambiar de tab
+	watch(activeTab, () => {
+		onWarningMouseLeave();
+		hoveredLib.value = null;
+	});
+
 	return {
 		// Tab navigation
 		activeTab,
@@ -301,7 +374,7 @@ export function useBenchmarkChart() {
 		// Estado reactivo
 		activeAppType,
 		activeScenario,
-		activeMatrixType,
+		activeMatrixTypes,
 		disabledMatrixLibs,
 		disabledFeatureCategories,
 		hoveredLib,
@@ -322,8 +395,11 @@ export function useBenchmarkChart() {
 		bmt,
 		featureNote,
 
+		sortedMatrixTypeOptions,
+
 		// Computados
 		filteredScenarios,
+		sortedScenarios,
 		currentScenario,
 		activeLibNames,
 		excludedLibNames,
@@ -334,6 +410,7 @@ export function useBenchmarkChart() {
 
 		// Funciones
 		toggleMatrixLib,
+		toggleMatrixType,
 		toggleFeatureCategory,
 		isLibHidden,
 		isCategoryHidden,

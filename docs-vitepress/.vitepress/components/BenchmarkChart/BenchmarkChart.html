@@ -56,10 +56,10 @@
 							</span>
 							<div class="bm-matrix__type-pills">
 								<button
-									v-for="opt in matrixTypeOptions"
+									v-for="opt in sortedMatrixTypeOptions"
 									:key="opt.key"
-									:class="['bm-matrix__type-pill', { 'bm-matrix__type-pill--active': activeMatrixType === opt.key }]"
-									@click="activeMatrixType = opt.key">
+									:class="['bm-matrix__type-pill', { 'bm-matrix__type-pill--active': activeMatrixTypes.includes(opt.key) }]"
+									@click="toggleMatrixType(opt.key)">
 									{{ bmt.matrixTypes[opt.key] }}
 								</button>
 							</div>
@@ -102,7 +102,7 @@
 							<thead>
 								<tr>
 									<th class="bm-matrix__th-feature">
-										Feature
+										{{ t.benchmark.featureColumnHeader }}
 									</th>
 									<th
 										v-for="lib in visibleMatrixLibNames"
@@ -112,14 +112,16 @@
 											{ 'bm-matrix__th-lib--ours': lib === 'QuickModel' },
 											{ 'bm-matrix__th-lib--hidden': isLibHidden(lib) },
 										]"
-										:style="{ color: libraries[lib]?.color }">
+										:style="{ color: libraries[lib]?.color }"
+										@mouseenter="onBarMouseEnter(lib, $event)"
+										@mouseleave="onBarMouseLeave">
 										{{ lib }}
 									</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr
-									v-for="row in featureRows"
+									v-for="row in visibleFeatureRows"
 									:key="row.i18nKey"
 									:class="{ 'bm-matrix__tr--hidden': isCategoryHidden(row.category) }">
 									<td class="bm-matrix__td-feature">
@@ -165,7 +167,8 @@
 								v-for="scn in scenarios"
 								:key="scn.key"
 								class="bm-coverage__header-cell bm-coverage__scn-label"
-								:title="bmt.coverageViewDetail"
+								@mouseenter="onWarningMouseEnter(bmt.coverageViewDetail, $event)"
+								@mouseleave="onWarningMouseLeave()"
 								@click="goToScenario(scn.key)">
 								{{ bmt.scenarios[scn.key].label }}
 							</button>
@@ -175,14 +178,16 @@
 								v-for="lib in coverageLibNames"
 								:key="lib">
 								<div
-								:class="['bm-coverage__lib-name', { 'bm-coverage__lib-name--ours': lib === 'QuickModel', 'bm-coverage__lib-name--baseline': isPlainJsLib(lib) }]"
+									:class="['bm-coverage__lib-name', { 'bm-coverage__lib-name--ours': lib === 'QuickModel', 'bm-coverage__lib-name--baseline': isPlainJsLib(lib) }]"
 									:style="{
 										color: libraries[lib]?.color,
 										background: lib === 'QuickModel' ? libraries[lib]?.color + '22' : 'transparent',
 										borderRadius: lib === 'QuickModel' ? '8px' : '0',
 										padding: lib === 'QuickModel' ? '2px 10px 2px 8px' : '0',
 										border: lib === 'QuickModel' ? '1px solid ' + libraries[lib]?.color + '44' : 'none',
-									}">
+									}"
+									@mouseenter="onBarMouseEnter(lib, $event)"
+									@mouseleave="onBarMouseLeave">
 									{{ lib }}
 								</div>
 								<button
@@ -220,7 +225,7 @@
 				<!-- Scenario badges -->
 				<div class="bm-scenario-badges">
 					<button
-						v-for="scn in scenarios"
+						v-for="scn in sortedScenarios"
 						:key="scn.key"
 						:class="['bm-scenario-badge', { 'bm-scenario-badge--active': activeScenario === scn.key }]"
 						@click="activeScenario = scn.key">

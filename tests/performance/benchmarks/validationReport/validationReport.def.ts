@@ -5,11 +5,11 @@ export const scenario: IBenchScenario = {
 	benchNum: 15,
 	appTypes: ['all', 'api', 'ddd'],
 	values: {
-		QuickModel: 675_311,
-		Zod: 68_239,
-		joi: 55_075,
-		yup: 22_394,
-		'Plain JS': 5_839_984,
+		QuickModel: 671_847,
+		Zod: 52_642,
+		joi: 53_193,
+		yup: 21_264,
+		'Plain JS': 5_775_895,
 		valibot: null,
 		TypeBox: null,
 		'class-transformer': null,
@@ -29,5 +29,6 @@ export const scenario: IBenchScenario = {
 		'QuickModel 10k Dates': null,
 		'QuickModel 1k roundtrip': null,
 		'Plain JS async': null,
+		Immer: null,
 	},
 };

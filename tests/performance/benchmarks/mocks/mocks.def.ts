@@ -5,9 +5,9 @@ export const scenario: IBenchScenario = {
 	benchNum: 5,
 	appTypes: ['all', 'testing', 'mock'],
 	values: {
-		'Plain JS': 2_932_551,
-		QuickModel: 65_630,
-		'faker (manual)': 33_471,
+		'Plain JS': 2_145_923,
+		QuickModel: 138_102,
+		'faker (manual)': 30_329,
 		TypeBox: null,
 		valibot: null,
 		Zod: null,
@@ -29,5 +29,6 @@ export const scenario: IBenchScenario = {
 		'QuickModel 10k Dates': null,
 		'QuickModel 1k roundtrip': null,
 		'Plain JS async': null,
+		Immer: null,
 	},
 };

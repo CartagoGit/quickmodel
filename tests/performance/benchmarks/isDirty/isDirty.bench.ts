@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import type { IBenchResult } from '../bench.types';
-import { runBench, printComparison } from '../_shared';
+import { runBench, printComparison, notInstalled, immerMod } from '../_shared';
 import { SimpleUser, simpleUserData } from '../_models';
 
 export function describeBench(): void {
@@ -19,6 +19,34 @@ export function describeBench(): void {
 			);
 			console.log(
 				'  ⚠️  O(n) — serializa el objeto completo en cada check; costoso con objetos grandes'
+			);
+			expect(res.totalMs).toBeLessThan(5000);
+		});
+
+		test('Immer — produce() + reference check (structural sharing) ✅', () => {
+			if (!immerMod) {
+				notInstalled('Immer');
+				expect(true).toBe(true);
+				return;
+			}
+			type IProduceFn = <T>(base: T, recipe: (draft: T) => void) => T;
+			const produce = immerMod.produce as IProduceFn;
+			const baseState = { ...simpleUserData };
+			const res = runBench('Benchmark 10: Immer', ITERS, () => {
+				const next = produce(baseState, (draft) => {
+					draft.name = 'Bob Builder';
+					draft.age = 31;
+				});
+				void (next !== baseState);
+			});
+			console.log(
+				`\n[BENCH #10] Immer: ${res.opsPerSec.toLocaleString()} ops/sec`
+			);
+			console.log(
+				'  ✅ produce() retorna nueva ref si hay cambios — O(1) via structural sharing'
+			);
+			console.log(
+				'  ⚠️  Sin getDirtyFields(), patch() ni reset() — gestión manual de estado'
 			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
@@ -47,11 +75,25 @@ export function describeBench(): void {
 			const snapshot = JSON.stringify(simpleUserData);
 			const mutated = { ...simpleUserData, name: 'Bob Builder', age: 31 };
 			const user = new SimpleUser(simpleUserData);
+			type IProduceFn = <T>(base: T, recipe: (draft: T) => void) => T;
+			const produce = immerMod ? (immerMod.produce as IProduceFn) : null;
+			const baseState = { ...simpleUserData };
 
 			const allResults: IBenchResult[] = [
 				runBench('Benchmark 10: Plain JS', ITERS, () => {
 					void (JSON.stringify(mutated) !== snapshot);
 				}),
+				...(produce
+					? [
+							runBench('Benchmark 10: Immer', ITERS, () => {
+								const next = produce(baseState, (draft) => {
+									draft.name = 'Bob Builder';
+									draft.age = 31;
+								});
+								void (next !== baseState);
+							}),
+						]
+					: []),
 				runBench('Benchmark 10: QuickModel isDirty', ITERS, () => {
 					user.patch({ name: 'Bob Builder', age: 31 });
 					void user.isDirty();
