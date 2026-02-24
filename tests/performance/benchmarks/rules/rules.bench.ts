@@ -116,6 +116,28 @@ export function describeBench(): void {
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
 
+		test('[baseline] Plain JS — if/else manual por campo (sin decoradores)', () => {
+			const res = runBench('Benchmark 8: Plain JS', ITERS, () => {
+				const errors: string[] = [];
+				if (validSignupData.name.length < 2)
+					errors.push('Name too short');
+				if (!/^[^@]+@[^@]+\.[^@]+$/.test(validSignupData.email))
+					errors.push('Invalid email');
+				if (validSignupData.password.length < 8)
+					errors.push('Password too short');
+				if (!/[A-Z]/.test(validSignupData.password))
+					errors.push('Must contain uppercase');
+				void errors;
+			});
+			console.log(
+				`\n[BENCH #8] Plain JS: ${res.opsPerSec.toLocaleString()} ops/sec`
+			);
+			console.log(
+				'  ⚠️  if/else manual — sin grupos, sin decoradores, frágil ante cambios de schema'
+			);
+			expect(res.totalMs).toBeLessThan(15_000);
+		});
+
 		test('📊 Comparativa #8 — Validación por reglas / forms', () => {
 			const allResults: IBenchResult[] = [];
 
@@ -168,9 +190,24 @@ export function describeBench(): void {
 				})
 			);
 
+			allResults.push(
+				runBench('Benchmark 8: Plain JS', ITERS, () => {
+					const errors: string[] = [];
+					if (validSignupData.name.length < 2)
+						errors.push('Name too short');
+					if (!/^[^@]+@[^@]+\.[^@]+$/.test(validSignupData.email))
+						errors.push('Invalid email');
+					if (validSignupData.password.length < 8)
+						errors.push('Password too short');
+					if (!/[A-Z]/.test(validSignupData.password))
+						errors.push('Must contain uppercase');
+					void errors;
+				})
+			);
+
 			if (allResults.length > 1) {
 				printComparison(
-					'Benchmark #8 — Rules / Forms (class-validator / vest / joi / QuickModel)',
+					'Benchmark #8 — Rules / Forms (class-validator / vest / joi / QuickModel / Plain JS)',
 					allResults
 				);
 			}

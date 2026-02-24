@@ -14,6 +14,69 @@
 //   .bm-matrix     — tabla de características
 // ─────────────────────────────────────────────────────────────
 
+// ── Global animated title (above tab bar) ─────────────────────
+
+.bm-global-title {
+	text-align: center;
+	margin-bottom: 1.25rem;
+	min-height: 5rem; // prevent layout jump during transition
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.bm-global-title__inner {
+	width: 100%;
+}
+
+.bm-global-title__text {
+	font-size: 1.65rem;
+	font-weight: 700;
+	margin: 0 0 0.4rem;
+	color: var(--vp-c-text-1);
+}
+
+.bm-global-title__subtitle {
+	color: var(--vp-c-text-2);
+	font-size: 0.9rem;
+	margin: 0;
+	line-height: 1.5;
+}
+
+// ── Title transition animations ───────────────────────────────
+
+// Forward (left → right)
+.bm-title-forward-enter-active,
+.bm-title-forward-leave-active {
+	transition:
+		opacity 0.22s ease,
+		transform 0.22s ease;
+}
+.bm-title-forward-enter-from {
+	opacity: 0;
+	transform: translateX(22px);
+}
+.bm-title-forward-leave-to {
+	opacity: 0;
+	transform: translateX(-22px);
+}
+
+// Backward (right → left)
+.bm-title-backward-enter-active,
+.bm-title-backward-leave-active {
+	transition:
+		opacity 0.22s ease,
+		transform 0.22s ease;
+}
+.bm-title-backward-enter-from {
+	opacity: 0;
+	transform: translateX(-22px);
+}
+.bm-title-backward-leave-to {
+	opacity: 0;
+	transform: translateX(22px);
+}
+
 // ── Wrapper ──────────────────────────────────────────────────
 
 .bm-wrapper {
@@ -259,6 +322,21 @@
 			margin-left: 0.3rem;
 			font-style: italic;
 		}
+	}
+}
+
+// ── Bar baseline (Plain JS reference) ────────────────────────
+// Aparece al final del chart; separador visual y opacidad reducida.
+
+.bm-bar--baseline {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px dashed var(--vp-c-divider);
+	opacity: 0.6;
+
+	.bm-bar__label {
+		font-style: italic;
+		font-weight: 500;
 	}
 }
 
@@ -740,6 +818,25 @@
 	&__scn-label {
 		border-bottom: 1px solid var(--vp-c-divider);
 		margin-bottom: 2px;
+		cursor: pointer;
+		background: none;
+		border-left: none;
+		border-right: none;
+		border-top: none;
+		color: var(--vp-c-text-2);
+		font-size: 0.68rem;
+		font-weight: 600;
+		line-height: 1.2;
+		word-break: break-word;
+		padding: 6px 4px;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
+
+		&:hover {
+			color: var(--vp-c-brand-1);
+			border-bottom-color: var(--vp-c-brand-1);
+		}
 	}
 
 	&__lib-name {
@@ -759,11 +856,6 @@
 		min-width: 60px;
 		border-radius: 6px;
 		border: 1px solid transparent;
-		cursor: pointer;
-		transition:
-			transform 0.12s ease,
-			box-shadow 0.12s ease,
-			opacity 0.12s ease;
 		font-size: 0.68rem;
 		font-weight: 700;
 		padding: 0 6px;
@@ -781,23 +873,6 @@
 				transparent
 			);
 			color: var(--chip-color, var(--vp-c-text-1));
-
-			&:hover {
-				transform: translateY(-1px);
-				box-shadow: 0 3px 8px
-					color-mix(in srgb, var(--chip-color, #888) 30%, transparent);
-			}
-
-			&:active {
-				transform: translateY(0);
-			}
-		}
-
-		// Estado actual resaltado
-		&--active {
-			border-color: var(--chip-color, #888);
-			box-shadow: 0 0 0 2px
-				color-mix(in srgb, var(--chip-color, #888) 25%, transparent);
 		}
 
 		// Estado inactivo: librería no tiene datos
@@ -805,13 +880,36 @@
 			background: var(--vp-c-bg-alt);
 			border-color: var(--vp-c-divider);
 			color: var(--vp-c-text-3);
-			cursor: default;
 			opacity: 0.55;
+		}
+
+		// Valor máximo de la columna: borde casi blanco para destacarlo
+		&--col-max {
+			border-color: color-mix(
+				in srgb,
+				white 85%,
+				var(--chip-color, #888) 15%
+			);
 		}
 	}
 
 	&__chip-speed {
 		letter-spacing: 0.01em;
+	}
+
+	// Fila de referencia baseline (Plain JS) — al final, sin destacar
+	&__lib-name--baseline {
+		opacity: 0.5;
+		font-style: italic;
+		font-weight: 500;
+	}
+
+	&__chip--baseline {
+		opacity: 0.45;
+
+		&.bm-coverage__chip--on {
+			border-style: dashed;
+		}
 	}
 }
 

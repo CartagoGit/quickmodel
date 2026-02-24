@@ -47,13 +47,14 @@ describe('QProjectStatusTool', () => {
 
 	it('should return passed=true when all checks pass', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
 			// typecheck throws on error, clean = no throw
-			return { stdout: TSC_CLEAN, stderr: '' };
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -62,7 +63,7 @@ describe('QProjectStatusTool', () => {
 
 	it('should return passed=false when tests fail', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
 			if (cmd.includes('test')) {
 				const err = new Error('tests failed') as any;
@@ -71,8 +72,8 @@ describe('QProjectStatusTool', () => {
 				throw err;
 			}
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
-			return { stdout: TSC_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -81,16 +82,17 @@ describe('QProjectStatusTool', () => {
 
 	it('should return passed=false when lint has errors', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint')) {
 				const err = new Error('lint failed') as any;
 				err.stdout = LINT_ISSUES;
 				err.stderr = '';
 				throw err;
 			}
-			return { stdout: TSC_CLEAN, stderr: '' };
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -99,11 +101,12 @@ describe('QProjectStatusTool', () => {
 
 	it('should return passed=false when typecheck has errors', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
 			const err = new Error('tsc failed') as any;
 			err.stdout = TSC_ERRORS;
 			err.stderr = '';
@@ -116,12 +119,13 @@ describe('QProjectStatusTool', () => {
 
 	it('should return a structured result with all check sections', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
-			return { stdout: TSC_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -133,12 +137,13 @@ describe('QProjectStatusTool', () => {
 
 	it('should report test pass/fail counts in tests section', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
-			return { stdout: TSC_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -149,12 +154,13 @@ describe('QProjectStatusTool', () => {
 
 	it('should report lint error count in lint section', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
-			return { stdout: TSC_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -164,12 +170,13 @@ describe('QProjectStatusTool', () => {
 
 	it('should report typecheck error count in typecheck section', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
-			return { stdout: TSC_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});
@@ -179,12 +186,13 @@ describe('QProjectStatusTool', () => {
 
 	it('should include a summary string describing the full status', async () => {
 		const tool = new QProjectStatusTool();
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			const cmd = args.join(' ');
-			if (cmd.includes('test')) return { stdout: PASS_TESTS, stderr: '' };
+			if (cmd.includes('test'))
+				return Promise.resolve({ stdout: PASS_TESTS, stderr: '' });
 			if (cmd.includes('eslint'))
-				return { stdout: LINT_CLEAN, stderr: '' };
-			return { stdout: TSC_CLEAN, stderr: '' };
+				return Promise.resolve({ stdout: LINT_CLEAN, stderr: '' });
+			return Promise.resolve({ stdout: TSC_CLEAN, stderr: '' });
 		};
 
 		const result = await tool.execute({});

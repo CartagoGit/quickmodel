@@ -1,13 +1,16 @@
 import { describe, it, expect, afterEach, mock } from 'bun:test';
 import { QTypecheckTool } from '../../../../src/mcp/tools/internal/typecheck.tool';
 
-const makeTscError = (
-	file: string,
-	line: number,
-	col: number,
-	code: string,
-	msg: string
-) => `${file}(${line},${col}): error ${code}: ${msg}`;
+interface IMakeTscErrorOptions {
+	file: string;
+	line: number;
+	col: number;
+	code: string;
+	msg: string;
+}
+
+const makeTscError = (opts: IMakeTscErrorOptions) =>
+	`${opts.file}(${opts.line},${opts.col}): error ${opts.code}: ${opts.msg}`;
 
 describe('QTypecheckTool', () => {
 	afterEach(() => {
@@ -23,7 +26,7 @@ describe('QTypecheckTool', () => {
 
 	it('should return passed=true when tsc exits 0 with no errors', async () => {
 		const tool = new QTypecheckTool();
-		tool['_spawn'] = async () => ({ stdout: '', stderr: '' });
+		tool['_spawn'] = () => Promise.resolve({ stdout: '', stderr: '' });
 
 		const result = await tool.execute({});
 		expect(result.passed).toBe(true);
@@ -33,15 +36,15 @@ describe('QTypecheckTool', () => {
 
 	it('should return passed=false when tsc has errors', async () => {
 		const tool = new QTypecheckTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('tsc failed') as any;
-			err.stdout = makeTscError(
-				'src/foo.ts',
-				10,
-				5,
-				'TS2322',
-				"Type 'string' is not assignable to type 'number'."
-			);
+			err.stdout = makeTscError({
+				file: 'src/foo.ts',
+				line: 10,
+				col: 5,
+				code: 'TS2322',
+				msg: "Type 'string' is not assignable to type 'number'.",
+			});
 			err.stderr = '';
 			throw err;
 		};
@@ -53,15 +56,15 @@ describe('QTypecheckTool', () => {
 
 	it('each error should have file, line, column, code, message', async () => {
 		const tool = new QTypecheckTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('tsc failed') as any;
-			err.stdout = makeTscError(
-				'src/foo.ts',
-				10,
-				5,
-				'TS2322',
-				"Type 'string' is not assignable to type 'number'."
-			);
+			err.stdout = makeTscError({
+				file: 'src/foo.ts',
+				line: 10,
+				col: 5,
+				code: 'TS2322',
+				msg: "Type 'string' is not assignable to type 'number'.",
+			});
 			err.stderr = '';
 			throw err;
 		};
@@ -78,11 +81,23 @@ describe('QTypecheckTool', () => {
 
 	it('should parse multiple errors from tsc output', async () => {
 		const tool = new QTypecheckTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('tsc failed') as any;
 			err.stdout = [
-				makeTscError('src/a.ts', 1, 1, 'TS2304', 'Cannot find name X.'),
-				makeTscError('src/b.ts', 2, 3, 'TS2551', 'Did you mean Y?'),
+				makeTscError({
+					file: 'src/a.ts',
+					line: 1,
+					col: 1,
+					code: 'TS2304',
+					msg: 'Cannot find name X.',
+				}),
+				makeTscError({
+					file: 'src/b.ts',
+					line: 2,
+					col: 3,
+					code: 'TS2551',
+					msg: 'Did you mean Y?',
+				}),
 			].join('\n');
 			err.stderr = '';
 			throw err;
@@ -95,7 +110,7 @@ describe('QTypecheckTool', () => {
 
 	it('should include a summary string', async () => {
 		const tool = new QTypecheckTool();
-		tool['_spawn'] = async () => ({ stdout: '', stderr: '' });
+		tool['_spawn'] = () => Promise.resolve({ stdout: '', stderr: '' });
 
 		const result = await tool.execute({});
 		expect(typeof result.summary).toBe('string');

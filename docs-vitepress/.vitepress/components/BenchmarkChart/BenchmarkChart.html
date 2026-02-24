@@ -1,5 +1,25 @@
 <div class="bm-wrapper">
 	<!-- ═══════════════════════════════════════════════════════
+	     ANIMATED TITLE (above tab bar)
+	     ═══════════════════════════════════════════════════════ -->
+	<div class="bm-global-title">
+		<Transition
+			:name="'bm-title-' + tabDirection"
+			mode="out-in">
+			<div
+				:key="activeTab"
+				class="bm-global-title__inner">
+				<h2 class="bm-global-title__text">
+					{{ activeTabTitle.icon }} {{ activeTabTitle.title }}
+				</h2>
+				<p class="bm-global-title__subtitle">
+					{{ activeTabTitle.subtitle }}
+				</p>
+			</div>
+		</Transition>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════
 	     TAB BAR
 	     ═══════════════════════════════════════════════════════ -->
 	<TabBar
@@ -18,15 +38,6 @@
 			class="bm-tab-panel">
 			<!-- ─── PANEL: Feature Comparison ─────────────── -->
 			<template v-if="activeTab === 'features'">
-				<div class="bm-panel-header">
-					<h2 class="bm-header__title">
-						🎯 {{ t.benchmark.featureTitle }}
-					</h2>
-					<p class="bm-header__subtitle">
-						{{ t.benchmark.featureSubtitle }}
-					</p>
-				</div>
-
 				<!-- Feature matrix table -->
 				<div class="bm-matrix">
 					<div class="bm-matrix__header">
@@ -142,15 +153,6 @@
 
 			<!-- ─── PANEL: Coverage Map ───────────────────── -->
 			<template v-else-if="activeTab === 'coverage'">
-				<div class="bm-panel-header">
-					<h2 class="bm-header__title">
-						📊 {{ t.benchmark.coverageTitle }}
-					</h2>
-					<p class="bm-header__subtitle">
-						{{ t.benchmark.coverageSubtitle }}
-					</p>
-				</div>
-
 				<div class="bm-coverage">
 					<div class="bm-coverage__scroll">
 						<div
@@ -159,19 +161,21 @@
 							<!-- Header row -->
 							<div
 								class="bm-coverage__header-cell bm-coverage__lib-col"></div>
-							<div
+							<button
 								v-for="scn in scenarios"
 								:key="scn.key"
-								class="bm-coverage__header-cell bm-coverage__scn-label">
+								class="bm-coverage__header-cell bm-coverage__scn-label"
+								:title="bmt.coverageViewDetail"
+								@click="goToScenario(scn.key)">
 								{{ bmt.scenarios[scn.key].label }}
-							</div>
+							</button>
 
 							<!-- Library rows -->
 							<template
 								v-for="lib in coverageLibNames"
 								:key="lib">
 								<div
-									:class="['bm-coverage__lib-name', { 'bm-coverage__lib-name--ours': lib === 'QuickModel' }]"
+								:class="['bm-coverage__lib-name', { 'bm-coverage__lib-name--ours': lib === 'QuickModel', 'bm-coverage__lib-name--baseline': isPlainJsLib(lib) }]"
 									:style="{
 										color: libraries[lib]?.color,
 										background: lib === 'QuickModel' ? libraries[lib]?.color + '22' : 'transparent',
@@ -188,6 +192,8 @@
 										'bm-coverage__chip',
 										scn.values[lib] != null ? 'bm-coverage__chip--on' : 'bm-coverage__chip--off',
 										scn.key === activeScenario && scn.values[lib] != null ? 'bm-coverage__chip--active' : '',
+										isColMax(lib, scn) ? 'bm-coverage__chip--col-max' : '',
+										isPlainJsLib(lib) ? 'bm-coverage__chip--baseline' : '',
 									]"
 									:style="scn.values[lib] != null ? { '--chip-color': libraries[lib]?.color } : {}"
 									:disabled="scn.values[lib] == null"
@@ -211,15 +217,6 @@
 
 			<!-- ─── PANEL: Performance Benchmark ─────────── -->
 			<template v-else>
-				<div class="bm-panel-header">
-					<h2 class="bm-header__title">
-						⚡ {{ t.benchmark.perfTitle }}
-					</h2>
-					<p class="bm-header__subtitle">
-						{{ t.benchmark.perfSubtitle }}
-					</p>
-				</div>
-
 				<!-- Scenario badges -->
 				<div class="bm-scenario-badges">
 					<button
@@ -244,7 +241,7 @@
 						<div
 							v-for="lib in activeLibNames"
 							:key="lib"
-							class="bm-bar">
+							:class="['bm-bar', { 'bm-bar--baseline': isPlainJsLib(lib) }]">
 							<div
 								:class="['bm-bar__label', { 'bm-bar__label--ours': lib === 'QuickModel' }]"
 								:style="{

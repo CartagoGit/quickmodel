@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import {
+	describe,
+	it,
+	expect,
+	beforeEach,
+	afterEach,
+	beforeAll,
+} from 'bun:test';
 import {
 	QScaffoldFeatureTool,
 	QCheckApiCompatibilityTool,
@@ -108,9 +115,9 @@ describe('New Internal Tools', () => {
 				baselineFile: 'baseline.json',
 			});
 			expect(result.status).toBe('breaking');
-			expect(result.changes.some((c) => c.includes('DeletedClass'))).toBe(
-				true
-			);
+			expect(
+				result.changes.some((chg) => chg.includes('DeletedClass'))
+			).toBe(true);
 		});
 		it('should create new baseline if it does not exist', async () => {
 			const tool = new QCheckApiCompatibilityTool();
@@ -167,37 +174,41 @@ describe('New Internal Tools', () => {
 });
 
 describe('New Internal Tools - Health & Docs', () => {
-	// Import dynamically or explicitly if they are exported in index.ts
-	// Assuming they are exported similar to others:
-	const {
-		QCheckProjectHealthTool,
-		QGetCoverageReportTool,
-		QUpdateDocsTool,
-	} = require('../../../../src/mcp/tools/internal');
+	let QCheckProjectHealthTool: typeof import('../../../../src/mcp/tools/internal').QCheckProjectHealthTool;
+	let QGetCoverageReportTool: typeof import('../../../../src/mcp/tools/internal').QGetCoverageReportTool;
+	let QUpdateDocsTool: typeof import('../../../../src/mcp/tools/internal').QUpdateDocsTool;
+
+	beforeAll(async () => {
+		const mod = await import('../../../../src/mcp/tools/internal');
+		QCheckProjectHealthTool = mod.QCheckProjectHealthTool;
+		QGetCoverageReportTool = mod.QGetCoverageReportTool;
+		QUpdateDocsTool = mod.QUpdateDocsTool;
+	});
 
 	describe('QCheckProjectHealthTool', () => {
 		it('should return ok on successful check', async () => {
 			const tool = new QCheckProjectHealthTool();
-			(tool as any)._spawn = async () => ({
-				stdout: 'Passed',
-				stderr: '',
-			});
+			tool['_spawn'] = () =>
+				Promise.resolve({
+					stdout: 'Passed',
+					stderr: '',
+				});
 
-			const result = await tool.execute({});
+			const result = await tool.execute();
 			expect(result.status).toBe('ok');
 			expect(result.output).toContain('Passed');
 		});
 
 		it('should return error on failed check', async () => {
 			const tool = new QCheckProjectHealthTool();
-			(tool as any)._spawn = async () => {
+			tool['_spawn'] = () => {
 				const err = new Error('Failed');
 				(err as any).stdout = 'Errors found';
 				(err as any).stderr = '';
 				throw err;
 			};
 
-			const result = await tool.execute({});
+			const result = await tool.execute();
 			expect(result.status).toBe('error');
 			expect(result.output).toContain('Errors found');
 		});
@@ -206,22 +217,23 @@ describe('New Internal Tools - Health & Docs', () => {
 	describe('QGetCoverageReportTool', () => {
 		it('should return coverage summary on success', async () => {
 			const tool = new QGetCoverageReportTool();
-			(tool as any)._spawn = async () => ({
-				stdout: 'Coverage: 100%',
-				stderr: '',
-			});
+			tool['_spawn'] = () =>
+				Promise.resolve({
+					stdout: 'Coverage: 100%',
+					stderr: '',
+				});
 
-			const result = await tool.execute({});
+			const result = await tool.execute();
 			expect(result.summary).toContain('Coverage: 100%');
 		});
 
 		it('should return error summary on failure', async () => {
 			const tool = new QGetCoverageReportTool();
-			(tool as any)._spawn = async () => {
+			tool['_spawn'] = () => {
 				throw new Error('Coverage failed');
 			};
 
-			const result = await tool.execute({});
+			const result = await tool.execute();
 			expect(result.summary).toContain('Coverage failed');
 		});
 	});
@@ -230,9 +242,9 @@ describe('New Internal Tools - Health & Docs', () => {
 		it('should run build script', async () => {
 			const tool = new QUpdateDocsTool();
 			let capturedCmd = '';
-			(tool as any)._spawn = async (_cmd: string, args: string[]) => {
+			tool['_spawn'] = (_cmd: string, args: string[]) => {
 				capturedCmd = args.join(' ');
-				return { stdout: 'Built', stderr: '' };
+				return Promise.resolve({ stdout: 'Built', stderr: '' });
 			};
 
 			const result = await tool.execute({ action: 'build' });
@@ -243,9 +255,9 @@ describe('New Internal Tools - Health & Docs', () => {
 		it('should run clean script', async () => {
 			const tool = new QUpdateDocsTool();
 			let capturedCmd = '';
-			(tool as any)._spawn = async (_cmd: string, args: string[]) => {
+			tool['_spawn'] = (_cmd: string, args: string[]) => {
 				capturedCmd = args.join(' ');
-				return { stdout: 'Cleaned', stderr: '' };
+				return Promise.resolve({ stdout: 'Cleaned', stderr: '' });
 			};
 
 			const result = await tool.execute({ action: 'clean' });
@@ -255,7 +267,7 @@ describe('New Internal Tools - Health & Docs', () => {
 
 		it('should handle spawn errors', async () => {
 			const tool = new QUpdateDocsTool();
-			(tool as any)._spawn = async () => {
+			tool['_spawn'] = () => {
 				throw new Error('Spawn failed');
 			};
 

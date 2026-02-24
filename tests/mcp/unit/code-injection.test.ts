@@ -16,8 +16,8 @@ describe('Security: MCP Tool Code Injection', () => {
 			});
 			// If it doesn't throw, fail the test
 			expect(false).toBe(true);
-		} catch (e: any) {
-			expect(e.message).toContain('Invalid class name');
+		} catch (err: any) {
+			expect(err.message).toContain('Invalid class name');
 		}
 	});
 

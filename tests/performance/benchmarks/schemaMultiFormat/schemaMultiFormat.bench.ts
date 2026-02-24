@@ -29,10 +29,10 @@ export function describeBench(): void {
 				}
 			);
 			console.log(
-				`  ✅ QuickModel: ${result.opsPerSec.toLocaleString()} ops/sec (× 7 formatos por iteración)`
+				`\n[BENCH #14] QuickModel: ${result.opsPerSec.toLocaleString()} ops/sec`
 			);
 			console.log(
-				`     Equivalente a ~${(result.opsPerSec * 7).toLocaleString()} exports/sec`
+				`  ✅ × 7 formatos por iteración — equivalente a ~${(result.opsPerSec * 7).toLocaleString()} exports/sec`
 			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
@@ -53,8 +53,9 @@ export function describeBench(): void {
 				JSON.stringify(tbSchemaProduct);
 			});
 			console.log(
-				`  ⚠️  TypeBox: ${result.opsPerSec.toLocaleString()} ops/sec (solo 1 formato: JSON Schema)`
+				`\n[BENCH #14] TypeBox: ${result.opsPerSec.toLocaleString()} ops/sec`
 			);
+			console.log('  ⚠️  solo 1 formato: JSON Schema');
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -75,8 +76,9 @@ export function describeBench(): void {
 				void schema;
 			});
 			console.log(
-				`  ⚠️  Plain JS: ${result.opsPerSec.toLocaleString()} ops/sec (solo 1 formato: JSON Schema manual)`
+				`\n[BENCH #14] Plain JS: ${result.opsPerSec.toLocaleString()} ops/sec`
 			);
+			console.log('  ⚠️  solo 1 formato: JSON Schema manual');
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 

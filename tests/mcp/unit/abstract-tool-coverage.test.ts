@@ -6,8 +6,8 @@ class MockTool extends QAbstractTool<z.ZodObject<{ prop: z.ZodString }>> {
 	name = 'mock_tool';
 	description = 'A mock tool for testing';
 	schema = z.object({ prop: z.string() });
-	async execute(args: { prop: string }): Promise<string> {
-		return args.prop;
+	execute(args: { prop: string }): Promise<string> {
+		return Promise.resolve(args.prop);
 	}
 }
 

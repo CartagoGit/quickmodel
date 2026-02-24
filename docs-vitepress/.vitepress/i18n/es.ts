@@ -81,8 +81,9 @@ export const esLocale = {
 		tooltipMissing: '❌ No incluye',
 		coverageTitle: 'Mapa de Cobertura — Características & Velocidad',
 		coverageSubtitle:
-			'Qué librerías soportan cada escenario de benchmark. Haz clic en un chip para ir al benchmark.',
+			'Qué librerías soportan cada escenario de benchmark. Haz clic en la cabecera de columna para ver el benchmark detallado.',
 		coverageSpeed: 'ops/seg',
+		coverageViewDetail: 'Ver benchmark detallado →',
 		tabFeatures: 'Comparativa de Características',
 		tabCoverage: 'Mapa de Cobertura',
 		tabPerf: 'Rendimiento',
@@ -148,6 +149,10 @@ export const esLocale = {
 			validationReport: {
 				label: 'Reporte de Errores Estructurado / validationReport() (3k)',
 				notes: '3k iteraciones con datos inválidos — obtener objetos de error categorizados. QuickModel validationReport(): retorna { valid, integrity[], rules: { valid, errors[] } } — dos categorías separadas: errores de tipo/coerción (integrity) y errores de lógica de negocio (@QRule). Zod safeParse(): array plano ZodError.issues, sin categorías. yup validateSync(abortEarly:false): ValidationError.errors plano. joi validate(abortEarly:false): array error.details plano. Solo QuickModel distingue fallos de integridad vs reglas en una sola llamada tipada.',
+			},
+			performanceTargets: {
+				label: 'Objetivos de Rendimiento / Throughput (Lote)',
+				notes: 'Throughput de QuickModel en dos escenarios exclusivos: transformación de 10k objetos Date en un único pase; y roundtrip completo create+serialize de 1k instancias tipadas con campos BigInt y Date. Ambas mediciones verifican los SLAs internos: 10k Dates < 100ms, 1k roundtrip < 50ms.',
 			},
 		},
 

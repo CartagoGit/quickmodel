@@ -23,10 +23,10 @@ export function describeBench(): void {
 				}
 			);
 			console.log(
-				`  ✅ QuickModel: ${result.opsPerSec.toLocaleString()} ops/sec`
+				`\n[BENCH #15] QuickModel: ${result.opsPerSec.toLocaleString()} ops/sec`
 			);
 			console.log(
-				'     Retorna: { valid, integrity[], rules: { valid, errors[] } } — todo tipado'
+				'  ✅ Retorna: { valid, integrity[], rules: { valid, errors[] } } — todo tipado'
 			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
@@ -36,8 +36,9 @@ export function describeBench(): void {
 				zodSignupReportSchema.safeParse(invalidData);
 			});
 			console.log(
-				`  ⚠️  Zod: ${result.opsPerSec.toLocaleString()} ops/sec (solo validación, sin coerción ni integridad)`
+				`\n[BENCH #15] Zod: ${result.opsPerSec.toLocaleString()} ops/sec`
 			);
+			console.log('  ⚠️  solo validación, sin coerción ni integridad');
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -67,7 +68,29 @@ export function describeBench(): void {
 				}
 			});
 			console.log(
-				`  ⚠️  yup: ${result.opsPerSec.toLocaleString()} ops/sec`
+				`\n[BENCH #15] yup: ${result.opsPerSec.toLocaleString()} ops/sec`
+			);
+			expect(result.opsPerSec).toBeGreaterThan(0);
+		});
+
+		test('[baseline] Plain JS — array de errores manual (if/push pattern)', () => {
+			const result = runBench('[BENCH #15] Plain JS', ITERATIONS, () => {
+				const errors: string[] = [];
+				if (invalidData.name.length < 2) errors.push('Name too short');
+				if (!/^[^@]+@[^@]+\.[^@]+$/.test(invalidData.email))
+					errors.push('Invalid email');
+				if (invalidData.password.length < 8)
+					errors.push('Password too short');
+				if (!/[A-Z]/.test(invalidData.password))
+					errors.push('Needs uppercase');
+				if (invalidData.age < 18) errors.push('Must be 18+');
+				void { valid: errors.length === 0, errors };
+			});
+			console.log(
+				`\n[BENCH #15] Plain JS: ${result.opsPerSec.toLocaleString()} ops/sec`
+			);
+			console.log(
+				'  ⚠️  if/push manual — sin categorías integridad/reglas, sin tipado, frágil ante cambios de schema'
 			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
@@ -107,7 +130,7 @@ export function describeBench(): void {
 				joiSignupSchema.validate(invalidData, { abortEarly: false });
 			});
 			console.log(
-				`  ⚠️  joi: ${result.opsPerSec.toLocaleString()} ops/sec`
+				`\n[BENCH #15] joi: ${result.opsPerSec.toLocaleString()} ops/sec`
 			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
@@ -170,8 +193,24 @@ export function describeBench(): void {
 				);
 			}
 
+			allResults.push(
+				runBench('[BENCH #15] Plain JS', ITERATIONS, () => {
+					const errors: string[] = [];
+					if (invalidData.name.length < 2)
+						errors.push('Name too short');
+					if (!/^[^@]+@[^@]+\.[^@]+$/.test(invalidData.email))
+						errors.push('Invalid email');
+					if (invalidData.password.length < 8)
+						errors.push('Password too short');
+					if (!/[A-Z]/.test(invalidData.password))
+						errors.push('Needs uppercase');
+					if (invalidData.age < 18) errors.push('Must be 18+');
+					void { valid: errors.length === 0, errors };
+				})
+			);
+
 			printComparison(
-				'Benchmark #15 — Structured error report (QuickModel / Zod / yup / joi)',
+				'Benchmark #15 — Structured error report (QuickModel / Zod / yup / joi / Plain JS)',
 				allResults
 			);
 			console.log(

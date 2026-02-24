@@ -15,8 +15,8 @@ const makeEslintJson = (
 		{
 			filePath,
 			messages,
-			errorCount: messages.filter((m) => m.severity === 2).length,
-			warningCount: messages.filter((m) => m.severity === 1).length,
+			errorCount: messages.filter((msg) => msg.severity === 2).length,
+			warningCount: messages.filter((msg) => msg.severity === 1).length,
 		},
 	]);
 
@@ -34,17 +34,18 @@ describe('QLintCheckTool', () => {
 
 	it('should return passed=true when eslint reports no problems', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => ({
-			stdout: JSON.stringify([
-				{
-					filePath: '/src/foo.ts',
-					messages: [],
-					errorCount: 0,
-					warningCount: 0,
-				},
-			]),
-			stderr: '',
-		});
+		tool['_spawn'] = () =>
+			Promise.resolve({
+				stdout: JSON.stringify([
+					{
+						filePath: '/src/foo.ts',
+						messages: [],
+						errorCount: 0,
+						warningCount: 0,
+					},
+				]),
+				stderr: '',
+			});
 
 		const result = await tool.execute({ targetDir: 'src' });
 		expect(result.passed).toBe(true);
@@ -53,7 +54,7 @@ describe('QLintCheckTool', () => {
 
 	it('should return passed=false when eslint has errors', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('exit 1') as any;
 			err.stdout = makeEslintJson('/src/foo.ts', [
 				{
@@ -75,7 +76,7 @@ describe('QLintCheckTool', () => {
 
 	it('each error should have file, line, column, rule, message, severity', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('exit 1') as any;
 			err.stdout = makeEslintJson('/src/foo.ts', [
 				{
@@ -103,7 +104,7 @@ describe('QLintCheckTool', () => {
 
 	it('should separate errors from warnings', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('exit 1') as any;
 			err.stdout = makeEslintJson('/src/foo.ts', [
 				{
@@ -136,10 +137,11 @@ describe('QLintCheckTool', () => {
 
 	it('should include a summary string', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => ({
-			stdout: JSON.stringify([]),
-			stderr: '',
-		});
+		tool['_spawn'] = () =>
+			Promise.resolve({
+				stdout: JSON.stringify([]),
+				stderr: '',
+			});
 
 		const result = await tool.execute({ targetDir: 'src' });
 		expect(typeof result.summary).toBe('string');
@@ -148,10 +150,11 @@ describe('QLintCheckTool', () => {
 
 	it('should accept targetFiles array as input', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => ({
-			stdout: JSON.stringify([]),
-			stderr: '',
-		});
+		tool['_spawn'] = () =>
+			Promise.resolve({
+				stdout: JSON.stringify([]),
+				stderr: '',
+			});
 
 		const result = await tool.execute({
 			targetFiles: ['src/foo.ts', 'src/bar.ts'],
@@ -162,10 +165,11 @@ describe('QLintCheckTool', () => {
 
 	it('should accept targetDir as input', async () => {
 		const tool = new QLintCheckTool();
-		tool['_spawn'] = async () => ({
-			stdout: JSON.stringify([]),
-			stderr: '',
-		});
+		tool['_spawn'] = () =>
+			Promise.resolve({
+				stdout: JSON.stringify([]),
+				stderr: '',
+			});
 
 		const result = await tool.execute({ targetDir: 'src/mcp' });
 		expect(result).toBeDefined();

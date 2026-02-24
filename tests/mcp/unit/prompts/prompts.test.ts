@@ -45,13 +45,13 @@ describe('QAbstractPrompt', () => {
 		description = 'A test prompt';
 		argsSchema = { input: z.string().describe('Some input') };
 
-		async execute(args: { input: string }): Promise<IQPromptResult> {
-			return {
+		execute(args: { input: string }): Promise<IQPromptResult> {
+			return Promise.resolve({
 				messages: [
 					this.user(`Input: ${args.input}`),
 					this.assistant('Done'),
 				],
-			};
+			});
 		}
 	}
 
@@ -114,7 +114,9 @@ describe('QFromTypescriptPrompt', () => {
 		const result = await prompt.execute({
 			typescript: 'interface IOrder { total: number; }',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('IOrder');
 	});
 
@@ -124,7 +126,9 @@ describe('QFromTypescriptPrompt', () => {
 			typescript: 'interface IOrder { total: number; }',
 			model_name: 'OrderModel',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('OrderModel');
 	});
 
@@ -133,7 +137,9 @@ describe('QFromTypescriptPrompt', () => {
 		const result = await prompt.execute({
 			typescript: 'interface IProduct { price: number; }',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('interface_to_model');
 		expect(allText).toContain('validate_usage');
 	});
@@ -174,7 +180,9 @@ export class UserModel extends QModel<IUser> {
 	it('execute() references inspect_model tool', async () => {
 		const prompt = new QDebugModelPrompt();
 		const result = await prompt.execute({ model_code: MODEL_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('inspect_model');
 	});
 
@@ -184,7 +192,9 @@ export class UserModel extends QModel<IUser> {
 			model_code: MODEL_CODE,
 			error: 'ValidationError: field "name" failed',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('explain_error');
 	});
 
@@ -194,7 +204,9 @@ export class UserModel extends QModel<IUser> {
 			model_code: MODEL_CODE,
 			sample_data: '{"name": "Alice"}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('simulate_transformation');
 	});
 
@@ -205,7 +217,9 @@ export class UserModel extends QModel<IUser> {
 			error: 'TypeError: X',
 			sample_data: '{"name": "Bob"}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('inspect_model');
 		expect(allText).toContain('explain_error');
 		expect(allText).toContain('validate_usage');
@@ -240,14 +254,18 @@ export class EventModel extends QModel<IEvent> {
 	it('execute() references generate_mock tool', async () => {
 		const prompt = new QGenerateTestDataPrompt();
 		const result = await prompt.execute({ model_code: MODEL_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('generate_mock');
 	});
 
 	it('execute() references inspect_model and simulate_transformation', async () => {
 		const prompt = new QGenerateTestDataPrompt();
 		const result = await prompt.execute({ model_code: MODEL_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('inspect_model');
 		expect(allText).toContain('simulate_transformation');
 	});
@@ -258,7 +276,9 @@ export class EventModel extends QModel<IEvent> {
 			model_code: MODEL_CODE,
 			count: '5',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('5');
 	});
 
@@ -268,7 +288,9 @@ export class EventModel extends QModel<IEvent> {
 			model_code: MODEL_CODE,
 			context: 'e-commerce checkout test',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('e-commerce checkout test');
 	});
 });
@@ -299,14 +321,18 @@ export class ProductModel extends QModel<IProduct> {
 	it('execute() references inspect_model tool', async () => {
 		const prompt = new QInspectAndSchemaPrompt();
 		const result = await prompt.execute({ model_code: MODEL_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('inspect_model');
 	});
 
 	it('execute() references export_json_schema tool', async () => {
 		const prompt = new QInspectAndSchemaPrompt();
 		const result = await prompt.execute({ model_code: MODEL_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('export_json_schema');
 	});
 
@@ -316,7 +342,9 @@ export class ProductModel extends QModel<IProduct> {
 			model_code: MODEL_CODE,
 			formats: 'json,zod',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('json');
 		expect(allText).toContain('zod');
 	});
@@ -325,7 +353,9 @@ export class ProductModel extends QModel<IProduct> {
 		const prompt = new QInspectAndSchemaPrompt();
 		const result = await prompt.execute({ model_code: MODEL_CODE });
 		// Should mention multiple formats (the defaults)
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/json|openapi|zod|typescript/i);
 	});
 });
@@ -367,7 +397,9 @@ describe('QFormValidationPrompt', () => {
 		const result = await prompt.execute({
 			form_description: 'Contact form',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('validate_usage');
 	});
 
@@ -376,7 +408,9 @@ describe('QFormValidationPrompt', () => {
 		const result = await prompt.execute({
 			form_description: 'Payment form',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('simulate_validation');
 	});
 
@@ -385,7 +419,9 @@ describe('QFormValidationPrompt', () => {
 		const result = await prompt.execute({
 			form_description: 'Profile form',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@QRule');
 	});
 
@@ -394,7 +430,9 @@ describe('QFormValidationPrompt', () => {
 		const result = await prompt.execute({
 			form_description: 'Settings form',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@QField');
 	});
 
@@ -403,7 +441,9 @@ describe('QFormValidationPrompt', () => {
 		const result = await prompt.execute({
 			form_description: 'Unique survey form ABC123',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('Unique survey form ABC123');
 	});
 
@@ -413,7 +453,9 @@ describe('QFormValidationPrompt', () => {
 			form_description: 'User form',
 			fields: 'username, email, birthDate',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('username');
 		expect(allText).toContain('email');
 	});
@@ -461,28 +503,36 @@ describe('QFullPipelinePrompt', () => {
 	it('execute() references create() in messages', async () => {
 		const prompt = new QFullPipelinePrompt();
 		const result = await prompt.execute({ model_code: PIPELINE_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('create(');
 	});
 
 	it('execute() references check_integrity tool', async () => {
 		const prompt = new QFullPipelinePrompt();
 		const result = await prompt.execute({ model_code: PIPELINE_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('check_integrity');
 	});
 
 	it('execute() references simulate_validation tool', async () => {
 		const prompt = new QFullPipelinePrompt();
 		const result = await prompt.execute({ model_code: PIPELINE_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('simulate_validation');
 	});
 
 	it('execute() references serialize() or toJSON() in messages', async () => {
 		const prompt = new QFullPipelinePrompt();
 		const result = await prompt.execute({ model_code: PIPELINE_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/serialize\(\)|toJSON\(\)/);
 	});
 
@@ -492,14 +542,18 @@ describe('QFullPipelinePrompt', () => {
 			model_code: PIPELINE_CODE,
 			sample_data: '{"id":"1","createdAt":"2024-01-01","total":99.9}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('2024-01-01');
 	});
 
 	it('execute() references simulate_transformation tool', async () => {
 		const prompt = new QFullPipelinePrompt();
 		const result = await prompt.execute({ model_code: PIPELINE_CODE });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('simulate_transformation');
 	});
 });
@@ -537,21 +591,27 @@ describe('QMixinPrompt', () => {
 	it('execute() references QModel.extends() in messages', async () => {
 		const prompt = new QMixinPrompt();
 		const result = await prompt.execute({ base_class: 'NgComponent' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('QModel.extends(');
 	});
 
 	it('execute() references validate_usage tool', async () => {
 		const prompt = new QMixinPrompt();
 		const result = await prompt.execute({ base_class: 'NgComponent' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('validate_usage');
 	});
 
 	it('execute() mentions IQImplements in messages', async () => {
 		const prompt = new QMixinPrompt();
 		const result = await prompt.execute({ base_class: 'NgComponent' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('IQImplements');
 	});
 
@@ -560,14 +620,18 @@ describe('QMixinPrompt', () => {
 		const result = await prompt.execute({
 			base_class: 'SpecialBaseClass999',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('SpecialBaseClass999');
 	});
 
 	it('execute() mentions instanceof caveat about QModel', async () => {
 		const prompt = new QMixinPrompt();
 		const result = await prompt.execute({ base_class: 'NgComponent' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/instanceof/);
 	});
 
@@ -577,7 +641,9 @@ describe('QMixinPrompt', () => {
 			base_class: 'MyBase',
 			model_fields: 'createdAt: Date, status: string',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('createdAt');
 	});
 });
@@ -613,28 +679,36 @@ describe('QAliasComputedPrompt', () => {
 	it('execute() mentions @QAlias in messages', async () => {
 		const prompt = new QAliasComputedPrompt();
 		const result = await prompt.execute({});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@QAlias');
 	});
 
 	it('execute() mentions @QComputed in messages', async () => {
 		const prompt = new QAliasComputedPrompt();
 		const result = await prompt.execute({});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@QComputed');
 	});
 
 	it('execute() references serialize() in messages', async () => {
 		const prompt = new QAliasComputedPrompt();
 		const result = await prompt.execute({});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/serialize\(\)|toJSON\(\)/);
 	});
 
 	it('execute() references validate_usage tool', async () => {
 		const prompt = new QAliasComputedPrompt();
 		const result = await prompt.execute({});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('validate_usage');
 	});
 
@@ -643,7 +717,9 @@ describe('QAliasComputedPrompt', () => {
 		const result = await prompt.execute({
 			model_code: 'class UniqueModelXYZ extends QModel',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('UniqueModelXYZ');
 	});
 });
@@ -680,7 +756,9 @@ describe('QMigrationPrompt', () => {
 		const result = await prompt.execute({
 			legacy_code: 'class OldModel {}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('declare');
 	});
 
@@ -689,7 +767,9 @@ describe('QMigrationPrompt', () => {
 		const result = await prompt.execute({
 			legacy_code: 'class OldModel {}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@Quick');
 	});
 
@@ -698,7 +778,9 @@ describe('QMigrationPrompt', () => {
 		const result = await prompt.execute({
 			legacy_code: 'class OldModel {}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('validate_usage');
 	});
 
@@ -707,14 +789,18 @@ describe('QMigrationPrompt', () => {
 		const result = await prompt.execute({
 			legacy_code: 'class LegacyModelXYZ9 {}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('LegacyModelXYZ9');
 	});
 
 	it('execute() mentions migration or v2 pattern', async () => {
 		const prompt = new QMigrationPrompt();
 		const result = await prompt.execute({ legacy_code: 'class Old {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/migrat|v2|upgrade|update/i);
 	});
 });
@@ -754,7 +840,9 @@ describe('QAsyncRulesPrompt', () => {
 	it('execute() CLEARLY states this is only for async contexts', async () => {
 		const prompt = new QAsyncRulesPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		// Must explicitly warn: only use when predicates are truly async
 		expect(allText).toMatch(/only|async.*predicate|predicate.*async/i);
 	});
@@ -762,28 +850,36 @@ describe('QAsyncRulesPrompt', () => {
 	it('execute() references checkRulesAsync()', async () => {
 		const prompt = new QAsyncRulesPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('checkRulesAsync(');
 	});
 
 	it('execute() explains timeoutMs option', async () => {
 		const prompt = new QAsyncRulesPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('timeoutMs');
 	});
 
 	it('execute() explains parallel vs serial mode', async () => {
 		const prompt = new QAsyncRulesPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/parallel|serial/);
 	});
 
 	it('execute() mentions NestJS or async context', async () => {
 		const prompt = new QAsyncRulesPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/NestJS|async context|database|API call/i);
 	});
 
@@ -793,7 +889,9 @@ describe('QAsyncRulesPrompt', () => {
 			model_code: 'class M {}',
 			context: 'NestJS service with TypeORM uniqueness check',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('TypeORM uniqueness check');
 	});
 });
@@ -815,9 +913,7 @@ describe('QAddQGroupPrompt', () => {
 	it('argsSchema.group_name is optional', () => {
 		const prompt = new QAddQGroupPrompt();
 		expect(prompt.argsSchema.group_name).toBeDefined();
-		const parsed = (
-			prompt.argsSchema.group_name as z.ZodOptional<z.ZodString>
-		).safeParse(undefined);
+		const parsed = prompt.argsSchema.group_name.safeParse(undefined);
 		expect(parsed.success).toBe(true);
 	});
 
@@ -839,21 +935,27 @@ describe('QAddQGroupPrompt', () => {
 	it('execute() mentions @QGroup in messages', async () => {
 		const prompt = new QAddQGroupPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@QGroup');
 	});
 
 	it('execute() mentions checkGroups() in messages', async () => {
 		const prompt = new QAddQGroupPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('checkGroups');
 	});
 
 	it('execute() references validate_usage tool', async () => {
 		const prompt = new QAddQGroupPrompt();
 		const result = await prompt.execute({ model_code: 'class M {}' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('validate_usage');
 	});
 
@@ -863,7 +965,9 @@ describe('QAddQGroupPrompt', () => {
 			model_code: 'class M {}',
 			group_name: 'addressGroup',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('addressGroup');
 	});
 });
@@ -879,9 +983,7 @@ describe('QSecurityReviewPrompt', () => {
 
 	it('argsSchema.model_code is optional', () => {
 		const prompt = new QSecurityReviewPrompt();
-		const parsed = (
-			prompt.argsSchema.model_code as z.ZodOptional<z.ZodString>
-		).safeParse(undefined);
+		const parsed = prompt.argsSchema.model_code.safeParse(undefined);
 		expect(parsed.success).toBe(true);
 	});
 
@@ -900,14 +1002,18 @@ describe('QSecurityReviewPrompt', () => {
 	it('execute() mentions check_security tool', async () => {
 		const prompt = new QSecurityReviewPrompt();
 		const result = await prompt.execute({});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('check_security');
 	});
 
 	it('execute() mentions unknownPropertyPolicy hardening', async () => {
 		const prompt = new QSecurityReviewPrompt();
 		const result = await prompt.execute({});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toMatch(/unknownPropertyPolicy|strip|mass.?assign/i);
 	});
 
@@ -917,7 +1023,9 @@ describe('QSecurityReviewPrompt', () => {
 			model_code:
 				'@Quick({}) class UserModel extends QModel<UserModel> {}',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('UserModel');
 	});
 });
@@ -951,7 +1059,9 @@ describe('QTransformerGuidePrompt', () => {
 	it('execute() mentions @Quick decorator in messages', async () => {
 		const prompt = new QTransformerGuidePrompt();
 		const result = await prompt.execute({ typescript_type: 'Date' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('@Quick');
 	});
 
@@ -960,14 +1070,18 @@ describe('QTransformerGuidePrompt', () => {
 		const result = await prompt.execute({
 			typescript_type: 'Map<string, Date>',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('simulate_transformation');
 	});
 
 	it('execute() mentions the requested type in messages', async () => {
 		const prompt = new QTransformerGuidePrompt();
 		const result = await prompt.execute({ typescript_type: 'Set<number>' });
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('Set');
 	});
 
@@ -977,7 +1091,9 @@ describe('QTransformerGuidePrompt', () => {
 			typescript_type: 'Date',
 			sample_data: '{ "created": "2024-01-01" }',
 		});
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('2024-01-01');
 	});
 });
@@ -1028,7 +1144,9 @@ describe('QImplementFeaturePrompt', () => {
 		const result = (await prompt.execute({
 			feature_description: 'Add email validation',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('lint_check');
 	});
 
@@ -1037,7 +1155,9 @@ describe('QImplementFeaturePrompt', () => {
 		const result = (await prompt.execute({
 			feature_description: 'Add email validation',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('typecheck');
 	});
 
@@ -1046,7 +1166,9 @@ describe('QImplementFeaturePrompt', () => {
 		const result = (await prompt.execute({
 			feature_description: 'Add email validation',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('check_project_rules');
 	});
 
@@ -1055,7 +1177,9 @@ describe('QImplementFeaturePrompt', () => {
 		const result = (await prompt.execute({
 			feature_description: 'Add email validation',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText.toLowerCase()).toMatch(
 			/test|tdd|red.*green|failing test/
 		);
@@ -1066,7 +1190,9 @@ describe('QImplementFeaturePrompt', () => {
 		const result = (await prompt.execute({
 			feature_description: 'Add email validation',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText.toLowerCase()).toMatch(/done|complete|finish|ready/);
 	});
 
@@ -1075,7 +1201,9 @@ describe('QImplementFeaturePrompt', () => {
 		const result = (await prompt.execute({
 			feature_description: 'AddUniqueEmailRule',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('AddUniqueEmailRule');
 	});
 
@@ -1085,7 +1213,9 @@ describe('QImplementFeaturePrompt', () => {
 			feature_description: 'Add validation',
 			file_paths: 'src/mcp/tools/public/my-tool.ts',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('my-tool.ts');
 	});
 });
@@ -1140,7 +1270,9 @@ describe('QFixLintPrompt', () => {
 		const result = (await prompt.execute({
 			lint_errors: 'src/foo.ts  12:3  error  id-length',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('lint_check');
 	});
 
@@ -1149,7 +1281,9 @@ describe('QFixLintPrompt', () => {
 		const result = (await prompt.execute({
 			lint_errors: 'src/foo.ts  12:3  error  id-length',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('pre_commit_check');
 	});
 
@@ -1158,7 +1292,9 @@ describe('QFixLintPrompt', () => {
 		const result = (await prompt.execute({
 			lint_errors: 'src/foo.ts  12:3  error  id-length',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('passed: true');
 	});
 
@@ -1168,7 +1304,9 @@ describe('QFixLintPrompt', () => {
 		const result = (await prompt.execute({
 			lint_errors: errText,
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain(errText);
 	});
 
@@ -1178,7 +1316,9 @@ describe('QFixLintPrompt', () => {
 			lint_errors: 'src/foo.ts  5:3  error  no-console',
 			file_paths: 'src/foo.ts,src/bar.ts',
 		})) as IQPromptResult;
-		const allText = result.messages.map((m) => m.content.text).join(' ');
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
 		expect(allText).toContain('foo.ts');
 		expect(allText).toContain('bar.ts');
 	});

@@ -8,7 +8,7 @@ describe('MCP Tool Execution Integration', () => {
 		server.registerTools(tools);
 
 		// Find the tool instance
-		const tool = tools.find((t) => t.name === 'interface_to_model');
+		const tool = tools.find((fnd) => fnd.name === 'interface_to_model');
 		expect(tool).toBeDefined();
 
 		if (tool) {
@@ -23,7 +23,7 @@ describe('MCP Tool Execution Integration', () => {
 
 	it('should execute QGenerateMockDataTool via server registry', async () => {
 		const tools = QMcpServer.getDefaultTools();
-		const tool = tools.find((t) => t.name === 'generate_mock');
+		const tool = tools.find((fnd) => fnd.name === 'generate_mock');
 		expect(tool).toBeDefined();
 
 		if (tool) {

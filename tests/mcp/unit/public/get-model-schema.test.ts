@@ -102,6 +102,7 @@ describe('QGetModelSchemaTool', () => {
 	it('should throw on unsupported format', async () => {
 		const tool = new QGetModelSchemaTool();
 
+		// eslint-disable-next-line @typescript-eslint/await-thenable
 		await expect(
 			tool.execute({ code: sampleCode, format: 'invalid' as any })
 		).rejects.toThrow();

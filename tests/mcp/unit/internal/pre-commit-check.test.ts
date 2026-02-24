@@ -15,10 +15,10 @@ describe('QPreCommitCheckTool', () => {
 
 	it('should return passed=true when eslint and prettier succeed', async () => {
 		const tool = new QPreCommitCheckTool();
-		tool['_spawn'] = async (cmd: string) => {
+		tool['_spawn'] = (cmd: string) => {
 			if (cmd === 'npx') {
 				// eslint --format json with no errors
-				return {
+				return Promise.resolve({
 					stdout: JSON.stringify([
 						{
 							filePath: '/src/foo.ts',
@@ -28,9 +28,9 @@ describe('QPreCommitCheckTool', () => {
 						},
 					]),
 					stderr: '',
-				};
+				});
 			}
-			return { stdout: '', stderr: '' };
+			return Promise.resolve({ stdout: '', stderr: '' });
 		};
 
 		const result = await tool.execute({ files: ['src/foo.ts'] });
@@ -40,30 +40,31 @@ describe('QPreCommitCheckTool', () => {
 
 	it('should return passed=false when eslint has errors', async () => {
 		const tool = new QPreCommitCheckTool();
-		tool['_spawn'] = async (cmd: string) => {
+		tool['_spawn'] = (cmd: string) => {
 			if (cmd === 'npx') {
-				const err = new Error('exit 1') as any;
-				err.stdout = JSON.stringify([
-					{
-						filePath: '/src/foo.ts',
-						messages: [
-							{
-								ruleId: 'id-length',
-								severity: 2,
-								message:
-									"Identifier name 'fn' is too short (< 3)",
-								line: 12,
-								column: 3,
-							},
-						],
-						errorCount: 1,
-						warningCount: 0,
-					},
-				]);
-				err.stderr = '';
-				throw err;
+				const err = Object.assign(new Error('exit 1'), {
+					stdout: JSON.stringify([
+						{
+							filePath: '/src/foo.ts',
+							messages: [
+								{
+									ruleId: 'id-length',
+									severity: 2,
+									message:
+										"Identifier name 'fn' is too short (< 3)",
+									line: 12,
+									column: 3,
+								},
+							],
+							errorCount: 1,
+							warningCount: 0,
+						},
+					]),
+					stderr: '',
+				});
+				return Promise.reject(err);
 			}
-			return { stdout: '', stderr: '' };
+			return Promise.resolve({ stdout: '', stderr: '' });
 		};
 
 		const result = await tool.execute({ files: ['src/foo.ts'] });
@@ -73,29 +74,30 @@ describe('QPreCommitCheckTool', () => {
 
 	it('should include eslint error details in the issues array', async () => {
 		const tool = new QPreCommitCheckTool();
-		tool['_spawn'] = async (cmd: string) => {
+		tool['_spawn'] = (cmd: string) => {
 			if (cmd === 'npx') {
-				const err = new Error('exit 1') as any;
-				err.stdout = JSON.stringify([
-					{
-						filePath: '/src/bar.ts',
-						messages: [
-							{
-								ruleId: 'no-console',
-								severity: 2,
-								message: 'Unexpected console statement.',
-								line: 5,
-								column: 2,
-							},
-						],
-						errorCount: 1,
-						warningCount: 0,
-					},
-				]);
-				err.stderr = '';
-				throw err;
+				const err = Object.assign(new Error('exit 1'), {
+					stdout: JSON.stringify([
+						{
+							filePath: '/src/bar.ts',
+							messages: [
+								{
+									ruleId: 'no-console',
+									severity: 2,
+									message: 'Unexpected console statement.',
+									line: 5,
+									column: 2,
+								},
+							],
+							errorCount: 1,
+							warningCount: 0,
+						},
+					]),
+					stderr: '',
+				});
+				return Promise.reject(err);
 			}
-			return { stdout: '', stderr: '' };
+			return Promise.resolve({ stdout: '', stderr: '' });
 		};
 
 		const result = await tool.execute({ files: ['src/bar.ts'] });
@@ -107,17 +109,18 @@ describe('QPreCommitCheckTool', () => {
 
 	it('should include a human-readable summary', async () => {
 		const tool = new QPreCommitCheckTool();
-		tool['_spawn'] = async () => ({
-			stdout: JSON.stringify([
-				{
-					filePath: '/src/ok.ts',
-					messages: [],
-					errorCount: 0,
-					warningCount: 0,
-				},
-			]),
-			stderr: '',
-		});
+		tool['_spawn'] = () =>
+			Promise.resolve({
+				stdout: JSON.stringify([
+					{
+						filePath: '/src/ok.ts',
+						messages: [],
+						errorCount: 0,
+						warningCount: 0,
+					},
+				]),
+				stderr: '',
+			});
 
 		const result = await tool.execute({ files: ['src/ok.ts'] });
 		expect(typeof result.summary).toBe('string');
@@ -127,9 +130,9 @@ describe('QPreCommitCheckTool', () => {
 	it('should run on "src" as default when no files provided', async () => {
 		const tool = new QPreCommitCheckTool();
 		const calls: string[][] = [];
-		tool['_spawn'] = async (cmd: string, args: string[]) => {
+		tool['_spawn'] = (cmd: string, args: string[]) => {
 			calls.push([cmd, ...args]);
-			return {
+			return Promise.resolve({
 				stdout: JSON.stringify([
 					{
 						filePath: '/src/x.ts',
@@ -139,21 +142,20 @@ describe('QPreCommitCheckTool', () => {
 					},
 				]),
 				stderr: '',
-			};
+			});
 		};
 
 		await tool.execute({});
-		const eslintCall = calls.find((c) => c[0] === 'npx');
+		const eslintCall = calls.find((call) => call[0] === 'npx');
 		expect(eslintCall).toBeDefined();
 		expect(eslintCall?.join(' ')).toContain('src');
 	});
 
 	it('should report prettier changes as informational', async () => {
 		const tool = new QPreCommitCheckTool();
-		tool['_spawn'] = async (cmd: string) => {
-			if (cmd === 'npx' && false) throw new Error('eslint error');
+		tool['_spawn'] = (cmd: string) => {
 			if (cmd === 'npx') {
-				return {
+				return Promise.resolve({
 					stdout: JSON.stringify([
 						{
 							filePath: '/src/foo.ts',
@@ -163,10 +165,10 @@ describe('QPreCommitCheckTool', () => {
 						},
 					]),
 					stderr: '',
-				};
+				});
 			}
 			// prettier --write outputs modified file paths to stdout
-			return { stdout: 'src/foo.ts\n', stderr: '' };
+			return Promise.resolve({ stdout: 'src/foo.ts\n', stderr: '' });
 		};
 
 		const result = await tool.execute({ files: ['src/foo.ts'] });

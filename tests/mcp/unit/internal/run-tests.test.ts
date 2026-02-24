@@ -54,7 +54,8 @@ describe('QRunTestsTool', () => {
 
 	it('should return passed=true when bun test exits 0', async () => {
 		const tool = new QRunTestsTool();
-		tool['_spawn'] = async () => ({ stdout: BUN_PASS_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: BUN_PASS_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(result.passed).toBe(true);
@@ -62,7 +63,8 @@ describe('QRunTestsTool', () => {
 
 	it('should return total_pass and total_fail from stdout', async () => {
 		const tool = new QRunTestsTool();
-		tool['_spawn'] = async () => ({ stdout: BUN_PASS_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: BUN_PASS_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(result.total_pass).toBe(2);
@@ -71,7 +73,7 @@ describe('QRunTestsTool', () => {
 
 	it('should return passed=false when bun test exits non-zero', async () => {
 		const tool = new QRunTestsTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('bun test failed') as any;
 			err.stdout = BUN_FAIL_OUTPUT;
 			err.stderr = '';
@@ -84,7 +86,7 @@ describe('QRunTestsTool', () => {
 
 	it('should parse total_pass and total_fail when tests fail', async () => {
 		const tool = new QRunTestsTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('bun test failed') as any;
 			err.stdout = BUN_FAIL_OUTPUT;
 			err.stderr = '';
@@ -98,7 +100,7 @@ describe('QRunTestsTool', () => {
 
 	it('should return an errors array with failing test info', async () => {
 		const tool = new QRunTestsTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('bun test failed') as any;
 			err.stdout = BUN_FAIL_OUTPUT;
 			err.stderr = '';
@@ -111,7 +113,8 @@ describe('QRunTestsTool', () => {
 
 	it('should include a summary string', async () => {
 		const tool = new QRunTestsTool();
-		tool['_spawn'] = async () => ({ stdout: BUN_PASS_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: BUN_PASS_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(typeof result.summary).toBe('string');
@@ -121,9 +124,9 @@ describe('QRunTestsTool', () => {
 	it('should pass the pattern to the bun test command', async () => {
 		const tool = new QRunTestsTool();
 		let capturedArgs: string[] = [];
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			capturedArgs = args;
-			return { stdout: BUN_PASS_OUTPUT, stderr: '' };
+			return Promise.resolve({ stdout: BUN_PASS_OUTPUT, stderr: '' });
 		};
 
 		await tool.execute({ pattern: 'unit/my' });
@@ -133,9 +136,9 @@ describe('QRunTestsTool', () => {
 	it('should run without pattern when no pattern provided', async () => {
 		const tool = new QRunTestsTool();
 		let capturedArgs: string[] = [];
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			capturedArgs = args;
-			return { stdout: BUN_PASS_OUTPUT, stderr: '' };
+			return Promise.resolve({ stdout: BUN_PASS_OUTPUT, stderr: '' });
 		};
 
 		await tool.execute({});

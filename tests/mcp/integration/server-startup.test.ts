@@ -8,7 +8,7 @@ describe('MCP Server Integration', () => {
 		expect(tools.length).toBeGreaterThan(0);
 
 		// Check for presence of key tools
-		const names = tools.map((t) => t.name);
+		const names = tools.map((tool) => tool.name);
 		expect(names).toContain('list_transformers');
 		expect(names).toContain('generate_mock');
 		expect(names).toContain('update_docs');

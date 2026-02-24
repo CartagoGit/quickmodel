@@ -45,9 +45,9 @@ describe('QCheckProjectRulesTool', () => {
 		const result = await tool.execute({ targetDir: mockProjectRoot });
 		expect(result.passed).toBe(false);
 		const hasError = result.errors.some(
-			(e: string) =>
-				e.includes('Found @QType usage') &&
-				e.includes('violation.test.ts')
+			(err: string) =>
+				err.includes('Found @QType usage') &&
+				err.includes('violation.test.ts')
 		);
 		expect(hasError).toBe(true);
 	});
@@ -120,13 +120,13 @@ class Test {
 		expect(result.passed).toBe(true);
 
 		const hasWarning = result.warnings.some(
-			(w: string) =>
-				w.includes('Found console.log') && w.includes('bad-code.ts')
+			(wrn: string) =>
+				wrn.includes('Found console.log') && wrn.includes('bad-code.ts')
 		);
 		expect(hasWarning).toBe(true);
 
-		const safeWarning = result.warnings.find((w: string) =>
-			w.includes('server.ts')
+		const safeWarning = result.warnings.find((wrn: string) =>
+			wrn.includes('server.ts')
 		);
 		expect(safeWarning).toBeUndefined();
 	});
@@ -149,8 +149,8 @@ function process(a: string, b: number) {
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('id-length') && e.includes('bad-names.ts')
+				(err: string) =>
+					err.includes('id-length') && err.includes('bad-names.ts')
 			);
 			expect(hasError).toBe(true);
 		});
@@ -172,8 +172,9 @@ try {} catch (err) {}
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasIdError = result.errors.some(
-				(e: string) =>
-					e.includes('id-length') && e.includes('allowed-names.ts')
+				(err: string) =>
+					err.includes('id-length') &&
+					err.includes('allowed-names.ts')
 			);
 			expect(hasIdError).toBe(false);
 		});
@@ -190,8 +191,8 @@ function process(_unused: string, value: number) { return value; }
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('id-length') && e.includes('discard.ts')
+				(err: string) =>
+					err.includes('id-length') && err.includes('discard.ts')
 			);
 			expect(hasError).toBe(false);
 		});
@@ -214,8 +215,9 @@ function processData(name: string, age: number, city: string, country: string) {
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('max-params') && e.includes('too-many-params.ts')
+				(err: string) =>
+					err.includes('max-params') &&
+					err.includes('too-many-params.ts')
 			);
 			expect(hasError).toBe(true);
 		});
@@ -233,8 +235,9 @@ function create(name: string, age: number, active: boolean) {
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('max-params') && e.includes('valid-params.ts')
+				(err: string) =>
+					err.includes('max-params') &&
+					err.includes('valid-params.ts')
 			);
 			expect(hasError).toBe(false);
 		});
@@ -252,9 +255,9 @@ function deserialize(val: unknown, key: string, cls: string, ctx: object) {
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('max-params') &&
-					e.includes('custom.transformer.ts')
+				(err: string) =>
+					err.includes('max-params') &&
+					err.includes('custom.transformer.ts')
 			);
 			expect(hasError).toBe(false);
 		});
@@ -277,9 +280,9 @@ interface User {
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('naming-convention') &&
-					e.includes('bad-interface.ts')
+				(err: string) =>
+					err.includes('naming-convention') &&
+					err.includes('bad-interface.ts')
 			);
 			expect(hasError).toBe(true);
 		});
@@ -297,9 +300,9 @@ interface IUser {
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('naming-convention') &&
-					e.includes('good-interface.ts')
+				(err: string) =>
+					err.includes('naming-convention') &&
+					err.includes('good-interface.ts')
 			);
 			expect(hasError).toBe(false);
 		});
@@ -315,8 +318,9 @@ type User = { name: string };
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('naming-convention') && e.includes('bad-type.ts')
+				(err: string) =>
+					err.includes('naming-convention') &&
+					err.includes('bad-type.ts')
 			);
 			expect(hasError).toBe(true);
 		});
@@ -332,9 +336,9 @@ type IUser = { name: string };
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('naming-convention') &&
-					e.includes('good-type.ts')
+				(err: string) =>
+					err.includes('naming-convention') &&
+					err.includes('good-type.ts')
 			);
 			expect(hasError).toBe(false);
 		});
@@ -353,9 +357,9 @@ type IUser = { name: string };
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('no-restricted-imports') &&
-					e.includes('self-import.ts')
+				(err: string) =>
+					err.includes('no-restricted-imports') &&
+					err.includes('self-import.ts')
 			);
 			expect(hasError).toBe(true);
 		});
@@ -369,9 +373,9 @@ type IUser = { name: string };
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('no-restricted-imports') &&
-					e.includes('bad-mcp.ts')
+				(err: string) =>
+					err.includes('no-restricted-imports') &&
+					err.includes('bad-mcp.ts')
 			);
 			expect(hasError).toBe(true);
 		});
@@ -385,9 +389,9 @@ type IUser = { name: string };
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(
-				(e: string) =>
-					e.includes('no-restricted-imports') &&
-					e.includes('good-mcp.ts')
+				(err: string) =>
+					err.includes('no-restricted-imports') &&
+					err.includes('good-mcp.ts')
 			);
 			expect(hasError).toBe(false);
 		});

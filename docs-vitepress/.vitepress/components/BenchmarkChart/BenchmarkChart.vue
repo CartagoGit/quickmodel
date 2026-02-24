@@ -7,6 +7,7 @@ const {
 	tabDirection,
 	setTab,
 	tabItems,
+	activeTabTitle,
 
 	libraries,
 	featureRows,
@@ -34,6 +35,7 @@ const {
 	toggleFeatureCategory,
 	isLibHidden,
 	isCategoryHidden,
+	isPlainJsLib,
 	isOverflow,
 	barPercent,
 	overflowFillPercent,
@@ -43,6 +45,7 @@ const {
 	featureIcon,
 	formatBadgeSpeed,
 	goToScenario,
+	isColMax,
 	onBarMouseEnter,
 	onBarMouseLeave,
 	warningTooltipText,

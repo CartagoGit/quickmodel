@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────
 
 // Tipo centralizado en bench.types.ts (fuente de verdad)
+import type { IBenchScenario } from '@benchmarks/bench.types';
 export type { IBenchScenario } from '@benchmarks/bench.types';
 
 export interface ILibraryInfo {
@@ -814,8 +815,8 @@ export const libNames: string[] = [
 	'superjson',
 	'vest',
 	'QuickModel',
-	'Plain JS',
 	'faker (manual)',
+	'Plain JS', // baseline de referencia — aparece al final en coverage map y chart
 ];
 
 // ─────────────────────────────────────────────────────────────

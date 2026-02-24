@@ -6,7 +6,7 @@ import { QUpdateDocsTool } from '../../../../src/mcp/tools/internal/update-docs.
 describe('Internal Tools Error Fallbacks', () => {
 	it('QCheckProjectHealthTool should use error.message fallback', async () => {
 		const tool = new QCheckProjectHealthTool();
-		(tool as any)._spawn = async () => {
+		(tool as any)._spawn = () => {
 			const err = new Error('Spawn failed hard');
 			// No stdout/stderr on error object
 			throw err;
@@ -20,7 +20,7 @@ describe('Internal Tools Error Fallbacks', () => {
 	it('QGetCoverageReportTool should use error.message fallback', async () => {
 		// Assuming it has similar logic
 		const tool = new QGetCoverageReportTool();
-		(tool as any)._spawn = async () => {
+		(tool as any)._spawn = () => {
 			throw new Error('Coverage crashed');
 		};
 		const result = await tool.execute();
@@ -31,7 +31,7 @@ describe('Internal Tools Error Fallbacks', () => {
 
 	it('QUpdateDocsTool should handle error message', async () => {
 		const tool = new QUpdateDocsTool();
-		(tool as any)._spawn = async () => {
+		(tool as any)._spawn = () => {
 			throw new Error('Docs build died');
 		};
 		const result = await tool.execute({ action: 'build' });

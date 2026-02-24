@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { spawnCommand } from '../../../../../src/mcp/tools/internal/utils';
+import { spawnCommand } from '../../../../src/mcp/tools/internal/utils';
 
 describe('Utils Coverage (spawnCommand)', () => {
 	it('should truncate stdout if it exceeds MAX_BUFFER', async () => {
@@ -9,7 +9,7 @@ describe('Utils Coverage (spawnCommand)', () => {
             process.stdout.write(blob);
         `;
 
-		const { stdout, stderr } = await spawnCommand('bun', ['-e', script]);
+		const { stdout } = await spawnCommand('bun', ['-e', script]);
 
 		expect(stdout).toContain('[TRUNCATED DUE TO SIZE]');
 		expect(stdout.length).toBeLessThan(11 * 1024 * 1024);

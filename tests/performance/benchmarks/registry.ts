@@ -24,11 +24,13 @@ import { scenario as nestedConstructDef } from './nestedConstruct/nestedConstruc
 import { scenario as aliasMappingDef } from './aliasMapping/aliasMapping.def';
 import { scenario as schemaMultiFormatDef } from './schemaMultiFormat/schemaMultiFormat.def';
 import { scenario as coercionDef } from './coercion/coercion.def';
+import { scenario as performanceTargetsDef } from './performanceTargets/performanceTargets.def';
 import { scenario as validationDef } from './validation/validation.def';
 
 /**
  * Calcula el ratio QuickModel / mejor_competidor para un escenario.
  * - Excluye claves que empiezan por 'QuickModel' (son variantes propias, no competidores).
+ * - Excluye 'Plain JS' (referencia baseline, no competitor real de librería).
  * - Devuelve Infinity si no hay competidor (escenario exclusivo de QM).
  * - Devuelve 0 si QM no tiene valor (null).
  * Usado para ordenar los escenarios de mayor a menor ventaja de QuickModel.
@@ -38,7 +40,12 @@ function qmRatio(scenario: IBenchScenario): number {
 	if (qmValue === null || qmValue === undefined) return 0;
 
 	const bestCompetitor = Object.entries(scenario.values)
-		.filter(([key, val]) => !key.startsWith('QuickModel') && val !== null)
+		.filter(
+			([key, val]) =>
+				!key.startsWith('QuickModel') &&
+				key !== 'Plain JS' &&
+				val !== null
+		)
 		.reduce<number>((max, [, val]) => Math.max(max, val as number), 0);
 
 	return bestCompetitor === 0 ? Infinity : qmValue / bestCompetitor;
@@ -58,6 +65,7 @@ const _rawScenarios: IBenchScenario[] = [
 	aliasMappingDef,
 	schemaMultiFormatDef,
 	coercionDef,
+	performanceTargetsDef,
 	validationDef,
 ];
 

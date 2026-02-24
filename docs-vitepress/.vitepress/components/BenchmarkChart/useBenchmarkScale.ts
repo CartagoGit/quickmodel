@@ -36,15 +36,15 @@ export function useBenchmarkScale(
 			.sort((aVal, bVal) => bVal - aVal);
 
 		if (allVals.length === 0) return 1;
-		if (allVals.length === 1) return allVals[0]!;
+		if (allVals.length === 1) return allVals[0];
 
 		// Clipping iterativo: recortar el top mientras supere OVERFLOW_RATIO * segundo.
-		let threshold = allVals[0]!;
+		let threshold = allVals[0];
 		for (let pass = 0; pass < allVals.length; pass++) {
 			const visible = allVals.filter((val) => val <= threshold);
 			if (visible.length < 2) break;
-			const top = visible[0]!;
-			const second = visible[1]!;
+			const top = visible[0];
+			const second = visible[1];
 			if (second === 0) break;
 			if (top / second > OVERFLOW_RATIO) {
 				threshold = second * OVERFLOW_SCALE_FACTOR;
@@ -71,17 +71,34 @@ export function useBenchmarkScale(
 
 	/**
 	 * Fill width (%) for an overflow bar.
-	 * ratio = lib_value / visualMax.
-	 * A higher ratio → shorter fill (wider extension arrow).
-	 * Mapped via log10: ratio 3.5 → fill 92%, ratio 10 → ~84%, ratio 100 → ~72%.
+	 * The fastest overflow bar always gets OVERFLOW_BAR_PERCENT (92%).
+	 * The rest scale proportionally using log10 of their ratio relative to
+	 * the max overflow ratio, so slower overflow bars are visually shorter.
+	 * Min fill is 60% to leave room for the ›› label.
 	 */
 	function overflowFillPercent(lib: string): number {
 		const val = currentScenario.value.values[lib];
 		if (!val || visualMax.value === 0) return OVERFLOW_BAR_PERCENT;
+
 		const ratio = val / visualMax.value;
-		// ext width: clamp 8–28 via log10 of ratio
-		const extWidth = Math.min(28, Math.max(8, Math.log10(ratio) * 12 + 4));
-		return Math.round(100 - extWidth);
+
+		// Find the largest overflow ratio in the current scenario for normalisation.
+		const maxOverflowRatio = [...activeLibNames.value]
+			.map((name) => {
+				const libVal = currentScenario.value.values[name];
+				return libVal && libVal > visualMax.value
+					? libVal / visualMax.value
+					: 1;
+			})
+			.reduce((prev, cur) => Math.max(prev, cur), 1);
+
+		// Normalise with log10 relative to the actual max: fastest bar → 1, rest → 0–1.
+		const logRatio = Math.log10(Math.max(1, ratio));
+		const logMax = Math.log10(Math.max(1, maxOverflowRatio));
+		const normalised = logMax > 0 ? logRatio / logMax : 1;
+
+		// Fill grows from 60 % (barely overflow) to OVERFLOW_BAR_PERCENT (fastest bar).
+		return Math.round(60 + normalised * (OVERFLOW_BAR_PERCENT - 60));
 	}
 
 	function overflowRatio(lib: string): number {

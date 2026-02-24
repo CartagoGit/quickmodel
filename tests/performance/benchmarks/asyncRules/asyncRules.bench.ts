@@ -88,6 +88,31 @@ export function describeBench(): void {
 			expect(res.totalMs).toBeLessThan(30_000);
 		});
 
+		test('[baseline] Plain JS — Promise.all manual (async checks sin decoradores)', async () => {
+			const res = await runBenchAsync(
+				'Benchmark 12: Plain JS',
+				ITERS,
+				async () => {
+					const results = await Promise.all([
+						Promise.resolve(validSignupData.name.length >= 2),
+						Promise.resolve(
+							/^[^@]+@[^@]+\.[^@]+$/.test(validSignupData.email)
+						),
+						Promise.resolve(validSignupData.password.length >= 8),
+						Promise.resolve(/[A-Z]/.test(validSignupData.password)),
+					]);
+					void results;
+				}
+			);
+			console.log(
+				`\n[BENCH #12] Plain JS async: ${res.opsPerSec.toLocaleString()} ops/sec`
+			);
+			console.log(
+				'  ⚠️  Promise.all manual — sin timeout, sin grupos, sin reporte tipado'
+			);
+			expect(res.totalMs).toBeLessThan(30_000);
+		});
+
 		test('📊 Comparativa #12 — async rule orchestration', async () => {
 			const asyncForm2 = Object.assign(
 				new AsyncSignupForm(),
@@ -151,9 +176,33 @@ export function describeBench(): void {
 				);
 			}
 
+			allResults.push(
+				await runBenchAsync(
+					'Benchmark 12: Plain JS',
+					ITERS,
+					async () => {
+						const checks = await Promise.all([
+							Promise.resolve(validSignupData.name.length >= 2),
+							Promise.resolve(
+								/^[^@]+@[^@]+\.[^@]+$/.test(
+									validSignupData.email
+								)
+							),
+							Promise.resolve(
+								validSignupData.password.length >= 8
+							),
+							Promise.resolve(
+								/[A-Z]/.test(validSignupData.password)
+							),
+						]);
+						void checks;
+					}
+				)
+			);
+
 			if (allResults.length > 0) {
 				printComparison(
-					'Benchmark #12 — Async rules (QuickModel parallel / joi / yup)',
+					'Benchmark #12 — Async rules (QuickModel parallel / joi / yup / Plain JS)',
 					allResults
 				);
 			}

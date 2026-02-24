@@ -20,8 +20,8 @@ describe('QInterfaceToModelTool — error paths', () => {
 		try {
 			await tool.execute({ code: 'const x = 1;' });
 			expect(true).toBe(false); // must not reach here
-		} catch (e: any) {
-			expect(e.message).toContain('No interface found in code');
+		} catch (err: any) {
+			expect(err.message).toContain('No interface found in code');
 		}
 	});
 
@@ -102,8 +102,8 @@ describe('QJsonToModelTool — additional error paths', () => {
 		try {
 			await tool.execute({ json: '{"a":1}', className: '123Invalid' });
 			expect(true).toBe(false);
-		} catch (e: any) {
-			expect(e.message).toContain('Invalid class name');
+		} catch (err: any) {
+			expect(err.message).toContain('Invalid class name');
 		}
 	});
 
@@ -166,7 +166,9 @@ describe('QInspectModelTool — additional paths', () => {
 		`;
 		const result = await tool.execute({ code });
 		// Should not throw and should not include undefined in transformers
-		expect(result.transformers.every((t) => t !== undefined)).toBe(true);
+		expect(result.transformers.every((elem) => elem !== undefined)).toBe(
+			true
+		);
 	});
 
 	it('should have correct name, description', () => {

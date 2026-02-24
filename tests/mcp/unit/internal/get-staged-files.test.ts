@@ -27,7 +27,8 @@ describe('QGetStagedFilesTool', () => {
 
 	it('should return a files array from git diff --cached --name-only', async () => {
 		const tool = new QGetStagedFilesTool();
-		tool['_spawn'] = async () => ({ stdout: STAGED_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: STAGED_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(Array.isArray(result.files)).toBe(true);
@@ -36,7 +37,8 @@ describe('QGetStagedFilesTool', () => {
 
 	it('should correctly parse multi-line output into file paths', async () => {
 		const tool = new QGetStagedFilesTool();
-		tool['_spawn'] = async () => ({ stdout: STAGED_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: STAGED_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(result.files).toContain(
@@ -52,7 +54,8 @@ describe('QGetStagedFilesTool', () => {
 
 	it('should return total matching the number of files', async () => {
 		const tool = new QGetStagedFilesTool();
-		tool['_spawn'] = async () => ({ stdout: STAGED_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: STAGED_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(result.total).toBe(3);
@@ -60,7 +63,7 @@ describe('QGetStagedFilesTool', () => {
 
 	it('should return empty array when no staged files', async () => {
 		const tool = new QGetStagedFilesTool();
-		tool['_spawn'] = async () => ({ stdout: '', stderr: '' });
+		tool['_spawn'] = () => Promise.resolve({ stdout: '', stderr: '' });
 
 		const result = await tool.execute({});
 		expect(result.files).toHaveLength(0);
@@ -69,7 +72,8 @@ describe('QGetStagedFilesTool', () => {
 
 	it('should include a summary string', async () => {
 		const tool = new QGetStagedFilesTool();
-		tool['_spawn'] = async () => ({ stdout: STAGED_OUTPUT, stderr: '' });
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: STAGED_OUTPUT, stderr: '' });
 
 		const result = await tool.execute({});
 		expect(typeof result.summary).toBe('string');
@@ -79,9 +83,9 @@ describe('QGetStagedFilesTool', () => {
 	it('should run git diff --cached --name-only', async () => {
 		const tool = new QGetStagedFilesTool();
 		let capturedArgs: string[] = [];
-		tool['_spawn'] = async (_cmd: string, args: string[]) => {
+		tool['_spawn'] = (_cmd: string, args: string[]) => {
 			capturedArgs = args;
-			return { stdout: '', stderr: '' };
+			return Promise.resolve({ stdout: '', stderr: '' });
 		};
 
 		await tool.execute({});
@@ -91,7 +95,7 @@ describe('QGetStagedFilesTool', () => {
 
 	it('should handle git error gracefully returning empty files', async () => {
 		const tool = new QGetStagedFilesTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			const err = new Error('not a git repo') as any;
 			err.stdout = '';
 			err.stderr = 'fatal: not a git repository';

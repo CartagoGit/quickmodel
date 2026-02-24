@@ -149,6 +149,27 @@ export function describeBench(): void {
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
+		test('[baseline] Plain JS — typeof manual por campo (sin schema)', () => {
+			const res = runBench('Benchmark 4: Plain JS', CYCLES, () => {
+				for (const item of dataset) {
+					void (
+						typeof item.id === 'string' &&
+						typeof item.name === 'string' &&
+						typeof item.email === 'string' &&
+						typeof item.age === 'number' &&
+						typeof item.active === 'boolean'
+					);
+				}
+			});
+			console.log(
+				`\n[BENCH #4] Plain JS: ${res.opsPerSec.toLocaleString()} cycles/sec`
+			);
+			console.log(
+				'  ⚠️  typeof manual — sin coerción, sin mensajes de error, frágil ante cambios de schema'
+			);
+			expect(res.opsPerSec).toBeGreaterThan(0);
+		});
+
 		test('📊 Comparativa #4 — batch validation', () => {
 			const allResults: IBenchResult[] = [
 				runBench('Benchmark 4: Zod batch', CYCLES, () => {
@@ -229,12 +250,29 @@ export function describeBench(): void {
 				);
 			}
 
+			allResults.push(
+				runBench('Benchmark 4: Plain JS', CYCLES, () => {
+					for (const item of dataset) {
+						void (
+							typeof item.id === 'string' &&
+							typeof item.name === 'string' &&
+							typeof item.email === 'string' &&
+							typeof item.age === 'number' &&
+							typeof item.active === 'boolean'
+						);
+					}
+				})
+			);
+
 			printComparison(
-				'Benchmark #4 — Batch validation 1k obj (TypeBox/valibot/arktype/Zod/yup/joi/QuickModel)',
+				'Benchmark #4 — Batch validation 1k obj (TypeBox/valibot/arktype/Zod/yup/joi/QuickModel/Plain JS)',
 				allResults
 			);
 			console.log(
-				'\n  ℹ️  class-transformer excluido: no valida — necesita class-validator por separado\n'
+				'\n  ℹ️  class-transformer excluido: no valida — necesita class-validator por separado'
+			);
+			console.log(
+				'  ⚠️  Plain JS: typeof manual — sin coerción, sin mensajes; referencia de velocidad máxima\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

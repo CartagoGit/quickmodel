@@ -10,7 +10,7 @@ const mockRegisterTool = mock((_name, _schema, _callback) => {});
 const mockRegisterPrompt = mock((_name, _config, _callback) => {});
 const mockConnect = mock(() => Promise.resolve());
 
-mock.module('@modelcontextprotocol/sdk/server/mcp.js', () => {
+void mock.module('@modelcontextprotocol/sdk/server/mcp.js', () => {
 	return {
 		McpServer: class {
 			constructor() {}
@@ -21,7 +21,7 @@ mock.module('@modelcontextprotocol/sdk/server/mcp.js', () => {
 	};
 });
 
-mock.module('@modelcontextprotocol/sdk/server/stdio.js', () => {
+void mock.module('@modelcontextprotocol/sdk/server/stdio.js', () => {
 	return {
 		StdioServerTransport: class {},
 	};
@@ -34,9 +34,9 @@ class MockTool extends QAbstractTool<any> {
 	name = 'mock_tool';
 	description = 'Mock tool description';
 	schema = z.object({ input: z.string() });
-	async execute(args: any) {
+	execute(args: any): Promise<unknown> {
 		if (args.input === 'error') throw new Error('Tool error');
-		return { result: args.input };
+		return Promise.resolve({ result: args.input });
 	}
 }
 
@@ -45,14 +45,14 @@ class MockPrompt extends QAbstractPrompt<{ input: z.ZodString }> {
 	title = 'Mock Prompt';
 	description = 'Mock prompt description';
 	argsSchema = { input: z.string().describe('Input text') };
-	async execute(args: { input: string }): Promise<IQPromptResult> {
-		return {
+	execute(args: { input: string }): Promise<IQPromptResult> {
+		return Promise.resolve({
 			description: 'Mock result',
 			messages: [
 				this.user(`Input: ${args.input}`),
 				this.assistant('Done'),
 			],
-		};
+		});
 	}
 }
 
@@ -138,7 +138,9 @@ describe('QMcpServer', () => {
 	it('should get default tools', () => {
 		const tools = QMcpServer.getDefaultTools();
 		expect(tools.length).toBeGreaterThan(0);
-		expect(tools.find((t) => t.name === 'create_model')).toBeDefined();
+		expect(
+			tools.find((tool) => tool.name === 'create_model')
+		).toBeDefined();
 	});
 
 	it('should register prompts correctly', () => {
@@ -180,67 +182,81 @@ describe('QMcpServer', () => {
 		const prompts = QMcpServer.getDefaultPrompts();
 		expect(prompts.length).toBe(19);
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_from_typescript')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_from_typescript'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_debug')
+			prompts.find((prompt) => prompt.name === 'quickmodel_debug')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_generate_test_data')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_generate_test_data'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_inspect_and_schema')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_inspect_and_schema'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_form_validation')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_form_validation'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_full_pipeline')
+			prompts.find((prompt) => prompt.name === 'quickmodel_full_pipeline')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_mixin')
+			prompts.find((prompt) => prompt.name === 'quickmodel_mixin')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_alias_computed')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_alias_computed'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_migration')
+			prompts.find((prompt) => prompt.name === 'quickmodel_migration')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_async_rules')
+			prompts.find((prompt) => prompt.name === 'quickmodel_async_rules')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_add_qgroup')
+			prompts.find((prompt) => prompt.name === 'quickmodel_add_qgroup')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_security_review')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_security_review'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_transformer_guide')
+			prompts.find(
+				(prompt) => prompt.name === 'quickmodel_transformer_guide'
+			)
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_fix_lint')
+			prompts.find((prompt) => prompt.name === 'quickmodel_fix_lint')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_fix_typecheck')
+			prompts.find((prompt) => prompt.name === 'quickmodel_fix_typecheck')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_refactor')
+			prompts.find((prompt) => prompt.name === 'quickmodel_refactor')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_apply_solid')
+			prompts.find((prompt) => prompt.name === 'quickmodel_apply_solid')
 		).toBeDefined();
 		expect(
-			prompts.find((p) => p.name === 'quickmodel_sync_project')
+			prompts.find((prompt) => prompt.name === 'quickmodel_sync_project')
 		).toBeDefined();
 	});
 
 	it('should register multiple prompts', () => {
 		const server = new QMcpServer();
-		const p1 = new MockPrompt();
-		const p2 = new MockPrompt();
-		p2.name = 'mock_prompt_2';
-		server.registerPrompts([p1, p2]);
+		const prompt1 = new MockPrompt();
+		const prompt2 = new MockPrompt();
+		prompt2.name = 'mock_prompt_2';
+		server.registerPrompts([prompt1, prompt2]);
 
 		expect(mockRegisterPrompt).toHaveBeenCalledTimes(2);
 	});
@@ -248,31 +264,45 @@ describe('QMcpServer', () => {
 	it('getDefaultPublicTools should return only public tools', () => {
 		const tools = QMcpServer.getDefaultPublicTools();
 		expect(tools.length).toBeGreaterThan(0);
-		expect(tools.find((t) => t.name === 'create_model')).toBeDefined();
-		// Internal tools must NOT appear
-		expect(tools.find((t) => t.name === 'lint_check')).toBeUndefined();
-		expect(tools.find((t) => t.name === 'typecheck')).toBeUndefined();
 		expect(
-			tools.find((t) => t.name === 'check_project_rules')
+			tools.find((tool) => tool.name === 'create_model')
+		).toBeDefined();
+		// Internal tools must NOT appear
+		expect(
+			tools.find((tool) => tool.name === 'lint_check')
+		).toBeUndefined();
+		expect(tools.find((tool) => tool.name === 'typecheck')).toBeUndefined();
+		expect(
+			tools.find((tool) => tool.name === 'check_project_rules')
 		).toBeUndefined();
 	});
 
 	it('getDefaultInternalTools should return only internal tools', () => {
 		const tools = QMcpServer.getDefaultInternalTools();
 		expect(tools.length).toBeGreaterThan(0);
-		expect(tools.find((t) => t.name === 'lint_check')).toBeDefined();
-		expect(tools.find((t) => t.name === 'typecheck')).toBeDefined();
+		expect(tools.find((tool) => tool.name === 'lint_check')).toBeDefined();
+		expect(tools.find((tool) => tool.name === 'typecheck')).toBeDefined();
 		expect(
-			tools.find((t) => t.name === 'check_project_rules')
+			tools.find((tool) => tool.name === 'check_project_rules')
 		).toBeDefined();
-		expect(tools.find((t) => t.name === 'check_bundle_size')).toBeDefined();
-		expect(tools.find((t) => t.name === 'check_changelog')).toBeDefined();
-		expect(tools.find((t) => t.name === 'list_todos')).toBeDefined();
-		expect(tools.find((t) => t.name === 'pre_commit_check')).toBeDefined();
-		expect(tools.find((t) => t.name === 'run_tests')).toBeDefined();
-		expect(tools.find((t) => t.name === 'get_staged_files')).toBeDefined();
+		expect(
+			tools.find((tool) => tool.name === 'check_bundle_size')
+		).toBeDefined();
+		expect(
+			tools.find((tool) => tool.name === 'check_changelog')
+		).toBeDefined();
+		expect(tools.find((tool) => tool.name === 'list_todos')).toBeDefined();
+		expect(
+			tools.find((tool) => tool.name === 'pre_commit_check')
+		).toBeDefined();
+		expect(tools.find((tool) => tool.name === 'run_tests')).toBeDefined();
+		expect(
+			tools.find((tool) => tool.name === 'get_staged_files')
+		).toBeDefined();
 		// Public tools must NOT appear
-		expect(tools.find((t) => t.name === 'create_model')).toBeUndefined();
+		expect(
+			tools.find((tool) => tool.name === 'create_model')
+		).toBeUndefined();
 	});
 
 	it('getDefaultTools should be the union of public + internal tools', () => {

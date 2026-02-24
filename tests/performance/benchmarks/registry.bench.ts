@@ -23,6 +23,7 @@ import { scenario as asyncRulesDef } from './asyncRules/asyncRules.def';
 import { scenario as bulkConstructDef } from './bulkConstruct/bulkConstruct.def';
 import { scenario as schemaMultiFormatDef } from './schemaMultiFormat/schemaMultiFormat.def';
 import { scenario as validationReportDef } from './validationReport/validationReport.def';
+import { scenario as performanceTargetsDef } from './performanceTargets/performanceTargets.def';
 
 // ─── Bench functions (.bench.ts) — Bun-only ─────────────────────────────────
 
@@ -45,7 +46,7 @@ import { describeBench as featureMatrixBench } from './featureMatrix/featureMatr
 
 /**
  * Todos los módulos de benchmark en el orden de ejecución original.
- * bench #6 (performanceTargets) no tiene escenario comparativo → `scenario` omitido.
+ * featureMatrix (último) es un resumen cualitativo sin .def.ts → `scenario` omitido.
  */
 export const allBenches: IBenchModule[] = [
 	{ scenario: validationDef, describeBench: validationBench },
@@ -53,7 +54,7 @@ export const allBenches: IBenchModule[] = [
 	{ scenario: serializationDef, describeBench: serializationBench },
 	{ scenario: batchDef, describeBench: batchBench },
 	{ scenario: mocksDef, describeBench: mocksBench },
-	{ describeBench: performanceTargetsBench }, // bench #6 — sin comparativa
+	{ scenario: performanceTargetsDef, describeBench: performanceTargetsBench }, // bench #6 — throughput exclusivo QM
 	{ scenario: typeSerializationDef, describeBench: typeSerializationBench },
 	{ scenario: rulesDef, describeBench: rulesBench },
 	{ scenario: aliasMappingDef, describeBench: aliasMappingBench },

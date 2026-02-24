@@ -1,5 +1,6 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from '../../composables/useI18n';
+import type { IBenchScenario } from '@benchmarks/bench.types';
 import {
 	scenarios,
 	libraries,
@@ -52,10 +53,35 @@ export function useBenchmarkChart() {
 		{ key: 'coverage', icon: '📊', label: t.value.benchmark.tabCoverage },
 		{ key: 'performance', icon: '⚡', label: t.value.benchmark.tabPerf },
 	]);
+
+	const activeTabTitle = computed(() => {
+		const bmt = t.value.benchmark;
+		const map: Record<
+			ITab,
+			{ icon: string; title: string; subtitle: string }
+		> = {
+			features: {
+				icon: '🎯',
+				title: bmt.featureTitle,
+				subtitle: bmt.featureSubtitle,
+			},
+			coverage: {
+				icon: '📊',
+				title: bmt.coverageTitle,
+				subtitle: bmt.coverageSubtitle,
+			},
+			performance: {
+				icon: '⚡',
+				title: bmt.perfTitle,
+				subtitle: bmt.perfSubtitle,
+			},
+		};
+		return map[activeTab.value];
+	});
 	// ─── Estado reactivo ──────────────────────────
 
 	const activeAppType = ref('all');
-	const activeScenario = ref(scenarios[0]!.key);
+	const activeScenario = ref(scenarios[0].key);
 	const activeMatrixType = ref('all');
 	const disabledMatrixLibs = ref<string[]>([]);
 	const disabledFeatureCategories = ref<string[]>([]);
@@ -78,18 +104,32 @@ export function useBenchmarkChart() {
 		const inFiltered = filteredScenarios.value.find(
 			(scn) => scn.key === activeScenario.value
 		);
-		return inFiltered ?? filteredScenarios.value[0] ?? scenarios[0]!;
+		return inFiltered ?? filteredScenarios.value[0] ?? scenarios[0];
 	});
 
-	/** Librerías con datos en el escenario actual, ordenadas de más rápida a más lenta */
+	/** Librerías de referencia baseline: no compiten en el ranking, siempre al final
+	 *  del chart y nunca se destacan como máximo en la coverage map. */
+	const PLAIN_JS_REFS = new Set<string>(['Plain JS']);
+
+	function isPlainJsLib(lib: string): boolean {
+		return PLAIN_JS_REFS.has(lib);
+	}
+
+	/** Librerías con datos en el escenario actual, ordenadas de más rápida a más lenta.
+	 *  Las librerías de referencia (Plain JS) se colocan siempre al final. */
 	const activeLibNames = computed(() =>
 		libNames
 			.filter((lib) => currentScenario.value.values[lib] != null)
-			.sort(
-				(libA, libB) =>
+			.sort((libA, libB) => {
+				const isRefA = PLAIN_JS_REFS.has(libA);
+				const isRefB = PLAIN_JS_REFS.has(libB);
+				if (isRefA && !isRefB) return 1;
+				if (!isRefA && isRefB) return -1;
+				return (
 					(currentScenario.value.values[libB] ?? 0) -
 					(currentScenario.value.values[libA] ?? 0)
-			)
+				);
+			})
 	);
 
 	/** Librerías sin datos en el escenario actual (excluidas) */
@@ -181,12 +221,29 @@ export function useBenchmarkChart() {
 		return `${val}/s`;
 	}
 
+	/** Devuelve true si lib tiene el valor máximo en la columna del escenario dado,
+	 *  excluyendo las librerías de referencia (Plain JS) del cálculo.
+	 *  Considerando solo las librerías visibles en el coverage map. */
+	function isColMax(lib: string, scn: IBenchScenario): boolean {
+		if (PLAIN_JS_REFS.has(lib)) return false;
+		const val = scn.values[lib];
+		if (val == null) return false;
+		const max = Math.max(
+			...coverageLibNames
+				.filter((name) => !PLAIN_JS_REFS.has(name))
+				.map((name) => scn.values[name])
+				.filter((val): val is number => val != null)
+		);
+		return val === max;
+	}
+
 	/** Salta al escenario indicado y activa el tab de Performance */
 	function goToScenario(key: string): void {
 		activeScenario.value = key;
 		setTab('performance');
-		const el = document.querySelector('.bm-wrapper');
-		if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		const element = document.querySelector('.bm-wrapper');
+		if (element)
+			element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
 	// ─── Sub-composables (SRP) ────────────────────────────────
@@ -230,6 +287,7 @@ export function useBenchmarkChart() {
 		tabDirection,
 		setTab,
 		tabItems,
+		activeTabTitle,
 
 		// Datos estáticos
 		libraries,
@@ -279,8 +337,10 @@ export function useBenchmarkChart() {
 		toggleFeatureCategory,
 		isLibHidden,
 		isCategoryHidden,
+		isPlainJsLib,
 		formatBadgeSpeed,
 		goToScenario,
+		isColMax,
 
 		// Escala (useBenchmarkScale)
 		isOverflow,

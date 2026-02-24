@@ -79,8 +79,9 @@ export const enLocale = {
 		tooltipMissing: '❌ Missing',
 		coverageTitle: 'Coverage Map — Features & Speed',
 		coverageSubtitle:
-			'Which libraries support each benchmark scenario. Click a chip to jump to that benchmark.',
+			'Which libraries support each benchmark scenario. Click a column header to view the detailed benchmark.',
 		coverageSpeed: 'ops/sec',
+		coverageViewDetail: 'View detailed benchmark →',
 		tabFeatures: 'Feature Comparison',
 		tabCoverage: 'Coverage Map',
 		tabPerf: 'Performance',
@@ -146,6 +147,10 @@ export const enLocale = {
 			validationReport: {
 				label: 'Structured Error Report / validationReport() (3k)',
 				notes: '3k iterations with invalid data — getting categorized error objects. QuickModel validationReport(): returns { valid, integrity[], rules: { valid, errors[] } } — two separate categories: type/coercion errors (integrity) and business logic errors (@QRule). Zod safeParse(): flat ZodError.issues array, no categories. yup validateSync(abortEarly:false): flat ValidationError.errors. joi validate(abortEarly:false): flat error.details array. Only QuickModel distinguishes integrity vs rule failures in a single typed call.',
+			},
+			performanceTargets: {
+				label: 'Performance Targets / Throughput (Batch)',
+				notes: 'QuickModel throughput on two QM-exclusive scenarios: transformation of 10k Date objects in a single batch pass; and full create+serialize roundtrip of 1k typed instances with BigInt and Date fields. Both verify internal SLAs: 10k Dates < 100ms, 1k roundtrip < 50ms.',
 			},
 		},
 

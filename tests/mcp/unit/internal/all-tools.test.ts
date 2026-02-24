@@ -8,8 +8,10 @@ import {
 	QSyncDocsTool,
 } from '../../../../src/mcp/tools/internal';
 
+import { z } from 'zod';
+
 // Mock QMcpServer for QSyncDocsTool
-mock.module('../../../../src/mcp/server', () => {
+void mock.module('../../../../src/mcp/server', () => {
 	return {
 		QMcpServer: {
 			getDefaultTools: () => [
@@ -17,7 +19,7 @@ mock.module('../../../../src/mcp/server', () => {
 				{
 					name: 'mock_tool',
 					description: 'Mock Description',
-					schema: require('zod').object({}),
+					schema: z.object({}),
 				},
 			],
 		},
@@ -68,7 +70,7 @@ describe('MCP Internal Tools', () => {
 			await tool.execute({ action: 'build' });
 
 			expect(mockSpawn).toHaveBeenCalled();
-			const callArgs = mockSpawn.mock.calls[0]!;
+			const callArgs = mockSpawn.mock.calls[0];
 			// callArgs: [command, args, cwd]
 			const cmdArgs = callArgs[1] as string[];
 			expect(cmdArgs).toContain('docs:build');
@@ -81,7 +83,7 @@ describe('MCP Internal Tools', () => {
 			await tool.execute({ action: 'clean' });
 
 			expect(mockSpawn).toHaveBeenCalled();
-			const cmdArgs = mockSpawn.mock.calls[0]![1] as string[];
+			const cmdArgs = mockSpawn.mock.calls[0][1] as string[];
 			expect(cmdArgs).toContain('docs:clean');
 		});
 	});
@@ -94,7 +96,7 @@ describe('MCP Internal Tools', () => {
 			await tool.execute();
 
 			expect(mockSpawn).toHaveBeenCalled();
-			const cmdArgs = mockSpawn.mock.calls[0]![1] as string[];
+			const cmdArgs = mockSpawn.mock.calls[0][1] as string[];
 			expect(cmdArgs).toContain('check');
 		});
 	});
@@ -107,7 +109,7 @@ describe('MCP Internal Tools', () => {
 			await tool.execute();
 
 			expect(mockSpawn).toHaveBeenCalled();
-			const cmdArgs = mockSpawn.mock.calls[0]![1] as string[];
+			const cmdArgs = mockSpawn.mock.calls[0][1] as string[];
 			expect(cmdArgs).toContain('test:coverage');
 		});
 	});
@@ -164,7 +166,6 @@ describe('MCP Internal Tools', () => {
 			(tool as any)._fs = mockFs;
 
 			mockReaddirSync.mockReturnValue(['file.ts']);
-			// @ts-ignore
 			mockStatSync.mockImplementation(() => ({
 				isDirectory: () => false,
 			}));
@@ -180,7 +181,6 @@ describe('MCP Internal Tools', () => {
 			(tool as any)._fs = mockFs;
 
 			mockReaddirSync.mockReturnValue(['file.ts']);
-			// @ts-ignore
 			mockStatSync.mockImplementation(() => ({
 				isDirectory: () => false,
 			}));
@@ -221,7 +221,7 @@ describe('MCP Internal Tools', () => {
 
 			try {
 				await tool.execute();
-			} catch (e: any) {
+			} catch (_err: any) {
 				// If it fails on import, we skip strictly validiting that part for now to avoid complexity,
 				// but in a real scenario we'd mock the import.
 				// Let's assume it might fail if dependencies aren't perfect.
@@ -232,27 +232,35 @@ describe('MCP Internal Tools', () => {
 			// verify calls
 			const calls = mockWriteFileSync.mock.calls;
 			if (calls.length > 0) {
-				const paths = calls.map((c) => c[0] as string);
+				const paths = calls.map((call) => call[0] as string);
 				// English
 				expect(
-					paths.some((p) => p.includes('en/mcp/public/index.md'))
+					paths.some((pth) => pth.includes('en/mcp/public/index.md'))
 				).toBe(true);
 				expect(
-					paths.some((p) => p.includes('en/mcp/internal/index.md'))
+					paths.some((pth) =>
+						pth.includes('en/mcp/internal/index.md')
+					)
 				).toBe(true);
 				expect(
-					paths.some((p) => p.includes('en/guide/transformers.md'))
+					paths.some((pth) =>
+						pth.includes('en/guide/transformers.md')
+					)
 				).toBe(true);
 
 				// Spanish
 				expect(
-					paths.some((p) => p.includes('es/mcp/public/index.md'))
+					paths.some((pth) => pth.includes('es/mcp/public/index.md'))
 				).toBe(true);
 				expect(
-					paths.some((p) => p.includes('es/mcp/internal/index.md'))
+					paths.some((pth) =>
+						pth.includes('es/mcp/internal/index.md')
+					)
 				).toBe(true);
 				expect(
-					paths.some((p) => p.includes('es/guide/transformers.md'))
+					paths.some((pth) =>
+						pth.includes('es/guide/transformers.md')
+					)
 				).toBe(true);
 			}
 		});

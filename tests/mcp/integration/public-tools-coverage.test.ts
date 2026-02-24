@@ -231,7 +231,7 @@ describe('QGenerateMockDataTool - Full Coverage', () => {
 		});
 
 		// Verificar que no todos los nombres son iguales (alta probabilidad)
-		const names = result.map((m) => m.name);
+		const names = result.map((item) => item.name);
 		const uniqueNames = new Set(names);
 
 		expect(uniqueNames.size).toBeGreaterThan(1);
