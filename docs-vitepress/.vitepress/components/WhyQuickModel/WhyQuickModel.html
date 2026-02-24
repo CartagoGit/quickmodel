@@ -1,0 +1,198 @@
+<div class="wqm-wrapper">
+	<!-- ═══════════════════════════════════════════════════════
+	     MAIN TAB BAR
+	     ═══════════════════════════════════════════════════════ -->
+	<TabBar
+		:tabs="mainTabItems"
+		:model-value="activeMainTab"
+		@update:model-value="setMainTab" />
+
+	<!-- ═══════════════════════════════════════════════════════
+	     MAIN TAB PANELS (animated)
+	     ═══════════════════════════════════════════════════════ -->
+	<Transition
+		:name="'bm-tab-' + mainTabDirection"
+		mode="out-in">
+		<div
+			:key="activeMainTab"
+			class="bm-tab-panel wqm-panel">
+
+			<!-- ─────────────────────────────────────────────────
+			     TAB 1 — EXPLANATION
+			     ───────────────────────────────────────────────── -->
+			<template v-if="activeMainTab === 'explanation'">
+				<p class="wqm-intro">{{ t.whyQuickModel.explanationIntro }}</p>
+
+				<div class="wqm-features">
+					<div
+						v-for="sec in featureSections"
+						:key="sec.title"
+						class="wqm-feature">
+						<h3 class="wqm-feature__title">
+							{{ sec.icon }} {{ sec.title }}
+						</h3>
+						<div
+							class="wqm-feature__body"
+							v-html="sec.body" />
+					</div>
+				</div>
+			</template>
+
+			<!-- ─────────────────────────────────────────────────
+			     TAB 2 — INSTALLATION
+			     ───────────────────────────────────────────────── -->
+			<template v-else-if="activeMainTab === 'installation'">
+				<div class="bm-panel-header">
+					<h2 class="bm-header__title">{{ t.whyQuickModel.installTitle }}</h2>
+					<p class="bm-header__subtitle">{{ t.whyQuickModel.installSubtitle }}</p>
+				</div>
+
+				<!-- ── Step 1: Package manager ──────────────────── -->
+				<div class="wqm-install-step">
+					<span class="wqm-step-badge">1</span>
+					<h3 class="wqm-step-title">{{ t.whyQuickModel.installStep1 }}</h3>
+				</div>
+
+				<!-- Nested install sub-tabs -->
+				<div class="wqm-install-tabs">
+					<TabBar
+						:tabs="installTabItems"
+						:model-value="activeInstallTab"
+						@update:model-value="setInstallTab" />
+
+					<Transition
+						:name="'bm-tab-' + installTabDirection"
+						mode="out-in">
+						<div
+							:key="activeInstallTab"
+							class="wqm-code"
+							v-html="highlighted[activeInstallTab] || '<pre><code>' + installCmds[activeInstallTab] + '</code></pre>'" />
+					</Transition>
+				</div>
+
+				<!-- ── Step 2: tsconfig ──────────────────────────────────── -->
+				<div class="wqm-install-step">
+					<span class="wqm-step-badge">2</span>
+					<h3 class="wqm-step-title">{{ t.whyQuickModel.installStep2 }}</h3>
+				</div>
+
+				<div class="wqm-tsconfig-variants">
+					<div class="wqm-tsconfig-card">
+						<div class="wqm-tsconfig-card__badge wqm-tsconfig-card__badge--legacy">
+							Legacy · TS 3.4+
+						</div>
+						<div
+							class="wqm-code"
+							v-html="highlighted.tsconfigLegacy || '<pre><code>' + codeTsconfigLegacy + '</code></pre>'" />
+					</div>
+					<div class="wqm-tsconfig-card">
+						<div class="wqm-tsconfig-card__badge wqm-tsconfig-card__badge--tc39">
+							TC39 · TS 5.0+
+						</div>
+						<div
+							class="wqm-code"
+							v-html="highlighted.tsconfigTC39 || '<pre><code>' + codeTsconfigTC39 + '</code></pre>'" />
+					</div>
+				</div>
+
+				<!-- ── Step 3: First model ──────────────────────────────────── -->
+				<div class="wqm-install-step">
+					<span class="wqm-step-badge">3</span>
+					<h3 class="wqm-step-title">{{ t.whyQuickModel.installStep3 }}</h3>
+				</div>
+				<div
+					class="wqm-code"
+					v-html="highlighted.firstModel || '<pre><code>' + codeFirstModel + '</code></pre>'" />
+			</template>
+
+			<!-- ─────────────────────────────────────────────────
+			     TAB 3 — REQUIREMENTS
+			     ───────────────────────────────────────────────── -->
+			<template v-else-if="activeMainTab === 'requirements'">
+				<div class="bm-panel-header">
+					<h2 class="bm-header__title">{{ t.whyQuickModel.reqTitle }}</h2>
+					<p class="bm-header__subtitle">{{ t.whyQuickModel.reqSubtitle }}</p>
+				</div>
+
+				<div class="wqm-req-grid">
+					<!-- Runtime -->
+					<div class="wqm-req-card wqm-req-card--required">
+						<div class="wqm-req-card__header">
+							<span class="wqm-req-card__icon">🟢</span>
+							<span class="wqm-req-card__name">Node.js</span>
+							<span class="wqm-req-card__version">≥ 18.0.0</span>
+						</div>
+						<p class="wqm-req-card__desc">{{ t.whyQuickModel.reqNodeDesc }}</p>
+					</div>
+
+					<div class="wqm-req-card wqm-req-card--required">
+						<div class="wqm-req-card__header">
+							<span class="wqm-req-card__icon">🔷</span>
+							<span class="wqm-req-card__name">TypeScript</span>
+							<span class="wqm-req-card__version">≥ 3.4 · ≥ 5.0 (TC39)</span>
+						</div>
+						<p class="wqm-req-card__desc">{{ t.whyQuickModel.reqTsDesc }}</p>
+					</div>
+
+					<div class="wqm-req-card wqm-req-card--required">
+						<div class="wqm-req-card__header">
+							<span class="wqm-req-card__icon">📦</span>
+							<span class="wqm-req-card__name">reflect-metadata</span>
+							<span class="wqm-req-card__version">≥ 0.2</span>
+						</div>
+						<p class="wqm-req-card__desc">{{ t.whyQuickModel.reqReflectDesc }}</p>
+					</div>
+
+					<div class="wqm-req-card wqm-req-card--optional">
+						<div class="wqm-req-card__header">
+							<span class="wqm-req-card__icon">🎭</span>
+							<span class="wqm-req-card__name">@faker-js/faker</span>
+							<span class="wqm-req-card__version">≥ 10.0 · bundled</span>
+						</div>
+						<p class="wqm-req-card__desc" v-html="t.whyQuickModel.reqFakerDesc" />
+					</div>
+				</div>
+
+				<!-- tsconfig settings table -->
+				<h3 class="wqm-req-section-title">{{ t.whyQuickModel.reqTsconfigTitle }}</h3>
+				<div class="wqm-req-table">
+					<div class="wqm-req-table__row wqm-req-table__row--header">
+						<span>{{ t.whyQuickModel.reqTsconfigOption }}</span>
+						<span>{{ t.whyQuickModel.reqTsconfigLegacy }}</span>
+						<span>{{ t.whyQuickModel.reqTsconfigTC39 }}</span>
+						<span>{{ t.whyQuickModel.reqTsconfigNote }}</span>
+					</div>
+					<div class="wqm-req-table__row">
+						<span><code>experimentalDecorators</code></span>
+						<span class="wqm-req__ok">✅ true</span>
+						<span class="wqm-req__no">❌ false</span>
+						<span>{{ t.whyQuickModel.reqExpDecNote }}</span>
+					</div>
+					<div class="wqm-req-table__row">
+						<span><code>emitDecoratorMetadata</code></span>
+						<span class="wqm-req__ok">✅ true</span>
+						<span class="wqm-req__no">❌ false</span>
+						<span>{{ t.whyQuickModel.reqEmitMetaNote }}</span>
+					</div>
+					<div class="wqm-req-table__row wqm-req-table__row--critical">
+						<span><code>useDefineForClassFields</code></span>
+						<span class="wqm-req__critical">⚠️ false</span>
+						<span class="wqm-req__ok">✅ true</span>
+						<span>{{ t.whyQuickModel.reqUseDefineNote }}</span>
+					</div>
+					<div class="wqm-req-table__row">
+						<span><code>target</code></span>
+						<span colspan="2" class="wqm-req__ok">✅ ES2022+</span>
+						<span>{{ t.whyQuickModel.reqTargetNote }}</span>
+					</div>
+					<div class="wqm-req-table__row">
+						<span><code>strict</code></span>
+						<span colspan="2" class="wqm-req__ok">✅ recommended</span>
+						<span>{{ t.whyQuickModel.reqStrictNote }}</span>
+					</div>
+				</div>
+			</template>
+
+		</div>
+	</Transition>
+</div>

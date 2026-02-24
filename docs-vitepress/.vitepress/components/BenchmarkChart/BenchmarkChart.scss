@@ -206,8 +206,22 @@
 		width: 100%;
 		gap: 0;
 
+		&-speed {
+			position: absolute;
+			right: 12px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 0.76rem;
+			font-weight: 700;
+			color: #fff;
+			text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+			white-space: nowrap;
+			pointer-events: none;
+			z-index: 1;
+		}
+
 		&-fill {
-			width: 90%;
+			/* width is set dynamically via :style binding (proportional to overflow ratio) */
 			height: 100%;
 			min-height: 28px;
 			border-radius: 4px 0 0 4px;
@@ -230,11 +244,13 @@
 		}
 
 		&-ext {
-			padding-left: 1rem;
+			padding-left: 0.6rem;
 			font-size: 0.72rem;
 			font-weight: 600;
 			opacity: 0.85;
 			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: clip;
 		}
 
 		&-caveat {

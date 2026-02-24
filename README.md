@@ -6,7 +6,7 @@
 
 TypeScript model system with automatic type transformation and SOLID architecture.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Custom](https://img.shields.io/badge/License-Custom-blue.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3.4+-blue.svg)](https://www.typescriptlang.org/)
 [![CI](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml/badge.svg)](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/CartagoGit/quickmodel/branch/main/graph/badge.svg)](https://codecov.io/gh/CartagoGit/quickmodel)
@@ -241,6 +241,13 @@ user.createdAt // ✅ TypeScript: Date (transformed)
 - ✅ You want standard constructor usage (`new`)
 - ✅ You need property visibility in IDE
 ```
+
+## 💖 Support the Project
+
+If QuickModel saves you time or adds value to your work, consider buying me a coffee!
+Every contribution helps keep the project maintained and growing.
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?logo=paypal)](https://paypal.me/cartagonova)
 
 ## 📖 Core Concepts
 
@@ -804,4 +811,4 @@ Contributions welcome! See [development guide](https://cartagogit.github.io/quic
 
 ## 📝 License
 
-MIT © Cartago Git
+QuickModel Custom License © 2026 Cartago — free to use, not to sell or fork without permission. See [LICENSE](./LICENSE) for full terms.

@@ -8,6 +8,54 @@ export const en = {
 		internalToolsMaintainers: 'Internal Tools (Maintainers)',
 		internalSkillsMaintainers: 'Internal Skills (Maintainers)',
 	},
+	quickExamples: {
+		tabBasic: '@Quick + QModel',
+		tabForms: 'QField + QGroup + QRule',
+		tabMocks: 'Serialization + Mocks',
+		basicTitle: 'Type coercion with @Quick and QModel',
+		basicSubtitle:
+			'A single decorator transforms JSON strings into BigInt, Date, Map and more',
+		formsTitle: 'Form schemas, groups and validation rules',
+		formsSubtitle:
+			'Declarative form schema generation with metadata, groups and business rules',
+		mocksTitle: 'Round-trip serialization and mock data',
+		mocksSubtitle:
+			'Type-safe JSON serialization and automatic realistic mock generation for tests',
+	},
+	whyQuickModel: {
+		tabExplanation: 'Why QuickModel?',
+		tabInstallation: 'Installation',
+		tabRequirements: 'Requirements',
+		explanationIntro:
+			'QuickModel is more than a serialization library — it is a complete development platform for data-intensive TypeScript applications.',
+		installTitle: 'Get started in seconds',
+		installSubtitle: 'Install with your preferred package manager',
+		installStep1: 'Install via your package manager',
+		installStep2: 'Configure tsconfig.json',
+		installStep3: 'Create your first model',
+		reqTitle: 'System Requirements',
+		reqSubtitle: 'Everything you need to run QuickModel',
+		reqNodeDesc:
+			'Required. ES2022+ runtime. Works with Node, Bun, Deno, and any modern browser bundle.',
+		reqTsDesc:
+			'TypeScript 3.4+ for legacy decorators, 5.0+ to use TC39 standard decorators.',
+		reqReflectDesc:
+			'Already bundled inside QuickModel. No need to import it manually in your project.',
+		reqFakerDesc:
+			'Bundled as an optional dependency — installed automatically with the package. Only needed when you call <code>mock()</code>.',
+		reqTsconfigTitle: 'tsconfig.json Settings',
+		reqTsconfigOption: 'Option',
+		reqTsconfigLegacy: 'Legacy (TS 3.4+)',
+		reqTsconfigTC39: 'TC39 (TS 5+)',
+		reqTsconfigNote: 'Notes',
+		reqExpDecNote: 'Enable legacy decorator syntax (@Quick, @QType…)',
+		reqEmitMetaNote:
+			'Emit type metadata at runtime (required for type inference)',
+		reqUseDefineNote:
+			'⚠️ CRITICAL — must be false with legacy decorators to avoid shadowing',
+		reqTargetNote: 'BigInt and modern APIs require ES2020 minimum',
+		reqStrictNote: 'Recommended for maximum type safety',
+	},
 	benchmark: {
 		// ─── UI labels ────────────────────────────────────────────
 		featureTitle: 'Feature Comparison',
@@ -21,6 +69,8 @@ export const en = {
 		perfSubtitle: 'Hover the bars to see details',
 		scenarioLabel: 'Scenario:',
 		muchFaster: 'much faster',
+		noticeablyFaster: 'noticeably faster',
+		slightlyFaster: 'faster ↑',
 		seeNote: '(see note ↑)',
 		notApplicable: 'Not applicable in this scenario',
 		slower: 'slower',
@@ -47,7 +97,7 @@ export const en = {
 			},
 			serialization: {
 				label: 'Serialization Roundtrip (type-safe)',
-				notes: '1k round-trips. Plain JS (JSON.parse/stringify) is the fastest but loses Date→string, BigInt→error, Map/Set→{}. class-transformer preserves Date only via @Type. superjson preserves Date, BigInt, Set, Map, RegExp and more. QuickModel preserves all types natively — bars for Plain JS and arktype are clipped for readability.',
+				notes: '1k round-trips. Plain JS (JSON.parse/stringify) is the fastest but loses Date→string, BigInt→error, Map/Set→{}. class-transformer preserves Date only via @Type. superjson preserves Date, BigInt, Set, Map, RegExp and more. QuickModel preserves all types natively with zero extra code.',
 			},
 			batch: {
 				label: 'Batch Validation (1k objects)',
@@ -55,7 +105,7 @@ export const en = {
 			},
 			mocks: {
 				label: 'Test Data Generation (100 instances)',
-				notes: '100 typed instances per cycle. faker (manual) is raw-faster but requires 10-20 lines of per-model factory code, no type constraints, needs manual maintenance on schema changes. QM is built-in: zero setup, fully typed, respects field constraints automatically. Bar for faker is clipped — it runs at 80k ops/s. arktype, joi, superjson, class-validator and vest have no built-in mock generation.',
+				notes: '100 typed instances per cycle. faker (manual) requires a manual factory function per model — fast but with no type constraints and breaks on every schema change. Plain JS uses a hardcoded factory — fastest but not random. QM is built-in: zero setup, fully typed, respects field constraints automatically. arktype, joi, superjson, class-validator and vest have no built-in mock generation.',
 			},
 			forms: {
 				label: 'Business Rules / Forms (5k)',
@@ -199,9 +249,9 @@ export const en = {
 				],
 			},
 			fakerManual: {
-				desc: '@faker-js/faker — fast random data generation, manual model mapping required',
+				desc: '@faker-js/faker — random data generation, manual factory function required per model',
 				pros: [
-					'Very fast raw generation (~80k/s) ✅',
+					'Fast random data generation ✅',
 					'Huge variety of data types ✅',
 					'Well-known, large ecosystem ✅',
 				],
@@ -410,5 +460,11 @@ export const en = {
 			model: 'Model State',
 			exclusive: 'QuickModel Only',
 		},
+	},
+	footer: {
+		license:
+			'Released under the <a href="https://github.com/CartagoGit/quickmodel/blob/main/LICENSE" target="_blank" rel="noopener">QuickModel Custom License</a>.',
+		donation:
+			'If this project helps you, consider <a href="https://paypal.me/cartagonova" target="_blank" rel="noopener">☕ buying me a coffee</a>!',
 	},
 } as const;

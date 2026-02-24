@@ -1,0 +1,337 @@
+// ─────────────────────────────────────────────────────────────
+// WhyQuickModel — BEM styles
+// Bloque raíz: .wqm  (wqm = why-quick-model)
+// ─────────────────────────────────────────────────────────────
+
+// ── Wrapper ───────────────────────────────────────────────────
+
+.wqm-wrapper {
+	margin: 2rem 0 3rem;
+}
+
+// ── Panel ─────────────────────────────────────────────────────
+
+.wqm-panel {
+	min-height: 200px;
+}
+
+// ── Explanation panel ─────────────────────────────────────────
+
+.wqm-intro {
+	font-size: 1.05rem;
+	color: var(--vp-c-text-1);
+	margin: 1.25rem 0 1.5rem;
+	line-height: 1.7;
+}
+
+.wqm-features {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.25rem;
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.wqm-feature {
+	background: var(--vp-c-bg-soft);
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 10px;
+	padding: 1rem 1.25rem 1.1rem;
+	transition: border-color 0.2s ease;
+
+	&:hover {
+		border-color: var(--vp-c-brand-light);
+	}
+}
+
+.wqm-feature__title {
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 0 0 0.6rem;
+	color: var(--vp-c-text-1);
+}
+
+.wqm-feature__body {
+	font-size: 0.875rem;
+	color: var(--vp-c-text-2);
+	line-height: 1.65;
+
+	ul {
+		margin: 0;
+		padding-left: 1.2rem;
+
+		li {
+			margin-bottom: 0.35rem;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	p {
+		margin: 0 0 0.5rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	code {
+		font-family: var(--vp-font-family-mono);
+		font-size: 0.82rem;
+		background: var(--vp-code-bg);
+		border-radius: 3px;
+		padding: 0.1em 0.35em;
+		color: var(--vp-c-text-1);
+	}
+}
+
+.wqm-schema-pills {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin-top: 0.35rem;
+}
+
+// ── Installation panel ────────────────────────────────────────
+
+.wqm-install-step {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 1.5rem 0 0.6rem;
+
+	&:first-of-type {
+		margin-top: 1.25rem;
+	}
+}
+
+.wqm-step-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	background: var(--vp-c-brand-1);
+	color: #fff;
+	font-size: 0.8rem;
+	font-weight: 700;
+	flex-shrink: 0;
+}
+
+.wqm-step-title {
+	font-size: 1rem;
+	font-weight: 600;
+	margin: 0;
+	color: var(--vp-c-text-1);
+}
+
+// ── Install sub-tabs wrapper ──────────────────────────────────
+
+.wqm-install-tabs {
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 10px;
+	overflow: hidden;
+	background: var(--vp-c-bg-soft);
+
+	// Style the nested TabBar to appear borderless inside this container
+	:deep(.tab-bar) {
+		border-bottom: 1px solid var(--vp-c-divider);
+		border-radius: 0;
+		background: var(--vp-c-bg-alt);
+	}
+}
+
+// ── tsconfig two-column variants ──────────────────────────────
+
+.wqm-tsconfig-variants {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+
+	@media (min-width: 640px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.wqm-tsconfig-card {
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid var(--vp-c-divider);
+}
+
+.wqm-tsconfig-card__badge {
+	font-size: 0.75rem;
+	font-weight: 700;
+	padding: 0.3rem 0.75rem;
+	letter-spacing: 0.04em;
+
+	&--legacy {
+		background: var(--vp-c-yellow-soft);
+		color: var(--vp-c-yellow-1);
+	}
+
+	&--tc39 {
+		background: var(--vp-c-green-soft);
+		color: var(--vp-c-green-1);
+	}
+}
+
+// ── Code block (shared, powered by shiki) ────────────────────
+
+.wqm-code {
+	overflow: hidden;
+
+	pre {
+		margin: 0;
+		padding: 1rem 1.25rem;
+		overflow-x: auto;
+		border-radius: 0;
+	}
+
+	code {
+		font-family: var(--vp-font-family-mono);
+		font-size: 0.85rem;
+		line-height: 1.6;
+		background: transparent;
+		border-radius: 0;
+		padding: 0;
+	}
+
+	// Fallback without shiki
+	&:not(:has(.shiki)) {
+		background: var(--vp-code-block-bg);
+
+		code {
+			color: var(--vp-c-text-1);
+			white-space: pre;
+		}
+	}
+}
+
+// ── Requirements panel ────────────────────────────────────────
+
+.wqm-req-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.85rem;
+	margin: 1rem 0 1.75rem;
+
+	@media (min-width: 640px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.wqm-req-card {
+	border-radius: 10px;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid var(--vp-c-divider);
+
+	&--required {
+		border-left: 3px solid var(--vp-c-brand-1);
+	}
+
+	&--optional {
+		border-left: 3px solid var(--vp-c-yellow-1);
+		opacity: 0.85;
+	}
+}
+
+.wqm-req-card__header {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	margin-bottom: 0.4rem;
+}
+
+.wqm-req-card__icon {
+	font-size: 1rem;
+}
+
+.wqm-req-card__name {
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: var(--vp-c-text-1);
+}
+
+.wqm-req-card__version {
+	font-size: 0.78rem;
+	color: var(--vp-c-brand-1);
+	font-family: var(--vp-font-family-mono);
+	margin-left: auto;
+}
+
+.wqm-req-card__desc {
+	font-size: 0.82rem;
+	color: var(--vp-c-text-2);
+	margin: 0;
+	line-height: 1.55;
+}
+
+// ── Requirements tsconfig table ───────────────────────────────
+
+.wqm-req-section-title {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--vp-c-text-1);
+	margin: 0 0 0.75rem;
+}
+
+.wqm-req-table {
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 8px;
+	overflow: hidden;
+	font-size: 0.82rem;
+}
+
+.wqm-req-table__row {
+	display: grid;
+	grid-template-columns: 1.8fr 1fr 1fr 2fr;
+	gap: 0.5rem;
+	padding: 0.55rem 0.9rem;
+	border-bottom: 1px solid var(--vp-c-divider);
+	align-items: center;
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&--header {
+		background: var(--vp-c-bg-soft);
+		font-weight: 700;
+		color: var(--vp-c-text-2);
+		font-size: 0.78rem;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+
+	&--critical {
+		background: var(--vp-c-yellow-soft);
+	}
+
+	code {
+		font-family: var(--vp-font-family-mono);
+		font-size: 0.8rem;
+		background: var(--vp-code-bg);
+		border-radius: 3px;
+		padding: 0.1em 0.3em;
+	}
+}
+
+.wqm-req__ok {
+	color: var(--vp-c-green-1);
+	font-weight: 600;
+}
+
+.wqm-req__no {
+	color: var(--vp-c-text-3);
+}
+
+.wqm-req__critical {
+	color: var(--vp-c-yellow-1);
+	font-weight: 700;
+}

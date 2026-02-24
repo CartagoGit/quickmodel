@@ -275,16 +275,18 @@
 									@mouseleave="onBarMouseLeave">
 									<div
 										class="bm-bar__overflow-fill"
-										:style="{ background: libraries[lib]?.color }">
-										<span class="bm-bar__value">
+										:style="{ background: libraries[lib]?.color, width: overflowFillPercent(lib) + '%' }">
+										<span class="bm-bar__overflow-speed">
 											{{ formatOps(lib) }}
 										</span>
 									</div>
 									<div
 										class="bm-bar__overflow-ext"
-										:style="{ color: libraries[lib]?.color }">
-										›› {{ t.benchmark.muchFaster }}
-										<span class="bm-bar__overflow-caveat">
+										:style="{ color: libraries[lib]?.color, width: (100 - overflowFillPercent(lib)) + '%' }">
+										›› {{ overflowLabel(lib) }}
+										<span
+											v-if="overflowRatio(lib) >= 10"
+											class="bm-bar__overflow-caveat">
 											{{ t.benchmark.seeNote }}
 										</span>
 									</div>

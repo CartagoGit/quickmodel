@@ -14,12 +14,34 @@
 		font-weight: 500;
 		color: var(--vp-c-text-2);
 		margin: 0 0 8px 0;
+
+		:deep(a) {
+			color: var(--vp-c-brand-1);
+			text-decoration: none;
+			transition: color 0.2s ease, text-decoration-color 0.2s ease;
+
+			&:hover {
+				color: var(--vp-c-brand-2);
+				text-decoration: underline;
+			}
+		}
 	}
 
 	&__copyright {
 		font-size: 14px;
 		color: var(--vp-c-text-3);
 		margin: 0;
+
+		:deep(a) {
+			color: var(--vp-c-brand-1);
+			text-decoration: none;
+			transition: color 0.2s ease, text-decoration-color 0.2s ease;
+
+			&:hover {
+				color: var(--vp-c-brand-2);
+				text-decoration: underline;
+			}
+		}
 	}
 
 	&__links {

@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "SEE LICENSE IN LICENSE",
 	"keywords": [
 		"typescript",
 		"models",

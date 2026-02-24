@@ -1,304 +1,258 @@
+#!/usr/bin/env bun
 /**
- * @fileoverview Actualiza automáticamente los datos de benchmarks en la documentación.
+ * update-bench-docs.ts
  *
- * Ejecuta `bun run bench:compare`, captura el output y actualiza los valores
- * en `benchmark-chart.constants.ts` con los resultados reales de la máquina actual.
+ * Runs comparison benchmarks and auto-updates the `scenarios` array in
+ * benchmark-chart.constants.ts with real measurements.
  *
- * Diseño:
- *   - Cada scenario en constants.ts declara su `benchNum` (qué BENCH # lo alimenta).
- *   - `RAW_TO_LIB_KEY` mapea el nombre tal como aparece en el test output → libKey.
- *   - `SCENARIO_BENCH_NUM` es el mapeo inverso: scenarioKey → benchNum.
- *   - Un mismo benchNum puede alimentar varios scenarios (p.ej. benchNum=8 actualiza
- *     tanto 'forms' como 'rules' automáticamente, sin tablas extra).
+ * Agnostic design:
+ *  - Discovers participating libs from bench output (no hardcoded lists)
+ *  - Matches bench numbers to existing scenarios via `benchNum` field
+ *  - Creates new scenario entries (key = bench{N}) for unknown benches
+ *  - Adds i18n stubs in en.ts / es.ts for newly created scenarios
+ *  - Never touches `libraries`, `featureRows`, or anything outside `scenarios`
  *
- * Uso:
- *   bun run bench:update
+ * Usage: bun run bench:update
  */
 
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-// ─────────────────────────────────────────────────────────────
-// TIPOS
-// ─────────────────────────────────────────────────────────────
+// ─── Paths ────────────────────────────────────────────────────────────────────
 
-interface IBenchEntry {
+const ROOT = resolve(import.meta.dir, '..');
+const CONSTANTS_PATH = resolve(
+	ROOT,
+	'docs-vitepress/.vitepress/components/BenchmarkChart/benchmark-chart.constants.ts'
+);
+const TEST_PATH = resolve(
+	ROOT,
+	'tests/performance/comparison-benchmarks.test.ts'
+);
+const I18N_EN_PATH = resolve(ROOT, 'docs-vitepress/.vitepress/i18n/en.ts');
+const I18N_ES_PATH = resolve(ROOT, 'docs-vitepress/.vitepress/i18n/es.ts');
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface IScenario {
+	key: string;
 	benchNum: number;
-	rawLibName: string;
-	opsPerSec: number;
+	appTypes: string[];
+	values: Record<string, number | null>;
 }
 
-interface IScenarioUpdate {
-	scenarioKey: string;
-	libKey: string;
+interface IBenchReading {
+	benchNum: number;
+	/** Canonical lib name (after normalization) */
+	libName: string;
 	value: number;
 }
 
-// ─────────────────────────────────────────────────────────────
-// MAPEO: rawLibName (lowercase) → libKey canónico en constants.ts
-//
-// Cubre todos los nombres que aparecen en los logs de los tests:
-//   "[BENCH #N] TypeBox: 1,500,000 ops/sec"  → libKey = "TypeBox"
-// ─────────────────────────────────────────────────────────────
-
-const RAW_TO_LIB_KEY: Record<string, string> = {
-	typebox: 'TypeBox',
-	arktype: 'arktype',
-	valibot: 'valibot',
-	zod: 'Zod',
-	yup: 'yup',
-	joi: 'joi',
-	'plain js (baseline)': 'Plain JS',
-	'plain json (baseline)': 'Plain JS',
-	superjson: 'superjson',
-	'class-transformer': 'class-transformer',
-	'class-validator': 'class-validator',
-	vest: 'vest',
-	quickmodel: 'QuickModel',
-	'quickmodel mock': 'QuickModel',
-	'quickmodel @qrule': 'QuickModel',
+// ─── Lib-name normalization ───────────────────────────────────────────────────
+// Maps lowercase raw names from bench output -> canonical keys used in constants.
+// Only needed when the bench output name differs structurally from the canonical.
+const LIB_RENAMES: Record<string, string> = {
+	'plain json': 'Plain JS',
+	'plain js': 'Plain JS',
 };
 
-// ─────────────────────────────────────────────────────────────
-// SCENARIO → BENCH NUM
-//
-// Refleja el campo `benchNum` de cada IBenchScenario en constants.ts.
-// Si se añade un scenario nuevo allí, añadir aquí también.
-// Un mismo benchNum puede asignarse a varios scenarios (p.ej. 'forms'
-// y 'rules' ambos usan BENCH #8).
-// ─────────────────────────────────────────────────────────────
+/** Suffixes appended by some benches that don't change the lib identity */
+const STRIP_SUFFIXES = [' (baseline)', ' @qrule', ' mock'];
 
-const SCENARIO_BENCH_NUM: Record<string, number> = {
-	validation: 1,
-	coercion: 2,
-	serialization: 3,
-	batch: 4,
-	mocks: 5,
-	forms: 8,
-	rules: 8,
-};
+function canonicalize(raw: string): string {
+	let name = raw.trim();
+	const lower = name.toLowerCase();
+	for (const sfx of STRIP_SUFFIXES) {
+		if (lower.endsWith(sfx)) {
+			name = name.slice(0, -sfx.length).trim();
+			break;
+		}
+	}
+	return LIB_RENAMES[name.toLowerCase()] ?? name;
+}
 
-// ─────────────────────────────────────────────────────────────
-// PARSING
-// ─────────────────────────────────────────────────────────────
+// ─── Bench output parsing ─────────────────────────────────────────────────────
 
-/**
- * Extrae todas las mediciones del output del test.
- * Soporta "ops/sec" y "cycles/sec".
- *
- * Formatos capturados:
- *   [BENCH #1] TypeBox: 1,500,000 ops/sec | 0.67μs avg
- *   [BENCH #4] TypeBox: 1,500,000 cycles/sec
- */
-function parseBenchOutput(rawOutput: string): IBenchEntry[] {
-	const pattern =
+function parseBenchOutput(output: string): IBenchReading[] {
+	// Matches: [BENCH #N] LibName: 1,234 ops/sec  OR  cycles/sec
+	const LINE_RE =
 		/\[BENCH #(\d+)\]\s+([^:\n]+?):\s+([\d,]+)\s+(?:ops|cycles)\/sec/g;
-	const entries: IBenchEntry[] = [];
+	// Deduplicate: keep last occurrence per (benchNum, libName) - last = warmest JIT
+	const seen = new Map<string, IBenchReading>();
 	let match: RegExpExecArray | null;
-
-	while ((match = pattern.exec(rawOutput)) !== null) {
+	while ((match = LINE_RE.exec(output)) !== null) {
 		const benchNum = parseInt(match[1]!, 10);
-		const rawLibName = match[2]!.trim().toLowerCase();
-		const opsPerSec = parseInt(match[3]!.replace(/,/g, ''), 10);
-		entries.push({ benchNum, rawLibName, opsPerSec });
+		const libName = canonicalize(match[2]!);
+		const value = parseInt(match[3]!.replace(/,/g, ''), 10);
+		seen.set(`${benchNum}|${libName}`, { benchNum, libName, value });
 	}
-
-	return entries;
+	return Array.from(seen.values());
 }
 
-/**
- * Convierte las entradas de benchmark en actualizaciones de scenario+libKey.
- *
- * Un mismo benchNum actualiza todos los scenarios que lo declaren
- * (p.ej. benchNum=8 → 'forms' y 'rules').
- */
-function mapEntriesToUpdates(entries: IBenchEntry[]): IScenarioUpdate[] {
-	// Índice inverso: benchNum → lista de scenarioKeys que lo usan
-	const benchToScenarios = new Map<number, string[]>();
-	for (const [scenarioKey, benchNum] of Object.entries(SCENARIO_BENCH_NUM)) {
-		const list = benchToScenarios.get(benchNum) ?? [];
-		list.push(scenarioKey);
-		benchToScenarios.set(benchNum, list);
-	}
+// ─── Test-file describe-block parsing ────────────────────────────────────────
 
-	const updates: IScenarioUpdate[] = [];
-
-	for (const entry of entries) {
-		const libKey = RAW_TO_LIB_KEY[entry.rawLibName];
-		if (!libKey) {
-			console.warn(
-				`  [SKIP] Sin mapeo para: [BENCH #${entry.benchNum}] "${entry.rawLibName}"`
-			);
+function parseBenchDescriptions(testSource: string): Map<number, string> {
+	const map = new Map<number, string>();
+	const MARKER = 'Benchmark #';
+	let pos = 0;
+	while ((pos = testSource.indexOf(MARKER, pos)) !== -1) {
+		const rest = testSource.slice(pos + MARKER.length);
+		const numEnd = rest.search(/\D/);
+		if (numEnd <= 0) {
+			pos++;
 			continue;
 		}
-
-		const scenarioKeys = benchToScenarios.get(entry.benchNum);
-		if (!scenarioKeys || scenarioKeys.length === 0) {
-			// Benchmark sin scenario asociado (BENCH #6, #7): se ignora silenciosamente
-			continue;
+		const num = parseInt(rest.slice(0, numEnd), 10);
+		if (!map.has(num)) {
+			// Try to grab a short description after an optional em-dash or hyphen
+			const afterNum = rest.slice(numEnd).trimStart();
+			const dashIdx = afterNum.search(/[-\u2014]/);
+			const rawDesc =
+				dashIdx >= 0 ? afterNum.slice(dashIdx + 1).trimStart() : '';
+			// Stop at the closing quote/backtick (first occurrence)
+			const quoteIdx = rawDesc.search(/['"` ]/);
+			const desc =
+				quoteIdx > 0
+					? rawDesc.slice(0, quoteIdx).trim()
+					: `Benchmark ${num}`;
+			map.set(num, desc || `Benchmark ${num}`);
 		}
-
-		for (const scenarioKey of scenarioKeys) {
-			updates.push({ scenarioKey, libKey, value: entry.opsPerSec });
-		}
+		pos += MARKER.length;
 	}
-
-	return updates;
+	return map;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FORMATEO DE NÚMEROS
-// ─────────────────────────────────────────────────────────────
+// ─── Key derivation for new scenarios ────────────────────────────────────────
 
-/** Ejemplo: 1500000 → "1_500_000" */
-function formatWithUnderscores(num: number): string {
-	const str = Math.round(num).toString();
+/** Falls back to bench{N} - developer can rename later; benchNum ensures future updates work */
+function deriveKey(benchNum: number): string {
+	return `bench${benchNum}`;
+}
+
+// ─── Number formatting ────────────────────────────────────────────────────────
+
+function fmt(num: number): string {
+	const str = num.toString();
 	const parts: string[] = [];
-	let remaining = str;
-	while (remaining.length > 3) {
-		parts.unshift(remaining.slice(-3));
-		remaining = remaining.slice(0, -3);
+	let count = 0;
+	for (let pos = str.length - 1; pos >= 0; pos--) {
+		if (count > 0 && count % 3 === 0) parts.unshift('_');
+		parts.unshift(str[pos]!);
+		count++;
 	}
-	parts.unshift(remaining);
-	return parts.join('_');
+	return parts.join('');
 }
 
-// ─────────────────────────────────────────────────────────────
-// ACTUALIZACIÓN DEL ARCHIVO DE CONSTANTES
-// ─────────────────────────────────────────────────────────────
+// ─── Scenario serialization ──────────────────────────────────────────────────
 
-/**
- * Máquina de estados que recorre el archivo línea a línea y reemplaza
- * los valores numéricos en los bloques `values: { ... }` de cada scenario.
- *
- * Solo actúa dentro del array `scenarios` — se detiene al llegar a
- * `export const libraries` para no tocar otras secciones del archivo.
- */
-function applyUpdatesToConstantsFile(updates: IScenarioUpdate[]): number {
-	const filePath = join(
-		import.meta.dirname,
-		'..',
-		'docs-vitepress',
-		'.vitepress',
-		'components',
-		'BenchmarkChart',
-		'benchmark-chart.constants.ts'
-	);
-
-	// Mapa anidado: scenarioKey → libKey → newValue
-	const updateMap = new Map<string, Map<string, number>>();
-	for (const upd of updates) {
-		if (!updateMap.has(upd.scenarioKey)) {
-			updateMap.set(upd.scenarioKey, new Map());
-		}
-		updateMap.get(upd.scenarioKey)!.set(upd.libKey, upd.value);
-	}
-
-	const content = readFileSync(filePath, 'utf-8');
-	const lines = content.split('\n');
-
-	type IState = 'scanning' | 'in_scenario' | 'in_values' | 'done';
-
-	let state: IState = 'scanning';
-	let currentScenarioKey = '';
-	let braceDepth = 0;
-	let replacedCount = 0;
-
-	// Detecta `key: 'xxx'` dentro de un objeto del array scenarios
-	const scenarioKeyRe = /^\s+key:\s*['"]([^'"]+)['"]/;
-	// Detecta el inicio de `values: {`
-	const valuesStartRe = /^\s+values:\s*\{/;
-	// Detecta líneas de valor de librería:  'Plain JS': 1_234,  TypeBox: null,
-	const libValueRe =
-		/^(\s+(?:'([^']+)'|([\w][\w -]*))\s*:\s*)(null|[\d_]+)(,?\s*)$/;
-
-	const updatedLines = lines.map((rawLine) => {
-		if (state === 'done') return rawLine;
-
-		// Parar al llegar a la sección de libraries (fuera del array scenarios)
-		if (rawLine.includes('export const libraries')) {
-			state = 'done';
-			return rawLine;
-		}
-
-		if (state === 'scanning' || state === 'in_scenario') {
-			const keyMatch = scenarioKeyRe.exec(rawLine);
-			if (keyMatch) {
-				currentScenarioKey = keyMatch[1]!;
-				state = 'in_scenario';
-				return rawLine;
-			}
-
-			if (state === 'in_scenario' && valuesStartRe.test(rawLine)) {
-				state = 'in_values';
-				braceDepth = 1;
-				return rawLine;
-			}
-
-			return rawLine;
-		}
-
-		// ── state === 'in_values' ────────────────────────────────────
-		braceDepth +=
-			(rawLine.match(/\{/g) ?? []).length -
-			(rawLine.match(/\}/g) ?? []).length;
-
-		if (braceDepth <= 0) {
-			state = 'scanning';
-			currentScenarioKey = '';
-			return rawLine;
-		}
-
-		const lineMatch = libValueRe.exec(rawLine);
-		if (!lineMatch) return rawLine;
-
-		const libKey = (lineMatch[2] ?? lineMatch[3] ?? '').trim();
-		const scenarioMap = updateMap.get(currentScenarioKey);
-		const newVal = scenarioMap?.get(libKey);
-
-		if (newVal === undefined) return rawLine;
-
-		const formatted = formatWithUnderscores(newVal);
-		replacedCount++;
-		return `${lineMatch[1]}${formatted}${lineMatch[5]}`;
-	});
-
-	writeFileSync(filePath, updatedLines.join('\n'), 'utf-8');
-	return replacedCount;
-}
-
-// ─────────────────────────────────────────────────────────────
-// RESUMEN POR SCENARIO
-// ─────────────────────────────────────────────────────────────
-
-function printSummaryTable(updates: IScenarioUpdate[]): void {
-	const byScenario = new Map<string, Map<string, number>>();
-	for (const upd of updates) {
-		if (!byScenario.has(upd.scenarioKey))
-			byScenario.set(upd.scenarioKey, new Map());
-		byScenario.get(upd.scenarioKey)!.set(upd.libKey, upd.value);
-	}
-
-	console.log('  Scenario          BENCH  Librerías actualizadas');
-	console.log(
-		'  ────────────────  ─────  ────────────────────────────────────────'
-	);
-	for (const [scenarioKey, libMap] of byScenario) {
-		const benchNum = SCENARIO_BENCH_NUM[scenarioKey] ?? '?';
-		const libs = [...libMap.keys()].join(', ');
-		console.log(
-			`  ${scenarioKey.padEnd(16)}  #${String(benchNum).padEnd(4)} ${libs}`
+function serializeScenarios(scens: IScenario[]): string {
+	const lines: string[] = ['export const scenarios: IBenchScenario[] = ['];
+	for (const scn of scens) {
+		lines.push('\t{');
+		lines.push(`\t\tkey: '${scn.key}',`);
+		lines.push(`\t\tbenchNum: ${scn.benchNum},`);
+		lines.push(
+			`\t\tappTypes: [${scn.appTypes.map((apt) => `'${apt}'`).join(', ')}],`
 		);
+		lines.push('\t\tvalues: {');
+		for (const [lib, val] of Object.entries(scn.values)) {
+			const needsQuotes = /[^a-zA-Z0-9$_]/.test(lib);
+			const keyStr = needsQuotes ? `'${lib}'` : lib;
+			const valStr = val === null ? 'null' : fmt(val);
+			lines.push(`\t\t\t${keyStr}: ${valStr},`);
+		}
+		lines.push('\t\t},');
+		lines.push('\t},');
 	}
-	console.log();
+	lines.push('];');
+	return lines.join('\n');
 }
 
-// ─────────────────────────────────────────────────────────────
-// PUNTO DE ENTRADA PRINCIPAL
-// ─────────────────────────────────────────────────────────────
+// ─── Replace only scenarios block in constants file ──────────────────────────
+
+function replaceScenarios(source: string, newBlock: string): string {
+	const OPEN = 'export const scenarios: IBenchScenario[] = [';
+	const start = source.indexOf(OPEN);
+	if (start === -1)
+		throw new Error('Cannot find scenarios block in constants file');
+
+	// Start bracket counting from the array literal '[', NOT from 'export const'
+	// (to avoid counting the '[' inside 'IBenchScenario[]' as depth=1)
+	const arrayStart = start + OPEN.length - 1; // index of the '[' that opens the array
+
+	let depth = 0;
+	let inStr = false;
+	let strCh = '';
+	let end = -1;
+
+	for (let idx = arrayStart; idx < source.length; idx++) {
+		const chr = source[idx]!;
+		if (inStr) {
+			if (chr === strCh && source[idx - 1] !== '\\') inStr = false;
+			continue;
+		}
+		if (chr === '"' || chr === "'" || chr === '`') {
+			inStr = true;
+			strCh = chr;
+			continue;
+		}
+		if (chr === '[') depth++;
+		if (chr === ']') {
+			depth--;
+			if (depth === 0) {
+				end = source[idx + 1] === ';' ? idx + 2 : idx + 1;
+				break;
+			}
+		}
+	}
+
+	if (end === -1) throw new Error('Cannot find end of scenarios block');
+	return source.slice(0, start) + newBlock + source.slice(end);
+}
+
+// ─── i18n stub insertion ──────────────────────────────────────────────────────
+
+function addI18nStub(filepath: string, key: string, label: string): void {
+	const source = readFileSync(filepath, 'utf-8');
+	const scenIdx = source.indexOf('scenarios: {');
+	if (scenIdx === -1) return;
+	// Key already present in scenarios block? Check with literal string match.
+	const chunk = source.slice(scenIdx, scenIdx + 4000);
+	if (
+		chunk.includes(`\n\t\t\t${key}:`) ||
+		chunk.includes(`\n\t\t\t\t${key}:`)
+	)
+		return;
+
+	// Find insertion point: just before \t\t},\n\n\t\t// --- Library
+	const PATTERN = '\t\t},\n\n\t\t// ─── Library';
+	const insertAt = source.indexOf(PATTERN, scenIdx);
+	if (insertAt === -1) {
+		console.warn(
+			`  ⚠️  Cannot place i18n stub for "${key}" in ${filepath.split('/').pop()}`
+		);
+		return;
+	}
+
+	const stub =
+		`\t\t\t${key}: {\n` +
+		`\t\t\t\tlabel: '${label}',\n` +
+		`\t\t\t\tnotes: 'Auto-generated — update label and notes.',\n` +
+		`\t\t\t},\n`;
+	writeFileSync(
+		filepath,
+		source.slice(0, insertAt) + stub + source.slice(insertAt),
+		'utf-8'
+	);
+	console.log(
+		`  📝 Added i18n stub "${key}" in ${filepath.split('/').pop()}`
+	);
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-	console.log('🔄 Ejecutando benchmarks (esto puede tardar ~2 minutos)...\n');
+	console.log('🔬 Running comparison benchmarks...\n');
 
 	const proc = Bun.spawn(
 		[
@@ -307,62 +261,139 @@ async function main(): Promise<void> {
 			'test',
 			'tests/performance/comparison-benchmarks.test.ts',
 		],
-		{
-			cwd: join(import.meta.dirname, '..'),
-			stdout: 'pipe',
-			stderr: 'pipe',
-		}
+		{ cwd: ROOT, stdout: 'pipe', stderr: 'pipe' }
 	);
 
-	const rawOutput = await new Response(proc.stdout).text();
-	const rawStderr = await new Response(proc.stderr).text();
+	const [stdout, stderr] = await Promise.all([
+		new Response(proc.stdout).text(),
+		new Response(proc.stderr).text(),
+	]);
 	await proc.exited;
 
-	if (proc.exitCode !== 0) {
-		console.warn(
-			`  ⚠️  exitCode=${proc.exitCode} (puede haber librerías opcionales ausentes)\n`
-		);
+	const raw = stdout + stderr;
+
+	// Show bench lines for visibility
+	for (const line of raw
+		.split('\n')
+		.filter((lin) => lin.startsWith('[BENCH'))) {
+		console.log(line);
 	}
 
-	// stdout en Bun contiene el output de los tests (console.log dentro de tests)
-	const fullOutput = rawOutput + '\n' + rawStderr;
-
-	console.log('📊 Parseando resultados...');
-	const entries = parseBenchOutput(fullOutput);
-
-	if (entries.length === 0) {
-		console.error('\n❌ No se encontraron mediciones en el output.');
-		console.error('   Prueba manualmente: bun run bench:compare');
+	const readings = parseBenchOutput(raw);
+	if (readings.length === 0) {
+		console.error('\n❌ No benchmark readings found. Aborting.');
 		process.exit(1);
 	}
 
-	// Deduplicar: si un mismo benchNum+lib aparece varias veces (test individual +
-	// test de comparativa), quedarse con la última medición (más estable, JIT warm).
-	const deduped = new Map<string, IBenchEntry>();
-	for (const entry of entries) {
-		deduped.set(`${entry.benchNum}|${entry.rawLibName}`, entry);
+	// Group readings by benchNum
+	const byBench = new Map<number, IBenchReading[]>();
+	for (const rdg of readings) {
+		const grp = byBench.get(rdg.benchNum) ?? [];
+		grp.push(rdg);
+		byBench.set(rdg.benchNum, grp);
 	}
-	const dedupedEntries = [...deduped.values()];
 
-	console.log(
-		`  ${entries.length} mediciones brutas → ${dedupedEntries.length} únicas\n`
+	// Parse bench descriptions from test file (for key derivation on new benches)
+	const testSource = readFileSync(TEST_PATH, 'utf-8');
+	const descriptions = parseBenchDescriptions(testSource);
+
+	// Load current scenarios via dynamic import (Bun handles TS natively)
+	const mod = await import(CONSTANTS_PATH);
+	const currentScenarios: IScenario[] = (mod.scenarios as IScenario[]).map(
+		(scn) => ({
+			...scn,
+			values: { ...scn.values },
+		})
 	);
 
-	const updates = mapEntriesToUpdates(dedupedEntries);
-	printSummaryTable(updates);
+	// Build benchNum -> scenario-index lookup (multiple scenarios can share same benchNum)
+	const benchToIdx = new Map<number, number[]>();
+	for (let idx = 0; idx < currentScenarios.length; idx++) {
+		const benchNum = currentScenarios[idx]!.benchNum;
+		const lst = benchToIdx.get(benchNum) ?? [];
+		lst.push(idx);
+		benchToIdx.set(benchNum, lst);
+	}
 
-	console.log('✏️  Actualizando benchmark-chart.constants.ts...');
-	const replaced = applyUpdatesToConstantsFile(updates);
+	// Collect every lib name ever seen (for null-padding)
+	const globalLibs = new Set<string>();
+	for (const scn of currentScenarios) {
+		for (const lib of Object.keys(scn.values)) globalLibs.add(lib);
+	}
+	for (const rdgs of byBench.values()) {
+		for (const rdg of rdgs) globalLibs.add(rdg.libName);
+	}
 
-	console.log(
-		`\n✅ ${replaced} valores actualizados en benchmark-chart.constants.ts`
+	const updated = [...currentScenarios];
+	const log: string[] = [];
+
+	for (const [benchNum, rdgs] of byBench.entries()) {
+		const indices = benchToIdx.get(benchNum);
+
+		if (indices && indices.length > 0) {
+			// Update existing scenario(s)
+			for (const idx of indices) {
+				const scn = updated[idx]!;
+				const changed: string[] = [];
+				for (const { libName, value } of rdgs) {
+					scn.values[libName] = value;
+					changed.push(libName);
+				}
+				log.push(
+					`  ✅ '${scn.key}' (BENCH #${benchNum}) — updated: ${changed.join(', ')}`
+				);
+			}
+		} else {
+			// New benchmark -> create scenario automatically
+			const key = deriveKey(benchNum);
+			const desc = descriptions.get(benchNum) ?? `Benchmark ${benchNum}`;
+			const values: Record<string, number | null> = {};
+			for (const { libName, value } of rdgs) {
+				values[libName] = value;
+			}
+			updated.push({ key, benchNum, appTypes: ['all'], values });
+			log.push(
+				`  🆕 '${key}' (BENCH #${benchNum}) — new scenario: "${desc}"`
+			);
+			addI18nStub(I18N_EN_PATH, key, `Benchmark #${benchNum}`);
+			addI18nStub(I18N_ES_PATH, key, `Benchmark #${benchNum}`);
+		}
+	}
+
+	// Pad all scenarios: every known lib must appear (null = N/A in chart)
+	// Non-null (participating) libs first, then null ones
+	for (const scn of updated) {
+		for (const lib of globalLibs) {
+			if (!(lib in scn.values)) scn.values[lib] = null;
+		}
+		const nonNull = Object.entries(scn.values).filter(
+			([, val]) => val !== null
+		);
+		const nulls = Object.entries(scn.values).filter(
+			([, val]) => val === null
+		);
+		scn.values = Object.fromEntries([...nonNull, ...nulls]);
+	}
+
+	// Sort scenarios by benchNum
+	updated.sort((asc, bsc) => asc.benchNum - bsc.benchNum);
+
+	// Write only the scenarios block back to constants (rest is untouched)
+	const constantsSource = readFileSync(CONSTANTS_PATH, 'utf-8');
+	const newConstants = replaceScenarios(
+		constantsSource,
+		serializeScenarios(updated)
 	);
+	writeFileSync(CONSTANTS_PATH, newConstants, 'utf-8');
+
+	console.log('\n📊 Update summary:');
+	for (const line of log) console.log(line);
 	console.log(
-		'   Gráficos + cobertura de la documentación reflejan ahora los resultados de esta máquina.'
+		`\n✅ benchmark-chart.constants.ts updated (${updated.length} scenarios)`
 	);
 }
 
 main().catch((err: unknown) => {
-	console.error('Error fatal:', err);
+	console.error('❌ Fatal:', err);
 	process.exit(1);
 });

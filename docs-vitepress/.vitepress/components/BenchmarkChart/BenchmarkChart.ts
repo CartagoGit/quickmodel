@@ -191,10 +191,21 @@ export function useBenchmarkChart() {
 
 	// ─── Sub-composables (SRP) ────────────────────────────────
 
-	const { isOverflow, barPercent } = useBenchmarkScale(
-		currentScenario,
-		activeLibNames
-	);
+	const { isOverflow, barPercent, overflowFillPercent, overflowRatio } =
+		useBenchmarkScale(currentScenario, activeLibNames);
+
+	/**
+	 * Returns proportional overflow label based on how much the bar exceeds visualMax.
+	 * ratio ≥ 10  → 'mucho más rápido' / 'much faster'
+	 * ratio 3–10  → 'bastante más rápido' / 'noticeably faster'
+	 * ratio < 3   → 'más rápido' / 'faster (overflow)'
+	 */
+	function overflowLabel(lib: string): string {
+		const ratio = overflowRatio(lib);
+		if (ratio >= 10) return bmt.value.muchFaster;
+		if (ratio >= 3) return bmt.value.noticeablyFaster;
+		return bmt.value.slightlyFaster;
+	}
 
 	const { formatOps, featureIcon } = useBenchmarkFormatters(currentScenario);
 
@@ -274,6 +285,9 @@ export function useBenchmarkChart() {
 		// Escala (useBenchmarkScale)
 		isOverflow,
 		barPercent,
+		overflowFillPercent,
+		overflowRatio,
+		overflowLabel,
 
 		// Formateadores (useBenchmarkFormatters)
 		formatOps,

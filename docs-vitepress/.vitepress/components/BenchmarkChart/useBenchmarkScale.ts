@@ -9,6 +9,14 @@ const OVERFLOW_BAR_PERCENT = 92;
 export interface IBenchmarkScaleResult {
 	isOverflow: (lib: string) => boolean;
 	barPercent: (lib: string) => number;
+	/**
+	 * Width (%) of the filled portion of an overflow bar.
+	 * Ranges 72–92: the higher the overflow ratio, the shorter the fill
+	 * (leaving more room for the ›› extension arrow).
+	 */
+	overflowFillPercent: (lib: string) => number;
+	/** Raw ratio = lib_value / visualMax. Always >= 1 for overflow bars. */
+	overflowRatio: (lib: string) => number;
 }
 
 /**
@@ -61,5 +69,26 @@ export function useBenchmarkScale(
 			: Math.max(pct, MIN_BAR_PERCENT);
 	}
 
-	return { isOverflow, barPercent };
+	/**
+	 * Fill width (%) for an overflow bar.
+	 * ratio = lib_value / visualMax.
+	 * A higher ratio → shorter fill (wider extension arrow).
+	 * Mapped via log10: ratio 3.5 → fill 92%, ratio 10 → ~84%, ratio 100 → ~72%.
+	 */
+	function overflowFillPercent(lib: string): number {
+		const val = currentScenario.value.values[lib];
+		if (!val || visualMax.value === 0) return OVERFLOW_BAR_PERCENT;
+		const ratio = val / visualMax.value;
+		// ext width: clamp 8–28 via log10 of ratio
+		const extWidth = Math.min(28, Math.max(8, Math.log10(ratio) * 12 + 4));
+		return Math.round(100 - extWidth);
+	}
+
+	function overflowRatio(lib: string): number {
+		const val = currentScenario.value.values[lib];
+		if (!val || visualMax.value === 0) return 1;
+		return val / visualMax.value;
+	}
+
+	return { isOverflow, barPercent, overflowFillPercent, overflowRatio };
 }
