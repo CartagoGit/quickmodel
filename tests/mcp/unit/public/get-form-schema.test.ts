@@ -68,8 +68,12 @@ describe('QGetFormSchemaTool', () => {
 		const tool = new QGetFormSchemaTool();
 		const result = await tool.execute({ code: sampleCode });
 
-		const nameEntry = result.schema.find((e: any) => e.field === 'name');
-		const ageEntry = result.schema.find((e: any) => e.field === 'age');
+		const nameEntry = result.schema.find(
+			(entry: any) => entry.field === 'name'
+		);
+		const ageEntry = result.schema.find(
+			(entry: any) => entry.field === 'age'
+		);
 
 		expect(nameEntry?.required).toBe(true);
 		expect(ageEntry?.required).toBeFalsy();
@@ -79,7 +83,9 @@ describe('QGetFormSchemaTool', () => {
 		const tool = new QGetFormSchemaTool();
 		const result = await tool.execute({ code: sampleCode });
 
-		const emailEntry = result.schema.find((e: any) => e.field === 'email');
+		const emailEntry = result.schema.find(
+			(entry: any) => entry.field === 'email'
+		);
 		expect(emailEntry?.hint).toBeDefined();
 	});
 
@@ -99,7 +105,7 @@ describe('QGetFormSchemaTool', () => {
 		const tool = new QGetFormSchemaTool();
 		const result = await tool.execute({ code: groupedCode, grouped: true });
 
-		const groups: string[] = result.schema.map((g: any) => g.group);
+		const groups: string[] = result.schema.map((grp: any) => grp.group);
 		expect(groups).toContain('Personal');
 		expect(groups).toContain('Contact');
 	});
@@ -238,8 +244,10 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
     }`;
 		const { schema, count } = await tool.execute({ code });
 		expect(count).toBe(2);
-		const alpha = schema.find((e: any) => e.field === 'alpha') as any;
-		const beta = schema.find((e: any) => e.field === 'beta') as any;
+		const alpha = schema.find(
+			(entry: any) => entry.field === 'alpha'
+		) as any;
+		const beta = schema.find((entry: any) => entry.field === 'beta') as any;
 		expect(alpha.widget).toBe('input');
 		expect(alpha.required).toBe(true);
 		expect(beta.widget).toBe('number');

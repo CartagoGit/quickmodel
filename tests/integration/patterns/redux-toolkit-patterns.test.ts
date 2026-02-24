@@ -260,9 +260,7 @@ describe('Reducer with copy() — immutable update', () => {
 
 	test('@QComputed is recalculated after copy() in reducer', () => {
 		updateUser('u1', { name: 'Alice Admin', role: 'admin' });
-		const rehydrated = new UserDto(
-			entities['u1'] as unknown as Record<string, unknown>
-		);
+		const rehydrated = new UserDto(entities['u1']);
 		expect(rehydrated.label).toBe('Alice Admin (admin)');
 	});
 });

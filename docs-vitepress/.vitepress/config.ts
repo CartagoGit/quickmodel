@@ -7,28 +7,28 @@ import { getTranslations, type ILocale } from './i18n';
  * Single source of truth — add items here and all locale sidebars update automatically.
  */
 const buildMcpSidebar = (locale: ILocale) => {
-	const { mcp: t } = getTranslations(locale);
+	const { mcp: trl } = getTranslations(locale);
 	const prefix = `/${locale}/mcp`;
 	const showInternal = process.env.VITE_SHOW_INTERNAL_DOCS === 'true';
 	return [
 		{
-			text: t.title,
+			text: trl.title,
 			items: [
-				{ text: t.overview, link: `${prefix}/` },
-				{ text: t.publicTools, link: `${prefix}/public/` },
-				{ text: t.publicSkills, link: `${prefix}/public/skills` },
+				{ text: trl.overview, link: `${prefix}/` },
+				{ text: trl.publicTools, link: `${prefix}/public/` },
+				{ text: trl.publicSkills, link: `${prefix}/public/skills` },
 				...(showInternal
 					? [
 							{
-								text: t.installationMaintainers,
+								text: trl.installationMaintainers,
 								link: `${prefix}/internal/setup`,
 							},
 							{
-								text: t.internalToolsMaintainers,
+								text: trl.internalToolsMaintainers,
 								link: `${prefix}/internal/`,
 							},
 							{
-								text: t.internalSkillsMaintainers,
+								text: trl.internalSkillsMaintainers,
 								link: `${prefix}/internal/skills`,
 							},
 						]

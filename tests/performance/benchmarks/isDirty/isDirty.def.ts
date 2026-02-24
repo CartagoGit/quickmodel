@@ -7,8 +7,8 @@ export const scenario: IBenchScenario = {
 	values: {
 		QuickModel: 900_000,
 		'Plain JS': 250_000,
-		'Plain JS JSON.stringify': null, // stringify es una op diferente, no es competidor de isDirty
-		'QuickModel isDirty': 99_664,
+		'Plain JS JSON.stringify': 7_107_321,
+		'QuickModel isDirty': 105_262,
 		TypeBox: null,
 		valibot: null,
 		Zod: null,
@@ -25,5 +25,6 @@ export const scenario: IBenchScenario = {
 		'joi async': null,
 		'QuickModel async': null,
 		'QuickModel createMany': null,
+		arktype: null,
 	},
 };

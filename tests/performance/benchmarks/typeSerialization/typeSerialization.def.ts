@@ -5,9 +5,9 @@ export const scenario: IBenchScenario = {
 	benchNum: 7,
 	appTypes: ['all', 'data'],
 	values: {
-		'Plain JS': 697_496,
-		superjson: 40_772,
-		QuickModel: 28_157,
+		'Plain JS': 685_589,
+		superjson: 48_645,
+		QuickModel: 23_095,
 		TypeBox: null,
 		valibot: null,
 		Zod: null,
@@ -25,5 +25,6 @@ export const scenario: IBenchScenario = {
 		'joi async': null,
 		'QuickModel async': null,
 		'QuickModel createMany': null,
+		anktype: null,
 	},
 };

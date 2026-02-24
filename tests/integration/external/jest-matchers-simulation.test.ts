@@ -26,8 +26,8 @@ expect.extend(
 
 // TS augmentation for this file
 declare module 'bun:test' {
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	interface Matchers<_T = unknown> {
+	// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+	interface Matchers<T = unknown> {
 		toBeValidQModel(): void;
 		toHaveQRuleError(field: string, message?: string): void;
 		toHaveQField(fieldName: string): void;

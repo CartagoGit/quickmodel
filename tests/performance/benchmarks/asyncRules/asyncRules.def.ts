@@ -5,12 +5,12 @@ export const scenario: IBenchScenario = {
 	benchNum: 12,
 	appTypes: ['all', 'api'],
 	values: {
-		QuickModel: 127_369, // modo paralelo — comparación justa vs joi async/yup async
+		QuickModel: 127_369,
 		joi: 8_000,
 		yup: 4_500,
-		'yup async': 62_758,
-		'joi async': 135_775,
-		'QuickModel async': null, // ya representado en QuickModel (modo paralelo)
+		'yup async': 51_094,
+		'joi async': 126_239,
+		'QuickModel async': 88_438,
 		'Plain JS': null,
 		TypeBox: null,
 		valibot: null,
@@ -25,5 +25,6 @@ export const scenario: IBenchScenario = {
 		'Plain JS JSON.stringify': null,
 		'QuickModel isDirty': null,
 		'QuickModel createMany': null,
+		arktype: null,
 	},
 };

@@ -176,8 +176,8 @@ describe('MCP Public Tools', () => {
 			try {
 				await tool.execute({ json, className: 'Fail' });
 				expect(true).toBe(false); // Fail if no error
-			} catch (e: any) {
-				expect(e.message).toContain('Invalid JSON');
+			} catch (err: any) {
+				expect(err.message).toContain('Invalid JSON');
 			}
 		});
 
@@ -186,8 +186,8 @@ describe('MCP Public Tools', () => {
 			try {
 				await tool.execute({ json: '123', className: 'Fail' });
 				expect(true).toBe(false);
-			} catch (e: any) {
-				expect(e.message).toContain('must be an object');
+			} catch (err: any) {
+				expect(err.message).toContain('must be an object');
 			}
 		});
 	});

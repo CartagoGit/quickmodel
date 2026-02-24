@@ -1,4 +1,5 @@
 import { describe, it, expect, mock, afterEach } from 'bun:test';
+import nodeOs from 'node:os';
 import { QCheckBundleSizeTool } from '../../../../src/mcp/tools/internal/check-bundle-size.tool';
 
 describe('QCheckBundleSizeTool', () => {
@@ -15,11 +16,12 @@ describe('QCheckBundleSizeTool', () => {
 
 	it('should return status, files array, and total_bytes on success', async () => {
 		const tool = new QCheckBundleSizeTool();
-		tool['_spawn'] = async () => ({ stdout: '', stderr: '' });
-		tool['_getDistFiles'] = async () => [
-			{ file: 'index.cjs', bytes: 120000 },
-			{ file: 'index.mjs', bytes: 95000 },
-		];
+		tool['_spawn'] = () => Promise.resolve({ stdout: '', stderr: '' });
+		tool['_getDistFiles'] = () =>
+			Promise.resolve([
+				{ file: 'index.cjs', bytes: 120000 },
+				{ file: 'index.mjs', bytes: 95000 },
+			]);
 
 		const result = await tool.execute({});
 
@@ -30,10 +32,9 @@ describe('QCheckBundleSizeTool', () => {
 
 	it('should list individual file sizes', async () => {
 		const tool = new QCheckBundleSizeTool();
-		tool['_spawn'] = async () => ({ stdout: '', stderr: '' });
-		tool['_getDistFiles'] = async () => [
-			{ file: 'index.cjs', bytes: 50000 },
-		];
+		tool['_spawn'] = () => Promise.resolve({ stdout: '', stderr: '' });
+		tool['_getDistFiles'] = () =>
+			Promise.resolve([{ file: 'index.cjs', bytes: 50000 }]);
 
 		const result = await tool.execute({});
 
@@ -43,10 +44,10 @@ describe('QCheckBundleSizeTool', () => {
 
 	it('status should be "ok" when build succeeds', async () => {
 		const tool = new QCheckBundleSizeTool();
-		tool['_spawn'] = async () => ({ stdout: 'build ok', stderr: '' });
-		tool['_getDistFiles'] = async () => [
-			{ file: 'index.cjs', bytes: 1000 },
-		];
+		tool['_spawn'] = () =>
+			Promise.resolve({ stdout: 'build ok', stderr: '' });
+		tool['_getDistFiles'] = () =>
+			Promise.resolve([{ file: 'index.cjs', bytes: 1000 }]);
 
 		const result = await tool.execute({});
 
@@ -55,7 +56,7 @@ describe('QCheckBundleSizeTool', () => {
 
 	it('status should be "error" when build fails', async () => {
 		const tool = new QCheckBundleSizeTool();
-		tool['_spawn'] = async () => {
+		tool['_spawn'] = () => {
 			throw Object.assign(new Error('build failed'), {
 				stdout: '',
 				stderr: 'build error',
@@ -69,10 +70,9 @@ describe('QCheckBundleSizeTool', () => {
 
 	it('should include a summary string', async () => {
 		const tool = new QCheckBundleSizeTool();
-		tool['_spawn'] = async () => ({ stdout: '', stderr: '' });
-		tool['_getDistFiles'] = async () => [
-			{ file: 'index.cjs', bytes: 123456 },
-		];
+		tool['_spawn'] = () => Promise.resolve({ stdout: '', stderr: '' });
+		tool['_getDistFiles'] = () =>
+			Promise.resolve([{ file: 'index.cjs', bytes: 123456 }]);
 
 		const result = await tool.execute({});
 
@@ -84,7 +84,7 @@ describe('QCheckBundleSizeTool', () => {
 		// Verifies the readdirSync { withFileTypes: false } fix — Dirent objects cannot
 		// be joined with path.join() and would produce wrong results if returned.
 		const tool = new QCheckBundleSizeTool();
-		const tmpDir = require('os').tmpdir();
+		const tmpDir = nodeOs.tmpdir();
 		const files = (tool as any).readDistDir(tmpDir) as Array<{
 			file: string;
 			bytes: number;

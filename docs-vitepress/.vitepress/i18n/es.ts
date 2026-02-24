@@ -1,4 +1,4 @@
-export const es = {
+export const esLocale = {
 	mcp: {
 		title: 'Protocolo de Contexto de Modelo',
 		overview: 'Descripción General',
