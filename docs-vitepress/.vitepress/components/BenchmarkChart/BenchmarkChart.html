@@ -1,46 +1,11 @@
 <div class="bm-wrapper">
-
 	<!-- ═══════════════════════════════════════════════════════
 	     TAB BAR
 	     ═══════════════════════════════════════════════════════ -->
-	<div
-		class="bm-tabs"
-		role="tablist">
-		<!-- Tab: Feature Comparison -->
-		<button
-			role="tab"
-			:aria-selected="activeTab === 'features'"
-			:class="['bm-tabs__tab', { 'bm-tabs__tab--active': activeTab === 'features' }]"
-			@click="setTab('features')">
-			<span class="bm-tabs__tab-icon">🎯</span>
-			<span class="bm-tabs__tab-label">{{ t.benchmark.tabFeatures }}</span>
-		</button>
-
-		<!-- Tab: Coverage Map -->
-		<button
-			role="tab"
-			:aria-selected="activeTab === 'coverage'"
-			:class="['bm-tabs__tab', { 'bm-tabs__tab--active': activeTab === 'coverage' }]"
-			@click="setTab('coverage')">
-			<span class="bm-tabs__tab-icon">📊</span>
-			<span class="bm-tabs__tab-label">{{ t.benchmark.tabCoverage }}</span>
-		</button>
-
-		<!-- Tab: Performance -->
-		<button
-			role="tab"
-			:aria-selected="activeTab === 'performance'"
-			:class="['bm-tabs__tab', { 'bm-tabs__tab--active': activeTab === 'performance' }]"
-			@click="setTab('performance')">
-			<span class="bm-tabs__tab-icon">⚡</span>
-			<span class="bm-tabs__tab-label">{{ t.benchmark.tabPerf }}</span>
-		</button>
-
-		<!-- Sliding active indicator -->
-		<div
-			class="bm-tabs__indicator"
-			:style="{ '--tab-idx': activeTabIndex }"></div>
-	</div>
+	<TabBar
+		:tabs="tabItems"
+		:model-value="activeTab"
+		@update:model-value="setTab" />
 
 	<!-- ═══════════════════════════════════════════════════════
 	     TAB PANELS (animated)
@@ -51,36 +16,47 @@
 		<div
 			:key="activeTab"
 			class="bm-tab-panel">
-
 			<!-- ─── PANEL: Feature Comparison ─────────────── -->
 			<template v-if="activeTab === 'features'">
 				<div class="bm-panel-header">
-					<h2 class="bm-header__title">🎯 {{ t.benchmark.featureTitle }}</h2>
-					<p class="bm-header__subtitle">{{ t.benchmark.featureSubtitle }}</p>
+					<h2 class="bm-header__title">
+						🎯 {{ t.benchmark.featureTitle }}
+					</h2>
+					<p class="bm-header__subtitle">
+						{{ t.benchmark.featureSubtitle }}
+					</p>
 				</div>
 
 				<!-- Feature matrix table -->
 				<div class="bm-matrix">
 					<div class="bm-matrix__header">
-						<h3 class="bm-matrix__title">{{ t.benchmark.matrixTitle }}</h3>
-						<p class="bm-matrix__hint">{{ t.benchmark.matrixHint }}</p>
+						<h3 class="bm-matrix__title">
+							{{ t.benchmark.matrixTitle }}
+						</h3>
+						<p class="bm-matrix__hint">
+							{{ t.benchmark.matrixHint }}
+						</p>
 					</div>
 					<!-- Matrix filters: type selector + library badges -->
 					<div class="bm-matrix__filters">
 						<div class="bm-matrix__filter-row">
-							<span class="bm-matrix__filter-label">{{ t.benchmark.typeLabel }}</span>
+							<span class="bm-matrix__filter-label">
+								{{ t.benchmark.typeLabel }}
+							</span>
 							<div class="bm-matrix__type-pills">
 								<button
 									v-for="opt in matrixTypeOptions"
 									:key="opt.key"
 									:class="['bm-matrix__type-pill', { 'bm-matrix__type-pill--active': activeMatrixType === opt.key }]"
 									@click="activeMatrixType = opt.key">
-									{{ lp(opt, 'label') }}
+									{{ bmt.matrixTypes[opt.key] }}
 								</button>
 							</div>
 						</div>
 						<div class="bm-matrix__filter-row">
-							<span class="bm-matrix__filter-label">{{ t.benchmark.librariesLabel }}</span>
+							<span class="bm-matrix__filter-label">
+								{{ t.benchmark.librariesLabel }}
+							</span>
 							<TransitionGroup
 								tag="div"
 								class="bm-matrix__badges"
@@ -96,14 +72,16 @@
 							</TransitionGroup>
 						</div>
 						<div class="bm-matrix__filter-row">
-							<span class="bm-matrix__filter-label">{{ t.benchmark.featuresLabel }}</span>
+							<span class="bm-matrix__filter-label">
+								{{ t.benchmark.featuresLabel }}
+							</span>
 							<div class="bm-matrix__badges">
 								<button
 									v-for="cat in featureCategoryOptions.filter((opt) => opt.key !== 'all')"
 									:key="cat.key"
 									:class="['bm-matrix__badge bm-matrix__badge--cat', { 'bm-matrix__badge--off': disabledFeatureCategories.includes(cat.key) }]"
 									@click="toggleFeatureCategory(cat.key)">
-									{{ lp(cat, 'label') }}
+									{{ bmt.featureCategories[cat.key] }}
 								</button>
 							</div>
 						</div>
@@ -112,7 +90,9 @@
 						<table class="bm-matrix__table">
 							<thead>
 								<tr>
-									<th class="bm-matrix__th-feature">Feature</th>
+									<th class="bm-matrix__th-feature">
+										Feature
+									</th>
 									<th
 										v-for="lib in visibleMatrixLibNames"
 										:key="lib"
@@ -129,9 +109,11 @@
 							<tbody>
 								<tr
 									v-for="row in featureRows"
-									:key="row.featureEn"
+									:key="row.i18nKey"
 									:class="{ 'bm-matrix__tr--hidden': isCategoryHidden(row.category) }">
-									<td class="bm-matrix__td-feature">{{ lp(row, 'feature') }}</td>
+									<td class="bm-matrix__td-feature">
+										{{ bmt.features[row.i18nKey].label }}
+									</td>
 									<td
 										v-for="lib in visibleMatrixLibNames"
 										:key="lib"
@@ -143,11 +125,13 @@
 										<span
 											v-if="row.values[lib] === 'partial' && row.notes?.[lib]"
 											class="bm-matrix__icon bm-matrix__icon--warning"
-											@mouseenter="onWarningMouseEnter(lp(row.notes[lib], 'text'), $event)"
+											@mouseenter="onWarningMouseEnter(featureNote(row.i18nKey, row.notes[lib]), $event)"
 											@mouseleave="onWarningMouseLeave()">
 											⚠️
 										</span>
-										<template v-else>{{ featureIcon(row.values[lib]) }}</template>
+										<template v-else>
+											{{ featureIcon(row.values[lib]) }}
+										</template>
 									</td>
 								</tr>
 							</tbody>
@@ -159,8 +143,12 @@
 			<!-- ─── PANEL: Coverage Map ───────────────────── -->
 			<template v-else-if="activeTab === 'coverage'">
 				<div class="bm-panel-header">
-					<h2 class="bm-header__title">📊 {{ t.benchmark.coverageTitle }}</h2>
-					<p class="bm-header__subtitle">{{ t.benchmark.coverageSubtitle }}</p>
+					<h2 class="bm-header__title">
+						📊 {{ t.benchmark.coverageTitle }}
+					</h2>
+					<p class="bm-header__subtitle">
+						{{ t.benchmark.coverageSubtitle }}
+					</p>
 				</div>
 
 				<div class="bm-coverage">
@@ -169,12 +157,13 @@
 							class="bm-coverage__grid"
 							:style="{ '--scn-count': scenarios.length }">
 							<!-- Header row -->
-							<div class="bm-coverage__header-cell bm-coverage__lib-col"></div>
+							<div
+								class="bm-coverage__header-cell bm-coverage__lib-col"></div>
 							<div
 								v-for="scn in scenarios"
 								:key="scn.key"
 								class="bm-coverage__header-cell bm-coverage__scn-label">
-								{{ lp(scn, 'label') }}
+								{{ bmt.scenarios[scn.key].label }}
 							</div>
 
 							<!-- Library rows -->
@@ -202,10 +191,16 @@
 									]"
 									:style="scn.values[lib] != null ? { '--chip-color': libraries[lib]?.color } : {}"
 									:disabled="scn.values[lib] == null"
-									:title="scn.values[lib] != null ? lp(scn, 'label') + ': ' + formatBadgeSpeed(scn.values[lib]) : ''"
+									:title="scn.values[lib] != null ? bmt.scenarios[scn.key].label + ': ' + formatBadgeSpeed(scn.values[lib]) : ''"
 									@click="scn.values[lib] != null && goToScenario(scn.key)">
 									<span class="bm-coverage__chip-speed">
-										{{ scn.values[lib] != null ? formatBadgeSpeed(scn.values[lib]) : '—' }}
+										{{
+											scn.values[lib] != null
+												? formatBadgeSpeed(
+														scn.values[lib]
+													)
+												: '—'
+										}}
 									</span>
 								</button>
 							</template>
@@ -217,8 +212,12 @@
 			<!-- ─── PANEL: Performance Benchmark ─────────── -->
 			<template v-else>
 				<div class="bm-panel-header">
-					<h2 class="bm-header__title">⚡ {{ t.benchmark.perfTitle }}</h2>
-					<p class="bm-header__subtitle">{{ t.benchmark.perfSubtitle }}</p>
+					<h2 class="bm-header__title">
+						⚡ {{ t.benchmark.perfTitle }}
+					</h2>
+					<p class="bm-header__subtitle">
+						{{ t.benchmark.perfSubtitle }}
+					</p>
 				</div>
 
 				<!-- Scenario badges -->
@@ -228,13 +227,15 @@
 						:key="scn.key"
 						:class="['bm-scenario-badge', { 'bm-scenario-badge--active': activeScenario === scn.key }]"
 						@click="activeScenario = scn.key">
-						{{ lp(scn, 'label') }}
+						{{ bmt.scenarios[scn.key].label }}
 					</button>
 				</div>
 
 				<!-- Chart -->
 				<div class="bm-chart">
-					<p class="bm-chart__note">{{ formatNote(currentScenario) }}</p>
+					<p class="bm-chart__note">
+						{{ bmt.scenarios[currentScenario.key].notes }}
+					</p>
 
 					<TransitionGroup
 						name="bm-bar"
@@ -262,7 +263,9 @@
 									:style="{ width: barPercent(lib) + '%', background: libraries[lib]?.color }"
 									@mouseenter="onBarMouseEnter(lib, $event)"
 									@mouseleave="onBarMouseLeave">
-									<span class="bm-bar__value">{{ formatOps(lib) }}</span>
+									<span class="bm-bar__value">
+										{{ formatOps(lib) }}
+									</span>
 								</div>
 								<div
 									v-else
@@ -273,13 +276,17 @@
 									<div
 										class="bm-bar__overflow-fill"
 										:style="{ background: libraries[lib]?.color }">
-										<span class="bm-bar__value">{{ formatOps(lib) }}</span>
+										<span class="bm-bar__value">
+											{{ formatOps(lib) }}
+										</span>
 									</div>
 									<div
 										class="bm-bar__overflow-ext"
 										:style="{ color: libraries[lib]?.color }">
 										›› {{ t.benchmark.muchFaster }}
-										<span class="bm-bar__overflow-caveat">{{ t.benchmark.seeNote }}</span>
+										<span class="bm-bar__overflow-caveat">
+											{{ t.benchmark.seeNote }}
+										</span>
 									</div>
 								</div>
 							</div>
@@ -295,7 +302,10 @@
 							:key="exLib"
 							:style="{ color: libraries[exLib]?.color }"
 							class="bm-chart__excluded-lib">
-							{{ exLib }}{{ idx < excludedLibNames.length - 1 ? ', ' : '' }}
+							{{ exLib
+							}}{{
+								idx < excludedLibNames.length - 1 ? ', ' : ''
+							}}
 						</span>
 					</p>
 
@@ -306,7 +316,6 @@
 					</div>
 				</div>
 			</template>
-
 		</div>
 	</Transition>
 
@@ -337,16 +346,20 @@
 					class="bm-tooltip__header"
 					:style="{ background: libraries[hoveredLib]?.color }">
 					<span class="bm-tooltip__lib">{{ hoveredLib }}</span>
-					<span class="bm-tooltip__desc">{{ lp(libraries[hoveredLib], 'desc') }}</span>
+					<span class="bm-tooltip__desc">
+						{{ bmt.libraries[libraries[hoveredLib].i18nKey].desc }}
+					</span>
 				</div>
 				<div class="bm-tooltip__body">
 					<div
-						v-if="lpArr(libraries[hoveredLib], 'pros').length"
+						v-if="bmt.libraries[libraries[hoveredLib].i18nKey].pros.length"
 						class="bm-tooltip__section">
-						<div class="bm-tooltip__section-title">{{ t.benchmark.tooltipIncludes }}</div>
+						<div class="bm-tooltip__section-title">
+							{{ t.benchmark.tooltipIncludes }}
+						</div>
 						<ul class="bm-tooltip__list">
 							<li
-								v-for="pro in lpArr(libraries[hoveredLib], 'pros')"
+								v-for="pro in bmt.libraries[libraries[hoveredLib].i18nKey].pros"
 								:key="pro"
 								class="bm-tooltip__pro">
 								{{ pro }}
@@ -354,12 +367,14 @@
 						</ul>
 					</div>
 					<div
-						v-if="lpArr(libraries[hoveredLib], 'cons').length"
+						v-if="bmt.libraries[libraries[hoveredLib].i18nKey].cons.length"
 						class="bm-tooltip__section">
-						<div class="bm-tooltip__section-title">{{ t.benchmark.tooltipMissing }}</div>
+						<div class="bm-tooltip__section-title">
+							{{ t.benchmark.tooltipMissing }}
+						</div>
 						<ul class="bm-tooltip__list">
 							<li
-								v-for="con in lpArr(libraries[hoveredLib], 'cons')"
+								v-for="con in bmt.libraries[libraries[hoveredLib].i18nKey].cons"
 								:key="con"
 								class="bm-tooltip__con">
 								{{ con }}
@@ -370,5 +385,4 @@
 			</div>
 		</Transition>
 	</Teleport>
-
 </div>

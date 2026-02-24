@@ -82,6 +82,8 @@ onMounted(() => {
 })
 </script>
 
+<BenchmarkChart />
+
 ## 💡 ¿Por qué QuickModel? {.landing-title}
 
 QuickModel es más que una librería de serialización; es una **plataforma de desarrollo** para aplicaciones intensivas en datos.
@@ -159,48 +161,6 @@ Las APIs devuelven objetos variados en la misma lista (`Payment` puede ser `Card
 - **TC39 + Legacy**: compatible con `experimentalDecorators` (TS 3.4+) y el estándar TC39 (TS 5+).
 - **Tres estilos de propiedad**: `declare`, `!` y `?` funcionan igual.
 
-<BenchmarkChart />
+## 🚀 Ejemplos Rápidos {.landing-title}
 
-## 🚀 Ejemplo Rápido {.landing-title}
-
-```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
-
-// 1. Define tu interfaz
-interface IUser {
-	name: string;
-	balance: bigint;
-	lastLogin: Date;
-	metadata: Map<string, any>;
-}
-
-// 2. Aplica el decorador mágico
-@Quick({
-	balance: 'bigint', // Usa literales para tipos simples
-	lastLogin: Date, // Usa constructores para objetos nativos
-	metadata: Map, // Maneja estructuras complejas automáticamente
-})
-class User extends QModel<IUser> {}
-
-// 3. Respuesta de API (Strings JSON -> Objetos)
-const user = new User({
-	name: 'Alice',
-	balance: '500000000000000000',
-	lastLogin: '2024-03-15T10:00:00Z',
-	metadata: [
-		['role', 'admin'],
-		['theme', 'dark'],
-	],
-});
-
-console.log(user.balance + 1n); // 500000000000000001n (¡Es un BigInt!)
-console.log(user.lastLogin.getFullYear()); // 2024 (¡Es un Date!)
-console.log(user.metadata.get('role')); // "admin" (¡Es un Map!)
-
-// 4. Enviar de vuelta a API (Objetos -> JSON)
-const payload = user.toJSON();
-
-// 5. ¿Necesitas Datos de Prueba?
-const fakeUser = User.mock().random();
-// ¡Genera una instancia de User totalmente poblada con datos realistas y aleatorios!
-```
+<QuickExamples />

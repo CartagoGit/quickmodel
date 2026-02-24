@@ -26,6 +26,10 @@ Reactive composables, Pinia stores and server routes with Nuxt.
 
 DTO validation and transformation in REST APIs with the most popular Node.js frameworks.
 
+### [Bun.js](/en/integrations/bun-integration)
+
+Native Bun.serve HTTP handler, WebSocket support, and bulk loading with `Bun.file()` + QuickModel DTOs.
+
 ### [NestJS](/en/integrations/nestjs-integration)
 
 Integration with NestJS module system, validation pipes and guards.
@@ -101,6 +105,10 @@ Persistence in localStorage, sessionStorage and IndexedDB with automatic seriali
 ### [Electron IPC](/en/integrations/electron-integration)
 
 Inter-process communication in Electron using QuickModel for safe serialization.
+
+### [WebSocket & Real-Time Sockets](/en/integrations/websocket-integration)
+
+Native WebSocket, Socket.IO, SSE, uWebSockets.js and STOMP integration with typed message serialization and security.
 
 ## Quick Links
 

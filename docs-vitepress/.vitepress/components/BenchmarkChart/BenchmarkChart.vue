@@ -4,9 +4,9 @@ import { useBenchmarkChart } from './BenchmarkChart';
 const {
 	// Tab navigation
 	activeTab,
-	activeTabIndex,
 	tabDirection,
 	setTab,
+	tabItems,
 
 	libraries,
 	featureRows,
@@ -21,10 +21,9 @@ const {
 	hoveredLib,
 	tooltipX,
 	tooltipY,
-	lang,
 	t,
-	lp,
-	lpArr,
+	bmt,
+	featureNote,
 	currentScenario,
 	activeLibNames,
 	excludedLibNames,
@@ -39,7 +38,6 @@ const {
 	barPercent,
 	formatOps,
 	featureIcon,
-	formatNote,
 	formatBadgeSpeed,
 	goToScenario,
 	onBarMouseEnter,

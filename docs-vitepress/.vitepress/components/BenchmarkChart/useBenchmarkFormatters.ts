@@ -10,15 +10,13 @@ const OPS_KILO_THRESHOLD = 1_000;
 export interface IBenchmarkFormattersResult {
 	formatOps: (lib: string) => string;
 	featureIcon: (val: IFeatureValue | undefined) => string;
-	formatNote: (scenario: IBenchScenario) => string;
 }
 
 /**
  * Formatea valores del gráfico para su presentación (SRP: sólo responsable del formato).
  */
 export function useBenchmarkFormatters(
-	currentScenario: Ref<IBenchScenario>,
-	lang: Ref<string>
+	currentScenario: Ref<IBenchScenario>
 ): IBenchmarkFormattersResult {
 	function formatOps(lib: string): string {
 		const val = currentScenario.value.values[lib];
@@ -36,12 +34,5 @@ export function useBenchmarkFormatters(
 		return '❌';
 	}
 
-	function formatNote(scenario: IBenchScenario): string {
-		const key = ('notes' +
-			lang.value.charAt(0).toUpperCase() +
-			lang.value.slice(1)) as keyof IBenchScenario;
-		return (scenario[key] as string | undefined) ?? scenario.notesEn;
-	}
-
-	return { formatOps, featureIcon, formatNote };
+	return { formatOps, featureIcon };
 }

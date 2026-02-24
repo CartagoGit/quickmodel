@@ -26,6 +26,10 @@ Composables reactivos, Pinia stores y rutas de servidor con Nuxt.
 
 Validación y transformación de DTOs en APIs REST con los frameworks de Node.js más populares.
 
+### [Bun.js](/es/integrations/bun-integration)
+
+Handler HTTP nativo con `Bun.serve`, soporte WebSocket y carga masiva con `Bun.file()` + DTOs de QuickModel.
+
 ### [NestJS](/es/integrations/nestjs-integration)
 
 Integración con el sistema de módulos de NestJS, pipes de validación y guards.
@@ -101,6 +105,10 @@ Persistencia en localStorage, sessionStorage e IndexedDB con serialización auto
 ### [Electron IPC](/es/integrations/electron-integration)
 
 Comunicación entre procesos de Electron usando QuickModel para serialización segura.
+
+### [WebSocket y Sockets en Tiempo Real](/es/integrations/websocket-integration)
+
+Integración con WebSocket nativo, Socket.IO, SSE, uWebSockets.js y STOMP con serialización de mensajes tipada y seguridad.
 
 ## Enlaces Rápidos
 

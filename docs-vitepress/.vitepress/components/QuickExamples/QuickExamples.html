@@ -1,0 +1,47 @@
+<div class="qe-wrapper">
+	<!-- ═══════════════════════════════════════════════════════
+	     TAB BAR
+	     ═══════════════════════════════════════════════════════ -->
+	<TabBar
+		:tabs="tabItems"
+		:model-value="activeTab"
+		@update:model-value="setTab" />
+
+	<!-- ═══════════════════════════════════════════════════════
+	     TAB PANELS (animated)
+	     ═══════════════════════════════════════════════════════ -->
+	<Transition
+		:name="'bm-tab-' + tabDirection"
+		mode="out-in">
+		<div
+			:key="activeTab"
+			class="bm-tab-panel qe-panel">
+			<!-- ─── PANEL: @Quick + QModel ─────────────── -->
+			<template v-if="activeTab === 'basic'">
+				<div class="bm-panel-header">
+					<h2 class="bm-header__title">🏗️ {{ t.quickExamples.basicTitle }}</h2>
+					<p class="bm-header__subtitle">{{ t.quickExamples.basicSubtitle }}</p>
+				</div>
+				<div class="qe-code" v-html="highlightedBasic || '<pre><code>' + exampleBasic + '</code></pre>'" />
+			</template>
+
+			<!-- ─── PANEL: QField + QGroup + QRule ───────── -->
+			<template v-else-if="activeTab === 'forms'">
+				<div class="bm-panel-header">
+					<h2 class="bm-header__title">📋 {{ t.quickExamples.formsTitle }}</h2>
+					<p class="bm-header__subtitle">{{ t.quickExamples.formsSubtitle }}</p>
+				</div>
+				<div class="qe-code" v-html="highlightedForms || '<pre><code>' + exampleForms + '</code></pre>'" />
+			</template>
+
+			<!-- ─── PANEL: Serialización + Mocks ─────────── -->
+			<template v-else-if="activeTab === 'mocks'">
+				<div class="bm-panel-header">
+					<h2 class="bm-header__title">🧪 {{ t.quickExamples.mocksTitle }}</h2>
+					<p class="bm-header__subtitle">{{ t.quickExamples.mocksSubtitle }}</p>
+				</div>
+				<div class="qe-code" v-html="highlightedMocks || '<pre><code>' + exampleMocks + '</code></pre>'" />
+			</template>
+		</div>
+	</Transition>
+</div>

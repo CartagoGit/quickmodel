@@ -4,9 +4,15 @@
  * Ejecuta `bun run bench:compare`, captura el output y actualiza los valores
  * en `benchmark-chart.constants.ts` con los resultados reales de la máquina actual.
  *
+ * Diseño:
+ *   - Cada scenario en constants.ts declara su `benchNum` (qué BENCH # lo alimenta).
+ *   - `RAW_TO_LIB_KEY` mapea el nombre tal como aparece en el test output → libKey.
+ *   - `SCENARIO_BENCH_NUM` es el mapeo inverso: scenarioKey → benchNum.
+ *   - Un mismo benchNum puede alimentar varios scenarios (p.ej. benchNum=8 actualiza
+ *     tanto 'forms' como 'rules' automáticamente, sin tablas extra).
+ *
  * Uso:
  *   bun run bench:update
- *   bun run scripts/update-bench-docs.ts
  */
 
 import { readFileSync, writeFileSync } from 'fs';
@@ -17,74 +23,59 @@ import { join } from 'path';
 // ─────────────────────────────────────────────────────────────
 
 interface IBenchEntry {
-	benchNum: string;
+	benchNum: number;
 	rawLibName: string;
 	opsPerSec: number;
 }
 
 interface IScenarioUpdate {
-	scenario: string;
+	scenarioKey: string;
 	libKey: string;
 	value: number;
 }
 
 // ─────────────────────────────────────────────────────────────
-// MAPEO: (benchNum, rawLibName) → (scenario, libKey)
+// MAPEO: rawLibName (lowercase) → libKey canónico en constants.ts
 //
-// Key format: `BENCH_NUM|RAW_LIB_NAME` (normalizado: trim + lowercase)
-// Cada entrada mapea al scenario correcto y al key usado en constants.ts
+// Cubre todos los nombres que aparecen en los logs de los tests:
+//   "[BENCH #N] TypeBox: 1,500,000 ops/sec"  → libKey = "TypeBox"
 // ─────────────────────────────────────────────────────────────
 
-const BENCH_MAP: Record<string, { scenario: string; libKey: string }> = {
-	// ── Benchmark #1: Validación simple (10k) → scenario 'validation' ──────
-	'1|plain js (baseline)': { scenario: 'validation', libKey: 'Plain JS' },
-	'1|typebox': { scenario: 'validation', libKey: 'TypeBox' },
-	'1|valibot': { scenario: 'validation', libKey: 'valibot' },
-	'1|zod': { scenario: 'validation', libKey: 'Zod' },
-	'1|yup': { scenario: 'validation', libKey: 'yup' },
-	'1|arktype': { scenario: 'validation', libKey: 'arktype' },
-	'1|joi': { scenario: 'validation', libKey: 'joi' },
-	'1|quickmodel': { scenario: 'validation', libKey: 'QuickModel' },
+const RAW_TO_LIB_KEY: Record<string, string> = {
+	typebox: 'TypeBox',
+	arktype: 'arktype',
+	valibot: 'valibot',
+	zod: 'Zod',
+	yup: 'yup',
+	joi: 'joi',
+	'plain js (baseline)': 'Plain JS',
+	'plain json (baseline)': 'Plain JS',
+	superjson: 'superjson',
+	'class-transformer': 'class-transformer',
+	'class-validator': 'class-validator',
+	vest: 'vest',
+	quickmodel: 'QuickModel',
+	'quickmodel mock': 'QuickModel',
+	'quickmodel @qrule': 'QuickModel',
+};
 
-	// ── Benchmark #2: Coerción tipos complejos (1k) → scenario 'coercion' ──
-	'2|valibot': { scenario: 'coercion', libKey: 'valibot' },
-	'2|zod': { scenario: 'coercion', libKey: 'Zod' },
-	'2|class-transformer': {
-		scenario: 'coercion',
-		libKey: 'class-transformer',
-	},
-	'2|class-validator': { scenario: 'coercion', libKey: 'class-validator' },
-	'2|quickmodel': { scenario: 'coercion', libKey: 'QuickModel' },
+// ─────────────────────────────────────────────────────────────
+// SCENARIO → BENCH NUM
+//
+// Refleja el campo `benchNum` de cada IBenchScenario en constants.ts.
+// Si se añade un scenario nuevo allí, añadir aquí también.
+// Un mismo benchNum puede asignarse a varios scenarios (p.ej. 'forms'
+// y 'rules' ambos usan BENCH #8).
+// ─────────────────────────────────────────────────────────────
 
-	// ── Benchmark #3: Roundtrip serialización (1k) → scenario 'serialization'
-	'3|plain json (baseline)': {
-		scenario: 'serialization',
-		libKey: 'Plain JS',
-	},
-	'3|superjson': { scenario: 'serialization', libKey: 'superjson' },
-	'3|class-transformer': {
-		scenario: 'serialization',
-		libKey: 'class-transformer',
-	},
-	'3|quickmodel': { scenario: 'serialization', libKey: 'QuickModel' },
-
-	// ── Benchmark #4: Validación batch 1k (cycles/sec) → scenario 'batch' ──
-	'4|typebox': { scenario: 'batch', libKey: 'TypeBox' },
-	'4|valibot': { scenario: 'batch', libKey: 'valibot' },
-	'4|zod': { scenario: 'batch', libKey: 'Zod' },
-	'4|yup': { scenario: 'batch', libKey: 'yup' },
-	'4|arktype': { scenario: 'batch', libKey: 'arktype' },
-	'4|joi': { scenario: 'batch', libKey: 'joi' },
-	'4|quickmodel': { scenario: 'batch', libKey: 'QuickModel' },
-
-	// ── Benchmark #5: Generación de mocks (100 it.) → scenario 'mocks' ─────
-	'5|quickmodel mock': { scenario: 'mocks', libKey: 'QuickModel' },
-
-	// ── Benchmark #8: Reglas / @QRule (5k) → scenario 'rules' ────────────────
-	'8|class-validator': { scenario: 'rules', libKey: 'class-validator' },
-	'8|vest': { scenario: 'rules', libKey: 'vest' },
-	'8|joi': { scenario: 'rules', libKey: 'joi' },
-	'8|quickmodel @qrule': { scenario: 'rules', libKey: 'QuickModel' },
+const SCENARIO_BENCH_NUM: Record<string, number> = {
+	validation: 1,
+	coercion: 2,
+	serialization: 3,
+	batch: 4,
+	mocks: 5,
+	forms: 8,
+	rules: 8,
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -92,10 +83,10 @@ const BENCH_MAP: Record<string, { scenario: string; libKey: string }> = {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Extrae todas las entradas de benchmark del output del test.
- * Soporta tanto "ops/sec" como "cycles/sec".
+ * Extrae todas las mediciones del output del test.
+ * Soporta "ops/sec" y "cycles/sec".
  *
- * Formato esperado:
+ * Formatos capturados:
  *   [BENCH #1] TypeBox: 1,500,000 ops/sec | 0.67μs avg
  *   [BENCH #4] TypeBox: 1,500,000 cycles/sec
  */
@@ -106,8 +97,8 @@ function parseBenchOutput(rawOutput: string): IBenchEntry[] {
 	let match: RegExpExecArray | null;
 
 	while ((match = pattern.exec(rawOutput)) !== null) {
-		const benchNum = match[1]!;
-		const rawLibName = match[2]!.trim();
+		const benchNum = parseInt(match[1]!, 10);
+		const rawLibName = match[2]!.trim().toLowerCase();
 		const opsPerSec = parseInt(match[3]!.replace(/,/g, ''), 10);
 		entries.push({ benchNum, rawLibName, opsPerSec });
 	}
@@ -117,27 +108,39 @@ function parseBenchOutput(rawOutput: string): IBenchEntry[] {
 
 /**
  * Convierte las entradas de benchmark en actualizaciones de scenario+libKey.
- * Las entradas sin mapeo definido se descartan con un aviso.
+ *
+ * Un mismo benchNum actualiza todos los scenarios que lo declaren
+ * (p.ej. benchNum=8 → 'forms' y 'rules').
  */
 function mapEntriesToUpdates(entries: IBenchEntry[]): IScenarioUpdate[] {
+	// Índice inverso: benchNum → lista de scenarioKeys que lo usan
+	const benchToScenarios = new Map<number, string[]>();
+	for (const [scenarioKey, benchNum] of Object.entries(SCENARIO_BENCH_NUM)) {
+		const list = benchToScenarios.get(benchNum) ?? [];
+		list.push(scenarioKey);
+		benchToScenarios.set(benchNum, list);
+	}
+
 	const updates: IScenarioUpdate[] = [];
 
 	for (const entry of entries) {
-		const lookupKey = `${entry.benchNum}|${entry.rawLibName.toLowerCase()}`;
-		const mapping = BENCH_MAP[lookupKey];
-
-		if (!mapping) {
+		const libKey = RAW_TO_LIB_KEY[entry.rawLibName];
+		if (!libKey) {
 			console.warn(
 				`  [SKIP] Sin mapeo para: [BENCH #${entry.benchNum}] "${entry.rawLibName}"`
 			);
 			continue;
 		}
 
-		updates.push({
-			scenario: mapping.scenario,
-			libKey: mapping.libKey,
-			value: entry.opsPerSec,
-		});
+		const scenarioKeys = benchToScenarios.get(entry.benchNum);
+		if (!scenarioKeys || scenarioKeys.length === 0) {
+			// Benchmark sin scenario asociado (BENCH #6, #7): se ignora silenciosamente
+			continue;
+		}
+
+		for (const scenarioKey of scenarioKeys) {
+			updates.push({ scenarioKey, libKey, value: entry.opsPerSec });
+		}
 	}
 
 	return updates;
@@ -147,10 +150,7 @@ function mapEntriesToUpdates(entries: IBenchEntry[]): IScenarioUpdate[] {
 // FORMATEO DE NÚMEROS
 // ─────────────────────────────────────────────────────────────
 
-/**
- * Formatea un número con guiones bajos cada 3 dígitos desde la derecha.
- * Ejemplo: 1500000 → "1_500_000"
- */
+/** Ejemplo: 1500000 → "1_500_000" */
 function formatWithUnderscores(num: number): string {
 	const str = Math.round(num).toString();
 	const parts: string[] = [];
@@ -171,9 +171,8 @@ function formatWithUnderscores(num: number): string {
  * Máquina de estados que recorre el archivo línea a línea y reemplaza
  * los valores numéricos en los bloques `values: { ... }` de cada scenario.
  *
- * Estados:
- *  - 'scanning': buscando un bloque de scenario
- *  - 'in_values': dentro del bloque values:{...} de un scenario conocido
+ * Solo actúa dentro del array `scenarios` — se detiene al llegar a
+ * `export const libraries` para no tocar otras secciones del archivo.
  */
 function applyUpdatesToConstantsFile(updates: IScenarioUpdate[]): number {
 	const filePath = join(
@@ -186,80 +185,112 @@ function applyUpdatesToConstantsFile(updates: IScenarioUpdate[]): number {
 		'benchmark-chart.constants.ts'
 	);
 
-	// Construir mapa anidado: scenario → libKey → newValue
+	// Mapa anidado: scenarioKey → libKey → newValue
 	const updateMap = new Map<string, Map<string, number>>();
 	for (const upd of updates) {
-		if (!updateMap.has(upd.scenario)) {
-			updateMap.set(upd.scenario, new Map());
+		if (!updateMap.has(upd.scenarioKey)) {
+			updateMap.set(upd.scenarioKey, new Map());
 		}
-		updateMap.get(upd.scenario)!.set(upd.libKey, upd.value);
+		updateMap.get(upd.scenarioKey)!.set(upd.libKey, upd.value);
 	}
 
 	const content = readFileSync(filePath, 'utf-8');
 	const lines = content.split('\n');
 
-	let currentScenario = '';
-	let inValuesBlock = false;
+	type IState = 'scanning' | 'in_scenario' | 'in_values' | 'done';
+
+	let state: IState = 'scanning';
+	let currentScenarioKey = '';
 	let braceDepth = 0;
 	let replacedCount = 0;
 
-	// Regex para detectar la línea key: 'xxx' dentro de un objeto de scenario
-	const keyLineRe = /^\s+key:\s*['"]([^'"]+)['"]/;
-	// Regex para detectar el inicio de values: {
-	const valuesStartRe = /values:\s*\{/;
-	// Regex para líneas con valor de librería: opcionalmente quoted key + número
-	// El input siempre son líneas de un archivo TS del propio proyecto (controlado).
-
-	// eslint-disable-next-line security/detect-unsafe-regex
-	const libLineRe = /^(\s+(?:'([^']+)'|([\w][\w -]*)?):\s*)(-1|[\d_]+)(.*)$/;
+	// Detecta `key: 'xxx'` dentro de un objeto del array scenarios
+	const scenarioKeyRe = /^\s+key:\s*['"]([^'"]+)['"]/;
+	// Detecta el inicio de `values: {`
+	const valuesStartRe = /^\s+values:\s*\{/;
+	// Detecta líneas de valor de librería:  'Plain JS': 1_234,  TypeBox: null,
+	const libValueRe =
+		/^(\s+(?:'([^']+)'|([\w][\w -]*))\s*:\s*)(null|[\d_]+)(,?\s*)$/;
 
 	const updatedLines = lines.map((rawLine) => {
-		// ── Fuera del bloque values ─────────────────────────────────
-		if (!inValuesBlock) {
-			const keyMatch = keyLineRe.exec(rawLine);
-			if (keyMatch) {
-				currentScenario = keyMatch[1]!;
-			}
+		if (state === 'done') return rawLine;
 
-			if (currentScenario && valuesStartRe.test(rawLine)) {
-				inValuesBlock = true;
-				// Contar llaves en la misma línea (por si values: { ... } está inline)
-				braceDepth =
-					(rawLine.match(/\{/g) ?? []).length -
-					(rawLine.match(/\}/g) ?? []).length;
-				if (braceDepth <= 0) inValuesBlock = false;
-			}
+		// Parar al llegar a la sección de libraries (fuera del array scenarios)
+		if (rawLine.includes('export const libraries')) {
+			state = 'done';
 			return rawLine;
 		}
 
-		// ── Dentro del bloque values ────────────────────────────────
+		if (state === 'scanning' || state === 'in_scenario') {
+			const keyMatch = scenarioKeyRe.exec(rawLine);
+			if (keyMatch) {
+				currentScenarioKey = keyMatch[1]!;
+				state = 'in_scenario';
+				return rawLine;
+			}
+
+			if (state === 'in_scenario' && valuesStartRe.test(rawLine)) {
+				state = 'in_values';
+				braceDepth = 1;
+				return rawLine;
+			}
+
+			return rawLine;
+		}
+
+		// ── state === 'in_values' ────────────────────────────────────
 		braceDepth +=
 			(rawLine.match(/\{/g) ?? []).length -
 			(rawLine.match(/\}/g) ?? []).length;
 
 		if (braceDepth <= 0) {
-			inValuesBlock = false;
+			state = 'scanning';
+			currentScenarioKey = '';
 			return rawLine;
 		}
 
-		// Intentar reemplazar el valor de una librería
-		const lineMatch = libLineRe.exec(rawLine);
+		const lineMatch = libValueRe.exec(rawLine);
 		if (!lineMatch) return rawLine;
 
 		const libKey = (lineMatch[2] ?? lineMatch[3] ?? '').trim();
-		const scenarioMap = updateMap.get(currentScenario);
+		const scenarioMap = updateMap.get(currentScenarioKey);
 		const newVal = scenarioMap?.get(libKey);
 
 		if (newVal === undefined) return rawLine;
 
 		const formatted = formatWithUnderscores(newVal);
-		const updated = `${lineMatch[1]}${formatted}${lineMatch[5]}`;
 		replacedCount++;
-		return updated;
+		return `${lineMatch[1]}${formatted}${lineMatch[5]}`;
 	});
 
 	writeFileSync(filePath, updatedLines.join('\n'), 'utf-8');
 	return replacedCount;
+}
+
+// ─────────────────────────────────────────────────────────────
+// RESUMEN POR SCENARIO
+// ─────────────────────────────────────────────────────────────
+
+function printSummaryTable(updates: IScenarioUpdate[]): void {
+	const byScenario = new Map<string, Map<string, number>>();
+	for (const upd of updates) {
+		if (!byScenario.has(upd.scenarioKey))
+			byScenario.set(upd.scenarioKey, new Map());
+		byScenario.get(upd.scenarioKey)!.set(upd.libKey, upd.value);
+	}
+
+	console.log('  Scenario          BENCH  Librerías actualizadas');
+	console.log(
+		'  ────────────────  ─────  ────────────────────────────────────────'
+	);
+	for (const [scenarioKey, libMap] of byScenario) {
+		const benchNum = SCENARIO_BENCH_NUM[scenarioKey] ?? '?';
+		const libs = [...libMap.keys()].join(', ');
+		console.log(
+			`  ${scenarioKey.padEnd(16)}  #${String(benchNum).padEnd(4)} ${libs}`
+		);
+	}
+	console.log();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -288,49 +319,46 @@ async function main(): Promise<void> {
 	await proc.exited;
 
 	if (proc.exitCode !== 0) {
-		// Los tests de benchmark pueden fallar por librerías opcionales no
-		// instaladas, pero aun así emiten resultados válidos — continuar.
 		console.warn(
-			`  ⚠️  Los tests reportaron exitCode=${proc.exitCode} (librerías opcionales ausentes)`
+			`  ⚠️  exitCode=${proc.exitCode} (puede haber librerías opcionales ausentes)\n`
 		);
 	}
 
-	// Combinar stdout y stderr para capturar todo el output de console.log
+	// stdout en Bun contiene el output de los tests (console.log dentro de tests)
 	const fullOutput = rawOutput + '\n' + rawStderr;
 
-	console.log('📊 Parseando resultados...\n');
+	console.log('📊 Parseando resultados...');
 	const entries = parseBenchOutput(fullOutput);
 
 	if (entries.length === 0) {
-		console.error(
-			'❌ No se encontraron resultados de benchmark en el output.'
-		);
-		console.error(
-			'   Verifica que el script funciona con: bun run bench:compare'
-		);
+		console.error('\n❌ No se encontraron mediciones en el output.');
+		console.error('   Prueba manualmente: bun run bench:compare');
 		process.exit(1);
 	}
 
-	console.log(`  Encontradas ${entries.length} mediciones:\n`);
+	// Deduplicar: si un mismo benchNum+lib aparece varias veces (test individual +
+	// test de comparativa), quedarse con la última medición (más estable, JIT warm).
+	const deduped = new Map<string, IBenchEntry>();
 	for (const entry of entries) {
-		console.log(
-			`    [#${entry.benchNum}] ${entry.rawLibName.padEnd(28)} ${entry.opsPerSec.toLocaleString().padStart(12)} ops/sec`
-		);
+		deduped.set(`${entry.benchNum}|${entry.rawLibName}`, entry);
 	}
+	const dedupedEntries = [...deduped.values()];
 
-	const updates = mapEntriesToUpdates(entries);
 	console.log(
-		`\n  ${updates.length} actualizaciones mapeadas a scenarios.\n`
+		`  ${entries.length} mediciones brutas → ${dedupedEntries.length} únicas\n`
 	);
+
+	const updates = mapEntriesToUpdates(dedupedEntries);
+	printSummaryTable(updates);
 
 	console.log('✏️  Actualizando benchmark-chart.constants.ts...');
 	const replaced = applyUpdatesToConstantsFile(updates);
 
 	console.log(
-		`\n✅ Actualizados ${replaced} valores en benchmark-chart.constants.ts`
+		`\n✅ ${replaced} valores actualizados en benchmark-chart.constants.ts`
 	);
 	console.log(
-		'   La documentación refleja ahora los resultados de esta máquina.'
+		'   Gráficos + cobertura de la documentación reflejan ahora los resultados de esta máquina.'
 	);
 }
 

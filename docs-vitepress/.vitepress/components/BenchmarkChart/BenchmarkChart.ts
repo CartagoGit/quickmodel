@@ -18,7 +18,19 @@ const TAB_ORDER = ['features', 'coverage', 'performance'] as const;
 type ITab = (typeof TAB_ORDER)[number];
 
 export function useBenchmarkChart() {
-	const { lang, t, lp, lpArr } = useI18n();
+	const { lang, t } = useI18n();
+
+	const bmt = computed(() => t.value.benchmark);
+
+	/** Helper tipado para acceder a las notas de warning de una feature row */
+	type IBmtFeaturesMap = Record<
+		string,
+		{ label: string; notes?: Record<string, string> }
+	>;
+	function featureNote(rowI18nKey: string, libI18nKey: string): string {
+		const features = bmt.value.features as unknown as IBmtFeaturesMap;
+		return features[rowI18nKey]?.notes?.[libI18nKey] ?? '';
+	}
 
 	// ─── Tab navigation ───────────────────────────
 
@@ -35,7 +47,11 @@ export function useBenchmarkChart() {
 		prevTabIndex.value = TAB_ORDER.indexOf(activeTab.value);
 		activeTab.value = tab;
 	}
-
+	const tabItems = computed(() => [
+		{ key: 'features', icon: '🎯', label: t.value.benchmark.tabFeatures },
+		{ key: 'coverage', icon: '📊', label: t.value.benchmark.tabCoverage },
+		{ key: 'performance', icon: '⚡', label: t.value.benchmark.tabPerf },
+	]);
 	// ─── Estado reactivo ──────────────────────────
 
 	const activeAppType = ref('all');
@@ -180,10 +196,7 @@ export function useBenchmarkChart() {
 		activeLibNames
 	);
 
-	const { formatOps, featureIcon, formatNote } = useBenchmarkFormatters(
-		currentScenario,
-		lang
-	);
+	const { formatOps, featureIcon } = useBenchmarkFormatters(currentScenario);
 
 	const {
 		hoveredLib,
@@ -205,6 +218,7 @@ export function useBenchmarkChart() {
 		activeTabIndex,
 		tabDirection,
 		setTab,
+		tabItems,
 
 		// Datos estáticos
 		libraries,
@@ -236,8 +250,8 @@ export function useBenchmarkChart() {
 		// Traducciones
 		lang,
 		t,
-		lp,
-		lpArr,
+		bmt,
+		featureNote,
 
 		// Computados
 		filteredScenarios,
@@ -264,7 +278,6 @@ export function useBenchmarkChart() {
 		// Formateadores (useBenchmarkFormatters)
 		formatOps,
 		featureIcon,
-		formatNote,
 
 		// Interacciones (useBenchmarkInteractions)
 		onBarMouseEnter,

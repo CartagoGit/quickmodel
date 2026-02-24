@@ -724,6 +724,10 @@ export default defineConfig({
 									link: '/en/integrations/backend-integration',
 								},
 								{
+									text: 'Bun.js',
+									link: '/en/integrations/bun-integration',
+								},
+								{
 									text: 'NestJS',
 									link: '/en/integrations/nestjs-integration',
 								},
@@ -791,6 +795,14 @@ export default defineConfig({
 									link: '/en/integrations/vitest-matchers',
 								},
 								{
+									text: 'Jest / Jasmine',
+									link: '/en/integrations/jest-integration',
+								},
+								{
+									text: 'Mocha / Chai / AVA / Node:test',
+									link: '/en/integrations/test-runners-integration',
+								},
+								{
 									text: 'TanStack Query',
 									link: '/en/integrations/tanstack-query-integration',
 								},
@@ -810,6 +822,10 @@ export default defineConfig({
 								{
 									text: 'Electron IPC',
 									link: '/en/integrations/electron-integration',
+								},
+								{
+									text: 'WebSocket & Real-Time Sockets',
+									link: '/en/integrations/websocket-integration',
 								},
 							],
 						},
@@ -990,6 +1006,10 @@ export default defineConfig({
 									link: '/es/integrations/backend-integration',
 								},
 								{
+									text: 'Bun.js',
+									link: '/es/integrations/bun-integration',
+								},
+								{
 									text: 'NestJS',
 									link: '/es/integrations/nestjs-integration',
 								},
@@ -1057,6 +1077,14 @@ export default defineConfig({
 									link: '/es/integrations/vitest-matchers',
 								},
 								{
+									text: 'Jest / Jasmine',
+									link: '/es/integrations/jest-integration',
+								},
+								{
+									text: 'Mocha / Chai / AVA / Node:test',
+									link: '/es/integrations/test-runners-integration',
+								},
+								{
 									text: 'TanStack Query',
 									link: '/es/integrations/tanstack-query-integration',
 								},
@@ -1076,6 +1104,10 @@ export default defineConfig({
 								{
 									text: 'Electron IPC',
 									link: '/es/integrations/electron-integration',
+								},
+								{
+									text: 'WebSocket y Sockets en Tiempo Real',
+									link: '/es/integrations/websocket-integration',
 								},
 							],
 						},

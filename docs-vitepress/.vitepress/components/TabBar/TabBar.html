@@ -1,0 +1,21 @@
+<div
+	class="tab-bar"
+	role="tablist"
+	:style="{ '--tab-count': tabs.length }">
+	<!-- Tab buttons -->
+	<button
+		v-for="tab in tabs"
+		:key="tab.key"
+		role="tab"
+		:aria-selected="modelValue === tab.key"
+		:class="['tab-bar__tab', { 'tab-bar__tab--active': modelValue === tab.key }]"
+		@click="setTab(tab.key)">
+		<span class="tab-bar__tab-icon">{{ tab.icon }}</span>
+		<span class="tab-bar__tab-label">{{ tab.label }}</span>
+	</button>
+
+	<!-- Sliding active indicator -->
+	<div
+		class="tab-bar__indicator"
+		:style="{ '--tab-idx': activeTabIndex }"></div>
+</div>

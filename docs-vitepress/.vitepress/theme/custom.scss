@@ -510,3 +510,41 @@ body {
 		}
 	}
 }
+
+// ── Tab slide transitions (shared: BenchmarkChart, QuickExamples) ────────────
+
+// Forward: enter from right, leave to left
+.bm-tab-forward-enter-active,
+.bm-tab-forward-leave-active {
+	transition:
+		opacity 0.22s ease,
+		transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bm-tab-forward-enter-from {
+	opacity: 0;
+	transform: translateX(40px);
+}
+
+.bm-tab-forward-leave-to {
+	opacity: 0;
+	transform: translateX(-40px);
+}
+
+// Backward: enter from left, leave to right
+.bm-tab-backward-enter-active,
+.bm-tab-backward-leave-active {
+	transition:
+		opacity 0.22s ease,
+		transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bm-tab-backward-enter-from {
+	opacity: 0;
+	transform: translateX(-40px);
+}
+
+.bm-tab-backward-leave-to {
+	opacity: 0;
+	transform: translateX(40px);
+}

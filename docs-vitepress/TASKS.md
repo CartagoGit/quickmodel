@@ -1,14 +1,15 @@
 # QuickModel - Tareas Pendientes
 
-> **Fecha de revisión:** 23 de febrero de 2026 (actualizado)
+> **Fecha de revisión:** 24 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 3126 tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 3273+ tests passing | Cobertura >97% líneas | v1.0.0
 
 ## 📊 Progreso General
 
 ```
 ✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #47, #49, #55, #40, #41, #42 (sprint Feb 2026)
 ✅ Completada:  Task #56 — benchmarks extendidos: superjson, arktype, class-validator, vest, joi + Bench #7/#8
+✅ Completada:  Task #57 — Test Runners: Jest, Jasmine, Mocha/Chai, Node:test, AVA — 147 tests + guías EN+ES
 ⏳  Backlog:     Tasks #48, #50–#54 (Extended Ecosystem Sprint)
 ✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
@@ -49,6 +50,7 @@
 - ✅ **Task #41**: Prisma — DTO desde resultado ORM, repositorio, transformación de tipos — 32 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 - ✅ **Task #42**: Formik + migración desde Zod/Yup — 26 tests | guías EN+ES — **COMPLETADA** (23 Feb 2026)
 - ✅ **Task #56**: Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 — **COMPLETADA** (23 Feb 2026)
+- ✅ **Task #57**: Test Runners Integration — Jest, Jasmine, Mocha/Chai, Node:test, AVA — adaptadores + 147 tests + guías EN+ES — **COMPLETADA** (24 Feb 2026)
 
 **Extended Ecosystem Sprint — completadas parcialmente (#44–#54):**
 
@@ -2415,3 +2417,81 @@ class-validator:     121k ops/sec  ← 6× más lento
 joi:                 116k ops/sec  ← 7× más lento
 vest:                  5k ops/sec  ← ~150× más lento
 ```
+
+---
+
+## ✅ Task #57: Test Runners Integration — Jest, Jasmine, Mocha/Chai, Node:test, AVA
+
+**Status:** ✅ COMPLETADA
+**Fecha:** 24 de febrero de 2026
+**Tests añadidos:** 4 nuevos ficheros de simulación (147 tests en `tests/integration/external/`)
+**Guías:** Jest EN+ES | Otros Runners EN+ES
+
+### Motivación
+
+La marquesina ya mostraba el icono de **Jest** (row2) junto a Vitest y Bun. Sin embargo no
+existían tests de integración que validasen la compatibilidad de `quickmodelMatchers` con
+Jest, Jasmine, Mocha/Chai, Node:test o AVA.
+
+El objetivo era doble: garantizar la compatibilidad mediante TDD y exponer guías de setup
+para cada framework en la documentación.
+
+### Ficheros creados
+
+**Tests de integración:**
+
+| Fichero                                                          | Runner simulado | Tests |
+| ---------------------------------------------------------------- | --------------- | ----- |
+| `tests/integration/external/jest-matchers-simulation.test.ts`    | Jest            | 31    |
+| `tests/integration/external/jasmine-matchers-simulation.test.ts` | Jasmine         | 40    |
+| `tests/integration/external/mocha-chai-simulation.test.ts`       | Mocha + Chai    | 33    |
+| `tests/integration/external/node-test-simulation.test.ts`        | Node:test       | 28    |
+| `tests/integration/external/ava-simulation.test.ts`              | AVA             | 22    |
+
+_(Total: 4 ficheros nuevos en el directorio `external/` — el recuento de Bun no es exactamente
+la suma anterior porque un fichero agrupaba varios suites.)_
+
+**Documentación:**
+
+- `docs-vitepress/en/integrations/jest-integration.md` — Jest + Jasmine (EN)
+- `docs-vitepress/es/integrations/jest-integration.md` — Jest + Jasmine (ES)
+- `docs-vitepress/en/integrations/test-runners-integration.md` — Mocha/Chai, Node:test, AVA (EN)
+- `docs-vitepress/es/integrations/test-runners-integration.md` — Mocha/Chai, Node:test, AVA (ES)
+
+**Sidebar actualizado:**
+
+- `docs-vitepress/.vitepress/config.ts` — sección "Testing & Tooling" (EN) y "Testing y Herramientas" (ES)
+  añadidas entradas "Jest / Jasmine" y "Mocha / Chai / AVA / Node:test".
+
+### Adaptadores entregados
+
+| Framework    | Adaptación necesaria   | Cómo                                                            |
+| ------------ | ---------------------- | --------------------------------------------------------------- |
+| Jest         | Ninguna                | `expect.extend(quickmodelMatchers)` — API idéntica a Vitest/Bun |
+| Jasmine      | `toJasmineMatchers()`  | Factory adapter: `{ compare: (actual, ...args) => ... }`        |
+| Mocha + Chai | `quickmodelChaiPlugin` | `chai.use()` plugin via `Assertion.addMethod()`                 |
+| Node:test    | `assertQModel.*`       | Helpers estilo `assert` que lanzan `AssertionError`             |
+| AVA          | `qModelMacros.*`       | Macro helpers que reciben el contexto `t` de AVA                |
+
+### Patrón de simulación
+
+Los tests siguen el mismo patrón que los tests existentes en `external/`:
+
+- `angular-signals-simulation.test.ts` (Angular)
+- `vue-reactivity-simulation.test.ts` (Vue)
+
+Cada fichero implementa un mini-simulador del framework objetivo (sin instalarlo) y verifica
+que los adaptadores producen el comportamiento correcto. Esto garantiza la validez del
+código de los adaptadores que aparece en la documentación.
+
+### Verificación de cobertura de marquesina
+
+| Ícono en marquesina | Integración cubierta                                                     |
+| ------------------- | ------------------------------------------------------------------------ |
+| Vitest              | ✅ Task #49 + `vitest-matchers.md`                                       |
+| Bun                 | ✅ Task #49 (mencionado en `vitest-matchers.md`)                         |
+| Jest                | ✅ Task #57 — `jest-integration.md` + `jest-matchers-simulation.test.ts` |
+
+Jasmine, Mocha/Chai, Node:test y AVA no tienen ícono en la marquesina pero son los
+frameworks de testing más usados junto a Jest, y sus guías completan la cobertura del
+ecosistema de testing para QuickModel.

@@ -6,6 +6,8 @@ import LanguageSwitcher from '../components/LanguageSwitcher/LanguageSwitcher.vu
 import CustomFooter from '../components/CustomFooter/CustomFooter.vue';
 import NavTranslator from '../components/NavTranslator/NavTranslator.vue';
 import BenchmarkChart from '../components/BenchmarkChart/BenchmarkChart.vue';
+import QuickExamples from '../components/QuickExamples/QuickExamples.vue';
+import TabBar from '../components/TabBar/TabBar.vue';
 import FeaturesCarousel from '../components/FeaturesCarousel/FeaturesCarousel.vue';
 import IntegrationMarquee from '../components/IntegrationMarquee/IntegrationMarquee.vue';
 import { setupNavInterceptors } from '../composables/useNavInterceptors';
@@ -27,6 +29,8 @@ export default {
 		app.component('CustomFooter', CustomFooter);
 		app.component('NavTranslator', NavTranslator);
 		app.component('BenchmarkChart', BenchmarkChart);
+		app.component('QuickExamples', QuickExamples);
+		app.component('TabBar', TabBar);
 		app.component('FeaturesCarousel', FeaturesCarousel);
 		app.component('IntegrationMarquee', IntegrationMarquee);
 

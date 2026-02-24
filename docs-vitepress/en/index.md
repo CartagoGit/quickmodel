@@ -161,46 +161,6 @@ APIs return different object shapes in the same list (`Payment` can be `Card` or
 - **TC39 + Legacy**: compatible with `experimentalDecorators` (TS 3.4+) and TC39 standard (TS 5+).
 - **Three property styles**: `declare`, `!` and `?` all work identically.
 
-## Quick Example
+## Quick Examples
 
-```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
-
-// 1. Define your interface
-interface IUser {
-	name: string;
-	balance: bigint;
-	lastLogin: Date;
-	metadata: Map<string, any>;
-}
-
-// 2. Apply the magic decorator
-@Quick({
-	balance: 'bigint', // Use string literals for simple types
-	lastLogin: Date, // Use constructors for native objects
-	metadata: Map, // Automatically handles complex structures
-})
-class User extends QModel<IUser> {}
-
-// 3. API Response (JSON strings -> Objects)
-const user = new User({
-	name: 'Alice',
-	balance: '500000000000000000',
-	lastLogin: '2024-03-15T10:00:00Z',
-	metadata: [
-		['role', 'admin'],
-		['theme', 'dark'],
-	],
-});
-
-console.log(user.balance + 1n); // 500000000000000001n (It's a BigInt!)
-console.log(user.lastLogin.getFullYear()); // 2024 (It's a Date!)
-console.log(user.metadata.get('role')); // "admin" (It's a Map!)
-
-// 4. Send back to API (Objects -> JSON)
-const payload = user.toJSON();
-
-// 5. Need Mock Data?
-const fakeUser = User.mock().random();
-// Generates a fully populated User instance with random, realistic data!
-```
+<QuickExamples />
