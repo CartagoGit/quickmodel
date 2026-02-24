@@ -45,19 +45,19 @@ interface IUserProfile {
 class UserProfileDto extends QModel<IUserProfile> {
 	declare uid: string;
 
-	@QField({ label: 'Full Name', required: true })
+	@QField({ widget: 'input', label: 'Full Name', required: true })
 	@QRule((val: string) => val.length >= 2, 'Name too short')
 	declare name: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Invalid age')
 	declare age: number;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule((val: string) => val.includes('@'), 'Invalid email')
 	declare email: string;
 
-	@QField({ label: 'Phone' })
+	@QField({ widget: 'input', label: 'Phone' })
 	@QRule((val: string) => val.length >= 7, 'Phone too short')
 	declare phone: string;
 
@@ -155,22 +155,22 @@ interface IContactForm {
 	{ coercionStrategy: 'loose' }
 )
 class ContactFormDto extends QModel<IContactForm> {
-	@QField({ label: 'Full Name', required: true })
+	@QField({ widget: 'input', label: 'Full Name', required: true })
 	@QRule((val: string) => val.length >= 2, 'Name too short')
 	declare fullName: string;
 
-	@QField({ label: 'Message', required: true })
+	@QField({ widget: 'input', label: 'Message', required: true })
 	@QRule((val: string) => val.length >= 10, 'Message too short')
 	declare msg: string;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule((val: string) => val.includes('@'), 'Invalid email')
 	declare email: string;
 
-	@QField({ label: 'Subject' })
+	@QField({ widget: 'input', label: 'Subject' })
 	declare subject: string;
 
-	@QField({ label: 'Rating' })
+	@QField({ widget: 'input', label: 'Rating' })
 	@QRule((val: number) => val >= 1 && val <= 5, 'Rating must be 1-5')
 	declare rating: number;
 }
@@ -301,7 +301,7 @@ describe('React Native — AsyncStorage roundtrip', () => {
 
 	test('new dto from JSON.parse(serialize()) restores values', () => {
 		const stored = JSON.stringify(dto.serialize());
-		const parsed = JSON.parse(stored) as object;
+		const parsed = JSON.parse(stored) as Record<string, unknown>;
 		const restored = new UserProfileDto(parsed);
 		expect(restored.serialize()).toEqual(dto.serialize());
 	});
@@ -325,7 +325,9 @@ describe('React Native — AsyncStorage roundtrip', () => {
 				isVerified: true,
 			},
 		];
-		const { instances, errors } = UserProfileDto.createMany(rawList);
+		const { instances, errors } = UserProfileDto.createMany(
+			rawList as any[]
+		);
 		expect(errors.length).toBe(0);
 		expect(instances.length).toBe(2);
 		expect(instances[0]?.name).toBe('Hank');
@@ -352,7 +354,7 @@ describe('Expo Router — route validation', () => {
 		| { success: true; data: IUserProfile }
 		| { success: false; errors: Array<{ field: string; message: string }> };
 
-	function routeAction(params: object): IRouteResult {
+	function routeAction(params: Record<string, unknown>): IRouteResult {
 		const dto = new UserProfileDto(params);
 		const result = qCheckRules(dto);
 		if (!result.valid) {
@@ -435,7 +437,7 @@ describe('Capacitor Preferences — typed storage', () => {
 	test('serialize output is safe for Preferences.set', () => {
 		const dto = new AppSettingsDto(validSettings);
 		const raw = JSON.stringify(dto.serialize());
-		const parsed = JSON.parse(raw) as object;
+		const parsed = JSON.parse(raw) as Record<string, unknown>;
 		const restored = new AppSettingsDto(parsed);
 		expect(restored.theme).toBe('dark');
 		expect(restored.fontSize).toBe(16);
@@ -446,7 +448,9 @@ describe('Capacitor Preferences — typed storage', () => {
 		prefs.set('settings', JSON.stringify(dto.serialize()));
 		const stored = prefs.get('settings');
 		expect(stored).toBeDefined();
-		const restored = new AppSettingsDto(JSON.parse(stored!) as object);
+		const restored = new AppSettingsDto(
+			JSON.parse(stored!) as Record<string, unknown>
+		);
 		expect(restored.language).toBe('en');
 		expect(restored.notifications).toBe(true);
 	});
@@ -532,7 +536,7 @@ describe('Ionic — form patterns', () => {
 				tag: 'sale',
 			},
 		];
-		const { instances } = ProductDto.createMany(apiData);
+		const { instances } = ProductDto.createMany(apiData as any[]);
 		expect(instances.length).toBe(3);
 		expect(typeof instances[0]?.price).toBe('number');
 	});
@@ -630,7 +634,9 @@ describe('Cordova — localStorage persistence', () => {
 	test('populate restores from parsed storage value', () => {
 		const dto = new UserProfileDto(profile);
 		const stored = JSON.stringify(dto.serialize());
-		const restored = new UserProfileDto(JSON.parse(stored) as object);
+		const restored = new UserProfileDto(
+			JSON.parse(stored) as Record<string, unknown>
+		);
 		expect(restored.name).toBe('Sara');
 		expect(restored.age).toBe(34);
 	});
@@ -642,7 +648,9 @@ describe('Cordova — localStorage persistence', () => {
 
 		const raw = storage.get('user');
 		expect(raw).toBeDefined();
-		const initialized = new UserProfileDto(JSON.parse(raw!) as object);
+		const initialized = new UserProfileDto(
+			JSON.parse(raw!) as Record<string, unknown>
+		);
 		expect(initialized.uid).toBe('cord01');
 	});
 
@@ -650,7 +658,9 @@ describe('Cordova — localStorage persistence', () => {
 		const cordovaDto = new UserProfileDto(profile);
 		const serialized = cordovaDto.serialize();
 
-		const capacitorDto = new UserProfileDto(serialized as object);
+		const capacitorDto = new UserProfileDto(
+			serialized as Record<string, unknown>
+		);
 		expect(capacitorDto.name).toBe(cordovaDto.name);
 		expect(capacitorDto.email).toBe(cordovaDto.email);
 		expect(capacitorDto.isVerified).toBe(cordovaDto.isVerified);

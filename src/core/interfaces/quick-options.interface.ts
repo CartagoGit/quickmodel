@@ -358,6 +358,35 @@ export interface IQAdvancedOptions<
 	integrityErrorStrategy?: 'failFast' | 'accumulate';
 
 	/**
+	 * Key alias map for input remapping (API → model) and output remapping (model → API).
+	 *
+	 * Maps each model property name to its external alias key. During construction, alias keys
+	 * in the input are automatically renamed to the property name. During `serialize()`, property
+	 * names are renamed back to the alias keys in the output.
+	 *
+	 * **Type-safe alternative to `@QAlias`**: unlike `@QAlias`, the alias map provided here is
+	 * visible to TypeScript at compile time when combined with the second generic of `QModel`.
+	 * Pass the same map as `TAliasMap` to `QModel<TInterface, TAliasMap>` so that `serialize()`
+	 * returns a correctly typed object with alias keys — enabling IDE autocomplete without casts.
+	 *
+	 * @example
+	 * ```typescript
+	 * type IUserAliases = { firstName: 'first_name'; lastName: 'last_name' };
+	 *
+	 * @Quick({}, { alias: { firstName: 'first_name', lastName: 'last_name' } })
+	 * class User extends QModel<IUser, IUserAliases> {
+	 *   declare firstName: string;
+	 *   declare lastName: string;
+	 * }
+	 *
+	 * const user = new User({ first_name: 'Alice', last_name: 'Smith' });
+	 * user.firstName;             // 'Alice'
+	 * user.serialize().first_name; // 'Alice' — typed correctly ✅
+	 * ```
+	 */
+	alias?: Record<string, string>;
+
+	/**
 	 * When to run integrity check.
 	 *
 	 * - **manual** (default): Check must be triggered explicitly via `.checkIntegrity()`.

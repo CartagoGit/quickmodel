@@ -56,7 +56,6 @@ interface IComplexEntity {
 }
 
 @Quick({ createdAt: Date, amount: BigInt })
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ComplexEntity extends QModel<IComplexEntity> {
 	declare id: string;
 	declare createdAt: Date;
@@ -65,6 +64,7 @@ class ComplexEntity extends QModel<IComplexEntity> {
 	declare tags: string[];
 	declare metadata: Record<string, string>;
 }
+void ComplexEntity; // referenced to trigger decorator registration
 
 const BASE_USER = {
 	id: '1',

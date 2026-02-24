@@ -198,16 +198,16 @@ interface IReportDto {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class ReportDto extends QModel<IReportDto> {
-	@QField({ label: 'Report ID', required: true })
+	@QField({ widget: 'input', label: 'Report ID', required: true })
 	@QRule((val: string) => /^RPT-[A-Z0-9]{6}$/.test(val), 'Invalid report ID')
 	declare reportId: string;
 
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	@QRule((val: string) => val.trim().length >= 3, 'Title too short')
 	@QRule((val: string) => val.length <= 200, 'Title too long')
 	declare title: string;
 
-	@QField({ label: 'Score' })
+	@QField({ widget: 'input', label: 'Score' })
 	@QRule((val: number) => val >= 0 && val <= 100, 'Score must be 0-100')
 	declare score: number;
 

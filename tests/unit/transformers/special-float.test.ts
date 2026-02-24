@@ -18,7 +18,6 @@ let InfinityTransformer: any;
 let SpecialFloatTransformer: any;
 let isQMSpecialToken: (v: unknown) => boolean;
 let decodeQMSpecialToken: (v: any) => number | undefined;
-let _QM_SPECIAL_TOKEN_KEY: string;
 
 beforeAll(async () => {
 	const mod = await import('@/transformers/special-float.transformer');
@@ -27,7 +26,6 @@ beforeAll(async () => {
 	SpecialFloatTransformer = mod.SpecialFloatTransformer;
 	isQMSpecialToken = mod.isQMSpecialToken;
 	decodeQMSpecialToken = mod.decodeQMSpecialToken;
-	_QM_SPECIAL_TOKEN_KEY = mod.QM_SPECIAL_TOKEN_KEY;
 });
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -197,19 +195,19 @@ describe('Serializer auto-encoding', () => {
 	test('NaN serializes to { __qm: "nan" } automatically', () => {
 		const stats = new Stats({ hits: NaN, ratio: 0.5, boost: 1 });
 		const serialized = stats.serialize();
-		expect(serialized.hits).toEqual({ __qm: 'nan' });
+		expect(serialized.hits as unknown).toEqual({ __qm: 'nan' });
 	});
 
 	test('Infinity serializes to { __qm: "inf" } automatically', () => {
 		const stats = new Stats({ hits: 10, ratio: Infinity, boost: 1 });
 		const serialized = stats.serialize();
-		expect(serialized.ratio).toEqual({ __qm: 'inf' });
+		expect(serialized.ratio as unknown).toEqual({ __qm: 'inf' });
 	});
 
 	test('-Infinity serializes to { __qm: "-inf" } automatically', () => {
 		const stats = new Stats({ hits: 10, ratio: -Infinity, boost: 1 });
 		const serialized = stats.serialize();
-		expect(serialized.ratio).toEqual({ __qm: '-inf' });
+		expect(serialized.ratio as unknown).toEqual({ __qm: '-inf' });
 	});
 
 	test('finite numbers pass through unchanged', () => {
@@ -306,7 +304,7 @@ describe('Explicit transformer key', () => {
 			val: { __qm: 'nan' } as unknown as number,
 		});
 		expect(model.val).toBeNaN();
-		expect(model.serialize().val).toEqual({ __qm: 'nan' });
+		expect(model.serialize().val as unknown).toEqual({ __qm: 'nan' });
 	});
 
 	test("@Quick({ val: 'infinity' }) — Infinity round-trips", () => {
@@ -314,6 +312,6 @@ describe('Explicit transformer key', () => {
 			val: { __qm: 'inf' } as unknown as number,
 		});
 		expect(model.val).toBe(Infinity);
-		expect(model.serialize().val).toEqual({ __qm: 'inf' });
+		expect(model.serialize().val as unknown).toEqual({ __qm: 'inf' });
 	});
 });

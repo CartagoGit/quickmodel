@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import path from 'node:path';
 import { getTranslations, type ILocale } from './i18n';
 
 /**
@@ -46,6 +47,14 @@ export default defineConfig({
 	ignoreDeadLinks: true,
 	srcExclude: ['**/TASKS.md'],
 	vite: {
+		resolve: {
+			alias: {
+				'@benchmarks': path.resolve(
+					__dirname,
+					'../../tests/performance/benchmarks'
+				),
+			},
+		},
 		css: {
 			preprocessorOptions: {
 				scss: {

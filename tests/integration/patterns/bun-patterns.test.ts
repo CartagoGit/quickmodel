@@ -43,10 +43,10 @@ interface IProduct {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class ProductDto extends QModel<IProduct> {
-	@QField({ label: 'ID', required: true })
+	@QField({ widget: 'input', label: 'ID', required: true })
 	declare id: string;
 
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	@QRule((val: string) => val.trim().length <= 100, 'Name too long')
 	declare name: string;
@@ -55,7 +55,7 @@ class ProductDto extends QModel<IProduct> {
 	@QRule((val: number) => val >= 0, 'Price cannot be negative')
 	declare price: number;
 
-	@QField({ label: 'Stock' })
+	@QField({ widget: 'input', label: 'Stock' })
 	@QRule(
 		(val: number) => Number.isInteger(val) && val >= 0,
 		'Stock must be a non-negative integer'
@@ -349,7 +349,9 @@ describe('Bun.file() — bulk product loading with createMany()', () => {
 	];
 
 	test('createMany() coerces all items in bulk', () => {
-		const { instances: products } = ProductDto.createMany(productsSeed);
+		const { instances: products } = ProductDto.createMany(
+			productsSeed as any[]
+		);
 
 		expect(products).toHaveLength(3);
 		products.forEach((prod) => {
@@ -360,7 +362,9 @@ describe('Bun.file() — bulk product loading with createMany()', () => {
 	});
 
 	test('isAvailable @QComputed reflects stock correctly in each item', () => {
-		const { instances: products } = ProductDto.createMany(productsSeed);
+		const { instances: products } = ProductDto.createMany(
+			productsSeed as any[]
+		);
 
 		expect(products[0]?.isAvailable).toBe(true); // stock 200
 		expect(products[1]?.isAvailable).toBe(false); // stock 0
@@ -368,7 +372,9 @@ describe('Bun.file() — bulk product loading with createMany()', () => {
 	});
 
 	test('serialize() round-trips cleanly for each item', () => {
-		const { instances: products } = ProductDto.createMany(productsSeed);
+		const { instances: products } = ProductDto.createMany(
+			productsSeed as any[]
+		);
 
 		products.forEach((prod) => {
 			const serialized = prod.serialize();

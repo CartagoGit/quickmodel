@@ -20,12 +20,14 @@ import { QModel, Quick, QRule, QField, QComputed } from '@/index';
 import { quickmodelMatchers } from '@/matchers';
 
 // Extend bun:test's expect (same call that users make in Jest)
-expect.extend(quickmodelMatchers);
+expect.extend(
+	quickmodelMatchers as unknown as Parameters<typeof expect.extend>[0]
+);
 
 // TS augmentation for this file
 declare module 'bun:test' {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
-	interface Matchers<_Res = unknown> {
+	interface Matchers<_T = unknown> {
 		toBeValidQModel(): void;
 		toHaveQRuleError(field: string, message?: string): void;
 		toHaveQField(fieldName: string): void;
@@ -58,19 +60,19 @@ interface IOrderDto {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class OrderDto extends QModel<IOrderDto> {
-	@QField({ label: 'Amount', required: true })
+	@QField({ widget: 'input', label: 'Amount', required: true })
 	@QRule((val: number) => val > 0, 'Amount must be positive')
 	@QRule((val: number) => val <= 1_000_000, 'Amount exceeds limit')
 	declare amount: number;
 
-	@QField({ label: 'Currency', required: true })
+	@QField({ widget: 'input', label: 'Currency', required: true })
 	@QRule(
 		(val: string) => /^[A-Z]{3}$/.test(val),
 		'Currency must be a 3-letter ISO code'
 	)
 	declare currency: string;
 
-	@QField({ label: 'Order ID', required: true })
+	@QField({ widget: 'input', label: 'Order ID', required: true })
 	@QRule((val: string) => val.length > 0, 'Order ID cannot be empty')
 	declare orderId: string;
 

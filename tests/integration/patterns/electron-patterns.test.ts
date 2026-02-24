@@ -51,21 +51,21 @@ interface IAppConfig {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class UserPrefsDto extends QModel<IUserPrefs> {
-	@QField({ label: 'Theme', required: true })
+	@QField({ widget: 'input', label: 'Theme', required: true })
 	@QRule(
 		(val: string) => ['light', 'dark', 'system'].includes(val),
 		'Invalid theme'
 	)
 	declare theme: string;
 
-	@QField({ label: 'Language', required: true })
+	@QField({ widget: 'input', label: 'Language', required: true })
 	@QRule(
 		(val: string) => val.length === 2 || val.length === 5,
 		'Invalid locale'
 	)
 	declare language: string;
 
-	@QField({ label: 'Font Size' })
+	@QField({ widget: 'input', label: 'Font Size' })
 	@QRule((val: number) => val >= 10 && val <= 32, 'Font size out of range')
 	declare fontSize: number;
 
@@ -92,22 +92,22 @@ class UserPrefsDto extends QModel<IUserPrefs> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class FileRecordDto extends QModel<IFileRecord> {
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.length > 0, 'File name cannot be empty')
 	declare name: string;
 
-	@QField({ label: 'Path', required: true })
+	@QField({ widget: 'input', label: 'Path', required: true })
 	@QRule(
 		(val: string) => val.startsWith('/') || val[1] === ':',
 		'Invalid path'
 	)
 	declare path: string;
 
-	@QField({ label: 'Size' })
+	@QField({ widget: 'input', label: 'Size' })
 	@QRule((val: number) => val >= 0, 'Size cannot be negative')
 	declare size: number;
 
-	@QField({ label: 'MIME Type' })
+	@QField({ widget: 'input', label: 'MIME Type' })
 	declare mimeType: string;
 
 	declare modifiedAt: Date;
@@ -133,14 +133,14 @@ class FileRecordDto extends QModel<IFileRecord> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class AppConfigDto extends QModel<IAppConfig> {
-	@QField({ label: 'API URL', required: true })
+	@QField({ widget: 'input', label: 'API URL', required: true })
 	@QRule(
 		(val: string) => val.startsWith('http'),
 		'API URL must use http/https'
 	)
 	declare apiUrl: string;
 
-	@QField({ label: 'Timeout' })
+	@QField({ widget: 'input', label: 'Timeout' })
 	@QRule(
 		(val: number) => val > 0 && val <= 60000,
 		'Timeout must be 1–60000ms'
@@ -150,7 +150,7 @@ class AppConfigDto extends QModel<IAppConfig> {
 	@QField({ label: 'Debug Mode', widget: 'checkbox' })
 	declare debug: boolean;
 
-	@QField({ label: 'Version', required: true })
+	@QField({ widget: 'input', label: 'Version', required: true })
 	declare version: string;
 }
 
@@ -223,7 +223,7 @@ describe('IPC boundary — serialize/populate', () => {
 			modifiedAt: new Date('2025-06-01T10:00:00.000Z'),
 		});
 		const wire = simulateIpcWire(dto.serialize());
-		const restored = new FileRecordDto(wire as IFileRecord);
+		const restored = new FileRecordDto(wire as unknown as IFileRecord);
 		// After IPC, Date was ISO string — QModel loose coercion restores Date
 		expect(restored.modifiedAt).toBeInstanceOf(Date);
 		expect(restored.modifiedAt.getFullYear()).toBe(2025);
@@ -407,7 +407,9 @@ describe('createMany() for local file loading (CSV/JSON import)', () => {
 				modifiedAt: new Date(),
 			},
 		];
-		const { instances, errors } = FileRecordDto.createMany(jsonFileRows);
+		const { instances, errors } = FileRecordDto.createMany(
+			jsonFileRows as any[]
+		);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 	});
@@ -422,7 +424,7 @@ describe('createMany() for local file loading (CSV/JSON import)', () => {
 				modifiedAt: new Date(),
 			},
 		];
-		const { instances } = FileRecordDto.createMany(rows);
+		const { instances } = FileRecordDto.createMany(rows as any[]);
 		expect(instances[0]?.sizeKb).toBe(2);
 	});
 
@@ -451,7 +453,7 @@ describe('createMany() for local file loading (CSV/JSON import)', () => {
 				modifiedAt: new Date(),
 			},
 		];
-		const { instances } = FileRecordDto.createMany(rows);
+		const { instances } = FileRecordDto.createMany(rows as any[]);
 		const images = instances.filter((dto) => dto.isImage);
 		expect(images.length).toBe(2);
 	});

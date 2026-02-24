@@ -22,6 +22,7 @@ import type {
 } from '@/core/interfaces/mock-types.interface';
 import type {
 	IQSerializedInterface,
+	IQAliasedSerializedInterface,
 	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
 import type { IQIntegrityResult } from '@/core/interfaces/transformer.interface';
@@ -168,9 +169,11 @@ export interface IQCreateManyResult<TInstance> {
  * - **Dependency Inversion (DIP)**: Depends on abstractions, not concrete implementations.
  *
  * @group Classes
- * Syntax: `QModel<InterfaceType>`
+ * Syntax: `QModel<InterfaceType>` or `QModel<InterfaceType, AliasMap>`
  *
  * @template TInterface - The interface representing the IQSerialized JSON structure (e.g., `string` for dates)
+ * @template TAliasMap - Optional literal map `{ propertyName: 'alias_key' }` that makes `serialize()` return
+ *   alias keys instead of property names. Use together with `@Quick({}, { alias: {...} })` for full type safety.
  *
  * @example
  * **Basic Usage**
@@ -191,8 +194,28 @@ export interface IQCreateManyResult<TInstance> {
  * const user2 = new User({ id: '2', createdAt: '2024-01-01' });
  * console.log(user.createdAt instanceof Date); // true
  * ```
+ *
+ * @example
+ * **Type-safe alias keys in serialize() output**
+ * ```typescript
+ * interface IUser { firstName: string; lastName: string; }
+ * type IUserAliases = { firstName: 'first_name'; lastName: 'last_name' };
+ *
+ * @Quick({}, { alias: { firstName: 'first_name', lastName: 'last_name' } })
+ * class User extends QModel<IUser, IUserAliases> {
+ *   declare firstName: string;
+ *   declare lastName: string;
+ * }
+ *
+ * const user = new User({ first_name: 'Alice', last_name: 'Smith' });
+ * user.serialize().first_name; // ✅ typed correctly — IDE autocomplete works
+ * user.serialize().last_name;  // ✅
+ * ```
  */
-export abstract class QModel<TInterface extends IQAnyRecord> {
+export abstract class QModel<
+	TInterface extends IQAnyRecord,
+	TAliasMap extends Record<string, string> = Record<never, never>,
+> {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	private static readonly deserializer = new Deserializer();
 	private static readonly serializer = new Serializer();
@@ -745,17 +768,22 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 		const _aliasMap = QModel._getAliasMap(
 			this.constructor.prototype as object
 		);
-		const workData: Record<string, unknown> = {};
-		for (const key in data) {
-			if (
-				key === '__proto__' ||
-				key === 'constructor' ||
-				key === 'prototype'
-			)
-				continue;
-			workData[key] = (data as Record<string, unknown>)[key];
-		}
-		if (_aliasMap.size > 0) {
+		// OPT-9: Skip object copy when no @QAlias mappings exist.
+		// populateInstance and initDataClone both handle prototype-pollution keys independently.
+		let workData: Record<string, unknown>;
+		if (_aliasMap.size === 0) {
+			workData = data as unknown as Record<string, unknown>;
+		} else {
+			workData = {};
+			for (const key in data) {
+				if (
+					key === '__proto__' ||
+					key === 'constructor' ||
+					key === 'prototype'
+				)
+					continue;
+				workData[key] = (data as Record<string, unknown>)[key];
+			}
 			for (const [prop, alias] of _aliasMap) {
 				if (alias in workData) {
 					workData[prop] = workData[alias];
@@ -831,15 +859,11 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			configurable: true,
 		});
 
-		// Get all property keys from deserialized instance (only OWN properties, not getters from prototype)
-		const allKeys = new Set<string>();
+		// OPT-10: Build propertyNames directly — eliminates the intermediate allKeys Set,
+		// Array.from() + filter() allocations per construction.
+		const propertyNames = new Set<string>();
 
-		// Add own enumerable properties (these have actual values)
 		for (const key of Object.keys(deserialized)) {
-			allKeys.add(key);
-		}
-
-		for (const key of allKeys) {
 			// Skip internal __initData, __tempData, etc. but NOT QUICK_PROPERTY_KEYS storage keys
 			if (key.startsWith('__') && !key.startsWith(QUICK_PROPERTY_KEYS)) {
 				continue;
@@ -859,8 +883,6 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			if (this.hasAccessor(key)) {
 				// Use public assignment to trigger the custom setter
 				(this as any)[key] = value;
-				// Remove from allKeys so it's not picked up for lazy getter installation
-				allKeys.delete(key);
 				continue;
 			}
 
@@ -871,25 +893,20 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			if (key.startsWith(QUICK_PROPERTY_KEYS)) {
 				// Key is already a storage key, use as-is
 				storageKey = key;
-				// Extract property name by removing prefix
 				propertyKey = key.slice(QUICK_PROPERTY_KEYS.length);
+				// OPT-10: storage keys are NOT added to propertyNames (lazy getter uses unprefixed key)
 			} else {
 				// Regular property, add prefix for storage
 				storageKey = `${QUICK_PROPERTY_KEYS}${key}`;
 				propertyKey = key;
+				// OPT-10: collect plain property names directly — no Array.from/filter needed
+				propertyNames.add(propertyKey);
 			}
 
 			(this as Record<string, unknown>)[storageKey] = value;
 			// Store in backup
 			this[QUICK_VALUES_KEY][propertyKey] = value;
 		}
-
-		// Install lazy getters only for actual property names (not storage keys)
-		const propertyNames = new Set(
-			Array.from(allKeys).filter(
-				(key) => !key.startsWith(QUICK_PROPERTY_KEYS)
-			)
-		);
 
 		// Add keys from @Quick metadata to ensure smart setters work even for empty/missing properties
 		// Results are cached per class — metadata is immutable after decorators run.
@@ -920,7 +937,8 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			clsInitCache.qTypes.forEach((key) => propertyNames.add(key));
 		}
 
-		this.installLazyGetters(Array.from(propertyNames));
+		// OPT-10: Pass Set directly — installLazyGetters now accepts Iterable<string>
+		this.installLazyGetters(propertyNames);
 
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
@@ -981,7 +999,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	/**
 	 * Installs getters that retrieve values from backup storage if overwritten by Bun/compiler.
 	 */
-	private installLazyGetters(keys: string[]): void {
+	private installLazyGetters(keys: Iterable<string>): void {
 		for (const key of keys) {
 			// 1. Check for existing own property descriptor (e.g. from @QType handled manually)
 			const ownDescriptor = Object.getOwnPropertyDescriptor(this, key);
@@ -1250,7 +1268,7 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 	serialize(
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
-	): IQSerializedInterface<TInterface> {
+	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
 		type IModelAsRecord = Record<string, unknown>;
 		const rawResult = QModel.serializer.serialize(
 			this as unknown as IModelAsRecord,
@@ -1275,7 +1293,10 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 
 		// pick takes precedence over omit
 		if (options?.pick) {
-			const filtered = {} as IQSerializedInterface<TInterface>;
+			const filtered = {} as IQAliasedSerializedInterface<
+				TInterface,
+				TAliasMap
+			>;
 			for (const key of options.pick) {
 				if (key in result) {
 					(filtered as Record<string, unknown>)[key] = result[key];
@@ -1289,10 +1310,13 @@ export abstract class QModel<TInterface extends IQAnyRecord> {
 			for (const key of options.omit) {
 				delete filtered[key];
 			}
-			return filtered as IQSerializedInterface<TInterface>;
+			return filtered as IQAliasedSerializedInterface<
+				TInterface,
+				TAliasMap
+			>;
 		}
 
-		return result as IQSerializedInterface<TInterface>;
+		return result as IQAliasedSerializedInterface<TInterface, TAliasMap>;
 	}
 
 	/**

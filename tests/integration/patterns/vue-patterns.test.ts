@@ -25,7 +25,7 @@ import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 const FormSections = qGroups('personal', 'address');
 
 class ContactForm {
-	@QField({ label: 'First Name', required: true })
+	@QField({ widget: 'input', label: 'First Name', required: true })
 	@QGroup(FormSections.personal)
 	@QRule(
 		(value: string) => value.trim().length >= 2,
@@ -33,7 +33,7 @@ class ContactForm {
 	)
 	firstName = '';
 
-	@QField({ label: 'Last Name', required: true })
+	@QField({ widget: 'input', label: 'Last Name', required: true })
 	@QGroup(FormSections.personal)
 	@QRule(
 		(value: string) => value.trim().length >= 2,
@@ -49,12 +49,12 @@ class ContactForm {
 	)
 	email = '';
 
-	@QField({ label: 'City', required: true })
+	@QField({ widget: 'input', label: 'City', required: true })
 	@QGroup(FormSections.address)
 	@QRule((value: string) => value.trim().length >= 2, 'City is required')
 	city = '';
 
-	@QField({ label: 'Postal Code' })
+	@QField({ widget: 'input', label: 'Postal Code' })
 	@QGroup(FormSections.address)
 	@QRule(
 		(value: string) => /^\d{4,10}$/.test(value),
@@ -166,7 +166,7 @@ class ArticlePiniaStore {
 	private selectedId: string | null = null;
 
 	// action: addArticle
-	addArticle(data: object): void {
+	addArticle(data: Record<string, unknown>): void {
 		const article = new ArticleModel(data);
 		this.articles.set(
 			(article as unknown as Record<string, unknown>)['id'] as string,
@@ -377,21 +377,21 @@ describe('Vue 3 — VeeValidate-like field adapter', () => {
 // ---------------------------------------------------------------------------
 
 class SettingsForm {
-	@QField({ label: 'Theme' })
+	@QField({ widget: 'input', label: 'Theme' })
 	@QRule(
 		(value: string) => ['light', 'dark', 'auto'].includes(value),
 		'Theme must be light, dark, or auto'
 	)
 	theme = 'auto';
 
-	@QField({ label: 'Language' })
+	@QField({ widget: 'input', label: 'Language' })
 	@QRule(
 		(value: string) => ['en', 'es', 'fr', 'de'].includes(value),
 		'Unsupported language'
 	)
 	language = 'en';
 
-	@QField({ label: 'Notifications' })
+	@QField({ widget: 'input', label: 'Notifications' })
 	@QRule((value: boolean) => typeof value === 'boolean', 'Must be boolean')
 	notifications = true;
 }
@@ -497,7 +497,7 @@ async function useFetchProductList(rawData: object[]): Promise<{
 	failedCount: number;
 }> {
 	await Bun.sleep(1); // simulate async fetch
-	const { instances, errors } = ProductModel.createMany(rawData);
+	const { instances, errors } = ProductModel.createMany(rawData as any[]);
 	return {
 		products: instances.map((item) => item.serialize()),
 		failedCount: errors.length,
@@ -581,7 +581,7 @@ describe('Vue 3/Nuxt — useAsyncData with createMany()', () => {
 				updatedAt: new Date(),
 			},
 		];
-		const result = ProductModel.createMany(raw);
+		const result = ProductModel.createMany(raw as any[]);
 		expect(Array.isArray(result.instances)).toBe(true);
 		expect(Array.isArray(result.errors)).toBe(true);
 	});
@@ -594,7 +594,7 @@ describe('Vue 3/Nuxt — useAsyncData with createMany()', () => {
 const takenUsernames = new Set(['admin', 'superuser', 'root']);
 
 class VueRegisterForm {
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule(async (value: string) => {
 		await Bun.sleep(3);
 		return !takenUsernames.has(value.toLowerCase());

@@ -200,7 +200,7 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
 
 	it('uses input as default widget when widget is omitted', async () => {
 		const code = `class F extends QModel<any> {
-      @QField({ label: 'No Widget' })
+      @QField({ widget: 'input', label: 'No Widget' })
       declare field: string;
     }`;
 		const { schema } = await tool.execute({ code });

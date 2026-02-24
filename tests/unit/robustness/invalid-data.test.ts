@@ -16,7 +16,6 @@ describe('Robustness: Invalid Data Handling', () => {
 		// The library follows "Fail Fast" for explicit types
 		expect(() => {
 			// TypeScript accepts 'string' (serialization format), but Runtime validation rejects invalid values
-			// @ts-expect-error - Validating runtime behavior for invalid strict types
 			User.create({ name: 'Test', createdAt: 'GARBAGE' });
 		}).toThrow(/Invalid date value/);
 	});

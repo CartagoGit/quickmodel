@@ -275,14 +275,14 @@ class NewsletterForm {
 	)
 	email = '';
 
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule(
 		(value: string) => value.trim().length >= 2,
 		'Name must be at least 2 chars'
 	)
 	name = '';
 
-	@QField({ label: 'Frequency' })
+	@QField({ widget: 'input', label: 'Frequency' })
 	@QRule(
 		(value: string) => ['daily', 'weekly', 'monthly'].includes(value),
 		'Frequency must be daily, weekly, or monthly'
@@ -412,7 +412,7 @@ async function kitLoadFunction(apiResponse: object[]): Promise<{
 	count: number;
 }> {
 	await Bun.sleep(1);
-	const { instances } = EventModel.createMany(apiResponse);
+	const { instances } = EventModel.createMany(apiResponse as any[]);
 	return {
 		events: instances.map((evt) => evt.serialize()),
 		count: instances.length,
@@ -497,7 +497,7 @@ const takenSlugs = new Set([
 ]);
 
 class BlogPostForm {
-	@QField({ label: 'Slug', required: true })
+	@QField({ widget: 'input', label: 'Slug', required: true })
 	@QRule(async (value: string) => {
 		await Bun.sleep(3);
 		return !takenSlugs.has(value.toLowerCase());
@@ -509,7 +509,7 @@ class BlogPostForm {
 	@QRule((value: string) => value.length >= 3, 'Slug too short')
 	slug = '';
 
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	@QRule(
 		(value: string) => value.trim().length >= 5,
 		'Title must be at least 5 chars'

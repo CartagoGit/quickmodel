@@ -55,22 +55,22 @@ class UserRecordDto extends QModel<IUserRecord> {
 	declare uid: string;
 
 	@QGroup('profile')
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.length >= 2, 'Name too short')
 	declare name: string;
 
 	@QGroup('credentials')
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule((val: string) => val.includes('@'), 'Invalid email')
 	declare email: string;
 
 	@QGroup('profile')
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Invalid age')
 	declare age: number;
 
 	@QGroup('credentials')
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -186,7 +186,9 @@ describe('localStorage — basic operations', () => {
 		const raw = storage.get('user');
 		expect(raw).toBeDefined();
 
-		const restored = new UserRecordDto(JSON.parse(raw!) as object);
+		const restored = new UserRecordDto(
+			JSON.parse(raw!) as Record<string, unknown>
+		);
 		expect(restored.email).toBe(original.email);
 		expect(restored.name).toBe(original.name);
 	});
@@ -196,7 +198,7 @@ describe('localStorage — basic operations', () => {
 		storage.set('user', JSON.stringify(raw));
 
 		const restored = new UserRecordDto(
-			JSON.parse(storage.get('user')!) as object
+			JSON.parse(storage.get('user')!) as Record<string, unknown>
 		);
 		expect(
 			(restored as unknown as Record<string, unknown>)['_meta']
@@ -295,7 +297,7 @@ describe('IndexedDB — simulated store operations', () => {
 
 		const raw = idbStore.get('idb-1');
 		expect(raw).toBeDefined();
-		const restored = new UserRecordDto(raw as object);
+		const restored = new UserRecordDto(raw as Record<string, unknown>);
 		expect(restored.uid).toBe('idb-1');
 	});
 
@@ -305,7 +307,7 @@ describe('IndexedDB — simulated store operations', () => {
 			makeUser({ uid: 'c2', email: 'c2@x.com' }),
 			makeUser({ uid: 'c3', email: 'c3@x.com' }),
 		];
-		const { instances, errors } = UserRecordDto.createMany(cursor);
+		const { instances, errors } = UserRecordDto.createMany(cursor as any[]);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0); // all valid items coerce successfully
 	});
@@ -317,7 +319,7 @@ describe('IndexedDB — simulated store operations', () => {
 		});
 
 		const admins = [...idbStore.values()]
-			.map((raw) => new UserRecordDto(raw as object))
+			.map((raw) => new UserRecordDto(raw as Record<string, unknown>))
 			.filter((dto) => dto.role === 'admin');
 
 		expect(admins.length).toBe(1);
@@ -330,7 +332,9 @@ describe('IndexedDB — simulated store operations', () => {
 		const updated = dto.copy({ score: 500 });
 		idbStore.set('upd-1', updated.serialize());
 
-		const retrieved = new UserRecordDto(idbStore.get('upd-1') as object);
+		const retrieved = new UserRecordDto(
+			idbStore.get('upd-1') as Record<string, unknown>
+		);
 		expect(retrieved.score).toBe(500);
 	});
 
@@ -364,13 +368,15 @@ describe('SQLite — row mapping patterns', () => {
 		const now = new Date('2025-06-01T00:00:00.000Z');
 		const dto = new DbRowDto(makeRow({ created: now, updated: now }));
 		const json = JSON.stringify(dto.serialize());
-		const restored = new DbRowDto(JSON.parse(json) as object);
+		const restored = new DbRowDto(
+			JSON.parse(json) as Record<string, unknown>
+		);
 		expect(restored.created.getTime()).toBe(now.getTime());
 	});
 
 	test('bulk insert via createMany()', () => {
 		const rows = [1, 2, 3].map((rowId) => makeRow({ rowId }));
-		const { instances } = DbRowDto.createMany(rows);
+		const { instances } = DbRowDto.createMany(rows as any[]);
 		instances.forEach((row) => sqliteTable.push(row.toInterface()));
 		expect(sqliteTable.length).toBe(3);
 	});
@@ -437,7 +443,9 @@ describe('Capacitor Preferences — typed storage', () => {
 		prefStore.set('pref-b', JSON.stringify(dto.serialize()));
 
 		const raw = prefStore.get('pref-b');
-		const restored = new AppCacheDto(JSON.parse(raw!) as object);
+		const restored = new AppCacheDto(
+			JSON.parse(raw!) as Record<string, unknown>
+		);
 		expect(restored.value).toBe('"hello"');
 	});
 
@@ -551,7 +559,7 @@ describe('In-memory LRU cache', () => {
 			makeUser({ uid: 'cm1' }),
 			makeUser({ uid: 'cm2', email: 'cm2@x.com' }),
 		];
-		const { instances } = UserRecordDto.createMany(raws);
+		const { instances } = UserRecordDto.createMany(raws as any[]);
 		instances.forEach((dto) => cache.set(dto.uid, dto));
 		expect(cache.size).toBe(2);
 	});
@@ -576,7 +584,10 @@ describe('BroadcastChannel — cross-tab sync', () => {
 			payload: dto.serialize(),
 		});
 
-		const msg = JSON.parse(json) as { type: string; payload: object };
+		const msg = JSON.parse(json) as {
+			type: string;
+			payload: Record<string, unknown>;
+		};
 		const restored = new UserRecordDto(msg.payload);
 		expect(restored.uid).toBe('bc-2');
 	});
@@ -584,7 +595,9 @@ describe('BroadcastChannel — cross-tab sync', () => {
 	test('validation passes after BroadcastChannel roundtrip', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'bc-3' }));
 		const json = JSON.stringify(dto.serialize());
-		const restored = new UserRecordDto(JSON.parse(json) as object);
+		const restored = new UserRecordDto(
+			JSON.parse(json) as Record<string, unknown>
+		);
 		const result = qCheckRules(restored);
 		expect(result.valid).toBe(true);
 	});
@@ -606,7 +619,9 @@ describe('OPFS & Service Worker cache', () => {
 		const bytes = new TextEncoder().encode(JSON.stringify(dto.serialize()));
 
 		const text = new TextDecoder().decode(bytes);
-		const restored = new UserRecordDto(JSON.parse(text) as object);
+		const restored = new UserRecordDto(
+			JSON.parse(text) as Record<string, unknown>
+		);
 		expect(restored.uid).toBe('opfs-2');
 		expect(restored.name).toBe('Alice Example');
 	});
@@ -616,10 +631,10 @@ describe('OPFS & Service Worker cache', () => {
 		const bytes = new TextEncoder().encode(JSON.stringify(raw));
 		const text = new TextDecoder().decode(bytes);
 
-		const dto = new UserRecordDto(JSON.parse(text) as object);
-		const result = await qCheckRulesAsync(dto, {
-			asyncRules: { uid: [() => Promise.resolve(true)] },
-		});
+		const dto = new UserRecordDto(
+			JSON.parse(text) as Record<string, unknown>
+		);
+		const result = await qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 });

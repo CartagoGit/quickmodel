@@ -40,7 +40,7 @@ interface IJasmineCompareResult {
 }
 
 interface IJasmineMatcherFactory {
-	compare: (actual: object, ...args: unknown[]) => IJasmineCompareResult;
+	compare: (actual: unknown, ...args: unknown[]) => IJasmineCompareResult;
 	negativeCompare?: (
 		actual: object,
 		...args: unknown[]
@@ -68,12 +68,12 @@ function toJasmineMatchers(
 	for (const [name, matcherFn] of Object.entries(matchers)) {
 		result[name] = () => ({
 			compare: (
-				actual: object,
+				actual: unknown,
 				...args: unknown[]
 			): IJasmineCompareResult => {
 				const outcome = (
 					matcherFn as (
-						r: object,
+						r: unknown,
 						...rest: unknown[]
 					) => { pass: boolean; message: () => string }
 				)(actual, ...args);
@@ -102,7 +102,7 @@ interface IJasmineExpect {
 	not: IJasmineExpect;
 }
 
-function jasmineExpect(actual: object): IJasmineExpect {
+function jasmineExpect(actual: unknown): IJasmineExpect {
 	const jasmineMatchers = toJasmineMatchers(
 		quickmodelMatchers as unknown as Record<string, IQuickMatcher>
 	);
@@ -124,7 +124,8 @@ function jasmineExpect(actual: object): IJasmineExpect {
 		toHaveQRuleError: (fld: string, msg?: string) =>
 			call('toHaveQRuleError', false, fld, msg),
 		toHaveQField: (fld: string) => call('toHaveQField', false, fld),
-		toMatchQModel: (exp: object) => call('toMatchQModel', false, exp),
+		toMatchQModel: (exp: Record<string, unknown>) =>
+			call('toMatchQModel', false, exp),
 		toBeIntact: () => call('toBeIntact', false),
 		toHaveDirtyField: (fld: string) => call('toHaveDirtyField', false, fld),
 		get not() {
@@ -137,7 +138,8 @@ function jasmineExpect(actual: object): IJasmineExpect {
 		toHaveQRuleError: (fld: string, msg?: string) =>
 			call('toHaveQRuleError', true, fld, msg),
 		toHaveQField: (fld: string) => call('toHaveQField', true, fld),
-		toMatchQModel: (exp: object) => call('toMatchQModel', true, exp),
+		toMatchQModel: (exp: Record<string, unknown>) =>
+			call('toMatchQModel', true, exp),
 		toBeIntact: () => call('toBeIntact', true),
 		toHaveDirtyField: (fld: string) => call('toHaveDirtyField', true, fld),
 		get not() {
@@ -164,19 +166,19 @@ interface IProductDto {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class ProductDto extends QModel<IProductDto> {
-	@QField({ label: 'SKU', required: true })
+	@QField({ widget: 'input', label: 'SKU', required: true })
 	@QRule(
 		(val: string) => /^[A-Z]{2,4}-\d{4,8}$/.test(val),
 		'Invalid SKU format'
 	)
 	declare sku: string;
 
-	@QField({ label: 'Price', required: true })
+	@QField({ widget: 'input', label: 'Price', required: true })
 	@QRule((val: number) => val > 0, 'Price must be positive')
 	@QRule((val: number) => val < 100_000, 'Price too high')
 	declare price: number;
 
-	@QField({ label: 'Stock' })
+	@QField({ widget: 'input', label: 'Stock' })
 	@QRule((val: number) => Number.isInteger(val), 'Stock must be an integer')
 	@QRule((val: number) => val >= 0, 'Stock cannot be negative')
 	declare stock: number;

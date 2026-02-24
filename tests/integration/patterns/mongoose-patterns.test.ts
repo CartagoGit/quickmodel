@@ -87,16 +87,16 @@ interface ICreateUser {
 )
 class UserDto extends QModel<IUserRecord> {
 	@QGroup('identity')
-	@QField({ label: 'ID' })
+	@QField({ widget: 'input', label: 'ID' })
 	declare id: string;
 
 	@QGroup('identity')
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
 	@QGroup('identity')
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email'
@@ -104,12 +104,12 @@ class UserDto extends QModel<IUserRecord> {
 	declare email: string;
 
 	@QGroup('profile')
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Age out of range')
 	declare age: number;
 
 	@QGroup('profile')
-	@QField({ label: 'Role', required: true })
+	@QField({ widget: 'input', label: 'Role', required: true })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -119,7 +119,7 @@ class UserDto extends QModel<IUserRecord> {
 	@QField({ label: 'Active', widget: 'checkbox' })
 	declare active: boolean;
 
-	@QField({ label: 'Score' })
+	@QField({ widget: 'input', label: 'Score' })
 	declare score: number;
 
 	declare createdAt: Date;
@@ -140,22 +140,22 @@ class UserDto extends QModel<IUserRecord> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateUserDto extends QModel<ICreateUser> {
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email'
 	)
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18+')
 	declare age: number;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -186,24 +186,24 @@ interface IPostRecord {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class PostDto extends QModel<IPostRecord> {
-	@QField({ label: 'ID' })
+	@QField({ widget: 'input', label: 'ID' })
 	declare id: string;
 
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	@QRule((val: string) => val.trim().length >= 3, 'Title too short')
 	declare title: string;
 
-	@QField({ label: 'Body', required: true })
+	@QField({ widget: 'input', label: 'Body', required: true })
 	@QRule((val: string) => val.trim().length >= 10, 'Body too short')
 	declare body: string;
 
-	@QField({ label: 'Author ID', required: true })
+	@QField({ widget: 'input', label: 'Author ID', required: true })
 	declare authorId: string;
 
-	@QField({ label: 'Tags' })
+	@QField({ widget: 'input', label: 'Tags' })
 	declare tags: string[];
 
-	@QField({ label: 'Views' })
+	@QField({ widget: 'input', label: 'Views' })
 	declare views: number;
 
 	declare createdAt: Date;
@@ -456,7 +456,7 @@ describe('dto.toInterface() as Mongoose Model.create() payload', () => {
 		const dto = new UserDto(
 			docToObject(makeUserDoc({ name: 'Dan', role: 'admin' }))
 		);
-		const plain = dto.toInterface() as Record<string, unknown>;
+		const plain = dto.toInterface() as unknown as Record<string, unknown>;
 		expect(plain['name']).toBe('Dan');
 		// computed fields are NOT persisted
 		expect(typeof plain).toBe('object');
@@ -515,7 +515,7 @@ describe('createMany() for Mongoose insertMany() seed data', () => {
 			}),
 		];
 		const plains = docs.map(docToObject);
-		const { instances, errors } = UserDto.createMany(plains);
+		const { instances, errors } = UserDto.createMany(plains as any[]);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 	});

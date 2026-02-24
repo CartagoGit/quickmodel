@@ -11,16 +11,18 @@ import { QModel, Quick, QRule, QField, QComputed } from '@/index';
 import { quickmodelMatchers } from '@/matchers';
 
 // Extend bun:test's expect with custom matchers
-expect.extend(quickmodelMatchers);
+expect.extend(
+	quickmodelMatchers as unknown as Parameters<typeof expect.extend>[0]
+);
 
 // Augment bun:test Matchers interface for this file only
 declare module 'bun:test' {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
-	interface Matchers<_Res = unknown> {
+	interface Matchers<_T = unknown> {
 		toBeValidQModel(): void;
 		toHaveQRuleError(field: string, message?: string): void;
 		toHaveQField(fieldName: string): void;
-		toMatchQModel(expected: object): void;
+		toMatchQModel(expected: Record<string, unknown>): void;
 		toBeIntact(): void;
 		toHaveDirtyField(field: string): void;
 	}
@@ -43,7 +45,7 @@ interface IProfile {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class ProfileModel extends QModel<IProfile> {
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule((val: string) => val.length >= 3, 'Username too short')
 	@QRule((val: string) => /^[a-z0-9_]+$/.test(val), 'Invalid characters')
 	declare username: string;
@@ -55,7 +57,7 @@ class ProfileModel extends QModel<IProfile> {
 	)
 	declare email: string;
 
-	@QField({ label: 'Score' })
+	@QField({ widget: 'input', label: 'Score' })
 	@QRule((val: number) => val >= 0, 'Score cannot be negative')
 	@QRule((val: number) => val <= 100, 'Score exceeds maximum')
 	declare score: number;
@@ -70,14 +72,14 @@ class ProfileModel extends QModel<IProfile> {
 
 // Plain class — also works with qCheckRules and matchers
 class LoginForm {
-	@QField({ label: 'Email' })
+	@QField({ widget: 'input', label: 'Email' })
 	@QRule(
 		(val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
 		'Invalid email'
 	)
 	email = '';
 
-	@QField({ label: 'Password' })
+	@QField({ widget: 'input', label: 'Password' })
 	@QRule((val: string) => val.length >= 8, 'Password too short')
 	password = '';
 }

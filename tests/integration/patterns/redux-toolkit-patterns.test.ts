@@ -54,14 +54,14 @@ class UserDto extends QModel<IUser> {
 	declare uid: string;
 	declare name: string;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email'
 	)
 	declare email: string;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -110,18 +110,18 @@ class ProductDto extends QModel<IProduct> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateUserDto extends QModel<ICreateUser> {
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email'
 	)
 	declare email: string;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -199,7 +199,7 @@ describe('createSlice — serialize() as serializable Redux state', () => {
 			role: 'guest',
 			age: 22,
 		});
-		const stored = sliceState.current as object;
+		const stored = sliceState.current as Record<string, unknown>;
 		const rehydrated = new UserDto(stored);
 		expect(rehydrated.uid).toBe('u3');
 		expect(rehydrated.label).toBe('Carol (guest)');
@@ -219,7 +219,7 @@ describe('Reducer with copy() — immutable update', () => {
 	let entities: IEntityMap = {};
 	let ids: string[] = [];
 
-	function addUser(raw: object): void {
+	function addUser(raw: Record<string, unknown>): void {
 		const dto = new UserDto(raw);
 		entities[dto.uid] = dto.serialize() as Record<string, unknown>;
 		ids = [...ids, dto.uid];
@@ -260,7 +260,9 @@ describe('Reducer with copy() — immutable update', () => {
 
 	test('@QComputed is recalculated after copy() in reducer', () => {
 		updateUser('u1', { name: 'Alice Admin', role: 'admin' });
-		const rehydrated = new UserDto(entities['u1'] as object);
+		const rehydrated = new UserDto(
+			entities['u1'] as unknown as Record<string, unknown>
+		);
 		expect(rehydrated.label).toBe('Alice Admin (admin)');
 	});
 });
@@ -319,7 +321,7 @@ describe('createEntityAdapter — normalized store with QModel id', () => {
 	const store = new Map<string, Record<string, unknown>>();
 
 	function addMany(items: object[]): void {
-		const { instances } = UserDto.createMany(items);
+		const { instances } = UserDto.createMany(items as any[]);
 		for (const inst of instances) {
 			store.set(inst.uid, inst.serialize() as Record<string, unknown>);
 		}
@@ -327,11 +329,11 @@ describe('createEntityAdapter — normalized store with QModel id', () => {
 
 	function selectById(uid: string): UserDto | undefined {
 		const raw = store.get(uid);
-		return raw ? new UserDto(raw as object) : undefined;
+		return raw ? new UserDto(raw) : undefined;
 	}
 
 	function selectAll(): UserDto[] {
-		return [...store.values()].map((raw) => new UserDto(raw as object));
+		return [...store.values()].map((raw) => new UserDto(raw));
 	}
 
 	beforeEach(() => {
@@ -393,14 +395,16 @@ describe('createEntityAdapter — normalized store with QModel id', () => {
 
 describe('RTK Query — transformResponse pattern', () => {
 	// Simulates transformResponse: (raw) => new UserDto(raw).serialize()
-	function transformResponse(raw: object): Record<string, unknown> {
+	function transformResponse(
+		raw: Record<string, unknown>
+	): Record<string, unknown> {
 		return new UserDto(raw).serialize() as Record<string, unknown>;
 	}
 
 	function transformResponseMany(
 		rawList: object[]
 	): Record<string, unknown>[] {
-		const { instances } = UserDto.createMany(rawList);
+		const { instances } = UserDto.createMany(rawList as any[]);
 		return instances.map(
 			(inst) => inst.serialize() as Record<string, unknown>
 		);
@@ -450,7 +454,7 @@ describe('RTK Query — transformResponse pattern', () => {
 describe('checkRules() before dispatch — validation guard', () => {
 	const dispatchLog: string[] = [];
 
-	function dispatchCreateUser(payload: object): {
+	function dispatchCreateUser(payload: Record<string, unknown>): {
 		dispatched: boolean;
 		errors: string[];
 	} {
@@ -639,7 +643,7 @@ describe('DevTools — readable payloads via serialize()', () => {
 			{ uid: 'd3', name: 'A', email: 'a@x.com', role: 'user', age: 20 },
 			{ uid: 'd4', name: 'B', email: 'b@x.com', role: 'admin', age: 30 },
 		];
-		const { instances } = UserDto.createMany(batch);
+		const { instances } = UserDto.createMany(batch as any[]);
 		const payloads = instances.map((inst) => inst.serialize());
 		expect(payloads.every((pay) => !(pay instanceof QModel))).toBe(true);
 		expect(JSON.parse(JSON.stringify(payloads)) as unknown[]).toHaveLength(

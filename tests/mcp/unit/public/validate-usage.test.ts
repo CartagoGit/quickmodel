@@ -84,7 +84,7 @@ describe('QValidateUsageTool', () => {
 	it('should accept a model using only @QField (no @Quick needed)', async () => {
 		const tool = new QValidateUsageTool();
 		const code = `
-            @QField({ label: 'User' })
+            @QField({ widget: 'input', label: 'User' })
             export class User extends QModel<IUser> {
                 declare name: string;
             }
@@ -112,7 +112,7 @@ describe('QValidateUsageTool', () => {
 		const tool = new QValidateUsageTool();
 		const code = `
             export class User extends QModel<IUser> {
-                @QField({ label: 'Name', required: true })
+                @QField({ widget: 'input', label: 'Name', required: true })
                 declare name: string;
             }
         `;
@@ -134,7 +134,7 @@ describe('QValidateUsageTool', () => {
                 declare name: string;
                 @QRule((s) => s.name.length > 0, 'required')
                 declare age: number;
-                @QField({ label: 'Age' })
+                @QField({ widget: 'input', label: 'Age' })
                 declare city: string;
             }
         `;

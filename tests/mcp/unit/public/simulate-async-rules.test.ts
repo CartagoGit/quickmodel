@@ -159,4 +159,60 @@ describe('QSimulateAsyncRulesTool', () => {
 
 		expect(result.evaluated).toBe(3);
 	});
+
+	// ── Tests específicos para el fix del ZodEnum Zod v4 ──────────────────────
+	// Pre-fix: ZodEnum<["parallel","serial"]> causaba TS2416/TS2344
+	// Post-fix: ZodEnum<{parallel:"parallel";serial:"serial"}> (forma objeto Zod v4)
+
+	it('[ZodEnum fix] schema accepts "parallel" as valid mode value', () => {
+		const tool = new QSimulateAsyncRulesTool();
+		const parsed = tool.schema.safeParse({
+			data: { val: 1 },
+			rules: [{ field: 'val', predicate: 'true', message: 'fail' }],
+			options: { mode: 'parallel' },
+		});
+		expect(parsed.success).toBe(true);
+	});
+
+	it('[ZodEnum fix] schema accepts "serial" as valid mode value', () => {
+		const tool = new QSimulateAsyncRulesTool();
+		const parsed = tool.schema.safeParse({
+			data: { val: 1 },
+			rules: [{ field: 'val', predicate: 'true', message: 'fail' }],
+			options: { mode: 'serial' },
+		});
+		expect(parsed.success).toBe(true);
+	});
+
+	it('[ZodEnum fix] schema rejects unknown mode values', () => {
+		const tool = new QSimulateAsyncRulesTool();
+		const parsed = tool.schema.safeParse({
+			data: {},
+			rules: [],
+			options: { mode: 'concurrent' },
+		});
+		expect(parsed.success).toBe(false);
+	});
+
+	it('[ZodEnum fix] mode serial stops after first failing rule', async () => {
+		const tool = new QSimulateAsyncRulesTool();
+		const result = await tool.execute({
+			data: { val: -1 },
+			rules: [
+				{
+					field: 'val',
+					predicate: 'Promise.resolve(value >= 0)',
+					message: 'must be >= 0',
+				},
+				{
+					field: 'val',
+					predicate: 'Promise.resolve(value <= 100)',
+					message: 'must be <= 100',
+				},
+			],
+			options: { mode: 'serial' },
+		});
+		expect(result.valid).toBe(false);
+		expect(result.errors[0]?.message).toBe('must be >= 0');
+	});
 });

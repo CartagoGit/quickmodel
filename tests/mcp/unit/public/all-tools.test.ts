@@ -93,7 +93,7 @@ describe('MCP Public Tools', () => {
 				@Quick({ name: 'string' })
 				export class User extends QModel<IUser> {
 					@QRule((s) => s.name.length > 0, 'required')
-					@QField({ label: 'Name', required: true })
+					@QField({ widget: 'input', label: 'Name', required: true })
 					@QGroup('identity')
 					declare name: string;
 				}

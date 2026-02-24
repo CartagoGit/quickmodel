@@ -104,4 +104,21 @@ describe('QListTodosTool', () => {
 			true
 		);
 	});
+
+	it('collectFiles should return string paths (not Dirent objects)', () => {
+		// Verifies the readdirSync { withFileTypes: false } fix.
+		// If Dirent objects were returned, join(dir, dirent) would produce wrong paths.
+		const { writeFileSync } = require('fs');
+		const { join } = require('path');
+		writeFileSync(join(TMP, 'strings-check.ts'), '// verify strings fix');
+		const tool = new QListTodosTool();
+		const files = (tool as any).collectFiles(TMP, ['.ts']) as unknown[];
+		expect(Array.isArray(files)).toBe(true);
+		expect(files.length).toBeGreaterThan(0);
+		for (const entry of files) {
+			// Each entry must be a plain string path
+			expect(typeof entry).toBe('string');
+			expect((entry as string).endsWith('.ts')).toBe(true);
+		}
+	});
 });

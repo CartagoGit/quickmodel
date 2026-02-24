@@ -63,7 +63,7 @@ class UserModel extends QModel<IUser> {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class CartItemModel extends QModel<ICartItem> {
-	@QField({ label: 'Quantity' })
+	@QField({ widget: 'input', label: 'Quantity' })
 	@QRule((val: number) => val >= 1, 'Quantity must be at least 1')
 	@QRule((val: number) => val <= 99, 'Quantity limit exceeded')
 	declare qty: number;
@@ -96,7 +96,7 @@ function createUserStore() {
 		update: (patch: Partial<IUser>) => {
 			state = state.copy(patch);
 		},
-		reset: (initialData: object) => {
+		reset: (initialData: Record<string, unknown>) => {
 			state = new UserModel(initialData);
 		},
 	};
@@ -107,7 +107,7 @@ function createCartStore() {
 
 	return {
 		get: () => items,
-		addItem: (data: object) => {
+		addItem: (data: Record<string, unknown>) => {
 			const item = new CartItemModel(data);
 			items.set(item.productId, item);
 		},
@@ -243,7 +243,7 @@ describe('Zustand — persist middleware: serialize ↔ rehydrate', () => {
 	}
 
 	function deserializeState(stored: string): UserModel {
-		return new UserModel(JSON.parse(stored) as object);
+		return new UserModel(JSON.parse(stored) as Record<string, unknown>);
 	}
 
 	test('serialize → JSON.stringify → parse → new Model roundtrip', () => {
@@ -336,20 +336,20 @@ describe('Zustand — createMany() for bulk load into store', () => {
 	];
 
 	test('createMany() populates all items correctly', () => {
-		const { instances, errors } = UserModel.createMany(rawUsers);
+		const { instances, errors } = UserModel.createMany(rawUsers as any[]);
 		expect(errors).toHaveLength(0);
 		expect(instances).toHaveLength(3);
 	});
 
 	test('createMany() coerces age strings to numbers', () => {
-		const { instances } = UserModel.createMany(rawUsers);
+		const { instances } = UserModel.createMany(rawUsers as any[]);
 		instances.forEach((user) => {
 			expect(typeof user.age).toBe('number');
 		});
 	});
 
 	test('createMany() strips server fields', () => {
-		const { instances } = UserModel.createMany(rawUsers);
+		const { instances } = UserModel.createMany(rawUsers as any[]);
 		const serialized = instances.map((usr) => usr.serialize()) as Array<
 			Record<string, unknown>
 		>;
@@ -359,7 +359,7 @@ describe('Zustand — createMany() for bulk load into store', () => {
 	});
 
 	test('normalized Map is built from createMany()', () => {
-		const { instances } = UserModel.createMany(rawUsers);
+		const { instances } = UserModel.createMany(rawUsers as any[]);
 		const store = new Map(instances.map((usr) => [usr.id, usr]));
 		expect(store.size).toBe(3);
 		expect(store.get('u11')?.plan).toBe('pro');

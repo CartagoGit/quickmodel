@@ -46,7 +46,9 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 			z.ZodObject<{
 				timeoutMs: z.ZodOptional<z.ZodNumber>;
 				timeoutMessage: z.ZodOptional<z.ZodString>;
-				mode: z.ZodOptional<z.ZodEnum<['parallel', 'serial']>>;
+				mode: z.ZodOptional<
+					z.ZodEnum<{ parallel: 'parallel'; serial: 'serial' }>
+				>;
 			}>
 		>;
 	}>

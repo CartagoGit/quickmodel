@@ -53,7 +53,7 @@ interface IProductForm {
 )
 class RegistrationDto extends QModel<IRegistrationForm> {
 	@QGroup('personal')
-	@QField({ label: 'Full Name', required: true })
+	@QField({ widget: 'input', label: 'Full Name', required: true })
 	@QRule(
 		(val: string) => val.trim().length >= 2,
 		'Name must be at least 2 characters'
@@ -76,13 +76,13 @@ class RegistrationDto extends QModel<IRegistrationForm> {
 	declare password: string;
 
 	@QGroup('personal')
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18 or older')
 	@QRule((val: number) => val <= 120, 'Age out of range')
 	declare age: number;
 
 	@QGroup('preferences')
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['user', 'editor', 'admin'].includes(val),
 		'Invalid role'
@@ -116,7 +116,7 @@ class RegistrationDto extends QModel<IRegistrationForm> {
 )
 class ProductFormDto extends QModel<IProductForm> {
 	@QGroup('info')
-	@QField({ label: 'SKU', required: true })
+	@QField({ widget: 'input', label: 'SKU', required: true })
 	@QRule(
 		(val: string) => /^[A-Z]{2,4}-\d{3,6}$/.test(val),
 		'SKU format: XX-000 to XXXX-000000'
@@ -124,24 +124,24 @@ class ProductFormDto extends QModel<IProductForm> {
 	declare sku: string;
 
 	@QGroup('info')
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	@QRule((val: string) => val.trim().length >= 3, 'Title too short')
 	declare title: string;
 
 	@QGroup('pricing')
-	@QField({ label: 'Price' })
+	@QField({ widget: 'input', label: 'Price' })
 	@QRule((val: number) => val >= 0, 'Price must be non-negative')
 	@QRule((val: number) => val < 1_000_000, 'Price out of range')
 	declare price: number;
 
 	@QGroup('pricing')
-	@QField({ label: 'Stock' })
+	@QField({ widget: 'input', label: 'Stock' })
 	@QRule((val: number) => Number.isInteger(val), 'Stock must be integer')
 	@QRule((val: number) => val >= 0, 'Stock cannot be negative')
 	declare stock: number;
 
 	@QGroup('info')
-	@QField({ label: 'Category', required: true })
+	@QField({ widget: 'input', label: 'Category', required: true })
 	@QRule(
 		(val: string) =>
 			['electronics', 'clothing', 'books', 'food'].includes(val),

@@ -271,7 +271,7 @@ describe('Integration: Vue Reactivity Simulation', () => {
 			// Vue would warn: "Set operation on key failed: target is readonly."
 			// In strict mode this throws; in sloppy mode the set is silently rejected.
 			try {
-				reactiveUser.name = 'Jane Mutated';
+				(reactiveUser as any).name = 'Jane Mutated';
 			} catch (_err) {
 				// Expected in strict mode
 			}

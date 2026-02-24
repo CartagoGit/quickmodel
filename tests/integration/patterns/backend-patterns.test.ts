@@ -37,7 +37,7 @@ interface ICreateUser {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateUserDto extends QModel<ICreateUser> {
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule(
 		(val: string) => val.length >= 3,
 		'Username must be at least 3 chars'
@@ -63,7 +63,7 @@ class CreateUserDto extends QModel<ICreateUser> {
 	@QRule((val: number) => val <= 120, 'Age must be realistic')
 	declare age: number;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'editor', 'viewer'].includes(val),
 		'Role must be admin, editor, or viewer'
@@ -132,7 +132,7 @@ type INextFn = (error?: unknown) => void;
 
 // Simulate Express validation middleware factory
 function expressValidateBody<TDto extends QModel<object>>(
-	DtoClass: new (data: object) => TDto
+	DtoClass: new (data: Record<string, unknown>) => TDto
 ) {
 	return function middleware(
 		req: IMockRequest,
@@ -148,7 +148,7 @@ function expressValidateBody<TDto extends QModel<object>>(
 				return;
 			}
 			// Attach coerced DTO to request (simulating req.dto)
-			(req as Record<string, unknown>)['dto'] = dto;
+			(req as unknown as Record<string, unknown>)['dto'] = dto;
 			next();
 		} catch (_err) {
 			res.status = 400;
@@ -175,7 +175,9 @@ describe('Express — validation middleware pattern', () => {
 		});
 		expect(nextCalled).toBe(true);
 		expect(res.status).toBe(200);
-		const dto = (req as Record<string, unknown>)['dto'] as CreateUserDto;
+		const dto = (req as unknown as Record<string, unknown>)[
+			'dto'
+		] as CreateUserDto;
 		expect(dto).toBeInstanceOf(CreateUserDto);
 	});
 
@@ -214,7 +216,9 @@ describe('Express — validation middleware pattern', () => {
 		const res: IMockResponse = { status: 200, body: null };
 		const middleware = expressValidateBody(CreateUserDto);
 		middleware(req, res, () => {});
-		const dto = (req as Record<string, unknown>)['dto'] as CreateUserDto;
+		const dto = (req as unknown as Record<string, unknown>)[
+			'dto'
+		] as CreateUserDto;
 		const serialized = dto.serialize() as Record<string, unknown>;
 		expect('injectField' in serialized).toBe(false);
 	});
@@ -231,7 +235,9 @@ describe('Express — validation middleware pattern', () => {
 		const res: IMockResponse = { status: 200, body: null };
 		const middleware = expressValidateBody(CreateUserDto);
 		middleware(req, res, () => {});
-		const dto = (req as Record<string, unknown>)['dto'] as CreateUserDto;
+		const dto = (req as unknown as Record<string, unknown>)[
+			'dto'
+		] as CreateUserDto;
 		const out = dto.serialize() as Record<string, unknown>;
 		expect(out['displayName']).toBe('carol (viewer)');
 	});
@@ -243,8 +249,6 @@ describe('Express — validation middleware pattern', () => {
 			declare id: string;
 		}
 		// Pass no body at all — constructor receives undefined fields
-		const _req: IMockRequest = { body: {} };
-		const _res: IMockResponse = { status: 200, body: null };
 		// StrictDto with empty body should not throw (fields may be undefined)
 		// Test that qCheckRules properly delegates
 		const dto = new StrictDto({});
@@ -286,7 +290,7 @@ function makeFastifyReply(): IFastifyReply {
 
 // Simulate Fastify preHandler hook (plugin behavior)
 function fastifyDtoHook<TDto extends QModel<object>>(
-	DtoClass: new (data: object) => TDto,
+	DtoClass: new (data: Record<string, unknown>) => TDto,
 	req: IFastifyRequest,
 	reply: IFastifyReply
 ): TDto | null {
@@ -380,7 +384,7 @@ describe('Fastify — DTO coercion + validation hook', () => {
 				paid: true,
 			},
 		];
-		const { instances, errors } = InvoiceDto.createMany(raw);
+		const { instances, errors } = InvoiceDto.createMany(raw as any[]);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(0);
 	});
@@ -408,7 +412,7 @@ type IHonoMiddleware = (
 
 // Hono validator factory (simulates hono/validator zValidator behavior)
 function honoValidator<TDto extends QModel<object>>(
-	DtoClass: new (data: object) => TDto,
+	DtoClass: new (data: Record<string, unknown>) => TDto,
 	onSuccess: (dto: TDto, ctx: IHonoContext) => Promise<IHonoResponse>
 ): IHonoMiddleware {
 	return async (ctx: IHonoContext, _next: () => Promise<void>) => {
@@ -515,7 +519,7 @@ class RegistrationDto extends QModel<{
 	email: string;
 	password: string;
 }> {
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule(async (val: string) => {
 		await Bun.sleep(3);
 		return !existingUsernames.has(val.toLowerCase());
@@ -658,7 +662,7 @@ class BlogPostModel extends QModel<IBlogPost> {
 class BlogPostRepository {
 	private store = new Map<string, BlogPostModel>();
 
-	create(data: object): object {
+	create(data: Record<string, unknown>): object {
 		const post = new BlogPostModel(data);
 		this.store.set(
 			(post as unknown as Record<string, unknown>)['id'] as string,

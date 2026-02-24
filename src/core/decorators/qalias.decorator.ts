@@ -24,6 +24,26 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  *
  * @param alias - The external key name (e.g. `'first_name'`).
  *
+ * @remarks
+ * **TypeScript limitation:** due to `experimentalDecorators: true`, TypeScript cannot
+ * propagate the alias mapping to the return type of `serialize()`. The IDE will show
+ * the original property name (e.g. `firstName`) instead of the alias key (e.g. `first_name`).
+ * At runtime the behaviour is correct.
+ *
+ * **Type-safe alternative:** use `@Quick({}, { alias: {...} })` combined with the second
+ * generic on `QModel` to get correct IDE autocomplete on `serialize()` output:
+ * ```typescript
+ * type IUserAliases = { firstName: 'first_name'; lastName: 'last_name' };
+ *
+ * @Quick({}, { alias: { firstName: 'first_name', lastName: 'last_name' } })
+ * class User extends QModel<IUser, IUserAliases> {
+ *   declare firstName: string;
+ *   declare lastName: string;
+ * }
+ *
+ * user.serialize().first_name; // ✅ typed correctly
+ * ```
+ *
  * @example
  * ```typescript
  * @Quick()

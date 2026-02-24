@@ -46,7 +46,7 @@ interface IOrderRequest {
 )
 class CreateUserDto extends QModel<ICreateUserRequest> {
 	@QGroup('identity')
-	@QField({ label: 'Full Name', required: true })
+	@QField({ widget: 'input', label: 'Full Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
@@ -59,12 +59,12 @@ class CreateUserDto extends QModel<ICreateUserRequest> {
 	declare email: string;
 
 	@QGroup('profile')
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Age out of range')
 	declare age: number;
 
 	@QGroup('profile')
-	@QField({ label: 'Role', required: true })
+	@QField({ widget: 'input', label: 'Role', required: true })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -91,28 +91,28 @@ class CreateUserDto extends QModel<ICreateUserRequest> {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class ProductRequestDto extends QModel<IProductRequest> {
-	@QField({ label: 'SKU', required: true })
+	@QField({ widget: 'input', label: 'SKU', required: true })
 	declare sku: string;
 
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	declare title: string;
 
-	@QField({ label: 'Price' })
+	@QField({ widget: 'input', label: 'Price' })
 	declare price: number;
 
-	@QField({ label: 'Stock' })
+	@QField({ widget: 'input', label: 'Stock' })
 	declare stock: number;
 
-	@QField({ label: 'Category', required: true })
+	@QField({ widget: 'input', label: 'Category', required: true })
 	declare category: string;
 
-	@QField({ label: 'Published At' })
+	@QField({ widget: 'input', label: 'Published At' })
 	declare publishedAt: Date;
 
 	@QField({ label: 'Active', widget: 'checkbox' })
 	declare active: boolean;
 
-	@QField({ label: 'Tags' })
+	@QField({ widget: 'input', label: 'Tags' })
 	declare tags: string[];
 }
 
@@ -127,19 +127,19 @@ class ProductRequestDto extends QModel<IProductRequest> {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class OrderDto extends QModel<IOrderRequest> {
-	@QField({ label: 'Order ID', required: true })
+	@QField({ widget: 'input', label: 'Order ID', required: true })
 	declare orderId: string;
 
-	@QField({ label: 'User ID', required: true })
+	@QField({ widget: 'input', label: 'User ID', required: true })
 	declare userId: string;
 
-	@QField({ label: 'Total', required: true })
+	@QField({ widget: 'input', label: 'Total', required: true })
 	declare total: number;
 
-	@QField({ label: 'Currency', required: true })
+	@QField({ widget: 'input', label: 'Currency', required: true })
 	declare currency: string;
 
-	@QField({ label: 'Placed At', required: true })
+	@QField({ widget: 'input', label: 'Placed At', required: true })
 	declare placedAt: Date;
 }
 

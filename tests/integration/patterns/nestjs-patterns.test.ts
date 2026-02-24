@@ -725,7 +725,7 @@ describe('NestJS Pattern: bulk create endpoint (createMany)', () => {
 				active: true,
 			},
 		];
-		const { instances, errors } = CreateUserDto.createMany(bodies);
+		const { instances, errors } = CreateUserDto.createMany(bodies as any[]);
 		expect(instances).toHaveLength(3);
 		expect(errors).toHaveLength(0);
 		expect(instances[0]).toBeInstanceOf(CreateUserDto);
@@ -749,7 +749,7 @@ describe('NestJS Pattern: bulk create endpoint (createMany)', () => {
 				active: true,
 			},
 		];
-		const { instances, errors } = CreateUserDto.createMany(bodies);
+		const { instances, errors } = CreateUserDto.createMany(bodies as any[]);
 		expect(instances).toHaveLength(1); // only Alice passes
 		expect(errors).toHaveLength(1); // Bob fails
 		expect(instances[0]?.name).toBe('Alice');
@@ -773,7 +773,7 @@ describe('NestJS Pattern: bulk create endpoint (createMany)', () => {
 				active: false,
 			},
 		];
-		const { instances } = CreateUserDto.createMany(bodies);
+		const { instances } = CreateUserDto.createMany(bodies as any[]);
 		const response = instances.map((dto) => dto.serialize());
 		expect(Array.isArray(response)).toBe(true);
 		expect(response[0]?.name).toBe('Alice');
@@ -797,7 +797,7 @@ describe('NestJS Pattern: bulk create endpoint (createMany)', () => {
 				active: true,
 			},
 		];
-		const { errors } = CreateUserDto.createMany(bodies);
+		const { errors } = CreateUserDto.createMany(bodies as any[]);
 		expect(errors[0]).toHaveProperty('index', 1);
 		expect(errors[0]).toHaveProperty('instance');
 		expect(errors[0]).toHaveProperty('errors');

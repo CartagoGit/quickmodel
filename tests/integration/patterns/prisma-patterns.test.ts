@@ -57,16 +57,16 @@ class UserRecordDto extends QModel<IUserRecord> {
 	declare name: string;
 
 	@QGroup('identity')
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule((val: string) => val.includes('@'), 'Invalid email')
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Invalid age')
 	declare age: number;
 
 	@QGroup('identity')
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -87,22 +87,22 @@ class UserRecordDto extends QModel<IUserRecord> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateUserDto extends QModel<ICreateUser> {
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email format'
 	)
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18 or older')
 	declare age: number;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -348,7 +348,7 @@ describe('createMany() — seed / bulk import', () => {
 				score: 5,
 			},
 		];
-		const { instances, errors } = UserRecordDto.createMany(seed);
+		const { instances, errors } = UserRecordDto.createMany(seed as any[]);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 	});
@@ -365,7 +365,7 @@ describe('createMany() — seed / bulk import', () => {
 				score: '55',
 			},
 		];
-		const { instances } = UserRecordDto.createMany(seed);
+		const { instances } = UserRecordDto.createMany(seed as any[]);
 		expect(instances[0]?.age).toBe(27);
 		expect(instances[0]?.score).toBe(55);
 	});
@@ -382,7 +382,7 @@ describe('createMany() — seed / bulk import', () => {
 				score: 100,
 			},
 		];
-		const { instances } = UserRecordDto.createMany(seed);
+		const { instances } = UserRecordDto.createMany(seed as any[]);
 		const prismaData = instances.map((dto) => dto.toInterface());
 		expect(prismaData[0]?.uid).toBe('s5');
 	});
@@ -410,12 +410,14 @@ describe('Repository pattern with QModel layer', () => {
 
 		findById(uid: string): UserRecordDto | null {
 			const raw = this.store.get(uid);
-			return raw ? new UserRecordDto(raw as object) : null;
+			return raw
+				? new UserRecordDto(raw as Record<string, unknown>)
+				: null;
 		}
 
 		findAll(): UserRecordDto[] {
 			return [...this.store.values()].map(
-				(raw) => new UserRecordDto(raw as object)
+				(raw) => new UserRecordDto(raw as Record<string, unknown>)
 			);
 		}
 

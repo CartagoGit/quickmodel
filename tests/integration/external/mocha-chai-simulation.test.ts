@@ -181,7 +181,7 @@ function chaiExpect(actual: object): {
 						quickmodelMatchers.toHaveDirtyField(actual, field)
 					),
 			},
-			matchQModel: (expected: object) =>
+			matchQModel: (expected: Record<string, unknown>) =>
 				assertPass(quickmodelMatchers.toMatchQModel(actual, expected)),
 			not: {
 				have: {
@@ -212,7 +212,7 @@ function chaiExpect(actual: object): {
 							true
 						),
 				},
-				matchQModel: (expected: object) =>
+				matchQModel: (expected: Record<string, unknown>) =>
 					assertPass(
 						quickmodelMatchers.toMatchQModel(actual, expected),
 						true
@@ -243,14 +243,14 @@ interface ISubscriptionDto {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class SubscriptionDto extends QModel<ISubscriptionDto> {
-	@QField({ label: 'Plan', required: true })
+	@QField({ widget: 'input', label: 'Plan', required: true })
 	@QRule(
 		(val: string) => ['free', 'pro', 'enterprise'].includes(val),
 		'Plan must be free, pro, or enterprise'
 	)
 	declare planId: string;
 
-	@QField({ label: 'Seats', required: true })
+	@QField({ widget: 'input', label: 'Seats', required: true })
 	@QRule(
 		(val: number) => Number.isInteger(val) && val >= 1,
 		'At least 1 seat required'
@@ -258,7 +258,7 @@ class SubscriptionDto extends QModel<ISubscriptionDto> {
 	@QRule((val: number) => val <= 500, 'Cannot exceed 500 seats')
 	declare seatsCount: number;
 
-	@QField({ label: 'Price per seat' })
+	@QField({ widget: 'input', label: 'Price per seat' })
 	@QRule((val: number) => val >= 0, 'Price cannot be negative')
 	declare pricePerSeat: number;
 

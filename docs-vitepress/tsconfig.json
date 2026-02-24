@@ -13,7 +13,8 @@
 		"types": ["vitepress/client"],
 		"baseUrl": "./",
 		"paths": {
-			"@docs/*": ["./*"]
+			"@docs/*": ["./*"],
+			"@benchmarks/*": ["../tests/performance/benchmarks/*"]
 		}
 	},
 	"include": [

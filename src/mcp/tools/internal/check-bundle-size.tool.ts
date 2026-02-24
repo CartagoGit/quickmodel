@@ -75,9 +75,11 @@ export class QCheckBundleSizeTool extends QAbstractTool<z.ZodObject<{}>> {
 
 	private readDistDir(dirPath: string): IBundleFile[] {
 		const result: IBundleFile[] = [];
-		let entries: ReturnType<typeof readdirSync>;
+		let entries: string[];
 		try {
-			entries = readdirSync(dirPath);
+			entries = readdirSync(dirPath, {
+				withFileTypes: false,
+			}) as string[];
 		} catch {
 			return result;
 		}

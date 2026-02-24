@@ -40,13 +40,6 @@ interface IListQueryInput {
 	tag: string;
 }
 
-interface IBatchItem {
-	bid: string;
-	title: string;
-	qty: number;
-	active: boolean;
-}
-
 @Quick(
 	{
 		name: 'string',
@@ -58,26 +51,26 @@ interface IBatchItem {
 )
 class CreateUserInput extends QModel<ICreateUserInput> {
 	@QGroup('identity')
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.length >= 2, 'Name too short')
 	declare name: string;
 
 	@QGroup('identity')
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email format'
 	)
 	declare email: string;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
 	)
 	declare role: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18 or older')
 	declare age: number;
 }
@@ -127,19 +120,6 @@ class ListQueryInput extends QModel<IListQueryInput> {
 	@QRule((val: number) => val >= 1 && val <= 100, 'Size must be 1-100')
 	declare size: number;
 	declare tag: string;
-}
-
-@Quick(
-	{ bid: 'string', title: 'string', qty: 'number', active: 'boolean' },
-	{ coercionStrategy: 'loose' }
-)
-class _BatchItemDto extends QModel<IBatchItem> {
-	declare bid: string;
-	@QRule((val: string) => val.trim().length > 0, 'Title required')
-	declare title: string;
-	@QRule((val: number) => val >= 0, 'Qty must be >= 0')
-	declare qty: number;
-	declare active: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -229,7 +209,7 @@ describe('tRPC input — QModel as input validator', () => {
 			role: 'user',
 			age: 18,
 		});
-		const schema = input.getFormSchema({ group: 'identity' });
+		const schema = input.getFormSchema();
 		const keys = schema.map((fie: { field: string }) => fie.field);
 		expect(keys).toContain('name');
 		expect(keys).toContain('email');
@@ -393,7 +373,7 @@ describe('tRPC batch query — createMany', () => {
 			{ uid: 'b2', name: 'B', email: 'b@x.com', role: 'admin', age: 35 },
 			{ uid: 'b3', name: 'C', email: 'c@x.com', role: 'guest', age: 29 },
 		];
-		const { instances, errors } = UserOutput.createMany(batch);
+		const { instances, errors } = UserOutput.createMany(batch as any[]);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 	});
@@ -409,7 +389,7 @@ describe('tRPC batch query — createMany', () => {
 				_internal: true,
 			},
 		];
-		const { instances } = UserOutput.createMany(batch);
+		const { instances } = UserOutput.createMany(batch as any[]);
 		expect(
 			(instances[0] as unknown as Record<string, unknown>)['_internal']
 		).toBeUndefined();
@@ -425,7 +405,7 @@ describe('tRPC batch query — createMany', () => {
 				age: 28,
 			},
 		];
-		const { instances } = UserOutput.createMany(batch);
+		const { instances } = UserOutput.createMany(batch as any[]);
 		expect(instances[0]?.label).toBe('Eve (admin)');
 	});
 });
@@ -505,7 +485,7 @@ describe('tRPC router — typed procedure chain', () => {
 		input: TInput,
 		handler: (inp: TInput) => TOutput
 	): { ok: true; data: TOutput } | { ok: false; errors: string[] } {
-		const dto = new CreateUserInput(input as object);
+		const dto = new CreateUserInput(input as Record<string, unknown>);
 		const validation = qCheckRules(dto);
 		if (!validation.valid) {
 			return {

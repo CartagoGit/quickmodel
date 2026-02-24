@@ -79,4 +79,23 @@ describe('QCheckBundleSizeTool', () => {
 		expect(typeof result.summary).toBe('string');
 		expect(result.summary.length).toBeGreaterThan(0);
 	});
+
+	it('readDistDir should return IBundleFile[] with string file names (not Dirent objects)', () => {
+		// Verifies the readdirSync { withFileTypes: false } fix — Dirent objects cannot
+		// be joined with path.join() and would produce wrong results if returned.
+		const tool = new QCheckBundleSizeTool();
+		const tmpDir = require('os').tmpdir();
+		const files = (tool as any).readDistDir(tmpDir) as Array<{
+			file: string;
+			bytes: number;
+		}>;
+		expect(Array.isArray(files)).toBe(true);
+		for (const entry of files) {
+			// file must be a plain string — not a Dirent object
+			expect(typeof entry.file).toBe('string');
+			expect(typeof entry.bytes).toBe('number');
+			// Must not contain path separators (readDistDir only reads one level)
+			expect(entry.file).not.toContain('/');
+		}
+	});
 });

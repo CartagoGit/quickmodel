@@ -66,7 +66,7 @@ export const es = {
 		matrixHint: '⚠️ = disponible con código manual adicional',
 		typeLabel: 'Tipo:',
 		librariesLabel: 'Librerías:',
-		featuresLabel: 'Features:',
+		featuresLabel: 'Características:',
 		perfTitle: 'Comparativa de rendimiento',
 		perfSubtitle: 'Pasa el ratón sobre las barras para ver detalles',
 		scenarioLabel: 'Escenario:',
@@ -79,11 +79,11 @@ export const es = {
 		faster: 'más rápido',
 		tooltipIncludes: '✅ Incluye',
 		tooltipMissing: '❌ No incluye',
-		coverageTitle: 'Mapa de Cobertura — Features & Velocidad',
+		coverageTitle: 'Mapa de Cobertura — Características & Velocidad',
 		coverageSubtitle:
 			'Qué librerías soportan cada escenario de benchmark. Haz clic en un chip para ir al benchmark.',
 		coverageSpeed: 'ops/seg',
-		tabFeatures: 'Comparativa de Features',
+		tabFeatures: 'Comparativa de Características',
 		tabCoverage: 'Mapa de Cobertura',
 		tabPerf: 'Rendimiento',
 
@@ -120,6 +120,34 @@ export const es = {
 			typeSerialization: {
 				label: 'Fidelidad de Serialización con Tipos (1k)',
 				notes: '1k iteraciones — fidelidad de tipos. Plain JSON.parse/stringify pierde Date→string, BigInt falla, Map/Set→{}. superjson preserva la mayoría de tipos. QuickModel preserva Date, BigInt, Map, Set, RegExp de forma nativa sin código adicional.',
+			},
+			aliasMapping: {
+				label: 'Mapeo de Campos / @QAlias (2k)',
+				notes: '2k instanciaciones — payload API en snake_case → modelo camelCase. Plain JS: el más rápido pero requiere mapper hardcoded que se rompe con cada cambio de schema. class-transformer: copia a instancia de clase pero mantiene las claves snake_case originales sin configuración @Expose+@Transform. QuickModel @QAlias: renombrado sin boilerplate al instanciar, compatible con coerción de tipos y validación.',
+			},
+			isDirty: {
+				label: 'Detección de Cambios / isDirty() (5k)',
+				notes: '5k iteraciones — detectar si un modelo fue mutado. Plain JS: comparación JSON.stringify — O(n) serialización en cada check, crece con el tamaño del objeto. QuickModel patch()+isDirty(): tracking O(1) con Set por campo, reset() restaura al estado inicial, getDirtyFields() lista los campos modificados. isDirty("name") verifica un único campo.',
+			},
+			nestedConstruct: {
+				label: 'Construcción de Modelo Anidado (1k)',
+				notes: '1k instanciaciones — Order con total BigInt, placedAt Date, objeto customer anidado y array de items. Plain JS: BigInt()+new Date() manual por campo — resultado correcto pero frágil. class-transformer: plainToInstance() copia a clase pero BigInt queda como string (sin transformer nativo). QuickModel @Quick({ total: "bigint", placedAt: Date }): un solo decorador gestiona toda la coerción de tipos.',
+			},
+			asyncRules: {
+				label: 'Reglas Async Paralelas / qCheckRulesAsync (1k)',
+				notes: '1k iteraciones — orquestación de reglas async con predicados de resolución instantánea (mide overhead de orquestación). QuickModel modo parallel: Promise.allSettled sobre todos los @QRule — óptimo para reglas bound a IO. joi validateAsync(): Promise por campo, secuencial. yup validate() async: ejecución de reglas secuencial. QM único: timeoutMs por regla + switch serial/parallel.',
+			},
+			bulkConstruct: {
+				label: 'Construcción Masiva / createMany (5 × 500)',
+				notes: '5 ciclos de 500 objetos — importación masiva tipada desde JSON crudo. Plain JS: spread de objeto plano — el más rápido pero sin tipado ni validación. class-transformer: plainToInstance array — mapea a clase pero sin checks de integridad, BigInt no soportado. Zod: safeParse por item — valida pero retorna objetos planos, no instancias tipadas con métodos. QuickModel createMany(): instancias tipadas + integridad + reglas de negocio, separa válidos/inválidos automáticamente.',
+			},
+			schemaMultiFormat: {
+				label: 'Schema Multi-Formato / getSchema() × 7 (2k)',
+				notes: '2k iteraciones — exportar schema en 7 formatos secuencialmente: JSON Schema, Zod, OpenAPI 3.0, interfaz TypeScript, GraphQL SDL, MongoDB, AJV. QuickModel es el único: una llamada genera los 7 formatos desde una clase decorada. TypeBox: el objeto Type ES el schema — acceso O(1) pero solo JSON Schema nativo. Plain JS: object literal estático — 1 formato, sin reutilización. Ninguna otra librería genera schemas multi-formato desde clases decoradas.',
+			},
+			validationReport: {
+				label: 'Reporte de Errores Estructurado / validationReport() (3k)',
+				notes: '3k iteraciones con datos inválidos — obtener objetos de error categorizados. QuickModel validationReport(): retorna { valid, integrity[], rules: { valid, errors[] } } — dos categorías separadas: errores de tipo/coerción (integrity) y errores de lógica de negocio (@QRule). Zod safeParse(): array plano ZodError.issues, sin categorías. yup validateSync(abortEarly:false): ValidationError.errors plano. joi validate(abortEarly:false): array error.details plano. Solo QuickModel distingue fallos de integridad vs reglas en una sola llamada tipada.',
 			},
 		},
 

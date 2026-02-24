@@ -50,7 +50,7 @@ interface ICommentInput {
 )
 class CreateUserInput extends QModel<ICreateUserInput> {
 	@QGroup('identity')
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name is too short')
 	@QRule(
 		(val: string) => /^[\w\s'-]+$/u.test(val),
@@ -59,7 +59,7 @@ class CreateUserInput extends QModel<ICreateUserInput> {
 	declare name: string;
 
 	@QGroup('identity')
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email format'
@@ -67,12 +67,12 @@ class CreateUserInput extends QModel<ICreateUserInput> {
 	declare email: string;
 
 	@QGroup('profile')
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Age out of range')
 	declare age: number;
 
 	@QGroup('profile')
-	@QField({ label: 'Role', required: true })
+	@QField({ widget: 'input', label: 'Role', required: true })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role value'
@@ -85,11 +85,11 @@ class CreateUserInput extends QModel<ICreateUserInput> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class UpdatePostInput extends QModel<IUpdatePostInput> {
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	@QRule((val: string) => val.trim().length >= 3, 'Title too short')
 	declare title: string;
 
-	@QField({ label: 'Body', required: true })
+	@QField({ widget: 'input', label: 'Body', required: true })
 	@QRule((val: string) => val.trim().length >= 10, 'Body too short')
 	declare body: string;
 
@@ -109,22 +109,22 @@ class UpdatePostInput extends QModel<IUpdatePostInput> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class UserResponse extends QModel<IUserResponse> {
-	@QField({ label: 'ID' })
+	@QField({ widget: 'input', label: 'ID' })
 	declare id: number;
 
-	@QField({ label: 'Name' })
+	@QField({ widget: 'input', label: 'Name' })
 	declare name: string;
 
-	@QField({ label: 'Email' })
+	@QField({ widget: 'input', label: 'Email' })
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	declare age: number;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	declare role: string;
 
-	@QField({ label: 'Bio' })
+	@QField({ widget: 'input', label: 'Bio' })
 	declare bio: string;
 
 	@QComputed()
@@ -152,13 +152,13 @@ class UserResponse extends QModel<IUserResponse> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CommentInput extends QModel<ICommentInput> {
-	@QField({ label: 'Post ID', required: true })
+	@QField({ widget: 'input', label: 'Post ID', required: true })
 	declare postId: number;
 
-	@QField({ label: 'Author ID', required: true })
+	@QField({ widget: 'input', label: 'Author ID', required: true })
 	declare authorId: number;
 
-	@QField({ label: 'Text', required: true })
+	@QField({ widget: 'input', label: 'Text', required: true })
 	@QRule((val: string) => val.trim().length >= 1, 'Comment cannot be empty')
 	@QRule((val: string) => val.length <= 2000, 'Comment too long')
 	declare text: string;
@@ -340,20 +340,20 @@ describe('Mutation resolver — validation and error mapping', () => {
 			{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 		)
 		class UniqueInput extends QModel<ICreateUserInput> {
-			@QField({ label: 'Name', required: true })
+			@QField({ widget: 'input', label: 'Name', required: true })
 			declare name: string;
 
-			@QField({ label: 'Email', required: true })
+			@QField({ widget: 'input', label: 'Email', required: true })
 			@QRule(
 				(val: string) => Promise.resolve(!knownEmails.has(val)),
 				'Email already taken'
 			)
 			declare email: string;
 
-			@QField({ label: 'Age' })
+			@QField({ widget: 'input', label: 'Age' })
 			declare age: number;
 
-			@QField({ label: 'Role', required: true })
+			@QField({ widget: 'input', label: 'Role', required: true })
 			declare role: string;
 		}
 
@@ -480,7 +480,7 @@ describe('createMany() in list query — bulk coercion from DB resolver', () => 
 				bio: '',
 			},
 		];
-		const { instances, errors } = UserResponse.createMany(dbRows);
+		const { instances, errors } = UserResponse.createMany(dbRows as any[]);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 		expect(instances[0]?.age).toBe(28);
@@ -506,7 +506,7 @@ describe('createMany() in list query — bulk coercion from DB resolver', () => 
 				bio: '',
 			},
 		];
-		const { instances } = UserResponse.createMany(rows);
+		const { instances } = UserResponse.createMany(rows as any[]);
 		const response = instances.map((dto) => dto.serialize());
 		expect(response.length).toBe(2);
 		expect((response[0] as Record<string, unknown>)['name']).toBe('Dave');
@@ -541,7 +541,7 @@ describe('createMany() in list query — bulk coercion from DB resolver', () => 
 				bio: '',
 			},
 		];
-		const { instances, errors } = UserResponse.createMany(rows);
+		const { instances, errors } = UserResponse.createMany(rows as any[]);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 		// Each instance is a valid UserResponse DTO
@@ -622,7 +622,7 @@ describe('Validation middleware pattern (GraphQL Yoga useValidation)', () => {
 	 * Simulates a useValidation plugin that validates all input DTOs before resolver execution.
 	 * In Yoga/Apollo, this is done via a plugin or context middleware.
 	 */
-	function validateInput<TInput>(
+	function validateInput<TInput extends Record<string, unknown>>(
 		DtoClass: { new (data: TInput): QModel<TInput> },
 		input: TInput
 	): {

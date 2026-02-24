@@ -50,29 +50,6 @@ interface ISimulatedSocket {
 	readyState: 0 | 1 | 2 | 3; // CONNECTING | OPEN | CLOSING | CLOSED
 }
 
-function _createSimulatedSocket(): ISimulatedSocket {
-	let _handler: IWsMessageHandler | null = null;
-	const _sent: string[] = [];
-
-	const socket: ISimulatedSocket = {
-		readyState: 1,
-		get onmessage() {
-			return _handler;
-		},
-		set onmessage(val: IWsMessageHandler | null) {
-			_handler = val;
-		},
-		send(data: string) {
-			_sent.push(data);
-		},
-		simulateReceive(data: string) {
-			_handler?.({ data } as unknown as string);
-		},
-	};
-
-	return socket;
-}
-
 // Simulated WebSocket "pipe": client ↔ server
 interface IWsPipe {
 	clientSocket: ISimulatedSocket;
@@ -287,31 +264,31 @@ interface IChatMessage {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class ChatMessageDto extends QModel<IChatMessage> {
-	@QField({ label: 'ID', required: true })
+	@QField({ widget: 'input', label: 'ID', required: true })
 	@QRule((val: string) => val.length > 0, 'ID is required')
 	declare id: string;
 
-	@QField({ label: 'Room' })
+	@QField({ widget: 'input', label: 'Room' })
 	declare roomId: string;
 
-	@QField({ label: 'Author', required: true })
+	@QField({ widget: 'input', label: 'Author', required: true })
 	@QRule((val: string) => val.length >= 2, 'Author name too short')
 	declare author: string;
 
-	@QField({ label: 'Text', required: true })
+	@QField({ widget: 'input', label: 'Text', required: true })
 	@QRule(
 		(val: string) => val.length > 0 && val.length <= 4000,
 		'Invalid text length'
 	)
 	declare text: string;
 
-	@QField({ label: 'Sent At' })
+	@QField({ widget: 'input', label: 'Sent At' })
 	declare sentAt: Date;
 
-	@QField({ label: 'Mentions' })
+	@QField({ widget: 'input', label: 'Mentions' })
 	declare mentions: Set<string>;
 
-	@QField({ label: 'Metadata' })
+	@QField({ widget: 'input', label: 'Metadata' })
 	declare metadata: Map<string, string>;
 
 	@QComputed()
@@ -348,27 +325,27 @@ interface IStockTick {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class StockTickDto extends QModel<IStockTick> {
-	@QField({ label: 'Symbol' })
+	@QField({ widget: 'input', label: 'Symbol' })
 	@QRule((val: string) => /^[A-Z]{1,5}$/.test(val), 'Invalid symbol')
 	declare symbol: string;
 
-	@QField({ label: 'Price' })
+	@QField({ widget: 'input', label: 'Price' })
 	@QRule((val: number) => val > 0, 'Price must be positive')
 	declare price: number;
 
-	@QField({ label: 'Volume' })
+	@QField({ widget: 'input', label: 'Volume' })
 	declare volume: bigint;
 
-	@QField({ label: 'Timestamp' })
+	@QField({ widget: 'input', label: 'Timestamp' })
 	declare timestamp: Date;
 
-	@QField({ label: 'Change' })
+	@QField({ widget: 'input', label: 'Change' })
 	declare change: number;
 
-	@QField({ label: 'High' })
+	@QField({ widget: 'input', label: 'High' })
 	declare high: number;
 
-	@QField({ label: 'Low' })
+	@QField({ widget: 'input', label: 'Low' })
 	declare low: number;
 
 	@QComputed()
@@ -389,21 +366,21 @@ interface IPresenceEvent {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class PresenceEventDto extends QModel<IPresenceEvent> {
-	@QField({ label: 'User ID' })
+	@QField({ widget: 'input', label: 'User ID' })
 	@QRule((val: string) => val.length > 0, 'User ID required')
 	declare userId: string;
 
-	@QField({ label: 'Status' })
+	@QField({ widget: 'input', label: 'Status' })
 	@QRule(
 		(val: string) => ['online', 'away', 'busy', 'offline'].includes(val),
 		'Invalid status'
 	)
 	declare status: string;
 
-	@QField({ label: 'Last Seen' })
+	@QField({ widget: 'input', label: 'Last Seen' })
 	declare lastSeen: Date;
 
-	@QField({ label: 'Active Rooms' })
+	@QField({ widget: 'input', label: 'Active Rooms' })
 	declare activeRooms: Set<string>;
 }
 
@@ -476,8 +453,10 @@ describe('Native WebSocket simulation', () => {
 
 	it('validación con qCheckRules tras reconstrucción desde WS', () => {
 		const pipe = createWsPipe();
-		let validationResult: { valid: boolean; errors: string[] } | null =
-			null;
+		let validationResult: {
+			valid: boolean;
+			errors: Array<{ field: string; message: string; value: unknown }>;
+		} | null = null;
 
 		pipe.serverSocket.onmessage = ((evt: unknown) => {
 			const raw = (evt as { data: string }).data;
@@ -567,7 +546,7 @@ describe('Native WebSocket simulation', () => {
 		pipe.serverSocket.onmessage = ((evt: unknown) => {
 			const raw = (evt as { data: string }).data;
 			const batch = JSON.parse(raw) as IStockTick[];
-			const { instances } = StockTickDto.createMany(batch);
+			const { instances } = StockTickDto.createMany(batch as any[]);
 			received.push(...instances);
 		}) as IWsMessageHandler;
 
@@ -601,7 +580,7 @@ describe('Native WebSocket simulation', () => {
 			},
 		];
 
-		const { instances: batch } = StockTickDto.createMany(rawTicks);
+		const { instances: batch } = StockTickDto.createMany(rawTicks as any[]);
 		const serialized = batch.map((dto) => dto.serialize());
 
 		pipe.clientSocket.send(JSON.stringify(serialized));

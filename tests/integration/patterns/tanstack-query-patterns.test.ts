@@ -63,7 +63,7 @@ class ProductDto extends QModel<IProduct> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateProductDto extends QModel<ICreateProduct> {
-	@QField({ label: 'Product Name', required: true })
+	@QField({ widget: 'input', label: 'Product Name', required: true })
 	@QRule(
 		(val: string) => val.length >= 2,
 		'Name must be at least 2 characters'
@@ -71,12 +71,12 @@ class CreateProductDto extends QModel<ICreateProduct> {
 	@QRule((val: string) => val.length <= 100, 'Name too long')
 	declare name: string;
 
-	@QField({ label: 'Price' })
+	@QField({ widget: 'input', label: 'Price' })
 	@QRule((val: number) => val > 0, 'Price must be positive')
 	@QRule((val: number) => val < 100_000, 'Price exceeds maximum')
 	declare price: number;
 
-	@QField({ label: 'Category' })
+	@QField({ widget: 'input', label: 'Category' })
 	@QRule(
 		(val: string) =>
 			['electronics', 'clothing', 'tools', 'books'].includes(val),
@@ -185,7 +185,9 @@ describe('TanStack Query — queryFn: single resource', () => {
 
 describe('TanStack Query — queryFn: list with createMany()', () => {
 	function fetchProducts(): IProduct[] {
-		const { instances, errors } = ProductDto.createMany(rawProductList);
+		const { instances, errors } = ProductDto.createMany(
+			rawProductList as any[]
+		);
 		if (errors.length > 0) {
 			throw new Error(`Failed to parse ${errors.length} products`);
 		}
@@ -212,7 +214,7 @@ describe('TanStack Query — queryFn: list with createMany()', () => {
 	});
 
 	test('createMany errors array is empty for valid data', () => {
-		const { errors } = ProductDto.createMany(rawProductList);
+		const { errors } = ProductDto.createMany(rawProductList as any[]);
 		expect(errors).toHaveLength(0);
 	});
 
@@ -222,7 +224,7 @@ describe('TanStack Query — queryFn: list with createMany()', () => {
 			{ name: 'X', price: -1, category: 'electronics' }, // name too short, price negative
 			{ name: 'Valid Widget', price: 49.99, category: 'electronics' }, // good item
 		];
-		const { errors } = CreateProductDto.createMany(badData);
+		const { errors } = CreateProductDto.createMany(badData as any[]);
 		expect(errors.length).toBeGreaterThan(0); // 'X' too short, -1 fails @QRule
 	});
 });
@@ -234,7 +236,7 @@ describe('TanStack Query — queryFn: list with createMany()', () => {
 describe('TanStack Query — useMutation: validate before mutate', () => {
 	// Simulate mutationFn: build DTO → validate → "send" to API
 	async function createProductMutation(
-		data: object
+		data: Record<string, unknown>
 	): Promise<IProduct | null> {
 		await Promise.resolve(); // simulate async context (e.g. network call)
 		const dto = new CreateProductDto(data);
@@ -354,18 +356,18 @@ describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () =
 	test('serialize() output can reconstruct the same DTO', () => {
 		const original = new ProductDto(rawProduct);
 		const cached = original.serialize();
-		const rehydrated = new ProductDto(cached as object);
+		const rehydrated = new ProductDto(cached as Record<string, unknown>);
 		expect(rehydrated.id).toBe(original.id);
 		expect(rehydrated.price).toBe(original.price);
 		expect(rehydrated.displayPrice).toBe(original.displayPrice);
 	});
 
 	test('cached list can be rehydrated as new DTO instances', () => {
-		const { instances } = ProductDto.createMany(rawProductList);
+		const { instances } = ProductDto.createMany(rawProductList as any[]);
 		const cachedList = instances.map((dto) => dto.serialize());
 		// Simulate reading from cache
 		const rehydrated = cachedList.map(
-			(item) => new ProductDto(item as object)
+			(item) => new ProductDto(item as Record<string, unknown>)
 		);
 		expect(rehydrated).toHaveLength(3);
 		expect(rehydrated[0]?.price).toBe(29.99);
@@ -373,7 +375,9 @@ describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () =
 
 	test('rehydrated DTO has correct @QComputed values', () => {
 		const original = new ProductDto(rawProduct);
-		const rehydrated = new ProductDto(original.serialize() as object);
+		const rehydrated = new ProductDto(
+			original.serialize() as Record<string, unknown>
+		);
 		expect(rehydrated.displayPrice).toBe('$29.99');
 	});
 });
@@ -384,26 +388,34 @@ describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () =
 
 describe('TanStack Query — select: transform cached data', () => {
 	// Simulate useQuery with select: (data) => data.map(raw => new ProductDto(raw))
-	function selectProducts(rawList: object[]): ProductDto[] {
+	function selectProducts(rawList: Record<string, unknown>[]): ProductDto[] {
 		return rawList.map((raw) => new ProductDto(raw));
 	}
 
-	function selectCheapProducts(rawList: object[]): ProductDto[] {
+	function selectCheapProducts(
+		rawList: Record<string, unknown>[]
+	): ProductDto[] {
 		return selectProducts(rawList).filter((dto) => dto.price < 30);
 	}
 
 	test('select returns typed DTO instances', () => {
-		const products = selectProducts(rawProductList);
+		const products = selectProducts(
+			rawProductList as Record<string, unknown>[]
+		);
 		expect(products[0]).toBeInstanceOf(ProductDto);
 	});
 
 	test('select filtering works on coerced number fields', () => {
-		const cheap = selectCheapProducts(rawProductList);
+		const cheap = selectCheapProducts(
+			rawProductList as Record<string, unknown>[]
+		);
 		expect(cheap).toHaveLength(2); // 29.99 and 9.50
 	});
 
 	test('select result has @QComputed displayPrice', () => {
-		const products = selectProducts(rawProductList);
+		const products = selectProducts(
+			rawProductList as Record<string, unknown>[]
+		);
 		expect(products[1]?.displayPrice).toBe('$9.50');
 	});
 });
@@ -420,7 +432,7 @@ describe('TanStack Query — Infinite queries: createMany() per page', () => {
 
 	function fetchPage(page: number): IPage {
 		const pageData = rawProductList.slice((page - 1) * 2, page * 2);
-		const { instances, errors } = ProductDto.createMany(pageData);
+		const { instances, errors } = ProductDto.createMany(pageData as any[]);
 		if (errors.length > 0) throw new Error('Parse error');
 		return {
 			items: instances.map((dto) => dto.serialize() as IProduct),

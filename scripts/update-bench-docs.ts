@@ -15,19 +15,17 @@
  * Usage: bun run bench:update
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
 
 const ROOT = resolve(import.meta.dir, '..');
+const BENCHMARKS_DIR = resolve(ROOT, 'tests/performance/benchmarks');
+const REGISTRY_PATH = resolve(BENCHMARKS_DIR, 'registry.ts');
 const CONSTANTS_PATH = resolve(
 	ROOT,
 	'docs-vitepress/.vitepress/components/BenchmarkChart/benchmark-chart.constants.ts'
-);
-const TEST_PATH = resolve(
-	ROOT,
-	'tests/performance/comparison-benchmarks.test.ts'
 );
 const I18N_EN_PATH = resolve(ROOT, 'docs-vitepress/.vitepress/i18n/en.ts');
 const I18N_ES_PATH = resolve(ROOT, 'docs-vitepress/.vitepress/i18n/es.ts');
@@ -145,69 +143,68 @@ function fmt(num: number): string {
 
 // ─── Scenario serialization ──────────────────────────────────────────────────
 
-function serializeScenarios(scens: IScenario[]): string {
-	const lines: string[] = ['export const scenarios: IBenchScenario[] = ['];
-	for (const scn of scens) {
-		lines.push('\t{');
-		lines.push(`\t\tkey: '${scn.key}',`);
-		lines.push(`\t\tbenchNum: ${scn.benchNum},`);
-		lines.push(
-			`\t\tappTypes: [${scn.appTypes.map((apt) => `'${apt}'`).join(', ')}],`
-		);
-		lines.push('\t\tvalues: {');
-		for (const [lib, val] of Object.entries(scn.values)) {
-			const needsQuotes = /[^a-zA-Z0-9$_]/.test(lib);
-			const keyStr = needsQuotes ? `'${lib}'` : lib;
-			const valStr = val === null ? 'null' : fmt(val);
-			lines.push(`\t\t\t${keyStr}: ${valStr},`);
-		}
-		lines.push('\t\t},');
-		lines.push('\t},');
+function serializeDefFile(scn: IScenario): string {
+	const lines: string[] = [
+		"import type { IBenchScenario } from '../bench.types';",
+		'',
+		'export const scenario: IBenchScenario = {',
+		`\tkey: '${scn.key}',`,
+		`\tbenchNum: ${scn.benchNum},`,
+		`\tappTypes: [${scn.appTypes.map((apt) => `'${apt}'`).join(', ')}],`,
+		'\tvalues: {',
+	];
+	const nonNull = Object.entries(scn.values).filter(
+		([, val]) => val !== null
+	);
+	const nullPad = Object.entries(scn.values).filter(
+		([, val]) => val === null
+	);
+	for (const [lib, val] of [...nonNull, ...nullPad]) {
+		const needsQuotes = /[^a-zA-Z0-9$_]/.test(lib);
+		const keyStr = needsQuotes ? `'${lib}'` : lib;
+		const valStr = val === null ? 'null' : fmt(val);
+		lines.push(`\t\t${keyStr}: ${valStr},`);
 	}
-	lines.push('];');
+	lines.push('\t},');
+	lines.push('};');
+	lines.push('');
 	return lines.join('\n');
 }
 
-// ─── Replace only scenarios block in constants file ──────────────────────────
+function writeDefFile(scn: IScenario): void {
+	const dir = resolve(BENCHMARKS_DIR, scn.key);
+	const file = resolve(dir, `${scn.key}.def.ts`);
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(file, serializeDefFile(scn), 'utf-8');
+}
 
-function replaceScenarios(source: string, newBlock: string): string {
-	const OPEN = 'export const scenarios: IBenchScenario[] = [';
-	const start = source.indexOf(OPEN);
-	if (start === -1)
-		throw new Error('Cannot find scenarios block in constants file');
+function addToRegistry(scn: IScenario): void {
+	let source = readFileSync(REGISTRY_PATH, 'utf-8');
 
-	// Start bracket counting from the array literal '[', NOT from 'export const'
-	// (to avoid counting the '[' inside 'IBenchScenario[]' as depth=1)
-	const arrayStart = start + OPEN.length - 1; // index of the '[' that opens the array
-
-	let depth = 0;
-	let inStr = false;
-	let strCh = '';
-	let end = -1;
-
-	for (let idx = arrayStart; idx < source.length; idx++) {
-		const chr = source[idx]!;
-		if (inStr) {
-			if (chr === strCh && source[idx - 1] !== '\\') inStr = false;
-			continue;
-		}
-		if (chr === '"' || chr === "'" || chr === '`') {
-			inStr = true;
-			strCh = chr;
-			continue;
-		}
-		if (chr === '[') depth++;
-		if (chr === ']') {
-			depth--;
-			if (depth === 0) {
-				end = source[idx + 1] === ';' ? idx + 2 : idx + 1;
-				break;
-			}
+	// Add import after the last existing def import line
+	const importRe = /^import \{ scenario as \w+Def \} from '\.\/.+\.def';/gm;
+	const allImports = [...source.matchAll(importRe)];
+	if (allImports.length > 0) {
+		const lastImport = allImports[allImports.length - 1]!;
+		const newImport = `import { scenario as ${scn.key}Def } from './${scn.key}/${scn.key}.def';`;
+		if (!source.includes(newImport)) {
+			const insertAt = lastImport.index + lastImport[0].length;
+			source =
+				source.slice(0, insertAt) +
+				'\n' +
+				newImport +
+				source.slice(insertAt);
 		}
 	}
+	const rawEnd = source.lastIndexOf('];');
+	if (rawEnd !== -1 && !source.includes(`${scn.key}Def,`)) {
+		source =
+			source.slice(0, rawEnd) +
+			`\t${scn.key}Def,\n` +
+			source.slice(rawEnd);
+	}
 
-	if (end === -1) throw new Error('Cannot find end of scenarios block');
-	return source.slice(0, start) + newBlock + source.slice(end);
+	writeFileSync(REGISTRY_PATH, source, 'utf-8');
 }
 
 // ─── i18n stub insertion ──────────────────────────────────────────────────────
@@ -293,8 +290,15 @@ async function main(): Promise<void> {
 		byBench.set(rdg.benchNum, grp);
 	}
 
-	// Parse bench descriptions from test file (for key derivation on new benches)
-	const testSource = readFileSync(TEST_PATH, 'utf-8');
+	// Parse bench descriptions from all .bench.ts files (for key derivation on new benches)
+	const testSource = readdirSync(BENCHMARKS_DIR, { recursive: true })
+		.filter(
+			(entry) => typeof entry === 'string' && entry.endsWith('.bench.ts')
+		)
+		.map((entry) =>
+			readFileSync(resolve(BENCHMARKS_DIR, entry as string), 'utf-8')
+		)
+		.join('\n');
 	const descriptions = parseBenchDescriptions(testSource);
 
 	// Load current scenarios via dynamic import (Bun handles TS natively)
@@ -344,7 +348,7 @@ async function main(): Promise<void> {
 				);
 			}
 		} else {
-			// New benchmark -> create scenario automatically
+			// New benchmark -> create scenario + .def.ts + add to registry automatically
 			const key = deriveKey(benchNum);
 			const desc = descriptions.get(benchNum) ?? `Benchmark ${benchNum}`;
 			const values: Record<string, number | null> = {};
@@ -375,21 +379,31 @@ async function main(): Promise<void> {
 		scn.values = Object.fromEntries([...nonNull, ...nulls]);
 	}
 
-	// Sort scenarios by benchNum
-	updated.sort((asc, bsc) => asc.benchNum - bsc.benchNum);
-
-	// Write only the scenarios block back to constants (rest is untouched)
-	const constantsSource = readFileSync(CONSTANTS_PATH, 'utf-8');
-	const newConstants = replaceScenarios(
-		constantsSource,
-		serializeScenarios(updated)
-	);
-	writeFileSync(CONSTANTS_PATH, newConstants, 'utf-8');
+	// Write each scenario back to its individual .def.ts file
+	let updatedCount = 0;
+	const newScenarios: IScenario[] = [];
+	for (const scn of updated) {
+		const defPath = resolve(BENCHMARKS_DIR, scn.key, `${scn.key}.def.ts`);
+		const isNew = !currentScenarios.some((cur) => cur.key === scn.key);
+		writeDefFile(scn);
+		if (isNew) {
+			newScenarios.push(scn);
+			addToRegistry(scn);
+			log.push(
+				`  📁 Created ${defPath.replace(ROOT + '/', '')} + added to registry.ts`
+			);
+		}
+		updatedCount++;
+	}
 
 	console.log('\n📊 Update summary:');
 	for (const line of log) console.log(line);
 	console.log(
-		`\n✅ benchmark-chart.constants.ts updated (${updated.length} scenarios)`
+		`\n✅ ${updatedCount} .def.ts file${updatedCount !== 1 ? 's' : ''} updated${
+			newScenarios.length > 0
+				? ` (${newScenarios.length} new — add their .bench.ts files manually)`
+				: ''
+		}`
 	);
 }
 

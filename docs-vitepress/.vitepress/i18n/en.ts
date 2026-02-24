@@ -119,6 +119,34 @@ export const en = {
 				label: 'Type-Safe Serialization Fidelity (1k)',
 				notes: '1k iterations — type fidelity. Plain JSON.parse/stringify loses Date→string, BigInt throws, Map/Set→{}. superjson preserves most types. QuickModel preserves Date, BigInt, Map, Set, RegExp natively with zero extra code.',
 			},
+			aliasMapping: {
+				label: 'Field Alias Mapping / @QAlias (2k)',
+				notes: '2k instantiations — snake_case API response → camelCase model. Plain JS: fastest but requires a hardcoded mapper that breaks on every schema change. class-transformer: copies to class instance but keeps original key names without @Expose+@Transform setup. QuickModel @QAlias: zero-boilerplate rename at instantiation, compatible with type coercion and validation.',
+			},
+			isDirty: {
+				label: 'Change Detection / isDirty() (5k)',
+				notes: '5k iterations — tracking if a model was mutated. Plain JS: JSON.stringify comparison — O(n) serialization on every check, grows with object size. QuickModel patch()+isDirty(): O(1) field-level Set tracking, reset() restores to initial state, getDirtyFields() lists changed fields. isDirty("name") checks a single field.',
+			},
+			nestedConstruct: {
+				label: 'Nested Model Construction (1k)',
+				notes: '1k instantiations — Order with BigInt total, Date placedAt, nested customer object and items array. Plain JS: manual BigInt()+new Date() per field — correct result but brittle. class-transformer: plainToInstance() copies to class but BigInt stays as string (no native transformer). QuickModel @Quick({ total: "bigint", placedAt: Date }): one decorator handles all type coercion automatically.',
+			},
+			asyncRules: {
+				label: 'Async Rules Parallel / qCheckRulesAsync (1k)',
+				notes: '1k iterations — async rule orchestration with instant-resolving predicates (measures orchestration overhead). QuickModel parallel mode: Promise.allSettled over all @QRule decorators — optimal for IO-bound rules. joi validateAsync(): Promise per field, sequential. yup validate() async: sequential rule execution. QM unique: timeoutMs per rule + serial/parallel mode switch.',
+			},
+			bulkConstruct: {
+				label: 'Bulk Construction / createMany (5 × 500)',
+				notes: '5 cycles of 500 objects — bulk typed import from raw JSON. Plain JS: plain object spread — fastest but no typing or validation. class-transformer: plainToInstance array — maps to class but no integrity checks, BigInt unsupported. Zod: safeParse per item — validates but returns plain objects, not typed instances with methods. QuickModel createMany(): typed instances + integrity check + business rules, separates valid/invalid automatically.',
+			},
+			schemaMultiFormat: {
+				label: 'Schema Multi-Format / getSchema() × 7 (2k)',
+				notes: '2k iterations — exporting schema in 7 formats sequentially: JSON Schema, Zod, OpenAPI 3.0, TypeScript interface, GraphQL SDL, MongoDB, AJV. QuickModel is unique: one call covers all 7 formats from a single decorated class. TypeBox: the Type object IS the schema — O(1) access but only JSON Schema natively. Plain JS: static object literal — 1 format, no reuse. No other library generates multi-format schemas from decorated classes.',
+			},
+			validationReport: {
+				label: 'Structured Error Report / validationReport() (3k)',
+				notes: '3k iterations with invalid data — getting categorized error objects. QuickModel validationReport(): returns { valid, integrity[], rules: { valid, errors[] } } — two separate categories: type/coercion errors (integrity) and business logic errors (@QRule). Zod safeParse(): flat ZodError.issues array, no categories. yup validateSync(abortEarly:false): flat ValidationError.errors. joi validate(abortEarly:false): flat error.details array. Only QuickModel distinguishes integrity vs rule failures in a single typed call.',
+			},
 		},
 
 		// ─── Library descriptions, pros and cons ─────────────────

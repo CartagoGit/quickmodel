@@ -92,6 +92,43 @@ export type IQSerializedInterface<T> = {
 };
 
 /**
+ * Maps a complete interface to its IQSerialized version, remapping keys according to
+ * the `alias` map passed to `@Quick()`. This is the return type of `serialize()` when
+ * `@Quick` is used with the `alias` option.
+ *
+ * Keys present in `TAliasMap` are renamed to their alias values; all other keys are kept.
+ *
+ * @template T - The model interface (property names)
+ * @template TAliasMap - Literal map `{ propertyName: 'alias_name' }` from `@Quick({ alias: ... })`
+ *
+ * @example
+ * ```typescript
+ * interface IUser { firstName: string; lastName: string; }
+ *
+ * @Quick({}, { alias: { firstName: 'first_name', lastName: 'last_name' } })
+ * class User extends QModel<IUser> {
+ *   declare firstName: string;
+ *   declare lastName: string;
+ * }
+ *
+ * const user = new User({ first_name: 'Dave', last_name: 'Jones' });
+ * const json = user.serialize();
+ * // Type: { first_name: string; last_name: string }  ✅  IDE autocomplete correcto
+ * json.first_name; // 'Dave'
+ * ```
+ */
+export type IQAliasedSerializedInterface<
+	T,
+	TAliasMap extends Record<string, string> = Record<never, never>,
+> = {
+	[K in keyof T as K extends string
+		? K extends keyof TAliasMap
+			? TAliasMap[K]
+			: K
+		: K]: IQSerialized<T[K]>;
+};
+
+/**
  * Mapea un tipo serializado de vuelta a su tipo original
  */
 export type IDeserialized<T> = T; // Deserialization handled at runtime with transformers

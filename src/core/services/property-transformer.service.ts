@@ -42,6 +42,14 @@ interface IQPropTransformMeta {
 	 * lookup inside the arrayElementClass branch.
 	 */
 	resolvedDesignType: any;
+	/**
+	 * OPT: Pre-computed fast-path type string for plain primitive fields.
+	 * When non-null, if `typeof value === primitivePassthroughType` the field can be
+	 * returned immediately without going through the full transform pipeline.
+	 * Conditions: no customTransformer, no fieldType, no arrayElementClass, no customTransformerFn in options,
+	 * and resolvedDesignType is String | Number | Boolean.
+	 */
+	primitivePassthroughType: 'string' | 'number' | 'boolean' | null;
 	/** Whether the cache entry has been built */
 	built: true;
 }
@@ -60,91 +68,104 @@ function _getPropTransformMeta(
 		classMap = new Map();
 		_PROP_TRANSFORM_META.set(ctor, classMap);
 	}
-	let meta = classMap.get(targetKey);
-	if (!meta) {
-		// Use the prototype to read decorator metadata (same as reading from any instance)
-		const proto = (ctor as { prototype: object }).prototype;
-		const rawArrayElementClass = Reflect.getMetadata(
-			'arrayElementClass',
-			proto,
-			targetKey
-		);
-		const rawArrayElementTypes = Reflect.getMetadata(
-			'arrayElementTypes',
-			proto,
-			targetKey
-		);
-		const rawDesignType = Reflect.getMetadata(
-			'design:type',
-			proto,
-			targetKey
-		);
+	const cached = classMap.get(targetKey);
+	if (cached) return cached;
 
-		// Resolve QUICK_TYPE_MAP_KEY fallback once — avoids per-call Reflect.getMetadata in hot path
-		let resolvedArrayElementClass = rawArrayElementClass;
-		let resolvedArrayElementTypes = rawArrayElementTypes;
-		let resolvedDesignType = rawDesignType;
+	// Use the prototype to read decorator metadata (same as reading from any instance)
+	const proto = (ctor as { prototype: object }).prototype;
+	const rawArrayElementClass = Reflect.getMetadata(
+		'arrayElementClass',
+		proto,
+		targetKey
+	);
+	const rawArrayElementTypes = Reflect.getMetadata(
+		'arrayElementTypes',
+		proto,
+		targetKey
+	);
+	const rawDesignType = Reflect.getMetadata('design:type', proto, targetKey);
 
-		if (!resolvedArrayElementClass) {
-			const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, ctor);
-			if (typeMap && typeMap[targetKey]) {
-				const mappedType = typeMap[targetKey];
-				if (Array.isArray(mappedType) && mappedType.length > 0) {
-					resolvedArrayElementClass = mappedType[0];
-					if (mappedType.length > 1) {
-						resolvedArrayElementTypes = mappedType;
-					}
-					// If no designType set, Array type is implied by the typeMap array notation
-					if (!resolvedDesignType) {
-						resolvedDesignType = Array;
-					}
-				} else if (typeof mappedType === 'function') {
-					const hasPrototype =
-						mappedType.prototype &&
-						mappedType.prototype.constructor === mappedType;
-					const name = mappedType.name.toLowerCase();
-					const isKnownNative =
-						[
-							'date',
-							'regexp',
-							'set',
-							'map',
-							'bigint',
-							'url',
-							'error',
-							'symbol',
-							'arraybuffer',
-							'dataview',
-						].includes(name) || name.includes('array');
-					if (hasPrototype && !isKnownNative) {
-						resolvedArrayElementClass = mappedType;
-					}
+	// Resolve QUICK_TYPE_MAP_KEY fallback once — avoids per-call Reflect.getMetadata in hot path
+	let resolvedArrayElementClass = rawArrayElementClass;
+	let resolvedArrayElementTypes = rawArrayElementTypes;
+	let resolvedDesignType = rawDesignType;
+
+	if (!resolvedArrayElementClass) {
+		const typeMap = Reflect.getMetadata(QUICK_TYPE_MAP_KEY, ctor);
+		if (typeMap && typeMap[targetKey]) {
+			const mappedType = typeMap[targetKey];
+			if (Array.isArray(mappedType) && mappedType.length > 0) {
+				resolvedArrayElementClass = mappedType[0];
+				if (mappedType.length > 1) {
+					resolvedArrayElementTypes = mappedType;
+				}
+				// If no designType set, Array type is implied by the typeMap array notation
+				if (!resolvedDesignType) {
+					resolvedDesignType = Array;
+				}
+			} else if (typeof mappedType === 'function') {
+				const hasPrototype =
+					mappedType.prototype &&
+					mappedType.prototype.constructor === mappedType;
+				const name = mappedType.name.toLowerCase();
+				const isKnownNative =
+					[
+						'date',
+						'regexp',
+						'set',
+						'map',
+						'bigint',
+						'url',
+						'error',
+						'symbol',
+						'arraybuffer',
+						'dataview',
+					].includes(name) || name.includes('array');
+				if (hasPrototype && !isKnownNative) {
+					resolvedArrayElementClass = mappedType;
 				}
 			}
 		}
-
-		meta = {
-			customTransformer: Reflect.getMetadata(
-				'customTransformer',
-				proto,
-				targetKey
-			),
-			fieldType: Reflect.getMetadata('fieldType', proto, targetKey),
-			arrayElementClass: rawArrayElementClass,
-			arrayElementTypes: rawArrayElementTypes,
-			designType: rawDesignType,
-			arrayNestingDepth: Reflect.getMetadata(
-				'arrayNestingDepth',
-				proto,
-				targetKey
-			),
-			resolvedArrayElementClass,
-			resolvedArrayElementTypes,
-			resolvedDesignType,
-			built: true,
-		};
-		classMap.set(targetKey, meta);
 	}
+
+	const _rawCustomTransformer = Reflect.getMetadata(
+		'customTransformer',
+		proto,
+		targetKey
+	);
+	const _rawFieldType = Reflect.getMetadata('fieldType', proto, targetKey);
+	const _rawArrayNestingDepth = Reflect.getMetadata(
+		'arrayNestingDepth',
+		proto,
+		targetKey
+	);
+
+	// OPT: compute primitive pass-through flag once at cache build time
+	let _primPassthrough: 'string' | 'number' | 'boolean' | null = null;
+	if (
+		!_rawCustomTransformer &&
+		!_rawFieldType &&
+		!resolvedArrayElementClass
+	) {
+		if (resolvedDesignType === String) _primPassthrough = 'string';
+		else if (resolvedDesignType === Number) _primPassthrough = 'number';
+		else if (resolvedDesignType === Boolean) _primPassthrough = 'boolean';
+	}
+
+	const meta: IQPropTransformMeta = {
+		customTransformer: _rawCustomTransformer,
+		fieldType: _rawFieldType,
+		arrayElementClass: rawArrayElementClass,
+		arrayElementTypes: rawArrayElementTypes,
+		designType: rawDesignType,
+		arrayNestingDepth: _rawArrayNestingDepth,
+		resolvedArrayElementClass,
+		resolvedArrayElementTypes,
+		resolvedDesignType,
+		primitivePassthroughType: _primPassthrough,
+		built: true,
+	};
+	classMap.set(targetKey, meta);
 	return meta;
 }
 
@@ -281,8 +302,31 @@ export class PropertyTransformer {
 							instance,
 							targetKey
 						),
+						// Plain-object fallback: disable primitive passthrough (unknown options)
+						primitivePassthroughType: null,
 						built: true,
 					};
+
+		// OPT: fast-path — most common case: @Quick() on string/number/boolean field
+		// already at correct JS type. Eliminates ~15 conditional checks per field.
+		// Guards:
+		//   - primitivePassthroughType pre-computed at cache build (no customTransformer/fieldType/arrayClass)
+		//   - no options-level transformer override
+		//   - string normalization is already applied upstream in population.service before this call
+		//   - for strings: skip on >5MB (PrimitiveTransformer security check)
+		const _ppt = _propMeta.primitivePassthroughType;
+		if (
+			_ppt !== null &&
+			typeof value === _ppt &&
+			!options.transformers?.[targetKey]
+		) {
+			if (
+				_ppt !== 'string' ||
+				(value as string).length < 5242880 /* 5MB */
+			) {
+				return value;
+			}
+		}
 
 		// 0. 🔥 CHECK: Custom transformer from options (High Priority)
 		const customTransformerFn = options.transformers?.[targetKey];

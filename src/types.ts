@@ -29,6 +29,7 @@ export type { IQNativeConstructor } from './core/constants/native-types';
 // Serialization Types
 export type {
 	IQSerializedInterface,
+	IQAliasedSerializedInterface,
 	IQModelData,
 	IQSerialized,
 } from './core/interfaces/serialization-types.interface';

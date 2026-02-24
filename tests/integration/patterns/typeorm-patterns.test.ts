@@ -67,27 +67,27 @@ interface ICreateUser {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class UserEntityDto extends QModel<IUserEntity> {
-	@QField({ label: 'ID', required: true })
+	@QField({ widget: 'input', label: 'ID', required: true })
 	declare id: number;
 
 	@QGroup('identity')
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
 	@QGroup('identity')
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email'
 	)
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 0 && val <= 120, 'Age out of range')
 	declare age: number;
 
-	@QField({ label: 'Role', required: true })
+	@QField({ widget: 'input', label: 'Role', required: true })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -97,7 +97,7 @@ class UserEntityDto extends QModel<IUserEntity> {
 	@QField({ label: 'Active', widget: 'checkbox' })
 	declare active: boolean;
 
-	@QField({ label: 'Score' })
+	@QField({ widget: 'input', label: 'Score' })
 	declare score: number;
 
 	declare createdAt: Date;
@@ -114,22 +114,22 @@ class UserEntityDto extends QModel<IUserEntity> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateUserDto extends QModel<ICreateUser> {
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	declare name: string;
 
-	@QField({ label: 'Email', required: true })
+	@QField({ widget: 'input', label: 'Email', required: true })
 	@QRule(
 		(val: string) => val.includes('@') && val.includes('.'),
 		'Invalid email format'
 	)
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18 or older')
 	declare age: number;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['admin', 'user', 'guest'].includes(val),
 		'Invalid role'
@@ -150,22 +150,22 @@ class CreateUserDto extends QModel<ICreateUser> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class PostEntityDto extends QModel<IPostEntity> {
-	@QField({ label: 'ID', required: true })
+	@QField({ widget: 'input', label: 'ID', required: true })
 	declare id: number;
 
-	@QField({ label: 'Title', required: true })
+	@QField({ widget: 'input', label: 'Title', required: true })
 	declare title: string;
 
-	@QField({ label: 'Body', required: true })
+	@QField({ widget: 'input', label: 'Body', required: true })
 	declare body: string;
 
-	@QField({ label: 'Author ID', required: true })
+	@QField({ widget: 'input', label: 'Author ID', required: true })
 	declare authorId: number;
 
 	@QField({ label: 'Published', widget: 'checkbox' })
 	declare published: boolean;
 
-	@QField({ label: 'Views' })
+	@QField({ widget: 'input', label: 'Views' })
 	declare views: number;
 
 	declare createdAt: Date;
@@ -438,7 +438,9 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 2, email: 'b@b.com' }),
 			makeEntity({ id: 3, email: 'c@c.com' }),
 		];
-		const { instances, errors } = UserEntityDto.createMany(seedData);
+		const { instances, errors } = UserEntityDto.createMany(
+			seedData as any[]
+		);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
 	});
@@ -448,7 +450,7 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 1, active: 1 as unknown as boolean }),
 			makeEntity({ id: 2, active: 0 as unknown as boolean }),
 		];
-		const { instances } = UserEntityDto.createMany(seedData);
+		const { instances } = UserEntityDto.createMany(seedData as any[]);
 		expect(instances[0]?.active).toBe(true);
 		expect(instances[1]?.active).toBe(false);
 	});
@@ -458,7 +460,7 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 1 }),
 			makeEntity({ id: 2, email: 'two@x.com' }),
 		];
-		const { instances } = UserEntityDto.createMany(seedData);
+		const { instances } = UserEntityDto.createMany(seedData as any[]);
 		const payloads = instances.map((dto) => dto.toInterface());
 		expect(payloads.length).toBe(2);
 		expect(payloads[0]?.name).toBe('Alice Example');
@@ -496,7 +498,7 @@ describe('@QComputed() in DTO vs virtual column in Entity', () => {
 		const dto = new UserEntityDto(
 			makeEntity({ name: 'Dan', role: 'user' })
 		);
-		const plain = dto.toInterface() as Record<string, unknown>;
+		const plain = dto.toInterface() as unknown as Record<string, unknown>;
 		// @QComputed fields are NOT in toInterface(), unlike @VirtualColumn in TypeORM
 		// This is by design — they are derived at runtime, not stored
 		expect(typeof plain).toBe('object');

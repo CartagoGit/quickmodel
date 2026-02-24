@@ -1,0 +1,29 @@
+import type { IBenchScenario } from '../bench.types';
+
+export const scenario: IBenchScenario = {
+	key: 'validationReport',
+	benchNum: 15,
+	appTypes: ['all', 'api', 'ddd'],
+	values: {
+		QuickModel: 900_000,
+		Zod: 600_000,
+		joi: 150_000,
+		yup: 50_000,
+		valibot: null,
+		TypeBox: null,
+		'Plain JS': null,
+		'class-transformer': null,
+		anktype: null,
+		superjson: null,
+		'class-validator': null,
+		vest: null,
+		'faker (manual)': null,
+		'QuickModel @QAlias': null,
+		'Plain JS JSON.stringify': null,
+		'QuickModel isDirty': null,
+		'yup async': null,
+		'joi async': null,
+		'QuickModel async': null,
+		'QuickModel createMany': null,
+	},
+};

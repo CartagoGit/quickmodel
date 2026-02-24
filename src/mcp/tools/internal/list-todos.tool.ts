@@ -109,9 +109,9 @@ export class QListTodosTool extends QAbstractTool<
 
 	private collectFiles(dir: string, exts: string[]): string[] {
 		const result: string[] = [];
-		let entries: ReturnType<typeof readdirSync>;
+		let entries: string[];
 		try {
-			entries = readdirSync(dir);
+			entries = readdirSync(dir, { withFileTypes: false }) as string[];
 		} catch {
 			return result;
 		}

@@ -127,19 +127,19 @@ interface IInvoiceDto {
 	{ unknownPropertyPolicy: 'strip' }
 )
 class InvoiceDto extends QModel<IInvoiceDto> {
-	@QField({ label: 'Invoice ID', required: true })
+	@QField({ widget: 'input', label: 'Invoice ID', required: true })
 	@QRule(
 		(val: string) => /^INV-\d{6}$/.test(val),
 		'Invalid invoice ID format'
 	)
 	declare invoiceId: string;
 
-	@QField({ label: 'Total Amount', required: true })
+	@QField({ widget: 'input', label: 'Total Amount', required: true })
 	@QRule((val: number) => val >= 0, 'Total amount cannot be negative')
 	@QRule((val: number) => val <= 10_000_000, 'Total amount exceeds maximum')
 	declare totalAmount: number;
 
-	@QField({ label: 'VAT Rate' })
+	@QField({ widget: 'input', label: 'VAT Rate' })
 	@QRule(
 		(val: number) => val >= 0 && val <= 100,
 		'VAT rate must be between 0 and 100'

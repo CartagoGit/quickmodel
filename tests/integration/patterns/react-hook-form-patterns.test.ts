@@ -39,7 +39,7 @@ interface IContactForm {
 
 // Plain class (no QModel) — works with @QRule and qCheckRules standalone
 class ContactForm {
-	@QField({ label: 'Full Name', required: true })
+	@QField({ widget: 'input', label: 'Full Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
 	name = '';
 
@@ -50,7 +50,7 @@ class ContactForm {
 	)
 	email = '';
 
-	@QField({ label: 'Subject', required: true })
+	@QField({ widget: 'input', label: 'Subject', required: true })
 	@QRule(
 		(val: string) => ['support', 'sales', 'general'].includes(val),
 		'Invalid subject'
@@ -75,7 +75,7 @@ class ContactForm {
 )
 class UserSignupDto extends QModel<IUserSignup> {
 	@QGroup('account')
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule(
 		(val: string) => val.length >= 3,
 		'Username must be at least 3 characters'
@@ -102,13 +102,13 @@ class UserSignupDto extends QModel<IUserSignup> {
 	declare password: string;
 
 	@QGroup('profile')
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18 or older')
 	@QRule((val: number) => val <= 120, 'Age out of range')
 	declare age: number;
 
 	@QGroup('profile')
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['user', 'admin', 'editor'].includes(val),
 		'Invalid role'
@@ -202,7 +202,7 @@ describe('React Hook Form — validate adapter', () => {
 describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 	// Simulate handleSubmit(onValid) behavior
 	function simulateSubmit(
-		formData: object,
+		formData: Record<string, unknown>,
 		onValid: (dto: UserSignupDto) => void,
 		onError: (errors: Record<string, string>) => void
 	): void {
@@ -238,7 +238,9 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 			() => {}
 		);
 		expect(capturedDto).not.toBeNull();
-		expect(capturedDto?.username).toBe('alice_01');
+		expect((capturedDto as unknown as UserSignupDto).username).toBe(
+			'alice_01'
+		);
 	});
 
 	test('age is coerced from string to number on submit', () => {
@@ -256,8 +258,10 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 			},
 			() => {}
 		);
-		expect(typeof capturedDto?.age).toBe('number');
-		expect(capturedDto?.age).toBe(30);
+		expect(typeof (capturedDto as UserSignupDto | null)?.age).toBe(
+			'number'
+		);
+		expect((capturedDto as UserSignupDto | null)?.age).toBe(30);
 	});
 
 	test('extra fields are stripped on submit', () => {
@@ -276,9 +280,9 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 			},
 			() => {}
 		);
-		const serialized = capturedDto?.serialize() as
-			| Record<string, unknown>
-			| undefined;
+		const serialized = (
+			capturedDto as UserSignupDto | null
+		)?.serialize() as Record<string, unknown> | undefined;
 		expect(serialized).not.toHaveProperty('_csrf');
 	});
 
@@ -297,7 +301,9 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 			},
 			() => {}
 		);
-		expect(capturedDto?.displayName).toBe('@dave_04');
+		expect((capturedDto as UserSignupDto | null)?.displayName).toBe(
+			'@dave_04'
+		);
 	});
 
 	test('invalid data calls onError with field map', () => {

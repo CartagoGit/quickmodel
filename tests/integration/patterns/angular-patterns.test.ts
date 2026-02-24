@@ -26,7 +26,7 @@ import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 const FormGroups = qGroups('identity', 'contact', 'security');
 
 class UserForm {
-	@QField({ label: 'First Name', required: true })
+	@QField({ widget: 'input', label: 'First Name', required: true })
 	@QGroup(FormGroups.identity)
 	@QRule(
 		(value: string) => value.trim().length >= 2,
@@ -35,7 +35,7 @@ class UserForm {
 	@QRule((value: string) => value.trim().length <= 50, 'First name too long')
 	firstName = '';
 
-	@QField({ label: 'Last Name', required: true })
+	@QField({ widget: 'input', label: 'Last Name', required: true })
 	@QGroup(FormGroups.identity)
 	@QRule(
 		(value: string) => value.trim().length >= 2,
@@ -60,7 +60,7 @@ class UserForm {
 	@QRule((value: number) => value <= 120, 'Age must be realistic')
 	age = 0;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QGroup(FormGroups.security)
 	@QRule(
 		(value: string) => ['admin', 'editor', 'viewer'].includes(value),
@@ -299,10 +299,10 @@ class UserRecord extends QModel<IUserRecord> {
 class UserDataService {
 	private store = new Map<string, UserRecord>();
 
-	save(data: object): object {
+	save(data: Record<string, unknown>): object {
 		const record = new UserRecord(data);
 		this.store.set(
-			(record as Record<string, unknown>)['id'] as string,
+			(record as unknown as Record<string, unknown>)['id'] as string,
 			record
 		);
 		return record.serialize();
@@ -469,7 +469,7 @@ class ApiItemDto extends QModel<IApiItem> {
 	declare active: boolean;
 }
 
-function simulateHttpInterceptor(rawBody: object): ApiItemDto {
+function simulateHttpInterceptor(rawBody: Record<string, unknown>): ApiItemDto {
 	return new ApiItemDto(rawBody);
 }
 
@@ -537,7 +537,7 @@ describe('Angular — HttpClient interceptor coercion', () => {
 				active: false,
 			},
 		];
-		const { instances } = ApiItemDto.createMany(rawArr);
+		const { instances } = ApiItemDto.createMany(rawArr as any[]);
 		expect(instances).toHaveLength(2);
 		instances.forEach((item) =>
 			expect(item.createdAt).toBeInstanceOf(Date)
@@ -757,7 +757,7 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 				score: 72,
 			},
 		];
-		const { instances, errors } = UserRecord.createMany(raw);
+		const { instances, errors } = UserRecord.createMany(raw as any[]);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(0);
 	});
@@ -772,7 +772,7 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 				score: 95,
 			},
 		];
-		const { instances } = UserRecord.createMany(raw);
+		const { instances } = UserRecord.createMany(raw as any[]);
 		const out = instances[0].serialize() as Record<string, unknown>;
 		expect(out['tier']).toBe('gold');
 		expect(out['fullName']).toBe('Dave Brown');
@@ -788,7 +788,7 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 				score: 90,
 			},
 		];
-		const result = UserRecord.createMany(raw);
+		const result = UserRecord.createMany(raw as any[]);
 		expect(Array.isArray(result.instances)).toBe(true);
 		expect(Array.isArray(result.errors)).toBe(true);
 	});
@@ -803,7 +803,7 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 			{ name: 'Widget', qty: 10 },
 			{ name: '', qty: 5 },
 		];
-		const { errors } = ValidatedItem.createMany(mixed);
+		const { errors } = ValidatedItem.createMany(mixed as any[]);
 		expect(errors.length).toBeGreaterThan(0);
 	});
 });

@@ -71,7 +71,7 @@ class UserDto extends QModel<IUser> {
 	{ unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' }
 )
 class CreateUserDto extends QModel<ICreateUser> {
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule((val: string) => val.length >= 3, 'Username too short')
 	@QRule((val: string) => /^[a-z0-9_]+$/.test(val), 'Invalid username format')
 	declare username: string;
@@ -83,11 +83,11 @@ class CreateUserDto extends QModel<ICreateUser> {
 	)
 	declare email: string;
 
-	@QField({ label: 'Age' })
+	@QField({ widget: 'input', label: 'Age' })
 	@QRule((val: number) => val >= 18, 'Must be 18 or older')
 	declare age: number;
 
-	@QField({ label: 'Role' })
+	@QField({ widget: 'input', label: 'Role' })
 	@QRule(
 		(val: string) => ['user', 'admin', 'editor'].includes(val),
 		'Invalid role'
@@ -172,7 +172,7 @@ function createGetUserHandler(
 
 // Simulate http.get('/api/users', ...) handler
 function createListUsersHandler(rawUsers: object[]): IHandlerResponse<IUser[]> {
-	const { instances, errors } = UserDto.createMany(rawUsers);
+	const { instances, errors } = UserDto.createMany(rawUsers as any[]);
 	if (errors.length > 0) {
 		throw new Error(
 			`Fixture error: failed to parse ${errors.length} users`
@@ -186,7 +186,7 @@ function createListUsersHandler(rawUsers: object[]): IHandlerResponse<IUser[]> {
 
 // Simulate http.post('/api/users', ...) mutation handler
 function createPostUserHandler(
-	body: object
+	body: Record<string, unknown>
 ): IHandlerResponse<
 	IUser | { errors: Array<{ field: string; message: string }> }
 > {
@@ -231,7 +231,7 @@ describe('MSW — GET /api/users/:id handler', () => {
 
 	beforeEach(() => {
 		store = new Map();
-		const { instances } = UserDto.createMany(seedUsers);
+		const { instances } = UserDto.createMany(seedUsers as any[]);
 		instances.forEach((usr) => store.set(usr.id, usr));
 	});
 
@@ -435,26 +435,26 @@ describe('MSW — PostDto: Date coercion and @QComputed preview', () => {
 	];
 
 	test('createdAt is coerced to Date', () => {
-		const { instances } = PostDto.createMany(rawPosts);
+		const { instances } = PostDto.createMany(rawPosts as any[]);
 		instances.forEach((post) => {
 			expect(post.createdAt).toBeInstanceOf(Date);
 		});
 	});
 
 	test('preview truncates long body', () => {
-		const { instances } = PostDto.createMany(rawPosts);
+		const { instances } = PostDto.createMany(rawPosts as any[]);
 		const longPost = instances[0];
 		expect(longPost.preview).toHaveLength(83); // 80 + '...'
 	});
 
 	test('preview does not truncate short body', () => {
-		const { instances } = PostDto.createMany(rawPosts);
+		const { instances } = PostDto.createMany(rawPosts as any[]);
 		const shortPost = instances[1];
 		expect(shortPost.preview).toBe('Brief.');
 	});
 
 	test('serialized posts include preview', () => {
-		const { instances } = PostDto.createMany(rawPosts);
+		const { instances } = PostDto.createMany(rawPosts as any[]);
 		const serialized = instances.map((post) => post.serialize());
 		serialized.forEach((post) => {
 			expect(post).toHaveProperty('preview');

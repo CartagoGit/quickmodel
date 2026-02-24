@@ -250,7 +250,7 @@
 	"homepage": "https://github.com/CartagoGit/quickmodel#readme",
 	"lint-staged": {
 		"*.{ts,js,mjs}": [
-			"eslint --fix",
+			"eslint --fix --no-warn-ignored",
 			"prettier --write"
 		],
 		"*.{json,md}": [

@@ -13,6 +13,7 @@
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick, QRule, QComputed, QField } from '@/index';
+import type { IQAnyRecord } from '@/types';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
@@ -109,7 +110,7 @@ describe('React — useState controlled form validation', () => {
 // ---------------------------------------------------------------------------
 
 class ProductForm {
-	@QField({ label: 'Name', required: true })
+	@QField({ widget: 'input', label: 'Name', required: true })
 	@QRule(
 		(value: string) => value.trim().length >= 2,
 		'Name must be at least 2 characters'
@@ -129,7 +130,7 @@ class ProductForm {
 	)
 	stock = 0;
 
-	@QField({ label: 'Category' })
+	@QField({ widget: 'input', label: 'Category' })
 	@QRule(
 		(value: string) =>
 			['electronics', 'clothing', 'food', 'other'].includes(value),
@@ -234,7 +235,7 @@ class OrderItemDto extends QModel<IOrderItem> {
 }
 
 // Simulate Next.js Server Action receiving raw form data
-function processOrderAction(raw: object): {
+function processOrderAction(raw: Record<string, unknown>): {
 	success: boolean;
 	data?: object;
 	error?: string;
@@ -312,7 +313,7 @@ describe('React/Next.js — Server Action coercion', () => {
 				orderedAt: '2024-02-01T00:00:00.000Z',
 			},
 		];
-		const { instances, errors } = OrderItemDto.createMany(raw);
+		const { instances, errors } = OrderItemDto.createMany(raw as any[]);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(0);
 		const totals = instances.map(
@@ -358,7 +359,7 @@ class CartStore {
 		return [...this.items.values()].map((item) => item.serialize());
 	}
 
-	addItem(data: object): void {
+	addItem(data: Record<string, unknown>): void {
 		const item = new CartItem(data);
 		this.items.set(
 			(item as unknown as Record<string, unknown>)['sku'] as string,
@@ -457,7 +458,7 @@ class SignUpForm {
 	)
 	email = '';
 
-	@QField({ label: 'Username', required: true })
+	@QField({ widget: 'input', label: 'Username', required: true })
 	@QRule((value: string) => value.length >= 3, 'Username too short')
 	@QRule(
 		(value: string) => /^[a-z0-9_]+$/i.test(value),
@@ -509,7 +510,7 @@ describe('React — async email uniqueness validation', () => {
 // ---------------------------------------------------------------------------
 
 // Simulate React useState / useReducer pattern for QModel state
-class QModelHook<TInterface extends object> {
+class QModelHook<TInterface extends IQAnyRecord> {
 	private current: QModel<TInterface>;
 	private listeners: Array<() => void> = [];
 
@@ -572,7 +573,9 @@ describe('React — useQModel hook simulation', () => {
 				avatarUrl: '',
 			})
 		);
-		expect(hook.getSnapshot().displayName).toBe('Alice Smith');
+		expect((hook.getSnapshot() as unknown as UserProfile).displayName).toBe(
+			'Alice Smith'
+		);
 	});
 
 	test('update() via merge() creates new instance in store', () => {
@@ -585,7 +588,9 @@ describe('React — useQModel hook simulation', () => {
 			})
 		);
 		hook.update((prev) => prev.copy({ bio: 'New bio' }));
-		expect(hook.getSnapshot().bio).toBe('New bio');
+		expect((hook.getSnapshot() as unknown as UserProfile).bio).toBe(
+			'New bio'
+		);
 	});
 
 	test('@QComputed initials computed from displayName', () => {
