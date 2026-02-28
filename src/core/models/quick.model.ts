@@ -262,8 +262,22 @@ export abstract class QModel<
 		}
 		return QModel._mockGenInstance;
 	}
-	/** @internal Singleton integrity/validation service used by `checkIntegrity()` and `isValid()`. */
-	private static readonly validation = new IntegrityService();
+
+	/**
+	 * @internal Lazy-initialized integrity/validation service.
+	 * Defers construction of `IntegrityService` (and its 14+ transformer instances)
+	 * until the first call to `.checkIntegrity()` or `.isValid()`.
+	 * This reduces module startup cost for consumers who never validate integrity.
+	 */
+	private static _integrityInstance: IntegrityService | undefined;
+
+	/** @internal Returns the singleton IntegrityService, creating it on first access. */
+	private static get _validation(): IntegrityService {
+		if (!QModel._integrityInstance) {
+			QModel._integrityInstance = new IntegrityService();
+		}
+		return QModel._integrityInstance;
+	}
 
 	// Store initial state for change tracking and reset
 	/** @internal Snapshot of the serialized constructor input; used by `isDirty()` and `reset()`. */
@@ -1648,7 +1662,7 @@ export abstract class QModel<
 	 */
 	checkIntegrity(): IQIntegrityResult[] {
 		type IModelAsRecord = Record<string, unknown>;
-		return QModel.validation.checkIntegrity(
+		return QModel._validation.checkIntegrity(
 			this as unknown as IModelAsRecord
 		);
 	}
