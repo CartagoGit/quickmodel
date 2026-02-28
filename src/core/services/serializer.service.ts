@@ -138,6 +138,8 @@ import type { IFileModeOutput } from '@/core/helpers/form-data.helpers';
 /**
  * @internal Per-class static serialization metadata cached after first `serialize()` call.
  * Contains resolved model options, type map, excluded fields, and getter keys.
+ * @see {@link Serializer.serialize} — method that builds and reads this cache
+ * @see {@link IQSerializationOptions} — user-facing options this cache is derived from
  */
 interface IQSerializeClassMeta {
 	modelOptions: IQAdvancedOptions | undefined;
@@ -178,6 +180,8 @@ function _isQModelCtor(ctor: Function): boolean {
 /**
  * @internal Cached merged serialization options per constructor, QConfig-aware.
  * Invalidated when the QConfig reference changes. Avoids repeated `QConfig.get()` + spread on every call.
+ * @see {@link Serializer.serialize} — method that reads and invalidates this cache
+ * @see {@link IQSerializationOptions} — the merged options type stored in this cache
  */
 interface IQSerializeMergedOpts {
 	configRef: unknown;
@@ -202,6 +206,8 @@ const _DEPTH_ONLY_OPTS: ReadonlyArray<
  * @internal Returns child options for container-element recursion in serializeValue().
  * When options is undefined, returns a pre-allocated frozen depth-only object.
  * When options is provided, creates a new merged object (slow path, rare).
+ * @see {@link Serializer.serialize} — top-level entry point calling this recursively
+ * @see {@link IQSerializationOptions} — the options type this helper extends with depth
  */
 function _nextDepthOpts(
 	options: IQSerializationOptions | undefined,

@@ -4,11 +4,15 @@ import type { IQFormSchemaEntry } from '@/core/decorators/qfield.decorator';
 /**
  * Metadata key for storing the group name per-property.
  * @internal
+ * @see {@link QGroup} — decorator that writes this key
+ * @see {@link QGROUP_METADATA_KEY} — used by `getFormSchemaGrouped()` to read group assignments
  */
 export const QGROUP_METADATA_KEY = '__qgroup__';
 
 /**
  * A group entry returned by `getFormSchemaGrouped()`.
+ * @see {@link QModel.getFormSchemaGrouped} — returns an array of these entries
+ * @see {@link IQFormSchemaEntry} — the individual field entry shape within `fields`
  */
 export interface IQFormSchemaGroup {
 	/** Group name as passed to `@QGroup`. `undefined` for fields without a group. */

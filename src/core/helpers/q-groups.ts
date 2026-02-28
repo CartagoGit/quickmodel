@@ -33,6 +33,8 @@
  * - {@link qCheckRulesByGroup} — per-group validation results
  *
  * @module
+ * @see {@link qGroups} — main entry point for creating group maps
+ * @see {@link IQGroupsMap} — the returned data structure type
  */
 
 /**
@@ -40,6 +42,8 @@
  * Each key and value is the same literal string.
  *
  * @typeParam T - Union of group name literals.
+ * @see {@link qGroups} — factory that constructs this map at runtime
+ * @see {@link QGroup} — decorator that uses group names from this map
  */
 export type IQGroupsMap<T extends string> = { [K in T]: K };
 

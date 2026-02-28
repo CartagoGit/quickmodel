@@ -105,6 +105,8 @@ type IIntegrityContext = {
 
 /**
  * Options accepted by {@link IntegrityService.checkIntegrity}.
+ * @see {@link IntegrityService.checkIntegrity} — method that consumes these options
+ * @see {@link IQIntegrityResult} — shape of each result entry returned by the check
  */
 export interface IIntegrityOptions {
 	/**

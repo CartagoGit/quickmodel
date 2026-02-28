@@ -4,6 +4,8 @@ import { QAbstractTool } from '../abstract-tool';
 /**
  * Extracts all `declare <field>: <type>` declarations from model source code.
  * Returns a Map of fieldName → typeString.
+ * @see {@link extractQuickOptions} — extracts `@Quick({})` options from the same code
+ * @see {@link parseTransformers} — parses the options string into a Map
  */
 function extractFields(code: string): Map<string, string> {
 	const fields = new Map<string, string>();
@@ -21,6 +23,8 @@ function extractFields(code: string): Map<string, string> {
 /**
  * Extracts the @Quick({...}) options string from model source code.
  * Returns a plain string of the options object interior (e.g. "createdAt: Date, age: Number").
+ * @see {@link extractFields} — extracts declared field types from the same code
+ * @see {@link parseTransformers} — parses this returned string into a Map
  */
 function extractQuickOptions(code: string): string {
 	const match = /@Quick\s*\(\s*\{([^}]*)\}/s.exec(code);
@@ -30,6 +34,8 @@ function extractQuickOptions(code: string): string {
 /**
  * Parses a Quick-options string into a Map of fieldName → transformerName.
  * E.g. "createdAt: Date, tags: Set" → Map { createdAt → "Date", tags → "Set" }
+ * @see {@link extractQuickOptions} — produces the string this function parses
+ * @see {@link extractFields} — complementary extractor for field type declarations
  */
 function parseTransformers(optionsStr: string): Map<string, string> {
 	const result = new Map<string, string>();
@@ -49,6 +55,8 @@ function parseTransformers(optionsStr: string): Map<string, string> {
 /**
  * Extracts all unique decorator names (e.g. QField, QRule, QGroup, QAlias, QComputed)
  * attached to declared fields in the code.
+ * @see {@link extractFields} — companion function extracting field type declarations
+ * @see {@link extractQuickOptions} — companion function extracting transformer config
  */
 function extractDecorators(code: string): Set<string> {
 	const decorators = new Set<string>();

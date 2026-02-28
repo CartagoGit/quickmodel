@@ -1,6 +1,8 @@
 /**
  * Service for generating mock data for models.
  * Uses faker to generate realistic random data.
+ * @see {@link QMockGenerator} — the main class exported from this module
+ * @see {@link IQMockType} — available generation strategy options
  */
 
 import 'reflect-metadata';
@@ -42,6 +44,8 @@ import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
  * | `'minimal'` | Minimal valid data — 1-element arrays, short strings. |
  * | `'full'` | Same as `'random'` but arrays are generated at max length (3 items). |
  * | `'sample'` | Deterministic sample values suitable for snapshots and docs. |
+ * @see {@link QMockGenerator.generate} — pass this type as the second argument
+ * @see {@link QModel.mock} — public-facing method that accepts this type
  */
 export type IQMockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
@@ -74,6 +78,8 @@ export type IQMockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 export class QMockGenerator {
 	/**
 	 * Creates a new QMockGenerator instance.
+	 * @see {@link QMockGenerator.generate} — call this after construction to produce mock data
+	 * @see {@link IQMockType} — strategy to pass to `generate()`
 	 */
 	constructor() {}
 

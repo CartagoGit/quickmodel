@@ -220,15 +220,21 @@ export class PrimitiveTransformer<T extends IPrimitiveType>
 
 /**
  * Transformer for string values.
+ * @see {@link PrimitiveTransformer} — generic class implementing this transformer
+ * @see {@link NumberTransformer} — numeric primitive variant
  */
 export const StringTransformer = new PrimitiveTransformer('string');
 
 /**
  * Transformer for number values.
+ * @see {@link PrimitiveTransformer} — generic class implementing this transformer
+ * @see {@link StringTransformer} — string primitive variant
  */
 export const NumberTransformer = new PrimitiveTransformer('number');
 
 /**
  * Transformer for boolean values.
+ * @see {@link PrimitiveTransformer} — generic class implementing this transformer
+ * @see {@link NumberTransformer} — numeric primitive variant
  */
 export const BooleanTransformer = new PrimitiveTransformer('boolean');

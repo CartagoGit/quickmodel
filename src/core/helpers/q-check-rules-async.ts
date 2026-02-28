@@ -29,6 +29,8 @@ import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 /**
  * Options for {@link qCheckRulesAsync}. Extends {@link IQRulesAsyncOptions}
  * with an optional group filter.
+ * @see {@link qCheckRulesAsync} — function that consumes these options
+ * @see {@link IQCheckRulesOptions} — synchronous counterpart options
  */
 export interface IQCheckRulesAsyncOptions extends IQRulesAsyncOptions {
 	/**

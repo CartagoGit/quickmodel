@@ -473,6 +473,8 @@ export class TextDecoderTransformer extends BaseTransformer<
  * The binary content is **not** included — only its metadata.
  *
  * @group Types
+ * @see {@link IFileSerialized} — serialized File variant including file name and timestamp
+ * @see {@link BlobTransformer} — transformer that produces and consumes this shape
  */
 export interface IBlobSerialized {
 	/** Byte length of the original Blob. */
@@ -488,6 +490,8 @@ export interface IBlobSerialized {
  * The binary content is **not** included — only its metadata.
  *
  * @group Types
+ * @see {@link IBlobSerialized} — base serialized shape for Blob
+ * @see {@link FileTransformer} — transformer that produces and consumes this shape
  */
 export interface IFileSerialized {
 	/** File name as reported by the browser / OS. */
@@ -509,6 +513,8 @@ type IFileInput = IFileSerialized | File;
 /**
  * Returns `true` when `val` looks like an `IBlobSerialized` POJO.
  * @internal
+ * @see {@link IBlobSerialized} — the shape this guard checks against
+ * @see {@link isFileSerialized} — counterpart guard for File serialized shape
  */
 function isBlobSerialized(val: unknown): val is IBlobSerialized {
 	return (
@@ -522,6 +528,8 @@ function isBlobSerialized(val: unknown): val is IBlobSerialized {
 /**
  * Returns `true` when `val` looks like an `IFileSerialized` POJO.
  * @internal
+ * @see {@link IFileSerialized} — the shape this guard checks against
+ * @see {@link isBlobSerialized} — counterpart guard for Blob serialized shape
  */
 function isFileSerialized(val: unknown): val is IFileSerialized {
 	return (
@@ -544,6 +552,8 @@ function isFileSerialized(val: unknown): val is IFileSerialized {
  * @returns A `Blob` with the decoded bytes and the parsed MIME type.
  * @throws {QModelError} When the URI is malformed (no comma separator).
  * @internal
+ * @see {@link BlobTransformer} — transformer that calls this helper during deserialization
+ * @see {@link IBlobSerialized} — the serialized shape handled by the calling transformer
  */
 function blobFromDataUri(
 	dataUri: string,

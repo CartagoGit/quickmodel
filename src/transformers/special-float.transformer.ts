@@ -50,6 +50,8 @@ export type IQMSpecialTokenValue = 'nan' | 'inf' | '-inf';
  * { "__qm": "inf" }   // Infinity
  * { "__qm": "-inf" }  // -Infinity
  * ```
+ * @see {@link IQMSpecialTokenValue} — the union type for the `__qm` field
+ * @see {@link isQMSpecialToken} — type guard to detect this shape at runtime
  */
 export interface IQMSpecialToken {
 	__qm: IQMSpecialTokenValue;
@@ -70,6 +72,8 @@ export interface IQMSpecialToken {
  * isQMSpecialToken(42)               // false
  * isQMSpecialToken(null)             // false
  * ```
+ * @see {@link IQMSpecialToken} — the shape this guard validates
+ * @see {@link decodeQMSpecialToken} — decode the token to its numeric value
  */
 export function isQMSpecialToken(value: unknown): value is IQMSpecialToken {
 	return (
@@ -94,6 +98,8 @@ export function isQMSpecialToken(value: unknown): value is IQMSpecialToken {
  * decodeQMSpecialToken({ __qm: 'inf' })   // Infinity
  * decodeQMSpecialToken({ __qm: '-inf' })  // -Infinity
  * ```
+ * @see {@link IQMSpecialToken} — the token object this function accepts
+ * @see {@link isQMSpecialToken} — use this guard before calling this function
  */
 export function decodeQMSpecialToken(token: IQMSpecialToken): number {
 	switch (token[QM_SPECIAL_TOKEN_KEY]) {
@@ -227,6 +233,8 @@ export class SpecialFloatTransformer
  *
  * QTransformerRegistry.register('nan', NanTransformer);
  * ```
+ * @see {@link SpecialFloatTransformer} — the class this instance is built from
+ * @see {@link InfinityTransformer} — alias for use with Infinity/-Infinity fields
  */
 export const NanTransformer = new SpecialFloatTransformer();
 
@@ -241,5 +249,7 @@ export const NanTransformer = new SpecialFloatTransformer();
  *   declare ratio: number;
  * }
  * ```
+ * @see {@link SpecialFloatTransformer} — the class this instance is built from
+ * @see {@link NanTransformer} — identical instance registered under the 'nan' key
  */
 export const InfinityTransformer = new SpecialFloatTransformer();

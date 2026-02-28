@@ -54,6 +54,8 @@ function _getZod(): IZodNs {
  * });
  * schema.parse({ id: 1, name: 'Alice' }); // ✅
  * ```
+ * @see {@link ISchemaGeneratorConfig} — config shape accepted by `generate()`
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 equivalent generator
  */
 export class ZodSchemaGenerator {
 	/**

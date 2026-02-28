@@ -12,6 +12,8 @@
  * full TypeScript inference to all tools and prompts at compile time.
  *
  * @module
+ * @see {@link QAbstractTool} — base class for all tools that import `z` from this module
+ * @see {@link ZodSchemaGenerator} — the library-side zod consumer that lazy-loads instead
  */
 
 export { z } from 'zod';

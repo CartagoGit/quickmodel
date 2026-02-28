@@ -1,5 +1,7 @@
 /**
  * Schema type definitions for `QModel.getSchema()`.
+ * @see {@link QModel.getSchema} — the method that accepts `IQSchemaFormat` as argument
+ * @see {@link JsonSchemaGenerator} — one of the generators invoked via this module
  */
 
 /**

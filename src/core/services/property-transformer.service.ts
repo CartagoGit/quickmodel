@@ -66,6 +66,8 @@ const _PROP_TRANSFORM_META = new WeakMap<
  * @param ctor - The model constructor (used as WeakMap key)
  * @param targetKey - The decorated property name
  * @returns The resolved `IQPropTransformMeta` entry for this field
+ * @see {@link PropertyTransformerService.transform} — calls this to resolve metadata before applying transformers
+ * @see {@link IQPropTransformMeta} — the shape of the metadata entry returned
  */
 function _getPropTransformMeta(
 	ctor: Function,

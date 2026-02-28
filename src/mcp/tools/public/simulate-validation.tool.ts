@@ -3,6 +3,8 @@ import { QAbstractTool } from '../abstract-tool';
 
 /**
  * A single validation rule to be simulated.
+ * @see {@link QSimulateValidationTool} — MCP tool that accepts an array of these rules
+ * @see {@link QSimulateRulesTool} — synchronous checkRules() simulator
  */
 interface IValidationRule {
 	/** The field in `data` to validate. */

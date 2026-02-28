@@ -3,6 +3,8 @@ import { QAbstractTool } from '../abstract-tool';
 
 /**
  * Metadata entry describing a built-in validator decorator.
+ * @see {@link QListValidatorsTool} — MCP tool that returns an array of these entries
+ * @see {@link QListTransformersTool} — complementary tool for transformer metadata
  */
 export interface IValidatorEntry {
 	/** Decorator name (e.g. "IsEmail") */

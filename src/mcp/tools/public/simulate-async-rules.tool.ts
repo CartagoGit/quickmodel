@@ -15,6 +15,8 @@ import type {
  * A single rule supplied to simulate_async_rules.
  * The predicate is a JS expression string that may return a Promise.
  * Variables available: `value` (field value), `data` (full data object).
+ * @see {@link QSimulateAsyncRulesTool} — MCP tool that accepts an array of these rules
+ * @see {@link QSimulateRulesTool} — synchronous rules simulator counterpart
  */
 interface IAsyncSimulatedRule {
 	field: string;

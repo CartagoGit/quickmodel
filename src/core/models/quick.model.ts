@@ -6,6 +6,8 @@
  * - O (Open/Closed): Open for extension (new transformers), closed for modification
  * - L (Liskov Substitution): All transformers are interchangeable
  * - I (Interface Segregation): Specific interfaces (ISerializer, IDeserializer, etc.)
+ * @see {@link QModel} — the main class exported from this module
+ * @see {@link Quick} — class decorator required to activate type transformation
  */
 
 import 'reflect-metadata';
@@ -246,6 +248,9 @@ export interface IQCreateManyResult<TInstance> {
  * user.serialize().first_name; // ✅ typed correctly — IDE autocomplete works
  * user.serialize().last_name;  // ✅
  * ```
+ * @see {@link Quick} — class decorator required before extending `QModel`
+ * @see {@link QModel.create} — preferred factory method for creating instances
+ * @see {@link QModel.serialize} — serialize an instance back to plain JSON
  */
 export abstract class QModel<
 	TInterface extends IQAnyRecord,

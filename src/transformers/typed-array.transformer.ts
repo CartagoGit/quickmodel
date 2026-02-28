@@ -281,6 +281,8 @@ export class TypedArrayTransformer<T extends ITypedArray>
 
 /**
  * Transformer for Int8Array (-128 to 127).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link uint8ArrayTransformer} — unsigned byte variant
  */
 export const int8ArrayTransformer = new TypedArrayTransformer<Int8Array>(
 	Int8Array
@@ -288,6 +290,8 @@ export const int8ArrayTransformer = new TypedArrayTransformer<Int8Array>(
 
 /**
  * Transformer for Uint8Array (0 to 255).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link uint8ClampedArrayTransformer} — clamped byte variant
  */
 export const uint8ArrayTransformer = new TypedArrayTransformer<Uint8Array>(
 	Uint8Array
@@ -295,12 +299,16 @@ export const uint8ArrayTransformer = new TypedArrayTransformer<Uint8Array>(
 
 /**
  * Transformer for Uint8ClampedArray (0 to 255, with clamping).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link uint8ArrayTransformer} — unclamped byte variant
  */
 export const uint8ClampedArrayTransformer =
 	new TypedArrayTransformer<Uint8ClampedArray>(Uint8ClampedArray);
 
 /**
  * Transformer for Int16Array (-32768 to 32767).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link uint16ArrayTransformer} — unsigned 16-bit variant
  */
 export const int16ArrayTransformer = new TypedArrayTransformer<Int16Array>(
 	Int16Array
@@ -308,6 +316,8 @@ export const int16ArrayTransformer = new TypedArrayTransformer<Int16Array>(
 
 /**
  * Transformer for Uint16Array (0 to 65535).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link int16ArrayTransformer} — signed 16-bit variant
  */
 export const uint16ArrayTransformer = new TypedArrayTransformer<Uint16Array>(
 	Uint16Array
@@ -315,6 +325,8 @@ export const uint16ArrayTransformer = new TypedArrayTransformer<Uint16Array>(
 
 /**
  * Transformer for Int32Array (-2147483648 to 2147483647).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link uint32ArrayTransformer} — unsigned 32-bit variant
  */
 export const int32ArrayTransformer = new TypedArrayTransformer<Int32Array>(
 	Int32Array
@@ -322,6 +334,8 @@ export const int32ArrayTransformer = new TypedArrayTransformer<Int32Array>(
 
 /**
  * Transformer for Uint32Array (0 to 4294967295).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link int32ArrayTransformer} — signed 32-bit variant
  */
 export const uint32ArrayTransformer = new TypedArrayTransformer<Uint32Array>(
 	Uint32Array
@@ -329,6 +343,8 @@ export const uint32ArrayTransformer = new TypedArrayTransformer<Uint32Array>(
 
 /**
  * Transformer for Float32Array (32-bit floating point).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link float64ArrayTransformer} — 64-bit float variant
  */
 export const float32ArrayTransformer = new TypedArrayTransformer<Float32Array>(
 	Float32Array
@@ -336,6 +352,8 @@ export const float32ArrayTransformer = new TypedArrayTransformer<Float32Array>(
 
 /**
  * Transformer for Float64Array (64-bit floating point).
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link float32ArrayTransformer} — 32-bit float variant
  */
 export const float64ArrayTransformer = new TypedArrayTransformer<Float64Array>(
 	Float64Array
@@ -344,6 +362,8 @@ export const float64ArrayTransformer = new TypedArrayTransformer<Float64Array>(
 /**
  * Transformer for BigInt64Array (signed 64-bit integers).
  * Serializes to string array.
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link bigUint64ArrayTransformer} — unsigned 64-bit BigInt variant
  */
 export const bigInt64ArrayTransformer =
 	new TypedArrayTransformer<BigInt64Array>(BigInt64Array, true);
@@ -351,6 +371,8 @@ export const bigInt64ArrayTransformer =
 /**
  * Transformer for BigUint64Array (unsigned 64-bit integers).
  * Serializes to string array.
+ * @see {@link TypedArrayTransformer} — generic class implementing this transformer
+ * @see {@link bigInt64ArrayTransformer} — signed 64-bit BigInt variant
  */
 export const bigUint64ArrayTransformer =
 	new TypedArrayTransformer<BigUint64Array>(BigUint64Array, true);

@@ -43,6 +43,8 @@ interface IMatcherResult {
  * @param instance - Model instance to inspect
  * @param fieldName - Property name to look up
  * @returns `true` if any prototype in the chain has `@QField` metadata for `fieldName`
+ * @see {@link QField} — decorator that stores the metadata this function checks for
+ * @see {@link QFIELD_METADATA_KEY} — the metadata key used for the lookup
  */
 function hasQFieldMeta(instance: object, fieldName: string | symbol): boolean {
 	let proto = Object.getPrototypeOf(instance) as object | null;
@@ -246,6 +248,8 @@ function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
  * - `toMatchQModel(expected)` — deep equality via `serialize()`
  * - `toBeIntact()` — `hasIntegrity()` returns true
  * - `toHaveDirtyField(field)` — `isDirty(field)` returns true
+ * @see {@link QModel.checkRules} — the validation method used by `toBeValidQModel()`
+ * @see {@link QModel.serialize} — the method used by `toMatchQModel()` for comparison
  */
 export const quickmodelMatchers = {
 	toBeValidQModel,

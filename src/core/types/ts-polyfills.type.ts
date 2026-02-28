@@ -76,6 +76,8 @@ export type INoInfer<T> = [T][T extends unknown ? 0 : never];
  * @typeParam Value - The type of the decorated field.
  * @group Type utilities
  * @internal
+ * @see {@link INoInfer} — companion polyfill for controlled type inference
+ * @see {@link ITC39FieldContext} — TC39 decorator context used in `qtype.decorator.ts`
  */
 export interface IClassFieldDecoratorCtx<This, Value> {
 	readonly kind: 'field';
