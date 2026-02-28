@@ -72,6 +72,9 @@ import type {
  * results[Groups.identity].valid; // true
  * results[Groups.security].valid; // true
  * ```
+ *
+ * @see {@link qCheckRulesByGroup} — synchronous variant of this function
+ * @see {@link qCheckRulesAsync} — async check without group segmentation
  */
 export async function qCheckRulesByGroupAsync(
 	instance: object,

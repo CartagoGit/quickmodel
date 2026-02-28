@@ -11,8 +11,8 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#58 (excepto #48) + Propuesta G
-⏳  Backlog:     Task #48 (Drizzle ORM) + Propuestas A–F, H–R (ver sección final)
+✅ Completadas: Tasks #1–#58 + Propuestas A, D, G, O, R, S
+⏳  Backlog:     Propuestas B, C, E, F, H, I, J, K, L, M, N, P, Q (ver sección final)
 ```
 
 ---
@@ -109,11 +109,11 @@
 
 ---
 
-### Propuesta A — `@QSensitive` decorator
+### ✅ Propuesta A — `@QSensitive` decorator _(Completada)_
 
 **Prioridad:** 🔴 Alta
 **Impacto:** Alto — seguridad, GDPR, PII
-**Esfuerzo estimado:** 2-3 horas | **Tests estimados:** ~15
+**Completada:** 2026 — `src/core/decorators/qsensitive.decorator.ts` + filtro en `serialize()`. 11 tests.
 
 Marca campos como sensibles. Los excluye de `serialize()` en producción, de mensajes de error `safeStringify` y de logs. Override explícito con `serialize({ includeSensitive: true })`. El mecanismo de `excludeFields` ya existe en `@Quick`; `@QSensitive` es la solución declarativa y semántica de primera clase.
 
@@ -205,11 +205,11 @@ User.getSchema('yup'); // → yup.object().shape({ ... })
 
 ---
 
-### Propuesta D — `QModelCollection<T>` class
+### ✅ Propuesta D — `QModelCollection<T>` class _(Completada)_
 
 **Prioridad:** 🔴 Alta
 **Impacto:** Alto — complementa y cierra el ciclo de `createMany()`
-**Esfuerzo estimado:** 5-6 horas | **Tests estimados:** ~30
+**Completada:** 2026 — `src/core/models/quick-collection.model.ts` + `QModel.collection()` alias estático. 28 tests.
 
 Wrapper tipado para arrays de modelos QModel con métodos de filtrado, paginación, ordenación y agregación. Cierra el ciclo funcional de `createMany()`.
 
@@ -536,11 +536,12 @@ class InternalDto extends QModel<IInternalDto> {
 
 ---
 
-### Propuesta R — CLI `bunx quickmodel generate`
+### ✅ Propuesta R — CLI `bunx quickmodel generate` _(Completada)_
 
-**Prioridad:** � Media — ⬆️ **REVISADO A LA BAJA EN ESFUERZO**
+**Prioridad:** 🟡 Media
 **Impacto:** Medio-alto — DX para nuevos usuarios, scaffolding rápido
-**Esfuerzo estimado:** ~~6-8 horas~~ **2-3 horas** — la infraestructura ya existe
+**Esfuerzo estimado:** ~~6-8 horas~~ **2-3 horas** — la infraestructura ya existía
+**Completada:** 2026 — `src/cli/generate.command.ts` + rama `generate` en `mcp-cli.ts`. 35 tests.
 
 > **✅ Infraestructura existente:** `bin.quickmodel` ya está declarado en `package.json` y `src/mcp-cli.ts` ya tiene el esqueleto del CLI con el comando `mcp`. Solo falta añadir el subcomando `generate` al mismo fichero o en un módulo auxiliar.
 
@@ -590,9 +591,9 @@ User.getSchema('prisma');
 
 | Prop  | Nombre                                                                     | Prioridad       | Esfuerzo | Impacto          | Relación con existente           |
 | ----- | -------------------------------------------------------------------------- | --------------- | -------- | ---------------- | -------------------------------- |
-| A     | `@QSensitive`                                                              | 🔴 Alta         | 2-3h     | Alto (GDPR)      | Extiende `excludeFields`         |
+| ~~A~~ | ~~`@QSensitive`~~                                                          | ✅ Completada   | —        | —                | qsensitive.decorator.ts — 2026   |
 | B     | `QModel.diff()`                                                            | 🔴 Alta         | 3-4h     | Alto             | Complementa `isDirty()`/`copy()` |
-| D     | `QModelCollection<T>`                                                      | 🔴 Alta         | 5-6h     | Alto             | Cierra ciclo `createMany()`      |
+| ~~D~~ | ~~`QModelCollection<T>`~~                                                  | ✅ Completada   | —        | —                | quick-collection.model.ts — 2026 |
 | O     | `validate()` unificado                                                     | 🔴 Alta         | 1-2h     | Alto (DX)        | Unifica API validación           |
 | C     | `getSchema('valibot'/'yup')`                                               | 🟡 Media        | 2h×2     | Alto estratégico | +2 a los 7 formatos existentes   |
 | E     | I18n mensajes                                                              | 🟡 Media        | 4h       | Medio            | Extiende `QConfig`               |
@@ -600,7 +601,7 @@ User.getSchema('prisma');
 | N     | `@QVersion` + migrations                                                   | 🟡 Media        | 4-5h     | Medio            | Complementa Task #55             |
 | P     | `@QReadonly`                                                               | 🟡 Media        | 2h       | Medio            | Nuevo decorator                  |
 | Q     | Config per-class                                                           | 🟡 Media        | 3h       | Medio            | Extiende `QConfig`               |
-| R     | CLI `generate` subcommand                                                  | 🟡 Media        | **2-3h** | Medio-alto       | `bin.quickmodel` ya existe       |
+| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada   | —        | —                | generate.command.ts — 2026       |
 | S     | `getSchema('prisma')`                                                      | 🟡 Media        | 2-3h     | Alto             | Cierra circuito Task #41         |
 | F     | `@QDefault`                                                                | 🟢 Baja         | 2h       | Medio            | Nuevo decorator                  |
 | ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada   | —        | —                | Task #58 — 28 Feb 2026           |
@@ -621,7 +622,7 @@ User.getSchema('prisma');
 ```
 1.  Task #48  → Drizzle ORM (cierra backlog oficial pendiente)
 2.  Prop. O   → validate() unificado (1-2h, mayor ROI: alto impacto, mínimo riesgo)
-3.  Prop. R   → CLI generate subcommand (2-3h, bin ya existe — quick win)
+3.  ~~Prop. R~~   ✅ CLI generate subcommand (generate.command.ts — completada 2026)
 4.  Prop. A   → @QSensitive (seguridad / GDPR)
 5.  Prop. B   → QModel.diff() (complementa copy/isDirty)
 6.  Prop. S   → getSchema('prisma') (2-3h, cierra circuito Task #41)

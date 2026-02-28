@@ -17,11 +17,11 @@ Las siguientes herramientas se usan para desarrollo interno.
 
 <!-- TOOLS-START -->
 
-<!-- _Generado automáticamente por QSyncDocsTool. No editar manualmente._ -->
+<!-- _Mantenido manualmente. El equivalente en inglés se genera automáticamente por QSyncDocsTool._ -->
 
 ## `benchmark_performance`
 
-Ejecuta pruebas de rendimiento para las transformaciones de QuickModel.
+Ejecuta benchmarks de rendimiento para las transformaciones de QuickModel.
 
 ```json
 {
@@ -34,7 +34,7 @@ Ejecuta pruebas de rendimiento para las transformaciones de QuickModel.
 
 ## `check_api_compatibility`
 
-Verifica la compatibilidad de la API pública.
+Comprueba si hay cambios incompatibles (breaking changes) en la API pública.
 
 ```json
 {
@@ -47,7 +47,7 @@ Verifica la compatibilidad de la API pública.
 
 ## `check_bundle_size`
 
-Compila el proyecto y reporta el tamaño de los archivos generados en dist/. Devuelve { status, files: [{file, bytes}][], total_bytes, summary }.
+Compila el proyecto y reporta el tamaño de los archivos generados en `dist/`. Devuelve `{ status, files: [{file, bytes}][], total_bytes, summary }`.
 
 ```json
 {}
@@ -55,7 +55,7 @@ Compila el proyecto y reporta el tamaño de los archivos generados en dist/. Dev
 
 ## `check_changelog`
 
-Verifica que CHANGELOG.md contiene una entrada para la versión actual de package.json. Devuelve { found, version, excerpt, status, message? }.
+Verifica que `CHANGELOG.md` contiene una entrada para la versión actual de `package.json`. Devuelve `{ found, version, excerpt, status, message? }`.
 
 ```json
 {
@@ -68,7 +68,7 @@ Verifica que CHANGELOG.md contiene una entrada para la versión actual de packag
 
 ## `check_jsdocs`
 
-Escanea el código fuente buscando miembros exportados que carecen de documentación JSDoc.
+Escanea el código fuente en busca de miembros exportados que carecen de documentación JSDoc.
 
 ```json
 {}
@@ -76,7 +76,7 @@ Escanea el código fuente buscando miembros exportados que carecen de documentac
 
 ## `check_project_health`
 
-Ejecuta una verificación completa de salud: Lint, Typecheck y Tests.
+Ejecuta una comprobación completa de salud del proyecto: Lint, Typecheck y Tests.
 
 ```json
 {}
@@ -84,7 +84,7 @@ Ejecuta una verificación completa de salud: Lint, Typecheck y Tests.
 
 ## `check_project_rules`
 
-Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y no console.log.
+Hace cumplir las reglas internas del proyecto: usar `@Quick` en lugar de `@QType` en tests, sin `console.log`, etc.
 
 ```json
 {
@@ -97,7 +97,7 @@ Hace cumplir reglas internas del proyecto: usar @Quick sobre @QType en tests, y 
 
 ## `check_security`
 
-Run the security test suite to verify protection against vulnerabilities (XSS, Injection, Path Traversal, etc.).
+Ejecuta la suite de tests de seguridad para verificar protección contra vulnerabilidades (XSS, Inyección, Path Traversal, etc.).
 
 ```json
 {}
@@ -105,7 +105,7 @@ Run the security test suite to verify protection against vulnerabilities (XSS, I
 
 ## `generate_test`
 
-Herramienta interna para generar un archivo de prueba inicial para un componente fuente.
+Herramienta interna para generar un archivo de test inicial para un componente fuente.
 
 ```json
 {
@@ -117,7 +117,7 @@ Herramienta interna para generar un archivo de prueba inicial para un componente
 
 ## `get_coverage_report`
 
-Ejecuta pruebas con cobertura y reporta el resumen.
+Ejecuta los tests con cobertura y reporta el resumen.
 
 ```json
 {}
@@ -125,7 +125,7 @@ Ejecuta pruebas con cobertura y reporta el resumen.
 
 ## `get_staged_files`
 
-Lista los archivos actualmente en staging (`git diff --cached --name-only`). Úsalo para saber qué archivos necesitan validación lint/typecheck antes de hacer commit. Devuelve { passed, files[], total, summary }.
+Lista los archivos actualmente en staging (`git diff --cached --name-only`). Úsalo para saber qué archivos necesitan validación lint/typecheck antes de hacer commit. Devuelve `{ passed, files[], total, summary }`.
 
 ```json
 {}
@@ -133,16 +133,16 @@ Lista los archivos actualmente en staging (`git diff --cached --name-only`). Ús
 
 ## `lint_check`
 
-Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve { passed, errors, warnings, total_errors, total_warnings, summary }.
+Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve `{ passed, errors, warnings, total_errors, total_warnings, summary }`.
 
 ```json
 {
 	"targetDir": {
-		"description": "Directorio a analizar (p. ej. \"src/mcp/tools\"). Por defecto \"src\" si no se especifica targetDir ni targetFiles.",
+		"description": "Directory to lint (e.g. \"src/mcp/tools\"). Defaults to \"src\" if neither targetDir nor targetFiles is provided.",
 		"optional": true
 	},
 	"targetFiles": {
-		"description": "Array de rutas de archivo específicas a analizar (p. ej. [\"src/mcp/tools/public/my-tool.ts\"]).",
+		"description": "Array of specific file paths to lint (e.g. [\"src/mcp/tools/public/my-tool.ts\"]).",
 		"optional": true
 	}
 }
@@ -150,16 +150,16 @@ Ejecuta ESLint sobre un directorio o archivos específicos. Devuelve { passed, e
 
 ## `list_todos`
 
-Escanea archivos fuente en busca de comentarios TODO, FIXME, HACK y XXX. Admite targetDir personalizado y extensiones de archivo. Devuelve { items: [{file, line, type, text}][], total }.
+Escanea archivos fuente en busca de comentarios TODO, FIXME, HACK y XXX. Devuelve una lista estructurada `{ file, line, type, text }[]`. Por defecto escanea `src/`; admite `targetDir` personalizado.
 
 ```json
 {
 	"targetDir": {
-		"description": "Directorio a escanear. Por defecto src/ en la raíz del proyecto.",
+		"description": "Directory to scan. Defaults to src/ in the project root.",
 		"optional": true
 	},
 	"extensions": {
-		"description": "Extensiones de archivo a incluir (por defecto: [\".ts\", \".js\"]). P. ej. [\".ts\", \".tsx\", \".js\"]",
+		"description": "File extensions to include (default: [\".\"ts\", \".js\"]). E.g. [\".ts\", \".tsx\", \".js\"]",
 		"optional": true
 	}
 }
@@ -167,12 +167,12 @@ Escanea archivos fuente en busca de comentarios TODO, FIXME, HACK y XXX. Admite 
 
 ## `pre_commit_check`
 
-Simula el hook de pre-commit de Husky: ejecuta ESLint (--fix) y Prettier (--write) sobre los archivos indicados o src/. Devuelve { passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }. Ejécutalo antes de hacer commit para garantizar que el hook no lo rechazará.
+Simula el hook de pre-commit de Husky: ejecuta ESLint (`--fix`) y Prettier (`--write`) sobre los archivos indicados o `src/`. Devuelve `{ passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }`. Ejecútalo antes de hacer commit para garantizar que el hook no lo rechazará.
 
 ```json
 {
 	"files": {
-		"description": "Lista de rutas de archivo a comprobar. Por defecto todos los archivos TypeScript/JavaScript en src/.",
+		"description": "List of file paths to check. Defaults to all TypeScript/JavaScript files in src/.",
 		"optional": true
 	}
 }
@@ -180,7 +180,7 @@ Simula el hook de pre-commit de Husky: ejecuta ESLint (--fix) y Prettier (--writ
 
 ## `project_status`
 
-Ejecuta todas las comprobaciones de salud del proyecto simultáneamente: tests, lint y typecheck. Devuelve un snapshot consolidado con estado pass/fail de cada capa y un resumen legible. Devuelve { passed, tests, lint, typecheck, summary }.
+Ejecuta todas las comprobaciones de salud del proyecto simultáneamente: tests, lint y typecheck. Devuelve un snapshot consolidado con estado pass/fail de cada capa y un resumen legible. Devuelve `{ passed, tests, lint, typecheck, summary }`.
 
 ```json
 {}
@@ -188,12 +188,12 @@ Ejecuta todas las comprobaciones de salud del proyecto simultáneamente: tests, 
 
 ## `run_tests`
 
-Ejecuta la suite de tests de Bun (opcionalmente filtrada por ruta/patrón). Parsea los conteos de pass/fail y devuelve detalles estructurados de fallos. Devuelve { passed, total_pass, total_fail, errors[], summary }.
+Ejecuta la suite de tests de Bun (opcionalmente filtrada por ruta/patrón). Parsea los conteos de pass/fail y devuelve detalles estructurados de fallos. Devuelve `{ passed, total_pass, total_fail, errors[], summary }`.
 
 ```json
 {
 	"pattern": {
-		"description": "Ruta de archivo o patrón opcional para filtrar la ejecución (p. ej. \"tests/mcp/unit/internal\"). Ejecuta la suite completa si se omite.",
+		"description": "Optional file path or pattern to narrow test execution (e.g. \"tests/mcp/unit/internal\"). Runs the full suite when omitted.",
 		"optional": true
 	}
 }
@@ -201,7 +201,7 @@ Ejecuta la suite de tests de Bun (opcionalmente filtrada por ruta/patrón). Pars
 
 ## `scaffold_feature`
 
-Genera la estructura básica para una nueva funcionalidad.
+Genera la estructura básica (boilerplate) para una nueva funcionalidad (transformers, tools).
 
 ```json
 {
@@ -220,7 +220,7 @@ Genera la estructura básica para una nueva funcionalidad.
 
 ## `typecheck`
 
-Ejecuta la verificación de tipos de TypeScript (tsc --noEmit) sobre src/. Devuelve { passed, errors, total, summary }.
+Ejecuta la verificación de tipos de TypeScript (`tsc --noEmit`) sobre `src/`. Devuelve `{ passed, errors, total, summary }`.
 
 ```json
 {}
@@ -228,7 +228,7 @@ Ejecuta la verificación de tipos de TypeScript (tsc --noEmit) sobre src/. Devue
 
 ## `update_docs`
 
-Herramienta interna para ejecutar scripts de construcción de documentación.
+Herramienta interna para ejecutar los scripts de construcción de documentación.
 
 ```json
 {
@@ -240,7 +240,7 @@ Herramienta interna para ejecutar scripts de construcción de documentación.
 
 ## `update_docs_content`
 
-Genera automáticamente archivos de documentación para Herramientas y Transformadores basado en el código actual.
+Genera automáticamente los archivos de documentación para Tools y Transformadores basándose en el código actual.
 
 ```json
 {}

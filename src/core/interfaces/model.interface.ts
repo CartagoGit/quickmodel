@@ -10,6 +10,9 @@
  *   base interface with its transformed-property overrides.
  *
  * @module core/interfaces/model.interface
+ *
+ * @see {@link QModel} — the model class that uses these helper types
+ * @see {@link IQImplements} — the primary public helper defined in this module
  */
 
 /**
@@ -107,6 +110,9 @@ export type IQTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  *   declare updated: Date;
  * }
  * ```
+ *
+ * @see {@link QModel} — base class for models that `implement` this helper type
+ * @see {@link IQAnyRecord} — escape-hatch type used in the `TTransforms` constraint
  */
 export type IQImplements<
 	TInterface,

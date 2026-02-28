@@ -149,6 +149,25 @@ QuickModel utiliza una estructura de importación modular para mantener tu proye
     import { QMockGenerator } from 'quickmodel/advanced';
     ```
 
+## Scaffolding con CLI
+
+Despus de instalar, puedes generar boilerplate con el CLI integrado:
+
+```bash
+# Generar una clase QModel con campos tipados
+npx quickmodel generate model User --fields "id:number,name:string,createdAt:Date"
+
+# Generar un skeleton de transformer personalizado
+npx quickmodel generate transformer Decimal
+
+# Generar boilerplate de integración (prisma | drizzle | zod)
+npx quickmodel generate integration prisma
+```
+
+::: tip
+Con Bun puedes usar `bunx quickmodel generate ...` en lugar de `npx`.
+:::
+
 ## Verificar la Instalación
 
 Crea un archivo de prueba simple para verificar que todo funciona:

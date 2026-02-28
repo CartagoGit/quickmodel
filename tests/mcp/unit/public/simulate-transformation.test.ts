@@ -79,7 +79,8 @@ describe('QSimulateTransformationTool', () => {
 
 		const result = await tool.execute({ data, options });
 		// Serialized date matches ISO string
-		expect(result.result.meta.created).toBe('2022-02-02T00:00:00.000Z');
+		const meta = result.result.meta as Record<string, unknown>;
+		expect(meta.created).toBe('2022-02-02T00:00:00.000Z');
 	});
 
 	it('should support Set transformation', async () => {

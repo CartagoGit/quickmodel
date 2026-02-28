@@ -132,6 +132,8 @@ export default tseslint.config(
 						'fs', // Node.js filesystem module
 						'cb', // Callback
 						'md', // Markdown content (estándar en herramientas de documentación)
+						'fl',
+						'ln', // Line
 					],
 					exceptionPatterns: [
 						'^_', // Variables ignoradas con prefijo _ (_err, _val, etc.)

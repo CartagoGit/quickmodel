@@ -1,11 +1,13 @@
 /**
  * English locale strings for the QuickModel MCP server.
  *
- * Contains UI labels, descriptions, and tool documentation strings used by
- * the MCP server when responding to AI clients in English.
+ * Contains structural UI labels used by `QSyncDocsTool` to generate
+ * documentation pages (titles, table headers, footer comments).
+ * Tool descriptions are NOT stored here — they live in each tool's
+ * `description` property (single source of truth).
  *
- * @see {@link esMcp} — Spanish locale counterpart
- * @internal Consumed by `QSyncDocsTool` and the MCP server response layer.
+ * @see {@link enMcp} — exported constant containing all English locale strings
+ * @internal Consumed by `QSyncDocsTool` for all locales (EN and ES).
  */
 export const enMcp = {
 	publicTitle: 'Public MCP Tools',
@@ -18,92 +20,4 @@ export const enMcp = {
 	descHeader: 'Description',
 	customTransformers:
 		'See [Custom Transformers](./custom-transformers.md) to add your own.',
-	inputSchema: 'Input Schema',
-	tools: {
-		// Public
-		create_model:
-			'Generates the TypeScript code for a class extending QModel based on a list of properties. Use this to quickly create new models.',
-		validate_usage:
-			'Analyzes a code snippet to check for common QuickModel usage errors (e.g. missing declare, wrong inheritance).',
-		list_transformers:
-			'List all available data transformers in QuickModel (e.g., string, date, email).',
-		generate_mock:
-			'Generate mock data for a given schema definition using QuickModel.',
-		inspect_model:
-			'Analyze a QuickModel class definition and explain its structure.',
-		search_docs: 'Search the QuickModel documentation for a query string.',
-		interface_to_model:
-			'Convert a TypeScript interface definition into a QuickModel class.',
-		export_json_schema:
-			'Generate a JSON Schema Definition from a QuickModel class.',
-		explain_error:
-			'Explain a QuickModel validation error in human-readable language.',
-		simulate_transformation:
-			'Simulates a QuickModel data transformation given an input object and a configuration map.',
-		json_to_model:
-			'Convert a JSON string into a QuickModel class definition with inferred types.',
-
-		simulate_validation:
-			'Simulate @QRule-style predicate validation on a data object. Each rule has a predicate (JS expression with `value` and `data` variables) and a message. Returns { valid, errors[], evaluated }.',
-		get_model_schema:
-			'Generate a model schema in any supported format from a QuickModel class definition. Supports all 7 formats: json, openapi, zod, mongo, typescript, graphql, ajv. Uses the real QModel.getSchema() API.',
-		get_form_schema:
-			'Extract the form schema from @QField / @QGroup decorators using the real QModel.getFormSchema() / getFormSchemaGrouped() API. Returns field metadata (widget, label, placeholder, required, inputType, options) as a structured array.',
-		check_integrity:
-			'Run transformer-level integrity checks on a data object using the real instance.checkIntegrity() API. Detects invalid Date objects, out-of-range BigInt values, malformed RegExp patterns, and other transformer-level failures. Returns { valid, errors[], evaluated, summary }.',
-		simulate_rules:
-			'Run business-logic rules through the real instance.checkRules() API. Applies rules via @QRule metadata so the result format matches production IQRulesResult exactly. Predicate strings have access to `value` (field value) and `data` (full data object). Use simulate_validation for standalone predicate evaluation; use this when you need to verify the exact @QRule + checkRules() output your code will produce at runtime. Returns { valid, errors[], evaluated }.',
-		simulate_async_rules:
-			'Run async business-logic rules through the real instance.checkRulesAsync() API. Supports timeoutMs, timeoutMessage and mode (parallel|serial). Predicate strings can use async/await and return Promises. Returns { valid, errors[], evaluated }.',
-		roundtrip:
-			'Verifies that serializing and re-creating a QuickModel instance is lossless. Runs: s1 = new Model(data).serialize() → s2 = new Model(s1).serialize() and reports whether s1 === s2. Returns { lossless, input, serialized, roundtrip_serialized, diff, summary }.',
-		diff_models:
-			'Compare two QuickModel class definitions (as source strings) and report differences: added/removed fields, changed transformers, added/removed decorators. Pure static analysis — no code execution. Returns { added_fields, removed_fields, changed_fields, changed_transformers, added_decorators, removed_decorators, summary }.',
-
-		// Internal
-		update_docs: 'Internal tool to run documentation build scripts.',
-		generate_test:
-			'Internal tool to generate a starter test file for a source component.',
-		check_jsdocs:
-			'Scan the source code for exported members that are missing JSDoc documentation.',
-		check_project_health:
-			'Run a comprehensive health check: Lint, Typecheck, and Run Tests.',
-		get_coverage_report: 'Run tests with coverage and report the summary.',
-		check_project_rules:
-			'Enforce internal project rules: @Quick over @QType in tests, no console.log, id-length (min 3 chars), max-params (max 3), naming-convention (I prefix for interfaces/types), no-restricted-imports.',
-		update_docs_content:
-			'Auto-generate documentation files for Tools and Transformers based on current code.',
-		scaffold_feature:
-			'Generate boilerplate code for new features (transformers, tools).',
-		check_api_compatibility:
-			'Check for breaking changes in the public API.',
-		benchmark_performance:
-			'Run performance benchmarks for QuickModel transformations.',
-		list_todos:
-			'Scan source files for TODO, FIXME, HACK and XXX comments. Supports custom targetDir and file extensions. Returns { items: [{file, line, type, text}][], total }.',
-		check_bundle_size:
-			'Build the project and report the size of all generated dist/ files. Returns { status, files: [{file, bytes}][], total_bytes, summary }.',
-		check_changelog:
-			'Verify that CHANGELOG.md contains an entry for the current package.json version. Returns { found, version, excerpt, status, message? }.',
-		lint_check:
-			'Run ESLint on a directory or specific files. Returns { passed, errors, warnings, total_errors, total_warnings, summary }.',
-		typecheck:
-			'Run TypeScript type checking (tsc --noEmit) on src/. Returns { passed, errors, total, summary }.',
-		pre_commit_check:
-			'Simulate the Husky pre-commit hook: run ESLint (--fix) and Prettier (--write) on the given files or src/. ' +
-			'Returns { passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }. ' +
-			'Run before committing to guarantee the hook will not reject the commit.',
-		run_tests:
-			'Run the Bun test suite (optionally filtered by a path/pattern). ' +
-			'Parses pass/fail counts and returns structured failure details. ' +
-			'Returns { passed, total_pass, total_fail, errors[], summary }.',
-		get_staged_files:
-			'List the files currently staged for commit (`git diff --cached --name-only`). ' +
-			'Use this to discover which files need lint/typecheck validation before committing. ' +
-			'Returns { passed, files[], total, summary }.',
-		project_status:
-			'Run all project health checks simultaneously: tests, lint and typecheck. ' +
-			'Returns a consolidated snapshot with pass/fail status for each layer and a human-readable summary. ' +
-			'Returns { passed, tests, lint, typecheck, summary }.',
-	},
 };

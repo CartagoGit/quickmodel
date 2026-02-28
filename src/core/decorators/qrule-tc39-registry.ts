@@ -16,6 +16,9 @@
  *
  * A `WeakSet<object>` is intentionally used so that class prototypes can be
  * garbage-collected when no references remain (e.g., in dynamic class creation).
+ *
+ * @see {@link createTC39Guard} — the factory function that creates these guards
+ * @see {@link QRule} — decorator that uses TC39 guards when available
  */
 
 /**

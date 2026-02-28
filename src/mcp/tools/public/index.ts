@@ -24,3 +24,6 @@ export * from './simulate-rules.tool';
 export * from './simulate-async-rules.tool';
 export * from './roundtrip.tool';
 export * from './diff-models.tool';
+export * from './explain-transformation.tool';
+export * from './generate-feature-tests.tool';
+export * from './generate-integration-test.tool';

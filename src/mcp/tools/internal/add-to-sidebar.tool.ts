@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 /**
  * Options for inserting a single guide entry.
+ * @see {@link QAddToSidebarTool} — tool that uses these options internally
  * @internal
  */
 interface IInsertGuideOpts {
@@ -16,6 +17,7 @@ interface IInsertGuideOpts {
 
 /**
  * Args accepted by {@link QAddToSidebarTool}.
+ * @see {@link QAddToSidebarTool} — tool that processes these arguments
  * @internal
  */
 interface IAddToSidebarArgs {
@@ -30,6 +32,7 @@ interface IAddToSidebarArgs {
 
 /**
  * Result returned by {@link QAddToSidebarTool}.
+ * @see {@link QAddToSidebarTool} — tool whose `execute` returns this union
  * @internal
  */
 type IAddToSidebarResult =

@@ -5,7 +5,7 @@
  */
 
 /**
- * The seven schema formats supported by `QModel.getSchema()` / `get_model_schema` MCP tool.
+ * The ten schema formats supported by `QModel.getSchema()` / `get_model_schema` MCP tool.
  *
  * | Value | Generator | Output |
  * |---|---|---|
@@ -16,10 +16,16 @@
  * | `'graphql'` | `GraphQLSchemaGenerator` | GraphQL SDL `type` block string |
  * | `'openapi'` | `OpenAPISchemaGenerator` | OpenAPI 3.0 component schema object |
  * | `'ajv'` | `AjvSchemaGenerator` | AJV-compatible JSON Schema object |
+ * | `'prisma'` | `PrismaSchemaGenerator` | Prisma `model` block string |
+ * | `'valibot'` | `ValibotSchemaGenerator` | Valibot v1.x `v.object(…)` source string |
+ * | `'yup'` | `YupSchemaGenerator` | Yup `yup.object(…)` source string |
  *
  * @see {@link JsonSchemaGenerator}
  * @see {@link OpenAPISchemaGenerator}
  * @see {@link ZodSchemaGenerator}
+ * @see {@link PrismaSchemaGenerator}
+ * @see {@link ValibotSchemaGenerator}
+ * @see {@link YupSchemaGenerator}
  * @see {@link QModel.getSchema} — model-instance API that accepts this type
  */
 export type IQSchemaType =
@@ -29,4 +35,7 @@ export type IQSchemaType =
 	| 'typescript' // TypeScript interface string
 	| 'graphql' // GraphQL SDL type definition
 	| 'openapi' // OpenAPI 3.0 schema
-	| 'ajv'; // AJV validator schema
+	| 'ajv' // AJV validator schema
+	| 'prisma' // Prisma model block string
+	| 'valibot' // Valibot v1.x schema source string
+	| 'yup'; // Yup schema source string

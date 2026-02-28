@@ -87,8 +87,9 @@ export type IUnionToIntersection<U> = (
  *
  * type ICommon = IQExtractCommonKeys<IContent | IMetadata>;
  * //   ICommon = 'type'  ← the only key present in both union members
- * ```
- */
+ * ``` *
+ * @see {@link IQAdvancedOptions} — uses `IQExtractCommonKeys` to validate discriminator keys
+ * @see {@link IQDiscriminatorConfig} — discriminator configuration that constrains the key type */
 export type IQExtractCommonKeys<T> =
 	// Get all possible keys from the union
 	keyof T extends infer K
@@ -200,8 +201,9 @@ export type IQExtractValidDiscriminatorKeys<TSpec> =
  *     }
  *   }
  * })
- * ```
- */
+ * ``` *
+ * @see {@link IQDiscriminatorConfig} — uses this function type as a discriminator strategy
+ * @see {@link IQAdvancedOptions} — the options object where this function is configured */
 export type IQTypeGuardFunction<TConstructors> = (
 	data: unknown
 ) => TConstructors;
@@ -242,6 +244,9 @@ export type IQTypeGuardFunction<TConstructors> = (
  * }
  * ```
  * @group Types
+ *
+ * @see {@link IQTypeGuardFunction} — function type used as a discriminator in this config
+ * @see {@link IQAdvancedOptions} — options object that maps property names to IQDiscriminatorConfig
  */
 export type IQDiscriminatorConfig<
 	TConstructors = unknown,
@@ -318,8 +323,9 @@ export type IQDiscriminatorConfig<
  *     }
  *   }
  * })
- * ```
- */
+ * ``` *
+ * @see {@link Quick} — decorator that accepts an `IQAdvancedOptions` as its second argument
+ * @see {@link IQDiscriminatorConfig} — discriminator configuration type used within this interface */
 
 export interface IQAdvancedOptions<
 	TTypeMap extends Record<string, unknown> = Record<string, unknown>,

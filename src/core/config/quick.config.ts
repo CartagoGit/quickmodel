@@ -476,5 +476,8 @@ export class QModelConfigService {
  *   }
  * });
  * ```
+ *
+ * @see {@link QModelConfigService} — the class this singleton is an instance of
+ * @see {@link QModelConfigService.configure} — configure global defaults on this instance
  */
 export const QConfig = new QModelConfigService();

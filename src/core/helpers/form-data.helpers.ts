@@ -106,6 +106,9 @@ function isUrlString(val: unknown): val is string {
  * @returns Decoded `Blob` with the detected MIME type
  * @throws {TypeError} If the URI is missing the comma separator (invalid format)
  * @throws {DOMException} If the base64-encoded data section is malformed
+ *
+ * @see {@link appendFieldToFormData} — uses the decoded Blob when appending form fields
+ * @see {@link IBlobSerialized} — the serialized Blob format that produces data URIs
  */
 function blobFromDataUri(uri: string): Blob {
 	const comma = uri.indexOf(',');

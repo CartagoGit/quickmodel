@@ -45,7 +45,7 @@ export class QSimulateTransformationTool extends QAbstractTool<
 	async execute(args: {
 		data: Record<string, unknown>;
 		options: Record<string, unknown>;
-	}): Promise<{ result: unknown }> {
+	}): Promise<{ result: Record<string, unknown> }> {
 		await Promise.resolve();
 
 		const hydratedOptions = this.hydrateOptions(args.options);

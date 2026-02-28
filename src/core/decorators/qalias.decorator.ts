@@ -73,6 +73,11 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  * const copy = User.create(user.serialize());
  * copy.firstName === 'Alice'; // true
  * ```
+ *
+ * @param alias - The serialization/deserialization alias key to assign to this property.
+ * @returns A `PropertyDecorator` that stores the alias in reflect-metadata.
+ * @see {@link QALIAS_METADATA_KEY} — metadata key used to store the alias
+ * @see {@link QModel.serialize} — reads all QAlias metadata to rename output keys
  */
 export function QAlias(alias: string): PropertyDecorator {
 	return (target, propertyKey) => {

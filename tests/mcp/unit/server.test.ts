@@ -180,7 +180,7 @@ describe('QMcpServer', () => {
 
 	it('should get default prompts', () => {
 		const prompts = QMcpServer.getDefaultPrompts();
-		expect(prompts.length).toBe(20);
+		expect(prompts.length).toBe(23);
 		expect(
 			prompts.find(
 				(prompt) => prompt.name === 'quickmodel_from_typescript'

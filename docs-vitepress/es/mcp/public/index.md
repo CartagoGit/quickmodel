@@ -18,11 +18,11 @@ Las siguientes herramientas están disponibles para uso público.
 
 <!-- TOOLS-START -->
 
-<!-- _Generado automáticamente por QSyncDocsTool. No editar manualmente._ -->
+<!-- _Mantenido manualmente. El equivalente en inglés se genera automáticamente por QSyncDocsTool._ -->
 
 ## `create_model`
 
-Genera el código TypeScript para una clase que extiende QModel basado en una lista de propiedades. Úsalo para crear nuevos modelos rápidamente.
+Genera el código TypeScript de una clase que extiende `QModel` a partir de una lista de propiedades. Úsalo para crear nuevos modelos rápidamente.
 
 ```json
 {
@@ -49,7 +49,7 @@ Explica un error de validación de QuickModel en lenguaje humano.
 
 ## `export_json_schema`
 
-Genera una definición de JSON Schema a partir de una clase QuickModel.
+Genera una definición JSON Schema a partir de una clase QuickModel.
 
 ```json
 {
@@ -61,7 +61,7 @@ Genera una definición de JSON Schema a partir de una clase QuickModel.
 
 ## `generate_mock`
 
-Genera datos simulados (mock) para una definición de esquema dada usando QuickModel.
+Genera datos simulados (mock) para una definición de esquema usando QuickModel.
 
 ```json
 {
@@ -77,7 +77,7 @@ Genera datos simulados (mock) para una definición de esquema dada usando QuickM
 
 ## `inspect_model`
 
-Analiza una definición de clase QuickModel y explica su estructura.
+Analiza la definición de una clase QuickModel y explica su estructura.
 
 ```json
 {
@@ -89,7 +89,7 @@ Analiza una definición de clase QuickModel y explica su estructura.
 
 ## `interface_to_model`
 
-Convierte una definición de interfaz TypeScript en una clase QuickModel.
+Convierte una interfaz TypeScript en una clase QuickModel.
 
 ```json
 {
@@ -117,7 +117,7 @@ Convierte una cadena JSON en una definición de clase QuickModel con tipos infer
 
 ## `list_transformers`
 
-Lista todos los transformadores de datos disponibles en QuickModel (ej. string, date, email).
+Lista todos los transformadores de datos disponibles en QuickModel (p. ej. string, date, email).
 
 ```json
 {}
@@ -125,7 +125,7 @@ Lista todos los transformadores de datos disponibles en QuickModel (ej. string, 
 
 ## `list_validators`
 
-Lista todos los decoradores validadores integrados de QuickModel con sus firmas de uso y descripciones.
+Lista todos los decoradores de validación integrados en QuickModel con sus firmas de uso y descripciones.
 
 ```json
 {}
@@ -139,6 +139,116 @@ Busca en la documentación de QuickModel por una cadena de consulta.
 {
 	"query": {
 		"description": "The search term or phrase"
+	}
+}
+```
+
+## `check_integrity`
+
+Ejecuta comprobaciones de integridad a nivel de transformer sobre un objeto de datos. Detecta fechas inválidas, BigInts fuera de rango, RegExps malformados, etc. Complementa a `simulate_validation` (que cubre predicados de lógica de negocio con `@QRule`). Devuelve `{ valid, errors[], evaluated }`.
+
+```json
+{
+	"data": {
+		"description": "The data object to check"
+	},
+	"options": {
+		"description": "Type configuration — same format as @Quick() (e.g. { birth: \"Date\", balance: \"BigInt\" })"
+	}
+}
+```
+
+## `diff_models`
+
+Compara dos definiciones de clase QuickModel y reporta diferencias estructurales. Detecta campos añadidos/eliminados, cambios en la configuración del transformer en `@Quick({})`, y decoradores de campo añadidos/eliminados (`@QField`, `@QRule`, `@QGroup`, `@QAlias`, `@QComputed`). Análisis estático puro, sin ejecución de código. Devuelve `{ added_fields, removed_fields, changed_fields, changed_transformers, added_decorators, removed_decorators, summary }`.
+
+```json
+{
+	"model_a": {
+		"description": "Source code of the baseline QuickModel class (the \"before\")"
+	},
+	"model_b": {
+		"description": "Source code of the new QuickModel class (the \"after\")"
+	}
+}
+```
+
+## `get_form_schema`
+
+Extrae el schema de formulario de una clase QuickModel analizando sus decoradores `@QField` y `@QGroup`. Usa la API real `QModel.getFormSchema()`. Con `grouped=true` devuelve el schema agrupado por secciones `@QGroup`. Devuelve `{ schema, count }`.
+
+```json
+{
+	"code": {
+		"description": "The QuickModel class code containing @QField and optional @QGroup decorators"
+	},
+	"grouped": {
+		"description": "When true, returns the schema grouped by @QGroup sections (default: false)",
+		"optional": true
+	}
+}
+```
+
+## `get_model_schema`
+
+Genera el schema de un modelo en cualquier formato soportado a partir de una clase QuickModel. Formatos disponibles: `json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`. Usa la API real `QModel.getSchema()`.
+
+```json
+{
+	"code": {
+		"description": "The QuickModel class code (must include @Quick({...}) decorator)"
+	},
+	"format": {
+		"description": "Schema format to generate: json | openapi | zod | mongo | typescript | graphql | ajv"
+	}
+}
+```
+
+## `roundtrip`
+
+Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. Ejecuta: `s1 = new Model(data).serialize()` → `s2 = new Model(s1).serialize()` y comprueba si `s1 === s2`. Devuelve `{ lossless, input, serialized, roundtrip_serialized, diff, summary }`.
+
+```json
+{
+	"data": {
+		"description": "Raw input data to populate the model"
+	},
+	"options": {
+		"description": "@Quick() configuration options (e.g. { field: \"Date\" }). Type names must match the same strings accepted by simulate_transformation."
+	}
+}
+```
+
+## `simulate_async_rules`
+
+⚠️ **SOLO ASYNC**: Ejecuta reglas de lógica de negocio asíncronas a través de la API real `instance.checkRulesAsync()`. Úsalo SOLO cuando los predicados requieran operaciones genuinamente asíncronas (p. ej. simular consultas a BD, llamadas a API). Para reglas síncronas usa `simulate_rules` — más simple y rápido. Soporta `timeoutMs`, `timeoutMessage` y `mode: "parallel" | "serial"`.
+
+```json
+{
+	"data": {
+		"description": "The data object to validate"
+	},
+	"rules": {
+		"description": "Array of { field, predicate, message } objects. Predicate strings have access to `value` and `data`."
+	},
+	"options": {
+		"description": "Async options: { timeoutMs?, timeoutMessage?, mode?: \"parallel\" | \"serial\" }",
+		"optional": true
+	}
+}
+```
+
+## `simulate_rules`
+
+Ejecuta reglas de lógica de negocio a través de la API real `instance.checkRules()`. Aplica las reglas mediante metadatos `@QRule` para que el formato del resultado coincida exactamente con el `IQRulesResult` de producción. Usa `simulate_validation` para evaluaciones independientes de predicados; usa esta herramienta cuando necesites verificar la salida exacta de `@QRule` + `checkRules()` en runtime. Devuelve `{ valid, errors[], evaluated }`.
+
+```json
+{
+	"data": {
+		"description": "The data object to validate"
+	},
+	"rules": {
+		"description": "Array of { field, predicate, message } objects. Predicate strings have access to `value` and `data`."
 	}
 }
 ```
@@ -158,130 +268,20 @@ Simula una transformación de datos QuickModel dado un objeto de entrada y un ma
 }
 ```
 
-## `check_integrity`
-
-Ejecuta comprobaciones de integridad a nivel de transformer sobre un objeto de datos. Detecta valores `Date` inválidos, `BigInt` demasiado grandes, `RegExp` malformadas, etc. Complementa `simulate_validation` (que cubre los predicados de negocio `@QRule`). Devuelve `{ valid, errors[], evaluated }`.
-
-```json
-{
-	"data": {
-		"description": "El objeto de datos a verificar"
-	},
-	"options": {
-		"description": "Configuración de tipos — mismo formato que @Quick() (ej. { birth: \"Date\", balance: \"BigInt\" })"
-	}
-}
-```
-
-## `diff_models`
-
-Compara dos definiciones de clases QuickModel e informa las diferencias estructurales. Detecta campos añadidos/eliminados, cambios en la configuración de transformers en `@Quick({})`, y decoradores de campo añadidos/eliminados (`@QField`, `@QRule`, `@QGroup`, `@QAlias`, `@QComputed`). Análisis estático — no requiere ejecución. Devuelve `{ added_fields, removed_fields, changed_fields, changed_transformers, added_decorators, removed_decorators, summary }`.
-
-```json
-{
-	"model_a": {
-		"description": "Código fuente de la clase QuickModel de referencia (el \"antes\")"
-	},
-	"model_b": {
-		"description": "Código fuente de la nueva clase QuickModel (el \"después\")"
-	}
-}
-```
-
-## `get_form_schema`
-
-Extrae el esquema de formulario de una clase QuickModel analizando sus decoradores `@QField` y `@QGroup`. Usa la API real `QModel.getFormSchema()`. Establece `grouped=true` para obtener el esquema agrupado por secciones `@QGroup`. Devuelve `{ schema, count }`.
-
-```json
-{
-	"code": {
-		"description": "El código de la clase QuickModel con decoradores @QField y opcionalmente @QGroup"
-	},
-	"grouped": {
-		"description": "Cuando es true, devuelve el esquema agrupado por secciones @QGroup (defecto: false)",
-		"optional": true
-	}
-}
-```
-
-## `get_model_schema`
-
-Genera el esquema del modelo en cualquier formato soportado desde una definición de clase QuickModel. Formatos soportados: `json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`. Usa la API real `QModel.getSchema()` para una salida precisa.
-
-```json
-{
-	"code": {
-		"description": "El código de la clase QuickModel (debe incluir el decorador @Quick({...}))"
-	},
-	"format": {
-		"description": "Formato del esquema a generar: json | openapi | zod | mongo | typescript | graphql | ajv"
-	}
-}
-```
-
-## `roundtrip`
-
-Verifica que serializar y volver a crear una instancia de QuickModel es sin pérdida. Ejecuta: `s1 = new Model(data).serialize()` → `s2 = new Model(s1).serialize()` e informa si `s1 === s2`. Devuelve `{ lossless, input, serialized, roundtrip_serialized, diff, summary }`.
-
-```json
-{
-	"data": {
-		"description": "Datos de entrada brutos para popular el modelo"
-	},
-	"options": {
-		"description": "Opciones de configuración de @Quick() (ej. { field: \"Date\" }). Los nombres de tipo deben coincidir con los aceptados por simulate_transformation."
-	}
-}
-```
-
-## `simulate_async_rules`
-
-⚠️ **SOLO ASYNC**: Ejecuta reglas de negocio async a través de la API real `instance.checkRulesAsync()`. Usa esto SOLO cuando los predicados realmente requieran operaciones async (ej. simulando consultas a BD, llamadas a APIs). Para reglas síncronas, usa `simulate_rules` — es más simple y rápido. Soporta `timeoutMs`, `timeoutMessage` y `mode: "parallel" | "serial"`.
-
-```json
-{
-	"data": {
-		"description": "El objeto de datos a validar"
-	},
-	"rules": {
-		"description": "Array de objetos { field, predicate, message }. Las cadenas de predicado tienen acceso a `value` y `data`."
-	},
-	"options": {
-		"description": "Opciones async: { timeoutMs?, timeoutMessage?, mode?: \"parallel\" | \"serial\" }",
-		"optional": true
-	}
-}
-```
-
-## `simulate_rules`
-
-Ejecuta reglas de negocio a través de la API real `instance.checkRules()`. Aplica las reglas vía metadatos `@QRule` para que el formato del resultado coincida exactamente con `IQRulesResult` de producción. Usa `simulate_validation` para evaluación standalone de predicados; usa esta herramienta cuando necesites verificar la salida exacta de `@QRule` + `checkRules()` que producirá tu código en runtime. Devuelve `{ valid, errors[], evaluated }`.
-
-```json
-{
-	"data": {
-		"description": "El objeto de datos a validar"
-	},
-	"rules": {
-		"description": "Array de objetos { field, predicate, message }. Las cadenas de predicado tienen acceso a `value` y `data`."
-	}
-}
-```
-
 ## `simulate_validation`
 
-Simula la validación de predicados estilo `@QRule` sobre un objeto de datos. Cada regla tiene un `predicate` (expresión JS con variables `value` y `data`) y un `message`. Opcionalmente filtra por `group`. Devuelve `{ valid, errors, evaluated }`.
+Simula validación de predicados estilo `@QRule` sobre un objeto de datos. Cada regla tiene un `predicate` (expresión JS con variables `value` y `data`) y un `message`. Permite filtrar por `group`. Devuelve `{ valid, errors, evaluated }`.
 
 ```json
 {
 	"data": {
-		"description": "El objeto de datos a validar"
+		"description": "The data object to validate"
 	},
 	"rules": {
-		"description": "Array de objetos { field, predicate, message, group? }"
+		"description": "Array of { field, predicate, message, group? } objects"
 	},
 	"group": {
-		"description": "Nombre de grupo opcional — solo se ejecutarán las reglas de este grupo",
+		"description": "Optional group name — only rules with this group will run",
 		"optional": true
 	}
 }
@@ -289,7 +289,7 @@ Simula la validación de predicados estilo `@QRule` sobre un objeto de datos. Ca
 
 ## `validate_usage`
 
-Analiza un fragmento de código para verificar errores comunes de uso de QuickModel (ej. falta de declare, herencia incorrecta).
+Analiza un fragmento de código para detectar errores comunes de uso de QuickModel (p. ej. falta de `declare`, herencia incorrecta).
 
 ```json
 {

@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 import type { IQPromptResult } from '../abstract-prompt';
 
 /**
@@ -18,7 +18,7 @@ import type { IQPromptResult } from '../abstract-prompt';
  * @see {@link QSimulateValidationTool} for rule validation
  * @see {@link QSimulateTransformationTool} for transformation verification
  */
-export class QFullPipelinePrompt extends QAbstractPrompt<{
+export class QFullPipelinePrompt extends QAbstractInternalPrompt<{
 	model_code: z.ZodString;
 	sample_data: z.ZodOptional<z.ZodString>;
 }> {

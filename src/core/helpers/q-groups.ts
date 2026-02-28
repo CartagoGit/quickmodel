@@ -90,6 +90,9 @@ export function qGroups<T extends string[]>(
  * Creates a typed group-name map from a **`readonly` array** (use `as const`
  * on TS < 5.0 to preserve literal types).
  *
+ * @param groups - Readonly array of group name literals (e.g. `['identity', 'security'] as const`)
+ * @returns A `IQGroupsMap<T>` where each key maps to itself as a literal string value
+ *
  * @example
  * ```ts
  * // TS 3.4+ — as const required to keep literal types:

@@ -33,6 +33,9 @@ export {
 	GraphQLSchemaGenerator,
 	OpenAPISchemaGenerator,
 	AjvSchemaGenerator,
+	PrismaSchemaGenerator,
+	ValibotSchemaGenerator,
+	YupSchemaGenerator,
 	type ISchemaGeneratorConfig,
 } from './core/services/schema-generators.service';
 

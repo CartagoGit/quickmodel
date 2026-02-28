@@ -3,18 +3,20 @@ import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
 import { resolve as pathResolve, dirname } from 'path';
 import { enMcp } from '../../locales/en.mcp';
-import { esMcp } from '../../locales/es.mcp';
 
 /**
  * Tool to synchronize documentation content with code.
- * Automatically updates:
- * - Public Tools reference
- * - Internal Tools reference
- * - Transformers reference
+ * Automatically updates the **English** documentation pages only:
+ * - Public Tools reference (`en/mcp/public/index.md`, `en/mcp/tools.md`)
+ * - Internal Tools reference (`en/mcp/internal/index.md`, `en/mcp/contributing/tools.md`)
+ * - Transformers reference (`en/guide/transformers.md`, `es/guide/transformers.md`)
+ *
+ * All tool `description` fields are always English — the single source of truth for AI agents.
+ * Spanish docs pages (`docs-vitepress/es/mcp/`) are human-facing and reference English tool
+ * names; they are NOT generated from a locale file.
  *
  * @see {@link QUpdateDocsTool} — trigger the full documentation build pipeline
  * @see {@link QCheckMissingJSDocsTool} — find exports missing JSDoc before syncing
- * @see {@link esMcp} — Spanish locale strings used to generate documentation pages
  */
 export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'update_docs_content';
@@ -29,6 +31,10 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	 * Regenerates documentation pages for public tools, internal tools, and
 	 * transformers for every supported locale by reflecting on the live tool
 	 * and transformer registrations.
+	 *
+	 * Tool descriptions are always sourced from `tool.description` (English,
+	 * the single source of truth in code). `enMcp` structural strings are used
+	 * for all locales — there is no separate Spanish locale file.
 	 *
 	 * @returns `{ summary, updatedFiles }` — `updatedFiles` lists the absolute
 	 * paths of every Markdown file that was written; `summary` is a human-
@@ -56,93 +62,48 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		const transformers =
 			new TransformerLookupService().getAvailableTransformers();
 
-		// 3. Process each language
-		const languages = [
-			{ code: 'en', texts: enMcp },
-			{ code: 'es', texts: esMcp },
-		];
+		// 3. Build tool docs once (always English — tool.description is the source of truth)
+		const publicDocs = this.generateToolMd(publicTools, enMcp.generatedBy);
+		const internalDocs = this.generateToolMd(
+			internalTools,
+			enMcp.generatedBy
+		);
 
-		for (const lang of languages) {
-			const langTexts = lang.texts as any;
-			const isEn = lang.code === 'en';
+		// 4. Inject tool docs into English pages only.
+		// Spanish docs (es/mcp/) are human-facing pages — not auto-generated. Tool descriptions are always English.
+		this.injectDoc(
+			pathResolve(cwd, `docs-vitepress/en/mcp/public/index.md`),
+			publicDocs,
+			updatedFiles
+		);
+		this.injectDoc(
+			pathResolve(cwd, `docs-vitepress/en/mcp/tools.md`),
+			publicDocs,
+			updatedFiles
+		);
+		this.injectDoc(
+			pathResolve(cwd, `docs-vitepress/en/mcp/internal/index.md`),
+			internalDocs,
+			updatedFiles
+		);
+		this.injectDoc(
+			pathResolve(cwd, `docs-vitepress/en/mcp/contributing/tools.md`),
+			internalDocs,
+			updatedFiles
+		);
 
-			// Helper to get description
-			// If English, use tool.description (Source of Truth in Code) if not in file (or just always tool.desc?)
-			// User said: "use translations". But for English, tool.description IS the text.
-			// Ideally en.mcp.ts shouldn't double maintain it.
-			// Let's assume for 'en', we prefer tool.description.
-			// For 'es', we look in langTexts.tools[name].
-			const getDesc = (name: string, defaultDesc: string) => {
-				if (langTexts.tools && langTexts.tools[name]) {
-					return langTexts.tools[name];
-				}
-				// If not found in translation file
-				if (isEn) {
-					return defaultDesc; // For English, use code description
-				}
-				// For other languages, fallback to English with a warning prefix? Or just English.
-				// User wants "unified", so maybe we should enforce it?
-				// But let's just return defaultDesc (English) as fallback.
-				return defaultDesc;
-			};
-
-			// Generate Tools Documentation
-			const publicDocs = this.generateToolMd(
-				publicTools,
-				langTexts,
-				getDesc
-			);
-			const internalDocs = this.generateToolMd(
-				internalTools,
-				langTexts,
-				getDesc
-			);
-
-			this.injectDoc(
-				pathResolve(
-					cwd,
-					`docs-vitepress/${lang.code}/mcp/public/index.md`
-				),
-				publicDocs,
-				updatedFiles
-			);
-			this.injectDoc(
-				pathResolve(cwd, `docs-vitepress/${lang.code}/mcp/tools.md`),
-				publicDocs,
-				updatedFiles
-			);
-			this.injectDoc(
-				pathResolve(
-					cwd,
-					`docs-vitepress/${lang.code}/mcp/internal/index.md`
-				),
-				internalDocs,
-				updatedFiles
-			);
-			this.injectDoc(
-				pathResolve(
-					cwd,
-					`docs-vitepress/${lang.code}/mcp/contributing/tools.md`
-				),
-				internalDocs,
-				updatedFiles
-			);
-
-			// Generate Transformers Documentation
-			const transformerDocs = this.generateTransformerMd(
-				transformers,
-				langTexts
-			);
-
-			this.writeDoc(
-				pathResolve(
-					cwd,
-					`docs-vitepress/${lang.code}/guide/transformers.md`
-				),
-				transformerDocs,
-				updatedFiles
-			);
-		}
+		// Transformer docs: auto-generate for both locales (structural only, no tool descriptions)
+		const transformerDocs = this.generateTransformerMd(transformers, enMcp);
+		this.writeDoc(
+			pathResolve(cwd, `docs-vitepress/en/guide/transformers.md`),
+			transformerDocs,
+			updatedFiles
+		);
+		this.writeDoc(
+			pathResolve(cwd, `docs-vitepress/es/guide/transformers.md`),
+			transformerDocs,
+			updatedFiles
+		);
 
 		return {
 			summary: `Successfully updated ${updatedFiles.length} documentation files.`,
@@ -152,29 +113,22 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 
 	/**
 	 * Generates a Markdown section listing all tools in a category.
+	 * Tool descriptions are taken directly from `tool.description` (English,
+	 * single source of truth — no translation lookup needed).
 	 *
 	 * @param tools - Array of tool instances to document
-	 * @param texts - Locale-specific text strings
-	 * @param descLookup - Function resolving a tool's localised description
+	 * @param generatedBy - Footer comment string for the generated block
 	 * @returns Markdown string with one `##` section per tool
 	 */
-	private generateToolMd(
-		tools: any[],
-		texts: Record<string, any>,
-		descLookup: (name: string, defaultDesc: string) => string
-	): string {
-		// Title is handled by the parent index.md usually, but let's add a separator or subheader if needed.
-		// For now, we just append the list of tools.
+	private generateToolMd(tools: any[], generatedBy: string): string {
 		let md = `\n\n`;
-		md += `<!-- ${texts.generatedBy} -->\n\n`;
+		md += `<!-- ${generatedBy} -->\n\n`;
 
 		for (const tool of tools) {
 			md += `## \`${tool.name}\`\n\n`;
-			// Use translation lookup
-			let desc = descLookup(tool.name, tool.description);
 
 			// SECURITY: Escape HTML characters to prevent XSS in generated docs
-			desc = desc
+			const desc = (tool.description as string)
 				.replace(/&/g, '&amp;')
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')
@@ -182,7 +136,6 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 				.replace(/'/g, '&#039;');
 
 			md += `${desc}\n\n`;
-			// md += `### ${texts.inputSchema}\n\n`;
 			md += `\`\`\`json\n`;
 			const shape = tool.schema.shape || {};
 			const simpleSchema: any = {};

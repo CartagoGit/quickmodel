@@ -92,6 +92,9 @@ export interface IQCheckRulesAsyncOptions extends IQRulesAsyncOptions {
  * // Serial execution (predicates run one-by-one):
  * await qCheckRulesAsync(form, { mode: 'serial' });
  * ```
+ *
+ * @see {@link IQCheckRulesAsyncOptions} — options accepted by this function
+ * @see {@link qCheckRules} — synchronous variant
  */
 export async function qCheckRulesAsync(
 	instance: object,

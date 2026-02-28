@@ -2,6 +2,9 @@
  * Utility types for type-safe serialization/deserialization
  *
  * These types correctly map TypeScript types to their IQSerialized representations
+ *
+ * @see {@link QModel.serialize} — method that produces the serialized shape
+ * @see {@link IQImplements} — helper that maps serialized types to property types
  */
 
 /**
@@ -44,67 +47,94 @@ export type IQSerialized<T> = T extends RegExp
 						: T extends symbol
 							? string | { __type: 'symbol'; description: string }
 							: T extends Int8Array
-								? number[]
+								? number[] | string
 								: T extends Uint8Array
-									? number[]
+									? number[] | string
 									: T extends Uint8ClampedArray
-										? number[]
+										? number[] | string
 										: T extends Int16Array
-											? number[]
+											? number[] | string
 											: T extends Uint16Array
-												? number[]
+												? number[] | string
 												: T extends Int32Array
-													? number[]
+													? number[] | string
 													: T extends Uint32Array
-														? number[]
+														? number[] | string
 														: T extends Float32Array
-															? number[]
+															? number[] | string
 															: T extends Float64Array
-																? number[]
+																?
+																		| number[]
+																		| string
 																: T extends BigInt64Array
-																	? string[]
+																	?
+																			| string[]
+																			| string
 																	: T extends BigUint64Array
-																		? string[]
+																		?
+																				| string[]
+																				| string
 																		: T extends ArrayBuffer
-																			? number[]
+																			?
+																					| number[]
+																					| string
 																			: T extends DataView
-																				? number[]
-																				: T extends Map<
-																							infer K,
-																							infer V
-																					  >
+																				?
+																						| number[]
+																						| string
+																				: T extends File
 																					?
-																							| [
-																									IQSerialized<K>,
-																									IQSerialized<V>,
-																							  ][]
+																							| string
 																							| {
-																									__type: 'Map';
-																									entries: [
-																										K,
-																										V,
-																									][];
+																									name: string;
+																									size: number;
+																									type: string;
+																									lastModified: number;
 																							  }
-																					: T extends Set<
-																								infer U
-																						  >
+																					: T extends Blob
 																						?
-																								| IQSerialized<U>[]
+																								| string
 																								| {
-																										__type: 'Set';
-																										values: U[];
+																										size: number;
+																										type: string;
+																										_blobRef: boolean;
 																								  }
-																						: T extends Array<
-																									infer U
+																						: T extends Map<
+																									infer K,
+																									infer V
 																							  >
-																							? IQSerialized<U>[]
-																							: T extends object
-																								? {
-																										[K in keyof T]: IQSerialized<
-																											T[K]
-																										>;
-																									}
-																								: T; // primitivos (string, number, boolean, null, undefined)
+																							?
+																									| [
+																											IQSerialized<K>,
+																											IQSerialized<V>,
+																									  ][]
+																									| {
+																											__type: 'Map';
+																											entries: [
+																												K,
+																												V,
+																											][];
+																									  }
+																							: T extends Set<
+																										infer U
+																								  >
+																								?
+																										| IQSerialized<U>[]
+																										| {
+																												__type: 'Set';
+																												values: U[];
+																										  }
+																								: T extends Array<
+																											infer U
+																									  >
+																									? IQSerialized<U>[]
+																									: T extends object
+																										? {
+																												[K in keyof T]: IQSerialized<
+																													T[K]
+																												>;
+																											}
+																										: T; // primitivos (string, number, boolean, null, undefined)
 
 /**
  * Maps every property of an interface to its {@link IQSerialized} equivalent.

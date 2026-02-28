@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Guided refactoring cycle with TDD gates.
@@ -13,7 +13,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QLintCheckTool} for the lint gate
  * @see {@link QCheckProjectRulesTool} for the project rules gate
  */
-export class QRefactorPrompt extends QAbstractPrompt<{
+export class QRefactorPrompt extends QAbstractInternalPrompt<{
 	description: z.ZodString;
 	file_paths: z.ZodOptional<z.ZodString>;
 }> {

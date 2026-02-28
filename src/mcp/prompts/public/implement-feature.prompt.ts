@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Guided TDD feature implementation with enforced lint + typecheck gate.
@@ -18,7 +18,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QTypecheckTool} for the typecheck gate
  * @see {@link QCheckProjectRulesTool} for the project rules gate
  */
-export class QImplementFeaturePrompt extends QAbstractPrompt<{
+export class QImplementFeaturePrompt extends QAbstractInternalPrompt<{
 	feature_description: z.ZodString;
 	file_paths: z.ZodOptional<z.ZodString>;
 }> {
@@ -86,6 +86,7 @@ export class QImplementFeaturePrompt extends QAbstractPrompt<{
 						`### Step 2 — 🟢 Implement the minimum code to pass\n\n` +
 						`Now write the production code:\n` +
 						`- Follow **strict TypeScript** (\`strict: true\`, \`noImplicitAny\`, \`noUncheckedIndexedAccess\`)\n` +
+						`- **Avoid \`as unknown\`**: it signals that the types are wrong — fix them instead. \`as any\` is even worse and never acceptable. If there is a genuinely unavoidable edge case, add \`// @quickmodel-rule-ignore: no-as-unknown\` on that line.\n` +
 						`- Respect **ESLint rules**:\n` +
 						`  - \`id-length\`: identifiers ≥ 3 chars (exceptions: \`_\`, \`id\`, \`on\`, \`fs\`, \`cb\`, \`md\`, \`ts\`, \`err\`, \`_\` prefix)\n` +
 						`  - \`max-params\`: maximum 3 positional parameters per function\n` +
@@ -114,7 +115,7 @@ export class QImplementFeaturePrompt extends QAbstractPrompt<{
 						`### Step 5 — 🚦 MANDATORY Project Rules Gate\n\n` +
 						`> ⛔ **You CANNOT declare the feature done until this returns \`passed: true\`.**\n\n` +
 						`Call \`check_project_rules\`.\n` +
-						`- Checks: \`@Quick\` vs \`@QType\`, \`console.log\`, id-length, max-params, naming convention, restricted imports\n` +
+						`- Checks: \`@Quick\` vs \`@QType\`, \`console.log\`, id-length, max-params, naming convention, restricted imports, **no-as-unknown**\n` +
 						`- Fix all items in \`errors[]\`, re-run until \`passed: true\`\n\n` +
 						`---\n\n` +
 						`### Step 6 — ✅ Feature is DONE\n\n` +

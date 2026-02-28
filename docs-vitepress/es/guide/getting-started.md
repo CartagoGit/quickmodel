@@ -12,9 +12,10 @@ QuickModel es una librería de TypeScript que proporciona serialización y deser
 - **Validación de Negocio**: Decorador `@QRule` con 14 validadores integrados, validaciones asíncronas y comprobación de reglas por grupos.
 - **Gestión de Estado**: Seguimiento de cambios con `isDirty`, actualizaciones parciales mediante `copy(partial)` y `patch()`, y `reset()` para restaurar el snapshot original.
 - **Propiedades Calculadas y Alias**: `@QComputed` para campos derivados y `@QAlias` para alias de propiedades.
-- **Generación de Schemas**: Exportación a 7 formatos (`json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`) mediante `getSchema()`.
+- **Generación de Schemas**: Exportación a 10 formatos (`json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`, `prisma`, `valibot`, `yup`) mediante `getSchema()`.
 - **Integración con Formularios**: Genera schemas de formulario con los decoradores `@QField` y `@QGroup` y el método `getFormSchema()`.
 - **Generación de Mocks**: Generación integrada de datos de prueba (`User.mock().random()`, `User.mock().fromSchema()`).
+- **Scaffolding CLI**: Genera clases de modelo, skeletons de transformer y boilerplate de integración con `npx quickmodel generate`.
 - **Servidor MCP**: 20 herramientas públicas para asistentes de IA y 20 plantillas de prompts para desarrollo asistido por IA.
 - **Seguridad**: Protección integrada contra DoS, límites de tamaño de payload, guardas de recursión y prevención de XSS.
 - **Arquitectura SOLID**: Diseño limpio y extensible — registra transformers personalizados sin modificar el código base.

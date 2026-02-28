@@ -24,6 +24,9 @@ import {
 	QApplySolidPrompt,
 	QSyncProjectPrompt,
 	QFormDataPrompt,
+	QTraceModelPrompt,
+	QVerifyDeliveryPrompt,
+	QDrizzlePrompt,
 } from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -50,6 +53,9 @@ import {
 	QGetFormSchemaTool,
 	QGetModelSchemaTool,
 	QSimulateValidationTool,
+	QGenerateFeatureTestsTool,
+	QExplainTransformationTool,
+	QGenerateIntegrationTestTool,
 } from './tools/public';
 
 import {
@@ -73,6 +79,12 @@ import {
 	QRunTestsTool,
 	QGetStagedFilesTool,
 	QProjectStatusTool,
+	QCheckDocDriftTool,
+	QCheckDocParityTool,
+	QDeprecationTrackerTool,
+	QManageProposalTool,
+	QPatchJSDocTool,
+	QValidateExamplesTool,
 } from './tools/internal';
 /**
  * Main entry point for the **QuickModel MCP Server**.
@@ -164,6 +176,9 @@ export class QMcpServer {
 			new QRoundtripTool(),
 			new QDiffModelsTool(),
 			new QJsonToModelTool(),
+			new QGenerateFeatureTestsTool(),
+			new QExplainTransformationTool(),
+			new QGenerateIntegrationTestTool(),
 		];
 	}
 
@@ -202,6 +217,12 @@ export class QMcpServer {
 			new QScaffoldFeatureTool(),
 			new QCheckApiCompatibilityTool(),
 			new QBenchmarkPerformanceTool(),
+			new QCheckDocDriftTool(),
+			new QCheckDocParityTool(),
+			new QDeprecationTrackerTool(),
+			new QManageProposalTool(),
+			new QPatchJSDocTool(),
+			new QValidateExamplesTool(),
 		];
 	}
 
@@ -256,6 +277,9 @@ export class QMcpServer {
 			new QApplySolidPrompt(),
 			new QSyncProjectPrompt(),
 			new QFormDataPrompt(),
+			new QTraceModelPrompt(),
+			new QVerifyDeliveryPrompt(),
+			new QDrizzlePrompt(),
 		];
 	}
 

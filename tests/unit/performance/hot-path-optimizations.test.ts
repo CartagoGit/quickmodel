@@ -693,11 +693,11 @@ describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
 	test('serialize() en modelo con anidamiento sigue siendo correcto', () => {
 		// PersonAddr / CityAddress son modelos ya definidos arriba en Suite 6/7
 		const addr = new CityAddress({ city: 'Madrid', zip: '28001' });
-		const person = new PersonAddr({ nom: 'Sara', address: addr });
+		const person = new PersonAddr({ fullName: 'Sara', address: addr });
 
 		const result = person.serialize();
 
-		expect(result.nom).toBe('Sara');
+		expect(result.fullName).toBe('Sara');
 		expect((result.address as Record<string, unknown>).city).toBe('Madrid');
 		expect((result.address as Record<string, unknown>).zip).toBe('28001');
 	});
@@ -743,29 +743,29 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		const nodeB = new SelfRefNode({ nom: 'NodeB', age: 2 });
 
 		// Circular: nodeA.ref → nodeB, nodeB.ref → nodeA
-		(nodeA as Record<string, unknown>).ref = nodeB;
-		(nodeB as Record<string, unknown>).ref = nodeA;
+		nodeA.ref = nodeB;
+		nodeB.ref = nodeA;
 
 		const result = nodeA.serialize();
 
 		// nodeA.ref (nodeB) serializa bien, pero nodeB.ref (nodeA) ya fue visitado → __circular
 		expect(result.nom).toBe('NodeA');
-		const refB = result.ref as Record<string, unknown>;
-		expect(refB.nom).toBe('NodeB');
-		expect(refB.ref).toEqual({ __circular: true });
+		const refB = result.ref;
+		expect(refB?.nom).toBe('NodeB');
+		expect(refB?.ref as unknown).toEqual({ __circular: true });
 	});
 
 	test('primitivos antes del campo circular no rompen la detección de ciclo', () => {
 		// Similar al anterior pero verifica que campos anteriores al circular se serializan
 		const nodeA = new SelfRefNode({ nom: 'Alpha', age: 42 });
-		(nodeA as Record<string, unknown>).ref = nodeA; // self-reference
+		nodeA.ref = nodeA; // self-reference
 
 		const result = nodeA.serialize();
 
 		expect(result.nom).toBe('Alpha');
 		expect(result.age).toBe(42);
 		// El campo ref es el propio nodeA que ya fue visitado → __circular
-		expect(result.ref).toEqual({ __circular: true });
+		expect(result.ref as unknown).toEqual({ __circular: true });
 	});
 
 	test('anidamiento válido (no circular) sigue funcionando con lazy WeakSet', () => {
@@ -895,21 +895,21 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 	test('NaN produce token especial { __qm: "nan" } (no short-circuited)', () => {
 		const mdl = new SpecialFloatModel({ val: 0 });
 		// Asignar NaN directamente porque el constructor puede coercionar
-		(mdl as Record<string, unknown>).val = NaN;
+		mdl.val = NaN;
 		const out = mdl.serialize() as Record<string, unknown>;
 		expect(out.val).toEqual({ __qm: 'nan' });
 	});
 
 	test('Infinity produce token especial { __qm: "inf" } (no short-circuited)', () => {
 		const mdl = new SpecialFloatModel({ val: 0 });
-		(mdl as Record<string, unknown>).val = Infinity;
+		mdl.val = Infinity;
 		const out = mdl.serialize() as Record<string, unknown>;
 		expect(out.val).toEqual({ __qm: 'inf' });
 	});
 
 	test('-Infinity produce token especial { __qm: "-inf" } (no short-circuited)', () => {
 		const mdl = new SpecialFloatModel({ val: 0 });
-		(mdl as Record<string, unknown>).val = -Infinity;
+		mdl.val = -Infinity;
 		const out = mdl.serialize() as Record<string, unknown>;
 		expect(out.val).toEqual({ __qm: '-inf' });
 	});

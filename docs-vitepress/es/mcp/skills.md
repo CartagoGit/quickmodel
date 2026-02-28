@@ -14,22 +14,23 @@ Usa una **herramienta** cuando necesites una operación única y precisa (ej. `s
 
 > Para desarrolladores que **usan** QuickModel en sus aplicaciones.
 
-| Nombre del skill                                                  | Título                                     | Descripción                                                                  |
-| ----------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel     | Genera una clase QModel a partir de una interfaz TS                          |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                      | Diagnostica y corrige errores de validación o transformación                 |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel | Crea datos mock realistas verificados en el pipeline                         |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspeccionar Modelo y Exportar Schema      | Inspecciona un modelo y exporta su schema en múltiples formatos              |
-| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Añadir Validación de Formulario            | Flujo guiado para añadir `@QField`, `@QRule` y `@QGroup`                     |
-| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Recorrer el Pipeline Completo              | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`             |
-| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extender Clase Base con Mixin QModel       | `QModel.extends(BaseClass)` para entidades TypeORM / NestJS                  |
-| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                  | Remapeo de nombres de campo y serialización de getters                       |
-| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código legado a patrones idiomáticos de QuickModel |
-| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos                 |
-| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo             |
-| [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                             |
-| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo                     |
-| [`quickmodel_form_data`](#quickmodel_form_data)                   | Guía de Integración FormData ↔ QModel      | `fromFormData()`, `toFormData()`, fileMode/fileSource, streaming             |
+| Nombre del skill                                                  | Título                                          | Descripción                                                                             |
+| ----------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convertir Interfaz TypeScript a QModel          | Genera una clase QModel a partir de una interfaz TS                                     |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Depurar un QuickModel                           | Diagnostica y corrige errores de validación o transformación                            |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generar Datos de Prueba para un QuickModel      | Crea datos mock realistas verificados en el pipeline                                    |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspeccionar Modelo y Exportar Schema           | Inspecciona un modelo y exporta su schema en múltiples formatos                         |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Añadir Validación de Formulario                 | Flujo guiado para añadir `@QField`, `@QRule` y `@QGroup`                                |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Recorrer el Pipeline Completo                   | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`                        |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extender Clase Base con Mixin QModel            | `QModel.extends(BaseClass)` para entidades TypeORM / NestJS                             |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                       | Remapeo de nombres de campo y serialización de getters                                  |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel               | Convierte clases planas / código legado a patrones idiomáticos de QuickModel            |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()           | Solo async: BD, APIs externas — NO para predicados síncronos                            |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                        | Agrupa campos y activa `checkGroups()` para validación por grupo                        |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                           | Mass assignment, DoS, prototype pollution, ReDoS                                        |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                            | Elige el transformer correcto para un tipo TS y simúlalo                                |
+| [`quickmodel_form_data`](#quickmodel_form_data)                   | Guía de Integración FormData ↔ QModel           | `fromFormData()`, `toFormData()`, fileMode/fileSource, streaming                        |
+| [`quickmodel_drizzle`](#quickmodel_drizzle)                       | Generar DTO QuickModel desde schema Drizzle ORM | Mapeo de tipos de columna, `unknownPropertyPolicy: 'strip'`, patrones insert/repository |
 
 ::: info Skills de Mantenimiento (solo contribuidores)
 Los skills para contribuidores que trabajan en el código base de QuickModel están en una sección separada: **[Skills Internos →](./contributing/skills)**.
@@ -634,3 +635,83 @@ file_size: "small"
 → IA muestra: const outFd = dto.toFormData({ fileMode: 'reference' })
 → Devuelve guía de integración completa para el escenario
 ```
+
+---
+
+## `quickmodel_drizzle`
+
+**Genera un DTO QuickModel con tipos seguros desde un esquema de tabla Drizzle ORM.**
+
+Guía a la IA por el flujo completo Drizzle → QuickModel: analiza el esquema de la tabla, mapea cada tipo de columna Drizzle a la configuración correcta de transformer en `@Quick()`, genera la clase DTO (con decoradores opcionales `@QRule` / `@QComputed` / `@QField`), llama a `validate_usage` para verificar la corrección y opcionalmente `simulate_transformation` para confirmar la coerción de tipos con una fila de muestra real.
+
+### Argumentos
+
+| Argumento        | Obligatorio | Descripción                                                                                                                                                                                          |
+| ---------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `drizzle_schema` | ✅ Sí       | Definición del esquema de tabla Drizzle (ej. `export const users = pgTable('users', { id: integer().primaryKey(), createdAt: timestamp().notNull() })`)                                              |
+| `dto_name`       | ✗ No        | Nombre opcional para la clase DTO de lectura (por defecto: nombre de la tabla en PascalCase + `Dto`, ej. `UserDto`)                                                                                  |
+| `patterns`       | ✗ No        | Lista separada por comas de patrones adicionales: `insert` (CreateDto + `@QRule`), `repository` (clase DrizzleRepository), `copy` (actualización parcial), `createMany` (seed masivo), `async-rules` |
+
+### Mapeo de tipos de columna
+
+| Tipo de columna Drizzle                          | Mapping en `@Quick()` | Notas                                            |
+| ------------------------------------------------ | --------------------- | ------------------------------------------------ |
+| `timestamp()` / `date()`                         | `Date`                | Convierte string ISO → instancia `Date`          |
+| `integer()` / `serial()` / `bigint()` / `real()` | `'number'`            | Maneja coerción de strings desde queries raw     |
+| `varchar()` / `text()` / `char()`                | `'string'`            | Sin transformación necesaria                     |
+| `boolean()`                                      | `'boolean'`           | Convierte strings `'true'`/`'false'`             |
+| `jsonb()` / `json()`                             | `'string'`            | JSON.stringify antes de insertar, .parse al leer |
+
+### Configuración Drizzle aplicada automáticamente
+
+- `unknownPropertyPolicy: 'strip'` — elimina artefactos de joins, `_count`, campos relacionales, columnas de auditoría
+- `coercionStrategy: 'loose'` — maneja coerción de primitivos desde queries raw
+
+### Patrones disponibles
+
+| Patrón        | Qué se genera                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `select`      | Siempre generado — el DTO principal de lectura                                           |
+| `insert`      | `Create[Nombre]Dto` con validadores `@QRule` para operaciones de creación                |
+| `repository`  | `Drizzle[Nombre]Repository` con `insert()`, `findById()`, `findAll()`, `delete()`        |
+| `copy`        | Patrón de actualización parcial: `existing.copy({ campo: valor })` → `db.update().set()` |
+| `createMany`  | Seed/importación masiva usando `[Nombre]Dto.createMany(seed)`                            |
+| `async-rules` | Validación de unicidad a nivel BD con `qCheckRulesAsync()`                               |
+
+### Flujo de trabajo
+
+1. **Analizar columnas** — mapear cada columna Drizzle a su tipo de transformer en QuickModel
+2. **Aplicar configuración** — siempre incluir `unknownPropertyPolicy: 'strip'` y `coercionStrategy: 'loose'`
+3. **Generar DTO** — producir la clase `@Quick({...}) class [Nombre]Dto extends QModel<I[Nombre]Dto>`
+4. `validate_usage` — verificar la clase generada en busca de errores estructurales
+5. `simulate_transformation` — ejecutar una fila de muestra para confirmar la coerción de Date/number
+6. **Patrones opcionales** — generar DTO de inserción, repository, copia/actualización, seed, reglas async según se necesite
+
+### Herramientas usadas internamente
+
+1. `validate_usage` — verifica la clase generada en busca de errores en `declare`, `@Quick` y `extends QModel<T>`
+2. `simulate_transformation` — confirma la coerción de tipos con una fila Drizzle de muestra (strings ISO para timestamps, etc.)
+
+### Ejemplo
+
+```
+drizzle_schema: "export const users = pgTable('users', { id: integer().primaryKey(), name: varchar({ length: 255 }), createdAt: timestamp().notNull() })"
+dto_name: "UserRowDto"
+patterns: "insert,repository"
+
+→ IA mapea: id → number, name → string, createdAt → Date
+→ IA genera:
+    @Quick({ createdAt: Date }, { unknownPropertyPolicy: 'strip', coercionStrategy: 'loose' })
+    class UserRowDto extends QModel<IUserRowDto> {
+        declare id: number;
+        declare name: string;
+        declare createdAt: Date;
+    }
+→ IA llama a validate_usage({ code: "..." })
+→ IA llama a simulate_transformation({ data: { id: 1, name: "Alice", createdAt: "2024-01-15T..." }, ... })
+→ IA genera CreateUserRowDtoDto con validadores @QRule
+→ IA genera DrizzleUserRowDtoRepository
+→ Devuelve código completo del DTO + patrones
+```
+
+> 📖 **[Guía de Integración Drizzle ORM](/es/integrations/drizzle-integration)** — referencia completa sobre mapeo de columnas, patrones de repository y campos calculados.

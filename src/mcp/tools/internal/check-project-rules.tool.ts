@@ -18,7 +18,7 @@ const ID_LENGTH_EXCEPTIONS = new Set([
 /**
  * Tool to enforce project-specific coding standards and rules.
  * Checks: @Quick/@QType preference, console.log, id-length, max-params,
- * naming-convention (I prefix), and no-restricted-imports.
+ * naming-convention (I prefix), no-restricted-imports, and no-as-unknown.
  *
  * @see {@link QLintCheckTool} — full ESLint validation
  * @see {@link QTypecheckTool} — TypeScript type-checking
@@ -31,7 +31,8 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	description =
 		'Enforce internal project rules: @Quick over @QType in tests, no console.log, ' +
 		'id-length (min 3 chars), max-params (max 3), naming-convention (I prefix for ' +
-		'interfaces/types), and no-restricted-imports (quickmodel, bare @mcp).';
+		'interfaces/types), no-restricted-imports (quickmodel, bare @mcp), and ' +
+		'no-as-unknown (avoid `as unknown` casts — fix the types instead).';
 	schema = z.object({
 		targetDir: z
 			.string()
@@ -45,7 +46,8 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	 *
 	 * Checks include: `@Quick` vs `@QType` in tests, no bare `console.log`,
 	 * `id-length` ≥ 3 characters, `max-params` ≤ 3, `I` prefix for interfaces /
-	 * type aliases, and prohibited import paths (`quickmodel`, bare `@mcp`).
+	 * type aliases, prohibited import paths (`quickmodel`, bare `@mcp`), and
+	 * `no-as-unknown` (both `src/` and `tests/`).
 	 *
 	 * @param args - Scan configuration.
 	 * @param args.targetDir - Directory to scan (relative to project root).
@@ -90,14 +92,17 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 
 		for (const file of testFiles) {
 			const content = readFileSync(file, 'utf-8');
+			const relativePath = file.replace(absRoot, '');
 			const firstLines = content.split('\n').slice(0, 10).join('\n');
-			if (firstLines.includes('@quickmodel-rule-ignore: prefer-quick'))
-				continue;
-			if (/@QType\(/.test(content)) {
-				errors.push(
-					`[Rule: Prefer @Quick] Found @QType usage in test file: ${file.replace(absRoot, '')}. Please use @Quick({...}) instead.`
-				);
+			if (!firstLines.includes('@quickmodel-rule-ignore: prefer-quick')) {
+				if (/@QType\(/.test(content)) {
+					errors.push(
+						`[Rule: Prefer @Quick] Found @QType usage in test file: ${relativePath}. Please use @Quick({...}) instead.`
+					);
+				}
 			}
+			// Rule 7: no-as-unknown (also applies to tests)
+			this.checkAsUnknown(content, relativePath, errors);
 		}
 
 		// ── Src-level rules (Rules 2-6) ──────────────────────────────────────
@@ -134,6 +139,9 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 
 			// Rule 6: no-restricted-imports
 			this.checkRestrictedImports(content, relativePath, errors);
+
+			// Rule 7: no-as-unknown
+			this.checkAsUnknown(content, relativePath, errors);
 		}
 
 		return {
@@ -451,6 +459,55 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 			if (/from\s+['"]@mcp['"]/.test(line)) {
 				errors.push(
 					`[Rule: no-restricted-imports] Bare import from '@mcp' is forbidden at ${relativePath}:${idx + 1}. Specify the full path, e.g. '@mcp/server'.`
+				);
+			}
+		}
+	}
+
+	// ── Rule 7 helper ─────────────────────────────────────────────────────────
+	/**
+	 * Checks source and test files for `as unknown` casts.
+	 *
+	 * `as unknown` is a signal that the types are not correct — fix them instead.
+	 * `as any` is even worse and is never acceptable.
+	 * If a cast is truly unavoidable (e.g. in a test simulating a value that
+	 * cannot exist at runtime), use `as unknown` over `as any` and add
+	 * `// @quickmodel-rule-ignore: no-as-unknown` on that line (or in the first
+	 * 10 lines of the file to skip the whole file).
+	 * The default must always be: fix the types.
+	 *
+	 * @param content - Source file content to analyse
+	 * @param relativePath - File path used in error messages
+	 * @param errors - Mutable array to push violation messages into
+	 */
+	private checkAsUnknown(
+		content: string,
+		relativePath: string,
+		errors: string[]
+	): void {
+		const allLines = content.split('\n');
+		const firstLines = allLines.slice(0, 10).join('\n');
+		if (firstLines.includes('@quickmodel-rule-ignore: no-as-unknown'))
+			return;
+
+		for (let idx = 0; idx < allLines.length; idx++) {
+			const line = allLines[idx]!;
+			const trimmed = line.trim();
+			if (
+				trimmed.startsWith('//') ||
+				trimmed.startsWith('*') ||
+				trimmed.startsWith('/*')
+			)
+				continue;
+			if (line.includes('@quickmodel-rule-ignore: no-as-unknown'))
+				continue;
+			if (/\bas\s+unknown\b/.test(line)) {
+				errors.push(
+					`[Rule: no-as-unknown] 'as unknown' at ${relativePath}:${idx + 1} — ` +
+						`this means the types are wrong; fix them instead of casting. ` +
+						`('as any' is even worse and never acceptable.) ` +
+						`If there is a genuinely unavoidable edge case, ` +
+						`add '// @quickmodel-rule-ignore: no-as-unknown' on the line.`
 				);
 			}
 		}

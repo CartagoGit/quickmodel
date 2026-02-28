@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 import type { IQPromptResult } from '../abstract-prompt';
 
 /**
@@ -15,7 +15,7 @@ import type { IQPromptResult } from '../abstract-prompt';
  * @see {@link QCheckSecurityTool} for the security check step
  * @see {@link QCheckIntegrityTool} for integrity validation
  */
-export class QSecurityReviewPrompt extends QAbstractPrompt<{
+export class QSecurityReviewPrompt extends QAbstractInternalPrompt<{
 	model_code: z.ZodOptional<z.ZodString>;
 }> {
 	name = 'quickmodel_security_review';

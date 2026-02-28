@@ -1,4 +1,4 @@
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Full project synchronisation — keeps tests, lint, typecheck and
@@ -12,7 +12,9 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QProjectStatusTool} for the health snapshot step
  * @see {@link QSyncDocsTool} for the documentation regeneration step
  */
-export class QSyncProjectPrompt extends QAbstractPrompt<Record<string, never>> {
+export class QSyncProjectPrompt extends QAbstractInternalPrompt<
+	Record<string, never>
+> {
 	name = 'quickmodel_sync_project';
 	title = 'Sync Project (health + documentation, gate-enforced)';
 	description =

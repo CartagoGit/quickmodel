@@ -64,6 +64,9 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  * results[Groups.identity].valid; // false
  * results[Groups.security].valid; // true
  * ```
+ *
+ * @see {@link qCheckRules} — the underlying function called per group
+ * @see {@link qCheckRulesByGroupAsync} — async variant of this function
  */
 export function qCheckRulesByGroup(
 	instance: object

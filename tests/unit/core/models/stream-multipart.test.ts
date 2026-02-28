@@ -54,7 +54,7 @@ interface IDecoratedForm {
 class DecoratedForm extends QModel<IDecoratedForm> {
 	declare label: string;
 
-	@QType({ type: File, fileMode: 'reference' })
+	@QType(File, { fileMode: 'reference' })
 	declare thumb: File | null;
 }
 

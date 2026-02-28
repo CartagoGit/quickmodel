@@ -475,7 +475,7 @@ describe('createMany() — seed / bulk import for Drizzle', () => {
 		expect(insertData[0]?.name).toBe('E');
 		// toInterface() serializes Date fields to ISO string for ORM insert compatibility
 		expect(typeof insertData[0]?.createdAt).toBe('string');
-		expect(new Date(insertData[0]?.createdAt as string).getFullYear()).toBe(
+		expect(new Date(String(insertData[0]?.createdAt)).getFullYear()).toBe(
 			new Date().getFullYear()
 		);
 	});

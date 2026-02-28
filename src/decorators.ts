@@ -60,3 +60,5 @@ export { QGroup } from './core/decorators/qgroup.decorator';
 export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
 
 export { QComputed } from './core/decorators/qcomputed.decorator';
+
+export { QSensitive } from './core/decorators/qsensitive.decorator';

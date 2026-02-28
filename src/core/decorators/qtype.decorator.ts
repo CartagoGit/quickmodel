@@ -23,6 +23,9 @@
  * - Open/Closed: Allows marking fields without modifying QModel core
  * - Interface Segregation: Provides multiple ways to specify field types
  * - Dependency Inversion: Works with abstract transformer registry
+ *
+ * @see {@link QType} — the decorator defined in this module
+ * @see {@link QModel} — class that reads the metadata registered by this decorator
  */
 
 import 'reflect-metadata';
@@ -252,6 +255,9 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * @remarks
  * **Why use @QType?**
  * TypeScript types are erased at runtime. Without this decorator (or @Quick), the library cannot know that `createdAt` should be transformed into a `Date` object, or that `balance` should be a `BigInt`.
+ *
+ * @see {@link Quick} — alternative higher-level decorator that wraps `@QType`
+ * @see {@link QModel} — reads the metadata registered by this decorator
  */
 
 // ---------------------------------------------------------------------------
@@ -656,6 +662,9 @@ function applyQTypeMetadata(
  *   declare scores: number[];
  * }
  * ```
+ *
+ * @see {@link QModel} — reads the metadata registered by this decorator
+ * @see {@link Quick} — alternative higher-level decorator that wraps `@QType`
  */
 /**
  * Returns `true` when `val` looks like an `IQTypeOptions` object (options-only form of `@QType`).

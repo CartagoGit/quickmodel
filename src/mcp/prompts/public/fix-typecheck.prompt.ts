@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Guided step-by-step TypeScript type error resolution.
@@ -12,7 +12,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QTypecheckTool} for the typecheck gate used in this prompt
  * @see {@link QPreCommitCheckTool} for the final pre-commit gate
  */
-export class QFixTypecheckPrompt extends QAbstractPrompt<{
+export class QFixTypecheckPrompt extends QAbstractInternalPrompt<{
 	type_errors: z.ZodString;
 	file_paths: z.ZodOptional<z.ZodString>;
 }> {
@@ -78,7 +78,8 @@ export class QFixTypecheckPrompt extends QAbstractPrompt<{
 						`- **\`noUncheckedIndexedAccess\`** — array/Map access returns \`T | undefined\`; always guard\n` +
 						`- **\`noImplicitReturns\`** — every code branch must return a value\n` +
 						`- **Interfaces prefixed with \`I\`** — \`interface IUser {}\`, \`type IStatus = ...\`\n` +
-						`- **No \`any\`** — use \`unknown\` and narrow, or add a proper type\n\n` +
+						`- **No \`any\`** — use \`unknown\` and narrow, or add a proper type\n` +
+						`- **Avoid \`as unknown\`**: if TypeScript pushes you toward it, the types are wrong — fix them. \`as any\` is even worse and never acceptable. If there is a genuinely unavoidable edge case, add \`// @quickmodel-rule-ignore: no-as-unknown\`.\n\n` +
 						`## Fix plan ${typecheckTarget}\n\n` +
 						`I'll go error by error, starting from the first one in the output:\n\n` +
 						`1. Read the error → identify the code → apply the minimal correct fix\n` +

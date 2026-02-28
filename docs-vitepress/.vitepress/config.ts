@@ -558,6 +558,10 @@ export default defineConfig({
 									text: 'Mongoose',
 									link: '/en/integrations/mongoose-integration',
 								},
+								{
+									text: 'Drizzle ORM',
+									link: '/en/integrations/drizzle-integration',
+								},
 							],
 						},
 						{
@@ -911,6 +915,10 @@ export default defineConfig({
 								{
 									text: 'Mongoose',
 									link: '/es/integrations/mongoose-integration',
+								},
+								{
+									text: 'Drizzle ORM',
+									link: '/es/integrations/drizzle-integration',
 								},
 							],
 						},

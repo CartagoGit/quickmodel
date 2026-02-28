@@ -61,6 +61,8 @@ import {
 	QUICK_OPTIONS_KEY,
 	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
+import { QSENSITIVE_FIELDS_KEY } from '@/core/decorators/qsensitive.decorator';
+import { QModelCollection } from '@/core/models/quick-collection.model';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
@@ -74,6 +76,9 @@ import {
 	GraphQLSchemaGenerator,
 	OpenAPISchemaGenerator,
 	AjvSchemaGenerator,
+	PrismaSchemaGenerator,
+	ValibotSchemaGenerator,
+	YupSchemaGenerator,
 } from '@/core/services/schema-generators.service';
 import {
 	formDataToPlainObject,
@@ -121,6 +126,8 @@ const _SETTER_META_CACHE = new WeakMap<Function, Map<string, IQSetterMeta>>();
 /**
  * getSchema() result cache — keyed by class constructor, then by schema format.
  * Schema metadata is immutable after decorators run → safe to cache forever.
+ *
+ * @see {@link QModel.getSchema} — static method that populates this cache
  */
 const _GET_SCHEMA_CACHE = new WeakMap<Function, Map<string, unknown>>();
 // ──────────────────────────────────────────────────────────────────────────────
@@ -128,6 +135,9 @@ const _GET_SCHEMA_CACHE = new WeakMap<Function, Map<string, unknown>>();
 /**
  * Combined validation report from both `checkIntegrity()` and `checkRules()`.
  * Returned by {@link QModel.validationReport}.
+ *
+ * @see {@link QModel.validationReport} — the method that produces this report
+ * @see {@link IQRulesResult} — the `rules` field type
  */
 export interface IQValidationReport {
 	/**
@@ -140,6 +150,51 @@ export interface IQValidationReport {
 	/** Results from `@QRule` business-logic predicates. */
 	rules: IQRulesResult;
 }
+
+/**
+ * Options accepted by {@link QModel.validate}.
+ *
+ * @see {@link QModel.validate} — unified validation method
+ */
+export interface IQValidateOptions {
+	/**
+	 * When `true`, runs async predicates via `checkRulesAsync()` and returns a
+	 * `Promise<IQValidateResult>`. When omitted or `false`, returns `IQValidateResult`
+	 * synchronously.
+	 */
+	async?: boolean;
+	/**
+	 * When provided, only rules associated with these groups (via `@QGroup`) are
+	 * evaluated. Combines results from all listed groups.
+	 */
+	groups?: string[];
+	/**
+	 * Maximum time (ms) each async predicate may take before being marked as
+	 * timed out. Only meaningful when `async: true`.
+	 */
+	timeoutMs?: number;
+	/**
+	 * Custom error message used when a predicate exceeds `timeoutMs`.
+	 * Only meaningful when `async: true` and `timeoutMs` is set.
+	 */
+	timeoutMessage?: string;
+	/**
+	 * Execution mode for async predicates.
+	 * - `'parallel'` *(default)* — all predicates run concurrently.
+	 * - `'serial'` — predicates run sequentially in field-declaration order.
+	 * Only meaningful when `async: true`.
+	 */
+	mode?: 'parallel' | 'serial';
+}
+
+/**
+ * Result returned by {@link QModel.validate}.
+ *
+ * Has the same shape as {@link IQValidationReport}.
+ *
+ * @see {@link IQValidationReport} — identical structure
+ */
+export type IQValidateResult = IQValidationReport;
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -177,6 +232,9 @@ export interface IQCreateManyError<TInstance> {
 
 /**
  * Return type of {@link QModel.createMany}.
+ *
+ * @see {@link QModel.createMany} — the method that returns this result
+ * @see {@link IQCreateManyError} — the per-instance error type in `errors[]`
  */
 export interface IQCreateManyResult<TInstance> {
 	/**
@@ -491,6 +549,31 @@ export abstract class QModel<
 		}
 
 		return { instances, errors };
+	}
+
+	/**
+	 * Creates a `QModelCollection<T>` from a raw data array.
+	 *
+	 * This is a static alias for `QModelCollection.from(Model, data)` that can be
+	 * called directly on the subclass.
+	 *
+	 * @param data - Array of raw plain-object rows for this model.
+	 * @returns A typed `QModelCollection` wrapping the instantiated models.
+	 *
+	 * @example
+	 * ```typescript
+	 * const users = UserModel.collection(rawRows);
+	 * users.where(u => u.active).sortBy('name').paginate(1, 10);
+	 * ```
+	 *
+	 * @see {@link QModelCollection.from} — underlying factory method
+	 * @see {@link QModel.createMany} — similar but returns a plain array with error reporting
+	 */
+	static collection<TInst extends object>(
+		this: new (data: Record<string, unknown>) => TInst,
+		data: Array<Record<string, unknown>>
+	): QModelCollection<TInst> {
+		return QModelCollection.from(this, data);
 	}
 
 	/**
@@ -1695,6 +1778,19 @@ export abstract class QModel<
 			opts
 		);
 
+		// @QSensitive: exclude sensitive fields unless includeSensitive: true
+		if (!opts?.includeSensitive) {
+			const sensitiveFields = Reflect.getOwnMetadata(
+				QSENSITIVE_FIELDS_KEY,
+				this.constructor.prototype as object
+			) as string[] | undefined;
+			if (sensitiveFields?.length) {
+				for (const field of sensitiveFields) {
+					delete rawResult[field];
+				}
+			}
+		}
+
 		// @QAlias: remap property keys → alias keys in output
 		const _aliasMap = QModel._getAliasMap(
 			this.constructor.prototype as object
@@ -2016,6 +2112,110 @@ export abstract class QModel<
 	): Promise<IQValidationReport> {
 		const integrity = this.checkIntegrity();
 		const rules = await this.checkRulesAsync(options);
+		return {
+			valid: integrity.length === 0 && rules.valid,
+			integrity,
+			rules,
+		};
+	}
+
+	/**
+	 * Unified validation method that combines integrity checks and `@QRule` evaluation.
+	 *
+	 * - Called without options → runs `validationReport()` synchronously.
+	 * - Called with `{ async: true }` → runs `validationReportAsync()` and returns a
+	 *   `Promise<IQValidateResult>`.
+	 * - Called with `{ groups: [...] }` → only evaluates rules for the listed groups.
+	 *
+	 * @param options - Optional settings. See {@link IQValidateOptions}.
+	 * @returns `IQValidateResult` (sync) or `Promise<IQValidateResult>` when `async: true`.
+	 *
+	 * @see {@link QModel.validationReport} — underlying sync implementation
+	 * @see {@link QModel.validationReportAsync} — underlying async implementation
+	 *
+	 * @example Sync
+	 * ```typescript
+	 * const result = user.validate();
+	 * if (!result.valid) console.log(result.rules.errors);
+	 * ```
+	 *
+	 * @example Async
+	 * ```typescript
+	 * const result = await user.validate({ async: true });
+	 * ```
+	 *
+	 * @example Group filter
+	 * ```typescript
+	 * const result = user.validate({ groups: ['personal'] });
+	 * ```
+	 */
+	validate(
+		options: IQValidateOptions & { async: true }
+	): Promise<IQValidateResult>;
+	validate(
+		options?: IQValidateOptions & { async?: false | undefined }
+	): IQValidateResult;
+	validate(
+		options?: IQValidateOptions
+	): IQValidateResult | Promise<IQValidateResult> {
+		const integrity = this.checkIntegrity();
+
+		if (options?.async === true) {
+			// Async path
+			const { groups, async: _async, ...asyncOpts } = options;
+			if (groups !== undefined && groups.length > 0) {
+				// Combine rules for each requested group
+				return (async () => {
+					const allErrors: IQRulesResult['errors'] = [];
+					for (const grp of groups) {
+						const res = await qCheckRulesAsync(this, {
+							...asyncOpts,
+							group: grp,
+						});
+						allErrors.push(...res.errors);
+					}
+					const combinedRules: IQRulesResult = {
+						valid: allErrors.length === 0,
+						errors: allErrors,
+					};
+					return {
+						valid: integrity.length === 0 && combinedRules.valid,
+						integrity,
+						rules: combinedRules,
+					};
+				})();
+			}
+			return (async () => {
+				const rules = await qCheckRulesAsync(this, asyncOpts);
+				return {
+					valid: integrity.length === 0 && rules.valid,
+					integrity,
+					rules,
+				};
+			})();
+		}
+
+		// Sync path
+		const groups = options?.groups;
+		if (groups !== undefined && groups.length > 0) {
+			// Combine rules for each requested group
+			const allErrors: IQRulesResult['errors'] = [];
+			for (const grp of groups) {
+				const res = qCheckRules(this, { group: grp });
+				allErrors.push(...res.errors);
+			}
+			const combinedRules: IQRulesResult = {
+				valid: allErrors.length === 0,
+				errors: allErrors,
+			};
+			return {
+				valid: integrity.length === 0 && combinedRules.valid,
+				integrity,
+				rules: combinedRules,
+			};
+		}
+
+		const rules = this.checkRules();
 		return {
 			valid: integrity.length === 0 && rules.valid,
 			integrity,
@@ -2745,7 +2945,8 @@ export abstract class QModel<
 		// `this.id = undefined`) overwriting QModel's lazy getters after construction.
 		const Constructor = this
 			.constructor as unknown as IModelConstructor<this>;
-		const current = this.serialize();
+		// Include sensitive fields when cloning internally so the copy retains all data.
+		const current = this.serialize({ includeSensitive: true });
 		const data = partial ? { ...current, ...partial } : { ...current };
 		const instance = Constructor.deserialize(
 			data as unknown as IQModelData<IQAnyRecord>
@@ -3010,6 +3211,15 @@ export abstract class QModel<
 				break;
 			case 'ajv':
 				result = AjvSchemaGenerator.generate(config);
+				break;
+			case 'prisma':
+				result = PrismaSchemaGenerator.generate(config);
+				break;
+			case 'valibot':
+				result = ValibotSchemaGenerator.generate(config);
+				break;
+			case 'yup':
+				result = YupSchemaGenerator.generate(config);
 				break;
 			default:
 				throw new Error(`Unknown schema type: ${type}`);

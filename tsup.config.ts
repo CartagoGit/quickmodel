@@ -46,7 +46,9 @@ export default defineConfig({
 	minifySyntax: true,
 	minifyWhitespace: true,
 	outDir: 'dist',
-	external: ['reflect-metadata'],
+	// @modelcontextprotocol/sdk must be external: it ships with the CLI binary
+	// and is a runtime dependency that should not be bundled.
+	external: ['reflect-metadata', '@modelcontextprotocol/sdk'],
 	// Soporte para path aliases (@/*)
 	esbuildOptions(options) {
 		options.alias = {

@@ -15,6 +15,9 @@
 
 // Re-export so existing imports from this barrel continue to work.
 export { ZodSchemaGenerator } from '@/core/services/zod-schema-generator.service';
+export { PrismaSchemaGenerator } from '@/core/services/prisma-schema-generator.service';
+export { ValibotSchemaGenerator } from '@/core/services/valibot-schema-generator.service';
+export { YupSchemaGenerator } from '@/core/services/yup-schema-generator.service';
 
 /**
  * Base schema generator configuration

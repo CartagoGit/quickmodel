@@ -6,6 +6,9 @@
  * - `IQTransformContext` / `IQIntegrityContext` / `IQIntegrityResult` — shared context shapes.
  *
  * @module core/interfaces/transformer.interface
+ *
+ * @see {@link IQTransformer} — the primary bidirectional transformer interface
+ * @see {@link QTransformerRegistry} — registry that accepts IQTransformer implementations
  */
 
 /**

@@ -45,7 +45,7 @@ export class QGenerateMockDataTool extends QAbstractTool<
 	async execute(args: {
 		schema: Record<string, unknown>;
 		count: number;
-	}): Promise<unknown[]> {
+	}): Promise<Array<Record<string, unknown>>> {
 		await Promise.resolve();
 		// dynamically create a class
 		// We can't easily perform "class X extends QModel" dynamically in strict TS without eval or mixins

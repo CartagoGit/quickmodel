@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Guided step-by-step ESLint error resolution.
@@ -12,7 +12,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QLintCheckTool} for the lint gate used in this prompt
  * @see {@link QPreCommitCheckTool} for the final pre-commit gate
  */
-export class QFixLintPrompt extends QAbstractPrompt<{
+export class QFixLintPrompt extends QAbstractInternalPrompt<{
 	lint_errors: z.ZodString;
 	file_paths: z.ZodOptional<z.ZodString>;
 }> {

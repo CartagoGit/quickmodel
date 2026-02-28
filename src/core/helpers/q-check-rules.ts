@@ -201,6 +201,8 @@ export function qCheckRules(
  * warning assertions are not affected by previous test runs.
  *
  * @internal
+ * @see {@link qCheckRules} — function that reads `_asyncWarnedKeys` for deduplication
+ * @see {@link _asyncWarnedKeys} — the WeakSet-backed Set this function clears
  */
 export function _resetAsyncWarnedKeys(): void {
 	_asyncWarnedKeys.clear();

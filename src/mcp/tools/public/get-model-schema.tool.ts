@@ -12,11 +12,14 @@ const VALID_FORMATS = [
 	'typescript',
 	'graphql',
 	'ajv',
+	'prisma',
+	'valibot',
+	'yup',
 ] as const;
 
 /**
  * Tool to generate a model schema in any supported format using the real QModel.getSchema() API.
- * Supports all 7 formats: json, openapi, zod, mongo, typescript, graphql, ajv.
+ * Supports all 10 formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup.
  *
  * @see {@link QExportJsonSchemaTool} — export a standalone JSON Schema definition
  * @see {@link QGetFormSchemaTool} — get a form-oriented schema for UI frameworks
@@ -26,7 +29,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	name = 'get_model_schema';
 	description =
 		'Generate a model schema in any supported format from a QuickModel class definition. ' +
-		'Supported formats: json, openapi, zod, mongo, typescript, graphql, ajv. ' +
+		'Supported formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup. ' +
 		'Uses the real QModel.getSchema() API for accurate output.';
 
 	schema = z.object({
@@ -38,7 +41,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 		format: z
 			.enum(VALID_FORMATS)
 			.describe(
-				'Schema format to generate: json | openapi | zod | mongo | typescript | graphql | ajv'
+				'Schema format to generate: json | openapi | zod | mongo | typescript | graphql | ajv | prisma | valibot | yup'
 			),
 	});
 
@@ -48,7 +51,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	 * @param args - Tool arguments.
 	 * @param args.code - TypeScript source code of the QuickModel class.
 	 * @param args.format - Target schema format (`"json"`, `"openapi"`, `"zod"`, `"mongo"`,
-	 *   `"typescript"`, `"graphql"`, `"ajv"`).
+	 *   `"typescript"`, `"graphql"`, `"ajv"`, `"prisma"`, `"valibot"`, `"yup"`).
 	 * @returns `{ schema, format }` — the generated schema object and the format used.
 	 * @throws {Error} When `format` is not one of the supported values.
 	 * @see {@link QAbstractTool.execute} — base contract for this method
@@ -63,7 +66,10 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 			| 'mongo'
 			| 'typescript'
 			| 'graphql'
-			| 'ajv';
+			| 'ajv'
+			| 'prisma'
+			| 'valibot'
+			| 'yup';
 	}): Promise<{ schema: unknown; format: string }> {
 		await Promise.resolve();
 

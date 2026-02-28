@@ -102,6 +102,9 @@ type IUserTransform = {
  *
  * - Without transform → property is COPIED AS-IS from backend
  * - With transform → property is TRANSFORMED to specified type
+ *
+ * @see {@link Quick} — the decorator that enables automatic type transformation
+ * @see {@link QModel} — the base class that reads all transformation metadata
  */
 
 // ✅ OPTION WITH @Quick() - Automatically protects ALL properties

@@ -77,6 +77,9 @@ import { QConfig } from '../config/quick.config';
  *   declare tags: Tag[];
  * }
  * ```
+ *
+ * @see {@link Quick} — the decorator defined below in this module
+ * @see {@link IQAdvancedOptions} — optional second argument type for advanced configuration
  */
 
 import 'reflect-metadata';

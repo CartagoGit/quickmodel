@@ -83,6 +83,17 @@ export interface IQSerializationOptions {
 	 * @default 'auto'
 	 */
 	fileMode?: IFileModeOutput;
+
+	/**
+	 * When `true`, includes fields marked with `@QSensitive()` in the serialized output.
+	 *
+	 * By default, `@QSensitive()` fields (passwords, tokens, API keys, PII data) are
+	 * excluded from `serialize()` and `toJSON()` output to prevent accidental exposure.
+	 *
+	 * @default false
+	 * @see {@link QSensitive} — decorator that marks fields as sensitive
+	 */
+	includeSensitive?: boolean;
 }
 
 /**

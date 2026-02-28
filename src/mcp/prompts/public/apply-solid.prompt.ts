@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Guided SOLID principles review and application.
@@ -12,7 +12,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QRunTestsTool} for the test gate
  * @see {@link QLintCheckTool} for the lint gate
  */
-export class QApplySolidPrompt extends QAbstractPrompt<{
+export class QApplySolidPrompt extends QAbstractInternalPrompt<{
 	file_paths: z.ZodString;
 	concern: z.ZodOptional<z.ZodString>;
 }> {

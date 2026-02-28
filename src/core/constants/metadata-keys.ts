@@ -1,6 +1,9 @@
 /**
  * Metadata keys used throughout the QuickModel system.
  * Centralized to avoid duplication and ensure consistency.
+ *
+ * @see {@link Quick} — decorator that writes most of these keys at class definition time
+ * @see {@link QType} — decorator that writes field-level type metadata
  */
 
 /**

@@ -5,6 +5,7 @@ import { join, resolve, sep } from 'path';
 
 /**
  * Args accepted by {@link QCreateGuidePageTool}.
+ * @see {@link QCreateGuidePageTool} — tool that processes these arguments
  * @internal
  */
 interface ICreateGuidePageArgs {
@@ -19,6 +20,7 @@ interface ICreateGuidePageArgs {
 
 /**
  * Result returned by {@link QCreateGuidePageTool}.
+ * @see {@link QCreateGuidePageTool} — tool whose `execute` returns this union
  * @internal
  */
 type ICreateGuidePageResult =

@@ -63,7 +63,7 @@ export class QGetFormSchemaTool extends QAbstractTool<
 	async execute(args: {
 		code: string;
 		grouped?: boolean;
-	}): Promise<{ schema: unknown; count: number }> {
+	}): Promise<{ schema: Array<Record<string, unknown>>; count: number }> {
 		await Promise.resolve();
 
 		const parsedFields = this.parseFields(args.code);

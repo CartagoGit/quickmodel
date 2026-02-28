@@ -56,7 +56,7 @@ export class QJsonToModelTool extends QAbstractTool<
 	 */
 	async execute(args: {
 		json: string;
-		className: string;
+		className?: string;
 	}): Promise<{ code: string }> {
 		await Promise.resolve();
 		let data: any;

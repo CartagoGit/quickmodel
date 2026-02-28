@@ -125,3 +125,22 @@ export { OpenAPISchemaGenerator as QOpenAPISchemaGenerator } from './core/servic
  * @see {@link QJsonSchemaGenerator} — standard JSON Schema variant
  */
 export { AjvSchemaGenerator as QAjvSchemaGenerator } from './core/services/schema-generators.service';
+
+/**
+ * Generates a Prisma `model` block string from a model's decorator configuration.
+ * Useful for scaffolding Prisma schema files from QuickModel definitions.
+ * @see {@link QModel.getSchema} via `getSchema('prisma')`
+ */
+export { PrismaSchemaGenerator as QPrismaSchemaGenerator } from './core/services/prisma-schema-generator.service';
+
+/**
+ * Generates a Valibot v1.x schema source string from a model's decorator configuration.
+ * @see {@link QYupSchemaGenerator} — Yup schema equivalent
+ */
+export { ValibotSchemaGenerator as QValibotSchemaGenerator } from './core/services/valibot-schema-generator.service';
+
+/**
+ * Generates a Yup schema source string from a model's decorator configuration.
+ * @see {@link QValibotSchemaGenerator} — Valibot schema equivalent
+ */
+export { YupSchemaGenerator as QYupSchemaGenerator } from './core/services/yup-schema-generator.service';

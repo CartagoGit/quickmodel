@@ -20,6 +20,9 @@ import { QRefactorPrompt } from '../../../../src/mcp/prompts/public/refactor.pro
 import { QApplySolidPrompt } from '../../../../src/mcp/prompts/public/apply-solid.prompt';
 import { QSyncProjectPrompt } from '../../../../src/mcp/prompts/public/sync-project.prompt';
 import { QFormDataPrompt } from '../../../../src/mcp/prompts/public/form-data.prompt';
+import { QCheckDocsCoherencePrompt } from '../../../../src/mcp/prompts/public/check-docs-coherence.prompt';
+import { QVerifyDeliveryPrompt } from '../../../../src/mcp/prompts/public/verify-delivery.prompt';
+import { QRunScriptPrompt } from '../../../../src/mcp/prompts/public/run-script.prompt';
 import type { IQPromptResult } from '../../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
@@ -1918,5 +1921,475 @@ describe('QFormDataPrompt', () => {
 		const prompt = new QFormDataPrompt();
 		const result = await prompt.execute({ scenario: 'Test scenario' });
 		expect(result.messages[0]?.role).toBe('user');
+	});
+});
+
+// ── QDrizzlePrompt ────────────────────────────────────────────────────────────
+
+import { QDrizzlePrompt } from '../../../../src/mcp/prompts/public/drizzle.prompt';
+
+describe('QDrizzlePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QDrizzlePrompt();
+		expect(prompt.name).toBe('quickmodel_drizzle');
+		expect(prompt.title).toBe(
+			'Generate QuickModel DTO from Drizzle ORM schema'
+		);
+		expect(prompt.description).toContain('Drizzle ORM');
+	});
+
+	it('should be an instance of QAbstractPrompt', () => {
+		const prompt = new QDrizzlePrompt();
+		expect(prompt).toBeInstanceOf(QAbstractPrompt);
+	});
+
+	it('should have drizzle_schema as required arg and dto_name as optional', () => {
+		const prompt = new QDrizzlePrompt();
+		expect(prompt.argsSchema.drizzle_schema).toBeDefined();
+		expect(prompt.argsSchema.dto_name).toBeDefined();
+		expect(prompt.argsSchema.patterns).toBeDefined();
+	});
+
+	it('execute() returns a valid IQPromptResult with required arg', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+		});
+		expect(result).toHaveProperty('messages');
+		expect(result).toHaveProperty('description');
+		expect(Array.isArray(result.messages)).toBe(true);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+		});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() starts with a user role message', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+		});
+		expect(result.messages[0]?.role).toBe('user');
+	});
+
+	it('execute() mentions validate_usage step', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('validate_usage');
+	});
+
+	it('execute() mentions simulate_transformation step', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('simulate_transformation');
+	});
+
+	it('execute() maps timestamp() to Date in messages', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const posts = pgTable('posts', { createdAt: timestamp().notNull() })",
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/timestamp.*Date|Date.*timestamp/i);
+	});
+
+	it('execute() mentions unknownPropertyPolicy strip', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('unknownPropertyPolicy');
+		expect(allText).toContain('strip');
+	});
+
+	it('execute() includes dto_name hint when provided', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+			dto_name: 'UserDto',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('UserDto');
+	});
+
+	it('execute() includes insert pattern step when requested', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+			patterns: 'insert',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/insert|CreateDto/i);
+	});
+
+	it('execute() includes repository pattern step when requested', async () => {
+		const prompt = new QDrizzlePrompt();
+		const result = await prompt.execute({
+			drizzle_schema:
+				"export const users = pgTable('users', { id: integer() })",
+			dto_name: 'UserDto',
+			patterns: 'repository',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('Repository');
+	});
+});
+
+// ── QCheckDocsCoherencePrompt ─────────────────────────────────────────────────
+
+describe('QCheckDocsCoherencePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		expect(prompt.name).toBe('quickmodel_check_docs_coherence');
+		expect(prompt.title).toContain('Coherence');
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('execute() returns valid result structure', async () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		const result = await prompt.execute({});
+		assertValidResult(result);
+	});
+
+	it('execute() mentions check_jsdocs tool', async () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('check_jsdocs');
+	});
+
+	it('execute() references EN and ES docs directories', async () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/docs-vitepress\/en|docs-vitepress\/es/);
+	});
+
+	it('execute() references sidebar config.ts', async () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('config.ts');
+	});
+
+	it('execute() mentions MCP description accuracy', async () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('description');
+	});
+
+	it('execute() includes a DONE checklist', async () => {
+		const prompt = new QCheckDocsCoherencePrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('[ ]');
+	});
+});
+
+// ── QVerifyDeliveryPrompt ─────────────────────────────────────────────────────
+
+describe('QVerifyDeliveryPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		expect(prompt.name).toBe('quickmodel_verify_delivery');
+		expect(prompt.title).toContain('Verify');
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('execute() returns valid result structure', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		assertValidResult(result);
+	});
+
+	it('execute() mentions check_project_health gate', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('check_project_health');
+	});
+
+	it('execute() mentions check_project_rules gate', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('check_project_rules');
+	});
+
+	it('execute() mentions pre_commit_check gate', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('pre_commit_check');
+	});
+
+	it('execute() redirects to quickmodel_fix_lint on failure', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('quickmodel_fix_lint');
+	});
+
+	it('execute() redirects to quickmodel_fix_typecheck on failure', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('quickmodel_fix_typecheck');
+	});
+
+	it('execute() enforces not-done constraint until all gates pass', async () => {
+		const prompt = new QVerifyDeliveryPrompt();
+		const result = await prompt.execute({});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/NOT declare done|DONE condition/);
+	});
+});
+
+// ── QRunScriptPrompt ──────────────────────────────────────────────────────────
+
+describe('QRunScriptPrompt', () => {
+	const PURPOSE =
+		'Inspect VS Code extension package.json to list config keys';
+	const SCRIPT =
+		"import json\nwith open('package.json') as fle:\n    pkg = json.load(fle)\nprint(pkg.get('contributes', {}))";
+
+	it('should have correct metadata', () => {
+		const prompt = new QRunScriptPrompt();
+		expect(prompt.name).toBe('quickmodel_run_script');
+		expect(prompt.title).toContain('Script');
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('argsSchema requires purpose and script', () => {
+		const prompt = new QRunScriptPrompt();
+		expect(prompt.argsSchema.purpose).toBeDefined();
+		expect(prompt.argsSchema.script).toBeDefined();
+		expect(prompt.argsSchema.language).toBeDefined();
+	});
+
+	it('execute() returns valid result structure', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() includes purpose in messages', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain(PURPOSE);
+	});
+
+	it('execute() includes script content in messages', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('package.json');
+	});
+
+	it('execute() mentions audit phase', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/[Aa]udit/);
+	});
+
+	it('execute() mentions exit code check', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/exit code|non-zero/);
+	});
+
+	it('execute() mentions clean up phase', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/[Cc]lean up|working tree/);
+	});
+
+	it('execute() references quickmodel_verify_delivery after code changes', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('quickmodel_verify_delivery');
+	});
+
+	it('execute() includes language label when provided', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+			language: 'python',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('python');
+	});
+
+	it('execute() includes DONE checklist', async () => {
+		const prompt = new QRunScriptPrompt();
+		const result = await prompt.execute({
+			purpose: PURPOSE,
+			script: SCRIPT,
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('[ ]');
+	});
+});
+
+// ── QIntegratePrompt ──────────────────────────────────────────────────────────
+
+import { QIntegratePrompt } from '../../../../src/mcp/prompts/public/integrate.prompt';
+
+describe('QIntegratePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QIntegratePrompt();
+		expect(prompt.name).toBe('quickmodel_integrate');
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+	});
+
+	it('execute() returns valid result structure', async () => {
+		const prompt = new QIntegratePrompt();
+		const result = await prompt.execute({
+			library: 'express',
+			use_case: 'validate request body',
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() includes library name in messages', async () => {
+		const prompt = new QIntegratePrompt();
+		const result = await prompt.execute({
+			library: 'fastify',
+			use_case: 'parse query params',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('fastify');
+	});
+
+	it('execute() includes model_code context when provided', async () => {
+		const prompt = new QIntegratePrompt();
+		const result = await prompt.execute({
+			library: 'axios',
+			use_case: 'transform API response',
+			model_code:
+				'class IResponseModel extends QModel<IResponseModel> {}',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('IResponseModel');
+	});
+
+	it('execute() references generate_integration_test in messages', async () => {
+		const prompt = new QIntegratePrompt();
+		const result = await prompt.execute({
+			library: 'nestjs',
+			use_case: 'DTO validation',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('generate_integration_test');
 	});
 });

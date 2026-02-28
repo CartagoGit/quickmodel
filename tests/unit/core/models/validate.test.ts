@@ -33,14 +33,39 @@ import type {
 // Helpers / fixtures
 // ---------------------------------------------------------------------------
 
+interface IPerson {
+	name: string;
+	age: number;
+}
+
+interface IPersonWithRules {
+	name: string;
+	age: number;
+}
+
+interface IPersonWithGroups {
+	name: string;
+	age: number;
+}
+
+interface IPersonWithAsyncRules {
+	name: string;
+	age: number;
+}
+
+interface IPersonSlowAsync {
+	name: string;
+	age: number;
+}
+
 @Quick({ name: String, age: Number })
-class Person extends QModel<Person> {
+class Person extends QModel<IPerson> {
 	name: string = '';
 	age: number = 0;
 }
 
 @Quick({ name: String, age: Number })
-class PersonWithRules extends QModel<PersonWithRules> {
+class PersonWithRules extends QModel<IPersonWithRules> {
 	@QRule((val: unknown) => String(val).trim().length > 0, 'Name is required')
 	name: string = '';
 
@@ -49,7 +74,7 @@ class PersonWithRules extends QModel<PersonWithRules> {
 }
 
 @Quick({ name: String, age: Number })
-class PersonWithGroups extends QModel<PersonWithGroups> {
+class PersonWithGroups extends QModel<IPersonWithGroups> {
 	@QGroup('personal')
 	@QRule((val: unknown) => String(val).trim().length > 0, 'Name is required')
 	name: string = '';
@@ -60,7 +85,7 @@ class PersonWithGroups extends QModel<PersonWithGroups> {
 }
 
 @Quick({ name: String, age: Number })
-class PersonWithAsyncRules extends QModel<PersonWithAsyncRules> {
+class PersonWithAsyncRules extends QModel<IPersonWithAsyncRules> {
 	@QRule(async (val: unknown) => {
 		await new Promise((res) => setTimeout(res, 10));
 		return String(val).startsWith('A');
@@ -72,7 +97,7 @@ class PersonWithAsyncRules extends QModel<PersonWithAsyncRules> {
 }
 
 @Quick({ name: String, age: Number })
-class PersonSlowAsync extends QModel<PersonSlowAsync> {
+class PersonSlowAsync extends QModel<IPersonSlowAsync> {
 	@QRule(async () => {
 		await new Promise((res) => setTimeout(res, 500));
 		return true;
@@ -119,7 +144,7 @@ describe('QModel.validate()', () => {
 		test('reports integrity failures', () => {
 			const raw = { name: 123, age: 'not-a-number' };
 			// Force instantiation bypassing transformer to trigger integrity issues
-			const person = Object.assign(new Person(), raw) as Person;
+			const person = Object.assign(new Person({}), raw) as Person;
 			const result = person.validate();
 
 			// integrity.length > 0 when field types don't match
@@ -204,7 +229,7 @@ describe('QModel.validate()', () => {
 	describe('options: async: true', () => {
 		test('returns a Promise when async: true', () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
-			const opts: IQValidateOptions = { async: true };
+			const opts: IQValidateOptions & { async: true } = { async: true };
 			const result = person.validate(opts);
 
 			expect(result).toBeInstanceOf(Promise);

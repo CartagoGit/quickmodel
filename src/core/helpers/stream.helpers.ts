@@ -271,6 +271,9 @@ export async function streamToBlob(
 
 /**
  * Generates a random RFC 2046 boundary token (32 lowercase hex characters).
+ *
+ * @see {@link modelToMultipartStream} — the public function that calls this helper
+ * @see {@link IQMultipartStream} — stream type that carries the generated boundary
  */
 function generateBoundary(): string {
 	const arr = new Uint8Array(16);
@@ -288,6 +291,9 @@ function generateBoundary(): string {
  * - `File`/`Blob` fields whose `fileMode` is `'reference'` are emitted as
  *   a text part containing the filename (same behaviour as serialize).
  * - All other values are coerced to string and emitted as text parts.
+ *
+ * @see {@link modelToMultipartStream} — public function that drives this generator
+ * @see {@link IBuildPartsConfig} — config object that parameterises this generator
  */
 interface IBuildPartsConfig {
 	values: Record<string, unknown>;
@@ -392,6 +398,8 @@ export interface IModelToMultipartStreamOptions {
  * @returns `IQMultipartStream` — `ReadableStream` augmented with `boundary`
  *
  * @public
+ * @see {@link IModelToMultipartStreamOptions} — full options reference for this function
+ * @see {@link IQMultipartStream} — the stream type returned, with `boundary` header helper
  */
 export function modelToMultipartStream(
 	opts: IModelToMultipartStreamOptions

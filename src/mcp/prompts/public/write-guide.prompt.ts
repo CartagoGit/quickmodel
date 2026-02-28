@@ -1,5 +1,5 @@
 import { z } from '@mcp/deps';
-import { QAbstractPrompt } from '../abstract-prompt';
+import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 
 /**
  * Skill: Guided workflow to create and publish a new QuickModel documentation page.
@@ -17,7 +17,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * @see {@link QSearchDocsTool} — tool called in step 4
  * @see {@link QSyncDocsTool} — tool called in step 5
  */
-export class QWriteGuidePrompt extends QAbstractPrompt<{
+export class QWriteGuidePrompt extends QAbstractInternalPrompt<{
 	slug: z.ZodString;
 	title_en: z.ZodString;
 	title_es: z.ZodString;

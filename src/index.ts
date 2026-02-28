@@ -51,3 +51,5 @@ export type { IQFormSchemaEntry } from './core/decorators/qfield.decorator';
 export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
 export type { IQAliasedSerializedInterface } from './core/interfaces/serialization-types.interface';
 export type { IQAdvancedOptions } from './core/interfaces/quick-options.interface';
+export { QModelCollection } from './core/models/quick-collection.model';
+export type { IQCollectionRulesResult } from './core/models/quick-collection.model';

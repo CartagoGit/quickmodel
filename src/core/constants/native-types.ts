@@ -10,6 +10,9 @@
  * 2. Adding a `[Constructor, 'token']` entry to {@link NATIVE_TYPE_MAP}
  * 3. Adding the constructor to {@link TRANSFORMABLE_TYPES}
  * 4. Implementing (or extending) the corresponding transformer class
+ *
+ * @see {@link IQNativeConstructor} — union of all native constructors QuickModel recognises
+ * @see {@link NATIVE_TYPE_MAP} — the lookup table from constructor to transformer token
  */
 
 /**
