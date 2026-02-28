@@ -111,6 +111,8 @@ export class QDiffModelsTool extends QAbstractTool<
 	 * @param args.model_b - Source code of the new model (the "after").
 	 * @returns Diff report with `added_fields`, `removed_fields`, `changed_fields`,
 	 *   `changed_transformers`, `added_decorators`, `removed_decorators`, and `summary`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QInspectModelTool} — inspect a single model before comparing
 	 */
 	async execute(args: { model_a: string; model_b: string }): Promise<{
 		added_fields: string[];

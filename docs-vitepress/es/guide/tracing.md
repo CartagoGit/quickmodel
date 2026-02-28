@@ -87,6 +87,35 @@ QConfig.configure({
 QConfig.configure({ defaults: { trace: { verbosity: 'info', colors: true } } }); // siempre con color
 ```
 
+### Elegir qué partes colorizar
+
+Por defecto solo el segmento `[LEVEL]` recibe color. Usa `colorize` para cambiar esto:
+
+```
+[QM] [WARN] [UserModel:importe] [rule-fail]
+  ^     ^          ^                ^
+pre   level      model            event
+```
+
+| Valor de `colorize`                     | Efecto                                     |
+| --------------------------------------- | ------------------------------------------ |
+| `'level'` _(por defecto)_               | Solo `[WARN]`/`[INFO]` tiene color         |
+| `'line'`                                | Todo el prefijo en un bloque de color      |
+| `['level', 'event']`                    | `[LEVEL]` y `[event]` con color, resto sin |
+| `['prefix', 'level', 'model', 'event']` | Cada segmento envuelto individualmente     |
+
+```typescript
+// Solo level + event
+QConfig.configure({
+	defaults: { trace: { verbosity: 'info', colorize: ['level', 'event'] } },
+});
+
+// Prefijo completo
+QConfig.configure({
+	defaults: { trace: { verbosity: 'info', colorize: 'line' } },
+});
+```
+
 ### Prefijo personalizado
 
 Cambia la etiqueta `[QM]` que aparece en cada línea de consola:

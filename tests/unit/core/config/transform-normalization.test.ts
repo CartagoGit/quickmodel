@@ -86,8 +86,10 @@ describe('Transformation: Normalization', () => {
 
 		@Quick(
 			{},
-			{ normalization: { trimStrings: false } },
-			{ unknownPropertyPolicy: 'keep' }
+			{
+				normalization: { trimStrings: false },
+				unknownPropertyPolicy: 'keep',
+			}
 		)
 		class User extends QModel<any> {
 			declare name: string;

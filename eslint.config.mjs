@@ -103,7 +103,7 @@ export default tseslint.config(
 						{
 							group: ['@mcp'],
 							message:
-								"PROHIBIDO: importar desde '@mcp' sin especificar archivo. Usa '@mcp/server' o la ruta completa.",
+								"PROHIBIDO: importar desde '@mcp' sin especificar archivo. Usa '@mcp/server', '@mcp/deps' o la ruta completa.",
 						},
 					],
 				},

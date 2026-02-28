@@ -62,6 +62,8 @@ export type {
 	IQTraceVerbosity,
 	IQTraceEvent,
 	IQTraceEntry,
+	IQTraceColorize,
+	IQTraceColorizeSegment,
 } from './core/config/quick.config';
 
 // Transform Options

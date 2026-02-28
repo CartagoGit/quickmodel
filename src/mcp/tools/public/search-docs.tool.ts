@@ -35,6 +35,8 @@ export class QSearchDocsTool extends QAbstractTool<
 	 * @param args - Tool arguments.
 	 * @param args.query - The search term or phrase to look for (case-insensitive).
 	 * @returns `{ matches }` — array of matching lines with 2 lines of context each.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QExplainErrorTool} — explain a specific QuickModel error message
 	 */
 	async execute(args: { query: string }): Promise<{ matches: string[] }> {
 		try {

@@ -431,6 +431,20 @@ export default defineConfig({
 							],
 						},
 						{
+							text: 'Tracing & Observability',
+							link: '/en/guide/tracing',
+							items: [
+								{
+									text: 'Tracing & Observability',
+									link: '/en/guide/tracing',
+								},
+								{
+									text: 'External Logger (Winston, Pino…)',
+									link: '/en/guide/tracing#integrating-an-external-logger',
+								},
+							],
+						},
+						{
 							text: 'Customization',
 							link: '/en/guide/custom-transformers',
 							items: [
@@ -767,6 +781,20 @@ export default defineConfig({
 								{
 									text: '⚡ Benchmarks',
 									link: '/es/guide/mocks#rendimiento',
+								},
+							],
+						},
+						{
+							text: 'Trazas y Observabilidad',
+							link: '/es/guide/tracing',
+							items: [
+								{
+									text: 'Trazas y Observabilidad',
+									link: '/es/guide/tracing',
+								},
+								{
+									text: 'Logger Externo (Winston, Pino…)',
+									link: '/es/guide/tracing#integrar-un-logger-externo',
 								},
 							],
 						},

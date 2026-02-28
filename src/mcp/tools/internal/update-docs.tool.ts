@@ -51,6 +51,8 @@ export class QUpdateDocsTool extends QAbstractTool<
 	 * `'clean'` removes generated documentation artifacts.
 	 * @returns `{ stdout, stderr }` — raw output from the underlying command.
 	 * An empty `stdout` with a non-empty `stderr` indicates a build failure.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QSyncDocsTool} — sync docs content from source code before building
 	 */
 	async execute(args: { action: 'build' | 'clean' }): Promise<{
 		stdout: string;

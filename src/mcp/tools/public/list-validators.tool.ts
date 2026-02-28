@@ -109,6 +109,8 @@ export class QListValidatorsTool extends QAbstractTool<z.ZodObject<{}>> {
 	 *
 	 * @param _args - No arguments required.
 	 * @returns Array of `IValidatorEntry` objects sorted alphabetically by name.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QListTransformersTool} — list available data transformers
 	 */
 	execute(_args: z.infer<z.ZodObject<{}>>): Promise<IValidatorEntry[]> {
 		return Promise.resolve(

@@ -209,11 +209,11 @@ export interface IQConfig {
 			 * Whether to colorize console output using ANSI escape codes.
 			 *
 			 * Each log level gets a distinct color:
-			 * - `error` → bright red
-			 * - `warn`  → yellow
-			 * - `info`  → cyan
-			 * - `debug` → gray
-			 * - `verbose` → magenta
+			 * - `error`   → red
+			 * - `warn`    → bright yellow (orange-ish)
+			 * - `info`    → light blue
+			 * - `debug`   → purple / magenta
+			 * - `verbose` → gray
 			 *
 			 * When omitted, colors are **auto-detected** from `process.stdout.isTTY`
 			 * (enabled in interactive terminals, disabled in CI/pipes automatically).
@@ -227,6 +227,26 @@ export interface IQConfig {
 			 * ```
 			 */
 			colors?: boolean;
+
+			/**
+			 * Controls which segments of the log line receive color when `colors` is active.
+			 *
+			 * The line format is: `[QM][WARN][UserModel:field][rule-fail] message`
+			 *
+			 * - `'level'` *(default)* — only `[LEVEL]` is colored:
+			 *   `[QM]`**`[WARN]`**`[UserModel][rule-fail]`
+			 * - `'line'`  — the full prefix in one color block:
+			 *   **`[QM][WARN][UserModel][rule-fail]`**
+			 * - `IQTraceColorizeSegment[]` — pick exact segments:
+			 *   `['level', 'event']` → `[QM]`**`[WARN]`**`[UserModel]`**`[rule-fail]`**
+			 *
+			 * @default 'level'
+			 * @example
+			 * ```typescript
+			 * QConfig.configure({ defaults: { trace: { verbosity: 'info', colorize: ['level', 'event'] } } });
+			 * ```
+			 */
+			colorize?: IQTraceColorize;
 		};
 
 		/**
@@ -252,6 +272,38 @@ export interface IQConfig {
 // ─────────────────────────────────────────────────────────────────────────────
 // Trace types (declared outside IQConfig so they can be imported independently)
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Controls which parts of the console log line are colorized.
+ *
+/**
+ * Individual segments of a console log line that can be colorized independently.
+ *
+ * The line format is: `[prefix][LEVEL][model:field][event]`
+ *
+ * - `'prefix'` — the app-name tag: `[QM]`
+ * - `'level'`  — the verbosity tag:  `[WARN]`
+ * - `'model'`  — the model/field tag: `[UserModel:amount]`
+ * - `'event'`  — the lifecycle tag:  `[rule-fail]`
+ *
+ * @group Configuration
+ * @see {@link IQTraceColorize}
+ */
+export type IQTraceColorizeSegment = 'prefix' | 'level' | 'model' | 'event';
+
+/**
+ * Controls which parts of the console log line are colorized.
+ *
+ * - `'level'` *(default)* — shorthand: only the `[LEVEL]` tag is colored.
+ * - `'line'`  — shorthand: the entire prefix (`[prefix][LEVEL][model][event]`) is colored in one block.
+ * - `IQTraceColorizeSegment[]` — explicit list of segments to colorize individually:
+ *   e.g. `['level', 'event']` colors `[WARN]` and `[rule-fail]` but leaves `[QM]` and `[UserModel]` plain.
+ *
+ * @group Configuration
+ * @see {@link IQTraceColorizeSegment} — individual segment names
+ * @see {@link IQConfig} — configure via `defaults.trace.colorize`
+ */
+export type IQTraceColorize = 'level' | 'line' | IQTraceColorizeSegment[];
 
 /**
  * Verbosity levels for the QuickModel trace system (ordered from least to most verbose).

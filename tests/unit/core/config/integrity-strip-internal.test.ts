@@ -81,8 +81,7 @@ describe('Integrity: Strip Internal Identifiers', () => {
 		// Disable stripping for this model
 		@Quick(
 			{},
-			{ stripInternalIdentifiers: false },
-			{ unknownPropertyPolicy: 'keep' }
+			{ stripInternalIdentifiers: false, unknownPropertyPolicy: 'keep' }
 		)
 		class User extends QModel<any> {
 			declare _internal: string;
@@ -95,8 +94,10 @@ describe('Integrity: Strip Internal Identifiers', () => {
 	it('should allow custom stripping via decorator', () => {
 		@Quick(
 			{},
-			{ stripInternalIdentifiers: ['ugly_'] },
-			{ unknownPropertyPolicy: 'keep' }
+			{
+				stripInternalIdentifiers: ['ugly_'],
+				unknownPropertyPolicy: 'keep',
+			}
 		)
 		class User extends QModel<any> {
 			declare ugly_field: string;

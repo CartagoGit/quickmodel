@@ -68,6 +68,8 @@ export class QListTodosTool extends QAbstractTool<
 	 * `{ file, line, type, text }` entries; `total` is the count.
 	 * @throws {Error} When `targetDir` resolves outside the project root
 	 * (path-traversal guard).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckMissingJSDocsTool} — complement: find undocumented exports
 	 */
 	async execute(args: {
 		targetDir?: string;

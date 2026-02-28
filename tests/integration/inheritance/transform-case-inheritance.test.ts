@@ -25,8 +25,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { in: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { in: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Base {
 				declare childField: string;
@@ -48,8 +50,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { out: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { out: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Base {
 				declare childField: string;
@@ -71,8 +75,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { in: 'snake_case', out: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { in: 'snake_case', out: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Base {
 				declare userId: number;
@@ -107,8 +113,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { in: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { in: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Middle {
 				declare childField: string;
@@ -136,8 +144,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { out: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { out: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Middle {
 				declare childField: string;
@@ -225,8 +235,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{ createdAt: Date },
-				{ transformCase: { in: 'snake_case', out: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { in: 'snake_case', out: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Middle {
 				declare userId: number;
@@ -264,8 +276,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { in: 'snake_case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { in: 'snake_case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Middle {
 				declare childField: string;
@@ -300,8 +314,10 @@ describe('transformCase: multi-level inheritance', () => {
 
 			@Quick(
 				{},
-				{ transformCase: { in: 'kebab-case' } },
-				{ unknownPropertyPolicy: 'keep' }
+				{
+					transformCase: { in: 'kebab-case' },
+					unknownPropertyPolicy: 'keep',
+				}
 			)
 			class Child extends Middle {
 				declare timeoutMs: number;

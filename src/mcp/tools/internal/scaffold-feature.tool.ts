@@ -57,6 +57,8 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 	 * file; `message` summarises the result or carries an error description.
 	 * @throws {Error} When the resolved target path is outside the project root
 	 * (path-traversal guard).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QGenerateTestTool} — generate test boilerplate for the scaffolded file
 	 */
 	async execute(args: {
 		type: 'transformer' | 'tool';

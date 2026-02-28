@@ -23,6 +23,7 @@ import {
 	QRefactorPrompt,
 	QApplySolidPrompt,
 	QSyncProjectPrompt,
+	QFormDataPrompt,
 } from './prompts/public';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -254,6 +255,7 @@ export class QMcpServer {
 			new QRefactorPrompt(),
 			new QApplySolidPrompt(),
 			new QSyncProjectPrompt(),
+			new QFormDataPrompt(),
 		];
 	}
 

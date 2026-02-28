@@ -22,16 +22,17 @@ Usa la herramienta MCP **`check_project_rules`** para validarlas automáticament
 
 ### Reglas de linting (ESLint)
 
-| Regla                   | Detalle                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| `id-length`             | Nombres de variables/parámetros: **mínimo 3 caracteres**                                  |
-| ↳ Excepciones           | `_`, `id`, `on`, `fs`, `cb`, `md`, `ts`, `err` y prefijo `_`                              |
-| `max-params`            | Máximo **3 parámetros** posicionales por función — usar objeto si hace falta más          |
-| ↳ Excepción             | `src/transformers/` y `src/core/bases/` (contrato `IQTransformer`)                        |
-| `no-restricted-imports` | Prohibido importar `quickmodel` (barrel) desde `src/`                                     |
-| ↳                       | Prohibido importar `@mcp` sin especificar sub-ruta (usar `@mcp/server`, `@mcp/tools/...`) |
-| `no-console`            | No usar `console.log` en `src/` (excepto `mcp-cli.ts` y `server.ts`)                      |
-| Decoradores en tests    | Usar `@Quick({...})` — **nunca** `@QType(...)` en tests                                   |
+| Regla                   | Detalle                                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `id-length`             | Nombres de variables/parámetros: **mínimo 3 caracteres**                                                       |
+| ↳ Excepciones           | `_`, `id`, `on`, `fs`, `cb`, `md`, `ts`, `err` y prefijo `_`                                                   |
+| `max-params`            | Máximo **3 parámetros** posicionales por función — usar objeto si hace falta más                               |
+| ↳ Excepción             | `src/transformers/` y `src/core/bases/` (contrato `IQTransformer`)                                             |
+| `no-restricted-imports` | Prohibido importar `quickmodel` (barrel) desde `src/`                                                          |
+| ↳                       | Prohibido importar `@mcp` sin sub-ruta fuera de `src/mcp/` (usar `@mcp/server`, `@mcp/deps`, `@mcp/tools/...`) |
+| ↳                       | Dentro de `src/mcp/**`: prohibido importar `zod` directamente — usar `import { z } from '@mcp/deps'`           |
+| `no-console`            | No usar `console.log` en `src/` (excepto `mcp-cli.ts` y `server.ts`)                                           |
+| Decoradores en tests    | Usar `@Quick({...})` — **nunca** `@QType(...)` en tests                                                        |
 
 ### Verificación obligatoria antes de entregar código
 

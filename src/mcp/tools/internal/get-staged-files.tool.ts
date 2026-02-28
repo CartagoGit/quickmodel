@@ -34,6 +34,8 @@ export class QGetStagedFilesTool extends QAbstractTool<
 	 * @returns `{ passed, files, total, summary }` — `files` is a string array of
 	 * staged file paths; `total` is the count; `passed` is `false` when the git
 	 * command itself errors (e.g. not a git repository).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QPreCommitCheckTool} — pass staged files to this for pre-commit checking
 	 */
 	async execute(_args: Record<never, never>): Promise<{
 		passed: boolean;

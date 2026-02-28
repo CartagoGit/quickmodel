@@ -73,6 +73,8 @@ export class QProjectStatusTool extends QAbstractTool<
 	 * @returns `{ passed, tests, lint, typecheck, summary }` — each sub-object
 	 * exposes `passed` plus counts specific to that check; overall `passed` is
 	 * `true` only when all three checks pass.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckProjectHealthTool} — simpler single-command health gate
 	 */
 	async execute(_args: Record<never, never>): Promise<{
 		passed: boolean;

@@ -43,6 +43,8 @@ export class QTypecheckTool extends QAbstractTool<
 	 * @returns `{ passed, errors, total, summary }` — `errors` is an array of
 	 * `{ file, line, column, code, message }` entries; `passed` is `true` only
 	 * when `total === 0`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QLintCheckTool} — complement: run ESLint alongside typecheck
 	 */
 	async execute(_args: Record<never, never>): Promise<{
 		passed: boolean;

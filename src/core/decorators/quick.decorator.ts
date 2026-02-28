@@ -554,8 +554,10 @@ export function Quick<
 			}
 		}
 
-		// Store options (strict mode, etc)
-		if (Object.keys(mergedOptions).length > 0) {
+		// Store ALL advanced options merged with global defaults and extraOptions.
+		// This single call replaces both the early-merge store above and the prior
+		// advancedOptions-only store — ensures extraOptions (3rd arg) is always included.
+		if (Object.keys(mergedOptions).length > 0 || advancedOptions) {
 			Reflect.defineMetadata(QUICK_OPTIONS_KEY, mergedOptions, target);
 		}
 
@@ -594,11 +596,6 @@ export function Quick<
 				);
 				decorator(target.prototype, propertyKey);
 			}
-		}
-
-		// Store ALL advanced options (strict, etc.)
-		if (advancedOptions) {
-			Reflect.defineMetadata(QUICK_OPTIONS_KEY, advancedOptions, target);
 		}
 
 		// Store discriminators separately for fast direct lookup via QUICK_DISCRIMINATORS_KEY,

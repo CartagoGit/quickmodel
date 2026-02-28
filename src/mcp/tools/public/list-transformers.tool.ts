@@ -30,6 +30,8 @@ export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {
 	 * Returns a sorted list of all transformer identifiers registered in the built-in registry.
 	 *
 	 * @returns Sorted array of lowercase transformer names (e.g. `["bigint", "boolean", "date", ...]`).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QListValidatorsTool} — list built-in validator decorators
 	 */
 	execute(): Promise<string[]> {
 		// Use the service to get the real list

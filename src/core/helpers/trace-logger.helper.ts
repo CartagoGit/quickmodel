@@ -4,6 +4,7 @@ import type {
 	IQTraceEntry,
 	IQTraceEvent,
 	IQTraceVerbosity,
+	IQTraceColorize,
 } from '../config/quick.config';
 import 'reflect-metadata';
 
@@ -38,9 +39,9 @@ const CONSOLE_FN: Record<IConsoleLevel, (...args: unknown[]) => void> = {
 /** @internal ANSI escape codes per level — conventional terminal palette. */
 const ANSI_COLOR: Record<IConsoleLevel, string> = {
 	error: '\x1b[31m', // red
-	warn: '\x1b[33m', // yellow
-	info: '\x1b[32m', // green
-	debug: '\x1b[34m', // blue
+	warn: '\x1b[93m', // bright yellow (orange-ish)
+	info: '\x1b[94m', // bright blue (light blue)
+	debug: '\x1b[35m', // magenta / purple
 	verbose: '\x1b[90m', // gray (dim)
 };
 const ANSI_RESET = '\x1b[0m';
@@ -145,6 +146,11 @@ export class TraceLogger {
 	/** @internal Whether to colorize console output (auto-detected from TTY when not configured). */
 	private static _globalColors: boolean =
 		typeof process !== 'undefined' && process.stdout?.isTTY === true;
+	/**
+	 * @internal Which segments of the log line receive color.
+	 * `'level'` (default) | `'line'` | `IQTraceColorizeSegment[]`
+	 */
+	private static _globalColorize: IQTraceColorize = 'level';
 
 	// ── cache refresh ──────────────────────────────────────────────────────────
 
@@ -177,6 +183,7 @@ export class TraceLogger {
 				? traceCfg.colors
 				: typeof process !== 'undefined' &&
 					process.stdout?.isTTY === true;
+		TraceLogger._globalColorize = traceCfg?.colorize ?? 'level';
 
 		// Emit config-change only after a real re-configure (not initial load).
 		if (prevRef !== undefined) {
@@ -312,11 +319,32 @@ export class TraceLogger {
 		const modelPart = entry.field
 			? `${entry.model}:${entry.field}`
 			: entry.model;
-		const rawPrefix = `[${TraceLogger._globalPrefix}][${params.level.toUpperCase()}][${modelPart}][${entry.event}]`;
 		const lvl = params.level as IConsoleLevel;
-		const prefix = TraceLogger._globalColors
-			? `${ANSI_COLOR[lvl] ?? ''}${rawPrefix}${ANSI_RESET}`
-			: rawPrefix;
+		const col = TraceLogger._globalColors ? (ANSI_COLOR[lvl] ?? '') : '';
+		const rst = TraceLogger._globalColors ? ANSI_RESET : '';
+		const colorize = TraceLogger._globalColorize;
+
+		let prefix: string;
+		if (!TraceLogger._globalColors) {
+			// No colors at all
+			prefix = `[${TraceLogger._globalPrefix}][${params.level.toUpperCase()}][${modelPart}][${entry.event}]`;
+		} else if (colorize === 'line') {
+			// Entire prefix in one color block
+			prefix = `${col}[${TraceLogger._globalPrefix}][${params.level.toUpperCase()}][${modelPart}][${entry.event}]${rst}`;
+		} else {
+			// Granular: color each requested segment individually.
+			// 'level' shorthand = ['level']; array = explicit list.
+			const segs =
+				colorize === 'level' ? ['level'] : (colorize as string[]);
+			const clr = (seg: string, text: string) =>
+				segs.includes(seg) ? `${col}${text}${rst}` : text;
+			prefix = [
+				clr('prefix', `[${TraceLogger._globalPrefix}]`),
+				clr('level', `[${params.level.toUpperCase()}]`),
+				clr('model', `[${modelPart}]`),
+				clr('event', `[${entry.event}]`),
+			].join('');
+		}
 		const consoleFn = CONSOLE_FN[lvl] ?? console.debug;
 
 		if (

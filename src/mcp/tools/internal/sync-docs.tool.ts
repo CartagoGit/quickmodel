@@ -33,6 +33,8 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	 * @returns `{ summary, updatedFiles }` — `updatedFiles` lists the absolute
 	 * paths of every Markdown file that was written; `summary` is a human-
 	 * readable description of what was regenerated.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QUpdateDocsTool} — trigger the full documentation build after syncing
 	 */
 	async execute(): Promise<{ summary: string; updatedFiles: string[] }> {
 		const updatedFiles: string[] = [];

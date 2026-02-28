@@ -44,6 +44,8 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 	 * @param args.iterations - Number of iterations for each test case (e.g. 1000).
 	 * @returns An object with `results` mapping benchmark names to formatted average
 	 * millisecond strings, and a `summary` human-readable narrative.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckBundleSizeTool} — complement: measure the bundle output size
 	 */
 	async execute(args: { iterations: number }): Promise<{
 		results: Record<string, string>;

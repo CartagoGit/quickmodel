@@ -88,6 +88,35 @@ QConfig.configure({
 QConfig.configure({ defaults: { trace: { verbosity: 'info', colors: true } } }); // always colored
 ```
 
+### Choosing which parts to colorize
+
+By default only the `[LEVEL]` segment is colored. Use `colorize` to change this:
+
+```
+[QM] [WARN] [UserModel:amount] [rule-fail]
+  ^     ^          ^               ^
+pre   level      model           event
+```
+
+| `colorize` value                        | Effect                                      |
+| --------------------------------------- | ------------------------------------------- |
+| `'level'` _(default)_                   | Only `[WARN]`/`[INFO]` is colored           |
+| `'line'`                                | Entire prefix in one color block            |
+| `['level', 'event']`                    | `[LEVEL]` and `[event]` colored, rest plain |
+| `['prefix', 'level', 'model', 'event']` | Each segment wrapped individually           |
+
+```typescript
+// Only level + event
+QConfig.configure({
+	defaults: { trace: { verbosity: 'info', colorize: ['level', 'event'] } },
+});
+
+// Entire prefix
+QConfig.configure({
+	defaults: { trace: { verbosity: 'info', colorize: 'line' } },
+});
+```
+
 ### Custom prefix
 
 Change the `[QM]` tag shown in every console line:

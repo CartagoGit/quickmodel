@@ -75,6 +75,8 @@ export class QPreCommitCheckTool extends QAbstractTool<
 	 * `passed` is `true` only when ESLint reports zero errors; `issues` is the
 	 * structured list of lint problems; `prettier_changed` counts auto-formatted
 	 * files.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QGetStagedFilesTool} — use this to discover which files to pass as `args.files`
 	 */
 	async execute(args: { files?: string[] }): Promise<{
 		passed: boolean;

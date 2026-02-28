@@ -32,6 +32,13 @@ export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Runs the comprehensive health check via `bun run check` (lint + typecheck + tests).
+	 *
+	 * @returns `{ status, output }` — `status` is `'ok'` when all checks pass.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QProjectStatusTool} — use this for a structured snapshot of each check separately
+	 */
 	async execute(): Promise<{ status: 'ok' | 'error'; output: string }> {
 		try {
 			const { stdout, stderr } = await this._spawn('bun', [

@@ -55,6 +55,8 @@ export class QGenerateTestTool extends QAbstractTool<
 	 * generated or pre-existing test file; `content` is the boilerplate code;
 	 * `message` carries an error description when the source file is not found or
 	 * a path-traversal is detected.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckProjectHealthTool} — run health checks after adding generated tests
 	 */
 	async execute(args: {
 		sourceFile: string;

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { QModel, Quick, QConfig } from '../../../src/index';
 
 /**
@@ -9,9 +9,7 @@ import { QModel, Quick, QConfig } from '../../../src/index';
  */
 describe('System Security: App-Wide Protection', () => {
 	// Clean state before and after
-	const originalDefaults = { ...QConfig.get().defaults };
-
-	beforeAll(() => {
+	beforeEach(() => {
 		// 1. BOOTSTRAP PHASE
 		// In a real app, this happens in main.ts / index.ts
 		QConfig.configure({
@@ -21,9 +19,8 @@ describe('System Security: App-Wide Protection', () => {
 		});
 	});
 
-	afterAll(() => {
-		// Restore cleanup
-		QConfig.configure({ defaults: originalDefaults });
+	afterEach(() => {
+		QConfig.reset();
 	});
 
 	test('Scenario: Full Application Lockdown', () => {

@@ -48,6 +48,8 @@ export class QCheckChangelogTool extends QAbstractTool<
 	 * the version is not documented.
 	 * @throws {Error} When `projectDir` resolves outside the project root
 	 * (path-traversal guard).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckApiCompatibilityTool} — complement: detect breaking API changes before release
 	 */
 	async execute(args: { projectDir?: string }): Promise<{
 		found: boolean;

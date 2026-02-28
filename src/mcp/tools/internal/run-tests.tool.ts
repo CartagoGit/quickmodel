@@ -54,6 +54,8 @@ export class QRunTestsTool extends QAbstractTool<
 	 * @returns `{ passed, total_pass, total_fail, errors, summary }` — `errors` is
 	 * an array of `{ test, message, file? }` entries for each failing test;
 	 * `passed` is `true` when `total_fail === 0`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QGetCoverageReportTool} — use this to also capture code coverage metrics
 	 */
 	async execute(args: { pattern?: string }): Promise<{
 		passed: boolean;

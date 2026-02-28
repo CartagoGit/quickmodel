@@ -30,6 +30,14 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	/** @internal `fs` module reference; can be overridden in tests to inject a mock filesystem. */
 	protected _fs = fs;
 
+	/**
+	 * Scans all TypeScript sources under `src/` for exported members without JSDoc.
+	 *
+	 * @returns `{ filesWithMissingDocs, summary }` — list of file paths with
+	 * undocumented exports and a one-liner summary.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QListTodosTool} — use this to also find TODO/FIXME annotation markers
+	 */
 	async execute(): Promise<{
 		filesWithMissingDocs: string[];
 		summary: string;
