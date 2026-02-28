@@ -54,6 +54,8 @@ export class QRoundtripTool extends QAbstractTool<
 	 * @param args.data - Raw input data to populate the model.
 	 * @param args.options - `@Quick()` configuration options.
 	 * @returns `{ lossless, input, serialized, roundtrip_serialized, diff, summary }`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckIntegrityTool} — complement: checks transformer-level constraints
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;

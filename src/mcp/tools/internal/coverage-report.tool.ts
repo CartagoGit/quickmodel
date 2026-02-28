@@ -26,6 +26,13 @@ export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Runs the test suite with coverage reporting enabled.
+	 *
+	 * @returns `{ summary }` — coverage output from `bun run test:coverage`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QRunTestsTool} — use this for tests without coverage overhead
+	 */
 	async execute(): Promise<{ summary: string }> {
 		try {
 			const { stdout, stderr } = await this._spawn('bun', [

@@ -4,6 +4,16 @@ QuickModel ships with a **built-in structured trace system** that can observe ev
 
 Tracing is **fully opt-in and zero-overhead** by default. Nothing is emitted until you configure a verbosity level.
 
+## What is tracing for?
+
+The system serves two purposes:
+
+**1. Diagnosis (primary)** — When your model is not behaving as expected you should not have to guess.
+Set `verbosity: 'verbose'` temporarily and QuickModel will print every internal step it takes: which transformer ran, which field was stripped, which rule passed or failed, and what the raw vs. transformed value was. Once you've found the issue, set it back to `'silent'`.
+
+**2. Production observability (secondary)** — Route rule failures, integrity events, or lifecycle milestones
+to your own structured logging system (Winston, Pino, Datadog…) via the `sink` option.
+
 ## Verbosity levels
 
 | Level       | What is emitted                                            |
@@ -48,6 +58,49 @@ QConfig.configure({
 });
 ```
 
+### Console output format & colors
+
+By default, each trace line printed to the console follows this format:
+
+```
+[QM][INFO][UserModel][construction] Instance created (3 fields)
+[QM][WARN][UserModel:amount][rule-fail] rule="Amount must be positive"
+[QM][ERROR][UserModel:email][rule-error] rule="Must be a valid email"
+[QM][DEBUG][UserModel:createdAt][transformer] DateTransformer applied
+```
+
+The prefix `[QM]` is configurable via `prefix` (see below). Colors are applied automatically in interactive terminals and disabled in CI environments (pipes, log files). The palette follows the conventional terminal standard:
+
+| Level     | Color  |
+| --------- | ------ |
+| `error`   | Red    |
+| `warn`    | Yellow |
+| `info`    | Green  |
+| `debug`   | Blue   |
+| `verbose` | Gray   |
+
+**Force or disable colors:**
+
+```typescript
+QConfig.configure({
+	defaults: { trace: { verbosity: 'info', colors: false } },
+}); // always plain
+QConfig.configure({ defaults: { trace: { verbosity: 'info', colors: true } } }); // always colored
+```
+
+### Custom prefix
+
+Change the `[QM]` tag shown in every console line:
+
+```typescript
+QConfig.configure({
+	defaults: {
+		trace: { verbosity: 'info', prefix: 'MyApp' },
+	},
+});
+// → [MyApp][INFO][UserModel][construction] Instance created (3 fields)
+```
+
 ### Filtering events
 
 Use `events` to limit which lifecycle events are emitted:
@@ -63,9 +116,9 @@ QConfig.configure({
 });
 ```
 
-### Custom sink (structured logging / telemetry)
+### Integrating an external logger
 
-By default traces go to `console`. Provide a `sink` to intercept them:
+When you want QuickModel's traces to go through **your own logging system** (Winston, Pino, Datadog, etc.) instead of `console`, provide a `sink`. When present, the console is **never called** — every entry goes exclusively to your function:
 
 ```typescript
 import type { IQTraceEntry } from 'quickmodel/types';
@@ -82,23 +135,49 @@ QConfig.configure({
 });
 ```
 
-When a `sink` is provided, `console` is **never called** — the entry goes exclusively to your function.
-
-### Custom prefix
-
-Change the `[QuickModel:…]` tag displayed in console output:
+**Winston:**
 
 ```typescript
+import { createLogger, transports } from 'winston';
+const logger = createLogger({ transports: [new transports.Console()] });
+
+QConfig.configure({
+	defaults: {
+		trace: {
+			verbosity: 'warn',
+			sink: (entry) =>
+				logger[entry.level === 'verbose' ? 'debug' : entry.level](
+					entry.message,
+					entry
+				),
+		},
+	},
+});
+```
+
+**Pino:**
+
+```typescript
+import pino from 'pino';
+const log = pino();
+
 QConfig.configure({
 	defaults: {
 		trace: {
 			verbosity: 'info',
-			prefix: 'MyApp',
+			sink: (entry) =>
+				log[entry.level === 'verbose' ? 'debug' : entry.level](
+					entry,
+					entry.message
+				),
 		},
 	},
 });
-// → [MyApp:UserModel][construction] Instance created (3 fields)
 ```
+
+::: tip
+Because `sink` receives the full [`IQTraceEntry`](#iqtraceentry-reference) object, you can forward only specific fields, add correlation IDs, or filter further before sending to your backend.
+:::
 
 ## Per-model configuration (`@Quick`)
 

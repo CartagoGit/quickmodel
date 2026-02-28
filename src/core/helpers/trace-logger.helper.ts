@@ -35,13 +35,13 @@ const CONSOLE_FN: Record<IConsoleLevel, (...args: unknown[]) => void> = {
 	verbose: (...args) => console.debug(...args),
 };
 
-/** @internal ANSI escape codes per level (used when colors are enabled). */
+/** @internal ANSI escape codes per level — conventional terminal palette. */
 const ANSI_COLOR: Record<IConsoleLevel, string> = {
-	error: '\x1b[91m', // bright red
+	error: '\x1b[31m', // red
 	warn: '\x1b[33m', // yellow
-	info: '\x1b[36m', // cyan
-	debug: '\x1b[90m', // gray
-	verbose: '\x1b[35m', // magenta
+	info: '\x1b[32m', // green
+	debug: '\x1b[34m', // blue
+	verbose: '\x1b[90m', // gray (dim)
 };
 const ANSI_RESET = '\x1b[0m';
 

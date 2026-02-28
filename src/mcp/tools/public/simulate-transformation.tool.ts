@@ -39,6 +39,8 @@ export class QSimulateTransformationTool extends QAbstractTool<
 	 * @param args.data - Raw input data (e.g. `{ createdAt: '2024-01-01' }`).
 	 * @param args.options - Transformer config in `@Quick()` format (e.g. `{ createdAt: 'Date' }`).
 	 * @returns `{ result }` — the fully serialized plain object after transformation.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QRoundtripTool} — use this to also verify the reverse transformation is lossless
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;

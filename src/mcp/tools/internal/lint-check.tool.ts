@@ -82,6 +82,8 @@ export class QLintCheckTool extends QAbstractTool<
 	 * @returns `{ passed, errors, warnings, total_errors, total_warnings, summary }` —
 	 * `errors` and `warnings` are `ILintIssue[]` with file, line, column, rule,
 	 * and message; `passed` is `true` only when `total_errors === 0`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckProjectRulesTool} — use this for static project-rule checks without ESLint
 	 */
 	async execute(args: {
 		targetDir?: string;

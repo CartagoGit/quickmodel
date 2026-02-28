@@ -37,6 +37,8 @@ export class QValidateUsageTool extends QAbstractTool<
 	 * @param args - Tool arguments.
 	 * @param args.code - TypeScript code to analyze.
 	 * @returns `{ valid, issues[], detectedDecorators[] }` — `valid` is `true` when no issues found.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckIntegrityTool} — complement: checks transformer-level data integrity
 	 */
 	async execute(args: { code: string }): Promise<{
 		valid: boolean;

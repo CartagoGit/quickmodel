@@ -86,6 +86,8 @@ export class QSimulateValidationTool extends QAbstractTool<
 	 * @param args.rules - Array of validation rules with field, predicate, message, and optional group.
 	 * @param args.group - Optional group name to filter rules (only rules matching this group are evaluated).
 	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all active predicates pass.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QSimulateRulesTool} — use this for full @QRule wiring through checkRules()
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;

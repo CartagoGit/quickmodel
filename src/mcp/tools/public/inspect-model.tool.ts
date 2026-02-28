@@ -43,6 +43,8 @@ export class QInspectModelTool extends QAbstractTool<
 	 * @param args.code - TypeScript source code of the QuickModel class.
 	 * @returns `{ name, transformers, structure, decorators }` — class name, bound transformers,
 	 *   raw `@Quick()` config string, and list of detected decorator names.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QExportJsonSchemaTool} — use inspection results to generate a JSON Schema
 	 */
 	async execute(args: { code: string }): Promise<{
 		name: string;

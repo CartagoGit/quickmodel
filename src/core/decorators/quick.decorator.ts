@@ -494,7 +494,8 @@ export function Quick<
 	const TAliases extends Record<string, string> = Record<never, never>,
 >(
 	typeMap?: IQImplements<TTypeMap, TExtendedTypes>,
-	advancedOptions?: IQAdvancedOptions<TTypeMap> & { alias?: TAliases }
+	advancedOptions?: IQAdvancedOptions<TTypeMap> & { alias?: TAliases },
+	extraOptions?: IQAdvancedOptions
 ): ClassDecorator {
 	// SAFETY CHECK: Detect common misconfiguration where options are passed as first argument
 	if (
@@ -525,8 +526,12 @@ export function Quick<
 
 		// Merge global defaults
 		const globalDefaults = QConfig.get().defaults;
-		// Merge passed advancedOptions
-		let mergedOptions = { ...globalDefaults, ...advancedOptions };
+		// Merge passed advancedOptions + optional extraOptions (3rd argument)
+		let mergedOptions = {
+			...globalDefaults,
+			...advancedOptions,
+			...extraOptions,
+		};
 
 		// Handle case where options are passed as first argument (typeMap)
 		// Only if typeMap is provided AND advancedOptions is undefined

@@ -2,6 +2,9 @@ import { z } from '@mcp/deps';
 
 /**
  * Represents a single message in an MCP Prompt response.
+ * @see {@link IQPromptResult} — the result container that holds an array of these messages
+ * @see {@link QAbstractPrompt.user} — helper that constructs a user-role message
+ * @see {@link QAbstractPrompt.assistant} — helper that constructs an assistant-role message
  */
 export interface IQPromptMessage {
 	role: 'user' | 'assistant';
@@ -13,6 +16,8 @@ export interface IQPromptMessage {
 
 /**
  * Result returned by a prompt handler.
+ * @see {@link IQPromptMessage} — individual messages that make up the result
+ * @see {@link IQMcpPrompt.execute} — method that returns this type
  */
 export interface IQPromptResult {
 	description?: string;
@@ -22,6 +27,8 @@ export interface IQPromptResult {
 /**
  * MCP Prompt arguments schema — a plain record of Zod types.
  * Used as `argsSchema` in `server.registerPrompt()`.
+ * @see {@link IQMcpPrompt.argsSchema} — property that declares this type on prompt classes
+ * @see {@link QAbstractPrompt} — base class whose `argsSchema` uses this type
  */
 export type IPromptArgsSchema = Record<string, z.ZodType>;
 
@@ -88,6 +95,8 @@ export abstract class QAbstractPrompt<
 	 *
 	 * @param text - The message body text (plain text or Markdown)
 	 * @returns A `{ role: 'user', content: { type: 'text', text } }` message object
+	 * @see {@link QAbstractPrompt.assistant} — counterpart that builds an assistant message
+	 * @see {@link IQPromptMessage} — shape of the returned message object
 	 */
 	protected user(text: string): IQPromptMessage {
 		return { role: 'user', content: { type: 'text', text } };
@@ -98,6 +107,8 @@ export abstract class QAbstractPrompt<
 	 *
 	 * @param text - The message body text (plain text or Markdown)
 	 * @returns A `{ role: 'assistant', content: { type: 'text', text } }` message object
+	 * @see {@link QAbstractPrompt.user} — counterpart that builds a user message
+	 * @see {@link IQPromptMessage} — shape of the returned message object
 	 */
 	protected assistant(text: string): IQPromptMessage {
 		return { role: 'assistant', content: { type: 'text', text } };

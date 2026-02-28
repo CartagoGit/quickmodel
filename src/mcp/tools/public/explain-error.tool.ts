@@ -39,6 +39,8 @@ export class QExplainErrorTool extends QAbstractTool<
 	 * @param args - Tool arguments.
 	 * @param args.error - JSON string of the validation error thrown by QuickModel.
 	 * @returns `{ explanation }` — a descriptive string explaining each error in plain language.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QSimulateValidationTool} — run validation to produce the error JSON passed here
 	 */
 	async execute(args: { error: string }): Promise<{ explanation: string }> {
 		await Promise.resolve();

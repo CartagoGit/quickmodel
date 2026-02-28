@@ -4,6 +4,15 @@ QuickModel incluye un **sistema de trazas estructurado** que permite observar cu
 
 Las trazas son **completamente opcionales y sin coste** por defecto. Nada se emite hasta que configures un nivel de verbosidad.
 
+## ¿Para qué sirven las trazas?
+
+El sistema tiene dos propósitos:
+
+**1. Diagnóstico (principal)** — Cuando un modelo no se comporta como esperas, no deberías tener que adivinar qué ocurre.
+Establece `verbosity: 'verbose'` temporalmente y QuickModel imprimirá cada paso interno: qué transformer ejecutó, qué campo eliminó, qué regla pasó o falló, y cuál era el valor bruto frente al transformado. Una vez encontrado el problema, vuelve a `'silent'`.
+
+**2. Observabilidad en producción (secundario)** — Enruta fallos de regla, eventos de integridad o hitos del ciclo de vida hacia tu propio sistema de logging estructurado (Winston, Pino, Datadog…) mediante la opción `sink`.
+
 ## Niveles de verbosidad
 
 | Nivel       | Qué se emite                                                          |
@@ -48,6 +57,49 @@ QConfig.configure({
 });
 ```
 
+### Formato de consola y colores
+
+Por defecto, cada línea del trace sigue este formato:
+
+```
+[QM][INFO][UserModel][construction] Instance created (3 fields)
+[QM][WARN][UserModel:importe][rule-fail] rule="El importe debe ser positivo"
+[QM][ERROR][UserModel:email][rule-error] rule="Debe ser un email válido"
+[QM][DEBUG][UserModel:createdAt][transformer] DateTransformer applied
+```
+
+El prefijo `[QM]` es configurable mediante `prefix` (ver más abajo). Los colores se aplican automáticamente en terminales interactivas y se deshabilitan en entornos CI (pipes, ficheros de log). La paleta sigue el estándar convencional de terminales:
+
+| Nivel     | Color    |
+| --------- | -------- |
+| `error`   | Rojo     |
+| `warn`    | Amarillo |
+| `info`    | Verde    |
+| `debug`   | Azul     |
+| `verbose` | Gris     |
+
+**Forzar o deshabilitar colores:**
+
+```typescript
+QConfig.configure({
+	defaults: { trace: { verbosity: 'info', colors: false } },
+}); // siempre sin color
+QConfig.configure({ defaults: { trace: { verbosity: 'info', colors: true } } }); // siempre con color
+```
+
+### Prefijo personalizado
+
+Cambia la etiqueta `[QM]` que aparece en cada línea de consola:
+
+```typescript
+QConfig.configure({
+	defaults: {
+		trace: { verbosity: 'info', prefix: 'MiApp' },
+	},
+});
+// → [MiApp][INFO][UserModel][construction] Instance created (3 fields)
+```
+
 ### Filtrar eventos
 
 Usa `events` para limitar qué eventos del ciclo de vida se emiten:
@@ -63,9 +115,9 @@ QConfig.configure({
 });
 ```
 
-### Sink personalizado (logging estructurado / telemetría)
+### Integrar un logger externo
 
-Por defecto las trazas van a `console`. Proporciona un `sink` para interceptarlas:
+Cuando quieras que las trazas de QuickModel pasen por **tu propio sistema de logging** (Winston, Pino, Datadog…) en lugar de `console`, proporciona un `sink`. Cuando está presente, **no se llama a `console`** — cada entrada va exclusivamente a tu función:
 
 ```typescript
 import type { IQTraceEntry } from 'quickmodel/types';
@@ -82,23 +134,49 @@ QConfig.configure({
 });
 ```
 
-Cuando se proporciona un `sink`, **no se llama a `console`** — la entrada va exclusivamente a tu función.
-
-### Prefijo personalizado
-
-Cambia la etiqueta `[QuickModel:…]` que aparece en la salida de consola:
+**Winston:**
 
 ```typescript
+import { createLogger, transports } from 'winston';
+const logger = createLogger({ transports: [new transports.Console()] });
+
+QConfig.configure({
+	defaults: {
+		trace: {
+			verbosity: 'warn',
+			sink: (entry) =>
+				logger[entry.level === 'verbose' ? 'debug' : entry.level](
+					entry.message,
+					entry
+				),
+		},
+	},
+});
+```
+
+**Pino:**
+
+```typescript
+import pino from 'pino';
+const log = pino();
+
 QConfig.configure({
 	defaults: {
 		trace: {
 			verbosity: 'info',
-			prefix: 'MiApp',
+			sink: (entry) =>
+				log[entry.level === 'verbose' ? 'debug' : entry.level](
+					entry,
+					entry.message
+				),
 		},
 	},
 });
-// → [MiApp:UserModel][construction] Instance created (3 fields)
 ```
+
+::: tip
+Como `sink` recibe el objeto [`IQTraceEntry`](#referencia-iqtraceentry) completo, puedes reenviar solo los campos que te interesen, añadir IDs de correlación o filtrar antes de enviar a tu backend.
+:::
 
 ## Configuración por modelo (`@Quick`)
 

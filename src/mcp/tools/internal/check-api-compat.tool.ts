@@ -41,6 +41,8 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 	 * removed / renamed exports.
 	 * @throws {Error} When `baselineFile` resolves to a path outside the project root
 	 * (path-traversal guard).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckProjectHealthTool} — run after this to confirm the whole release gate passes
 	 */
 	async execute(args: { baselineFile?: string }): Promise<{
 		status: 'compatible' | 'breaking' | 'baseline_created';

@@ -48,6 +48,8 @@ export class QCheckBundleSizeTool extends QAbstractTool<z.ZodObject<{}>> {
 	 * @returns `{ status, files, total_bytes, summary }` — `files` is an array of
 	 * `{ file, bytes }` entries from the `dist/` directory; `total_bytes` is the
 	 * sum; `status` is `'error'` if the build itself fails.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QBenchmarkPerformanceTool} — complement: measures transformation throughput
 	 */
 	async execute(_args: {}): Promise<{
 		status: 'ok' | 'error';

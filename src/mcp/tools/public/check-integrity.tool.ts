@@ -43,6 +43,8 @@ export class QCheckIntegrityTool extends QAbstractTool<
 	 * @param args.data - The raw data object to check (e.g. `{ birth: '2024-01-01', balance: '99999n' }`).
 	 * @param args.options - Type configuration in `@Quick()` format (e.g. `{ birth: 'Date', balance: 'BigInt' }`).
 	 * @returns `{ valid, errors[], evaluated, summary }` — `valid` is `true` when all fields pass.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QSimulateValidationTool} — use this as a complement for @QRule predicate checks
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;

@@ -39,6 +39,8 @@ export class QGenerateMockDataTool extends QAbstractTool<
 	 * @param args.schema - Type configuration in `@Quick()` format (e.g. `{ createdAt: 'Date' }`).
 	 * @param args.count - Number of mock objects to generate.
 	 * @returns Array of serialized plain objects, one per requested mock instance.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QRoundtripTool} — use generated mocks to verify round-trip losslessness
 	 */
 	async execute(args: {
 		schema: Record<string, unknown>;

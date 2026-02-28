@@ -54,6 +54,8 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	 * `errors` is empty; warnings are informational only.
 	 * @throws {Error} When `targetDir` resolves outside the project root
 	 * (path-traversal guard).
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QLintCheckTool} — run full ESLint with auto-fix instead
 	 */
 	async execute(args: { targetDir?: string }): Promise<{
 		passed: boolean;

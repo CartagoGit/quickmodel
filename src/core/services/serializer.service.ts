@@ -129,6 +129,7 @@ import { QConfig } from '../config/quick.config';
 import { TraceLogger } from '../helpers/trace-logger.helper';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QM_SPECIAL_TOKEN_KEY } from '@/transformers/special-float.transformer';
+import type { IFileModeOutput } from '@/core/helpers/form-data.helpers';
 
 // ---------------------------------------------------------------------------
 // Module-level per-constructor cache for serialize() hot path
@@ -145,7 +146,7 @@ interface IQSerializeClassMeta {
 	/** Getter keys from prototype chain that should be included (qtype:generated + QComputed) */
 	getterKeys: string[];
 	/** Per-field fileMode from @QType({ fileMode }) decorators — null when none defined */
-	fieldFileModes: Record<string, string> | null;
+	fieldFileModes: Record<string, IFileModeOutput> | null;
 }
 
 const _SERIALIZE_CLASS_META = new WeakMap<Function, IQSerializeClassMeta>();
@@ -243,7 +244,7 @@ function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
 		}
 
 		// Collect per-field fileMode from @QType({ fileMode }) decorators
-		let fieldFileModes: Record<string, string> | null = null;
+		let fieldFileModes: Record<string, IFileModeOutput> | null = null;
 		const classproto = (ctor as { prototype: object }).prototype;
 		const qtypeFields = Reflect.getMetadata(
 			QTYPES_METADATA_KEY,
@@ -255,7 +256,7 @@ function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
 					'qtype:fileMode',
 					classproto,
 					fieldKey
-				) as string | undefined;
+				) as IFileModeOutput | undefined;
 				if (fieldFileMode) {
 					if (fieldFileModes === null) fieldFileModes = {};
 					fieldFileModes[String(fieldKey)] = fieldFileMode;

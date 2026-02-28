@@ -11,18 +11,21 @@ import { z } from '@mcp/deps';
 export interface IQMcpTool<T extends z.ZodObject<any> = z.ZodObject<any>> {
 	/**
 	 * Unique name of the tool (e.g., 'create_model', 'validate_usage').
+	 * @see {@link QMcpServer.registerTools} — uses this name to register the tool in MCP
 	 */
 	name: string;
 
 	/**
 	 * Human-readable description of what the tool does.
 	 * This is used by the AI to understand when to call this tool.
+	 * @see {@link IQMcpTool.schema} — complements this description with the typed argument schema
 	 */
 	description: string;
 
 	/**
 	 * Zod schema defining the arguments accepted by the tool.
 	 * Using strict Zod schemas ensures type safety and prevents hallucinations.
+	 * @see {@link IQMcpTool.execute} — consumes the inferred type of this schema as its argument
 	 */
 	schema: T;
 
@@ -31,6 +34,8 @@ export interface IQMcpTool<T extends z.ZodObject<any> = z.ZodObject<any>> {
 	 * @param args - Arguments strictly matching the Zod schema.
 	 * @returns Promise resolving to an `IQMcpToolResult`-compatible object —
 	 *   either `{ success: true; ... }` on success, or `{ success: false; error: string }` on failure.
+	 * @see {@link QAbstractTool.execute} — base class abstract implementation of this method
+	 * @see {@link IQMcpTool.schema} — Zod schema whose inferred type becomes `args`
 	 */
 	execute(args: z.infer<T>): Promise<unknown>;
 }
@@ -46,6 +51,7 @@ export interface IQMcpTool<T extends z.ZodObject<any> = z.ZodObject<any>> {
  *
  * @see {@link IQMcpTool} — the interface this class implements
  * @see {@link QMcpServer} — registers tool instances and exposes them via MCP
+ * @see {@link QAbstractPrompt} — analogous base class for MCP prompts (skills)
  */
 export abstract class QAbstractTool<
 	T extends z.ZodObject<any>,
@@ -59,6 +65,8 @@ export abstract class QAbstractTool<
 	 * @param args - Validated arguments.
 	 * @returns Promise resolving to an `IQMcpToolResult`-compatible object —
 	 *   either `{ success: true; ... }` on success, or `{ success: false; error: string }` on failure.
+	 * @see {@link IQMcpTool.execute} — interface contract this method fulfils
+	 * @see {@link QAbstractTool.schema} — Zod schema whose inferred type constrains `args`
 	 */
 	abstract execute(args: z.infer<T>): Promise<unknown>;
 }

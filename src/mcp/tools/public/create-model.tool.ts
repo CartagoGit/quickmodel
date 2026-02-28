@@ -35,6 +35,8 @@ export class QCreateModelTool extends QAbstractTool<
 	 * @param args.properties - Map of property name → transformer type string (e.g. `{ createdAt: 'Date' }`).
 	 * @returns `{ code }` — the generated TypeScript source.
 	 * @throws {Error} When `className` or any property key is not a valid identifier.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QInterfaceToModelTool} — use this alternative when starting from a TypeScript interface
 	 */
 	async execute(args: {
 		className: string;

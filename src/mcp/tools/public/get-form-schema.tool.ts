@@ -57,6 +57,8 @@ export class QGetFormSchemaTool extends QAbstractTool<
 	 * @param args.code - TypeScript source code of the QuickModel class.
 	 * @param args.grouped - When `true`, groups the schema by `@QGroup` sections.
 	 * @returns `{ schema, count }` — array of field metadata entries and total count.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QGetModelSchemaTool} — use this for multi-format schema generation instead
 	 */
 	async execute(args: {
 		code: string;

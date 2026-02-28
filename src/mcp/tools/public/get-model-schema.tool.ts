@@ -51,6 +51,8 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	 *   `"typescript"`, `"graphql"`, `"ajv"`).
 	 * @returns `{ schema, format }` — the generated schema object and the format used.
 	 * @throws {Error} When `format` is not one of the supported values.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QExportJsonSchemaTool} — simpler alternative for JSON Schema only
 	 */
 	async execute(args: {
 		code: string;

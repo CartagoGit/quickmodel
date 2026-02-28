@@ -30,6 +30,14 @@ export class QCheckSecurityTool extends QAbstractTool<z.ZodObject<{}>> {
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Runs the security test suite and returns the results.
+	 *
+	 * @param _args - No arguments required.
+	 * @returns `{ status, output }` — `status` is `'secure'`, `'vulnerable'`, or `'error'`.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCheckProjectHealthTool} — comprehensive gate that includes security tests
+	 */
 	async execute(_args: {}): Promise<{
 		status: 'secure' | 'vulnerable' | 'error';
 		output: string;

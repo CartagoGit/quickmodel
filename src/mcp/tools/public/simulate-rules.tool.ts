@@ -85,6 +85,8 @@ export class QSimulateRulesTool extends QAbstractTool<
 	 * @param args.data - The data object to validate.
 	 * @param args.rules - Array of rules with field, predicate expression, and message.
 	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all predicates pass.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QSimulateAsyncRulesTool} — use this for async predicates (DB lookups, API calls)
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;

@@ -51,6 +51,8 @@ export class QJsonToModelTool extends QAbstractTool<
 	 * @param args.className - Optional name for the generated class (defaults to `"GeneratedModel"`).
 	 * @returns `{ code }` — generated TypeScript source code for the QuickModel class.
 	 * @throws {Error} When `json` is not a valid JSON string or is not a plain object.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QInterfaceToModelTool} — alternative when starting from a TypeScript interface
 	 */
 	async execute(args: {
 		json: string;

@@ -46,6 +46,8 @@ export class QInterfaceToModelTool extends QAbstractTool<
 	 * @param args.code - TypeScript interface source code to convert.
 	 * @returns `{ code }` — generated TypeScript source code of the QuickModel class.
 	 * @throws {Error} When no interface declaration is found in the provided code.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QCreateModelTool} — alternative when starting from a property schema, not an interface
 	 */
 	async execute(args: { code: string }): Promise<{ code: string }> {
 		await Promise.resolve();

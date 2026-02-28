@@ -121,6 +121,8 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 	 * @param args.rules - Array of async rules with field, predicate expression, and message.
 	 * @param args.options - Options forwarded to `checkRulesAsync()` (mode, timeoutMs, …).
 	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all predicates pass.
+	 * @see {@link QAbstractTool.execute} — base contract for this method
+	 * @see {@link QSimulateRulesTool} — use this simpler alternative for synchronous predicates
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;
