@@ -5,6 +5,10 @@
  * public API surface (e.g. return types) but not main library features.
  *
  * @module quickmodel/types
+ * @see {@link IQSerializationOptions} — options for `QModel.serialize()`
+ * @see {@link IQConfig} — global configuration shape
+ * @see {@link IQMockType} — mock generation strategy enum values
+ * @see {@link IQTransformer} — interface for custom transformers
  */
 
 // Core Interfaces
@@ -53,7 +57,12 @@ export type {
 // Options
 export type { IQSerializationOptions } from './core/interfaces/serializer.interface';
 export type { IQMockType } from './core/services/mock-generator.service';
-export type { IQConfig } from './core/config/quick.config';
+export type {
+	IQConfig,
+	IQTraceVerbosity,
+	IQTraceEvent,
+	IQTraceEntry,
+} from './core/config/quick.config';
 
 // Transform Options
 export type { IQPropertyOptions } from './core/interfaces/transform-options.interface';
@@ -79,3 +88,24 @@ export type {
 	IQDeserializer,
 } from './core/interfaces/serializer.interface';
 export type { ISchemaGeneratorConfig } from './core/services/schema-generators.service';
+export type { IQRuleOptions } from './core/decorators/qrule.decorator';
+
+// FormData Types (Propuesta G — Capa 3)
+export type {
+	IFileSourceMode,
+	IFileModeOutput,
+	IFromFormDataOptions,
+	IToFormDataOptions,
+} from './core/helpers/form-data.helpers';
+export type { IQSpoofMethod } from './core/types/form-data.type';
+
+// Streaming Types (Propuesta G — Capa 4)
+export type {
+	IToReadableStreamSingleField,
+	IToReadableStreamMultipart,
+	IToReadableStreamOptions,
+	IQMultipartStream,
+	IModelToMultipartStreamOptions,
+	IFromStreamOptions,
+	IPipeStreamOptions,
+} from './core/helpers/stream.helpers';
