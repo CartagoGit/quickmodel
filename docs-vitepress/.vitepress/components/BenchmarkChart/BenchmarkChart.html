@@ -50,7 +50,9 @@
 					</div>
 					<!-- Matrix filters: type selector + library badges -->
 					<div class="bm-matrix__filters">
-						<div class="bm-matrix__filter-row">
+						<div
+							v-if="showFeatureCategoryFilter"
+							class="bm-matrix__filter-row">
 							<span class="bm-matrix__filter-label">
 								{{ t.benchmark.typeLabel }}
 							</span>
@@ -82,7 +84,9 @@
 								</button>
 							</TransitionGroup>
 						</div>
-						<div class="bm-matrix__filter-row">
+						<div
+							v-if="showFeatureCategoryFilter"
+							class="bm-matrix__filter-row">
 							<span class="bm-matrix__filter-label">
 								{{ t.benchmark.featuresLabel }}
 							</span>

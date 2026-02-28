@@ -17,6 +17,9 @@
  * - Open/Closed: New transformers can be added without modifying base class
  * - Liskov Substitution: All transformers can be used interchangeably
  *
+ * @see {@link IQTransformer} — the interface this class implements
+ * @see {@link QTransformerRegistry} — registry where custom transformers are registered
+ *
  * @example
  * ```typescript
  * class CustomTransformer extends BaseTransformer<string, CustomType> {

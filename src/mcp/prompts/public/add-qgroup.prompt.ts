@@ -9,6 +9,10 @@ import type { IQPromptResult } from '../abstract-prompt';
  * model.checkGroups(groupName) evaluates only the rules for that group,
  * enabling conditional validation (e.g. only validate address fields when
  * the user has selected a shipping option).
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QSimulateRulesTool} for testing the validation groups
+ * @see {@link QValidateUsageTool} for usage verification
  */
 export class QAddQGroupPrompt extends QAbstractPrompt<{
 	model_code: z.ZodString;

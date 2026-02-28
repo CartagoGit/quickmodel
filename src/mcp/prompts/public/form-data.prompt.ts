@@ -13,6 +13,10 @@ import type { IQPromptResult } from '../abstract-prompt';
  * - Streaming for large files: `toReadableStream()`, `fromStream()`, `pipeStream()`
  * - `IQStreamProgress` callback: `{ bytes, total, percent, chunks, bytesPerSec, elapsed, eta }`
  * - When `total` / `percent` / `eta` are `null` (stream without Content-Length)
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QModel.toFormData} for the FormData serialization method
+ * @see {@link QModel.fromFormData} for the FormData deserialization method
  */
 export class QFormDataPrompt extends QAbstractPrompt<{
 	scenario: z.ZodString;

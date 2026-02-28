@@ -11,7 +11,8 @@
  */
 
 import { describe, test, expect, beforeAll } from 'bun:test';
-import { QModel, Quick, QRule } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule } from '@/decorators';
 
 // ---------------------------------------------------------------------------
 // Helpers

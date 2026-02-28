@@ -11,6 +11,10 @@ import type { IQPromptResult } from '../abstract-prompt';
  * 3. Optionally grouping fields with `@QGroup`
  * 4. Verifying the result with `validate_usage`
  * 5. Testing rules live with `simulate_validation`
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QSimulateValidationTool} for the live validation testing step
+ * @see {@link QValidateUsageTool} for usage verification
  */
 export class QFormValidationPrompt extends QAbstractPrompt<{
 	form_description: z.ZodString;

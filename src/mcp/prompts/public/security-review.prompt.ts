@@ -10,6 +10,10 @@ import type { IQPromptResult } from '../abstract-prompt';
  * - populationLimit — prevent DoS via large arrays
  * - Field-level type enforcement preventing prototype pollution
  * - Safe defaults for common attack vectors
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QCheckSecurityTool} for the security check step
+ * @see {@link QCheckIntegrityTool} for integrity validation
  */
 export class QSecurityReviewPrompt extends QAbstractPrompt<{
 	model_code: z.ZodOptional<z.ZodString>;

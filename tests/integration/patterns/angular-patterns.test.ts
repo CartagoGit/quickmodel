@@ -9,7 +9,8 @@
  * - QModel subclasses for coercion/serialization → .checkRules() / .serialize()
  */
 import { describe, test, expect, beforeEach, spyOn, afterEach } from 'bun:test';
-import { QModel, Quick, QRule, QComputed, QGroup, QField } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QComputed, QGroup, QField } from '@/decorators';
 import { qGroups } from '@/core/helpers/q-groups';
 import {
 	qCheckRules,

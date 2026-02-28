@@ -23,6 +23,9 @@ import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
  *   new properties.
  *
  * @internal Used by `PopulationService`.
+ *
+ * @see {@link PopulationService} — orchestrates population and triggers dot-notation handling
+ * @see {@link ValueTransformerService} — applies the actual type conversion to each resolved leaf
  */
 export class DotNotationHandler {
 	constructor(

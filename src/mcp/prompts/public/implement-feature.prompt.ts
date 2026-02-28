@@ -12,6 +12,11 @@ import { QAbstractPrompt } from '../abstract-prompt';
  *  5. Run check_project_rules — MUST pass before continuing
  *  6. Refactor if needed, re-run gate
  *  7. Only then the feature is DONE
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QLintCheckTool} for the lint gate
+ * @see {@link QTypecheckTool} for the typecheck gate
+ * @see {@link QCheckProjectRulesTool} for the project rules gate
  */
 export class QImplementFeaturePrompt extends QAbstractPrompt<{
 	feature_description: z.ZodString;

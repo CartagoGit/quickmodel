@@ -12,7 +12,8 @@
  * - Error responses: validation errors in MSW handlers
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QField, QComputed } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField, QComputed } from '@/decorators';
 
 // ---------------------------------------------------------------------------
 // Models

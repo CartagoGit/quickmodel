@@ -2,7 +2,7 @@
 // This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, test, expect } from 'bun:test';
 import { QModel } from '@/index';
-import { QType } from '@/utils';
+import { QType } from '@/decorators';
 
 describe('Advanced Options with @QType Decorator', () => {
 	test('should support custom transformer, serializer and mocker via @QType options', () => {

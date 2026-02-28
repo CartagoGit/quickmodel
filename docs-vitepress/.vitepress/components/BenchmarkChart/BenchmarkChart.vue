@@ -5,6 +5,7 @@ import type { IBenchmarkChartProps } from './BenchmarkChart.types';
 const props = withDefaults(defineProps<IBenchmarkChartProps>(), {
 	onlyScenarios: undefined,
 	onlyLibs: undefined,
+	onlyFeatureCategories: undefined,
 	onlyTabs: undefined,
 	defaultTab: undefined,
 });
@@ -22,6 +23,7 @@ const {
 	scenarios,
 	libNames,
 	featureCategoryOptions,
+	showFeatureCategoryFilter,
 	activeScenario,
 	activeMatrixTypes,
 	disabledMatrixLibs,

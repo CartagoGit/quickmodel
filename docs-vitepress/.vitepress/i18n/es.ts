@@ -85,8 +85,8 @@ export const esLocale = {
 			'Qué librerías soportan cada escenario de benchmark. Haz clic en la cabecera de columna para ver el benchmark detallado.',
 		coverageSpeed: 'ops/seg',
 		coverageViewDetail: 'Ver benchmark detallado →',
-		tabFeatures: 'Comparativa de Características',
-		tabCoverage: 'Mapa de Cobertura',
+		tabFeatures: 'Características',
+		tabCoverage: 'Cobertura',
 		tabPerf: 'Rendimiento',
 
 		// ─── Scenario labels and notes ────────────────────────────
@@ -519,6 +519,7 @@ export const esLocale = {
 			serialization: 'Serialización',
 			forms: 'Formularios y Reglas',
 			model: 'Estado del Modelo',
+			mocks: 'Mocks',
 			exclusive: 'Solo QuickModel',
 		},
 	},

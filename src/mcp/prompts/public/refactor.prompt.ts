@@ -7,6 +7,11 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Guides the AI through a safe refactor: run tests first to establish a green
  * baseline, apply the refactor, then verify with run_tests + lint_check +
  * typecheck + check_project_rules before declaring done.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QRunTestsTool} for the test gate
+ * @see {@link QLintCheckTool} for the lint gate
+ * @see {@link QCheckProjectRulesTool} for the project rules gate
  */
 export class QRefactorPrompt extends QAbstractPrompt<{
 	description: z.ZodString;

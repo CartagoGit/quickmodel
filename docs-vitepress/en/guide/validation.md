@@ -577,5 +577,6 @@ const result = qCheckRules(form, { group: Groups.identity });
 <BenchmarkChart
   :only-scenarios="['validation', 'rules', 'asyncRules', 'validationReport']"
   :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup', 'Zod', 'valibot']"
+  :only-feature-categories="['validation']"
   default-tab="performance"
 />

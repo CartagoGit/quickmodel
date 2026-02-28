@@ -23,6 +23,7 @@ import type {
 import type {
 	IQSerializedInterface,
 	IQAliasedSerializedInterface,
+	IQAliasInput,
 	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
 import type { IQIntegrityResult } from '@/core/interfaces/transformer.interface';
@@ -60,6 +61,7 @@ import {
 } from '../constants/metadata-keys';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
+import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
 import type { INoInfer } from '@/core/types/ts-polyfills.type';
 import {
@@ -330,10 +332,19 @@ export abstract class QModel<
 	 * ```
 	 */
 	static create<
-		TClass extends QModel<any>,
-		TInterface = TClass extends QModel<infer I> ? I : never,
+		TClass extends QModel<any, any>,
+		TInterface = TClass extends QModel<infer I, any> ? I : never,
+		TAliasMap extends Record<string, string> = TClass extends QModel<
+			any,
+			infer A
+		>
+			? A
+			: Record<never, never>,
 		TResult = TClass,
-	>(this: new (data: any) => TClass, data: INoInfer<TInterface>): TResult;
+	>(
+		this: new (data: any) => TClass,
+		data: INoInfer<IQAliasInput<TInterface, TAliasMap>>
+	): TResult;
 
 	static create(this: any, data: any): any {
 		// Use generics to cast 'this' to the constructor type
@@ -419,12 +430,18 @@ export abstract class QModel<
 	 * ```
 	 */
 	static createMany<
-		TClass extends QModel<any>,
-		TInterface = TClass extends QModel<infer I> ? I : never,
+		TClass extends QModel<any, any>,
+		TInterface = TClass extends QModel<infer I, any> ? I : never,
+		TAliasMap extends Record<string, string> = TClass extends QModel<
+			any,
+			infer A
+		>
+			? A
+			: Record<never, never>,
 		TResult = TClass,
 	>(
 		this: new (data: any) => TClass,
-		data: INoInfer<TInterface>[],
+		data: INoInfer<IQAliasInput<TInterface, TAliasMap>>[],
 		options?: IQCreateManyOptions
 	): IQCreateManyResult<TResult>;
 
@@ -998,7 +1015,12 @@ export abstract class QModel<
 	 * const clonedUser = new User(user);
 	 * ```
 	 */
-	constructor(data: IQModelData<TInterface> | QModel<TInterface>) {
+	constructor(
+		data:
+			| IQAliasInput<TInterface, TAliasMap>
+			| IQModelData<TInterface>
+			| QModel<TInterface>
+	) {
 		Object.defineProperty(this, '__tempData', {
 			value: data,
 			writable: false,
@@ -1230,6 +1252,15 @@ export abstract class QModel<
 
 		// OPT-10: Pass Set directly — installLazyGetters now accepts Iterable<string>
 		this.installLazyGetters(propertyNames);
+
+		// Trace construction lifecycle
+		if (TraceLogger.isEnabled('info', this.constructor)) {
+			TraceLogger.traceConstruction(
+				this.constructor.name,
+				this.constructor,
+				propertyNames.size
+			);
+		}
 
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');

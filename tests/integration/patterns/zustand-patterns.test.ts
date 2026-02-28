@@ -12,7 +12,8 @@
  * - Shallow selector optimization with serialize()
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QComputed, QField } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QComputed, QField } from '@/decorators';
 
 // ---------------------------------------------------------------------------
 // Models

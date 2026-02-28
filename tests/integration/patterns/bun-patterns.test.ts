@@ -15,7 +15,8 @@
  * - createMany() for bulk API ingestion
  */
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QRule, QComputed, QField } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QComputed, QField } from '@/decorators';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------

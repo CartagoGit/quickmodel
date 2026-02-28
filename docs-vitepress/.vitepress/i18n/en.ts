@@ -83,8 +83,8 @@ export const enLocale = {
 			'Which libraries support each benchmark scenario. Click a column header to view the detailed benchmark.',
 		coverageSpeed: 'ops/sec',
 		coverageViewDetail: 'View detailed benchmark →',
-		tabFeatures: 'Feature Comparison',
-		tabCoverage: 'Coverage Map',
+		tabFeatures: 'Features',
+		tabCoverage: 'Coverage',
 		tabPerf: 'Performance',
 
 		// ─── Scenario labels and notes ────────────────────────────
@@ -519,6 +519,7 @@ export const enLocale = {
 			serialization: 'Serialization',
 			forms: 'Forms & Rules',
 			model: 'Model State',
+			mocks: 'Mocks',
 			exclusive: 'QuickModel Only',
 		},
 	},

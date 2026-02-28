@@ -13,8 +13,14 @@ interface IUser {
 	emailAddress: string;
 }
 
+type IUserAliasMap = {
+	firstName: 'first_name';
+	lastName: 'last_name';
+	emailAddress: 'email_address';
+};
+
 @Quick()
-class UserModel extends QModel<IUser> {
+class UserModel extends QModel<IUser, IUserAliasMap> {
 	@QAlias('first_name')
 	declare firstName: string;
 
@@ -29,12 +35,12 @@ class UserModel extends QModel<IUser> {
 ## Input: `create()` with snake_case payload
 
 ```typescript
-// Works with aliased keys (e.g. from a REST API):
+// Works with aliased keys (e.g. from a REST API) — fully typed, no `as any`:
 const user = UserModel.create({
 	first_name: 'Alice',
 	last_name: 'Smith',
 	email_address: 'alice@example.com',
-} as any);
+});
 
 console.log(user.firstName); // 'Alice'    ✅ camelCase inside the model
 console.log(user.emailAddress); // 'alice@example.com'
@@ -65,7 +71,7 @@ Because both input and output use the alias keys, the serialized form can be pas
 
 ```typescript
 const serialized = user.serialize();
-const restored = UserModel.create(serialized as any);
+const restored = UserModel.create(serialized);
 
 restored.firstName === 'Alice'; // ✅
 restored.emailAddress === 'alice@example.com'; // ✅
@@ -84,8 +90,10 @@ restored.firstName === 'Alice'; // ✅
 Only properties decorated with `@QAlias` are remapped. Other fields keep their original keys.
 
 ```typescript
+type IProfileAliasMap = { fullName: 'full_name' };
+
 @Quick({ birthDate: Date })
-class ProfileModel extends QModel<IProfile> {
+class ProfileModel extends QModel<IProfile, IProfileAliasMap> {
 	@QAlias('full_name')
 	declare fullName: string;
 
@@ -95,7 +103,7 @@ class ProfileModel extends QModel<IProfile> {
 const p = ProfileModel.create({
 	full_name: 'Jane Doe',
 	birthDate: '1990-01-01',
-} as any);
+});
 p.fullName; // 'Jane Doe'  ✅
 p.birthDate; // Date object ✅
 
@@ -119,7 +127,7 @@ const admin = AdminModel.create({
 	last_name: 'Lee',
 	email_address: 'dan@example.com',
 	phone_number: '555-1234',
-} as any);
+});
 
 admin.firstName; // 'Dan'
 admin.phoneNumber; // '555-1234'
@@ -154,5 +162,6 @@ admin.serialize(); // { first_name: 'Dan', ..., phone_number: '555-1234' }
 <BenchmarkChart
   :only-scenarios="['aliasMapping']"
   :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
+  :only-feature-categories="['model', 'exclusive']"
   default-tab="performance"
 />

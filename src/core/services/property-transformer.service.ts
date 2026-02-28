@@ -198,6 +198,10 @@ function _getPropTransformMeta(
  *   `ValueTransformerService` abstractions.
  *
  * @internal Used by `PopulationService`.
+ *
+ * @see {@link PopulationService} — calls `transform()` for each decorated property
+ * @see {@link ValueTransformerService} — performs the actual scalar/nested type coercion
+ * @see {@link TransformerLookupService} — resolves the registered transformer for each type
  */
 export class PropertyTransformer {
 	/**

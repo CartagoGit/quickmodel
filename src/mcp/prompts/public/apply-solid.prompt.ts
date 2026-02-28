@@ -7,6 +7,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Analyses the specified files against each of the 5 SOLID principles
  * and guides the AI through structured improvements, gated by run_tests,
  * lint_check and typecheck to ensure no regressions.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QRunTestsTool} for the test gate
+ * @see {@link QLintCheckTool} for the lint gate
  */
 export class QApplySolidPrompt extends QAbstractPrompt<{
 	file_paths: z.ZodString;

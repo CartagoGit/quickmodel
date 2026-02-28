@@ -6,6 +6,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  *
  * Guides the AI through understanding field name remapping and computed-getter
  * serialization, covering common mistakes and best practices.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QValidateUsageTool} for usage verification
+ * @see {@link QModel.serialize} for the serialize step that outputs aliased/computed fields
  */
 export class QAliasComputedPrompt extends QAbstractPrompt<{
 	model_code: z.ZodOptional<z.ZodString>;

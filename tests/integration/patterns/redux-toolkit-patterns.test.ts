@@ -7,7 +7,8 @@
  *         DevTools-friendly payloads.
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QField, QComputed } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField, QComputed } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 

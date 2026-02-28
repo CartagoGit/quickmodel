@@ -507,7 +507,7 @@ export const featureRows: IFeatureRow[] = [
 	},
 	{
 		i18nKey: 'typedMocks',
-		category: 'exclusive',
+		category: 'mocks',
 		scenarioKey: 'mocks',
 		values: {
 			'Plain JS': false,
@@ -614,7 +614,7 @@ export const featureRows: IFeatureRow[] = [
 	},
 	{
 		i18nKey: 'computedFields',
-		category: 'exclusive',
+		category: 'model',
 		values: {
 			'Plain JS': false,
 			TypeBox: false,
@@ -710,7 +710,7 @@ export const featureRows: IFeatureRow[] = [
 	},
 	{
 		i18nKey: 'schemaExport',
-		category: 'validation',
+		category: 'serialization',
 		values: {
 			'Plain JS': false,
 			TypeBox: true,
@@ -751,7 +751,7 @@ export const featureRows: IFeatureRow[] = [
 	},
 	{
 		i18nKey: 'treeShakeable',
-		category: 'validation',
+		category: 'model',
 		values: {
 			'Plain JS': false,
 			TypeBox: 'partial',
@@ -889,6 +889,7 @@ export const featureCategoryOptions = [
 	{ key: 'serialization' },
 	{ key: 'forms' },
 	{ key: 'model' },
+	{ key: 'mocks' },
 	{ key: 'exclusive' },
 ];
 

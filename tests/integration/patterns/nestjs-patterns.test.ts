@@ -18,7 +18,8 @@
  *  - Exception filter pattern (structured error format)
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QComputed } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QComputed } from '@/decorators';
 import { QRule } from '@/core/decorators/qrule.decorator';
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -22,7 +22,8 @@
 
 import 'reflect-metadata';
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QType, QRule } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QType, QRule } from '@/decorators';
 import { QTYPES_METADATA_KEY } from '@/core/decorators/qtype.decorator';
 import { QRULE_FIELDS_KEY } from '@/core/decorators/qrule.decorator';
 

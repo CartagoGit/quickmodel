@@ -7,6 +7,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Runs project_status to capture the current health snapshot, then guides
  * the AI through fixing any failures and regenerating documentation before
  * declaring the project fully in sync.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QProjectStatusTool} for the health snapshot step
+ * @see {@link QSyncDocsTool} for the documentation regeneration step
  */
 export class QSyncProjectPrompt extends QAbstractPrompt<Record<string, never>> {
 	name = 'quickmodel_sync_project';

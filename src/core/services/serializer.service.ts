@@ -122,6 +122,7 @@ import {
 } from '../constants/metadata-keys';
 import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { QConfig } from '../config/quick.config';
+import { TraceLogger } from '../helpers/trace-logger.helper';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QM_SPECIAL_TOKEN_KEY } from '@/transformers/special-float.transformer';
 
@@ -397,6 +398,17 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): TInterface {
+		// Emit serialize trace on top-level call (seen is undefined only at depth 0)
+		if (
+			seen === undefined &&
+			TraceLogger.isEnabled('info', model.constructor)
+		) {
+			TraceLogger.traceSerialize(
+				model.constructor.name,
+				model.constructor
+			);
+		}
+
 		// Per-constructor cache: eliminates Reflect.getMetadata + proto chain walk per call
 		const {
 			modelOptions,

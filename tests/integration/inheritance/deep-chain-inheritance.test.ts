@@ -1,7 +1,8 @@
 // @quickmodel-rule-ignore: prefer-quick
 // This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect } from 'bun:test';
-import { Quick, QType, QModel, IQImplements } from '@/index';
+import { Quick, QModel, IQImplements } from '@/index';
+import { QType } from '@/decorators';
 
 /**
  * Tests for deep inheritance chains (3+ levels).

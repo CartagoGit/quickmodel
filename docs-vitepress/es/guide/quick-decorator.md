@@ -215,7 +215,7 @@ Maneja arrays que contienen diferentes tipos de modelos (Tipos Unión).
 
 ### 5. Política de Propiedades Desconocidas
 
-QuickModel proporciona tres políticas para manejar propiedades desconocidas: 'keep' (predeterminado - las preserva), 'strip' (las elimina), o 'error' (lanza un error).
+QuickModel proporciona tres políticas para manejar propiedades desconocidas: 'strip' (predeterminado - las elimina), 'keep' (las preserva), o 'error' (lanza un error).
 
 ```typescript
 @Quick({ name: String }, { unknownPropertyPolicy: 'error' })

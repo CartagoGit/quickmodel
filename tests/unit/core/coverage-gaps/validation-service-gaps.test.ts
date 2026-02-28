@@ -2,7 +2,7 @@
 // This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect, spyOn } from 'bun:test';
 import { IntegrityService } from '../../../../src/core/services/integrity.service';
-import { QType } from '../../../../src/index';
+import { QType } from '@/decorators';
 import 'reflect-metadata';
 
 describe('Integrity Service Coverage Gaps', () => {

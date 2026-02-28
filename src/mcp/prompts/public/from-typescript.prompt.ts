@@ -6,6 +6,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  *
  * Guides the AI through: parse interface → generate model → validate usage.
  * The AI should call `interface_to_model` followed by `validate_usage`.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QInterfaceToModelTool} for the underlying tool invoked
+ * @see {@link QValidateUsageTool} for the validation step
  */
 export class QFromTypescriptPrompt extends QAbstractPrompt<{
 	typescript: z.ZodString;

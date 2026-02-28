@@ -7,7 +7,7 @@
 import { describe, test, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
 // @QComputed will be imported once implemented
-import { QComputed } from '@/index';
+import { QComputed } from '@/decorators';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

@@ -23,6 +23,9 @@ import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
  * @template TInterface - The target interface type to reconstruct.
  *
  * @internal This service is used by `QModel.toInterface()` and `QModel.toJSON()`.
+ *
+ * @see {@link QModel.toInterface} — public API entry point
+ * @see {@link QModel.toJSON} — also delegates to this service
  */
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,

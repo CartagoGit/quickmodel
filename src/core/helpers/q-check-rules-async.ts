@@ -24,6 +24,7 @@ import {
 	type IQRulesAsyncOptions,
 } from '@/core/decorators/qrule.decorator';
 import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
+import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 
 /**
  * Options for {@link qCheckRulesAsync}. Extends {@link IQRulesAsyncOptions}
@@ -92,6 +93,10 @@ export async function qCheckRulesAsync(
 	options?: IQCheckRulesAsyncOptions
 ): Promise<IQRulesResult> {
 	const proto = Object.getPrototypeOf(instance) as object;
+	const className =
+		(proto as { constructor?: { name?: string } }).constructor?.name ??
+		'Unknown';
+	const modelCtor = (proto as { constructor?: Function }).constructor;
 	const fields: string[] = Reflect.getMetadata(QRULE_FIELDS_KEY, proto) ?? [];
 
 	// Sentinel value that signals a timeout — unique per call to avoid cross-call collision
@@ -156,7 +161,6 @@ export async function qCheckRulesAsync(
 	): void => {
 		const timedOut = result === TIMED_OUT;
 		const passes = !timedOut && result === true;
-		if (passes) return;
 
 		const rawMessage =
 			typeof descriptor.message === 'function'
@@ -167,6 +171,36 @@ export async function qCheckRulesAsync(
 				? options.timeoutMessage()
 				: (options?.timeoutMessage ?? rawMessage)
 			: rawMessage;
+
+		if (timedOut) {
+			TraceLogger.traceRule({
+				event: 'rule-timeout',
+				modelName: className,
+				modelCtor,
+				field: descriptor.field,
+				ruleMessage: rawMessage,
+				value: descriptor.value,
+			});
+		} else if (passes) {
+			TraceLogger.traceRule({
+				event: 'rule-pass',
+				modelName: className,
+				modelCtor,
+				field: descriptor.field,
+				ruleMessage: rawMessage,
+				value: descriptor.value,
+			});
+			return;
+		} else {
+			TraceLogger.traceRule({
+				event: 'rule-fail',
+				modelName: className,
+				modelCtor,
+				field: descriptor.field,
+				ruleMessage: rawMessage,
+				value: descriptor.value,
+			});
+		}
 
 		errors.push({
 			field: descriptor.field,

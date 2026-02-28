@@ -6,12 +6,19 @@ import { QAlias } from '@/core/decorators/qalias.decorator';
 // Models
 // ---------------------------------------------------------------------------
 
-@Quick()
-class UserModel extends QModel<{
+interface IUserModel {
 	firstName: string;
 	lastName: string;
 	emailAddress: string;
-}> {
+}
+type IUserAliasMap = {
+	firstName: 'first_name';
+	lastName: 'last_name';
+	emailAddress: 'email_address';
+};
+
+@Quick()
+class UserModel extends QModel<IUserModel, IUserAliasMap> {
 	@QAlias('first_name')
 	declare firstName: string;
 
@@ -22,11 +29,14 @@ class UserModel extends QModel<{
 	declare emailAddress: string;
 }
 
-@Quick({ birthDate: Date })
-class ProfileModel extends QModel<{
+interface IProfileModel {
 	fullName: string | undefined;
 	birthDate: string | Date;
-}> {
+}
+type IProfileAliasMap = { fullName: 'full_name' };
+
+@Quick({ birthDate: Date })
+class ProfileModel extends QModel<IProfileModel, IProfileAliasMap> {
 	@QAlias('full_name')
 	declare fullName: string;
 
@@ -39,9 +49,15 @@ interface IChildModel {
 	emailAddress: string;
 	phoneNumber: string;
 }
+type IChildAliasMap = {
+	firstName: 'first_name';
+	lastName: 'last_name';
+	emailAddress: 'email_address';
+	phoneNumber: 'phone_number';
+};
 
 @Quick()
-class ChildModel extends QModel<IChildModel> {
+class ChildModel extends QModel<IChildModel, IChildAliasMap> {
 	@QAlias('first_name')
 	declare firstName: string;
 
@@ -65,7 +81,7 @@ describe('@QAlias — input remapping (create)', () => {
 			first_name: 'Alice',
 			last_name: 'Smith',
 			email_address: 'alice@example.com',
-		} as any);
+		});
 
 		expect(user.firstName).toBe('Alice');
 		expect(user.lastName).toBe('Smith');
@@ -90,7 +106,7 @@ describe('@QAlias — input remapping (create)', () => {
 			firstName: 'Wrong',
 			last_name: 'Smith',
 			email_address: 'alice@example.com',
-		} as any);
+		});
 
 		expect(user.firstName).toBe('Alice');
 	});
@@ -99,7 +115,7 @@ describe('@QAlias — input remapping (create)', () => {
 		const profile = ProfileModel.create({
 			full_name: 'Jane Doe',
 			birthDate: '1990-01-01T00:00:00.000Z',
-		} as any);
+		});
 
 		expect(profile.fullName).toBe('Jane Doe');
 		expect(profile.birthDate).toBeInstanceOf(Date);
@@ -110,7 +126,7 @@ describe('@QAlias — input remapping (create)', () => {
 			first_name: 'Carol',
 			last_name: 'White',
 			email_address: 'carol@example.com',
-		} as any);
+		});
 
 		expect(user.firstName).toBe('Carol');
 		expect(user.lastName).toBe('White');
@@ -152,7 +168,7 @@ describe('@QAlias — output remapping (serialize)', () => {
 		const profile = ProfileModel.create({
 			fullName: 'Jane Doe',
 			birthDate: '1990-01-01T00:00:00.000Z',
-		} as any);
+		});
 
 		const output = profile.serialize();
 
@@ -170,7 +186,7 @@ describe('@QAlias — full roundtrip', () => {
 		});
 
 		const serialized = original.serialize();
-		const restored = UserModel.create(serialized as any);
+		const restored = UserModel.create(serialized);
 
 		expect(restored.firstName).toBe('Alice');
 		expect(restored.lastName).toBe('Smith');
@@ -199,7 +215,7 @@ describe('@QAlias — inheritance', () => {
 			last_name: 'Lee',
 			email_address: 'dan@example.com',
 			phone_number: '555-1234',
-		} as any);
+		});
 
 		expect(child.firstName).toBe('Dan');
 		expect(child.phoneNumber).toBe('555-1234');

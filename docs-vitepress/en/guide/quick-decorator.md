@@ -214,7 +214,7 @@ Handle arrays containing different model types (Union Types).
 
 ### 5. Unknown Property Policy
 
-QuickModel provides three policies for handling unknown properties: 'keep' (default - preserves them), 'strip' (removes them), or 'error' (throws an error).
+QuickModel provides three policies for handling unknown properties: 'strip' (default - removes them), 'keep' (preserves them), or 'error' (throws an error).
 
 ```typescript
 @Quick({ name: String }, { unknownPropertyPolicy: 'error' })

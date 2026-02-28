@@ -6,6 +6,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  *
  * Guides the AI through converting plain classes or legacy QuickModel v1 code
  * into idiomatic v2 patterns: declare fields, @Quick decorator, proper typing.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QValidateUsageTool} for verification after migration
+ * @see {@link QInterfaceToModelTool} for TypeScript interface conversion
  */
 export class QMigrationPrompt extends QAbstractPrompt<{
 	legacy_code: z.ZodString;

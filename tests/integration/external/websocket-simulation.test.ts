@@ -1,6 +1,7 @@
 // tests/integration/external/websocket-simulation.test.ts
 import { describe, it, expect } from 'bun:test';
-import { Quick, QModel, QRule, QField, QComputed } from '@/index';
+import { Quick, QModel } from '@/index';
+import { QRule, QField, QComputed } from '@/decorators';
 import { qCheckRules } from '@/forms';
 
 /**

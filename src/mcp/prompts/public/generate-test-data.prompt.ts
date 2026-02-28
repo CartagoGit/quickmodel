@@ -5,6 +5,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Skill: Generate realistic test data for a QuickModel.
  *
  * Guides the AI through: inspect/create model → generate mock → simulate transformation.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QGenerateMockDataTool} for the mock generation step
+ * @see {@link QSimulateTransformationTool} for transformation verification
  */
 export class QGenerateTestDataPrompt extends QAbstractPrompt<{
 	model_code: z.ZodString;

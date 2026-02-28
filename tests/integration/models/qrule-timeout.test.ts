@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QRule } from '@/index';
-import type { IQRulesAsyncOptions } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule } from '@/decorators';
+import type { IQRulesAsyncOptions } from '@/decorators';
 
 // ---------------------------------------------------------------------------
 // Helpers

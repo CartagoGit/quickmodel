@@ -22,47 +22,19 @@ export type {
 } from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';
-export { QType } from './core/decorators/qtype.decorator';
-export { QRule } from './core/decorators/qrule.decorator';
-export type {
-	IQRulesResult,
-	IQRule,
-	IQRulesAsyncOptions,
-} from './core/decorators/qrule.decorator';
-export {
-	IsEmail,
-	IsUrl,
-	IsNotEmpty,
-	MinLength,
-	MaxLength,
-	Matches,
-	IsUuid,
-	IsDateString,
-	Min,
-	Max,
-	IsInt,
-	IsPositive,
-	IsNegative,
-	IsIn,
-} from './core/decorators/validators';
-export { QField } from './core/decorators/qfield.decorator';
-export type {
-	IQFieldMeta,
-	IQFormSchemaEntry,
-	IQFieldWidget,
-} from './core/decorators/qfield.decorator';
-export { QAlias } from './core/decorators/qalias.decorator';
-export { QGroup } from './core/decorators/qgroup.decorator';
-export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
-export { QComputed } from './core/decorators/qcomputed.decorator';
 export { QConfig } from './core/config/quick.config';
 
 // ============================================================================
 // PUBLIC API - Submodules
 // Use dedicated subpath imports for granular tree-shaking:
+//   import { ... } from 'quickmodel/decorators'   ← QType, QRule, QField, QAlias, QGroup, QComputed
+//   import { ... } from 'quickmodel/validators'   ← IsEmail, IsUrl, IsNotEmpty, MinLength…
 //   import { ... } from 'quickmodel/types'
 //   import { ... } from 'quickmodel/advanced'
 //   import { ... } from 'quickmodel/utils'
 //   import { ... } from 'quickmodel/forms'
+//   import { ... } from 'quickmodel/mock'
+//   import { ... } from 'quickmodel/schema'
+//   import { ... } from 'quickmodel/schema/zod'
 //   import { ... } from 'quickmodel/compat/ts5/forms'
 // ============================================================================

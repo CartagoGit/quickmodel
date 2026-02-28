@@ -16,7 +16,8 @@
  * ```
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QField, QComputed } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField, QComputed } from '@/decorators';
 import { quickmodelMatchers } from '@/matchers';
 
 // Extend bun:test's expect (same call that users make in Jest)

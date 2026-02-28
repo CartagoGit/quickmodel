@@ -549,7 +549,7 @@ QuickModel includes built-in protections for robust serialization:
 - **Internal Property Protection**: Properties starting with `__` are automatically excluded from serialization to prevent leaking internal state.
 - **Injection Protection**: Automatic validation for URLs (blocks `javascript:`) and limits on RegExp length.
 
-> ⚠️ **Security Notice**: QuickModel operates in **Permissive Mode** by default (`unknownPropertyPolicy: 'keep'`). For public APIs, use error policy: `@Quick({}, { unknownPropertyPolicy: 'error' })`. See [SECURITY.md](SECURITY.md) for full security guidelines and best practices.
+> ⚠️ **Security Notice**: QuickModel strips unknown properties by default (`unknownPropertyPolicy: 'strip'`). For strictest validation on public APIs, use error policy: `@Quick({}, { unknownPropertyPolicy: 'error' })`. See [SECURITY.md](SECURITY.md) for full security guidelines and best practices.
 
 ## ✅ Validation
 

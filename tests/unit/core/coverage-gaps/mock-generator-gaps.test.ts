@@ -1,7 +1,8 @@
 // @quickmodel-rule-ignore: prefer-quick
 // This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect } from 'bun:test';
-import { QModel, Quick, QType } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QType } from '@/decorators';
 
 describe('Mock Generator Coverage Gaps', () => {
 	// ...

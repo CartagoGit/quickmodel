@@ -8,6 +8,9 @@ import { QConfig } from '../config/quick.config';
  * - Circular reference detection
  * - Context creation and propagation
  * - Stack overflow prevention
+ *
+ * @see {@link Deserializer} — uses this guard to limit recursive deserialization depth
+ * @see {@link QConfig} — configure `maxRecursionDepth` globally
  */
 export class RecursionGuard {
 	/** @internal Default maximum recursion depth used when no `maxRecursionDepth` is configured. */

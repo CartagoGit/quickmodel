@@ -84,6 +84,10 @@ import {
  * Version and name are read from `package.json` at construction time when
  * not provided explicitly via `options`.
  *
+ * @see {@link QAbstractTool} for the base class all registered tools must extend
+ * @see {@link IQMcpTool} for the tool interface contract
+ * @see {@link QAbstractPrompt} for the base class all registered prompts must extend
+ *
  * Typical usage (programmatic embedding):
  * ```typescript
  * const server = new QMcpServer();

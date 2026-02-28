@@ -155,6 +155,45 @@ export type IQAliasedSerializedInterface<
 };
 
 /**
+ * Maps a model interface to the shape accepted as **input** by `create()`, `createMany()`
+ * and `new Model()` when the model declares alias keys via `TAliasMap`.
+ *
+ * - Keys that have an entry in `TAliasMap` are replaced by their alias value
+ *   (e.g. `firstName` → `'first_name'`).
+ * - Keys without an entry keep their original name.
+ * - When `TAliasMap` is empty (`Record<never, never>`) the type is identical to `T`
+ *   — no overhead and no regression for models without aliases.
+ * - The union with `T` preserves the documented fallback: passing **camelCase** (original)
+ *   keys instead of alias keys is also valid at runtime and therefore at type level.
+ *
+ * @template T         - The model interface (runtime / wire property names).
+ * @template TAliasMap - Literal map `{ propertyName: 'alias_key' }` — same second
+ *                       type parameter as `QModel<TInterface, TAliasMap>`.
+ *
+ * @example
+ * ```typescript
+ * type IUserAliasMap = { firstName: 'first_name'; lastName: 'last_name' };
+ *
+ * // IQAliasInput<IUser, IUserAliasMap> produces:
+ * // { first_name: string; last_name: string } | IUser
+ * ```
+ */
+export type IQAliasInput<
+	T,
+	TAliasMap extends Record<string, string> = Record<never, never>,
+> = [keyof TAliasMap] extends [never]
+	? T
+	: // Alias-remapped shape (alias keys → original types) ∪ original shape (fallback)
+			| {
+					[K in keyof T as K extends string
+						? K extends keyof TAliasMap
+							? TAliasMap[K]
+							: K
+						: K]: T[K];
+			  }
+			| T;
+
+/**
  * Identity mapping from serialized → deserialized type.
  *
  * This is a type-level no-op: the actual deserialization is performed at runtime

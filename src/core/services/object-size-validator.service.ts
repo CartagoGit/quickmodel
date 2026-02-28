@@ -8,6 +8,10 @@ import { QModelError } from '../errors/quickmodel.error';
  * - Object property count validation
  * - Nested object size checks
  * - DoS prevention via size limits
+ *
+ * @see {@link PopulationService} — calls this validator for every array and object property
+ * @see {@link QConfig} — configure `maxArrayLength` and related limits globally
+ * @see {@link QModelError} — the error thrown when a limit is exceeded
  */
 export class ObjectSizeValidator {
 	/**

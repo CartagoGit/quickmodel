@@ -41,6 +41,10 @@ const _DESERIALIZE_TRIGGER_CACHE = new WeakMap<
  * - `InstanceFactoryService` (object creation)
  * - `PopulationService` (data mapping)
  * - `ValueTransformerService` (type conversion)
+ *
+ * @see {@link QModel} — the public API that delegates to this service
+ * @see {@link PopulationService} — hydrates each field after the instance is created
+ * @see {@link IntegrityService} — validates the deserialized result when configured
  */
 export class Deserializer<
 	TInterface extends Record<string, unknown> = Record<string, unknown>,

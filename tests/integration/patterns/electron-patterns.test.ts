@@ -10,7 +10,8 @@
  * serialize() simulates renderer→main; JSON.parse/stringify simulates IPC wire.
  */
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QRule, QField, QComputed } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField, QComputed } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
 
 // ---------------------------------------------------------------------------

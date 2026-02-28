@@ -14,7 +14,8 @@
  */
 
 import { describe, test, expect, spyOn } from 'bun:test';
-import { QModel, Quick, QAlias } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QAlias } from '@/decorators';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MODELOS DE APOYO

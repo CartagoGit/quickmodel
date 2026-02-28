@@ -28,6 +28,8 @@ import 'reflect-metadata';
  * Logger.warn('Unexpected null in required field', MyModel);
  * ```
  *
+ * @see {@link TraceLogger} — structured trace logger with verbosity levels
+ * @see {@link QConfig} — global configuration including `enableDebugLogs`
  * @internal
  */
 export class Logger {

@@ -6,6 +6,9 @@
  * - Method shadowing detection
  * - Template instance creation for intrinsic checks
  * - Arrow function protection
+ *
+ * @see {@link PopulationService} — calls this inspector before populating an instance
+ * @see {@link IntegrityService} — uses this inspector when running `checkIntegrity()`
  */
 export class SecurityInspector {
 	/** @internal Cache of template model instances keyed by constructor, used to inspect default values without mutating real instances. */

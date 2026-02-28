@@ -7,7 +7,8 @@
  * Setup: extend bun:test's expect with quickmodelMatchers at the top.
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QField, QComputed } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField, QComputed } from '@/decorators';
 import { quickmodelMatchers } from '@/matchers';
 
 // Extend bun:test's expect with custom matchers

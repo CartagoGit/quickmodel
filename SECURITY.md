@@ -65,8 +65,8 @@ QuickModel provides protections against Mass Assignment attacks:
 - **Method Shadowing Prevention**: Automatically prevents incoming JSON payloads from overwriting class methods.
 - **Strict Mode**: When enabled via `@Quick({ unknownPropertyPolicy: 'error' })`, any property in the payload that is not defined in the model is rejected.
 
-:warning: **IMPORTANT DEFAULT**: Strict mode is **DISABLED by default**.
-Properties present in the JSON but not in the model **will be copied** to the instance unless you use `unknownPropertyPolicy: 'error'`.
+:warning: **IMPORTANT DEFAULT**: `unknownPropertyPolicy` defaults to **`'strip'`**.
+Properties present in the JSON but not in the model **will be silently removed** unless you use `unknownPropertyPolicy: 'keep'` (preserve them) or `'error'` (reject the payload).
 
 **Recommendation:** Always enable error policy for public-facing API models:
 

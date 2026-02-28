@@ -6,7 +6,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel } from '@/index';
-import { QType } from '@/utils';
+import { QType } from '@/decorators';
 
 // ============================================================================
 // Test Models

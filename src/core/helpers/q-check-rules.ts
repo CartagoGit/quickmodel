@@ -22,6 +22,7 @@ import {
 } from '@/core/decorators/qrule.decorator';
 import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
 import { Logger } from '@/core/helpers/logger.helper';
+import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 
 /**
  * Tracks class#field pairs already warned about async predicates.
@@ -94,6 +95,10 @@ export function qCheckRules(
 	options?: IQCheckRulesOptions
 ): IQRulesResult {
 	const proto = Object.getPrototypeOf(instance) as object;
+	const className =
+		(proto as { constructor?: { name?: string } }).constructor?.name ??
+		'Unknown';
+	const modelCtor = (proto as { constructor?: Function }).constructor;
 	const fields: string[] = Reflect.getMetadata(QRULE_FIELDS_KEY, proto) ?? [];
 
 	const errors: IQRulesResult['errors'] = [];
@@ -115,13 +120,11 @@ export function qCheckRules(
 
 		for (const rule of rules) {
 			let passes = false;
+			let thrownErr: unknown = undefined;
 			try {
 				const result = rule.predicate(value);
 				if (result instanceof Promise) {
 					// Async predicates are skipped on the synchronous path — warn once per class#field.
-					const className =
-						(proto as { constructor?: { name?: string } })
-							.constructor?.name ?? 'Unknown';
 					const warnKey = `${className}#${field}`;
 					if (!_asyncWarnedKeys.has(warnKey)) {
 						_asyncWarnedKeys.add(warnKey);
@@ -135,16 +138,46 @@ export function qCheckRules(
 				} else {
 					passes = result;
 				}
-			} catch {
+			} catch (err) {
+				thrownErr = err;
 				passes = false;
 			}
 
-			if (!passes) {
-				const message =
-					typeof rule.message === 'function'
-						? rule.message()
-						: rule.message;
-				errors.push({ field, message, value });
+			const ruleMessage =
+				typeof rule.message === 'function'
+					? rule.message()
+					: rule.message;
+
+			if (thrownErr !== undefined) {
+				TraceLogger.traceRule({
+					event: 'rule-error',
+					modelName: className,
+					modelCtor,
+					field,
+					ruleMessage,
+					value,
+					err: thrownErr,
+				});
+				errors.push({ field, message: ruleMessage, value });
+			} else if (!passes) {
+				TraceLogger.traceRule({
+					event: 'rule-fail',
+					modelName: className,
+					modelCtor,
+					field,
+					ruleMessage,
+					value,
+				});
+				errors.push({ field, message: ruleMessage, value });
+			} else {
+				TraceLogger.traceRule({
+					event: 'rule-pass',
+					modelName: className,
+					modelCtor,
+					field,
+					ruleMessage,
+					value,
+				});
 			}
 		}
 	}

@@ -13,7 +13,8 @@
  * - Error response format: standard { errors } shape for 422
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QComputed, QField } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QComputed, QField } from '@/decorators';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------

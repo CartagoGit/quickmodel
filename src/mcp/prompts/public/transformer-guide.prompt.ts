@@ -12,6 +12,10 @@ import type { IQPromptResult } from '../abstract-prompt';
  * - Complex types: Date, BigInt, RegExp, Set, Map, ArrayBuffer, typed arrays, URL, URLSearchParams
  * - Nested generics: Map<string, Set<Date>>, Array<Date>
  * - Ends with simulate_transformation to preview the result
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QSimulateTransformationTool} for the transformation preview step
+ * @see {@link QListTransformersTool} for the full list of available transformers
  */
 export class QTransformerGuidePrompt extends QAbstractPrompt<{
 	typescript_type: z.ZodString;

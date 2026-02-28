@@ -30,8 +30,8 @@ export interface IQConfig {
 	defaults?: {
 		/**
 		 * Defines behavior when encountering properties in the input payload that are not defined in the model.
-		 * - `keep`: Preserves extra properties (Default).
-		 * - `strip`: Silently removes extra properties.
+		 * - `strip`: Silently removes extra properties (Default).
+		 * - `keep`: Preserves extra properties.
 		 * - `error`: Throws an error.
 		 */
 		unknownPropertyPolicy?: 'keep' | 'strip' | 'error';
@@ -124,9 +124,71 @@ export interface IQConfig {
 		validationTrigger?: 'manual' | 'construction';
 
 		/**
-		 * Enables internal debug logging.
+		 * Enables internal debug logging (legacy shorthand — equivalent to `trace.verbosity: 'debug'`).
+		 * Prefer using `trace` for fine-grained control.
 		 */
 		enableDebugLogs?: boolean;
+
+		/**
+		 * Structured trace / observability configuration for QuickModel.
+		 *
+		 * Controls which lifecycle events emit console output and at what level of detail.
+		 * All settings are **opt-in** — no overhead when omitted.
+		 *
+		 * @example
+		 * ```typescript
+		 * QConfig.configure({
+		 *   defaults: {
+		 *     trace: {
+		 *       verbosity: 'verbose',
+		 *       events: ['deserialize', 'rule-fail'],
+		 *     }
+		 *   }
+		 * });
+		 * ```
+		 */
+		trace?: {
+			/**
+			 * Minimum log level to emit.
+			 *
+			 * - `'silent'`  — no output at all (default when `trace` is omitted)
+			 * - `'error'`   — only hard failures (thrown errors)
+			 * - `'warn'`    — recoverable anomalies + errors
+			 * - `'info'`    — lifecycle milestones (construction, serialize, deserialize)
+			 * - `'debug'`   — field-level transformation steps
+			 * - `'verbose'` — everything including raw input/output values per field
+			 *
+			 * @default 'silent'
+			 */
+			verbosity?: IQTraceVerbosity;
+
+			/**
+			 * Filter which lifecycle events to trace.
+			 * When omitted, all events matching `verbosity` are traced.
+			 *
+			 * Available events:
+			 * - `'construction'`  — model instance created (`new MyModel(data)`)
+			 * - `'serialize'`     — `model.serialize()` called
+			 * - `'deserialize'`   — data hydration per field
+			 * - `'rule-pass'`     — a `@QRule` predicate returned `true`
+			 * - `'rule-fail'`     — a `@QRule` predicate returned `false`
+			 * - `'rule-error'`    — a `@QRule` predicate threw an exception
+			 * - `'rule-timeout'`  — an async `@QRule` timed out
+			 * - `'integrity'`     — `checkIntegrity()` result per field
+			 * - `'transformer'`   — which transformer was applied to each field
+			 * - `'config-change'` — `QConfig.configure()` called
+			 */
+			events?: IQTraceEvent[];
+
+			/**
+			 * Custom sink for trace entries.
+			 * When provided, all trace records are forwarded here **instead of** `console`.
+			 * Useful for structured logging, telemetry, or test assertions.
+			 *
+			 * @param entry - The structured trace record
+			 */
+			sink?: (entry: IQTraceEntry) => void;
+		};
 
 		/**
 		 * If true, undefined/null values are exposed in serialized output.
@@ -146,6 +208,70 @@ export interface IQConfig {
 			disableSafetyChecks?: boolean;
 		};
 	};
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Trace types (declared outside IQConfig so they can be imported independently)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Verbosity levels for the QuickModel trace system (ordered from least to most verbose).
+ *
+ * @group Configuration
+ */
+export type IQTraceVerbosity =
+	| 'silent'
+	| 'error'
+	| 'warn'
+	| 'info'
+	| 'debug'
+	| 'verbose';
+
+/**
+ * Lifecycle events that can be traced by the QuickModel trace system.
+ *
+ * @group Configuration
+ */
+export type IQTraceEvent =
+	| 'construction'
+	| 'serialize'
+	| 'deserialize'
+	| 'rule-pass'
+	| 'rule-fail'
+	| 'rule-error'
+	| 'rule-timeout'
+	| 'integrity'
+	| 'transformer'
+	| 'config-change';
+
+/**
+ * A single structured trace record emitted by the QuickModel trace system.
+ *
+ * @group Configuration
+ */
+export interface IQTraceEntry {
+	/** UTC timestamp (ms since epoch). */
+	timestamp: number;
+	/** Log level of this entry. */
+	level: Exclude<IQTraceVerbosity, 'silent'>;
+	/** Lifecycle event that produced this entry. */
+	event: IQTraceEvent;
+	/** Model class name (e.g. `'UserModel'`). */
+	model: string;
+	/** Property name when the event is field-scoped, `undefined` otherwise. */
+	field?: string;
+	/** Human-readable description of what happened. */
+	message: string;
+	/** Raw input value (only present at `'verbose'` verbosity, field-scoped events). */
+	inputValue?: unknown;
+	/** Transformed output value (only present at `'verbose'` verbosity, field-scoped events). */
+	outputValue?: unknown;
+	/** Name of the transformer applied (only for `'transformer'` events). */
+	transformer?: string;
+	/** Rule message when the event is rule-scoped. */
+	ruleMessage?: string;
+	/** Additional arbitrary metadata. */
+	meta?: Record<string, unknown>;
 }
 
 /**

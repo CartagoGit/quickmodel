@@ -13,8 +13,14 @@ interface IUsuario {
 	emailAddress: string;
 }
 
+type IUsuarioAliasMap = {
+	firstName: 'first_name';
+	lastName: 'last_name';
+	emailAddress: 'email_address';
+};
+
 @Quick()
-class UsuarioModel extends QModel<IUsuario> {
+class UsuarioModel extends QModel<IUsuario, IUsuarioAliasMap> {
 	@QAlias('first_name')
 	declare firstName: string;
 
@@ -29,12 +35,12 @@ class UsuarioModel extends QModel<IUsuario> {
 ## Entrada: `create()` con payload en snake_case
 
 ```typescript
-// Funciona con claves alias (p. ej. desde una API REST):
+// Funciona con claves alias (p. ej. desde una API REST) — tipado completo, sin `as any`:
 const usuario = UsuarioModel.create({
 	first_name: 'Alice',
 	last_name: 'Smith',
 	email_address: 'alice@ejemplo.com',
-} as any);
+});
 
 console.log(usuario.firstName); // 'Alice'             ✅ camelCase dentro del modelo
 console.log(usuario.emailAddress); // 'alice@ejemplo.com'
@@ -65,7 +71,7 @@ Dado que tanto la entrada como la salida usan las claves alias, el resultado ser
 
 ```typescript
 const serializado = usuario.serialize();
-const restaurado = UsuarioModel.create(serializado as any);
+const restaurado = UsuarioModel.create(serializado);
 
 restaurado.firstName === 'Alice'; // ✅
 restaurado.emailAddress === 'alice@ejemplo.com'; // ✅
@@ -84,8 +90,10 @@ restaurado.firstName === 'Alice'; // ✅
 Solo las propiedades decoradas con `@QAlias` son remapeadas. Los demás campos conservan sus claves originales.
 
 ```typescript
+type IPerfilAliasMap = { nombreCompleto: 'nombre_completo' };
+
 @Quick({ fechaNacimiento: Date })
-class PerfilModel extends QModel<IPerfil> {
+class PerfilModel extends QModel<IPerfil, IPerfilAliasMap> {
 	@QAlias('nombre_completo')
 	declare nombreCompleto: string;
 
@@ -95,7 +103,7 @@ class PerfilModel extends QModel<IPerfil> {
 const p = PerfilModel.create({
 	nombre_completo: 'Jane Doe',
 	fechaNacimiento: '1990-01-01',
-} as any);
+});
 p.nombreCompleto; // 'Jane Doe'  ✅
 p.fechaNacimiento; // objeto Date ✅
 
@@ -119,7 +127,7 @@ const admin = AdminModel.create({
 	last_name: 'Lee',
 	email_address: 'dan@ejemplo.com',
 	numero_telefono: '555-1234',
-} as any);
+});
 
 admin.firstName; // 'Dan'
 admin.numeroTelefono; // '555-1234'
@@ -154,5 +162,6 @@ admin.serialize(); // { first_name: 'Dan', ..., numero_telefono: '555-1234' }
 <BenchmarkChart
   :only-scenarios="['aliasMapping']"
   :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
+  :only-feature-categories="['model', 'exclusive']"
   default-tab="performance"
 />

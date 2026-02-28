@@ -7,6 +7,8 @@ export interface IBenchmarkChartProps {
 	onlyScenarios?: string[];
 	/** Whitelist de nombres de librerías. undefined = mostrar todas. */
 	onlyLibs?: string[];
+	/** Whitelist de categorías de featureRows visibles en el tab Características. undefined = mostrar todas. */
+	onlyFeatureCategories?: string[];
 	/** Whitelist de tabs visibles. undefined = mostrar los tres. */
 	onlyTabs?: ITab[];
 	/** Tab activo inicial. Default: primer tab de onlyTabs o 'features'. */

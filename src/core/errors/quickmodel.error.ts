@@ -9,8 +9,9 @@
  *
  * Use the static factory helpers (`invalidType`, `invalidValue`) to produce
  * consistently formatted messages.
- *
- * @example
+ * * @see {@link QModel.checkIntegrity} — throws this error for type mismatches
+ * @see {@link IntegrityService} — service that generates these errors internally
+ * * @example
  * ```typescript
  * try {
  *   const user = new User({ age: 'not-a-number' });

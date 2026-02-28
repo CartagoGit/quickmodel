@@ -291,15 +291,16 @@ export function useBenchmarkChart(props?: IBenchmarkChartProps) {
 
 	/** Filas visibles en la tabla de características según categorías activas, ordenadas alfabéticamente */
 	const visibleFeatureRows = computed(() => {
-		const rows =
-			disabledFeatureCategories.value.length === 0
-				? featureRows
-				: featureRows.filter(
-						(row) =>
-							!disabledFeatureCategories.value.includes(
-								row.category
-							)
-					);
+		const sectionCats = props?.onlyFeatureCategories?.length
+			? new Set(props.onlyFeatureCategories)
+			: null;
+		const rows = featureRows.filter((row) => {
+			if (sectionCats !== null && !sectionCats.has(row.category))
+				return false;
+			if (disabledFeatureCategories.value.includes(row.category))
+				return false;
+			return true;
+		});
 		const featMap = bmt.value.features as unknown as IBmtFeaturesMap;
 		return [...rows].sort((rowA, rowB) =>
 			(featMap[rowA.i18nKey]?.label ?? rowA.i18nKey).localeCompare(
@@ -417,6 +418,9 @@ export function useBenchmarkChart(props?: IBenchmarkChartProps) {
 		appTypeOptions,
 		matrixTypeOptions,
 		featureCategoryOptions,
+		showFeatureCategoryFilter: computed(
+			() => !props?.onlyFeatureCategories?.length
+		),
 
 		// Estado reactivo
 		activeAppType,

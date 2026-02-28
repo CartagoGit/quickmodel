@@ -12,6 +12,11 @@ import type { IQPromptResult } from '../abstract-prompt';
  * 4. serialize() / toJSON() — safe round-trip back to JSON
  *
  * Uses: check_integrity, simulate_validation, simulate_transformation tools.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QCheckIntegrityTool} for integrity checks
+ * @see {@link QSimulateValidationTool} for rule validation
+ * @see {@link QSimulateTransformationTool} for transformation verification
  */
 export class QFullPipelinePrompt extends QAbstractPrompt<{
 	model_code: z.ZodString;

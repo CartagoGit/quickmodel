@@ -38,6 +38,10 @@ export interface IRecursiveDeserializer {
  *   `IRecursiveDeserializer` recursive-deserializer abstraction.
  *
  * @internal Used by `PropertyTransformer` and `PopulationService`.
+ *
+ * @see {@link PropertyTransformer} — orchestrates per-property transformation using this service
+ * @see {@link TransformerLookupService} — resolves the transformer to apply
+ * @see {@link QTransformerRegistry} — register custom transformers consumed by this service
  */
 export class ValueTransformerService {
 	constructor(

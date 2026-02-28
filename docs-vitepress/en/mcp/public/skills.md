@@ -14,22 +14,22 @@ Use a **tool** when you need a single, precise operation (e.g. `simulate_transfo
 
 > For developers **using** QuickModel in their applications.
 
-| Skill name                                                        | Title                                  | Description                                                      |
-| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------- |
-| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                      |
-| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues             |
-| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline         |
-| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats        |
-| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`        |
-| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
-| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities        |
-| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                    |
+| Skill name                                                        | Title                                  | Description                                                          |
+| ----------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
+| [`quickmodel_from_typescript`](#quickmodel_from_typescript)       | Convert TypeScript Interface to QModel | Generate a QModel class from a TS interface                          |
+| [`quickmodel_debug`](#quickmodel_debug)                           | Debug a QuickModel                     | Diagnose and fix validation or transformation issues                 |
+| [`quickmodel_generate_test_data`](#quickmodel_generate_test_data) | Generate Test Data for a QuickModel    | Create realistic mock data verified through the pipeline             |
+| [`quickmodel_inspect_and_schema`](#quickmodel_inspect_and_schema) | Inspect Model and Export Schema        | Inspect a model and export its schema in multiple formats            |
+| [`quickmodel_form_validation`](#quickmodel_form_validation)       | Add Form Validation to a QuickModel    | Guided workflow to add `@QField`, `@QRule`, and `@QGroup`            |
+| [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`     |
+| [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities            |
+| [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                        |
 | [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / legacy code to idiomatic QuickModel patterns |
-| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates      |
-| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation   |
-| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit           |
-| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it         |
-| [`quickmodel_form_data`](#quickmodel_form_data)                   | FormData ↔ QModel Integration Guide    | `fromFormData()`, `toFormData()`, fileMode/fileSource, streaming |
+| [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates          |
+| [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation       |
+| [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit               |
+| [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it             |
+| [`quickmodel_form_data`](#quickmodel_form_data)                   | FormData ↔ QModel Integration Guide    | `fromFormData()`, `toFormData()`, fileMode/fileSource, streaming     |
 
 ::: info Maintainer Skills (contributors only)
 Skills for contributors working on the QuickModel codebase are in a separate section: **[Internal Skills →](../internal/skills)**.
@@ -352,9 +352,9 @@ Guides the AI through converting property assignments to `declare` fields, wrapp
 
 ### Arguments
 
-| Argument      | Required | Description                                                      |
-| ------------- | -------- | ---------------------------------------------------------------- |
-| `legacy_code` | ✅ Yes   | The legacy TypeScript class or old QuickModel code to migrate    |
+| Argument      | Required | Description                                                   |
+| ------------- | -------- | ------------------------------------------------------------- |
+| `legacy_code` | ✅ Yes   | The legacy TypeScript class or old QuickModel code to migrate |
 
 ### Workflow
 

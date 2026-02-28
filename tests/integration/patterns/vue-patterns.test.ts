@@ -12,7 +12,8 @@
  * - defineModel / v-model: two-way binding simulation
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QComputed, QField, QGroup } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QComputed, QField, QGroup } from '@/decorators';
 import { qGroups } from '@/core/helpers/q-groups';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';

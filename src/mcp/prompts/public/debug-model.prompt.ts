@@ -5,6 +5,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Skill: Debug a QuickModel that is throwing errors or producing unexpected output.
  *
  * Guides the AI through: inspect model → explain error → suggest fix.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QInspectModelTool} for model inspection
+ * @see {@link QExplainErrorTool} for error explanation
  */
 export class QDebugModelPrompt extends QAbstractPrompt<{
 	model_code: z.ZodString;

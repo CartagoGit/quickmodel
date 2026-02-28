@@ -7,6 +7,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Given the raw output from typecheck, guides the AI through fixing each
  * TS error one by one, calling typecheck after every change, and only
  * declaring done when typecheck and pre_commit_check both return passed: true.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QTypecheckTool} for the typecheck gate used in this prompt
+ * @see {@link QPreCommitCheckTool} for the final pre-commit gate
  */
 export class QFixTypecheckPrompt extends QAbstractPrompt<{
 	type_errors: z.ZodString;

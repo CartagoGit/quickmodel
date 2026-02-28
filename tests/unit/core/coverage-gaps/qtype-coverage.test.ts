@@ -1,7 +1,8 @@
 // @quickmodel-rule-ignore: prefer-quick
 // This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect } from 'bun:test';
-import { QModel, QType } from '../../../../src';
+import { QModel } from '../../../../src';
+import { QType } from '@/decorators';
 
 describe('QType Decorator Coverage Gaps', () => {
 	it('should handle Boolean constructor', () => {

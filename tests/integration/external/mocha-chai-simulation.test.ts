@@ -22,7 +22,8 @@
  * ```
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QField } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField } from '@/decorators';
 import { quickmodelMatchers } from '@/matchers';
 
 // ---------------------------------------------------------------------------

@@ -145,6 +145,10 @@ function _getMergedRuntimeOptions(
  *   transformers.
  *
  * @internal Used exclusively by `Deserializer.deserialize()`.
+ *
+ * @see {@link Deserializer} — service that calls `populateInstance()`
+ * @see {@link PropertyTransformer} — performs per-property type coercion
+ * @see {@link SecurityInspector} — validates prototype safety before population
  */
 export class PopulationService {
 	/** @internal Singleton security inspector used to detect prototype pollution and other injection vectors. */
@@ -257,7 +261,10 @@ export class PopulationService {
 			classMeta = {
 				options: rawOptions,
 				decoratedFields: rawDecorated,
-				decoratedFieldsSet: new Set([...rawDecorated, ...aliasedPropsSet]),
+				decoratedFieldsSet: new Set([
+					...rawDecorated,
+					...aliasedPropsSet,
+				]),
 				discriminators: rawDiscriminators,
 				designTypes: rawDesignTypes,
 				hasTypeMapKey: rawHasTypeMapKey,

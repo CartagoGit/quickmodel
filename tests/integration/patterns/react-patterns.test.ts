@@ -12,7 +12,8 @@
  * - createMany() → { instances, errors }
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { QModel, Quick, QRule, QComputed, QField } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QComputed, QField } from '@/decorators';
 import type { IQAnyRecord } from '@/types';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';

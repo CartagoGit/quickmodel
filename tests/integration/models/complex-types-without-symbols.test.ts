@@ -9,7 +9,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { QModel, IQImplements } from '@/index';
-import { QType } from '@/utils';
+import { QType } from '@/decorators';
 
 // ============================================================================
 // Nested Model

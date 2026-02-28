@@ -7,6 +7,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Given the raw output from lint_check or a pre-commit failure, guides the AI
  * through fixing each violation one by one, calling lint_check after every
  * change, and only declaring done when pre_commit_check returns passed: true.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QLintCheckTool} for the lint gate used in this prompt
+ * @see {@link QPreCommitCheckTool} for the final pre-commit gate
  */
 export class QFixLintPrompt extends QAbstractPrompt<{
 	lint_errors: z.ZodString;

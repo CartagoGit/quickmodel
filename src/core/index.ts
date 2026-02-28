@@ -8,9 +8,25 @@ export { Quick } from './decorators/quick.decorator';
 export { QType } from './decorators/qtype.decorator';
 
 // Interfaces
-export * from './interfaces/transformer.interface';
-export * from './interfaces/model.interface';
-export * from './interfaces/serializer.interface';
+export type {
+	IQTransformer,
+	IQTransformerKey,
+	IQIntegrityChecker,
+	IQTransformContext,
+	IQIntegrityContext,
+	IQIntegrityResult,
+} from './interfaces/transformer.interface';
+export type {
+	IQAnyRecord,
+	IModelConstructor,
+	IQTransform,
+	IQImplements,
+} from './interfaces/model.interface';
+export type {
+	IQSerializationOptions,
+	IQSerializer,
+	IQDeserializer,
+} from './interfaces/serializer.interface';
 
 // Registry
 export { QTransformerRegistry } from './registry/transformer.registry';

@@ -3,7 +3,7 @@
  */
 
 import { QModel, Quick } from '@/index';
-import { QRule, QAlias, QField } from '@/index';
+import { QRule, QAlias, QField } from '@/decorators';
 import { z } from 'zod';
 
 // ─────────────────────────────────────────────────────────────

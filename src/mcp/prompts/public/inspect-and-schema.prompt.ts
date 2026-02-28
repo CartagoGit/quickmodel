@@ -5,6 +5,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * Skill: Inspect a QuickModel and export its schema in multiple formats.
  *
  * Guides the AI through: inspect model → export schema in requested format(s).
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QInspectModelTool} for the model inspection step
+ * @see {@link QGetModelSchemaTool} for the schema export step
  */
 export class QInspectAndSchemaPrompt extends QAbstractPrompt<{
 	model_code: z.ZodString;

@@ -5,6 +5,9 @@ import 'reflect-metadata';
  *
  * This service applies SOLID principles:
  * - Single Responsibility: Only handles instance creation.
+ *
+ * @see {@link PopulationService} — uses this factory to create instances before populating them
+ * @see {@link Deserializer} — orchestrates instance creation and population
  */
 export class InstanceFactoryService {
 	/**

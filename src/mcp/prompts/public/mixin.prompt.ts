@@ -13,6 +13,10 @@ import type { IQPromptResult } from '../abstract-prompt';
  * - `IQImplements<TSchema>` type-only interface for strong typing
  * - `instanceof` caveat (QuickModel does NOT multi-inherit JS prototype chain)
  * - Typical Angular/NestJS entity scenarios
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QValidateUsageTool} for mixin usage verification
+ * @see {@link QModel} for the extends static method
  */
 export class QMixinPrompt extends QAbstractPrompt<{
 	base_class: z.ZodString;

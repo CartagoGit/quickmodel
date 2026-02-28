@@ -5,6 +5,12 @@
  * - `IQSerializer<TModel, TInterface>` — converts a model instance to its JSON-compatible form.
  * - `IQDeserializer<TInterface, TModel>` — converts a plain object / JSON string to a model instance.
  *
+ * @see {@link QModel.serialize} — the public method that accepts `IQSerializationOptions`
+ * @see {@link Serializer} — concrete implementation of `IQSerializer`
+ * @see {@link Deserializer} — concrete implementation of `IQDeserializer`
+ *
+ * @see {@link QModel.serialize} — primary consumer of `IQSerializer`
+ * @see {@link QModel.create} — primary consumer of `IQDeserializer`
  * @module core/interfaces/serializer.interface
  */
 
@@ -13,6 +19,9 @@ import type { IFileModeOutput } from '../helpers/form-data.helpers';
 
 /**
  * Options controlling how a `QModel` instance is serialized to a plain object or JSON string.
+ *
+ * @see {@link QModel.serialize} — passes these options to control output shape
+ * @see {@link QModel.toJSON} — also accepts these options
  */
 export interface IQSerializationOptions {
 	/**
@@ -79,6 +88,9 @@ export interface IQSerializationOptions {
 /**
  * Serializes a model instance into its JSON-compatible interface representation.
  *
+ * @see {@link QModel.serialize} — public model method
+ * @see {@link Serializer} — service implementing this contract
+ *
  * @template TModel - Model class instance type (extends `Record<string, unknown>`).
  * @template TInterface - Resulting plain-object type.
  */
@@ -116,6 +128,9 @@ export interface IQSerializer<
 
 /**
  * Deserializes a plain object or JSON string into a fully-typed model instance.
+ *
+ * @see {@link QModel.create} — public model static method
+ * @see {@link Deserializer} — service implementing this contract
  *
  * @template TInterface - Plain-object input type (extends `Record<string, unknown>`).
  * @template TModel - Resulting model type.

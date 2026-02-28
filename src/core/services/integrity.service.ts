@@ -29,6 +29,7 @@
 
 import 'reflect-metadata';
 import { QConfig } from '../config/quick.config';
+import { TraceLogger } from '../helpers/trace-logger.helper';
 import {
 	IQIntegrityResult,
 	IQIntegrityChecker,
@@ -394,15 +395,30 @@ export class IntegrityService {
 
 					try {
 						const result = checker.checkIntegrity(value, context);
+						TraceLogger.traceIntegrity({
+							modelName: className,
+							modelCtor: instance.constructor,
+							field: key,
+							isValid: result.isValid,
+							errorMsg: result.error,
+						});
 						if (!result.isValid) {
 							results.push(result);
 							if (failFast) return results;
 						}
 					} catch (error) {
 						// Catch errors during integrity check to prevent crash
+						const errMsg = `Integrity error for ${className}.${key}: ${error instanceof Error ? error.message : String(error)}`;
+						TraceLogger.traceIntegrity({
+							modelName: className,
+							modelCtor: instance.constructor,
+							field: key,
+							isValid: false,
+							errorMsg: errMsg,
+						});
 						results.push({
 							isValid: false,
-							error: `Integrity error for ${className}.${key}: ${error instanceof Error ? error.message : String(error)}`,
+							error: errMsg,
 						});
 						if (failFast) return results;
 					}

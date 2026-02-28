@@ -35,6 +35,10 @@ import {
  *
  * **Serialization**: `URL` → `string`
  * **Deserialization**: `string` → `URL`
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link URLSearchParamsTransformer} — related transformer for query strings
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class URLTransformer
 	extends BaseTransformer<string, URL>
@@ -178,6 +182,10 @@ export class URLTransformer
  *
  * **Serialization**: `URLSearchParams` → `string`
  * **Deserialization**: `string | object` → `URLSearchParams`
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link URLTransformer} — related transformer for full URL objects
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class URLSearchParamsTransformer
 	extends BaseTransformer<string | Record<string, string>, URLSearchParams>
@@ -289,6 +297,9 @@ export class URLSearchParamsTransformer
  * Transformer for TextEncoder: converts plain object to TextEncoder.
  *
  * **Note**: TextEncoder has no state, so serialization returns empty object.
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link TextDecoderTransformer} — complementary transformer for decoding text
  */
 export class TextEncoderTransformer extends BaseTransformer<
 	Record<string, never>,
@@ -359,6 +370,9 @@ export class TextEncoderTransformer extends BaseTransformer<
  *
  * **Serialization**: `TextDecoder` → `{ encoding: string }`
  * **Deserialization**: `string | { encoding: string }` → `TextDecoder`
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link TextEncoderTransformer} — complementary transformer for encoding text
  */
 export class TextDecoderTransformer extends BaseTransformer<
 	string | { encoding: string },
@@ -574,8 +588,9 @@ function blobFromDataUri(
  *   declare thumbnail: Blob;
  * }
  * ```
- *
- * @group Transformers
+ * * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link FileTransformer} — extends Blob with filename and MIME metadata
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one * @group Transformers
  */
 export class BlobTransformer
 	extends BaseTransformer<IBlobInput, Blob>
@@ -703,8 +718,9 @@ export class BlobTransformer
  *   declare avatar: File;
  * }
  * ```
- *
- * @group Transformers
+ * * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link BlobTransformer} — simpler binary transformer without file metadata
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one * @group Transformers
  */
 export class FileTransformer
 	extends BaseTransformer<IFileInput, File>

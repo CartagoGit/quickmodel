@@ -13,7 +13,8 @@
  * - isDirty() alongside Formik's dirty state
  */
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QRule, QField, QComputed, QGroup } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QRule, QField, QComputed, QGroup } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
 import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';

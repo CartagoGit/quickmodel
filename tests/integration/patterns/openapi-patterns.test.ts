@@ -8,7 +8,8 @@
  * No external Swagger/OpenAPI packages imported — pure schema generation logic.
  */
 import { describe, test, expect } from 'bun:test';
-import { QModel, Quick, QField, QComputed, QGroup, QRule } from '@/index';
+import { QModel, Quick } from '@/index';
+import { QField, QComputed, QGroup, QRule } from '@/decorators';
 
 // ---------------------------------------------------------------------------
 // Models

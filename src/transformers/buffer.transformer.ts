@@ -48,6 +48,10 @@ import {
  * const json = file.serialize();
  * console.log(json.data); // [72, 101, 108, 108, 111]
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link DataViewTransformer} — related transformer for DataView
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class ArrayBufferTransformer
 	extends BaseTransformer<number[], ArrayBuffer>
@@ -171,6 +175,10 @@ export class ArrayBufferTransformer
  * const json = data.serialize();
  * console.log(json.view); // [0, 255, 128]
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link ArrayBufferTransformer} — related transformer for raw ArrayBuffer
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class DataViewTransformer
 	extends BaseTransformer<number[], DataView>
@@ -284,6 +292,10 @@ export class DataViewTransformer
  * @remarks
  * SharedArrayBuffer allows sharing memory between different execution contexts.
  * IQSerialized as a byte array for JSON compatibility.
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link ArrayBufferTransformer} — standard single-context buffer equivalent
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class SharedArrayBufferTransformer
 	extends BaseTransformer<number[], SharedArrayBuffer>

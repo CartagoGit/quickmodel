@@ -666,27 +666,27 @@ User.getSchema('prisma');
 
 ## 📊 Resumen priorizado de propuestas
 
-| Prop | Nombre                                                                 | Prioridad         | Esfuerzo | Impacto          | Relación con existente                   |
-| ---- | ---------------------------------------------------------------------- | ----------------- | -------- | ---------------- | ---------------------------------------- |
-| A    | `@QSensitive`                                                          | 🔴 Alta           | 2-3h     | Alto (GDPR)      | Extiende `excludeFields`                 |
-| B    | `QModel.diff()`                                                        | 🔴 Alta           | 3-4h     | Alto             | Complementa `isDirty()`/`copy()`         |
-| D    | `QModelCollection<T>`                                                  | 🔴 Alta           | 5-6h     | Alto             | Cierra ciclo `createMany()`              |
-| O    | `validate()` unificado                                                 | 🔴 Alta           | 1-2h     | Alto (DX)        | Unifica API validación                   |
-| C    | `getSchema('valibot'/'yup')`                                           | 🟡 Media          | 2h×2     | Alto estratégico | +2 a los 7 formatos existentes           |
-| E    | I18n mensajes                                                          | 🟡 Media          | 4h       | Medio            | Extiende `QConfig`                       |
-| M    | `QModel.patch()` mutable                                               | 🟡 Media          | 2-3h     | Medio            | Contraparte mutable de `copy()`          |
-| N    | `@QVersion` + migrations                                               | 🟡 Media          | 4-5h     | Medio            | Complementa Task #55                     |
-| P    | `@QReadonly`                                                           | 🟡 Media          | 2h       | Medio            | Nuevo decorator                          |
-| Q    | Config per-class                                                       | 🟡 Media          | 3h       | Medio            | Extiende `QConfig`                       |
-| R    | CLI `generate` subcommand                                              | 🟡 Media          | **2-3h** | Medio-alto       | `bin.quickmodel` ya existe               |
-| S    | `getSchema('prisma')`                                                  | 🟡 Media          | 2-3h     | Alto             | Cierra circuito Task #41                 |
-| F    | `@QDefault`                                                            | 🟢 Baja           | 2h       | Medio            | Nuevo decorator                          |
-| G    | `fromFormData()` + `toFormData()` + streaming + Blob/File transformers | 🟡 Media          | 11-13h   | Medio-alto       | `blob`/`file` en `IQAliasType` sin impl. |
-| H    | `@QTransform` pipeline                                                 | 🟢 Baja           | 2-3h     | Medio            | Complementa `@QType`                     |
-| I    | Audit trail                                                            | ⚠️ Cuestionable   | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`             |
-| J    | `getSchema('drizzle'/'typebox')`                                       | 🟢 Baja           | 2h×2     | Medio            | +2 a Schema API + Task #48               |
-| K    | Plugin system                                                          | ⚠️ Diferida       | 3-4h     | Bajo ahora       | Prematuro sin ecosistema                 |
-| L    | Guía WebSocket / SSE                                                   | 🟢 Baja           | 2-3h     | Medio            | **Requiere Prop B**                      |
+| Prop | Nombre                                                                 | Prioridad       | Esfuerzo | Impacto          | Relación con existente                   |
+| ---- | ---------------------------------------------------------------------- | --------------- | -------- | ---------------- | ---------------------------------------- |
+| A    | `@QSensitive`                                                          | 🔴 Alta         | 2-3h     | Alto (GDPR)      | Extiende `excludeFields`                 |
+| B    | `QModel.diff()`                                                        | 🔴 Alta         | 3-4h     | Alto             | Complementa `isDirty()`/`copy()`         |
+| D    | `QModelCollection<T>`                                                  | 🔴 Alta         | 5-6h     | Alto             | Cierra ciclo `createMany()`              |
+| O    | `validate()` unificado                                                 | 🔴 Alta         | 1-2h     | Alto (DX)        | Unifica API validación                   |
+| C    | `getSchema('valibot'/'yup')`                                           | 🟡 Media        | 2h×2     | Alto estratégico | +2 a los 7 formatos existentes           |
+| E    | I18n mensajes                                                          | 🟡 Media        | 4h       | Medio            | Extiende `QConfig`                       |
+| M    | `QModel.patch()` mutable                                               | 🟡 Media        | 2-3h     | Medio            | Contraparte mutable de `copy()`          |
+| N    | `@QVersion` + migrations                                               | 🟡 Media        | 4-5h     | Medio            | Complementa Task #55                     |
+| P    | `@QReadonly`                                                           | 🟡 Media        | 2h       | Medio            | Nuevo decorator                          |
+| Q    | Config per-class                                                       | 🟡 Media        | 3h       | Medio            | Extiende `QConfig`                       |
+| R    | CLI `generate` subcommand                                              | 🟡 Media        | **2-3h** | Medio-alto       | `bin.quickmodel` ya existe               |
+| S    | `getSchema('prisma')`                                                  | 🟡 Media        | 2-3h     | Alto             | Cierra circuito Task #41                 |
+| F    | `@QDefault`                                                            | 🟢 Baja         | 2h       | Medio            | Nuevo decorator                          |
+| G    | `fromFormData()` + `toFormData()` + streaming + Blob/File transformers | 🟡 Media        | 11-13h   | Medio-alto       | `blob`/`file` en `IQAliasType` sin impl. |
+| H    | `@QTransform` pipeline                                                 | 🟢 Baja         | 2-3h     | Medio            | Complementa `@QType`                     |
+| I    | Audit trail                                                            | ⚠️ Cuestionable | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`             |
+| J    | `getSchema('drizzle'/'typebox')`                                       | 🟢 Baja         | 2h×2     | Medio            | +2 a Schema API + Task #48               |
+| K    | Plugin system                                                          | ⚠️ Diferida     | 3-4h     | Bajo ahora       | Prematuro sin ecosistema                 |
+| L    | Guía WebSocket / SSE                                                   | 🟢 Baja         | 2-3h     | Medio            | **Requiere Prop B**                      |
 
 **Tiempo total propuestas (sin cuestionables):** ~70-85h
 **Propuestas alta prioridad (A+B+D+O):** ~12-15h

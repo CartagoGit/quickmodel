@@ -27,6 +27,8 @@
  *
  * @returns A stateful guard with a single `hasAndMark(proto)` method.
  *
+ * @see {@link QRule} — the decorator that uses this guard to prevent duplicate registrations
+ *
  * @example
  * ```typescript
  * // Inside QRule factory (simplified):

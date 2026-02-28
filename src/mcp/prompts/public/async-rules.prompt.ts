@@ -9,6 +9,10 @@ import { QAbstractPrompt } from '../abstract-prompt';
  * For synchronous rules, always use checkRules() — it is simpler and faster.
  *
  * Covers timeoutMs, parallel vs. serial execution mode, and NestJS integration patterns.
+ *
+ * @see {@link QAbstractPrompt} for the base class this prompt extends
+ * @see {@link QSimulateAsyncRulesTool} for async rule simulation
+ * @see {@link QSimulateRulesTool} for the synchronous alternative
  */
 export class QAsyncRulesPrompt extends QAbstractPrompt<{
 	model_code: z.ZodString;
