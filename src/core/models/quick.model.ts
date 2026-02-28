@@ -1568,14 +1568,27 @@ export abstract class QModel<
 	 * ```
 	 */
 	serialize(
+		options?: IQSerializationOptions
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	serialize(
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	serialize(
+		seenOrOptions?: WeakSet<object> | IQSerializationOptions,
+		options?: IQSerializationOptions
 	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
+		const seen =
+			seenOrOptions instanceof WeakSet ? seenOrOptions : undefined;
+		const opts =
+			seenOrOptions instanceof WeakSet
+				? options
+				: (seenOrOptions ?? options);
 		type IModelAsRecord = Record<string, unknown>;
 		const rawResult = QModel.serializer.serialize(
 			this as unknown as IModelAsRecord,
 			seen,
-			options
+			opts
 		);
 
 		// @QAlias: remap property keys → alias keys in output
@@ -1594,12 +1607,12 @@ export abstract class QModel<
 		}
 
 		// pick takes precedence over omit
-		if (options?.pick) {
+		if (opts?.pick) {
 			const filtered = {} as IQAliasedSerializedInterface<
 				TInterface,
 				TAliasMap
 			>;
-			for (const key of options.pick) {
+			for (const key of opts.pick) {
 				if (key in result) {
 					(filtered as Record<string, unknown>)[key] = result[key];
 				}
@@ -1607,9 +1620,9 @@ export abstract class QModel<
 			return filtered;
 		}
 
-		if (options?.omit && options.omit.length > 0) {
+		if (opts?.omit && opts.omit.length > 0) {
 			const filtered: Record<string, unknown> = { ...result };
-			for (const key of options.omit) {
+			for (const key of opts.omit) {
 				delete filtered[key];
 			}
 			return filtered as IQAliasedSerializedInterface<
@@ -1822,8 +1835,22 @@ export abstract class QModel<
 	/**
 	 * Async version of `isValid()`. Returns `true` when both integrity and async rules pass.
 	 *
-	 * @param options - Optional timeout and message settings forwarded to `checkRulesAsync()`.
-	 * @returns `Promise<boolean>`
+	 * Equivalent to `hasIntegrity() && (await checkRulesAsync(options)).valid`.
+	 *
+	 * @param options - Optional timeout and mode settings forwarded to `checkRulesAsync()`.
+	 * @returns `Promise<boolean>` — `true` when the instance passes all transformer-level
+	 *   integrity checks **and** all async `@QRule` predicates.
+	 *
+	 * @see {@link QModel.isValid} for the synchronous version
+	 * @see {@link QModel.validationReportAsync} for the full async report
+	 *
+	 * @example
+	 * ```typescript
+	 * if (!(await user.isValidAsync())) {
+	 *   const report = await user.validationReportAsync();
+	 *   console.log(report.integrity, report.rules.errors);
+	 * }
+	 * ```
 	 */
 	async isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
 		return (
@@ -1835,7 +1862,20 @@ export abstract class QModel<
 	 * Async version of `validationReport()`. Runs `checkIntegrity()` synchronously
 	 * and `checkRulesAsync()` for async predicate support.
 	 *
-	 * @returns `Promise<IQValidationReport>`
+	 * @param options - Optional execution settings (mode, timeoutMs, timeoutMessage).
+	 * @returns `Promise<IQValidationReport>` — `{ valid, integrity, rules }`.
+	 *
+	 * @see {@link QModel.validationReport} for the synchronous version
+	 * @see {@link QModel.isValidAsync} for a simple boolean shortcut
+	 *
+	 * @example
+	 * ```typescript
+	 * const report = await user.validationReportAsync({ timeoutMs: 300 });
+	 * if (!report.valid) {
+	 *   console.log('Integrity:', report.integrity);
+	 *   console.log('Rules:', report.rules.errors);
+	 * }
+	 * ```
 	 */
 	async validationReportAsync(
 		options?: IQRulesAsyncOptions
@@ -2240,6 +2280,11 @@ export abstract class QModel<
 	 *
 	 * @returns true if any field has changed, false otherwise
 	 *
+	 * @see {@link QModel.isDirty} — per-field variant, also accepts no argument
+	 * @see {@link QModel.getChanges} — returns the changed fields with their values
+	 * @see {@link QModel.getChangedFields} — array of changed field names
+	 * @see {@link QModel.reset} — revert all fields to initial state
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ id: '1', name: 'John', age: 30 });
@@ -2267,6 +2312,12 @@ export abstract class QModel<
 	 *
 	 * @param field - Optional field name to check. If omitted, checks all fields.
 	 * @returns `true` if the field (or any field) has been modified, `false` otherwise
+	 *
+	 * @see {@link QModel.hasChanges} — equivalent call for the no-argument case
+	 * @see {@link QModel.getDirtyFields} — `Set<string>` of all changed field names
+	 * @see {@link QModel.getChangedFields} — array of all changed field names
+	 * @see {@link QModel.getChanges} — changed fields with their current values
+	 * @see {@link QModel.reset} — revert all fields to initial state
 	 *
 	 * @example
 	 * ```typescript
@@ -2303,6 +2354,10 @@ export abstract class QModel<
 	 * of an array, making membership checks O(1).
 	 *
 	 * @returns Set of field names that differ from their initial value
+	 *
+	 * @see {@link QModel.getChangedFields} — same information as an array
+	 * @see {@link QModel.getChanges} — changed fields with their current values
+	 * @see {@link QModel.isDirty} — check a single field or any field
 	 *
 	 * @example
 	 * ```typescript
@@ -2360,6 +2415,10 @@ export abstract class QModel<
 	 * Perfect for PATCH requests where you only want to send modified fields.
 	 *
 	 * @returns Object with only changed fields and their current values
+	 *
+	 * @see {@link QModel.getChangedFields} for an array of changed field names
+	 * @see {@link QModel.getDirtyFields} for a `Set<string>` of changed field names
+	 * @see {@link QModel.patch} to apply partial updates
 	 *
 	 * @example
 	 * ```typescript

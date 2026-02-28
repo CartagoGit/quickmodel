@@ -224,6 +224,9 @@ export class PropertyTransformer {
 	 * @param value - The raw input value to transform
 	 * @param context - Full population context (model class, metadata caches,
 	 *   recursion guard, coercion strategy, etc.)
+	 * @returns The transformed value: a native runtime type (e.g. `Date`, `bigint`, `Set`),
+	 *   a nested model instance, a mapped array, or the original `value` if no transformer
+	 *   applies. `undefined` if the input was `undefined`.
 	 */
 	public transformProperty(
 		key: string,

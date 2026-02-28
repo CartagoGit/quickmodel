@@ -20,6 +20,12 @@
 - **New subpath `quickmodel/schema`** — Exposes all seven schema generators (JSON, Zod, Mongo,
   TypeScript, GraphQL, OpenAPI, AJV) as a cohesive group, without mock generation, `QModel`, or
   the serializer. `zod` remains lazily loaded.
+- **Lazy `IntegrityService` init** — `IntegrityService` (and its 14 built-in transformer
+  instances) is now instantiated lazily on the first call to `.checkIntegrity()` or `.isValid()`
+  instead of eagerly at class-load time. This eliminates the startup cost of registering all
+  built-in transformers for consumers whose code never validates integrity.
+- **Bundle size documentation** — New guide page (EN + ES) explains the distinction between
+  startup cost and bundle size, and lists all lazy-loaded components.
 
 ### Added
 

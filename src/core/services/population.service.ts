@@ -223,6 +223,7 @@ export class PopulationService {
 	 * @throws {QModelError} If `unknownPropertyPolicy: 'error'` is configured and an unrecognised
 	 *   property key is encountered.
 	 * @throws {QModelError} If strict mode validation fails for a property value.
+	 * @returns `void` — all transformed values are written directly onto `instance`.
 	 */
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,

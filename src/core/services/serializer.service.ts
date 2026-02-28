@@ -829,6 +829,7 @@ export class Serializer<
 
 		// File — must be checked before Blob (File extends Blob)
 		if (value instanceof File) {
+			if (options?.fileMode === 'reference') return value.name;
 			const transformer = this.transformers.get(File);
 			return transformer
 				? transformer.serialize(value)
@@ -842,6 +843,7 @@ export class Serializer<
 
 		// Blob
 		if (value instanceof Blob) {
+			if (options?.fileMode === 'reference') return '[Blob]';
 			const transformer = this.transformers.get(Blob);
 			return transformer
 				? transformer.serialize(value)
@@ -891,6 +893,7 @@ export class Serializer<
 
 		// TypedArrays
 		if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+			if (options?.fileMode === 'reference') return '[binary]';
 			// Determine which constructor to use to look up the transformer
 			let transformer;
 			if (value instanceof Int8Array)
@@ -942,6 +945,7 @@ export class Serializer<
 
 		// ArrayBuffer
 		if (value instanceof ArrayBuffer) {
+			if (options?.fileMode === 'reference') return '[binary]';
 			const transformer =
 				this.transformers.get(ArrayBuffer) ||
 				this.transformers.get(Symbol('ArrayBuffer').toString());

@@ -15,9 +15,51 @@ QuickModel incluye un bundle dual **ESM + CJS** generado con [tsup](https://tsup
 Los consumidores ESM obtienen la mejor experiencia de tree-shaking porque los bundlers pueden analizar estáticamente las sentencias `import`. Los consumidores CJS (`require()`) deberían preferir las **importaciones de subpath granulares** (listadas más abajo) para evitar cargar la librería completa.
 :::
 
-## Las dependencias opcionales se cargan de forma lazy
+## Startup cost vs. tamaño de bundle
 
-Varias funcionalidades opcionales dependen de peer dependencies pesadas. QuickModel las carga **bajo demanda** usando `createRequire` de Node, por lo que nunca aparecen en el grafo de importaciones estático si no se invoca la funcionalidad correspondiente:
+Son dos conceptos diferentes que se confunden con frecuencia:
+
+| Concepto             | Qué significa                                                                                       | Cómo se mide                                            |
+| -------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Tamaño de bundle** | Cuánto código (bytes) se envía al cliente / se incluye en la salida                                 | `bundlephobia`, webpack-bundle-analyzer, `du -sh dist/` |
+| **Startup cost**     | Cuánto trabajo de CPU ocurre cuando el módulo se evalúa por primera vez (constructores, registros…) | Profiler, `console.time`, benchmarks de cold-start      |
+
+QuickModel aborda **ambos**, pero con distintas técnicas según el tipo de dependencia:
+
+- **Peer dependencies** (`zod`, `@faker-js/faker`) — cargadas vía `createRequire` en runtime; nunca aparecen en el grafo de importaciones estático → elimina tanto el tamaño como el startup cost.
+- **Código interno** (`IntegrityService`, helpers de form-data/stream) — importado estáticamente, por lo que siempre está en el bundle, pero la **construcción se difiere** → elimina el startup cost sin cambiar la API.
+
+## Qué se carga de forma lazy
+
+Los siguientes componentes se difieren hasta el primer uso:
+
+| Componente                                                           | Técnica                    | Cuándo se instancia / carga                          |
+| -------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------- |
+| Peer dependency `zod`                                                | `createRequire` en runtime | Primera llamada a `.getSchema('zod')`                |
+| Peer dependency `@faker-js/faker`                                    | `createRequire` en runtime | Primera llamada a `.mock()`                          |
+| Instancia de `QMockGenerator`                                        | Getter estático lazy       | Primera llamada a cualquier `.mock()`                |
+| Instancia de `IntegrityService` (+ 14 constructores de transformers) | Getter estático lazy       | Primera llamada a `.checkIntegrity()` o `.isValid()` |
+
+Esto significa que importar `quickmodel` y declarar clases model **no ejecuta ni un solo constructor de transformer** — las 14+ instancias de transformers dentro de `IntegrityService` solo se crean cuando se solicita validación por primera vez.
+
+```ts
+// ✅ Carga del módulo: cero constructores de transformer se ejecutan
+import { QModel, Quick } from 'quickmodel';
+
+class Order extends QModel<Order> {
+	@Quick() id: number = 0;
+}
+
+// ✅ Todavía sin constructores — solo serialización
+const plain = new Order({ id: 1 }).serialize();
+
+// ⚡ AQUÍ: 14+ constructores de transformer se ejecutan (una vez, cacheados)
+const ok = new Order({ id: 1 }).isValid();
+```
+
+## Dependencias peer opcionales: `zod` y `faker`
+
+Las peer dependencies se cargan **bajo demanda** usando `createRequire` de Node, por lo que nunca aparecen en el grafo de importaciones estático si no se invoca la funcionalidad correspondiente:
 
 | Dependencia opcional | Funcionalidad                             | Cuándo se carga                       |
 | -------------------- | ----------------------------------------- | ------------------------------------- |
@@ -38,21 +80,6 @@ class User extends QModel<User> {
 
 // zod sólo se requiere en el momento en que esta línea se ejecuta en runtime
 const schema = User.getSchema('zod');
-```
-
-## `QMockGenerator` se inicializa de forma lazy
-
-La instancia de `QMockGenerator` (que puede referenciar `@faker-js/faker`) se crea **sólo cuando se realiza la primera llamada a `.mock()`** en cualquier clase model. Importar `quickmodel` no la instancia.
-
-```ts
-import { QModel, Quick } from 'quickmodel';
-
-class Product extends QModel<Product> {
-	@Quick() name: string = '';
-}
-
-// QMockGenerator NO se instancia hasta aquí
-const mock = Product.mock();
 ```
 
 ## Importaciones de subpath granulares
@@ -130,7 +157,7 @@ Funcionalidades opcionales cargadas sólo cuando se activan:
 
 ## Consumidores CJS: evita el barrel principal
 
-Al consumir QuickModel vía `require()` (CJS), los bundlers no pueden hacer tree-shaking de los namespace re-exports. Para evitar cargar componentes que no necesitas, importa desde los subpaths granulares:
+Al consumir QuickModel vía `require()` (CJS), los bundlers no pueden hacer tree-shaking de los namespace re-exports (`export * as Advanced`, `export * as Utils`, etc.). Para evitar cargar componentes que no necesitas, importa desde los subpaths granulares:
 
 ```js
 // ❌ Puede arrastrar código extra en CJS

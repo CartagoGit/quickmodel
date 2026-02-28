@@ -9,6 +9,7 @@
  */
 
 import { IQCaseOptions } from '../types/case.type';
+import type { IFileModeOutput } from '../helpers/form-data.helpers';
 
 /**
  * Options controlling how a `QModel` instance is serialized to a plain object or JSON string.
@@ -60,6 +61,19 @@ export interface IQSerializationOptions {
 	 * Ignored when `pick` is also provided.
 	 */
 	omit?: string[];
+
+	/**
+	 * Controls how binary fields (`File`, `Blob`, `ArrayBuffer`, TypedArrays) are
+	 * serialized in the plain-object output.
+	 *
+	 * - `'auto'` / `'binary'` *(default)*: metadata POJO — `{ name, size, type, … }` for
+	 *   `File`; `{ size, type, _blobRef: true }` for `Blob`; byte array for buffers.
+	 * - `'reference'`: descriptive string — `File` → `file.name`;
+	 *   `Blob` → `'[Blob]'`; `ArrayBuffer`/TypedArray → `'[binary]'`.
+	 *
+	 * @default 'auto'
+	 */
+	fileMode?: IFileModeOutput;
 }
 
 /**
