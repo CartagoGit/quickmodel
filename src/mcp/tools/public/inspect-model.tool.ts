@@ -22,6 +22,8 @@ const QUICKMODEL_DECORATORS = [
  * Suitable for quick structural inspection via AI-agent tooling.
  *
  * @see {@link QExportJsonSchemaTool} to generate a full JSON Schema from the same code.
+ * @see {@link QGetModelSchemaTool} — multi-format schema generation
+ * @see {@link QDiffModelsTool} — compare two model definitions
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QInspectModelTool extends QAbstractTool<

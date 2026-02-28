@@ -93,6 +93,9 @@ const VALIDATORS: IValidatorEntry[] = [
 
 /**
  * MCP tool that lists all built-in QuickModel validator decorators.
+ *
+ * @see {@link QCheckIntegrityTool} — run transformer-level integrity checks
+ * @see {@link QSimulateValidationTool} — simulate @QRule predicate validation
  */
 export class QListValidatorsTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'list_validators';

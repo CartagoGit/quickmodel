@@ -7,6 +7,9 @@ import { spawnCommand } from './utils';
  * (equivalent to `git diff --cached --name-only`).
  * Use this before running lint_check or pre_commit_check to know exactly
  * which files are about to be committed.
+ *
+ * @see {@link QPreCommitCheckTool} — run pre-commit checks on staged files
+ * @see {@link QLintCheckTool} — run ESLint on specific files
  */
 export class QGetStagedFilesTool extends QAbstractTool<
 	z.ZodObject<Record<never, never>>

@@ -564,6 +564,5 @@ Los campos `@QComputed()` también se incluyen en la salida de `toJSON()`, lo qu
 <BenchmarkChart
   :only-scenarios="['serialization', 'coercion', 'typeSerialization', 'schemaMultiFormat']"
   :only-libs="['QuickModel', 'superjson', 'class-transformer', 'Plain JS']"
-  :only-tabs="['performance']"
   default-tab="performance"
 />

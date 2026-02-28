@@ -31,6 +31,10 @@ interface IAsyncSimulatedRule {
  *
  * Predicates are JS expression strings that may return `Promise<boolean>` or `boolean`.
  * Both are accepted for backward compatibility.
+ *
+ * @see {@link QSimulateRulesTool} — for synchronous business rules (prefer this for non-async)
+ * @see {@link QSimulateValidationTool} — for predicate-based validation reports
+ * @see {@link QCheckIntegrityTool} — for transformer-level integrity checks
  */
 export class QSimulateAsyncRulesTool extends QAbstractTool<
 	z.ZodObject<{

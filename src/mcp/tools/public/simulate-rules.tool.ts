@@ -12,6 +12,10 @@ import type { IQRulesResult } from '../../../core/decorators/qrule.decorator';
  * A single rule supplied to simulate_rules.
  * The predicate is a JS expression string.
  * Variables available: `value` (field value), `data` (full data object).
+ *
+ * @see {@link QSimulateAsyncRulesTool} — for async rules with DB/API access
+ * @see {@link QSimulateValidationTool} — for predicate validation
+ * @see {@link QCheckIntegrityTool} — for transformer-level integrity checks
  */
 interface ISimulatedRule {
 	field: string;

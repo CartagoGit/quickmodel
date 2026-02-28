@@ -4,6 +4,8 @@
  * `MapTransformer` — converts between `[K, V][]` / `Record<string, V>` and `Map<K, V>`.
  * `SetTransformer` — converts between `V[]` and `Set<V>`.
  *
+ * @see {@link QModel.serialize} — triggers these transformers for Map/Set fields
+ * @see {@link Quick} — use `@Quick({ field: Map })` / `@Quick({ field: Set })` to activate
  * @module transformers/map-set
  */
 import { BaseTransformer } from '../core/bases/base-transformer';

@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Weak collections transformer for QuickModel.
+ *
+ * Provides intentionally restricted transformers for `WeakMap` and `WeakSet` —
+ * both are non-serializable by design. Attempting to serialize them throws.
+ * Use `excludeFields` in `@Quick` options to omit them from serialization.
+ *
+ * @see {@link QModel.serialize} — will throw when encountering WeakMap/WeakSet fields
+ * @see {@link Quick} — use `{ serialization: { excludeFields: ['field'] } }` to exclude
+ * @module transformers/weak-collections
+ */
 import { BaseTransformer } from '@/core/bases/base-transformer';
 import type { IQTransformContext } from '@/core/interfaces/transformer.interface';
 import { QModelError } from '@/core/errors/quickmodel.error';

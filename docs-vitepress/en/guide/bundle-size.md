@@ -181,7 +181,7 @@ import { QModel, Quick } from 'quickmodel';
 ## Feature & Coverage Comparison
 
 <BenchmarkChart
-  :only-tabs="['features', 'coverage']"
+  :only-tabs="['features', 'coverage', 'performance']"
   default-tab="features"
 />
 interface IUser { name: string; age: number; createdAt: string; }

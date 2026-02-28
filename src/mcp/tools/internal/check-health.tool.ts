@@ -15,6 +15,12 @@ import { spawnCommand } from './utils';
  * @returns `{ status: 'ok' | 'error', output: string }` — `'ok'` only when
  * all three checks pass, combined stdout + stderr on failure.
  *
+ * @see {@link QLintCheckTool} — run only ESLint
+ * @see {@link QTypecheckTool} — run only TypeScript type-check
+ * @see {@link QRunTestsTool} — run only the test suite
+ * @see {@link QCheckSecurityTool} — run the security test suite
+ * @see {@link QProjectStatusTool} — quick project status snapshot
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {

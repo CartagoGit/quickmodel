@@ -16,6 +16,8 @@
  * All transformers extend `BaseTransformer` and optionally implement
  * `IQIntegrityChecker` for runtime type validation.
  *
+ * @see {@link QModel.serialize} — triggers these transformers for Web API type fields
+ * @see {@link Quick} — use `@Quick({ field: URL })`, `{ field: Blob }`, etc. to activate
  * @module transformers/web-apis
  */
 import { BaseTransformer } from '../core/bases/base-transformer';

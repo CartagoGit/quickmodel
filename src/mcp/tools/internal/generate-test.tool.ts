@@ -19,6 +19,9 @@ import { join, resolve as pathResolve, dirname } from 'path';
  * the absolute path of the generated (or existing) test file; `message`
  * carries security or not-found error details on failure.
  *
+ * @see {@link QScaffoldFeatureTool} — scaffold full transformer/tool boilerplate
+ * @see {@link QRunTestsTool} — run tests after generation
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QGenerateTestTool extends QAbstractTool<

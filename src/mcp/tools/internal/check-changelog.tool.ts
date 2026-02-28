@@ -9,6 +9,9 @@ import { join, resolve, sep } from 'path';
  *
  * Prevents releases where the changelog has not been updated.
  * Looks for patterns like "## [1.2.3]" or "## 1.2.3" in CHANGELOG.md.
+ *
+ * @see {@link QCheckApiCompatibilityTool} — detect breaking API changes before release
+ * @see {@link QCheckProjectHealthTool} — comprehensive release gate
  */
 export class QCheckChangelogTool extends QAbstractTool<
 	z.ZodObject<{

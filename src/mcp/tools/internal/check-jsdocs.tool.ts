@@ -15,6 +15,9 @@ import { join } from 'path';
  * file paths where at least one exported member lacks JSDoc, plus a human-
  * readable summary count.
  *
+ * @see {@link QCheckApiCompatibilityTool} — detect breaking changes in public API
+ * @see {@link QCheckProjectHealthTool} — comprehensive project health check
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {

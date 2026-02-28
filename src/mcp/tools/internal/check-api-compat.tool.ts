@@ -6,6 +6,10 @@ import { join, resolve } from 'path';
 /**
  * Tool to check API compatibility.
  * Compares current exports against a simple baseline to detect breaking changes.
+ *
+ * @see {@link QCheckMissingJSDocsTool} — ensure all exports are documented
+ * @see {@link QCheckProjectHealthTool} — comprehensive project health check
+ * @see {@link QCheckChangelogTool} — verify changelog is updated for the release
  */
 export class QCheckApiCompatibilityTool extends QAbstractTool<
 	z.ZodObject<{ baselineFile: z.ZodOptional<z.ZodString> }>

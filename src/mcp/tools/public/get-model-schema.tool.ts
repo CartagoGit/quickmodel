@@ -17,6 +17,10 @@ const VALID_FORMATS = [
 /**
  * Tool to generate a model schema in any supported format using the real QModel.getSchema() API.
  * Supports all 7 formats: json, openapi, zod, mongo, typescript, graphql, ajv.
+ *
+ * @see {@link QExportJsonSchemaTool} — export a standalone JSON Schema definition
+ * @see {@link QGetFormSchemaTool} — get a form-oriented schema for UI frameworks
+ * @see {@link QInspectModelTool} — inspect model metadata without a schema
  */
 export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	name = 'get_model_schema';

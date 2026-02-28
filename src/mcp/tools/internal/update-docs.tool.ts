@@ -17,6 +17,9 @@ import { spawnCommand } from './utils';
  * @returns `{ status: 'ok' | 'error', output: string }` — combined command
  * output; `'error'` when the build process exits with a non-zero code.
  *
+ * @see {@link QSyncDocsTool} — auto-generate docs content from source code
+ * @see {@link QCheckMissingJSDocsTool} — find exports missing JSDoc before building
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QUpdateDocsTool extends QAbstractTool<

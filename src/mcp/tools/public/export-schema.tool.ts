@@ -19,6 +19,10 @@ import { QInspectModelTool } from './inspect-model.tool';
  * @returns `{ schema: object }` — a JSON Schema object with `type`, `title`,
  * `properties`, and `required` keys.
  *
+ * @see {@link QGetModelSchemaTool} — multi-format schema generation (openapi, zod, graphql, etc.)
+ * @see {@link QGetFormSchemaTool} — form-oriented schema for UI frameworks
+ * @see {@link QInspectModelTool} — structural model inspection
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QExportJsonSchemaTool extends QAbstractTool<

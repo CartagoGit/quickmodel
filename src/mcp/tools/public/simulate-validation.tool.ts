@@ -22,6 +22,10 @@ interface IValidationRule {
 /**
  * Tool to simulate running `@QRule`-style predicates over a data object.
  * Returns a validation report with errors, without requiring actual decorated classes.
+ *
+ * @see {@link QSimulateRulesTool} — for synchronous @QRule business logic
+ * @see {@link QSimulateAsyncRulesTool} — for async business rules
+ * @see {@link QCheckIntegrityTool} — for transformer-level integrity checks
  */
 export class QSimulateValidationTool extends QAbstractTool<
 	z.ZodObject<{

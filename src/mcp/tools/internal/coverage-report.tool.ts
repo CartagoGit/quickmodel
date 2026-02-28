@@ -12,6 +12,10 @@ import { spawnCommand } from './utils';
  *
  * @returns `{ summary: string }` — raw stdout + stderr from the coverage run.
  *
+ * @see {@link QRunTestsTool} — run tests without coverage
+ * @see {@link QCheckProjectHealthTool} — comprehensive health check
+ * @see {@link QCheckSecurityTool} — dedicated security test suite
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {

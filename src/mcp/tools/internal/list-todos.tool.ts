@@ -21,6 +21,9 @@ const ANNOTATION_TYPES: ITodoType[] = ['TODO', 'FIXME', 'HACK', 'XXX'];
 /**
  * Internal tool to scan source files for TODO / FIXME / HACK / XXX comments.
  * Returns a structured list of annotations with file, line number, type, and text.
+ *
+ * @see {@link QCheckMissingJSDocsTool} — find exports missing documentation
+ * @see {@link QProjectStatusTool} — overall project health snapshot
  */
 export class QListTodosTool extends QAbstractTool<
 	z.ZodObject<{

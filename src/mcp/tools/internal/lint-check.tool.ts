@@ -33,6 +33,10 @@ interface IEslintFileResult {
  * Internal tool to run ESLint on specific files or a directory and return
  * structured lint issues (errors and warnings).
  * Use this BEFORE declaring any implementation finished to enforce coding standards.
+ *
+ * @see {@link QTypecheckTool} — TypeScript type-checking
+ * @see {@link QCheckProjectRulesTool} — project-specific rules (id-length, naming, etc.)
+ * @see {@link QCheckProjectHealthTool} — combined lint + typecheck + tests
  */
 export class QLintCheckTool extends QAbstractTool<
 	z.ZodObject<{

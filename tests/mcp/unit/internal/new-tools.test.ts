@@ -13,7 +13,7 @@ import {
 	QGenerateTestTool,
 } from '../../../../src/mcp/tools/internal';
 import { join } from 'path';
-import { existsSync, rmSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, rmSync, mkdirSync } from 'fs';
 
 // Mock FS for safer testing where possible, though integration style often easier for FS tools
 // We'll trust the real FS in tmp dirs for some tests to be realistic.
@@ -64,6 +64,48 @@ describe('New Internal Tools', () => {
 			expect(result.message).toContain('complete');
 			const expPath = join(process.cwd(), loc, 'my-new-tool.tool.ts');
 			expect(existsSync(expPath)).toBe(true);
+		});
+
+		it('transformer template must use BaseTransformer class pattern', async () => {
+			const tool = new QScaffoldFeatureTool();
+			const loc = 'tests/temp_internal_tools';
+
+			await tool.execute({
+				type: 'transformer',
+				name: 'email',
+				location: loc,
+			});
+
+			const content = readFileSync(
+				join(process.cwd(), loc, 'email.transformer.ts'),
+				'utf-8'
+			);
+
+			expect(content).toContain('BaseTransformer');
+			expect(content).toContain('deserialize');
+			expect(content).toContain('serialize');
+			expect(content).not.toContain('ValueTransformer');
+			expect(content).not.toContain('value-transformer.service');
+		});
+
+		it('tool template must use QAbstractTool correctly', async () => {
+			const tool = new QScaffoldFeatureTool();
+			const loc = 'tests/temp_internal_tools';
+
+			await tool.execute({
+				type: 'tool',
+				name: 'send-email',
+				location: loc,
+			});
+
+			const content = readFileSync(
+				join(process.cwd(), loc, 'send-email.tool.ts'),
+				'utf-8'
+			);
+
+			expect(content).toContain('QAbstractTool');
+			expect(content).toContain('execute');
+			expect(content).toContain("import { z } from 'zod'");
 		});
 	});
 

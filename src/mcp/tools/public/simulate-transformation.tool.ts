@@ -6,6 +6,10 @@ import { QModel } from '../../../core/models/quick.model';
 /**
  * Tool to simulate how QuickModel transforms data.
  * This allows the agent to "preview" what the library does.
+ *
+ * @see {@link QRoundtripTool} — verify full round-trip losslessness
+ * @see {@link QListTransformersTool} — list all available transformer types
+ * @see {@link QCheckIntegrityTool} — check transformer-level integrity constraints
  */
 export class QSimulateTransformationTool extends QAbstractTool<
 	z.ZodObject<{

@@ -44,6 +44,11 @@ interface IEslintFileResult {
  * a consolidated snapshot: tests, lint, typecheck.
  * Use this as the first step in any "what is the current state?" workflow
  * and as a final gate before committing or releasing.
+ *
+ * @see {@link QCheckProjectHealthTool} — detailed health check (all checks via `bun run check`)
+ * @see {@link QRunTestsTool} — run tests in isolation
+ * @see {@link QLintCheckTool} — run lint in isolation
+ * @see {@link QTypecheckTool} — run typecheck in isolation
  */
 export class QProjectStatusTool extends QAbstractTool<
 	z.ZodObject<Record<never, never>>

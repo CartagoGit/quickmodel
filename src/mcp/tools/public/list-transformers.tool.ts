@@ -14,6 +14,9 @@ import { TransformerLookupService } from '../../../core/services/transformer-loo
  * @returns A `Promise<string[]>` of lowercase transformer identifiers,
  * e.g. `["bigint", "boolean", "date", "number", "string", ...]`.
  *
+ * @see {@link QSimulateTransformationTool} — simulate a specific transformation
+ * @see {@link QListValidatorsTool} — list built-in validator decorators
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {

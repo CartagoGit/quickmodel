@@ -21,6 +21,10 @@ import { QAbstractTool } from '../abstract-tool';
  *
  * @throws {Error} If no valid `interface` definition is found in the input.
  *
+ * @see {@link QCreateModelTool} — create a model from a schema definition
+ * @see {@link QJsonToModelTool} — infer a model from a JSON object
+ * @see {@link QExportJsonSchemaTool} — export a JSON Schema from the generated model
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QInterfaceToModelTool extends QAbstractTool<

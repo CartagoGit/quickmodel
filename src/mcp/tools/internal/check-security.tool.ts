@@ -15,6 +15,10 @@ import { spawnCommand } from './utils';
  * `'secure'` only when all tests pass; `'vulnerable'` on test failures;
  * `'error'` when the runner itself fails to start.
  *
+ * @see {@link QCheckProjectHealthTool} — comprehensive health check (lint + typecheck + tests)
+ * @see {@link QCheckProjectRulesTool} — project-specific coding rule validation
+ * @see {@link QGetCoverageReportTool} — test coverage report
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QCheckSecurityTool extends QAbstractTool<z.ZodObject<{}>> {

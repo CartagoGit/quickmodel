@@ -603,6 +603,7 @@ export default defineConfig({
 					'/en/guide/': [
 						{
 							text: 'Introduction',
+							link: '/en/guide/getting-started',
 							items: [
 								{
 									text: 'Getting Started',
@@ -620,6 +621,7 @@ export default defineConfig({
 						},
 						{
 							text: 'Core',
+							link: '/en/guide/qmodel',
 							items: [
 								{ text: 'QModel', link: '/en/guide/qmodel' },
 								{
@@ -658,6 +660,7 @@ export default defineConfig({
 						},
 						{
 							text: 'Validation',
+							link: '/en/guide/validation',
 							items: [
 								{
 									text: 'Validation (@QRule)',
@@ -667,10 +670,15 @@ export default defineConfig({
 									text: 'Built-in Validators',
 									link: '/en/guide/validators',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/en/guide/validation#performance',
+								},
 							],
 						},
 						{
 							text: 'Forms',
+							link: '/en/guide/forms',
 							items: [
 								{
 									text: 'Form Validation (/forms)',
@@ -684,19 +692,29 @@ export default defineConfig({
 									text: 'FormData & Streaming',
 									link: '/en/guide/formdata',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/en/guide/forms#performance',
+								},
 							],
 						},
 						{
 							text: 'Mocks',
+							link: '/en/guide/mocks',
 							items: [
 								{
 									text: 'Mock Generation',
 									link: '/en/guide/mocks',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/en/guide/mocks#performance',
+								},
 							],
 						},
 						{
 							text: 'Customization',
+							link: '/en/guide/custom-transformers',
 							items: [
 								{
 									text: 'Custom Transformers',
@@ -714,10 +732,15 @@ export default defineConfig({
 									text: 'Unknown Property Policy',
 									link: '/en/guide/unknown-property-policy',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/en/guide/nested-models#performance',
+								},
 							],
 						},
 						{
 							text: 'Performance',
+							link: '/en/guide/bundle-size',
 							items: [
 								{
 									text: 'Bundle Size & Tree-shaking',
@@ -727,6 +750,7 @@ export default defineConfig({
 						},
 						{
 							text: 'Reference',
+							link: '/en/guide/troubleshooting',
 							items: [
 								{
 									text: 'Troubleshooting',
@@ -919,6 +943,7 @@ export default defineConfig({
 					'/es/guide/': [
 						{
 							text: 'Introducción',
+							link: '/es/guide/getting-started',
 							items: [
 								{
 									text: 'Comenzando',
@@ -936,6 +961,7 @@ export default defineConfig({
 						},
 						{
 							text: 'Núcleo',
+							link: '/es/guide/qmodel',
 							items: [
 								{ text: 'QModel', link: '/es/guide/qmodel' },
 								{
@@ -974,6 +1000,7 @@ export default defineConfig({
 						},
 						{
 							text: 'Validación',
+							link: '/es/guide/validation',
 							items: [
 								{
 									text: 'Validación (@QRule)',
@@ -983,10 +1010,15 @@ export default defineConfig({
 									text: 'Validadores Integrados',
 									link: '/es/guide/validators',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/es/guide/validation#rendimiento',
+								},
 							],
 						},
 						{
 							text: 'Formularios',
+							link: '/es/guide/forms',
 							items: [
 								{
 									text: 'Validación de Formularios (/forms)',
@@ -1000,19 +1032,29 @@ export default defineConfig({
 									text: 'FormData y Streaming',
 									link: '/es/guide/formdata',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/es/guide/forms#rendimiento',
+								},
 							],
 						},
 						{
 							text: 'Mocks',
+							link: '/es/guide/mocks',
 							items: [
 								{
 									text: 'Generación de Mocks',
 									link: '/es/guide/mocks',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/es/guide/mocks#rendimiento',
+								},
 							],
 						},
 						{
 							text: 'Personalización',
+							link: '/es/guide/custom-transformers',
 							items: [
 								{
 									text: 'Transformadores Personalizados',
@@ -1030,10 +1072,15 @@ export default defineConfig({
 									text: 'Política de Propiedades Desconocidas',
 									link: '/es/guide/unknown-property-policy',
 								},
+								{
+									text: '⚡ Benchmarks',
+									link: '/es/guide/nested-models#rendimiento',
+								},
 							],
 						},
 						{
 							text: 'Rendimiento',
+							link: '/es/guide/bundle-size',
 							items: [
 								{
 									text: 'Tamaño de Bundle y Tree-shaking',
@@ -1043,6 +1090,7 @@ export default defineConfig({
 						},
 						{
 							text: 'Referencia',
+							link: '/es/guide/troubleshooting',
 							items: [
 								{
 									text: 'Solución de Problemas',

@@ -6,6 +6,10 @@ import { Quick } from '../../../core/decorators/quick.decorator';
 /**
  * Tool to generate mock data based on a simple schema definition.
  * This demonstrates the power of QModel.mock() dynamically.
+ *
+ * @see {@link QCreateModelTool} — create a full model definition
+ * @see {@link QRoundtripTool} — use mock data to test round-trip losslessness
+ * @see {@link QSimulateTransformationTool} — simulate transformation of mock fields
  */
 export class QGenerateMockDataTool extends QAbstractTool<
 	z.ZodObject<{

@@ -4,6 +4,10 @@ import { QAbstractTool } from '../abstract-tool';
 /**
  * Tool to generate a QModel class definition from a simple schema.
  * Useful for scaffolding new models.
+ *
+ * @see {@link QInterfaceToModelTool} — convert an existing TypeScript interface instead
+ * @see {@link QJsonToModelTool} — infer a model from a JSON object
+ * @see {@link QGenerateMockDataTool} — generate mock data for the new model
  */
 export class QCreateModelTool extends QAbstractTool<
 	z.ZodObject<{

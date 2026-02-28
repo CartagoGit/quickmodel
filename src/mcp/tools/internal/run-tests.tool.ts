@@ -14,6 +14,10 @@ interface ITestError {
  * Parses pass/fail counts from stdout and extracts failing test names.
  * Use this to verify that a refactor or new feature does not break existing tests.
  * Always run BEFORE declaring implementation done.
+ *
+ * @see {@link QGetCoverageReportTool} — run tests with coverage report
+ * @see {@link QCheckProjectHealthTool} — combined lint + typecheck + tests
+ * @see {@link QCheckSecurityTool} — run only the security test suite
  */
 export class QRunTestsTool extends QAbstractTool<
 	z.ZodObject<{

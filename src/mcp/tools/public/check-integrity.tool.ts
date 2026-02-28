@@ -7,6 +7,10 @@ import { QModel } from '../../../core/models/quick.model';
  * Tool to run transformer-level integrity checks on sample data.
  * Complements `simulate_validation` (@QRule checks) by testing transformer constraints:
  * invalid Date ranges, oversized BigInt, malformed RegExp, etc.
+ *
+ * @see {@link QSimulateValidationTool} — for predicate-based @QRule validation
+ * @see {@link QSimulateRulesTool} — for synchronous business rules
+ * @see {@link QRoundtripTool} — for round-trip lossless verification
  */
 export class QCheckIntegrityTool extends QAbstractTool<
 	z.ZodObject<{

@@ -222,6 +222,5 @@ const userJson = User.mock().interfaceRandom();
 <BenchmarkChart
   :only-scenarios="['mocks']"
   :only-libs="['QuickModel', 'faker (manual)']"
-  :only-tabs="['performance']"
   default-tab="performance"
 />

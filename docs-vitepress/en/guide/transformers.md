@@ -46,6 +46,5 @@ See [Custom Transformers](./custom-transformers.md) to add your own.
 <BenchmarkChart
   :only-scenarios="['coercion', 'typeSerialization']"
   :only-libs="['QuickModel', 'superjson', 'class-transformer', 'Plain JS']"
-  :only-tabs="['performance']"
   default-tab="performance"
 />

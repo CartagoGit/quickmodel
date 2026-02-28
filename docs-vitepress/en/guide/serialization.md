@@ -565,6 +565,5 @@ user.serialize();
 <BenchmarkChart
   :only-scenarios="['serialization', 'coercion', 'typeSerialization', 'schemaMultiFormat']"
   :only-libs="['QuickModel', 'superjson', 'class-transformer', 'Plain JS']"
-  :only-tabs="['performance']"
   default-tab="performance"
 />

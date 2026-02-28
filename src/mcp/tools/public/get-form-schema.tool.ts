@@ -18,6 +18,10 @@ interface IParsedField {
 /**
  * Tool to call the real `QModel.getFormSchema()` / `getFormSchemaGrouped()` API
  * by parsing `@QField` and `@QGroup` annotations from a code string.
+ *
+ * @see {@link QGetModelSchemaTool} — multi-format schema (openapi, zod, graphql, etc.)
+ * @see {@link QExportJsonSchemaTool} — JSON Schema export
+ * @see {@link QInspectModelTool} — full structural model inspection
  */
 export class QGetFormSchemaTool extends QAbstractTool<
 	z.ZodObject<{

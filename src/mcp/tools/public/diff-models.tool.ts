@@ -71,6 +71,9 @@ function extractDecorators(code: string): Set<string> {
  *  - Added / removed field-level decorators (@QField, @QRule, @QGroup, @QAlias, @QComputed)
  *
  * Useful for: migration reviews, PR diffs, understanding what changed between model versions.
+ *
+ * @see {@link QInspectModelTool} — inspect a single model structure
+ * @see {@link QCheckApiCompatibilityTool} — detect breaking changes in the public API
  */
 export class QDiffModelsTool extends QAbstractTool<
 	z.ZodObject<{

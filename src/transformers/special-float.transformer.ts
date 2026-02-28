@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Special float transformer for QuickModel.
+ *
+ * Handles round-trip serialization of special IEEE 754 float values:
+ * `NaN`, `Infinity`, and `-Infinity` — which are not valid in JSON.
+ *
+ * Encodes them as `{ __qm: 'nan' }`, `{ __qm: 'inf' }`, and `{ __qm: '-inf' }`.
+ *
+ * @see {@link QModel.serialize} — automatically handles special floats in all numeric fields
+ * @see {@link QM_SPECIAL_TOKEN_KEY} — the JSON key used for special float tokens
+ * @module transformers/special-float
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import type {
 	IQIntegrityChecker,

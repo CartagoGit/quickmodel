@@ -6,6 +6,9 @@ import { join, dirname, resolve, sep } from 'path';
 /**
  * Tool to scaffold boilerplate code for new features.
  * Currently supports: 'transformer', 'tool'.
+ *
+ * @see {@link QCreateModelTool} — scaffold a new QModel class
+ * @see {@link QGenerateTestTool} — generate test boilerplate for a source file
  */
 export class QScaffoldFeatureTool extends QAbstractTool<
 	z.ZodObject<{
@@ -84,19 +87,37 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 			}
 
 			targetPath = join(dir, `${safeName}.transformer.ts`);
-			content = `import { ValueTransformer } from '../core/services/value-transformer.service';
+			content = `import { BaseTransformer } from '@/core/bases/base-transformer';
+import type { IQTransformContext } from '@/core/interfaces/transformer.interface';
+// import { QTransformerRegistry } from '@/core/registry/transformer.registry';
 
-export const ${safeName}Transformer: ValueTransformer<any> = {
-    name: '${safeName}',
-    to: (value: any) => {
-        // Transform value for quickmodel storage/usage
-        return String(value);
-    },
-    from: (value: any) => {
-        // Transform value back to original format
-        return value;
-    }
-};
+/**
+ * ${pascalName}Transformer — custom transformer for the '${safeName}' type.
+ *
+ * Register once at app startup:
+ *   QTransformerRegistry.register(${pascalName}, new ${pascalName}Transformer());
+ *
+ * Then reference the constructor in any @Quick config:
+ *   @Quick({ myField: ${pascalName} })
+ */
+export class ${pascalName}Transformer extends BaseTransformer<string, string> {
+	deserialize(
+		value: string | null | undefined,
+		_propertyKey: string,
+		_className: string,
+		_context?: IQTransformContext
+	): string | null {
+		if (value == null) return null;
+		// TODO: transform input → runtime value
+		return String(value);
+	}
+
+	serialize(value: string | null): string | null {
+		if (value == null) return null;
+		// TODO: transform runtime value → serialized output
+		return String(value);
+	}
+}
 `;
 		} else if (args.type === 'tool') {
 			const dir = args.location

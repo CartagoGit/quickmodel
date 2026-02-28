@@ -4,6 +4,8 @@
  * Handles round-trip serialization/deserialization of `Error` instances:
  * `{ name, message, stack }` POJO ↔ native `Error` (or subclass).
  *
+ * @see {@link QModel.serialize} — triggers this transformer when an `Error` field is encountered
+ * @see {@link Quick} — use `@Quick({ field: Error })` to activate this transformer
  * @module transformers/error
  */
 import { BaseTransformer } from '../core/bases/base-transformer';

@@ -15,6 +15,10 @@ interface ITypeError {
  * Internal tool to run TypeScript type checking (`tsc --noEmit`) on the source.
  * Returns structured type errors with file, line, column, TS error code and message.
  * Use this BEFORE declaring any implementation finished to ensure strict type safety.
+ *
+ * @see {@link QLintCheckTool} — ESLint static analysis
+ * @see {@link QCheckProjectHealthTool} — combined lint + typecheck + tests
+ * @see {@link QProjectStatusTool} — snapshot of all health checks
  */
 export class QTypecheckTool extends QAbstractTool<
 	z.ZodObject<Record<never, never>>

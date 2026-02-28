@@ -19,6 +19,9 @@ import { Quick } from '../../../core/decorators/quick.decorator';
  * @returns `{ results: Record<string, string>, summary: string }` — per-
  * scenario ops/sec strings and a human-readable summary table.
  *
+ * @see {@link QRoundtripTool} — test correctness of a round-trip (not just speed)
+ * @see {@link QCheckBundleSizeTool} — check output size after optimisation
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QBenchmarkPerformanceTool extends QAbstractTool<

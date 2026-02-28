@@ -35,6 +35,10 @@ interface IEslintFileResult {
  *
  * Use this BEFORE attempting a commit to ensure the hook will not reject it.
  * Returns a full report with ESLint issues, prettier changes, and a pass/fail verdict.
+ *
+ * @see {@link QLintCheckTool} — run ESLint without auto-fix
+ * @see {@link QGetStagedFilesTool} — discover which files are staged for commit
+ * @see {@link QCheckProjectHealthTool} — comprehensive health gate
  */
 export class QPreCommitCheckTool extends QAbstractTool<
 	z.ZodObject<{

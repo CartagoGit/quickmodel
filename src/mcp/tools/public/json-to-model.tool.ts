@@ -20,6 +20,10 @@ import { QAbstractTool } from '../abstract-tool';
  * @throws {Error} If the JSON is invalid, if the root value is not an object,
  * or if the supplied class name is not a valid identifier.
  *
+ * @see {@link QCreateModelTool} — create a model from an explicit schema
+ * @see {@link QInterfaceToModelTool} — convert a TypeScript interface instead
+ * @see {@link QExportJsonSchemaTool} — export a JSON Schema from the generated model
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QJsonToModelTool extends QAbstractTool<

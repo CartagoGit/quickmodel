@@ -14,6 +14,10 @@ import { QModel } from '../../../core/models/quick.model';
  *
  * When `lossless` is `false`, the `diff` object maps each differing key to
  * `{ expected, got }` so the agent can diagnose the mismatch.
+ *
+ * @see {@link QCheckIntegrityTool} — checks transformer-level constraints
+ * @see {@link QSimulateTransformationTool} — simulates a single field transformation
+ * @see {@link QGenerateMockDataTool} — generates test data for roundtrip inputs
  */
 export class QRoundtripTool extends QAbstractTool<
 	z.ZodObject<{

@@ -18,6 +18,8 @@ const DEFAULT_CHUNK_SIZE = 256 * 1024;
 /**
  * Options for `toReadableStream()`.
  * @public
+ * @see {@link QModel.toReadableStream} — public API that uses these options
+ * @see {@link blobToReadableStream} — underlying implementation
  */
 export interface IToReadableStreamOptions {
 	/**
@@ -43,6 +45,8 @@ export interface IToReadableStreamOptions {
 /**
  * Options for `fromStream()`.
  * @public
+ * @see {@link QModel.fromStream} — public API that uses these options
+ * @see {@link streamToBlob} — underlying implementation
  */
 export interface IFromStreamOptions {
 	/**
@@ -67,6 +71,8 @@ export interface IFromStreamOptions {
 /**
  * Options for `pipeStream()`.
  * @public
+ * @see {@link QModel.pipeStream} — public API that uses these options
+ * @see {@link pipeReadableToWritable} — underlying implementation
  */
 export interface IPipeStreamOptions {
 	/**

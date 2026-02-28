@@ -14,6 +14,9 @@ import { spawn } from 'child_process';
  * @returns `{ matches: string[] }` — up to 20 matching lines with 2 lines of
  * surrounding context.
  *
+ * @see {@link QExplainErrorTool} — explain a specific QuickModel error
+ * @see {@link QInspectModelTool} — inspect a model definition
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QSearchDocsTool extends QAbstractTool<

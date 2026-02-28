@@ -18,6 +18,10 @@ interface IBundleFile {
  *
  * Useful for catching silent size regressions when adding new transformers
  * or features. Can be run as part of CI pre-release checks.
+ *
+ * @see {@link QBenchmarkPerformanceTool} — benchmark transformation throughput
+ * @see {@link QCheckApiCompatibilityTool} — detect breaking API changes
+ * @see {@link QCheckChangelogTool} — verify changelog before release
  */
 export class QCheckBundleSizeTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'check_bundle_size';

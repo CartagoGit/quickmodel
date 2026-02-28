@@ -154,6 +154,5 @@ admin.serialize(); // { first_name: 'Dan', ..., numero_telefono: '555-1234' }
 <BenchmarkChart
   :only-scenarios="['aliasMapping']"
   :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
-  :only-tabs="['performance']"
   default-tab="performance"
 />

@@ -472,6 +472,5 @@ const result = qCheckRules(form);
 <BenchmarkChart
   :only-scenarios="['rules', 'asyncRules', 'validationReport']"
   :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup']"
-  :only-tabs="['performance']"
   default-tab="performance"
 />

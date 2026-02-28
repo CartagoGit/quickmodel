@@ -2,6 +2,10 @@
  * String transformation helpers.
  * Use these to compose multiple transformations easily.
  *
+ * @see {@link compose} — pipeline composition helper
+ * @see {@link pipe} — alias for compose
+ * @see {@link deepFreeze} — deep object freezing helper
+ *
  * @example
  * ```typescript
  * import { trim, uppercase, compose } from './core/helpers/transform-helpers';
@@ -31,6 +35,7 @@
  * @param depth - Internal recursion counter; throws at 512 to prevent stack overflow
  * @returns The same `obj` reference after all nested objects have been frozen
  * @throws {Error} If `depth` exceeds 512 (security guard against infinite structures)
+ * @see {@link QModel.createReadonly} — creates a frozen readonly model instance
  */
 export function deepFreeze<T>(
 	obj: T,

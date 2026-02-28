@@ -19,6 +19,10 @@ const ID_LENGTH_EXCEPTIONS = new Set([
  * Tool to enforce project-specific coding standards and rules.
  * Checks: @Quick/@QType preference, console.log, id-length, max-params,
  * naming-convention (I prefix), and no-restricted-imports.
+ *
+ * @see {@link QLintCheckTool} — full ESLint validation
+ * @see {@link QTypecheckTool} — TypeScript type-checking
+ * @see {@link QCheckProjectHealthTool} — comprehensive health gate
  */
 export class QCheckProjectRulesTool extends QAbstractTool<
 	z.ZodObject<{ targetDir: z.ZodOptional<z.ZodString> }>

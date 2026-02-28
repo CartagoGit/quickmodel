@@ -15,6 +15,10 @@ import { QAbstractTool } from '../abstract-tool';
  * @returns `{ explanation: string }` — a numbered summary beginning with
  * "Found N issues:" followed by one bullet per error.
  *
+ * @see {@link QSimulateValidationTool} — run validation to produce these errors
+ * @see {@link QCheckIntegrityTool} — run integrity checks
+ * @see {@link QSearchDocsTool} — search docs for error context
+ *
  * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QExplainErrorTool extends QAbstractTool<

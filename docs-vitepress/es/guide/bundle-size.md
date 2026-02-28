@@ -230,6 +230,6 @@ const { ZodSchemaGenerator } = require('quickmodel/schema/zod');
 ## Comparativa de características
 
 <BenchmarkChart
-  :only-tabs="['features', 'coverage']"
+  :only-tabs="['features', 'coverage', 'performance']"
   default-tab="features"
 />

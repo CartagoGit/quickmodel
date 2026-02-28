@@ -11,6 +11,9 @@ import { esMcp } from '../../locales/es.mcp';
  * - Public Tools reference
  * - Internal Tools reference
  * - Transformers reference
+ *
+ * @see {@link QUpdateDocsTool} — trigger the full documentation build pipeline
+ * @see {@link QCheckMissingJSDocsTool} — find exports missing JSDoc before syncing
  */
 export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'update_docs_content';

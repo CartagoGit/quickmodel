@@ -8,6 +8,8 @@
  * applying native coercion (`String()`, `Number()`, `Boolean()`) during
  * deserialization and returning the value as-is during serialization.
  *
+ * @see {@link QModel.serialize} — triggers this transformer for primitive fields
+ * @see {@link Quick} — use `@Quick({ field: String | Number | Boolean })` to activate
  * @module transformers/primitive
  */
 import { BaseTransformer } from '../core/bases/base-transformer';

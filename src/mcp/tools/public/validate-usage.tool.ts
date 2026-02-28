@@ -14,6 +14,10 @@ const QUICKMODEL_DECORATORS = [
 
 /**
  * Tool to validate if code snippets seem to be using QuickModel correctly.
+ *
+ * @see {@link QCheckIntegrityTool} — run transformer-level integrity checks on data
+ * @see {@link QSimulateValidationTool} — simulate predicate validation
+ * @see {@link QInspectModelTool} — inspect model structure
  */
 export class QValidateUsageTool extends QAbstractTool<
 	z.ZodObject<{ code: z.ZodString }>
