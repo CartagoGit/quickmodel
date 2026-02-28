@@ -11,7 +11,7 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#58 + Propuestas A, D, G, O, R, S
+✅ Completadas: Tasks #1–#58 + Task #48 + Propuestas A, D, G, O, R, S
 ⏳  Backlog:     Propuestas B, C, E, F, H, I, J, K, L, M, N, P, Q (ver sección final)
 ```
 
@@ -79,33 +79,14 @@
 | 56  | Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 | 23 Feb 2026               |
 | 57  | Test Runners — Jest, Jasmine, Mocha/Chai, Node:test, AVA                             | 147 tests, guías EN+ES    |
 | 58  | `fromFormData()` + `toFormData()` + `toReadableStream()` + Blob/File transformers    | 28 Feb 2026               |
-
----
-
-## ⏳ Task #48: Drizzle ORM integration patterns
-
-**Status:** 📋 Pendiente
-**Objetivo:** Suite de tests + guía EN+ES para Drizzle ORM
-**Tests a añadir:** ~25 en `tests/integration/patterns/drizzle-patterns.test.ts`
-**Docs:** `docs-vitepress/en/guide/drizzle-integration.md` + ES
-
-**Patrones a cubrir:**
-
-1. DTO desde resultado de query — `new UserDto(await db.select().from(users).where(...))`
-2. Create input — `dto.toInterface()` como `db.insert(users).values(...)`
-3. Patrón repositorio — `DrizzleUserRepository` con QModel layer
-4. Tipos Drizzle → QModel — `Date`, `number` (Drizzle no tiene Decimal por defecto)
-5. `createMany()` para seed / bulk import
-6. `unknownPropertyPolicy: 'strip'` — eliminar columnas internas (timestamps, etc.)
-7. `copy()` + `db.update().set(...)` — update parcial inmutable
-8. `@QComputed()` para campos calculados no almacenados
+| 48  | Drizzle ORM integration patterns — 35 tests, guía EN+ES, skill MCP                   | 1 Mar 2026                |
 
 ---
 
 ## 🆕 PROPUESTAS BACKLOG (Mar 2026+)
 
 > **Análisis:** 28 de febrero de 2026
-> Task #48 (Drizzle) ya está registrada arriba y no se repite aquí.
+> Task #48 (Drizzle) completada — 35 tests passing, docs EN+ES, skill MCP incluida.
 
 ---
 
@@ -620,7 +601,7 @@ User.getSchema('prisma');
 ## 🔁 Orden recomendado de implementación
 
 ```
-1.  Task #48  → Drizzle ORM (cierra backlog oficial pendiente)
+1.  ~~Task #48~~ ✅ Drizzle ORM (35 tests, docs EN+ES, skill MCP — completada 1 Mar 2026)
 2.  Prop. O   → validate() unificado (1-2h, mayor ROI: alto impacto, mínimo riesgo)
 3.  ~~Prop. R~~   ✅ CLI generate subcommand (generate.command.ts — completada 2026)
 4.  Prop. A   → @QSensitive (seguridad / GDPR)

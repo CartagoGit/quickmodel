@@ -1,4 +1,12 @@
-import { describe, test, expect } from 'bun:test';
+import {
+	describe,
+	test,
+	expect,
+	beforeEach,
+	afterEach,
+	spyOn,
+	type Mock,
+} from 'bun:test';
 import { QModel, Quick } from '../../src';
 
 interface IUser {
@@ -26,6 +34,15 @@ class StrictUser extends QModel<IUser> {
 }
 
 describe('Shadowing Bypass via Strict Constructor', () => {
+	let warnSpy: Mock<typeof console.warn>;
+
+	beforeEach(() => {
+		warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		warnSpy.mockRestore();
+	});
+
 	test('should prevent overwriting methods even if constructor throws on empty init', () => {
 		const maliciousPayload = {
 			id: 1,
@@ -49,5 +66,8 @@ describe('Shadowing Bypass via Strict Constructor', () => {
 			// Validate that it is NOT the string
 			expect(typeof user.save).not.toBe('string');
 		}
+		// El spy silencia cualquier warning que pueda emitir el framework,
+		// pero en este caso el constructor estricto impide el flujo normal
+		// de protección por shadowing — la protección ocurre igualmente.
 	});
 });

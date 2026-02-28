@@ -120,11 +120,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			metadata: new Map(),
 		});
 
-		const _valueType = Reflect.getMetadata(
-			'design:type',
-			container,
-			'value'
-		);
 		const metadataType = Reflect.getMetadata(
 			'design:type',
 			container,

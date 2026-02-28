@@ -63,10 +63,7 @@ export class QGetFormSchemaTool extends QAbstractTool<
 	 * @see {@link QAbstractTool.execute} — base contract for this method
 	 * @see {@link QGetModelSchemaTool} — use this for multi-format schema generation instead
 	 */
-	async execute(args: {
-		code: string;
-		grouped?: boolean;
-	}): Promise<{
+	async execute(args: { code: string; grouped?: boolean }): Promise<{
 		schema: IQFormSchemaGroup[] | Array<Record<string, unknown>>;
 		count: number;
 	}> {

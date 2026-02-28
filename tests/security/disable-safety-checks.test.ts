@@ -18,11 +18,27 @@
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import {
+	describe,
+	test,
+	expect,
+	beforeEach,
+	afterEach,
+	spyOn,
+	type Mock,
+} from 'bun:test';
 
 describe('disableSafetyChecks: behavior verification', () => {
-	beforeEach(() => QConfig.reset());
-	afterEach(() => QConfig.reset());
+	let warnSpy: Mock<typeof console.warn>;
+
+	beforeEach(() => {
+		QConfig.reset();
+		warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		warnSpy.mockRestore();
+		QConfig.reset();
+	});
 
 	// -----------------------------------------------------------------------
 	// BYPASSED checks
@@ -46,6 +62,9 @@ describe('disableSafetyChecks: behavior verification', () => {
 		const bigArray = Array(10).fill('x');
 		expect(() => new BigList({ items: bigArray })).not.toThrow();
 		expect(new BigList({ items: bigArray }).items).toHaveLength(10);
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks is ENABLED')
+		);
 	});
 
 	test('bypasses nested object size limit', () => {
@@ -63,6 +82,9 @@ describe('disableSafetyChecks: behavior verification', () => {
 		// Deep nested object that would normally trigger size checks
 		const deep = { a: { b: { c: { d: { e: 'deep' } } } } };
 		expect(() => new BigObject({ meta: deep })).not.toThrow();
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks is ENABLED')
+		);
 	});
 
 	// -----------------------------------------------------------------------
@@ -91,6 +113,9 @@ describe('disableSafetyChecks: behavior verification', () => {
 		expect((instance as any).hacked).toBeUndefined();
 		// Global Object prototype must not be polluted
 		expect(({} as any).hacked).toBeUndefined();
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks is ENABLED')
+		);
 	});
 
 	test('prototype pollution: constructor key is silently skipped even with disableSafetyChecks', () => {
@@ -112,6 +137,9 @@ describe('disableSafetyChecks: behavior verification', () => {
 		expect(instance.name).toBe('ok');
 		// constructor should not be overwritten with the object value
 		expect(typeof instance.constructor).toBe('function');
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks is ENABLED')
+		);
 	});
 
 	test('prototype pollution: "prototype" key is silently skipped even with disableSafetyChecks', () => {
@@ -132,6 +160,9 @@ describe('disableSafetyChecks: behavior verification', () => {
 		} as any);
 		expect(instance.name).toBe('ok');
 		expect((Risky as any).hacked).toBeUndefined();
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks is ENABLED')
+		);
 	});
 
 	// -----------------------------------------------------------------------
@@ -154,5 +185,8 @@ describe('disableSafetyChecks: behavior verification', () => {
 		const event = new Event({ title: 'Meeting', created: '2025-01-01' });
 		expect(event.title).toBe('Meeting');
 		expect(event.created).toBeInstanceOf(Date);
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('disableSafetyChecks is ENABLED')
+		);
 	});
 });
