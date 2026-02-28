@@ -141,11 +141,16 @@ export class BigIntTransformer
 	}
 
 	/**
-	 * Validates if a value can be converted to bigint.
+	 * Validates that a value can be safely converted to `bigint`.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result indicating success or failure
+	 * Accepts: `bigint` (already converted), `string` (decimal notation), and
+	 * `number` (integer). Rejects all other types and strings/numbers that
+	 * `BigInt()` would throw on.
+	 *
+	 * @param value   - The runtime value to validate.
+	 * @param context - Context object with `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` when the value is a valid bigint or coercible,
+	 *          or `{ isValid: false, error: string }` with a human-readable message.
 	 */
 	checkIntegrity(
 		value: unknown,
