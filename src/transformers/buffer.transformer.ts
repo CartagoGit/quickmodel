@@ -335,6 +335,9 @@ export class SharedArrayBufferTransformer
 	}
 }
 
+/** Pre-registered singleton instance of {@link ArrayBufferTransformer}. */
 export const arrayBufferTransformer = new ArrayBufferTransformer();
+/** Pre-registered singleton instance of {@link DataViewTransformer}. */
 export const dataViewTransformer = new DataViewTransformer();
+/** Pre-registered singleton instance of {@link SharedArrayBufferTransformer}. */
 export const sharedArrayBufferTransformer = new SharedArrayBufferTransformer();

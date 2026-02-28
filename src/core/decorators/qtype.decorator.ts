@@ -609,6 +609,31 @@ function applyQTypeMetadata(
 // Public decorator factory
 // ---------------------------------------------------------------------------
 
+/**
+ * Property decorator factory for explicit type transformation.
+ *
+ * Registers the property's transformer type on the class metadata so that
+ * `QModel` can convert raw input values (e.g. JSON strings) into the correct
+ * runtime type during construction and deserialization.
+ *
+ * Supports both the legacy `experimentalDecorators` API (TypeScript ≤ 4) and
+ * the TC39 field-decorator API (TypeScript 5+).
+ *
+ * @param typeOrClass - The transformer type, constructor, or array syntax (e.g. `[Date]`).
+ * @param options - Optional transformation options (e.g. `{ optional: true }`).
+ * @returns A dual-mode decorator compatible with both decorator APIs.
+ *
+ * @example
+ * ```typescript
+ * class Post extends QModel<IPost> {
+ *   \@QType(Date)
+ *   declare createdAt: Date;
+ *
+ *   \@QType([Number])
+ *   declare scores: number[];
+ * }
+ * ```
+ */
 export function QType(
 	typeOrClass?: IQSpec | Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
 	options?: IQTypeOptions

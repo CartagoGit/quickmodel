@@ -183,4 +183,5 @@ export class SymbolTransformer
 	}
 }
 
+/** Pre-registered singleton instance of {@link SymbolTransformer}. */
 export const symbolTransformer = new SymbolTransformer();

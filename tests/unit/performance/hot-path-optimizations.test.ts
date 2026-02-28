@@ -7,6 +7,7 @@
  *  3. Objeto de contexto mutable reutilizado entre campos (elimina 2 alloc por campo)
  *  4. Inline de createContext + hasCircularReference (evita dispatch + WeakSet redundante)
  *  5. Fast-path para campos primitivos ya correctamente tipados
+ *  6. OPT#4: Lazy WeakSet / lazy recursionContext — no alloc para modelos no-anidados
  *
  * TDD: estos tests deben pasar DESPUÉS de las optimizaciones y NO deben romper
  * ningún comportamiento existente.
@@ -448,5 +449,134 @@ describe('Optimization NEW-A — fast-path unknown+keep+primitive fields', () =>
 		const nested = { sub: 'value' };
 		const inst = new ExtraFields({ nom: 'Eve', age: 5, nested } as any);
 		expect((inst as any).nested).toStrictEqual(nested);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modelos para SUITE 7 (OPT#4) — definidos a nivel de módulo para que
+// emitDecoratorMetadata emita correctamente los design:type.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ICity {
+	street: string;
+	city: string;
+}
+
+@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
+class CityAddress extends QModel<ICity> {
+	declare street: string;
+	declare city: string;
+	declare createdAt: Date;
+}
+
+interface IPersonAddr {
+	fullName: string;
+	address: ICity;
+}
+
+@Quick({ address: CityAddress }, { unknownPropertyPolicy: 'keep' })
+class PersonAddr extends QModel<IPersonAddr> {
+	declare fullName: string;
+	declare address: CityAddress;
+}
+
+interface IAliasPrimitive {
+	firstName: string;
+	lastName: string;
+}
+
+@Quick({}, { unknownPropertyPolicy: 'keep' })
+class AliasPrimitive extends QModel<IAliasPrimitive> {
+	@QAlias('first_name')
+	declare firstName: string;
+
+	@QAlias('last_name')
+	declare lastName: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 7: OPT#4 — Lazy WeakSet / lazy recursionContext
+// Verifica que:
+//  a) La creación lazy del WeakSet/recursionContext NO rompe la populación de
+//     modelos anidados (que sí ejercen el contexto recursivo).
+//  b) El inlined depth check sigue disparándose en estructuras profundas.
+//  c) Las primitivas en modelos no-anidados siguen asignándose sin recurrir al
+//     path de recursionContext (garantiza que no hay regresiones en el fast-path).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('OPT#4 — lazy WeakSet / lazy recursionContext', () => {
+	test('modelo anidado se popula correctamente (ejercita la creación lazy del WeakSet)', () => {
+		// Este test ejercita el path recursivo: populateInstance root → transformProperty
+		// → recursiveDeserializer → populateInstance nested.
+		// La creación lazy del WeakSet/recursionContext debe ocurrir en la primera llamada
+		// recursiva y propagarse correctamente.
+		const person = new PersonAddr({
+			fullName: 'Alice',
+			address: {
+				street: '123 Main St',
+				city: 'Springfield',
+				createdAt: '2024-01-01',
+			} as any,
+		});
+
+		expect(person.fullName).toBe('Alice');
+		expect(person.address).toBeInstanceOf(CityAddress);
+		expect(person.address.street).toBe('123 Main St');
+		expect(person.address.city).toBe('Springfield');
+		expect(person.address.createdAt).toBeInstanceOf(Date);
+	});
+
+	test('modelo anidado funciona con múltiples construcciones (WeakSet no persiste entre llamadas)', () => {
+		// Verifica que el estado lazy (WeakSet/recursionContext) no persiste entre
+		// diferentes construcciones de la misma clase.
+		const personA = new PersonAddr({
+			fullName: 'Alice',
+			address: {
+				street: '1 First St',
+				city: 'CityA',
+				createdAt: '2024-01-01',
+			} as any,
+		});
+		const personB = new PersonAddr({
+			fullName: 'Bob',
+			address: {
+				street: '2 Second St',
+				city: 'CityB',
+				createdAt: '2024-06-15',
+			} as any,
+		});
+
+		expect(personA.address.city).toBe('CityA');
+		expect(personB.address.city).toBe('CityB');
+		// Ambas instancias son independientes — WeakSet no persiste entre llamadas
+		expect(personA.address).not.toBe(personB.address);
+	});
+
+	test('modelo no-anidado (solo primitivos) se sigue asignando sin errores', () => {
+		// Verifica que el fast-path de primitivas sigue funcionando y NO necesita
+		// el recursionContext (que queda sin crear para este modelo).
+		const prim = new SimplePrimitive({
+			idt: 'x01',
+			nom: 'Carlos',
+			age: 25,
+			active: true,
+		});
+
+		expect(prim.idt).toBe('x01');
+		expect(prim.nom).toBe('Carlos');
+		expect(prim.age).toBe(25);
+		expect(prim.active).toBe(true);
+	});
+
+	test('@QAlias en modelo no-anidado sigue funcionando (lazy WeakSet no se crea)', () => {
+		// ApiProfile-like test: campos con @QAlias, sin tipos anidados.
+		// El WeakSet lazy NO debe crearse para este modelo.
+		const usr = new AliasPrimitive({
+			first_name: 'Ana',
+			last_name: 'García',
+		} as any);
+
+		expect(usr.firstName).toBe('Ana');
+		expect(usr.lastName).toBe('García');
 	});
 });

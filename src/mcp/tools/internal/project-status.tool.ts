@@ -2,23 +2,27 @@ import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
+/** @internal Test-run summary returned by the project status snapshot. */
 interface ITestStatus {
 	passed: boolean;
 	total_pass: number;
 	total_fail: number;
 }
 
+/** @internal Lint summary returned by the project status snapshot. */
 interface ILintStatus {
 	passed: boolean;
 	total_errors: number;
 	total_warnings: number;
 }
 
+/** @internal TypeScript type-check summary returned by the project status snapshot. */
 interface ITypecheckStatus {
 	passed: boolean;
 	total: number;
 }
 
+/** @internal Shape of a single message entry in the ESLint JSON output. */
 interface IEslintMessage {
 	ruleId: string | null;
 	severity: number;
@@ -27,6 +31,7 @@ interface IEslintMessage {
 	column: number;
 }
 
+/** @internal Shape of a per-file entry in the ESLint JSON output. */
 interface IEslintFileResult {
 	filePath: string;
 	messages: IEslintMessage[];

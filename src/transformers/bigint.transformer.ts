@@ -174,4 +174,5 @@ export class BigIntTransformer
 	}
 }
 
+/** Pre-registered singleton instance of {@link BigIntTransformer}. */
 export const bigIntTransformer = new BigIntTransformer();

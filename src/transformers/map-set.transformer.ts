@@ -733,5 +733,7 @@ export class SetTransformer<V = unknown>
 	}
 }
 
+/** Pre-registered singleton instance of {@link MapTransformer}. */
 export const mapTransformer = new MapTransformer();
+/** Pre-registered singleton instance of {@link SetTransformer}. */
 export const setTransformer = new SetTransformer();

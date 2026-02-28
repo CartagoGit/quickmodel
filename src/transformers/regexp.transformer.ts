@@ -250,4 +250,5 @@ export class RegExpTransformer
 	}
 }
 
+/** Pre-registered singleton instance of {@link RegExpTransformer}. */
 export const regExpTransformer = new RegExpTransformer();

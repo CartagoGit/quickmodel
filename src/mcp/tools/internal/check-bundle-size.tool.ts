@@ -4,6 +4,7 @@ import { spawnCommand } from './utils';
 import { readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
+/** @internal Represents a single compiled dist file with its size in bytes. */
 interface IBundleFile {
 	file: string;
 	bytes: number;

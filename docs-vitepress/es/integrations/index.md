@@ -84,6 +84,14 @@ Interceptación de peticiones HTTP en tests con modelos realistas generados por 
 
 Matchers de Vitest específicos para validar instancias de QModel en tests.
 
+### [Jest Integration](/es/integrations/jest-integration)
+
+Uso de `quickmodelMatchers` con Jest mediante `expect.extend()` — sin adaptadores adicionales.
+
+### [Otros Test Runners (Mocha/Chai, Node:test, AVA)](/es/integrations/test-runners-integration)
+
+Integración de los matchers de QuickModel con Mocha + Chai, Node:test y AVA.
+
 ### [TanStack Query](/es/integrations/tanstack-query-integration)
 
 Queries y mutaciones con transformación automática de respuestas de API.

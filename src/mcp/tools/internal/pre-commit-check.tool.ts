@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
+/** @internal Normalised lint issue reported by the pre-commit check. */
 interface ILintIssue {
 	file: string;
 	line: number;
@@ -11,6 +12,7 @@ interface ILintIssue {
 	severity: 'error' | 'warning';
 }
 
+/** @internal Shape of a single message entry in the ESLint JSON output. */
 interface IEslintMessage {
 	ruleId: string | null;
 	severity: number;
@@ -19,6 +21,7 @@ interface IEslintMessage {
 	column: number;
 }
 
+/** @internal Shape of a per-file entry in the ESLint JSON output. */
 interface IEslintFileResult {
 	filePath: string;
 	messages: IEslintMessage[];

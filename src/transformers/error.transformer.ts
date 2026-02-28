@@ -200,4 +200,5 @@ export class ErrorTransformer
 	}
 }
 
+/** Pre-registered singleton instance of {@link ErrorTransformer}. */
 export const errorTransformer = new ErrorTransformer();

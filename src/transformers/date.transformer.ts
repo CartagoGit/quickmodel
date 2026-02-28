@@ -159,4 +159,5 @@ export class DateTransformer
 	}
 }
 
+/** Pre-registered singleton instance of {@link DateTransformer}. */
 export const dateTransformer = new DateTransformer();

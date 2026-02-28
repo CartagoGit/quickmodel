@@ -312,17 +312,14 @@ export class PopulationService {
 			);
 		}
 
-		// OPT: Inline createContext + hasCircularReference — avoids method dispatch + intermediate object
-		// createContext previously built { visited: new WeakSet(), depth: currentDepth + 1 }
-		const _visitedSet = context?.visited ?? new WeakSet<object>();
-		if (typeof data === 'object' && data !== null) {
+		// OPT#4: Lazy WeakSet / lazy recursionContext — no allocations for non-nested root-level populations.
+		// Root calls (no context.visited): _visitedSet stays null until the first recursive nested field.
+		// Recursive calls (context.visited provided): use the existing set and check/track the current data.
+		let _visitedSet: WeakSet<object> | null = context?.visited ?? null;
+		if (_visitedSet !== null && typeof data === 'object' && data !== null) {
 			if (_visitedSet.has(data as object)) return;
 			_visitedSet.add(data as object);
 		}
-		const recursionContext = {
-			visited: _visitedSet,
-			depth: currentDepth + 1,
-		};
 
 		// Use cached class metadata — all static after decorators run
 		const {
@@ -353,10 +350,10 @@ export class PopulationService {
 			);
 		}
 
-		// OPT: Inline depth check — avoids method dispatch through this.recursionGuard.validateDepth()
-		if (recursionContext.depth > (maxRecursionDepth ?? 50)) {
+		// OPT#4b: Inline depth guard — uses currentDepth + 1 directly (no recursionContext object needed).
+		if (currentDepth + 1 > (maxRecursionDepth ?? 50)) {
 			throw new Error(
-				`QuickModel Security: Maximum recursion depth (${maxRecursionDepth}) exceeded during population.`
+				`QuickModel Security: Maximum recursion depth (${maxRecursionDepth ?? 50}) exceeded during population.`
 			);
 		}
 
@@ -397,6 +394,10 @@ export class PopulationService {
 			className: classNameCached,
 			metadata: undefined as unknown as Record<string, unknown>,
 		};
+
+		// OPT#4c: Lazy recursionContext — only created when a field actually needs recursive population.
+		// For models with only primitive/unknown fields, this object is never allocated.
+		let _lazyRC: { visited: WeakSet<object>; depth: number } | null = null;
 
 		// OPT#5: Pre-build metadata object for decorated fields with no per-field transformerOptions.
 		// maxArrayLength, coercionStrategy, normalization are constant within this construction call.
@@ -626,6 +627,16 @@ export class PopulationService {
 			}
 
 			// Transform Property — mutate reusable context to avoid per-field object allocation
+			// OPT#4c: Build recursionContext lazily — only on first field that needs recursive dispatch.
+			if (_lazyRC === null) {
+				if (_visitedSet === null) {
+					_visitedSet = new WeakSet<object>();
+					if (typeof data === 'object' && data !== null) {
+						_visitedSet.add(data as object);
+					}
+				}
+				_lazyRC = { visited: _visitedSet, depth: currentDepth + 1 };
+			}
 			reusableTransformCtx.propertyKey = targetKey;
 			instance[targetKey] = this.propertyTransformer.transformProperty(
 				targetKey,
@@ -639,7 +650,7 @@ export class PopulationService {
 					options,
 					discriminators,
 					transformContext: reusableTransformCtx,
-					recursionContext,
+					recursionContext: _lazyRC,
 					maxArrayLength,
 					coercionStrategy: coercionStrategy,
 					cachedBaseMeta: _cachedBaseMeta,
@@ -653,10 +664,20 @@ export class PopulationService {
 		);
 
 		for (const dotKey of dotNotationFields) {
+			// OPT#4c: Build recursionContext lazily for dot notation too
+			if (_lazyRC === null) {
+				if (_visitedSet === null) {
+					_visitedSet = new WeakSet<object>();
+					if (typeof data === 'object' && data !== null) {
+						_visitedSet.add(data as object);
+					}
+				}
+				_lazyRC = { visited: _visitedSet, depth: currentDepth + 1 };
+			}
 			this.dotNotationHandler.apply(instance, {
 				path: dotKey,
 				modelClass,
-				recursionContext,
+				recursionContext: _lazyRC,
 			});
 		}
 	}
