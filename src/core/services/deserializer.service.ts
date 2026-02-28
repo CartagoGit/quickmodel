@@ -14,10 +14,6 @@ import { QConfig } from '../config/quick.config';
 import { QModelError } from '../errors/quickmodel.error';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
-// ---------------------------------------------------------------------------
-// Module-level per-class cache for validationTrigger — avoids
-// Reflect.getMetadata + QConfig.get() on every deserialize() call.
-// ---------------------------------------------------------------------------
 /** @internal Per-class cache for `validationTrigger` resolution — avoids `Reflect.getMetadata` + `QConfig.get()` on every `deserialize()` call. */
 interface IQDeserializeTriggerCache {
 	/** QConfig snapshot for invalidation */
