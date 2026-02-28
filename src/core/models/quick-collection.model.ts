@@ -1,4 +1,16 @@
+import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
 import type { IQSerializationOptions } from '@/core/interfaces/serializer.interface';
+
+/**
+ * Minimal contract every element stored in a `QModelCollection` must fulfill.
+ *
+ * Any `QModel` subclass satisfies this interface automatically.
+ * @internal
+ */
+export interface IQModelInstance {
+	serialize(opts?: IQSerializationOptions): object;
+	checkRules(): IQRulesResult;
+}
 
 /**
  * Result returned by `QModelCollection.checkAllRules()`.
@@ -23,7 +35,7 @@ interface ISortByOptions {
  * A typed constructor that can instantiate a `QModel`-like class.
  * @internal
  */
-type IQModelCtor<TInstance extends object> = new (
+type IQModelCtor<TInstance extends IQModelInstance> = new (
 	data: Record<string, unknown>
 ) => TInstance;
 
@@ -54,7 +66,7 @@ type IQModelCtor<TInstance extends object> = new (
  * @see {@link QModel.collection} — static alias on each model class
  * @see {@link QModel.createMany} — creates instances but returns a plain array
  */
-export class QModelCollection<TInstance extends object> {
+export class QModelCollection<TInstance extends IQModelInstance> {
 	readonly #items: TInstance[];
 	readonly #ctor: IQModelCtor<TInstance>;
 
@@ -78,7 +90,7 @@ export class QModelCollection<TInstance extends object> {
 	 * const col = QModelCollection.from(UserModel, await db.select().from(users));
 	 * ```
 	 */
-	static from<TInstance extends object>(
+	static from<TInstance extends IQModelInstance>(
 		ctor: IQModelCtor<TInstance>,
 		data: Array<Record<string, unknown>>
 	): QModelCollection<TInstance> {
@@ -236,15 +248,13 @@ export class QModelCollection<TInstance extends object> {
 	 * col.serialize({ pick: ['id', 'name'] }); // → [{ id, name }, ...]
 	 * ```
 	 */
-	serialize(options?: IQSerializationOptions): Record<string, unknown>[] {
-		return this.#items.map((item) => {
-			const serializable = item as unknown as {
-				serialize: (
-					opts?: IQSerializationOptions
-				) => Record<string, unknown>;
-			};
-			return serializable.serialize(options);
-		});
+	serialize(
+		options?: IQSerializationOptions
+	): ReturnType<TInstance['serialize']>[] {
+		return this.#items.map(
+			(item) =>
+				item.serialize(options) as ReturnType<TInstance['serialize']>
+		);
 	}
 
 	/**
@@ -270,12 +280,8 @@ export class QModelCollection<TInstance extends object> {
 	checkAllRules(): IQCollectionRulesResult {
 		const errors: IQCollectionRulesResult['errors'] = [];
 		for (let idx = 0; idx < this.#items.length; idx++) {
-			const item = this.#items[idx] as unknown as {
-				checkRules: () => {
-					valid: boolean;
-					errors: Array<{ field: string; message: string }>;
-				};
-			};
+			const item = this.#items[idx];
+			if (item === undefined) continue;
 			const result = item.checkRules();
 			if (!result.valid) {
 				for (const err of result.errors) {

@@ -62,7 +62,10 @@ import {
 	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
 import { QSENSITIVE_FIELDS_KEY } from '@/core/decorators/qsensitive.decorator';
-import { QModelCollection } from '@/core/models/quick-collection.model';
+import {
+	QModelCollection,
+	type IQModelInstance,
+} from '@/core/models/quick-collection.model';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
@@ -569,7 +572,7 @@ export abstract class QModel<
 	 * @see {@link QModelCollection.from} — underlying factory method
 	 * @see {@link QModel.createMany} — similar but returns a plain array with error reporting
 	 */
-	static collection<TInst extends object>(
+	static collection<TInst extends IQModelInstance>(
 		this: new (data: Record<string, unknown>) => TInst,
 		data: Array<Record<string, unknown>>
 	): QModelCollection<TInst> {
