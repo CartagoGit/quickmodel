@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Error transformer for QuickModel.
+ *
+ * Handles round-trip serialization/deserialization of `Error` instances:
+ * `{ name, message, stack }` POJO ↔ native `Error` (or subclass).
+ *
+ * @module transformers/error
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';

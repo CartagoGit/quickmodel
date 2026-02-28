@@ -1,3 +1,11 @@
+/**
+ * @fileoverview RegExp transformer for QuickModel.
+ *
+ * Handles round-trip serialization/deserialization of `RegExp` objects:
+ * `string | { __type: 'regexp'; source: string; flags: string }` ↔ `RegExp`.
+ *
+ * @module transformers/regexp
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';

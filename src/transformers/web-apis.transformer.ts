@@ -1,3 +1,23 @@
+/**
+ * @fileoverview Web API transformers for QuickModel.
+ *
+ * Provides round-trip serialization/deserialization for browser and Node.js
+ * Web API types:
+ *
+ * | Class                       | Runtime type        | JSON representation         |
+ * |-----------------------------|---------------------|-----------------------------|
+ * | `URLTransformer`            | `URL`               | `string`                    |
+ * | `URLSearchParamsTransformer`| `URLSearchParams`   | query string                |
+ * | `TextEncoderTransformer`    | `TextEncoder`       | `{}` (stateless)            |
+ * | `TextDecoderTransformer`    | `TextDecoder`       | `{ encoding: string }`      |
+ * | `BlobTransformer`           | `Blob`              | `IBlobSerialized`           |
+ * | `FileTransformer`           | `File`              | `IFileSerialized`           |
+ *
+ * All transformers extend `BaseTransformer` and optionally implement
+ * `IQIntegrityChecker` for runtime type validation.
+ *
+ * @module transformers/web-apis
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';

@@ -1,3 +1,14 @@
+/**
+ * @fileoverview TypedArray transformer for QuickModel.
+ *
+ * A single generic `TypedArrayTransformer<T>` handles all nine TypedArray types:
+ * `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`,
+ * `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array`.
+ *
+ * `BigInt64Array` and `BigUint64Array` are handled via `string[]` representation.
+ *
+ * @module transformers/typed-array
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {

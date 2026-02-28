@@ -94,6 +94,19 @@ export interface IQConfig {
 		};
 
 		/**
+		 * HTTP method to spoof via a `_method` field in `toFormData()` output.
+		 *
+		 * Global fallback — overridden by the decorator-level option and by the
+		 * `toFormData({ spoofMethod })` call-time option.
+		 *
+		 * Supports all RFC 7231 verbs, WebDAV (RFC 4918), DeltaV (RFC 3253),
+		 * and any custom string method.
+		 *
+		 * @see {@link IQSpoofMethod}
+		 */
+		spoofMethod?: import('@/core/types/form-data.type').IQSpoofMethod;
+
+		/**
 		 * Strategy for reporting integrity errors.
 		 * - 'failFast': Throws on first error.
 		 * - 'accumulate': Collects all errors (Default).

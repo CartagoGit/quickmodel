@@ -521,6 +521,17 @@ export abstract class QModel<
 	 * @group Serialization
 	 */
 	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
+		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
+		const localOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			this.constructor
+		) as IQAdvancedOptions | undefined;
+		const globalDefaults = QConfig.get().defaults;
+		const resolvedSpoofMethod =
+			options?.spoofMethod ??
+			localOptions?.spoofMethod ??
+			globalDefaults?.spoofMethod;
+
 		// Build a plain object from the model's current values.
 		// Combine direct own keys (via getters/properties) with internal QUICK_VALUES_KEY storage.
 		const plain: Record<string, unknown> = {};
@@ -538,7 +549,10 @@ export abstract class QModel<
 			}
 		}
 
-		return plainObjectToFormData(plain, options);
+		return plainObjectToFormData(plain, {
+			...options,
+			spoofMethod: resolvedSpoofMethod,
+		});
 	}
 
 	/**

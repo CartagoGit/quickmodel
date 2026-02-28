@@ -696,6 +696,10 @@ export default defineConfig({
 									link: '/en/guide/mocks',
 								},
 								{
+									text: 'Bundle Size & Tree-shaking',
+									link: '/en/guide/bundle-size',
+								},
+								{
 									text: 'Troubleshooting',
 									link: '/en/guide/troubleshooting',
 								},
@@ -977,6 +981,10 @@ export default defineConfig({
 								{
 									text: 'Generación de Mocks',
 									link: '/es/guide/mocks',
+								},
+								{
+									text: 'Tamaño de Bundle y Tree-shaking',
+									link: '/es/guide/bundle-size',
 								},
 								{
 									text: 'Solución de Problemas',

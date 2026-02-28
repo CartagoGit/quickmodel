@@ -781,3 +781,337 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		expect(ref.ref).toBeUndefined();
 	});
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 10: OPT#VAL-A — short-circuit de primitivos en serializeValue()
+//
+// Cada llamada a serializeValue() recorre 20+ instanceof checks antes de
+// llegar al `return value` de primitivos. Para modelos flat (string/number/boolean)
+// esto es el gasto dominante de serialize(). El short-circuit evalúa el typeof
+// al inicio y retorna inmediatamente sin tocar instanceof ni WeakSet.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface IAllPrimitivesModel {
+	nom: string;
+	age: number;
+	active: boolean;
+	score: number;
+	tag: string;
+	rank: number;
+}
+
+@Quick({}, { unknownPropertyPolicy: 'keep' })
+class AllPrimitivesModel extends QModel<IAllPrimitivesModel> {
+	declare nom: string;
+	declare age: number;
+	declare active: boolean;
+	declare score: number;
+	declare tag: string;
+	declare rank: number;
+}
+
+interface ISpecialFloatModel {
+	val: number;
+}
+
+@Quick({}, { unknownPropertyPolicy: 'keep' })
+class SpecialFloatModel extends QModel<ISpecialFloatModel> {
+	declare val: number;
+}
+
+describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
+	// ── Correctness ──────────────────────────────────────────────────────────
+
+	test('string serializa exactamente igual (sin coerción)', () => {
+		const mdl = new AllPrimitivesModel({
+			nom: 'hello world',
+			age: 0,
+			active: false,
+			score: 0,
+			tag: '',
+			rank: 0,
+		});
+		expect(mdl.serialize().nom).toBe('hello world');
+		expect(mdl.serialize().tag).toBe('');
+	});
+
+	test('number finito serializa como number (sin conversión)', () => {
+		const mdl = new AllPrimitivesModel({
+			nom: 'x',
+			age: 42,
+			active: true,
+			score: 3.14,
+			tag: 'y',
+			rank: -7,
+		});
+		const out = mdl.serialize();
+		expect(out.age).toBe(42);
+		expect(out.score).toBe(3.14);
+		expect(out.rank).toBe(-7);
+	});
+
+	test('boolean (true/false) serializa como boolean', () => {
+		const mdlTrue = new AllPrimitivesModel({
+			nom: 'a',
+			age: 1,
+			active: true,
+			score: 1,
+			tag: 'b',
+			rank: 1,
+		});
+		const mdlFalse = new AllPrimitivesModel({
+			nom: 'c',
+			age: 0,
+			active: false,
+			score: 0,
+			tag: 'd',
+			rank: 0,
+		});
+		expect(mdlTrue.serialize().active).toBe(true);
+		expect(mdlFalse.serialize().active).toBe(false);
+	});
+
+	test('número cero y string vacío no se convierten a falsy/undefined', () => {
+		const mdl = new AllPrimitivesModel({
+			nom: '',
+			age: 0,
+			active: false,
+			score: 0,
+			tag: '',
+			rank: 0,
+		});
+		const out = mdl.serialize();
+		expect(out.nom).toBe('');
+		expect(out.age).toBe(0);
+		expect(out.active).toBe(false);
+		expect(out.score).toBe(0);
+		expect(out.tag).toBe('');
+		expect(out.rank).toBe(0);
+	});
+
+	// ── Edge cases: NaN e Infinity NO deben short-circuit ────────────────────
+
+	test('NaN produce token especial { __qm: "nan" } (no short-circuited)', () => {
+		const mdl = new SpecialFloatModel({ val: 0 });
+		// Asignar NaN directamente porque el constructor puede coercionar
+		(mdl as Record<string, unknown>).val = NaN;
+		const out = mdl.serialize() as Record<string, unknown>;
+		expect(out.val).toEqual({ __qm: 'nan' });
+	});
+
+	test('Infinity produce token especial { __qm: "inf" } (no short-circuited)', () => {
+		const mdl = new SpecialFloatModel({ val: 0 });
+		(mdl as Record<string, unknown>).val = Infinity;
+		const out = mdl.serialize() as Record<string, unknown>;
+		expect(out.val).toEqual({ __qm: 'inf' });
+	});
+
+	test('-Infinity produce token especial { __qm: "-inf" } (no short-circuited)', () => {
+		const mdl = new SpecialFloatModel({ val: 0 });
+		(mdl as Record<string, unknown>).val = -Infinity;
+		const out = mdl.serialize() as Record<string, unknown>;
+		expect(out.val).toEqual({ __qm: '-inf' });
+	});
+
+	// ── Performance ──────────────────────────────────────────────────────────
+
+	test('serialize() de modelo flat primitivo supera 90k ops/sec tras OPT#VAL-A', () => {
+		const ITERS = 3_000;
+		function runMicrobench(func: () => void): number {
+			for (let idx = 0; idx < 500; idx++) func();
+			let best = 0;
+			for (let trial = 0; trial < 3; trial++) {
+				const start = performance.now();
+				for (let idx = 0; idx < ITERS; idx++) func();
+				const elapsed = performance.now() - start;
+				const ops = Math.round((ITERS / elapsed) * 1000);
+				if (ops > best) best = ops;
+			}
+			return best;
+		}
+
+		const mdl = new AllPrimitivesModel({
+			nom: 'BenchUser',
+			age: 35,
+			active: true,
+			score: 9.8,
+			tag: 'vip',
+			rank: 1,
+		});
+
+		const opsPerSec = runMicrobench(() => {
+			void mdl.serialize();
+		});
+
+		console.log(
+			`\n  [OPT#VAL-A serialize flat] ${opsPerSec.toLocaleString()} ops/sec`
+		);
+
+		// PRE-optimización baseline: ~55-65k ops/sec (each primitive value runs 20+ instanceof checks)
+		// POST OPT#VAL-A: string/number/boolean retornan antes del primer instanceof → ~90k+
+		expect(opsPerSec).toBeGreaterThan(90_000);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 11: OPT#NEST-A — nested model branch en serializeValue()
+//
+// El branch "has serialize() method + isQModelCtor" actualmente usa:
+//   const childOptions = { ...options, _depth: depth + 1 }  (spread de N props)
+//   delete childOptions.dateStrategy; delete childOptions.transformCase;  (slow delete)
+//
+// OPT#NEST-A construye el childOptions de forma selectiva:
+//   - Para QModels: solo { _depth } → usa _nextDepthOpts fast path
+//   - Para custom serializables (no-QModel): spread mínimo { ...options, _depth }
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface IInnerNode {
+	val: string;
+	num: number;
+}
+
+interface IOuterNode {
+	nom: string;
+	inner: IInnerNode;
+}
+
+@Quick({}, { unknownPropertyPolicy: 'keep' })
+class InnerNode extends QModel<IInnerNode> {
+	declare val: string;
+	declare num: number;
+}
+
+@Quick({ inner: InnerNode }, { unknownPropertyPolicy: 'keep' })
+class OuterNode extends QModel<IOuterNode> {
+	declare nom: string;
+	declare inner: InnerNode;
+}
+
+describe('OPT#NEST-A — nested model branch en serializeValue()', () => {
+	test('modelo anidado serializa correctamente (om. & n): valores intactos', () => {
+		const inner = new InnerNode({ val: 'inner-val', num: 42 });
+		const outer = new OuterNode({ nom: 'outer', inner });
+
+		const out = outer.serialize() as {
+			nom: string;
+			inner: { val: string; num: number };
+		};
+
+		expect(out.nom).toBe('outer');
+		expect(out.inner.val).toBe('inner-val');
+		expect(out.inner.num).toBe(42);
+	});
+
+	test('dateStrategy del padre NO se propaga al modelo anidado', () => {
+		interface IDateInner {
+			nom: string;
+			ts: Date;
+		}
+
+		@Quick({ ts: Date }, { unknownPropertyPolicy: 'keep' })
+		class DateInner extends QModel<IDateInner> {
+			declare nom: string;
+			declare ts: Date;
+		}
+
+		interface IDateOuter {
+			label: string;
+			child: IDateInner;
+		}
+
+		@Quick({ child: DateInner }, { unknownPropertyPolicy: 'keep' })
+		class DateOuter extends QModel<IDateOuter> {
+			declare label: string;
+			declare child: DateInner;
+		}
+
+		const inner = new DateInner({
+			nom: 'child',
+			ts: new Date('2025-01-15T12:00:00.000Z'),
+		});
+		const outer = new DateOuter({ label: 'parent', child: inner });
+
+		// Serialize con dateStrategy explícita en el padre
+		const out = outer.serialize(undefined, {
+			dateStrategy: 'timestamp',
+		}) as {
+			label: string;
+			child: { nom: string; ts: unknown };
+		};
+
+		// El modelo interno debe usar su propia estrategia (ISO por defecto),
+		// NO heredar 'timestamp' del padre
+		expect(out.label).toBe('parent');
+		expect(typeof out.child.ts).toBe('string');
+		// ISO string → not a number (timestamp would be a number)
+		expect(typeof (out.child.ts as string)).toBe('string');
+	});
+
+	test('múltiples niveles de anidamiento serializan con depth correcto (no overflow)', () => {
+		// 5 niveles de anidamiento → depth 1-5
+		interface IDeeplyNested {
+			val: string;
+			child?: IDeeplyNested;
+		}
+
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
+		class DeeplyNested extends QModel<IDeeplyNested> {
+			declare val: string;
+			declare child?: DeeplyNested;
+		}
+
+		const lvl5 = new DeeplyNested({ val: 'lvl5' });
+		const lvl4 = new DeeplyNested({ val: 'lvl4', child: lvl5 });
+		const lvl3 = new DeeplyNested({ val: 'lvl3', child: lvl4 });
+		const lvl2 = new DeeplyNested({ val: 'lvl2', child: lvl3 });
+		const lvl1 = new DeeplyNested({ val: 'lvl1', child: lvl2 });
+
+		const out = lvl1.serialize() as {
+			val: string;
+			child?: {
+				val: string;
+				child?: {
+					val: string;
+					child?: { val: string; child?: { val: string } };
+				};
+			};
+		};
+
+		expect(out.val).toBe('lvl1');
+		expect(out.child?.val).toBe('lvl2');
+		expect(out.child?.child?.val).toBe('lvl3');
+		expect(out.child?.child?.child?.val).toBe('lvl4');
+		expect(out.child?.child?.child?.child?.val).toBe('lvl5');
+	});
+
+	test('serialize() de modelo con anidamiento supera 55k ops/sec tras OPT#NEST-A', () => {
+		const ITERS = 2_000;
+		function runMicrobench(func: () => void): number {
+			for (let idx = 0; idx < 500; idx++) func();
+			let best = 0;
+			for (let trial = 0; trial < 3; trial++) {
+				const start = performance.now();
+				for (let idx = 0; idx < ITERS; idx++) func();
+				const elapsed = performance.now() - start;
+				const ops = Math.round((ITERS / elapsed) * 1000);
+				if (ops > best) best = ops;
+			}
+			return best;
+		}
+
+		const inner = new InnerNode({ val: 'bench-inner', num: 99 });
+		const outer = new OuterNode({ nom: 'bench-outer', inner });
+
+		const opsPerSec = runMicrobench(() => {
+			void outer.serialize();
+		});
+
+		console.log(
+			`\n  [OPT#NEST-A serialize nested] ${opsPerSec.toLocaleString()} ops/sec`
+		);
+
+		// PRE-optimización: ~45-50k (spread alloc + 2 delete operations per nested model)
+		// POST OPT#NEST-A: selective opts build, no delete → ~55k+
+		expect(opsPerSec).toBeGreaterThan(55_000);
+	});
+});

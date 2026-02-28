@@ -36,6 +36,16 @@
 			"import": "./dist/advanced.mjs",
 			"require": "./dist/advanced.js"
 		},
+		"./mock": {
+			"types": "./dist/mock.d.ts",
+			"import": "./dist/mock.mjs",
+			"require": "./dist/mock.js"
+		},
+		"./schema": {
+			"types": "./dist/schema.d.ts",
+			"import": "./dist/schema.mjs",
+			"require": "./dist/schema.js"
+		},
 		"./utils": {
 			"types": "./dist/utils.d.ts",
 			"import": "./dist/utils.mjs",

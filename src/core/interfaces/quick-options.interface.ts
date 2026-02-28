@@ -14,6 +14,7 @@ import type {
 	IQTransformerFn,
 } from './transform-options.interface';
 import { IQCaseOptions } from '../types/case.type';
+import type { IQSpoofMethod } from '../types/form-data.type';
 
 /**
  * Extract constructor types from IQSpec or IQSpecs.
@@ -347,6 +348,21 @@ export interface IQAdvancedOptions<
 	 * Date serialization strategy.
 	 */
 	dateStrategy?: 'iso' | 'timestamp' | 'native';
+
+	/**
+	 * HTTP method to spoof via a `_method` field appended as the first entry of
+	 * the resulting `FormData` when calling `toFormData()`.
+	 *
+	 * Enables frameworks such as Laravel, Symfony, and Rails to receive `PUT`,
+	 * `PATCH`, `DELETE`, WebDAV, and other non-`POST` methods through a standard
+	 * `multipart/form-data` `POST` request.
+	 *
+	 * **Cascading precedence** (lowest → highest):
+	 * `QConfig.defaults.spoofMethod` → `@Quick({}, { spoofMethod })` → `toFormData({ spoofMethod })`
+	 *
+	 * @see {@link IQSpoofMethod} for the full list of valid values
+	 */
+	spoofMethod?: IQSpoofMethod;
 
 	/**
 	 * Case transformation strategy for input (API -> Model) and output (Model -> API).

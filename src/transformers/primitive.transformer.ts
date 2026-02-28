@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Primitive transformer for QuickModel.
+ *
+ * Handles coercion and validation of JavaScript primitive types:
+ * `string`, `number`, and `boolean`.
+ *
+ * The `PrimitiveTransformer<T>` is generic and reused for all three,
+ * applying native coercion (`String()`, `Number()`, `Boolean()`) during
+ * deserialization and returning the value as-is during serialization.
+ *
+ * @module transformers/primitive
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {

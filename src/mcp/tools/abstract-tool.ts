@@ -29,7 +29,8 @@ export interface IQMcpTool<T extends z.ZodObject<any> = z.ZodObject<any>> {
 	/**
 	 * Execution logic of the tool.
 	 * @param args - Arguments strictly matching the Zod schema.
-	 * @returns Promise resolving to the result of the operation.
+	 * @returns Promise resolving to an `IQMcpToolResult`-compatible object —
+	 *   either `{ success: true; ... }` on success, or `{ success: false; error: string }` on failure.
 	 */
 	execute(args: z.infer<T>): Promise<unknown>;
 }
@@ -56,6 +57,8 @@ export abstract class QAbstractTool<
 	/**
 	 * Implementation of the tool logic.
 	 * @param args - Validated arguments.
+	 * @returns Promise resolving to an `IQMcpToolResult`-compatible object —
+	 *   either `{ success: true; ... }` on success, or `{ success: false; error: string }` on failure.
 	 */
 	abstract execute(args: z.infer<T>): Promise<unknown>;
 }

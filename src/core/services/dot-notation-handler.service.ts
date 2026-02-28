@@ -43,6 +43,8 @@ export class DotNotationHandler {
 	 * @param applyConfig.path - Dot-notation property path (e.g. `'address.city'`)
 	 * @param applyConfig.modelClass - The constructor function providing decorator metadata
 	 * @param applyConfig.recursionContext - Optional cycle-detection context
+	 * @returns `void` — the instance is mutated in place. Silently no-ops if any segment of the path
+	 *   does not exist, is `null`/`undefined`, or is a prototype-pollution key.
 	 */
 	public apply(
 		instance: Record<string, unknown>,

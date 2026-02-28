@@ -12,6 +12,14 @@
 - **Lazy `QMockGenerator` init** — The `QMockGenerator` singleton inside `QModel` is now
   instantiated lazily on the first call to `.mock()` instead of eagerly at class-load time.
   This prevents the mock generator's constructor from running in codepaths that never use mocks.
+- **New subpath `quickmodel/schema/zod`** — Exposes `ZodSchemaGenerator` as a standalone entry
+  point. Consumers that only need Zod schema generation can now import it directly without pulling
+  in any other schema generators or model code.
+- **New subpath `quickmodel/mock`** — Exposes `QMockGenerator` and `QMockBuilder` without pulling
+  in schema generators, the serializer pipeline, or `QModel`. `faker` remains lazily loaded.
+- **New subpath `quickmodel/schema`** — Exposes all seven schema generators (JSON, Zod, Mongo,
+  TypeScript, GraphQL, OpenAPI, AJV) as a cohesive group, without mock generation, `QModel`, or
+  the serializer. `zod` remains lazily loaded.
 
 ### Added
 

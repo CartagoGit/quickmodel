@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Buffer transformers for QuickModel.
+ *
+ * Handles round-trip serialization/deserialization of binary data types:
+ *
+ * | Class                       | Runtime type  | JSON representation |
+ * |-----------------------------|---------------|---------------------|
+ * | `ArrayBufferTransformer`    | `ArrayBuffer` | `number[]`          |
+ * | `DataViewTransformer`       | `DataView`    | `number[]`          |
+ * | `SharedArrayBufferTransformer` | `SharedArrayBuffer` | `number[]` |
+ *
+ * @module transformers/buffer
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '../core/errors/quickmodel.error';
 import {

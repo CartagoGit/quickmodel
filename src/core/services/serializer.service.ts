@@ -627,6 +627,17 @@ export class Serializer<
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
 	): unknown {
+		// OPT#VAL-A: Short-circuit for primitive types — the common case for flat models.
+		// Primitives never recurse, so they can safely skip the depth guard and all
+		// instanceof checks. This saves 20+ comparisons per field in the hot path.
+		// NOTE: NaN and ±Infinity are NOT finite, so they fall through to the special-float
+		// handler at the bottom. null/undefined are returned as-is.
+		if (value === null || value === undefined) return value;
+		const _vType = typeof value;
+		if (_vType === 'string' || _vType === 'boolean') return value;
+		if (_vType === 'number' && isFinite(value as number)) return value;
+		// bigint, symbol, and object types fall through to the full dispatch below
+
 		const depth = options?._depth || 0;
 		// SECURITY: Prevent Stack Overflow
 		const MAX_DEPTH = 512;
@@ -665,10 +676,15 @@ export class Serializer<
 			}
 			visited.add(value);
 
-			// Check if Map has Symbol keys
-			const hasSymbolKeys = Array.from(value.keys()).some(
-				(key) => typeof key === 'symbol'
-			);
+			// OPT#MAP-A: Check if Map has Symbol keys using a direct for-of loop.
+			// Avoids Array.from() allocation — short-circuits on first Symbol key found.
+			let hasSymbolKeys = false;
+			for (const _mapKey of value.keys()) {
+				if (typeof _mapKey === 'symbol') {
+					hasSymbolKeys = true;
+					break;
+				}
+			}
 
 			// If has Symbol keys, serialize as array of tuples to preserve Symbol info
 			if (hasSymbolKeys) {
@@ -952,22 +968,27 @@ export class Serializer<
 			typeof value.serialize === 'function'
 		) {
 			const visited = seen || new WeakSet<object>();
-			// No need to check visited here because value.serialize(seen) will check it
 
-			// prepare child options
-			const childOptions: IQSerializationOptions = {
-				...options,
-				_depth: depth + 1,
-			};
-
-			// If it is a QModel (has metadata), we should strip the dateStrategy
-			// to allow it to use its own configuration
+			// OPT#NEST-A: For QModels, build a minimal childOptions directly instead of
+			// spreading all parent options and then deleting dateStrategy/transformCase
+			// (spread alloc + 2 slow delete operations per nested model).
+			// QModel autonomy is preserved: strip dateStrategy and transformCase so the
+			// nested model resolves its own configured defaults.
+			// Non-QModel custom serializables (rare path) still get full parent options.
+			let childOptions: IQSerializationOptions;
 			if (_isQModelCtor(value.constructor)) {
-				delete childOptions.dateStrategy;
-				delete childOptions.transformCase; // Strip case config too
-				// Force explicit removal via type assertion if needed
-				(childOptions as any).dateStrategy = undefined;
-				(childOptions as any).transformCase = undefined;
+				childOptions = {
+					_depth: depth + 1,
+					includeUnderscore: options?.includeUnderscore,
+					includeDoubleUnderscore: options?.includeDoubleUnderscore,
+				};
+			} else {
+				// Custom serializable (e.g. hand-written serialize() method):
+				// propagate all parent options, only increment depth.
+				childOptions = {
+					...options,
+					_depth: depth + 1,
+				};
 			}
 
 			return (

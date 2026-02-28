@@ -1,3 +1,11 @@
+/**
+ * @fileoverview BigInt transformer for QuickModel.
+ *
+ * Handles round-trip serialization/deserialization of JavaScript `BigInt` values:
+ * `string | number | { __type: 'bigint'; value: string }` ↔ `bigint`.
+ *
+ * @module transformers/bigint
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import {

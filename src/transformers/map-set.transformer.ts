@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Map and Set transformers for QuickModel.
+ *
+ * `MapTransformer` — converts between `[K, V][]` / `Record<string, V>` and `Map<K, V>`.
+ * `SetTransformer` — converts between `V[]` and `Set<V>`.
+ *
+ * @module transformers/map-set
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';

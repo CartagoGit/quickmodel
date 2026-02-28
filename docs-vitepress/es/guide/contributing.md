@@ -130,6 +130,21 @@ src/
 > `QZodSchemaGenerator`. Del mismo modo, `QMockGenerator` se instancia lazy dentro de
 > `QModel` — su constructor solo se ejecuta en la primera llamada a `.mock()`, no al
 > cargar la clase.
+>
+> Además, hay un subpath dedicado `quickmodel/schema/zod` para consumidores que solo
+> necesitan el generador Zod de forma aislada, sin arrastrar el resto:
+>
+> ```typescript
+> import { ZodSchemaGenerator } from 'quickmodel/schema/zod';
+> ```
+>
+> Hay otros dos subpaths granulares para evitar cargar código no relacionado en entornos CJS:
+>
+> | Subpath                 | Contenido                              | Excluye                                     |
+> | ----------------------- | -------------------------------------- | ------------------------------------------- |
+> | `quickmodel/mock`       | `QMockGenerator`, `QMockBuilder`       | generadores de schema, serializer, `QModel` |
+> | `quickmodel/schema`     | Los 7 generadores de schema (Zod lazy) | mock, serializer, `QModel`                  |
+> | `quickmodel/schema/zod` | Solo `ZodSchemaGenerator` (Zod lazy)   | todo lo demás                               |
 
 #### 2. Open/Closed Principle (OCP)
 

@@ -8,6 +8,8 @@ export default defineConfig({
 		utils: 'src/utils.ts',
 		forms: 'src/forms.ts',
 		matchers: 'src/matchers.ts',
+		mock: 'src/mock.ts',
+		schema: 'src/schema.ts',
 		validators: 'src/core/decorators/validators.ts',
 		'compat/ts5/forms': 'src/compat/ts5/forms.ts',
 		'core/index': 'src/core/index.ts',

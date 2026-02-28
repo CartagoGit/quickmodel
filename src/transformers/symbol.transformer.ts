@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Symbol transformer for QuickModel.
+ *
+ * Handles round-trip serialization/deserialization of JavaScript `Symbol` values:
+ * `string | { __type: 'symbol'; description: string }` ↔ `Symbol`.
+ *
+ * Uses `Symbol.for(description)` to ensure the same symbol can be recovered
+ * across serialization boundaries.
+ *
+ * @module transformers/symbol
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';

@@ -32,6 +32,26 @@ export interface ISchemaGeneratorConfig {
  * `Set` → `{ type: 'array', uniqueItems: true }`, etc.
  *
  * @see {@link ISchemaGeneratorConfig} for the input shape.
+ *
+ * @example
+ * ```ts
+ * const schema = JsonSchemaGenerator.generate({
+ *   className: 'User',
+ *   decoratorConfig: { name: String, age: Number, createdAt: Date },
+ *   properties: ['name', 'age', 'createdAt'],
+ * });
+ * // {
+ * //   $schema: 'http://json-schema.org/draft-07/schema#',
+ * //   type: 'object',
+ * //   title: 'User',
+ * //   properties: {
+ * //     name: { type: 'string' },
+ * //     age:  { type: 'number' },
+ * //     createdAt: { type: 'string', format: 'date-time' },
+ * //   },
+ * //   required: ['name', 'age', 'createdAt'],
+ * // }
+ * ```
  */
 export class JsonSchemaGenerator {
 	/**
@@ -172,6 +192,21 @@ export class JsonSchemaGenerator {
  *
  * Produces `{ [field]: { type: NativeConstructor, required: true } }` entries
  * compatible with `new mongoose.Schema(definition)`.
+ *
+ * @example
+ * ```ts
+ * const definition = MongoSchemaGenerator.generate({
+ *   className: 'User',
+ *   decoratorConfig: { name: String, age: Number, createdAt: Date },
+ *   properties: ['name', 'age', 'createdAt'],
+ * });
+ * // {
+ * //   name:      { type: String, required: true },
+ * //   age:       { type: Number, required: true },
+ * //   createdAt: { type: Date,   required: true },
+ * // }
+ * const UserSchema = new mongoose.Schema(definition);
+ * ```
  */
 export class MongoSchemaGenerator {
 	/**
@@ -242,6 +277,16 @@ export class MongoSchemaGenerator {
  *
  * Produces a `interface I${className} { ... }` source string that can be
  * written to a `.d.ts` file or surfaced in tooling.
+ *
+ * @example
+ * ```ts
+ * const code = TypeScriptSchemaGenerator.generate({
+ *   className: 'User',
+ *   decoratorConfig: { name: String, age: Number, createdAt: Date },
+ *   properties: ['name', 'age', 'createdAt'],
+ * });
+ * // 'interface IUser {\n\tname: string;\n\tage: number;\n\tcreatedAt: Date;\n}'
+ * ```
  */
 export class TypeScriptSchemaGenerator {
 	/**
@@ -314,6 +359,16 @@ export class TypeScriptSchemaGenerator {
  * types where possible (`String!`, `Float!`, `Boolean!`, `DateTime!`).
  * `BigInt` is mapped to `String!` (GraphQL has no native BigInt scalar);
  * `Map` and complex objects are mapped to `JSON!`.
+ *
+ * @example
+ * ```ts
+ * const sdl = GraphQLSchemaGenerator.generate({
+ *   className: 'User',
+ *   decoratorConfig: { name: String, age: Number, createdAt: Date },
+ *   properties: ['name', 'age', 'createdAt'],
+ * });
+ * // 'type User {\n\tname: String!\n\tage: Float!\n\tcreatedAt: DateTime!\n}'
+ * ```
  */
 export class GraphQLSchemaGenerator {
 	/**
@@ -384,6 +439,24 @@ export class GraphQLSchemaGenerator {
  * Returns an object with `type: 'object'`, a `properties` map, and a `required`
  * array — ready to embed directly in an OpenAPI document under
  * `components.schemas`.
+ *
+ * @example
+ * ```ts
+ * const schema = OpenAPISchemaGenerator.generate({
+ *   className: 'User',
+ *   decoratorConfig: { name: String, age: Number, createdAt: Date },
+ *   properties: ['name', 'age', 'createdAt'],
+ * });
+ * // {
+ * //   type: 'object',
+ * //   properties: {
+ * //     name:      { type: 'string' },
+ * //     age:       { type: 'number', format: 'double' },
+ * //     createdAt: { type: 'string', format: 'date-time' },
+ * //   },
+ * //   required: ['name', 'age', 'createdAt'],
+ * // }
+ * ```
  */
 export class OpenAPISchemaGenerator {
 	/**

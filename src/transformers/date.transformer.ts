@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Date transformer for QuickModel.
+ *
+ * Handles round-trip serialization/deserialization of `Date` objects:
+ * `string | number | Date` ↔ `Date` (ISO 8601).
+ *
+ * @module transformers/date
+ */
 import { BaseTransformer } from '../core/bases/base-transformer';
 import { QModelError } from '@/core/errors/quickmodel.error';
 import { safeStringify } from '@/core/helpers/transform-helpers';

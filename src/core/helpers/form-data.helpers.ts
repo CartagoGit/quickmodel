@@ -60,6 +60,15 @@ export interface IToFormDataOptions {
 	 * Per-field override. Takes precedence over `fileMode`.
 	 */
 	fields?: Record<string, IFileModeOutput>;
+	/**
+	 * When set, inserts a `_method` field as the **first** entry in the
+	 * resulting `FormData`. Used for HTTP method spoofing with backends
+	 * (Laravel, Symfony, Rails) that only support `POST` in multipart forms.
+	 *
+	 * Resolved via cascade in `toFormData()` — this field carries the
+	 * already-resolved value from `QConfig.defaults` → decorator → call option.
+	 */
+	spoofMethod?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -320,6 +329,11 @@ export async function plainObjectToFormData(
 	const globalMode: IFileModeOutput = options?.fileMode ?? 'auto';
 	const fieldOverrides = options?.fields ?? {};
 	const formData = new FormData();
+
+	// _method must be the very first field (some backends require this)
+	if (options?.spoofMethod) {
+		formData.append('_method', options.spoofMethod);
+	}
 
 	for (const [key, val] of Object.entries(plain)) {
 		const mode: IFileModeOutput = fieldOverrides[key] ?? globalMode;
