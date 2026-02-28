@@ -1,3 +1,9 @@
+/**
+ * Internal MCP tools barrel — re-exports maintenance and DX tools.
+ *
+ * @see {@link QMcpServer} — server that registers these internal tools
+ * @see {@link QCheckHealthTool} — runs lint + typecheck + tests
+ */
 export * from './update-docs.tool';
 export * from './generate-test.tool';
 export * from './check-jsdocs.tool';

@@ -4,6 +4,7 @@
  * Contains UI labels, descriptions, and tool documentation strings used by
  * the MCP server when responding to AI clients in English.
  *
+ * @see {@link esMcp} — Spanish locale counterpart
  * @internal Consumed by `QSyncDocsTool` and the MCP server response layer.
  */
 export const enMcp = {

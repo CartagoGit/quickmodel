@@ -48,9 +48,12 @@ describe('External classes without @Quick()', () => {
 	}
 
 	test('Should handle single external class without @Quick()', () => {
-		@Quick({
-			user: ExternalUser,
-		})
+		@Quick(
+			{
+				user: ExternalUser,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Profile extends QModel<IProfile> {
 			userId!: number;
 			user!: ExternalUser;
@@ -90,9 +93,12 @@ describe('External classes without @Quick()', () => {
 	});
 
 	test('Should handle array of external classes without @Quick()', () => {
-		@Quick({
-			members: [ExternalUser],
-		})
+		@Quick(
+			{
+				members: [ExternalUser],
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Team extends QModel<ITeam> {
 			id!: number;
 			members!: ExternalUser[];
@@ -121,10 +127,13 @@ describe('External classes without @Quick()', () => {
 	});
 
 	test('Should handle nested external classes', () => {
-		@Quick({
-			user: ExternalUser,
-			address: ExternalAddress,
-		})
+		@Quick(
+			{
+				user: ExternalUser,
+				address: ExternalAddress,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Profile extends QModel<IProfile> {
 			userId!: number;
 			user!: ExternalUser;
@@ -162,11 +171,14 @@ describe('External classes without @Quick()', () => {
 
 	test('Should handle external class with dot notation', () => {
 		// Usando dot notation para propiedades de la clase externa
-		@Quick({
-			user: ExternalUser,
-			'user.id': Number,
-			'user.name': String,
-		})
+		@Quick(
+			{
+				user: ExternalUser,
+				'user.id': Number,
+				'user.name': String,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Profile extends QModel<IProfile> {
 			userId!: number;
 			user!: ExternalUser;

@@ -44,7 +44,10 @@ describe('Transformation: Normalization', () => {
 			defaults: { normalization: { emptyStringAsNull: true } },
 		});
 
-		@Quick({ name: String, optional: String }) // String transformer handles null? Usually primitive transformer allows null?
+		@Quick(
+			{ name: String, optional: String },
+			{ unknownPropertyPolicy: 'keep' }
+		) // String transformer handles null? Usually primitive transformer allows null?
 		// Primitive transformer typically returns the value if it handles design type.
 		// We need to check if default handling allows null.
 		class User extends QModel<any> {
@@ -81,7 +84,11 @@ describe('Transformation: Normalization', () => {
 			defaults: { normalization: { trimStrings: true } },
 		});
 
-		@Quick({}, { normalization: { trimStrings: false } })
+		@Quick(
+			{},
+			{ normalization: { trimStrings: false } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<any> {
 			declare name: string;
 		}

@@ -12,5 +12,6 @@ import type { IQPropertyOptions } from './transform-options.interface';
  *
  * @see {@link IQPropertyOptions} for the base fields (`transformer`, `serializer`, `mocker`)
  * @see {@link IQAdvancedOptions} for the equivalent at class / `@Quick()` level
+ * @see {@link QType} — property decorator that accepts this interface as its options argument
  */
 export interface IQTypeOptions extends IQPropertyOptions {}

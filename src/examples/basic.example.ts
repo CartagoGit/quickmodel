@@ -1,3 +1,12 @@
+/**
+ * Basic QuickModel usage examples — nested models, collections, inheritance.
+ *
+ * Demonstrates how to define and work with `QModel` subclasses, including
+ * nested objects, arrays of nested models, and plain class nesting.
+ *
+ * @see {@link QModel} — base class used by all example models here
+ * @see {@link Quick} — class decorator applied to models that contain `Date` fields
+ */
 import { IQImplements, QModel, Quick } from '@/index';
 
 // ============================================

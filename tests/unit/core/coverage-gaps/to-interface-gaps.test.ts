@@ -58,7 +58,7 @@ describe('ToInterface Coverage Gaps', () => {
 	it('should handle Map to Array conversion in nested array', () => {
 		// Covers lines 159-160
 		// We use an array that grows so originalValue is undefined for new item
-		@Quick({ items: 'any' }) // Use any to allow Map
+		@Quick({ items: 'any' }, { unknownPropertyPolicy: 'keep' }) // Use any to allow Map
 		class Wrapper extends QModel<any> {
 			declare items: any[];
 		}

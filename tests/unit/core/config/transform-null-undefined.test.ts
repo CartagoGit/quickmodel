@@ -37,7 +37,11 @@ describe('Transformation: Null to Undefined', () => {
 	it('should override global config via decorator', () => {
 		QConfig.configure({ defaults: { nullToUndefined: true } });
 
-		@Quick({}, { nullToUndefined: false })
+		@Quick(
+			{},
+			{ nullToUndefined: false },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<any> {
 			declare name: string | null;
 		}

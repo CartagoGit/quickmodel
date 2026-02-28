@@ -65,13 +65,16 @@ describe('E2E: User Registration Flow', () => {
 		zipCode!: string;
 	}
 
-	@Quick({
-		'profile.birthDate': Date,
-		'profile.address': Address,
-		'metadata.registeredAt': Date,
-		'metadata.lastLogin': Date,
-		'metadata.loginCount': BigInt,
-	})
+	@Quick(
+		{
+			'profile.birthDate': Date,
+			'profile.address': Address,
+			'metadata.registeredAt': Date,
+			'metadata.lastLogin': Date,
+			'metadata.loginCount': BigInt,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class User
 		extends QModel<IUser>
 		implements IQImplements<IUser, IUserTransform>

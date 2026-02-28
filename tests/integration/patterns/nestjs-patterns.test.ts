@@ -536,12 +536,15 @@ interface IProductDto {
 	createdAt: Date;
 }
 
-@Quick({
-	title: 'string',
-	price: 'number',
-	available: 'boolean',
-	createdAt: Date,
-})
+@Quick(
+	{
+		title: 'string',
+		price: 'number',
+		available: 'boolean',
+		createdAt: Date,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class ProductDto extends QModel<IProductDto> {
 	declare title: string;
 	declare price: number;

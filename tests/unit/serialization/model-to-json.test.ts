@@ -11,12 +11,15 @@ describe('Model Serialization (toJSON)', () => {
 		metadata: Record<string, any>; // Map as object
 	}
 
-	@Quick({
-		birthDate: Date,
-		balance: BigInt,
-		tags: Set,
-		metadata: Map,
-	})
+	@Quick(
+		{
+			birthDate: Date,
+			balance: BigInt,
+			tags: Set,
+			metadata: Map,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare name: string;

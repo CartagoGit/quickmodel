@@ -3,20 +3,26 @@ import { Quick, QModel } from '@/index';
 
 describe('E2E: E-Commerce Order Flow', () => {
 	// Domain Models
-	@Quick({
-		createdAt: Date,
-		updatedAt: Date,
-	})
+	@Quick(
+		{
+			createdAt: Date,
+			updatedAt: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class BaseEntity extends QModel<any> {
 		declare id: string;
 		declare createdAt: Date;
 		declare updatedAt: Date;
 	}
 
-	@Quick({
-		price: BigInt,
-		tags: Set,
-	})
+	@Quick(
+		{
+			price: BigInt,
+			tags: Set,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Product extends BaseEntity {
 		declare name: string;
 		declare price: bigint;
@@ -24,11 +30,14 @@ describe('E2E: E-Commerce Order Flow', () => {
 		declare sku: string;
 	}
 
-	@Quick({
-		product: Product,
-		unitPrice: BigInt,
-		total: BigInt,
-	})
+	@Quick(
+		{
+			product: Product,
+			unitPrice: BigInt,
+			total: BigInt,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class OrderItem extends QModel<any> {
 		declare product: Product;
 		declare quantity: number;
@@ -36,12 +45,15 @@ describe('E2E: E-Commerce Order Flow', () => {
 		declare total: bigint;
 	}
 
-	@Quick({
-		items: [OrderItem],
-		totalAmount: BigInt,
-		shippingDate: Date,
-		metadata: Map,
-	})
+	@Quick(
+		{
+			items: [OrderItem],
+			totalAmount: BigInt,
+			shippingDate: Date,
+			metadata: Map,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Order extends BaseEntity {
 		declare customerId: string;
 		declare items: OrderItem[];

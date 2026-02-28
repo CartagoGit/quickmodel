@@ -19,9 +19,12 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			createdAt: Date;
 		}
 
-		@Quick({
-			createdAt: Date,
-		})
+		@Quick(
+			{
+				createdAt: Date,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User
 			extends QModel<IUser>
 			implements IQImplements<IUser, IUserTransform>
@@ -57,11 +60,14 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			createdAt: Date;
 		}
 
-		@Quick({
-			balance: BigInt,
-			pattern: RegExp,
-			createdAt: Date,
-		})
+		@Quick(
+			{
+				balance: BigInt,
+				pattern: RegExp,
+				createdAt: Date,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Account
 			extends QModel<IAccount>
 			implements IQImplements<IAccount, IAccountTransform>
@@ -97,9 +103,12 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			publishedAt: Date | null;
 		}
 
-		@Quick({
-			publishedAt: Date,
-		})
+		@Quick(
+			{
+				publishedAt: Date,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Post
 			extends QModel<IPost>
 			implements IQImplements<IPost, IPostTransform>
@@ -166,10 +175,13 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			createdAt: Date;
 		}
 
-		@Quick({
-			balance: BigInt,
-			createdAt: Date,
-		})
+		@Quick(
+			{
+				balance: BigInt,
+				createdAt: Date,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User
 			extends QModel<IUser>
 			implements IQImplements<IUser, IUserTransform>
@@ -206,10 +218,13 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			metadata: Map<string, unknown>;
 		}
 
-		@Quick({
-			tags: Set,
-			metadata: Map,
-		})
+		@Quick(
+			{
+				tags: Set,
+				metadata: Map,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Data
 			extends QModel<IData>
 			implements IQImplements<IData, IDataTransform>

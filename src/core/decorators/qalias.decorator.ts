@@ -2,12 +2,18 @@ import 'reflect-metadata';
 
 /**
  * Metadata key for the alias name stored per-property.
+ *
+ * @see {@link QAlias} — decorator that writes this key per property
+ * @see {@link Serializer} — reads this key to emit alias names in output
  * @internal
  */
 export const QALIAS_METADATA_KEY = '__qalias__';
 
 /**
  * Metadata key for the ordered list of properties decorated with @QAlias.
+ *
+ * @see {@link QAlias} — decorator that pushes field names to this list
+ * @see {@link Deserializer} — reads this list to remap input keys before deserialization
  * @internal
  */
 export const QALIAS_FIELDS_KEY = '__qalias_fields__';

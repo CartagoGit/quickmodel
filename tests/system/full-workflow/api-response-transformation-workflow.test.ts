@@ -96,10 +96,13 @@ describe('System: API Response Transformation', () => {
 		lastUpdated: Date;
 	}
 
-	@Quick({
-		createdAt: Date,
-		lastLogin: Date,
-	})
+	@Quick(
+		{
+			createdAt: Date,
+			lastLogin: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class User
 		extends QModel<IUser>
 		implements IQImplements<IUser, IUserTransform>
@@ -123,10 +126,13 @@ describe('System: API Response Transformation', () => {
 		}
 	}
 
-	@Quick({
-		publishedAt: Date,
-		views: BigInt,
-	})
+	@Quick(
+		{
+			publishedAt: Date,
+			views: BigInt,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Post
 		extends QModel<IPost>
 		implements IQImplements<IPost, IPostTransform>
@@ -150,11 +156,14 @@ describe('System: API Response Transformation', () => {
 		}
 	}
 
-	@Quick({
-		totalViews: BigInt,
-		averageViews: BigInt,
-		lastUpdated: Date,
-	})
+	@Quick(
+		{
+			totalViews: BigInt,
+			averageViews: BigInt,
+			lastUpdated: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Stats
 		extends QModel<IStats>
 		implements IQImplements<IStats, IStatsTransform>
@@ -353,11 +362,14 @@ describe('System: API Response Transformation', () => {
 			};
 		}
 
-		@Quick({
-			data: [Post],
-			'meta.total': BigInt,
-			'meta.lastFetch': Date,
-		})
+		@Quick(
+			{
+				data: [Post],
+				'meta.total': BigInt,
+				'meta.lastFetch': Date,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class PaginatedPosts
 			extends QModel<IPaginatedResponse>
 			implements

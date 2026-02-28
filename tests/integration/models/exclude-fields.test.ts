@@ -12,7 +12,11 @@ interface ISession {
 }
 
 /** Model with WeakMap in excludeFields */
-@Quick({ cache: WeakMap }, { excludeFields: ['cache'] })
+@Quick(
+	{ cache: WeakMap },
+	{ excludeFields: ['cache'] },
+	{ unknownPropertyPolicy: 'keep' }
+)
 class Session extends QModel<ISession> {
 	declare id: string;
 	declare token: string;
@@ -27,7 +31,11 @@ interface IAccount {
 }
 
 /** Multiple fields excluded */
-@Quick({}, { excludeFields: ['password', 'internalMeta'] })
+@Quick(
+	{},
+	{ excludeFields: ['password', 'internalMeta'] },
+	{ unknownPropertyPolicy: 'keep' }
+)
 class Account extends QModel<IAccount> {
 	declare id: number;
 	declare name: string;
@@ -41,7 +49,11 @@ interface IProduct {
 }
 
 /** excludeFields with type transformation */
-@Quick({ price: BigInt }, { excludeFields: ['price'] })
+@Quick(
+	{ price: BigInt },
+	{ excludeFields: ['price'] },
+	{ unknownPropertyPolicy: 'keep' }
+)
 class Product extends QModel<IProduct> {
 	declare id: string;
 	declare price: bigint;

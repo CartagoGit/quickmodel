@@ -80,11 +80,14 @@ class BlockTransformer extends BaseTransformer<
 }
 
 // 4. Use the Transformer in the Parent Model
-@Quick({
-	// We bind the 'blocks' property to our custom polymorphic transformer
-	blocks: new BlockTransformer(),
-	createdAt: Date,
-})
+@Quick(
+	{
+		// We bind the 'blocks' property to our custom polymorphic transformer
+		blocks: new BlockTransformer(),
+		createdAt: Date,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class Page extends QModel<any> {
 	declare id: string;
 	declare title: string;

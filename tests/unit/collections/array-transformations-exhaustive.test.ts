@@ -162,7 +162,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			bigints: string[];
 		}
 
-		@Quick({ bigints: [BigInt] }) // ✅ CORRECTO - array syntax
+		@Quick({ bigints: [BigInt] }, { unknownPropertyPolicy: 'keep' }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare bigints: bigint[];
 		}
@@ -258,7 +258,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			sets: string[][];
 		}
 
-		@Quick({ sets: [Set] }) // ✅ CORRECTO - array syntax
+		@Quick({ sets: [Set] }, { unknownPropertyPolicy: 'keep' }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare sets: Set<string>[];
 		}
@@ -287,7 +287,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			maps: [string, unknown][][];
 		}
 
-		@Quick({ maps: [Map] }) // ✅ CORRECTO - array syntax
+		@Quick({ maps: [Map] }, { unknownPropertyPolicy: 'keep' }) // ✅ CORRECTO - array syntax
 		class Data extends QModel<IData> {
 			declare maps: Map<string, unknown>[];
 		}
@@ -324,11 +324,14 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			float32arrays: number[][];
 		}
 
-		@Quick({
-			int8arrays: [Int8Array], // ✅ CORRECTO - array syntax
-			uint8arrays: [Uint8Array], // ✅ CORRECTO - array syntax
-			float32arrays: [Float32Array], // ✅ CORRECTO - array syntax
-		})
+		@Quick(
+			{
+				int8arrays: [Int8Array], // ✅ CORRECTO - array syntax
+				uint8arrays: [Uint8Array], // ✅ CORRECTO - array syntax
+				float32arrays: [Float32Array], // ✅ CORRECTO - array syntax
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Data extends QModel<IData> {
 			declare int8arrays: Int8Array[];
 			declare uint8arrays: Uint8Array[];
@@ -454,7 +457,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			declare title: string;
 		}
 
-		@Quick({ posts: [Post] }) // ✅ CORRECTO - array syntax
+		@Quick({ posts: [Post] }, { unknownPropertyPolicy: 'keep' }) // ✅ CORRECTO - array syntax
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare posts: Post[];

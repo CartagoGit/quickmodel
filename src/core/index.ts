@@ -1,3 +1,15 @@
+/**
+ * QuickModel Core — public core API bundle.
+ *
+ * Re-exports the essential building blocks: the model class, class decorator,
+ * field-type decorator, and the main serialization/transformer interfaces.
+ *
+ * @see {@link QModel} — base model class that drives serialization/deserialization
+ * @see {@link Quick} — class decorator that registers a constructor with QuickModel
+ * @see {@link IQTransformer} — interface for implementing custom transformers
+ * @module core
+ */
+
 // Public Core API
 
 // Models

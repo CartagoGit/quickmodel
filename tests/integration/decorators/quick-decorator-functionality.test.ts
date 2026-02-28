@@ -261,10 +261,13 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			createdAt: Date;
 		}
 
-		@Quick({
-			balance: BigInt,
-			createdAt: Date,
-		})
+		@Quick(
+			{
+				balance: BigInt,
+				createdAt: Date,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<IUser> implements IQImplements<IUser> {
 			declare id: string;
 			declare name: string;

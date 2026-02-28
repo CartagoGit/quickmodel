@@ -48,6 +48,9 @@ interface ITC39FieldContext {
 
 /**
  * Returns `true` when `keyOrContext` is a TC39 `ClassFieldDecoratorContext`.
+ *
+ * @see {@link ITC39FieldContext} — the interface this narrows to
+ * @see {@link QType} — uses this to select the TC39 vs legacy decorator path
  * @internal
  */
 function isTC39Context(
@@ -65,6 +68,8 @@ function isTC39Context(
  * Metadata key symbol for storing the list of properties decorated with @QType().
  * Used internally by QModel to track which properties need serialization/deserialization.
  *
+ * @see {@link QType} — decorator that writes to this metadata key
+ * @see {@link QModel} — reads this key during deserialization
  * @internal
  */
 export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');

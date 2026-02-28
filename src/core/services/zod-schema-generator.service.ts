@@ -8,6 +8,10 @@
  * This means bundlers that resolve static-import graphs (webpack, esbuild,
  * Rollup/Vite) will NOT include `zod` in a consumer's bundle unless they
  * actually call `ZodSchemaGenerator.generate()` or `QModel.getSchema('zod')`.
+ *
+ * @see {@link ZodSchemaGenerator} — the class exported by this module
+ * @see {@link JsonSchemaGenerator} — sibling service for JSON Schema Draft-07 output
+ * @see {@link QModel.getSchema} — public API entry point that delegates to this generator
  */
 
 import { createRequire } from 'node:module';

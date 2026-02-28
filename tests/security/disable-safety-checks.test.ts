@@ -34,7 +34,8 @@ describe('disableSafetyChecks: behavior verification', () => {
 
 		@Quick(
 			{ items: [String] },
-			{ performance: { disableSafetyChecks: true } }
+			{ performance: { disableSafetyChecks: true } },
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class BigList extends QModel<any> {
 			declare items: string[];
@@ -46,7 +47,11 @@ describe('disableSafetyChecks: behavior verification', () => {
 	});
 
 	test('bypasses nested object size limit', () => {
-		@Quick({}, { performance: { disableSafetyChecks: true } })
+		@Quick(
+			{},
+			{ performance: { disableSafetyChecks: true } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class BigObject extends QModel<any> {
 			declare meta: Record<string, any>;
 		}
@@ -61,7 +66,11 @@ describe('disableSafetyChecks: behavior verification', () => {
 	// -----------------------------------------------------------------------
 
 	test('prototype pollution: __proto__ key is silently skipped even with disableSafetyChecks', () => {
-		@Quick({}, { performance: { disableSafetyChecks: true } })
+		@Quick(
+			{},
+			{ performance: { disableSafetyChecks: true } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Risky extends QModel<any> {
 			declare id: number;
 		}
@@ -79,7 +88,11 @@ describe('disableSafetyChecks: behavior verification', () => {
 	});
 
 	test('prototype pollution: constructor key is silently skipped even with disableSafetyChecks', () => {
-		@Quick({}, { performance: { disableSafetyChecks: true } })
+		@Quick(
+			{},
+			{ performance: { disableSafetyChecks: true } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Risky extends QModel<any> {
 			declare name: string;
 		}
@@ -94,7 +107,11 @@ describe('disableSafetyChecks: behavior verification', () => {
 	});
 
 	test('prototype pollution: "prototype" key is silently skipped even with disableSafetyChecks', () => {
-		@Quick({}, { performance: { disableSafetyChecks: true } })
+		@Quick(
+			{},
+			{ performance: { disableSafetyChecks: true } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Risky extends QModel<any> {
 			declare name: string;
 		}
@@ -114,7 +131,8 @@ describe('disableSafetyChecks: behavior verification', () => {
 	test('normal property assignment still works', () => {
 		@Quick(
 			{ created: Date },
-			{ performance: { disableSafetyChecks: true } }
+			{ performance: { disableSafetyChecks: true } },
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Event extends QModel<any> {
 			declare title: string;

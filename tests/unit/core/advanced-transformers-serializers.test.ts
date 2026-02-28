@@ -26,7 +26,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 						return 0;
 					},
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Event extends QModel<IEvent> {
 			declare id: number;
@@ -63,7 +64,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 					// Force uppercase on input
 					email: (val: any) => String(val).toUpperCase(),
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class User extends QModel<IUser> {
 			declare email: string;
@@ -91,7 +93,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 					// Add prefix on output only
 					code: (val: any) => `PREFIX_${val}`,
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Format extends QModel<IFormat> {
 			declare code: string;
@@ -122,7 +125,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 					stamp: (val: any) =>
 						val instanceof Date ? val.getTime() / 1000 : 0,
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class TimeModel extends QModel<ITime> {
 			declare stamp: Date;
@@ -153,7 +157,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 					// Mocker generates the raw ID
 					sku: () => '1234',
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Product extends QModel<IProduct> {
 			declare sku: string;
@@ -183,7 +188,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 					// Return a string instead of a Date object, defying the @Quick type
 					date: (val: any) => `Date: ${val}`,
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Log extends QModel<ILog> {
 			declare date: any; // Using any because we broke the contract intentionally
@@ -208,7 +214,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 					// Always return 999 regardless of actual value
 					value: () => 999,
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Data extends QModel<IData> {
 			declare value: number;
@@ -267,7 +274,8 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 						return val;
 					},
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class Optional extends QModel<IOptional> {
 			declare val?: number;

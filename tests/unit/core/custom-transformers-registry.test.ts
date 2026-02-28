@@ -50,9 +50,12 @@ interface IProduct {
 	price: IMoneyJSON;
 }
 
-@Quick({
-	price: Money, // Use the class as key
-})
+@Quick(
+	{
+		price: Money, // Use the class as key
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class Product extends QModel<IProduct> {
 	declare name: string;
 	declare price: Money;

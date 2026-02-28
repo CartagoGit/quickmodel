@@ -48,7 +48,7 @@ const quickConfig = {
 	metadata: Map,
 };
 
-@Quick(quickConfig)
+@Quick(quickConfig, { unknownPropertyPolicy: 'keep' })
 class QuickTestDeclare
 	extends QModel<IQuickTestDeclare>
 	implements IQImplements<IQuickTestDeclare>
@@ -76,7 +76,7 @@ class QuickTestDeclare
 //   @QType() name!: string;
 // }
 
-@Quick(quickConfig)
+@Quick(quickConfig, { unknownPropertyPolicy: 'keep' })
 class QuickTestBang
 	extends QModel<IQuickTestBang>
 	implements IQImplements<IQuickTestBang>

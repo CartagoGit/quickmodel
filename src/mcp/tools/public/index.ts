@@ -1,3 +1,9 @@
+/**
+ * Public MCP tools barrel — re-exports all user-facing MCP tool classes.
+ *
+ * @see {@link QMcpServer} — server that registers these public tools
+ * @see {@link QCreateModelTool} — generate a new QModel class from a description
+ */
 export * from './list-transformers.tool';
 export * from './list-validators.tool';
 export * from './generate-mock.tool';

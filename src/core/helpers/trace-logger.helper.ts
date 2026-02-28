@@ -131,7 +131,7 @@ export class TraceLogger {
 	private static _globalSink: ((entry: IQTraceEntry) => void) | undefined =
 		undefined;
 	/** @internal Cached log prefix (default: 'QuickModel', configurable via `trace.prefix`). */
-	private static _globalPrefix: string = 'QuickModel';
+	private static _globalPrefix: string = 'QM';
 
 	// ── cache refresh ──────────────────────────────────────────────────────────
 
@@ -158,7 +158,7 @@ export class TraceLogger {
 
 		TraceLogger._globalEvents = traceCfg?.events;
 		TraceLogger._globalSink = traceCfg?.sink;
-		TraceLogger._globalPrefix = traceCfg?.prefix ?? 'QuickModel';
+		TraceLogger._globalPrefix = traceCfg?.prefix ?? 'QM';
 
 		// Emit config-change only after a real re-configure (not initial load).
 		if (prevRef !== undefined) {
@@ -291,8 +291,10 @@ export class TraceLogger {
 			return;
 		}
 
-		const fieldPart = entry.field ? `:${entry.field}` : '';
-		const prefix = `[${TraceLogger._globalPrefix}:${entry.model}${fieldPart}][${entry.event}]`;
+		const modelPart = entry.field
+			? `${entry.model}:${entry.field}`
+			: entry.model;
+		const prefix = `[${TraceLogger._globalPrefix}][${params.level.toUpperCase()}][${modelPart}][${entry.event}]`;
 		const consoleFn =
 			CONSOLE_FN[params.level as IConsoleLevel] ?? console.debug;
 
@@ -500,7 +502,7 @@ export class TraceLogger {
 		}
 
 		console.info(
-			`[${TraceLogger._globalPrefix}:QConfig][config-change]`,
+			`[${TraceLogger._globalPrefix}][INFO][QConfig][config-change]`,
 			summary
 		);
 	}

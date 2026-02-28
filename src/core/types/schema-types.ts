@@ -18,6 +18,7 @@
  * @see {@link JsonSchemaGenerator}
  * @see {@link OpenAPISchemaGenerator}
  * @see {@link ZodSchemaGenerator}
+ * @see {@link QModel.getSchema} — model-instance API that accepts this type
  */
 export type IQSchemaType =
 	| 'json' // JSON Schema Draft-07

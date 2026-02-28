@@ -503,7 +503,7 @@ describe('IQTraceEntry structure', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('logPrefix config', () => {
-	it('uses "QuickModel" as default prefix', () => {
+	it('uses "QM" as default prefix', () => {
 		const spy = spyOn(console, 'info').mockImplementation(() => {});
 		QConfig.configure({ defaults: { trace: { verbosity: 'info' } } });
 
@@ -515,9 +515,7 @@ describe('logPrefix config', () => {
 		});
 
 		expect(
-			spy.mock.calls.some((args) =>
-				String(args[0]).startsWith('[QuickModel:')
-			)
+			spy.mock.calls.some((args) => String(args[0]).startsWith('[QM]['))
 		).toBe(true);
 		spy.mockRestore();
 	});
@@ -525,7 +523,7 @@ describe('logPrefix config', () => {
 	it('uses the configured custom prefix', () => {
 		const spy = spyOn(console, 'info').mockImplementation(() => {});
 		QConfig.configure({
-			defaults: { trace: { verbosity: 'info' }, logPrefix: 'Acme' },
+			defaults: { trace: { verbosity: 'info', prefix: 'Acme' } },
 		});
 
 		TraceLogger.emit({
@@ -536,14 +534,14 @@ describe('logPrefix config', () => {
 		});
 
 		expect(
-			spy.mock.calls.some((args) => String(args[0]).startsWith('[Acme:'))
+			spy.mock.calls.some((args) => String(args[0]).startsWith('[Acme]['))
 		).toBe(true);
 		spy.mockRestore();
 	});
 
-	it('resets prefix to "QuickModel" after QConfig.reset()', () => {
+	it('resets prefix to "QM" after QConfig.reset()', () => {
 		QConfig.configure({
-			defaults: { trace: { verbosity: 'info' }, logPrefix: 'Tmp' },
+			defaults: { trace: { verbosity: 'info', prefix: 'Tmp' } },
 		});
 		(TraceLogger as any)._configRef = undefined;
 		QConfig.reset();
@@ -560,9 +558,7 @@ describe('logPrefix config', () => {
 		});
 
 		expect(
-			spy.mock.calls.some((args) =>
-				String(args[0]).startsWith('[QuickModel:')
-			)
+			spy.mock.calls.some((args) => String(args[0]).startsWith('[QM]['))
 		).toBe(true);
 		spy.mockRestore();
 	});

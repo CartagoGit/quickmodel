@@ -13,6 +13,7 @@
  *
  * @see {@link QRunTestsTool} — uses this to spawn `bun test`
  * @see {@link QLintCheckTool} — uses this to spawn `bun run lint`
+ * @see {@link QTypecheckTool} — uses this to spawn `bunx tsc --noEmit`
  *
  * @internal
  */

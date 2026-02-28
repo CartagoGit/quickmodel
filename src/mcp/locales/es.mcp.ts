@@ -5,6 +5,7 @@
  * de herramientas usadas por el servidor MCP cuando responde a clientes IA
  * en español.
  *
+ * @see {@link enMcp} — contraparte en inglés de este locale
  * @internal Consumido por `QSyncDocsTool` y la capa de respuesta del servidor MCP.
  */
 export const esMcp = {

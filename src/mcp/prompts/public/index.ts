@@ -1,3 +1,9 @@
+/**
+ * Public MCP prompts barrel — re-exports all user-facing prompt classes.
+ *
+ * @see {@link QMcpServer} — server where these prompts are registered
+ * @see {@link QFromTypescriptPrompt} — convert a TS interface to a QModel class
+ */
 export { QFromTypescriptPrompt } from './from-typescript.prompt';
 export { QDebugModelPrompt } from './debug-model.prompt';
 export { QGenerateTestDataPrompt } from './generate-test-data.prompt';

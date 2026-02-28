@@ -35,7 +35,11 @@ describe('Expose Unset Fields Configuration', () => {
 	});
 
 	test('should expose undefined fields when exposeUnsetFields is true', () => {
-		@Quick({}, { exposeUnsetFields: true })
+		@Quick(
+			{},
+			{ exposeUnsetFields: true },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class ExposeModel extends QModel<IOptional> {
 			declare req: string;
 			declare opt?: string;
@@ -90,12 +94,20 @@ describe('Expose Unset Fields Configuration', () => {
 
 	test('should handle nested models with mixed settings', () => {
 		// Parent exposes, Child hides
-		@Quick({}, { exposeUnsetFields: false })
+		@Quick(
+			{},
+			{ exposeUnsetFields: false },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class HiddenChild extends QModel<any> {
 			declare hidden?: string;
 		}
 
-		@Quick({ child: HiddenChild }, { exposeUnsetFields: true })
+		@Quick(
+			{ child: HiddenChild },
+			{ exposeUnsetFields: true },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class ExposedParent extends QModel<any> {
 			declare exposed?: string;
 			declare child: HiddenChild;

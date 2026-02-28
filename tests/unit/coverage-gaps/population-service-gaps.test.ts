@@ -117,10 +117,13 @@ describe('PopulationService Coverage Gaps', () => {
 	});
 
 	it('should prevent prototype pollution via dot notation', () => {
-		@Quick({
-			'a.__proto__.polluted': String,
-			'constructor.prototype.polluted': String,
-		})
+		@Quick(
+			{
+				'a.__proto__.polluted': String,
+				'constructor.prototype.polluted': String,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class DotPollutionModel extends QModel<any> {}
 
 		// NOTE: 'instance' is created to trigger the potential pollution logic in the constructor/population

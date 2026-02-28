@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+/**
+ * QuickModel CLI entry point.
+ *
+ * Starts the QuickModel MCP server when invoked with `mcp`, or prints
+ * basic usage help for any other (or missing) sub-command.
+ *
+ * @example
+ * ```sh
+ * npx quickmodel mcp   # start the MCP stdio server
+ * npx quickmodel help  # print usage
+ * ```
+ *
+ * @see {@link QMcpServer} — the server class instantiated by the `mcp` sub-command
+ * @module quickmodel/cli
+ */
 import { QMcpServer } from './mcp/server';
 import pkg from '../package.json';
 

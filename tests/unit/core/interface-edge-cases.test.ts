@@ -348,11 +348,14 @@ describe('Interface Conversion - Edge Cases', () => {
 			pattern?: RegExp;
 		}
 
-		@Quick({
-			balance: BigInt,
-			createdAt: Date,
-			pattern: RegExp,
-		})
+		@Quick(
+			{
+				balance: BigInt,
+				createdAt: Date,
+				pattern: RegExp,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Account extends QModel<IAccount> implements IAccountTransforms {
 			declare id: string;
 			declare balance: bigint;

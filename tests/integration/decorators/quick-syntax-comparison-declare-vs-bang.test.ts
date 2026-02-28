@@ -37,14 +37,17 @@ interface ITestBang {
 // MODELS CON DECLARE + QUICK
 // ====================
 
-@Quick({
-	createdAt: Date,
-	count: BigInt,
-	key: Symbol,
-	pattern: RegExp,
-	tags: Set,
-	metadata: Map,
-})
+@Quick(
+	{
+		createdAt: Date,
+		count: BigInt,
+		key: Symbol,
+		pattern: RegExp,
+		tags: Set,
+		metadata: Map,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class TestDeclare extends QModel<ITestDeclare> {
 	declare id: string;
 	declare name: string;
@@ -60,14 +63,17 @@ class TestDeclare extends QModel<ITestDeclare> {
 // MODELS CON ! + QUICK
 // ====================
 
-@Quick({
-	createdAt: Date,
-	count: BigInt,
-	key: Symbol,
-	pattern: RegExp,
-	tags: Set,
-	metadata: Map,
-})
+@Quick(
+	{
+		createdAt: Date,
+		count: BigInt,
+		key: Symbol,
+		pattern: RegExp,
+		tags: Set,
+		metadata: Map,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class TestBang extends QModel<ITestBang> {
 	id!: string;
 	name!: string;

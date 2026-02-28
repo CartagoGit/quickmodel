@@ -20,16 +20,19 @@ interface IComplexEntity {
 	tags: Set<string>;
 }
 
-@Quick({
-	createdAt: Date,
-	amount: BigInt,
-	pattern: RegExp,
-	uniqueKey: Symbol,
-	lastError: Error,
-	buffer: Int8Array,
-	metadata: Map,
-	tags: Set,
-})
+@Quick(
+	{
+		createdAt: Date,
+		amount: BigInt,
+		pattern: RegExp,
+		uniqueKey: Symbol,
+		lastError: Error,
+		buffer: Int8Array,
+		metadata: Map,
+		tags: Set,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class ComplexEntityQuick extends QModel<IComplexEntity> {
 	declare id: string;
 	declare createdAt: Date;
@@ -52,14 +55,17 @@ interface INestedComplexModelQuick {
 	errorLog: Set<Error>;
 }
 
-@Quick({
-	primaryEntity: ComplexEntityQuick,
-	timestamps: [Date],
-	amounts: [BigInt],
-	patterns: [RegExp],
-	buffers: Map,
-	errorLog: Set,
-})
+@Quick(
+	{
+		primaryEntity: ComplexEntityQuick,
+		timestamps: [Date],
+		amounts: [BigInt],
+		patterns: [RegExp],
+		buffers: Map,
+		errorLog: Set,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class NestedComplexModelQuick extends QModel<INestedComplexModelQuick> {
 	declare primaryEntity: ComplexEntityQuick;
 	declare timestamps: Date[];
@@ -78,12 +84,15 @@ interface IMixedUnionModel {
 	multiType: Map<string, string | number | boolean>;
 }
 
-@Quick({
-	items: [ComplexEntityQuick, Date, String],
-	optionalEntity: ComplexEntityQuick,
-	multiType: Map,
-	// id and value rely on auto-detection or lack of transformation for primitives (except Date/Bigint in value)
-})
+@Quick(
+	{
+		items: [ComplexEntityQuick, Date, String],
+		optionalEntity: ComplexEntityQuick,
+		multiType: Map,
+		// id and value rely on auto-detection or lack of transformation for primitives (except Date/Bigint in value)
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class MixedUnionModelQuick extends QModel<IMixedUnionModel> {
 	declare id: string;
 

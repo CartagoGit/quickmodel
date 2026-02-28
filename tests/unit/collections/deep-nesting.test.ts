@@ -87,10 +87,13 @@ describe('Arrays de arrays con tipos transformables', () => {
 		bigints3D: string[][][];
 	}
 
-	@Quick({
-		dates2D: [[Date]], // Explicit 2D array syntax
-		bigints3D: [[[BigInt]]], // Explicit 3D array syntax
-	})
+	@Quick(
+		{
+			dates2D: [[Date]], // Explicit 2D array syntax
+			bigints3D: [[[BigInt]]], // Explicit 3D array syntax
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Data extends QModel<IData> {
 		declare dates2D: Date[][];
 		declare bigints3D: bigint[][][];
@@ -143,10 +146,13 @@ describe('Arrays de arrays de modelos', () => {
 		declare title: string;
 	}
 
-	@Quick({
-		posts2D: [[Post]], // Explicit 2D array syntax
-		tags3D: [[[Tag]]], // Explicit 3D array syntax
-	})
+	@Quick(
+		{
+			posts2D: [[Post]], // Explicit 2D array syntax
+			tags3D: [[[Tag]]], // Explicit 3D array syntax
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Data extends QModel<IData> {
 		declare posts2D: Post[][];
 		declare tags3D: Tag[][][];
@@ -334,11 +340,14 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare createdAt: Date;
 		}
 
-		@Quick({
-			tags: Set,
-			comments: [Comment],
-			dates: [Date],
-		})
+		@Quick(
+			{
+				tags: Set,
+				comments: [Comment],
+				dates: [Date],
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Post extends QModel<IPost> {
 			declare id: number;
 			declare title: string;
@@ -440,9 +449,12 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			singleTypedArrays: number[][]; // Para transformar a Int8Array[]
 		}
 
-		@Quick({
-			singleTypedArrays: [Int8Array],
-		})
+		@Quick(
+			{
+				singleTypedArrays: [Int8Array],
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Data extends QModel<IData> {
 			declare matrices2D: number[][][];
 			declare singleTypedArrays: Int8Array[];
@@ -497,10 +509,13 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			metrics: IMetrics[];
 		}
 
-		@Quick({
-			values: [BigInt],
-			timestamps: [Date],
-		})
+		@Quick(
+			{
+				values: [BigInt],
+				timestamps: [Date],
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Metrics extends QModel<IMetrics> {
 			declare values: bigint[];
 			declare timestamps: Date[];
@@ -574,10 +589,13 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			nestedMaps: [string, number][][]; // Map<string, number>[]
 		}
 
-		@Quick({
-			nestedSets: [Set], // Array of Sets
-			nestedMaps: [Map], // Array of Maps
-		})
+		@Quick(
+			{
+				nestedSets: [Set], // Array of Sets
+				nestedMaps: [Map], // Array of Maps
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Data extends QModel<IData> {
 			declare nestedSets: Set<string>[];
 			declare nestedMaps: Map<string, number>[];
@@ -643,10 +661,13 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			transforms: (string | number)[];
 		}
 
-		@Quick({
-			tags: Set,
-			dates: [Date],
-		})
+		@Quick(
+			{
+				tags: Set,
+				dates: [Date],
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Metadata extends QModel<IMetadata> {
 			declare tags: Set<string>;
 			declare dates: Date[];
@@ -686,7 +707,8 @@ describe('Mezcla de arrays y objetos anidados', () => {
 						return Date;
 					},
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class ComplexData extends QModel<IComplexData> {
 			declare items: (Content | Metadata)[];
@@ -906,12 +928,15 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			regexps2D: string[][];
 		}
 
-		@Quick({
-			dates2D: [[Date]], // Explicit 2D array syntax
-			bigints2D: [[BigInt]], // Explicit 2D array syntax
-			urls2D: [[URL]], // Explicit 2D array syntax
-			regexps2D: [[RegExp]], // Explicit 2D array syntax
-		})
+		@Quick(
+			{
+				dates2D: [[Date]], // Explicit 2D array syntax
+				bigints2D: [[BigInt]], // Explicit 2D array syntax
+				urls2D: [[URL]], // Explicit 2D array syntax
+				regexps2D: [[RegExp]], // Explicit 2D array syntax
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class MixedTransforms extends QModel<IMixedTransforms> {
 			declare dates2D: Date[][];
 			declare bigints2D: bigint[][];
@@ -982,11 +1007,14 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare priority: bigint;
 		}
 
-		@Quick({
-			tags: [Tag],
-			dates: [Date],
-			metadata: Map,
-		})
+		@Quick(
+			{
+				tags: [Tag],
+				dates: [Date],
+				metadata: Map,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Post extends QModel<IPost> {
 			declare id: number;
 			declare title: string;
@@ -995,10 +1023,13 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare metadata: Map<string, unknown>;
 		}
 
-		@Quick({
-			posts: [[Post]], // Explicit nested array syntax for Post[][]
-			settings: Map,
-		})
+		@Quick(
+			{
+				posts: [[Post]], // Explicit nested array syntax for Post[][]
+				settings: Map,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare name: string;

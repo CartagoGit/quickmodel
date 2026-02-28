@@ -20,15 +20,18 @@ interface IUser {
 	balance: bigint;
 }
 
-@Quick({
-	createdAt: Date,
-	balance: BigInt,
-	// Add primitive types to enable validation
-	id: Number,
-	age: Number,
-	name: String,
-	email: String,
-})
+@Quick(
+	{
+		createdAt: Date,
+		balance: BigInt,
+		// Add primitive types to enable validation
+		id: Number,
+		age: Number,
+		name: String,
+		email: String,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class User extends QModel<IUser> {
 	declare id: number;
 	declare name: string;
@@ -52,10 +55,13 @@ interface IAddress {
 	zipCode: string;
 }
 
-@Quick({
-	street: String,
-	zipCode: String,
-})
+@Quick(
+	{
+		street: String,
+		zipCode: String,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class Address extends QModel<IAddress> {
 	declare street: string;
 	declare zipCode: string;
@@ -198,10 +204,13 @@ describe('Error Handling: Array Type Mismatches', () => {
 		dates: Date[];
 	}
 
-	@Quick({
-		numbers: [Number], // Explicitly enable validation for primitives in array
-		dates: [Date],
-	})
+	@Quick(
+		{
+			numbers: [Number], // Explicitly enable validation for primitives in array
+			dates: [Date],
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Data extends QModel<IData> {
 		declare numbers: number[];
 		declare dates: Date[];

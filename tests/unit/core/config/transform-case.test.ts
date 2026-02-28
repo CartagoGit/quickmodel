@@ -13,7 +13,11 @@ describe('Configuration: transformCase', () => {
 	// -------------------------------------------------------------------------
 
 	test('should transform snake_case input to camelCase property (in: snake_case)', () => {
-		@Quick({}, { transformCase: { in: 'snake_case' } })
+		@Quick(
+			{},
+			{ transformCase: { in: 'snake_case' } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<any> {
 			declare userId: number;
 			declare userName: string;
@@ -31,7 +35,11 @@ describe('Configuration: transformCase', () => {
 	});
 
 	test('should transform kebab-case input to camelCase property (in: kebab-case)', () => {
-		@Quick({}, { transformCase: { in: 'kebab-case' } })
+		@Quick(
+			{},
+			{ transformCase: { in: 'kebab-case' } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Config extends QModel<any> {
 			declare apiKey: string;
 			declare maxRetries: number;
@@ -47,7 +55,11 @@ describe('Configuration: transformCase', () => {
 	});
 
 	test('should prioritize exact match over transformation', () => {
-		@Quick({}, { transformCase: { in: 'snake_case' } })
+		@Quick(
+			{},
+			{ transformCase: { in: 'snake_case' } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Ambiguous extends QModel<any> {
 			declare userId: number; // camel
 			declare user_id: number; // snake
@@ -86,7 +98,11 @@ describe('Configuration: transformCase', () => {
 	// -------------------------------------------------------------------------
 
 	test('should transform camelCase property to snake_case output (out: snake_case)', () => {
-		@Quick({}, { transformCase: { out: 'snake_case' } })
+		@Quick(
+			{},
+			{ transformCase: { out: 'snake_case' } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<any> {
 			declare userId: number;
 			declare userName: string;
@@ -101,7 +117,11 @@ describe('Configuration: transformCase', () => {
 	});
 
 	test('should transform camelCase property to kebab-case output (out: kebab-case)', () => {
-		@Quick({}, { transformCase: { out: 'kebab-case' } })
+		@Quick(
+			{},
+			{ transformCase: { out: 'kebab-case' } },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Config extends QModel<any> {
 			declare apiKey: string;
 		}
@@ -124,7 +144,8 @@ describe('Configuration: transformCase', () => {
 					in: 'snake_case',
 					out: 'snake_case',
 				},
-			}
+			},
+			{ unknownPropertyPolicy: 'keep' }
 		)
 		class User extends QModel<any> {
 			declare userId: number;

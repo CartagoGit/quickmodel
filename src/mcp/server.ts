@@ -137,6 +137,9 @@ export class QMcpServer {
 	 * export, form schema, roundtrip checks, rule simulation, and more.
 	 *
 	 * @returns A fresh array of instantiated public `IQMcpTool`s.
+	 *
+	 * @see {@link QMcpServer.getDefaultInternalTools} — maintenance and DX tools
+	 * @see {@link QMcpServer.registerTools} — register these on the server
 	 */
 	public static getDefaultPublicTools(): IQMcpTool[] {
 		return [
@@ -172,6 +175,9 @@ export class QMcpServer {
 	 * benchmarking, scaffold, and more.
 	 *
 	 * @returns A fresh array of instantiated internal `IQMcpTool`s.
+	 *
+	 * @see {@link QMcpServer.getDefaultPublicTools} — end-user facing tools
+	 * @see {@link QMcpServer.registerTools} — register these on the server
 	 */
 	public static getDefaultInternalTools(): IQMcpTool[] {
 		return [
@@ -203,6 +209,9 @@ export class QMcpServer {
 	 *
 	 * @returns Concatenation of `getDefaultPublicTools()` and
 	 * `getDefaultInternalTools()`.
+	 *
+	 * @see {@link QMcpServer.getDefaultPublicTools} — public tool subset
+	 * @see {@link QMcpServer.getDefaultInternalTools} — internal tool subset
 	 */
 	public static getDefaultTools(): IQMcpTool[] {
 		return [
@@ -220,6 +229,9 @@ export class QMcpServer {
 	 * migration, and more.
 	 *
 	 * @returns A fresh array of instantiated `IQMcpPrompt`s.
+	 *
+	 * @see {@link QMcpServer.registerPrompts} — register these on the server
+	 * @see {@link QFromTypescriptPrompt} — example: convert TS interface to QModel
 	 */
 	public static getDefaultPrompts(): IQMcpPrompt[] {
 		return [
@@ -253,6 +265,9 @@ export class QMcpServer {
 	 * @remarks
 	 * Each prompt is registered with its `name`, `description`, `argsSchema`,
 	 * and an async `execute` handler. The MCP SDK handles schema validation.
+	 *
+	 * @see {@link QMcpServer.getDefaultPrompts} — built-in prompt list
+	 * @see {@link QMcpServer.registerTools} — equivalent for tool registration
 	 */
 	public registerPrompts(prompts: IQMcpPrompt[]): void {
 		for (const prompt of prompts) {
@@ -279,6 +294,9 @@ export class QMcpServer {
 	 * returned as MCP text content. Errors are caught and surfaced as
 	 * `isError: true` MCP responses rather than letting exceptions propagate
 	 * to the transport layer.
+	 *
+	 * @see {@link QMcpServer.getDefaultTools} — built-in tool list
+	 * @see {@link QMcpServer.registerPrompts} — equivalent for prompt registration
 	 */
 	public registerTools(tools: IQMcpTool[]): void {
 		for (const tool of tools) {
@@ -328,8 +346,9 @@ export class QMcpServer {
 	 * Emits a startup message to `stderr` (standard practice for MCP servers
 	 * so it doesn’t pollute the StdIO JSON-RPC channel).
 	 *
-	 * @returns A `Promise` that resolves once the transport is connected.
-	 */
+	 * @returns A `Promise` that resolves once the transport is connected.	 *
+	 * @see {@link QMcpServer.registerTools} — register tools before calling this
+	 * @see {@link QMcpServer.registerPrompts} — register prompts before calling this	 */
 	public async start(): Promise<void> {
 		const transport = new StdioServerTransport();
 		await this.server.connect(transport);

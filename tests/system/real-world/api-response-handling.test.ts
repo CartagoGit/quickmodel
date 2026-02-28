@@ -2,11 +2,14 @@ import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
 
 describe('System: Real World API Response Handling', () => {
-	@Quick({
-		lastLogin: Date,
-		settings: Map,
-		history: [Date],
-	})
+	@Quick(
+		{
+			lastLogin: Date,
+			settings: Map,
+			history: [Date],
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class UserProfile extends QModel<any> {
 		declare id: number;
 		declare username: string;
@@ -15,10 +18,13 @@ describe('System: Real World API Response Handling', () => {
 		declare history: Date[];
 	}
 
-	@Quick({
-		data: UserProfile,
-		meta: Map,
-	})
+	@Quick(
+		{
+			data: UserProfile,
+			meta: Map,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class ApiResponse extends QModel<any> {
 		declare status: string;
 		declare data: UserProfile;

@@ -31,7 +31,7 @@ class Tag extends QModel<ITag> {
 // }
 
 /*
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class _User extends QModel<IUser> {
   declare id: string;
   declare name: string;
@@ -65,9 +65,12 @@ interface IArraysAndUnions {
 	mixed: string | number;
 }
 
-@Quick({
-	modelArray: [Tag],
-})
+@Quick(
+	{
+		modelArray: [Tag],
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class ArraysAndUnionsModel extends QModel<IArraysAndUnions> {
 	declare strArray: string[];
 	declare numArray: number[];

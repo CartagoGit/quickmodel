@@ -158,9 +158,9 @@ export interface IQConfig {
 			 * @example
 			 * ```typescript
 			 * QConfig.configure({ defaults: { trace: { prefix: 'MyApp' } } });
-			 * // → [MyApp:UserModel][construction] Instance created...
+			 * // → [MyApp][INFO][UserModel][construction] Instance created...
 			 * ```
-			 * @default 'QuickModel'
+			 * @default 'QM'
 			 */
 			prefix?: string;
 

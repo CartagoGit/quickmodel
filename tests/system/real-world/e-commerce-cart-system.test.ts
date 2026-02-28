@@ -66,10 +66,13 @@ describe('System: E-Commerce Cart', () => {
 		paidAt: Date | null;
 	}
 
-	@Quick({
-		price: BigInt,
-		createdAt: Date,
-	})
+	@Quick(
+		{
+			price: BigInt,
+			createdAt: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Product
 		extends QModel<IProduct>
 		implements IQImplements<IProduct, IProductTransform>
@@ -90,12 +93,15 @@ describe('System: E-Commerce Cart', () => {
 		}
 	}
 
-	@Quick({
-		product: Product,
-		'product.price': BigInt,
-		'product.createdAt': Date,
-		addedAt: Date,
-	})
+	@Quick(
+		{
+			product: Product,
+			'product.price': BigInt,
+			'product.createdAt': Date,
+			addedAt: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class CartItem
 		extends QModel<ICartItem>
 		implements IQImplements<ICartItem, ICartItemTransform>
@@ -109,11 +115,14 @@ describe('System: E-Commerce Cart', () => {
 		}
 	}
 
-	@Quick({
-		items: [CartItem], // ✅ CORRECTO - array syntax
-		createdAt: Date,
-		updatedAt: Date,
-	})
+	@Quick(
+		{
+			items: [CartItem], // ✅ CORRECTO - array syntax
+			createdAt: Date,
+			updatedAt: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Cart
 		extends QModel<ICart>
 		implements IQImplements<ICart, ICartTransform>
@@ -140,12 +149,15 @@ describe('System: E-Commerce Cart', () => {
 		}
 	}
 
-	@Quick({
-		items: [CartItem], // ✅ CORRECTO - array syntax
-		total: BigInt,
-		createdAt: Date,
-		paidAt: Date,
-	})
+	@Quick(
+		{
+			items: [CartItem], // ✅ CORRECTO - array syntax
+			total: BigInt,
+			createdAt: Date,
+			paidAt: Date,
+		},
+		{ unknownPropertyPolicy: 'keep' }
+	)
 	class Order
 		extends QModel<IOrder>
 		implements IQImplements<IOrder, IOrderTransform>

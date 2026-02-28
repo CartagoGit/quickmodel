@@ -25,11 +25,14 @@ const UserSchema = z.object({
 });
 
 // 2. Define the QuickModel (for Transformation)
-@Quick({
-	birthDate: Date,
-	skills: Set,
-	balance: BigInt,
-})
+@Quick(
+	{
+		birthDate: Date,
+		skills: Set,
+		balance: BigInt,
+	},
+	{ unknownPropertyPolicy: 'keep' }
+)
 class User extends QModel<any> {
 	declare id: string;
 	declare username: string;

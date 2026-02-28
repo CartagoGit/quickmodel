@@ -110,10 +110,13 @@ describe('QModel.create() factory method', () => {
 				metadata: [string, string][];
 			}
 
-			@Quick({
-				tags: Set,
-				metadata: Map,
-			})
+			@Quick(
+				{
+					tags: Set,
+					metadata: Map,
+				},
+				{ unknownPropertyPolicy: 'keep' }
+			)
 			class Data extends QModel<IData> {
 				declare tags: Set<string>;
 				declare metadata: Map<string, string>;
@@ -295,9 +298,12 @@ describe('QModel.create() factory method', () => {
 			// In Strict Mode, optional properties MUST be declared in the schema
 			// if we want them to be accepted even if not present in the first usage.
 			// We use { value: Number } to register 'value' as a known property.
-			@Quick({
-				value: Number, // Registers 'value' as known type
-			})
+			@Quick(
+				{
+					value: Number, // Registers 'value' as known type
+				},
+				{ unknownPropertyPolicy: 'keep' }
+			)
 			class Config extends QModel<IConfig> {
 				declare name: string;
 				declare value?: number;
@@ -346,12 +352,15 @@ describe('QModel.create() factory method', () => {
 				tags: string[];
 			}
 
-			@Quick({
-				createdAt: Date,
-				updatedAt: Date,
-				balance: BigInt,
-				tags: Set,
-			})
+			@Quick(
+				{
+					createdAt: Date,
+					updatedAt: Date,
+					balance: BigInt,
+					tags: Set,
+				},
+				{ unknownPropertyPolicy: 'keep' }
+			)
 			class Record extends QModel<IRecord> {
 				declare id: string;
 				declare createdAt: Date;

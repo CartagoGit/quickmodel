@@ -31,6 +31,9 @@
  * the `QModel` machinery. Use `import { Quick, QModel } from 'quickmodel'`
  * when you need the full serialization pipeline.
  *
+ * @see {@link QField} — field-metadata decorator exported here
+ * @see {@link QRule} — validation rule decorator exported here
+ * @see {@link QGroup} — validation group decorator exported here
  * @module quickmodel/decorators
  */
 

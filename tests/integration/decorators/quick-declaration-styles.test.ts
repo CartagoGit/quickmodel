@@ -118,11 +118,14 @@ describe('@Quick() with declaration styles', () => {
 			tags: Set<string>;
 		}
 
-		@Quick({
-			total: BigInt,
-			createdAt: Date,
-			tags: Set,
-		})
+		@Quick(
+			{
+				total: BigInt,
+				createdAt: Date,
+				tags: Set,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class OrderWithDeclare
 			extends QModel<IOrder>
 			implements IQImplements<IOrder, IOrderTransform>
@@ -133,11 +136,14 @@ describe('@Quick() with declaration styles', () => {
 			declare tags: Set<string>;
 		}
 
-		@Quick({
-			total: BigInt,
-			createdAt: Date,
-			tags: Set,
-		})
+		@Quick(
+			{
+				total: BigInt,
+				createdAt: Date,
+				tags: Set,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class OrderWithExclamation
 			extends QModel<IOrder>
 			implements IQImplements<IOrder, IOrderTransform>
@@ -148,11 +154,14 @@ describe('@Quick() with declaration styles', () => {
 			tags!: Set<string>;
 		}
 
-		@Quick({
-			total: BigInt,
-			createdAt: Date,
-			tags: Set,
-		})
+		@Quick(
+			{
+				total: BigInt,
+				createdAt: Date,
+				tags: Set,
+			},
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class OrderWithOptional
 			extends QModel<IOrder>
 			implements IQImplements<IOrder, IOrderTransform>
