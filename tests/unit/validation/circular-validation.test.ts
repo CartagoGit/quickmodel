@@ -46,8 +46,6 @@ describe('Validation Robustness: Circular References', () => {
 		parent.child = child;
 		child.child = parent; // Cycle created
 
-		console.log('Test: calling validate on circular structure...');
-
 		// This SHOULD crash if not protected
 		const errors = parent.checkIntegrity();
 

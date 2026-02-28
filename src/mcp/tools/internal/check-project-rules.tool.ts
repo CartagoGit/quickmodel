@@ -114,10 +114,14 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		for (const file of srcFiles) {
 			const relativePath = file.replace(absRoot, '');
 			const content = readFileSync(file, 'utf-8');
+			const firstLines = content.split('\n').slice(0, 5).join('\n');
 
 			// Rule 2: No console.log in src (warn only, allow CLI/server entry points)
 			if (!file.endsWith('mcp-cli.ts') && !file.endsWith('server.ts')) {
-				if (content.includes('console.log')) {
+				if (
+					content.includes('console.log') &&
+					!firstLines.includes('@quickmodel-rule-ignore: no-console')
+				) {
 					warnings.push(
 						`[Rule: No Console Log] Found console.log in source file: ${relativePath}. Use a proper logger or remove debug code.`
 					);

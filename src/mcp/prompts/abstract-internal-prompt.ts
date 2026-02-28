@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-console — string literals inside the prompt text describe the no-console rule as documentation; no actual console.log calls in this file
 import { QAbstractPrompt } from './abstract-prompt';
 import type { IPromptArgsSchema, IQPromptMessage } from './abstract-prompt';
 

@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-console — string literals inside the prompt text reference console.log as a rule example; no actual console.log calls in this file
 import { z } from '@mcp/deps';
 import { QAbstractInternalPrompt } from '../abstract-internal-prompt';
 

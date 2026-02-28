@@ -43,8 +43,6 @@ describe('Nested Model Validation', () => {
 		// The parent validation SHOULD trigger the nested validation and report it
 		const parentErrors = parent.checkIntegrity();
 
-		console.log('Parent Errors:', parentErrors);
-
 		expect(parentErrors.length).toBeGreaterThan(0);
 		expect(parentErrors[0]?.error).toContain('nested');
 	});

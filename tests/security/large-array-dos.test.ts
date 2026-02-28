@@ -30,8 +30,9 @@ describe('Large Array DoS', () => {
 		const list = new List({ items: largeArray });
 		const end = performance.now();
 
-		console.log(`Time to process ${SIZE} items: ${end - start}ms`);
 		expect(list.items.length).toBe(SIZE);
+		// Processing should complete within a reasonable time (< 2s)
+		expect(end - start).toBeLessThan(2000);
 	});
 
 	test('should enforce custom limit (10k) and throw error', () => {

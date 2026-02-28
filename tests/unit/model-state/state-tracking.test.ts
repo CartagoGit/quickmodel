@@ -486,13 +486,8 @@ describe('QModel State Tracking', () => {
 			user.name = 'Jane';
 			user.email = 'jane@example.com';
 
-			// Show "unsaved changes" warning
-			if (user.hasChanges()) {
-				const changedFields = user.getChangedFields();
-				console.log(
-					`Warning: You have unsaved changes to: ${changedFields.join(', ')}`
-				);
-			}
+			expect(user.hasChanges()).toBe(true);
+			expect(user.getChangedFields()).toContain('name');
 
 			// User clicks cancel
 			user.reset();

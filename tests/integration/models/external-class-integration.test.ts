@@ -68,28 +68,16 @@ describe('External classes without @Quick()', () => {
 			},
 		});
 
-		console.log('\n=== Single External Class ===');
-		console.log('profile.user:', profile.user);
-		console.log(
-			'profile.user instanceof ExternalUser:',
-			profile.user instanceof ExternalUser
-		);
-		console.log('profile.user.id:', profile.user?.id);
-		console.log('profile.user.name:', profile.user?.name);
-
-		if (profile.user instanceof ExternalUser) {
-			console.log(
-				'profile.user.getDisplayName():',
-				profile.user.getDisplayName()
-			);
-		}
-
 		// Verificar si se instancia correctamente
 		expect(profile.userId).toBe(1);
-
-		// ¿Qué pasa con la clase externa?
-		// Opción 1: ¿Se instancia como ExternalUser?
-		// Opción 2: ¿Se queda como objeto plano?
+		expect(profile.user).toBeInstanceOf(ExternalUser);
+		expect(profile.user?.id).toBe(100);
+		expect(profile.user?.name).toBe('John Doe');
+		if (profile.user instanceof ExternalUser) {
+			expect(profile.user.getDisplayName()).toBe(
+				'John Doe <john@example.com>'
+			);
+		}
 	});
 
 	test('Should handle array of external classes without @Quick()', () => {
@@ -112,17 +100,10 @@ describe('External classes without @Quick()', () => {
 			],
 		});
 
-		console.log('\n=== Array of External Classes ===');
-		console.log('team.members:', team.members);
-		console.log('team.members.length:', team.members?.length);
-		console.log('team.members[0]:', team.members?.[0]);
-		console.log(
-			'team.members[0] instanceof ExternalUser:',
-			team.members?.[0] instanceof ExternalUser
-		);
-
 		expect(team.id).toBe(1);
-
+		expect(team.members).toHaveLength(2);
+		expect(team.members?.[0]).toBeInstanceOf(ExternalUser);
+		expect(team.members?.[1]).toBeInstanceOf(ExternalUser);
 		// ¿Los miembros se instancian como ExternalUser?
 	});
 
@@ -154,19 +135,9 @@ describe('External classes without @Quick()', () => {
 			},
 		});
 
-		console.log('\n=== Nested External Classes ===');
-		console.log(
-			'profile.user instanceof ExternalUser:',
-			profile.user instanceof ExternalUser
-		);
-		console.log(
-			'profile.address instanceof ExternalAddress:',
-			profile.address instanceof ExternalAddress
-		);
-		console.log('profile.user:', profile.user);
-		console.log('profile.address:', profile.address);
-
 		expect(profile.userId).toBe(1);
+		expect(profile.user).toBeInstanceOf(ExternalUser);
+		expect(profile.address).toBeInstanceOf(ExternalAddress);
 	});
 
 	test('Should handle external class with dot notation', () => {
@@ -193,14 +164,8 @@ describe('External classes without @Quick()', () => {
 			},
 		});
 
-		console.log('\n=== External Class with Dot Notation ===');
-		console.log('profile.user:', profile.user);
-		console.log(
-			'profile.user instanceof ExternalUser:',
-			profile.user instanceof ExternalUser
-		);
-
 		expect(profile.userId).toBe(1);
+		expect(profile.user).toBeInstanceOf(ExternalUser);
 	});
 
 	test('What happens with plain object (no class specified)?', () => {
@@ -220,15 +185,8 @@ describe('External classes without @Quick()', () => {
 			},
 		});
 
-		console.log('\n=== Plain Object (no type) ===');
-		console.log('profile.user:', profile.user);
-		console.log('typeof profile.user:', typeof profile.user);
-		console.log(
-			'profile.user constructor:',
-			profile.user?.constructor?.name
-		);
-
 		expect(profile.userId).toBe(1);
 		expect(typeof profile.user).toBe('object');
+		expect(profile.user?.constructor?.name).toBe('Object');
 	});
 });
