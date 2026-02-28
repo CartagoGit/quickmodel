@@ -106,11 +106,14 @@ export class ArrayBufferTransformer
 	}
 
 	/**
-	 * Validates if a value is an ArrayBuffer or number array.
+	 * Validates that `value` is a valid `ArrayBuffer` representation.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * Accepts: an `ArrayBuffer` instance, or a plain `number[]` (byte array).
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `ArrayBuffer` instances and byte arrays;
+	 *          `{ isValid: false, error }` for all other types.
 	 */
 	checkIntegrity(
 		value: unknown,
@@ -229,11 +232,14 @@ export class DataViewTransformer
 	}
 
 	/**
-	 * Validates if a value is a DataView, ArrayBuffer, or number array.
+	 * Validates that `value` is a valid `DataView` representation.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * Accepts: a `DataView` instance, an `ArrayBuffer`, or a plain `number[]` (byte array).
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `DataView`, `ArrayBuffer`, and byte arrays;
+	 *          `{ isValid: false, error }` for all other types.
 	 */
 	checkIntegrity(
 		value: unknown,
@@ -320,6 +326,16 @@ export class SharedArrayBufferTransformer
 		return Array.from(new Uint8Array(value));
 	}
 
+	/**
+	 * Validates that `value` is a valid `SharedArrayBuffer` representation.
+	 *
+	 * Accepts: a `SharedArrayBuffer` instance, or a plain `number[]` (byte array).
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `SharedArrayBuffer` instances and byte arrays;
+	 *          `{ isValid: false, error }` for all other types.
+	 */
 	checkIntegrity(
 		value: unknown,
 		context: IQIntegrityContext

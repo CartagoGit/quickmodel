@@ -357,6 +357,7 @@ export class Serializer<
 	 * @param seen - Optional WeakSet to track circular references
 	 * @param options - Optional serialization options
 	 * @returns Plain object suitable for JSON serialization with transformers applied
+	 * @throws {Error} If the serialization recursion depth exceeds 512 (circular-structure guard).
 	 *
 	 * @remarks
 	 * Uses transformers to convert special types (BigInt, Date, RegExp, etc.) to JSON-compatible format.

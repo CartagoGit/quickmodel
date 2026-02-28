@@ -2,9 +2,14 @@ import { IQTransformer } from '../interfaces/transformer.interface';
 import type { IQAlias } from '../types/q-alias.type';
 
 /**
- * Valid keys to identify a transformer.
- * Can be a string literal ('date', 'bigint'), a constructor (Date, BigInt), a string name,
- * or a custom transformer object implementing IQTransformer.
+ * Valid key types accepted by `QTransformerRegistry.register()` and
+ * `QTransformerRegistry.get()`.
+ *
+ * Narrower than the `IQTransformerKey` in `transformer.interface.ts` — limited
+ * to string aliases, objects with a `name` property, and transformer instances.
+ * Constructor functions are passed as `{ name: string }` (all constructors have `.name`).
+ *
+ * @see {@link QTransformerRegistry} for registration and retrieval methods
  * @group Types
  */
 export type IQTransformerKey =

@@ -260,7 +260,7 @@ const dto = UploadDto.fromFormData(fd);
 // dto.avatar → File { name: 'foto.jpg', size: 204800, type: 'image/jpeg' }
 // dto.userId → 42   (number, coerción automática desde string '42')
 
-const { valid, rules } = dto.validate();
+const { valid, rules } = dto.validationReport();
 if (!valid) {
 	showErrors(rules);
 	return;
@@ -283,7 +283,7 @@ async function handleUpload(req: Request) {
 	const fd = await req.formData();
 	const dto = UploadDto.fromFormData(fd);
 
-	const { valid, rules } = dto.validate();
+	const { valid, rules } = dto.validationReport();
 	if (!valid) return Response.json({ errors: rules }, { status: 422 });
 
 	// Subir a S3 sin cargar en memoria — pipe directo
@@ -315,4 +315,12 @@ const dto = UploadDto.fromFormData(fd, { fileSource: 'base64' });
 // Reenviar en el mismo formato
 const outFd = await dto.toFormData({ fileMode: 'base64' });
 // outFd.get('avatar') → 'data:image/jpeg;base64,/9j/...' — round-trip exacto
+```
+
+## Skill MCP
+
+El skill [`quickmodel_form_data`](/mcp/public/skills#quickmodel_form_data) guía el flujo completo de FormData — generación de código `fromFormData()` / `toFormData()`, elección de la opción correcta de `fileMode`/`fileSource`, y añadir streaming con callbacks de progreso.
+
+```
+/mcp quickmodel_form_data intent=fromFormData model_fields="avatar: File, userId: number, tags: string[]"
 ```

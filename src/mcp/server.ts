@@ -17,7 +17,6 @@ import {
 	QAddQGroupPrompt,
 	QSecurityReviewPrompt,
 	QTransformerGuidePrompt,
-	QFormDataPrompt,
 	QImplementFeaturePrompt,
 	QFixLintPrompt,
 	QFixTypecheckPrompt,
@@ -100,15 +99,6 @@ export class QMcpServer {
 	/** @internal The underlying `@modelcontextprotocol/sdk` server instance. */
 	private server: McpServer;
 
-	/**
-	 * Creates a new `QMcpServer` instance.
-	 *
-	 * @param options - Optional overrides for the server identity.
-	 * @param options.name - Server name reported to MCP clients. Defaults to the
-	 *   `name` field in `package.json`.
-	 * @param options.version - Server version reported to MCP clients. Defaults
-	 *   to the `version` field in `package.json`.
-	 */
 	constructor(options?: { name?: string; version?: string }) {
 		let name = 'quickmodel-mcp';
 		let version = '0.0.0';
@@ -242,7 +232,6 @@ export class QMcpServer {
 			new QAddQGroupPrompt(),
 			new QSecurityReviewPrompt(),
 			new QTransformerGuidePrompt(),
-			new QFormDataPrompt(),
 			new QImplementFeaturePrompt(),
 			new QFixLintPrompt(),
 			new QFixTypecheckPrompt(),

@@ -221,11 +221,14 @@ export class RegExpTransformer
 	}
 
 	/**
-	 * Validates if a value can be converted to RegExp.
+	 * Validates that `value` is a valid RegExp input:
+	 * a `RegExp` instance, an object with a `source` property (the structured token form),
+	 * or a plain `string`.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `RegExp`, `{ source }` objects, or strings;
+	 *          `{ isValid: false, error }` otherwise.
 	 */
 	checkIntegrity(
 		value: unknown,

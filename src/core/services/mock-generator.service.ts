@@ -85,6 +85,9 @@ export class QMockGenerator {
 	 * @param type - Mock generation strategy. Defaults to `'random'`.
 	 * @param overrides - Per-field value overrides that bypass generation.
 	 * @returns A plain data object matching the model's field definitions.
+	 * @throws {QModelError} If `@faker-js/faker` is not installed and the requested
+	 *   strategy requires faker-based generation (any strategy except `'empty'`).
+	 * @see IQMockType
 	 */
 	generate<
 		TModel,

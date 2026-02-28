@@ -171,10 +171,18 @@ export class SpecialFloatTransformer
 	}
 
 	/**
-	 * Validates that a value is a number or a valid QM special token.
+	 * Validates that a value is acceptable for a special-float field.
 	 *
-	 * @param value - Value to check.
-	 * @param ctx - Integrity context with property and class information.
+	 * Accepted types:
+	 * - `null` / `undefined` — treated as absent (valid)
+	 * - `number` — any finite or non-finite JavaScript number
+	 * - `IQMSpecialToken` — QM serialised token `{ __qm: 'nan' | 'inf' | '-inf' }`
+	 *
+	 * @param value - Runtime value to check.
+	 * @param ctx - Integrity context carrying the class and property name for error messages.
+	 * @returns `{ isValid: true }` for accepted values; `{ isValid: false, error }` otherwise.
+	 * @see IQMSpecialToken
+	 * @see isQMSpecialToken
 	 */
 	checkIntegrity(value: unknown, ctx: IQIntegrityContext): IQIntegrityResult {
 		if (value === null || value === undefined) return { isValid: true };

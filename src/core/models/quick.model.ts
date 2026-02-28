@@ -1474,21 +1474,6 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Serializes the model instance to a plain interface object.
-	 * Complex types (Date, BigInt, Map, etc.) are converted to JSON-serializable primitives.
-	 *
-	 * SOLID - Single Responsibility: Delegates serialization to Serializer.
-	 *
-	 * @returns The IQSerialized version of the instance (complex types converted to primitives/plain objects)
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const data = user.serialize();
-	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
-	 * ```
-	 */
-	/**
 	 * Returns a plain snapshot of the current runtime state.
 	 *
 	 * Unlike `serialize()`, complex types are NOT converted to JSON-safe primitives:
@@ -1524,6 +1509,36 @@ export abstract class QModel<
 		return result;
 	}
 
+	/**
+	 * Serializes the model instance to a plain interface object.
+	 *
+	 * Complex types (`Date`, `BigInt`, `Map`, `Set`, `RegExp`, …) are converted to
+	 * JSON-serializable primitives according to each transformer's `serialize()` logic.
+	 * `@QAlias` remapping is applied after serialization.
+	 *
+	 * **SOLID — Single Responsibility:** Delegates serialization to the `QSerializer` service.
+	 *
+	 * @param seen    - Optional `WeakSet` to track circular references (pass `undefined` normally).
+	 * @param options - Optional `pick`/`omit` field list to filter the result.
+	 * @returns The {@link IQAliasedSerializedInterface} snapshot with all complex types converted to primitives.
+	 *
+	 * @see {@link QModel.toJSON} for a JSON-string shortcut
+	 * @see {@link QModel.toPlain} for a plain snapshot that keeps runtime types
+	 * @see {@link QModel.toInterface} for the original-input-format snapshot
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 * const data = user.serialize();
+	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+	 * ```
+	 *
+	 * @example With pick filter
+	 * ```typescript
+	 * const partial = user.serialize(undefined, { pick: ['id', 'name'] });
+	 * // { id: '1', name: 'John' }
+	 * ```
+	 */
 	serialize(
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions

@@ -41,6 +41,7 @@ export class ToInterfaceService<
 	 *   `Array` to carry original collection data through recursive calls)
 	 * @param depth - Current recursion depth; throws at 512 to prevent stack overflow
 	 * @returns Plain object matching `T` with values in their original input format
+	 * @throws {Error} If `depth` exceeds 512 (security guard against circular structures).
 	 * @template T - The target interface shape
 	 */
 	toInterface<T extends Record<string, unknown> = TInterface>(

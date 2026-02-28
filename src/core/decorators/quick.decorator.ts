@@ -480,6 +480,8 @@ export type { IQAliasedSerializedInterface } from '../interfaces/serialization-t
  *
  * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
  * @see {@link IQAdvancedOptions} for discriminator configuration
+ * @throws {Error} If `unknownPropertyPolicy` or another advanced-option key is accidentally
+ *   passed as the first argument (misconfiguration guard).
  */
 export function Quick<
 	TExtendedTypes extends IQAnyRecord = IQAnyRecord,

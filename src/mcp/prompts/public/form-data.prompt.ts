@@ -134,7 +134,7 @@ export class QFormDataPrompt extends QAbstractPrompt<{
 						`3. Show the \`toFormData()\` or \`toReadableStream()\` call for the output side\n` +
 						`4. If streaming, show the full \`IQStreamProgress\` callback with UI update examples\n` +
 						`5. Highlight which \`total\`/\`percent\`/\`eta\` fields may be \`null\` and why\n` +
-						`6. Show the isValid() / validationReport() call before any network operation` +
+						`6. Show the validate() call before any network operation` +
 						(model_fields
 							? `\n\nUse these fields: \`${model_fields}\``
 							: '')

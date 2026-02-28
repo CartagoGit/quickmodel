@@ -133,11 +133,15 @@ export class DateTransformer
 	}
 
 	/**
-	 * Validates if a value is a valid Date or date string.
+	 * Validates that `value` is a `Date` instance, a valid date string, or
+	 * a numeric Unix timestamp (ms).
 	 *
-	 * @param value - The value to validate
-	 * @param _context - Integrity context (unused)
-	 * @returns Integrity check result
+	 * Invalid strings that produce `NaN` from `new Date(v)` are rejected.
+	 *
+	 * @param value    - Runtime value to validate.
+	 * @param _context - Integrity context (unused; error message uses generic text).
+	 * @returns `{ isValid: true }` for `Date`, valid string, or valid number;
+	 *          `{ isValid: false, error }` otherwise.
 	 */
 	checkIntegrity(
 		value: unknown,

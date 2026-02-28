@@ -245,7 +245,13 @@ export const truncate =
 	(str: string): string =>
 		str.length > maxLength ? str.slice(0, maxLength) + '...' : str;
 
-/** Removes all whitespace characters from a string. */
+/**
+ * Removes all whitespace characters from a string.
+ *
+ * @param str - Source string.
+ * @returns A new string with all whitespace removed.
+ * @example removeSpaces('hello world') // → 'helloworld'
+ */
 export const removeSpaces = (str: string): string => str.replace(/\s+/g, '');
 
 /**
@@ -269,16 +275,40 @@ export const round =
 	(num: number): number =>
 		Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
-/** Returns the largest integer less than or equal to `num`. */
+/**
+ * Returns the largest integer less than or equal to `num`.
+ *
+ * @param num - Input number.
+ * @returns `Math.floor(num)`.
+ * @example floor(3.7) // → 3
+ */
 export const floor = (num: number): number => Math.floor(num);
 
-/** Returns the smallest integer greater than or equal to `num`. */
+/**
+ * Returns the smallest integer greater than or equal to `num`.
+ *
+ * @param num - Input number.
+ * @returns `Math.ceil(num)`.
+ * @example ceil(3.1) // → 4
+ */
 export const ceil = (num: number): number => Math.ceil(num);
 
-/** Returns the integer part of `num` by removing any fractional digits. */
+/**
+ * Returns the integer part of `num` by removing any fractional digits.
+ *
+ * @param num - Input number.
+ * @returns `Math.trunc(num)`.
+ * @example trunc(3.9) // → 3
+ */
 export const trunc = (num: number): number => Math.trunc(num);
 
-/** Returns the absolute value of `num`. */
+/**
+ * Returns the absolute value of `num`.
+ *
+ * @param num - Input number.
+ * @returns `Math.abs(num)`.
+ * @example abs(-5) // → 5
+ */
 export const abs = (num: number): number => Math.abs(num);
 
 /**
@@ -345,11 +375,23 @@ export const subtract =
 // ENCODING/DECODING HELPERS
 // ============================================================================
 
-/** Encodes a UTF-8 string as Base64. */
+/**
+ * Encodes a UTF-8 string as Base64.
+ *
+ * @param str - Source UTF-8 string.
+ * @returns The Base64-encoded representation.
+ * @example base64Encode('hello') // → 'aGVsbG8='
+ */
 export const base64Encode = (str: string): string =>
 	Buffer.from(str).toString('base64');
 
-/** Decodes a Base64-encoded string back to UTF-8. */
+/**
+ * Decodes a Base64-encoded string back to UTF-8.
+ *
+ * @param str - Base64-encoded string.
+ * @returns The decoded UTF-8 string.
+ * @example base64Decode('aGVsbG8=') // → 'hello'
+ */
 export const base64Decode = (str: string): string =>
 	Buffer.from(str, 'base64').toString('utf-8');
 
@@ -359,13 +401,35 @@ export const base64Decode = (str: string): string =>
  */
 export const jsonParse = <T = unknown>(str: string): T => JSON.parse(str);
 
-/** Serialises a value to a JSON string. */
+/**
+ * Serialises a value to a JSON string.
+ *
+ * @param obj - Any serialisable value.
+ * @returns A JSON string representation of `obj`.
+ * @example jsonStringify({ name: 'test' }) // → '{"name":"test"}'
+ */
 export const jsonStringify = (obj: unknown): string => JSON.stringify(obj);
 
-/** Encodes a string for safe use in a URI component (`encodeURIComponent`). */
+/**
+ * Encodes a string for safe use in a URI component.
+ *
+ * Delegates to `encodeURIComponent`.
+ *
+ * @param str - Raw string to encode.
+ * @returns The URL-encoded string.
+ * @example encodeURIString('hello world') // → 'hello%20world'
+ */
 export const encodeURIString = (str: string): string => encodeURIComponent(str);
 
-/** Decodes a URI-encoded component string (`decodeURIComponent`). */
+/**
+ * Decodes a URI-encoded component string.
+ *
+ * Delegates to `decodeURIComponent`.
+ *
+ * @param str - URI-encoded string.
+ * @returns The decoded plain string.
+ * @example decodeURIString('hello%20world') // → 'hello world'
+ */
 export const decodeURIString = (str: string): string => decodeURIComponent(str);
 
 // ============================================================================
@@ -396,8 +460,12 @@ export function compose<T>(...fns: Array<(val: T) => T>): (val: T) => T {
 }
 
 /**
- * Pipe is an alias for compose (same behavior, different name).
- * Some developers prefer "pipe" terminology.
+ * Alias for {@link compose} — applies functions left-to-right (pipeline order).
+ *
+ * Some developers prefer the `pipe` term over `compose`. Both are semantically
+ * identical in this implementation.
+ *
+ * @see compose
  */
 export const pipe = compose;
 
@@ -423,8 +491,14 @@ export const discount =
 	(price: number): number =>
 		price * (1 - rate);
 
-/** Applies a fixed 21 % VAT to the given price. */
-export const vat = (price: number): number => price * 0.21; // VAT 21%
+/**
+ * Applies a fixed 21 % VAT rate to the given price.
+ *
+ * @param price - Net price before tax.
+ * @returns The tax amount (not the final price). Add to `price` for the gross amount.
+ * @example vat(100) // → 21
+ */
+export const vat = (price: number): number => price * 0.21;
 
 /**
  * Returns a curried function that formats a number as a currency string.

@@ -224,11 +224,16 @@ export class TypedArrayTransformer<T extends ITypedArray>
 	}
 
 	/**
-	 * Validates if a value can be converted to a TypedArray.
+	 * Validates that `value` can be converted to this typed array.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * Accepts: the exact `TypedArray` subclass instance, a plain JS `Array`,
+	 * or any object (array-like sources that `TypedArray.from()` can accept).
+	 * Rejects primitives and other non-array types.
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for typed array instances, plain arrays, and array-like objects;
+	 *          `{ isValid: false, error }` for all other types.
 	 */
 	checkIntegrity(
 		value: unknown,

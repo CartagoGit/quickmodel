@@ -304,6 +304,7 @@ export class ValueTransformerService {
 	 * @param designType - The TypeScript-inferred constructor for this property.
 	 * @param context - Transform context including property key, class name, and recursion depth.
 	 * @returns The transformed runtime value, or the original value if no transformer applies.
+	 * @throws {Error} If `designType` is `Date` and `value` cannot be converted to a valid Date.
 	 */
 	public transformByDesignType(
 		value: unknown,

@@ -99,6 +99,8 @@ export class Deserializer<
 	 * @param key - The property name (for context/errors)
 	 * @param spec - The Type/Transformer specification (Date, [Date], custom obj, etc.)
 	 * @returns The transformed value
+	 * @throws Never directly — but the underlying transformer may throw if the value
+	 *   is fundamentally incompatible with the spec (e.g. a non-serialisable object).
 	 */
 	public transformValue(value: unknown, key: string, spec: unknown): unknown {
 		const context = { propertyKey: key, className: 'SmartSetter' };
@@ -159,7 +161,11 @@ export class Deserializer<
 	 *
 	 * @param data - Plain object to deserialize
 	 * @param modelClass - Model class constructor
+	 * @param context - Optional recursion context (used internally for nested models)
 	 * @returns Fully-typed model instance
+	 * @throws {Error} If the recursion depth exceeds 512 (circular-model guard).
+	 * @throws {QModelError} If `validationTrigger: 'construction'` is configured and
+	 *   integrity checks fail during construction.
 	 */
 	deserialize<TData extends Record<string, unknown>, TResult = unknown>(
 		data: TData,

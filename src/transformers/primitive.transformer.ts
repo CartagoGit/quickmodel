@@ -162,11 +162,17 @@ export class PrimitiveTransformer<T extends IPrimitiveType>
 	}
 
 	/**
-	 * Validates if a value matches the expected primitive type.
+	 * Validates that `value` matches the expected primitive type (`'string'`, `'number'`, or `'boolean'`).
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * For strings, also enforces a **5 MB maximum length** to prevent denial-of-service
+	 * attacks via oversized payloads.
+	 *
+	 * `null` and `undefined` pass without error (treated as absent values).
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` when the type matches and (for strings) length ≤ 5 MB;
+	 *          `{ isValid: false, error }` otherwise.
 	 */
 	checkIntegrity(
 		value: unknown,

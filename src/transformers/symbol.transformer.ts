@@ -153,11 +153,14 @@ export class SymbolTransformer
 	}
 
 	/**
-	 * Validates if a value is a string or symbol.
+	 * Validates that `value` is a valid symbol representation:
+	 * a `symbol` primitive, a `string` (description), or a
+	 * `{ __type: 'symbol', description: string }` object token.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for valid symbol forms;
+	 *          `{ isValid: false, error }` otherwise.
 	 */
 	checkIntegrity(
 		value: unknown,

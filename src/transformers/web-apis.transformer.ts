@@ -114,6 +114,16 @@ export class URLTransformer
 		return value.toString();
 	}
 
+	/**
+	 * Validates that `value` is a `URL` instance or a valid URL string.
+	 *
+	 * String values are tested with `new URL(value)` — invalid URL strings fail.
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `URL` instances and valid URL strings;
+	 *          `{ isValid: false, error }` for invalid strings and other types.
+	 */
 	checkIntegrity(
 		value: unknown,
 		context: IQIntegrityContext
@@ -221,6 +231,15 @@ export class URLSearchParamsTransformer
 		return value.toString();
 	}
 
+	/**
+	 * Validates that `value` is a valid `URLSearchParams` representation:
+	 * a `URLSearchParams` instance, a query string, or a plain key-value object.
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `URLSearchParams`, strings, and plain objects;
+	 *          `{ isValid: false, error }` for all other types.
+	 */
 	checkIntegrity(
 		value: unknown,
 		context: IQIntegrityContext

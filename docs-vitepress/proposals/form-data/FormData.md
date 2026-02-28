@@ -2,7 +2,7 @@
 
 > **Estado:** Propuesta de diseño
 > **Prioridad:** 🟡 Media
-> **Esfuerzo estimado:** 11-13 horas | **Tests estimados:** ~45
+> **Esfuerzo estimado:** 12-15 horas | **Tests estimados:** ~55
 > **Backlog:** [TASKS.md](../TASKS.md#propuesta-g)
 
 ---
@@ -158,6 +158,136 @@ const fd = dto.toFormData({
 
 ---
 
+### Method Spoofing (`spoofMethod`)
+
+Algunos backends (Laravel, Symfony, Rails) no aceptan métodos HTTP como `PUT`, `PATCH` o `DELETE`
+directamente en formularios multipart. En su lugar esperan que el `FormData` incluya un campo
+`_method` con el valor del método real:
+
+```http
+POST /api/users/42
+Content-Type: multipart/form-data
+
+_method=PUT
+name=Alice
+avatar=...
+```
+
+`toFormData()` soporta esto mediante el parámetro `spoofMethod`. El campo `_method` se inserta
+**siempre como el primer campo** del `FormData` resultante (algunos backends lo requieren así).
+
+```typescript
+// Por petición — máxima prioridad
+const fd = dto.toFormData({ spoofMethod: 'PUT' });
+// fd.get('_method') → 'PUT'
+
+// Sin spoofing — comportamiento por defecto
+const fd = dto.toFormData();
+// fd.has('_method') → false
+```
+
+#### Cascada de configuración
+
+El valor de `spoofMethod` sigue una **cascada de tres niveles** — el más específico gana:
+
+```
+QConfig.configure({ defaults: { spoofMethod: 'PUT' } })   ← global   (fallback de proyecto)
+  < @Quick({}, { spoofMethod: 'PUT' })                     ← modelo   (default del modelo)
+    < toFormData({ spoofMethod: 'PATCH' })                 ← petición (máxima prioridad)
+```
+
+El segundo argumento de `@Quick` es `IQAdvancedOptions` **ya existente** en
+`src/core/interfaces/quick-options.interface.ts`. Solo hay que añadirle `spoofMethod`.
+No se necesita crear ninguna interfaz nueva.
+
+```typescript
+// Nivel 1 — Global: proyecto Laravel, todos los modelos usan PUT por defecto
+// API real: QConfig.configure(), clave bajo defaults (igual que dateStrategy, transformCase, etc.)
+QConfig.configure({ defaults: { spoofMethod: 'PUT' } });
+
+// Nivel 2 — Modelo: este modelo siempre va como PATCH salvo que se sobreescriba
+// advancedOptions (segundo arg de @Quick) ya existe — solo añadir spoofMethod
+@Quick({ name: 'string' }, { spoofMethod: 'PATCH' })
+class PartialUpdateDto extends QModel<IPartialUpdate> {
+	declare name: string;
+}
+
+// Nivel 3 — Petición: fuerza DELETE aunque el modelo diga PATCH
+const fd = dto.toFormData({ spoofMethod: 'DELETE' });
+// → _method=DELETE  (prioridad máxima)
+
+// Sin opción en toFormData() → hereda del decorador
+const fd = dto.toFormData();
+// → _method=PATCH  (del decorador @Quick)
+
+// Si el decorador tampoco lo define → hereda de QConfig.defaults.spoofMethod
+// Si QConfig tampoco lo define → sin campo _method
+```
+
+**Valores válidos de `spoofMethod`:**
+
+```typescript
+type IQSpoofMethod =
+	// Métodos estándar HTTP/1.1 (RFC 7231)
+	| 'GET'
+	| 'POST'
+	| 'PUT'
+	| 'PATCH'
+	| 'DELETE'
+	| 'HEAD'
+	| 'OPTIONS'
+	| 'TRACE'
+	| 'CONNECT'
+	// WebDAV (RFC 4918)
+	| 'PROPFIND'
+	| 'PROPPATCH'
+	| 'MKCOL'
+	| 'COPY'
+	| 'MOVE'
+	| 'LOCK'
+	| 'UNLOCK'
+	// DeltaV / versioning (RFC 3253)
+	| 'REPORT'
+	| 'CHECKOUT'
+	| 'CHECKIN'
+	| 'UNCHECKOUT'
+	| 'MKWORKSPACE'
+	| 'UPDATE'
+	| 'LABEL'
+	| 'MERGE'
+	| 'BASELINE-CONTROL'
+	| 'MKACTIVITY'
+	// Otros usados en la práctica
+	| 'PURGE'
+	| 'SEARCH'
+	// Catch-all: cualquier método custom (mantiene autocomplete para los anteriores)
+	| (string & {});
+```
+
+`GET` y `POST` se incluyen por completitud aunque su uso como spoof no tiene sentido práctico.
+
+#### Tests requeridos
+
+```typescript
+it('inserta _method cuando se pasa spoofMethod en toFormData()');
+it('_method es el primer campo del FormData resultante');
+it('acepta todos los métodos HTTP estándar como valores de spoofMethod');
+it('acepta métodos custom via string & {} (ej. PURGE, SEARCH)');
+it('toFormData spoofMethod sobreescribe el del decorador');
+it('decorador spoofMethod sobreescribe QConfig.configure defaults');
+it(
+	'QConfig.configure defaults aplica como fallback cuando ningún nivel superior lo define'
+);
+it('no inserta _method si ningún nivel define spoofMethod');
+it('sin QConfig y sin decorador, toFormData sin spoofMethod no añade _method');
+it(
+	'QConfig.configure con defaults vacío no interfiere con spoofMethod no definido'
+);
+it('precedencia completa: toFormData > decorador > QConfig.defaults');
+```
+
+---
+
 ### Config permanente en el decorador
 
 Para campos que **siempre** deben serializarse de la misma forma:
@@ -167,10 +297,10 @@ Para campos que **siempre** deben serializarse de la misma forma:
 class ProfileDto extends QModel<IProfileDto> {
 	declare name: string;
 
-	@Quick({ fileMode: 'reference' }) // nunca enviar el binario en serialize()
+	@QType({ fileMode: 'reference' }) // nunca enviar el binario en serialize()
 	declare avatar: File;
 
-	@Quick({ fileMode: 'base64' }) // siempre base64 en JSON
+	@QType({ fileMode: 'base64' }) // siempre base64 en JSON
 	declare signature: Blob;
 }
 
@@ -181,7 +311,7 @@ dto.serialize();
 **Precedencia de opciones** (de menor a mayor):
 
 ```
-Decorador @Quick({ fileMode })
+Decorador @QType({ fileMode })
   < opción global de llamada { fileMode }
     < opción por campo { fields: { avatar: 'binary' } }
 ```
@@ -413,29 +543,34 @@ const outFd = dto.toFormData({ fileMode: 'base64' });
 
 ## Archivos a crear / modificar
 
-| Archivo                                          | Acción    | Descripción                                                            |
-| ------------------------------------------------ | --------- | ---------------------------------------------------------------------- |
-| `src/transformers/web-apis.transformer.ts`       | Modificar | Añadir `BlobTransformer`, `FileTransformer`                            |
-| `src/core/interfaces/serializer.interface.ts`    | Modificar | Añadir `fileMode` a `IQSerializationOptions`                           |
-| `src/core/interfaces/quick-options.interface.ts` | Modificar | Añadir `fileSource`, `fields` a opciones de `fromFormData`             |
-| `src/core/models/quick.model.ts`                 | Modificar | `fromFormData()`, `toFormData()`, `toReadableStream()`, `fromStream()` |
-| `src/core/helpers/form-data.helpers.ts`          | Nuevo     | Auto-detección y conversiones por modo                                 |
-| `src/core/helpers/stream.helpers.ts`             | Nuevo     | `toReadableStream`, `fromStream`, `pipeStream`                         |
-| `src/core/types/q-alias.type.ts`                 | Verificar | `blob`, `file`, `formdata` ya declarados — sin cambios                 |
-| `tests/unit/core/models/form-data.test.ts`       | Nuevo     | ~25 tests (fromFormData, toFormData, todos los modos)                  |
-| `tests/unit/core/models/stream.test.ts`          | Nuevo     | ~10 tests (toReadableStream, fromStream, pipeStream)                   |
-| `tests/unit/core/transformers/blob-file.test.ts` | Nuevo     | ~10 tests (BlobTransformer, FileTransformer)                           |
-| `docs-vitepress/en/guide/formdata.md`            | Nuevo     | Guía EN                                                                |
-| `docs-vitepress/es/guide/formdata.md`            | Nuevo     | Guía ES                                                                |
+| Archivo                                              | Acción    | Descripción                                                                                                                                                  |
+| ---------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/transformers/web-apis.transformer.ts`           | Modificar | Añadir `BlobTransformer`, `FileTransformer`                                                                                                                  |
+| `src/core/interfaces/serializer.interface.ts`        | Modificar | Añadir `fileMode` a `IQSerializationOptions`                                                                                                                 |
+| `src/core/interfaces/transform-options.interface.ts` | Modificar | Añadir `fileMode?: IQFileMode` a `IQPropertyOptions` — lo hereda `IQTypeOptions`, habilitando `@QType({ fileMode })` a nivel de propiedad                    |
+| `src/core/interfaces/quick-options.interface.ts`     | Modificar | Añadir `fileSource`, `fields` a opciones de `fromFormData`; añadir `spoofMethod?: IQSpoofMethod` a `IQAdvancedOptions` (ya existe — segundo arg de `@Quick`) |
+| `src/core/config/quick.config.ts`                    | Modificar | Añadir `spoofMethod?: IQSpoofMethod` a `IQConfig['defaults']` — misma clave que `dateStrategy`, `transformCase`, etc.                                        |
+| `src/core/types/form-data.type.ts`                   | Nuevo     | Declarar `IQSpoofMethod` (todos los métodos HTTP) e `IQFileMode` (`'auto' \| 'binary' \| 'reference' \| 'base64'`)                                           |
+| `src/core/models/quick.model.ts`                     | Modificar | `fromFormData()`, `toFormData()`, `toReadableStream()`, `fromStream()`                                                                                       |
+| `src/core/helpers/form-data.helpers.ts`              | Nuevo     | Auto-detección y conversiones por modo                                                                                                                       |
+| `src/core/helpers/stream.helpers.ts`                 | Nuevo     | `toReadableStream`, `fromStream`, `pipeStream`                                                                                                               |
+| `src/core/types/q-alias.type.ts`                     | Verificar | `blob`, `file`, `formdata` ya declarados — sin cambios                                                                                                       |
+| `tests/unit/core/models/form-data.test.ts`           | Nuevo     | ~25 tests (fromFormData, toFormData, todos los modos)                                                                                                        |
+| `tests/unit/core/models/spoof-method.test.ts`        | Nuevo     | ~10 tests (spoofMethod: precedencia cascada, valores válidos, \_method primero)                                                                              |
+| `tests/unit/core/models/stream.test.ts`              | Nuevo     | ~10 tests (toReadableStream, fromStream, pipeStream)                                                                                                         |
+| `tests/unit/core/transformers/blob-file.test.ts`     | Nuevo     | ~10 tests (BlobTransformer, FileTransformer)                                                                                                                 |
+| `docs-vitepress/en/guide/formdata.md`                | Nuevo     | Guía EN                                                                                                                                                      |
+| `docs-vitepress/es/guide/formdata.md`                | Nuevo     | Guía ES                                                                                                                                                      |
 
 **Esfuerzo desglosado:**
 
-| Componente                                             | Horas      |
-| ------------------------------------------------------ | ---------- |
-| `BlobTransformer` + `FileTransformer`                  | 2h         |
-| `fromFormData()` + auto-detect                         | 2h         |
-| `toFormData()` + modos                                 | 2h         |
-| `toReadableStream()` + `fromStream()` + `pipeStream()` | 3-4h       |
-| Tests (~45 tests)                                      | 2-3h       |
-| Documentación EN+ES                                    | 1h         |
-| **Total**                                              | **12-14h** |
+| Componente                                                       | Horas      |
+| ---------------------------------------------------------------- | ---------- |
+| `BlobTransformer` + `FileTransformer`                            | 2h         |
+| `fromFormData()` + auto-detect                                   | 2h         |
+| `toFormData()` + modos                                           | 2h         |
+| Method spoofing (`spoofMethod`) + cascada + `IQSpoofMethod` type | 1h         |
+| `toReadableStream()` + `fromStream()` + `pipeStream()`           | 3-4h       |
+| Tests (~55 tests)                                                | 2-3h       |
+| Documentación EN+ES                                              | 1h         |
+| **Total**                                                        | **13-15h** |

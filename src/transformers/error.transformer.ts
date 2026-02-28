@@ -171,11 +171,13 @@ export class ErrorTransformer
 	}
 
 	/**
-	 * Validates if a value can be converted to Error.
+	 * Validates that `value` is a valid `Error` representation:
+	 * an `Error` instance, a `string` message, or an object with a `message` property.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `Error`, `string`, or `{ message: …}` objects;
+	 *          `{ isValid: false, error }` for all other types.
 	 */
 	checkIntegrity(
 		value: unknown,

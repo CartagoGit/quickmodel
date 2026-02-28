@@ -414,11 +414,15 @@ export class MapTransformer<K = string, V = unknown>
 	}
 
 	/**
-	 * Validates if a value is a Map or plain object.
+	 * Validates that `value` is a valid Map representation.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * Accepts: a `Map` instance, an array of `[key, value]` pairs,
+	 * or a plain object (which will be converted via `Object.entries`).
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `Map`, entry arrays, and plain objects;
+	 *          `{ isValid: false, error }` for primitives and other types.
 	 */
 	checkIntegrity(
 		value: unknown,
@@ -703,11 +707,15 @@ export class SetTransformer<V = unknown>
 	}
 
 	/**
-	 * Validates if a value is a Set or array.
+	 * Validates that `value` is a valid `Set` representation.
 	 *
-	 * @param value - The value to validate
-	 * @param context - Validation context with property and class information
-	 * @returns Validation result
+	 * Accepts: a `Set` instance, a plain array (will be converted via `new Set(arr)`),
+	 * or the structured token `{ __type: 'Set', values: … }`.
+	 *
+	 * @param value   - Runtime value to validate.
+	 * @param context - Context providing `className` and `propertyKey` for error messages.
+	 * @returns `{ isValid: true }` for `Set`, arrays, and `{ __type: 'Set' }` objects;
+	 *          `{ isValid: false, error }` for all other types.
 	 */
 	checkIntegrity(
 		value: unknown,

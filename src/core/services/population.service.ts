@@ -219,6 +219,10 @@ export class PopulationService {
 	 * @param data - Raw input data (plain object or another model instance)
 	 * @param params.modelClass - The constructor function of the model being populated
 	 * @param params.context - Optional recursion context for cycle detection
+	 * @throws {Error} If the input array exceeds the configured `maxArrayLength` limit (DoS guard).
+	 * @throws {QModelError} If `unknownPropertyPolicy: 'error'` is configured and an unrecognised
+	 *   property key is encountered.
+	 * @throws {QModelError} If strict mode validation fails for a property value.
 	 */
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,
