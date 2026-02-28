@@ -5,9 +5,9 @@ export const scenario: IBenchScenario = {
 	benchNum: 5,
 	appTypes: ['all', 'testing', 'mock'],
 	values: {
-		'Plain JS': 2_145_923,
-		QuickModel: 138_102,
-		'faker (manual)': 30_329,
+		'Plain JS': 2_409_522,
+		QuickModel: 97_652,
+		'faker (manual)': 25_041,
 		TypeBox: null,
 		valibot: null,
 		Zod: null,

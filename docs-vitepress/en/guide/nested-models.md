@@ -515,3 +515,12 @@ class Profile extends QModel<IProfile> {
 - [@Quick Decorator](/en/guide/quick-decorator) - Learn more about transformations
 - [Custom Transformers](/en/guide/custom-transformers) - Create custom nested types
 - [Examples](/en/examples/complex-types) - See complex nesting examples
+
+## Performance
+
+<BenchmarkChart
+  :only-scenarios="['nestedConstruct']"
+  :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

@@ -95,6 +95,10 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * @param options - Optional: Object with custom `transformer`, `serializer`, and `mocker`
  * @returns A property decorator function that registers the field with appropriate metadata
  *
+ * @see {@link Quick} — class-level alternative: declare all field types in one place (recommended)
+ * @see {@link QModel.checkIntegrity} — validate fields transformed by this decorator
+ * @see {@link QModel.serialize} — serializes transformed field values back to primitives
+ *
  * @example
  * **No transformation** (copy as-is):
  * ```typescript
@@ -634,8 +638,29 @@ function applyQTypeMetadata(
  * }
  * ```
  */
+/**
+ * Returns `true` when `val` looks like an `IQTypeOptions` object (options-only form of `@QType`).
+ * Distinguishes options bags (`{ fileMode, transformer, ... }`) from type constructors,
+ * functions, and bidirectional transformer objects (`{ serialize, deserialize }`).
+ * @internal
+ */
+function typeofIsOptionsOnly(val: unknown): boolean {
+	if (typeof val !== 'object' || Array.isArray(val)) return false;
+	const rec = val as Record<string, unknown>;
+	// Bidirectional transformers have a serialize method → not options
+	if (typeof rec['serialize'] === 'function') return false;
+	// Constructors / classes have a prototype pointing back to themselves
+	if (
+		rec['prototype'] !== undefined &&
+		(rec['prototype'] as Record<string, unknown>)?.['constructor'] === val
+	) {
+		return false;
+	}
+	return true;
+}
+
 export function QType(
-	typeOrClass?: IQSpec | Array<unknown>, // Support array syntax: [Type], [[Type]], etc.
+	typeOrClass?: IQSpec | Array<unknown> | IQTypeOptions,
 	options?: IQTypeOptions
 ): {
 	/**
@@ -653,6 +678,20 @@ export function QType(
 		context: IClassFieldDecoratorCtx<This, T>
 	): void;
 } {
+	// Detect options-only form: @QType({ fileMode: 'reference' }) — first arg is IQTypeOptions
+	let resolvedType: IQSpec | Array<unknown> | undefined;
+	let resolvedOptions: IQTypeOptions | undefined = options;
+	if (
+		typeOrClass !== null &&
+		typeOrClass !== undefined &&
+		typeofIsOptionsOnly(typeOrClass)
+	) {
+		resolvedType = undefined;
+		resolvedOptions = typeOrClass as IQTypeOptions;
+	} else {
+		resolvedType = typeOrClass as IQSpec | Array<unknown> | undefined;
+	}
+
 	return function (
 		targetOrUndefined: object | undefined,
 		keyOrContext: string | symbol | ITC39FieldContext
@@ -668,7 +707,10 @@ export function QType(
 			context.addInitializer(function (this: unknown) {
 				const proto = Object.getPrototypeOf(this as object) as object;
 				if (guard.hasAndMark(proto)) return;
-				applyQTypeMetadata(proto, fieldName, { typeOrClass, options });
+				applyQTypeMetadata(proto, fieldName, {
+					typeOrClass: resolvedType,
+					options: resolvedOptions,
+				});
 			});
 			return;
 		}
@@ -677,7 +719,7 @@ export function QType(
 		applyQTypeMetadata(
 			targetOrUndefined as object,
 			keyOrContext as string | symbol,
-			{ typeOrClass, options }
+			{ typeOrClass: resolvedType, options: resolvedOptions }
 		);
 	} as ReturnType<typeof QType>;
 }

@@ -120,6 +120,7 @@ import {
 	QUICK_VALUES_KEY,
 	QCOMPUTED_METADATA_KEY,
 } from '../constants/metadata-keys';
+import { QTYPES_METADATA_KEY } from '../decorators/qtype.decorator';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QM_SPECIAL_TOKEN_KEY } from '@/transformers/special-float.transformer';
@@ -138,6 +139,8 @@ interface IQSerializeClassMeta {
 	excludeFields: string[];
 	/** Getter keys from prototype chain that should be included (qtype:generated + QComputed) */
 	getterKeys: string[];
+	/** Per-field fileMode from @QType({ fileMode }) decorators — null when none defined */
+	fieldFileModes: Record<string, string> | null;
 }
 
 const _SERIALIZE_CLASS_META = new WeakMap<Function, IQSerializeClassMeta>();
@@ -234,7 +237,34 @@ function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
 			proto = Object.getPrototypeOf(proto) as object | null;
 		}
 
-		meta = { modelOptions, typeMap, excludeFields, getterKeys };
+		// Collect per-field fileMode from @QType({ fileMode }) decorators
+		let fieldFileModes: Record<string, string> | null = null;
+		const classproto = (ctor as { prototype: object }).prototype;
+		const qtypeFields = Reflect.getMetadata(
+			QTYPES_METADATA_KEY,
+			classproto
+		) as Array<string | symbol> | undefined;
+		if (qtypeFields?.length) {
+			for (const fieldKey of qtypeFields) {
+				const fieldFileMode = Reflect.getMetadata(
+					'qtype:fileMode',
+					classproto,
+					fieldKey
+				) as string | undefined;
+				if (fieldFileMode) {
+					if (fieldFileModes === null) fieldFileModes = {};
+					fieldFileModes[String(fieldKey)] = fieldFileMode;
+				}
+			}
+		}
+
+		meta = {
+			modelOptions,
+			typeMap,
+			excludeFields,
+			getterKeys,
+			fieldFileModes,
+		};
 		_SERIALIZE_CLASS_META.set(ctor, meta);
 	}
 	return meta;
@@ -373,6 +403,7 @@ export class Serializer<
 			typeMap,
 			excludeFields: modelExcludeFields,
 			getterKeys,
+			fieldFileModes,
 		} = _getSerializeClassMeta(model.constructor);
 
 		// Resolve Configuration (DateStrategy, Case, etc.)
@@ -577,10 +608,17 @@ export class Serializer<
 				_visited = new WeakSet<object>();
 				_visited.add(model as object);
 			}
+			// Per-field fileMode: @QType({ fileMode }) acts as field-level default;
+			// a global call option (activeOptions?.fileMode) always takes precedence.
+			const decoratorFileMode = fieldFileModes?.[key];
+			const fieldOpts =
+				decoratorFileMode && !activeOptions?.fileMode
+					? { ..._childOpts, fileMode: decoratorFileMode }
+					: _childOpts;
 			result[outputKey] = this.serializeValue(
 				value,
 				_visited ?? undefined,
-				_childOpts
+				fieldOpts
 			);
 		}
 

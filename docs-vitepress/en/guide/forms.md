@@ -466,3 +466,12 @@ const result = qCheckRules(form);
 | ----------------------------- | ---------- | ------------------------------------------ |
 | `quickmodel/forms`            | 3.4        | Main entry — all helpers except `qGroups5` |
 | `quickmodel/compat/ts5/forms` | 5.0        | Adds `qGroups5` (no `as const` needed)     |
+
+## Performance
+
+<BenchmarkChart
+  :only-scenarios="['rules', 'asyncRules', 'validationReport']"
+  :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

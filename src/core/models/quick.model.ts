@@ -403,6 +403,10 @@ export abstract class QModel<
 	 * @param options - Optional configuration
 	 * @returns `{ instances, errors }` — see {@link IQCreateManyResult}
 	 *
+	 * @see {@link QModel.create} — single-instance variant
+	 * @see {@link QModel.createReadonly} — single immutable instance
+	 * @see {@link QModel.deserialize} — low-level single deserialization
+	 *
 	 * @example
 	 * ```typescript
 	 * const { instances, errors } = UserModel.createMany(rawList);
@@ -1517,6 +1521,10 @@ export abstract class QModel<
 	 *
 	 * @returns Plain `Record<string, unknown>` with current runtime values
 	 *
+	 * @see {@link QModel.serialize} — JSON-safe form (converts Date → string, bigint → string, etc.)
+	 * @see {@link QModel.toInterface} — original-input-format snapshot
+	 * @see {@link QModel.toJSON} — JSON string shortcut
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ createdAt: '2024-01-01T00:00:00.000Z', balance: '999' });
@@ -1644,6 +1652,10 @@ export abstract class QModel<
 	 *
 	 * @returns JSON string representation of the model
 	 *
+	 * @see {@link QModel.serialize} — plain object form (before JSON.stringify)
+	 * @see {@link QModel.deserializeJson} — parse a JSON string back to a model instance
+	 * @see {@link QModel.fromJSON} — alias for `deserializeJson`
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
@@ -1663,6 +1675,10 @@ export abstract class QModel<
 	 * valid Date range, safe RegExp, BigInt size limits).
 	 *
 	 * @returns Array of integrity errors (empty if all pass)
+	 *
+	 * @see {@link QModel.hasIntegrity} — boolean shortcut (`checkIntegrity().length === 0`)
+	 * @see {@link QModel.isValid} — also validates `@QRule` business rules
+	 * @see {@link QModel.validationReport} — combined integrity + rules report
 	 *
 	 * @example
 	 * ```typescript
@@ -1696,6 +1712,11 @@ export abstract class QModel<
 	 *
 	 * @returns `{ valid: boolean, errors: Array<{ field, message, value }> }`
 	 *
+	 * @see {@link QModel.checkIntegrity} — transformer-level type safety (separate from rules)
+	 * @see {@link QModel.isValid} — combined boolean (integrity + rules)
+	 * @see {@link QModel.validationReport} — combined integrity + rules report
+	 * @see {@link QModel.checkRulesAsync} — async version for predicates with I/O
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'Jo', age: -1, email: 'notanemail' });
@@ -1721,6 +1742,9 @@ export abstract class QModel<
 	 *
 	 * @returns `true` when every field value matches its declared transformer type
 	 *
+	 * @see {@link QModel.checkIntegrity} — full error details array
+	 * @see {@link QModel.isValid} — also validates `@QRule` business rules
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ age: 30, active: true });
@@ -1743,6 +1767,11 @@ export abstract class QModel<
 	 *
 	 * @returns `true` when the instance has full type integrity and all rules are satisfied
 	 *
+	 * @see {@link QModel.hasIntegrity} — transformer-level check only
+	 * @see {@link QModel.checkRules} — business rules check only
+	 * @see {@link QModel.validationReport} — full report with both integrity and rule errors
+	 * @see {@link QModel.isValidAsync} — async version (supports async `@QRule` predicates)
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
@@ -1763,6 +1792,11 @@ export abstract class QModel<
 	 * Single call instead of invoking both methods separately.
 	 *
 	 * @returns `{ valid, integrity, rules }` — see {@link IQValidationReport}
+	 *
+	 * @see {@link QModel.isValid} — boolean shortcut for the same combined check
+	 * @see {@link QModel.checkIntegrity} — transformer-level errors only
+	 * @see {@link QModel.checkRules} — business rules errors only
+	 * @see {@link QModel.validationReportAsync} — async version with async `@QRule` support
 	 *
 	 * @example
 	 * ```typescript
@@ -1806,6 +1840,10 @@ export abstract class QModel<
 	 *
 	 * @param options - Optional execution settings (mode, timeoutMs, timeoutMessage).
 	 * @returns `Promise<IQRulesResult>`
+	 *
+	 * @see {@link QModel.checkRules} — synchronous version (no async predicates)
+	 * @see {@link QModel.isValidAsync} — combined boolean async (integrity + async rules)
+	 * @see {@link QModel.validationReportAsync} — full async report
 	 *
 	 * @example Basic usage
 	 * ```typescript
@@ -1895,6 +1933,9 @@ export abstract class QModel<
 	 *
 	 * @returns Ordered array of {@link IQFormSchemaEntry} — one per `@QField`-decorated property.
 	 *
+	 * @see {@link QModel.getFormSchemaGrouped} — same schema organised by `@QGroup` sections
+	 * @see {@link QModel.getFormSchema} — static variant (no instance required)
+	 *
 	 * @example
 	 * ```typescript
 	 * const schema = instance.getFormSchema();
@@ -1910,6 +1951,8 @@ export abstract class QModel<
 	 *
 	 * @returns Ordered array of {@link IQFormSchemaEntry} — one per `@QField`-decorated property.
 	 *
+	 * @see {@link QModel.getFormSchemaGrouped} — same schema organised by `@QGroup` sections
+	 *
 	 * @example
 	 * ```typescript
 	 * const schema = ProfileModel.getFormSchema();
@@ -1923,7 +1966,10 @@ export abstract class QModel<
 	 * Returns the form schema grouped by `@QGroup` sections.
 	 * Fields without `@QGroup` are placed in a group with `group: undefined`.
 	 *
-	 * @returns Ordered array of `{ group, fields }` entries.
+	 * @returns Ordered array of `{ group, fields }` entries — see {@link IQFormSchemaGroup}.
+	 *
+	 * @see {@link QModel.getFormSchema} — flat (un-grouped) list
+	 * @see {@link QModel.getFormSchemaGrouped} — static variant (no instance required)
 	 *
 	 * @example
 	 * ```typescript
@@ -1943,6 +1989,10 @@ export abstract class QModel<
 
 	/**
 	 * Static version of `getFormSchemaGrouped()` — no instance required.
+	 *
+	 * @returns Ordered array of `{ group, fields }` entries — see {@link IQFormSchemaGroup}.
+	 *
+	 * @see {@link QModel.getFormSchema} — flat (un-grouped) list
 	 */
 	static getFormSchemaGrouped(): IQFormSchemaGroup[] {
 		return QModel._buildGrouped(QModel._collectFormSchema(this.prototype));
@@ -2065,6 +2115,11 @@ export abstract class QModel<
 	 * @template T - The model class type
 	 * @param data - Plain object matching the model's interface structure
 	 * @returns A new, fully typed model instance
+	 *
+	 * @see {@link QModel.fromJSON} — deserialize from a JSON string
+	 * @see {@link QModel.deserializeJson} — alias for `fromJSON`
+	 * @see {@link QModel.serialize} — serialize a model instance back to a plain object
+	 * @see {@link QModel.create} — factory alias that wraps the constructor
 	 *
 	 * @example
 	 * Basic deserialization
@@ -2241,6 +2296,11 @@ export abstract class QModel<
 	 * - Audit trails: track what the original data was
 	 *
 	 * @returns Plain object with initial values in the same format as constructor input
+	 *
+	 * @see {@link QModel.toInterface} — current state in the same format
+	 * @see {@link QModel.reset} — restore the instance to this initial state
+	 * @see {@link QModel.isDirty} — check whether the current state diverges from this baseline
+	 * @see {@link QModel.getChanges} — diff between current and initial state
 	 *
 	 * @example
 	 * ```typescript
@@ -2566,6 +2626,10 @@ export abstract class QModel<
 	 * @param partial - Optional fields to override in the new instance
 	 * @returns A new model instance
 	 *
+	 * @see {@link QModel.patch} — in-place mutation instead of a new instance
+	 * @see {@link QModel.reset} — revert the current instance (no new object created)
+	 * @see {@link QModel.equals} — compare two instances for deep equality
+	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'John', age: 30 });
@@ -2647,6 +2711,10 @@ export abstract class QModel<
 	 *          `before` = this instance's value, `after` = other instance's value.
 	 *          Returns an empty object when both instances are equal.
 	 *
+	 * @see {@link QModel.equals} — boolean equality shortcut (no diff detail)
+	 * @see {@link QModel.getChanges} — diff against the construction baseline (not another instance)
+	 * @see {@link QModel.serialize} — the serialized form used for comparison
+	 *
 	 * @example
 	 * ```typescript
 	 * const a = new User({ name: 'John', age: 30 });
@@ -2684,6 +2752,10 @@ export abstract class QModel<
 	 * @param other - Another instance of the same model class
 	 * @returns `true` if all serialized fields are equal, `false` otherwise
 	 *
+	 * @see {@link QModel.diff} — field-by-field diff with before/after values
+	 * @see {@link QModel.deepEqual} — internal deep equality primitive (private)
+	 * @see {@link QModel.copy} — create an equal copy with a new reference
+	 *
 	 * @example
 	 * ```typescript
 	 * const a = new User({ id: '1', name: 'John' });
@@ -2719,6 +2791,8 @@ export abstract class QModel<
 	 * @param type - Schema type to generate
 	 * @returns Generated schema in the requested format
 	 * @throws Error if schema type is unknown
+	 *
+	 * @see {@link QModel.getSchema} — instance variant that enriches the schema with actual example values
 	 *
 	 * @example
 	 * Generate JSON Schema
@@ -2856,6 +2930,8 @@ export abstract class QModel<
 	 *
 	 * @param type - Schema type to generate
 	 * @returns Generated schema with examples
+	 *
+	 * @see {@link QModel.getSchema} — static variant (no examples, returns raw schema)
 	 *
 	 * @example
 	 * Generate JSON Schema with examples

@@ -46,15 +46,23 @@ This means importing `quickmodel` and declaring model classes does **not** run a
 // ✅ Module load: zero transformer constructors run
 import { QModel, Quick } from 'quickmodel';
 
-class Order extends QModel<Order> {
-	@Quick() id: number = 0;
+interface IOrder {
+	id: number;
+	status: string;
 }
 
-// ✅ Still no transformer constructors — just serialization
-const plain = new Order({ id: 1 }).serialize();
+@Quick({ id: Number, status: String })
+class Order extends QModel<IOrder> {
+	declare id: number;
+	declare status: string;
+}
+
+// ✅ Still no transformer constructors — just deserialization + serialization
+const order = new Order({ id: 1, status: 'pending' });
+const plain = order.serialize();
 
 // ⚡ HERE: 14+ transformer constructors run (once, cached after this)
-const ok = new Order({ id: 1 }).isValid();
+const ok = order.isValid();
 ```
 
 ## Optional peer dependencies: `zod` and `faker`
@@ -74,12 +82,19 @@ This means bundlers will **not** include `zod` or `@faker-js/faker` in your bund
 // ✅ This import does NOT pull zod into your bundle
 import { QModel, Quick } from 'quickmodel';
 
-class User extends QModel<User> {
-	@Quick() name: string = '';
+interface IUser {
+	name: string;
+	createdAt: string;
+}
+
+@Quick({ name: String, createdAt: Date })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare createdAt: Date;
 }
 
 // zod is only required the moment this line executes at runtime
-const schema = User.getSchema('zod');
+const zodSchema = User.getSchema('zod');
 ```
 
 ## Granular subpath imports
@@ -103,36 +118,83 @@ For maximum control over what ends up in your bundle, use the dedicated entry po
 | `quickmodel/compat/ts5/forms`    | TC39 decorator form helpers                                      | TypeScript 5+ projects            |
 | `quickmodel/core`                | Core internal index                                              | Advanced extension                |
 
-### Practical example: test utilities
+### Practical example: mocks only in tests
 
-If your test files generate mock data but your source files never do, isolate the mock system to tests only:
+The mock system (`faker`) is never instantiated in production code — only on the first `.mock()` call. You can safely call `.mock()` from tests without it affecting production bundles:
 
 ```ts
 // src/user.model.ts — production code
-import { QModel, Quick } from 'quickmodel'; // no mock system loaded
+import { QModel, Quick } from 'quickmodel';
 
-class User extends QModel<User> {
-	@Quick() name: string = '';
-	@Quick() age: number = 0;
+interface IUser {
+	name: string;
+	age: number;
+	role: string;
 }
+
+@Quick({ name: String, age: Number, role: String })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare age: number;
+	declare role: string;
+}
+
+export { User };
 ```
 
 ```ts
-// tests/user.factory.ts — test code
-import { QMockBuilder } from 'quickmodel/mock'; // only mock, no QModel overhead
+// tests/user.test.ts — test code (faker loads here, not in production)
+import { User } from '../src/user.model';
 
-const mockUser = new QMockBuilder({ name: 'Alice', age: 30 });
+// Generate a random instance
+const user = User.mock().random();
+
+// Generate with fixed overrides
+const admin = User.mock().random({ role: 'admin' });
+
+// Generate an array of 5 instances
+const users = User.mock().array(5);
 ```
 
 ### Practical example: schema export only
+
+When using `quickmodel/schema/zod` directly, zod is never loaded at application startup:
 
 ```ts
 // scripts/export-schema.ts
 import { ZodSchemaGenerator } from 'quickmodel/schema/zod';
 
-const gen = new ZodSchemaGenerator();
-// zod is loaded here — not at application startup
-const schema = gen.generate(MyModel);
+// zod loads here — not when the application module is first imported
+const schema = ZodSchemaGenerator.generate({
+	className: 'User',
+	decoratorConfig: { name: String, age: Number, createdAt: Date },
+	properties: ['name', 'age', 'createdAt'],
+});
+```
+
+Alternatively, use the static method on the model class (zod still loads lazily):
+
+```ts
+import { QModel, Quick } from 'quickmodel';
+
+
+## Feature & Coverage Comparison
+
+<BenchmarkChart
+  :only-tabs="['features', 'coverage']"
+  default-tab="features"
+/>
+interface IUser { name: string; age: number; createdAt: string; }
+
+@Quick({ name: String, age: Number, createdAt: Date })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare age: number;
+	declare createdAt: Date;
+}
+
+// zod loads here, on first call
+const zodSchema = User.getSchema('zod');
 ```
 
 ## Measuring your actual footprint

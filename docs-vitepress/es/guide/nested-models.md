@@ -515,3 +515,12 @@ class Profile extends QModel<IProfile> {
 - [Decorador @Quick](/es/guide/quick-decorator) - Aprende más sobre transformaciones
 - [Transformadores Personalizados](/es/guide/custom-transformers) - Crea tipos anidados personalizados
 - [Ejemplos](/es/examples/complex-types) - Ve ejemplos de anidamiento complejo
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['nestedConstruct']"
+  :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

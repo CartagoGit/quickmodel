@@ -5,10 +5,10 @@ export const scenario: IBenchScenario = {
 	benchNum: 9,
 	appTypes: ['all', 'api', 'ddd'],
 	values: {
-		'Plain JS': 23_837_902,
-		'class-transformer': 62_247,
+		'Plain JS': 21_833_584,
+		'class-transformer': 83_316,
 		QuickModel: 250_000,
-		'QuickModel @QAlias': 101_202,
+		'QuickModel @QAlias': 105_330,
 		TypeBox: null,
 		valibot: null,
 		Zod: null,

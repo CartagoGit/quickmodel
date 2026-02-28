@@ -283,3 +283,12 @@ class Usuario extends QModel<IUsuario> {
 - **[Validación con @QRule](./validation.md)** — Reglas personalizadas, apilado, async, grupos
 - **[Guía de Formularios](./forms.md)** — Validación por grupos y form schema
 - **[Transformadores](./transformers.md)** — Coerción de tipos, incluyendo `special-float` (NaN / Infinity)
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['validation', 'validationReport']"
+  :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup', 'Zod', 'valibot']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

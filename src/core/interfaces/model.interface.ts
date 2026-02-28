@@ -54,6 +54,9 @@ export type IQTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
  * @template TInterface - Base model interface representing JSON structure
  * @template TTransforms - Object mapping property names to their transformed types
  *
+ * @see {@link QModel} — the base class that performs the actual type transformation at runtime
+ * @see {@link Quick} — decorator that maps each property to its transformer
+ *
  * @example
  * Basic usage with type transformations
  * ```typescript

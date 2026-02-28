@@ -40,3 +40,12 @@ QuickModel incluye un conjunto de transformadores integrados para manejar tipos 
 | `weakset`           | Handles `weakset` data types.                                       |
 
 Consulta [Transformadores Personalizados](./custom-transformers.md) para añadir los tuyos.
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['coercion', 'typeSerialization']"
+  :only-libs="['QuickModel', 'superjson', 'class-transformer', 'Plain JS']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

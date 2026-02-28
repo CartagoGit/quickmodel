@@ -24,6 +24,10 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  *
  * @param alias - The external key name (e.g. `'first_name'`).
  *
+ * @see {@link Quick} — class-level alias configuration via `@Quick({}, { alias: {...} })` with full type-safety on `serialize()` return type
+ * @see {@link QModel.serialize} — outputs the aliased key names
+ * @see {@link QModel.create} — accepts the aliased key names as input
+ *
  * @remarks
  * **TypeScript limitation:** due to `experimentalDecorators: true`, TypeScript cannot
  * propagate the alias mapping to the return type of `serialize()`. The IDE will show

@@ -66,6 +66,9 @@ import { QCOMPUTED_METADATA_KEY } from '../constants/metadata-keys';
  * ```
  *
  * @group Decorators
+ *
+ * @see {@link QModel.serialize} — includes computed fields in the serialized output
+ * @see {@link QModel.toJSON} — also includes computed fields when converting to JSON
  */
 export function QComputed(): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol): void => {

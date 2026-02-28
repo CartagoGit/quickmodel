@@ -36,6 +36,10 @@ export interface IQRule<T = unknown> {
 
 /**
  * Result returned by `QModel.checkRules()`.
+ *
+ * @see {@link QModel.checkRules} — synchronous evaluation
+ * @see {@link QModel.checkRulesAsync} — async evaluation
+ * @see {@link IQValidationReport} — combined integrity + rules report
  */
 export interface IQRulesResult {
 	/** `true` when all business rules pass. */
@@ -58,6 +62,10 @@ export interface IQRulesResult {
 
 /**
  * Options for `checkRulesAsync()`, `isValidAsync()` and `validationReportAsync()`.
+ *
+ * @see {@link QModel.checkRulesAsync}
+ * @see {@link QModel.isValidAsync}
+ * @see {@link QModel.validationReportAsync}
  */
 export interface IQRulesAsyncOptions {
 	/**

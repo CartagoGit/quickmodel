@@ -216,3 +216,12 @@ Returns plain JavaScript objects (POJOs), **not** class instances. Useful for AP
 // Returns { name: "..." } instead of User { name: "..." }
 const userJson = User.mock().interfaceRandom();
 ```
+
+## Performance
+
+<BenchmarkChart
+  :only-scenarios="['mocks']"
+  :only-libs="['QuickModel', 'faker (manual)']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

@@ -216,3 +216,12 @@ Devuelve objetos JavaScript planos (POJOs), **no** instancias de clase. Útil pa
 // Devuelve { name: "..." } en lugar de User { name: "..." }
 const userJson = User.mock().interfaceRandom();
 ```
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['mocks']"
+  :only-libs="['QuickModel', 'faker (manual)']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

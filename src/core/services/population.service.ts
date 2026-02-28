@@ -54,6 +54,11 @@ interface IQPopulateClassMeta {
 	 * fired for this class — replaces the static Set.has() lookup in the hot path.
 	 */
 	unknownPolicyWarned: boolean;
+	/**
+	 * OPT#POP-DOT: subset of decoratedFields that contain a dot ('.').
+	 * Pre-computed once at first construction to avoid filter() alloc per call.
+	 */
+	dotNotationFields: string[];
 }
 const _POPULATE_CLASS_META = new WeakMap<Function, IQPopulateClassMeta>();
 
@@ -289,6 +294,11 @@ export class PopulationService {
 				// OPT: per-class one-shot warning flags to avoid repeated Logger.warn() calls
 				disableSafetyChecksWarned: false,
 				unknownPolicyWarned: false,
+				// OPT#POP-DOT: pre-filter dot-notation keys once; empty array for most models
+				dotNotationFields: rawDecorated.filter(
+					(fld: unknown) =>
+						typeof fld === 'string' && fld.includes('.')
+				),
 			};
 			_POPULATE_CLASS_META.set(modelClass, classMeta);
 		}
@@ -469,17 +479,17 @@ export class PopulationService {
 				// If isOriginalKnown is true and isNormalizedKnown is false, we keep original key.
 			}
 
-			// Normalization logic (String trimming, etc) applied to VALUE
-			if (key === 'save') {
-				Logger.debug(
-					'[POPULATE_DEBUG] Found save key in data',
-					modelClass,
-					{ decoratedFields }
-				);
-			}
-
 			// SECURITY: Prevent Prototype Pollution (Check raw input key)
-			if (this.securityInspector.isDangerousKey(key)) {
+			// OPT#POP-DANGER: inlined — avoids method dispatch through this.securityInspector per key
+			if (
+				key === '__proto__' ||
+				key === 'constructor' ||
+				key === 'prototype' ||
+				key === '__defineGetter__' ||
+				key === '__defineSetter__' ||
+				key === '__lookupGetter__' ||
+				key === '__lookupSetter__'
+			) {
 				continue;
 			}
 
@@ -679,10 +689,8 @@ export class PopulationService {
 			);
 		}
 
-		// Handle Dot Notation properties
-		const dotNotationFields = decoratedFields.filter(
-			(field: unknown) => typeof field === 'string' && field.includes('.')
-		);
+		// Handle Dot Notation properties (OPT#POP-DOT: pre-cached in classMeta)
+		const dotNotationFields = classMeta.dotNotationFields;
 
 		for (const dotKey of dotNotationFields) {
 			// OPT#4c: Build recursionContext lazily for dot notation too

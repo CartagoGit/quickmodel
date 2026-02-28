@@ -148,3 +148,12 @@ admin.serialize(); // { first_name: 'Dan', ..., numero_telefono: '555-1234' }
 | Mapeo de modelos externos         | `@QAlias('user_id')` en `userId`           |
 | Nombres de columnas de DB         | `@QAlias('phone_number')` en `phoneNumber` |
 | Nombres de campo legacy           | `@QAlias('e_mail')` en `email`             |
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['aliasMapping']"
+  :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

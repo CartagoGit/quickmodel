@@ -278,3 +278,12 @@ class User extends QModel<IUser> {
 - **[Validation with @QRule](./validation.md)** — Custom rules, stacking, async, groups
 - **[Forms Guide](./forms.md)** — Group validation and form schema
 - **[Transformers](./transformers.md)** — Type coercion including `special-float` (NaN / Infinity)
+
+## Performance
+
+<BenchmarkChart
+  :only-scenarios="['validation', 'validationReport']"
+  :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup', 'Zod', 'valibot']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

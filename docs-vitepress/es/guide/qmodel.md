@@ -315,3 +315,12 @@ const admin = User.mock().random({ role: 'admin' });
 
 > [!TIP]
 > Para más detalles sobre las potentes funciones de generación de mocks, consulta la [Guía de Mocks](/es/guide/mocks).
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['batch', 'isDirty', 'bulkConstruct']"
+  :only-libs="['QuickModel', 'Plain JS', 'Immer']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

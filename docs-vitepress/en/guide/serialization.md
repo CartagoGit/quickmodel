@@ -559,3 +559,12 @@ user.serialize();
 - [Transformers](/en/guide/transformers) - See all transformation rules
 - [Nested Models](/en/guide/nested-models) - Work with complex structures
 - [Examples](/en/examples/api-models) - Real-world API integration
+
+## Performance
+
+<BenchmarkChart
+  :only-scenarios="['serialization', 'coercion', 'typeSerialization', 'schemaMultiFormat']"
+  :only-libs="['QuickModel', 'superjson', 'class-transformer', 'Plain JS']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

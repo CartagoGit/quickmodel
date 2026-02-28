@@ -558,3 +558,12 @@ Los campos `@QComputed()` también se incluyen en la salida de `toJSON()`, lo qu
 - [Transformadores](/es/guide/transformers) - Ve todas las reglas de transformación
 - [Modelos Anidados](/es/guide/nested-models) - Trabaja con estructuras complejas
 - [Ejemplos](/es/examples/api-models) - Integración con API del mundo real
+
+## Rendimiento
+
+<BenchmarkChart
+  :only-scenarios="['serialization', 'coercion', 'typeSerialization', 'schemaMultiFormat']"
+  :only-libs="['QuickModel', 'superjson', 'class-transformer', 'Plain JS']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>

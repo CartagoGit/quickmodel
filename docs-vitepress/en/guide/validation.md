@@ -571,3 +571,12 @@ const result = qCheckRules(form, { group: Groups.identity });
 ```
 
 > 📖 **[Form Validation guide](/en/guide/forms)** — Full reference: `qGroups`, `qGetGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync`, Angular/React/Vue examples.
+
+## Performance
+
+<BenchmarkChart
+  :only-scenarios="['validation', 'rules', 'asyncRules', 'validationReport']"
+  :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup', 'Zod', 'valibot']"
+  :only-tabs="['performance']"
+  default-tab="performance"
+/>
