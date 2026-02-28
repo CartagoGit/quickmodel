@@ -15,7 +15,7 @@ QuickModel is a TypeScript library that provides automatic serialization and des
 - **Schema Generation**: Export to 7 formats (`json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`) via `getSchema()`.
 - **Form Integration**: Generate form schemas with `@QField` and `@QGroup` decorators and `getFormSchema()`.
 - **Mock Generation**: Built-in mock data generation for testing (`User.mock().random()`, `User.mock().fromSchema()`).
-- **MCP Server**: 20 public AI assistant tools and 19 prompt templates for AI-assisted development.
+- **MCP Server**: 20 public AI assistant tools and 20 prompt templates for AI-assisted development.
 - **Security**: Built-in DoS protection, payload size limits, recursion guards, and XSS prevention.
 - **SOLID Architecture**: Clean, extensible design — register custom transformers without modifying core code.
 

@@ -22,7 +22,23 @@ import { ICaseType } from '../types/case.type';
  */
 export class CaseHelper {
 	/**
-	 * Converts a string to the specified case format.
+	 * Converts a string from any recognised naming convention to `format`.
+	 *
+	 * The conversion follows the normalisation pipeline described in the class-level
+	 * JSDoc: split on camelCase/snake/kebab boundaries → lowercase tokens → re-join.
+	 *
+	 * @param format - Target case format: `'snake_case'`, `'camelCase'`, `'kebab-case'`, or `'PascalCase'`
+	 * @param str - The source string to convert (any mixed case/separator style)
+	 * @returns The string converted to `format`, or the original string unchanged
+	 *   if `format` is unrecognised or `str` is falsy.
+	 *
+	 * @example
+	 * ```ts
+	 * CaseHelper.toCase('snake_case', 'firstName')  // 'first_name'
+	 * CaseHelper.toCase('kebab-case', 'firstName')  // 'first-name'
+	 * CaseHelper.toCase('PascalCase', 'my_field')   // 'MyField'
+	 * CaseHelper.toCase('camelCase',  'my-field')   // 'myField'
+	 * ```
 	 */
 	static toCase(format: ICaseType, str: string): string {
 		if (!str) return str;

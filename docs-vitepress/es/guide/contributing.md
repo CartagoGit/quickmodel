@@ -68,8 +68,9 @@ src/
 │   │   ├── serializer.service.ts
 │   │   ├── deserializer.service.ts
 │   │   ├── mock-builder.service.ts
-│   │   ├── mock-generator.service.ts
-│   │   ├── schema-generators.service.ts
+│   │   ├── mock-generator.service.ts         # faker cargado lazy (createRequire)
+│   │   ├── schema-generators.service.ts      # JSON, Mongo, TS, GraphQL, OpenAPI, AJV
+│   │   ├── zod-schema-generator.service.ts   # Zod — lazy, NO está en el grafo de imports estáticos
 │   │   ├── integrity.service.ts
 │   │   ├── to-interface.service.ts
 │   │   ├── security-inspector.service.ts
@@ -107,7 +108,7 @@ src/
 └── mcp/
     ├── server.ts                  # Punto de entrada del servidor MCP
     ├── locales/                   # i18n (en.mcp.ts, es.mcp.ts)
-    ├── prompts/                   # 19 plantillas de prompts MCP
+    ├── prompts/                   # 20 plantillas de prompts MCP
     └── tools/
         ├── public/                # 20 herramientas MCP públicas
         └── internal/              # 20 herramientas MCP internas
@@ -120,6 +121,15 @@ src/
 - **Transformers**: Cada transformer maneja UN tipo específico
 - **Services**: Servicios separados para serialización, deserialización y validación
 - **Decorators**: Solo registran metadata, no contienen lógica de transformación
+
+> **Nota sobre el bundle**: `ZodSchemaGenerator` vive en su propio archivo
+> (`zod-schema-generator.service.ts`) y carga `zod` de forma lazy con `createRequire`
+> (mismo patrón que `@faker-js/faker` en el servicio de mocks). Los bundlers que siguen
+> imports estáticos (webpack, Vite/Rollup, esbuild) **no incluirán** `zod` en el bundle
+> del consumidor a menos que se llame realmente a `QModel.getSchema('zod')` o
+> `QZodSchemaGenerator`. Del mismo modo, `QMockGenerator` se instancia lazy dentro de
+> `QModel` — su constructor solo se ejecuta en la primera llamada a `.mock()`, no al
+> cargar la clase.
 
 #### 2. Open/Closed Principle (OCP)
 

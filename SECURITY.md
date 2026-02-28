@@ -35,7 +35,7 @@ The deserializer explicitly prevents prototype pollution attacks by blocking mod
     - Configurable per-model via `@Quick({}, { maxArrayLength: 20000 })`.
 - **Large Object Protection**: **(New in v1.1.0)** Prevents memory exhaustion attacks via objects with excessive key counts.
     - Enforced limit: **50,000 properties** per object instance.
-- **Map/Set Pre-allocation Checks**: Transformers verify input size against limits (`maxItems`) *before* allocating memory or iterating keys, preventing CPU/Memory exhaustion from massive inputs even in legacy object-to-map conversion paths.
+- **Map/Set Pre-allocation Checks**: Transformers verify input size against limits (`maxItems`) _before_ allocating memory or iterating keys, preventing CPU/Memory exhaustion from massive inputs even in legacy object-to-map conversion paths.
 
 ### 3. Circular Reference & Stack Overflow Handling
 
@@ -48,6 +48,7 @@ Transformers validate inputs strictly. The `validate()` method allows you to ver
 
 **URL Injection Protection (v1.0.1+):**
 The `URLTransformer` now validates protocols to prevent unsafe schemes like `javascript:` or `file:`.
+
 - **Allowed by default:** `http:`, `https:`, `ftp:`, `ws:`, `wss:`
 - **Blocked:** `javascript:`, `file:`, `data:`, `vbscript:`
 - Use `transformerOptions.allowedProtocols` to customize.
@@ -68,6 +69,7 @@ QuickModel provides protections against Mass Assignment attacks:
 Properties present in the JSON but not in the model **will be copied** to the instance unless you use `unknownPropertyPolicy: 'error'`.
 
 **Recommendation:** Always enable error policy for public-facing API models:
+
 ```typescript
 @Quick({}, { unknownPropertyPolicy: 'error' })
 class User extends QModel<IUser> { ... }
@@ -76,6 +78,7 @@ class User extends QModel<IUser> { ... }
 ### 6. Type Confusion & Polymorphism Safety
 
 **Discriminator Integrity (v1.0.1+):**
+
 - **Fail Secure**: If a discriminator function throws an error (e.g. malformed data), the library will **propagate the error** instead of silently falling back to a default type.
 - **Null Safety**: When deserializing arrays of models (`[User]`), `null` or `undefined` values are now **preserved** (`[User, null]`) instead of being filtered out, ensuring index integrity and preventing logic errors.
 
@@ -100,7 +103,7 @@ Internal error handlers allow secure logging of malformed data without crashing 
 
 ### 8. Security Best Practices
 
-- **Validate Input**: Always use `.validate()` on models created from untrusted sources.
+- **Validate Input**: Always use `.isValid()` or `.checkIntegrity()` on models created from untrusted sources.
 - **Use Error Policy**: Consider using `unknownPropertyPolicy: 'error'` (`@Quick({ unknownPropertyPolicy: 'error' })`) to reject unknown properties in payloads.
 - **Sanitize Strings**: When using the `RegExp` transformer with user input, sanitize the input to prevent ReDoS.
 

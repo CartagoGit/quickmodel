@@ -60,6 +60,18 @@ export class QPreCommitCheckTool extends QAbstractTool<
 	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Simulates the Husky pre-commit hook by running ESLint (`--fix`) and
+	 * Prettier (`--write`) on the specified files.
+	 *
+	 * @param args - Hook simulation options.
+	 * @param args.files - File paths to process. When omitted, defaults to all
+	 * TypeScript / JavaScript files in `src/`.
+	 * @returns `{ passed, eslint_errors, eslint_warnings, prettier_changed, issues, summary }` —
+	 * `passed` is `true` only when ESLint reports zero errors; `issues` is the
+	 * structured list of lint problems; `prettier_changed` counts auto-formatted
+	 * files.
+	 */
 	async execute(args: { files?: string[] }): Promise<{
 		passed: boolean;
 		eslint_errors: number;

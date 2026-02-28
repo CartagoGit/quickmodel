@@ -39,6 +39,19 @@ export class QGenerateTestTool extends QAbstractTool<
 	/** @internal `fs` module reference; can be overridden in tests to inject a mock filesystem. */
 	protected _fs = fs;
 
+	/**
+	 * Generates a starter Bun-compatible test file mirroring the source path
+	 * under `tests/unit/`.
+	 *
+	 * @param args - Generator options.
+	 * @param args.sourceFile - Absolute or project-relative path to the source
+	 * TypeScript file for which the test should be generated
+	 * (e.g. `src/core/user.ts`).
+	 * @returns `{ path, content, message? }` — `path` is the absolute path of the
+	 * generated or pre-existing test file; `content` is the boilerplate code;
+	 * `message` carries an error description when the source file is not found or
+	 * a path-traversal is detected.
+	 */
 	async execute(args: {
 		sourceFile: string;
 	}): Promise<{ path: string; content: string; message?: string }> {

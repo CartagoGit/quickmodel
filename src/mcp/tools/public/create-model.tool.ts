@@ -23,6 +23,15 @@ export class QCreateModelTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Generates TypeScript source code for a new QuickModel class.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.className - Valid JavaScript identifier for the model class name.
+	 * @param args.properties - Map of property name → transformer type string (e.g. `{ createdAt: 'Date' }`).
+	 * @returns `{ code }` — the generated TypeScript source.
+	 * @throws {Error} When `className` or any property key is not a valid identifier.
+	 */
 	async execute(args: {
 		className: string;
 		properties: Record<string, string>;

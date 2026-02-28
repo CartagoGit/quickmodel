@@ -3,6 +3,10 @@ import { z } from 'zod';
 /**
  * Interface definition for any MCP tool in the QuickModel ecosystem.
  * All tools must implement this interface to be registered with the QMcpServer.
+ *
+ * @typeParam T - Zod schema type defining the tool's accepted arguments.
+ * @see {@link QAbstractTool} — abstract base class that implements this interface
+ * @see {@link QMcpServer} — server that registers and exposes tools
  */
 export interface IQMcpTool<T extends z.ZodObject<any> = z.ZodObject<any>> {
 	/**
@@ -32,7 +36,15 @@ export interface IQMcpTool<T extends z.ZodObject<any> = z.ZodObject<any>> {
 
 /**
  * Abstract base class for QuickModel MCP tools.
- * Provides a standard structure for implementing specific tools.
+ *
+ * Provides a standard structure for implementing specific tools that can be
+ * registered with {@link QMcpServer}. Subclasses must implement `name`,
+ * `description`, `schema`, and `execute()`.
+ *
+ * @typeParam T - Zod schema type defining the tool's accepted arguments
+ *
+ * @see {@link IQMcpTool} — the interface this class implements
+ * @see {@link QMcpServer} — registers tool instances and exposes them via MCP
  */
 export abstract class QAbstractTool<
 	T extends z.ZodObject<any>,

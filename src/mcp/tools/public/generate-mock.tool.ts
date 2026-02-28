@@ -28,20 +28,29 @@ export class QGenerateMockDataTool extends QAbstractTool<
 			.describe('Number of mock objects to generate'),
 	});
 
+	/**
+	 * Generates mock data instances for a dynamic QuickModel schema.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.schema - Type configuration in `@Quick()` format (e.g. `{ createdAt: 'Date' }`).
+	 * @param args.count - Number of mock objects to generate.
+	 * @returns Array of serialized plain objects, one per requested mock instance.
+	 */
 	async execute(args: {
-		schema: Record<string, string>;
+		schema: Record<string, unknown>;
 		count: number;
-	}): Promise<any[]> {
+	}): Promise<unknown[]> {
 		await Promise.resolve();
 		// dynamically create a class
 		// We can't easily perform "class X extends QModel" dynamically in strict TS without eval or mixins
 		// But we can define an anonymous class.
 
+		/** @internal Ephemeral model built dynamically to apply the caller-supplied schema. */
 		class DynamicModel extends QModel<any> {}
 
 		// Apply decorators manually
 		// @Quick(args.schema)
-		Quick(args.schema)(DynamicModel);
+		Quick(args.schema as any)(DynamicModel);
 
 		// Generate mocks
 		const mocks: any[] = [];

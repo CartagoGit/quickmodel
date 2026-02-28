@@ -39,6 +39,15 @@ export class QUpdateDocsTool extends QAbstractTool<
 	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Triggers the documentation build or clean pipeline.
+	 *
+	 * @param args - Action to perform.
+	 * @param args.action - `'build'` runs `bun run docs:build` (TypeDoc + VitePress);
+	 * `'clean'` removes generated documentation artifacts.
+	 * @returns `{ stdout, stderr }` — raw output from the underlying command.
+	 * An empty `stdout` with a non-empty `stderr` indicates a build failure.
+	 */
 	async execute(args: { action: 'build' | 'clean' }): Promise<{
 		stdout: string;
 		stderr: string;

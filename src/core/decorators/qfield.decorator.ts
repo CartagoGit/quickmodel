@@ -80,6 +80,10 @@ export interface IQFormSchemaEntry extends IQFieldMeta {
  * Use `getFormSchema()` on the model to retrieve the full schema.
  *
  * @param meta - Form field metadata for this property.
+ *
+ * @see {@link QModel.getFormSchema} — retrieve the schema array for all decorated fields
+ * @see {@link QModel.getFormSchemaGrouped} — retrieve the schema organized by `@QGroup` sections
+ * @see {@link QGroup} — assign this field to a form section
  */
 export function QField(meta: IQFieldMeta): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol): void => {

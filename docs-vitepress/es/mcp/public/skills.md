@@ -29,6 +29,7 @@ Usa una **herramienta** cuando necesites una operación única y precisa (ej. `s
 | [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo |
 | [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                 |
 | [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Guía de Transformers                       | Elige el transformer correcto para un tipo TS y simúlalo         |
+| [`quickmodel_form_data`](#quickmodel_form_data)                   | Guía de Integración FormData ↔ QModel      | `fromFormData()`, `toFormData()`, fileMode/fileSource, streaming |
 
 ::: info Skills de Mantenimiento (solo contribuidores)
 Los skills para contribuidores que trabajan en el código base de QuickModel están en una sección separada: **[Skills Internos →](../internal/skills)**.
@@ -541,4 +542,95 @@ sample_data: "2024-06-01T10:00:00.000Z"
 → IA llama a simulate_transformation({ data: { createdAt: "2024-06-01T..." }, ... })
 → IA advierte: cadenas no ISO pueden producir Invalid Date
 → Devuelve guía del transformer + resultado de simulación
+```
+
+---
+
+## `quickmodel_form_data`
+
+**Flujo de trabajo guiado para integrar FormData del navegador/servidor con un QModel.**
+
+Cubre la API completa FormData ↔ QModel: `fromFormData()`, `toFormData()`, opciones `fileMode`/`fileSource` (`auto`, `binary`, `reference`, `base64`), overrides por campo y streaming para archivos grandes con `toReadableStream()`, `fromStream()` y `pipeStream()`. Explica también el callback `IQStreamProgress` y cuándo son `null` los campos `total`/`percent`/`eta`.
+
+### Argumentos
+
+| Argumento      | Obligatorio | Descripción                                                                                                            |
+| -------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `scenario`     | ✅ Sí       | Describe tu caso de uso (ej. `«El usuario sube avatar y datos de perfil desde un formulario del navegador»`)           |
+| `model_fields` | ✗ No        | Lista opcional de campos y tipos separados por coma (ej. `"avatar: File, userId: number, description: string"`)        |
+| `file_size`    | ✗ No        | `"small"` para archivos < 50 MB (API en memoria), `"large"` para > 50 MB (streaming), o déjalo vacío para cubrir ambos |
+
+### Árbol de decisión rápido
+
+```
+Archivo < 50 MB? → fromFormData(fd) / toFormData()
+Archivo > 50 MB? → toReadableStream() / fromStream() / pipeStream()
+```
+
+### API en memoria (< 50 MB)
+
+| Método / Opción                     | Propósito                                                             |
+| ----------------------------------- | --------------------------------------------------------------------- |
+| `Model.fromFormData(fd)`            | Parsea FormData → instancia del modelo tipada (auto-detect File/Blob) |
+| `dto.toFormData()`                  | Construye FormData a partir de los campos del modelo                  |
+| `fileSource: 'auto'` (por defecto)  | Inspección en tiempo de ejecución: File→File, ArrayBuffer→Blob        |
+| `fileSource: 'binary'`              | Preserva todo como File/Blob                                          |
+| `fileSource: 'reference'`           | Trata strings como rutas/URLs, sin deserialización binaria            |
+| `fileSource: 'base64'`              | Decodifica URI `data:` → Blob                                         |
+| `fileMode` (mismos valores)         | Modo de salida para `toFormData()`                                    |
+| `fields: { avatar: 'binary' }`      | Override por campo — máxima precedencia                               |
+| `@Quick({ fileMode: 'reference' })` | Valor por defecto permanente en el decorador a nivel de campo         |
+
+**Precedencia:** `@Quick({ fileMode })` < opción global de la llamada < opción por campo `fields`
+
+### API de Streaming (> 50 MB)
+
+| Método                                                        | Propósito                                                                                           |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `dto.toReadableStream({ field, chunkSize?, onChunk? })`       | Emite el campo del modelo como `ReadableStream<Uint8Array>` — sin cargar el archivo completo en RAM |
+| `dto.toReadableStream({ multipart: true, onChunk? })`         | Emite todos los campos como un stream `multipart/form-data` completo                                |
+| `Model.fromStream(stream, { field, maxBytes?, onProgress? })` | Acumula chunks del stream en un campo Blob del modelo                                               |
+| `Model.pipeStream(src, dst, { maxBytes?, onProgress? })`      | Pipe de memoria cero de origen a destino (S3, WriteStream…)                                         |
+
+### Callback IQStreamProgress
+
+```typescript
+interface IQStreamProgress {
+	bytes: number; // siempre disponible
+	total: number | null; // null si no hay Content-Length
+	percent: number | null; // null si total es null
+	chunks: number; // siempre disponible
+	bytesPerSec: number; // siempre disponible
+	elapsed: number; // ms desde el inicio del stream
+	eta: number | null; // null si total es null
+}
+```
+
+> `total` es `null` cuando se recibe un stream sin `Content-Length`. Un `File` de un formulario del navegador siempre tiene `.size`, por lo que `total` siempre está disponible en ese caso.
+
+### Flujo de trabajo
+
+1. Identifica si el escenario requiere la API en memoria o streaming en función de `file_size`
+2. Genera la clase QModel con los decoradores `@Quick({ fileMode })` correctos para los campos Blob/File
+3. Muestra la llamada a `fromFormData()` o `fromStream()` con las opciones adecuadas
+4. Muestra `toFormData()` o `toReadableStream()` para la parte de salida
+5. Si usa streaming, muestra el callback `IQStreamProgress` completo
+6. Llama a `isValid()` / `validationReport()` antes de cualquier operación de red
+
+### Herramientas usadas internamente
+
+_Este skill es completamente autónomo — utiliza el razonamiento de la IA sobre la API documentada en lugar de llamar a herramientas individuales._
+
+### Ejemplo
+
+```
+scenario: "El usuario sube avatar y datos de perfil desde un formulario del navegador"
+model_fields: "avatar: File, userId: number, description: string"
+file_size: "small"
+
+→ IA genera: @Quick({ avatar: 'binary' }) class UserProfileDto extends QModel<...>
+→ IA muestra: const dto = UserProfileDto.fromFormData(formData, { fileSource: 'binary' })
+→ IA muestra: dto.isValid() antes de enviar
+→ IA muestra: const outFd = dto.toFormData({ fileMode: 'reference' })
+→ Devuelve guía de integración completa para el escenario
 ```

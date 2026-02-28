@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Performance
+
+- **Lazy `ZodSchemaGenerator`** — `zod` is no longer in the static import graph of `quickmodel`'s
+  main entry point. `ZodSchemaGenerator` was extracted to its own file
+  (`src/core/services/zod-schema-generator.service.ts`) which loads `zod` via `createRequire` on
+  first use (same pattern used for `@faker-js/faker` in the mock generator). Forward-compatible
+  re-export kept in `schema-generators.service.ts` so existing imports are unaffected.
+- **Lazy `QMockGenerator` init** — The `QMockGenerator` singleton inside `QModel` is now
+  instantiated lazily on the first call to `.mock()` instead of eagerly at class-load time.
+  This prevents the mock generator's constructor from running in codepaths that never use mocks.
+
 ### Added
 
 - **`excludeFields` option in `@Quick()`** — Permanently exclude fields from serialization:
@@ -49,7 +60,7 @@
 - **`validationReport()` / `isValid()` instance methods** — convenience wrappers for inline validation:
     - `isValid()` → `boolean`
     - `validationReport()` → `IQValidationReport` with `{ valid, errors, integrityResult }`
-- **`/forms` submodule** (`@cartago-git/quickmodel/forms`) — standalone form-validation helpers:
+- **`/forms` submodule** (`quickmodel/forms`) — standalone form-validation helpers:
     - `qGroups(...names)` — creates a typed group-name map (TS 4.1+)
     - `qGetGroups(instance)` — returns distinct `@QGroup` names on an instance
     - `qCheckRules(instance, options?)` — runs `@QRule` predicates (optionally filtered by group)
@@ -63,7 +74,7 @@
     - `@Min(n)`, `@Max(n)`, `@IsInt()`, `@IsPositive()`, `@IsNegative()`
     - `@IsIn(values)`
     - All work on plain classes and `QModel` subclasses; compatible with `@QGroup`
-- **`/matchers` submodule** (`@cartago-git/quickmodel/matchers`) — custom test matchers:
+- **`/matchers` submodule** (`quickmodel/matchers`) — custom test matchers:
     - `toBeValidQModel()` — all `@QRule` checks pass
     - `toHaveQRuleError(field, message?)` — specific field has a rule error
     - `toHaveQField(fieldName)` — property has `@QField` decorator
@@ -74,9 +85,9 @@
 - **MCP Server** (`src/mcp/server.ts`) — AI assistant integration via Model Context Protocol:
     - **20 public tools**: `create_model`, `validate_usage`, `list_transformers`, `list_validators`, `generate_mock`, `inspect_model`, `search_docs`, `interface_to_model`, `export_json_schema`, `explain_error`, `simulate_transformation`, `json_to_model`, `check_integrity`, `diff_models`, `get_form_schema`, `get_model_schema`, `roundtrip`, `simulate_rules`, `simulate_validation`, `simulate_async_rules`
     - **20 internal dev tools**: `update_docs`, `generate_test`, `check_jsdocs`, `check_health`, `coverage_report`, `check_project_rules`, `check_security`, `sync_docs`, `scaffold_feature`, `check_api_compatibility`, `benchmark_performance`, `lint_check`, `typecheck`, `run_tests`, `pre_commit_check`, `get_staged_files`, `project_status`, `check_bundle_size`, `check_changelog`, `list_todos`
-    - Start server: `npx @cartago-git/quickmodel mcp`
-- **MCP Prompts / Skills** (`src/mcp/prompts/`) — 19 guided AI workflows:
-    - **13 public skills**: `quickmodel_from_typescript`, `quickmodel_debug`, `quickmodel_generate_test_data`, `quickmodel_inspect_and_schema`, `quickmodel_form_validation`, `quickmodel_full_pipeline`, `quickmodel_mixin`, `quickmodel_alias_computed`, `quickmodel_migration`, `quickmodel_async_rules`, `quickmodel_add_qgroup`, `quickmodel_security_review`, `quickmodel_transformer_guide`
+    - Start server: `npx quickmodel mcp`
+- **MCP Prompts / Skills** (`src/mcp/prompts/`) — 20 guided AI workflows:
+    - **14 public skills**: `quickmodel_from_typescript`, `quickmodel_debug`, `quickmodel_generate_test_data`, `quickmodel_inspect_and_schema`, `quickmodel_form_validation`, `quickmodel_full_pipeline`, `quickmodel_mixin`, `quickmodel_alias_computed`, `quickmodel_migration`, `quickmodel_async_rules`, `quickmodel_add_qgroup`, `quickmodel_security_review`, `quickmodel_transformer_guide`, `quickmodel_form_data`
     - **6 internal/maintainer skills**: `quickmodel_implement_feature`, `quickmodel_fix_lint`, `quickmodel_fix_typecheck`, `quickmodel_refactor`, `quickmodel_apply_solid`, `quickmodel_sync_project`
 - **Framework integration documentation** (guides + tests):
     - Angular (37 tests), React (31 tests), Vue (27 tests), Svelte (21 tests), Backend/Express (25 tests)

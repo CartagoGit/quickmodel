@@ -408,3 +408,344 @@ export class TextDecoderTransformer extends BaseTransformer<
 		return { encoding: value.encoding };
 	}
 }
+
+// ============================================================================
+// Blob / File transformers (Propuesta G — FormData)
+// ============================================================================
+
+/**
+ * Serialized representation of a `Blob`.
+ * The binary content is **not** included — only its metadata.
+ *
+ * @group Types
+ */
+export interface IBlobSerialized {
+	/** Byte length of the original Blob. */
+	size: number;
+	/** MIME type of the original Blob. */
+	type: string;
+	/** Discriminant marker to identify this POJO as a serialized Blob. */
+	_blobRef: true;
+}
+
+/**
+ * Serialized representation of a `File`.
+ * The binary content is **not** included — only its metadata.
+ *
+ * @group Types
+ */
+export interface IFileSerialized {
+	/** File name as reported by the browser / OS. */
+	name: string;
+	/** Byte length of the file. */
+	size: number;
+	/** MIME type of the file. */
+	type: string;
+	/** Last-modified timestamp in milliseconds since Unix epoch. */
+	lastModified: number;
+}
+
+/** Accepted input types when deserializing a Blob field. */
+type IBlobInput = IBlobSerialized | Blob | ArrayBuffer | Uint8Array | string;
+
+/** Accepted input types when deserializing a File field. */
+type IFileInput = IFileSerialized | File;
+
+/**
+ * Returns `true` when `val` looks like an `IBlobSerialized` POJO.
+ * @internal
+ */
+function isBlobSerialized(val: unknown): val is IBlobSerialized {
+	return (
+		typeof val === 'object' &&
+		val !== null &&
+		'_blobRef' in val &&
+		(val as IBlobSerialized)._blobRef === true
+	);
+}
+
+/**
+ * Returns `true` when `val` looks like an `IFileSerialized` POJO.
+ * @internal
+ */
+function isFileSerialized(val: unknown): val is IFileSerialized {
+	return (
+		typeof val === 'object' &&
+		val !== null &&
+		'name' in val &&
+		typeof (val as IFileSerialized).name === 'string' &&
+		'size' in val &&
+		'type' in val &&
+		'lastModified' in val
+	);
+}
+
+/**
+ * Decodes a base64 data URI string into a `Blob`.
+ *
+ * @param dataUri   - Full data URI, e.g. `"data:image/png;base64,abc..."`
+ * @param propKey   - Property name for error messages.
+ * @param className - Class name for error messages.
+ * @returns A `Blob` with the decoded bytes and the parsed MIME type.
+ * @throws {QModelError} When the URI is malformed (no comma separator).
+ * @internal
+ */
+function blobFromDataUri(
+	dataUri: string,
+	propKey: string,
+	className: string
+): Blob {
+	const commaIdx = dataUri.indexOf(',');
+	if (commaIdx === -1) {
+		throw new QModelError(
+			`${className}.${propKey}: BlobTransformer: malformed data URI (missing comma separator). ` +
+				`Expected format: "data:<mime>;base64,<data>"`,
+			{
+				className,
+				propertyKey: propKey,
+				value: dataUri,
+				expectedType: 'data:<mime>;base64,<data>',
+			}
+		);
+	}
+	const header = dataUri.slice(5, commaIdx); // strip leading 'data:'
+	const base64Part = dataUri.slice(commaIdx + 1);
+	const mimeType = header.split(';')[0] ?? '';
+	const bytes = Buffer.from(base64Part, 'base64');
+	return new Blob([bytes], { type: mimeType });
+}
+
+/**
+ * Transformer for `Blob`: converts between a metadata POJO / binary sources and a `Blob` instance.
+ *
+ * **Serialization**: `Blob` → `IBlobSerialized` (`{ size, type, _blobRef: true }`)
+ * **Deserialization** (auto-detect):
+ * - `Blob` / `File`        → passthrough
+ * - `ArrayBuffer`          → wrap in `Blob`
+ * - `Uint8Array`           → wrap in `Blob`
+ * - `string "data:..."`    → decode base64 → `Blob`
+ * - `IBlobSerialized` POJO → restore with metadata only (content is not stored in JSON)
+ *
+ * @example
+ * ```typescript
+ * @Quick({ thumbnail: 'blob' })
+ * class ArticleDto extends QModel<IArticleDto> {
+ *   declare thumbnail: Blob;
+ * }
+ * ```
+ *
+ * @group Transformers
+ */
+export class BlobTransformer
+	extends BaseTransformer<IBlobInput, Blob>
+	implements IQIntegrityChecker
+{
+	/**
+	 * Converts multiple input formats into a `Blob` instance.
+	 *
+	 * @param value       - The value to deserialize.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className   - Class name (for error messages).
+	 * @returns A `Blob` instance, or `null` when `value` is `null`/`undefined`.
+	 * @throws {QModelError} On unsupported input types or malformed data URIs.
+	 */
+	deserialize(
+		value: IBlobInput | null | undefined,
+		propertyKey: string,
+		className: string,
+		_context?: IQTransformContext
+	): Blob | null {
+		if (value === null || value === undefined) return null;
+
+		// Blob (and its File subclass) — passthrough
+		if (value instanceof Blob) return value;
+
+		if (value instanceof ArrayBuffer) {
+			return new Blob([value]);
+		}
+
+		if (value instanceof Uint8Array) {
+			return new Blob([value as BlobPart]);
+		}
+
+		if (typeof value === 'string') {
+			if (!value.startsWith('data:')) {
+				throw new QModelError(
+					`${className}.${propertyKey}: BlobTransformer requires a base64 data URI ` +
+						`(e.g. "data:image/png;base64,..."), got: "${safeStringify(value)}"`,
+					{
+						className,
+						propertyKey,
+						value,
+						expectedType:
+							'data URI string (data:<mime>;base64,<data>)',
+					}
+				);
+			}
+			return blobFromDataUri(value, propertyKey, className);
+		}
+
+		if (isBlobSerialized(value)) {
+			// Content is not stored in JSON — reconstruct with metadata only
+			return new Blob([], { type: value.type });
+		}
+
+		throw new QModelError(
+			`${className}.${propertyKey}: BlobTransformer ONLY accepts:\n` +
+				`  - Blob / File instance\n` +
+				`  - ArrayBuffer\n` +
+				`  - Uint8Array\n` +
+				`  - data URI string (e.g. "data:image/png;base64,...")\n` +
+				`  - IBlobSerialized { size, type, _blobRef: true }\n` +
+				`Received: ${typeof value} = ${safeStringify(value)}`,
+			{
+				className,
+				propertyKey,
+				value,
+				expectedType:
+					'Blob | ArrayBuffer | Uint8Array | string | IBlobSerialized',
+			}
+		);
+	}
+
+	/**
+	 * Serializes a `Blob` to its metadata representation.
+	 *
+	 * @remarks Binary content is **not** included in the serialized output.
+	 * @param value - The `Blob` instance to serialize.
+	 * @returns An `IBlobSerialized` POJO with `size`, `type`, and `_blobRef: true`.
+	 */
+	serialize(value: Blob): IBlobSerialized {
+		return { size: value.size, type: value.type, _blobRef: true };
+	}
+
+	/** @inheritdoc */
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
+		if (value instanceof Blob) return { isValid: true };
+		if (isBlobSerialized(value)) return { isValid: true };
+		if (value instanceof ArrayBuffer) return { isValid: true };
+		if (value instanceof Uint8Array) return { isValid: true };
+		if (typeof value === 'string' && value.startsWith('data:')) {
+			return { isValid: true };
+		}
+
+		return {
+			isValid: false,
+			error:
+				`${context.className ?? '?'}.${context.propertyKey}: ` +
+				`Expected Blob or compatible input, got ${typeof value}`,
+		};
+	}
+}
+
+/**
+ * Transformer for `File`: converts between a metadata POJO and a `File` instance.
+ *
+ * **Serialization**: `File` → `IFileSerialized` (`{ name, size, type, lastModified }`)
+ * **Deserialization**:
+ * - `File` instance       → passthrough
+ * - `IFileSerialized` POJO → reconstruct `File` with metadata (empty content)
+ *
+ * @remarks
+ * File binary content is never included in the serialized form.
+ * After JSON round-trip, the deserialized `File` carries correct metadata
+ * but has zero bytes. Use `toFormData()` / `toReadableStream()` to preserve
+ * actual bytes for binary transfer.
+ *
+ * @example
+ * ```typescript
+ * @Quick({ avatar: 'file' })
+ * class ProfileDto extends QModel<IProfileDto> {
+ *   declare avatar: File;
+ * }
+ * ```
+ *
+ * @group Transformers
+ */
+export class FileTransformer
+	extends BaseTransformer<IFileInput, File>
+	implements IQIntegrityChecker
+{
+	/**
+	 * Converts supported input into a `File` instance.
+	 *
+	 * @param value       - The value to deserialize.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className   - Class name (for error messages).
+	 * @returns A `File` instance, or `null` when `value` is `null`/`undefined`.
+	 * @throws {QModelError} On unsupported input types or missing required fields.
+	 */
+	deserialize(
+		value: IFileInput | null | undefined,
+		propertyKey: string,
+		className: string,
+		_context?: IQTransformContext
+	): File | null {
+		if (value === null || value === undefined) return null;
+
+		if (value instanceof File) return value;
+
+		// Blob → File wrapping (e.g. from streamToBlob / fromStream)
+		if (value instanceof Blob) {
+			return new File([value], '', {
+				type: value.type,
+				lastModified: Date.now(),
+			});
+		}
+
+		if (isFileSerialized(value)) {
+			return new File([], value.name, {
+				type: value.type,
+				lastModified: value.lastModified,
+			});
+		}
+
+		throw new QModelError(
+			`${className}.${propertyKey}: FileTransformer ONLY accepts:\n` +
+				`  - File instance\n` +
+				`  - IFileSerialized { name, size, type, lastModified }\n` +
+				`Received: ${typeof value} = ${safeStringify(value)}`,
+			{
+				className,
+				propertyKey,
+				value,
+				expectedType: 'File | IFileSerialized',
+			}
+		);
+	}
+
+	/**
+	 * Serializes a `File` to its metadata representation.
+	 *
+	 * @remarks Binary content is **not** included in the serialized output.
+	 * @param value - The `File` instance to serialize.
+	 * @returns An `IFileSerialized` POJO with `name`, `size`, `type`, and `lastModified`.
+	 */
+	serialize(value: File): IFileSerialized {
+		return {
+			name: value.name,
+			size: value.size,
+			type: value.type,
+			lastModified: value.lastModified,
+		};
+	}
+
+	/** @inheritdoc */
+	checkIntegrity(
+		value: unknown,
+		context: IQIntegrityContext
+	): IQIntegrityResult {
+		if (value instanceof File) return { isValid: true };
+		if (isFileSerialized(value)) return { isValid: true };
+
+		return {
+			isValid: false,
+			error:
+				`${context.className ?? '?'}.${context.propertyKey}: ` +
+				`Expected File or IFileSerialized, got ${typeof value}`,
+		};
+	}
+}

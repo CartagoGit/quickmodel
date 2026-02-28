@@ -29,6 +29,7 @@ Use a **tool** when you need a single, precise operation (e.g. `simulate_transfo
 | [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation   |
 | [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit           |
 | [`quickmodel_transformer_guide`](#quickmodel_transformer_guide)   | Transformer Guide                      | Pick the right transformer for a TS type and simulate it         |
+| [`quickmodel_form_data`](#quickmodel_form_data)                   | FormData ↔ QModel Integration Guide    | `fromFormData()`, `toFormData()`, fileMode/fileSource, streaming |
 
 ::: info Maintainer Skills (contributors only)
 Skills for contributors working on the QuickModel codebase are in a separate section: **[Internal Skills →](../internal/skills)**.
@@ -541,4 +542,95 @@ sample_data: "2024-06-01T10:00:00.000Z"
 → AI calls simulate_transformation({ data: { createdAt: "2024-06-01T..." }, ... })
 → AI warns: non-ISO strings may produce Invalid Date
 → Returns transformer guide + simulation result
+```
+
+---
+
+## `quickmodel_form_data`
+
+**Guided workflow for integrating browser/server FormData with a QModel.**
+
+Covers the full FormData ↔ QModel API: `fromFormData()`, `toFormData()`, `fileMode`/`fileSource` options (`auto`, `binary`, `reference`, `base64`), per-field overrides, and streaming for large files via `toReadableStream()`, `fromStream()`, and `pipeStream()`. Also explains the `IQStreamProgress` callback and when `total`/`percent`/`eta` are `null`.
+
+### Arguments
+
+| Argument       | Required | Description                                                                                                             |
+| -------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `scenario`     | ✅ Yes   | Describe your use case (e.g. `"User uploads avatar and profile data from a browser form"`)                              |
+| `model_fields` | ✗ No     | Optional comma-separated list of relevant fields and types (e.g. `"avatar: File, userId: number, description: string"`) |
+| `file_size`    | ✗ No     | `"small"` for files < 50 MB (in-memory API), `"large"` for files > 50 MB (streaming API), or omit to cover both paths   |
+
+### Quick decision tree
+
+```
+File < 50 MB? → fromFormData(fd) / toFormData()
+File > 50 MB? → toReadableStream() / fromStream() / pipeStream()
+```
+
+### In-memory API (< 50 MB)
+
+| Method / Option                     | Purpose                                                       |
+| ----------------------------------- | ------------------------------------------------------------- |
+| `Model.fromFormData(fd)`            | Parse FormData → typed model instance (auto-detect File/Blob) |
+| `dto.toFormData()`                  | Build FormData from model fields                              |
+| `fileSource: 'auto'` (default)      | Runtime inspection: File→File, ArrayBuffer→Blob, `data:`→Blob |
+| `fileSource: 'binary'`              | Preserve all as File/Blob                                     |
+| `fileSource: 'reference'`           | Treat strings as paths/URLs, no binary deserialisation        |
+| `fileSource: 'base64'`              | Decode `data:` URI → Blob                                     |
+| `fileMode` (same values)            | Output mode for `toFormData()`                                |
+| `fields: { avatar: 'binary' }`      | Per-field override — highest precedence                       |
+| `@Quick({ fileMode: 'reference' })` | Permanent field-level default in decorator                    |
+
+**Precedence:** `@Quick({ fileMode })` < global call option < per-field `fields` option
+
+### Streaming API (> 50 MB)
+
+| Method                                                        | Purpose                                                                |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `dto.toReadableStream({ field, chunkSize?, onChunk? })`       | Emit model field as `ReadableStream<Uint8Array>` — no full file in RAM |
+| `dto.toReadableStream({ multipart: true, onChunk? })`         | Emit all fields as a complete `multipart/form-data` stream             |
+| `Model.fromStream(stream, { field, maxBytes?, onProgress? })` | Accumulate stream chunks into a model Blob field                       |
+| `Model.pipeStream(src, dst, { maxBytes?, onProgress? })`      | Zero-memory pipe from source to destination (S3, WriteStream, …)       |
+
+### IQStreamProgress callback
+
+```typescript
+interface IQStreamProgress {
+	bytes: number; // always available
+	total: number | null; // null if no Content-Length
+	percent: number | null; // null if total is null
+	chunks: number; // always available
+	bytesPerSec: number; // always available
+	elapsed: number; // ms since stream start
+	eta: number | null; // null if total is null
+}
+```
+
+> `total` is `null` when receiving a stream without `Content-Length`. A `File` from a browser form always has `.size`, so `total` is always set in that case.
+
+### Workflow
+
+1. Identifies whether the scenario needs in-memory or streaming API based on `file_size`
+2. Generates the QModel class with correct `@Quick({ fileMode })` decorators for Blob/File fields
+3. Shows `fromFormData()` or `fromStream()` call with the right options
+4. Shows `toFormData()` or `toReadableStream()` for the output side
+5. If streaming, demonstrates the full `IQStreamProgress` callback
+6. Calls `isValid()` / `validationReport()` before any network operation
+
+### Tools called internally
+
+_This skill is fully self-contained — it uses the AI's reasoning over the documented API rather than calling individual tools._
+
+### Example
+
+```
+scenario: "User uploads avatar and profile data from a browser form"
+model_fields: "avatar: File, userId: number, description: string"
+file_size: "small"
+
+→ AI generates: @Quick({ avatar: 'binary' }) class UserProfileDto extends QModel<...>
+→ AI shows: const dto = UserProfileDto.fromFormData(formData, { fileSource: 'binary' })
+→ AI shows: dto.isValid() check before sending
+→ AI shows: const outFd = dto.toFormData({ fileMode: 'reference' })
+→ Returns full integration guide for the scenario
 ```

@@ -73,10 +73,14 @@ export interface IQSerializer<
 	TInterface,
 > {
 	/**
-	 * Serializes a model to its interface representation
-	 * @param model - The model to serialize
-	 * @param seen - Optional WeakSet to track circular references
-	 * @param options - Serialization options
+	 * Serializes a model instance to its JSON-compatible plain-object form.
+	 *
+	 * @param model - The model instance to serialize
+	 * @param seen - Optional `WeakSet` used for circular-reference detection across
+	 *   recursive calls; pass `undefined` to let the serializer manage its own set.
+	 * @param options - Fine-grained serialization control (date strategy, case
+	 *   transformation, field inclusion/exclusion, etc.)
+	 * @returns A plain `TInterface` object ready for `JSON.stringify()` or network transfer
 	 */
 	serialize(
 		model: TModel,
@@ -85,7 +89,13 @@ export interface IQSerializer<
 	): TInterface;
 
 	/**
-	 * Serializes to JSON string
+	 * Serializes a model instance directly to a JSON string.
+	 *
+	 * Equivalent to `JSON.stringify(serializer.serialize(model, undefined, options))`.
+	 *
+	 * @param model - The model instance to serialize
+	 * @param options - Fine-grained serialization options (same as `serialize()`)
+	 * @returns A JSON-encoded string representation of the model
 	 */
 	serializeToJson(model: TModel, options?: IQSerializationOptions): string;
 }
@@ -101,7 +111,11 @@ export interface IQDeserializer<
 	TModel,
 > {
 	/**
-	 * Deserializes an interface to a model
+	 * Deserializes a plain-object payload into a fully-typed model instance.
+	 *
+	 * @param data - Plain object matching the `TInterface` shape
+	 * @param modelClass - Constructor of the target model class
+	 * @returns A fully-populated `TModel` instance with all transformers applied
 	 */
 	deserialize(
 		data: TInterface,
@@ -109,7 +123,12 @@ export interface IQDeserializer<
 	): TModel;
 
 	/**
-	 * Deserializes from JSON string.
+	 * Parses a JSON string and deserializes the result into a fully-typed model instance.
+	 *
+	 * @param json - A valid JSON string
+	 * @param modelClass - Constructor of the target model class
+	 * @returns A fully-populated `TModel` instance with all transformers applied
+	 * @throws {SyntaxError} If `json` is not valid JSON
 	 */
 	deserializeFromJson(
 		json: string,

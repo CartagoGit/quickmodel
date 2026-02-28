@@ -109,8 +109,17 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 			.describe('Options forwarded to checkRulesAsync()'),
 	});
 
+	/**
+	 * Runs async `@QRule` predicates against an in-memory QuickModel instance.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.data - The data object to validate.
+	 * @param args.rules - Array of async rules with field, predicate expression, and message.
+	 * @param args.options - Options forwarded to `checkRulesAsync()` (mode, timeoutMs, …).
+	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all predicates pass.
+	 */
 	async execute(args: {
-		data: Record<string, any>;
+		data: Record<string, unknown>;
 		rules: IAsyncSimulatedRule[];
 		options?: IQRulesAsyncOptions;
 	}): Promise<{
@@ -121,6 +130,7 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 		const { data, rules, options } = args;
 
 		@Quick({})
+		/** @internal Ephemeral model target for dynamically registered async business-logic rules. */
 		class DynamicModel extends QModel<any> {
 			[key: string]: any;
 		}

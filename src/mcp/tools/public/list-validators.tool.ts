@@ -100,6 +100,12 @@ export class QListValidatorsTool extends QAbstractTool<z.ZodObject<{}>> {
 		'List all built-in validator decorators available in QuickModel (e.g., @IsEmail, @Min, @MaxLength).';
 	schema = z.object({});
 
+	/**
+	 * Returns a sorted list of all built-in QuickModel validator decorator entries.
+	 *
+	 * @param _args - No arguments required.
+	 * @returns Array of `IValidatorEntry` objects sorted alphabetically by name.
+	 */
 	execute(_args: z.infer<z.ZodObject<{}>>): Promise<IValidatorEntry[]> {
 		return Promise.resolve(
 			[...VALIDATORS].sort((aVal, bVal) =>

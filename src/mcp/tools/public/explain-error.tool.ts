@@ -29,6 +29,13 @@ export class QExplainErrorTool extends QAbstractTool<
 		error: z.string().describe('The JSON string of the validation error'),
 	});
 
+	/**
+	 * Translates a QuickModel validation error JSON string into a human-readable explanation.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.error - JSON string of the validation error thrown by QuickModel.
+	 * @returns `{ explanation }` — a descriptive string explaining each error in plain language.
+	 */
 	async execute(args: { error: string }): Promise<{ explanation: string }> {
 		await Promise.resolve();
 		let errObj: any;

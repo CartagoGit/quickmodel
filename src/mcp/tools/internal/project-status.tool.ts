@@ -60,6 +60,15 @@ export class QProjectStatusTool extends QAbstractTool<
 	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Runs tests, lint, and TypeScript type-checking in sequence and returns a
+	 * consolidated health snapshot of the project.
+	 *
+	 * @param _args - No arguments required.
+	 * @returns `{ passed, tests, lint, typecheck, summary }` — each sub-object
+	 * exposes `passed` plus counts specific to that check; overall `passed` is
+	 * `true` only when all three checks pass.
+	 */
 	async execute(_args: Record<never, never>): Promise<{
 		passed: boolean;
 		tests: ITestStatus;

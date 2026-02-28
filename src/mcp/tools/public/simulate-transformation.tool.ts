@@ -27,15 +27,25 @@ export class QSimulateTransformationTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Hydrates a dynamic QuickModel with the provided data and transformer options,
+	 * then returns the fully serialized output.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.data - Raw input data (e.g. `{ createdAt: '2024-01-01' }`).
+	 * @param args.options - Transformer config in `@Quick()` format (e.g. `{ createdAt: 'Date' }`).
+	 * @returns `{ result }` — the fully serialized plain object after transformation.
+	 */
 	async execute(args: {
-		data: Record<string, any>;
-		options: Record<string, any>;
-	}): Promise<{ result: any }> {
+		data: Record<string, unknown>;
+		options: Record<string, unknown>;
+	}): Promise<{ result: unknown }> {
 		await Promise.resolve();
 
 		const hydratedOptions = this.hydrateOptions(args.options);
 
 		@Quick(hydratedOptions)
+		/** @internal Ephemeral model built from caller-supplied options to simulate a single transformation. */
 		class DynamicModel extends QModel<any> {
 			[key: string]: any;
 		}

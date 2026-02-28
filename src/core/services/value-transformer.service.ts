@@ -46,8 +46,18 @@ export class ValueTransformerService {
 	) {}
 
 	/**
-	 * Transforms a nested array of primitive/transformable types.
-	 * e.g. Date[][], BigInt[][][]
+	 * Transforms a nested array of primitive or transformable types (e.g. `Date[][]`, `BigInt[][][]`).
+	 *
+	 * Recursively walks multi-dimensional arrays and delegates each leaf element to
+	 * `transformByDesignType()`. Guards against DoS via max-depth (512) and
+	 * the configured `maxArrayLength` limit.
+	 *
+	 * @param value - The array (or nested array) to transform.
+	 * @param elementClass - The target element constructor (e.g. `Date`, `BigInt`).
+	 * @param context - Transform context including property key, class name, and recursion guard.
+	 * @returns A new array with every leaf element transformed to its runtime type.
+	 * @throws {Error} When recursion depth exceeds 512 (stack overflow protection).
+	 * @throws {Error} When `value.length > maxArrayLength` (DoS protection).
 	 */
 	public transformNestedArray(
 		value: unknown[],
@@ -95,8 +105,20 @@ export class ValueTransformerService {
 	}
 
 	/**
-	 * Transforms a nested array of models.
-	 * e.g. User[][], Post[][]
+	 * Transforms a nested array of model instances (e.g. `User[][]`, `Post[][]`).
+	 *
+	 * Each element is deserialized into one of the `possibleTypes` model classes,
+	 * using the discriminator config when multiple types are registered.
+	 * Guards against DoS via max-depth (512) and the configured array-length limit.
+	 *
+	 * @param value - The array (or nested array) of raw objects to transform.
+	 * @param possibleTypes - List of model constructors to attempt deserialization with.
+	 * @param options - Configuration options.
+	 * @param options.discriminatorConfig - Discriminated-union configuration for polymorphic arrays.
+	 * @param options.context - Transform context (property key, class name).
+	 * @param options.recursionContext - Current recursion depth and visited-objects set.
+	 * @returns A new (possibly nested) array of model instances.
+	 * @throws {Error} When recursion depth exceeds 512 (stack overflow protection).
 	 */
 	public transformNestedModelArray(
 		value: unknown[],
@@ -271,7 +293,17 @@ export class ValueTransformerService {
 	}
 
 	/**
-	 * Transforms a value based on its design:type metadata.
+	 * Transforms a single value using its `design:type` metadata (the TypeScript-inferred
+	 * constructor stored by `emitDecoratorMetadata`).
+	 *
+	 * Applies the appropriate transformer for the given `designType` (e.g. `Date`, `BigInt`,
+	 * a nested QModel class, etc.). Falls back to heuristic detection when the design type is
+	 * generic (`Object` or `undefined`) and the value carries a `__type` marker.
+	 *
+	 * @param value - The raw input value to transform.
+	 * @param designType - The TypeScript-inferred constructor for this property.
+	 * @param context - Transform context including property key, class name, and recursion depth.
+	 * @returns The transformed runtime value, or the original value if no transformer applies.
 	 */
 	public transformByDesignType(
 		value: unknown,

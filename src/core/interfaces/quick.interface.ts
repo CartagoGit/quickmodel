@@ -2,18 +2,39 @@ import type { IQNativeConstructor } from '../constants/native-types';
 import type { IQAlias } from '../types/q-alias.type';
 
 /**
- * Constructor type for class-based type mapping
+ * Constructor type for class-based type mapping.
+ *
+ * Represents any newable class that QuickModel can recursively hydrate,
+ * e.g. `class Address {}`. Passed directly to `@Quick()` / `@QType()`.
+ *
+ * @typeParam T - The type produced by the constructor.
  */
 export type IQConstructor<T = any> = new (...args: any[]) => T;
 
 /**
- * Transformer function that converts a value
+ * A custom transformer function provided via `@Quick()` / `@QType()`.
+ *
+ * Can be a plain arrow function `(v) => new Date(v)` or any other callable.
+ * QuickModel calls it as `fn(rawValue)` during deserialization.
  */
 export type IQTransformerFunction = Function;
 
 /**
- * Single type specification supported by QuickModel (without transformers).
- * Represents a type that can be transformed via class, native constructor, or alias.
+ * Single type specification for QuickModel **without** function transformers.
+ *
+ * Represents all the non-function options that can be passed as a type token
+ * to `@Quick()` / `@QType()`:
+ *
+ * | option | example | effect |
+ * |---|---|---|
+ * | `IQConstructor<T>` | `class User {}` | Recursively hydrates nested model |
+ * | `IQNativeConstructor` | `Date`, `RegExp`, `Map` | Routes to built-in transformer |
+ * | `IQAlias` | `'date'`, `'bigint'` | Routes to alias transformer |
+ * | `symbol` | `MY_TRANSFORMER` | Looks up in `QTransformerRegistry` |
+ * | `PromiseConstructor` | `Promise` | Deferred/async placeholder |
+ *
+ * @typeParam T - The target runtime type.
+ * @see {@link IQSpec} for the full union including functions and arrays
  */
 export type IQTypeSpec<T = any> =
 	| IQConstructor<T>
@@ -23,14 +44,20 @@ export type IQTypeSpec<T = any> =
 	| PromiseConstructor;
 
 /**
- * All supported type specifications for @Quick() and @QType() decorators.
+ * Full set of type specifications accepted by `@Quick()` and `@QType()` decorators.
  *
- * Supports:
- * - String literals: 'bigint', 'date', 'regexp', 'map', 'set', etc. (type conversions)
- * - Constructors: Date, RegExp, Map, Set, BigInt, Symbol, custom classes
- * - Transformer functions: (value) => transformed value (arrow or regular functions)
- * - Arrays: [Date], [[Date]], [[[Date]]] for nested arrays (up to 4 levels)
- * - Custom transformers
+ * | form | example | effect |
+ * |---|---|---|
+ * | `IQTypeSpec` | `Date`, `User`, `'bigint'` | Class / native / alias transformer |
+ * | `IQTransformerFunction` | `(v) => new Date(v)` | Inline transformer function |
+ * | `IQSpec[]` | `[Date]`, `[[Map]]` | Typed array (up to 4 nesting levels) |
+ * | `string` | `'myCustomKey'` | Registry symbol-key lookup |
+ * | `{ deserialize; serialize }` | custom object | Inline bi-directional transformer |
+ * | `null` | `null` | Marks nullable union `[Date, null]` |
+ * | `undefined` | `undefined` | Marks optional union |
+ *
+ * @see {@link IQTypeSpec} for the subset without functions
+ * @see {@link IQOptions} for the decorator options shape
  */
 export type IQSpec =
 	| IQTypeSpec // Classes, natives, aliases
@@ -42,14 +69,27 @@ export type IQSpec =
 	| undefined; // Allow undefined in union types
 
 /**
- * All supported type specifications for @Quick() decorator for arrays
+ * Ordered array of `IQSpec` entries used by the `@Quick()` array-form notation.
+ *
+ * @see {@link IQSpec}
  */
 export type IQSpecs = IQSpec[]; // Array of any Spec
 
 /**
- * Options for @Quick() decorator to specify property types explicitly
+ * Property-to-type-spec map passed to the `@Quick()` class decorator.
+ *
+ * Each key is a **property name** (optionally using dot notation for nested
+ * paths) and each value is the type spec to apply during transformation.
  *
  * Supports **dot notation** for nested property transformations.
+ *
+ * @example
+ * ```typescript
+ * @Quick({ createdAt: Date, 'address.zip': Number })
+ * class Order extends QModel<IOrder> { ... }
+ * ```
+ *
+ * @see {@link IQSpec} for accepted value shapes
  */
 export interface IQOptions {
 	[propertyName: string]: IQSpec | IQSpecs;

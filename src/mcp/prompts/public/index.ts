@@ -11,6 +11,7 @@ export { QAsyncRulesPrompt } from './async-rules.prompt';
 export { QAddQGroupPrompt } from './add-qgroup.prompt';
 export { QSecurityReviewPrompt } from './security-review.prompt';
 export { QTransformerGuidePrompt } from './transformer-guide.prompt';
+export { QFormDataPrompt } from './form-data.prompt';
 export { QImplementFeaturePrompt } from './implement-feature.prompt';
 export { QFixLintPrompt } from './fix-lint.prompt';
 export { QFixTypecheckPrompt } from './fix-typecheck.prompt';

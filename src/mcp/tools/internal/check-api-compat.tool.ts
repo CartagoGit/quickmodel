@@ -25,6 +25,19 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 	/** @internal `fs` module reference; can be overridden in tests to inject a mock filesystem. */
 	protected _fs = fs;
 
+	/**
+	 * Compares the current public API surface against a stored baseline file.
+	 *
+	 * @param args - Compatibility check options.
+	 * @param args.baselineFile - Path to the JSON baseline file (relative to project
+	 * root). Defaults to `api-baseline.json`. When the file does not exist a new
+	 * baseline is created and `'baseline_created'` is returned.
+	 * @returns `{ status, changes }` where status is `'compatible'`,
+	 * `'breaking'`, or `'baseline_created'`, and `changes` lists the detected
+	 * removed / renamed exports.
+	 * @throws {Error} When `baselineFile` resolves to a path outside the project root
+	 * (path-traversal guard).
+	 */
 	async execute(args: { baselineFile?: string }): Promise<{
 		status: 'compatible' | 'breaking' | 'baseline_created';
 		changes: string[];

@@ -128,6 +128,8 @@ function _getPropTransformMeta(
 						'symbol',
 						'arraybuffer',
 						'dataview',
+						'blob',
+						'file',
 					].includes(name) || name.includes('array');
 				if (hasPrototype && !isKnownNative) {
 					resolvedArrayElementClass = mappedType;

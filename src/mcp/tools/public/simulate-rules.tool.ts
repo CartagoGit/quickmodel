@@ -74,8 +74,16 @@ export class QSimulateRulesTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Runs synchronous `@QRule` predicates against an in-memory QuickModel instance.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.data - The data object to validate.
+	 * @param args.rules - Array of rules with field, predicate expression, and message.
+	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all predicates pass.
+	 */
 	async execute(args: {
-		data: Record<string, any>;
+		data: Record<string, unknown>;
 		rules: ISimulatedRule[];
 	}): Promise<{
 		valid: boolean;
@@ -89,6 +97,7 @@ export class QSimulateRulesTool extends QAbstractTool<
 		// Build a dynamic class that will hold all rules.
 		// @Quick({}) is intentionally minimal — no transformers needed.
 		@Quick({})
+		/** @internal Ephemeral model target for dynamically registered synchronous business-logic rules. */
 		class DynamicModel extends QModel<any> {
 			[key: string]: any;
 		}

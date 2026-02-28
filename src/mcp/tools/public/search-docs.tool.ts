@@ -25,6 +25,13 @@ export class QSearchDocsTool extends QAbstractTool<
 		query: z.string().describe('The search term or phrase'),
 	});
 
+	/**
+	 * Searches the project documentation for a given term using `grep`.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.query - The search term or phrase to look for (case-insensitive).
+	 * @returns `{ matches }` — array of matching lines with 2 lines of context each.
+	 */
 	async execute(args: { query: string }): Promise<{ matches: string[] }> {
 		try {
 			// Use spawn to avoid shell injection vulnerabilities

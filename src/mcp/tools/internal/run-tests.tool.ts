@@ -40,6 +40,17 @@ export class QRunTestsTool extends QAbstractTool<
 	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Executes the Bun test suite, optionally scoped to a path pattern.
+	 *
+	 * @param args - Test run options.
+	 * @param args.pattern - Optional file path or glob pattern to narrow test
+	 * execution (e.g. `'tests/mcp/unit/internal'`). Runs the full suite when
+	 * omitted.
+	 * @returns `{ passed, total_pass, total_fail, errors, summary }` — `errors` is
+	 * an array of `{ test, message, file? }` entries for each failing test;
+	 * `passed` is `true` when `total_fail === 0`.
+	 */
 	async execute(args: { pattern?: string }): Promise<{
 		passed: boolean;
 		total_pass: number;

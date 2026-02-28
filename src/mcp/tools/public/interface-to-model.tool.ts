@@ -35,6 +35,14 @@ export class QInterfaceToModelTool extends QAbstractTool<
 		code: z.string().describe('The TypeScript interface code'),
 	});
 
+	/**
+	 * Converts a TypeScript interface to a complete QuickModel class.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.code - TypeScript interface source code to convert.
+	 * @returns `{ code }` — generated TypeScript source code of the QuickModel class.
+	 * @throws {Error} When no interface declaration is found in the provided code.
+	 */
 	async execute(args: { code: string }): Promise<{ code: string }> {
 		await Promise.resolve();
 		// Naive regex parsing. In production use tsx/morph or similar.

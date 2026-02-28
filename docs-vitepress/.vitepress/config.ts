@@ -109,26 +109,26 @@ export default defineConfig({
 			{ icon: 'npm', link: 'https://www.npmjs.com/~cartago-git' },
 		],
 		sidebar: {
-			'/tsdoc/@cartago-git/namespaces/Types/': [
+			'/tsdoc/quickmodel/namespaces/Types/': [
 				{
 					text: 'Navigation',
 					items: [
 						{ text: 'Back to Core', link: '/tsdoc/' },
 						{
 							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+							link: '/tsdoc/quickmodel/namespaces/Advanced/',
 						},
 						{
 							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+							link: '/tsdoc/quickmodel/namespaces/Utils/',
 						},
 						{
 							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							link: '/tsdoc/quickmodel/namespaces/Forms/',
 						},
 						{
 							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+							link: '/tsdoc/quickmodel/namespaces/Compat/',
 						},
 					],
 				},
@@ -137,7 +137,7 @@ export default defineConfig({
 					items: [
 						{
 							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
+							link: '/tsdoc/quickmodel/namespaces/Types/',
 						},
 						{
 							text: 'Interfaces',
@@ -145,35 +145,35 @@ export default defineConfig({
 							items: [
 								{
 									text: 'IQAdvancedOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQAdvancedOptions',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQAdvancedOptions',
 								},
 								{
 									text: 'IQAnyRecord',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQAnyRecord',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQAnyRecord',
 								},
 								{
 									text: 'IQOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQOptions',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQOptions',
 								},
 								{
 									text: 'IQPropertyOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQPropertyOptions',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQPropertyOptions',
 								},
 								{
 									text: 'IQSerializationOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQSerializationOptions',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQSerializationOptions',
 								},
 								{
 									text: 'IQTypeOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQTypeOptions',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQTypeOptions',
 								},
 								{
 									text: 'IQTransformer',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQTransformer',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQTransformer',
 								},
 								{
 									text: 'IQValidationResult',
-									link: '/tsdoc/@cartago-git/namespaces/Types/interfaces/IQValidationResult',
+									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQValidationResult',
 								},
 							],
 						},
@@ -183,129 +183,129 @@ export default defineConfig({
 							items: [
 								{
 									text: 'IQAlias',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQAlias',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQAlias',
 								},
 								{
 									text: 'IQConstructor',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQConstructor',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQConstructor',
 								},
 								{
 									text: 'IQDiscriminatorConfig',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQDiscriminatorConfig',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQDiscriminatorConfig',
 								},
 								{
 									text: 'IQExtractCommonKeys',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQExtractCommonKeys',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractCommonKeys',
 								},
 								{
 									text: 'IQExtractConstructors',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQExtractConstructors',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractConstructors',
 								},
 								{
 									text: 'IQExtractIQModelInterface',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQExtractIQModelInterface',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractIQModelInterface',
 								},
 								{
 									text: 'IQExtractInstanceType',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQExtractInstanceType',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractInstanceType',
 								},
 								{
 									text: 'IQExtractValidDiscriminatorKeys',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQExtractValidDiscriminatorKeys',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractValidDiscriminatorKeys',
 								},
 								{
 									text: 'IQMockType',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQMockType',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQMockType',
 								},
 								{
 									text: 'IQMockerFn',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQMockerFn',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQMockerFn',
 								},
 								{
 									text: 'IQModelData',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQModelData',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQModelData',
 								},
 								{
 									text: 'IQModelInstance',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQModelInstance',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQModelInstance',
 								},
 								{
 									text: 'IQModelInterface',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQModelInterface',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQModelInterface',
 								},
 								{
 									text: 'IQNativeConstructor',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQNativeConstructor',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQNativeConstructor',
 								},
 								{
 									text: 'IQSerialized',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQSerialized',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSerialized',
 								},
 								{
 									text: 'IQSerializedInterface',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQSerializedInterface',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSerializedInterface',
 								},
 								{
 									text: 'IQSerializerFn',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQSerializerFn',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSerializerFn',
 								},
 								{
 									text: 'IQSpec',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQSpec',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSpec',
 								},
 								{
 									text: 'IQSpecs',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQSpecs',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSpecs',
 								},
 								{
 									text: 'IQTransform',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQTransform',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransform',
 								},
 								{
 									text: 'IQTransformerFn',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQTransformerFn',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransformerFn',
 								},
 								{
 									text: 'IQTransformerFunction',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQTransformerFunction',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransformerFunction',
 								},
 								{
 									text: 'IQTransformerKey',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQTransformerKey',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransformerKey',
 								},
 								{
 									text: 'IQTypeGuardFunction',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQTypeGuardFunction',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTypeGuardFunction',
 								},
 								{
 									text: 'IQTypeSpec',
-									link: '/tsdoc/@cartago-git/namespaces/Types/type-aliases/IQTypeSpec',
+									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTypeSpec',
 								},
 							],
 						},
 					],
 				},
 			],
-			'/tsdoc/@cartago-git/namespaces/Advanced/': [
+			'/tsdoc/quickmodel/namespaces/Advanced/': [
 				{
 					text: 'Navigation',
 					items: [
 						{ text: 'Back to Core', link: '/tsdoc/' },
 						{
 							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
+							link: '/tsdoc/quickmodel/namespaces/Types/',
 						},
 						{
 							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+							link: '/tsdoc/quickmodel/namespaces/Utils/',
 						},
 						{
 							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							link: '/tsdoc/quickmodel/namespaces/Forms/',
 						},
 						{
 							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+							link: '/tsdoc/quickmodel/namespaces/Compat/',
 						},
 					],
 				},
@@ -314,44 +314,44 @@ export default defineConfig({
 					items: [
 						{
 							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+							link: '/tsdoc/quickmodel/namespaces/Advanced/',
 						},
 						{
 							text: 'Classes',
 							items: [
 								{
 									text: 'QMockGenerator',
-									link: '/tsdoc/@cartago-git/namespaces/Advanced/classes/QMockGenerator',
+									link: '/tsdoc/quickmodel/namespaces/Advanced/classes/QMockGenerator',
 								},
 								{
 									text: 'QTransformerRegistry',
-									link: '/tsdoc/@cartago-git/namespaces/Advanced/classes/QTransformerRegistry',
+									link: '/tsdoc/quickmodel/namespaces/Advanced/classes/QTransformerRegistry',
 								},
 							],
 						},
 					],
 				},
 			],
-			'/tsdoc/@cartago-git/namespaces/Utils/': [
+			'/tsdoc/quickmodel/namespaces/Utils/': [
 				{
 					text: 'Navigation',
 					items: [
 						{ text: 'Back to Core', link: '/tsdoc/' },
 						{
 							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
+							link: '/tsdoc/quickmodel/namespaces/Types/',
 						},
 						{
 							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+							link: '/tsdoc/quickmodel/namespaces/Advanced/',
 						},
 						{
 							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							link: '/tsdoc/quickmodel/namespaces/Forms/',
 						},
 						{
 							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+							link: '/tsdoc/quickmodel/namespaces/Compat/',
 						},
 					],
 				},
@@ -360,18 +360,18 @@ export default defineConfig({
 					items: [
 						{
 							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+							link: '/tsdoc/quickmodel/namespaces/Utils/',
 						},
 						{
 							text: 'Classes',
 							items: [
 								{
 									text: 'QMockBuilder',
-									link: '/tsdoc/@cartago-git/namespaces/Utils/classes/QMockBuilder',
+									link: '/tsdoc/quickmodel/namespaces/Utils/classes/QMockBuilder',
 								},
 								{
 									text: 'QModelError',
-									link: '/tsdoc/@cartago-git/namespaces/Utils/classes/QModelError',
+									link: '/tsdoc/quickmodel/namespaces/Utils/classes/QModelError',
 								},
 							],
 						},
@@ -380,33 +380,33 @@ export default defineConfig({
 							items: [
 								{
 									text: 'QType',
-									link: '/tsdoc/@cartago-git/namespaces/Utils/functions/QType',
+									link: '/tsdoc/quickmodel/namespaces/Utils/functions/QType',
 								},
 							],
 						},
 					],
 				},
 			],
-			'/tsdoc/@cartago-git/namespaces/Forms/': [
+			'/tsdoc/quickmodel/namespaces/Forms/': [
 				{
 					text: 'Navigation',
 					items: [
 						{ text: 'Back to Core', link: '/tsdoc/' },
 						{
 							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
+							link: '/tsdoc/quickmodel/namespaces/Types/',
 						},
 						{
 							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+							link: '/tsdoc/quickmodel/namespaces/Advanced/',
 						},
 						{
 							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+							link: '/tsdoc/quickmodel/namespaces/Utils/',
 						},
 						{
 							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+							link: '/tsdoc/quickmodel/namespaces/Compat/',
 						},
 					],
 				},
@@ -415,7 +415,7 @@ export default defineConfig({
 					items: [
 						{
 							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							link: '/tsdoc/quickmodel/namespaces/Forms/',
 						},
 						{
 							text: 'Functions',
@@ -423,27 +423,27 @@ export default defineConfig({
 							items: [
 								{
 									text: 'qCheckRules',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRules',
+									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRules',
 								},
 								{
 									text: 'qCheckRulesAsync',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRulesAsync',
+									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRulesAsync',
 								},
 								{
 									text: 'qCheckRulesByGroup',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRulesByGroup',
+									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRulesByGroup',
 								},
 								{
 									text: 'qCheckRulesByGroupAsync',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qCheckRulesByGroupAsync',
+									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRulesByGroupAsync',
 								},
 								{
 									text: 'qGetGroups',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qGetGroups',
+									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qGetGroups',
 								},
 								{
 									text: 'qGroups',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/functions/qGroups',
+									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qGroups',
 								},
 							],
 						},
@@ -453,11 +453,11 @@ export default defineConfig({
 							items: [
 								{
 									text: 'IQCheckRulesAsyncOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/interfaces/IQCheckRulesAsyncOptions',
+									link: '/tsdoc/quickmodel/namespaces/Forms/interfaces/IQCheckRulesAsyncOptions',
 								},
 								{
 									text: 'IQCheckRulesOptions',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/interfaces/IQCheckRulesOptions',
+									link: '/tsdoc/quickmodel/namespaces/Forms/interfaces/IQCheckRulesOptions',
 								},
 							],
 						},
@@ -467,33 +467,33 @@ export default defineConfig({
 							items: [
 								{
 									text: 'IQGroupsMap',
-									link: '/tsdoc/@cartago-git/namespaces/Forms/type-aliases/IQGroupsMap',
+									link: '/tsdoc/quickmodel/namespaces/Forms/type-aliases/IQGroupsMap',
 								},
 							],
 						},
 					],
 				},
 			],
-			'/tsdoc/@cartago-git/namespaces/Compat/': [
+			'/tsdoc/quickmodel/namespaces/Compat/': [
 				{
 					text: 'Navigation',
 					items: [
 						{ text: 'Back to Core', link: '/tsdoc/' },
 						{
 							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
+							link: '/tsdoc/quickmodel/namespaces/Types/',
 						},
 						{
 							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+							link: '/tsdoc/quickmodel/namespaces/Advanced/',
 						},
 						{
 							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+							link: '/tsdoc/quickmodel/namespaces/Utils/',
 						},
 						{
 							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							link: '/tsdoc/quickmodel/namespaces/Forms/',
 						},
 					],
 				},
@@ -502,7 +502,7 @@ export default defineConfig({
 					items: [
 						{
 							text: 'Overview',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+							link: '/tsdoc/quickmodel/namespaces/Compat/',
 						},
 						{
 							text: 'Functions',
@@ -510,7 +510,7 @@ export default defineConfig({
 							items: [
 								{
 									text: 'qGroups5',
-									link: '/tsdoc/@cartago-git/namespaces/Compat/functions/qGroups5',
+									link: '/tsdoc/quickmodel/namespaces/Compat/functions/qGroups5',
 								},
 							],
 						},
@@ -523,23 +523,23 @@ export default defineConfig({
 					items: [
 						{
 							text: 'Advanced',
-							link: '/tsdoc/@cartago-git/namespaces/Advanced/',
+							link: '/tsdoc/quickmodel/namespaces/Advanced/',
 						},
 						{
 							text: 'Types',
-							link: '/tsdoc/@cartago-git/namespaces/Types/',
+							link: '/tsdoc/quickmodel/namespaces/Types/',
 						},
 						{
 							text: 'Utils',
-							link: '/tsdoc/@cartago-git/namespaces/Utils/',
+							link: '/tsdoc/quickmodel/namespaces/Utils/',
 						},
 						{
 							text: 'Forms',
-							link: '/tsdoc/@cartago-git/namespaces/Forms/',
+							link: '/tsdoc/quickmodel/namespaces/Forms/',
 						},
 						{
 							text: 'Compat (TS5)',
-							link: '/tsdoc/@cartago-git/namespaces/Compat/',
+							link: '/tsdoc/quickmodel/namespaces/Compat/',
 						},
 					],
 				},

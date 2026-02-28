@@ -15,8 +15,16 @@ export class SecurityInspector {
 	>();
 
 	/**
-	 * Gets a template instance of the model to inspect default values/methods.
-	 * Used for intrinsic security checks.
+	 * Gets or creates a cached template instance of a model class.
+	 *
+	 * Used for intrinsic security checks that need to inspect the default shape of a
+	 * class without mutating a real instance (e.g. detecting arrow-function methods).
+	 * Results are cached per constructor in a `WeakMap` so the costly instantiation
+	 * only happens once per class.
+	 *
+	 * @param modelClass - The constructor function of the model class to inspect
+	 * @returns A plain-record view of a freshly constructed instance, or `null` if the
+	 *   class cannot be constructed without throwing.
 	 */
 	public getTemplateInstance(
 		modelClass: Function
@@ -48,7 +56,13 @@ export class SecurityInspector {
 	}
 
 	/**
-	 * Checks if a key is a dangerous prototype pollution key
+	 * Returns `true` when `key` is a known prototype-pollution vector.
+	 *
+	 * The blocked key set is: `__proto__`, `constructor`, `prototype`,
+	 * `__defineGetter__`, `__defineSetter__`, `__lookupGetter__`, `__lookupSetter__`.
+	 *
+	 * @param key - The property name to test
+	 * @returns `true` if the key is dangerous and should be silently skipped
 	 */
 	public isDangerousKey(key: string): boolean {
 		return (
@@ -63,8 +77,19 @@ export class SecurityInspector {
 	}
 
 	/**
-	 * Checks if a key corresponds to a method on the prototype chain.
-	 * Used to prevent Method Shadowing attacks where payload data overwrites methods.
+	 * Checks whether `key` resolves to a function method anywhere on the prototype chain.
+	 *
+	 * Used to prevent **Method Shadowing** attacks: an attacker supplying a payload
+	 * object `{ toString: malicious }` would otherwise overwrite the prototype method.
+	 * Accessor properties (getters/setters) are intentionally **not** treated as
+	 * methods — they must be allowed so setter-backed fields keep working.
+	 *
+	 * @param proto - Prototype object to walk (typically `modelClass.prototype`)
+	 * @param key - Property name to check
+	 * @param decoratedFields - Field names explicitly declared as data properties;
+	 *   if `key` is in this list the check is skipped and `false` is returned.
+	 * @returns `true` when a non-accessor function with `key` is found on `proto` or
+	 *   any ancestor up to (but not including) `Object.prototype`
 	 */
 	public isMethodOnPrototype(
 		proto: any,
@@ -94,7 +119,21 @@ export class SecurityInspector {
 	}
 
 	/**
-	 * Checks if a property is an arrow function method (instance property)
+	 * Checks whether `key` is an arrow-function method defined directly on a class
+	 * instance (as opposed to a prototype method).
+	 *
+	 * Arrow-function class fields (`myMethod = () => {}`) are stored on the instance
+	 * itself rather than on `prototype`. Without this check they would be
+	 * indistinguishable from data properties, allowing an attacker to shadow them via
+	 * a payload object.
+	 *
+	 * @param key - The property name to check
+	 * @param template - A template instance from {@link getTemplateInstance}, or `null`
+	 *   if the class could not be instantiated
+	 * @param decoratedFields - Field names explicitly registered as data properties;
+	 *   if `key` is in this list the check is skipped and `false` is returned.
+	 * @returns `true` when `key` exists on `template`, its value is a function, and
+	 *   it is not listed in `decoratedFields`
 	 */
 	public isArrowFunctionMethod(
 		key: string,

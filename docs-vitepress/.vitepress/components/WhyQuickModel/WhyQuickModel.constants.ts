@@ -91,12 +91,12 @@ export const whyFeatureSections: IWhyFeatureSection[] = [
 		icon: '🤖',
 		titleEn: 'MCP Server — AI Integration',
 		titleEs: 'Servidor MCP — IA Integrada',
-		bodyEn: `<p>QuickModel includes <strong>19 tools</strong> and <strong>19 guided prompts</strong>: <code>create_model</code>, <code>interface_to_model</code>, <code>get_model_schema</code>, <code>generate_mock</code>, <code>simulate_validation</code>, <code>diff_models</code>, <code>roundtrip</code>…</p>
+		bodyEn: `<p>QuickModel includes <strong>20 tools</strong> and <strong>20 guided prompts</strong>: <code>create_model</code>, <code>interface_to_model</code>, <code>get_model_schema</code>, <code>generate_mock</code>, <code>simulate_validation</code>, <code>diff_models</code>, <code>roundtrip</code>…</p>
 			<ul>
 				<li><strong>For beginners</strong>: your AI knows exactly how to write valid QuickModel code because the library tells it.</li>
 				<li><strong>For pros</strong>: generate models from JSON in milliseconds and validate architecture without context switching.</li>
 			</ul>`,
-		bodyEs: `<p>QuickModel incluye <strong>19 herramientas</strong> y <strong>19 prompts guiados</strong>: <code>create_model</code>, <code>interface_to_model</code>, <code>get_model_schema</code>, <code>generate_mock</code>, <code>simulate_validation</code>, <code>diff_models</code>, <code>roundtrip</code>…</p>
+		bodyEs: `<p>QuickModel incluye <strong>20 herramientas</strong> y <strong>20 prompts guiados</strong>: <code>create_model</code>, <code>interface_to_model</code>, <code>get_model_schema</code>, <code>generate_mock</code>, <code>simulate_validation</code>, <code>diff_models</code>, <code>roundtrip</code>…</p>
 			<ul>
 				<li><strong>Para novatos</strong>: la IA sabe exactamente cómo escribir QuickModel válido porque la librería se lo dice.</li>
 				<li><strong>Para pros</strong>: genera modelos desde JSON en milisegundos y valida arquitectura sin cambiar de contexto.</li>

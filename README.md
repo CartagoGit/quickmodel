@@ -2,7 +2,7 @@
   <img src="./assets/quickmodel.png" alt="QuickModel Logo" width="120" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);" />
 </div>
 
-# @cartago-git/quickmodel
+# quickmodel
 
 TypeScript model system with automatic type transformation and SOLID architecture.
 
@@ -10,8 +10,8 @@ TypeScript model system with automatic type transformation and SOLID architectur
 [![TypeScript](https://img.shields.io/badge/TypeScript-3.4+-blue.svg)](https://www.typescriptlang.org/)
 [![CI](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml/badge.svg)](https://github.com/CartagoGit/quickmodel/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/CartagoGit/quickmodel/branch/main/graph/badge.svg)](https://codecov.io/gh/CartagoGit/quickmodel)
-[![npm version](https://badge.fury.io/js/@cartago-git%2Fquickmodel.svg)](https://www.npmjs.com/package/@cartago-git/quickmodel)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@cartago-git/quickmodel)](https://bundlephobia.com/package/@cartago-git/quickmodel)
+[![npm version](https://badge.fury.io/js/quickmodel.svg)](https://www.npmjs.com/package/quickmodel)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/quickmodel)](https://bundlephobia.com/package/quickmodel)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-ff69b4)](https://github.com/sponsors/CartagoGit)
 
 > 📚 **[Complete Documentation](https://cartagogit.github.io/quickmodel/)**
@@ -22,9 +22,9 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 🎯 **Simple API** - Use `@Quick({})` decorator to specify transformations explicitly
 - 💡 **Type-Safe** - Full TypeScript support with interface segregation
 - 📦 **Nested Models** - Infinite nesting with automatic transformation
-- ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `@cartago-git/quickmodel/forms` subpath — no `QModel` required
+- ✅ **Business Validation** - `@QRule` declarative rules + `@QGroup` group filtering. Works on any class via the `quickmodel/forms` subpath — no `QModel` required
 - 🔍 **Schema Generation** - Export your model as JSON Schema, Zod, OpenAPI, Mongoose, TypeScript, GraphQL, or AJV via `getSchema()`
-- 🤖 **MCP Server** - AI assistant integration with 20 public tools, 20 internal tools, and 19 guided prompts (Claude, Copilot, etc.)
+- 🤖 **MCP Server** - AI assistant integration with 20 public tools, 20 internal tools, and 20 guided prompts (Claude, Copilot, etc.)
 - 🏗️ **SOLID Architecture** - Clean, maintainable, extensible code
 - 🎭 **Built-in Mocking** - Testing utilities with [@faker-js/faker](https://fakerjs.dev/)
 - 🧪 **Well Tested** - 3300+ tests covering all features
@@ -33,7 +33,7 @@ TypeScript model system with automatic type transformation and SOLID architectur
 ## 📦 Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 # or: yarn add / pnpm add / bun add
 ```
 
@@ -46,7 +46,7 @@ QuickModel transforms JSON data into TypeScript runtime types. **All special typ
 #### 1️⃣ **Simplest Case** - Primitives only (no transformations)
 
 ```typescript
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 interface IUser {
 	id: number;
@@ -64,7 +64,7 @@ const user = new User({ id: 1, name: 'John' });
 #### 2️⃣ **With @Quick()** - Auto-apply QType to all properties
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: number;
@@ -81,7 +81,7 @@ class User extends QModel<IUser> {
 #### 3️⃣ **With Type Transformations** - Explicit mapping required
 
 ```typescript
-import { QModel, Quick, IQImplements } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQImplements } from 'quickmodel';
 
 // Backend interface (JSON-compatible types)
 interface IUser {
@@ -132,7 +132,7 @@ console.log(user.metadata); // Map<string, any>
 > Although optional, using `IQImplements` is **highly recommended** to ensure your class definitions match your data contracts and transformations, preventing silent type errors.
 
 ```typescript
-import { QModel, Quick, IQImplements } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQImplements } from 'quickmodel';
 
 // Backend interface (JSON types)
 interface IUser {
@@ -178,7 +178,7 @@ The static `create()` method provides a convenient factory for your models.
 For automatic type inference of transformed properties, use `declare` keywords in your class. This is the standard, most robust way and works with both `new User()` and `User.create()`.
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: number;
@@ -202,7 +202,7 @@ user.createdAt; // ✅ Date
 If you prefer NOT to use `declare` properties (e.g. to keep classes smaller), you can use the `IQTransform` helper to manually specify the transformed type in the `create()` call.
 
 ```typescript
-import { QModel, Quick, IQTransform } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQTransform } from 'quickmodel';
 
 interface IUser {
 	id: number;
@@ -555,7 +555,7 @@ QuickModel includes built-in protections for robust serialization:
 
 QuickModel has two independent validation layers:
 
-### 1. Transformer integrity — `checkIntegrity()` / `validate()`
+### 1. Transformer integrity — `checkIntegrity()` / `isValid()`
 
 Checks that each property value conforms to its declared transformer type (no type mismatches, no DoS limits exceeded).
 
@@ -574,7 +574,7 @@ const invalidUser = new User({
 	tags: 'not-an-array',
 });
 
-const errors = invalidUser.validate();
+const errors = invalidUser.checkIntegrity();
 // [
 //   { isValid: false, error: "User.birthDate: Invalid Date string: invalid-date" },
 //   { isValid: false, error: "User.tags: Expected array for Set[], got string" }
@@ -586,12 +586,8 @@ const errors = invalidUser.validate();
 Declarative per-field rules for your own business logic. Works on **any class** — no need to extend `QModel`.
 
 ```typescript
-import { QRule, QGroup } from '@cartago-git/quickmodel';
-import {
-	qGroups,
-	qCheckRules,
-	qCheckRulesByGroup,
-} from '@cartago-git/quickmodel/forms';
+import { QRule, QGroup } from 'quickmodel';
+import { qGroups, qCheckRules, qCheckRulesByGroup } from 'quickmodel/forms';
 
 const Groups = qGroups('identity', 'security');
 
@@ -715,7 +711,7 @@ QuickModel ships a built-in **Model Context Protocol (MCP) server** that gives A
 
 ```bash
 bun run mcp
-# or: npx @cartago-git/quickmodel mcp
+# or: npx quickmodel mcp
 ```
 
 ### Configure in Claude Desktop (`~/.config/claude/claude_desktop_config.json`)
@@ -725,7 +721,7 @@ bun run mcp
 	"mcpServers": {
 		"quickmodel": {
 			"command": "npx",
-			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
+			"args": ["-y", "quickmodel", "mcp"]
 		}
 	}
 }
@@ -756,7 +752,7 @@ bun run mcp
 | `roundtrip`               | Verify that `serialize()` → re-create → `serialize()` is lossless; returns `{ lossless, serialized, roundtrip_serialized, diff, summary }`                                  |
 | `diff_models`             | Compare two `QModel` class definitions (as source strings) and report added/removed fields, changed transformers, and decorator changes; pure static analysis               |
 
-### AI-guided prompts / skills (19)
+### AI-guided prompts / skills (20)
 
 | Skill                           | Description                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -773,6 +769,7 @@ bun run mcp
 | `quickmodel_add_qgroup`         | Add `@QGroup` field grouping to a model and use `checkGroups()` for group-level validation        |
 | `quickmodel_security_review`    | Security audit: mass assignment, DoS limits, prototype pollution, ReDoS via `check_security`      |
 | `quickmodel_transformer_guide`  | Choose the right transformer for a TypeScript type and validate it with `simulate_transformation` |
+| `quickmodel_form_data`          | `fromFormData()` / `toFormData()` / streaming (`toReadableStream`, `fromStream`, `pipeStream`)    |
 | `quickmodel_implement_feature`  | Full TDD cycle: write test → implement → `lint_check` gate → `typecheck` gate → done              |
 | `quickmodel_fix_lint`           | Step-by-step ESLint fix with `lint_check` + `pre_commit_check` gates; use after any hook failure  |
 | `quickmodel_fix_typecheck`      | Step-by-step TS type fix with `typecheck` + `pre_commit_check` gates; use after `typecheck` fails |

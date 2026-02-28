@@ -22,6 +22,11 @@ export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {
 		'List all available data transformers in QuickModel (e.g., string, date, email).';
 	schema = z.object({});
 
+	/**
+	 * Returns a sorted list of all transformer identifiers registered in the built-in registry.
+	 *
+	 * @returns Sorted array of lowercase transformer names (e.g. `["bigint", "boolean", "date", ...]`).
+	 */
 	execute(): Promise<string[]> {
 		// Use the service to get the real list
 		const service = new TransformerLookupService();

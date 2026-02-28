@@ -32,6 +32,13 @@ export class QExportJsonSchemaTool extends QAbstractTool<
 		code: z.string().describe('The QuickModel class code'),
 	});
 
+	/**
+	 * Generates a JSON Schema Definition from a QuickModel class.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.code - TypeScript source code of the QuickModel class.
+	 * @returns `{ schema }` — a JSON Schema Draft-07 object derived from the class.
+	 */
 	async execute(args: { code: string }): Promise<{ schema: object }> {
 		// Use inspect logic to get structure, then map to standard JSON Schema
 		const tool = new QInspectModelTool();

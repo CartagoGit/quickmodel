@@ -34,6 +34,14 @@ export class QInspectModelTool extends QAbstractTool<
 		code: z.string().describe('The TypeScript code of the model class'),
 	});
 
+	/**
+	 * Inspects a QuickModel class and returns its structural metadata.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.code - TypeScript source code of the QuickModel class.
+	 * @returns `{ name, transformers, structure, decorators }` — class name, bound transformers,
+	 *   raw `@Quick()` config string, and list of detected decorator names.
+	 */
 	async execute(args: { code: string }): Promise<{
 		name: string;
 		transformers: string[];

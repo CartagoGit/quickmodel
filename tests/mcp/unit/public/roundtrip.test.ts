@@ -70,9 +70,7 @@ describe('QRoundtripTool', () => {
 		});
 
 		expect(result.lossless).toBe(true);
-		expect(
-			Object.keys(result.diff as Record<string, unknown>)
-		).toHaveLength(0);
+		expect(Object.keys(result.diff)).toHaveLength(0);
 	});
 
 	it('should return summary string', async () => {

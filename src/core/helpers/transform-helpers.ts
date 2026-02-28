@@ -19,7 +19,18 @@
 // ============================================================================
 
 /**
- * Deep freezes an object.
+ * Recursively freezes `obj` and all nested object references using `Object.freeze()`.
+ *
+ * Circular references and shared sub-graphs are protected by a `WeakSet` so each
+ * object is only frozen once. The recursion cap (512) guards against pathologically
+ * deep structures.
+ *
+ * @template T - Type of the value being frozen
+ * @param obj - The value / object to freeze (primitives and functions are returned as-is)
+ * @param visited - Internal `WeakSet` used to detect already-visited objects (do not pass externally)
+ * @param depth - Internal recursion counter; throws at 512 to prevent stack overflow
+ * @returns The same `obj` reference after all nested objects have been frozen
+ * @throws {Error} If `depth` exceeds 512 (security guard against infinite structures)
  */
 export function deepFreeze<T>(
 	obj: T,
@@ -141,10 +152,22 @@ export function safeStringify(
 	}
 }
 
-/** Converts a string to UPPERCASE. */
+/**
+ * Converts a string to `UPPERCASE`.
+ *
+ * @param str - Source string
+ * @returns The string with all characters uppercased via `String.prototype.toUpperCase()`
+ * @example uppercase('hello') // → 'HELLO'
+ */
 export const uppercase = (str: string): string => str.toUpperCase();
 
-/** Converts a string to lowercase. */
+/**
+ * Converts a string to `lowercase`.
+ *
+ * @param str - Source string
+ * @returns The string with all characters lowercased via `String.prototype.toLowerCase()`
+ * @example lowercase('HELLO') // → 'hello'
+ */
 export const lowercase = (str: string): string => str.toLowerCase();
 
 /**
@@ -350,7 +373,14 @@ export const decodeURIString = (str: string): string => decodeURIComponent(str);
 // ============================================================================
 
 /**
- * Compose multiple transformation functions left to right.
+ * Composes multiple transformation functions from left to right (pipeline order).
+ *
+ * Each function receives the output of the previous one. The composed function
+ * applies them sequentially: `fn1 → fn2 → … → fnN`.
+ *
+ * @template T - The common input/output type shared by all functions in the pipeline
+ * @param fns - One or more transformation functions, each accepting and returning `T`
+ * @returns A single function that applies all `fns` in order
  *
  * @example
  * ```typescript

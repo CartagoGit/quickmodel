@@ -38,9 +38,26 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 			),
 	});
 
+	/**
+	 * Exports the schema of a QuickModel class in the requested format.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.code - TypeScript source code of the QuickModel class.
+	 * @param args.format - Target schema format (`"json"`, `"openapi"`, `"zod"`, `"mongo"`,
+	 *   `"typescript"`, `"graphql"`, `"ajv"`).
+	 * @returns `{ schema, format }` — the generated schema object and the format used.
+	 * @throws {Error} When `format` is not one of the supported values.
+	 */
 	async execute(args: {
 		code: string;
-		format: string;
+		format:
+			| 'json'
+			| 'openapi'
+			| 'zod'
+			| 'mongo'
+			| 'typescript'
+			| 'graphql'
+			| 'ajv';
 	}): Promise<{ schema: unknown; format: string }> {
 		await Promise.resolve();
 
@@ -55,6 +72,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 		const hydratedConfig = this.parseAndHydrateQuickConfig(code);
 
 		@Quick(hydratedConfig)
+		/** @internal Ephemeral model built from parsed config to extract the requested schema. */
 		class DynamicModel extends QModel<any> {
 			[key: string]: any;
 		}

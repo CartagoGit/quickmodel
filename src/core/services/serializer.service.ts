@@ -99,6 +99,8 @@ import { TypedArrayTransformer } from '@/transformers/typed-array.transformer';
 import {
 	URLTransformer,
 	URLSearchParamsTransformer,
+	BlobTransformer,
+	FileTransformer,
 } from '@/transformers/web-apis.transformer';
 import {
 	MapTransformer,
@@ -296,6 +298,14 @@ export class Serializer<
 		this.transformers.set(WeakMap, weakMapTransformer);
 		this.transformers.set('weakset', weakSetTransformer);
 		this.transformers.set(WeakSet, weakSetTransformer);
+
+		// Register Blob and File transformers
+		const blobTransformer = new BlobTransformer();
+		const fileTransformer = new FileTransformer();
+		this.transformers.set('blob', blobTransformer);
+		this.transformers.set(Blob, blobTransformer);
+		this.transformers.set('file', fileTransformer);
+		this.transformers.set(File, fileTransformer);
 
 		// Register typed arrays
 		this.transformers.set(
@@ -528,13 +538,31 @@ export class Serializer<
 					const context = {
 						propertyKey: key,
 						className: model.constructor.name,
-						metadata: activeOptions as any,
+						metadata: activeOptions as Record<string, unknown>,
 					};
 					result[outputKey] = (mapValue as IQTransformer).serialize(
 						value,
 						context
 					);
 					continue;
+				}
+
+				// String alias in typeMap (e.g. 'blob', 'file', 'date')
+				// Look up the matching transformer by alias name so it is
+				// applied even when the runtime value is not detected by the
+				// instanceof checks in serializeValue().
+				if (typeof mapValue === 'string') {
+					const aliasTransformer = this.transformers.get(
+						mapValue.toLowerCase()
+					);
+					if (
+						aliasTransformer &&
+						value !== null &&
+						value !== undefined
+					) {
+						result[outputKey] = aliasTransformer.serialize(value);
+						continue;
+					}
 				}
 			}
 
@@ -780,6 +808,27 @@ export class Serializer<
 			return transformer
 				? transformer.serialize(value)
 				: value.toString();
+		}
+
+		// File — must be checked before Blob (File extends Blob)
+		if (value instanceof File) {
+			const transformer = this.transformers.get(File);
+			return transformer
+				? transformer.serialize(value)
+				: {
+						name: value.name,
+						size: value.size,
+						type: value.type,
+						lastModified: value.lastModified,
+					};
+		}
+
+		// Blob
+		if (value instanceof Blob) {
+			const transformer = this.transformers.get(Blob);
+			return transformer
+				? transformer.serialize(value)
+				: { size: value.size, type: value.type, _blobRef: true };
 		}
 
 		// BigInt

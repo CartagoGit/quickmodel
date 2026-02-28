@@ -75,7 +75,7 @@ export { Deserializer as QDeserializer } from './core/services/deserializer.serv
 export { JsonSchemaGenerator as QJsonSchemaGenerator } from './core/services/schema-generators.service';
 
 /** Generates a Zod validation schema from a model's decorator configuration. */
-export { ZodSchemaGenerator as QZodSchemaGenerator } from './core/services/schema-generators.service';
+export { ZodSchemaGenerator as QZodSchemaGenerator } from './core/services/zod-schema-generator.service';
 
 /** Generates a Mongoose/MongoDB schema definition from a model's decorator configuration. */
 export { MongoSchemaGenerator as QMongoSchemaGenerator } from './core/services/schema-generators.service';

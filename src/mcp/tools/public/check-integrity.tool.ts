@@ -32,9 +32,17 @@ export class QCheckIntegrityTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Runs transformer-level integrity checks on the provided data object.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.data - The raw data object to check (e.g. `{ birth: '2024-01-01', balance: '99999n' }`).
+	 * @param args.options - Type configuration in `@Quick()` format (e.g. `{ birth: 'Date', balance: 'BigInt' }`).
+	 * @returns `{ valid, errors[], evaluated, summary }` — `valid` is `true` when all fields pass.
+	 */
 	async execute(args: {
-		data: Record<string, any>;
-		options: Record<string, any>;
+		data: Record<string, unknown>;
+		options: Record<string, unknown>;
 	}): Promise<{
 		valid: boolean;
 		errors: Array<{ isValid: boolean; error?: string }>;
@@ -52,6 +60,7 @@ export class QCheckIntegrityTool extends QAbstractTool<
 			const singleOption = { [field]: hydratedOptions[field] };
 
 			@Quick(singleOption)
+			/** @internal Ephemeral per-field model created for isolated integrity checking. */
 			class DynamicField extends QModel<any> {
 				[key: string]: any;
 			}

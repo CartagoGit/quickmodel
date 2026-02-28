@@ -26,6 +26,9 @@ export interface IQFormSchemaGroup {
  *
  * @param groupName - Label for the form section (e.g. `'Personal Info'`).
  *
+ * @see {@link QModel.getFormSchemaGrouped} — retrieve form schema organized by group
+ * @see {@link QRule} — add validation rules that can also be filtered by group
+ *
  * @example
  * ```typescript
  * @Quick()

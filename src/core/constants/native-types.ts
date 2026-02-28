@@ -34,7 +34,9 @@ export type IQNativeConstructor =
 	| typeof ArrayBuffer
 	| typeof DataView
 	| typeof Set
-	| typeof Map;
+	| typeof Map
+	| typeof Blob
+	| typeof File;
 
 /**
  * Mapping of native constructors to their string identifiers.
@@ -63,6 +65,8 @@ export const NATIVE_TYPE_MAP = new Map<Function, string>([
 	[DataView, 'dataview'],
 	[Set, 'set'],
 	[Map, 'map'],
+	[Blob, 'blob'],
+	[File, 'file'],
 ]);
 
 /**
@@ -92,4 +96,6 @@ export const TRANSFORMABLE_TYPES = [
 	BigUint64Array,
 	ArrayBuffer,
 	DataView,
+	Blob,
+	File,
 ];

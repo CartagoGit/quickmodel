@@ -68,8 +68,9 @@ src/
 │   │   ├── serializer.service.ts
 │   │   ├── deserializer.service.ts
 │   │   ├── mock-builder.service.ts
-│   │   ├── mock-generator.service.ts
-│   │   ├── schema-generators.service.ts
+│   │   ├── mock-generator.service.ts         # faker loaded lazily (createRequire)
+│   │   ├── schema-generators.service.ts      # JSON, Mongo, TS, GraphQL, OpenAPI, AJV
+│   │   ├── zod-schema-generator.service.ts   # Zod — loaded lazily, NOT in static import graph
 │   │   ├── integrity.service.ts
 │   │   ├── to-interface.service.ts
 │   │   ├── security-inspector.service.ts
@@ -107,7 +108,7 @@ src/
 └── mcp/
     ├── server.ts                  # MCP server entry point
     ├── locales/                   # i18n (en.mcp.ts, es.mcp.ts)
-    ├── prompts/                   # 19 MCP prompt templates
+    ├── prompts/                   # 20 MCP prompt templates
     └── tools/
         ├── public/                # 20 public MCP tools
         └── internal/              # 20 internal MCP tools
@@ -120,6 +121,13 @@ src/
 - **Transformers**: Each transformer handles ONE specific type
 - **Services**: Separate services for serialization, deserialization, and validation
 - **Decorators**: Only register metadata, do not contain transformation logic
+
+> **Bundle note**: `ZodSchemaGenerator` lives in its own file (`zod-schema-generator.service.ts`)
+> and loads `zod` lazily via `createRequire` (same pattern as `@faker-js/faker` in the mock service).
+> Consumers whose bundlers follow static imports (webpack, Vite/Rollup, esbuild) will **not** include
+> `zod` in their output unless `QModel.getSchema('zod')` or `QZodSchemaGenerator` is actually called.
+> Similarly, `QMockGenerator` is instantiated lazily inside `QModel` — its constructor runs only on
+> the first call to `.mock()`, not when the class is loaded.
 
 #### 2. Open/Closed Principle (OCP)
 

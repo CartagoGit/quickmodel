@@ -22,6 +22,15 @@ export class QGetStagedFilesTool extends QAbstractTool<
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Retrieves the list of files currently staged for commit via
+	 * `git diff --cached --name-only`.
+	 *
+	 * @param _args - No arguments required.
+	 * @returns `{ passed, files, total, summary }` — `files` is a string array of
+	 * staged file paths; `total` is the count; `passed` is `false` when the git
+	 * command itself errors (e.g. not a git repository).
+	 */
 	async execute(_args: Record<never, never>): Promise<{
 		passed: boolean;
 		files: string[];

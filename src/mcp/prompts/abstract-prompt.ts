@@ -31,6 +31,11 @@ export type IPromptArgsSchema = Record<string, z.ZodType>;
  * MCP Prompts define guided multi-step workflows that chain tools together.
  * They are surfaced to the AI as "skills" it can invoke to complete complex tasks.
  *
+ * @template TArgs - Zod schema shape for the prompt arguments
+ *
+ * @see {@link QAbstractPrompt} for the base class implementation
+ * @see {@link IQMcpTool} for the simpler single-call tool contract
+ *
  * @example
  * ```typescript
  * // The AI can invoke this skill when given a TypeScript interface:
@@ -58,6 +63,13 @@ export interface IQMcpPrompt<
 
 /**
  * Abstract base class for QuickModel MCP Prompts.
+ *
+ * Concrete prompt classes extend this and implement the four abstract members:
+ * `name`, `title`, `description`, `argsSchema`, and `execute()`.
+ * The `user()` and `assistant()` helpers simplify building the `messages` array.
+ *
+ * @template TArgs - Zod schema shape for the prompt arguments
+ * @see {@link IQMcpPrompt}
  */
 export abstract class QAbstractPrompt<
 	TArgs extends IPromptArgsSchema = IPromptArgsSchema,
@@ -71,12 +83,22 @@ export abstract class QAbstractPrompt<
 		[K in keyof TArgs]: string;
 	}): Promise<IQPromptResult>;
 
-	/** Helper — build a user message */
+	/**
+	 * Builds an `IQPromptMessage` with `role: 'user'`.
+	 *
+	 * @param text - The message body text (plain text or Markdown)
+	 * @returns A `{ role: 'user', content: { type: 'text', text } }` message object
+	 */
 	protected user(text: string): IQPromptMessage {
 		return { role: 'user', content: { type: 'text', text } };
 	}
 
-	/** Helper — build an assistant message */
+	/**
+	 * Builds an `IQPromptMessage` with `role: 'assistant'`.
+	 *
+	 * @param text - The message body text (plain text or Markdown)
+	 * @returns A `{ role: 'assistant', content: { type: 'text', text } }` message object
+	 */
 	protected assistant(text: string): IQPromptMessage {
 		return { role: 'assistant', content: { type: 'text', text } };
 	}

@@ -66,6 +66,19 @@ export class QLintCheckTool extends QAbstractTool<
 	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Runs ESLint on the specified files or directory and returns structured
+	 * lint issues split by severity.
+	 *
+	 * @param args - Lint target options.
+	 * @param args.targetDir - Directory to lint (e.g. `'src/mcp/tools'`).
+	 * Defaults to `'src'` when neither `targetDir` nor `targetFiles` is given.
+	 * @param args.targetFiles - Array of specific file paths to lint. Takes
+	 * precedence over `targetDir` when both are provided.
+	 * @returns `{ passed, errors, warnings, total_errors, total_warnings, summary }` —
+	 * `errors` and `warnings` are `ILintIssue[]` with file, line, column, rule,
+	 * and message; `passed` is `true` only when `total_errors === 0`.
+	 */
 	async execute(args: {
 		targetDir?: string;
 		targetFiles?: string[];

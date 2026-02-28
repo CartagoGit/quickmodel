@@ -175,14 +175,24 @@ Método de bajo nivel para hidratar un objeto plano en una instancia. Equivalent
 const user = User.deserialize(plainObject);
 ```
 
-### `validate()`
+### `validationReport()`
 
-Ejecuta todas las validaciones definidas en las propiedades.
+Devuelve un informe detallado de todos los fallos de validación, incluidos los errores de integridad de transformers y las violaciones de reglas de negocio `@QRule`.
 
 ```typescript
-const errors = user.validate();
-if (errors.length) {
-	console.error(errors);
+const report = user.validationReport();
+if (!report.valid) {
+	console.error(report.errors);
+}
+```
+
+### `isValid()`
+
+Devuelve `true` si el modelo supera todas las comprobaciones de integridad y las reglas de negocio. Combina `checkIntegrity()` y `checkRules()` en una sola llamada.
+
+```typescript
+if (!user.isValid()) {
+	console.error('El modelo no es válido');
 }
 ```
 

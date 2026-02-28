@@ -5,7 +5,27 @@
  */
 
 /**
- * Maps a TypeScript type to its IQSerialized version
+ * Maps a TypeScript runtime type to its JSON-safe serialized representation.
+ *
+ * Used to derive the correct interface type for `serialize()` return values.
+ *
+ * | Runtime type             | Serialized type                          |
+ * |--------------------------|------------------------------------------|
+ * | `Date`                   | `string` (ISO 8601)                      |
+ * | `RegExp`                 | `string` or `{ __type: 'regexp'; ... }`  |
+ * | `Error`                  | `string`                                 |
+ * | `URL`, `URLSearchParams` | `string`                                 |
+ * | `bigint`                 | `string` or `{ __type: 'bigint'; ... }`  |
+ * | `symbol`                 | `string` or `{ __type: 'symbol'; ... }`  |
+ * | Typed arrays             | `number[]` (or `string[]` for BigInt64)  |
+ * | `ArrayBuffer`, `DataView`| `number[]`                               |
+ * | `Map<K, V>`              | `[K, V][]` or `{ __type: 'Map'; ... }`   |
+ * | `Set<U>`                 | `U[]` or `{ __type: 'Set'; ... }`        |
+ * | `Array<U>`               | `IQSerialized<U>[]`                      |
+ * | plain `object`           | `{ [K in keyof T]: IQSerialized<T[K]> }` |
+ * | primitives               | as-is (`string`, `number`, `boolean`, …) |
+ *
+ * @template T - The runtime TypeScript type to map.
  */
 export type IQSerialized<T> = T extends RegExp
 	? string | { __type: 'regexp'; source: string; flags: string }
@@ -85,7 +105,13 @@ export type IQSerialized<T> = T extends RegExp
 																								: T; // primitivos (string, number, boolean, null, undefined)
 
 /**
- * Maps a complete interface to its IQSerialized version
+ * Maps every property of an interface to its {@link IQSerialized} equivalent.
+ *
+ * This is the return type of `QModel.serialize()` when no `alias` map is used.
+ * Each property is independently mapped through `IQSerialized<T[K]>`.
+ *
+ * @template T - The model interface (runtime property types).
+ * @see {@link IQAliasedSerializedInterface} — variant with key renaming via `@Quick({ alias: ... })`
  */
 export type IQSerializedInterface<T> = {
 	[K in keyof T]: IQSerialized<T[K]>;
@@ -129,10 +155,11 @@ export type IQAliasedSerializedInterface<
 };
 
 /**
- * Maps a serialized type back to its original (deserialized) type.
+ * Identity mapping from serialized → deserialized type.
  *
- * This is an identity mapping at the type level — actual deserialization is
- * performed at runtime by the registered transformers.
+ * This is a type-level no-op: the actual deserialization is performed at runtime
+ * by the registered transformers. The type alias exists to make intent explicit in
+ * method signatures that accept or return deserialized data.
  *
  * @template T - The deserialized TypeScript type.
  */

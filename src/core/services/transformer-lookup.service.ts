@@ -27,6 +27,8 @@ import {
 	URLSearchParamsTransformer,
 	TextEncoderTransformer,
 	TextDecoderTransformer,
+	BlobTransformer,
+	FileTransformer,
 } from '@/transformers/web-apis.transformer';
 import { PrimitiveTransformer } from '@/transformers/primitive.transformer';
 import { SpecialFloatTransformer } from '@/transformers/special-float.transformer';
@@ -52,10 +54,19 @@ export class TransformerLookupService {
 	}
 
 	/**
-	 * Gets a registered transformer by key or constructor name.
+	 * Resolves a registered transformer by key, constructor, or direct transformer object.
 	 *
-	 * @param key - The key to look up (string literal, constructor, or class name)
-	 * @returns The registered transformer or `undefined` if not found
+	 * Lookup order:
+	 * 1. **Direct injection** — if `key` is already an `IQTransformer` object, return it as-is.
+	 * 2. **Global registry** (`QTransformerRegistry`) — user-registered overrides win.
+	 * 3. **Local built-in map** — transformers registered in `registerDefaultTransformers()`.
+	 *
+	 * String keys are normalised to lowercase and cached. Function/constructor keys are
+	 * resolved via `.name` and cached in a `WeakMap` to avoid repeated allocations.
+	 *
+	 * @param key - Transformer lookup key: a string alias (`"date"`), a constructor (`Date`),
+	 *   or a direct `IQTransformer` implementation.
+	 * @returns The matching `IQTransformer`, or `undefined` when none is registered.
 	 */
 	public getTransformer(
 		key: IQTransformerKey
@@ -211,6 +222,12 @@ export class TransformerLookupService {
 		this.transformers.set('urlsearchparams', urlSearchParamsTransformer);
 		this.transformers.set('textencoder', textEncoderTransformer);
 		this.transformers.set('textdecoder', textDecoderTransformer);
+
+		// Register Blob and File transformers
+		const blobTransformer = new BlobTransformer();
+		const fileTransformer = new FileTransformer();
+		this.transformers.set('blob', blobTransformer);
+		this.transformers.set('file', fileTransformer);
 
 		// Register special float transformers (NaN, Infinity, -Infinity)
 		const specialFloatTransformer = new SpecialFloatTransformer();

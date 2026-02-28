@@ -21,6 +21,15 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	/** @internal File-system abstraction, injectable for testing. */
 	protected _fs = fs;
 
+	/**
+	 * Regenerates documentation pages for public tools, internal tools, and
+	 * transformers for every supported locale by reflecting on the live tool
+	 * and transformer registrations.
+	 *
+	 * @returns `{ summary, updatedFiles }` — `updatedFiles` lists the absolute
+	 * paths of every Markdown file that was written; `summary` is a human-
+	 * readable description of what was regenerated.
+	 */
 	async execute(): Promise<{ summary: string; updatedFiles: string[] }> {
 		const updatedFiles: string[] = [];
 		const cwd = process.cwd();

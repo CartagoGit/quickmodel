@@ -51,6 +51,20 @@ export class QListTodosTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Scans source files for `TODO`, `FIXME`, `HACK`, and `XXX` annotation
+	 * comments and returns them as a structured list.
+	 *
+	 * @param args - Scan configuration.
+	 * @param args.targetDir - Directory to scan (relative to project root).
+	 * Defaults to `src/` inside the project root.
+	 * @param args.extensions - File extensions to include.
+	 * Defaults to `['.ts', '.js']`.
+	 * @returns `{ items, total }` — `items` is an array of
+	 * `{ file, line, type, text }` entries; `total` is the count.
+	 * @throws {Error} When `targetDir` resolves outside the project root
+	 * (path-traversal guard).
+	 */
 	async execute(args: {
 		targetDir?: string;
 		extensions?: string[];

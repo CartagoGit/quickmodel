@@ -97,6 +97,17 @@ export class QDiffModelsTool extends QAbstractTool<
 			.describe('Source code of the new QuickModel class (the "after")'),
 	});
 
+	/**
+	 * Compares two QuickModel class definitions and reports structural differences.
+	 *
+	 * Performs static analysis — no execution required.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.model_a - Source code of the baseline model (the "before").
+	 * @param args.model_b - Source code of the new model (the "after").
+	 * @returns Diff report with `added_fields`, `removed_fields`, `changed_fields`,
+	 *   `changed_transformers`, `added_decorators`, `removed_decorators`, and `summary`.
+	 */
 	async execute(args: { model_a: string; model_b: string }): Promise<{
 		added_fields: string[];
 		removed_fields: string[];

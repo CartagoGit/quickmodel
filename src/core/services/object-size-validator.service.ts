@@ -11,7 +11,14 @@ import { QModelError } from '../errors/quickmodel.error';
  */
 export class ObjectSizeValidator {
 	/**
-	 * Validates that an array doesn't exceed the maximum allowed length
+	 * Validates that an array does not exceed the configured maximum length.
+	 *
+	 * @param options - Validation context.
+	 * @param options.key - Property name (used in the error message).
+	 * @param options.value - The array to check.
+	 * @param options.maxLength - Maximum allowed number of elements.
+	 * @param options.className - Model class name (used in the error message).
+	 * @throws {QModelError} When `value.length > maxLength`.
 	 */
 	public validateArraySize(options: {
 		key: string;
@@ -33,7 +40,17 @@ export class ObjectSizeValidator {
 	}
 
 	/**
-	 * Validates that an object doesn't have too many properties
+	 * Validates that a plain object does not have too many own properties.
+	 *
+	 * Guards against DoS attacks that pass extremely wide objects to trigger
+	 * excessive property iteration at construction time.
+	 *
+	 * @param options - Validation context.
+	 * @param options.keys - Pre-computed `Object.keys()` of the input object.
+	 * @param options.limit - Maximum allowed property count.
+	 * @param options.className - Model class name (used in the error message).
+	 * @param options.propertyKey - Property key label for the error message (defaults to `"<root>"`).
+	 * @throws {QModelError} When `keys.length > limit`.
 	 */
 	public validateObjectSize(options: {
 		keys: string[];
@@ -55,7 +72,17 @@ export class ObjectSizeValidator {
 	}
 
 	/**
-	 * Validates that a nested object doesn't exceed size limits
+	 * Validates that a nested plain object does not exceed the hard-coded
+	 * per-property limit of 50 000 own keys.
+	 *
+	 * Non-plain values (arrays, Dates, RegExps, Maps, Sets, `null`) are skipped.
+	 * This prevents a single nested property from causing excessive iteration
+	 * inside the population pipeline.
+	 *
+	 * @param key - Name of the nested property (used in the error message).
+	 * @param value - The value to inspect.
+	 * @param className - Model class name (used in the error message).
+	 * @throws {QModelError} When the nested object has more than 50 000 own properties.
 	 */
 	public validateNestedObjectSize(
 		key: string,

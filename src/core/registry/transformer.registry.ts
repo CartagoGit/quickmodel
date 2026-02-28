@@ -49,8 +49,9 @@ export class QTransformerRegistry {
 	/**
 	 * Retrieves a transformer by key.
 	 *
-	 * @param key - The key to look up
-	 * @returns The transformer or undefined
+	 * @param key - String alias, constructor, or transformer object to look up
+	 * @returns The registered `IQTransformer`, or `undefined` if no transformer
+	 *   is registered for that key
 	 */
 	public static get(
 		key: IQTransformerKey
@@ -99,7 +100,15 @@ export class QTransformerRegistry {
 	}
 
 	/**
-	 * Clears all custom transformers (useful for testing).
+	 * Removes all custom-registered transformers from the registry.
+	 *
+	 * Built-in default transformers (registered by `TransformerLookupService` and
+	 * `IntegrityService`) are **not** stored here, so they are unaffected.
+	 * Primarily useful for test isolation — call before/after a test suite to
+	 * prevent custom transformers from leaking across test files.
+	 *
+	 * @see {@link snapshot} / {@link restore} for a lighter-weight alternative that
+	 *   preserves and restores the registry state without losing all registrations.
 	 */
 	public static clear(): void {
 		this.transformers.clear();

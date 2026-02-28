@@ -18,7 +18,7 @@ Usa la herramienta MCP **`check_project_rules`** para validarlas automáticament
 | `noUncheckedIndexedAccess` | El acceso a arrays/Maps puede ser `undefined`                                                    |
 | Interfaces → prefijo `I`   | `interface IUser {}` ✅ — `interface User {}` ❌                                                 |
 | Type aliases → prefijo `I` | `type IStatus = ...` ✅ — `type Status = ...` ❌                                                 |
-| Path aliases               | Usar `@/core/...`, `@/transformers/...` — **nunca** rutas relativas ni `@cartago-git/quickmodel` |
+| Path aliases               | Usar `@/core/...`, `@/transformers/...` — **nunca** rutas relativas ni `quickmodel` desde `src/` |
 
 ### Reglas de linting (ESLint)
 
@@ -28,7 +28,7 @@ Usa la herramienta MCP **`check_project_rules`** para validarlas automáticament
 | ↳ Excepciones           | `_`, `id`, `on`, `fs`, `cb`, `md`, `ts`, `err` y prefijo `_`                              |
 | `max-params`            | Máximo **3 parámetros** posicionales por función — usar objeto si hace falta más          |
 | ↳ Excepción             | `src/transformers/` y `src/core/bases/` (contrato `IQTransformer`)                        |
-| `no-restricted-imports` | Prohibido importar `@cartago-git/quickmodel` desde `src/`                                 |
+| `no-restricted-imports` | Prohibido importar `quickmodel` (barrel) desde `src/`                                     |
 | ↳                       | Prohibido importar `@mcp` sin especificar sub-ruta (usar `@mcp/server`, `@mcp/tools/...`) |
 | `no-console`            | No usar `console.log` en `src/` (excepto `mcp-cli.ts` y `server.ts`)                      |
 | Decoradores en tests    | Usar `@Quick({...})` — **nunca** `@QType(...)` en tests                                   |

@@ -20,10 +20,13 @@
  */
 export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	/**
-	 * Transforms from interface (JSON) to model type
-	 * @param value - Value from JSON/Interface
-	 * @param propertyKey - Property name
-	 * @param className - Class name
+	 * Converts a serialized (JSON) value to the in-memory model type.
+	 *
+	 * @param value - The raw value from the JSON/interface layer (may be `null` or `undefined`)
+	 * @param propertyKey - Name of the property being deserialized (used for error messages)
+	 * @param className - Name of the model class (used for error messages)
+	 * @param context - Optional transform context with additional metadata
+	 * @returns The deserialized in-memory value, or `null` when the input was `null`/`undefined`
 	 */
 	deserialize(
 		value: TInput | null | undefined,
@@ -33,9 +36,11 @@ export interface IQTransformer<TInput = unknown, TOutput = unknown> {
 	): TOutput | null;
 
 	/**
-	 * Serializes from model type to interface (JSON)
-	 * @param value - Model value
-	 * @param context - Optional context
+	 * Converts an in-memory model value back to its serialized (JSON-compatible) form.
+	 *
+	 * @param value - The model-layer value to serialize
+	 * @param context - Optional transform context with additional metadata
+	 * @returns The serialized `TInput` form suitable for JSON encoding
 	 */
 	serialize(value: TOutput, context?: IQTransformContext): TInput;
 }

@@ -31,6 +31,20 @@ export class QCheckChangelogTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Verifies that `CHANGELOG.md` contains an entry for the version declared in
+	 * `package.json`, preventing a release without a changelog update.
+	 *
+	 * @param args - Check configuration.
+	 * @param args.projectDir - Directory containing `package.json` and
+	 * `CHANGELOG.md`. Defaults to `process.cwd()`.
+	 * @returns `{ found, version, excerpt, status, message? }` — `found` is `true`
+	 * when the current version appears in `CHANGELOG.md`; `excerpt` is the matching
+	 * line; `status` is `'ok'` on success or `'error'` when the file is missing or
+	 * the version is not documented.
+	 * @throws {Error} When `projectDir` resolves outside the project root
+	 * (path-traversal guard).
+	 */
 	async execute(args: { projectDir?: string }): Promise<{
 		found: boolean;
 		version: string;

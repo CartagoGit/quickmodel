@@ -37,6 +37,23 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 	/** @internal File-system abstraction, injectable for testing. */
 	protected _fs = fs;
 
+	/**
+	 * Scaffolds a boilerplate file for a new transformer or MCP tool.
+	 *
+	 * @param args - Scaffolding options.
+	 * @param args.type - Feature type: `'transformer'` creates a file under
+	 * `src/transformers/`; `'tool'` creates a file under
+	 * `src/mcp/tools/internal/`.
+	 * @param args.name - Kebab-case feature name
+	 * (e.g. `'email'`, `'validate-user'`). Used to derive the file name and the
+	 * PascalCase class name.
+	 * @param args.location - Target directory relative to the project root.
+	 * Overrides the default placement for `type`.
+	 * @returns `{ path, message }` — `path` is the absolute path of the created
+	 * file; `message` summarises the result or carries an error description.
+	 * @throws {Error} When the resolved target path is outside the project root
+	 * (path-traversal guard).
+	 */
 	async execute(args: {
 		type: 'transformer' | 'tool';
 		name: string;

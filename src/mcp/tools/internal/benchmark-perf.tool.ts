@@ -33,6 +33,14 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 			.describe('Number of iterations for each test case'),
 	});
 
+	/**
+	 * Executes micro-benchmarks for instantiation, transformation, and serialisation.
+	 *
+	 * @param args - Benchmark configuration.
+	 * @param args.iterations - Number of iterations for each test case (e.g. 1000).
+	 * @returns An object with `results` mapping benchmark names to formatted average
+	 * millisecond strings, and a `summary` human-readable narrative.
+	 */
 	async execute(args: { iterations: number }): Promise<{
 		results: Record<string, string>;
 		summary: string;
@@ -49,12 +57,13 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 			birthDate: 'date',
 			tags: 'any', // array of strings
 		})
+		/** @internal Ephemeral model used only for benchmark measurements. */
 		class BenchmarkModel extends QModel<BenchmarkModel> {
-			public name?: string;
-			public age?: number;
-			public isActive?: boolean;
-			public birthDate?: Date;
-			public tags?: string[];
+			/** @internal */ public name?: string;
+			/** @internal */ public age?: number;
+			/** @internal */ public isActive?: boolean;
+			/** @internal */ public birthDate?: Date;
+			/** @internal */ public tags?: string[];
 		}
 
 		// 1. Instantiation Benchmark

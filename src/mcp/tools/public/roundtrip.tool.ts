@@ -40,15 +40,26 @@ export class QRoundtripTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Verifies that serializing and re-creating a QuickModel instance is lossless.
+	 *
+	 * Creates an instance from `data`, serializes it to `s1`, creates a new instance
+	 * from `s1`, serializes again to `s2`, and reports whether `s1 === s2`.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.data - Raw input data to populate the model.
+	 * @param args.options - `@Quick()` configuration options.
+	 * @returns `{ lossless, input, serialized, roundtrip_serialized, diff, summary }`.
+	 */
 	async execute(args: {
-		data: Record<string, any>;
-		options: Record<string, any>;
+		data: Record<string, unknown>;
+		options: Record<string, unknown>;
 	}): Promise<{
 		lossless: boolean;
-		input: Record<string, any>;
+		input: Record<string, unknown>;
 		serialized: Record<string, unknown>;
 		roundtrip_serialized: Record<string, unknown>;
-		diff: Record<string, { expected: unknown; got: unknown }>;
+		diff: Record<string, unknown>;
 		summary: string;
 	}> {
 		await Promise.resolve();
@@ -56,6 +67,7 @@ export class QRoundtripTool extends QAbstractTool<
 		const hydratedOptions = this.hydrateOptions(args.options);
 
 		@Quick(hydratedOptions)
+		/** @internal Ephemeral model used to serialize-deserialize `args.data` for round-trip verification. */
 		class DynamicModel extends QModel<any> {
 			[key: string]: any;
 		}

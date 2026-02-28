@@ -71,6 +71,20 @@ import {
 	OpenAPISchemaGenerator,
 	AjvSchemaGenerator,
 } from '@/core/services/schema-generators.service';
+import {
+	formDataToPlainObject,
+	plainObjectToFormData,
+	type IFromFormDataOptions,
+	type IToFormDataOptions,
+} from '@/core/helpers/form-data.helpers';
+import {
+	blobToReadableStream,
+	streamToBlob,
+	pipeReadableToWritable,
+	type IToReadableStreamOptions,
+	type IFromStreamOptions,
+	type IPipeStreamOptions,
+} from '@/core/helpers/stream.helpers';
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
 // Metadata is immutable after decorators run (class-definition time), so
@@ -238,8 +252,16 @@ export abstract class QModel<
 	private static readonly serializer = new Serializer();
 	/** @internal Singleton service that converts QModel instances to plain interface objects. */
 	private static readonly toInterfaceService = new ToInterfaceService();
-	/** @internal Singleton mock generator used by `QModel.mock()`. */
-	private static readonly QMockGenerator = new QMockGenerator();
+	/** @internal Lazy-initialized mock generator — instantiated only on first call to `.mock()`. */
+	private static _mockGenInstance: QMockGenerator | undefined;
+
+	/** @internal Returns the singleton QMockGenerator, creating it on first access. */
+	private static get _mockGen(): QMockGenerator {
+		if (!QModel._mockGenInstance) {
+			QModel._mockGenInstance = new QMockGenerator();
+		}
+		return QModel._mockGenInstance;
+	}
 	/** @internal Singleton integrity/validation service used by `checkIntegrity()` and `isValid()`. */
 	private static readonly validation = new IntegrityService();
 
@@ -428,6 +450,215 @@ export abstract class QModel<
 	}
 
 	/**
+	 * Creates a model instance from a `FormData` object.
+	 *
+	 * Converts the FormData entries into a plain object and passes it to the
+	 * model constructor. File and Blob entries are resolved according to the
+	 * `fileSource` option (default: `'auto'`).
+	 *
+	 * **Auto-detection tree (default `fileSource: 'auto'`):**
+	 * - `File` instance → kept as `File`
+	 * - `Blob` instance → kept as `Blob`
+	 * - `string "data:..."` → decoded base64 → `Blob`
+	 * - `string "https://..."` → string (URL reference)
+	 * - Any other string → string as-is
+	 *
+	 * @param formData      - Source `FormData`
+	 * @param options - Conversion options (fileSource, per-field overrides)
+	 * @returns Model instance with type-safe property access
+	 *
+	 * @see {@link QModel.toFormData} — inverse: serialize a model instance back to FormData
+	 *
+	 * @example
+	 * ```typescript
+	 * // Default auto-detection
+	 * const dto = UploadDto.fromFormData(formData);
+	 *
+	 * // Force all binary fields to be treated as references
+	 * const dto = UploadDto.fromFormData(formData, { fileSource: 'reference' });
+	 *
+	 * // Per-field overrides
+	 * const dto = UploadDto.fromFormData(formData, {
+	 *   fields: { avatar: 'binary', document: 'reference' },
+	 * });
+	 * ```
+	 *
+	 * @group Serialization
+	 */
+	static fromFormData<TClass extends QModel<IQAnyRecord>>(
+		this: new (data: any) => TClass,
+		formData: FormData,
+		options?: IFromFormDataOptions
+	): TClass {
+		const plain = formDataToPlainObject(formData, options);
+		const Constructor = this;
+		return new Constructor(plain);
+	}
+
+	/**
+	 * Builds a `FormData` from the model's current property values.
+	 *
+	 * Binary fields (`File`, `Blob`, `ArrayBuffer`, `Uint8Array`) are encoded
+	 * according to the `fileMode` option (default: `'auto'` / `'binary'`).
+	 *
+	 * @param options - Conversion options (fileMode, per-field overrides)
+	 * @returns `Promise<FormData>`
+	 *
+	 * @see {@link QModel.fromFormData} — inverse: parse a FormData into a model instance
+	 *
+	 * @example
+	 * ```typescript
+	 * // Default — preserve binaries
+	 * const fd = await dto.toFormData();
+	 *
+	 * // Convert all binaries to base64 data:URIs
+	 * const fd = await dto.toFormData({ fileMode: 'base64' });
+	 *
+	 * // Per-field overrides
+	 * const fd = await dto.toFormData({ fields: { avatar: 'binary', doc: 'reference' } });
+	 * ```
+	 *
+	 * @group Serialization
+	 */
+	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
+		// Build a plain object from the model's current values.
+		// Combine direct own keys (via getters/properties) with internal QUICK_VALUES_KEY storage.
+		const plain: Record<string, unknown> = {};
+		const values = this[QUICK_VALUES_KEY];
+
+		// 1. Collect from QUICK_VALUES_KEY (transformed/stored values including File/Blob)
+		for (const key of Object.keys(values)) {
+			plain[key] = values[key];
+		}
+
+		// 2. Collect from own enumerable string keys (may include non-transformed string fields)
+		for (const key of Object.keys(this as object)) {
+			if (key !== QUICK_VALUES_KEY && !(key in plain)) {
+				plain[key] = (this as Record<string, unknown>)[key];
+			}
+		}
+
+		return plainObjectToFormData(plain, options);
+	}
+
+	/**
+	 * Creates a `ReadableStream<Uint8Array>` from a binary field (Blob or File) in the model.
+	 *
+	 * The field value is sliced lazily into chunks — it is never fully loaded into memory
+	 * at once. Use this for large files (> 50 MB) or server-side streaming uploads.
+	 *
+	 * @param options - Must include `field` (name of the binary field)
+	 * @returns `ReadableStream<Uint8Array>`
+	 *
+	 * @throws `Error` if the field is null, undefined, or not a Blob/File
+	 *
+	 * @see {@link QModel.fromStream} — inverse: populate a field from a readable stream
+	 * @see {@link QModel.pipeStream} — zero-copy pipe between streams
+	 *
+	 * @example
+	 * ```typescript
+	 * const stream = dto.toReadableStream({ field: 'video', chunkSize: 64 * 1024 });
+	 * return new Response(stream, { headers: { 'Content-Type': dto.video.type } });
+	 * ```
+	 *
+	 * @group Serialization
+	 */
+	toReadableStream(
+		options: IToReadableStreamOptions
+	): ReadableStream<Uint8Array> {
+		const { field, chunkSize, onChunk } = options;
+		const values = this[QUICK_VALUES_KEY];
+		const val: unknown = values[field];
+
+		if (val === null || val === undefined) {
+			throw new Error(
+				`[QModel.toReadableStream] Field "${field}" is null or undefined — ` +
+					`cannot stream a null value.`
+			);
+		}
+
+		if (!(val instanceof Blob)) {
+			throw new Error(
+				`[QModel.toReadableStream] Field "${field}" must be a Blob or File instance, ` +
+					`got: ${typeof val}`
+			);
+		}
+
+		return blobToReadableStream(val, chunkSize, onChunk);
+	}
+
+	/**
+	 * Creates a model instance with a binary field populated from a `ReadableStream<Uint8Array>`.
+	 *
+	 * All stream chunks are accumulated into a single `Blob` and assigned to the
+	 * specified field. Use when you need the full binary data in memory
+	 * (e.g. after receiving a small upload).
+	 *
+	 * @param stream  - Source `ReadableStream<Uint8Array>`
+	 * @param options - Must include `field` (name of the target binary field)
+	 * @returns `Promise<TClass>` — model instance with the binary field set
+	 *
+	 * @throws `RangeError` if `maxBytes` is set and the stream exceeds it
+	 *
+	 * @see {@link QModel.toReadableStream} — inverse: stream out from a model field
+	 * @see {@link QModel.pipeStream} — zero-copy alternative when accumulation is not needed
+	 *
+	 * @example
+	 * ```typescript
+	 * const dto = await UploadDto.fromStream(req.body, { field: 'video', maxBytes: 500 * 1024 * 1024 });
+	 * // dto.video → Blob with all stream chunks
+	 * ```
+	 *
+	 * @group Serialization
+	 */
+	static async fromStream<TClass extends QModel<IQAnyRecord>>(
+		this: new (data: any) => TClass,
+		stream: ReadableStream<Uint8Array>,
+		options: IFromStreamOptions
+	): Promise<TClass> {
+		const { field, maxBytes, onProgress } = options;
+		const blob = await streamToBlob(stream, {
+			maxBytes,
+			onProgress,
+			mimeType: 'application/octet-stream',
+		});
+		const Constructor = this;
+		return new Constructor({ [field]: blob as unknown });
+	}
+
+	/**
+	 * Pipes all bytes from a `ReadableStream<Uint8Array>` to a `WritableStream<Uint8Array>`
+	 * without accumulating anything in memory.
+	 *
+	 * `QModel` acts as a zero-copy conduit. Use for large files or server-side proxy uploads.
+	 *
+	 * @param src     - Source readable stream
+	 * @param dst     - Destination writable stream
+	 * @param options - Optional limits and progress callback
+	 * @returns `Promise<void>` — resolves when all bytes have been piped
+	 *
+	 * @throws `RangeError` if `maxBytes` is set and the stream exceeds it
+	 *
+	 * @see {@link QModel.toReadableStream} — create a readable stream from a model field
+	 * @see {@link QModel.fromStream} — accumulate a stream into a model field
+	 *
+	 * @example
+	 * ```typescript
+	 * await UploadDto.pipeStream(req.body, s3UploadStream, { maxBytes: 500 * 1024 * 1024 });
+	 * ```
+	 *
+	 * @group Serialization
+	 */
+	static async pipeStream(
+		src: ReadableStream<Uint8Array>,
+		dst: WritableStream<Uint8Array>,
+		options?: IPipeStreamOptions
+	): Promise<void> {
+		const { maxBytes, onProgress } = options ?? {};
+		return pipeReadableToWritable(src, dst, { maxBytes, onProgress });
+	}
+
+	/**
 	 * Creates a type-safe mock builder for generating test data.
 	 * Each derived class automatically infers its correct types.
 	 *
@@ -455,7 +686,7 @@ export abstract class QModel<
 
 		return new QMockBuilder(
 			ModelClass,
-			QModel.QMockGenerator
+			QModel._mockGen
 		) as unknown as QMockBuilder<IQModelInstance<T>, IQModelInterface<T>>;
 	}
 
@@ -603,6 +834,12 @@ export abstract class QModel<
 		// a locally-scoped generic helper function whose parameter IS the concrete
 		// constructor — the compiler can then verify the relationship at each call-site.
 		const makeMixed = <T extends new (...args: any[]) => any>(Base: T) => {
+			/**
+			 * Local mixin class that fuses `QModel` initialization logic with an arbitrary
+			 * external base class. Returned by `QModel.extends()` — not part of the public API.
+			 *
+			 * @internal
+			 */
 			class QModelMixed extends Base {
 				constructor(...args: any[]) {
 					// Call external base with no args — QModel hydration fills all fields
@@ -1790,6 +2027,7 @@ export abstract class QModel<
 	 * @template T - The model class type
 	 * @param json - JSON string representation of the model
 	 * @returns A new, fully typed model instance
+	 * @throws {SyntaxError} If `json` is not valid JSON
 	 *
 	 * @example
 	 * ```typescript
@@ -1818,6 +2056,7 @@ export abstract class QModel<
 	 * @template T - The model class type
 	 * @param json - JSON string representation of the model
 	 * @returns A new, fully typed model instance
+	 * @throws {SyntaxError} If `json` is not valid JSON
 	 *
 	 * @example
 	 * ```typescript

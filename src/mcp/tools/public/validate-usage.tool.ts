@@ -25,6 +25,15 @@ export class QValidateUsageTool extends QAbstractTool<
 		code: z.string().describe('The TypeScript code to analyze'),
 	});
 
+	/**
+	 * Performs static analysis on QuickModel TypeScript code and reports usage issues.
+	 *
+	 * Checks for: `extends QModel`, `declare` fields, presence of at least one decorator.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.code - TypeScript code to analyze.
+	 * @returns `{ valid, issues[], detectedDecorators[] }` — `valid` is `true` when no issues found.
+	 */
 	async execute(args: { code: string }): Promise<{
 		valid: boolean;
 		issues: string[];

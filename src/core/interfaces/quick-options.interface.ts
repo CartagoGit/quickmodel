@@ -66,15 +66,16 @@ export type IUnionToIntersection<U> = (
 /**
  * Extract common keys from all types in a union.
  *
- * This finds properties that exist in ALL types, which are valid discriminator fields.
+ * Finds properties that exist in **all** union members — these are valid discriminator fields.
  * Uses a distributive conditional type to check each member of the union.
  *
  * @example
  * ```typescript
- * type Content = { type: 'content'; text: string; };
- * type Metadata = { type: 'metadata'; tags: string[]; };
+ * type IContent  = { type: 'content';  text: string; };
+ * type IMetadata = { type: 'metadata'; tags: string[]; };
  *
- * type Common = IQExtractCommonKeys<T> =
+ * type ICommon = IQExtractCommonKeys<IContent | IMetadata>;
+ * //   ICommon = 'type'  ← the only key present in both union members
  * ```
  */
 export type IQExtractCommonKeys<T> =

@@ -35,6 +35,22 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 			.describe('Directory to scan (defaults to project root)'),
 	});
 
+	/**
+	 * Scans TypeScript source files and enforces project-specific coding rules
+	 * without invoking the ESLint daemon.
+	 *
+	 * Checks include: `@Quick` vs `@QType` in tests, no bare `console.log`,
+	 * `id-length` ≥ 3 characters, `max-params` ≤ 3, `I` prefix for interfaces /
+	 * type aliases, and prohibited import paths (`quickmodel`, bare `@mcp`).
+	 *
+	 * @param args - Scan configuration.
+	 * @param args.targetDir - Directory to scan (relative to project root).
+	 * Defaults to `process.cwd()`.
+	 * @returns `{ passed, errors[], warnings[] }` — `passed` is `true` only when
+	 * `errors` is empty; warnings are informational only.
+	 * @throws {Error} When `targetDir` resolves outside the project root
+	 * (path-traversal guard).
+	 */
 	async execute(args: { targetDir?: string }): Promise<{
 		passed: boolean;
 		errors: string[];

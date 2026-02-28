@@ -212,7 +212,17 @@ export class IntegrityService {
 	}
 
 	/**
-	 * Gets the transformer (custom or default) for a given key.
+	 * Resolves the transformer (custom or default) for the given key.
+	 *
+	 * Lookup order:
+	 * 1. **Global registry** (`QTransformerRegistry`) — user-registered overrides win.
+	 * 2. **Local defaults** — built-in transformers registered in the constructor.
+	 *
+	 * String keys are normalised to lowercase; function/constructor keys are resolved
+	 * via their `.name` property, both results cached to avoid repeated allocations.
+	 *
+	 * @param key - A string alias (`"date"`, `"bigint"`) or a constructor reference (`Date`, `BigInt`).
+	 * @returns The matching `IQTransformer`, or `undefined` if none is registered for the key.
 	 */
 	public getTransformer(
 		key: IQTransformerKey

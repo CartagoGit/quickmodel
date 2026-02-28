@@ -37,6 +37,14 @@ export class QCheckBundleSizeTool extends QAbstractTool<z.ZodObject<{}>> {
 		return Promise.resolve(this.readDistDir(distPath));
 	}
 
+	/**
+	 * Triggers a production build and measures the resulting bundle files.
+	 *
+	 * @param _args - No arguments required.
+	 * @returns `{ status, files, total_bytes, summary }` — `files` is an array of
+	 * `{ file, bytes }` entries from the `dist/` directory; `total_bytes` is the
+	 * sum; `status` is `'error'` if the build itself fails.
+	 */
 	async execute(_args: {}): Promise<{
 		status: 'ok' | 'error';
 		files: IBundleFile[];

@@ -31,6 +31,15 @@ export class QTypecheckTool extends QAbstractTool<
 	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
+	/**
+	 * Runs TypeScript type-checking via `tsc --noEmit` and returns structured
+	 * error details.
+	 *
+	 * @param _args - No arguments required.
+	 * @returns `{ passed, errors, total, summary }` — `errors` is an array of
+	 * `{ file, line, column, code, message }` entries; `passed` is `true` only
+	 * when `total === 0`.
+	 */
 	async execute(_args: Record<never, never>): Promise<{
 		passed: boolean;
 		errors: ITypeError[];

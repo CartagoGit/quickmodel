@@ -19,6 +19,7 @@ import { QFixTypecheckPrompt } from '../../../../src/mcp/prompts/public/fix-type
 import { QRefactorPrompt } from '../../../../src/mcp/prompts/public/refactor.prompt';
 import { QApplySolidPrompt } from '../../../../src/mcp/prompts/public/apply-solid.prompt';
 import { QSyncProjectPrompt } from '../../../../src/mcp/prompts/public/sync-project.prompt';
+import { QFormDataPrompt } from '../../../../src/mcp/prompts/public/form-data.prompt';
 import type { IQPromptResult } from '../../../../src/mcp/prompts/abstract-prompt';
 import { z } from 'zod';
 
@@ -1774,5 +1775,148 @@ describe('QSyncProjectPrompt', () => {
 			.map((msg) => msg.content.text)
 			.join(' ');
 		expect(allText).toMatch(/doc|documentation/i);
+	});
+});
+
+// ── QFormDataPrompt ───────────────────────────────────────────────────────────
+
+describe('QFormDataPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QFormDataPrompt();
+		expect(prompt.name).toBe('quickmodel_form_data');
+		expect(prompt.title).toContain('FormData');
+		expect(prompt.description).toBeDefined();
+		expect(prompt.description.length).toBeGreaterThan(20);
+	});
+
+	it('argsSchema.scenario is required', () => {
+		const prompt = new QFormDataPrompt();
+		const res = prompt.argsSchema.scenario.safeParse(undefined);
+		expect(res.success).toBe(false);
+	});
+
+	it('argsSchema.model_fields is optional', () => {
+		const prompt = new QFormDataPrompt();
+		const res = prompt.argsSchema.model_fields?.safeParse(undefined);
+		expect(res?.success).toBe(true);
+	});
+
+	it('argsSchema.file_size is optional', () => {
+		const prompt = new QFormDataPrompt();
+		const res = prompt.argsSchema.file_size?.safeParse(undefined);
+		expect(res?.success).toBe(true);
+	});
+
+	it('execute() returns a valid result with only scenario', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'User uploads avatar from a browser form',
+		});
+		assertValidResult(result);
+	});
+
+	it('execute() returns at least 3 messages', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Server receives file upload',
+		});
+		expect(result.messages.length).toBeGreaterThanOrEqual(3);
+	});
+
+	it('execute() mentions fromFormData in messages', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Read profile form data',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('fromFormData');
+	});
+
+	it('execute() mentions toFormData in messages', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Submit profile form data',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('toFormData');
+	});
+
+	it('execute() mentions fileMode or fileSource in messages', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Avatar upload with binary mode',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/fileMode|fileSource/);
+	});
+
+	it('execute() mentions IQStreamProgress in messages', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Large video upload',
+			file_size: 'large',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('IQStreamProgress');
+	});
+
+	it('execute() mentions toReadableStream for large files', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Pipe 1 GB file to S3',
+			file_size: 'large',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('toReadableStream');
+	});
+
+	it('execute() mentions isValid or validationReport before network operation', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'Submit form before calling API',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toMatch(/isValid|validationReport/);
+	});
+
+	it('execute() includes the scenario in the output messages', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'UniqueScenario_XYZ_987',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('UniqueScenario_XYZ_987');
+	});
+
+	it('execute() includes model_fields when provided', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({
+			scenario: 'User form',
+			model_fields: 'avatar: File, uniqueFieldZZZ: string',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('uniqueFieldZZZ');
+	});
+
+	it('execute() starts with a user role message', async () => {
+		const prompt = new QFormDataPrompt();
+		const result = await prompt.execute({ scenario: 'Test scenario' });
+		expect(result.messages[0]?.role).toBe('user');
 	});
 });

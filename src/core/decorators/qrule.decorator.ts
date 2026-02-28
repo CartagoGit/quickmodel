@@ -222,6 +222,10 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
  *               **Inferred automatically in TC39 mode.**
  *               In legacy mode defaults to `unknown` — annotate the predicate parameter explicitly.
  *
+ * @see {@link QModel.checkRules} for synchronous evaluation
+ * @see {@link QModel.checkRulesAsync} for async evaluation (required when predicate returns `Promise<boolean>`)
+ * @see {@link QModel.validationReport} for a combined integrity + rules report
+ *
  * @example
  * ```typescript
  * @Quick({ name: 'string', age: 'number' })

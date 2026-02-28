@@ -181,14 +181,24 @@ Low-level method to hydrate a plain object into a model instance. Equivalent to 
 const user = User.deserialize(plainObject);
 ```
 
-### `validate()`
+### `validationReport()`
 
-Runs all validations defined on properties (if verification middleware is enabled).
+Returns a detailed report of all validation failures, including transformer integrity checks and `@QRule` business rule violations.
 
 ```typescript
-const errors = user.validate();
-if (errors.length) {
-	console.error(errors);
+const report = user.validationReport();
+if (!report.valid) {
+	console.error(report.errors);
+}
+```
+
+### `isValid()`
+
+Returns `true` if the model passes all integrity checks and business rules. Combines `checkIntegrity()` and `checkRules()` in a single call.
+
+```typescript
+if (!user.isValid()) {
+	console.error('Model is not valid');
 }
 ```
 

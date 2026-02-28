@@ -41,9 +41,9 @@ const esFeatures: IFeature[] = [
 	},
 	{
 		icon: '🤖',
-		title: 'Servidor MCP con 19 Skills',
+		title: 'Servidor MCP con 20 Skills',
 		details:
-			'Claude, Cursor o VS Code acceden a 19 herramientas (crear modelos, exportar schemas, simular validaciones, diff entre modelos…) y 19 prompts guiados. Tu IA conoce tu código.',
+			'Claude, Cursor o VS Code acceden a 20 herramientas (crear modelos, exportar schemas, simular validaciones, diff entre modelos…) y 20 prompts guiados. Tu IA conoce tu código.',
 	},
 	{
 		icon: '🧪',
@@ -116,9 +116,9 @@ const enFeatures: IFeature[] = [
 	},
 	{
 		icon: '🤖',
-		title: 'Built-in MCP Server with 19 Skills',
+		title: 'Built-in MCP Server with 20 Skills',
 		details:
-			'Claude, Cursor, or VS Code access 19 tools (create models, export schemas, simulate validations, diff models…) and 19 guided prompts. Your AI understands your codebase.',
+			'Claude, Cursor, or VS Code access 20 tools (create models, export schemas, simulate validations, diff models…) and 20 guided prompts. Your AI understands your codebase.',
 	},
 	{
 		icon: '🧪',

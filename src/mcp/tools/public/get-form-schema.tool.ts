@@ -46,15 +46,24 @@ export class QGetFormSchemaTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Extracts the form schema from a QuickModel class decorated with `@QField`.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.code - TypeScript source code of the QuickModel class.
+	 * @param args.grouped - When `true`, groups the schema by `@QGroup` sections.
+	 * @returns `{ schema, count }` — array of field metadata entries and total count.
+	 */
 	async execute(args: {
 		code: string;
 		grouped?: boolean;
-	}): Promise<{ schema: Array<Record<string, unknown>>; count: number }> {
+	}): Promise<{ schema: unknown; count: number }> {
 		await Promise.resolve();
 
 		const parsedFields = this.parseFields(args.code);
 
 		// Build dynamic class with metadata programmatically
+		/** @internal Ephemeral model built from parsed field definitions for form-schema extraction. */
 		class DynamicForm extends QModel<any> {
 			[key: string]: any;
 		}

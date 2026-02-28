@@ -39,9 +39,18 @@ export class QJsonToModelTool extends QAbstractTool<
 			.describe('The name of the generated class'),
 	});
 
+	/**
+	 * Generates a QuickModel class from a raw JSON object.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.json - JSON string to analyse and convert to a model.
+	 * @param args.className - Optional name for the generated class (defaults to `"GeneratedModel"`).
+	 * @returns `{ code }` — generated TypeScript source code for the QuickModel class.
+	 * @throws {Error} When `json` is not a valid JSON string or is not a plain object.
+	 */
 	async execute(args: {
 		json: string;
-		className?: string;
+		className: string;
 	}): Promise<{ code: string }> {
 		await Promise.resolve();
 		let data: any;

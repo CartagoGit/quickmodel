@@ -74,8 +74,17 @@ export class QSimulateValidationTool extends QAbstractTool<
 			),
 	});
 
+	/**
+	 * Runs predicate-based field validation rules against the provided data object.
+	 *
+	 * @param args - Tool arguments.
+	 * @param args.data - The data object to validate.
+	 * @param args.rules - Array of validation rules with field, predicate, message, and optional group.
+	 * @param args.group - Optional group name to filter rules (only rules matching this group are evaluated).
+	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all active predicates pass.
+	 */
 	async execute(args: {
-		data: Record<string, any>;
+		data: Record<string, unknown>;
 		rules: IValidationRule[];
 		group?: string;
 	}): Promise<{
