@@ -34,7 +34,10 @@ interface ICreateUserBody {
 	active: boolean;
 }
 
-@Quick({ birthDate: Date, active: 'boolean' })
+@Quick(
+	{ birthDate: Date, active: 'boolean' },
+	{ unknownPropertyPolicy: 'keep' }
+)
 class CreateUserDto extends QModel<ICreateUserBody> {
 	@QRule(
 		(value: string) => typeof value === 'string' && value.trim().length > 0,
@@ -67,7 +70,7 @@ interface IAddress {
 	zip: string;
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class AddressDto extends QModel<IAddress> {
 	@QRule((val: string) => val.trim().length > 0, 'Street is required')
 	declare street: string;
@@ -85,7 +88,7 @@ interface ICreateOrderBody {
 	shippingAddress: IAddress;
 }
 
-@Quick({ shippingAddress: AddressDto })
+@Quick({ shippingAddress: AddressDto }, { unknownPropertyPolicy: 'keep' })
 class CreateOrderDto extends QModel<ICreateOrderBody> {
 	@QRule((val: string) => val.trim().length > 0, 'Product ID required')
 	declare productId: string;
@@ -109,7 +112,7 @@ interface IUserResponse {
 	score: number;
 }
 
-@Quick({ birthYear: Number, score: Number })
+@Quick({ birthYear: Number, score: Number }, { unknownPropertyPolicy: 'keep' })
 class UserResponseDto extends QModel<IUserResponse> {
 	declare firstName: string;
 	declare lastName: string;
@@ -152,7 +155,7 @@ async function isEmailAvailable(email: string): Promise<boolean> {
 	return !REGISTERED_EMAILS.has(email);
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class RegisterDto extends QModel<{
 	username: string;
 	email: string;
@@ -508,7 +511,7 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 	});
 
 	test('plain getter without @QComputed is NOT included in serialize()', () => {
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class WithPlainGetter extends QModel<{ value: number }> {
 			declare value: number;
 

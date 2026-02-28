@@ -44,7 +44,7 @@ describe('Security: Limits Bypass Attempts', () => {
 			next?: INode;
 		}
 
-		@Quick({ next: Node })
+		@Quick({ next: Node }, { unknownPropertyPolicy: 'keep' })
 		class Node extends QModel<INode> {
 			declare next?: Node;
 		}

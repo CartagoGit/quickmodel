@@ -104,9 +104,22 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 				updatedFiles
 			);
 			this.injectDoc(
+				pathResolve(cwd, `docs-vitepress/${lang.code}/mcp/tools.md`),
+				publicDocs,
+				updatedFiles
+			);
+			this.injectDoc(
 				pathResolve(
 					cwd,
 					`docs-vitepress/${lang.code}/mcp/internal/index.md`
+				),
+				internalDocs,
+				updatedFiles
+			);
+			this.injectDoc(
+				pathResolve(
+					cwd,
+					`docs-vitepress/${lang.code}/mcp/contributing/tools.md`
 				),
 				internalDocs,
 				updatedFiles

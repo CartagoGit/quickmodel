@@ -16,6 +16,9 @@
  * ```
  *
  * @module core/helpers/form-data.helpers
+ * @see {@link QModel.fromFormData} — public API that uses `formDataToPlainObject`
+ * @see {@link QModel.toFormData} — public API that uses `plainObjectToFormData`
+ * @see {@link IFileSourceMode} — available binary-field source modes
  */
 
 /**
@@ -134,6 +137,8 @@ async function blobToDataUri(blob: Blob): Promise<string> {
  * @param val   - The raw FormData value (File, Blob, or string)
  * @param mode  - How to interpret binary fields
  * @returns Resolved runtime value
+ * @see {@link IFileSourceMode} — available interpretation modes
+ * @see {@link formDataToPlainObject} — caller that applies this per entry
  */
 export function resolveFormDataValue(
 	val: File | Blob | string,
@@ -238,6 +243,8 @@ interface IAppendFieldOptions {
  *
  * @param options - Field append options
  * @returns Promise that resolves once the field has been appended
+ * @see {@link plainObjectToFormData} — calls this for each field in the object
+ * @see {@link IFileModeOutput} — encoding mode applied to binary fields
  */
 export async function appendFieldToFormData(
 	options: IAppendFieldOptions

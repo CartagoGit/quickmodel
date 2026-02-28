@@ -28,6 +28,7 @@
  * @returns A stateful guard with a single `hasAndMark(proto)` method.
  *
  * @see {@link QRule} — the decorator that uses this guard to prevent duplicate registrations
+ * @see {@link QModel} — model class whose prototype is tracked by the WeakSet
  *
  * @example
  * ```typescript

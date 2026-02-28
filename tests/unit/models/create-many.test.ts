@@ -6,7 +6,7 @@ import { QRule } from '@/core/decorators/qrule.decorator';
 // Shared model
 // ---------------------------------------------------------------------------
 
-@Quick({ age: 'number' })
+@Quick({ age: 'number' }, { unknownPropertyPolicy: 'keep' })
 class UserModel extends QModel<{ name: string; age: number }> {
 	name: string = '';
 
@@ -150,7 +150,7 @@ describe('createMany() — option includeErrorInstances', () => {
 // ---------------------------------------------------------------------------
 
 describe('createMany() — integrity failures', () => {
-	@Quick({ score: 'number' })
+	@Quick({ score: 'number' }, { unknownPropertyPolicy: 'keep' })
 	class ScoreModel extends QModel<{ score: number }> {
 		declare score: number;
 	}
@@ -166,7 +166,7 @@ describe('createMany() — integrity failures', () => {
 	});
 
 	test('works correctly for model with no @QRule decorators', () => {
-		@Quick({ value: 'string' })
+		@Quick({ value: 'string' }, { unknownPropertyPolicy: 'keep' })
 		class Simple extends QModel<{ value: string }> {
 			declare value: string;
 		}

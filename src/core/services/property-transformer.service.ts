@@ -231,6 +231,9 @@ export class PropertyTransformer {
 	 * @returns The transformed value: a native runtime type (e.g. `Date`, `bigint`, `Set`),
 	 *   a nested model instance, a mapped array, or the original `value` if no transformer
 	 *   applies. `undefined` if the input was `undefined`.
+	 * @see {@link ValueTransformerService.transform} — performs the actual scalar coercion
+	 * @see {@link TransformerLookupService.getTransformer} — resolves the transformer to apply
+	 * @see {@link PopulationService.populateInstance} — calls this for each decorated property
 	 */
 	public transformProperty(
 		key: string,

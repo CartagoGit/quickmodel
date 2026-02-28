@@ -32,6 +32,9 @@ export interface ISchemaGeneratorConfig {
  * `Set` → `{ type: 'array', uniqueItems: true }`, etc.
  *
  * @see {@link ISchemaGeneratorConfig} for the input shape.
+ * @see {@link MongoSchemaGenerator} — Mongoose schema definition equivalent
+ * @see {@link ZodSchemaGenerator} — Zod schema equivalent
+ * @see {@link TypeScriptSchemaGenerator} — TypeScript interface string equivalent
  *
  * @example
  * ```ts
@@ -193,6 +196,9 @@ export class JsonSchemaGenerator {
  * Produces `{ [field]: { type: NativeConstructor, required: true } }` entries
  * compatible with `new mongoose.Schema(definition)`.
  *
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 equivalent
+ * @see {@link ISchemaGeneratorConfig} — input shape
+ *
  * @example
  * ```ts
  * const definition = MongoSchemaGenerator.generate({
@@ -278,6 +284,10 @@ export class MongoSchemaGenerator {
  * Produces a `interface I${className} { ... }` source string that can be
  * written to a `.d.ts` file or surfaced in tooling.
  *
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 equivalent
+ * @see {@link MongoSchemaGenerator} — Mongoose schema equivalent
+ * @see {@link ISchemaGeneratorConfig} — input shape
+ *
  * @example
  * ```ts
  * const code = TypeScriptSchemaGenerator.generate({
@@ -360,6 +370,10 @@ export class TypeScriptSchemaGenerator {
  * `BigInt` is mapped to `String!` (GraphQL has no native BigInt scalar);
  * `Map` and complex objects are mapped to `JSON!`.
  *
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 equivalent
+ * @see {@link OpenAPISchemaGenerator} — OpenAPI 3.0 equivalent
+ * @see {@link ISchemaGeneratorConfig} — input shape
+ *
  * @example
  * ```ts
  * const sdl = GraphQLSchemaGenerator.generate({
@@ -439,6 +453,10 @@ export class GraphQLSchemaGenerator {
  * Returns an object with `type: 'object'`, a `properties` map, and a `required`
  * array — ready to embed directly in an OpenAPI document under
  * `components.schemas`.
+ *
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 equivalent
+ * @see {@link MongoSchemaGenerator} — Mongoose schema equivalent
+ * @see {@link ISchemaGeneratorConfig} — input shape
  *
  * @example
  * ```ts

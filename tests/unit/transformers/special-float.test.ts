@@ -184,7 +184,7 @@ interface IStats {
 	boost: number;
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class Stats extends QModel<IStats> {
 	declare hits: number;
 	declare ratio: number;
@@ -288,12 +288,12 @@ interface IScore {
 	val: number;
 }
 
-@Quick({ val: 'nan' })
+@Quick({ val: 'nan' }, { unknownPropertyPolicy: 'keep' })
 class ScoreNan extends QModel<IScore> {
 	declare val: number;
 }
 
-@Quick({ val: 'infinity' })
+@Quick({ val: 'infinity' }, { unknownPropertyPolicy: 'keep' })
 class ScoreInf extends QModel<IScore> {
 	declare val: number;
 }

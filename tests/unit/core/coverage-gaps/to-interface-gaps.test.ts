@@ -4,12 +4,12 @@ import { ToInterfaceService } from '../../../../src/core/services/to-interface.s
 
 describe('ToInterface Coverage Gaps', () => {
 	it('should handle null original value becoming a model instance', () => {
-		@Quick({ name: 'string' })
+		@Quick({ name: 'string' }, { unknownPropertyPolicy: 'keep' })
 		class Child extends QModel<any> {
 			declare name: string;
 		}
 
-		@Quick({ child: Child })
+		@Quick({ child: Child }, { unknownPropertyPolicy: 'keep' })
 		class Parent extends QModel<any> {
 			declare child: Child | null;
 		}
@@ -28,7 +28,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should handle circular reference in conversion', () => {
 		// Line 155-160: check saw.has(currentValue)
-		@Quick({ self: 'any' })
+		@Quick({ self: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class Circular extends QModel<any> {
 			declare self: Circular;
 		}
@@ -71,7 +71,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should handle BigInt conversion from string original', () => {
 		// Covers lines 321-322: if (originalValue === 'string' && currentValue === 'bigint')
-		@Quick({ val: 'any' })
+		@Quick({ val: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class Mixed extends QModel<any> {
 			declare val: any;
 		}
@@ -82,7 +82,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should handle Object.create(null)', () => {
 		// Covers lines 331-346: !('constructor' in typedOriginal)
-		@Quick({ obj: 'any' })
+		@Quick({ obj: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class NullProto extends QModel<any> {
 			declare obj: any;
 		}
@@ -95,7 +95,7 @@ describe('ToInterface Coverage Gaps', () => {
 	});
 	it('should handle Set to Array conversion in nested array', () => {
 		// Covers line 155: return Array.from(currentValue);
-		@Quick({ items: 'any' })
+		@Quick({ items: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class Wrapper extends QModel<any> {
 			declare items: any[];
 		}
@@ -108,7 +108,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should preserve Date string if already string', () => {
 		// Covers lines 193-194: if (typeof currentValue === 'string') return currentValue;
-		@Quick({ date: 'any' })
+		@Quick({ date: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class DateWrapper extends QModel<any> {
 			declare date: any;
 		}
@@ -126,7 +126,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should fallback to String(date) if not a Date object or string', () => {
 		// Covers lines 197: return String(currentValue);
-		@Quick({ date: 'any' })
+		@Quick({ date: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class DateFallback extends QModel<any> {
 			declare date: any;
 		}
@@ -150,7 +150,7 @@ describe('ToInterface Coverage Gaps', () => {
 			} // Should skip functions (line 403)
 		}
 
-		@Quick({ data: 'any' })
+		@Quick({ data: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class CustomModel extends QModel<any> {
 			declare data: CustomData;
 		}
@@ -173,7 +173,7 @@ describe('ToInterface Coverage Gaps', () => {
 		class Nested extends QModel<any> {
 			declare val: string;
 		}
-		@Quick({ child: Nested })
+		@Quick({ child: Nested }, { unknownPropertyPolicy: 'keep' })
 		class Parent extends QModel<any> {
 			declare child: Nested | null;
 		}
@@ -188,7 +188,10 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should handle wrapper objects (Number, String, Boolean)', () => {
 		// Covers lines 256-284
-		@Quick({ numWrapper: 'any', strWrapper: 'any', boolWrapper: 'any' })
+		@Quick(
+			{ numWrapper: 'any', strWrapper: 'any', boolWrapper: 'any' },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Wrappers extends QModel<any> {
 			declare numWrapper: any;
 			declare strWrapper: any;
@@ -213,7 +216,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should throw/log error on object type mismatch in development', () => {
 		// Covers lines 352-361: original was object, current is NOT
-		@Quick({ obj: 'object' })
+		@Quick({ obj: 'object' }, { unknownPropertyPolicy: 'keep' })
 		class Mismatch extends QModel<any> {
 			declare obj: object;
 		}
@@ -239,7 +242,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should handle Symbol conversion with fallback', () => {
 		// Covers line 252: typeof currentValue !== 'symbol'
-		@Quick({ sym: 'any' })
+		@Quick({ sym: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class SymbolWrapper extends QModel<any> {
 			declare sym: any;
 		}
@@ -277,7 +280,7 @@ describe('ToInterface Coverage Gaps', () => {
 		class CustomData {
 			constructor(public a: number) {}
 		}
-		@Quick({ data: 'any' })
+		@Quick({ data: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class CustomModel extends QModel<any> {
 			declare data: any;
 		}
@@ -294,7 +297,7 @@ describe('ToInterface Coverage Gaps', () => {
 
 	it('should handle String original with BigInt current', () => {
 		// Covers lines 318-322: original is string, current is bigint -> string
-		@Quick({ val: 'any' })
+		@Quick({ val: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class StringBigInt extends QModel<any> {
 			declare val: any;
 		}
@@ -311,7 +314,7 @@ describe('ToInterface Coverage Gaps', () => {
 			current = current.next;
 		}
 
-		@Quick({ root: 'any' })
+		@Quick({ root: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class Deep extends QModel<any> {
 			declare root: any;
 		}
@@ -323,7 +326,7 @@ describe('ToInterface Coverage Gaps', () => {
 	});
 
 	it('should throw on maximum recursion depth in toInterface (Nested QModels)', () => {
-		@Quick({ next: 'any' })
+		@Quick({ next: 'any' }, { unknownPropertyPolicy: 'keep' })
 		class Node extends QModel<any> {
 			declare next: Node | null;
 		}

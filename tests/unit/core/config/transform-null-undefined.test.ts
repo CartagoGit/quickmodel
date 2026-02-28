@@ -13,7 +13,7 @@ describe('Transformation: Null to Undefined', () => {
 	});
 
 	it('should NOT convert null to undefined by default', () => {
-		@Quick({ name: String })
+		@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare name: string | null;
 		}
@@ -25,7 +25,7 @@ describe('Transformation: Null to Undefined', () => {
 	it('should convert null to undefined when enabled globally', () => {
 		QConfig.configure({ defaults: { nullToUndefined: true } });
 
-		@Quick({ name: String })
+		@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare name: string | undefined;
 		}
@@ -54,7 +54,7 @@ describe('Transformation: Null to Undefined', () => {
 			},
 		});
 
-		@Quick({ name: String })
+		@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare name: string | undefined;
 		}

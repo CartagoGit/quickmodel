@@ -521,6 +521,6 @@ class Profile extends QModel<IProfile> {
 <BenchmarkChart
   :only-scenarios="['nestedConstruct']"
   :only-libs="['QuickModel', 'class-transformer', 'Plain JS']"
-  :only-feature-categories="['model']"
+  :only-feature-categories="['model', 'serialization']"
   default-tab="performance"
 />

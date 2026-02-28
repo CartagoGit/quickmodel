@@ -86,7 +86,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 2-3: prototype chain checks', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class Admin extends AdminBase {
 			declare username: string;
 			declare email: string;
@@ -123,7 +123,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 4: external base constructor properties are available', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class Admin extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -148,7 +148,10 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 5: @Quick type transformations work on mixin class', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date, salary: BigInt })
+		@Quick(
+			{ promotedAt: Date, salary: BigInt },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Admin extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -194,7 +197,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 6: static methods create(), mock(), getMetadata()', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminStatic extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -231,7 +234,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 7: instance methods serialize(), toJSON(), isDirty(), copy()', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminInstance extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -273,7 +276,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 8: serialize() includes external base fields AND mixin fields', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminFull extends AdminBase {
 			declare username: string;
 			declare email: string;
@@ -321,19 +324,19 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 9: deep chain ExternalBase → Mixin → Child → GrandChild', () => {
 		const MixinBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ createdAt: Date })
+		@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class UserModel extends MixinBase {
 			declare username: string;
 			declare createdAt: Date;
 		}
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminModel extends UserModel {
 			declare role: string;
 			declare promotedAt: Date;
 		}
 
-		@Quick({ bannedAt: Date })
+		@Quick({ bannedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class SuperAdmin extends AdminModel {
 			declare level: number;
 			declare bannedAt: Date;
@@ -382,7 +385,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 10: @QType explicit decorator works on mixin class', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminQType extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -415,7 +418,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 11: createReadonly() returns a deep-frozen instance', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminRO extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -447,7 +450,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 12: getDirtyFields() and reset() work on mixin instances', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date })
+		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class AdminDirty extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -497,7 +500,10 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	describe('Scenario 13: deserializeJson() roundtrip (JSON string → instance)', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ promotedAt: Date, salary: BigInt })
+		@Quick(
+			{ promotedAt: Date, salary: BigInt },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class AdminJson extends AdminBase {
 			declare username: string;
 			declare promotedAt: Date;
@@ -540,13 +546,16 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 		const BaseA = QModel.extends<ExternalUser>(ExternalUser);
 		const BaseB = QModel.extends<ExternalUser>(ExternalUser);
 
-		@Quick({ hiredAt: Date })
+		@Quick({ hiredAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class EmployeeA extends BaseA {
 			declare username: string;
 			declare hiredAt: Date;
 		}
 
-		@Quick({ retiredAt: Date, pension: BigInt })
+		@Quick(
+			{ retiredAt: Date, pension: BigInt },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class EmployeeB extends BaseB {
 			declare username: string;
 			declare retiredAt: Date;

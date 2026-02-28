@@ -61,6 +61,9 @@ export interface IQCheckRulesOptions {
  *                   `@QGroup`). Does not need to extend `QModel`.
  * @param options  - Optional filtering options.
  * @returns `IQRulesResult` with `valid` flag and `errors` array.
+ * @see {@link qCheckRulesAsync} — async version for predicates that return `Promise`
+ * @see {@link qCheckRulesByGroup} — returns a map per group instead of flattened
+ * @see {@link qGetGroups} — list group names available on an instance
  *
  * @example
  * ```ts
@@ -157,6 +160,7 @@ export function qCheckRules(
 					ruleMessage,
 					value,
 					err: thrownErr,
+					ruleTrace: rule.options?.trace,
 				});
 				errors.push({ field, message: ruleMessage, value });
 			} else if (!passes) {
@@ -167,6 +171,7 @@ export function qCheckRules(
 					field,
 					ruleMessage,
 					value,
+					ruleTrace: rule.options?.trace,
 				});
 				errors.push({ field, message: ruleMessage, value });
 			} else {
@@ -177,6 +182,7 @@ export function qCheckRules(
 					field,
 					ruleMessage,
 					value,
+					ruleTrace: rule.options?.trace,
 				});
 			}
 		}

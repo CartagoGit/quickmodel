@@ -158,7 +158,7 @@ describe('QFromTypescriptPrompt', () => {
 
 describe('QDebugModelPrompt', () => {
 	const MODEL_CODE = `
-@Quick({ name: String })
+@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 export class UserModel extends QModel<IUser> {
   declare name: string;
 }`;
@@ -232,7 +232,7 @@ export class UserModel extends QModel<IUser> {
 
 describe('QGenerateTestDataPrompt', () => {
 	const MODEL_CODE = `
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 export class EventModel extends QModel<IEvent> {
   declare createdAt: Date;
 }`;
@@ -300,7 +300,7 @@ export class EventModel extends QModel<IEvent> {
 
 describe('QInspectAndSchemaPrompt', () => {
 	const MODEL_CODE = `
-@Quick({ price: Number })
+@Quick({ price: Number }, { unknownPropertyPolicy: 'keep' })
 export class ProductModel extends QModel<IProduct> {
   declare price: number;
 }`;
@@ -465,7 +465,7 @@ describe('QFormValidationPrompt', () => {
 // ── QFullPipelinePrompt ───────────────────────────────────────────────────────
 
 const PIPELINE_CODE = `
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 class Order extends QModel<any> {
   declare id: string;
   declare createdAt: Date;

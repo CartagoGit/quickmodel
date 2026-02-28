@@ -87,6 +87,8 @@ export class Deserializer<
 	 *
 	 * @param key - The key to look up
 	 * @returns The registered transformer or undefined if not found
+	 * @see {@link TransformerLookupService.getTransformer} — the actual lookup logic
+	 * @see {@link QTransformerRegistry} — where custom transformers are registered
 	 * @internal
 	 */
 	public getTransformer(
@@ -105,6 +107,8 @@ export class Deserializer<
 	 * @returns The transformed value
 	 * @throws Never directly — but the underlying transformer may throw if the value
 	 *   is fundamentally incompatible with the spec (e.g. a non-serialisable object).
+	 * @see {@link ValueTransformerService.transform} — performs the scalar coercion
+	 * @see {@link QModel} — uses this via "Smart Setter" property assignments
 	 */
 	public transformValue(value: unknown, key: string, spec: unknown): unknown {
 		const context = { propertyKey: key, className: 'SmartSetter' };
@@ -170,6 +174,9 @@ export class Deserializer<
 	 * @throws {Error} If the recursion depth exceeds 512 (circular-model guard).
 	 * @throws {QModelError} If `validationTrigger: 'construction'` is configured and
 	 *   integrity checks fail during construction.
+	 * @see {@link QModel.create} — public entry point that delegates here
+	 * @see {@link PopulationService.populateInstance} — hydrates the created instance
+	 * @see {@link IntegrityService.checkIntegrity} — called when `validationTrigger: 'construction'`
 	 */
 	deserialize<TData extends Record<string, unknown>, TResult = unknown>(
 		data: TData,
@@ -242,6 +249,8 @@ export class Deserializer<
 	 * @param modelClass - Model class constructor
 	 * @returns Fully-typed model instance
 	 * @throws {SyntaxError} If JSON parsing fails
+	 * @see {@link Deserializer.deserialize} — synchronous object version
+	 * @see {@link QModel.deserialize} — public static entry point
 	 */
 	deserializeFromJson<TResult = TModel>(
 		json: string,

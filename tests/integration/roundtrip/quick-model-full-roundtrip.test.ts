@@ -12,7 +12,7 @@ type IUserTransforms = {
 	createdAt: Date;
 };
 
-@Quick({ createdAt: Date })
+@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 class User
 	extends QModel<IUser>
 	implements IQImplements<IUser, IUserTransforms>

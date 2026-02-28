@@ -18,3 +18,4 @@ export { QFixTypecheckPrompt } from './fix-typecheck.prompt';
 export { QRefactorPrompt } from './refactor.prompt';
 export { QApplySolidPrompt } from './apply-solid.prompt';
 export { QSyncProjectPrompt } from './sync-project.prompt';
+export { QTraceModelPrompt } from './trace-model.prompt';

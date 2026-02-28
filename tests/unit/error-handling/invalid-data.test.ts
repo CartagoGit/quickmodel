@@ -42,7 +42,7 @@ interface IPayment {
 	amount: bigint;
 }
 
-@Quick({ amount: BigInt })
+@Quick({ amount: BigInt }, { unknownPropertyPolicy: 'keep' })
 class Payment extends QModel<IPayment> {
 	declare amount: bigint;
 }
@@ -66,7 +66,7 @@ interface IUserWithAddress {
 	address: IAddress;
 }
 
-@Quick({ id: Number, address: Address })
+@Quick({ id: Number, address: Address }, { unknownPropertyPolicy: 'keep' })
 class UserWithAddress extends QModel<IUserWithAddress> {
 	declare id: number;
 	declare address: Address;

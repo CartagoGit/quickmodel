@@ -18,14 +18,14 @@ interface IBlock {
 }
 
 // 2. Define Concrete Models
-@Quick({})
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class TextBlock extends QModel<IBlock & { content: string }> {
 	declare type: 'text';
 	declare id: string;
 	declare content: string;
 }
 
-@Quick({})
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class ImageBlock extends QModel<IBlock & { src: string; alt?: string }> {
 	declare type: 'image';
 	declare id: string;
@@ -33,7 +33,7 @@ class ImageBlock extends QModel<IBlock & { src: string; alt?: string }> {
 	declare alt?: string;
 }
 
-@Quick({})
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class VideoBlock extends QModel<IBlock & { url: string; duration: number }> {
 	declare type: 'video';
 	declare id: string;

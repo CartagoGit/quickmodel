@@ -23,6 +23,9 @@ export class ObjectSizeValidator {
 	 * @param options.maxLength - Maximum allowed number of elements.
 	 * @param options.className - Model class name (used in the error message).
 	 * @throws {QModelError} When `value.length > maxLength`.
+	 * @see {@link ObjectSizeValidator.validateObjectSize} — companion check for plain objects
+	 * @see {@link PopulationService} — calls this method for every array property
+	 * @see {@link QConfig} — defines the `maxArrayLength` global limit
 	 */
 	public validateArraySize(options: {
 		key: string;
@@ -55,6 +58,9 @@ export class ObjectSizeValidator {
 	 * @param options.className - Model class name (used in the error message).
 	 * @param options.propertyKey - Property key label for the error message (defaults to `"<root>"`).
 	 * @throws {QModelError} When `keys.length > limit`.
+	 * @see {@link ObjectSizeValidator.validateArraySize} — companion check for arrays
+	 * @see {@link ObjectSizeValidator.validateNestedObjectSize} — deeper nested property check
+	 * @see {@link QModelError} — error thrown when the limit is exceeded
 	 */
 	public validateObjectSize(options: {
 		keys: string[];
@@ -87,6 +93,9 @@ export class ObjectSizeValidator {
 	 * @param value - The value to inspect.
 	 * @param className - Model class name (used in the error message).
 	 * @throws {QModelError} When the nested object has more than 50 000 own properties.
+	 * @see {@link ObjectSizeValidator.validateObjectSize} — validates the root-level property count
+	 * @see {@link PopulationService} — iterates nested properties and calls this guard
+	 * @see {@link QModelError} — thrown when the nested object is too wide
 	 */
 	public validateNestedObjectSize(
 		key: string,

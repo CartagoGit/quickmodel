@@ -7,7 +7,7 @@ describe('Robustness Scenarios', () => {
 			interface ICircular {
 				self: any;
 			}
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Circular extends QModel<ICircular> {
 				declare self: any;
 			}
@@ -25,7 +25,7 @@ describe('Robustness Scenarios', () => {
 			interface ICircularArray {
 				list: any[];
 			}
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class CircularArray extends QModel<ICircularArray> {
 				declare list: any[];
 			}
@@ -43,7 +43,7 @@ describe('Robustness Scenarios', () => {
 			interface ICircularMap {
 				map: Map<string, any>;
 			}
-			@Quick({ map: Map })
+			@Quick({ map: Map }, { unknownPropertyPolicy: 'keep' })
 			class CircularMap extends QModel<ICircularMap> {
 				declare map: Map<string, any>;
 			}
@@ -63,7 +63,7 @@ describe('Robustness Scenarios', () => {
 			interface IComplex {
 				map: Map<string, bigint>;
 			}
-			@Quick({ map: Map })
+			@Quick({ map: Map }, { unknownPropertyPolicy: 'keep' })
 			class Complex extends QModel<IComplex> {
 				declare map: Map<string, bigint>;
 			}
@@ -79,7 +79,7 @@ describe('Robustness Scenarios', () => {
 			interface IComplex {
 				dates: Set<Date>;
 			}
-			@Quick({ dates: Set })
+			@Quick({ dates: Set }, { unknownPropertyPolicy: 'keep' })
 			class Complex extends QModel<IComplex> {
 				declare dates: Set<Date>;
 			}

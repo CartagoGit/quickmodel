@@ -120,6 +120,9 @@ export const trimEnd = (str: string): string => str.trimEnd();
  *   Set to `0` to disable truncation.
  * @returns A safe JSON string, truncated with `...[truncated]` if too long.
  *
+ * @see {@link Logger} — used internally for safe debug output
+ * @see {@link TraceLogger} — also uses this helper for trace entries
+ *
  * @example
  * ```ts
  * safeStringify({ name: 'test' }) // '{"name":"test"}'
@@ -450,6 +453,9 @@ export const decodeURIString = (str: string): string => decodeURIComponent(str);
  * @template T - The common input/output type shared by all functions in the pipeline
  * @param fns - One or more transformation functions, each accepting and returning `T`
  * @returns A single function that applies all `fns` in order
+ *
+ * @see {@link pipe} — alias for this function
+ * @see {@link Quick} — `@Quick()` typeMap values can be composed functions
  *
  * @example
  * ```typescript

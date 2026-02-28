@@ -13,6 +13,8 @@
  * no practical purpose in normal usage.
  *
  * @public
+ * @see {@link IToFormDataOptions} — parent options interface that uses this type
+ * @see {@link QModel.toFormData} — method that accepts `spoofMethod` via `IToFormDataOptions`
  */
 export type IQSpoofMethod =
 	// ── RFC 7231 — standard HTTP/1.1 ──────────────────────────────────────

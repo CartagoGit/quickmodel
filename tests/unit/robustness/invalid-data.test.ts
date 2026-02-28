@@ -8,7 +8,7 @@ describe('Robustness: Invalid Data Handling', () => {
 			createdAt: Date;
 		}
 
-		@Quick({ createdAt: Date })
+		@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare createdAt: Date;
 		}
@@ -25,7 +25,7 @@ describe('Robustness: Invalid Data Handling', () => {
 			name: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare name: string;
 		}

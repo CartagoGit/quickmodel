@@ -97,6 +97,8 @@ function toBeValidQModel(received: object): IMatcherResult {
  * expect(dto).toHaveQRuleError('email', 'Invalid email address');
  * expect(dto).not.toHaveQRuleError('username');
  * ```
+ * @see {@link toBeValidQModel} — asserts that all rules pass
+ * @see {@link qCheckRules} — the function used internally
  */
 function toHaveQRuleError(
 	received: object,
@@ -149,6 +151,8 @@ function toHaveQField(received: object, fieldName: string): IMatcherResult {
  * expect(userA).toMatchQModel(userB);
  * expect(response).toMatchQModel(new UserModel(expectedData));
  * ```
+ * @see {@link toBeIntact} — integrity check matcher
+ * @see {@link QModel.serialize} — method called internally for comparison
  */
 function toMatchQModel(received: object, expected: object): IMatcherResult {
 	const receivedData =
@@ -176,6 +180,8 @@ function toMatchQModel(received: object, expected: object): IMatcherResult {
  * expect(model).toBeIntact();
  * expect(corruptedModel).not.toBeIntact();
  * ```
+ * @see {@link QModel.hasIntegrity} — the method called internally
+ * @see {@link toMatchQModel} — deep equality matcher
  */
 function toBeIntact(received: unknown): IMatcherResult {
 	if (!(received instanceof QModel)) {
@@ -205,6 +211,8 @@ function toBeIntact(received: unknown): IMatcherResult {
  * expect(model).toHaveDirtyField('score');
  * expect(model).not.toHaveDirtyField('email'); // email was not mutated
  * ```
+ * @see {@link QModel.isDirty} — the method called internally
+ * @see {@link toBeIntact} — integrity check matcher
  */
 function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
 	if (!(received instanceof QModel)) {

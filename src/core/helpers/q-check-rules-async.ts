@@ -56,6 +56,9 @@ export interface IQCheckRulesAsyncOptions extends IQRulesAsyncOptions {
  *                   `@QGroup`). Does not need to extend `QModel`.
  * @param options  - Optional async execution + filtering options.
  * @returns `Promise<IQRulesResult>`
+ * @see {@link qCheckRules} — synchronous version
+ * @see {@link qCheckRulesByGroupAsync} — returns a per-group map of async results
+ * @see {@link qGetGroups} — list available group names on an instance
  *
  * @example
  * ```ts
@@ -180,6 +183,7 @@ export async function qCheckRulesAsync(
 				field: descriptor.field,
 				ruleMessage: rawMessage,
 				value: descriptor.value,
+				ruleTrace: descriptor.rule.options?.trace,
 			});
 		} else if (passes) {
 			TraceLogger.traceRule({
@@ -189,6 +193,7 @@ export async function qCheckRulesAsync(
 				field: descriptor.field,
 				ruleMessage: rawMessage,
 				value: descriptor.value,
+				ruleTrace: descriptor.rule.options?.trace,
 			});
 			return;
 		} else {
@@ -199,6 +204,7 @@ export async function qCheckRulesAsync(
 				field: descriptor.field,
 				ruleMessage: rawMessage,
 				value: descriptor.value,
+				ruleTrace: descriptor.rule.options?.trace,
 			});
 		}
 

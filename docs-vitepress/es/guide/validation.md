@@ -628,6 +628,40 @@ const result = qCheckRules(form, { group: Groups.identidad });
 
 > 📖 **[Guía de Validación de Formularios](/es/guide/forms)** — Referencia completa: `qGroups`, `qGetGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync`, ejemplos Angular/React/Vue.
 
+## Trazas en evaluación de reglas
+
+`@QRule` acepta un tercer argumento opcional — `options: IQRuleOptions` — que permite configurar el comportamiento de traza por regla de forma independiente a la configuración global y por modelo.
+
+El orden de resolución es: **por regla > por modelo > global > silent**.
+
+```typescript
+import { QRule } from 'quickmodel';
+
+class PagoModel extends QModel<{ importe: number; moneda: string }> {
+	// Siempre muestra fallos aunque el trace global sea 'silent'
+	@QRule<number>((val) => val > 0, 'El importe debe ser positivo', {
+		trace: { verbosity: 'warn' },
+	})
+	declare importe: number;
+
+	// Enruta solo los fallos de esta regla a un sink de seguridad
+	@QRule<string>(
+		(val) => /^[A-Z]{3}$/.test(val),
+		'Código de moneda inválido',
+		{
+			trace: {
+				verbosity: 'error',
+				events: ['rule-fail', 'rule-error'],
+				sink: (entry) => auditoriaSeg.escribir(entry),
+			},
+		}
+	)
+	declare moneda: string;
+}
+```
+
+> 📖 **[Guía de Trazas y Observabilidad](/es/guide/tracing)** — Referencia completa para la configuración global, por modelo y por regla, estructura de `IQTraceEntry` y casos de uso reales.
+
 ## Rendimiento
 
 <BenchmarkChart

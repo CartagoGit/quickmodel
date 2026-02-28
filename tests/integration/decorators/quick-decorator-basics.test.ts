@@ -133,7 +133,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			metadata: Record<string, unknown>;
 		}
 
-		@Quick({})
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> implements IQImplements<IData> {
 			id!: string;
 			value!: number;

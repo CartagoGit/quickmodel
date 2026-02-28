@@ -7,7 +7,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 			obj: { a: number };
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare obj: { a: number } | string;
 		}
@@ -35,7 +35,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		}
 
 		// We treat it as generic object
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Container extends QModel<IContainer> {
 			declare instance: SimpleClass;
 		}
@@ -59,7 +59,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 			obj: { a: number };
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare obj: { a: number } | string;
 		}
@@ -83,7 +83,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 			obj: { a: number; func: () => void };
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare obj: { a: number; func: () => void };
 		}

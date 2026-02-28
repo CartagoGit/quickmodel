@@ -8,7 +8,7 @@ describe('Default Value Overwrite Bug', () => {
 			name: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			name: string = 'Anonymous'; // Default value
 		}
@@ -26,7 +26,7 @@ describe('Default Value Overwrite Bug', () => {
 			name: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class UserNoDefault extends QModel<IUser> {
 			declare name: string;
 		}
@@ -41,7 +41,7 @@ describe('Default Value Overwrite Bug', () => {
 			name?: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			name: string = 'Anonymous';
 		}
@@ -63,7 +63,7 @@ describe('Default Value Overwrite Bug', () => {
 			date: Date;
 		}
 
-		@Quick({ date: Date })
+		@Quick({ date: Date }, { unknownPropertyPolicy: 'keep' })
 		class DataModel extends QModel<IData> {
 			date: Date = new Date('2000-01-01');
 		}
@@ -78,7 +78,7 @@ describe('Default Value Overwrite Bug', () => {
 			name: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class UserPrivate extends QModel<IUser> {
 			private _name: string = 'Anonymous';
 			get name() {
@@ -128,7 +128,7 @@ describe('Default Value Overwrite Bug', () => {
 			theme: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Settings extends QModel<ISettings> {
 			theme: string = 'light';
 		}

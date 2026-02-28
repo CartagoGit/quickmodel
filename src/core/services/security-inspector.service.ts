@@ -28,6 +28,8 @@ export class SecurityInspector {
 	 * @param modelClass - The constructor function of the model class to inspect
 	 * @returns A plain-record view of a freshly constructed instance, or `null` if the
 	 *   class cannot be constructed without throwing.
+	 * @see {@link SecurityInspector.isArrowFunctionMethod} — consumes the template returned here
+	 * @see {@link PopulationService} — requests a template before populating each instance
 	 */
 	public getTemplateInstance(
 		modelClass: Function
@@ -66,6 +68,8 @@ export class SecurityInspector {
 	 *
 	 * @param key - The property name to test
 	 * @returns `true` if the key is dangerous and should be silently skipped
+	 * @see {@link SecurityInspector.isMethodOnPrototype} — pair check for prototype-method shadowing
+	 * @see {@link PopulationService} — skips properties when this returns `true`
 	 */
 	public isDangerousKey(key: string): boolean {
 		return (
@@ -93,6 +97,9 @@ export class SecurityInspector {
 	 *   if `key` is in this list the check is skipped and `false` is returned.
 	 * @returns `true` when a non-accessor function with `key` is found on `proto` or
 	 *   any ancestor up to (but not including) `Object.prototype`
+	 * @see {@link SecurityInspector.isDangerousKey} — blocks outright prototype-pollution keys first
+	 * @see {@link SecurityInspector.isArrowFunctionMethod} — complements this check for instance-level arrow functions
+	 * @see {@link PopulationService} — calls this guard for every incoming property
 	 */
 	public isMethodOnPrototype(
 		proto: any,
@@ -137,6 +144,9 @@ export class SecurityInspector {
 	 *   if `key` is in this list the check is skipped and `false` is returned.
 	 * @returns `true` when `key` exists on `template`, its value is a function, and
 	 *   it is not listed in `decoratedFields`
+	 * @see {@link SecurityInspector.getTemplateInstance} — creates the `template` argument
+	 * @see {@link SecurityInspector.isMethodOnPrototype} — sibling check for prototype methods
+	 * @see {@link PopulationService} — uses both methods to guard every incoming key
 	 */
 	public isArrowFunctionMethod(
 		key: string,

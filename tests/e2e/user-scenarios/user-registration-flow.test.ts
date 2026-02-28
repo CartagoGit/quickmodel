@@ -57,7 +57,7 @@ describe('E2E: User Registration Flow', () => {
 	}
 
 	// Step 2: Create models
-	@Quick({})
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Address extends QModel<IAddress> {
 		street!: string;
 		city!: string;

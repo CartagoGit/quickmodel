@@ -119,7 +119,7 @@ describe('Feature: Custom Transformers via Registry', () => {
 		// We use Date constructor to match what user would likely do.
 		QTransformerRegistry.register(Date, new FixedDateTransformer());
 
-		@Quick({ date: Date })
+		@Quick({ date: Date }, { unknownPropertyPolicy: 'keep' })
 		class Event extends QModel<{ date: string }> {
 			declare date: Date;
 		}

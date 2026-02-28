@@ -26,6 +26,8 @@
  * | primitives               | as-is (`string`, `number`, `boolean`, …) |
  *
  * @template T - The runtime TypeScript type to map.
+ * @see {@link IQSerializedInterface} — maps all keys of an interface via `IQSerialized`
+ * @see {@link QModel.serialize} — the method that returns `IQSerializedInterface<T>`
  */
 export type IQSerialized<T> = T extends RegExp
 	? string | { __type: 'regexp'; source: string; flags: string }
@@ -112,6 +114,8 @@ export type IQSerialized<T> = T extends RegExp
  *
  * @template T - The model interface (runtime property types).
  * @see {@link IQAliasedSerializedInterface} — variant with key renaming via `@Quick({ alias: ... })`
+ * @see {@link IQSerialized} — type mapping applied to each individual property
+ * @see {@link QModel.serialize} — returns this type
  */
 export type IQSerializedInterface<T> = {
 	[K in keyof T]: IQSerialized<T[K]>;
@@ -126,6 +130,10 @@ export type IQSerializedInterface<T> = {
  *
  * @template T - The model interface (property names)
  * @template TAliasMap - Literal map `{ propertyName: 'alias_name' }` from `@Quick({ alias: ... })`
+ *
+ * @see {@link IQSerializedInterface} — non-aliased variant
+ * @see {@link QAlias} — property-level decorator that also produces key remapping
+ * @see {@link QModel.serialize} — returns this type when a `TAliasMap` is provided
  *
  * @example
  * ```typescript
@@ -170,6 +178,9 @@ export type IQAliasedSerializedInterface<
  * @template TAliasMap - Literal map `{ propertyName: 'alias_key' }` — same second
  *                       type parameter as `QModel<TInterface, TAliasMap>`.
  *
+ * @see {@link IQAliasedSerializedInterface} — output shape equivalent
+ * @see {@link QModel.create} — accepts `IQAliasInput<T, TAliasMap>` as first argument
+ *
  * @example
  * ```typescript
  * type IUserAliasMap = { firstName: 'first_name'; lastName: 'last_name' };
@@ -201,6 +212,8 @@ export type IQAliasInput<
  * method signatures that accept or return deserialized data.
  *
  * @template T - The deserialized TypeScript type.
+ * @see {@link IQSerialized} — reverse direction: runtime → JSON-safe
+ * @see {@link QModel.create} — performs the deserialization at runtime
  */
 export type IDeserialized<T> = T; // Deserialization handled at runtime with transformers
 
@@ -216,6 +229,9 @@ export type IDeserialized<T> = T; // Deserialization handled at runtime with tra
  * without manual casting.
  *
  * @template T - The model interface type.
+ * @see {@link QModel} — constructor that accepts this union
+ * @see {@link IQSerializedInterface} — the serialized variant included in this union
+ * @see {@link QModel.create} — static factory that also accepts `IQModelData<T>`
  */
 export type IQModelData<T> =
 	| T

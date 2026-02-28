@@ -194,6 +194,9 @@ export class PopulationService {
 	 *   property key is encountered.
 	 * @throws {QModelError} If strict mode validation fails for a property value.
 	 * @returns `void` — all transformed values are written directly onto `instance`.
+	 * @see {@link PropertyTransformer.transformProperty} — called for each decorated field
+	 * @see {@link SecurityInspector} — validates the input before population begins
+	 * @see {@link QModel.create} — public entry point that triggers this method
 	 */
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,

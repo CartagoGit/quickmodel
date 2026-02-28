@@ -696,7 +696,7 @@ export const featureRows: IFeatureRow[] = [
 			TypeBox: false,
 			valibot: false,
 			Zod: false,
-			'class-transformer': false,
+			'class-transformer': 'partial',
 			QuickModel: true,
 			yup: false,
 			arktype: false,
@@ -707,6 +707,7 @@ export const featureRows: IFeatureRow[] = [
 			'faker (manual)': false,
 			Immer: false,
 		},
+		notes: { 'class-transformer': 'classTransformer' },
 	},
 	{
 		i18nKey: 'schemaExport',

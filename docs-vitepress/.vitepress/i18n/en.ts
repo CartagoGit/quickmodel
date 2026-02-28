@@ -1,12 +1,15 @@
 export const enLocale = {
 	mcp: {
 		title: 'Model Context Protocol',
+		sectionUsing: 'Using QuickModel',
+		sectionDeveloping: 'Developing QuickModel',
 		overview: 'Overview',
-		publicTools: 'Public Tools',
-		publicSkills: 'Public Skills',
-		installationMaintainers: 'Installation (Maintainers)',
-		internalToolsMaintainers: 'Internal Tools (Maintainers)',
-		internalSkillsMaintainers: 'Internal Skills (Maintainers)',
+		installation: 'Installation & Setup',
+		publicTools: 'MCP Tools',
+		publicSkills: 'Skills / Workflows',
+		installationMaintainers: 'Contributor Setup',
+		internalToolsMaintainers: 'Internal Tools',
+		internalSkillsMaintainers: 'Internal Skills',
 	},
 	quickExamples: {
 		tabBasic: '@Quick + QModel',
@@ -469,7 +472,13 @@ export const enLocale = {
 					joi: 'External suite — must be called manually, not bound to model lifecycle',
 				},
 			},
-			inheritance: { label: 'Multi-level inheritance inference' },
+			inheritance: {
+				label: 'Multi-level inheritance inference',
+				notes: {
+					classTransformer:
+						'Decorator metadata (@Type, @Transform) is inherited by subclasses but type inference is manual — no automatic nested type resolution',
+				},
+			},
 			schemaExport: { label: 'Schema export (JSON/Zod/OpenAPI)' },
 			tsInference: {
 				label: 'Compile-time TS inference',

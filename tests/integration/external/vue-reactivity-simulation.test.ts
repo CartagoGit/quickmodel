@@ -71,7 +71,7 @@ interface IAddress {
 	zip: string;
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class Address extends QModel<IAddress> {
 	declare city: string;
 	declare zip: string;
@@ -84,7 +84,7 @@ interface IUser {
 	address?: Address;
 }
 
-@Quick({ createdAt: Date, address: Address })
+@Quick({ createdAt: Date, address: Address }, { unknownPropertyPolicy: 'keep' })
 class User extends QModel<IUser> {
 	declare name: string;
 	declare age: number;

@@ -75,7 +75,7 @@ describe('Model Serialization (toJSON)', () => {
 			};
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Address extends QModel<IAddress> {
 			declare city: string;
 			declare location: { lat: number; lon: number };
@@ -85,7 +85,7 @@ describe('Model Serialization (toJSON)', () => {
 			address: IAddress;
 		}
 
-		@Quick({ address: Address })
+		@Quick({ address: Address }, { unknownPropertyPolicy: 'keep' })
 		class Profile extends QModel<IProfile> {
 			declare address: Address;
 		}
@@ -107,7 +107,7 @@ describe('Model Serialization (toJSON)', () => {
 			name: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Item extends QModel<IItem> {
 			declare name: string;
 		}
@@ -116,7 +116,7 @@ describe('Model Serialization (toJSON)', () => {
 			items: IItem[];
 		}
 
-		@Quick({ items: [Item] })
+		@Quick({ items: [Item] }, { unknownPropertyPolicy: 'keep' })
 		class Cart extends QModel<ICart> {
 			declare items: Item[];
 		}

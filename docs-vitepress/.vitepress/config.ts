@@ -4,6 +4,7 @@ import { getTranslations, type ILocale } from './i18n';
 
 /**
  * Build the MCP sidebar section for a given locale.
+ * Two groups: "Using QuickModel" (always visible) and "Developing QuickModel" (internal only).
  * Single source of truth — add items here and all locale sidebars update automatically.
  */
 const buildMcpSidebar = (locale: ILocale) => {
@@ -12,29 +13,37 @@ const buildMcpSidebar = (locale: ILocale) => {
 	const showInternal = process.env.VITE_SHOW_INTERNAL_DOCS === 'true';
 	return [
 		{
-			text: trl.title,
+			text: trl.sectionUsing,
+			collapsed: false,
 			items: [
 				{ text: trl.overview, link: `${prefix}/` },
-				{ text: trl.publicTools, link: `${prefix}/public/` },
-				{ text: trl.publicSkills, link: `${prefix}/public/skills` },
-				...(showInternal
-					? [
+				{ text: trl.installation, link: `${prefix}/installation` },
+				{ text: trl.publicTools, link: `${prefix}/tools` },
+				{ text: trl.publicSkills, link: `${prefix}/skills` },
+			],
+		},
+		...(showInternal
+			? [
+					{
+						text: trl.sectionDeveloping,
+						collapsed: false,
+						items: [
 							{
 								text: trl.installationMaintainers,
-								link: `${prefix}/internal/setup`,
+								link: `${prefix}/contributing/setup`,
 							},
 							{
 								text: trl.internalToolsMaintainers,
-								link: `${prefix}/internal/`,
+								link: `${prefix}/contributing/tools`,
 							},
 							{
 								text: trl.internalSkillsMaintainers,
-								link: `${prefix}/internal/skills`,
+								link: `${prefix}/contributing/skills`,
 							},
-						]
-					: []),
-			],
-		},
+						],
+					},
+				]
+			: []),
 	];
 };
 

@@ -61,6 +61,9 @@ export class Logger {
 	 * @param message - The message to log
 	 * @param context - Optional context object/class to check for local debug config
 	 * @param data - Optional data to log
+	 * @see {@link Logger.warn} — unconditional warning counterpart
+	 * @see {@link Logger.globalDebugEnabled} — fast flag to gate expensive string building
+	 * @see {@link TraceLogger} — structured alternative with verbosity levels and sinks
 	 */
 	static debug(message: string, context?: any, ...data: any[]): void {
 		if (this.isEnabled(context)) {
@@ -84,6 +87,8 @@ export class Logger {
 	 * Warnings are designed for recoverable anomalies such as deprecated API
 	 * usage, unexpected `null` values in non-nullable fields, or version
 	 * mismatches. Unlike `debug`, they cannot be silenced via config.
+	 * @see {@link Logger.debug} — debug-level counterpart, gated by config
+	 * @see {@link QConfig} — `enableDebugLogs` controls debug-level output only
 	 */
 	static warn(message: string, context?: any, ...data: any[]): void {
 		const prefix = context

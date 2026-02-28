@@ -11,7 +11,7 @@ async function isEmailUnique(email: string): Promise<boolean> {
 	return Promise.resolve(!email.includes('taken'));
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class UserAsync extends QModel<{ name: string; email: string; age: number }> {
 	@QRule((value: string) => value.length >= 2, 'Name too short')
 	declare name: string;
@@ -24,13 +24,13 @@ class UserAsync extends QModel<{ name: string; email: string; age: number }> {
 	declare age: number;
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class OnlySyncRules extends QModel<{ name: string }> {
 	@QRule((value: string) => value.length >= 2, 'Name too short')
 	declare name: string;
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class OnlyAsyncRules extends QModel<{ email: string }> {
 	@QRule(async (value: string) => isEmailUnique(value), 'Email already taken')
 	declare email: string;
@@ -131,7 +131,7 @@ describe('checkRulesAsync() — async predicates', () => {
 	});
 
 	test('rejected async predicate is treated as rule failure', async () => {
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Broken extends QModel<{ posX: number }> {
 			@QRule(() => Promise.reject(new Error('DB down')), 'DB error')
 			declare posX: number;
@@ -273,7 +273,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 	test('rule passes once the deferred predicate resolves true', async () => {
 		const gate = deferred<boolean>();
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class SlowEmailModel extends QModel<{ email: string }> {
 			@QRule(() => gate.promise, 'Email already taken')
 			declare email: string;
@@ -293,7 +293,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 	test('rule fails once the deferred predicate resolves false', async () => {
 		const gate = deferred<boolean>();
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class SlowEmailModel extends QModel<{ email: string }> {
 			@QRule(() => gate.promise, 'Email already taken')
 			declare email: string;
@@ -315,7 +315,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 		const gateUsername = deferred<boolean>();
 		const gateBio = deferred<boolean>();
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class MultiSlowModel extends QModel<{ username: string; bio: string }> {
 			@QRule(() => gateUsername.promise, 'Username too short')
 			declare username: string;
@@ -341,7 +341,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 	test('rejected deferred predicate is treated as rule failure', async () => {
 		const gate = deferred<boolean>();
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class UnstableModel extends QModel<{ token: string }> {
 			@QRule(() => gate.promise, 'Auth service unavailable')
 			declare token: string;
@@ -373,7 +373,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'slow predicate exceeding timeoutMs fails with timedOut:true and default rule message',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class SlowModel extends QModel<{ email: string }> {
 				@QRule(async () => {
 					await Bun.sleep(100);
@@ -397,7 +397,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'slow predicate exceeding timeoutMs uses custom timeoutMessage when provided',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class SlowModel extends QModel<{ email: string }> {
 				@QRule(async () => {
 					await Bun.sleep(100);
@@ -431,7 +431,7 @@ describe('checkRulesAsync() — timeout option', () => {
 				es: 'Servicio no disponible',
 			};
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class SlowModel extends QModel<{ email: string }> {
 				@QRule(async () => {
 					await Bun.sleep(100);
@@ -456,7 +456,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'fast predicate within timeoutMs passes normally',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class FastModel extends QModel<{ email: string }> {
 				@QRule(async () => {
 					await Bun.sleep(10);
@@ -477,7 +477,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'fast predicate returning false within timeoutMs still reports failure (not timedOut)',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class FastModel extends QModel<{ age: number }> {
 				@QRule(async (value: number) => {
 					await Bun.sleep(10);
@@ -499,7 +499,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'without timeoutMs, slow predicate resolves fully even with real latency',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class SlowModel extends QModel<{ code: string }> {
 				@QRule(async (value: string) => {
 					await Bun.sleep(50);
@@ -519,7 +519,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'mixed fields: timed-out rule + fast-failing rule both appear in errors',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class MixedModel extends QModel<{ email: string; age: number }> {
 				@QRule(async () => {
 					await Bun.sleep(100);
@@ -551,7 +551,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'isValidAsync with timeoutMs returns false when a rule times out',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class SlowModel extends QModel<{ email: string }> {
 				@QRule(async () => {
 					await Bun.sleep(100);
@@ -571,7 +571,7 @@ describe('checkRulesAsync() — timeout option', () => {
 	test(
 		'validationReportAsync with timeoutMs includes timedOut errors in report.rules',
 		async () => {
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class SlowModel extends QModel<{ email: string }> {
 				@QRule(async () => {
 					await Bun.sleep(100);

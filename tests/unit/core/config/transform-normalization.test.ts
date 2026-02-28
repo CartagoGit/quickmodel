@@ -16,7 +16,7 @@ describe('Transformation: Normalization', () => {
 	});
 
 	it('should NOT normalize by default', () => {
-		@Quick({ name: String })
+		@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare name: string;
 		}
@@ -30,7 +30,7 @@ describe('Transformation: Normalization', () => {
 			defaults: { normalization: { trimStrings: true } },
 		});
 
-		@Quick({ name: String })
+		@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare name: string;
 		}
@@ -67,7 +67,7 @@ describe('Transformation: Normalization', () => {
 			},
 		});
 
-		@Quick({ name: String })
+		@Quick({ name: String }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare name: string | null;
 		}
@@ -100,12 +100,15 @@ describe('Transformation: Normalization', () => {
 			},
 		});
 
-		@Quick({ bio: String })
+		@Quick({ bio: String }, { unknownPropertyPolicy: 'keep' })
 		class Profile extends QModel<any> {
 			declare bio: string | null;
 		}
 
-		@Quick({ tags: [String], profile: Profile })
+		@Quick(
+			{ tags: [String], profile: Profile },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class User extends QModel<any> {
 			declare tags: string[];
 			declare profile: Profile;

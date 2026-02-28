@@ -42,6 +42,8 @@
  *   interface, the assignment is valid and type inference of the field type
  *   (`Value`) works correctly via `access.get`.
  *
+ * @see {@link QType} — decorator that uses `IClassFieldDecoratorCtx` for TC39 mode
+ * @see {@link QRule} — decorator that also relies on this polyfill for TS 4.1 compat
  * @module
  */
 

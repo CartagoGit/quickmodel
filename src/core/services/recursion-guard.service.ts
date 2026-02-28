@@ -21,6 +21,9 @@ export class RecursionGuard {
 	 *
 	 * @param currentDepth - The current recursion depth counter
 	 * @throws {Error} If `currentDepth` exceeds the configured or default maximum
+	 * @see {@link RecursionGuard.getMaxDepth} — queries the configured depth limit
+	 * @see {@link RecursionGuard.createContext} — creates the context that tracks depth
+	 * @see {@link QConfig} — configure `maxRecursionDepth` globally
 	 */
 	public validateDepth(currentDepth: number): void {
 		const config = QConfig.get();
@@ -40,6 +43,8 @@ export class RecursionGuard {
 	 *
 	 * @param existingContext - Optional previous context whose `visited` set and `depth` are inherited
 	 * @returns A new context object with `visited` WeakSet and `depth` incremented by 1
+	 * @see {@link RecursionGuard.validateDepth} — should be called with the new context's depth
+	 * @see {@link RecursionGuard.hasCircularReference} — uses the `visited` WeakSet from this context
 	 */
 	public createContext(existingContext?: {
 		visited?: WeakSet<object>;
@@ -60,6 +65,8 @@ export class RecursionGuard {
 	 * @param data - The value to test for circularity
 	 * @param visited - The WeakSet of already-visited object references for this recursion cycle
 	 * @returns `true` if `data` is an object that was already in `visited`; `false` otherwise
+	 * @see {@link RecursionGuard.createContext} — creates the `visited` WeakSet used here
+	 * @see {@link Deserializer} — calls this guard when recursing into nested models
 	 */
 	public hasCircularReference(
 		data: unknown,
@@ -78,6 +85,8 @@ export class RecursionGuard {
 	 * Gets the maximum allowed recursion depth from config, falling back to the default.
 	 *
 	 * @returns The configured `maxRecursionDepth` or the default (50) if not set
+	 * @see {@link RecursionGuard.validateDepth} — uses this value to enforce the limit
+	 * @see {@link QConfig} — source of the `maxRecursionDepth` setting
 	 */
 	public getMaxDepth(): number {
 		return (

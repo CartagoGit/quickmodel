@@ -80,6 +80,15 @@ export interface ITraceRuleParams {
 	ruleMessage: string;
 	value?: unknown;
 	err?: unknown;
+	/**
+	 * Per-rule trace override from `@QRule(..., ..., { trace: ... })`.
+	 * Highest priority in the resolution chain.
+	 */
+	ruleTrace?: {
+		verbosity?: IQTraceVerbosity;
+		events?: IQTraceEvent[];
+		sink?: (entry: IQTraceEntry) => void;
+	};
 }
 
 /** @internal Parameters for {@link TraceLogger.traceIntegrity}. */
@@ -121,7 +130,7 @@ export class TraceLogger {
 	/** @internal Cached global sink function. */
 	private static _globalSink: ((entry: IQTraceEntry) => void) | undefined =
 		undefined;
-	/** @internal Cached log prefix (default: 'QuickModel', configurable via logPrefix). */
+	/** @internal Cached log prefix (default: 'QuickModel', configurable via `trace.prefix`). */
 	private static _globalPrefix: string = 'QuickModel';
 
 	// ── cache refresh ──────────────────────────────────────────────────────────
@@ -149,7 +158,7 @@ export class TraceLogger {
 
 		TraceLogger._globalEvents = traceCfg?.events;
 		TraceLogger._globalSink = traceCfg?.sink;
-		TraceLogger._globalPrefix = cfg.defaults?.logPrefix ?? 'QuickModel';
+		TraceLogger._globalPrefix = traceCfg?.prefix ?? 'QuickModel';
 
 		// Emit config-change only after a real re-configure (not initial load).
 		if (prevRef !== undefined) {
@@ -167,6 +176,8 @@ export class TraceLogger {
 	/**
 	 * Resolves the effective verbosity for a given model class.
 	 * Per-model options override globals.
+	 * @see {@link TraceLogger.isEnabled} — uses resolved verbosity to check if a level is active
+	 * @see {@link QConfig} — source of global trace verbosity
 	 */
 	public static resolveVerbosity(modelCtor?: Function): IQTraceVerbosity {
 		TraceLogger._refreshCache();
@@ -186,6 +197,8 @@ export class TraceLogger {
 
 	/**
 	 * Returns true when at least one of the specified levels would be emitted.
+	 * @see {@link TraceLogger.resolveVerbosity} — determines the effective verbosity level
+	 * @see {@link TraceLogger.emit} — respects this check before writing output
 	 */
 	public static isEnabled(
 		level: Exclude<IQTraceVerbosity, 'silent'>,
@@ -220,15 +233,44 @@ export class TraceLogger {
 
 	/**
 	 * Emits a structured trace entry.
+	 *
+	 * Resolution order (highest priority first):
+	 * 1. `ruleOverride` — from `@QRule(..., ..., { trace: ... })`
+	 * 2. Per-model — from `@Quick({}, { trace: ... })`
+	 * 3. Global — from `QConfig.configure({ defaults: { trace: ... } })`
+	 * @see {@link TraceLogger.isEnabled} — guards emission by verbosity
+	 * @see {@link IQTraceEntry} — shape of the emitted entry
+	 * @see {@link QConfig} — global trace sink and verbosity configuration
 	 */
 	public static emit(
 		params: Omit<IQTraceEntry, 'timestamp'>,
-		modelCtor?: Function
+		modelCtor?: Function,
+		ruleOverride?: {
+			verbosity?: IQTraceVerbosity;
+			events?: IQTraceEvent[];
+			sink?: (entry: IQTraceEntry) => void;
+		}
 	): void {
 		TraceLogger._refreshCache();
 
-		if (!TraceLogger.isEnabled(params.level, modelCtor)) return;
-		if (!TraceLogger._isEventAllowed(params.event, modelCtor)) return;
+		// 1. Verbosity: per-rule > per-model > global
+		if (ruleOverride?.verbosity !== undefined) {
+			if (ruleOverride.verbosity === 'silent') return;
+			if (
+				VERBOSITY_WEIGHT[params.level as IQTraceVerbosity] >
+				VERBOSITY_WEIGHT[ruleOverride.verbosity]
+			)
+				return;
+		} else if (!TraceLogger.isEnabled(params.level, modelCtor)) {
+			return;
+		}
+
+		// 2. Event filter: per-rule > per-model > global
+		if (ruleOverride?.events !== undefined) {
+			if (!ruleOverride.events.includes(params.event)) return;
+		} else if (!TraceLogger._isEventAllowed(params.event, modelCtor)) {
+			return;
+		}
 
 		const entry: IQTraceEntry = { ...params, timestamp: Date.now() };
 
@@ -240,7 +282,9 @@ export class TraceLogger {
 				)?.trace?.sink
 			: undefined;
 
-		const sink = perModelSink ?? TraceLogger._globalSink;
+		// 3. Sink: per-rule > per-model > global
+		const sink =
+			ruleOverride?.sink ?? perModelSink ?? TraceLogger._globalSink;
 
 		if (sink) {
 			sink(entry);
@@ -276,7 +320,11 @@ export class TraceLogger {
 
 	// ── convenience factories ─────────────────────────────────────────────────
 
-	/** Emits a construction lifecycle trace. */
+	/**
+	 * Emits a construction lifecycle trace.
+	 * @see {@link TraceLogger.emit} — internal emitter used by this helper
+	 * @see {@link TraceLogger.traceSerialize} — sibling trace for serialization
+	 */
 	public static traceConstruction(
 		modelName: string,
 		modelCtor: Function,
@@ -294,7 +342,11 @@ export class TraceLogger {
 		);
 	}
 
-	/** Emits a serialize lifecycle trace. */
+	/**
+	 * Emits a serialize lifecycle trace.
+	 * @see {@link TraceLogger.emit} — internal emitter used by this helper
+	 * @see {@link TraceLogger.traceConstruction} — sibling trace for construction
+	 */
 	public static traceSerialize(modelName: string, modelCtor: Function): void {
 		TraceLogger.emit(
 			{
@@ -307,7 +359,11 @@ export class TraceLogger {
 		);
 	}
 
-	/** Emits a deserialize field trace. */
+	/**
+	 * Emits a deserialize field trace.
+	 * @see {@link ITraceDeserializeFieldParams} — shape of the params object
+	 * @see {@link TraceLogger.emit} — internal emitter used by this helper
+	 */
 	public static traceDeserializeField(
 		params: ITraceDeserializeFieldParams
 	): void {
@@ -326,7 +382,11 @@ export class TraceLogger {
 		);
 	}
 
-	/** Emits a transformer trace. */
+	/**
+	 * Emits a transformer trace.
+	 * @see {@link ITraceTransformerParams} — shape of the params object
+	 * @see {@link TraceLogger.emit} — internal emitter used by this helper
+	 */
 	public static traceTransformer(params: ITraceTransformerParams): void {
 		const {
 			modelName,
@@ -351,7 +411,12 @@ export class TraceLogger {
 		);
 	}
 
-	/** Emits a rule lifecycle trace. */
+	/**
+	 * Emits a rule lifecycle trace.
+	 * @see {@link ITraceRuleParams} — shape of the params object
+	 * @see {@link TraceLogger.emit} — internal emitter used by this helper
+	 * @see {@link TraceLogger.traceIntegrity} — sibling trace for integrity checks
+	 */
 	public static traceRule(params: ITraceRuleParams): void {
 		const { event, modelName, modelCtor, field, ruleMessage, value, err } =
 			params;
@@ -382,11 +447,17 @@ export class TraceLogger {
 				...(value !== undefined ? { inputValue: value } : {}),
 				...(err !== undefined ? { meta: { error: String(err) } } : {}),
 			},
-			modelCtor
+			modelCtor,
+			params.ruleTrace
 		);
 	}
 
-	/** Emits an integrity trace. */
+	/**
+	 * Emits an integrity trace.
+	 * @see {@link ITraceIntegrityParams} — shape of the params object
+	 * @see {@link TraceLogger.traceRule} — sibling trace for rule evaluation
+	 * @see {@link IntegrityService} — calls this trace when checking field integrity
+	 */
 	public static traceIntegrity(params: ITraceIntegrityParams): void {
 		const { modelName, modelCtor, field, isValid, errorMsg } = params;
 		TraceLogger.emit(
@@ -404,7 +475,11 @@ export class TraceLogger {
 		);
 	}
 
-	/** Emits a config-change trace. Always global. */
+	/**
+	 * Emits a config-change trace. Always global.
+	 * @see {@link TraceLogger.emit} — routed through the shared emitter
+	 * @see {@link QConfig} — triggers this event on reconfiguration
+	 */
 	public static traceConfigChange(summary: string): void {
 		TraceLogger._refreshCache();
 

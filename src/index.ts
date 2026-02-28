@@ -3,6 +3,9 @@
  *
  * @module quickmodel
  * @license MIT
+ * @see {@link QModel} — base class for all QuickModel models
+ * @see {@link Quick} — `@Quick()` class decorator that activates QuickModel features
+ * @see {@link QConfig} — global configuration singleton
  */
 
 // ============================================================================
@@ -11,6 +14,7 @@
 /**
  * Helper type to enforce type consistency between a model class
  * and its input/output interfaces.
+ * @see {@link QModel} — the base class this type constrains
  */
 export type { IQImplements } from './core/interfaces/model.interface';
 export { QModel } from './core/models/quick.model';
@@ -38,3 +42,12 @@ export { QConfig } from './core/config/quick.config';
 //   import { ... } from 'quickmodel/schema/zod'
 //   import { ... } from 'quickmodel/compat/ts5/forms'
 // ============================================================================
+
+// ============================================================================
+// PUBLIC API - Types re-exported for documentation and IDE support
+// (return types of public methods and parameter types of @Quick)
+// ============================================================================
+export type { IQFormSchemaEntry } from './core/decorators/qfield.decorator';
+export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
+export type { IQAliasedSerializedInterface } from './core/interfaces/serialization-types.interface';
+export type { IQAdvancedOptions } from './core/interfaces/quick-options.interface';

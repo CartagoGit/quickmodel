@@ -9,6 +9,10 @@ import type { IQMockType } from './mock-generator.service';
  * @template TInstance - The model instance type (e.g., `User`)
  * @template TInterface - The interface type (e.g., `IUser`)
  *
+ * @see {@link QModel.mock} — entry-point that creates and returns a builder
+ * @see {@link QMockGenerator} — underlying service that generates raw mock data
+ * @see {@link IQMockType} — available generation strategies
+ *
  * @example
  * ```typescript
  * const mockUser = User.mock().random();
@@ -86,6 +90,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override default values
 	 * @returns A new model instance with empty values
+	 * @see {@link QMockBuilder.random} — realistic-data variant
+	 * @see {@link QMockBuilder.interfaceEmpty} — plain-object variant (no model instance)
 	 *
 	 * @example
 	 * ```typescript
@@ -108,6 +114,9 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override generated values
 	 * @returns A new model instance with random values
+	 * @see {@link QMockBuilder.empty} — zero-value variant
+	 * @see {@link QMockBuilder.sample} — deterministic variant
+	 * @see {@link QMockBuilder.interfaceRandom} — plain-object variant
 	 *
 	 * @example
 	 * ```typescript
@@ -131,6 +140,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override sample values
 	 * @returns A new model instance with sample values
+	 * @see {@link QMockBuilder.random} — non-deterministic variant
+	 * @see {@link QMockBuilder.interfaceSample} — plain-object variant
 	 *
 	 * @example
 	 * ```typescript
@@ -154,6 +165,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override minimal values
 	 * @returns A new model instance with minimal values
+	 * @see {@link QMockBuilder.full} — all-fields variant
+	 * @see {@link QMockBuilder.interfaceMinimal} — plain-object variant
 	 *
 	 * @example
 	 * ```typescript
@@ -177,6 +190,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override full values
 	 * @returns A new model instance with all fields populated
+	 * @see {@link QMockBuilder.minimal} — minimal-fields variant
+	 * @see {@link QMockBuilder.interfaceFull} — plain-object variant
 	 *
 	 * @example
 	 * ```typescript
@@ -200,6 +215,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override default values
 	 * @returns A plain interface object with empty values
+	 * @see {@link QMockBuilder.empty} — model-instance variant
+	 * @see {@link QMockBuilder.interfaceRandom} — random-values variant
 	 *
 	 * @example
 	 * ```typescript
@@ -221,6 +238,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override generated values
 	 * @returns A plain interface object with random values
+	 * @see {@link QMockBuilder.random} — model-instance variant
+	 * @see {@link QMockBuilder.interfaceArray} — batch variant
 	 *
 	 * @example
 	 * ```typescript
@@ -241,6 +260,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override sample values
 	 * @returns A plain interface object with sample values
+	 * @see {@link QMockBuilder.sample} — model-instance variant
+	 * @see {@link QMockBuilder.interfaceRandom} — random variant
 	 */
 	interfaceSample(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
@@ -256,6 +277,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override minimal values
 	 * @returns A plain interface object with minimal values
+	 * @see {@link QMockBuilder.minimal} — model-instance variant
+	 * @see {@link QMockBuilder.interfaceFull} — all-fields variant
 	 */
 	interfaceMinimal(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
@@ -271,6 +294,8 @@ export class QMockBuilder<
 	 *
 	 * @param overrides - Optional partial data to override full values
 	 * @returns A plain interface object with all fields
+	 * @see {@link QMockBuilder.full} — model-instance variant
+	 * @see {@link QMockBuilder.interfaceMinimal} — minimal variant
 	 */
 	interfaceFull(overrides?: Partial<TInterface>): TInterface {
 		this.ensureFieldsRegistered();
@@ -286,6 +311,9 @@ export class QMockBuilder<
 	 * @returns Array of model instances
 	 *
 	 * @throws {Error} If count is negative
+	 * @see {@link QMockBuilder.random} — single-instance variant
+	 * @see {@link QMockBuilder.interfaceArray} — plain-object array variant
+	 * @see {@link IQMockType} — available generation strategies
 	 *
 	 * @example
 	 * ```typescript
@@ -325,6 +353,8 @@ export class QMockBuilder<
 	 * @returns Array of plain interface objects
 	 *
 	 * @throws {Error} If count is negative
+	 * @see {@link QMockBuilder.array} — model-instance array variant
+	 * @see {@link IQMockType} — available generation strategies
 	 *
 	 * @example
 	 * ```typescript

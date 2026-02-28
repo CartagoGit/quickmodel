@@ -7,7 +7,7 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		interface IUser {
 			name: string;
 		}
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare name: string;
 		}
@@ -26,7 +26,7 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		interface IUser {
 			name: string;
 		}
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare name: string;
 		}
@@ -45,7 +45,7 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 			name: string;
 			date: Date;
 		}
-		@Quick({ date: Date })
+		@Quick({ date: Date }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare name: string;
 			declare date: Date;
@@ -61,7 +61,7 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		interface IUser {
 			date: Date;
 		}
-		@Quick({ date: Date })
+		@Quick({ date: Date }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare date: Date;
 		}

@@ -9,7 +9,7 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 			fullName: string; // Virtual property
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare firstName: string;
 			declare lastName: string;
@@ -35,7 +35,7 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 			fullName: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare firstName: string;
 			declare lastName: string;
@@ -71,7 +71,7 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 			fullName: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare firstName: string;
 			declare lastName: string;
@@ -101,7 +101,7 @@ describe('Feature: Custom Accessors (Getters & Setters)', () => {
 			count: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Counter extends QModel<ICount> {
 			private _count: number = 0;
 

@@ -572,6 +572,36 @@ const result = qCheckRules(form, { group: Groups.identity });
 
 > 📖 **[Form Validation guide](/en/guide/forms)** — Full reference: `qGroups`, `qGetGroups`, `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`, `qCheckRulesByGroupAsync`, Angular/React/Vue examples.
 
+## Tracing rule evaluations
+
+`@QRule` accepts an optional third argument — `options: IQRuleOptions` — that lets you configure per-rule trace behavior independently of global and per-model settings.
+
+The resolution chain is: **per-rule > per-model > global > silent**.
+
+```typescript
+import { QRule } from 'quickmodel';
+
+class PaymentModel extends QModel<{ amount: number; currency: string }> {
+	// Always surface failures even if global trace is 'silent'
+	@QRule<number>((val) => val > 0, 'Amount must be positive', {
+		trace: { verbosity: 'warn' },
+	})
+	declare amount: number;
+
+	// Route only failures of this rule to a security sink
+	@QRule<string>((val) => /^[A-Z]{3}$/.test(val), 'Invalid currency code', {
+		trace: {
+			verbosity: 'error',
+			events: ['rule-fail', 'rule-error'],
+			sink: (entry) => securityAudit.write(entry),
+		},
+	})
+	declare currency: string;
+}
+```
+
+> 📖 **[Tracing & Observability guide](/en/guide/tracing)** — Full reference for global, per-model and per-rule trace configuration, `IQTraceEntry` structure, and real-world use cases.
+
 ## Performance
 
 <BenchmarkChart

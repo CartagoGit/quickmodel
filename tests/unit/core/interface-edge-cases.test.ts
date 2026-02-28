@@ -10,7 +10,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			children?: INode[];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Node extends QModel<INode> {
 			declare id: string;
 			declare name: string;
@@ -69,7 +69,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			} | null;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class DataModel extends QModel<IData> {
 			declare id: string;
 			declare value?: string | null;
@@ -131,7 +131,10 @@ describe('Interface Conversion - Edge Cases', () => {
 			updatedAt?: Date | null;
 		}
 
-		@Quick({ createdAt: Date, updatedAt: Date })
+		@Quick(
+			{ createdAt: Date, updatedAt: Date },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class Timestamped
 			extends QModel<ITimestamps>
 			implements ITimestampsTransforms
@@ -191,7 +194,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			};
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Complex extends QModel<IComplex> {
 			declare id: string;
 			declare tags: string[];
@@ -268,7 +271,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			age: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare id: string;
 			declare name: string;
@@ -407,7 +410,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			data: unknown;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class DataModel extends QModel<IData> {
 			declare id: string;
 			declare data: unknown;

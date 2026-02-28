@@ -19,7 +19,7 @@ interface ITag {
 	name: string;
 }
 
-@Quick()
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class Tag extends QModel<ITag> {
 	declare id: string;
 	declare name: string;

@@ -27,6 +27,9 @@ import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
  *                   Does not need to extend `QModel`.
  * @returns Sorted array of distinct group names. Empty array when no `@QGroup`
  *          annotations are present.
+ * @see {@link qCheckRulesByGroup} — validate rules group by group using the names returned here
+ * @see {@link QGroup} — property decorator that registers a group name
+ * @see {@link qCheckRules} — run all validation rules without grouping
  *
  * @example
  * ```ts

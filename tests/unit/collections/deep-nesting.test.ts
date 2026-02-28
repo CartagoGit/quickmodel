@@ -13,7 +13,7 @@ describe('Nested Arrays and Objects - Deep Nesting', () => {
 			level4: string[][][][];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare level2: number[][];
 			declare level3: number[][][];
@@ -212,13 +212,13 @@ describe('Objetos anidados profundos', () => {
 		declare city: string;
 	}
 
-	@Quick({ address: Address })
+	@Quick({ address: Address }, { unknownPropertyPolicy: 'keep' })
 	class Profile extends QModel<IProfile> {
 		declare bio: string;
 		declare address: Address;
 	}
 
-	@Quick({ profile: Profile })
+	@Quick({ profile: Profile }, { unknownPropertyPolicy: 'keep' })
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare profile: Profile;
@@ -265,13 +265,13 @@ describe('Mezcla de arrays y objetos anidados', () => {
 		declare text: string;
 	}
 
-	@Quick({ comments: [Comment] })
+	@Quick({ comments: [Comment] }, { unknownPropertyPolicy: 'keep' })
 	class Post extends QModel<IPost> {
 		declare id: number;
 		declare comments: Comment[];
 	}
 
-	@Quick({ posts: [Post] })
+	@Quick({ posts: [Post] }, { unknownPropertyPolicy: 'keep' })
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare posts: Post[];
@@ -328,7 +328,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 		}
 		*/
 
-		@Quick({ createdAt: Date })
+		@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class Comment extends QModel<IComment> {
 			declare text: string;
 			declare createdAt: Date;
@@ -347,7 +347,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare dates: Date[];
 		}
 
-		@Quick({ posts: [Post] })
+		@Quick({ posts: [Post] }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare id: number;
 			declare posts: Post[];
@@ -506,7 +506,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare timestamps: Date[];
 		}
 
-		@Quick({ metrics: [Metrics] })
+		@Quick({ metrics: [Metrics] }, { unknownPropertyPolicy: 'keep' })
 		class Report extends QModel<IReport> {
 			declare id: number;
 			declare metrics: Metrics[];
@@ -652,7 +652,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			declare dates: Date[];
 		}
 
-		@Quick({ metadata: Metadata })
+		@Quick({ metadata: Metadata }, { unknownPropertyPolicy: 'keep' })
 		class Content extends QModel<IContent> {
 			declare text: string;
 			declare metadata: Metadata;
@@ -814,27 +814,27 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			level1: ILevel1[];
 		}
 
-		@Quick({ values: [BigInt] })
+		@Quick({ values: [BigInt] }, { unknownPropertyPolicy: 'keep' })
 		class Level4 extends QModel<ILevel4> {
 			declare values: bigint[];
 		}
 
-		@Quick({ level4: [Level4] })
+		@Quick({ level4: [Level4] }, { unknownPropertyPolicy: 'keep' })
 		class Level3 extends QModel<ILevel3> {
 			declare level4: Level4[];
 		}
 
-		@Quick({ level3: [Level3] })
+		@Quick({ level3: [Level3] }, { unknownPropertyPolicy: 'keep' })
 		class Level2 extends QModel<ILevel2> {
 			declare level3: Level3[];
 		}
 
-		@Quick({ level2: [Level2] })
+		@Quick({ level2: [Level2] }, { unknownPropertyPolicy: 'keep' })
 		class Level1 extends QModel<ILevel1> {
 			declare level2: Level2[];
 		}
 
-		@Quick({ level1: [Level1] })
+		@Quick({ level1: [Level1] }, { unknownPropertyPolicy: 'keep' })
 		class Level0 extends QModel<ILevel0> {
 			declare level1: Level1[];
 		}
@@ -976,7 +976,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			settings: [string, string][]; // Map
 		}
 
-		@Quick({ priority: BigInt })
+		@Quick({ priority: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class Tag extends QModel<ITag> {
 			declare name: string;
 			declare priority: bigint;
@@ -1081,7 +1081,7 @@ describe('Mezcla de arrays y objetos anidados', () => {
 			nulls: (number | null)[][];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare empty2D: unknown[][];
 			declare mixed: (number | string)[][];

@@ -45,6 +45,9 @@ export class ToInterfaceService<
 	 * @param depth - Current recursion depth; throws at 512 to prevent stack overflow
 	 * @returns Plain object matching `T` with values in their original input format
 	 * @throws {Error} If `depth` exceeds 512 (security guard against circular structures).
+	 * @see {@link Serializer.serialize} — use this when JSON-safe output is needed instead
+	 * @see {@link QModel.toInterface} — public entry point that delegates here
+	 * @see {@link ToInterfaceService.convertToInterfaceFormat} — processes each individual property value
 	 * @template T - The target interface shape
 	 */
 	toInterface<T extends Record<string, unknown> = TInterface>(

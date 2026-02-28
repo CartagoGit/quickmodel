@@ -7,13 +7,12 @@
 > **Documento único de planificación.** Contiene el historial resumido de tareas completadas y el backlog de
 > propuestas para sprints futuros (Mar 2026+).
 > Documentos históricos en archivo: [`.archived/PENDING_CONFIGS.md`](../../.archived/PENDING_CONFIGS.md) · [`.archived/REFACTORING.md`](../../.archived/REFACTORING.md)
-> Propuestas con diseño detallado: [FormData ↔ QModel](./form-data/FormData.md)
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#57 (excepto #48)
-⏳  Backlog:     Task #48 (Drizzle ORM) + Propuestas A–R (ver sección final)
+✅ Completadas: Tasks #1–#58 (excepto #48) + Propuesta G
+⏳  Backlog:     Task #48 (Drizzle ORM) + Propuestas A–F, H–R (ver sección final)
 ```
 
 ---
@@ -79,6 +78,7 @@
 | 55  | Storage & Persistence — localStorage, IndexedDB, SQLite                              | 39 tests, guías EN+ES     |
 | 56  | Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 | 23 Feb 2026               |
 | 57  | Test Runners — Jest, Jasmine, Mocha/Chai, Node:test, AVA                             | 147 tests, guías EN+ES    |
+| 58  | `fromFormData()` + `toFormData()` + `toReadableStream()` + Blob/File transformers    | 28 Feb 2026               |
 
 ---
 
@@ -300,88 +300,10 @@ new Event({ id: '1' });
 // → createdAt = new Date(), status = 'draft', tags = []
 ```
 
-### Propuesta G — `fromFormData()` + `toFormData()` + transformers Blob/File
+### ✅ Propuesta G — `fromFormData()` + `toFormData()` + transformers Blob/File — **COMPLETADA** (Task #58)
 
-**Prioridad:** 🟡 Media
-**Impacto:** Medio-alto — Server Actions, multipart uploads, round-trip FormData ↔ QModel
-**Esfuerzo estimado:** 6-8 horas | **Tests estimados:** ~25
-
-> 📄 **Diseño detallado:** [proposals/form-data/FormData.md](./form-data/FormData.md)
-
-> **Hallazgo de análisis:** `blob`, `file` y `formdata` están declarados en `IQAliasType` pero **no tienen transformer implementado** en `web-apis.transformer.ts`. Esta propuesta los implementa, y sobre esa base construye la API pública `fromFormData()`/`toFormData()`/`toReadableStream()`.
-
-#### Por qué `Object.fromEntries(fd)` no es suficiente
-
-`Object.fromEntries(formData)` aplana todo a `string`, perdiendo los objetos `File`. Un campo `<input type="file">` llega como `File` (subclase de `Blob`) con `name`, `size`, `type` y `lastModified` — información irrecuperable si se convierte a string.
-
-#### Casuísticas de entrada — `fromFormData(fd, opts?)`
-
-Un campo `File` puede llegar de tres formas distintas según el contexto:
-
-| Caso                                     | Valor en FormData                      | Estrategia                                                         |
-| ---------------------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
-| Upload real (`<input type="file">`)      | `File` object                          | `'binary'` (default) — preservar el `File` completo                |
-| Referencia a ruta/URL (JSON en FormData) | `string` `"/uploads/foto.jpg"`         | `'reference'` — tratar como URL/path, no deserializar como binario |
-| Base64 data URI (upload codificado)      | `string` `"data:image/png;base64,..."` | `'base64'` — detectar `data:` prefix y convertir a `Blob`          |
-| Blob programático                        | `Blob` instance                        | igual que `'binary'`                                               |
-
-```typescript
-// Caso 1: formulario HTML real — File objects preservados
-const dto = UploadDto.fromFormData(formData);
-
-// Caso 2: la app envía rutas en lugar de binarios
-const dto = UploadDto.fromFormData(formData, { fileSource: 'reference' });
-// → dto.avatar = "/uploads/foto.jpg" (string, no Blob)
-
-// Caso 3: upload base64 desde cliente JS
-const dto = UploadDto.fromFormData(formData, { fileSource: 'base64' });
-// → detecta "data:image/..." y convierte a Blob automáticamente
-```
-
-#### Casuísticas de salida — `toFormData(opts?)`
-
-Al construir el `FormData` de salida, el mismo campo puede necesitar formatos distintos:
-
-| Campo runtime                   | Modo `'binary'` (default)                                | Modo `'reference'`                         | Modo `'base64'`                           |
-| ------------------------------- | -------------------------------------------------------- | ------------------------------------------ | ----------------------------------------- |
-| `File`                          | `.append(key, file)` — File entry preservada             | `.append(key, file.name)` — solo el nombre | `.append(key, dataURI)` — data URI string |
-| `Blob`                          | `.append(key, blob, filename?)`                          | `.append(key, '[Blob]')`                   | `.append(key, dataURI)`                   |
-| `ArrayBuffer` / `Uint8Array`    | auto-wrap en `Blob` + `.append()`                        | `.append(key, '[binary]')`                 | `.append(key, dataURI)`                   |
-| `string` / `number` / `boolean` | `.append(key, String(value))` — igual en todos los modos |
-
-```typescript
-// Caso 1: reenvío real — preservar binarios
-const fd = dto.toFormData();
-
-// Caso 2: proxy/log — solo referencias, sin datos binarios en red
-const fd = dto.toFormData({ fileMode: 'reference' });
-// → avatar: "foto.jpg", documento: "[Blob]"
-
-// Caso 3: cliente que espera base64 (e.g. API legacy)
-const fd = dto.toFormData({ fileMode: 'base64' });
-// → avatar: "data:image/jpeg;base64,/9j/..."
-```
-
-#### Patrón de opciones — sigue `dateStrategy` existente
-
-El patrón `fileMode`/`fileSource` sigue exactamente el patrón de `dateStrategy` en `IQSerializationOptions`, que ya está establecido y funciona bien. Consistencia garantizada.
-
-```typescript
-// Misma ergonomía que dateStrategy
-dto.serialize({ dateStrategy: 'iso', fileMode: 'reference' });
-dto.toFormData({ fileMode: 'binary' });
-UploadDto.fromFormData(fd, { fileSource: 'base64' });
-```
-
-#### Archivos a crear/modificar
-
-- `src/transformers/web-apis.transformer.ts` — añadir `BlobTransformer`, `FileTransformer` (actualmente en `IQAliasType` sin implementación)
-- `src/core/interfaces/serializer.interface.ts` — añadir `fileMode?: 'binary' | 'reference' | 'base64'` a `IQSerializationOptions`
-- `src/core/interfaces/quick-options.interface.ts` — añadir `fileSource?: 'binary' | 'reference' | 'base64'` a opciones de `fromFormData`
-- `src/core/models/quick.model.ts` — métodos estático `fromFormData()` e instancia `toFormData()`
-- `src/core/helpers/form-data.helpers.ts` (nuevo) — lógica de conversión por modo
-- `tests/unit/core/models/form-data.test.ts`
-- `docs-vitepress/en/guide/formdata.md` + ES
+**Completada:** 28 de febrero de 2026
+**Resultado:** `BlobTransformer`, `FileTransformer` implementados + API pública `fromFormData()` / `toFormData()` / `toReadableStream()` / `fromStream()` / `pipeStream()` con soporte `fileMode`/`fileSource` (`auto`, `binary`, `reference`, `base64`), per-field overrides via `@QType`, `IQStreamProgress` callback y skill MCP `quickmodel_form_data` documentado EN+ES.
 
 ---
 
@@ -666,27 +588,27 @@ User.getSchema('prisma');
 
 ## 📊 Resumen priorizado de propuestas
 
-| Prop | Nombre                                                                 | Prioridad       | Esfuerzo | Impacto          | Relación con existente                   |
-| ---- | ---------------------------------------------------------------------- | --------------- | -------- | ---------------- | ---------------------------------------- |
-| A    | `@QSensitive`                                                          | 🔴 Alta         | 2-3h     | Alto (GDPR)      | Extiende `excludeFields`                 |
-| B    | `QModel.diff()`                                                        | 🔴 Alta         | 3-4h     | Alto             | Complementa `isDirty()`/`copy()`         |
-| D    | `QModelCollection<T>`                                                  | 🔴 Alta         | 5-6h     | Alto             | Cierra ciclo `createMany()`              |
-| O    | `validate()` unificado                                                 | 🔴 Alta         | 1-2h     | Alto (DX)        | Unifica API validación                   |
-| C    | `getSchema('valibot'/'yup')`                                           | 🟡 Media        | 2h×2     | Alto estratégico | +2 a los 7 formatos existentes           |
-| E    | I18n mensajes                                                          | 🟡 Media        | 4h       | Medio            | Extiende `QConfig`                       |
-| M    | `QModel.patch()` mutable                                               | 🟡 Media        | 2-3h     | Medio            | Contraparte mutable de `copy()`          |
-| N    | `@QVersion` + migrations                                               | 🟡 Media        | 4-5h     | Medio            | Complementa Task #55                     |
-| P    | `@QReadonly`                                                           | 🟡 Media        | 2h       | Medio            | Nuevo decorator                          |
-| Q    | Config per-class                                                       | 🟡 Media        | 3h       | Medio            | Extiende `QConfig`                       |
-| R    | CLI `generate` subcommand                                              | 🟡 Media        | **2-3h** | Medio-alto       | `bin.quickmodel` ya existe               |
-| S    | `getSchema('prisma')`                                                  | 🟡 Media        | 2-3h     | Alto             | Cierra circuito Task #41                 |
-| F    | `@QDefault`                                                            | 🟢 Baja         | 2h       | Medio            | Nuevo decorator                          |
-| G    | `fromFormData()` + `toFormData()` + streaming + Blob/File transformers | 🟡 Media        | 11-13h   | Medio-alto       | `blob`/`file` en `IQAliasType` sin impl. |
-| H    | `@QTransform` pipeline                                                 | 🟢 Baja         | 2-3h     | Medio            | Complementa `@QType`                     |
-| I    | Audit trail                                                            | ⚠️ Cuestionable | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`             |
-| J    | `getSchema('drizzle'/'typebox')`                                       | 🟢 Baja         | 2h×2     | Medio            | +2 a Schema API + Task #48               |
-| K    | Plugin system                                                          | ⚠️ Diferida     | 3-4h     | Bajo ahora       | Prematuro sin ecosistema                 |
-| L    | Guía WebSocket / SSE                                                   | 🟢 Baja         | 2-3h     | Medio            | **Requiere Prop B**                      |
+| Prop  | Nombre                                                                     | Prioridad       | Esfuerzo | Impacto          | Relación con existente           |
+| ----- | -------------------------------------------------------------------------- | --------------- | -------- | ---------------- | -------------------------------- |
+| A     | `@QSensitive`                                                              | 🔴 Alta         | 2-3h     | Alto (GDPR)      | Extiende `excludeFields`         |
+| B     | `QModel.diff()`                                                            | 🔴 Alta         | 3-4h     | Alto             | Complementa `isDirty()`/`copy()` |
+| D     | `QModelCollection<T>`                                                      | 🔴 Alta         | 5-6h     | Alto             | Cierra ciclo `createMany()`      |
+| O     | `validate()` unificado                                                     | 🔴 Alta         | 1-2h     | Alto (DX)        | Unifica API validación           |
+| C     | `getSchema('valibot'/'yup')`                                               | 🟡 Media        | 2h×2     | Alto estratégico | +2 a los 7 formatos existentes   |
+| E     | I18n mensajes                                                              | 🟡 Media        | 4h       | Medio            | Extiende `QConfig`               |
+| M     | `QModel.patch()` mutable                                                   | 🟡 Media        | 2-3h     | Medio            | Contraparte mutable de `copy()`  |
+| N     | `@QVersion` + migrations                                                   | 🟡 Media        | 4-5h     | Medio            | Complementa Task #55             |
+| P     | `@QReadonly`                                                               | 🟡 Media        | 2h       | Medio            | Nuevo decorator                  |
+| Q     | Config per-class                                                           | 🟡 Media        | 3h       | Medio            | Extiende `QConfig`               |
+| R     | CLI `generate` subcommand                                                  | 🟡 Media        | **2-3h** | Medio-alto       | `bin.quickmodel` ya existe       |
+| S     | `getSchema('prisma')`                                                      | 🟡 Media        | 2-3h     | Alto             | Cierra circuito Task #41         |
+| F     | `@QDefault`                                                                | 🟢 Baja         | 2h       | Medio            | Nuevo decorator                  |
+| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada   | —        | —                | Task #58 — 28 Feb 2026           |
+| H     | `@QTransform` pipeline                                                     | 🟢 Baja         | 2-3h     | Medio            | Complementa `@QType`             |
+| I     | Audit trail                                                                | ⚠️ Cuestionable | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`     |
+| J     | `getSchema('drizzle'/'typebox')`                                           | 🟢 Baja         | 2h×2     | Medio            | +2 a Schema API + Task #48       |
+| K     | Plugin system                                                              | ⚠️ Diferida     | 3-4h     | Bajo ahora       | Prematuro sin ecosistema         |
+| L     | Guía WebSocket / SSE                                                       | 🟢 Baja         | 2-3h     | Medio            | **Requiere Prop B**              |
 
 **Tiempo total propuestas (sin cuestionables):** ~70-85h
 **Propuestas alta prioridad (A+B+D+O):** ~12-15h
@@ -705,7 +627,7 @@ User.getSchema('prisma');
 6.  Prop. S   → getSchema('prisma') (2-3h, cierra circuito Task #41)
 7.  Prop. D   → QModelCollection<T> (cierra ciclo createMany)
 8.  Prop. C   → getSchema('valibot') + getSchema('yup') (bajo riesgo, alto valor)
-9.  Prop. G   → fromFormData() + toFormData() (round-trip FormData ↔ QModel)
+9.  ~~Prop. G~~   ✅ fromFormData() + toFormData() (Task #58 — completada)
 10. Prop. M   → patch() mutable (complementa copy, sencillo)
 11. Prop. N   → @QVersion + migrations (cierra loop Storage / Task #55)
 12. Prop. E   → I18n (requiere decisiones de diseño)

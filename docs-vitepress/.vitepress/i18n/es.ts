@@ -1,12 +1,15 @@
 export const esLocale = {
 	mcp: {
 		title: 'Protocolo de Contexto de Modelo',
+		sectionUsing: 'Usando QuickModel',
+		sectionDeveloping: 'Desarrollando QuickModel',
 		overview: 'Descripción General',
-		publicTools: 'Herramientas Públicas',
-		publicSkills: 'Skills Públicos',
-		installationMaintainers: 'Instalación (Mantenedores)',
-		internalToolsMaintainers: 'Herramientas Internas (Mantenedores)',
-		internalSkillsMaintainers: 'Skills Internos (Mantenedores)',
+		installation: 'Instalación y Configuración',
+		publicTools: 'Herramientas MCP',
+		publicSkills: 'Skills / Flujos de Trabajo',
+		installationMaintainers: 'Configuración para Contribuidores',
+		internalToolsMaintainers: 'Herramientas Internas',
+		internalSkillsMaintainers: 'Skills Internos',
 	},
 	quickExamples: {
 		tabBasic: '@Quick + QModel',
@@ -471,7 +474,13 @@ export const esLocale = {
 					joi: 'Suite externa — debe llamarse manualmente, no está ligada al ciclo de vida del modelo',
 				},
 			},
-			inheritance: { label: 'Herencia multinivel con inferencia' },
+			inheritance: {
+				label: 'Herencia multinivel con inferencia',
+				notes: {
+					classTransformer:
+						'Los metadatos de decoradores (@Type, @Transform) se heredan en subclases pero la inferencia de tipos es manual — sin resolución automática de tipos anidados',
+				},
+			},
 			schemaExport: { label: 'Exportar schema (JSON/Zod/OpenAPI)' },
 			tsInference: {
 				label: 'Inferencia TS compile-time',

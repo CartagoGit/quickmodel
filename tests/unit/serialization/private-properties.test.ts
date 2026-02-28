@@ -10,7 +10,7 @@ describe('Private/Protected Properties Serialization', () => {
 		// or we treat them as optional internal state.
 	}
 
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class User extends QModel<IUser> {
 		declare id: number;
 		declare name: string;
@@ -41,7 +41,7 @@ describe('Private/Protected Properties Serialization', () => {
 		_ignored: string;
 	}
 
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class StrictUser extends QModel<IStrictUser> {
 		declare id: number;
 		declare _ignored: string; // Declared property strictly in interface

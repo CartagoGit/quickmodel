@@ -26,19 +26,19 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 1: @Quick on every level — 3 levels
 	// =========================================================================
 	describe('Scenario 1: @Quick on every level (A → B → C)', () => {
-		@Quick({ dateA: Date })
+		@Quick({ dateA: Date }, { unknownPropertyPolicy: 'keep' })
 		class LevelA extends QModel<any> {
 			declare nameA: string;
 			declare dateA: Date;
 		}
 
-		@Quick({ bigintB: BigInt })
+		@Quick({ bigintB: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class LevelB extends LevelA {
 			declare nameB: string;
 			declare bigintB: bigint;
 		}
 
-		@Quick({ dateC: Date })
+		@Quick({ dateC: Date }, { unknownPropertyPolicy: 'keep' })
 		class LevelC extends LevelB {
 			declare nameC: string;
 			declare dateC: Date;
@@ -97,7 +97,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 2: @Quick only on A and C — B undecorated
 	// =========================================================================
 	describe('Scenario 2: @Quick only on root and leaf, middle undecorated (A → B → C)', () => {
-		@Quick({ dateA: Date })
+		@Quick({ dateA: Date }, { unknownPropertyPolicy: 'keep' })
 		class RootDecorated extends QModel<any> {
 			declare nameA: string;
 			declare dateA: Date;
@@ -108,7 +108,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 			declare nameB: string;
 		}
 
-		@Quick({ dateC: Date })
+		@Quick({ dateC: Date }, { unknownPropertyPolicy: 'keep' })
 		class LeafDecorated extends MiddleRaw {
 			declare nameC: string;
 			declare dateC: Date;
@@ -135,7 +135,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 3: @Quick only on root — 3 levels, only A decorated
 	// =========================================================================
 	describe('Scenario 3: @Quick only on root, two raw descendants (A → B → C)', () => {
-		@Quick({ rootDate: Date })
+		@Quick({ rootDate: Date }, { unknownPropertyPolicy: 'keep' })
 		class OnlyRootDecorated extends QModel<any> {
 			declare rootDate: Date;
 			declare rootName: string;
@@ -168,25 +168,25 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 4: 4-level chain — A → B → C → D, each adds its own type
 	// =========================================================================
 	describe('Scenario 4: Four-level chain (A → B → C → D)', () => {
-		@Quick({ fieldA: Date })
+		@Quick({ fieldA: Date }, { unknownPropertyPolicy: 'keep' })
 		class ChainA extends QModel<any> {
 			declare labelA: string;
 			declare fieldA: Date;
 		}
 
-		@Quick({ fieldB: BigInt })
+		@Quick({ fieldB: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class ChainB extends ChainA {
 			declare labelB: string;
 			declare fieldB: bigint;
 		}
 
-		@Quick({ fieldC: RegExp })
+		@Quick({ fieldC: RegExp }, { unknownPropertyPolicy: 'keep' })
 		class ChainC extends ChainB {
 			declare labelC: string;
 			declare fieldC: RegExp;
 		}
 
-		@Quick({ fieldD: Date })
+		@Quick({ fieldD: Date }, { unknownPropertyPolicy: 'keep' })
 		class ChainD extends ChainC {
 			declare labelD: string;
 			declare fieldD: Date;
@@ -252,14 +252,14 @@ describe('Integration: Deep Chain Inheritance', () => {
 		// IQImplements removes `value: Date` from the intersection and replaces it
 		// with `value: bigint`. The external base (OverrideA) stays untouched.
 
-		@Quick({ value: Date })
+		@Quick({ value: Date }, { unknownPropertyPolicy: 'keep' })
 		class OverrideA extends QModel<any> {
 			declare label: string;
 			declare value: Date;
 		}
 
 		// IQImplements<OverrideA, { value: bigint }> → Omit<OverrideA, 'value'> & { value: bigint }
-		@Quick({ value: BigInt })
+		@Quick({ value: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class OverrideB extends QModel.extends<
 			IQImplements<OverrideA, { value: bigint }>
 		>(OverrideA) {
@@ -304,7 +304,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 		// LeafLevel overrides `pattern` → RegExp (pattern was declared string in Mid).
 		// TOverrides = { campo: NuevoTipo } — replace with the actual runtime type.
 
-		@Quick({ startDate: Date })
+		@Quick({ startDate: Date }, { unknownPropertyPolicy: 'keep' })
 		class MultiBase extends QModel<any> {
 			declare label: string;
 			declare startDate: Date;
@@ -312,7 +312,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 		}
 
 		// IQImplements<MultiBase, { count: bigint }> → removes count: string, adds count: bigint
-		@Quick({ count: BigInt })
+		@Quick({ count: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class MultiMid extends QModel.extends<
 			IQImplements<MultiBase, { count: bigint }>
 		>(MultiBase) {
@@ -321,7 +321,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 		}
 
 		// IQImplements<MultiMid, { pattern: RegExp }> → removes pattern: string, adds pattern: RegExp
-		@Quick({ pattern: RegExp })
+		@Quick({ pattern: RegExp }, { unknownPropertyPolicy: 'keep' })
 		class MultiLeaf extends QModel.extends<
 			IQImplements<MultiMid, { pattern: RegExp }>
 		>(MultiMid) {
@@ -376,7 +376,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 		// MidTriple overrides all three at once via TOverrides object → Date, bigint, RegExp.
 		// LeafTriple extends normally and adds its own extra field.
 
-		@Quick({})
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class BaseTriple extends QModel<any> {
 			declare label: string;
 			declare timestamp: string; // will become Date in MidTriple
@@ -385,7 +385,10 @@ describe('Integration: Deep Chain Inheritance', () => {
 		}
 
 		// IQImplements<BaseTriple, { timestamp: Date; amount: bigint; pattern: RegExp }> — three overrides at once
-		@Quick({ timestamp: Date, amount: BigInt, pattern: RegExp })
+		@Quick(
+			{ timestamp: Date, amount: BigInt, pattern: RegExp },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class MidTriple extends QModel.extends<
 			IQImplements<
 				BaseTriple,
@@ -447,19 +450,19 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 6: Accumulated fields — all levels contribute to toJSON
 	// =========================================================================
 	describe('Scenario 6: All ancestor fields appear in toJSON()', () => {
-		@Quick({ timestamp: Date })
+		@Quick({ timestamp: Date }, { unknownPropertyPolicy: 'keep' })
 		class AccumA extends QModel<any> {
 			declare strA: string;
 			declare timestamp: Date;
 		}
 
-		@Quick({ count: BigInt })
+		@Quick({ count: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class AccumB extends AccumA {
 			declare strB: string;
 			declare count: bigint;
 		}
 
-		@Quick({ pattern: RegExp })
+		@Quick({ pattern: RegExp }, { unknownPropertyPolicy: 'keep' })
 		class AccumC extends AccumB {
 			declare strC: string;
 			declare pattern: RegExp;
@@ -491,7 +494,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 7: @QType mixed with @Quick in a deep chain
 	// =========================================================================
 	describe('Scenario 7: @QType on specific fields mixed with @Quick on class', () => {
-		@Quick({ autoDate: Date })
+		@Quick({ autoDate: Date }, { unknownPropertyPolicy: 'keep' })
 		class MixedA extends QModel<any> {
 			declare label: string;
 			declare autoDate: Date;
@@ -500,7 +503,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 			declare explicitBig: bigint;
 		}
 
-		@Quick({ childDate: Date })
+		@Quick({ childDate: Date }, { unknownPropertyPolicy: 'keep' })
 		class MixedB extends MixedA {
 			declare childLabel: string;
 			declare childDate: Date;
@@ -530,19 +533,19 @@ describe('Integration: Deep Chain Inheritance', () => {
 	// Scenario 8: mock() knows about all ancestor fields
 	// =========================================================================
 	describe('Scenario 8: mock() generates data for fields from all ancestor levels', () => {
-		@Quick({ birthDate: Date })
+		@Quick({ birthDate: Date }, { unknownPropertyPolicy: 'keep' })
 		class MockBase extends QModel<any> {
 			declare name: string;
 			declare birthDate: Date;
 		}
 
-		@Quick({ salary: BigInt })
+		@Quick({ salary: BigInt }, { unknownPropertyPolicy: 'keep' })
 		class MockMid extends MockBase {
 			declare department: string;
 			declare salary: bigint;
 		}
 
-		@Quick({ joinedAt: Date })
+		@Quick({ joinedAt: Date }, { unknownPropertyPolicy: 'keep' })
 		class MockLeaf extends MockMid {
 			declare role: string;
 			declare joinedAt: Date;

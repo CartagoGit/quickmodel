@@ -17,6 +17,7 @@
  * Used internally by QuickModel in the few places where an explicit `any`
  * index signature is required (e.g. Reflect metadata payloads).
  * Satisfies ESLint's `no-explicit-any` rule via indirection.
+ * @see {@link QModel} — primary consumer of this escape-hatch type
  */
 export interface IQAnyRecord extends Record<string, any> {}
 
@@ -26,6 +27,8 @@ export interface IQAnyRecord extends Record<string, any> {}
  * in the full `QModel` base class.
  *
  * @template TModel - The model instance type produced by the constructor.
+ * @see {@link QModel} — the actual base class this narrows
+ * @see {@link QModel.create} — static method captured by this interface shape
  */
 export interface IModelConstructor<TModel> {
 	new (data: any): TModel;
@@ -38,6 +41,7 @@ export interface IModelConstructor<TModel> {
  * @internal
  * @template T - Base interface (backend data structure)
  * @template Transforms - Object with only the properties that change types
+ * @see {@link IQImplements} — public helper that uses this under the hood
  */
 export type IQTransform<T, Transforms> = Omit<T, keyof Transforms> & Transforms;
 

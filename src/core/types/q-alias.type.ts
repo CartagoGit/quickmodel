@@ -31,6 +31,9 @@
  * - **'int8array'**, **'uint8array'**, etc.: Base64 string/array ↔ TypedArray
  *
  * @group Types
+ * @see {@link QType} — `@QType(alias)` decorator that accepts this type as its argument
+ * @see {@link Quick} — `@Quick(typeMap)` decorator where values can be these aliases
+ * @see {@link QTransformerRegistry} — registry that maps these aliases to transformer instances
  */
 export type IQAlias =
 	// Primitives

@@ -48,7 +48,7 @@ describe('ToInterfaceService Coverage Gaps - Deep Dive', () => {
 		interface IChild {
 			name: string;
 		}
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Child extends QModel<IChild> {
 			declare name: string;
 		}
@@ -65,7 +65,7 @@ describe('ToInterfaceService Coverage Gaps - Deep Dive', () => {
 		interface IChild {
 			name: string;
 		}
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Child extends QModel<IChild> {
 			declare name: string;
 		}

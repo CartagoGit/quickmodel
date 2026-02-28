@@ -32,7 +32,7 @@ import {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsEmail', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ email: string }> {
 		@IsEmail()
 		declare email: string;
@@ -51,7 +51,7 @@ describe('@IsEmail', () => {
 	});
 
 	test('custom message is used', () => {
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class EmailFrm extends QModel<{ email: string }> {
 			@IsEmail('Custom message')
 			declare email: string;
@@ -66,7 +66,7 @@ describe('@IsEmail', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsUrl', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ url: string }> {
 		@IsUrl()
 		declare url: string;
@@ -88,7 +88,7 @@ describe('@IsUrl', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@Min', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ age: number }> {
 		@Min(18)
 		declare age: number;
@@ -115,7 +115,7 @@ describe('@Min', () => {
 });
 
 describe('@Max', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ score: number }> {
 		@Max(100)
 		declare score: number;
@@ -135,7 +135,7 @@ describe('@Max', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@MinLength', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ name: string }> {
 		@MinLength(3)
 		declare name: string;
@@ -151,7 +151,7 @@ describe('@MinLength', () => {
 });
 
 describe('@MaxLength', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ tag: string }> {
 		@MaxLength(5)
 		declare tag: string;
@@ -171,7 +171,7 @@ describe('@MaxLength', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsNotEmpty', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ slug: string }> {
 		@IsNotEmpty()
 		declare slug: string;
@@ -195,7 +195,7 @@ describe('@IsNotEmpty', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@Matches', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ code: string }> {
 		@Matches(/^[A-Z]{3}$/)
 		declare code: string;
@@ -215,7 +215,7 @@ describe('@Matches', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsInt', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ count: number }> {
 		@IsInt()
 		declare count: number;
@@ -235,7 +235,7 @@ describe('@IsInt', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsPositive', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ qty: number }> {
 		@IsPositive()
 		declare qty: number;
@@ -255,7 +255,7 @@ describe('@IsPositive', () => {
 });
 
 describe('@IsNegative', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ delta: number }> {
 		@IsNegative()
 		declare delta: number;
@@ -275,7 +275,7 @@ describe('@IsNegative', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsIn', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ role: string }> {
 		@IsIn(['admin', 'user', 'guest'])
 		declare role: string;
@@ -295,7 +295,7 @@ describe('@IsIn', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('@IsUuid', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ uid: string }> {
 		@IsUuid()
 		declare uid: string;
@@ -354,7 +354,7 @@ describe('@IsDateString', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('Multiple validators stacked', () => {
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Form extends QModel<{ age: number }> {
 		@Min(0)
 		@Max(150)

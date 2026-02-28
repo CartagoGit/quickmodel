@@ -29,6 +29,9 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  *                   Does not need to extend `QModel`.
  * @returns A record mapping each group name to its `IQRulesResult`. Returns an
  *          empty object when no `@QGroup` annotations are present.
+ * @see {@link qCheckRules} — run all rules (or a specific group) in one call
+ * @see {@link qCheckRulesByGroupAsync} — async version for async predicates
+ * @see {@link qGetGroups} — list group names declared on an instance
  *
  * @example
  * ```ts

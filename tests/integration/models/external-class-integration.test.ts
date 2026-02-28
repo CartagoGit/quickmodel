@@ -193,7 +193,7 @@ describe('External classes without @Quick()', () => {
 
 	test('What happens with plain object (no class specified)?', () => {
 		// Sin especificar ningún tipo
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Profile extends QModel<IProfile> {
 			userId!: number;
 			user!: unknown; // Sin tipo especificado

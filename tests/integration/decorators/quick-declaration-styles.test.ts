@@ -22,7 +22,7 @@ describe('@Quick() with declaration styles', () => {
 			inStock: boolean;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class ProductWithDeclare extends QModel<IProduct> {
 			declare id: string;
 			declare name: string;
@@ -30,7 +30,7 @@ describe('@Quick() with declaration styles', () => {
 			declare inStock: boolean;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class ProductWithExclamation extends QModel<IProduct> {
 			id!: string;
 			name!: string;
@@ -38,7 +38,7 @@ describe('@Quick() with declaration styles', () => {
 			inStock!: boolean;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class ProductWithOptional extends QModel<IProduct> {
 			id?: string;
 			name?: string;
@@ -239,21 +239,21 @@ describe('@Quick() with declaration styles', () => {
 		}
 
 		// Address classes with different styles
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class AddressDeclare extends QModel<IAddress> {
 			declare street: string;
 			declare city: string;
 			declare zipCode: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class AddressExclamation extends QModel<IAddress> {
 			street!: string;
 			city!: string;
 			zipCode!: string;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class AddressOptional extends QModel<IAddress> {
 			street?: string;
 			city?: string;
@@ -261,21 +261,24 @@ describe('@Quick() with declaration styles', () => {
 		}
 
 		// Customer classes with different styles
-		@Quick({ address: AddressDeclare })
+		@Quick({ address: AddressDeclare }, { unknownPropertyPolicy: 'keep' })
 		class CustomerDeclare extends QModel<ICustomer> {
 			declare name: string;
 			declare email: string;
 			declare address: AddressDeclare;
 		}
 
-		@Quick({ address: AddressExclamation })
+		@Quick(
+			{ address: AddressExclamation },
+			{ unknownPropertyPolicy: 'keep' }
+		)
 		class CustomerExclamation extends QModel<ICustomer> {
 			name!: string;
 			email!: string;
 			address!: AddressExclamation;
 		}
 
-		@Quick({ address: AddressOptional })
+		@Quick({ address: AddressOptional }, { unknownPropertyPolicy: 'keep' })
 		class CustomerOptional extends QModel<ICustomer> {
 			name!: string;
 			email!: string;
@@ -340,21 +343,21 @@ describe('@Quick() with declaration styles', () => {
 			scores: number[];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class TeamDeclare extends QModel<ITeam> {
 			declare name: string;
 			declare members: string[];
 			declare scores: number[];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class TeamExclamation extends QModel<ITeam> {
 			name!: string;
 			members!: string[];
 			scores!: number[];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class TeamOptional extends QModel<ITeam> {
 			name?: string;
 			members?: string[];
@@ -414,21 +417,21 @@ describe('@Quick() with declaration styles', () => {
 			maxItems: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class SettingsDeclare extends QModel<ISettings> {
 			declare theme: string;
 			declare notifications: boolean;
 			declare maxItems: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class SettingsExclamation extends QModel<ISettings> {
 			theme!: string;
 			notifications!: boolean;
 			maxItems!: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class SettingsOptional extends QModel<ISettings> {
 			theme?: string;
 			notifications?: boolean;
@@ -504,21 +507,21 @@ describe('@Quick() with declaration styles', () => {
 			retries: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class ConfigDeclare extends QModel<IConfig> {
 			declare apiUrl: string;
 			declare timeout: number;
 			declare retries: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class ConfigExclamation extends QModel<IConfig> {
 			apiUrl!: string;
 			timeout!: number;
 			retries!: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class ConfigOptional extends QModel<IConfig> {
 			apiUrl?: string;
 			timeout?: number;

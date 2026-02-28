@@ -151,7 +151,7 @@ describe('transformCase: multi-level inheritance', () => {
 				declare middleField: string;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Child extends Middle {
 				declare childField: string;
 			}
@@ -180,7 +180,7 @@ describe('transformCase: multi-level inheritance', () => {
 				declare middleField: string;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Child extends Middle {
 				declare childField: string;
 			}

@@ -7,6 +7,10 @@
  * for conditional debug logging that respects `QConfig.enableDebugLogs`.
  *
  * @module quickmodel/utils
+ * @see {@link QType} — `@QType` property decorator re-exported here
+ * @see {@link QModelError} — error class for QuickModel exceptions
+ * @see {@link QMockBuilder} — fluent mock-data builder
+ * @see {@link Logger} — internal debug logger exported here as `QLogger`
  */
 
 export { QType } from './core/decorators/qtype.decorator';

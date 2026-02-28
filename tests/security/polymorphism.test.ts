@@ -23,7 +23,7 @@ describe('Security: Polymorphism Support', () => {
 		interface IData {
 			tags: Set<string>;
 		}
-		@Quick({ tags: Set })
+		@Quick({ tags: Set }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare tags: Set<string>;
 		}
@@ -41,7 +41,7 @@ describe('Security: Polymorphism Support', () => {
 		interface IData {
 			count: number;
 		}
-		@Quick({ count: Number })
+		@Quick({ count: Number }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare count: number;
 		}

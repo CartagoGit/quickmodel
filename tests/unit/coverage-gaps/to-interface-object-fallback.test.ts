@@ -24,7 +24,7 @@ describe('ToInterfaceService Object Fallback Coverage', () => {
 			external: ExternalClass;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Container extends QModel<IContainer> {
 			declare external: ExternalClass;
 		}

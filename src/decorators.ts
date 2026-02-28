@@ -41,6 +41,7 @@ export type {
 	IQRulesResult,
 	IQRule,
 	IQRulesAsyncOptions,
+	IQRuleOptions,
 } from './core/decorators/qrule.decorator';
 
 export { QField } from './core/decorators/qfield.decorator';

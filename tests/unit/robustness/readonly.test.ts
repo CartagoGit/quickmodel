@@ -6,7 +6,7 @@ describe('Robustness: Readonly Models', () => {
 		interface IUser {
 			name: string;
 		}
-		@Quick({ name: 'string' })
+		@Quick({ name: 'string' }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare name: string;
 		}
@@ -28,7 +28,7 @@ describe('Robustness: Readonly Models', () => {
 		interface IAddress {
 			city: string;
 		}
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Address extends QModel<IAddress> {
 			declare city: string;
 		}
@@ -36,7 +36,7 @@ describe('Robustness: Readonly Models', () => {
 		interface IUser {
 			address: IAddress;
 		}
-		@Quick({ address: Address })
+		@Quick({ address: Address }, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> {
 			declare address: Address;
 		}
@@ -63,7 +63,7 @@ describe('Robustness: Readonly Models', () => {
 		interface IData {
 			tags: string[];
 		}
-		@Quick({ tags: Set })
+		@Quick({ tags: Set }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare tags: Set<string>;
 		}

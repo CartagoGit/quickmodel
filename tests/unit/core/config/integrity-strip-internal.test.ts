@@ -13,7 +13,7 @@ describe('Integrity: Strip Internal Identifiers', () => {
 	});
 
 	it('should allow internal identifiers by default (undefined)', () => {
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare _internal: string;
 			declare $meta: string;
@@ -34,7 +34,7 @@ describe('Integrity: Strip Internal Identifiers', () => {
 	it('should strip internal identifiers when enabled globally (true)', () => {
 		QConfig.configure({ defaults: { stripInternalIdentifiers: true } });
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare _internal: string;
 			declare $meta: string;
@@ -57,7 +57,7 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			defaults: { stripInternalIdentifiers: ['__', 'internal_'] },
 		});
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<any> {
 			declare __hidden: string;
 			declare internal_code: string;
@@ -109,13 +109,13 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			defaults: { stripInternalIdentifiers: true },
 		});
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Nested extends QModel<any> {
 			declare _secret: string;
 			declare public: string;
 		}
 
-		@Quick({ nested: Nested })
+		@Quick({ nested: Nested }, { unknownPropertyPolicy: 'keep' })
 		class Root extends QModel<any> {
 			declare _rootSecret: string;
 			declare nested: Nested;

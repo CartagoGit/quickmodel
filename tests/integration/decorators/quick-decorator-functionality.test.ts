@@ -18,7 +18,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			active: boolean;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class User extends QModel<IUser> implements IQImplements<IUser> {
 			declare id: string;
 			declare name: string;
@@ -60,7 +60,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			updatedAt: Date;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Post extends QModel<IPost> implements IQImplements<IPost> {
 			declare id: string;
 			declare title: string;
@@ -89,7 +89,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			key: symbol;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Account
 			extends QModel<IAccount>
 			implements IQImplements<IAccount>
@@ -122,7 +122,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			tags: Set<string>;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> implements IQImplements<IData> {
 			declare id: string;
 			declare metadata: Map<string, string>;
@@ -164,7 +164,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			address: IAddress;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Person extends QModel<IPerson> implements IQImplements<IPerson> {
 			declare name: string;
 			declare age: number;
@@ -201,7 +201,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			price: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Product
 			extends QModel<IProduct>
 			implements IQImplements<IProduct>
@@ -217,7 +217,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			total: number;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Cart extends QModel<ICart> implements IQImplements<ICart> {
 			declare cartId: string;
 
@@ -299,7 +299,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			date: Date;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> implements IQImplements<IData> {
 			declare id: string;
 			declare value: number;
@@ -336,7 +336,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		}
 
 		// Auto decoration
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class UserAuto extends QModel<IUser> implements IQImplements<IUser> {
 			declare id: string;
 			declare name: string;

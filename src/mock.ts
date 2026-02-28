@@ -18,6 +18,9 @@
  * Also accessible under the `quickmodel/advanced` subpath (which includes the full
  * advanced API surface) and via `QModel.mock()` (which loads QMockGenerator lazily).
  *
+ * @see {@link QMockGenerator} — low-level mock generation service exported here
+ * @see {@link QMockBuilder} — fluent builder API exported here
+ * @see {@link QModel.mock} — high-level API that delegates to these services
  * @module quickmodel/mock
  */
 

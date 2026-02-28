@@ -28,6 +28,9 @@ export interface IQFormSchemaGroup {
  *
  * @see {@link QModel.getFormSchemaGrouped} — retrieve form schema organized by group
  * @see {@link QRule} — add validation rules that can also be filtered by group
+ * @see {@link QField} — decorate a property with form metadata before grouping it
+ * @see {@link qCheckRulesByGroup} — validate only rules belonging to a specific group
+ * @see {@link IQFormSchemaGroup} — the shape of each group entry returned by `getFormSchemaGrouped()`
  *
  * @example
  * ```typescript

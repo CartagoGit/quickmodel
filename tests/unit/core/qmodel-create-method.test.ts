@@ -17,7 +17,7 @@ describe('QModel.create() factory method', () => {
 				email: string;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class User extends QModel<IUser> {
 				declare id: number;
 				declare name: string;
@@ -63,7 +63,7 @@ describe('QModel.create() factory method', () => {
 				createdAt: string;
 			}
 
-			@Quick({ createdAt: Date })
+			@Quick({ createdAt: Date }, { unknownPropertyPolicy: 'keep' })
 			class Post extends QModel<IPost> {
 				declare id: number;
 				declare title: string;
@@ -88,7 +88,7 @@ describe('QModel.create() factory method', () => {
 				balance: string;
 			}
 
-			@Quick({ balance: BigInt })
+			@Quick({ balance: BigInt }, { unknownPropertyPolicy: 'keep' })
 			class Account extends QModel<IAccount> {
 				declare id: string;
 				declare balance: bigint;
@@ -149,13 +149,13 @@ describe('QModel.create() factory method', () => {
 				address: IAddress;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Address extends QModel<IAddress> {
 				declare street: string;
 				declare city: string;
 			}
 
-			@Quick({ address: Address })
+			@Quick({ address: Address }, { unknownPropertyPolicy: 'keep' })
 			class Profile extends QModel<IProfile> {
 				declare bio: string;
 				declare address: Address;
@@ -186,13 +186,13 @@ describe('QModel.create() factory method', () => {
 				comments: IComment[];
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Comment extends QModel<IComment> {
 				declare text: string;
 				declare author: string;
 			}
 
-			@Quick({ comments: [Comment] })
+			@Quick({ comments: [Comment] }, { unknownPropertyPolicy: 'keep' })
 			class BlogPost extends QModel<IBlogPost> {
 				declare title: string;
 				declare comments: Comment[];
@@ -222,7 +222,7 @@ describe('QModel.create() factory method', () => {
 				price: number;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Product extends QModel<IProduct> {
 				declare name: string;
 				declare price: number;
@@ -250,7 +250,7 @@ describe('QModel.create() factory method', () => {
 				total: number;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Order extends QModel<IOrder> {
 				declare orderId: string;
 				declare total: number;
@@ -270,7 +270,7 @@ describe('QModel.create() factory method', () => {
 				quantity: number;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Item extends QModel<IItem> {
 				declare code: string;
 				declare quantity: number;
@@ -322,7 +322,7 @@ describe('QModel.create() factory method', () => {
 				strings: string[];
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class Data extends QModel<IData> {
 				declare numbers: number[];
 				declare strings: string[];
@@ -384,13 +384,13 @@ describe('QModel.create() factory method', () => {
 				name: string;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class UserWithDeclare extends QModel<IUser> {
 				declare id: number;
 				declare name: string;
 			}
 
-			@Quick()
+			@Quick({}, { unknownPropertyPolicy: 'keep' })
 			class UserWithCreate extends QModel<IUser> {}
 
 			const data = { id: 1, name: 'Alice' };

@@ -48,6 +48,8 @@ export class DotNotationHandler {
 	 * @param applyConfig.recursionContext - Optional cycle-detection context
 	 * @returns `void` — the instance is mutated in place. Silently no-ops if any segment of the path
 	 *   does not exist, is `null`/`undefined`, or is a prototype-pollution key.
+	 * @see {@link PopulationService.populateInstance} — calls this for each dot-notation path key
+	 * @see {@link ValueTransformerService.transformByDesignType} — performs the leaf-value coercion
 	 */
 	public apply(
 		instance: Record<string, unknown>,

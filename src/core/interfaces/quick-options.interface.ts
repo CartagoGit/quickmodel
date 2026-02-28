@@ -6,6 +6,9 @@
  * and the `IQDiscriminatorConfig` discriminated union.
  *
  * @module core/interfaces/quick-options.interface
+ * @see {@link IQAdvancedOptions} — main options interface for the second `@Quick()` parameter
+ * @see {@link IQDiscriminatorConfig} — discriminated union config for polymorphic fields
+ * @see {@link Quick} — decorator that consumes these options
  */
 
 import type {
@@ -47,6 +50,8 @@ export type IQExtractConstructors<TSpec> = TSpec extends readonly unknown[]
  * type Instance1 = IQExtractInstanceType<typeof Date>;  // Date
  * type Instance2 = IQExtractInstanceType<DateConstructor>;  // Date
  * ```
+ * @see {@link IQExtractConstructors} — extract constructors from an IQSpec
+ * @see {@link IQExtractIQModelInterface} — extract the model interface from a QModel constructor
  */
 export type IQExtractInstanceType<T> = T extends new (
 	...args: unknown[]
@@ -111,6 +116,8 @@ export type IQExtractCommonKeys<T> =
  * class Content extends QModel<IContent> { ... }
  * type Interface = IQExtractIQModelInterface<Content>;  // IContent
  * ```
+ * @see {@link QModel.toInterface} — the runtime method this mirrors at the type level
+ * @see {@link IQExtractValidDiscriminatorKeys} — uses this to extract discriminator keys
  */
 export type IQExtractIQModelInterface<T> = T extends { toInterface(): infer I }
 	? I
@@ -153,6 +160,9 @@ export type IQExtractValidDiscriminatorKeys<TSpec> =
  *
  * @param data - Raw data object to check
  * @returns The constructor that matches the data type (must be one of the declared types)
+ *
+ * @see {@link IQDiscriminatorConfig} — used inside discriminator configuration
+ * @see {@link IQAdvancedOptions} — parent interface that hosts discriminators
  *
  * **IMPORTANT**: Cannot return `undefined` unless explicitly declared in types.
  * - If `items: [Content, Metadata]` → Must return `Content` or `Metadata`
@@ -252,6 +262,10 @@ export type IQDiscriminatorConfig<
  * Now with proper key inference from the typeMap.
  *
  * @template TTypeMap - The type map passed to @Quick() (first parameter)
+ *
+ * @see {@link Quick} — decorator that accepts these options as its second parameter
+ * @see {@link IQDiscriminatorConfig} — discriminator configuration type
+ * @see {@link IQTypeGuardFunction} — custom type guard function type
  *
  * @example
  * **Simple discriminator by field name**:

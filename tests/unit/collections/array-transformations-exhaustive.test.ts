@@ -17,7 +17,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			mixed: (string | number)[];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare numbers: number[];
 			declare strings: string[];
@@ -78,7 +78,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			mixed: (string | null | undefined)[];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare withNull: (string | null)[];
 			declare withUndefined: (number | undefined)[];
@@ -122,7 +122,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			dates: string[];
 		}
 
-		@Quick({ dates: [Date] })
+		@Quick({ dates: [Date] }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare dates: Date[];
 		}
@@ -202,7 +202,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			patterns: string[];
 		}
 
-		@Quick({ patterns: [RegExp] })
+		@Quick({ patterns: [RegExp] }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare patterns: RegExp[];
 		}
@@ -232,7 +232,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			symbols: string[];
 		}
 
-		@Quick({ symbols: [Symbol] })
+		@Quick({ symbols: [Symbol] }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare symbols: symbol[];
 		}
@@ -388,7 +388,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			urls: string[];
 		}
 
-		@Quick({ urls: [URL] })
+		@Quick({ urls: [URL] }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare urls: URL[];
 		}
@@ -414,7 +414,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			errors: { message: string; name?: string }[];
 		}
 
-		@Quick({ errors: [Error] })
+		@Quick({ errors: [Error] }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare errors: Error[];
 		}
@@ -521,7 +521,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 		}
 
 		test('✅ CORRECT: @Quick({ posts: [Post] }) with explicit array syntax', () => {
-			@Quick({ posts: [Post] })
+			@Quick({ posts: [Post] }, { unknownPropertyPolicy: 'keep' })
 			class User1 extends QModel<IUser> {
 				declare id: number;
 				declare posts: Post[];
@@ -580,7 +580,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			nested: number[][];
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare empty: unknown[];
 			declare single: number[];

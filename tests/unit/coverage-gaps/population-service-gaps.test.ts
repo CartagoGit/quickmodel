@@ -80,7 +80,7 @@ describe('PopulationService Coverage Gaps', () => {
 	});
 
 	it('should NOT throw for null/undefined values in primitive validation', () => {
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class PrimitiveModelNull extends QModel<{ val: number | null }> {
 			declare val: number | null;
 		}

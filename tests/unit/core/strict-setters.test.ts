@@ -29,7 +29,7 @@ describe('Robustness: Strict Setters', () => {
 		}
 
 		// Default (unknownPropertyPolicy: keep)
-		@Quick({ birthDate: Date })
+		@Quick({ birthDate: Date }, { unknownPropertyPolicy: 'keep' })
 		class LaxUser extends QModel<IUser> {
 			declare birthDate: Date;
 		}

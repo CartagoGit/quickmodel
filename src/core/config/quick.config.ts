@@ -124,21 +124,6 @@ export interface IQConfig {
 		validationTrigger?: 'manual' | 'construction';
 
 		/**
-		 * Prefix shown in all console trace messages instead of the default `'QuickModel'`.
-		 *
-		 * Useful when embedding QuickModel in a larger application and you want trace
-		 * output tagged with your own application name.
-		 *
-		 * @example
-		 * ```typescript
-		 * QConfig.configure({ defaults: { logPrefix: 'MyApp' } });
-		 * // → [MyApp:UserModel][construction] Instance created...
-		 * ```
-		 * @default 'QuickModel'
-		 */
-		logPrefix?: string;
-
-		/**
 		 * Enables internal debug logging (legacy shorthand — equivalent to `trace.verbosity: 'debug'`).
 		 * Prefer using `trace` for fine-grained control.
 		 */
@@ -156,6 +141,7 @@ export interface IQConfig {
 		 *   defaults: {
 		 *     trace: {
 		 *       verbosity: 'verbose',
+		 *       prefix: 'MyApp',
 		 *       events: ['deserialize', 'rule-fail'],
 		 *     }
 		 *   }
@@ -163,6 +149,21 @@ export interface IQConfig {
 		 * ```
 		 */
 		trace?: {
+			/**
+			 * Prefix shown in all console trace messages.
+			 *
+			 * Useful when embedding QuickModel in a larger application and you want
+			 * trace output tagged with your application name.
+			 *
+			 * @example
+			 * ```typescript
+			 * QConfig.configure({ defaults: { trace: { prefix: 'MyApp' } } });
+			 * // → [MyApp:UserModel][construction] Instance created...
+			 * ```
+			 * @default 'QuickModel'
+			 */
+			prefix?: string;
+
 			/**
 			 * Minimum log level to emit.
 			 *

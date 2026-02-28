@@ -41,7 +41,7 @@ interface ITimeline {
 	events: (Date | null | undefined)[];
 }
 
-@Quick({ events: [Date] })
+@Quick({ events: [Date] }, { unknownPropertyPolicy: 'keep' })
 class Timeline extends QModel<ITimeline> {
 	declare events: (Date | null | undefined)[];
 }

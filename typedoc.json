@@ -14,5 +14,12 @@
 	"excludeInternal": true,
 	"validation": {
 		"notExported": false
+	},
+	"externalSymbolLinkMappings": {
+		"quickmodel": {
+			"IQDiscriminatorConfig": "#",
+			"IQTypeGuardFunction": "#",
+			"IQSpoofMethod": "#"
+		}
 	}
 }

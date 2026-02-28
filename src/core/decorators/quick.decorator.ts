@@ -14,6 +14,11 @@ import { QConfig } from '../config/quick.config';
  * - Open/Closed: Extends property decoration functionality without modifying it
  * - Don't Repeat Yourself: Eliminates repetitive decorators
  *
+ * @see {@link Quick} — the `@Quick()` decorator function
+ * @see {@link QModel} — base class that works with this decorator
+ * @see {@link IQOptions} — type-map options accepted by `@Quick(typeMap)`
+ * @see {@link IQAdvancedOptions} — second parameter with discriminator config
+ *
  * @example
  * **Without @Quick()** (verbose):
  * ```typescript
@@ -478,7 +483,7 @@ export type { IQAliasedSerializedInterface } from '../interfaces/serialization-t
  *
  * Without discriminators, QuickModel uses the first type in the array as fallback.
  *
- * @see {@link QType} for per-property decoration (supports TypeScript metadata for `!` syntax)
+ * @see `@QType` for per-property decoration (supports TypeScript metadata for `!` syntax)
  * @see {@link IQAdvancedOptions} for discriminator configuration
  * @throws {Error} If `unknownPropertyPolicy` or another advanced-option key is accidentally
  *   passed as the first argument (misconfiguration guard).
@@ -834,6 +839,8 @@ export function Quick<
 /**
  * Checks if a class is decorated with @Quick()
  * @internal
+ * @see {@link Quick} — the decorator that sets this flag
+ * @see {@link QUICK_DECORATOR_KEY} — metadata key checked
  */
 export function isQuickDecorated(constructor: Function): boolean {
 	return Reflect.getMetadata(QUICK_DECORATOR_KEY, constructor) === true;

@@ -9,68 +9,23 @@ By connecting an AI agent to this server, you enable it to:
 - **Simulate data transformations** ensuring correctness.
 - **Inspect model structures** and explain behaviors.
 
-## Available Tools
+## Quick Start
 
-- **[Public Tools](./public/)**: For users building applications with QuickModel.
-- **[Public Skills](./public/skills)**: Guided AI workflows for developers — convert, debug, validate, migrate, and more.
-- **[Internal Tools](./internal/)**: For contributors working on the QuickModel codebase itself.
-- **[Internal Skills](./internal/skills)**: Guided TDD, lint, refactor, SOLID, and sync workflows for contributors.
+**[→ Installation & Setup](./installation)** — Connect your IDE (VS Code, Cursor, Windsurf, Antigravity) in minutes.
 
-## Installation & Setup
+## Available Resources
 
-To use the QuickModel MCP server in your project (installed via npm), follow the instructions for your IDE.
+### For Developers
 
-### Automatic
+| Resource                           | Description                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| **[MCP Tools](./tools)**           | Individual tools for model creation, validation, simulation, mocking and inspection. |
+| **[Skills / Workflows](./skills)** | Guided AI workflows — convert, debug, validate, migrate, and more.                   |
 
-The easiest way to let your IDE detect the MCP server is by running the following command in your terminal:
+### For Contributors
 
-```bash
-npx -y quickmodel mcp
-```
-
-### Manual
-
-If you prefer to configure it manually, follow the specific instructions for your IDE.
-
-#### 1. Visual Studio Code
-
-::: info
-Requires the **GitHub Copilot Chat** extension.
-:::
-
-1. Create a file named `.vscode/mcp.json` in your project root.
-2. Add the following configuration:
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "npx",
-			"args": ["-y", "quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-#### 2. Cursor IDE
-
-1. Go to **Settings** > **Features** > **MCP**.
-2. Click **+ Add New MCP Server**.
-3. Configure it as follows:
-    - **Name**: `quickmodel`
-    - **Type**: `command`
-    - **Command**: `npx -y quickmodel mcp`
-
-#### 3. Windsurf (Codeium)
-
-1. Open **Cascade** (Chat panel).
-2. Click the **MCP** icon (plug) or go to settings.
-3. Add a new server with the same command:
-    - **Command**: `npx -y quickmodel mcp`
-
-#### 4. Google Antigravity
-
-1. Open the **"Agent"** panel.
-2. Select **"Manage MCP Servers"**.
-3. Add a custom server:
-    - **Command**: `npx -y quickmodel mcp`
+| Resource                                      | Description                                                     |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| **[Contributor Setup](./contributing/setup)** | Configure the MCP server from the QuickModel source code.       |
+| **[Internal Tools](./contributing/tools)**    | Tools for scaffolding, QA, CI workflow and performance.         |
+| **[Internal Skills](./contributing/skills)**  | TDD cycles, lint/typecheck, refactoring and documentation sync. |

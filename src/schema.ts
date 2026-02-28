@@ -20,6 +20,9 @@
  * Individual generators are also accessible via `quickmodel/advanced`,
  * and via `QModel.getSchema(type)` on any model instance.
  *
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 generator exported here
+ * @see {@link ZodSchemaGenerator} — Zod validation schema generator exported here
+ * @see {@link QModel.getSchema} — model-instance API that delegates to these generators
  * @module quickmodel/schema
  */
 

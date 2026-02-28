@@ -18,6 +18,8 @@
  * const Groups = qGroups5(['identity', 'security']); // no as const needed
  * ```
  *
+ * @see {@link qGroups5} — the TS 5.0+ form-group helper exported here
+ * @see {@link IQGroupsMap} — the typed map type produced by `qGroups5`
  * @module compat/ts5/forms
  */
 

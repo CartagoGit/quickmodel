@@ -35,6 +35,9 @@ export class CaseHelper {
 	 * @returns The string converted to `format`, or the original string unchanged
 	 *   if `format` is unrecognised or `str` is falsy.
 	 *
+	 * @see {@link ICaseType} — accepted format string literals
+	 * @see {@link QModel.serialize} — applies this when `transformCase` is set on `@Quick`
+	 *
 	 * @example
 	 * ```ts
 	 * CaseHelper.toCase('snake_case', 'firstName')  // 'first_name'

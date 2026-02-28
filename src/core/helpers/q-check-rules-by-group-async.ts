@@ -38,6 +38,9 @@ import type {
  *                   (each group is evaluated independently).
  * @returns `Promise<Record<string, IQRulesResult>>` — resolves to an empty
  *          object when no `@QGroup` annotations are present.
+ * @see {@link qCheckRulesByGroup} — synchronous version
+ * @see {@link qCheckRulesAsync} — evaluate a specific group or all rules asynchronously
+ * @see {@link qGetGroups} — introspect group names on an instance
  *
  * @example
  * ```ts

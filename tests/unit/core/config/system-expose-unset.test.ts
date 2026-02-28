@@ -17,7 +17,7 @@ describe('Expose Unset Fields Configuration', () => {
 	});
 
 	test('should omit undefined fields by default', () => {
-		@Quick({})
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class DefaultModel extends QModel<IOptional> {
 			declare req: string;
 			declare opt?: string;
@@ -74,7 +74,7 @@ describe('Expose Unset Fields Configuration', () => {
 			defaults: { exposeUnsetFields: true },
 		});
 
-		@Quick({})
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class GlobalExpose extends QModel<IOptional> {
 			declare opt?: string;
 		}

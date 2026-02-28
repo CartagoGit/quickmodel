@@ -8,7 +8,7 @@ describe('Robustness: Circular References Infinite Loop', () => {
 		children?: INode[];
 	}
 
-	@Quick()
+	@Quick({}, { unknownPropertyPolicy: 'keep' })
 	class Node extends QModel<INode> {
 		declare value: number;
 		declare parent?: Node;

@@ -32,6 +32,10 @@ import { QRule } from './qrule.decorator';
  *
  * @module validators
  *
+ * @see {@link QRule} — primitive rule decorator that powers all validators here
+ * @see {@link qCheckRules} — evaluate rules added by these validators at runtime
+ * @see {@link QGroup} — organize validators into named groups
+ *
  * @example
  * ```typescript
  * import { Quick, QModel } from 'quickmodel';
@@ -71,6 +75,8 @@ import { QRule } from './qrule.decorator';
  * @IsEmail()
  * declare email: string;
  * ```
+ * @see {@link IsUrl} — sibling string-format validator
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsEmail(message = 'Invalid email address') {
 	return QRule<string>(
@@ -90,6 +96,8 @@ export function IsEmail(message = 'Invalid email address') {
  * @IsUrl()
  * declare website: string;
  * ```
+ * @see {@link IsEmail} — sibling email-format validator
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsUrl(message = 'Invalid URL') {
 	return QRule<string>((val: string) => {
@@ -112,6 +120,8 @@ export function IsUrl(message = 'Invalid URL') {
  * @IsNotEmpty()
  * declare username: string;
  * ```
+ * @see {@link MinLength} — related length constraint
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsNotEmpty(message = 'Must not be empty') {
 	return QRule<string>(
@@ -131,6 +141,9 @@ export function IsNotEmpty(message = 'Must not be empty') {
  * @MinLength(3)
  * declare name: string;
  * ```
+ * @see {@link MaxLength} — companion maximum-length constraint
+ * @see {@link IsNotEmpty} — related non-empty check
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function MinLength(min: number, message?: string) {
 	return QRule<string>(
@@ -150,6 +163,8 @@ export function MinLength(min: number, message?: string) {
  * @MaxLength(255)
  * declare bio: string;
  * ```
+ * @see {@link MinLength} — companion minimum-length constraint
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function MaxLength(max: number, message?: string) {
 	return QRule<string>(
@@ -169,6 +184,8 @@ export function MaxLength(max: number, message?: string) {
  * @Matches(/^[A-Z]{3}$/)
  * declare code: string;
  * ```
+ * @see {@link IsUuid} — related format validator using a fixed pattern
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function Matches(pattern: RegExp, message?: string) {
 	return QRule<string>(
@@ -187,6 +204,8 @@ export function Matches(pattern: RegExp, message?: string) {
  * @IsUuid()
  * declare id: string;
  * ```
+ * @see {@link Matches} — use this for custom pattern validation
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsUuid(message = 'Must be a valid UUID') {
 	return QRule<string>(
@@ -209,6 +228,8 @@ export function IsUuid(message = 'Must be a valid UUID') {
  * @IsDateString()
  * declare publishedAt: string;
  * ```
+ * @see {@link IsUuid} — sibling string-format validator
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsDateString(message = 'Must be a valid date string') {
 	return QRule<string>(
@@ -233,6 +254,9 @@ export function IsDateString(message = 'Must be a valid date string') {
  * @Min(18)
  * declare age: number;
  * ```
+ * @see {@link Max} — companion maximum-value constraint
+ * @see {@link IsPositive} — related sign constraint
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function Min(min: number, message?: string) {
 	return QRule<number>(
@@ -252,6 +276,8 @@ export function Min(min: number, message?: string) {
  * @Max(100)
  * declare score: number;
  * ```
+ * @see {@link Min} — companion minimum-value constraint
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function Max(max: number, message?: string) {
 	return QRule<number>(
@@ -270,6 +296,9 @@ export function Max(max: number, message?: string) {
  * @IsInt()
  * declare count: number;
  * ```
+ * @see {@link IsPositive} — related numeric constraint
+ * @see {@link Min} — use for range constraints alongside `@IsInt()`
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsInt(message = 'Must be an integer') {
 	return QRule<number>(
@@ -288,6 +317,9 @@ export function IsInt(message = 'Must be an integer') {
  * @IsPositive()
  * declare quantity: number;
  * ```
+ * @see {@link IsNegative} — opposite sign constraint
+ * @see {@link Min} — use for a specific lower bound
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsPositive(message = 'Must be a positive number') {
 	return QRule<number>(
@@ -306,6 +338,9 @@ export function IsPositive(message = 'Must be a positive number') {
  * @IsNegative()
  * declare delta: number;
  * ```
+ * @see {@link IsPositive} — opposite sign constraint
+ * @see {@link Max} — use for a specific upper bound
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsNegative(message = 'Must be a negative number') {
 	return QRule<number>(
@@ -333,6 +368,8 @@ export function IsNegative(message = 'Must be a negative number') {
  * @IsIn([1, 2, 3, 5, 8, 13])
  * declare fibonacci: number;
  * ```
+ * @see {@link Matches} — use for pattern-based constraints on strings
+ * @see {@link QRule} — underlying primitive used internally
  */
 export function IsIn<T>(allowed: T[], message?: string) {
 	return QRule<T>(

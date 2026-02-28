@@ -8,7 +8,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 			items: string[];
 		}
 
-		@Quick({ items: [String] })
+		@Quick({ items: [String] }, { unknownPropertyPolicy: 'keep' })
 		class Data extends QModel<IData> {
 			declare items: string[];
 		}
@@ -68,7 +68,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 			child?: Node;
 		}
 
-		@Quick()
+		@Quick({}, { unknownPropertyPolicy: 'keep' })
 		class Node extends QModel<INode> {
 			declare child?: Node;
 		}

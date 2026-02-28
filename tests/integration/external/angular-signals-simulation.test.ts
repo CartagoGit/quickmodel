@@ -122,7 +122,7 @@ interface IProduct {
 	tags: Set<string>;
 }
 
-@Quick({ releasedAt: Date, tags: Set })
+@Quick({ releasedAt: Date, tags: Set }, { unknownPropertyPolicy: 'keep' })
 class Product extends QModel<IProduct> {
 	declare sku: string;
 	declare price: number;
@@ -136,7 +136,7 @@ interface ICart {
 	updatedAt: Date;
 }
 
-@Quick({ updatedAt: Date })
+@Quick({ updatedAt: Date }, { unknownPropertyPolicy: 'keep' })
 class Cart extends QModel<ICart> {
 	declare userId: string;
 	declare total: number;

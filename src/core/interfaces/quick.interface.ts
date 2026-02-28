@@ -8,6 +8,8 @@ import type { IQAlias } from '../types/q-alias.type';
  * e.g. `class Address {}`. Passed directly to `@Quick()` / `@QType()`.
  *
  * @typeParam T - The type produced by the constructor.
+ * @see {@link IQSpec} — union that includes this type among other forms
+ * @see {@link Quick} — primary consumer: `@Quick({ field: MyClass })`
  */
 export type IQConstructor<T = any> = new (...args: any[]) => T;
 
@@ -16,6 +18,8 @@ export type IQConstructor<T = any> = new (...args: any[]) => T;
  *
  * Can be a plain arrow function `(v) => new Date(v)` or any other callable.
  * QuickModel calls it as `fn(rawValue)` during deserialization.
+ * @see {@link IQSpec} — full union that includes this function form
+ * @see {@link IQTransformerFn} — stricter typed alias `(v: unknown) => unknown`
  */
 export type IQTransformerFunction = Function;
 
@@ -35,6 +39,8 @@ export type IQTransformerFunction = Function;
  *
  * @typeParam T - The target runtime type.
  * @see {@link IQSpec} for the full union including functions and arrays
+ * @see {@link QType} — property decorator that accepts `IQTypeSpec` as its first argument
+ * @see {@link Quick} — class decorator that accepts a map of `IQTypeSpec` values
  */
 export type IQTypeSpec<T = any> =
 	| IQConstructor<T>
@@ -71,7 +77,8 @@ export type IQSpec =
 /**
  * Ordered array of `IQSpec` entries used by the `@Quick()` array-form notation.
  *
- * @see {@link IQSpec}
+ * @see {@link IQSpec} — the element type
+ * @see {@link IQOptions} — map of property name → `IQSpec | IQSpecs`
  */
 export type IQSpecs = IQSpec[]; // Array of any Spec
 
@@ -90,6 +97,8 @@ export type IQSpecs = IQSpec[]; // Array of any Spec
  * ```
  *
  * @see {@link IQSpec} for accepted value shapes
+ * @see {@link Quick} — decorator that accepts this map as its first argument
+ * @see {@link QModel.create} — the runtime counterpart that uses this configuration
  */
 export interface IQOptions {
 	[propertyName: string]: IQSpec | IQSpecs;

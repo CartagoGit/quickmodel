@@ -1,5 +1,8 @@
 /**
  * Exportaciones centralizadas de todos los transformers
+ *
+ * @see {@link BaseTransformer} — base class for all transformers exported here
+ * @see {@link QTransformerRegistry} — registry where these transformers are registered
  */
 
 export * from './bigint.transformer';

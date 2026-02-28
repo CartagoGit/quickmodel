@@ -16,6 +16,8 @@ export class InstanceFactoryService {
 	 * @param modelClass - The model class constructor
 	 * @param data - The data to initialize the model with
 	 * @returns A new instance of the model class
+	 * @see {@link Deserializer.deserialize} — calls this before handing off to `PopulationService`
+	 * @see {@link PopulationService.populateInstance} — fills the created instance with transformed data
 	 */
 	public createInstance<TData extends Record<string, unknown>, TResult>(
 		modelClass: new (data: TData) => TResult,

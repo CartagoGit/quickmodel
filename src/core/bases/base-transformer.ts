@@ -51,6 +51,9 @@ export abstract class BaseTransformer<
 	 * @param className - The class name (for error messages)
 	 * @returns The deserialized runtime value
 	 * @throws {Error} When transformation fails or value is invalid
+	 * @see {@link BaseTransformer.serialize} — inverse operation
+	 * @see {@link IQTransformer} — interface contract for this method
+	 * @see {@link TransformerLookupService} — selects the transformer that calls this
 	 */
 	abstract deserialize(
 		value: TInput | null | undefined,
@@ -64,6 +67,9 @@ export abstract class BaseTransformer<
 	 *
 	 * @param value - The runtime value to serialize
 	 * @returns The IQSerialized value suitable for JSON
+	 * @see {@link BaseTransformer.deserialize} — inverse operation
+	 * @see {@link IQTransformer} — interface contract for this method
+	 * @see {@link Serializer} — calls this during `QModel.serialize()`
 	 */
 	abstract serialize(value: TOutput): TInput;
 }

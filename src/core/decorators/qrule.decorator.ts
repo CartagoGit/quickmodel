@@ -1,6 +1,11 @@
 import 'reflect-metadata';
 import { createTC39Guard } from './qrule-tc39-registry';
 import type { IClassFieldDecoratorCtx } from '../types/ts-polyfills.type';
+import type {
+	IQTraceVerbosity,
+	IQTraceEvent,
+	IQTraceEntry,
+} from '../config/quick.config';
 
 /**
  * Metadata key for storing @QRule rules per property.
@@ -13,6 +18,44 @@ export const QRULE_METADATA_KEY = '__qrule__';
  * @internal
  */
 export const QRULE_FIELDS_KEY = '__qrule_fields__';
+
+/**
+ * Options for the {@link QRule} decorator.
+ */
+export interface IQRuleOptions {
+	/**
+	 * Per-rule trace override.
+	 *
+	 * Takes the **highest priority** in the resolution chain:
+	 * per-rule > per-model (`@Quick` options) > global (`QConfig.configure`)
+	 *
+	 * Useful to silence a noisy rule, escalate a critical one, or route
+	 * a specific rule's failures to a separate sink (e.g. a security audit log).
+	 *
+	 * @example
+	 * ```typescript
+	 * // Always trace failures for this rule, even if global is 'silent'
+	 * @QRule((val: string) => val.length >= 8, 'Too short', {
+	 *   trace: { verbosity: 'warn' }
+	 * })
+	 * declare password: string;
+	 *
+	 * // Route this rule exclusively to a security sink
+	 * @QRule(isValidToken, 'Invalid token', {
+	 *   trace: { verbosity: 'error', sink: securityLogger }
+	 * })
+	 * declare apiToken: string;
+	 * ```
+	 */
+	trace?: {
+		/** Override verbosity for this specific rule evaluation only. */
+		verbosity?: IQTraceVerbosity;
+		/** Filter which rule events to emit (e.g. only `rule-fail`, not `rule-pass`). */
+		events?: IQTraceEvent[];
+		/** Custom sink for this rule's trace entries — bypasses console and global sink. */
+		sink?: (entry: IQTraceEntry) => void;
+	};
+}
 
 /**
  * A single business rule attached to a model property.
@@ -32,6 +75,8 @@ export interface IQRule<T = unknown> {
 	 * - `() => string`: lazy message, evaluated at `checkRules()` call-time (useful for runtime i18n)
 	 */
 	message: string | (() => string);
+	/** @internal Per-rule trace override stored from `@QRule(predicate, message, options)`. */
+	options?: IQRuleOptions;
 }
 
 /**
@@ -225,6 +270,8 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
  *
  * @param predicate - Receives the current field value typed as `T`; return `true` to pass.
  * @param message   - Static string, i18n key, or lazy `() => string` resolver.
+ * @param options   - Optional per-rule settings, including a `trace` override that takes
+ *                    priority over per-model and global trace configuration.
  *
  * @typeParam T - Type of the field value.
  *               **Inferred automatically in TC39 mode.**
@@ -254,7 +301,8 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
  */
 export function QRule<T = unknown>(
 	predicate: (value: T) => boolean | Promise<boolean>,
-	message: string | (() => string)
+	message: string | (() => string),
+	options?: IQRuleOptions
 ): {
 	/**
 	 * Legacy `PropertyDecorator` overload.
@@ -273,6 +321,7 @@ export function QRule<T = unknown>(
 	const rule: IQRule<unknown> = {
 		predicate: predicate as IQRule<unknown>['predicate'],
 		message,
+		...(options ? { options } : {}),
 	};
 
 	return function dualModeQRule(

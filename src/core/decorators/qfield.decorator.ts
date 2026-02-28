@@ -48,6 +48,8 @@ export type IQFieldWidget =
 /**
  * Metadata stored per field via `@QField`.
  * Extend it with any extra key — all properties are accessible in `getFormSchema()`.
+ * @see {@link QField} — decorator that accepts this metadata
+ * @see {@link IQFormSchemaEntry} — the shape returned by `QModel.getFormSchema()`
  */
 export interface IQFieldMeta {
 	/** Widget type used to render this field. */
@@ -69,6 +71,9 @@ export interface IQFieldMeta {
 /**
  * A single entry in the form schema returned by `getFormSchema()`.
  * Combines `IQFieldMeta` with the resolved field name.
+ * @see {@link IQFieldMeta} — the metadata stored on each decorated property
+ * @see {@link QModel.getFormSchema} — returns an array of these entries
+ * @see {@link IQFormSchemaGroup} — the grouped form with sections
  */
 export interface IQFormSchemaEntry extends IQFieldMeta {
 	/** The property name this entry corresponds to. */

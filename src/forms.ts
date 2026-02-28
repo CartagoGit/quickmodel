@@ -61,6 +61,10 @@
  * ```
  *
  * @module forms
+ * @see {@link qCheckRules} — primary rule-checking helper
+ * @see {@link qCheckRulesAsync} — async version with timeout and serial/parallel modes
+ * @see {@link qCheckRulesByGroup} — grouped rule checking by `@QGroup`
+ * @see {@link qGroups} — typed group-name map helper
  */
 
 export { qGroups } from './core/helpers/q-groups';

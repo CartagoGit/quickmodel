@@ -62,6 +62,8 @@ export class ValueTransformerService {
 	 * @returns A new array with every leaf element transformed to its runtime type.
 	 * @throws {Error} When recursion depth exceeds 512 (stack overflow protection).
 	 * @throws {Error} When `value.length > maxArrayLength` (DoS protection).
+	 * @see {@link ValueTransformerService.transformByDesignType} — called for each leaf element
+	 * @see {@link ValueTransformerService.transformNestedModelArray} — equivalent for nested model arrays
 	 */
 	public transformNestedArray(
 		value: unknown[],
@@ -123,6 +125,8 @@ export class ValueTransformerService {
 	 * @param options.recursionContext - Current recursion depth and visited-objects set.
 	 * @returns A new (possibly nested) array of model instances.
 	 * @throws {Error} When recursion depth exceeds 512 (stack overflow protection).
+	 * @see {@link ValueTransformerService.transformNestedArray} — equivalent for primitive/scalar element arrays
+	 * @see {@link PropertyTransformer.transformProperty} — calls this when the field has model-type metadata
 	 */
 	public transformNestedModelArray(
 		value: unknown[],
@@ -309,6 +313,9 @@ export class ValueTransformerService {
 	 * @param context - Transform context including property key, class name, and recursion depth.
 	 * @returns The transformed runtime value, or the original value if no transformer applies.
 	 * @throws {Error} If `designType` is `Date` and `value` cannot be converted to a valid Date.
+	 * @see {@link ValueTransformerService.transformNestedArray} — called when the field has array metadata
+	 * @see {@link TransformerLookupService.getTransformer} — resolves custom-registered transformers
+	 * @see {@link PropertyTransformer.transformProperty} — entry point that delegates here
 	 */
 	public transformByDesignType(
 		value: unknown,
@@ -463,6 +470,8 @@ export class ValueTransformerService {
 	 * @param options.strategy - `'strict'` | `'loose'`
 	 * @returns The original or coerced value
 	 * @throws {QModelError} In strict mode when type mismatch cannot be resolved
+	 * @see {@link QModelError} — thrown on strict-mode type mismatch
+	 * @see {@link PropertyTransformer.transformProperty} — calls this for `Number`, `String`, `Boolean` design types
 	 */
 	public validateOrCoercePrimitive(options: {
 		key: string;

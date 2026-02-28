@@ -94,7 +94,7 @@ interface IAllTypesInterface {
 	functionValue?: undefined;
 }
 
-@Quick({ dateISO: Date, dateNow: Date })
+@Quick({ dateISO: Date, dateNow: Date }, { unknownPropertyPolicy: 'keep' })
 class AllTypesModel extends QModel<IAllTypesInterface> {
 	declare numPrimitive: number;
 	declare numWrapper: number;

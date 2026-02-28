@@ -51,6 +51,8 @@ export class QModelError extends Error {
 	 * @param options.actualValue - The value that was actually received (used to
 	 * determine `typeof`).
 	 * @returns A `QModelError` with a formatted message and populated `context`.
+	 * @see {@link QModelError.invalidValue} — use when the type is correct but value is logically wrong
+	 * @see {@link IntegrityService} — calls this factory for type-mismatch checks
 	 *
 	 * @example
 	 * ```typescript
@@ -91,6 +93,8 @@ export class QModelError extends Error {
 	 * @param options.reason - A human-readable explanation of why the value is
 	 * invalid (e.g. `'must be a positive integer'`).
 	 * @returns A `QModelError` with a formatted message and populated `context`.
+	 * @see {@link QModelError.invalidType} — use when the type itself is wrong
+	 * @see {@link QModel.checkIntegrity} — triggers this error for invalid field values
 	 *
 	 * @example
 	 * ```typescript

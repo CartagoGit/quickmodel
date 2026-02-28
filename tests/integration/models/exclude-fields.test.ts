@@ -53,7 +53,7 @@ interface IChild {
 }
 
 /** No excludeFields on this class */
-@Quick({})
+@Quick({}, { unknownPropertyPolicy: 'keep' })
 class PlainModel extends QModel<IChild> {
 	declare numItem: number;
 	declare internal: string;
