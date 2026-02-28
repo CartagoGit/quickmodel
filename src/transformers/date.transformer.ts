@@ -43,6 +43,9 @@ import {
  * const data = event.serialize();
  * console.log(data.createdAt); // "2024-01-01T00:00:00.000Z"
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class DateTransformer
 	extends BaseTransformer<string | number | Date, Date>

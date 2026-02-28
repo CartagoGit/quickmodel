@@ -3,6 +3,10 @@
  *
  * Compatible with Vitest and Bun:Test via `expect.extend()`.
  *
+ * @see {@link QModel} — the model class whose instances are matched
+ * @see {@link QRule} — the rule decorator evaluated by `toBeValidQModel` and `toHaveQRuleError`
+ * @see {@link QField} — the field decorator evaluated by `toHaveQField`
+ *
  * @example
  * ```typescript
  * // vitest.setup.ts or bun test setup file
@@ -63,9 +67,10 @@ function hasQFieldMeta(instance: object, fieldName: string | symbol): boolean {
  *
  * Works with any class decorated with `@QRule` (QModel subclasses or plain classes).
  *
+ * @see {@link QRule} — the decorator being evaluated
+ * @see {@link qCheckRules} — the function used internally
+ *
  * @example
- * ```typescript
- * expect(userDto).toBeValidQModel();
  * expect(invalidDto).not.toBeValidQModel();
  * ```
  */
@@ -115,6 +120,8 @@ function toHaveQRuleError(
 /**
  * Asserts that a property has been decorated with `@QField`.
  * Walks the entire prototype chain (inheritance-safe).
+ *
+ * @see {@link QField} — the decorator being checked
  *
  * @example
  * ```typescript

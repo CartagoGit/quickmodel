@@ -21,6 +21,11 @@ export type IQTransformerKey =
 /**
  * Global registry for transformers.
  * Allows users to register custom transformers that will be available to all specific services (Deserializer, Serializer).
+ *
+ * @see {@link IQTransformer} — interface that registered transformers must implement
+ * @see {@link IQTransformerKey} — accepted key types for registration and lookup
+ * @see {@link BaseTransformer} — abstract base class for building custom transformers
+ * @see {@link QModel} — consumer of registered transformers via `@Quick()` type map
  */
 export class QTransformerRegistry {
 	/** @internal Map of normalized lowercase transformer keys to user-registered `IQTransformer` instances. */
@@ -79,6 +84,8 @@ export class QTransformerRegistry {
 	 *
 	 * @param key - The transformer key to look up.
 	 * @returns `true` if a transformer is registered, `false` otherwise.
+	 * @see {@link QTransformerRegistry.register} — register a transformer
+	 * @see {@link QTransformerRegistry.get} — retrieve the transformer (throws if absent)
 	 */
 	public static has(key: IQTransformerKey): boolean {
 		const lookupKey = this.normalizeKey(key);

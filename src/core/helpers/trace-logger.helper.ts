@@ -121,6 +121,8 @@ export class TraceLogger {
 	/** @internal Cached global sink function. */
 	private static _globalSink: ((entry: IQTraceEntry) => void) | undefined =
 		undefined;
+	/** @internal Cached log prefix (default: 'QuickModel', configurable via logPrefix). */
+	private static _globalPrefix: string = 'QuickModel';
 
 	// ── cache refresh ──────────────────────────────────────────────────────────
 
@@ -147,6 +149,7 @@ export class TraceLogger {
 
 		TraceLogger._globalEvents = traceCfg?.events;
 		TraceLogger._globalSink = traceCfg?.sink;
+		TraceLogger._globalPrefix = cfg.defaults?.logPrefix ?? 'QuickModel';
 
 		// Emit config-change only after a real re-configure (not initial load).
 		if (prevRef !== undefined) {
@@ -245,7 +248,7 @@ export class TraceLogger {
 		}
 
 		const fieldPart = entry.field ? `:${entry.field}` : '';
-		const prefix = `[QuickModel:${entry.model}${fieldPart}][${entry.event}]`;
+		const prefix = `[${TraceLogger._globalPrefix}:${entry.model}${fieldPart}][${entry.event}]`;
 		const consoleFn =
 			CONSOLE_FN[params.level as IConsoleLevel] ?? console.debug;
 
@@ -421,7 +424,10 @@ export class TraceLogger {
 			return;
 		}
 
-		console.info(`[QuickModel:QConfig][config-change]`, summary);
+		console.info(
+			`[${TraceLogger._globalPrefix}:QConfig][config-change]`,
+			summary
+		);
 	}
 
 	/** @internal Legacy Logger.debug() bridge. */

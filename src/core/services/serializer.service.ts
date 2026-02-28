@@ -83,6 +83,10 @@
  * //   metadata: { key: "value" }
  * // }
  * ```
+ *
+ * @see {@link IQSerializer} — interface contract implemented by this service
+ * @see {@link QModel.serialize} — public-facing API that delegates to this service
+ * @see {@link QTransformerRegistry} — registry of custom transformers
  */
 
 import { CaseHelper } from '@/core/helpers/case.helper';
@@ -279,7 +283,10 @@ function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
  *
  * @template TModel - Model instance type.
  * @template TInterface - Target plain-object type.
- * @see {@link IQSerializer}
+ * @see {@link IQSerializer} — interface contract this class fulfils
+ * @see {@link QModel.serialize} — public entry-point that delegates here
+ * @see {@link QTransformerRegistry} — registry queried for custom transformers
+ * @see {@link ToInterfaceService} — sister service for preserving original input types
  */
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
@@ -392,6 +399,10 @@ export class Serializer<
 	 *
 	 * @remarks
 	 * Uses transformers to convert special types (BigInt, Date, RegExp, etc.) to JSON-compatible format.
+	 *
+	 * @see {@link IQSerializer.serialize} — interface definition
+	 * @see {@link Serializer.serializeToJson} — JSON-string variant
+	 * @see {@link IQSerializationOptions} — available serialization options
 	 */
 	serialize(
 		model: TModel,
@@ -642,6 +653,9 @@ export class Serializer<
 	 *
 	 * @param model - The model instance to serialize
 	 * @returns JSON string representation
+	 * @see {@link Serializer.serialize} — plain-object variant
+	 * @see {@link IQSerializationOptions} — available serialization options
+	 * @see {@link QModel.toJSON} — public-facing API that delegates here
 	 */
 	serializeToJson(model: TModel, options?: IQSerializationOptions): string {
 		return JSON.stringify(this.serialize(model, undefined, options));

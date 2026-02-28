@@ -11,6 +11,9 @@
  * @throws When the process exits with a non-zero code or emits an `'error'` event.
  * The thrown `Error` has `stdout` and `stderr` attached as extra properties.
  *
+ * @see {@link QRunTestsTool} — uses this to spawn `bun test`
+ * @see {@link QLintCheckTool} — uses this to spawn `bun run lint`
+ *
  * @internal
  */
 export const spawnCommand = async (

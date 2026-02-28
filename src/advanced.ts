@@ -4,6 +4,10 @@
  * This entry point exports runtime classes and utilities intended for advanced usage,
  * plugins, or custom integrations.
  *
+ * @see {@link QTransformerRegistry} — register custom transformers
+ * @see {@link QBaseTransformer} — base class for building custom transformers
+ * @see {@link QModel} — the core model class exposed via the root entry point
+ *
  * @module quickmodel/advanced
  */
 

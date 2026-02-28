@@ -321,6 +321,6 @@ const admin = User.mock().random({ role: 'admin' });
 <BenchmarkChart
   :only-scenarios="['batch', 'isDirty', 'bulkConstruct']"
   :only-libs="['QuickModel', 'Plain JS', 'Immer']"
-  :only-feature-categories="['model', 'exclusive']"
+  :only-feature-categories="['model']"
   default-tab="performance"
 />

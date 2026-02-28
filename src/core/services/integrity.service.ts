@@ -5,6 +5,11 @@
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles model type integrity checks
  *
+ * @see {@link QModel.checkIntegrity} — public entry-point that delegates to this service
+ * @see {@link QModel.hasIntegrity} — boolean shortcut over `checkIntegrity()`
+ * @see {@link QTransformerRegistry} — custom transformers consulted during checks
+ * @see {@link IQIntegrityResult} — shape of each error entry returned
+ *
  * @example
  * ```typescript
  * const service = new IntegrityService();
@@ -224,6 +229,8 @@ export class IntegrityService {
 	 *
 	 * @param key - A string alias (`"date"`, `"bigint"`) or a constructor reference (`Date`, `BigInt`).
 	 * @returns The matching `IQTransformer`, or `undefined` if none is registered for the key.
+	 * @see {@link QTransformerRegistry.get} — global registry lookup used first
+	 * @see {@link IQTransformer} — interface the returned transformer implements
 	 */
 	public getTransformer(
 		key: IQTransformerKey
@@ -278,6 +285,10 @@ export class IntegrityService {
 	 * Only validates fields that have:
 	 * 1. A `fieldType` metadata entry
 	 * 2. A corresponding validator in the registry
+	 *
+	 * @see {@link IntegrityService.isValid} — boolean shortcut wrapping this method
+	 * @see {@link IQIntegrityResult} — shape of each error entry returned
+	 * @see {@link QModel.checkIntegrity} — public API that delegates here
 	 *
 	 * @example
 	 * ```typescript
@@ -500,6 +511,8 @@ export class IntegrityService {
 	 * @param instance - The model instance to check
 	 * @param modelClass - The model class constructor
 	 * @returns True if all integrity checks pass, false if any fail
+	 * @see {@link IntegrityService.checkIntegrity} — full error-detail variant
+	 * @see {@link QModel.hasIntegrity} — public API that delegates here
 	 */
 	isValid(instance: Record<string, unknown>, modelClass?: Function): boolean {
 		return this.checkIntegrity(instance, { modelClass }).length === 0;

@@ -137,6 +137,10 @@ export function decodeQMSpecialToken(token: IQMSpecialToken): number {
  * ```
  *
  * @implements {IQIntegrityChecker}
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link isQMSpecialToken} — type guard used by this transformer
+ * @see {@link decodeQMSpecialToken} — decodes token objects back to float values
  */
 export class SpecialFloatTransformer
 	extends BaseTransformer<IQMSpecialToken | number, number>

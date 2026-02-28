@@ -68,6 +68,9 @@ type IPrimitiveTypeMap = {
  * // Type mismatch throws error
  * new Config({ name: 123 }); // Error: Expected string, got number
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class PrimitiveTransformer<T extends IPrimitiveType>
 	extends BaseTransformer<IPrimitiveTypeMap[T], IPrimitiveTypeMap[T]>

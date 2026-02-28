@@ -13,6 +13,11 @@ import type {
 	IQSerializerFn,
 	IQTransformerFn,
 } from './transform-options.interface';
+import type {
+	IQTraceVerbosity,
+	IQTraceEvent,
+	IQTraceEntry,
+} from '../config/quick.config';
 import { IQCaseOptions } from '../types/case.type';
 import type { IQSpoofMethod } from '../types/form-data.type';
 
@@ -419,6 +424,43 @@ export interface IQAdvancedOptions<
 	 * Useful for troubleshooting transformation or validation issues.
 	 */
 	enableDebugLogs?: boolean;
+
+	/**
+	 * Per-model structured trace configuration.
+	 *
+	 * Overrides the global `QConfig.configure({ defaults: { trace: { ... } } })` setting
+	 * for this specific model class only.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({ createdAt: Date }, {
+	 *   trace: {
+	 *     verbosity: 'verbose',
+	 *     events: ['rule-fail', 'construction'],
+	 *   }
+	 * })
+	 * class OrderModel extends QModel<IOrder> { ... }
+	 * ```
+	 */
+	trace?: {
+		/**
+		 * Minimum verbosity level to emit for this model.
+		 * Overrides the global `trace.verbosity`.
+		 */
+		verbosity?: IQTraceVerbosity;
+
+		/**
+		 * Filter which lifecycle events to trace for this model.
+		 * When omitted, all events matching `verbosity` are traced.
+		 */
+		events?: IQTraceEvent[];
+
+		/**
+		 * Custom sink for trace entries from this model only.
+		 * When provided, entries are forwarded here **instead of** `console`.
+		 */
+		sink?: (entry: IQTraceEntry) => void;
+	};
 
 	/**
 	 * Include fields with undefined/null values in the serialized output.

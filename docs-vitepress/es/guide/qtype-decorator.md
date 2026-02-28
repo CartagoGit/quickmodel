@@ -166,7 +166,7 @@ Estás modificando una clase heredada y solo quieres introducir propiedades de Q
 
 ## Opciones Avanzadas
 
-`@QType` acepta un segundo argumento para control avanzado localizado, similar a las opciones globales de `@Quick` pero con alcance al propiedad individual.
+`@QType` acepta un segundo argumento para control avanzado localizado, similar a las opciones globales de `@Quick` pero con alcance a la propiedad individual.
 
 ```typescript
 @QType(String, {
@@ -177,7 +177,39 @@ Estás modificando una clase heredada y solo quieres introducir propiedades de Q
   serializer: (val) => val + "_serialized",
 
   // Generación de Mock Personalizada
-  mocker: () => "mocked_value"
+  mocker: () => "mocked_value",
+
+  // Modo de serialización binaria para campos File/Blob
+  fileMode: 'reference', // 'auto' | 'binary' | 'reference' | 'base64'
 })
 declare myField: string;
 ```
+
+### `fileMode` — modo de serialización binaria por campo
+
+Controla cómo se serializan los campos `File`, `Blob`, `ArrayBuffer` y `TypedArray` al llamar a `serialize()` o `toFormData()`. Úsalo para fijar la estrategia de un campo concreto sin repetir la opción en cada punto de llamada.
+
+```typescript
+class UploadDto extends QModel<IUploadDto> {
+	declare name: string;
+
+	// Siempre emitir como base64 — consumidor de API legacy
+	@QType(File, { fileMode: 'base64' })
+	declare signature: File;
+
+	// Siempre mantener referencia de ruta — asset gestionado por CDN
+	@QType(File, { fileMode: 'reference' })
+	declare thumbnail: File;
+}
+```
+
+| Valor                  | Comportamiento                                                        |
+| ---------------------- | --------------------------------------------------------------------- |
+| `'auto'` (por defecto) | POJO de metadatos (`{ name, size, type, lastModified }`)              |
+| `'binary'`             | Igual que `'auto'` — preserva File/Blob como metadatos                |
+| `'reference'`          | Cadena: `file.name` para `File`, `'[Blob]'` / `'[binary]'` para otros |
+| `'base64'`             | Cadena base64 del contenido binario                                   |
+
+::: tip
+Una opción de llamada `serialize({ fileMode })` o `toFormData({ fileMode })` siempre **sobreescribe** el valor del decorador. El decorador establece el valor por defecto por campo cuando no se proporciona ninguna opción de llamada.
+:::

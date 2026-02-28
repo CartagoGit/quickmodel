@@ -47,6 +47,8 @@ import { QModelError } from '@/core/errors/quickmodel.error';
  * ```
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap | MDN WeakMap}
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link WeakSetTransformer} — related transformer for WeakSet
  */
 export class WeakMapTransformer extends BaseTransformer<
 	[any, any][],
@@ -161,6 +163,8 @@ export class WeakMapTransformer extends BaseTransformer<
  * ```
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet | MDN WeakSet}
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link WeakMapTransformer} — related transformer for WeakMap
  */
 export class WeakSetTransformer extends BaseTransformer<
 	object[],

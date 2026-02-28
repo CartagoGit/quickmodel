@@ -124,6 +124,21 @@ export interface IQConfig {
 		validationTrigger?: 'manual' | 'construction';
 
 		/**
+		 * Prefix shown in all console trace messages instead of the default `'QuickModel'`.
+		 *
+		 * Useful when embedding QuickModel in a larger application and you want trace
+		 * output tagged with your own application name.
+		 *
+		 * @example
+		 * ```typescript
+		 * QConfig.configure({ defaults: { logPrefix: 'MyApp' } });
+		 * // → [MyApp:UserModel][construction] Instance created...
+		 * ```
+		 * @default 'QuickModel'
+		 */
+		logPrefix?: string;
+
+		/**
 		 * Enables internal debug logging (legacy shorthand — equivalent to `trace.verbosity: 'debug'`).
 		 * Prefer using `trace` for fine-grained control.
 		 */
@@ -218,6 +233,9 @@ export interface IQConfig {
  * Verbosity levels for the QuickModel trace system (ordered from least to most verbose).
  *
  * @group Configuration
+ * @see {@link IQTraceEvent} — events that can be emitted at each verbosity level
+ * @see {@link IQConfig} — configure `defaults.trace.verbosity` to activate tracing
+ * @see {@link TraceLogger} — internal service that emits trace records
  */
 export type IQTraceVerbosity =
 	| 'silent'
@@ -231,6 +249,9 @@ export type IQTraceVerbosity =
  * Lifecycle events that can be traced by the QuickModel trace system.
  *
  * @group Configuration
+ * @see {@link IQTraceVerbosity} — minimum verbosity level required to emit each event
+ * @see {@link IQTraceEntry} — structured trace record produced for each event
+ * @see {@link IQConfig} — configure `defaults.trace.events` to filter events
  */
 export type IQTraceEvent =
 	| 'construction'
@@ -248,6 +269,10 @@ export type IQTraceEvent =
  * A single structured trace record emitted by the QuickModel trace system.
  *
  * @group Configuration
+ * @see {@link IQTraceVerbosity} — controls when records are emitted
+ * @see {@link IQTraceEvent} — event field values
+ * @see {@link TraceLogger} — internal service that builds and emits these records
+ * @see {@link IQConfig} — configure `defaults.trace.sink` to receive these records
  */
 export interface IQTraceEntry {
 	/** UTC timestamp (ms since epoch). */
@@ -279,6 +304,10 @@ export interface IQTraceEntry {
  *
  * Allows setting default behaviors for the entire application,
  * such as enabling Strict Mode globally.
+ *
+ * @see {@link QConfig} — singleton instance (use this instead of instantiating directly)
+ * @see {@link IQConfig} — shape of the configuration object
+ * @see {@link QModel} — per-model `@Quick({}, advancedOptions)` overrides global defaults
  */
 export class QModelConfigService {
 	/** @internal Current global configuration. Modified by `configure()` and reset by `reset()`. */

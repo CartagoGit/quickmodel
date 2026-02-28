@@ -10,7 +10,7 @@
  *   rule-timeout (async), integrity, config-change
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, spyOn } from 'bun:test';
 import { QConfig } from '@/core/config/quick.config';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 import { QModel, Quick } from '@/index';
@@ -495,5 +495,158 @@ describe('IQTraceEntry structure', () => {
 
 		const secondEntry = entries[0];
 		expect(secondEntry.inputValue).toBe(-5);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10. logPrefix — configurable console prefix
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('logPrefix config', () => {
+	it('uses "QuickModel" as default prefix', () => {
+		const spy = spyOn(console, 'info').mockImplementation(() => {});
+		QConfig.configure({ defaults: { trace: { verbosity: 'info' } } });
+
+		TraceLogger.emit({
+			level: 'info',
+			event: 'construction',
+			model: 'Test',
+			message: 'hi',
+		});
+
+		expect(
+			spy.mock.calls.some((args) =>
+				String(args[0]).startsWith('[QuickModel:')
+			)
+		).toBe(true);
+		spy.mockRestore();
+	});
+
+	it('uses the configured custom prefix', () => {
+		const spy = spyOn(console, 'info').mockImplementation(() => {});
+		QConfig.configure({
+			defaults: { trace: { verbosity: 'info' }, logPrefix: 'Acme' },
+		});
+
+		TraceLogger.emit({
+			level: 'info',
+			event: 'construction',
+			model: 'Test',
+			message: 'hi',
+		});
+
+		expect(
+			spy.mock.calls.some((args) => String(args[0]).startsWith('[Acme:'))
+		).toBe(true);
+		spy.mockRestore();
+	});
+
+	it('resets prefix to "QuickModel" after QConfig.reset()', () => {
+		QConfig.configure({
+			defaults: { trace: { verbosity: 'info' }, logPrefix: 'Tmp' },
+		});
+		(TraceLogger as any)._configRef = undefined;
+		QConfig.reset();
+		(TraceLogger as any)._configRef = undefined;
+
+		const spy = spyOn(console, 'info').mockImplementation(() => {});
+		QConfig.configure({ defaults: { trace: { verbosity: 'info' } } });
+
+		TraceLogger.emit({
+			level: 'info',
+			event: 'construction',
+			model: 'Test',
+			message: 'hi',
+		});
+
+		expect(
+			spy.mock.calls.some((args) =>
+				String(args[0]).startsWith('[QuickModel:')
+			)
+		).toBe(true);
+		spy.mockRestore();
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 11. Per-model trace via @Quick second parameter
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('Per-model trace via @Quick', () => {
+	it('per-model sink receives entries even when global is silent', () => {
+		const { entries, sink } = collectSink();
+		// Global: silent (no configure)
+		// Per-model: verbose with custom sink
+
+		@Quick({ name: 'string' }, { trace: { verbosity: 'verbose', sink } })
+		class TracedModel extends QModel<{ name: string }> {
+			declare name: string;
+		}
+
+		new TracedModel({ name: 'Alice' });
+
+		const constructionEntries = entries.filter(
+			(ent) => ent.event === 'construction'
+		);
+		expect(constructionEntries.length).toBeGreaterThanOrEqual(1);
+		expect(constructionEntries[0].model).toBe('TracedModel');
+	});
+
+	it('per-model verbosity overrides global verbosity', () => {
+		const globalEntries: IQTraceEntry[] = [];
+		const perModelEntries: IQTraceEntry[] = [];
+
+		QConfig.configure({
+			defaults: {
+				trace: {
+					verbosity: 'silent',
+					sink: (ent) => globalEntries.push(ent),
+				},
+			},
+		});
+
+		@Quick(
+			{ name: 'string' },
+			{
+				trace: {
+					verbosity: 'info',
+					sink: (ent) => perModelEntries.push(ent),
+				},
+			}
+		)
+		class LocalModel extends QModel<{ name: string }> {
+			declare name: string;
+		}
+
+		new LocalModel({ name: 'Bob' });
+
+		expect(globalEntries).toHaveLength(0);
+		expect(
+			perModelEntries.filter((ent) => ent.event === 'construction').length
+		).toBeGreaterThanOrEqual(1);
+	});
+
+	it('per-model events filter restricts which events arrive at the sink', () => {
+		const { entries, sink } = collectSink();
+
+		@Quick(
+			{ name: 'string' },
+			{
+				trace: {
+					verbosity: 'verbose',
+					events: ['rule-fail'],
+					sink,
+				},
+			}
+		)
+		class FilteredModel extends QModel<{ name: string }> {
+			declare name: string;
+		}
+
+		// construction should be filtered out
+		new FilteredModel({ name: 'Carol' });
+		expect(
+			entries.filter((ent) => ent.event === 'construction')
+		).toHaveLength(0);
 	});
 });

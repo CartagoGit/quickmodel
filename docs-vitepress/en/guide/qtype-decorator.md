@@ -177,7 +177,39 @@ You are modifying a legacy class and only want to introduce QuickModel propertie
   serializer: (val) => val + "_serialized",
 
   // Custom Mock Generation
-  mocker: () => "mocked_value"
+  mocker: () => "mocked_value",
+
+  // Binary serialization mode for File/Blob fields
+  fileMode: 'reference', // 'auto' | 'binary' | 'reference' | 'base64'
 })
 declare myField: string;
 ```
+
+### `fileMode` — per-field binary serialization mode
+
+Controls how `File`, `Blob`, `ArrayBuffer`, and `TypedArray` fields are serialized when calling `serialize()` or `toFormData()`. Use this to lock the strategy for a specific field without repeating the option at every call site.
+
+```typescript
+class UploadDto extends QModel<IUploadDto> {
+	declare name: string;
+
+	// Always emit as base64 string — legacy API consumer
+	@QType(File, { fileMode: 'base64' })
+	declare signature: File;
+
+	// Always keep path reference — CDN-managed asset
+	@QType(File, { fileMode: 'reference' })
+	declare thumbnail: File;
+}
+```
+
+| Value              | Behaviour                                                            |
+| ------------------ | -------------------------------------------------------------------- |
+| `'auto'` (default) | Metadata POJO (`{ name, size, type, lastModified }`)                 |
+| `'binary'`         | Same as `'auto'` — preserves File/Blob as metadata                   |
+| `'reference'`      | String: `file.name` for `File`, `'[Blob]'` / `'[binary]'` for others |
+| `'base64'`         | Base64-encoded string of the binary content                          |
+
+::: tip
+A call-time `serialize({ fileMode })` or `toFormData({ fileMode })` option always **overrides** the decorator-level value. The decorator sets the per-field default when no call-time option is provided.
+:::

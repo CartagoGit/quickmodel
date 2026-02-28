@@ -61,6 +61,9 @@ interface IErrorData {
  * const data = req1.serialize();
  * console.log(data.lastError); // "TypeError: Invalid input"
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class ErrorTransformer
 	extends BaseTransformer<string | IErrorData, Error>

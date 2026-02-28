@@ -211,11 +211,11 @@ class UploadDto extends QModel<IUploadDto> {
 	declare name: string;
 
 	// Siempre serializar como base64 — consumidor de API legacy
-	@QType({ type: File, fileMode: 'base64' })
+	@QType(File, { fileMode: 'base64' })
 	declare signature: File;
 
 	// Siempre mantener referencia de ruta — asset gestionado por CDN
-	@QType({ type: File, fileMode: 'reference' })
+	@QType(File, { fileMode: 'reference' })
 	declare thumbnail: File;
 }
 ```

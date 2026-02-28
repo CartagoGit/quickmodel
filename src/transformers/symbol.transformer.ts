@@ -46,6 +46,9 @@ import {
  * console.log(typeof data.id); // 'string'
  * console.log(data.id); // "unique-id"
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class SymbolTransformer
 	extends BaseTransformer<

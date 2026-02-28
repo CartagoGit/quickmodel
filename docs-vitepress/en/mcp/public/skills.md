@@ -569,19 +569,19 @@ File > 50 MB? → toReadableStream() / fromStream() / pipeStream()
 
 ### In-memory API (< 50 MB)
 
-| Method / Option                     | Purpose                                                       |
-| ----------------------------------- | ------------------------------------------------------------- |
-| `Model.fromFormData(fd)`            | Parse FormData → typed model instance (auto-detect File/Blob) |
-| `dto.toFormData()`                  | Build FormData from model fields                              |
-| `fileSource: 'auto'` (default)      | Runtime inspection: File→File, ArrayBuffer→Blob, `data:`→Blob |
-| `fileSource: 'binary'`              | Preserve all as File/Blob                                     |
-| `fileSource: 'reference'`           | Treat strings as paths/URLs, no binary deserialisation        |
-| `fileSource: 'base64'`              | Decode `data:` URI → Blob                                     |
-| `fileMode` (same values)            | Output mode for `toFormData()`                                |
-| `fields: { avatar: 'binary' }`      | Per-field override — highest precedence                       |
-| `@Quick({ fileMode: 'reference' })` | Permanent field-level default in decorator                    |
+| Method / Option                           | Purpose                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| `Model.fromFormData(fd)`                  | Parse FormData → typed model instance (auto-detect File/Blob) |
+| `dto.toFormData()`                        | Build FormData from model fields                              |
+| `fileSource: 'auto'` (default)            | Runtime inspection: File→File, ArrayBuffer→Blob, `data:`→Blob |
+| `fileSource: 'binary'`                    | Preserve all as File/Blob                                     |
+| `fileSource: 'reference'`                 | Treat strings as paths/URLs, no binary deserialisation        |
+| `fileSource: 'base64'`                    | Decode `data:` URI → Blob                                     |
+| `fileMode` (same values)                  | Output mode for `toFormData()`                                |
+| `fields: { avatar: 'binary' }`            | Per-field override — highest precedence                       |
+| `@QType(File, { fileMode: 'reference' })` | Permanent field-level default in decorator                    |
 
-**Precedence:** `@Quick({ fileMode })` < global call option < per-field `fields` option
+**Precedence:** `@QType({ fileMode })` < global call option < per-field `fields` option
 
 ### Streaming API (> 50 MB)
 
@@ -611,7 +611,7 @@ interface IQStreamProgress {
 ### Workflow
 
 1. Identifies whether the scenario needs in-memory or streaming API based on `file_size`
-2. Generates the QModel class with correct `@Quick({ fileMode })` decorators for Blob/File fields
+2. Generates the QModel class with correct `@QType(File, { fileMode })` decorators for Blob/File fields
 3. Shows `fromFormData()` or `fromStream()` call with the right options
 4. Shows `toFormData()` or `toReadableStream()` for the output side
 5. If streaming, demonstrates the full `IQStreamProgress` callback

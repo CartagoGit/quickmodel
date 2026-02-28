@@ -59,6 +59,11 @@ export type IQMockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
  * 4. Type-based faker generation derived from `fieldType` reflect-metadata.
  * 5. Fallback to `null`.
  *
+ * @see {@link QModel.mock} — public entry-point that delegates to this service
+ * @see {@link IQMockType} — available generation strategies
+ * @see {@link IQModelInterface} — interface describing what `generate()` returns
+ * @see {@link MockBuilderService} — fluent builder that wraps this service
+ *
  * @example
  * ```typescript
  * const generator = new QMockGenerator();
@@ -87,7 +92,9 @@ export class QMockGenerator {
 	 * @returns A plain data object matching the model's field definitions.
 	 * @throws {QModelError} If `@faker-js/faker` is not installed and the requested
 	 *   strategy requires faker-based generation (any strategy except `'empty'`).
-	 * @see IQMockType
+	 * @see {@link IQMockType} — available mock generation strategies
+	 * @see {@link QMockGenerator.generateArray} — batch generation variant
+	 * @see {@link QModel.mock} — public API that delegates here
 	 */
 	generate<
 		TModel,
@@ -249,6 +256,9 @@ export class QMockGenerator {
 	 * @param options.type - Mock generation strategy. Defaults to `'random'`.
 	 * @param options.overrides - Per-index callback that returns field overrides.
 	 * @returns An array of `count` plain data objects.
+	 * @see {@link QMockGenerator.generate} — single-item variant
+	 * @see {@link IQMockType} — available generation strategies
+	 * @see {@link QModel.mock} — public API that delegates here
 	 */
 	generateArray<
 		TModel,

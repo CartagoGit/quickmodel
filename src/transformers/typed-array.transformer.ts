@@ -85,6 +85,10 @@ type ITypedArray =
  * console.log(json.samples); // [0.5, -0.3, 0.8]
  * console.log(json.largeNumbers); // ["9007199254740991", "123456789012345"]
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link ArrayBufferTransformer} — related transformer for raw binary buffers
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class TypedArrayTransformer<T extends ITypedArray>
 	extends BaseTransformer<number[] | string[], T>

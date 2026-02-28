@@ -283,7 +283,7 @@ class User extends QModel<IUser> {
 
 <BenchmarkChart
   :only-scenarios="['validation', 'validationReport']"
-  :only-libs="['QuickModel', 'class-validator', 'vest', 'joi', 'yup', 'Zod', 'valibot']"
+  :only-libs="['QuickModel', 'TypeBox', 'arktype', 'class-validator', 'vest', 'joi', 'yup', 'Zod', 'valibot']"
   :only-feature-categories="['validation']"
   default-tab="performance"
 />

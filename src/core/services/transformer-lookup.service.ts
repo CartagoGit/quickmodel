@@ -38,6 +38,11 @@ import { SpecialFloatTransformer } from '@/transformers/special-float.transforme
  *
  * This service applies SOLID principles:
  * - Single Responsibility: Only handles transformer registration and lookup.
+ *
+ * @see {@link QTransformerRegistry} — global registry queried during lookup
+ * @see {@link IQTransformer} — interface all registered transformers must implement
+ * @see {@link PropertyTransformer} — consumer of this service during deserialization
+ * @see {@link ValueTransformerService} — sibling service that applies transformers to values
  */
 export class TransformerLookupService {
 	/** @internal Map of normalized lowercase transformer name → `IQTransformer` instances. Built at construction time from the global registry. */
@@ -67,6 +72,8 @@ export class TransformerLookupService {
 	 * @param key - Transformer lookup key: a string alias (`"date"`), a constructor (`Date`),
 	 *   or a direct `IQTransformer` implementation.
 	 * @returns The matching `IQTransformer`, or `undefined` when none is registered.
+	 * @see {@link QTransformerRegistry.get} — global registry consulted first
+	 * @see {@link TransformerLookupService.getAvailableTransformers} — list all registered keys
 	 */
 	public getTransformer(
 		key: IQTransformerKey
@@ -120,6 +127,8 @@ export class TransformerLookupService {
 	 * Returns a list of all available transformer keys.
 	 *
 	 * @returns Array of transformer keys (e.g., 'date', 'bigint')
+	 * @see {@link TransformerLookupService.getTransformer} — retrieve transformer by key
+	 * @see {@link QTransformerRegistry} — also holds custom user-registered transformers
 	 */
 	public getAvailableTransformers(): string[] {
 		return Array.from(this.transformers.keys());

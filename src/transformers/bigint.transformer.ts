@@ -47,6 +47,9 @@ import {
  * const data = account.serialize();
  * console.log(typeof data.balance); // 'string'
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class BigIntTransformer
 	extends BaseTransformer<

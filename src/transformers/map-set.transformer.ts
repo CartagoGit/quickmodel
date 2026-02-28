@@ -46,6 +46,10 @@ import {
  * const data = config.serialize();
  * console.log(data.metadata); // { key1: "value1", key2: 123 }
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link SetTransformer} — related transformer for Set collections
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class MapTransformer<K = string, V = unknown>
 	extends BaseTransformer<
@@ -484,6 +488,10 @@ export class MapTransformer<K = string, V = unknown>
  * const data = config.serialize();
  * console.log(Array.isArray(data.tags)); // true
  * ```
+ *
+ * @see {@link BaseTransformer} — abstract base this class extends
+ * @see {@link MapTransformer} — related transformer for Map collections
+ * @see {@link QTransformerRegistry} — register custom transformers alongside this one
  */
 export class SetTransformer<V = unknown>
 	extends BaseTransformer<V[] | { __type: 'Set'; values: V[] }, Set<V>>
