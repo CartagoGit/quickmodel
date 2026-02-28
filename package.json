@@ -136,6 +136,11 @@
 			"import": "./dist/forms.mjs",
 			"require": "./dist/forms.js"
 		},
+		"./decorators": {
+			"types": "./dist/decorators.d.ts",
+			"import": "./dist/decorators.mjs",
+			"require": "./dist/decorators.js"
+		},
 		"./matchers": {
 			"types": "./dist/matchers.d.ts",
 			"import": "./dist/matchers.mjs",
