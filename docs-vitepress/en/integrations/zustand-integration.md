@@ -16,13 +16,13 @@ immutable instance**, keeping state updates predictable and avoiding the need fo
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel zustand
+npm install quickmodel zustand
 ```
 
 ## Model Setup
 
 ```typescript
-import { QModel, Quick, QField, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QComputed } from 'quickmodel';
 
 interface IUser {
 	id: string;

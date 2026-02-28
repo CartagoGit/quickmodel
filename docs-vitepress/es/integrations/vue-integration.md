@@ -18,7 +18,7 @@ QuickModel encaja con la Composition API de Vue, stores Pinia, adaptadores VeeVa
 ```typescript
 // composables/useProfileForm.ts
 import { reactive, computed } from 'vue';
-import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+import { QField, QRule, qCheckRules } from 'quickmodel';
 
 class ProfileForm {
 	@QField({ label: 'Bio', required: true })
@@ -60,7 +60,7 @@ const { form, validation } = useProfileForm();
 ```typescript
 // composables/useProfileForm.ts
 import { reactive, toRaw } from 'vue';
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick({ bio: 'string', website: 'string' })
 class ProfileForm extends QModel<IProfileForm> {
@@ -98,7 +98,7 @@ Vue envuelve las instancias en un `Proxy`. Llama siempre a `toRaw(form).checkRul
 ```typescript
 // stores/user.store.ts
 import { defineStore } from 'pinia';
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick({ id: 'string', name: 'string', role: 'string', points: 'number' })
 class UserRecord extends QModel<IUser> {
@@ -139,7 +139,7 @@ export const useUserStore = defineStore('user', {
 ```typescript
 // composables/useQField.ts
 import { ref, computed } from 'vue';
-import { qCheckRules, QField, QRule } from '@cartago-git/quickmodel';
+import { qCheckRules, QField, QRule } from 'quickmodel';
 
 export function useQField<T extends object>(form: T, fieldName: keyof T) {
 	const value = ref(form[fieldName]);
@@ -214,7 +214,7 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 // composables/useUsernameCheck.ts
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 class UsernameDto {
 	@QRule(async (username: string) => {

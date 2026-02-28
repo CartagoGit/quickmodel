@@ -13,7 +13,7 @@ QuickModel exposes a built-in `getSchema()` method that generates standards-comp
 ## Basic usage
 
 ```typescript
-import { QModel, Quick, QField } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField } from 'quickmodel';
 
 interface ICreateUser {
 	name: string;

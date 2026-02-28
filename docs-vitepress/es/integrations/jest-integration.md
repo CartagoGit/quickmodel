@@ -7,7 +7,7 @@ cualquier proyecto Jest.
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 ## Configuración
@@ -18,7 +18,7 @@ Extiende el `expect` de Jest en tu
 ```typescript
 // jest.setup.ts
 import { expect } from '@jest/globals';
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 expect.extend(quickmodelMatchers);
 ```
@@ -117,13 +117,7 @@ expect(dto).not.toHaveDirtyField('email');
 ```typescript
 // tests/order.test.ts
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 @Quick(
 	{
@@ -227,7 +221,7 @@ Envuelve `quickmodelMatchers` con el siguiente adaptador:
 
 ```typescript
 // test/setup/quickmodel-jasmine.ts
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 type IMatcherFn = (
 	received: object,

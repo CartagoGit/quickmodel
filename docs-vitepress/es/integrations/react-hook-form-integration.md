@@ -17,7 +17,7 @@ síncrona y `qCheckRulesAsync()` para reglas asíncronas (p.ej. verificación de
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel react-hook-form
+npm install quickmodel react-hook-form
 ```
 
 ## Configuración del Modelo
@@ -26,13 +26,7 @@ Usa `@QField` para metadatos del formulario (etiqueta, tipo de widget, requerido
 Usa `@QRule` para la lógica de validación.
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 @Quick(
 	{
@@ -213,7 +207,7 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 ## Validación Asíncrona (Servidor)
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 // En el resolver del formulario:
 const dto = new RegistroConEmailUnicoDto(formValues);

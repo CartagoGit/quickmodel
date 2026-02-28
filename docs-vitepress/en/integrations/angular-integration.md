@@ -13,7 +13,7 @@ QuickModel integrates naturally with **Angular** applications. Use plain TypeScr
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 Enable decorators in `tsconfig.json`:
@@ -32,9 +32,9 @@ Enable decorators in `tsconfig.json`:
 Angular's `AbstractControl` validators receive a value and return `null` (valid) or an error object (invalid). QuickModel's `qCheckRules()` maps cleanly to this contract.
 
 ```typescript
-import { QRule, QField, QGroup } from '@cartago-git/quickmodel';
-import { qGroups } from '@cartago-git/quickmodel/core/helpers/q-groups';
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { QRule, QField, QGroup } from 'quickmodel';
+import { qGroups } from 'quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 const FormGroups = qGroups('identity', 'contact');
 
@@ -77,7 +77,7 @@ Form classes use initialized properties (`firstName = ''`) — **not** `declare 
 ### Step-by-step form validation
 
 ```typescript
-import { qCheckRulesByGroup } from '@cartago-git/quickmodel/core/helpers/q-check-rules-by-group';
+import { qCheckRulesByGroup } from 'quickmodel/forms';
 
 // Stepper: validate one group at a time
 const groups = qCheckRulesByGroup(form);
@@ -97,7 +97,7 @@ if (!groups['identity']?.valid) {
 Use `QModel` for data stored in Angular services. The `unknownPropertyPolicy: 'strip'` option prevents injection of unexpected fields.
 
 ```typescript
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 interface IUserRecord {
 	id: string;
@@ -282,7 +282,7 @@ Copy this utility into your Angular project (Angular is not a QuickModel depende
 ```typescript
 // utils/reactive-model.ts
 import { signal, type WritableSignal } from '@angular/core';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 type IReactiveModel<T extends QModel<any>> = T & {
 	/** The underlying WritableSignal. Use for computed() / effect(). */
@@ -407,7 +407,7 @@ console.log(finalPrice()); // 160
 ## Async Validators
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 import { AbstractControl, AsyncValidatorFn } from '@angular/forms';
 import { from } from 'rxjs';
 

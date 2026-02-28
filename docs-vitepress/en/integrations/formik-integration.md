@@ -18,7 +18,7 @@ QuickModel works alongside Formik v2 as the validation and coercion layer — no
 ## Model Setup
 
 ```typescript
-import { QModel, Quick, QRule, QField, QGroup } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QGroup } from 'quickmodel';
 
 interface IRegistrationForm {
 	name: string;
@@ -82,7 +82,7 @@ class RegistrationDto extends QModel<IRegistrationForm> {
 Formik's `validate` prop receives the form `values` and must return an **empty object** `{}` for valid submissions or `{ fieldName: 'Error message' }` for invalid ones.
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 // Utility: build a Formik-compatible validate function
 function createFormikValidate<TForm extends object>(
@@ -114,7 +114,7 @@ const validate = createFormikValidate<IRegistrationForm>(
 Use `@QGroup` to partition fields by wizard step. `qCheckRulesByGroup(dto)` returns a map of `groupName → { valid, errors }`:
 
 ```typescript
-import { qCheckRulesByGroup } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesByGroup } from 'quickmodel/forms';
 
 // Wizard step 1: validate only the 'personal' group
 function validateStep1(
@@ -222,7 +222,7 @@ const schema = dto.getFormSchema();
 Use `@QRule` with an async predicate (returns `Promise<boolean>`) for server-side checks like email uniqueness:
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 const takenEmails = new Set(['admin@example.com']);
 

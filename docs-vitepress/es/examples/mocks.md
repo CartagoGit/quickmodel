@@ -9,7 +9,7 @@ QuickModel genera mocks que respetan tus transformaciones: si el modelo tiene `c
 ## API Básica
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: string;
@@ -115,7 +115,7 @@ const apiFixture = User.mock().interfaceRandom({
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
 
 interface IOrder {
 	id: string;

@@ -14,7 +14,7 @@ QuickModel works with React using plain TypeScript classes for form validation a
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 Enable decorators in `tsconfig.json`:
@@ -31,8 +31,8 @@ Enable decorators in `tsconfig.json`:
 ## Controlled Form Validation (useState)
 
 ```typescript
-import { QRule, QField } from '@cartago-git/quickmodel';
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { QRule, QField } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class LoginForm {
 	@QField({ label: 'Email', widget: 'email', required: true })
@@ -98,7 +98,7 @@ function LoginPage() {
 
 ```typescript
 // models/login-form.ts
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick({ email: 'string', password: 'string' })
 class LoginForm extends QModel<ILoginForm> {
@@ -146,7 +146,7 @@ const handleSubmit = (e: FormEvent) => {
 ## React Hook Form — Custom Resolver
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { qCheckRules } from 'quickmodel/forms';
 import type { Resolver } from 'react-hook-form';
 
 export function qModelResolver<TForm extends object>(
@@ -181,7 +181,7 @@ If your form class extends `QModel`, you can enforce a stricter type contract an
 ```typescript
 // hooks/useQModelResolver.ts
 import type { Resolver } from 'react-hook-form';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function createQModelResolver<T extends QModel<object>>(
 	FormClass: new (data?: object) => T
@@ -222,7 +222,7 @@ Coerce and sanitize incoming `FormData` on the server:
 ```typescript
 // app/actions.ts
 'use server';
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 @Quick(
 	{
@@ -261,7 +261,7 @@ FormData values are always strings. Add `coercionStrategy: 'loose'` to automatic
 
 ```typescript
 import { create } from 'zustand';
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick(
 	{ sku: 'string', name: 'string', qty: 'number', price: 'number' },
@@ -319,7 +319,7 @@ const useCartStore = create<ICartStore>((set, get) => ({
 
 ```typescript
 import { useReducer, useCallback } from 'react';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function useQModel<T extends object, M extends QModel<T>>(initial: M) {
 	const [model, dispatch] = useReducer((_prev: M, next: M) => next, initial);
@@ -351,7 +351,7 @@ update({ bio: 'Senior Dev' });
 ## Async Validation
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 // in a useEffect or server action
 const result = await qCheckRulesAsync(form, { mode: 'parallel' });

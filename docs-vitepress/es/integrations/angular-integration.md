@@ -18,7 +18,7 @@ QuickModel funciona como capa de validación y tipo en cualquier versión de Ang
 
 ```typescript
 // user-form.ts
-import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+import { QField, QRule, qCheckRules } from 'quickmodel';
 
 class UserForm {
 	@QField({ label: 'Nombre de usuario', required: true })
@@ -66,7 +66,7 @@ export class UserFormComponent {
 
 ```typescript
 // user-record.model.ts
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick({ id: 'string', name: 'string', score: 'number', active: 'boolean' })
 class UserRecord extends QModel<IUser> {
@@ -171,7 +171,7 @@ Copia esta utilidad en tu proyecto Angular (Angular no es una dependencia de Qui
 ```typescript
 // utils/reactive-model.ts
 import { signal, type WritableSignal } from '@angular/core';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 type IReactiveModel<T extends QModel<any>> = T & {
 	/** La señal subyacente. Úsala para computed() / effect(). */
@@ -328,7 +328,7 @@ intercept(req: HttpRequest<any>, next: HttpHandler) {
 
 ```typescript
 // async-user.dto.ts
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 class AsyncUserDto {
 	@QRule(async (username: string) => {

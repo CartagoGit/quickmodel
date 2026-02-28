@@ -9,7 +9,7 @@ You have a user registration form and need to validate that the email has the co
 ## Basic Synchronous Validation
 
 ```typescript
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
 
 interface IUserRegister {
 	name: string;

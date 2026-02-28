@@ -31,13 +31,13 @@ console.log(admin.role); // 'admin'
 > If you need to type the `type` parameter explicitly (e.g. `'random' | 'empty'`), you can import `IQMockType` from types:
 >
 > ```typescript
-> import type { IQMockType } from '@cartago-git/quickmodel/types';
+> import type { IQMockType } from 'quickmodel/types';
 > ```
 >
 > For advanced custom usage, `QMockGenerator` is available in advanced:
 >
 > ```typescript
-> import { QMockGenerator } from '@cartago-git/quickmodel/advanced';
+> import { QMockGenerator } from 'quickmodel/advanced';
 > ```
 
 ## How It Works

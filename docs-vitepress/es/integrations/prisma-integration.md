@@ -17,14 +17,7 @@ QuickModel funciona junto a Prisma como una capa DTO con tipado fuerte entre tu 
 ## Configuración del Modelo
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QGroup,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QGroup, QComputed } from 'quickmodel';
 
 interface IUserRecord {
 	uid: string;
@@ -269,7 +262,7 @@ return post.serialize(); // incluye excerpt ✅
 ## Validación de Unicidad en DB
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 class CreateUserWithUniquenessDto extends CreateUserDto {}
 

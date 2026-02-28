@@ -1,17 +1,17 @@
 # Form Validation (`/forms` entry)
 
-The `@cartago-git/quickmodel/forms` subpath provides **standalone form-validation helpers** that work on **any class** — no need to extend `QModel`. Use them in Angular components, React hooks, Vue composables, or plain TypeScript objects.
+The `quickmodel/forms` subpath provides **standalone form-validation helpers** that work on **any class** — no need to extend `QModel`. Use them in Angular components, React hooks, Vue composables, or plain TypeScript objects.
 
 ## Why a separate entry?
 
-The root entry (`@cartago-git/quickmodel`) includes the full runtime: transformers, serialization, the mock generator, etc. For apps that only need lightweight validation logic, importing the `/forms` subpath keeps the bundle smaller and the dependency graph minimal.
+The root entry (`quickmodel`) includes the full runtime: transformers, serialization, the mock generator, etc. For apps that only need lightweight validation logic, importing the `/forms` subpath keeps the bundle smaller and the dependency graph minimal.
 
 ```ts
 // ✅ recommended for form-only validation
-import { qGroups, qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qGroups, qCheckRules } from 'quickmodel/forms';
 
 // also works, but pulls in the full runtime
-import { qGroups, qCheckRules } from '@cartago-git/quickmodel';
+import { qGroups, qCheckRules } from 'quickmodel';
 ```
 
 ## Prerequisites
@@ -40,7 +40,7 @@ And that your `tsconfig.json` has:
 ### Spread form (TS 3.4+)
 
 ```ts
-import { qGroups } from '@cartago-git/quickmodel/forms';
+import { qGroups } from 'quickmodel/forms';
 
 const Groups = qGroups('identity', 'security', 'address');
 // { identity: 'identity', security: 'security', address: 'address' }
@@ -56,7 +56,7 @@ const Groups = qGroups(groups);
 ### Array form without `as const` (TS 5.0+ only)
 
 ```ts
-import { qGroups5 } from '@cartago-git/quickmodel/compat/ts5/forms';
+import { qGroups5 } from 'quickmodel/compat/ts5/forms';
 
 const Groups = qGroups5(['identity', 'security']);
 ```
@@ -72,8 +72,8 @@ const Groups = qGroups5(['identity', 'security']);
 Use `@QRule` and `@QGroup` from the root entry — they work on **any class**, not just `QModel` subclasses:
 
 ```ts
-import { QRule, QGroup } from '@cartago-git/quickmodel';
-import { qGroups } from '@cartago-git/quickmodel/forms';
+import { QRule, QGroup } from 'quickmodel';
+import { qGroups } from 'quickmodel/forms';
 
 const Groups = qGroups('identity', 'security');
 
@@ -106,7 +106,7 @@ Stack as many `@QRule` as needed. **All failing rules are collected** — not ju
 Returns the distinct `@QGroup` names declared on an instance, in order of first appearance.
 
 ```ts
-import { qGetGroups } from '@cartago-git/quickmodel/forms';
+import { qGetGroups } from 'quickmodel/forms';
 
 const form = new ProfileForm();
 const groups = qGetGroups(form);
@@ -122,7 +122,7 @@ const groups = qGetGroups(form);
 Evaluates all synchronous `@QRule` predicates on any instance.
 
 ```ts
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 const form = new ProfileForm();
 form.name = 'A';
@@ -176,7 +176,7 @@ interface IQRulesResult {
 The async counterpart. Awaits sync and async predicates alike. Supports per-predicate timeout and serial/parallel execution modes.
 
 ```ts
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 const result = await qCheckRulesAsync(form);
 result.valid; // false if any rule failed
@@ -246,7 +246,7 @@ const result = await qCheckRulesAsync(form, {
 Validates all groups and returns a `Record<groupName, IQRulesResult>`.
 
 ```ts
-import { qCheckRulesByGroup } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesByGroup } from 'quickmodel/forms';
 
 const form = new ProfileForm();
 form.name = 'Alice';
@@ -285,7 +285,7 @@ canProceedToStep(Groups.security); // true / false
 The async counterpart of `qCheckRulesByGroup`. All groups are evaluated concurrently.
 
 ```ts
-import { qCheckRulesByGroupAsync } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesByGroupAsync } from 'quickmodel/forms';
 
 const results = await qCheckRulesByGroupAsync(form);
 // { identity: IQRulesResult, security: IQRulesResult }
@@ -306,13 +306,13 @@ const results = await qCheckRulesByGroupAsync(form, {
 
 ```ts [Angular Component]
 import { Component } from '@angular/core';
-import { QRule, QGroup } from '@cartago-git/quickmodel';
+import { QRule, QGroup } from 'quickmodel';
 import {
 	qGroups,
 	qCheckRules,
 	qCheckRulesByGroup,
 	IQRulesResult,
-} from '@cartago-git/quickmodel/forms';
+} from 'quickmodel/forms';
 
 const Groups = qGroups('identity', 'security');
 
@@ -356,12 +356,8 @@ export class SignupComponent {
 
 ```tsx [React Hook]
 import { useState, useCallback } from 'react';
-import { QRule, QGroup } from '@cartago-git/quickmodel';
-import {
-	qGroups,
-	qCheckRules,
-	IQRulesResult,
-} from '@cartago-git/quickmodel/forms';
+import { QRule, QGroup } from 'quickmodel';
+import { qGroups, qCheckRules, IQRulesResult } from 'quickmodel/forms';
 
 const Groups = qGroups('fields');
 
@@ -394,12 +390,8 @@ function useContactForm() {
 
 ```ts [Vue Composable]
 import { reactive, ref } from 'vue';
-import { QRule, QGroup } from '@cartago-git/quickmodel';
-import {
-	qGroups,
-	qCheckRulesAsync,
-	IQRulesResult,
-} from '@cartago-git/quickmodel/forms';
+import { QRule, QGroup } from 'quickmodel';
+import { qGroups, qCheckRulesAsync, IQRulesResult } from 'quickmodel/forms';
 
 const Groups = qGroups('fields');
 
@@ -470,7 +462,7 @@ const result = qCheckRules(form);
 
 ## TypeScript compatibility
 
-| Entry point                                | Minimum TS | Notes                                      |
-| ------------------------------------------ | ---------- | ------------------------------------------ |
-| `@cartago-git/quickmodel/forms`            | 3.4        | Main entry — all helpers except `qGroups5` |
-| `@cartago-git/quickmodel/compat/ts5/forms` | 5.0        | Adds `qGroups5` (no `as const` needed)     |
+| Entry point                   | Minimum TS | Notes                                      |
+| ----------------------------- | ---------- | ------------------------------------------ |
+| `quickmodel/forms`            | 3.4        | Main entry — all helpers except `qGroups5` |
+| `quickmodel/compat/ts5/forms` | 5.0        | Adds `qGroups5` (no `as const` needed)     |

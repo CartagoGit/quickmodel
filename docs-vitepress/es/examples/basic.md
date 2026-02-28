@@ -11,7 +11,7 @@ Estás obteniendo datos de usuario de una API que devuelve fechas como strings I
 Usa QuickModel para transformar automáticamente los datos:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 // 1. Define tu interfaz (formato de API)
 interface IUser {
@@ -237,7 +237,7 @@ const sampleUser = User.mock().sample();
 Aquí tienes un ejemplo completo con todas las características:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: number;

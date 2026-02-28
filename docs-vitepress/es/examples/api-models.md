@@ -5,7 +5,7 @@ Aprende cómo integrar QuickModel con APIs REST para transformación de datos si
 ## Obtener Datos de APIs
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: number;

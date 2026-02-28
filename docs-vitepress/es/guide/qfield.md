@@ -5,7 +5,7 @@
 ## Ejemplo Básico
 
 ```typescript
-import { Quick, QModel, QField } from '@cartago-git/quickmodel';
+import { Quick, QModel, QField } from 'quickmodel';
 
 interface IPerfil {
 	email: string;
@@ -239,7 +239,7 @@ import type {
 	IQFormSchemaEntry,
 	IQFieldWidget,
 	IQFormSchemaGroup,
-} from '@cartago-git/quickmodel';
+} from 'quickmodel';
 
 // Una entrada del esquema:
 interface IQFormSchemaEntry extends IQFieldMeta {
@@ -284,7 +284,7 @@ Usa `@QGroup('Nombre de sección')` junto a `@QField` para organizar los campos 
 ### Uso básico
 
 ```typescript
-import { Quick, QModel, QField, QGroup } from '@cartago-git/quickmodel';
+import { Quick, QModel, QField, QGroup } from 'quickmodel';
 
 interface IConfiguracion {
 	usuario: string;

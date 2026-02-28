@@ -25,7 +25,7 @@ To use the QuickModel MCP server in your project (installed via npm), follow the
 The easiest way to let your IDE detect the MCP server is by running the following command in your terminal:
 
 ```bash
-npx -y @cartago-git/quickmodel mcp
+npx -y quickmodel mcp
 ```
 
 ### Manual
@@ -46,7 +46,7 @@ Requires the **GitHub Copilot Chat** extension.
 	"servers": {
 		"quickmodel": {
 			"command": "npx",
-			"args": ["-y", "@cartago-git/quickmodel", "mcp"]
+			"args": ["-y", "quickmodel", "mcp"]
 		}
 	}
 }
@@ -59,18 +59,18 @@ Requires the **GitHub Copilot Chat** extension.
 3. Configure it as follows:
     - **Name**: `quickmodel`
     - **Type**: `command`
-    - **Command**: `npx -y @cartago-git/quickmodel mcp`
+    - **Command**: `npx -y quickmodel mcp`
 
 #### 3. Windsurf (Codeium)
 
 1. Open **Cascade** (Chat panel).
 2. Click the **MCP** icon (plug) or go to settings.
 3. Add a new server with the same command:
-    - **Command**: `npx -y @cartago-git/quickmodel mcp`
+    - **Command**: `npx -y quickmodel mcp`
 
 #### 4. Google Antigravity
 
 1. Open the **"Agent"** panel.
 2. Select **"Manage MCP Servers"**.
 3. Add a custom server:
-    - **Command**: `npx -y @cartago-git/quickmodel mcp`
+    - **Command**: `npx -y quickmodel mcp`

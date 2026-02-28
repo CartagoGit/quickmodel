@@ -17,14 +17,7 @@ QuickModel se integra de forma limpia en stacks basados en tRPC como validador d
 ## Configuración del Modelo
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QGroup,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QGroup, QComputed } from 'quickmodel';
 
 interface ICreateUserInput {
 	name: string;
@@ -70,7 +63,7 @@ class CreateUserInput extends QModel<ICreateUserInput> {
 
 ```typescript
 import { initTRPC, TRPCError } from '@trpc/server';
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 const trpc = initTRPC.create();
 
@@ -173,7 +166,7 @@ const loggingMiddleware = trpc.middleware(async ({ ctx, next, rawInput }) => {
 ## Validación Asíncrona en DB
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 export const createUser = trpc.procedure
   .input((raw) => new CreateUserInput(raw as object))
@@ -219,7 +212,7 @@ export const listUsers = trpc.procedure
 
 ```typescript
 import { TRPCError } from '@trpc/server';
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 function validateOrThrow(dto: QModel<object>): void {
 	const result = qCheckRules(dto);

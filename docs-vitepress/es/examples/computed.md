@@ -9,7 +9,7 @@ Tienes un modelo `User` con `firstName` y `lastName`, y quieres que `fullName` e
 ## Uso Básico
 
 ```typescript
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 interface IUser {
 	firstName: string;

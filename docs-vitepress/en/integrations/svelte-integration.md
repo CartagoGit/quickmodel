@@ -14,7 +14,7 @@ QuickModel integrates with **Svelte 5** and **SvelteKit** through runes, stores,
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 Enable decorators in `tsconfig.json`:
@@ -32,7 +32,7 @@ Enable decorators in `tsconfig.json`:
 
 ```svelte
 <script lang="ts">
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick(
   { id: 'string', title: 'string', body: 'string', pinned: 'boolean', createdAt: Date },
@@ -87,7 +87,7 @@ For lighter form validation without coercion or serialization, use a plain class
 ```svelte
 <!-- ContactForm.svelte -->
 <script lang="ts">
-import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+import { QField, QRule, qCheckRules } from 'quickmodel';
 
 class ContactForm {
   @QField({ label: 'Name', required: true })
@@ -120,7 +120,7 @@ let validation = $derived(qCheckRules(form));
 ```typescript
 // stores/taskStore.ts
 import { writable } from 'svelte/store';
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 @Quick(
 	{ id: 'string', label: 'string', done: 'boolean' },
@@ -166,7 +166,7 @@ Validate and coerce incoming form data on the server:
 // src/routes/newsletter/+page.server.ts
 import type { Actions } from './$types';
 import { fail } from '@sveltejs/kit';
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { qCheckRules } from 'quickmodel/forms';
 
 class NewsletterForm {
 	@QRule(
@@ -212,7 +212,7 @@ export const actions: Actions = {
 ```typescript
 // src/routes/events/+page.server.ts
 import type { PageServerLoad } from './$types';
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick(
 	{
@@ -262,7 +262,7 @@ class BlogPostForm {
 }
 
 // In a +page.server.ts action using qCheckRulesAsync
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 const result = await qCheckRulesAsync(form, { mode: 'serial' });
 ```

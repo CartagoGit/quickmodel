@@ -17,13 +17,13 @@ eliminando la necesidad de Immer.
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel zustand
+npm install quickmodel zustand
 ```
 
 ## Configuración del Modelo
 
 ```typescript
-import { QModel, Quick, QField, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QComputed } from 'quickmodel';
 
 interface IUsuario {
 	id: string;

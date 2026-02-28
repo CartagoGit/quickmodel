@@ -17,8 +17,8 @@ UserDto (QModel)  ──► checkRules()  ──► toInterface() ──► Mode
 ## Documento → coerción DTO
 
 ```typescript
-import { QModel, Quick, QField, QComputed } from '@cartago-git/quickmodel';
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QComputed } from 'quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 interface IUser {
 	id: string;

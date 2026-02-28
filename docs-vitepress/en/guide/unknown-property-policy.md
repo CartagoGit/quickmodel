@@ -49,7 +49,7 @@ This is useful for:
 You can set the policy by passing `unknownPropertyPolicy` in the second argument of the `@Quick` decorator.
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	name: string;
@@ -79,7 +79,7 @@ class FlexibleUser extends QModel<IUser> {
 You can enforce a global policy for your entire application using `QConfig`. This is the recommended approach for security-critical applications.
 
 ```typescript
-import { QConfig } from '@cartago-git/quickmodel';
+import { QConfig } from 'quickmodel';
 
 // Call this at the start of your application (e.g. index.ts or server.ts)
 QConfig.configure({

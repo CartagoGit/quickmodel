@@ -17,6 +17,7 @@ import {
 // Module-level per-(constructor, key) cache for transformProperty() hot path
 // Safe because decorator metadata is immutable after class definition
 // ---------------------------------------------------------------------------
+/** @internal Cached transform metadata per (constructor, property key). Populated once; safe because decorator metadata is immutable after class definition. */
 interface IQPropTransformMeta {
 	customTransformer: any;
 
@@ -59,6 +60,13 @@ const _PROP_TRANSFORM_META = new WeakMap<
 	Map<string, IQPropTransformMeta>
 >();
 
+/**
+ * Fetches or builds the cached property transform metadata for a given constructor and property key.
+ * @internal
+ * @param ctor - The model constructor (used as WeakMap key)
+ * @param targetKey - The decorated property name
+ * @returns The resolved `IQPropTransformMeta` entry for this field
+ */
 function _getPropTransformMeta(
 	ctor: Function,
 	targetKey: string

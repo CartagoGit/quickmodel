@@ -17,7 +17,7 @@ Use `@QField` to define form structure, `@QRule` for synchronous validation, and
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel react-hook-form
+npm install quickmodel react-hook-form
 ```
 
 ## Model Setup
@@ -26,13 +26,7 @@ Use `@QField` to define form metadata (label, widget type, required). Use `@QRul
 validation logic.
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IUserSignup {
 	username: string;
@@ -249,7 +243,7 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 ## Async Field Validation (Server-Side)
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 @Quick({
 	username: 'string',

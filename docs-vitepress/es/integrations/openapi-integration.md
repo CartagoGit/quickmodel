@@ -13,7 +13,7 @@ QuickModel expone un método `getSchema()` integrado que genera objetos de esque
 ## Uso básico
 
 ```typescript
-import { QModel, Quick, QField } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField } from 'quickmodel';
 
 interface ICreateUser {
 	name: string;

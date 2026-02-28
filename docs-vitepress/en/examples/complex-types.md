@@ -5,7 +5,7 @@ Advanced examples demonstrating complex type transformations and patterns.
 ## BigInt for Large Numbers
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IAccount {
 	id: string;
@@ -226,7 +226,7 @@ console.log(payment instanceof CreditCardPayment); // true
 QuickModel supports automated polymorphism using the `discriminators` option in the `@Quick` decorator. This allows TypeScript to infer types and runtime transformation based on a discriminator field.
 
 ```typescript
-import { Quick, QModel } from '@cartago-git/quickmodel';
+import { Quick, QModel } from 'quickmodel';
 
 interface IContent {
 	type: 'content';

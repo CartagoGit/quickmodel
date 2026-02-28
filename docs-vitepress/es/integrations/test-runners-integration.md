@@ -21,7 +21,7 @@ Crea un plugin y llámalo una vez en tu fichero de setup:
 ```typescript
 // test/setup/quickmodel-chai.ts
 import type * as Chai from 'chai';
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 export function quickmodelChaiPlugin(chai: Chai.ChaiStatic): void {
 	chai.Assertion.addMethod('validQModel', function () {
@@ -130,7 +130,7 @@ Construye una capa de helpers delgada sobre `quickmodelMatchers`:
 
 ```typescript
 // test/helpers/quickmodel-assert.ts
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 class AssertionError extends Error {
 	constructor(message: string) {
@@ -235,7 +235,7 @@ El patrón más sencillo son **helpers de macro** que reciben el contexto de eje
 ```typescript
 // test/helpers/quickmodel-ava.ts
 import type { ExecutionContext } from 'ava';
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 export const qModelMacros = {
 	assertValid(ctl: ExecutionContext, model: object): void {

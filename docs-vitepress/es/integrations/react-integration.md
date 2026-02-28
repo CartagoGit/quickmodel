@@ -17,7 +17,7 @@ QuickModel proporciona una capa de validación y tipo para aplicaciones React �
 
 ```typescript
 // models/contact-form.ts
-import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+import { QField, QRule, qCheckRules } from 'quickmodel';
 
 class ContactForm {
 	@QField({ label: 'Nombre', required: true })
@@ -60,7 +60,7 @@ const { valid, errors } = qCheckRules(form);
 
 ```typescript
 // models/contact-form.ts
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick({ name: 'string', email: 'string', message: 'string' })
 class ContactForm extends QModel<IContactForm> {
@@ -98,7 +98,7 @@ const { valid, errors } = form.checkRules();
 ```typescript
 // hooks/useQuickResolver.ts
 import type { Resolver } from 'react-hook-form';
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 export function createQuickResolver<T extends object>(
 	FormClass: new () => T
@@ -137,7 +137,7 @@ Si usas `QModel`, puedes tiparlo más estrictamente y usar `instance.checkRules(
 ```typescript
 // hooks/useQuickResolver.ts — variante QModel
 import type { Resolver } from 'react-hook-form';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function createQModelResolver<T extends QModel<object>>(
 	FormClass: new (data?: object) => T
@@ -176,13 +176,7 @@ const resolver = createQModelResolver(RegistrationForm);
 ```typescript
 // app/actions/orders.ts
 'use server';
-import {
-	QModel,
-	Quick,
-	QField,
-	QRule,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule, QComputed } from 'quickmodel';
 
 @Quick(
 	{ productId: 'string', quantity: 'number', price: 'number' },
@@ -217,7 +211,7 @@ export async function createOrder(formData: FormData) {
 
 ```typescript
 // stores/cart.store.ts
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick(
 	{ id: 'string', name: 'string', qty: 'number', unitPrice: 'number' },
@@ -259,7 +253,7 @@ const useCartStore = create<ICartStore>((set) => ({
 
 ```typescript
 // hooks/useEmailValidation.ts
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 const validateEmail = async (email: string) => {
 	const form = new AsyncRegistrationForm();
@@ -274,7 +268,7 @@ const validateEmail = async (email: string) => {
 ```typescript
 // hooks/useQModel.ts
 import { useState, useCallback } from 'react';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function useQModel<T extends QModel<object>>(
 	ModelClass: new (data: object) => T,

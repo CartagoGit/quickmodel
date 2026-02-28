@@ -18,19 +18,13 @@ convertir respuestas de la API en DTOs con tipos, `copy()` para actualizaciones 
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel @tanstack/react-query
+npm install quickmodel @tanstack/react-query
 ```
 
 ## Configuración del Modelo
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IProducto {
 	id: string;
@@ -146,7 +140,7 @@ async function crearProducto(data: object): Promise<IProducto> {
 ### Variante con clase plana
 
 ```typescript
-import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+import { QField, QRule, qCheckRules } from 'quickmodel';
 
 class CrearProductoForm {
 	@QField({ label: 'Nombre del Producto', required: true })
@@ -244,7 +238,7 @@ async function sincronizarSiHayCambios(dto: ProductoDto) {
 ## Validación Asíncrona (Unicidad en Servidor)
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 const dto = new ProductoConNombreUnicoDto(formData);
 const { valid, errors } = await qCheckRulesAsync(dto);

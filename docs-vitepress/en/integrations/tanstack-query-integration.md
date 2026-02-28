@@ -18,19 +18,13 @@ normalization.
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel @tanstack/react-query
+npm install quickmodel @tanstack/react-query
 ```
 
 ## Model Setup
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IProduct {
 	id: string;
@@ -152,7 +146,7 @@ function AddProductForm() {
 ### Plain Class Variant
 
 ```typescript
-import { QField, QRule, qCheckRules } from '@cartago-git/quickmodel';
+import { QField, QRule, qCheckRules } from 'quickmodel';
 
 class CreateProductForm {
 	@QField({ label: 'Product Name', required: true })
@@ -285,7 +279,7 @@ async function syncIfDirty(dto: ProductDto) {
 ## Async Validation (Server-Side Uniqueness)
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 @Quick({ name: 'string', price: 'number', category: 'string' })
 class ProductWithUniqueNameDto extends CreateProductDto {

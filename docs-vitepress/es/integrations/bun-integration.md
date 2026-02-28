@@ -17,13 +17,7 @@ QuickModel funciona como capa de **DTOs y validación sin dependencias externas*
 
 ```typescript
 // dto/product.dto.ts
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IProduct {
 	id: string;
@@ -199,8 +193,8 @@ Usa `qCheckRulesAsync` para reglas que necesitan acceder a una base de datos o s
 
 ```typescript
 // dto/register.dto.ts
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 import { db } from './db';
 
 @Quick(

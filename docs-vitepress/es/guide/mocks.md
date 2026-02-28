@@ -31,13 +31,13 @@ console.log(admin.role); // 'admin'
 > Si necesitas tipar el parámetro `type` explícitamente (e.j. `'random' | 'empty'`), puedes importar `IQMockType` desde types:
 >
 > ```typescript
-> import type { IQMockType } from '@cartago-git/quickmodel/types';
+> import type { IQMockType } from 'quickmodel/types';
 > ```
 >
 > Para uso avanzado personalizado, `QMockGenerator` está disponible en advanced:
 >
 > ```typescript
-> import { QMockGenerator } from '@cartago-git/quickmodel/advanced';
+> import { QMockGenerator } from 'quickmodel/advanced';
 > ```
 
 ## Cómo Funciona

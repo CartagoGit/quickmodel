@@ -17,13 +17,7 @@ QuickModel works as a zero-dependency **DTO and validation layer** inside Bun se
 
 ```typescript
 // dto/product.dto.ts
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IProduct {
 	id: string;
@@ -199,8 +193,8 @@ Use `qCheckRulesAsync` for rules that need to hit a database or external service
 
 ```typescript
 // dto/register.dto.ts
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 import { db } from './db';
 
 @Quick(

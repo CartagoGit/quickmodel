@@ -5,7 +5,7 @@
 ## Ejemplo Básico
 
 ```typescript
-import { Quick, QModel, QAlias } from '@cartago-git/quickmodel';
+import { Quick, QModel, QAlias } from 'quickmodel';
 
 interface IUsuario {
 	firstName: string;

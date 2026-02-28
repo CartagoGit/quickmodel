@@ -90,7 +90,7 @@ Soporte para estándares modernos de Web API.
 ## Ejemplo de Uso
 
 ```typescript
-import { Quick, QModel } from '@cartago-git/quickmodel';
+import { Quick, QModel } from 'quickmodel';
 
 @Quick({
 	// Primitivos

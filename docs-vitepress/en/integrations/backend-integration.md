@@ -19,7 +19,7 @@ QuickModel works as a **DTO layer** for Node.js backend frameworks. It provides 
 ```typescript
 // middleware/validate-body.ts
 import type { Request, Response, NextFunction } from 'express';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function validateBody<TDto extends QModel<object>>(
 	DtoClass: new (data: object) => TDto
@@ -49,13 +49,7 @@ export function validateBody<TDto extends QModel<object>>(
 
 ```typescript
 // dto/create-user.dto.ts
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 @Quick(
 	{ username: 'string', email: 'string', age: 'number', role: 'string' },
@@ -117,7 +111,7 @@ router.post(
 ```typescript
 // plugins/dto-validation.ts
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function dtoValidator<TDto extends QModel<object>>(
 	DtoClass: new (data: object) => TDto
@@ -197,7 +191,7 @@ class InvoiceDto extends QModel<IInvoice> {
 ```typescript
 // middleware/q-validator.ts
 import type { Context, Next } from 'hono';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 export function qValidator<TDto extends QModel<object>>(
 	DtoClass: new (data: object) => TDto,
@@ -239,7 +233,7 @@ app.post(
 ## Async Validation — Duplicate Checks
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 class RegistrationDto extends QModel<IRegistration> {
 	@QRule(async (email: string) => {

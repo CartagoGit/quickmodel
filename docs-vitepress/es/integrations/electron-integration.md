@@ -14,8 +14,8 @@ Renderer (no confiable)                  Main (confiable)
 ## Límite IPC — serialize() / populate()
 
 ```typescript
-import { QModel, Quick, QRule, QField } from '@cartago-git/quickmodel';
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField } from 'quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 interface IUserPrefs {
 	theme: string;

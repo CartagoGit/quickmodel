@@ -31,7 +31,7 @@ export function useQuickExamples() {
 
 	// ─── Code examples (raw source) ───────────────
 
-	const exampleBasic = `import { QModel, Quick } from '@cartago-git/quickmodel';
+	const exampleBasic = `import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
   name: string;
@@ -63,7 +63,7 @@ console.log(user.balance + 1n);            // 500000000000000001n
 console.log(user.lastLogin.getFullYear()); // 2024
 console.log(user.roles.has('admin'));      // true`;
 
-	const exampleForms = `import { QModel, Quick, QField, QGroup, QRule } from '@cartago-git/quickmodel';
+	const exampleForms = `import { QModel, Quick, QField, QGroup, QRule } from 'quickmodel';
 
 interface ISignup {
   name: string;
@@ -104,7 +104,7 @@ const schema  = SignupModel.getFormSchema();
 const grouped = SignupModel.getFormSchemaGrouped();
 // [{ group: 'Identity', fields: [...] }, { group: 'Details', fields: [...] }]`;
 
-	const exampleMocks = `import { QModel, Quick } from '@cartago-git/quickmodel';
+	const exampleMocks = `import { QModel, Quick } from 'quickmodel';
 
 interface IProduct {
   id: string;

@@ -32,6 +32,10 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		const missingDocs: string[] = [];
 		const self = this;
 
+		/**
+		 * Recursively scans a directory tree for undocumented TypeScript exports.
+		 * @param dir - Absolute path to the directory to scan
+		 */
 		function scanDir(dir: string) {
 			const files = self._fs.readdirSync(dir);
 			for (const file of files) {

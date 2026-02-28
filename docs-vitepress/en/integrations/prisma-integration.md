@@ -17,14 +17,7 @@ QuickModel works alongside Prisma as a type-safe DTO layer between your database
 ## Model Setup
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QGroup,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QGroup, QComputed } from 'quickmodel';
 
 interface IUserRecord {
 	uid: string;
@@ -269,7 +262,7 @@ return post.serialize(); // includes excerpt ✅
 ## DB Uniqueness Validation
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 class CreateUserWithUniquenessDto extends CreateUserDto {}
 

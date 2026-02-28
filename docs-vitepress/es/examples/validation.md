@@ -9,7 +9,7 @@ Tienes un formulario de registro de usuario y necesitas validar que el email ten
 ## Validación Sincrónica Básica
 
 ```typescript
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
 
 interface IUserRegister {
 	name: string;

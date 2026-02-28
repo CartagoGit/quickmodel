@@ -18,6 +18,7 @@ export type IQTransformerKey =
  * Allows users to register custom transformers that will be available to all specific services (Deserializer, Serializer).
  */
 export class QTransformerRegistry {
+	/** @internal Map of normalized lowercase transformer keys to user-registered `IQTransformer` instances. */
 	private static transformers = new Map<
 		string,
 		IQTransformer<unknown, unknown>

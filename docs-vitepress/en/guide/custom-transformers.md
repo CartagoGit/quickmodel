@@ -9,7 +9,7 @@ A transformer is a class that implements the transformation logic for a specific
 ### Basic Structure
 
 ```typescript
-import { IQTransformer } from '@cartago-git/quickmodel/types';
+import { IQTransformer } from 'quickmodel/types';
 
 class MyCustomTransformer implements IQTransformer<SerializedType, MyType> {
 	// Transform from JSON to runtime type
@@ -78,7 +78,7 @@ interface IMoneyJSON {
 }
 
 // 3. Create the transformer
-import { IQTransformer } from '@cartago-git/quickmodel/types';
+import { IQTransformer } from 'quickmodel/types';
 
 class MoneyTransformer implements IQTransformer<IMoneyJSON, Money> {
 	deserialize(value: IMoneyJSON): Money {
@@ -97,7 +97,7 @@ class MoneyTransformer implements IQTransformer<IMoneyJSON, Money> {
 }
 
 // 4. Register the transformer
-import { QTransformerRegistry } from '@cartago-git/quickmodel/advanced';
+import { QTransformerRegistry } from 'quickmodel/advanced';
 
 QTransformerRegistry.register(Money, new MoneyTransformer());
 

@@ -18,14 +18,7 @@ QuickModel ofrece una API orientada a la serialización que se integra de forma 
 ## Configuración del Modelo
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-	QGroup,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed, QGroup } from 'quickmodel';
 
 interface IUserRecord {
 	uid: string;
@@ -322,7 +315,7 @@ const restored = new UserRecordDto(JSON.parse(text) as object);
 Usa `qCheckRulesAsync` para ejecutar reglas de negocio asíncronas (p. ej. comprobaciones de unicidad) antes de escribir en cualquier capa de almacenamiento:
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 async function save(dto: UserRecordDto) {
 	const result = await qCheckRulesAsync(dto, {

@@ -91,10 +91,10 @@ export function useWhyQuickModel() {
 	// ─── Install commands (raw) ────────────────────────────────────
 
 	const installCmds = {
-		npm: 'npm install @cartago-git/quickmodel',
-		yarn: 'yarn add @cartago-git/quickmodel',
-		pnpm: 'pnpm add @cartago-git/quickmodel',
-		bun: 'bun add @cartago-git/quickmodel',
+		npm: 'npm install quickmodel',
+		yarn: 'yarn add quickmodel',
+		pnpm: 'pnpm add quickmodel',
+		bun: 'bun add quickmodel',
 	} as const;
 
 	const codeTsconfigLegacy = `// tsconfig.json — Legacy decorators (TypeScript 3.4+)
@@ -114,7 +114,7 @@ export function useWhyQuickModel() {
   }
 }`;
 
-	const codeFirstModel = `import { QModel, Quick } from '@cartago-git/quickmodel';
+	const codeFirstModel = `import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
   name: string;
@@ -146,7 +146,7 @@ console.log(user.serialize());
 
 	onMounted(async () => {
 		const { createHighlighter } = await import('shiki');
-		const hl = await createHighlighter({
+		const highlighter = await createHighlighter({
 			themes: ['github-dark'],
 			langs: ['bash', 'typescript', 'jsonc'],
 		});
@@ -158,13 +158,13 @@ console.log(user.serialize());
 		const jsonc = { lang: 'jsonc' as const, theme: 'github-dark' as const };
 
 		highlighted.value = {
-			bun: hl.codeToHtml(installCmds.bun, bash),
-			npm: hl.codeToHtml(installCmds.npm, bash),
-			yarn: hl.codeToHtml(installCmds.yarn, bash),
-			pnpm: hl.codeToHtml(installCmds.pnpm, bash),
-			tsconfigLegacy: hl.codeToHtml(codeTsconfigLegacy, jsonc),
-			tsconfigTC39: hl.codeToHtml(codeTsconfigTC39, jsonc),
-			firstModel: hl.codeToHtml(codeFirstModel, tts),
+			bun: highlighter.codeToHtml(installCmds.bun, bash),
+			npm: highlighter.codeToHtml(installCmds.npm, bash),
+			yarn: highlighter.codeToHtml(installCmds.yarn, bash),
+			pnpm: highlighter.codeToHtml(installCmds.pnpm, bash),
+			tsconfigLegacy: highlighter.codeToHtml(codeTsconfigLegacy, jsonc),
+			tsconfigTC39: highlighter.codeToHtml(codeTsconfigTC39, jsonc),
+			firstModel: highlighter.codeToHtml(codeFirstModel, tts),
 		};
 	});
 

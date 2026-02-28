@@ -5,7 +5,7 @@ QuickModel proporciona un sistema de validación declarativo mediante el decorad
 ## Uso básico
 
 ```typescript
-import { Quick, QType, QModel, QRule } from '@cartago-git/quickmodel';
+import { Quick, QType, QModel, QRule } from 'quickmodel';
 
 interface IUsuario {
 	nombre: string;
@@ -129,9 +129,9 @@ const result = user.checkRules();
 QuickModel incluye un conjunto de decoradores validadores listos para usar que replican la API de `class-validator`, implementados como wrappers sobre `@QRule`. Impórtalos desde el entry point principal:
 
 ```typescript
-import { IsEmail, Min, IsNotEmpty } from '@cartago-git/quickmodel';
+import { IsEmail, Min, IsNotEmpty } from 'quickmodel';
 // o con tree-shaking para un bundle más pequeño:
-import { IsEmail } from '@cartago-git/quickmodel/validators';
+import { IsEmail } from 'quickmodel/validators';
 ```
 
 ```typescript
@@ -190,7 +190,7 @@ interface IQRulesResult {
 Decora los campos con `@QGroup('nombre')` para asignarlos a un grupo con nombre. Luego pasa `{ group }` a `checkRules()` para evaluar solo ese subconjunto — ideal para formularios multi-paso.
 
 ```typescript
-import { QRule, QGroup } from '@cartago-git/quickmodel';
+import { QRule, QGroup } from 'quickmodel';
 
 @Quick()
 class RegistroModel extends QModel<IRegistro> {
@@ -229,7 +229,7 @@ model.checkRules({ group: 'seguridad' });
 Usa `qGroups()` desde la subruta `/forms` para obtener **constantes de nombre de grupo tipadas** con autocompletado:
 
 ```typescript
-import { qGroups } from '@cartago-git/quickmodel/forms';
+import { qGroups } from 'quickmodel/forms';
 
 const Groups = qGroups('identidad', 'seguridad');
 // Groups.identidad === 'identidad'  (totalmente tipado — sin errores tipográficos)
@@ -382,7 +382,7 @@ class Admin extends Usuario {
 Usa `@QField` para anotar propiedades del modelo con metadatos de formulario. Luego llama a `getFormSchema()` para obtener un array de esquema listo para pasarlo a cualquier librería de formularios (Angular, React, etc.).
 
 ```typescript
-import { QField } from '@cartago-git/quickmodel';
+import { QField } from 'quickmodel';
 
 @Quick({ fechaNacimiento: Date })
 class PerfilModel extends QModel<IPerfil> {
@@ -604,14 +604,14 @@ if (!reporte.valid) {
 Todos los helpers de esta página (`checkRules`, `checkRulesAsync`, filtrado por grupo…) están disponibles también como **funciones standalone** que funcionan en cualquier clase plana — sin necesidad de extender `QModel`. Impórtalos desde la entrada `/forms`:
 
 ```typescript
-import { QRule, QGroup } from '@cartago-git/quickmodel';
+import { QRule, QGroup } from 'quickmodel';
 import {
 	qGroups,
 	qCheckRules,
 	qCheckRulesAsync,
 	qCheckRulesByGroup,
 	qCheckRulesByGroupAsync,
-} from '@cartago-git/quickmodel/forms';
+} from 'quickmodel/forms';
 
 const Groups = qGroups('identidad', 'seguridad');
 

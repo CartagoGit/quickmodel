@@ -43,7 +43,7 @@ interface IUser {
 Use the `@Quick()` decorator to specify transformations:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 @Quick({
 	createdAt: Date,

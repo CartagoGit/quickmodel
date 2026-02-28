@@ -8,6 +8,7 @@ import {
 import type { IQFieldMeta } from '../../../core/decorators/qfield.decorator';
 import { QGROUP_METADATA_KEY } from '../../../core/decorators/qgroup.decorator';
 
+/** @internal Intermediate representation of a parsed `@QField`-decorated property. */
 interface IParsedField {
 	field: string;
 	meta: IQFieldMeta;

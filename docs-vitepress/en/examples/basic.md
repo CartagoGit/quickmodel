@@ -11,7 +11,7 @@ You're fetching user data from an API that returns dates as ISO strings and you 
 Use QuickModel to automatically transform the data:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 // 1. Define your interface (API format)
 interface IUser {
@@ -237,7 +237,7 @@ const sampleUser = User.mock().sample();
 Here's a complete example with all features:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: number;

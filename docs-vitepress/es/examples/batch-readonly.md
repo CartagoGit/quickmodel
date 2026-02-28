@@ -9,7 +9,7 @@ Cuando recibes un array de la API, `createMany()` procesa todos los elementos, s
 ### Uso Básico
 
 ```typescript
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
 
 interface IEmployee {
 	id: string;

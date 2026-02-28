@@ -7,7 +7,7 @@ The `QModel` class is the heart of the library. It's an abstract base class that
 Extend `QModel` and pass your data interface as a generic type:
 
 ```typescript
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 interface IUser {
 	id: number;

@@ -6,13 +6,13 @@ assertions on `QModel` instances expressive and readable.
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 The matchers are available as a sub-entry point:
 
 ```typescript
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 ```
 
 ## Setup
@@ -22,7 +22,7 @@ Extend Vitest's `expect` in your setup file:
 ```typescript
 // vitest.setup.ts
 import { expect } from 'vitest';
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 expect.extend(quickmodelMatchers);
 ```
@@ -43,7 +43,7 @@ export default defineConfig({
 ```typescript
 // tests/setup.ts
 import { expect } from 'bun:test';
-import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+import { quickmodelMatchers } from 'quickmodel/matchers';
 
 expect.extend(quickmodelMatchers);
 ```
@@ -142,7 +142,7 @@ expect(dto).not.toHaveDirtyField('id');
 
 ```typescript
 import { describe, test, expect, beforeEach } from 'vitest';
-import { QModel, Quick, QRule, QField } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField } from 'quickmodel';
 
 @Quick(
 	{ id: 'string', username: 'string', email: 'string', age: 'number' },

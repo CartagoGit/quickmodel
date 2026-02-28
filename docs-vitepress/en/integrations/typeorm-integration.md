@@ -15,13 +15,7 @@ Database  ──►  TypeORM Entity  ──►  QModel DTO  ──►  Controlle
 ## Basic setup
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 // TypeORM Entity (DB layer)
 // @Entity() @Column() etc. omitted for brevity — this is the raw shape
@@ -99,7 +93,7 @@ console.log(dto.displayLabel); // '[USER] Alice'
 ## Saving a DTO to the repository
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 const dto = new UserDto({
 	id: 0,
@@ -253,7 +247,7 @@ get displayLabel(): string {
 Use `@QRule` with `Promise.resolve()` for async business rules:
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 @Quick({ name: 'string', email: 'string' }, {})
 class CreateUserDto extends QModel<{ name: string; email: string }> {

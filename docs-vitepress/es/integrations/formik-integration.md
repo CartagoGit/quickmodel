@@ -18,7 +18,7 @@ QuickModel funciona junto a Formik v2 como capa de validación y coerción — s
 ## Configuración del modelo
 
 ```typescript
-import { QModel, Quick, QRule, QField, QGroup } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QGroup } from 'quickmodel';
 
 interface IFormularioRegistro {
 	nombre: string;
@@ -82,7 +82,7 @@ class RegistroDto extends QModel<IFormularioRegistro> {
 La prop `validate` de Formik recibe los `values` del formulario y debe retornar un **objeto vacío** `{}` si es válido, o `{ campo: 'Mensaje' }` si no lo es.
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 // Utilidad: crear función validate compatible con Formik
 function crearFormikValidate<TForm extends object>(
@@ -114,7 +114,7 @@ const validate = crearFormikValidate<IFormularioRegistro>(
 Usa `@QGroup` para particionar los campos por paso del wizard. `qCheckRulesByGroup(dto)` devuelve un mapa de `nombreGrupo → { valid, errors }`:
 
 ```typescript
-import { qCheckRulesByGroup } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesByGroup } from 'quickmodel/forms';
 
 // Paso 1 del wizard: validar solo el grupo 'personal'
 function validarPaso1(
@@ -229,7 +229,7 @@ const schema = dto.getFormSchema();
 Usa `@QRule` con un predicado asíncrono (que devuelva `Promise<boolean>`) para verificaciones del lado del servidor, como la unicidad de email:
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 const emailsRegistrados = new Set(['admin@ejemplo.com']);
 

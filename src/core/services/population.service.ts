@@ -25,6 +25,7 @@ import { Logger } from '../helpers/logger.helper';
 // ─── Performance caches ───────────────────────────────────────────────────────
 // Model-class metadata is immutable after decorators run. Caching per class
 // avoids repeated Reflect.getMetadata calls on every model construction.
+/** @internal Per-class static metadata cached after the first population call. Populated once; immutable after decorator run. */
 interface IQPopulateClassMeta {
 	options: IQAdvancedOptions;
 	decoratedFields: string[];
@@ -60,6 +61,7 @@ const _POPULATE_CLASS_META = new WeakMap<Function, IQPopulateClassMeta>();
 // Merges model-level @Quick options with QConfig.get().defaults once per
 // (class, globalConfig reference). Invalidated automatically when QConfig
 // is reconfigured (detect via object identity comparison).
+/** @internal Merged (model + global) runtime configuration for a class, invalidated when `QConfig` reference changes. */
 interface IQMergedRuntimeOptions {
 	disableSafetyChecks: boolean;
 	unknownPolicy: 'keep' | 'strip' | 'error';
@@ -74,6 +76,7 @@ interface IQMergedRuntimeOptions {
 	/** Cached maxRecursionDepth — avoids extra QConfig.get() in validateDepth */
 	maxRecursionDepth: number;
 }
+/** @internal Cache entry pairing a `QConfig` reference with its resolved `IQMergedRuntimeOptions`. */
 interface IQMergedMetaCacheEntry {
 	/** Reference to the QConfig.defaults at build time — used for change detection */
 	configRef: IQAdvancedOptions | undefined;
@@ -147,7 +150,9 @@ function _getMergedRuntimeOptions(
  * @internal Used exclusively by `Deserializer.deserialize()`.
  */
 export class PopulationService {
+	/** @internal Singleton security inspector used to detect prototype pollution and other injection vectors. */
 	private readonly securityInspector = new SecurityInspector();
+	/** @internal Singleton size validator used to enforce array/object size limits during population. */
 	private readonly sizeValidator = new ObjectSizeValidator();
 
 	/**

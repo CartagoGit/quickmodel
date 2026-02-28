@@ -9,7 +9,7 @@ When you receive an array from the API, `createMany()` processes all items, sepa
 ### Basic Usage
 
 ```typescript
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
 
 interface IEmployee {
 	id: string;

@@ -19,7 +19,7 @@ con tipos correctos.
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel msw
+npm install quickmodel msw
 ```
 
 ## Configuración del Modelo
@@ -27,13 +27,7 @@ npm install @cartago-git/quickmodel msw
 Define DTOs separados para lectura (incluye `id`) y escritura (solo datos del usuario):
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 // DTO de lectura — para respuestas GET y store en memoria
 @Quick(

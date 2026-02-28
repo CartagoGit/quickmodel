@@ -7,7 +7,7 @@ La clase `QModel` es el corazón de la librería. Es una clase base abstracta qu
 Extiende `QModel` pasando tu interfaz de datos como tipo genérico:
 
 ```typescript
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 interface IUser {
 	id: number;

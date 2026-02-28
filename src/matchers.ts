@@ -23,6 +23,7 @@ import { QModel } from '@/core/models/quick.model';
 // Internal types
 // ---------------------------------------------------------------------------
 
+/** @internal Result shape returned by every Vitest/Jest custom matcher function. */
 interface IMatcherResult {
 	pass: boolean;
 	message: () => string;
@@ -32,6 +33,13 @@ interface IMatcherResult {
 // Helper: walk prototype chain to find @QField metadata
 // ---------------------------------------------------------------------------
 
+/**
+ * Walks the prototype chain to check whether `@QField` metadata is registered for a property.
+ * @internal
+ * @param instance - Model instance to inspect
+ * @param fieldName - Property name to look up
+ * @returns `true` if any prototype in the chain has `@QField` metadata for `fieldName`
+ */
 function hasQFieldMeta(instance: object, fieldName: string | symbol): boolean {
 	let proto = Object.getPrototypeOf(instance) as object | null;
 	while (proto !== null && proto !== Object.prototype) {

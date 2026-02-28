@@ -19,7 +19,7 @@ QuickModel works seamlessly in mobile development environments including React N
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 Enable decorators in `tsconfig.json`:
@@ -38,13 +38,7 @@ Enable decorators in `tsconfig.json`:
 Define interfaces with the `I` prefix and extend `QModel<IInterface>`:
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IUserProfile {
 	uid: string;
@@ -120,7 +114,7 @@ console.assert(dto.isVerified === true); // boolean ✅
 ### Validation
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 const result = qCheckRules(dto);
 if (!result.valid) {
@@ -182,7 +176,7 @@ export async function action({ request }: { request: Request }) {
 
 ```typescript
 import { Preferences } from '@capacitor/preferences';
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 async function saveSettings(dto: AppSettingsDto): Promise<void> {
 	const result = await qCheckRulesAsync(dto);

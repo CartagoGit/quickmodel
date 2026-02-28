@@ -20,19 +20,13 @@ ofrece el **patrón de actualización inmutable** que los reducers esperan, sin 
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel @reduxjs/toolkit react-redux
+npm install quickmodel @reduxjs/toolkit react-redux
 ```
 
 ## Configuración del modelo
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QField,
-	QRule,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule, QComputed } from 'quickmodel';
 
 interface IUser {
 	uid: string;
@@ -197,7 +191,7 @@ export const userApi = createApi({
 Valida antes de disparar la acción para evitar estado inválido:
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 function handleCreateUser(formData: object) {
 	const dto = new CreateUserDto(formData);
@@ -215,7 +209,7 @@ function handleCreateUser(formData: object) {
 Para validación asíncrona (ej. checks de unicidad contra el servidor):
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 async function handleSubmit(formData: object) {
 	const dto = new CreateUserDto(formData);

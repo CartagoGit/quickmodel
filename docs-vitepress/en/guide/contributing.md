@@ -501,7 +501,7 @@ import { QModel } from '@/core/models/quick.model';
 import { McpServer } from '@mcp/server';
 
 // ❌ Never auto-import the published package from inside src/
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 // ❌ Never import bare @mcp barrel
 import { something } from '@mcp';

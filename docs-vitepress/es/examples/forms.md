@@ -9,7 +9,7 @@ Tienes un modelo de usuario y quieres generar un formulario dinámico en React, 
 ## Schema Básico con @QField
 
 ```typescript
-import { QModel, Quick, QField } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField } from 'quickmodel';
 
 interface IContact {
 	firstName: string;
@@ -101,7 +101,7 @@ console.log(schema);
 ## Agrupación por Secciones con @QGroup
 
 ```typescript
-import { QModel, Quick, QField, QGroup } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QGroup } from 'quickmodel';
 
 interface IUserProfile {
 	firstName: string;
@@ -192,7 +192,7 @@ console.log(grouped);
 ```typescript
 // DynamicForm.tsx
 import React from 'react';
-import type { IQFormSchemaEntry } from '@cartago-git/quickmodel';
+import type { IQFormSchemaEntry } from 'quickmodel';
 
 interface IDynamicFormProps {
 	schema: IQFormSchemaEntry[];

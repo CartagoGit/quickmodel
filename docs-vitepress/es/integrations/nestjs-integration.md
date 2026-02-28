@@ -25,7 +25,7 @@ Asegúrate de que `experimentalDecorators` y `emitDecoratorMetadata` estén acti
 ## Instalación
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 ## Usando QModel como DTO
@@ -34,7 +34,7 @@ Define tus DTOs extendiendo `QModel` en lugar de clases planas. Obtienes **coerc
 
 ```typescript
 // create-user.dto.ts
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface ICreateUserBody {
 	name: string;
@@ -89,7 +89,7 @@ Reemplaza `class-validator` con `@QRule` para la validación de reglas de negoci
 
 ```typescript
 // create-user.dto.ts
-import { QModel, Quick, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule } from 'quickmodel';
 
 @Quick(
 	{ birthDate: Date, active: 'boolean' },
@@ -157,7 +157,7 @@ import {
 	ArgumentMetadata,
 	BadRequestException,
 } from '@nestjs/common';
-import { QModel } from '@cartago-git/quickmodel';
+import { QModel } from 'quickmodel';
 
 @Injectable()
 export class QuickModelValidationPipe implements PipeTransform {
@@ -385,7 +385,7 @@ Pasa `{ includeErrorInstances: true }` a `createMany()` para incluir las instanc
 
 ```typescript
 import { ApiProperty } from '@nestjs/swagger';
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 @Quick(
 	{ title: 'string', price: 'number', available: 'boolean', createdAt: Date },
@@ -432,7 +432,7 @@ Formatos disponibles: `'openapi'`, `'json'` (JSON Schema Draft-07), `'ajv'`, `'z
 ```typescript
 // users.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick({ createdAt: Date }, { unknownPropertyPolicy: 'strip' })
 class UserModel extends QModel<IUser> {
@@ -481,7 +481,7 @@ export class UsersService {
 Usa `@QComputed()` para incluir campos derivados en la respuesta API **sin guardarlos en base de datos**:
 
 ```typescript
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick(
 	{

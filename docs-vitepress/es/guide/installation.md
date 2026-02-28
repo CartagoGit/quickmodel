@@ -20,7 +20,7 @@ QuickModel evita usar built-ins de TypeScript que eleven la versión mínima. La
 | Built-in `NoInfer<T>`                              | `QModel.create()` / `QModel.createMany()`     | TS 5.4         | Polifilado como `INoInfer<T>` (interno)             |
 | Parámetros de tipo `const`                         | `qGroups5()` / entry point `compat/ts5/forms` | TS 5.0         | Aislado en entry point separado `/compat/ts5/forms` |
 
-El **paquete principal** (`@cartago-git/quickmodel`) funciona con TypeScript **3.4+**.
+El **paquete principal** (`quickmodel`) funciona con TypeScript **3.4+**.
 El entry point `/compat/ts5/forms` requiere TypeScript **5.0+** por los parámetros de tipo `const`.
 :::
 
@@ -31,19 +31,19 @@ Elige tu gestor de paquetes preferido:
 ::: code-group
 
 ```bash [npm]
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 ```bash [yarn]
-yarn add @cartago-git/quickmodel
+yarn add quickmodel
 ```
 
 ```bash [pnpm]
-pnpm add @cartago-git/quickmodel
+pnpm add quickmodel
 ```
 
 ```bash [bun]
-bun add @cartago-git/quickmodel
+bun add quickmodel
 ```
 
 :::
@@ -138,15 +138,15 @@ QuickModel utiliza una estructura de importación modular para mantener tu proye
 
 - **Core**: Clases principales y decoradores (`QModel`, `Quick`, `QType`)
     ```typescript
-    import { QModel, Quick } from '@cartago-git/quickmodel';
+    import { QModel, Quick } from 'quickmodel';
     ```
 - **Definiciones de Tipos**: Interfaces y tipos auxiliares (`IQSerializedInterface`, `IQSpec`, etc.)
     ```typescript
-    import type { IQSerializedInterface } from '@cartago-git/quickmodel/types';
+    import type { IQSerializedInterface } from 'quickmodel/types';
     ```
 - **Utilidades Avanzadas**: Utilidades en tiempo de ejecución para usuarios avanzados (`QMockGenerator`)
     ```typescript
-    import { QMockGenerator } from '@cartago-git/quickmodel/advanced';
+    import { QMockGenerator } from 'quickmodel/advanced';
     ```
 
 ## Verificar la Instalación
@@ -154,7 +154,7 @@ QuickModel utiliza una estructura de importación modular para mantener tu proye
 Crea un archivo de prueba simple para verificar que todo funciona:
 
 ```typescript
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 interface IUser {
 	id: number;

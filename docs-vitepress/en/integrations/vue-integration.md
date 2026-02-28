@@ -14,7 +14,7 @@ QuickModel integrates with **Vue 3** and **Nuxt** through the Composition API. U
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel
+npm install quickmodel
 ```
 
 Enable decorators in `tsconfig.json`:
@@ -33,8 +33,8 @@ Enable decorators in `tsconfig.json`:
 ```typescript
 // composables/useContactForm.ts
 import { reactive } from 'vue';
-import { QRule, QField } from '@cartago-git/quickmodel';
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { QRule, QField } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class ContactForm {
 	@QField({ label: 'Name', required: true })
@@ -97,7 +97,7 @@ function onSubmit() {
 ```typescript
 // composables/useContactForm.ts
 import { reactive, toRaw } from 'vue';
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @Quick({ name: 'string', email: 'string' })
 class ContactForm extends QModel<IContactForm> {
@@ -143,7 +143,7 @@ Vue wraps instances in a `Proxy`. Always call `toRaw(form).checkRules()` / `toRa
 ```typescript
 // stores/articles.ts
 import { defineStore } from 'pinia';
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick(
 	{
@@ -212,7 +212,7 @@ Always assign the result of `copy()` back to the store. The original model is ne
 
 ```typescript
 // composables/useQModelField.ts
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { qCheckRules } from 'quickmodel/forms';
 
 export function useQModelField<TForm extends object>(
 	instance: TForm,
@@ -232,7 +232,7 @@ Integration with VeeValidate's `defineRule`:
 
 ```typescript
 import { defineRule } from 'vee-validate';
-import { qCheckRules } from '@cartago-git/quickmodel/core/helpers/q-check-rules';
+import { qCheckRules } from 'quickmodel/forms';
 
 defineRule('qmodel', (value: unknown, [instance, field]: [object, string]) => {
 	instance[field as keyof object] = value as never;
@@ -246,7 +246,7 @@ defineRule('qmodel', (value: unknown, [instance, field]: [object, string]) => {
 
 ```typescript
 // composables/useProducts.ts
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 @Quick(
 	{
@@ -283,7 +283,7 @@ export function useProducts() {
 ## Async Validation
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/core/helpers/q-check-rules-async';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 // In a Vue composable
 const validate = async () => {
@@ -301,7 +301,7 @@ const validate = async () => {
 
 ```typescript
 // server/api/users.post.ts
-import { QModel, Quick } from '@cartago-git/quickmodel';
+import { QModel, Quick } from 'quickmodel';
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event);

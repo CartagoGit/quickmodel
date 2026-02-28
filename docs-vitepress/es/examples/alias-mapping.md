@@ -9,7 +9,7 @@ Las APIs REST suelen devolver JSON con claves en `snake_case` (ej: `first_name`,
 ## Uso Básico
 
 ```typescript
-import { QModel, Quick, QAlias } from '@cartago-git/quickmodel';
+import { QModel, Quick, QAlias } from 'quickmodel';
 
 // Interfaz del backend (snake_case)
 interface IUserAPI {

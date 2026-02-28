@@ -18,7 +18,7 @@ validating them with `@QRule`, and returning well-typed serialized responses.
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel msw
+npm install quickmodel msw
 ```
 
 ## Model Setup
@@ -26,13 +26,7 @@ npm install @cartago-git/quickmodel msw
 Define separate DTOs for read (includes `id`) and write (user-supplied data only):
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IUser {
 	id: string;

@@ -6,10 +6,10 @@ QuickModel ships **14 ready-to-use validator decorators** that provide a familia
 
 ```typescript
 // Main entry (all validators bundled with the rest of QuickModel)
-import { IsEmail, Min, IsNotEmpty } from '@cartago-git/quickmodel';
+import { IsEmail, Min, IsNotEmpty } from 'quickmodel';
 
 // Tree-shakeable subpath (includes ONLY the validators you import)
-import { IsEmail } from '@cartago-git/quickmodel/validators';
+import { IsEmail } from 'quickmodel/validators';
 ```
 
 ## String Validators
@@ -161,7 +161,7 @@ import {
 	IsInt,
 	IsPositive,
 	IsIn,
-} from '@cartago-git/quickmodel';
+} from 'quickmodel';
 
 interface IUser {
 	name: string;
@@ -218,8 +218,8 @@ declare score: number;
 Built-in validators work on any plain class — no need to extend `QModel`. Combine them with `qCheckRules` from the `/forms` subpath:
 
 ```typescript
-import { IsEmail, MinLength } from '@cartago-git/quickmodel/validators';
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { IsEmail, MinLength } from 'quickmodel/validators';
+import { qCheckRules } from 'quickmodel/forms';
 
 class ContactForm {
 	@IsEmail()

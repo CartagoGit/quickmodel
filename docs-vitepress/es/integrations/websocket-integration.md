@@ -33,13 +33,7 @@ Esta guía cubre cinco entornos de sockets en tiempo real, todos verificados por
 Define tus modelos una sola vez. Funcionan de forma idéntica en todos los entornos de socket.
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QRule,
-	QField,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField, QComputed } from 'quickmodel';
 
 interface IChatMessage {
 	id: string;
@@ -129,7 +123,7 @@ ws.send(JSON.stringify(msg.serialize()));
 
 ```typescript
 import { WebSocketServer } from 'ws';
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -189,7 +183,7 @@ QuickModel se integra con [Socket.IO](https://socket.io) como capa de payload ta
 
 ```typescript
 import { Server } from 'socket.io';
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 const io = new Server(httpServer);
 
@@ -336,7 +330,7 @@ eventSource.addEventListener('user:presence', (evt) => {
 
 ```typescript
 import { App } from 'uWebSockets.js';
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -394,7 +388,7 @@ ws.onmessage = (evt) => {
 
 ```typescript
 import { Client } from '@stomp/stompjs';
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 const stompClient = new Client({
 	brokerURL: 'ws://localhost:15674/ws',

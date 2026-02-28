@@ -37,7 +37,7 @@ implements IQImplements<InterfazBase, InterfazTransformaciones>
 Escenario: Tu API envía un `string` para `createdAt`, pero quieres trabajar con un objeto `Date`.
 
 ```typescript
-import { QModel, Quick, IQImplements } from '@cartago-git/quickmodel';
+import { QModel, Quick, IQImplements } from 'quickmodel';
 
 // 1. Datos Sin Procesar (JSON)
 interface IUser {

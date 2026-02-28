@@ -12,8 +12,8 @@ Cliente GraphQL  ◄──  Return del resolver  ◄──  DTO salida QModel  �
 ## DTO de entrada en un resolver de mutación
 
 ```typescript
-import { QModel, Quick, QRule, QField } from '@cartago-git/quickmodel';
-import { qCheckRules } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField } from 'quickmodel';
+import { qCheckRules } from 'quickmodel';
 
 interface ICreateUserInput {
 	name: string;
@@ -76,7 +76,7 @@ const resolvers = {
 ## Reglas asíncronas — comprobación de unicidad antes de mutar
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel';
+import { qCheckRulesAsync } from 'quickmodel';
 
 @Quick({ name: 'string', email: 'string', age: 'number', role: 'string' }, {})
 class CreateUserInput extends QModel<ICreateUserInput> {
@@ -224,7 +224,7 @@ Los decoradores de QModel (`@QField`, `@QRule`, `@QGroup`) son independientes de
 
 ```typescript
 import { InputType, Field } from '@nestjs/graphql';
-import { QModel, Quick, QField, QRule } from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule } from 'quickmodel';
 
 @InputType()
 @Quick({ name: 'string', email: 'string' }, { unknownPropertyPolicy: 'strip' })

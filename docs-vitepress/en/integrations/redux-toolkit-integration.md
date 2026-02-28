@@ -20,19 +20,13 @@ without extra dependencies like Immer.
 ## Installation
 
 ```bash
-npm install @cartago-git/quickmodel @reduxjs/toolkit react-redux
+npm install quickmodel @reduxjs/toolkit react-redux
 ```
 
 ## Model Setup
 
 ```typescript
-import {
-	QModel,
-	Quick,
-	QField,
-	QRule,
-	QComputed,
-} from '@cartago-git/quickmodel';
+import { QModel, Quick, QField, QRule, QComputed } from 'quickmodel';
 
 interface IUser {
 	uid: string;
@@ -196,7 +190,7 @@ export const userApi = createApi({
 Validate before firing the action to avoid invalid state:
 
 ```typescript
-import { qCheckRules } from '@cartago-git/quickmodel/forms';
+import { qCheckRules } from 'quickmodel/forms';
 
 function handleCreateUser(formData: object) {
 	const dto = new CreateUserDto(formData);
@@ -214,7 +208,7 @@ function handleCreateUser(formData: object) {
 For async validation (e.g., uniqueness checks against the server):
 
 ```typescript
-import { qCheckRulesAsync } from '@cartago-git/quickmodel/forms';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 async function handleSubmit(formData: object) {
 	const dto = new CreateUserDto(formData);

@@ -14,7 +14,7 @@ Renderer (untrusted)                     Main (trusted)
 ## IPC boundary — serialize() / populate()
 
 ```typescript
-import { QModel, Quick, QRule, QField } from '@cartago-git/quickmodel';
+import { QModel, Quick, QRule, QField } from 'quickmodel';
 
 interface IUserPrefs {
 	theme: string;

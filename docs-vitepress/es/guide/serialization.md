@@ -493,7 +493,7 @@ assert(account.toJSON().password === undefined); // excluido
 Por defecto, los getters definidos en el prototipo (propiedades calculadas) **no** se incluyen en la salida de `serialize()` ni de `toJSON()`. Esto evita la exposición accidental de lógica interna. Usa `@QComputed()` para incluir explícitamente un getter.
 
 ```typescript
-import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+import { QModel, Quick, QComputed } from 'quickmodel';
 
 interface IUser {
 	firstName: string;
