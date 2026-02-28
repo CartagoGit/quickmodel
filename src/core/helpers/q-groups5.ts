@@ -9,6 +9,8 @@
  * `.d.ts` parse error from this syntax.
  *
  * @see {@link Forms.qGroups} for the TS 4.1-compatible version (spread / `as const`).
+ * @see {@link IQGroupsMap} — the map type returned by this function
+ * @see {@link QGroup} — decorator that consumes the group names produced here
  * @module
  */
 
@@ -44,6 +46,8 @@ import type { IQGroupsMap } from './q-groups';
  * ```
  *
  * @typeParam T - Readonly string tuple inferred from the array literal.
+ * @see {@link Forms.qGroups} — TS 4.1-compatible version requiring `as const`
+ * @see {@link IQGroupsMap} — map type returned by this function
  */
 export function qGroups5<const T extends string[]>(
 	groups: T
