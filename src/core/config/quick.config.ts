@@ -8,6 +8,9 @@
  *
  * @group Configuration
  *
+ * @see {@link QConfig} — the singleton instance to call `configure()` on
+ * @see {@link QModel} — `@Quick({}, advancedOptions)` overrides these defaults per model
+ *
  * @example
  * ```typescript
  * const config: IQConfig = {
@@ -160,6 +163,10 @@ export class QModelConfigService {
 	 * Merges the provided config with the existing one.
 	 *
 	 * @param config - The configuration object to apply.
+	 *
+	 * @see {@link QModelConfigService.get} — retrieve the active config
+	 * @see {@link QModelConfigService.reset} — clear all configuration
+	 *
 	 * @example
 	 * ```typescript
 	 * QConfig.configure({
@@ -178,6 +185,8 @@ export class QModelConfigService {
 	 * Includes all active defaults.
 	 *
 	 * @returns The current `IQConfig` object (same reference held internally — do not mutate).
+	 *
+	 * @see {@link QModelConfigService.configure} — update the configuration
 	 * @see IQConfig
 	 */
 	public get(): IQConfig {
@@ -190,6 +199,7 @@ export class QModelConfigService {
 	 * Clears all defaults previously set via `configure()`. Useful in unit tests
 	 * to prevent configuration leakage between test cases.
 	 *
+	 * @see {@link QModelConfigService.configure} — set configuration
 	 * @internal
 	 * @see QConfig
 	 */

@@ -18,9 +18,9 @@ describe('Integrity: Unknown Property Policy', () => {
 		});
 	});
 
-	describe('Policy: keep (Default)', () => {
-		it('should preserve unknown properties by default', () => {
-			@Quick()
+	describe('Policy: strip (Default)', () => {
+		it('should strip unknown properties by default', () => {
+			@Quick({ id: String, name: String })
 			class User extends QModel<IUser> {
 				declare id: string;
 				declare name: string;
@@ -32,14 +32,14 @@ describe('Integrity: Unknown Property Policy', () => {
 				extra: 'data',
 			} as any);
 
-			expect((user as any).extra).toBe('data');
+			expect((user as any).extra).toBeUndefined();
 			expect(user.id).toBe('1');
 		});
 
-		it('should preserve unknown properties when explicitly set properties in global config', () => {
+		it('should preserve unknown properties when global config is explicitly set to keep', () => {
 			QConfig.configure({ defaults: { unknownPropertyPolicy: 'keep' } });
 
-			@Quick()
+			@Quick({ id: String, name: String })
 			class User extends QModel<IUser> {
 				declare id: string;
 				declare name: string;

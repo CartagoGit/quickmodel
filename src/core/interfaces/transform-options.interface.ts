@@ -85,4 +85,17 @@ export interface IQPropertyOptions {
 	 * Called as `mocker()` (no arguments) during `mock().random()` / `mock().array()`.
 	 */
 	mocker?: IQMockerFn;
+
+	/**
+	 * Controls how binary fields (File, Blob, ArrayBuffer, TypedArrays) are serialized
+	 * for this specific property.
+	 *
+	 * - `'auto'` / `'binary'` → metadata POJO
+	 * - `'reference'` → string (`file.name` for File, `'[Blob]'`, `'[binary]'`)
+	 * - `'base64'` → base64 string
+	 *
+	 * A global `serialize({ fileMode })` call option always takes precedence over this.
+	 * @default 'auto'
+	 */
+	fileMode?: 'auto' | 'binary' | 'reference' | 'base64';
 }

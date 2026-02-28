@@ -12,6 +12,9 @@ import { ICaseType } from '../types/case.type';
  * 3. Lowercase all tokens.
  * 4. Re-join in the requested format.
  *
+ * @see {@link ICaseType} — union of accepted format strings
+ * @see {@link QModel.serialize} — applies `transformCase` during serialization when configured in `@Quick`
+ *
  * @example
  * ```ts
  * CaseHelper.toCase('snake_case', 'firstName') // 'first_name'

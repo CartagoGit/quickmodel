@@ -35,6 +35,9 @@ export class QTransformerRegistry {
 	 * @param key - The key to identify the transformer (Class constructor or string name)
 	 * @param transformer - The transformer instance
 	 *
+	 * @see {@link QTransformerRegistry.get} — retrieve a registered transformer by key
+	 * @see {@link QTransformerRegistry.has} — check if a transformer is registered for a key
+	 *
 	 * @example
 	 * ```typescript
 	 * class MoneyTransformer implements IQTransformer<Money, string> { ... }
@@ -57,6 +60,9 @@ export class QTransformerRegistry {
 	 * @param key - String alias, constructor, or transformer object to look up
 	 * @returns The registered `IQTransformer`, or `undefined` if no transformer
 	 *   is registered for that key
+	 *
+	 * @see {@link QTransformerRegistry.register} — register a transformer
+	 * @see {@link QTransformerRegistry.has} — non-throwing existence check
 	 */
 	public static get(
 		key: IQTransformerKey

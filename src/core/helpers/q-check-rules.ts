@@ -9,6 +9,7 @@
  *
  * @see {@link qGetGroups} to list available group names on an instance.
  * @see {@link qCheckRulesByGroup} for a per-group result map.
+ * @see {@link qCheckRulesAsync} for the async version (runs async predicates).
  * @module
  */
 

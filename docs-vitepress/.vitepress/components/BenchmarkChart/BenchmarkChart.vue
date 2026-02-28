@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { useBenchmarkChart } from './BenchmarkChart';
+import type { IBenchmarkChartProps } from './BenchmarkChart.types';
+
+const props = withDefaults(defineProps<IBenchmarkChartProps>(), {
+	onlyScenarios: undefined,
+	onlyLibs: undefined,
+	onlyTabs: undefined,
+	defaultTab: undefined,
+});
 
 const {
 	// Tab navigation
@@ -56,7 +64,7 @@ const {
 	warningTooltipY,
 	onWarningMouseEnter,
 	onWarningMouseLeave,
-} = useBenchmarkChart();
+} = useBenchmarkChart(props);
 </script>
 
 <template src="./BenchmarkChart.html"></template>

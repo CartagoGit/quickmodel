@@ -14,18 +14,39 @@ import {
 import { useBenchmarkScale } from './useBenchmarkScale';
 import { useBenchmarkFormatters } from './useBenchmarkFormatters';
 import { useBenchmarkInteractions } from './useBenchmarkInteractions';
+import type { ITab, IBenchmarkChartProps } from './BenchmarkChart.types';
 
-const TAB_ORDER = ['features', 'coverage', 'performance'] as const;
-type ITab = (typeof TAB_ORDER)[number];
+export type { ITab, IBenchmarkChartProps } from './BenchmarkChart.types';
 
-export function useBenchmarkChart() {
+export function useBenchmarkChart(props?: IBenchmarkChartProps) {
+	const TAB_ORDER_FULL = ['features', 'coverage', 'performance'] as const;
+	const TAB_ORDER = computed(() =>
+		props?.onlyTabs
+			? (TAB_ORDER_FULL.filter((tab) =>
+					(props.onlyTabs as string[]).includes(tab)
+				) as ITab[])
+			: ([...TAB_ORDER_FULL] as ITab[])
+	);
+
 	const { lang, t } = useI18n();
 
 	const bmt = computed(() => t.value.benchmark);
 
+	const baseScenarios = computed(() =>
+		props?.onlyScenarios
+			? scenarios.filter((scn) => props.onlyScenarios!.includes(scn.key))
+			: scenarios
+	);
+
+	const baseLibNames = computed(() =>
+		props?.onlyLibs
+			? libNames.filter((lib) => props.onlyLibs!.includes(lib))
+			: libNames
+	);
+
 	/** Scenarios ordenados por etiqueta traducida (para los badges del tab Rendimiento) */
 	const sortedScenarios = computed(() =>
-		[...scenarios].sort((scnA, scnB) => {
+		[...baseScenarios.value].sort((scnA, scnB) => {
 			const scnLabels = bmt.value.scenarios as unknown as Record<
 				string,
 				{ label: string }
@@ -48,24 +69,42 @@ export function useBenchmarkChart() {
 
 	// ─── Tab navigation ───────────────────────────
 
-	const activeTab = ref<ITab>('features');
+	const activeTab = ref<ITab>(
+		props?.defaultTab ?? props?.onlyTabs?.[0] ?? 'features'
+	);
 	const prevTabIndex = ref(0);
 
-	const activeTabIndex = computed(() => TAB_ORDER.indexOf(activeTab.value));
+	const activeTabIndex = computed(() =>
+		TAB_ORDER.value.indexOf(activeTab.value)
+	);
 
 	const tabDirection = computed(() =>
 		activeTabIndex.value >= prevTabIndex.value ? 'forward' : 'backward'
 	);
 
 	function setTab(tab: ITab): void {
-		prevTabIndex.value = TAB_ORDER.indexOf(activeTab.value);
+		prevTabIndex.value = TAB_ORDER.value.indexOf(activeTab.value);
 		activeTab.value = tab;
 	}
-	const tabItems = computed(() => [
-		{ key: 'features', icon: '🎯', label: t.value.benchmark.tabFeatures },
-		{ key: 'coverage', icon: '📊', label: t.value.benchmark.tabCoverage },
-		{ key: 'performance', icon: '⚡', label: t.value.benchmark.tabPerf },
-	]);
+	const tabItems = computed(() =>
+		[
+			{
+				key: 'features',
+				icon: '🎯',
+				label: t.value.benchmark.tabFeatures,
+			},
+			{
+				key: 'coverage',
+				icon: '📊',
+				label: t.value.benchmark.tabCoverage,
+			},
+			{
+				key: 'performance',
+				icon: '⚡',
+				label: t.value.benchmark.tabPerf,
+			},
+		].filter((item) => TAB_ORDER.value.includes(item.key as ITab))
+	);
 
 	const activeTabTitle = computed(() => {
 		const bmt = t.value.benchmark;
@@ -95,7 +134,7 @@ export function useBenchmarkChart() {
 
 	const activeAppType = ref('all');
 	const activeScenario = ref(
-		sortedScenarios.value[0]?.key ?? scenarios[0].key
+		sortedScenarios.value[0]?.key ?? baseScenarios.value[0]?.key ?? ''
 	);
 	/** Tipos de librería activos (multi-select). Todos activos por defecto. */
 	const activeMatrixTypes = ref<string[]>(
@@ -106,8 +145,8 @@ export function useBenchmarkChart() {
 
 	const filteredScenarios = computed(() =>
 		activeAppType.value === 'all'
-			? scenarios
-			: scenarios.filter((scn) =>
+			? baseScenarios.value
+			: baseScenarios.value.filter((scn) =>
 					scn.appTypes.includes(activeAppType.value)
 				)
 	);
@@ -131,7 +170,9 @@ export function useBenchmarkChart() {
 		const inFiltered = filteredScenarios.value.find(
 			(scn) => scn.key === activeScenario.value
 		);
-		return inFiltered ?? filteredScenarios.value[0] ?? scenarios[0];
+		return (
+			inFiltered ?? filteredScenarios.value[0] ?? baseScenarios.value[0]
+		);
 	});
 
 	/** Librerías de referencia baseline: no compiten en el ranking, siempre al final
@@ -145,7 +186,7 @@ export function useBenchmarkChart() {
 	/** Librerías con datos en el escenario actual, ordenadas de más rápida a más lenta.
 	 *  Las librerías de referencia (Plain JS) se colocan siempre al final. */
 	const activeLibNames = computed(() =>
-		libNames
+		baseLibNames.value
 			.filter((lib) => currentScenario.value.values[lib] != null)
 			.sort((libA, libB) => {
 				const isRefA = PLAIN_JS_REFS.has(libA);
@@ -161,7 +202,9 @@ export function useBenchmarkChart() {
 
 	/** Librerías sin datos en el escenario actual (excluidas) */
 	const excludedLibNames = computed(() =>
-		libNames.filter((lib) => currentScenario.value.values[lib] == null)
+		baseLibNames.value.filter(
+			(lib) => currentScenario.value.values[lib] == null
+		)
 	);
 
 	/** Ordenación estándar: QuickModel primero, Plain JS siempre al final, resto alfabético */
@@ -188,7 +231,7 @@ export function useBenchmarkChart() {
 
 	/** Feature matrix: librerías de los tipos activos (QuickModel siempre incluida), ordenadas alfabéticamente */
 	const matrixLibsByType = computed(() => {
-		const base = libNames.filter(
+		const base = baseLibNames.value.filter(
 			(lib) =>
 				lib === 'QuickModel' ||
 				(libCategories[lib]?.some((cat) =>
@@ -204,9 +247,13 @@ export function useBenchmarkChart() {
 	 * QuickModel primero, Plain JS último, resto alfabético.
 	 * La visibilidad se controla con --hidden (CSS), no eliminando del DOM.
 	 */
-	const visibleMatrixLibNames = computed(() => sortLibsDisplay(libNames));
+	const visibleMatrixLibNames = computed(() =>
+		sortLibsDisplay(baseLibNames.value)
+	);
 
-	const coverageLibNames = computed(() => sortLibsDisplay(libNames));
+	const coverageLibNames = computed(() =>
+		sortLibsDisplay(baseLibNames.value)
+	);
 
 	// Al cambiar los tipos activos, resetear las librerías desactivadas
 	watch(activeMatrixTypes, () => {
@@ -365,8 +412,8 @@ export function useBenchmarkChart() {
 		// Datos estáticos
 		libraries,
 		featureRows,
-		scenarios,
-		libNames,
+		scenarios: baseScenarios,
+		libNames: baseLibNames,
 		appTypeOptions,
 		matrixTypeOptions,
 		featureCategoryOptions,

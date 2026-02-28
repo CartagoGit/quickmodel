@@ -315,6 +315,14 @@ function applyQTypeMetadata(
 				propertyKey
 			);
 		}
+		if (options.fileMode) {
+			Reflect.defineMetadata(
+				'qtype:fileMode',
+				options.fileMode,
+				proto,
+				propertyKey
+			);
+		}
 	}
 
 	// ALWAYS create getter/setter to prevent TypeScript from shadowing with real properties

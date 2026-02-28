@@ -58,60 +58,11 @@ export { QComputed } from './core/decorators/qcomputed.decorator';
 export { QConfig } from './core/config/quick.config';
 
 // ============================================================================
-// PUBLIC API - Submodules (Namespaces for Documentation)
+// PUBLIC API - Submodules
+// Use dedicated subpath imports for granular tree-shaking:
+//   import { ... } from 'quickmodel/types'
+//   import { ... } from 'quickmodel/advanced'
+//   import { ... } from 'quickmodel/utils'
+//   import { ... } from 'quickmodel/forms'
+//   import { ... } from 'quickmodel/compat/ts5/forms'
 // ============================================================================
-
-/**
- * Secondary types and interfaces.
- *
- * @remarks
- * Also available via subpath import:
- * ```typescript
- * import { ... } from 'quickmodel/types';
- * ```
- */
-export * as Types from './types';
-
-/**
- * Advanced utilities and internal tools.
- *
- * @remarks
- * Also available via subpath import:
- * ```typescript
- * import { ... } from 'quickmodel/advanced';
- * ```
- */
-export * as Advanced from './advanced';
-
-/**
- * Common utilities and helper types.
- *
- * @remarks
- * Also available via subpath import:
- * ```typescript
- * import { ... } from 'quickmodel/utils';
- * ```
- */
-export * as Utils from './utils';
-
-/**
- * Form-validation helpers for framework-agnostic use.
- *
- * @remarks
- * Also available via subpath import:
- * ```typescript
- * import { ... } from 'quickmodel/forms';
- * ```
- */
-export * as Forms from './forms';
-
-/**
- * TypeScript 5.0+ compatibility utilities.
- *
- * @remarks
- * Also available via subpath import:
- * ```typescript
- * import { ... } from 'quickmodel/compat/ts5/forms';
- * ```
- */
-export * as Compat from './compat/ts5/forms';

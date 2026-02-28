@@ -9,6 +9,7 @@
  *
  * @see {@link qGetGroups} to list available group names.
  * @see {@link qCheckRules} for filtering by a specific group.
+ * @see {@link qCheckRulesByGroupAsync} for the async version.
  * @module
  */
 

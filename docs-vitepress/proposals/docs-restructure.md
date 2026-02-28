@@ -1,6 +1,6 @@
 # Propuesta: Reestructuración de la documentación de QuickModel
 
-> **Estado:** Aprobado — pendiente de implementación  
+> **Estado:** ✅ Implementado  
 > **Fecha:** 28 de febrero de 2026  
 > **Afecta a:** `docs-vitepress/.vitepress/config.ts` (sidebar EN + ES), componente `BenchmarkChart`, páginas `.md` de la guía
 

@@ -619,7 +619,7 @@ export default defineConfig({
 							],
 						},
 						{
-							text: 'Core Concepts',
+							text: 'Core',
 							items: [
 								{ text: 'QModel', link: '/en/guide/qmodel' },
 								{
@@ -650,27 +650,15 @@ export default defineConfig({
 									text: 'Aliases Reference',
 									link: '/en/guide/aliases',
 								},
+								{
+									text: 'Key Aliases (@QAlias)',
+									link: '/en/guide/qalias',
+								},
 							],
 						},
 						{
-							text: 'Advanced',
+							text: 'Validation',
 							items: [
-								{
-									text: 'Unknown Property Policy',
-									link: '/en/guide/unknown-property-policy',
-								},
-								{
-									text: 'Dot Notation',
-									link: '/en/guide/dot-notation',
-								},
-								{
-									text: 'Custom Transformers',
-									link: '/en/guide/custom-transformers',
-								},
-								{
-									text: 'Nested Models',
-									link: '/en/guide/nested-models',
-								},
 								{
 									text: 'Validation (@QRule)',
 									link: '/en/guide/validation',
@@ -679,6 +667,11 @@ export default defineConfig({
 									text: 'Built-in Validators',
 									link: '/en/guide/validators',
 								},
+							],
+						},
+						{
+							text: 'Forms',
+							items: [
 								{
 									text: 'Form Validation (/forms)',
 									link: '/en/guide/forms',
@@ -688,17 +681,53 @@ export default defineConfig({
 									link: '/en/guide/qfield',
 								},
 								{
-									text: 'Key Aliases (@QAlias)',
-									link: '/en/guide/qalias',
+									text: 'FormData & Streaming',
+									link: '/en/guide/formdata',
 								},
+							],
+						},
+						{
+							text: 'Mocks',
+							items: [
 								{
 									text: 'Mock Generation',
 									link: '/en/guide/mocks',
 								},
+							],
+						},
+						{
+							text: 'Customization',
+							items: [
+								{
+									text: 'Custom Transformers',
+									link: '/en/guide/custom-transformers',
+								},
+								{
+									text: 'Nested Models',
+									link: '/en/guide/nested-models',
+								},
+								{
+									text: 'Dot Notation',
+									link: '/en/guide/dot-notation',
+								},
+								{
+									text: 'Unknown Property Policy',
+									link: '/en/guide/unknown-property-policy',
+								},
+							],
+						},
+						{
+							text: 'Performance',
+							items: [
 								{
 									text: 'Bundle Size & Tree-shaking',
 									link: '/en/guide/bundle-size',
 								},
+							],
+						},
+						{
+							text: 'Reference',
+							items: [
 								{
 									text: 'Troubleshooting',
 									link: '/en/guide/troubleshooting',
@@ -906,7 +935,7 @@ export default defineConfig({
 							],
 						},
 						{
-							text: 'Conceptos Básicos',
+							text: 'Núcleo',
 							items: [
 								{ text: 'QModel', link: '/es/guide/qmodel' },
 								{
@@ -937,27 +966,15 @@ export default defineConfig({
 									text: 'Referencia de Alias',
 									link: '/es/guide/aliases',
 								},
+								{
+									text: 'Alias de Claves (@QAlias)',
+									link: '/es/guide/qalias',
+								},
 							],
 						},
 						{
-							text: 'Avanzado',
+							text: 'Validación',
 							items: [
-								{
-									text: 'Política de Propiedades Desconocidas',
-									link: '/es/guide/unknown-property-policy',
-								},
-								{
-									text: 'Notación por Puntos',
-									link: '/es/guide/dot-notation',
-								},
-								{
-									text: 'Transformadores Personalizados',
-									link: '/es/guide/custom-transformers',
-								},
-								{
-									text: 'Modelos Anidados',
-									link: '/es/guide/nested-models',
-								},
 								{
 									text: 'Validación (@QRule)',
 									link: '/es/guide/validation',
@@ -966,6 +983,11 @@ export default defineConfig({
 									text: 'Validadores Integrados',
 									link: '/es/guide/validators',
 								},
+							],
+						},
+						{
+							text: 'Formularios',
+							items: [
 								{
 									text: 'Validación de Formularios (/forms)',
 									link: '/es/guide/forms',
@@ -975,17 +997,53 @@ export default defineConfig({
 									link: '/es/guide/qfield',
 								},
 								{
-									text: 'Alias de Claves (@QAlias)',
-									link: '/es/guide/qalias',
+									text: 'FormData y Streaming',
+									link: '/es/guide/formdata',
 								},
+							],
+						},
+						{
+							text: 'Mocks',
+							items: [
 								{
 									text: 'Generación de Mocks',
 									link: '/es/guide/mocks',
 								},
+							],
+						},
+						{
+							text: 'Personalización',
+							items: [
+								{
+									text: 'Transformadores Personalizados',
+									link: '/es/guide/custom-transformers',
+								},
+								{
+									text: 'Modelos Anidados',
+									link: '/es/guide/nested-models',
+								},
+								{
+									text: 'Notación por Puntos',
+									link: '/es/guide/dot-notation',
+								},
+								{
+									text: 'Política de Propiedades Desconocidas',
+									link: '/es/guide/unknown-property-policy',
+								},
+							],
+						},
+						{
+							text: 'Rendimiento',
+							items: [
 								{
 									text: 'Tamaño de Bundle y Tree-shaking',
 									link: '/es/guide/bundle-size',
 								},
+							],
+						},
+						{
+							text: 'Referencia',
+							items: [
 								{
 									text: 'Solución de Problemas',
 									link: '/es/guide/troubleshooting',

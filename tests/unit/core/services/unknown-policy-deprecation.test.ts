@@ -1,17 +1,14 @@
 /**
- * Task #22 — unknownPropertyPolicy deprecation warning (v1.x → v2.0.0)
+ * unknownPropertyPolicy — default behavior
  *
- * When neither the model nor the global config explicitly sets
- * `unknownPropertyPolicy`, QuickModel falls back to 'keep' — the current
- * default that WILL change to 'strip' in v2.0.0.
- * A deprecation warning must be emitted to encourage explicit configuration.
+ * The default value of unknownPropertyPolicy is 'strip'.
+ * Unknown properties are removed unless the policy is explicitly overridden.
  *
- * TDD: tests written first, implementation follows.
+ * Tests cover: default strip behavior, explicit policy overrides,
+ * global config interaction, and functional behavior of each policy.
  */
-import { describe, test, expect, beforeEach, afterEach, spyOn } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { Quick, QModel, QConfig } from '@/index';
-import { Logger } from '@/core/helpers/logger.helper';
-import { PopulationService } from '@/core/services/population.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -20,28 +17,28 @@ interface IProduct {
 	price: number;
 }
 
-/** No unknownPropertyPolicy at all */
+/** No unknownPropertyPolicy — defaults to 'strip' */
 @Quick({ name: String, price: Number })
 class ProductNoPolicyModel extends QModel<IProduct> {
 	declare name: string;
 	declare price: number;
 }
 
-/** Explicit 'keep' — should NOT warn */
+/** Explicit 'keep' — unknown properties are preserved */
 @Quick({ name: String, price: Number }, { unknownPropertyPolicy: 'keep' })
 class ProductKeepModel extends QModel<IProduct> {
 	declare name: string;
 	declare price: number;
 }
 
-/** Explicit 'strip' — should NOT warn */
+/** Explicit 'strip' — unknown properties are removed */
 @Quick({ name: String, price: Number }, { unknownPropertyPolicy: 'strip' })
 class ProductStripModel extends QModel<IProduct> {
 	declare name: string;
 	declare price: number;
 }
 
-/** Explicit 'error' — should NOT warn */
+/** Explicit 'error' — unknown properties throw */
 @Quick({ name: String, price: Number }, { unknownPropertyPolicy: 'error' })
 class ProductErrorModel extends QModel<IProduct> {
 	declare name: string;
@@ -50,247 +47,116 @@ class ProductErrorModel extends QModel<IProduct> {
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe('Task #22 — unknownPropertyPolicy deprecation warning', () => {
-	let warnSpy: ReturnType<typeof spyOn>;
-
+describe('unknownPropertyPolicy — default is strip', () => {
 	beforeEach(() => {
-		warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
 		QConfig.reset();
-		// Reset per-class deduplication so each test sees fresh warnings
-		PopulationService._clearWarnedPolicyCache();
 	});
 
 	afterEach(() => {
-		warnSpy.mockRestore();
 		QConfig.reset();
-		PopulationService._clearWarnedPolicyCache();
 	});
 
-	// ── 1. Warning fires when policy is absent ────────────────────────────
+	// ── 1. Default behavior is strip ──────────────────────────────────────
 
-	test('emits a deprecation warning when unknownPropertyPolicy is not set', () => {
-		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
+	test('strips unknown properties by default when no policy is set (create)', () => {
+		const instance = ProductNoPolicyModel.create({
+			name: 'Widget',
+			price: 9.99,
+			extra: 'should be gone',
+		} as any);
 
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasDeprecation = warnings.some((msg) =>
-			msg.includes('unknownPropertyPolicy')
-		);
-		expect(hasDeprecation).toBe(true);
+		expect(instance.name).toBe('Widget');
+		expect(instance.price).toBe(9.99);
+		expect((instance as any).extra).toBeUndefined();
 	});
 
-	test('deprecation warning mentions v2.0.0', () => {
-		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
+	test('strips unknown properties by default when no policy is set (new)', () => {
+		const instance = new ProductNoPolicyModel({
+			name: 'Widget',
+			price: 9.99,
+			extra: 'should be gone',
+		} as any);
 
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasVersion = warnings.some(
-			(msg) => msg.includes('v2.0.0') || msg.includes('v2')
-		);
-		expect(hasVersion).toBe(true);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBeUndefined();
 	});
 
-	test('deprecation warning mentions the model class name', () => {
-		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
+	test('strips multiple unknown properties by default', () => {
+		const instance = ProductNoPolicyModel.create({
+			name: 'Widget',
+			price: 9.99,
+			extra1: 'gone',
+			extra2: 42,
+			extra3: { nested: true },
+		} as any);
 
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasClassName = warnings.some((msg) =>
-			msg.includes('ProductNoPolicyModel')
-		);
-		expect(hasClassName).toBe(true);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra1).toBeUndefined();
+		expect((instance as any).extra2).toBeUndefined();
+		expect((instance as any).extra3).toBeUndefined();
 	});
 
-	// ── 2. Warning does NOT fire when policy is explicitly configured ─────
+	// ── 2. Explicit 'strip' — same as default ─────────────────────────────
 
-	test('does NOT warn when unknownPropertyPolicy is explicitly set to "keep"', () => {
-		ProductKeepModel.create({ name: 'Widget', price: 9.99 });
+	test('explicit strip removes unknown properties (create)', () => {
+		const instance = ProductStripModel.create({
+			name: 'Widget',
+			price: 9.99,
+			extra: true,
+		} as any);
 
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasDeprecation = warnings.some((msg) =>
-			msg.includes('unknownPropertyPolicy')
-		);
-		expect(hasDeprecation).toBe(false);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBeUndefined();
 	});
 
-	test('does NOT warn when unknownPropertyPolicy is explicitly set to "strip"', () => {
-		ProductStripModel.create({ name: 'Widget', price: 9.99 });
+	test('explicit strip removes unknown properties (new)', () => {
+		const instance = new ProductStripModel({
+			name: 'Widget',
+			price: 9.99,
+			extra: true,
+		} as any);
 
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasDeprecation = warnings.some((msg) =>
-			msg.includes('unknownPropertyPolicy')
-		);
-		expect(hasDeprecation).toBe(false);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBeUndefined();
 	});
 
-	test('does NOT warn when unknownPropertyPolicy is explicitly set to "error"', () => {
-		// Pass only declared properties to avoid the error policy throwing
-		ProductErrorModel.create({ name: 'Widget', price: 9.99 });
+	// ── 3. Explicit 'keep' preserves unknown properties ───────────────────
 
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasDeprecation = warnings.some((msg) =>
-			msg.includes('unknownPropertyPolicy')
-		);
-		expect(hasDeprecation).toBe(false);
+	test('explicit keep preserves unknown properties (create)', () => {
+		const instance = ProductKeepModel.create({
+			name: 'Widget',
+			price: 9.99,
+			extra: true,
+		} as any);
+
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBe(true);
 	});
 
-	// ── 3. Global config suppresses the warning ───────────────────────────
+	test('explicit keep preserves unknown properties (new)', () => {
+		const instance = new ProductKeepModel({
+			name: 'Widget',
+			price: 9.99,
+			extra: true,
+		} as any);
 
-	test('does NOT warn when global config sets unknownPropertyPolicy', () => {
-		QConfig.configure({ defaults: { unknownPropertyPolicy: 'strip' } });
-
-		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasDeprecation = warnings.some((msg) =>
-			msg.includes('unknownPropertyPolicy')
-		);
-		expect(hasDeprecation).toBe(false);
+		expect(instance.name).toBe('Widget');
+		expect((instance as any).extra).toBe(true);
 	});
 
-	// ── 4. Warning fires only on root call (not recursion) ────────────────
+	// ── 4. Explicit 'error' throws on unknown properties ──────────────────
 
-	test('warning fires only once per create() call, not repeatedly during recursion', () => {
-		interface IOrder {
-			id: number;
-			product: IProduct;
-		}
-
-		@Quick({ id: Number, product: ProductNoPolicyModel })
-		class OrderModel extends QModel<IOrder> {
-			declare id: number;
-			declare product: IProduct;
-		}
-
-		OrderModel.create({ id: 1, product: { name: 'Widget', price: 9.99 } });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const deprecationWarnings = calls.filter((args) =>
-			String(args[0]).includes('unknownPropertyPolicy')
-		);
-		// Should fire at most once per root call per class
-		// (two classes without policy: OrderModel + ProductNoPolicyModel → at most 2 warnings, 1 each)
-		expect(deprecationWarnings.length).toBeGreaterThan(0);
-		expect(deprecationWarnings.length).toBeLessThanOrEqual(2);
+	test('explicit error throws when unknown properties are present (create)', () => {
+		expect(() =>
+			ProductErrorModel.create({
+				name: 'Widget',
+				price: 9.99,
+				extra: true,
+			} as any)
+		).toThrow();
 	});
 
-	// ── 5. Recommended call to action in the warning ─────────────────────
-
-	test('deprecation warning recommends setting the policy explicitly', () => {
-		ProductNoPolicyModel.create({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		const hasRecommendation = warnings.some(
-			(msg) =>
-				msg.includes("'strip'") ||
-				msg.includes('"strip"') ||
-				msg.includes('strip') ||
-				msg.includes('explicit')
-		);
-		expect(hasRecommendation).toBe(true);
-	});
-});
-
-// ─── Tests con `new` — comportamiento idéntico a `create` ───────────────────
-//
-// `Model.create(data)` es un alias de `new Model(data)`.
-// Todas las políticas deben funcionar igual usando el constructor directamente.
-
-describe('Task #22 — unknownPropertyPolicy deprecation warning (via `new`)', () => {
-	let warnSpy: ReturnType<typeof spyOn>;
-
-	beforeEach(() => {
-		warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
-		QConfig.reset();
-		PopulationService._clearWarnedPolicyCache();
-	});
-
-	afterEach(() => {
-		warnSpy.mockRestore();
-		QConfig.reset();
-		PopulationService._clearWarnedPolicyCache();
-	});
-
-	test('emits a deprecation warning when using `new` and policy is not set', () => {
-		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
-		).toBe(true);
-	});
-
-	test('deprecation warning via `new` mentions v2.0.0', () => {
-		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('v2.0.0') || msg.includes('v2'))
-		).toBe(true);
-	});
-
-	test('deprecation warning via `new` mentions the model class name', () => {
-		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('ProductNoPolicyModel'))
-		).toBe(true);
-	});
-
-	test('does NOT warn via `new` when policy is explicitly "keep"', () => {
-		new ProductKeepModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
-		).toBe(false);
-	});
-
-	test('does NOT warn via `new` when policy is explicitly "strip"', () => {
-		new ProductStripModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
-		).toBe(false);
-	});
-
-	test('does NOT warn via `new` when policy is explicitly "error"', () => {
-		new ProductErrorModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
-		).toBe(false);
-	});
-
-	test('global config suppresses warning when using `new`', () => {
-		QConfig.configure({ defaults: { unknownPropertyPolicy: 'strip' } });
-
-		new ProductNoPolicyModel({ name: 'Widget', price: 9.99 });
-
-		const calls = warnSpy.mock.calls as string[][];
-		const warnings = calls.map((args) => String(args[0]));
-		expect(
-			warnings.some((msg) => msg.includes('unknownPropertyPolicy'))
-		).toBe(false);
-	});
-
-	// ── Comportamiento funcional de cada política con `new` ───────────────
-
-	test('policy "error" via `new` throws on unknown properties', () => {
+	test('explicit error throws when unknown properties are present (new)', () => {
 		expect(
 			() =>
 				new ProductErrorModel({
@@ -301,23 +167,91 @@ describe('Task #22 — unknownPropertyPolicy deprecation warning (via `new`)', (
 		).toThrow();
 	});
 
-	test('policy "strip" via `new` removes unknown properties silently', () => {
-		const instance = new ProductStripModel({
+	test('explicit error does NOT throw when no unknown properties are present', () => {
+		expect(() =>
+			ProductErrorModel.create({ name: 'Widget', price: 9.99 })
+		).not.toThrow();
+	});
+
+	// ── 5. Global config overrides the default ────────────────────────────
+
+	test('global config keep overrides the default strip', () => {
+		QConfig.configure({ defaults: { unknownPropertyPolicy: 'keep' } });
+
+		const instance = ProductNoPolicyModel.create({
 			name: 'Widget',
 			price: 9.99,
-			extra: true,
+			extra: 'kept by global',
 		} as any);
-		expect(instance.name).toBe('Widget');
+
+		expect((instance as any).extra).toBe('kept by global');
+	});
+
+	test('global config strip is consistent with the default', () => {
+		QConfig.configure({ defaults: { unknownPropertyPolicy: 'strip' } });
+
+		const instance = ProductNoPolicyModel.create({
+			name: 'Widget',
+			price: 9.99,
+			extra: 'gone',
+		} as any);
+
 		expect((instance as any).extra).toBeUndefined();
 	});
 
-	test('policy "keep" via `new` preserves unknown properties', () => {
-		const instance = new ProductKeepModel({
+	test('global config error throws on unknown properties', () => {
+		QConfig.configure({ defaults: { unknownPropertyPolicy: 'error' } });
+
+		@Quick({ name: String, price: Number })
+		class ProductGlobalErrorModel extends QModel<IProduct> {
+			declare name: string;
+			declare price: number;
+		}
+
+		expect(() =>
+			ProductGlobalErrorModel.create({
+				name: 'Widget',
+				price: 9.99,
+				extra: 'fail',
+			} as any)
+		).toThrow();
+	});
+
+	// ── 6. Decorator policy overrides global config ───────────────────────
+
+	test('decorator keep overrides global strip config', () => {
+		QConfig.configure({ defaults: { unknownPropertyPolicy: 'strip' } });
+
+		const instance = ProductKeepModel.create({
 			name: 'Widget',
 			price: 9.99,
-			extra: true,
+			extra: 'decorator wins',
 		} as any);
+
+		expect((instance as any).extra).toBe('decorator wins');
+	});
+
+	test('decorator strip overrides global keep config', () => {
+		QConfig.configure({ defaults: { unknownPropertyPolicy: 'keep' } });
+
+		const instance = ProductStripModel.create({
+			name: 'Widget',
+			price: 9.99,
+			extra: 'still gone',
+		} as any);
+
+		expect((instance as any).extra).toBeUndefined();
+	});
+
+	// ── 7. Known properties are never stripped ────────────────────────────
+
+	test('known properties are always preserved regardless of policy', () => {
+		const instance = ProductNoPolicyModel.create({
+			name: 'Widget',
+			price: 9.99,
+		});
+
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra).toBe(true);
+		expect(instance.price).toBe(9.99);
 	});
 });

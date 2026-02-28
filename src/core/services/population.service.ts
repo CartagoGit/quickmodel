@@ -49,11 +49,7 @@ interface IQPopulateClassMeta {
 	 * class — avoids Logger.warn() on every root construction.
 	 */
 	disableSafetyChecksWarned: boolean;
-	/**
-	 * OPT: tracks whether the unknownPropertyPolicy deprecation warning has already
-	 * fired for this class — replaces the static Set.has() lookup in the hot path.
-	 */
-	unknownPolicyWarned: boolean;
+
 	/**
 	 * OPT#POP-DOT: subset of decoratedFields that contain a dot ('.').
 	 * Pre-computed once at first construction to avoid filter() alloc per call.
@@ -70,8 +66,7 @@ const _POPULATE_CLASS_META = new WeakMap<Function, IQPopulateClassMeta>();
 interface IQMergedRuntimeOptions {
 	disableSafetyChecks: boolean;
 	unknownPolicy: 'keep' | 'strip' | 'error';
-	/** true when model or global config explicitly set unknownPropertyPolicy */
-	unknownPolicyExplicit: boolean;
+
 	maxArrayLength: number;
 	normalization: { trimStrings?: boolean; emptyStringAsNull?: boolean };
 	coercionStrategy: 'strict' | 'loose';
@@ -109,11 +104,7 @@ function _getMergedRuntimeOptions(
 		unknownPolicy:
 			options.unknownPropertyPolicy ||
 			gDef.unknownPropertyPolicy ||
-			'keep',
-		/** true when at least one of model or global explicitly sets the policy */
-		unknownPolicyExplicit: !!(
-			options.unknownPropertyPolicy || gDef.unknownPropertyPolicy
-		),
+			'strip',
 		maxArrayLength:
 			options.maxArrayLength ?? gDef.maxArrayLength ?? 5000000,
 		normalization: {
@@ -160,37 +151,6 @@ export class PopulationService {
 	/** @internal Singleton size validator used to enforce array/object size limits during population. */
 	private readonly sizeValidator = new ObjectSizeValidator();
 
-	/**
-	 * Tracks which model classes have already received the `unknownPropertyPolicy`
-	 * deprecation warning so it fires at most once per class.
-	 * @internal
-	 */
-	private static readonly _warnedMissingPolicy = new Set<Function>();
-
-	/**
-	 * OPT2: Tracks classes whose classMeta.unknownPolicyWarned flag is set to true.
-	 * Needed to enable proper cache clearing in tests (WeakMap is not iterable).
-	 * @internal
-	 */
-	private static readonly _warnedPolicyClasses = new Set<Function>();
-
-	/**
-	 * Clears the per-class cache of deprecation warnings.
-	 * Intended for use in tests only — do not call in production code.
-	 * @internal
-	 */
-	public static _clearWarnedPolicyCache(): void {
-		PopulationService._warnedMissingPolicy.clear();
-		// OPT2: Also reset the classMeta.unknownPolicyWarned flags so the warning
-		// can fire again after cache clear (required for test isolation)
-		for (const modelClass of PopulationService._warnedPolicyClasses) {
-			const meta = _POPULATE_CLASS_META.get(modelClass);
-			if (meta) {
-				meta.unknownPolicyWarned = false;
-			}
-		}
-		PopulationService._warnedPolicyClasses.clear();
-	}
 	/** @internal Handles dot-notation path transformation (e.g. `'address.city'`) during population. */
 	private readonly dotNotationHandler: DotNotationHandler;
 	/** @internal Handles per-property type transformation and coercion during population. */
@@ -291,9 +251,8 @@ export class PopulationService {
 				computedKeysSet,
 				isMethodCache: new Map(),
 				isArrowMethodCache: new Map(),
-				// OPT: per-class one-shot warning flags to avoid repeated Logger.warn() calls
+				// OPT: per-class one-shot warning flag to avoid repeated Logger.warn() calls
 				disableSafetyChecksWarned: false,
-				unknownPolicyWarned: false,
 				// OPT#POP-DOT: pre-filter dot-notation keys once; empty array for most models
 				dotNotationFields: rawDecorated.filter(
 					(fld: unknown) =>
@@ -309,7 +268,6 @@ export class PopulationService {
 		const {
 			disableSafetyChecks,
 			unknownPolicy,
-			unknownPolicyExplicit,
 			maxArrayLength,
 			normalization,
 			coercionStrategy,
@@ -359,27 +317,6 @@ export class PopulationService {
 			discriminators,
 			designTypes,
 		} = classMeta;
-
-		// OPT: Deprecation warning — uses classMeta flag (avoids _warnedMissingPolicy Set lookup per call)
-		// Only fires for classes explicitly decorated with @Quick, once per class.
-		if (
-			currentDepth === 0 &&
-			classMeta.hasTypeMapKey &&
-			!unknownPolicyExplicit &&
-			!classMeta.unknownPolicyWarned
-		) {
-			classMeta.unknownPolicyWarned = true;
-			// Keep the static set in sync so external callers still work
-			PopulationService._warnedMissingPolicy.add(modelClass);
-			// Track in _warnedPolicyClasses so _clearWarnedPolicyCache() can reset the classMeta flag
-			PopulationService._warnedPolicyClasses.add(modelClass);
-			Logger.warn(
-				`[QuickModel] Deprecation: "${(modelClass as { name?: string }).name ?? 'unknown'}" does not set 'unknownPropertyPolicy'. ` +
-					"Currently defaulting to 'keep' (unknown properties are preserved). " +
-					"In v2.0.0 the default will change to 'strip'. " +
-					"Set it explicitly: @Quick({...}, { unknownPropertyPolicy: 'strip' }) to silence this warning."
-			);
-		}
 
 		// OPT#4b: Inline depth guard — uses currentDepth + 1 directly (no recursionContext object needed).
 		if (currentDepth + 1 > (maxRecursionDepth ?? 50)) {
