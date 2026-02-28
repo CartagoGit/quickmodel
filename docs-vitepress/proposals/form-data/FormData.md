@@ -311,7 +311,7 @@ dto.serialize();
 **Precedencia de opciones** (de menor a mayor):
 
 ```
-Decorador @QType({ fileMode })
+Decorador @Quick({ fileMode })
   < opción global de llamada { fileMode }
     < opción por campo { fields: { avatar: 'binary' } }
 ```
@@ -543,24 +543,23 @@ const outFd = dto.toFormData({ fileMode: 'base64' });
 
 ## Archivos a crear / modificar
 
-| Archivo                                              | Acción    | Descripción                                                                                                                                                  |
-| ---------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/transformers/web-apis.transformer.ts`           | Modificar | Añadir `BlobTransformer`, `FileTransformer`                                                                                                                  |
-| `src/core/interfaces/serializer.interface.ts`        | Modificar | Añadir `fileMode` a `IQSerializationOptions`                                                                                                                 |
-| `src/core/interfaces/transform-options.interface.ts` | Modificar | Añadir `fileMode?: IQFileMode` a `IQPropertyOptions` — lo hereda `IQTypeOptions`, habilitando `@QType({ fileMode })` a nivel de propiedad                    |
-| `src/core/interfaces/quick-options.interface.ts`     | Modificar | Añadir `fileSource`, `fields` a opciones de `fromFormData`; añadir `spoofMethod?: IQSpoofMethod` a `IQAdvancedOptions` (ya existe — segundo arg de `@Quick`) |
-| `src/core/config/quick.config.ts`                    | Modificar | Añadir `spoofMethod?: IQSpoofMethod` a `IQConfig['defaults']` — misma clave que `dateStrategy`, `transformCase`, etc.                                        |
-| `src/core/types/form-data.type.ts`                   | Nuevo     | Declarar `IQSpoofMethod` (todos los métodos HTTP) e `IQFileMode` (`'auto' \| 'binary' \| 'reference' \| 'base64'`)                                           |
-| `src/core/models/quick.model.ts`                     | Modificar | `fromFormData()`, `toFormData()`, `toReadableStream()`, `fromStream()`                                                                                       |
-| `src/core/helpers/form-data.helpers.ts`              | Nuevo     | Auto-detección y conversiones por modo                                                                                                                       |
-| `src/core/helpers/stream.helpers.ts`                 | Nuevo     | `toReadableStream`, `fromStream`, `pipeStream`                                                                                                               |
-| `src/core/types/q-alias.type.ts`                     | Verificar | `blob`, `file`, `formdata` ya declarados — sin cambios                                                                                                       |
-| `tests/unit/core/models/form-data.test.ts`           | Nuevo     | ~25 tests (fromFormData, toFormData, todos los modos)                                                                                                        |
-| `tests/unit/core/models/spoof-method.test.ts`        | Nuevo     | ~10 tests (spoofMethod: precedencia cascada, valores válidos, \_method primero)                                                                              |
-| `tests/unit/core/models/stream.test.ts`              | Nuevo     | ~10 tests (toReadableStream, fromStream, pipeStream)                                                                                                         |
-| `tests/unit/core/transformers/blob-file.test.ts`     | Nuevo     | ~10 tests (BlobTransformer, FileTransformer)                                                                                                                 |
-| `docs-vitepress/en/guide/formdata.md`                | Nuevo     | Guía EN                                                                                                                                                      |
-| `docs-vitepress/es/guide/formdata.md`                | Nuevo     | Guía ES                                                                                                                                                      |
+| Archivo                                          | Acción    | Descripción                                                                                                                                                  |
+| ------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/transformers/web-apis.transformer.ts`       | Modificar | Añadir `BlobTransformer`, `FileTransformer`                                                                                                                  |
+| `src/core/interfaces/serializer.interface.ts`    | Modificar | Añadir `fileMode` a `IQSerializationOptions`                                                                                                                 |
+| `src/core/interfaces/quick-options.interface.ts` | Modificar | Añadir `fileSource`, `fields` a opciones de `fromFormData`; añadir `spoofMethod?: IQSpoofMethod` a `IQAdvancedOptions` (ya existe — segundo arg de `@Quick`) |
+| `src/core/config/quick.config.ts`                | Modificar | Añadir `spoofMethod?: IQSpoofMethod` a `IQConfig['defaults']` — misma clave que `dateStrategy`, `transformCase`, etc.                                        |
+| `src/core/types/form-data.type.ts`               | Nuevo     | Declarar el tipo `IQSpoofMethod` con todos los métodos HTTP (RFC 7231, WebDAV, DeltaV, custom via `string & {}`)                                             |
+| `src/core/models/quick.model.ts`                 | Modificar | `fromFormData()`, `toFormData()`, `toReadableStream()`, `fromStream()`                                                                                       |
+| `src/core/helpers/form-data.helpers.ts`          | Nuevo     | Auto-detección y conversiones por modo                                                                                                                       |
+| `src/core/helpers/stream.helpers.ts`             | Nuevo     | `toReadableStream`, `fromStream`, `pipeStream`                                                                                                               |
+| `src/core/types/q-alias.type.ts`                 | Verificar | `blob`, `file`, `formdata` ya declarados — sin cambios                                                                                                       |
+| `tests/unit/core/models/form-data.test.ts`       | Nuevo     | ~25 tests (fromFormData, toFormData, todos los modos)                                                                                                        |
+| `tests/unit/core/models/spoof-method.test.ts`    | Nuevo     | ~10 tests (spoofMethod: precedencia cascada, valores válidos, \_method primero)                                                                              |
+| `tests/unit/core/models/stream.test.ts`          | Nuevo     | ~10 tests (toReadableStream, fromStream, pipeStream)                                                                                                         |
+| `tests/unit/core/transformers/blob-file.test.ts` | Nuevo     | ~10 tests (BlobTransformer, FileTransformer)                                                                                                                 |
+| `docs-vitepress/en/guide/formdata.md`            | Nuevo     | Guía EN                                                                                                                                                      |
+| `docs-vitepress/es/guide/formdata.md`            | Nuevo     | Guía ES                                                                                                                                                      |
 
 **Esfuerzo desglosado:**
 

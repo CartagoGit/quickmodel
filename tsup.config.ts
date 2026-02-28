@@ -11,6 +11,7 @@ export default defineConfig({
 		validators: 'src/core/decorators/validators.ts',
 		'compat/ts5/forms': 'src/compat/ts5/forms.ts',
 		'core/index': 'src/core/index.ts',
+		'schema/zod': 'src/core/services/zod-schema-generator.service.ts',
 		'transformers/index': 'src/transformers/index.ts',
 		'transformers/bigint': 'src/transformers/bigint.transformer.ts',
 		'transformers/buffer': 'src/transformers/buffer.transformer.ts',

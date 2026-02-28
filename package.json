@@ -116,6 +116,11 @@
 			"import": "./dist/core/index.mjs",
 			"require": "./dist/core/index.js"
 		},
+		"./schema/zod": {
+			"types": "./dist/schema/zod.d.ts",
+			"import": "./dist/schema/zod.mjs",
+			"require": "./dist/schema/zod.js"
+		},
 		"./forms": {
 			"types": "./dist/forms.d.ts",
 			"import": "./dist/forms.mjs",
