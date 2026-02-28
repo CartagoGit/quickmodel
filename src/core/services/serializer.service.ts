@@ -126,6 +126,10 @@ import { QM_SPECIAL_TOKEN_KEY } from '@/transformers/special-float.transformer';
 // Module-level per-constructor cache for serialize() hot path
 // Safe because decorator metadata is immutable after class definition
 // ---------------------------------------------------------------------------
+/**
+ * @internal Per-class static serialization metadata cached after first `serialize()` call.
+ * Contains resolved model options, type map, excluded fields, and getter keys.
+ */
 interface IQSerializeClassMeta {
 	modelOptions: IQAdvancedOptions | undefined;
 	typeMap: Record<string, unknown> | null | undefined;
@@ -143,6 +147,7 @@ const _SERIALIZE_CLASS_META = new WeakMap<Function, IQSerializeClassMeta>();
 // ---------------------------------------------------------------------------
 const _IS_QMODEL_CTOR = new WeakMap<Function, boolean>();
 
+/** @internal Returns `true` when `ctor` is a decorated QModel class; result is cached per constructor. */
 function _isQModelCtor(ctor: Function): boolean {
 	let cached = _IS_QMODEL_CTOR.get(ctor);
 	if (cached === undefined) {
@@ -159,6 +164,10 @@ function _isQModelCtor(ctor: Function): boolean {
 // invalidated when QConfig reference changes. Only used on the base call
 // (no explicit options). Avoids QConfig.get() + object spread every call.
 // ---------------------------------------------------------------------------
+/**
+ * @internal Cached merged serialization options per constructor, QConfig-aware.
+ * Invalidated when the QConfig reference changes. Avoids repeated `QConfig.get()` + spread on every call.
+ */
 interface IQSerializeMergedOpts {
 	configRef: unknown;
 	/**
@@ -193,6 +202,7 @@ function _nextDepthOpts(
 	return { ...options, _depth: depth + 1 };
 }
 
+/** @internal Builds and caches per-class serialization metadata (options, type map, excluded fields, getter keys). */
 function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
 	let meta = _SERIALIZE_CLASS_META.get(ctor);
 	if (!meta) {
@@ -228,6 +238,16 @@ function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
 	return meta;
 }
 
+/**
+ * Serializer: converts a `QModel` instance to a JSON-compatible plain object.
+ *
+ * See the module-level documentation at the top of this file for full details,
+ * type-conversion table, and usage examples.
+ *
+ * @template TModel - Model instance type.
+ * @template TInterface - Target plain-object type.
+ * @see {@link IQSerializer}
+ */
 export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,

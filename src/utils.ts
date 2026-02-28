@@ -1,6 +1,12 @@
 /**
- * QuickModel Utils
- * Secondary utilities, decorators, and types not essential for basic usage but useful for advanced scenarios or specific typing.
+ * QuickModel Utils — secondary entry point.
+ *
+ * Exports utilities, error classes, and helpers useful for advanced
+ * integrations: `@QType` property decorator, `QMockBuilder` for typed
+ * test-data generation, `QModelError` for error handling, and `QLogger`
+ * for conditional debug logging that respects `QConfig.enableDebugLogs`.
+ *
+ * @module @cartago-git/quickmodel/utils
  */
 
 export { QType } from './core/decorators/qtype.decorator';

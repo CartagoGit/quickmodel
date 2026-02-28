@@ -258,26 +258,30 @@ export default defineConfig({
 ```typescript
 // ✅ CORRECT
 import { QModel } from '@/core/models/quick.model';
-import { Deserializer } from '@/core/services/model-deserializer.service';
+import { Serializer } from '@/core/services/serializer.service';
 
 // ❌ INCORRECT
 import { QModel } from '../../core/models/quick.model';
-import { Deserializer } from '../services/model-deserializer.service';
+import { Serializer } from '../services/serializer.service';
 ```
 
-### NO Barrel Files
+### Barrel Files Convention
 
-**Important Rule:** DO NOT use barrel files (index.ts) except for the main one in `src/index.ts`
+**Module-level `index.ts` re-export files exist at module boundaries** (`src/transformers/index.ts`, `src/core/index.ts`, `src/mcp/tools/public/index.ts`, etc.) and are intentional — they aggregate exports for bundling and module discovery.
+
+Within a module, **always import directly from the specific source file** rather than going through an intermediate barrel:
 
 ```typescript
-// ❌ NEVER create index.ts files like these:
-// src/transformers/index.ts
-// src/core/services/index.ts
-// src/core/interfaces/index.ts
-
-// ✅ Import directly from source files
+// ✅ Import directly from the source file
 import { BigIntTransformer } from '@/transformers/bigint.transformer';
+import { Serializer } from '@/core/services/serializer.service';
+
+// ❌ Do NOT import through a module barrel within src/
+import { BigIntTransformer } from '@/transformers'; // avoid
+import { Serializer } from '@/core/services'; // avoid
 ```
+
+**Do NOT create new barrel files inside sub-directories** (e.g. `src/core/services/index.ts`, `src/core/interfaces/index.ts`). They can cause circular dependencies and slow down builds.
 
 **Reasons:**
 

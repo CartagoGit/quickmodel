@@ -1,22 +1,3 @@
-/**
- * Service for deserializing plain data into model instances.
- *
- * Converts JSON-compatible objects into fully-typed QuickModel instances,
- * using registered transformers and reflection metadata for type conversions.
- *
- * @template TInterface - The input interface type (plain object)
- * @template TModel - The output model type
- *
- * @remarks
- * This class follows SOLID principles:
- * - **Single Responsibility**: Acts as a facade/orchestrator for deserialization.
- *   Logic is delegated to:
- *   - TransformerLookupService (Registry & Defaults)
- *   - InstanceFactoryService (Creation)
- *   - PopulationService (Data Mapping)
- *   - ValueTransformerService (Type Conversion)
- */
-
 import 'reflect-metadata';
 import { IQDeserializer } from '../interfaces/serializer.interface';
 import { IQTransformer } from '../interfaces/transformer.interface';
@@ -37,6 +18,7 @@ import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 // Module-level per-class cache for validationTrigger — avoids
 // Reflect.getMetadata + QConfig.get() on every deserialize() call.
 // ---------------------------------------------------------------------------
+/** @internal Per-class cache for `validationTrigger` resolution — avoids `Reflect.getMetadata` + `QConfig.get()` on every `deserialize()` call. */
 interface IQDeserializeTriggerCache {
 	/** QConfig snapshot for invalidation */
 	configRef: unknown;
@@ -48,6 +30,22 @@ const _DESERIALIZE_TRIGGER_CACHE = new WeakMap<
 	IQDeserializeTriggerCache
 >();
 
+/**
+ * Service for deserializing plain data into model instances.
+ *
+ * Converts JSON-compatible objects into fully-typed QuickModel instances,
+ * using registered transformers and reflection metadata for type conversions.
+ *
+ * @template TInterface - The input interface type (plain object)
+ * @template TModel - The output model type
+ *
+ * @remarks
+ * Acts as a facade/orchestrator — delegates to:
+ * - `TransformerLookupService` (registry & defaults)
+ * - `InstanceFactoryService` (object creation)
+ * - `PopulationService` (data mapping)
+ * - `ValueTransformerService` (type conversion)
+ */
 export class Deserializer<
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 	TModel = unknown,

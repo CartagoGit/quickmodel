@@ -73,7 +73,14 @@ export class QTransformerRegistry {
 	}
 
 	/**
-	 * Normalizes the key to a lowercase string.
+	 * Normalizes any key type to a lowercase string suitable for Map lookup.
+	 *
+	 * Accepts:
+	 * - A string literal (`'date'` → `'date'`)
+	 * - A function / constructor (`Date` → `'date'`)
+	 * - An object with a `name` property (e.g. transformer instances)
+	 *
+	 * @returns The normalized key, or `undefined` if the key cannot be resolved.
 	 */
 	private static normalizeKey(key: IQTransformerKey): string | undefined {
 		if (typeof key === 'string') {
