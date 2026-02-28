@@ -198,8 +198,9 @@ function isTC39Context(
  * @see {@link isTC39Context} — guard used to select the correct path
  */
 function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
-	const existing: IQRule<unknown>[] =
-		Reflect.getMetadata(QRULE_METADATA_KEY, proto, key) ?? [];
+	const existing: IQRule<unknown>[] = [
+		...(Reflect.getMetadata(QRULE_METADATA_KEY, proto, key) ?? []),
+	];
 	existing.push(rule);
 	Reflect.defineMetadata(QRULE_METADATA_KEY, existing, proto, key);
 

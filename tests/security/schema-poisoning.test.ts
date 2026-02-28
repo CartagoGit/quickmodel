@@ -37,16 +37,12 @@ describe('Security: Schema Poisoning', () => {
 			VictimModel.prototype,
 			'isAdmin'
 		);
-
-		// We're checking if the property exists, not using the value
 		const isAdminPresent = 'isAdmin' in instance2;
-
-		console.log('Is Admin Metadata present?:', !!isAdminMetadata);
-		console.log('Instance 2 has isAdmin?', isAdminPresent);
 
 		// Expectation: The schema must NOT depend on the first runtime payload.
 		// If it does, we have a vulnerability where the first requester dictates the object shape for everyone.
 		expect(isAdminMetadata).toBeUndefined();
+		expect(isAdminPresent).toBe(false);
 	});
 
 	it('should NOT allow adding new properties via payload if explicit fields are defined', () => {

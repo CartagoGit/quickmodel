@@ -96,19 +96,30 @@ describe('Integration: Mock Generator - Real World', () => {
 		deliveredAt: Date | null;
 	}
 
-	@Quick({
-		id: String,
-		userId: String,
-		items: [OrderItem], // ✅ CORRECTO - array syntax
-		shippingAddress: Address,
-		billingAddress: Address,
-		status: String,
-		total: BigInt,
-		createdAt: Date,
-		shippedAt: Date,
-		deliveredAt: Date,
-		metadata: Object,
-	})
+	@Quick(
+		{
+			id: String,
+			userId: String,
+			items: [OrderItem], // ✅ CORRECTO - array syntax
+			shippingAddress: Address,
+			billingAddress: Address,
+			status: String,
+			total: BigInt,
+			createdAt: Date,
+			shippedAt: Date,
+			deliveredAt: Date,
+			metadata: Object,
+		},
+		{
+			mockers: {
+				metadata: () => ({
+					paymentMethod: 'card',
+					trackingNumber: null,
+					notes: [] as string[],
+				}),
+			},
+		}
+	)
 	class Order
 		extends QModel<IOrder>
 		implements IQImplements<IOrder, IOrderTransform>

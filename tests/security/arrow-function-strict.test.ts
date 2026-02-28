@@ -32,8 +32,6 @@ describe('Arrow Function Shadowing Bypass via Strict Constructor', () => {
 
 		const user = new StrictUserArrow(maliciousPayload);
 
-		console.log('User save type:', typeof user.save);
-
 		// If the vulnerability exists, user.save will be the string payload
 		expect(user.save).not.toBe(maliciousPayload.save);
 

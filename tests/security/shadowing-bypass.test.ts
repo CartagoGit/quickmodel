@@ -34,8 +34,6 @@ describe('Shadowing Bypass via Strict Constructor', () => {
 
 		const user = new StrictUser(maliciousPayload);
 
-		console.log('User save type:', typeof user.save);
-
 		// The security check should prevent overwriting the method with the string payload.
 		// Due to the Strict Constructor and test setup with decorators, the method might be undefined
 		// or broken, but CRITICALLY it must NOT be the malicious string.

@@ -21,23 +21,18 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 			deepArray = [deepArray];
 		}
 
-		console.log(`Testing depth: ${DEPTH}`);
-
-		// This will likely crash or throw "Maximum call stack size exceeded"
+		// Should throw a controlled error (type mismatch or depth limit), NOT a stack overflow
 		try {
 			new Data({ items: deepArray });
-			console.log('Finished without error');
 		} catch (err: any) {
-			console.log('Error caught: ' + err.message);
-			// We want it to throw a controlled error, NOT a stack overflow
-			if (
-				err.message &&
-				err.message.includes('Maximum call stack size exceeded')
-			) {
+			// If it crashed with a real stack overflow the framework has a vulnerability
+			if (err.message?.includes('Maximum call stack size exceeded')) {
 				throw new Error(
 					'Vulnerability confirmed: Stack Overflow via Nested Arrays'
 				);
 			}
+			// Any other controlled error is acceptable proof of protection
+			expect(err).toBeDefined();
 		}
 	});
 
