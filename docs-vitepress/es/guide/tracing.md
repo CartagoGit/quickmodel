@@ -20,6 +20,7 @@ Establece `verbosity: 'verbose'` temporalmente y QuickModel imprimirá cada paso
 | `'silent'`  | Nada (por defecto)                                                    |
 | `'error'`   | Fallos críticos: errores de regla, excepciones                        |
 | `'warn'`    | Anomalías recuperables + errores                                      |
+| `'success'` | Evaluaciones de regla exitosas (`rule-pass`)                          |
 | `'info'`    | Hitos del ciclo de vida: construcción, serialización, deserialización |
 | `'debug'`   | Pasos de transformación por campo                                     |
 | `'verbose'` | Todo, incluyendo valores de entrada/salida por campo                  |
@@ -33,7 +34,7 @@ Los niveles son **acumulativos**: `'info'` incluye `'error'` y `'warn'`.
 | `construction`  | `new MiModelo(data)` completa             | `info`       |
 | `serialize`     | `model.serialize()` llamado               | `info`       |
 | `deserialize`   | Cada campo hidratado desde datos raw      | `debug`      |
-| `rule-pass`     | Un predicado `@QRule` devolvió `true`     | `verbose`    |
+| `rule-pass`     | Un predicado `@QRule` devolvió `true`     | `success`    |
 | `rule-fail`     | Un predicado `@QRule` devolvió `false`    | `warn`       |
 | `rule-error`    | Un predicado `@QRule` lanzó una excepción | `error`      |
 | `rule-timeout`  | Un `@QRule` async superó `timeoutMs`      | `warn`       |
@@ -70,13 +71,14 @@ Por defecto, cada línea del trace sigue este formato:
 
 El prefijo `[QM]` es configurable mediante `prefix` (ver más abajo). Los colores se aplican automáticamente en terminales interactivas y se deshabilitan en entornos CI (pipes, ficheros de log). La paleta sigue el estándar convencional de terminales:
 
-| Nivel     | Color    |
-| --------- | -------- |
-| `error`   | Rojo     |
-| `warn`    | Amarillo |
-| `info`    | Verde    |
-| `debug`   | Azul     |
-| `verbose` | Gris     |
+| Nivel     | Color      |
+| --------- | ---------- |
+| `error`   | Rojo       |
+| `warn`    | Amarillo   |
+| `success` | Verde      |
+| `info`    | Azul claro |
+| `debug`   | Morado     |
+| `verbose` | Gris       |
 
 **Forzar o deshabilitar colores:**
 
@@ -147,6 +149,38 @@ QConfig.configure({
 ### Integrar un logger externo
 
 Cuando quieras que las trazas de QuickModel pasen por **tu propio sistema de logging** (Winston, Pino, Datadog…) en lugar de `console`, proporciona un `sink`. Cuando está presente, **no se llama a `console`** — cada entrada va exclusivamente a tu función:
+
+::: warning sink reemplaza a `console`, no lo complementa
+`sink` es una elección **ó/ó**, no ambos a la vez. En cuanto se configura un `sink`, QuickModel deja de escribir en `console` por completo.
+Esto es intencionado: en producción normalmente no quieres que la misma traza llegue tanto a tu backend de logging estructurado como a la salida cruda de `console`.
+
+| Configuración                   | Salida          |
+| ------------------------------- | --------------- |
+| Sin `sink`, `verbosity: 'info'` | Solo `console`  |
+| Con `sink`, `verbosity: 'info'` | Solo tu función |
+| Sin `sink`, sin `verbosity`     | Nada (silent)   |
+
+Si necesitas **ambos** — tu logger y `console` — llámalos dentro del sink:
+
+```typescript
+QConfig.configure({
+	defaults: {
+		trace: {
+			verbosity: 'warn',
+			sink: (entry) => {
+				// tu logger estructurado
+				miLogger.warn(entry.message, entry);
+				// Y también console (manualmente)
+				console.warn(
+					`[QM][${entry.level.toUpperCase()}][${entry.model}] ${entry.message}`
+				);
+			},
+		},
+	},
+});
+```
+
+:::
 
 ```typescript
 import type { IQTraceEntry } from 'quickmodel/types';
@@ -291,7 +325,7 @@ Cada registro de traza emitido por el sistema tiene esta forma:
 ```typescript
 interface IQTraceEntry {
 	timestamp: number; // UTC ms desde epoch
-	level: IQTraceVerbosity; // 'error' | 'warn' | 'info' | 'debug' | 'verbose'
+	level: IQTraceVerbosity; // 'error' | 'warn' | 'success' | 'info' | 'debug' | 'verbose'
 	event: IQTraceEvent; // uno de los eventos del ciclo de vida
 	model: string; // nombre de la clase, ej. 'UsuarioModel'
 	field?: string; // nombre de la propiedad (eventos de campo)

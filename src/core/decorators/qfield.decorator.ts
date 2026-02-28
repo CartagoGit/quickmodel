@@ -21,6 +21,8 @@
  * const schema = ProfileModel.getFormSchema();
  * // [{ field: 'email', widget: 'input', ... }, { field: 'role', widget: 'select', ... }, ...]
  * ```
+ * @see {@link IQFieldMeta} — the metadata shape accepted by this decorator
+ * @see {@link IQFormSchemaEntry} — the resulting schema entry shape after decoration
  */
 import 'reflect-metadata';
 
@@ -33,6 +35,8 @@ export const QFIELD_FIELDS_KEY = Symbol('qfield:fields');
 /**
  * Supported widget types for `@QField`.
  * Use `string & {}` to also allow custom widget names beyond this list.
+ * @see {@link IQFieldMeta} — uses this type for the `widget` property
+ * @see {@link QField} — decorator that maps field metadata including widget type
  */
 export type IQFieldWidget =
 	| 'input'

@@ -41,6 +41,7 @@ interface IStreamChunkOptions {
  *
  * @public
  * @see {@link QModel.toReadableStream}
+ * @see {@link IToReadableStreamMultipart} — multipart variant for streaming all fields
  */
 export type IToReadableStreamSingleField = IStreamChunkOptions & {
 	/** Name of the binary field to stream. Required in single-field mode. */
@@ -88,6 +89,8 @@ export type IToReadableStreamMultipart = IStreamChunkOptions & {
  * or `multipart: true` (full `multipart/form-data` stream).
  *
  * @public
+ * @see {@link IToReadableStreamSingleField} — single-field variant
+ * @see {@link IToReadableStreamMultipart} — multipart variant
  */
 export type IToReadableStreamOptions =
 	| IToReadableStreamSingleField
@@ -99,6 +102,7 @@ export type IToReadableStreamOptions =
  *
  * @public
  * @see {@link modelToMultipartStream}
+ * @see {@link IToReadableStreamMultipart} — options for multipart streaming
  */
 export interface IQMultipartStream extends ReadableStream<Uint8Array> {
 	/** The boundary token used to delimit parts in the multipart body. */
@@ -202,6 +206,8 @@ export function blobToReadableStream(
 
 /**
  * Options for {@link streamToBlob}.
+ * @see {@link streamToBlob} — function that consumes these options
+ * @see {@link IFromStreamOptions} — higher-level options through QModel.fromStream
  */
 export interface IStreamToBlobOptions {
 	/** Optional byte limit; throws `RangeError` if exceeded. Default: `Infinity`. */
@@ -351,6 +357,8 @@ async function* buildMultipartParts(
 /**
  * Options for {@link modelToMultipartStream}.
  * @public
+ * @see {@link modelToMultipartStream} — function that consumes these options
+ * @see {@link IQMultipartStream} — the stream type returned after providing these options
  */
 export interface IModelToMultipartStreamOptions {
 	/** Plain record of field name → value. */
@@ -424,6 +432,8 @@ export function modelToMultipartStream(
 
 /**
  * Options for {@link pipeReadableToWritable}.
+ * @see {@link pipeReadableToWritable} — function that consumes these options
+ * @see {@link IPipeStreamOptions} — higher-level options through QModel.pipeStream
  */
 export interface IPipeReadableToWritableOptions {
 	/** Optional byte limit; throws `RangeError` if exceeded. Default: `Infinity`. */

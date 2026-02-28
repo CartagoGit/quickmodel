@@ -37,7 +37,9 @@ import type { IClassFieldDecoratorCtx } from '../types/ts-polyfills.type';
 // TC39 field-decorator context helpers
 // ---------------------------------------------------------------------------
 
-/** @internal Minimal shape of a TC39 ClassFieldDecoratorContext. */
+/** @internal Minimal shape of a TC39 ClassFieldDecoratorContext.
+ * @see {@link isTC39Context} — guard that narrows to this type
+ */
 interface ITC39FieldContext {
 	readonly kind: 'field';
 	readonly name: string | symbol;
@@ -260,6 +262,8 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * Grouped type/options config passed to {@link applyQTypeMetadata}.
  * Bundling these two arguments keeps the function within the `max-params` limit.
  * @internal
+ * @see {@link applyQTypeMetadata} — function that consumes this config
+ * @see {@link QType} — decorator that creates this config
  */
 interface IQTypeApplyConfig {
 	/** The type constructor, Q-Symbol, string literal, or transformer. */
@@ -277,6 +281,8 @@ interface IQTypeApplyConfig {
  *   `createTC39Guard()` so it runs exactly once per class prototype.
  *
  * @internal
+ * @see {@link IQTypeApplyConfig} — bundled config parameter
+ * @see {@link isTC39Context} — guard used to detect which path to use
  */
 function applyQTypeMetadata(
 	proto: object,
@@ -656,6 +662,8 @@ function applyQTypeMetadata(
  * Distinguishes options bags (`{ fileMode, transformer, ... }`) from type constructors,
  * functions, and bidirectional transformer objects (`{ serialize, deserialize }`).
  * @internal
+ * @see {@link IQTypeOptions} — interface this guard narrows to
+ * @see {@link QType} — uses this to determine the overload being called
  */
 function typeofIsOptionsOnly(val: unknown): boolean {
 	if (typeof val !== 'object' || Array.isArray(val)) return false;

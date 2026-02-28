@@ -24,18 +24,24 @@
 /**
  * Mode for interpreting binary fields when reading from FormData.
  * @public
+ * @see {@link IFromFormDataOptions} — used by formDataToPlainObject
+ * @see {@link resolveFormDataValue} — applies this mode per entry
  */
 export type IFileSourceMode = 'auto' | 'binary' | 'reference' | 'base64';
 
 /**
  * Mode for writing binary fields into a FormData.
  * @public
+ * @see {@link IToFormDataOptions} — used by plainObjectToFormData
+ * @see {@link appendFieldToFormData} — applies this mode per field
  */
 export type IFileModeOutput = 'auto' | 'binary' | 'reference' | 'base64';
 
 /**
  * Options for `fromFormData()`.
  * @public
+ * @see {@link IFileSourceMode} — available binary-field source modes
+ * @see {@link formDataToPlainObject} — function that consumes these options
  */
 export interface IFromFormDataOptions {
 	/**
@@ -52,6 +58,8 @@ export interface IFromFormDataOptions {
 /**
  * Options for `toFormData()`.
  * @public
+ * @see {@link IFileModeOutput} — available binary-field output modes
+ * @see {@link plainObjectToFormData} — function that consumes these options
  */
 export interface IToFormDataOptions {
 	/**

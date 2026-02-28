@@ -28,11 +28,14 @@ import { TraceLogger } from '@/core/helpers/trace-logger.helper';
  * Tracks class#field pairs already warned about async predicates.
  * Avoids flooding the console when checkRules() is called repeatedly.
  * @internal
+ * @see {@link qCheckRules} — the function that uses this set to suppress duplicates
  */
 const _asyncWarnedKeys = new Set<string>();
 
 /**
  * Options accepted by {@link qCheckRules}.
+ * @see {@link qCheckRules} — function that accepts these options
+ * @see {@link qCheckRulesByGroup} — returns a per-group map instead
  */
 export interface IQCheckRulesOptions {
 	/**

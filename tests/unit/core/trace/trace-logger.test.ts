@@ -347,7 +347,7 @@ describe('qCheckRules traces', () => {
 		expect(errorEntries[0].meta?.error).toContain('boom');
 	});
 
-	it('does NOT emit rule-pass when verbosity is warn (pass is verbose)', () => {
+	it('does NOT emit rule-pass when verbosity is warn (pass is success)', () => {
 		const { entries, sink } = collectSink();
 		QConfig.configure({ defaults: { trace: { verbosity: 'warn', sink } } });
 

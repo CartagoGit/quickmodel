@@ -17,20 +17,28 @@ const VERBOSITY_WEIGHT: Record<IQTraceVerbosity, number> = {
 	silent: 0,
 	error: 1,
 	warn: 2,
-	info: 3,
-	debug: 4,
-	verbose: 5,
+	success: 3,
+	info: 4,
+	debug: 5,
+	verbose: 6,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Console adapters per level
 // ─────────────────────────────────────────────────────────────────────────────
 
-type IConsoleLevel = 'error' | 'warn' | 'info' | 'debug' | 'verbose';
+type IConsoleLevel =
+	| 'error'
+	| 'warn'
+	| 'success'
+	| 'info'
+	| 'debug'
+	| 'verbose';
 
 const CONSOLE_FN: Record<IConsoleLevel, (...args: unknown[]) => void> = {
 	error: (...args) => console.error(...args),
 	warn: (...args) => console.warn(...args),
+	success: (...args) => console.info(...args),
 	info: (...args) => console.info(...args),
 	debug: (...args) => console.debug(...args),
 	verbose: (...args) => console.debug(...args),
@@ -40,6 +48,7 @@ const CONSOLE_FN: Record<IConsoleLevel, (...args: unknown[]) => void> = {
 const ANSI_COLOR: Record<IConsoleLevel, string> = {
 	error: '\x1b[31m', // red
 	warn: '\x1b[93m', // bright yellow (orange-ish)
+	success: '\x1b[32m', // green
 	info: '\x1b[94m', // bright blue (light blue)
 	debug: '\x1b[35m', // magenta / purple
 	verbose: '\x1b[90m', // gray (dim)
@@ -473,7 +482,7 @@ export class TraceLogger {
 			params;
 		const level: Exclude<IQTraceVerbosity, 'silent'> =
 			event === 'rule-pass'
-				? 'verbose'
+				? 'success'
 				: event === 'rule-fail'
 					? 'warn'
 					: 'error';

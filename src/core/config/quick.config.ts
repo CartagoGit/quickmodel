@@ -317,6 +317,7 @@ export type IQTraceVerbosity =
 	| 'silent'
 	| 'error'
 	| 'warn'
+	| 'success'
 	| 'info'
 	| 'debug'
 	| 'verbose';

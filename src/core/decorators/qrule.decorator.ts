@@ -10,17 +10,21 @@ import type {
 /**
  * Metadata key for storing @QRule rules per property.
  * @internal
+ * @see {@link QRULE_FIELDS_KEY} — companion key listing decorated fields
  */
 export const QRULE_METADATA_KEY = '__qrule__';
 
 /**
  * Metadata key for storing the list of properties decorated with @QRule.
  * @internal
+ * @see {@link QRULE_METADATA_KEY} — companion key with the actual rules
  */
 export const QRULE_FIELDS_KEY = '__qrule_fields__';
 
 /**
  * Options for the {@link QRule} decorator.
+ * @see {@link QRule} — decorator that accepts these options
+ * @see {@link IQRule} — generated rule that stores these options
  */
 export interface IQRuleOptions {
 	/**
@@ -61,6 +65,8 @@ export interface IQRuleOptions {
  * A single business rule attached to a model property.
  *
  * @typeParam T - Type of the property value this rule validates.
+ * @see {@link IQRulesResult} — result type after evaluating collected rules
+ * @see {@link QRule} — decorator that creates and attaches these rules
  */
 export interface IQRule<T = unknown> {
 	/**
@@ -154,6 +160,7 @@ export interface IQRulesAsyncOptions {
  * is active in the consuming project while remaining compatible with TS 5+.
  *
  * @internal
+ * @see {@link isTC39Context} — guard that uses this interface
  */
 interface ITC39FieldContext {
 	readonly kind: 'field';
@@ -169,6 +176,7 @@ interface ITC39FieldContext {
  * `experimentalDecorators`).
  *
  * @internal
+ * @see {@link ITC39FieldContext} — the interface this guard narrows to
  */
 function isTC39Context(
 	keyOrContext: string | symbol | object
@@ -186,6 +194,8 @@ function isTC39Context(
  * Shared by both the legacy and TC39 paths to avoid duplication.
  *
  * @internal
+ * @see {@link QRULE_METADATA_KEY} — metadata key used to store the rule
+ * @see {@link isTC39Context} — guard used to select the correct path
  */
 function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
 	const existing: IQRule<unknown>[] =

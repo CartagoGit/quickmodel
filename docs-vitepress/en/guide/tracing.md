@@ -21,6 +21,7 @@ to your own structured logging system (Winston, Pino, Datadog…) via the `sink`
 | `'silent'`  | Nothing (default)                                          |
 | `'error'`   | Hard failures: rule errors, thrown exceptions              |
 | `'warn'`    | Recoverable anomalies + errors                             |
+| `'success'` | Successful rule evaluations (`rule-pass`)                  |
 | `'info'`    | Lifecycle milestones: construction, serialize, deserialize |
 | `'debug'`   | Field-level transformation steps                           |
 | `'verbose'` | Everything, including raw input/output values per field    |
@@ -34,7 +35,7 @@ Levels are **cumulative**: `'info'` includes `'error'` and `'warn'`.
 | `construction`  | `new MyModel(data)` completes            | `info`    |
 | `serialize`     | `model.serialize()` called               | `info`    |
 | `deserialize`   | Each field hydrated from raw data        | `debug`   |
-| `rule-pass`     | A `@QRule` predicate returned `true`     | `verbose` |
+| `rule-pass`     | A `@QRule` predicate returned `true`     | `success` |
 | `rule-fail`     | A `@QRule` predicate returned `false`    | `warn`    |
 | `rule-error`    | A `@QRule` predicate threw an exception  | `error`   |
 | `rule-timeout`  | An async `@QRule` exceeded `timeoutMs`   | `warn`    |
@@ -71,13 +72,14 @@ By default, each trace line printed to the console follows this format:
 
 The prefix `[QM]` is configurable via `prefix` (see below). Colors are applied automatically in interactive terminals and disabled in CI environments (pipes, log files). The palette follows the conventional terminal standard:
 
-| Level     | Color  |
-| --------- | ------ |
-| `error`   | Red    |
-| `warn`    | Yellow |
-| `info`    | Green  |
-| `debug`   | Blue   |
-| `verbose` | Gray   |
+| Level     | Color      |
+| --------- | ---------- |
+| `error`   | Red        |
+| `warn`    | Yellow     |
+| `success` | Green      |
+| `info`    | Light blue |
+| `debug`   | Purple     |
+| `verbose` | Gray       |
 
 **Force or disable colors:**
 
@@ -148,6 +150,38 @@ QConfig.configure({
 ### Integrating an external logger
 
 When you want QuickModel's traces to go through **your own logging system** (Winston, Pino, Datadog, etc.) instead of `console`, provide a `sink`. When present, the console is **never called** — every entry goes exclusively to your function:
+
+::: warning sink replaces `console`, it does not add to it
+`sink` is an **either/or** choice, not both at once. As soon as a `sink` is configured, QuickModel stops writing to `console` entirely.
+This is by design: in production you typically don't want the same trace going to both your structured logging backend and raw `console` output.
+
+| Configuration                    | Output             |
+| -------------------------------- | ------------------ |
+| No `sink`, `verbosity: 'info'`   | `console` only     |
+| With `sink`, `verbosity: 'info'` | Your function only |
+| No `sink`, no `verbosity`        | Nothing (silent)   |
+
+If you need **both** — your logger and `console` — call them both inside the sink:
+
+```typescript
+QConfig.configure({
+	defaults: {
+		trace: {
+			verbosity: 'warn',
+			sink: (entry) => {
+				// your structured logger
+				myLogger.warn(entry.message, entry);
+				// AND console (manually)
+				console.warn(
+					`[QM][${entry.level.toUpperCase()}][${entry.model}] ${entry.message}`
+				);
+			},
+		},
+	},
+});
+```
+
+:::
 
 ```typescript
 import type { IQTraceEntry } from 'quickmodel/types';
@@ -288,7 +322,7 @@ Every trace record emitted by the system has this shape:
 ```typescript
 interface IQTraceEntry {
 	timestamp: number; // UTC ms since epoch
-	level: IQTraceVerbosity; // 'error' | 'warn' | 'info' | 'debug' | 'verbose'
+	level: IQTraceVerbosity; // 'error' | 'warn' | 'success' | 'info' | 'debug' | 'verbose'
 	event: IQTraceEvent; // one of the lifecycle events above
 	model: string; // class name, e.g. 'UserModel'
 	field?: string; // property name for field-scoped events

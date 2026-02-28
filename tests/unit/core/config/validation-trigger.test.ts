@@ -1,5 +1,6 @@
 import { describe, test, expect, afterEach } from 'bun:test';
-import { Quick, QModel, QConfig, Advanced } from '../../../../src';
+import { Quick, QModel, QConfig } from '../../../../src';
+import * as Advanced from '../../../../src/advanced';
 import {
 	IQTransformer,
 	IQIntegrityResult,

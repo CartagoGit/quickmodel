@@ -7,6 +7,10 @@
  * Note: `ZodSchemaGenerator` lives in `./zod-schema-generator.service` so that
  * `zod` is NOT included in the static import graph of consumers that never call
  * `getSchema('zod')`. It is re-exported here for backward compatibility.
+ *
+ * @see {@link JsonSchemaGenerator} — JSON Schema Draft-07 generator
+ * @see {@link MongoSchemaGenerator} — Mongoose schema generator
+ * @see {@link TypeScriptSchemaGenerator} — TypeScript interface generator
  */
 
 // Re-export so existing imports from this barrel continue to work.
@@ -14,6 +18,8 @@ export { ZodSchemaGenerator } from '@/core/services/zod-schema-generator.service
 
 /**
  * Base schema generator configuration
+ * @see {@link JsonSchemaGenerator} — uses this for JSON Schema generation
+ * @see {@link MongoSchemaGenerator} — uses this for Mongoose schema generation
  */
 export interface ISchemaGeneratorConfig {
 	/** Simple name of the model class (e.g. `'User'`). Used as the schema title. */
@@ -63,6 +69,8 @@ export class JsonSchemaGenerator {
 	 * @param config - Class name, type-map, and property list
 	 * @returns A JSON Schema Draft-07–compatible plain object with `$schema`, `type: 'object'`,
 	 *   `properties`, and `required` fields
+	 * @see {@link addExamples} — enrich the generated schema with example values
+	 * @see {@link MongoSchemaGenerator.generate} — equivalent for Mongoose schemas
 	 */
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		const { className, decoratorConfig, properties } = config;
@@ -221,6 +229,8 @@ export class MongoSchemaGenerator {
 	 * @param config - Class name, type-map, and property list
 	 * @returns A plain object of `{ [field]: { type: NativeConstructor, required: true } }` entries
 	 *   suitable for passing to `new mongoose.Schema(definition)`
+	 * @see {@link JsonSchemaGenerator.generate} — equivalent for JSON Schema
+	 * @see {@link ISchemaGeneratorConfig} — input shape
 	 */
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		const { decoratorConfig, properties } = config;
@@ -304,6 +314,8 @@ export class TypeScriptSchemaGenerator {
 	 *
 	 * @param config - Class name, type-map, and property list
 	 * @returns A TypeScript interface source string (e.g. `'interface IUser { name: string; }\n'`)
+	 * @see {@link MongoSchemaGenerator.generate} — Mongoose schema equivalent
+	 * @see {@link ISchemaGeneratorConfig} — input shape
 	 */
 	static generate(config: ISchemaGeneratorConfig): string {
 		const { className, decoratorConfig, properties } = config;
@@ -390,6 +402,8 @@ export class GraphQLSchemaGenerator {
 	 *
 	 * @param config - Class name, type-map, and property list
 	 * @returns A GraphQL SDL `type` block as a string (e.g. `'type User {\n  name: String!\n}'`)
+	 * @see {@link TypeScriptSchemaGenerator.generate} — TypeScript interface equivalent
+	 * @see {@link ISchemaGeneratorConfig} — input shape
 	 */
 	static generate(config: ISchemaGeneratorConfig): string {
 		const { className, decoratorConfig, properties } = config;
@@ -482,6 +496,8 @@ export class OpenAPISchemaGenerator {
 	 *
 	 * @param config - Class name, type-map, and property list
 	 * @returns An OpenAPI 3.0–compatible schema object with `type: 'object'`, `properties`, and `required`
+	 * @see {@link JsonSchemaGenerator.generate} — JSON Schema Draft-07 equivalent
+	 * @see {@link GraphQLSchemaGenerator.generate} — GraphQL SDL equivalent
 	 */
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
 		const { decoratorConfig, properties } = config;
@@ -552,6 +568,8 @@ export class OpenAPISchemaGenerator {
  *
  * Delegates to `JsonSchemaGenerator` and strips the `$schema` property,
  * since AJV adds its own schema version identifier.
+ * @see {@link JsonSchemaGenerator} — underlying generator this delegates to
+ * @see {@link OpenAPISchemaGenerator} — OpenAPI 3.0 schema equivalent
  */
 export class AjvSchemaGenerator {
 	/**
