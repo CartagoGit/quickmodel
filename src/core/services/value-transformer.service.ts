@@ -19,7 +19,25 @@ export interface IRecursiveDeserializer {
 }
 
 /**
- * Service responsible for transforming single values based on metadata.
+ * Service responsible for transforming **individual values** based on their
+ * resolved type spec (design-type metadata, transformer key, or constructor).
+ *
+ * Handles:
+ * - Nested arrays (`Date[][]`, `BigInt[][][]`, …) via `transformNestedArray`
+ * - Nested model arrays via `transformNestedModelArray`
+ * - Polymorphic / discriminated-union values via `transformDiscriminatedValue`
+ * - Single scalar values via `transformByDesignType`
+ *
+ * Security limits (max array length, max recursion depth) are enforced at every
+ * recursive level to prevent DoS attacks.
+ *
+ * @remarks
+ * SOLID principles applied:
+ * - **Single Responsibility**: only transforms individual values.
+ * - **Dependency Inversion**: depends on `TransformerLookupService` and the
+ *   `IRecursiveDeserializer` recursive-deserializer abstraction.
+ *
+ * @internal Used by `PropertyTransformer` and `PopulationService`.
  */
 export class ValueTransformerService {
 	constructor(

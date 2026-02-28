@@ -42,36 +42,75 @@ QuickModel follows **SOLID principles** with a clear and maintainable architectu
 
 ```
 src/
-├── index.ts                    # Public API exports
+├── index.ts                       # Public API exports
+├── advanced.ts                    # Advanced API exports
+├── forms.ts                       # Forms submodule exports
+├── matchers.ts                    # Matchers submodule exports
+├── types.ts                       # Type exports
+├── utils.ts                       # Utility exports
+├── mcp-cli.ts                     # MCP CLI entry point
+├── compat/
+│   └── ts5/
+│       └── forms.ts               # TypeScript 5 compatibility
 ├── core/
 │   ├── models/
-│   │   └── quick.model.ts      # QModel base class
+│   │   └── quick.model.ts         # QModel base class
 │   ├── decorators/
-│   │   ├── quick.decorator.ts  # @Quick() - Bulk decorator
-│   │   └── qtype.decorator.ts  # @QType() - Per-property decorator
+│   │   ├── quick.decorator.ts     # @Quick() - Bulk decorator
+│   │   ├── qtype.decorator.ts     # @QType() - Per-property decorator
+│   │   ├── qrule.decorator.ts     # @QRule() - Validation decorator
+│   │   ├── qfield.decorator.ts    # @QField() - Form field decorator
+│   │   ├── qgroup.decorator.ts    # @QGroup() - Form group decorator
+│   │   ├── qalias.decorator.ts    # @QAlias() - Alias decorator
+│   │   ├── qcomputed.decorator.ts # @QComputed() - Computed property
+│   │   └── validators.ts          # Built-in validators (14)
 │   ├── services/
-│   │   ├── model-serializer.service.ts
-│   │   ├── model-deserializer.service.ts
-│   │   └── validation.service.ts
+│   │   ├── serializer.service.ts
+│   │   ├── deserializer.service.ts
+│   │   ├── mock-builder.service.ts
+│   │   ├── mock-generator.service.ts
+│   │   ├── schema-generators.service.ts
+│   │   ├── integrity.service.ts
+│   │   ├── to-interface.service.ts
+│   │   ├── security-inspector.service.ts
+│   │   └── ...
 │   ├── registry/
 │   │   └── transformer.registry.ts
 │   ├── bases/
 │   │   └── base-transformer.ts
+│   ├── helpers/
+│   │   ├── q-check-rules.ts
+│   │   ├── q-check-rules-async.ts
+│   │   └── ...
+│   ├── config/
+│   │   └── quick.config.ts
+│   ├── constants/
+│   ├── types/
 │   └── interfaces/
 │       ├── model.interface.ts
 │       ├── transformer.interface.ts
-│       ├── serializer.interface.ts
-│       └── field-symbols.interface.ts
-└── transformers/
-    ├── bigint.transformer.ts
-    ├── date.transformer.ts
-    ├── regexp.transformer.ts
-    ├── symbol.transformer.ts
-    ├── error.transformer.ts
-    ├── map-set.transformer.ts
-    ├── buffer.transformer.ts
-    ├── typed-array.transformer.ts
-    └── primitive.transformer.ts
+│       ├── serialization-types.interface.ts
+│       └── ...
+├── transformers/
+│   ├── bigint.transformer.ts
+│   ├── buffer.transformer.ts
+│   ├── date.transformer.ts
+│   ├── error.transformer.ts
+│   ├── map-set.transformer.ts
+│   ├── primitive.transformer.ts
+│   ├── regexp.transformer.ts
+│   ├── special-float.transformer.ts
+│   ├── symbol.transformer.ts
+│   ├── typed-array.transformer.ts
+│   ├── weak-collections.transformer.ts
+│   └── web-apis.transformer.ts
+└── mcp/
+    ├── server.ts                  # MCP server entry point
+    ├── locales/                   # i18n (en.mcp.ts, es.mcp.ts)
+    ├── prompts/                   # 19 MCP prompt templates
+    └── tools/
+        ├── public/                # 20 public MCP tools
+        └── internal/              # 20 internal MCP tools
 ```
 
 ### SOLID Principles
@@ -160,8 +199,8 @@ bun run typecheck
 	"compilerOptions": {
 		"target": "ES2022",
 		"module": "ESNext",
-		"lib": ["ES2023"],
-		"moduleResolution": "bundler",
+		"lib": ["ES2022"],
+		"moduleResolution": "node",
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["src/*"]
@@ -169,8 +208,10 @@ bun run typecheck
 		"rootDir": "./src",
 		"outDir": "./dist",
 		"strict": true,
+		"useDefineForClassFields": false,
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true
+		"emitDecoratorMetadata": true,
+		"types": ["bun", "node"]
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "tests", "run", "docs"]
@@ -256,15 +297,26 @@ We use **Bun Test** (native, ultra-fast, compatible with Jest/Vitest API)
 ```
 tests/
 ├── unit/              # Unit tests
-│   ├── primitives/
-│   ├── collections/
-│   └── transformers/
+│   ├── decorators/
+│   ├── models/
+│   ├── transformers/
+│   └── ...
 ├── integration/       # Feature integration tests
-│   └── decorators/
-├── system/           # Full workflow tests
+│   ├── decorators/
+│   ├── inheritance/
+│   ├── models/
+│   ├── patterns/
+│   └── ...
+├── system/            # Full workflow tests
 │   └── full-workflow/
-└── e2e/              # End-to-end tests
-    └── user-scenarios/
+├── e2e/               # End-to-end tests
+│   └── user-scenarios/
+├── performance/       # Performance benchmarks
+│   └── benchmarks/
+├── security/          # Security tests (XSS, DoS, injections, etc.)
+└── mcp/               # MCP server tests
+    ├── unit/
+    └── integration/
 ```
 
 ### Running Tests

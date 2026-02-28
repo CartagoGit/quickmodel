@@ -62,7 +62,10 @@ export class QTransformerRegistry {
 	}
 
 	/**
-	 * Checks if a transformer is registered.
+	 * Checks whether a transformer is registered for the given key.
+	 *
+	 * @param key - The transformer key to look up.
+	 * @returns `true` if a transformer is registered, `false` otherwise.
 	 */
 	public static has(key: IQTransformerKey): boolean {
 		const lookupKey = this.normalizeKey(key);

@@ -18,6 +18,16 @@ export class URLTransformer
 	extends BaseTransformer<string, URL>
 	implements IQIntegrityChecker
 {
+	/**
+	 * Converts a string to a `URL` instance, validating the protocol.
+	 *
+	 * @param value - The URL string or existing `URL` instance.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className - Class name (for error messages).
+	 * @returns A validated `URL` instance, or `null` when `value` is `null`/`undefined`.
+	 * @throws {QModelError} When the protocol is not in the allowed list
+	 *   (http, https, ftp, ws, wss by default) or the URL string is malformed.
+	 */
 	deserialize(
 		value: string | URL | null | undefined,
 		propertyKey: string,
@@ -94,6 +104,12 @@ export class URLTransformer
 		}
 	}
 
+	/**
+	 * Serializes a `URL` instance to its string representation (`href`).
+	 *
+	 * @param value - The `URL` instance to serialize.
+	 * @returns The full URL string.
+	 */
 	serialize(value: URL): string {
 		return value.toString();
 	}
@@ -135,6 +151,16 @@ export class URLSearchParamsTransformer
 	extends BaseTransformer<string | Record<string, string>, URLSearchParams>
 	implements IQIntegrityChecker
 {
+	/**
+	 * Converts a string (query format) or plain object to a `URLSearchParams` instance.
+	 *
+	 * @param value - Query string (`"key=value&foo=bar"`), key-value record, or
+	 *   existing `URLSearchParams` instance.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className - Class name (for error messages).
+	 * @returns A `URLSearchParams` instance, or `null`/`undefined` when `value` is nullish.
+	 * @throws {QModelError} When `value` is not a string, plain object, or `URLSearchParams` instance.
+	 */
 	deserialize(
 		value:
 			| string
@@ -185,6 +211,12 @@ export class URLSearchParamsTransformer
 		);
 	}
 
+	/**
+	 * Serializes `URLSearchParams` to its query-string form.
+	 *
+	 * @param value - The `URLSearchParams` instance to serialize.
+	 * @returns The encoded query string (e.g. `"key=value&foo=bar"`).
+	 */
 	serialize(value: URLSearchParams): string {
 		return value.toString();
 	}
@@ -221,6 +253,19 @@ export class TextEncoderTransformer extends BaseTransformer<
 	Record<string, never>,
 	TextEncoder
 > {
+	/**
+	 * Creates a new `TextEncoder` instance.
+	 *
+	 * `TextEncoder` is stateless, so any nullish value or empty object is
+	 * accepted and results in a fresh instance.
+	 *
+	 * @param value - `null`, `undefined`, an empty object `{}`, or an existing
+	 *   `TextEncoder` instance.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className - Class name (for error messages).
+	 * @returns A `TextEncoder` instance.
+	 * @throws {QModelError} When `value` is a non-empty non-TextEncoder value.
+	 */
 	deserialize(
 		value: unknown,
 		propertyKey: string,
@@ -258,6 +303,11 @@ export class TextEncoderTransformer extends BaseTransformer<
 		);
 	}
 
+	/**
+	 * Serializes a `TextEncoder` to an empty object (it has no configurable state).
+	 *
+	 * @returns An empty plain object `{}`.
+	 */
 	serialize(_value: TextEncoder): Record<string, never> {
 		return {}; // TextEncoder has no serializable state
 	}
@@ -273,6 +323,17 @@ export class TextDecoderTransformer extends BaseTransformer<
 	string | { encoding: string },
 	TextDecoder
 > {
+	/**
+	 * Creates a `TextDecoder` from a string (encoding name), a plain object
+	 * with an `encoding` property, or an existing `TextDecoder` instance.
+	 *
+	 * @param value - Encoding string (e.g. `"utf-8"`), `{ encoding: "utf-8" }` object,
+	 *   or an existing `TextDecoder` instance.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className - Class name (for error messages).
+	 * @returns A `TextDecoder` instance, or `null` when `value` is nullish.
+	 * @throws {QModelError} When the encoding string is not a valid IANA charset label.
+	 */
 	deserialize(
 		value: string | { encoding?: string } | TextDecoder | null | undefined,
 		propertyKey: string,
@@ -337,6 +398,12 @@ export class TextDecoderTransformer extends BaseTransformer<
 		);
 	}
 
+	/**
+	 * Serializes a `TextDecoder` to its encoding name.
+	 *
+	 * @param value - The `TextDecoder` instance to serialize.
+	 * @returns An object `{ encoding: string }` with the decoder's IANA charset label.
+	 */
 	serialize(value: TextDecoder): { encoding: string } {
 		return { encoding: value.encoding };
 	}

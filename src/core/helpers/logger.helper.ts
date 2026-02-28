@@ -3,7 +3,32 @@ import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 import 'reflect-metadata';
 
 /**
- * Helper for internal debug logging.
+ * Internal structured logger for QuickModel debug output.
+ *
+ * @remarks
+ * Respects two verbosity controls, checked in order:
+ * 1. **Global flag** — `QConfig.get().defaults.enableDebugLogs` (cached per
+ *    config reference to avoid repeated `QConfig.get()` calls in the hot path).
+ * 2. **Per-model flag** — `@Quick({}, { enableDebugLogs: true })` on a specific
+ *    class (read once via `Reflect.getMetadata` on the class constructor).
+ *
+ * All output is prefixed with `[QuickModel]` or `[QuickModel:ClassName]` so
+ * consumers can easily filter logs in the browser/Node console.
+ *
+ * Callers should gate expensive string interpolation behind
+ * `Logger.globalDebugEnabled` to avoid unnecessary allocations.
+ *
+ * @example
+ * ```typescript
+ * import { Logger } from '@/core/helpers/logger.helper';
+ *
+ * if (Logger.globalDebugEnabled) {
+ *   Logger.debug('Transforming value', MyModel, rawValue);
+ * }
+ * Logger.warn('Unexpected null in required field', MyModel);
+ * ```
+ *
+ * @internal
  */
 export class Logger {
 	/**
@@ -45,8 +70,18 @@ export class Logger {
 	}
 
 	/**
-	 * Logs a warning message (always enabled unless suppressed?)
-	 * Warnings usually imply something is wrong but recoverable.
+	 * Emits a warning to `console.warn`, always visible regardless of the
+	 * `enableDebugLogs` flag.
+	 *
+	 * @param message - The warning message to log.
+	 * @param context - Optional context object or class instance; its name is
+	 * appended to the `[QuickModel:Name]` prefix.
+	 * @param data - Additional values to pass to `console.warn`.
+	 *
+	 * @remarks
+	 * Warnings are designed for recoverable anomalies such as deprecated API
+	 * usage, unexpected `null` values in non-nullable fields, or version
+	 * mismatches. Unlike `debug`, they cannot be silenced via config.
 	 */
 	static warn(message: string, context?: any, ...data: any[]): void {
 		const prefix = context

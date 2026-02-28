@@ -3,7 +3,18 @@ import { QAbstractTool } from '../abstract-tool';
 import { spawn } from 'child_process';
 
 /**
- * Tool to search the documentation.
+ * MCP tool that performs a case-insensitive full-text search over the
+ * QuickModel documentation files (`docs/` and `docs-vitepress/guide/`).
+ *
+ * @remarks
+ * Internally uses `grep -rnC2` for context-aware matches, sanitised via
+ * `spawn` to prevent shell-injection attacks.
+ * Results are capped at 20 lines to keep the response size manageable.
+ *
+ * @returns `{ matches: string[] }` — up to 20 matching lines with 2 lines of
+ * surrounding context.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QSearchDocsTool extends QAbstractTool<
 	z.ZodObject<{ query: z.ZodString }>

@@ -4,7 +4,22 @@ import * as fs from 'fs';
 import { join, resolve as pathResolve, dirname } from 'path';
 
 /**
- * Tool to scaffold a test file for a given source file.
+ * Internal MCP tool that generates a boilerplate Bun-compatible test file
+ * for a given TypeScript source file.
+ *
+ * @remarks
+ * The generated file is placed in `tests/unit/` mirroring the source path.
+ * Includes a path-traversal security check — the resolved path must remain
+ * inside the project root.
+ *
+ * If the target test file already exists, the tool returns it unchanged
+ * (no overwriting).
+ *
+ * @returns `{ path: string, content: string, message?: string }` — `path` is
+ * the absolute path of the generated (or existing) test file; `message`
+ * carries security or not-found error details on failure.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QGenerateTestTool extends QAbstractTool<
 	z.ZodObject<{ sourceFile: z.ZodString }>

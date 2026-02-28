@@ -54,8 +54,43 @@ export function deepFreeze<T>(
 // STRING HELPERS
 // ============================================================================
 
+/**
+ * Removes leading and trailing whitespace from a string.
+ *
+ * @param str - The string to trim.
+ * @returns The trimmed string.
+ *
+ * @example
+ * ```ts
+ * trim('  hello  ') // 'hello'
+ * ```
+ */
 export const trim = (str: string): string => str.trim();
+
+/**
+ * Removes leading whitespace from a string.
+ *
+ * @param str - The string to trim.
+ * @returns The string with leading whitespace removed.
+ *
+ * @example
+ * ```ts
+ * trimStart('  hello  ') // 'hello  '
+ * ```
+ */
 export const trimStart = (str: string): string => str.trimStart();
+
+/**
+ * Removes trailing whitespace from a string.
+ *
+ * @param str - The string to trim.
+ * @returns The string with trailing whitespace removed.
+ *
+ * @example
+ * ```ts
+ * trimEnd('  hello  ') // '  hello'
+ * ```
+ */
 export const trimEnd = (str: string): string => str.trimEnd();
 
 /**
@@ -106,18 +141,33 @@ export function safeStringify(
 	}
 }
 
+/** Converts a string to UPPERCASE. */
 export const uppercase = (str: string): string => str.toUpperCase();
+
+/** Converts a string to lowercase. */
 export const lowercase = (str: string): string => str.toLowerCase();
 
+/**
+ * Capitalises the first letter and lowercases the rest of a string.
+ * @example capitalize('hELLO') // → 'Hello'
+ */
 export const capitalize = (str: string): string =>
 	str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
+/**
+ * Capitalises the first letter of every space-separated word.
+ * @example capitalizeWords('hello world') // → 'Hello World'
+ */
 export const capitalizeWords = (str: string): string =>
 	str
 		.split(' ')
 		.map((word) => capitalize(word))
 		.join(' ');
 
+/**
+ * Converts a string to a URL-friendly slug (lowercase, hyphens, no special chars).
+ * @example slugify('Hello World!') // → 'hello-world'
+ */
 export const slugify = (str: string): string =>
 	str
 		.trim()
@@ -126,31 +176,59 @@ export const slugify = (str: string): string =>
 		.replace(/\s+/g, '-') // Spaces to hyphens
 		.replace(/-+/g, '-'); // Multiple hyphens to single
 
+/**
+ * Converts a string to camelCase.
+ * @example camelCase('hello world') // → 'helloWorld'
+ */
 export const camelCase = (str: string): string =>
 	str
 		.toLowerCase()
 		.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
 
+/**
+ * Converts a string to snake_case.
+ * @example snakeCase('helloWorld') // → 'hello_world'
+ */
 export const snakeCase = (str: string): string =>
 	str
 		.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
 		.replace(/^_/, '');
 
+/**
+ * Converts a string to kebab-case.
+ * @example kebabCase('helloWorld') // → 'hello-world'
+ */
 export const kebabCase = (str: string): string =>
 	str
 		.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
 		.replace(/^-/, '');
 
+/**
+ * Reverses the characters of a string.
+ * @example reverse('abc') // → 'cba'
+ */
 export const reverse = (str: string): string =>
 	str.split('').reverse().join('');
 
+/**
+ * Returns a curried function that truncates a string to `maxLength` characters,
+ * appending `'...'` when truncation occurs.
+ *
+ * @param maxLength - Maximum number of characters before truncation.
+ * @example truncate(5)('Hello World') // → 'Hello...'
+ */
 export const truncate =
 	(maxLength: number) =>
 	(str: string): string =>
 		str.length > maxLength ? str.slice(0, maxLength) + '...' : str;
 
+/** Removes all whitespace characters from a string. */
 export const removeSpaces = (str: string): string => str.replace(/\s+/g, '');
 
+/**
+ * Normalises consecutive whitespace to a single space and trims both ends.
+ * @example normalizeWhitespace('  hello   world  ') // → 'hello world'
+ */
 export const normalizeWhitespace = (str: string): string =>
 	str.replace(/\s+/g, ' ').trim();
 
@@ -158,43 +236,83 @@ export const normalizeWhitespace = (str: string): string =>
 // NUMBER HELPERS
 // ============================================================================
 
+/**
+ * Returns a curried function that rounds a number to `decimals` decimal places.
+ * @param decimals - Number of decimal places (default: 0).
+ * @example round(2)(3.14159) // → 3.14
+ */
 export const round =
 	(decimals: number = 0) =>
 	(num: number): number =>
 		Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
+/** Returns the largest integer less than or equal to `num`. */
 export const floor = (num: number): number => Math.floor(num);
+
+/** Returns the smallest integer greater than or equal to `num`. */
 export const ceil = (num: number): number => Math.ceil(num);
+
+/** Returns the integer part of `num` by removing any fractional digits. */
 export const trunc = (num: number): number => Math.trunc(num);
+
+/** Returns the absolute value of `num`. */
 export const abs = (num: number): number => Math.abs(num);
 
+/**
+ * Returns a curried function that clamps a number between `min` and `max`.
+ * @param min - Lower bound (inclusive).
+ * @param max - Upper bound (inclusive).
+ * @example clamp(0, 100)(150) // → 100
+ */
 export const clamp =
 	(min: number, max: number) =>
 	(num: number): number =>
 		Math.min(max, Math.max(min, num));
 
+/** Clamps a number to the range [0, 100]. Useful for percentage values. */
 export const percentage = (num: number): number => clamp(0, 100)(num);
 
+/**
+ * Returns a curried function that formats a number to a fixed number of decimals.
+ * @param decimals - Number of decimal places.
+ * @example toFixed(2)(3.1) // → '3.10'
+ */
 export const toFixed =
 	(decimals: number) =>
 	(num: number): string =>
 		num.toFixed(decimals);
 
+/**
+ * Returns a curried function that multiplies a number by `factor`.
+ * @example multiply(2)(5) // → 10
+ */
 export const multiply =
 	(factor: number) =>
 	(num: number): number =>
 		num * factor;
 
+/**
+ * Returns a curried function that divides a number by `divisor`.
+ * @example divide(2)(10) // → 5
+ */
 export const divide =
 	(divisor: number) =>
 	(num: number): number =>
 		num / divisor;
 
+/**
+ * Returns a curried function that adds `amount` to a number.
+ * @example add(3)(7) // → 10
+ */
 export const add =
 	(amount: number) =>
 	(num: number): number =>
 		num + amount;
 
+/**
+ * Returns a curried function that subtracts `amount` from a number.
+ * @example subtract(3)(10) // → 7
+ */
 export const subtract =
 	(amount: number) =>
 	(num: number): number =>
@@ -204,18 +322,27 @@ export const subtract =
 // ENCODING/DECODING HELPERS
 // ============================================================================
 
+/** Encodes a UTF-8 string as Base64. */
 export const base64Encode = (str: string): string =>
 	Buffer.from(str).toString('base64');
 
+/** Decodes a Base64-encoded string back to UTF-8. */
 export const base64Decode = (str: string): string =>
 	Buffer.from(str, 'base64').toString('utf-8');
 
+/**
+ * Parses a JSON string and returns the typed value.
+ * @template T - Expected type of the parsed value.
+ */
 export const jsonParse = <T = unknown>(str: string): T => JSON.parse(str);
 
+/** Serialises a value to a JSON string. */
 export const jsonStringify = (obj: unknown): string => JSON.stringify(obj);
 
+/** Encodes a string for safe use in a URI component (`encodeURIComponent`). */
 export const encodeURIString = (str: string): string => encodeURIComponent(str);
 
+/** Decodes a URI-encoded component string (`decodeURIComponent`). */
 export const decodeURIString = (str: string): string => decodeURIComponent(str);
 
 // ============================================================================
@@ -248,18 +375,32 @@ export const pipe = compose;
 // CURRENCY/BUSINESS HELPERS
 // ============================================================================
 
+/**
+ * Returns a curried function that applies a tax rate to a price.
+ * @param rate - Tax rate as a decimal fraction (e.g. `0.1` for 10 %).
+ */
 export const tax =
 	(rate: number) =>
 	(price: number): number =>
 		price * rate;
 
+/**
+ * Returns a curried function that applies a discount rate to a price.
+ * @param rate - Discount rate as a decimal fraction (e.g. `0.2` for 20 % off).
+ */
 export const discount =
 	(rate: number) =>
 	(price: number): number =>
 		price * (1 - rate);
 
+/** Applies a fixed 21 % VAT to the given price. */
 export const vat = (price: number): number => price * 0.21; // VAT 21%
 
+/**
+ * Returns a curried function that formats a number as a currency string.
+ * @param currency - Currency symbol prefix (default `'$'`).
+ * @param decimals - Number of decimal places (default `2`).
+ */
 export const formatCurrency =
 	(currency: string = '$', decimals: number = 2) =>
 	(amount: number): string =>
@@ -269,15 +410,39 @@ export const formatCurrency =
 // ARRAY HELPERS
 // ============================================================================
 
+/**
+ * Returns a new array with duplicate values removed (uses `Set` equality).
+ * @template T - Element type.
+ */
 export const unique = <T>(arr: T[]): T[] => [...new Set(arr)];
 
+/**
+ * Returns a shallow copy of the array sorted in ascending order.
+ * @template T - Element type.
+ */
 export const sortAsc = <T>(arr: T[]): T[] => [...arr].sort();
 
+/**
+ * Returns a shallow copy of the array sorted in descending order.
+ * @template T - Element type.
+ */
 export const sortDesc = <T>(arr: T[]): T[] => [...arr].sort().reverse();
 
+/**
+ * Returns the first element of the array, or `undefined` if the array is empty.
+ * @template T - Element type.
+ */
 export const first = <T>(arr: T[]): T | undefined => arr[0];
 
+/**
+ * Returns the last element of the array, or `undefined` if the array is empty.
+ * @template T - Element type.
+ */
 export const last = <T>(arr: T[]): T | undefined => arr[arr.length - 1];
 
+/**
+ * Returns a new array with all falsy values (`null`, `undefined`, `0`, `''`, `false`) removed.
+ * @template T - Element type.
+ */
 export const compact = <T>(arr: T[]): NonNullable<T>[] =>
 	arr.filter(Boolean) as NonNullable<T>[];

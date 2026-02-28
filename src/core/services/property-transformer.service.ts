@@ -169,6 +169,26 @@ function _getPropTransformMeta(
 	return meta;
 }
 
+/**
+ * Service that performs the **per-property type transformation** during deserialization.
+ *
+ * Given a raw scalar or array value, a property key, and the current model class,
+ * `PropertyTransformer` resolves the correct transformer (via metadata caches and
+ * `TransformerLookupService`) and delegates the actual conversion.
+ *
+ * Performance-sensitive: all metadata reads are cached in a per-(class, key)
+ * `WeakMap` so that subsequent constructions of the same model class hit no
+ * `Reflect.getMetadata` calls after the first instance.
+ *
+ * @remarks
+ * SOLID principles applied:
+ * - **Single Responsibility**: only handles the transformation of a single property value.
+ * - **Open/Closed**: extensible via `QTransformerRegistry` without modifying this class.
+ * - **Dependency Inversion**: depends on `TransformerLookupService` and
+ *   `ValueTransformerService` abstractions.
+ *
+ * @internal Used by `PopulationService`.
+ */
 export class PropertyTransformer {
 	constructor(
 		private readonly valueTransformer: ValueTransformerService,
@@ -191,6 +211,13 @@ export class PropertyTransformer {
 			recursionContext: { visited: WeakSet<object>; depth: number };
 			maxArrayLength: number;
 			coercionStrategy: 'strict' | 'loose';
+			/**
+			 * OPT: pre-built metadata object for decorated fields with no per-field
+			 * transformerOptions override. Avoids one object allocation per field.
+			 * When provided and no per-field override exists, this object is reused
+			 * in-place instead of allocating a new one.
+			 */
+			cachedBaseMeta?: Record<string, unknown>;
 		}
 	): any {
 		const {
@@ -241,13 +268,24 @@ export class PropertyTransformer {
 		}
 
 		// 2. Property IS decorated
-		// Update context metadata
-		transformContext.metadata = {
-			transformerOptions: options.transformerOptions?.[targetKey],
-			maxArrayLength,
-			coercionStrategy,
-			normalization: options.normalization, // Pass normalization options to transformers
-		};
+		// OPT: Reuse pre-built base metadata when no per-field transformerOptions override exists.
+		// For the common case (no per-field override), `context.cachedBaseMeta` is the same object
+		// across all fields in a construction call — eliminating one object allocation per field.
+		const _fieldTransOpt = options.transformerOptions?.[targetKey];
+		transformContext.metadata =
+			_fieldTransOpt !== undefined
+				? {
+						transformerOptions: _fieldTransOpt,
+						maxArrayLength,
+						coercionStrategy,
+						normalization: options.normalization,
+					}
+				: (context.cachedBaseMeta ?? {
+						transformerOptions: undefined,
+						maxArrayLength,
+						coercionStrategy,
+						normalization: options.normalization,
+					});
 
 		// Per-(constructor, key) cache: eliminates Reflect.getMetadata calls per decorated field
 		// Falls back to direct instance lookup for plain objects (unit tests / dynamic metadata)

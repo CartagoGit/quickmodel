@@ -1,18 +1,31 @@
 /**
- * Public types for QModel models.
+ * Shared helper types for QModel model definitions.
  *
- * This module provides helper types for defining type transformations
- * in model classes that extend QModel.
+ * - `IQAnyRecord` — escape-hatch record type used internally to satisfy
+ *   index-signature requirements in places where `any` is genuinely needed.
+ * - `IModelConstructor<TModel>` — minimal constructor + static-method shape
+ *   used to type-check model classes without importing the full `QModel` class.
+ * - `IQTransform<T, Transforms>` — internal helper for partial type overrides.
+ * - `IQImplements<TInterface, TTransforms>` — public helper that merges a
+ *   base interface with its transformed-property overrides.
+ *
  * @module core/interfaces/model.interface
- * Really is used in multiple places to dodge eslint no-explicit-any
- * in several files where really is needed any type.
  */
 
+/**
+ * Open record type whose values are `any`.
+ * Used internally by QuickModel in the few places where an explicit `any`
+ * index signature is required (e.g. Reflect metadata payloads).
+ * Satisfies ESLint's `no-explicit-any` rule via indirection.
+ */
 export interface IQAnyRecord extends Record<string, any> {}
 
 /**
- * Interface representing a concrete QModel constructor
- * Used to type-check static methods like deserialize locally
+ * Minimal shape of a concrete QModel class constructor.
+ * Used to type-check static methods such as `deserialize` without pulling
+ * in the full `QModel` base class.
+ *
+ * @template TModel - The model instance type produced by the constructor.
  */
 export interface IModelConstructor<TModel> {
 	new (data: any): TModel;

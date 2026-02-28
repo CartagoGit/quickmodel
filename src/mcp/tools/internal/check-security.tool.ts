@@ -3,7 +3,19 @@ import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
 /**
- * Tool to run security checks.
+ * Internal MCP tool that runs the full security test suite located at
+ * `tests/security/` via `bun test` and reports pass / fail status.
+ *
+ * @remarks
+ * The security suite covers: DoS vectors (large inputs, deeply nested
+ * objects), ReDoS patterns, path-traversal attempts, prototype-pollution,
+ * and information-disclosure scenarios.
+ *
+ * @returns `{ status: 'secure' | 'vulnerable' | 'error', output: string }` —
+ * `'secure'` only when all tests pass; `'vulnerable'` on test failures;
+ * `'error'` when the runner itself fails to start.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QCheckSecurityTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'check_security';

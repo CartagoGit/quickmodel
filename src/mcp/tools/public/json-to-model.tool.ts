@@ -2,7 +2,25 @@ import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 
 /**
- * Tool to convert a raw JSON object into a QuickModel class definition.
+ * MCP tool that infers a QuickModel class definition from a raw JSON string.
+ *
+ * @remarks
+ * Type inference rules applied per-key:
+ * - `number`  → transformer `"number"`
+ * - `boolean` → transformer `"boolean"`
+ * - ISO-8601 date strings → transformer `"date"`
+ * - everything else → transformer `"string"` (safe default)
+ *
+ * The class name defaults to `"GeneratedModel"` when not supplied and is
+ * validated against a safe identifier pattern before code generation.
+ *
+ * @returns `{ code: string }` — a fully-formed TypeScript class extending
+ * `QModel` with `@Quick` decorator configuration.
+ *
+ * @throws {Error} If the JSON is invalid, if the root value is not an object,
+ * or if the supplied class name is not a valid identifier.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QJsonToModelTool extends QAbstractTool<
 	z.ZodObject<{

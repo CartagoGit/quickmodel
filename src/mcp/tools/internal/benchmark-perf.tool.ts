@@ -4,8 +4,22 @@ import { QModel } from '../../../core/models/quick.model';
 import { Quick } from '../../../core/decorators/quick.decorator';
 
 /**
- * Tool to benchmark QuickModel performance.
- * Runs standard transformation scenarios and reports metrics.
+ * Internal MCP tool that micro-benchmarks QuickModel transformation
+ * throughput across a set of representative scenarios.
+ *
+ * @remarks
+ * Runs `iterations` cycles (default: 1 000) of:
+ * - Primitive field deserialization (string, number, boolean)
+ * - `Date` round-trip (ISO string → Date → ISO string)
+ * - Nested model deserialization
+ * - `serialize()` call
+ *
+ * Reports ops/sec for each scenario and an overall summary.
+ *
+ * @returns `{ results: Record<string, string>, summary: string }` — per-
+ * scenario ops/sec strings and a human-readable summary table.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QBenchmarkPerformanceTool extends QAbstractTool<
 	z.ZodObject<{ iterations: z.ZodDefault<z.ZodNumber> }>

@@ -3,7 +3,16 @@ import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
 /**
- * Tool to get test coverage report.
+ * Internal MCP tool that runs `bun run test:coverage` and returns the
+ * coverage summary as a raw string.
+ *
+ * @remarks
+ * Delegates entirely to the Bun test runner — output includes per-file
+ * line/branch/function coverage percentages and a totals row.
+ *
+ * @returns `{ summary: string }` — raw stdout + stderr from the coverage run.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'get_coverage_report';

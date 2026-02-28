@@ -1,10 +1,18 @@
 /**
- * SOLID - Single Responsibility: Separate serialization from model logic
- * SOLID - Dependency Inversion: Depend on abstractions (interfaces)
+ * Serialization and deserialization contracts for QuickModel.
+ *
+ * - `IQSerializationOptions` — full option bag controlling `serialize()` / `toJSON()` output.
+ * - `IQSerializer<TModel, TInterface>` — converts a model instance to its JSON-compatible form.
+ * - `IQDeserializer<TInterface, TModel>` — converts a plain object / JSON string to a model instance.
+ *
+ * @module core/interfaces/serializer.interface
  */
 
 import { IQCaseOptions } from '../types/case.type';
 
+/**
+ * Options controlling how a `QModel` instance is serialized to a plain object or JSON string.
+ */
 export interface IQSerializationOptions {
 	/**
 	 * Include properties starting with a single underscore `_` (e.g., `_id`, `_value`)
@@ -54,6 +62,12 @@ export interface IQSerializationOptions {
 	omit?: string[];
 }
 
+/**
+ * Serializes a model instance into its JSON-compatible interface representation.
+ *
+ * @template TModel - Model class instance type (extends `Record<string, unknown>`).
+ * @template TInterface - Resulting plain-object type.
+ */
 export interface IQSerializer<
 	TModel extends Record<string, unknown>,
 	TInterface,
@@ -76,6 +90,12 @@ export interface IQSerializer<
 	serializeToJson(model: TModel, options?: IQSerializationOptions): string;
 }
 
+/**
+ * Deserializes a plain object or JSON string into a fully-typed model instance.
+ *
+ * @template TInterface - Plain-object input type (extends `Record<string, unknown>`).
+ * @template TModel - Resulting model type.
+ */
 export interface IQDeserializer<
 	TInterface extends Record<string, unknown>,
 	TModel,

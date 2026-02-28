@@ -31,7 +31,6 @@ interface IErrorData {
  * Preserves error name and stack trace when available.
  *
  * @example
- * @example
  * ```typescript
  * @Quick({ lastError: Error })
  * class Request extends QuickModel<IRequest> {

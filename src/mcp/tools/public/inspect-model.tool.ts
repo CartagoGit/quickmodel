@@ -13,7 +13,16 @@ const QUICKMODEL_DECORATORS = [
 ] as const;
 
 /**
- * Tool to analyze a model structure (simplified).
+ * MCP tool that parses a QuickModel class definition and returns a structural
+ * summary: class name, detected transformers, applied decorators, and the
+ * raw `@Quick` config string.
+ *
+ * @remarks
+ * Uses lightweight regex-based parsing — no TypeScript compiler involved.
+ * Suitable for quick structural inspection via AI-agent tooling.
+ *
+ * @see {@link QExportJsonSchemaTool} to generate a full JSON Schema from the same code.
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QInspectModelTool extends QAbstractTool<
 	z.ZodObject<{ code: z.ZodString }>

@@ -3,8 +3,21 @@ import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
 /**
- * Tool to trigger documentation updates.
- * Useful for internal workflows when docs need to be refreshed.
+ * Internal MCP tool that triggers the documentation build pipeline.
+ *
+ * @remarks
+ * Supports two actions:
+ * - `'build'` — runs `bun run docs:build` to generate TypeDoc API references
+ *   and VitePress static output.
+ * - `'clean'` — removes generated documentation artifacts so a fresh build
+ *   can be triggered.
+ *
+ * Both actions stream the complete stdout + stderr back to the caller.
+ *
+ * @returns `{ status: 'ok' | 'error', output: string }` — combined command
+ * output; `'error'` when the build process exits with a non-zero code.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QUpdateDocsTool extends QAbstractTool<
 	z.ZodObject<{

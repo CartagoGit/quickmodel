@@ -267,13 +267,17 @@ const original = user.getInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
 
-### `copy(partial)`
+### `copy(partial?)`
 
-Creates a **new instance** (immutable) by merging current state with the provided partial data. The original instance is never modified.
+Creates a **new independent instance**. Optionally merges the current state with partial data. The original instance is never modified.
 
 ```typescript
 const user = new User({ id: 1, name: 'John', age: 30 });
 
+// Deep copy without changes
+const clone = user.copy();
+
+// Copy with partial overrides
 const updated = user.copy({ age: 31 });
 
 console.log(user.age); // 30  — original untouched
@@ -290,14 +294,6 @@ console.log(updated.isDirty('name')); // true  — changed after merge
 > [!NOTE]
 > `copy()` returns a fully independent instance with its own change tracking. The copied state becomes the new baseline — `isDirty()` is `false` immediately after `copy()`, and `reset()` reverts to the copied state (not the original).
 
-### `copy()`
-
-Creates a deep copy of the model instance. The new instance is completely independent.
-
-```typescript
-const copy = user.copy();
-```
-
 ## Mocking
 
 Every QModel has a built-in static mock generator.
@@ -309,7 +305,6 @@ const fakeUser = User.mock().random();
 // Generate array of 10 instances
 const fakeUsers = User.mock().array(10);
 
-// Generate with specific overrides
 // Generate with specific overrides
 const admin = User.mock().random({ role: 'admin' });
 ```

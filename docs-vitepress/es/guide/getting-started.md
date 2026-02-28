@@ -6,12 +6,18 @@ QuickModel es una librería de TypeScript que proporciona serialización y deser
 
 ## Características Clave
 
-- **Cero Configuración**: Funciona desde el primer momento con decoradores de TypeScript.
-- **Seguridad de Tipos**: Soporte completo de TypeScript con verificación estricta de tipos.
-- **Transformaciones Automáticas**: Maneja Date, BigInt, Map, Set, RegExp, Buffer, TypedArrays, y más.
-- **Arquitectura SOLID**: Diseño limpio y extensible siguiendo las mejores prácticas.
-- **Generación de Mocks**: Integración incorporada para generar datos de prueba (`User.mock().random()`).
-- **API Limpia**: Métodos intuitivos para serialización y deserialización.
+- **Cero Configuración**: Funciona desde el primer momento con decoradores de TypeScript (`@Quick`, `@QType`).
+- **Seguridad de Tipos**: Soporte completo de TypeScript con verificación estricta de tipos e inferencia.
+- **Transformaciones Automáticas**: 33 transformers integrados para `Date`, `BigInt`, `Map`, `Set`, `RegExp`, `Buffer`, `URL`, `TypedArray`, `WeakMap`, y más.
+- **Validación de Negocio**: Decorador `@QRule` con 14 validadores integrados, validaciones asíncronas y comprobación de reglas por grupos.
+- **Gestión de Estado**: Seguimiento de cambios con `isDirty`, actualizaciones parciales mediante `copy(partial)` y `patch()`, y `reset()` para restaurar el snapshot original.
+- **Propiedades Calculadas y Alias**: `@QComputed` para campos derivados y `@QAlias` para alias de propiedades.
+- **Generación de Schemas**: Exportación a más de 7 formatos (JSON Schema, Zod, Yup, interfaz TypeScript, Markdown, etc.) mediante `getSchema()`.
+- **Integración con Formularios**: Genera schemas de formulario con los decoradores `@QField` y `@QGroup` y el método `getFormSchema()`.
+- **Generación de Mocks**: Generación integrada de datos de prueba (`User.mock().random()`, `User.mock().fromSchema()`).
+- **Servidor MCP**: 20 herramientas públicas para asistentes de IA y 19 plantillas de prompts para desarrollo asistido por IA.
+- **Seguridad**: Protección integrada contra DoS, límites de tamaño de payload, guardas de recursión y prevención de XSS.
+- **Arquitectura SOLID**: Diseño limpio y extensible — registra transformers personalizados sin modificar el código base.
 
 ## ¿Por Qué QuickModel?
 

@@ -3,7 +3,11 @@
  * Single source of truth for supported native types and their string identifiers.
  */
 
-// Native constructor types
+/**
+ * Union of all native constructor types that QuickModel recognises and can
+ * register a transformer for. Used as a discriminant in `IQTypeSpec` to
+ * distinguish class constructors from native built-ins.
+ */
 export type IQNativeConstructor =
 	| typeof String
 	| typeof Number

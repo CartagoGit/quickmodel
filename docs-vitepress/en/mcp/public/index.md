@@ -123,6 +123,14 @@ List all available data transformers in QuickModel (e.g., string, date, email).
 {}
 ```
 
+## `list_validators`
+
+List all available built-in validator decorators in QuickModel with their usage signatures and descriptions.
+
+```json
+{}
+```
+
 ## `search_docs`
 
 Search the QuickModel documentation for a query string.

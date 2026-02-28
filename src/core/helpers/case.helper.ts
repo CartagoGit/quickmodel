@@ -1,5 +1,25 @@
 import { ICaseType } from '../types/case.type';
 
+/**
+ * Utility class for converting strings between different naming conventions.
+ *
+ * Supports the four case formats recognized by the `@Quick()` `transformCase` option:
+ * `snake_case`, `camelCase`, `kebab-case`, and `PascalCase`.
+ *
+ * Normalisation follows this pipeline:
+ * 1. Split on camelCase boundaries (`myField` → `['my', 'Field']`).
+ * 2. Replace `_` and `-` separators.
+ * 3. Lowercase all tokens.
+ * 4. Re-join in the requested format.
+ *
+ * @example
+ * ```ts
+ * CaseHelper.toCase('snake_case', 'firstName') // 'first_name'
+ * CaseHelper.toCase('kebab-case', 'firstName') // 'first-name'
+ * CaseHelper.toCase('PascalCase', 'my_field')  // 'MyField'
+ * CaseHelper.toCase('camelCase',  'my-field')  // 'myField'
+ * ```
+ */
 export class CaseHelper {
 	/**
 	 * Converts a string to the specified case format.

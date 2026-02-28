@@ -1,6 +1,29 @@
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
+/**
+ * Service that reconstructs the **original interface representation** of a model.
+ *
+ * Unlike `Serializer` (which always converts to a JSON-safe format regardless of
+ * the original input), `ToInterfaceService` tries to *preserve* the original format
+ * that was passed to the model constructor — ensuring a lossless round-trip when
+ * the data has not changed.
+ *
+ * **Key differences vs `Serializer`:**
+ * - `Serializer.serialize()` → always JSON-safe (Date → ISO string, BigInt → string, …)
+ * - `ToInterfaceService.toInterface()` → restores the original input format (Date stays Date, …)
+ *
+ * @remarks
+ * SOLID principles applied:
+ * - **Single Responsibility**: only handles model → interface reconstruction.
+ * - **Open/Closed**: extensible via custom serializers in `@Quick` options.
+ * - **Dependency Inversion**: works against the `IQAdvancedOptions` abstraction.
+ *
+ * @template TModel     - The model type (keyed Plain record).
+ * @template TInterface - The target interface type to reconstruct.
+ *
+ * @internal This service is used by `QModel.toInterface()` and `QModel.toJSON()`.
+ */
 export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,

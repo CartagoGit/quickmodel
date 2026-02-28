@@ -372,6 +372,66 @@ describe('QModel Unified Schema Generation API', () => {
 	});
 
 	// ========================================================================
+	// 10. CACHE — misma referencia en llamadas consecutivas
+	// ========================================================================
+
+	describe('getSchema() result cache — same class, same format', () => {
+		test('repeated calls to User.getSchema("json") return the SAME object reference (cache hit)', () => {
+			const first = User.getSchema('json');
+			const second = User.getSchema('json');
+			expect(first).toBe(second);
+		});
+
+		test('repeated calls to User.getSchema("zod") return the SAME object reference', () => {
+			const first = User.getSchema('zod');
+			const second = User.getSchema('zod');
+			expect(first).toBe(second);
+		});
+
+		test('different formats return DIFFERENT objects', () => {
+			const json = User.getSchema('json');
+			const mongo = User.getSchema('mongo');
+			expect(json).not.toBe(mongo);
+		});
+
+		test('all 7 formats are individually cached', () => {
+			const formats = [
+				'json',
+				'zod',
+				'openapi',
+				'typescript',
+				'graphql',
+				'mongo',
+				'ajv',
+			] as const;
+			for (const fmt of formats) {
+				const first = User.getSchema(fmt);
+				const second = User.getSchema(fmt);
+				expect(first).toBe(second);
+			}
+		});
+
+		test('different classes have INDEPENDENT caches', () => {
+			interface IProduct {
+				name: string;
+				price: number;
+			}
+			@Quick({ name: String, price: Number })
+			class Product extends QModel<IProduct> {
+				declare name: string;
+				declare price: number;
+			}
+
+			const userSchema = User.getSchema('json');
+			const productSchema = Product.getSchema('json');
+			expect(userSchema).not.toBe(productSchema);
+			// Each class caches independently
+			expect(Product.getSchema('json')).toBe(productSchema);
+			expect(User.getSchema('json')).toBe(userSchema);
+		});
+	});
+
+	// ========================================================================
 	// _inferPropertiesFromSample() coverage — lines 1722-1736 of quick.model.ts
 	// ========================================================================
 	describe('_inferPropertiesFromSample() — no @Quick decorator paths', () => {

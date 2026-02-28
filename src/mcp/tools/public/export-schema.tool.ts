@@ -3,7 +3,23 @@ import { QAbstractTool } from '../abstract-tool';
 import { QInspectModelTool } from './inspect-model.tool';
 
 /**
- * Tool to export a QuickModel to JSON Schema.
+ * MCP tool that converts a QuickModel class definition into a standard
+ * JSON Schema (draft-07) object.
+ *
+ * @remarks
+ * Delegates structural inspection to {@link QInspectModelTool} and then maps
+ * each QuickModel transformer type to its closest JSON Schema equivalent:
+ * - `date` → `{ type: "string", format: "date-time" }`
+ * - `number` / `integer` → `{ type: "number" }`
+ * - `boolean` → `{ type: "boolean" }`
+ * - everything else → `{ type: "string" }` (safe default)
+ *
+ * All detected properties are marked as required by default.
+ *
+ * @returns `{ schema: object }` — a JSON Schema object with `type`, `title`,
+ * `properties`, and `required` keys.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QExportJsonSchemaTool extends QAbstractTool<
 	z.ZodObject<{

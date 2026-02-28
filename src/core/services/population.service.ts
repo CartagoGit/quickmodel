@@ -127,7 +127,24 @@ function _getMergedRuntimeOptions(
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Service responsible for populating an instance with data.
+ * Service responsible for **populating** a model instance with raw/serialized data.
+ *
+ * This is the core deserialization orchestrator: it receives the raw `data` object
+ * passed to the model constructor, applies security checks (prototype pollution,
+ * array-size limits, recursion guards), resolves the correct transformer or nested
+ * model class for each property, delegates to `PropertyTransformer` for the actual
+ * type conversion, and writes the final values onto the instance.
+ *
+ * @remarks
+ * SOLID principles applied:
+ * - **Single Responsibility**: coordinates population; delegates type-coercion to
+ *   `PropertyTransformer`, security to `SecurityInspector` / `ObjectSizeValidator`.
+ * - **Open/Closed**: new transformer support is added by registering in
+ *   `QTransformerRegistry` without modifying this service.
+ * - **Dependency Inversion**: depends on `TransformerLookupService`, not on concrete
+ *   transformers.
+ *
+ * @internal Used exclusively by `Deserializer.deserialize()`.
  */
 export class PopulationService {
 	private readonly securityInspector = new SecurityInspector();
@@ -344,13 +361,21 @@ export class PopulationService {
 		}
 
 		// SECURITY: Prevent Memory Exhaustion via Massive Objects
+		// OPT: Inlined from this.sizeValidator.validateObjectSize() — eliminates
+		// method dispatch on every construction. Constant limit of 50000 allows
+		// branch-prediction-friendly code in the hot path.
 		const PROPS_LIMIT = 50000;
 		const keys = Object.keys(data);
-		this.sizeValidator.validateObjectSize({
-			keys,
-			limit: PROPS_LIMIT,
-			className: modelClass.name,
-		});
+		if (keys.length > PROPS_LIMIT) {
+			throw new QModelError(
+				`QuickModel Security: Input object has too many properties (${keys.length}). Limit is ${PROPS_LIMIT}.`,
+				{
+					className: modelClass.name,
+					propertyKey: '<root>',
+					value: 'TRUNCATED',
+				}
+			);
+		}
 
 		// OPT: Pre-compute flags that are constant for this call so we skip branches per key
 		const hasTransformCase = !!transformCase?.in;
@@ -371,6 +396,16 @@ export class PopulationService {
 			propertyKey: '',
 			className: classNameCached,
 			metadata: undefined as unknown as Record<string, unknown>,
+		};
+
+		// OPT#5: Pre-build metadata object for decorated fields with no per-field transformerOptions.
+		// maxArrayLength, coercionStrategy, normalization are constant within this construction call.
+		// Passed to transformProperty so it can reuse the same object instead of allocating per field.
+		const _cachedBaseMeta: Record<string, unknown> = {
+			transformerOptions: undefined,
+			maxArrayLength,
+			coercionStrategy,
+			normalization: options.normalization,
 		};
 
 		for (const key of keys) {
@@ -607,6 +642,7 @@ export class PopulationService {
 					recursionContext,
 					maxArrayLength,
 					coercionStrategy: coercionStrategy,
+					cachedBaseMeta: _cachedBaseMeta,
 				}
 			);
 		}

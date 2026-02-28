@@ -1,16 +1,20 @@
-# QuickModel - Tareas Pendientes
+# QuickModel - Tareas Pendientes y Propuestas
 
-> **Fecha de revisión:** 24 de febrero de 2026 (actualizado)
+> **Fecha de revisión:** 28 de febrero de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 3273+ tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 3300+ tests passing | Cobertura >97% líneas | v1.0.0
+
+> **Documento único de planificación.** Contiene el backlog oficial de tareas completadas/pendientes
+> y la sección de propuestas nuevas para sprints futuros (Mar 2026+).
+> Documentos históricos completados: [`.archived/PENDING_CONFIGS.md`](../.archived/PENDING_CONFIGS.md) · [`.archived/REFACTORING.md`](../.archived/REFACTORING.md)
 
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #47, #49, #55, #40, #41, #42 (sprint Feb 2026)
+✅ Completadas: Tasks #1–#22, #23–#38, #39–#43, #44, #45, #46, #47, #49, #50, #51, #52, #53, #54, #55, #40, #41, #42 (sprint Feb 2026)
 ✅ Completada:  Task #56 — benchmarks extendidos: superjson, arktype, class-validator, vest, joi + Bench #7/#8
 ✅ Completada:  Task #57 — Test Runners: Jest, Jasmine, Mocha/Chai, Node:test, AVA — 147 tests + guías EN+ES
-⏳  Backlog:     Tasks #48, #50–#54 (Extended Ecosystem Sprint)
+⏳  Backlog:     Task #48 (Drizzle ORM) + Propuestas A–L (ver sección final)
 ✅ Completada:  Task #17 (benchmarks — comparativa vs Zod/PlainJS + gráfica landing)
 ```
 
@@ -2495,3 +2499,410 @@ código de los adaptadores que aparece en la documentación.
 Jasmine, Mocha/Chai, Node:test y AVA no tienen ícono en la marquesina pero son los
 frameworks de testing más usados junto a Jest, y sus guías completan la cobertura del
 ecosistema de testing para QuickModel.
+
+---
+
+---
+
+## 🆕 PROPUESTAS BACKLOG (Mar 2026+)
+
+> **Análisis:** 28 de febrero de 2026  
+> Estas propuestas son **100% nuevas** — ninguna estaba registrada en el backlog anterior.  
+> Task #48 (Drizzle) ya estaba registrada arriba en este fichero y no se repite aquí.
+
+---
+
+### Propuesta A — `@QSensitive` decorator
+
+**Prioridad:** 🔴 Alta  
+**Impacto:** Alto — seguridad, GDPR, PII  
+**Esfuerzo estimado:** 2-3 horas  
+**Tests estimados:** ~15
+
+**Descripción:**  
+Marca campos como sensibles. Los excluye automáticamente de:
+
+- El output de `serialize()` en modo producción
+- Los mensajes de error de `safeStringify`
+- Los logs del `Logger`
+
+El mecanismo de exclusión de campos ya existe (`excludeFields` de `@Quick`), pero `@QSensitive` es una solución declarativa y semántica de primera clase.
+
+**API propuesta:**
+
+```typescript
+@Quick()
+class User extends QModel<IUser> {
+	declare id: number;
+	declare email: string;
+
+	@QSensitive()
+	declare password: string;
+
+	@QSensitive()
+	declare token: string;
+}
+
+user.serialize();
+// → { id: 1, email: 'a@b.com' }  ← password y token excluidos automáticamente
+
+user.serialize({ includeSensitive: true }); // override explícito
+// → { id: 1, email: 'a@b.com', password: 'secret', token: 'abc' }
+```
+
+**Casos de uso:**
+
+- Seguridad en APIs REST (no exponer passwords, tokens, secrets)
+- Cumplimiento GDPR (PII no sale en logs)
+- `validationReport()` y `checkRules()` siguen accediendo al valor (solo afecta serialización)
+
+**Archivos a crear/modificar:**
+
+- `src/core/decorators/qsensitive.decorator.ts` — nuevo decorator
+- `src/core/constants/metadata-keys.ts` — nueva clave `QSENSITIVE_METADATA_KEY`
+- `src/core/services/serializer.service.ts` — skip campos `@QSensitive` salvo opción explícita
+- `src/core/services/population.service.ts` — excluir del log de `safeStringify`
+- `src/index.ts` — export `QSensitive`
+- `tests/unit/core/decorators/qsensitive.test.ts`
+- `docs-vitepress/en/guide/sensitive-fields.md` + ES
+
+---
+
+### Propuesta B — `QModel.diff(other)` method
+
+**Prioridad:** 🔴 Alta  
+**Impacto:** Alto — auditorías, sincronización, UI de "cambios pendientes"  
+**Esfuerzo estimado:** 3-4 horas  
+**Tests estimados:** ~20
+
+**Descripción:**  
+Diferencia profunda entre dos instancias QModel distintas. A diferencia de `isDirty()` que compara con el estado inicial de la misma instancia, `diff()` compara dos instancias independientes y devuelve un reporte estructurado de cambios.
+
+**API propuesta:**
+
+```typescript
+const original = new User({ id: 1, name: 'Alice', email: 'a@b.com' });
+const updated = new User({ id: 1, name: 'Alice M.', email: 'alice@new.com' });
+
+const changes = original.diff(updated);
+// → {
+//     changed: { name: { from: 'Alice', to: 'Alice M.' }, email: { from: 'a@b.com', to: 'alice@new.com' } },
+//     added:   {},
+//     removed: {}
+//   }
+
+original.diff(updated, { deep: true }); // diff recursivo en nested models
+original.diffSummary(updated); // array plano de strings legibles
+```
+
+**Casos de uso:**
+
+- Audit logs: saber exactamente qué cambió antes de guardar
+- `copy()` + `diff()` para implementar undo/redo
+- Complemento natural del sistema `isDirty()` / `copy()` / `getChanges()` ya existente
+
+**Archivos a crear/modificar:**
+
+- `src/core/services/diff.service.ts` — nueva clase `QModelDiffService`
+- `src/core/models/quick.model.ts` — métodos `diff()` y `diffSummary()`
+- `src/core/types/diff-types.ts` — tipos `IQDiffResult`, `IQDiffEntry`
+- `tests/unit/core/models/diff.test.ts`
+- `docs-vitepress/en/guide/qmodel.md` — sección "Diff & Change Detection" + ES
+
+---
+
+### Propuesta C — `getSchema('valibot')` y `getSchema('yup')`
+
+**Prioridad:** 🟡 Media  
+**Impacto:** Alto estratégico — Valibot es el sucesor moderno de Zod en 2026  
+**Esfuerzo estimado:** 2 horas por formato  
+**Tests estimados:** ~10 por formato
+
+**Descripción:**  
+Ampliar los 7 formatos actuales de `getSchema()` con dos nuevos generadores. El mecanismo ya existe en `SchemaGeneratorsService`, solo hay que añadir los métodos.
+
+```typescript
+User.getSchema('valibot'); // → schema Valibot v1.x
+User.getSchema('yup'); // → yup.object().shape({ ... })
+```
+
+**Por qué Valibot:** bundle size ~10× menor que Zod, tree-shakeable, TypeScript-first, adopción creciente en Vite/SvelteKit/Hono en 2026.
+
+**Archivos a modificar:**
+
+- `src/core/types/schema-types.ts` — añadir `'valibot' | 'yup'` al tipo `QSchemaType`
+- `src/core/services/schema-generators.service.ts` — `_generateValibotSchema` y `_generateYupSchema`
+- `tests/unit/core/services/schema-generators.test.ts`
+
+---
+
+### Propuesta D — `QModelCollection<T>` class
+
+**Prioridad:** 🟡 Media  
+**Impacto:** Medio-alto — complementa `createMany()` con un API fluida para colecciones  
+**Esfuerzo estimado:** 5-6 horas  
+**Tests estimados:** ~30
+
+**Descripción:**  
+Wrapper tipado para arrays de modelos QModel con métodos de filtrado, paginación, ordenación y agregación.
+
+```typescript
+const users = QModelCollection.from(User, rawData);
+
+users
+	.where((u) => u.age > 18)
+	.sortBy('name')
+	.paginate(1, 10)
+	.toArray(); // → User[]
+
+users.groupBy('role'); // → Record<string, User[]>
+users.serialize(); // → serializa todos los modelos
+users.checkAllRules(); // → { valid, errors: { index, field, message }[] }
+User.collection(rawData); // alias estático
+```
+
+**Archivos a crear:**
+
+- `src/core/models/quick-collection.model.ts`
+- `src/collection.ts` — subpath export `@cartago-git/quickmodel/collection`
+- `tests/unit/core/models/collection.test.ts`
+- `docs-vitepress/en/guide/collection.md` + ES
+
+---
+
+### Propuesta E — I18n de mensajes de validación
+
+**Prioridad:** 🟡 Media  
+**Impacto:** Medio — muy demandado en aplicaciones multi-idioma  
+**Esfuerzo estimado:** 4 horas  
+**Tests estimados:** ~15
+
+**Descripción:**  
+Permitir que los mensajes de `@QRule` y validators built-in sean claves de traducción con un resolver configurable en `QConfig`.
+
+```typescript
+QConfig.configure({
+	i18n: {
+		resolver: (key: string, params?: Record<string, unknown>) =>
+			t(key, params),
+	},
+});
+
+@Quick()
+class User extends QModel<IUser> {
+	@QRule((v) => v.length >= 3, 'validation.name.minLength')
+	declare name: string;
+}
+// → los mensajes se resuelven en tiempo de checkRules() en el idioma activo
+```
+
+**Archivos a modificar:**
+
+- `src/core/config/quick.config.ts` — añadir `i18n.resolver` a `IQConfig`
+- `src/core/decorators/validators.ts` — usar resolver para mensajes built-in
+- `src/core/helpers/q-check-rules.ts` — resolver mensajes antes de retornarlos
+- `tests/unit/core/config/i18n.test.ts`
+- `docs-vitepress/en/guide/i18n.md` + ES
+
+---
+
+### Propuesta F — `@QDefault` decorator
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio — DX para DTOs con campos opcionales  
+**Esfuerzo estimado:** 2 horas  
+**Tests estimados:** ~12
+
+**Descripción:**  
+Valores por defecto declarativos por campo. Solo se activa cuando el valor entrante es `undefined` o `null`, a diferencia del constructor que siempre ejecuta el default.
+
+```typescript
+@Quick({ createdAt: Date })
+class Event extends QModel<IEvent> {
+	declare id: string;
+
+	@QDefault(() => new Date())
+	declare createdAt: Date;
+
+	@QDefault('draft')
+	declare status: string;
+
+	@QDefault(() => [])
+	declare tags: string[];
+}
+
+new Event({ id: '1' });
+// → createdAt = new Date(), status = 'draft', tags = []
+```
+
+---
+
+### Propuesta G — `QModel.fromFormData(fd: FormData)` método estático
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio — DX en Server Actions, Remix, SvelteKit, Hono  
+**Esfuerzo estimado:** 2 horas  
+**Tests estimados:** ~10
+
+**Descripción:**  
+Método estático de primera clase que parsea directamente desde `FormData` con `coercionStrategy: 'loose'` implícito. El patrón existe en guías pero no hay método oficial.
+
+```typescript
+export async function createUser(formData: FormData) {
+	const dto = User.fromFormData(formData);
+	// equivalente a: new User(Object.fromEntries(formData), { coercionStrategy: 'loose' })
+	const { valid, errors } = dto.checkRules();
+	if (!valid) return { errors };
+	await db.insert(users).values(dto.toInterface());
+}
+```
+
+---
+
+### Propuesta H — `@QTransform` pipeline decorator
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio — DX para transformaciones custom a nivel de campo  
+**Esfuerzo estimado:** 2-3 horas  
+**Tests estimados:** ~12
+
+**Descripción:**  
+Transformaciones a nivel de campo ejecutadas después de deserializar el valor, antes de asignarlo al modelo. Composable.
+
+```typescript
+@Quick()
+class User extends QModel<IUser> {
+	@QTransform((v) => v.trim().toLowerCase())
+	declare email: string;
+
+	@QTransform((v) => v.trim())
+	@QTransform((v) => v[0].toUpperCase() + v.slice(1)) // composición
+	declare name: string;
+}
+```
+
+**Nota:** complementa `coercionStrategy: 'loose'` (global) con transforms por campo.
+
+---
+
+### Propuesta I — Audit trail / historial de cambios
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio — muy útil en CRUD empresariales  
+**Esfuerzo estimado:** 4-5 horas  
+**Tests estimados:** ~20
+
+**Descripción:**  
+Historial completo de mutaciones en una instancia. Opt-in vía `QConfig` para no penalizar rendimiento por defecto.
+
+```typescript
+QConfig.configure({ audit: { enabled: true, maxEntries: 100 } });
+
+const user = new User({ id: 1, name: 'Alice' });
+user.copy({ name: 'Alice M.' });
+
+user.history;
+// → [{ field: 'name', from: 'Alice', to: 'Alice M.', at: Date }]
+
+user.clearHistory();
+```
+
+---
+
+### Propuesta J — Nuevos formatos de schema: `getSchema('drizzle')` y `getSchema('typebox')`
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio estratégico  
+**Esfuerzo estimado:** 2 horas por formato
+
+**`getSchema('drizzle')`:** Cierra el círculo con Task #48. Produce columnas Drizzle desde metadatos del QModel.
+
+```typescript
+// Output esperado:
+const usersTable = pgTable('users', {
+	id: integer('id').primaryKey(),
+	name: varchar('name', { length: 255 }),
+	birth: timestamp('birth'),
+});
+```
+
+**`getSchema('typebox')`:** TypeBox es el validador nativo de Fastify v5. Permite validación ultra-rápida con Ajv internamente.
+
+```typescript
+const UserSchema = Type.Object({ id: Type.Number(), name: Type.String() });
+```
+
+---
+
+### Propuesta K — Plugin system para transformers
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio — extensibilidad del ecosistema  
+**Esfuerzo estimado:** 3-4 horas
+
+**Descripción:**  
+`QTransformerRegistry.plugin(myPlugin)` para distribuir suites de transformers como paquetes npm. Diferente al `snapshot()/restore()` actual (que es para test isolation).
+
+```typescript
+export const DecimalPlugin: IQTransformerPlugin = {
+	name: 'decimal',
+	version: '1.0.0',
+	transformers: [DecimalTransformer, CurrencyTransformer],
+};
+
+QTransformerRegistry.plugin(DecimalPlugin);
+```
+
+---
+
+### Propuesta L — Guía WebSocket / SSE en tiempo real
+
+**Prioridad:** 🟢 Baja  
+**Impacto:** Medio  
+**Esfuerzo estimado:** 2-3 horas (documentación + tests de simulación)
+
+**Descripción:**  
+La serialización ya funciona con WebSocket/SSE. Solo falta el patrón documentado con tests de simulación (mismo estilo que Electron IPC — Task #53).
+
+**Patrones a cubrir:**
+
+1. `socket.emit('event', dto.serialize())` — emisión tipada
+2. `socket.on('event', data => new UserDto(data))` — recepción tipada
+3. `diff()` para enviar solo los campos cambiados (Propuesta B)
+4. SSE — stream de eventos paginados con `createMany()`
+5. Reconexión — persistencia de estado local con `copy()`
+
+---
+
+## 📊 Resumen priorizado de propuestas nuevas
+
+| Prop | Nombre                           | Prioridad | Esfuerzo | Impacto               | Relación con existente             |
+| ---- | -------------------------------- | --------- | -------- | --------------------- | ---------------------------------- |
+| A    | `@QSensitive`                    | 🔴 Alta   | 2-3h     | Alto (seguridad/GDPR) | Extiende `excludeFields`           |
+| B    | `QModel.diff()`                  | 🔴 Alta   | 3-4h     | Alto                  | Complementa `isDirty()` / `copy()` |
+| C    | `getSchema('valibot'/'yup')`     | 🟡 Media  | 2h×2     | Alto estratégico      | Extiende Schema API existente      |
+| D    | `QModelCollection<T>`            | 🟡 Media  | 5-6h     | Medio-alto            | Complementa `createMany()`         |
+| E    | I18n de mensajes                 | 🟡 Media  | 4h       | Medio                 | Extiende `QConfig` + validators    |
+| F    | `@QDefault`                      | 🟢 Baja   | 2h       | Medio                 | Nuevo decorator                    |
+| G    | `fromFormData()`                 | 🟢 Baja   | 2h       | Medio                 | Patrón ya en guías                 |
+| H    | `@QTransform` pipeline           | 🟢 Baja   | 2-3h     | Medio                 | Complementa `@QType`               |
+| I    | Audit trail                      | 🟢 Baja   | 4-5h     | Medio                 | Complementa `isDirty()`            |
+| J    | `getSchema('drizzle'/'typebox')` | 🟢 Baja   | 2h×2     | Medio                 | Extiende Schema API + Task #48     |
+| K    | Plugin system transformers       | 🟢 Baja   | 3-4h     | Medio                 | Extiende Registry                  |
+| L    | Guía WebSocket / SSE             | 🟢 Baja   | 2-3h     | Medio                 | Solo docs + tests simulación       |
+
+**Tiempo total estimado propuestas nuevas:** ~45-55h  
+**Propuestas alta prioridad (A+B):** ~6-7h
+
+## 🔁 Orden recomendado de implementación
+
+```
+1. Task #48  → Drizzle ORM (cierra backlog oficial)
+2. Prop. A   → @QSensitive (impacto seguridad inmediato)
+3. Prop. B   → QModel.diff() (complementa copy/isDirty)
+4. Prop. C   → getSchema('valibot') + getSchema('yup') (bajo riesgo, alto valor)
+5. Prop. D   → QModelCollection<T> (requiere más diseño de API)
+6. Prop. E   → I18n (requiere decisiones de diseño)
+7. F/G/H    → @QDefault, fromFormData, @QTransform (quick wins independientes)
+8. I/J/K/L  → Audit, schemas extra, plugins, WebSocket (largo plazo)
+```

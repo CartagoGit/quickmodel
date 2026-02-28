@@ -47,15 +47,6 @@ export class MapTransformer<K = string, V = unknown>
 	implements IQIntegrityChecker
 {
 	/**
-	 * Converts a plain object or __type format to Map.
-	 *
-	 * @param value - The value to convert (object, {__type, entries}, or Map)
-	 * @param propertyKey - The property name (for error messages)
-	 * @param className - The class name (for error messages)
-	 * @returns A Map instance
-	 * @throws {Error} If the value is not an object or Map
-	 */
-	/**
 	 * Auto-transforms keys and values based on detected types.
 	 * Supports: Date (ISO strings), BigInt (string numbers), Symbol (Symbol.for), Error, etc.
 	 */
@@ -130,6 +121,22 @@ export class MapTransformer<K = string, V = unknown>
 		return key;
 	}
 
+	/**
+	 * Converts a plain object, `__type` envelope, or array of tuples to a `Map<K, V>`.
+	 *
+	 * Accepted input formats:
+	 * - Plain object `{ key: value }` (keys become map keys)
+	 * - `{ __type: 'Map', entries: [[key, val], ...] }` (round-trip from `serialize()`)
+	 * - Array of 2-tuples `[[key, val], ...]`
+	 * - Existing `Map` instance (returned as-is)
+	 *
+	 * @param value   - The raw data to convert.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className   - Class name (for error messages).
+	 * @returns A `Map<K, V>` instance, or `null` when `value` is `null`/`undefined`.
+	 * @throws {QModelError} When a prototype-pollution key is detected or when a
+	 *   `{ __type: 'Map' }` envelope exceeds the configured `maxItems` limit.
+	 */
 	deserialize(
 		value:
 			| Record<string, V>
@@ -469,15 +476,6 @@ export class SetTransformer<V = unknown>
 	implements IQIntegrityChecker
 {
 	/**
-	 * Converts an array or __type format to Set.
-	 *
-	 * @param value - The value to convert (array, {__type, values}, or Set)
-	 * @param propertyKey - The property name (for error messages)
-	 * @param className - The class name (for error messages)
-	 * @returns A Set instance
-	 * @throws {Error} If the value is not an array or Set
-	 */
-	/**
 	 * Auto-transforms values based on detected types (same as MapTransformer).
 	 */
 	private autoTransformValue(value: unknown): unknown {
@@ -538,6 +536,20 @@ export class SetTransformer<V = unknown>
 		return value;
 	}
 
+	/**
+	 * Converts an array or `__type` envelope to a `Set<V>`.
+	 *
+	 * Accepted input formats:
+	 * - Plain array `[v1, v2, ...]` (each element becomes a set entry)
+	 * - `{ __type: 'Set', values: [...] }` (round-trip from `serialize()`)
+	 * - Existing `Set` instance (returned as-is)
+	 *
+	 * @param value   - The raw data to convert.
+	 * @param propertyKey - Property name (for error messages).
+	 * @param className   - Class name (for error messages).
+	 * @returns A `Set<V>` instance, or `null` when `value` is `null`/`undefined`.
+	 * @throws {QModelError} When the input format is invalid.
+	 */
 	deserialize(
 		value: V[] | { __type: 'Set'; values: V[] } | Set<V> | null | undefined,
 		propertyKey: string,

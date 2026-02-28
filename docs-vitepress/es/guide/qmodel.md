@@ -261,9 +261,9 @@ const original = user.getInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
 
-### `copy(partial)`
+### `copy(partial?)`
 
-Crea una **nueva instancia** (inmutable) fusionando el estado actual con los datos parciales proporcionados. La instancia original nunca se modifica.
+Crea una **nueva instancia** (inmutable) fusionando el estado actual con los datos parciales opcionales. La instancia original nunca se modifica. Sin argumentos realiza una copia profunda (deep copy) del estado actual.
 
 ```typescript
 const user = new User({ id: 1, name: 'John', age: 30 });
@@ -279,18 +279,14 @@ updated.name = 'Jane';
 console.log(updated.isDirty()); // true
 console.log(updated.isDirty('age')); // false — 31 es su baseline
 console.log(updated.isDirty('name')); // true  — cambió tras el merge
+
+// Sin argumentos: copia profunda completa
+const clone = user.copy();
+console.log(clone.age); // 30  — misma copia, independiente
 ```
 
 > [!NOTE]
 > `copy()` devuelve una instancia completamente independiente con su propio tracking de cambios. El estado copiado se convierte en el nuevo baseline — `isDirty()` es `false` inmediatamente tras `copy()`, y `reset()` revierte al estado copiado (no al original).
-
-### `copy()`
-
-Crea una copia profunda (deep copy) de la instancia del modelo. La nueva instancia es completamente independiente.
-
-```typescript
-const copy = user.copy();
-```
 
 ## Mocking
 
@@ -303,7 +299,6 @@ const fakeUser = User.mock().random();
 // Generar array de 10 instancias
 const fakeUsers = User.mock().array(10);
 
-// Generar con sobrescrituras específicas
 // Generar con sobrescrituras específicas
 const admin = User.mock().random({ role: 'admin' });
 ```

@@ -1,3 +1,18 @@
+/**
+ * Spawns a child process and captures its stdout/stderr.
+ *
+ * Buffers up to 10 MB per stream and truncates (killing the process) if exceeded,
+ * preventing memory exhaustion from runaway commands.
+ *
+ * @param command - Executable to run (e.g. `'bun'`, `'git'`).
+ * @param args - Argument list passed to the executable.
+ * @param cwd - Working directory for the spawned process. Defaults to the current process cwd.
+ * @returns Resolves with `{ stdout, stderr }` on exit code 0.
+ * @throws When the process exits with a non-zero code or emits an `'error'` event.
+ * The thrown `Error` has `stdout` and `stderr` attached as extra properties.
+ *
+ * @internal
+ */
 export const spawnCommand = async (
 	command: string,
 	args: string[],

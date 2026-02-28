@@ -29,7 +29,6 @@ type IPrimitiveTypeMap = {
  * safety on plain JavaScript values.
  *
  * @example
- * @example
  * ```typescript
  * @Quick({
  *   name: 'string',

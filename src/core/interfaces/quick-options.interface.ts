@@ -1,16 +1,19 @@
+/**
+ * Advanced option types for the `@Quick()` decorator's second parameter.
+ *
+ * Exports helper types used to infer discriminator keys and constructors
+ * from type-spec arrays, as well as the main `IQAdvancedOptions` interface
+ * and the `IQDiscriminatorConfig` discriminated union.
+ *
+ * @module core/interfaces/quick-options.interface
+ */
+
 import type {
 	IQMockerFn,
 	IQSerializerFn,
 	IQTransformerFn,
 } from './transform-options.interface';
 import { IQCaseOptions } from '../types/case.type';
-
-/**
- * Options for @Quick() decorator to handle advanced scenarios.
- *
- * These options extend the basic transformation mapping with advanced features
- * like discriminated unions for polymorphic arrays.
- */
 
 /**
  * Extract constructor types from IQSpec or IQSpecs.

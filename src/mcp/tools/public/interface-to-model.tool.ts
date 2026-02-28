@@ -2,7 +2,26 @@ import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 
 /**
- * Tool to convert a TypeScript interface to a QuickModel class.
+ * MCP tool that converts a TypeScript `interface` declaration into a
+ * QuickModel class extending `QModel`.
+ *
+ * @remarks
+ * Parses the interface body with a lightweight regex approach (no compiler).
+ * Type-mapping rules per property:
+ * - `Date` in the type signature → transformer `"date"`
+ * - `number` → transformer `"number"`
+ * - `boolean` → transformer `"boolean"`
+ * - everything else → transformer `"string"` (safe default)
+ *
+ * Optional properties (`prop?: …`) are preserved with `?` in the generated
+ * class.
+ *
+ * @returns `{ code: string }` — a TypeScript class with `@Quick` decorator
+ * and typed property declarations.
+ *
+ * @throws {Error} If no valid `interface` definition is found in the input.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QInterfaceToModelTool extends QAbstractTool<
 	z.ZodObject<{

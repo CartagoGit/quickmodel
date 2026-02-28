@@ -2,7 +2,20 @@ import { z } from 'zod';
 import { QAbstractTool } from '../abstract-tool';
 
 /**
- * Tool to explain validation errors in plain language.
+ * MCP tool that parses a JSON-serialised QuickModel validation error and
+ * returns a human-readable explanation string.
+ *
+ * @remarks
+ * Accepts both a bare error object and an envelope with an `errors` array.
+ * Known error codes:
+ * - `INVALID_TYPE` → "Field '…' expected X but got Y."
+ * - `REQUIRED`     → "Field '…' is required but was missing."
+ * - Any other error → falls back to the `message` property or raw JSON.
+ *
+ * @returns `{ explanation: string }` — a numbered summary beginning with
+ * "Found N issues:" followed by one bullet per error.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QExplainErrorTool extends QAbstractTool<
 	z.ZodObject<{

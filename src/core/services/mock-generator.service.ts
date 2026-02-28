@@ -32,8 +32,40 @@ import {
 } from '../constants/metadata-keys';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 
+/**
+ * Controls the kind of data produced by `QMockGenerator.generate()`.
+ *
+ * | Value | Description |
+ * |---|---|
+ * | `'random'` | Full realistic data using `@faker-js/faker` (default). |
+ * | `'empty'` | Zero-value data: empty strings, `0`, `false`, `null`. |
+ * | `'minimal'` | Minimal valid data — 1-element arrays, short strings. |
+ * | `'full'` | Same as `'random'` but arrays are generated at max length (3 items). |
+ * | `'sample'` | Deterministic sample values suitable for snapshots and docs. |
+ */
 export type IQMockType = 'empty' | 'random' | 'minimal' | 'full' | 'sample';
 
+/**
+ * Service that generates mock data for QuickModel model classes.
+ *
+ * Relies on `@faker-js/faker` (optional peer-dependency) to produce realistic
+ * random values. When faker is not installed, calling any generation method
+ * throws a descriptive error pointing to the install command.
+ *
+ * Mock generation strategy (highest → lowest priority):
+ * 1. Caller-supplied `overrides` for a specific field.
+ * 2. Custom `mockers` defined in `@Quick({ mockers: { field: () => value } })`.
+ * 3. Custom mocker attached via `@QType({ mocker: () => value })`.
+ * 4. Type-based faker generation derived from `fieldType` reflect-metadata.
+ * 5. Fallback to `null`.
+ *
+ * @example
+ * ```typescript
+ * const generator = new QMockGenerator();
+ * const data = generator.generate(User, 'random');
+ * // → { id: 'a1b2-...', name: 'Alice', createdAt: '2024-01-01T...' }
+ * ```
+ */
 export class QMockGenerator {
 	/**
 	 * Creates a new QMockGenerator instance.
@@ -41,7 +73,18 @@ export class QMockGenerator {
 	constructor() {}
 
 	/**
-	 * Generates a mock based on reflect metadata.
+	 * Generates a mock plain-data object for a model class.
+	 *
+	 * Reads field metadata registered by `@Quick` / `@QType` and produces
+	 * appropriately typed values for each property. The resulting object can
+	 * be passed directly to the model constructor.
+	 *
+	 * @template TModel - The model type produced by `modelClass`.
+	 * @template TData - The plain-data shape accepted by the constructor.
+	 * @param modelClass - The model class constructor.
+	 * @param type - Mock generation strategy. Defaults to `'random'`.
+	 * @param overrides - Per-field value overrides that bypass generation.
+	 * @returns A plain data object matching the model's field definitions.
 	 */
 	generate<
 		TModel,
@@ -194,7 +237,15 @@ export class QMockGenerator {
 	}
 
 	/**
-	 * Generates an array of mocks.
+	 * Generates an array of mock plain-data objects.
+	 *
+	 * @template TModel - The model type produced by `modelClass`.
+	 * @template TData - The plain-data shape accepted by the constructor.
+	 * @param modelClass - The model class constructor.
+	 * @param count - Number of items to generate.
+	 * @param options.type - Mock generation strategy. Defaults to `'random'`.
+	 * @param options.overrides - Per-index callback that returns field overrides.
+	 * @returns An array of `count` plain data objects.
 	 */
 	generateArray<
 		TModel,

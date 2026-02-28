@@ -29,7 +29,6 @@ interface IRegExpData {
  * - Object: `{source: 'pattern', flags: 'gi'}`
  *
  * @example
- * @example
  * ```typescript
  * @Quick({ emailPattern: RegExp })
  * class Config extends QuickModel<IConfig> {

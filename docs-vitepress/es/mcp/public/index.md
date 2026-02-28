@@ -123,6 +123,14 @@ Lista todos los transformadores de datos disponibles en QuickModel (ej. string, 
 {}
 ```
 
+## `list_validators`
+
+Lista todos los decoradores validadores integrados de QuickModel con sus firmas de uso y descripciones.
+
+```json
+{}
+```
+
 ## `search_docs`
 
 Busca en la documentación de QuickModel por una cadena de consulta.

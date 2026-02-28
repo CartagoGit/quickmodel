@@ -8,6 +8,22 @@ import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { IQTransformContext } from '../interfaces/transformer.interface';
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 
+/**
+ * Service that resolves and applies **dot-notation** type transformations.
+ *
+ * When `@Quick` receives a type-map entry whose key contains a dot (e.g.
+ * `{ 'address.city': String }`), this service traverses the nested object
+ * structure, locates the target leaf property, and applies the specified
+ * transformer — exactly as if the property had been declared at the top level.
+ *
+ * @remarks
+ * - Prototype-pollution-safe: keys `__proto__`, `constructor`, and `prototype`
+ *   are silently ignored.
+ * - Only transforms values that already exist in the instance; it never creates
+ *   new properties.
+ *
+ * @internal Used by `PopulationService`.
+ */
 export class DotNotationHandler {
 	constructor(
 		private readonly transformerLookup: TransformerLookupService,

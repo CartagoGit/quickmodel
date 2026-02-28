@@ -3,7 +3,18 @@ import { QAbstractTool } from '../abstract-tool';
 import { TransformerLookupService } from '../../../core/services/transformer-lookup.service';
 
 /**
- * Tool to list all available transformers in the registry.
+ * MCP tool that returns a sorted list of all transformer names registered in
+ * the {@link TransformerLookupService} registry.
+ *
+ * @remarks
+ * The list reflects the current default registrations (Date, BigInt, RegExp,
+ * Map, Set, Symbol, Error, URL, TypedArray, Buffer, SpecialFloat, Primitive…).
+ * Any custom transformers registered at runtime will also appear.
+ *
+ * @returns A `Promise<string[]>` of lowercase transformer identifiers,
+ * e.g. `["bigint", "boolean", "date", "number", "string", ...]`.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'list_transformers';

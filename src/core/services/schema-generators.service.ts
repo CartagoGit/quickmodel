@@ -17,7 +17,13 @@ export interface ISchemaGeneratorConfig {
 }
 
 /**
- * JSON Schema Draft-07 Generator
+ * Generates a JSON Schema Draft-07 document from QuickModel decorator configuration.
+ *
+ * Maps QuickModel type specs to standard JSON Schema types:
+ * `Date` → `{ type: 'string', format: 'date-time' }`, `BigInt` → `{ type: 'string', pattern: … }`,
+ * `Set` → `{ type: 'array', uniqueItems: true }`, etc.
+ *
+ * @see {@link ISchemaGeneratorConfig} for the input shape.
  */
 export class JsonSchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
@@ -132,7 +138,10 @@ export class JsonSchemaGenerator {
 }
 
 /**
- * Zod Schema Generator
+ * Generates a Zod validation schema (`z.ZodObject`) from QuickModel decorator configuration.
+ *
+ * Useful for runtime input validation with the same type information
+ * already declared in the model's decorators.
  */
 export class ZodSchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): z.ZodObject<any> {
@@ -184,7 +193,10 @@ export class ZodSchemaGenerator {
 }
 
 /**
- * MongoDB/Mongoose Schema Generator
+ * Generates a Mongoose/MongoDB schema-definition object from QuickModel decorator configuration.
+ *
+ * Produces `{ [field]: { type: NativeConstructor, required: true } }` entries
+ * compatible with `new mongoose.Schema(definition)`.
  */
 export class MongoSchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
@@ -238,7 +250,10 @@ export class MongoSchemaGenerator {
 }
 
 /**
- * TypeScript Interface Generator
+ * Generates a TypeScript interface string from QuickModel decorator configuration.
+ *
+ * Produces a `interface I${className} { ... }` source string that can be
+ * written to a `.d.ts` file or surfaced in tooling.
  */
 export class TypeScriptSchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): string {
@@ -293,7 +308,12 @@ export class TypeScriptSchemaGenerator {
 }
 
 /**
- * GraphQL SDL Generator
+ * Generates a GraphQL SDL type definition string from QuickModel decorator configuration.
+ *
+ * Produces a `type ${className} { ... }` block using non-nullable scalar
+ * types where possible (`String!`, `Float!`, `Boolean!`, `DateTime!`).
+ * `BigInt` is mapped to `String!` (GraphQL has no native BigInt scalar);
+ * `Map` and complex objects are mapped to `JSON!`.
  */
 export class GraphQLSchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): string {
@@ -347,7 +367,11 @@ export class GraphQLSchemaGenerator {
 }
 
 /**
- * OpenAPI 3.0 Schema Generator
+ * Generates an OpenAPI 3.0 schema component from QuickModel decorator configuration.
+ *
+ * Returns an object with `type: 'object'`, a `properties` map, and a `required`
+ * array — ready to embed directly in an OpenAPI document under
+ * `components.schemas`.
  */
 export class OpenAPISchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {
@@ -409,7 +433,10 @@ export class OpenAPISchemaGenerator {
 }
 
 /**
- * AJV Schema Generator (JSON Schema compatible)
+ * Generates an AJV-compatible validation schema from QuickModel decorator configuration.
+ *
+ * Delegates to `JsonSchemaGenerator` and strips the `$schema` property,
+ * since AJV adds its own schema version identifier.
  */
 export class AjvSchemaGenerator {
 	static generate(config: ISchemaGeneratorConfig): Record<string, any> {

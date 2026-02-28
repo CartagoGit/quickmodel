@@ -129,14 +129,27 @@ export type IQAliasedSerializedInterface<
 };
 
 /**
- * Mapea un tipo serializado de vuelta a su tipo original
+ * Maps a serialized type back to its original (deserialized) type.
+ *
+ * This is an identity mapping at the type level — actual deserialization is
+ * performed at runtime by the registered transformers.
+ *
+ * @template T - The deserialized TypeScript type.
  */
 export type IDeserialized<T> = T; // Deserialization handled at runtime with transformers
 
 /**
- * Tipo para datos de entrada en el constructor
- * Acepta datos completos, ya sean originales o serializados
- * Uses Record<string, unknown> to allow flexibility while maintaining type safety
+ * Union type accepted by the `QModel` constructor for input data.
+ *
+ * Allows passing either:
+ * - The raw interface type `T` (e.g. directly from a backend JSON response),
+ * - The serialized version `IQSerializedInterface<T>` (e.g. after `JSON.parse()`), or
+ * - A generic `Record<string, unknown>` for loosely-typed or partial payloads.
+ *
+ * This flexibility lets you hand any of the above shapes directly to `new Model(data)`
+ * without manual casting.
+ *
+ * @template T - The model interface type.
  */
 export type IQModelData<T> =
 	| T

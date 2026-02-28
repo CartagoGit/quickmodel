@@ -4,7 +4,18 @@ import * as fs from 'fs';
 import { join } from 'path';
 
 /**
- * Tool to check for missing JSDocs in the codebase.
+ * Internal MCP tool that scans the `src/` directory for exported members
+ * (classes, functions, interfaces, constants) that are missing JSDoc blocks.
+ *
+ * @remarks
+ * Uses a custom file-walk + regex approach (no TypeScript compiler) so it
+ * runs instantly without a build step.
+ *
+ * @returns `{ filesWithMissingDocs: string[], summary: string }` — a list of
+ * file paths where at least one exported member lacks JSDoc, plus a human-
+ * readable summary count.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'check_jsdocs';

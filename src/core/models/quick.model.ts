@@ -62,6 +62,15 @@ import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
 import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
 import type { INoInfer } from '@/core/types/ts-polyfills.type';
+import {
+	JsonSchemaGenerator,
+	ZodSchemaGenerator,
+	MongoSchemaGenerator,
+	TypeScriptSchemaGenerator,
+	GraphQLSchemaGenerator,
+	OpenAPISchemaGenerator,
+	AjvSchemaGenerator,
+} from '@/core/services/schema-generators.service';
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
 // Metadata is immutable after decorators run (class-definition time), so
@@ -86,6 +95,12 @@ interface IQSetterMeta {
 	options: unknown;
 }
 const _SETTER_META_CACHE = new WeakMap<Function, Map<string, IQSetterMeta>>();
+
+/**
+ * getSchema() result cache — keyed by class constructor, then by schema format.
+ * Schema metadata is immutable after decorators run → safe to cache forever.
+ */
+const _GET_SCHEMA_CACHE = new WeakMap<Function, Map<string, unknown>>();
 // ──────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -2428,16 +2443,17 @@ export abstract class QModel<
 	static getSchema(
 		type: import('@/core/types/schema-types').IQSchemaType
 	): any {
-		const {
-			JsonSchemaGenerator,
-			ZodSchemaGenerator,
-			MongoSchemaGenerator,
-			TypeScriptSchemaGenerator,
-			GraphQLSchemaGenerator,
-			OpenAPISchemaGenerator,
-			AjvSchemaGenerator,
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-		} = require('@/core/services/schema-generators.service');
+		// ── OPT: Per-class, per-format cache ─────────────────────────────────
+		// Schema metadata is immutable after class definition (decorators ran).
+		// Caching the result avoids: require(), Reflect.getMetadata(), object
+		// allocation, switch dispatch — on every subsequent call.
+		let classCache = _GET_SCHEMA_CACHE.get(this);
+		if (!classCache) {
+			classCache = new Map<string, unknown>();
+			_GET_SCHEMA_CACHE.set(this, classCache);
+		}
+		const cached = classCache.get(type);
+		if (cached !== undefined) return cached;
 
 		const className = this.name;
 		const decoratorConfig =
@@ -2455,24 +2471,34 @@ export abstract class QModel<
 			properties,
 		};
 
+		let result: unknown;
 		switch (type) {
 			case 'json':
-				return JsonSchemaGenerator.generate(config);
+				result = JsonSchemaGenerator.generate(config);
+				break;
 			case 'zod':
-				return ZodSchemaGenerator.generate(config);
+				result = ZodSchemaGenerator.generate(config);
+				break;
 			case 'mongo':
-				return MongoSchemaGenerator.generate(config);
+				result = MongoSchemaGenerator.generate(config);
+				break;
 			case 'typescript':
-				return TypeScriptSchemaGenerator.generate(config);
+				result = TypeScriptSchemaGenerator.generate(config);
+				break;
 			case 'graphql':
-				return GraphQLSchemaGenerator.generate(config);
+				result = GraphQLSchemaGenerator.generate(config);
+				break;
 			case 'openapi':
-				return OpenAPISchemaGenerator.generate(config);
+				result = OpenAPISchemaGenerator.generate(config);
+				break;
 			case 'ajv':
-				return AjvSchemaGenerator.generate(config);
+				result = AjvSchemaGenerator.generate(config);
+				break;
 			default:
 				throw new Error(`Unknown schema type: ${type}`);
 		}
+		classCache.set(type, result);
+		return result;
 	}
 
 	/**
@@ -2506,11 +2532,6 @@ export abstract class QModel<
 	 * ```
 	 */
 	getSchema(type: import('@/core/types/schema-types').IQSchemaType): any {
-		const {
-			JsonSchemaGenerator,
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-		} = require('@/core/services/schema-generators.service');
-
 		const classSchema = (this.constructor as typeof QModel).getSchema(type);
 
 		// For JSON/OpenAPI, add examples from instance

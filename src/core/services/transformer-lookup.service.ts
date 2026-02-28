@@ -53,13 +53,7 @@ export class TransformerLookupService {
 	 * Gets a registered transformer by key or constructor name.
 	 *
 	 * @param key - The key to look up (string literal, constructor, or class name)
-	 * @returns The registered transformer or undefined if not found
-	 */
-	/**
-	 * Gets a registered transformer by key or constructor name.
-	 *
-	 * @param key - The key to look up (string literal, constructor, or class name)
-	 * @returns The registered transformer or undefined if not found
+	 * @returns The registered transformer or `undefined` if not found
 	 */
 	public getTransformer(
 		key: IQTransformerKey

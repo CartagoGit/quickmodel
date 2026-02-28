@@ -3,7 +3,19 @@ import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
 /**
- * Tool to check project health (lint, typecheck, test).
+ * Internal MCP tool that runs a comprehensive health check by invoking
+ * `bun run check` — a composite script that runs ESLint, TypeScript
+ * type-checking, and the full test suite in sequence.
+ *
+ * @remarks
+ * Use this as a final gate before committing or releasing. It is equivalent
+ * to calling `lint_check`, `typecheck`, and `run_tests` individually but
+ * faster because it uses the optimised `check` NPM script.
+ *
+ * @returns `{ status: 'ok' | 'error', output: string }` — `'ok'` only when
+ * all three checks pass, combined stdout + stderr on failure.
+ *
+ * @internal Registered on the MCP server; not part of the public library API.
  */
 export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'check_project_health';

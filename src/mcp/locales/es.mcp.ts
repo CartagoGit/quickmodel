@@ -1,3 +1,12 @@
+/**
+ * Cadenas de localización en español para el servidor MCP de QuickModel.
+ *
+ * Contiene etiquetas de interfaz, descripciones y cadenas de documentación
+ * de herramientas usadas por el servidor MCP cuando responde a clientes IA
+ * en español.
+ *
+ * @internal Consumido por `QSyncDocsTool` y la capa de respuesta del servidor MCP.
+ */
 export const esMcp = {
 	publicTitle: 'Herramientas MCP Públicas',
 	internalTitle: 'Herramientas MCP Internas',

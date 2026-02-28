@@ -74,8 +74,26 @@ import {
 	QProjectStatusTool,
 } from './tools/internal';
 /**
- * Main class for the QuickModel MCP Server.
- * Handles the connection lifecycle and tool registration.
+ * Main entry point for the **QuickModel MCP Server**.
+ *
+ * Wraps an `@modelcontextprotocol/sdk` `McpServer` and exposes a curated set
+ * of public tools (end-user facing) and internal development tools accessible
+ * to AI-agent workflows.
+ *
+ * @remarks
+ * Version and name are read from `package.json` at construction time when
+ * not provided explicitly via `options`.
+ *
+ * Typical usage (programmatic embedding):
+ * ```typescript
+ * const server = new QMcpServer();
+ * server.registerTools(QMcpServer.getDefaultPublicTools());
+ * server.registerPrompts(QMcpServer.getDefaultPrompts());
+ * await server.start(); // connects via StdIO
+ * ```
+ *
+ * The module also exposes a standalone CLI entry point (`mcp-cli.ts`) that
+ * instantiates this class automatically.
  */
 export class QMcpServer {
 	private server: McpServer;
@@ -106,7 +124,14 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Returns only the public-facing tools (end-user facing).
+	 * Returns only the public-facing tool instances (intended for end users and
+	 * AI coding assistants).
+	 *
+	 * @remarks
+	 * Includes ~20 tools covering: model creation, mock generation, schema
+	 * export, form schema, roundtrip checks, rule simulation, and more.
+	 *
+	 * @returns A fresh array of instantiated public `IQMcpTool`s.
 	 */
 	public static getDefaultPublicTools(): IQMcpTool[] {
 		return [
@@ -134,7 +159,14 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Returns only the internal development / maintenance tools.
+	 * Returns only the internal development and maintenance tool instances.
+	 *
+	 * @remarks
+	 * Includes ~20 tools covering: health checks, lint, typecheck, test runner,
+	 * coverage, bundle-size analysis, changelog verification, API compatibility,
+	 * benchmarking, scaffold, and more.
+	 *
+	 * @returns A fresh array of instantiated internal `IQMcpTool`s.
 	 */
 	public static getDefaultInternalTools(): IQMcpTool[] {
 		return [
@@ -162,7 +194,10 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Returns all available tools (public + internal).
+	 * Returns all available tools — public (end-user) + internal (dev/ops).
+	 *
+	 * @returns Concatenation of `getDefaultPublicTools()` and
+	 * `getDefaultInternalTools()`.
 	 */
 	public static getDefaultTools(): IQMcpTool[] {
 		return [
@@ -172,7 +207,14 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Returns the list of available prompts (skills).
+	 * Returns the full list of built-in prompt (skill) instances.
+	 *
+	 * @remarks
+	 * Prompts guide AI agents through common QuickModel workflows, e.g.
+	 * converting TypeScript interfaces, debugging models, security review,
+	 * migration, and more.
+	 *
+	 * @returns A fresh array of instantiated `IQMcpPrompt`s.
 	 */
 	public static getDefaultPrompts(): IQMcpPrompt[] {
 		return [
@@ -199,7 +241,13 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Registers a list of prompts (skills) with the server.
+	 * Registers a collection of prompts on the underlying `McpServer`.
+	 *
+	 * @param prompts - Array of `IQMcpPrompt` instances to register.
+	 *
+	 * @remarks
+	 * Each prompt is registered with its `name`, `description`, `argsSchema`,
+	 * and an async `execute` handler. The MCP SDK handles schema validation.
 	 */
 	public registerPrompts(prompts: IQMcpPrompt[]): void {
 		for (const prompt of prompts) {
@@ -217,7 +265,15 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Registers a list of tools with the server.
+	 * Registers a collection of tools on the underlying `McpServer`.
+	 *
+	 * @param tools - Array of `IQMcpTool` instances to register.
+	 *
+	 * @remarks
+	 * Each tool result is JSON-serialised via `safeStringify` before being
+	 * returned as MCP text content. Errors are caught and surfaced as
+	 * `isError: true` MCP responses rather than letting exceptions propagate
+	 * to the transport layer.
 	 */
 	public registerTools(tools: IQMcpTool[]): void {
 		for (const tool of tools) {
@@ -261,7 +317,13 @@ export class QMcpServer {
 	}
 
 	/**
-	 * Starts the server and connects via StdIO.
+	 * Connects the server to the StdIO transport and starts listening.
+	 *
+	 * @remarks
+	 * Emits a startup message to `stderr` (standard practice for MCP servers
+	 * so it doesn’t pollute the StdIO JSON-RPC channel).
+	 *
+	 * @returns A `Promise` that resolves once the transport is connected.
 	 */
 	public async start(): Promise<void> {
 		const transport = new StdioServerTransport();
