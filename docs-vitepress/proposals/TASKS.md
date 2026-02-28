@@ -44,7 +44,7 @@
 | 19  | `QTransformerRegistry.snapshot()/restore()`                                          | —                         |
 | 20  | `@QRule` async predicados                                                            | `a714b2e`                 |
 | 21  | Guía integración NestJS                                                              | —                         |
-| 22  | Deprecation warning `unknownPropertyPolicy` + docs `:::warning` v2.0.0               | —                         |
+| 22  | ~~Deprecation warning `unknownPropertyPolicy` + docs `:::warning` v2.0.0~~           | descartado                |
 | 23  | `copy()` + `isDirty(field?)` — estado mutable                                        | `a8089a7`                 |
 | 24  | `@QRule` decorator + `checkRules()`                                                  | `8a2910b`                 |
 | 25  | `hasIntegrity()` + `isValid()` — convenience shortcuts                               | `cd30a8b`                 |
@@ -448,7 +448,7 @@ user.clearHistory();
 **Impacto:** Medio — extensibilidad del ecosistema
 **Esfuerzo estimado:** 3-4 horas
 
-> **⚠️ Candidata a v2.0**: El registro ya soporta `QTransformerRegistry.register()` manual. Un sistema de plugins solo aportaría valor real si hubiera un ecosistema de paquetes npm de terceros, lo que requiere una adopción que hoy no existe. **Diferir hasta demanda concreta.**
+> **⚠️ Diferida indefinidamente**: El registro ya soporta `QTransformerRegistry.register()` manual. Un sistema de plugins solo aportaría valor real si hubiera un ecosistema de paquetes npm de terceros, lo que requiere una adopción que hoy no existe. **Diferir hasta demanda concreta.**
 
 `QTransformerRegistry.plugin(myPlugin)` para distribuir suites de transformers como paquetes npm. Diferente de `snapshot()/restore()` (que es para test isolation).
 
@@ -685,7 +685,7 @@ User.getSchema('prisma');
 | H    | `@QTransform` pipeline                                                 | 🟢 Baja           | 2-3h     | Medio            | Complementa `@QType`                     |
 | I    | Audit trail                                                            | ⚠️ Cuestionable   | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`             |
 | J    | `getSchema('drizzle'/'typebox')`                                       | 🟢 Baja           | 2h×2     | Medio            | +2 a Schema API + Task #48               |
-| K    | Plugin system                                                          | ⚠️ v2.0 candidato | 3-4h     | Bajo ahora       | Prematuro sin ecosistema                 |
+| K    | Plugin system                                                          | ⚠️ Diferida       | 3-4h     | Bajo ahora       | Prematuro sin ecosistema                 |
 | L    | Guía WebSocket / SSE                                                   | 🟢 Baja           | 2-3h     | Medio            | **Requiere Prop B**                      |
 
 **Tiempo total propuestas (sin cuestionables):** ~70-85h

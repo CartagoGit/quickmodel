@@ -764,7 +764,7 @@ bun run mcp
 | `quickmodel_full_pipeline`      | Walk the complete pipeline: `create()` → `checkIntegrity()` → `checkRules()` → `serialize()`      |
 | `quickmodel_mixin`              | Extend a base class (TypeORM entity, NestJS DTO) with QModel via `QModel.extends(BaseClass)`      |
 | `quickmodel_alias_computed`     | Explain and apply `@QAlias` (field name remapping) and `@QComputed` (getter in serialize output)  |
-| `quickmodel_migration`          | Migrate legacy classes / v1 code to idiomatic QuickModel v2 patterns                              |
+| `quickmodel_migration`          | Migrate legacy TypeScript classes to idiomatic QuickModel patterns                                |
 | `quickmodel_async_rules`        | ⚠️ Async-only: guide `checkRulesAsync()` with `timeoutMs`, parallel/serial mode, NestJS context   |
 | `quickmodel_add_qgroup`         | Add `@QGroup` field grouping to a model and use `checkGroups()` for group-level validation        |
 | `quickmodel_security_review`    | Security audit: mass assignment, DoS limits, prototype pollution, ReDoS via `check_security`      |

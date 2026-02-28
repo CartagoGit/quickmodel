@@ -3,26 +3,7 @@
 QuickModel 1.0 provides three strategies for handling unknown properties in input data through the `unknownPropertyPolicy` option.
 
 ::: info Default Behavior
-By default, QuickModel uses `'keep'` policy, adopting a flexible stance that allows extra properties to pass through without errors.
-:::
-
-::: warning Upcoming Breaking Change in v2.0.0
-The default value of `unknownPropertyPolicy` will change from `'keep'` to `'strip'` in **v2.0.0**.
-
-To avoid unexpected behavior when upgrading, **always set `unknownPropertyPolicy` explicitly** in your models or in the global config:
-
-```typescript
-// Per-model (recommended for granular control)
-@Quick({ name: String }, { unknownPropertyPolicy: 'strip' })
-class User extends QModel<IUser> { ... }
-
-// Or globally (applies to all models without an explicit override)
-QConfig.configure({
-  defaults: { unknownPropertyPolicy: 'strip' },
-});
-```
-
-If you rely on the `'keep'` behavior, set it explicitly to silence this deprecation and be future-proof.
+By default, QuickModel uses `'strip'` policy, silently removing unknown properties from input data.
 :::
 
 ## What is Unknown Property Policy?
@@ -31,8 +12,8 @@ When deserializing data, QuickModel can encounter properties that are not explic
 
 **Three available strategies:**
 
-- **`'keep'`** (default): Preserves extra properties on the instance
-- **`'strip'`**: Silently removes extra properties (useful for sanitization)
+- **`'keep'`**: Preserves extra properties on the instance
+- **`'strip'`** (default): Silently removes extra properties (useful for sanitization)
 - **`'error'`**: Throws an error when unknown properties are detected (strictest)
 
 This is useful for:
@@ -67,7 +48,7 @@ class SanitizedUser extends QModel<IUser> {
 	declare name: string;
 }
 
-// ✅ Keep unknown properties (default - most flexible)
+// ✅ Keep unknown properties (most flexible)
 @Quick({}, { unknownPropertyPolicy: 'keep' })
 class FlexibleUser extends QModel<IUser> {
 	declare name: string;
@@ -152,7 +133,7 @@ console.log(user1.name); // 'Alice'
 console.log((user1 as any).isAdmin); // undefined (stripped)
 ```
 
-### Policy: `'keep'` (Default - Flexible)
+### Policy: `'keep'` (Flexible)
 
 ```typescript
 @Quick({}, { unknownPropertyPolicy: 'keep' })
@@ -247,23 +228,6 @@ class ProductFixed extends QModel<IProduct> {
 const p1 = new ProductFixed({ id: 1, tags: ['a', 'b'] });
 const p2 = ProductFixed.create({ id: 1, tags: ['a', 'b'] });
 ```
-
-## Migration from deprecated `strict` option
-
-::: info Migrating from older versions
-If you're upgrading from a version that used `strict: true/false`:
-
-```typescript
-// OLD (deprecated):
-@Quick({}, { strict: true })
-@Quick({}, { strict: false })
-
-// NEW (current):
-@Quick({}, { unknownPropertyPolicy: 'error' })
-@Quick({}, { unknownPropertyPolicy: 'keep' })
-```
-
-:::
 
 ## Security Considerations
 

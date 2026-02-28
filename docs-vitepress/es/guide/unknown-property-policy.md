@@ -3,26 +3,7 @@
 QuickModel 1.0 proporciona tres estrategias para manejar propiedades desconocidas en los datos de entrada a través de la opción `unknownPropertyPolicy`.
 
 ::: info Comportamiento Predeterminado
-Por defecto, QuickModel usa la política `'keep'`, adoptando una postura flexible que permite que las propiedades extra pasen sin errores.
-:::
-
-::: warning Cambio Importante en v2.0.0
-El valor por defecto de `unknownPropertyPolicy` cambiará de `'keep'` a `'strip'` en **v2.0.0**.
-
-Para evitar comportamientos inesperados al actualizar, **siempre establece `unknownPropertyPolicy` explícitamente** en tus modelos o en la configuración global:
-
-```typescript
-// Por modelo (recomendado para control granular)
-@Quick({ name: String }, { unknownPropertyPolicy: 'strip' })
-class User extends QModel<IUser> { ... }
-
-// O globalmente (aplica a todos los modelos sin override explícito)
-QConfig.configure({
-  defaults: { unknownPropertyPolicy: 'strip' },
-});
-```
-
-Si dependes del comportamiento `'keep'`, establécelo explícitamente para silenciar esta deprecación y estar preparado para el futuro.
+Por defecto, QuickModel usa la política `'strip'`, eliminando silenciosamente las propiedades desconocidas de los datos de entrada.
 :::
 
 ## ¿Qué es la Política de Propiedades Desconocidas?
@@ -31,8 +12,8 @@ Al deserializar datos, QuickModel puede encontrar propiedades que no están expl
 
 **Tres estrategias disponibles:**
 
-- **`'keep'`** (predeterminado): Preserva las propiedades extra en la instancia
-- **`'strip'`**: Elimina silenciosamente las propiedades extra (útil para sanitización)
+- **`'keep'`**: Preserva las propiedades extra en la instancia
+- **`'strip'`** (predeterminado): Elimina silenciosamente las propiedades extra (útil para sanitización)
 - **`'error'`**: Lanza un error cuando se detectan propiedades desconocidas (más estricto)
 
 Esto es útil para:
@@ -67,7 +48,7 @@ class SanitizedUser extends QModel<IUser> {
 	declare name: string;
 }
 
-// ✅ Mantener propiedades desconocidas (predeterminado - más flexible)
+// ✅ Mantener propiedades desconocidas (flexible)
 @Quick({}, { unknownPropertyPolicy: 'keep' })
 class FlexibleUser extends QModel<IUser> {
 	declare name: string;
@@ -152,7 +133,7 @@ console.log(user1.name); // 'Alice'
 console.log((user1 as any).isAdmin); // undefined (eliminado)
 ```
 
-### Política: `'keep'` (Predeterminado - Flexible)
+### Política: `'keep'` (Flexible)
 
 ```typescript
 @Quick({}, { unknownPropertyPolicy: 'keep' })
@@ -247,23 +228,6 @@ class ProductFixed extends QModel<IProduct> {
 const p1 = new ProductFixed({ id: 1, tags: ['a', 'b'] });
 const p2 = ProductFixed.create({ id: 1, tags: ['a', 'b'] });
 ```
-
-## Migración desde la opción `strict` deprecada
-
-::: info Migrando desde versiones anteriores
-Si estás actualizando desde una versión que usaba `strict: true/false`:
-
-```typescript
-// ANTIGUO (deprecado):
-@Quick({}, { strict: true })
-@Quick({}, { strict: false })
-
-// NUEVO (actual):
-@Quick({}, { unknownPropertyPolicy: 'error' })
-@Quick({}, { unknownPropertyPolicy: 'keep' })
-```
-
-:::
 
 ## Consideraciones de Seguridad
 

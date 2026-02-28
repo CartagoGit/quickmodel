@@ -24,7 +24,7 @@ Usa una **herramienta** cuando necesites una operación única y precisa (ej. `s
 | [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Recorrer el Pipeline Completo              | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
 | [`quickmodel_mixin`](#quickmodel_mixin)                           | Extender Clase Base con Mixin QModel       | `QModel.extends(BaseClass)` para entidades TypeORM / NestJS      |
 | [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Usar @QAlias y @QComputed                  | Remapeo de nombres de campo y serialización de getters           |
-| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código v1 a patrones idiomáticos v2    |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrar Código Legado a QuickModel          | Convierte clases planas / código legado a patrones idiomáticos de QuickModel |
 | [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Reglas Async con checkRulesAsync()      | Solo async: BD, APIs externas — NO para predicados síncronos     |
 | [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Añadir @QGroup al Modelo                   | Agrupa campos y activa `checkGroups()` para validación por grupo |
 | [`quickmodel_security_review`](#quickmodel_security_review)       | Revisión de Seguridad                      | Mass assignment, DoS, prototype pollution, ReDoS                 |
@@ -346,7 +346,7 @@ model_code: "@Quick({})\nclass User extends QModel<User> { declare firstName: st
 
 ## `quickmodel_migration`
 
-**Migra clases TypeScript legadas o código antiguo de QuickModel v1 a patrones idiomáticos v2.**
+**Migra clases TypeScript legadas o código antiguo de QuickModel a patrones idiomáticos.**
 
 Guía a la IA para convertir asignaciones de propiedades a campos `declare`, envolver la clase con `@Quick({})`, añadir tipos de transformer, eliminar constructores manuales y llamar a `validate_usage`.
 
@@ -354,7 +354,7 @@ Guía a la IA para convertir asignaciones de propiedades a campos `declare`, env
 
 | Argumento     | Obligatorio | Descripción                                                |
 | ------------- | ----------- | ---------------------------------------------------------- |
-| `legacy_code` | ✅ Sí       | Clase TypeScript legada o código v1 a migrar a patrones v2 |
+| `legacy_code` | ✅ Sí       | Clase TypeScript legada o código antiguo de QuickModel a migrar  |
 
 ### Flujo de trabajo
 

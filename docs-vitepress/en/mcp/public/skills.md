@@ -24,7 +24,7 @@ Use a **tool** when you need a single, precise operation (e.g. `simulate_transfo
 | [`quickmodel_full_pipeline`](#quickmodel_full_pipeline)           | Walk the Full QuickModel Pipeline      | `create()` → `checkIntegrity()` → `checkRules()` → `serialize()` |
 | [`quickmodel_mixin`](#quickmodel_mixin)                           | Extend a Base Class with QModel Mixin  | `QModel.extends(BaseClass)` for TypeORM / NestJS entities        |
 | [`quickmodel_alias_computed`](#quickmodel_alias_computed)         | Use @QAlias and @QComputed             | Field name remapping and getter serialization                    |
-| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / v1 code to idiomatic v2 patterns         |
+| [`quickmodel_migration`](#quickmodel_migration)                   | Migrate Legacy Code to QuickModel      | Convert plain classes / legacy code to idiomatic QuickModel patterns |
 | [`quickmodel_async_rules`](#quickmodel_async_rules)               | ⚠️ Async Rules with checkRulesAsync()  | Async-only: DB lookups, API calls — NOT for sync predicates      |
 | [`quickmodel_add_qgroup`](#quickmodel_add_qgroup)                 | Add @QGroup to a Model                 | Group fields and enable `checkGroups()` group-level validation   |
 | [`quickmodel_security_review`](#quickmodel_security_review)       | Security Review                        | Mass assignment, DoS, prototype pollution, ReDoS audit           |
@@ -346,7 +346,7 @@ model_code: "@Quick({})\nclass User extends QModel<User> { declare firstName: st
 
 ## `quickmodel_migration`
 
-**Migrate legacy TypeScript classes or old QuickModel v1 code to idiomatic v2 patterns.**
+**Migrate legacy TypeScript classes or old QuickModel code to idiomatic patterns.**
 
 Guides the AI through converting property assignments to `declare` fields, wrapping the class with `@Quick({})`, adding transformer types, removing manual constructors, and calling `validate_usage` to confirm correctness.
 
@@ -354,7 +354,7 @@ Guides the AI through converting property assignments to `declare` fields, wrapp
 
 | Argument      | Required | Description                                                      |
 | ------------- | -------- | ---------------------------------------------------------------- |
-| `legacy_code` | ✅ Yes   | The legacy TypeScript class or v1 code to migrate to v2 patterns |
+| `legacy_code` | ✅ Yes   | The legacy TypeScript class or old QuickModel code to migrate    |
 
 ### Workflow
 

@@ -11,6 +11,7 @@ import {
 	QUICK_TYPE_MAP_KEY,
 	QCOMPUTED_METADATA_KEY,
 } from '../constants/metadata-keys';
+import { QALIAS_FIELDS_KEY } from '../decorators/qalias.decorator';
 import { QConfig } from '../config/quick.config';
 import { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 import { QModelError } from '../errors/quickmodel.error';
@@ -241,10 +242,22 @@ export class PopulationService {
 				proto = Object.getPrototypeOf(proto);
 			}
 
+			// Build alias fields set by walking prototype chain once per class.
+			// Properties decorated with @QAlias are valid model properties even if
+			// they lack @QType — they must NOT be treated as unknown/stripped.
+			const aliasedPropsSet = new Set<string>();
+			let aliasProto = modelClass.prototype;
+			while (aliasProto && aliasProto !== Object.prototype) {
+				const aliasFields: string[] =
+					Reflect.getMetadata(QALIAS_FIELDS_KEY, aliasProto) ?? [];
+				for (const field of aliasFields) aliasedPropsSet.add(field);
+				aliasProto = Object.getPrototypeOf(aliasProto);
+			}
+
 			classMeta = {
 				options: rawOptions,
 				decoratedFields: rawDecorated,
-				decoratedFieldsSet: new Set(rawDecorated),
+				decoratedFieldsSet: new Set([...rawDecorated, ...aliasedPropsSet]),
 				discriminators: rawDiscriminators,
 				designTypes: rawDesignTypes,
 				hasTypeMapKey: rawHasTypeMapKey,
