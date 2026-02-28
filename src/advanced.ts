@@ -36,6 +36,8 @@ export { IntegrityService } from './core/services/integrity.service';
  *   }
  * }
  * ```
+ * @see {@link QTransformerRegistry} — register your custom transformer here
+ * @see {@link IQTransformer} — interface that custom transformers implement
  */
 export { BaseTransformer as QBaseTransformer } from './core/bases/base-transformer';
 
@@ -52,6 +54,8 @@ export { BaseTransformer as QBaseTransformer } from './core/bases/base-transform
  * const serializer = new QSerializer();
  * const plain = serializer.serialize(myModelInstance);
  * ```
+ * @see {@link QModel.serialize} — high-level API wrapping this service
+ * @see {@link QDeserializer} — inverse service
  */
 export { Serializer as QSerializer } from './core/services/serializer.service';
 
@@ -67,6 +71,8 @@ export { Serializer as QSerializer } from './core/services/serializer.service';
  * const deserializer = new QDeserializer();
  * const instance = deserializer.deserialize(UserModel, rawData);
  * ```
+ * @see {@link QModel.create} — high-level API wrapping this service
+ * @see {@link QSerializer} — inverse service
  */
 export { Deserializer as QDeserializer } from './core/services/deserializer.service';
 
@@ -75,23 +81,47 @@ export { Deserializer as QDeserializer } from './core/services/deserializer.serv
 // Generates schemas in different external formats from QuickModel metadata.
 // ============================================================================
 
-/** Generates a JSON Schema Draft-07 document from a model's decorator configuration. */
+/**
+ * Generates a JSON Schema Draft-07 document from a model's decorator configuration.
+ * @see {@link QMongoSchemaGenerator} — MongoDB schema variant
+ * @see {@link QZodSchemaGenerator} — Zod schema variant
+ */
 export { JsonSchemaGenerator as QJsonSchemaGenerator } from './core/services/schema-generators.service';
 
-/** Generates a Zod validation schema from a model's decorator configuration. */
+/**
+ * Generates a Zod validation schema from a model's decorator configuration.
+ * @see {@link QJsonSchemaGenerator} — JSON Schema variant
+ */
 export { ZodSchemaGenerator as QZodSchemaGenerator } from './core/services/zod-schema-generator.service';
 
-/** Generates a Mongoose/MongoDB schema definition from a model's decorator configuration. */
+/**
+ * Generates a Mongoose/MongoDB schema definition from a model's decorator configuration.
+ * @see {@link QJsonSchemaGenerator} — JSON Schema variant
+ */
 export { MongoSchemaGenerator as QMongoSchemaGenerator } from './core/services/schema-generators.service';
 
-/** Generates a TypeScript interface string from a model's decorator configuration. */
+/**
+ * Generates a TypeScript interface string from a model's decorator configuration.
+ * @see {@link QJsonSchemaGenerator} — JSON Schema variant
+ */
 export { TypeScriptSchemaGenerator as QTypeScriptSchemaGenerator } from './core/services/schema-generators.service';
 
-/** Generates a GraphQL type definition string from a model's decorator configuration. */
+/**
+ * Generates a GraphQL type definition string from a model's decorator configuration.
+ * @see {@link QOpenAPISchemaGenerator} — OpenAPI schema variant
+ * @see {@link QJsonSchemaGenerator} — JSON Schema variant
+ */
 export { GraphQLSchemaGenerator as QGraphQLSchemaGenerator } from './core/services/schema-generators.service';
 
-/** Generates an OpenAPI 3.0 schema component from a model's decorator configuration. */
+/**
+ * Generates an OpenAPI 3.0 schema component from a model's decorator configuration.
+ * @see {@link QGraphQLSchemaGenerator} — GraphQL schema variant
+ * @see {@link QMongoSchemaGenerator} — MongoDB schema variant
+ */
 export { OpenAPISchemaGenerator as QOpenAPISchemaGenerator } from './core/services/schema-generators.service';
 
-/** Generates an AJV-compatible validation schema from a model's decorator configuration. */
+/**
+ * Generates an AJV-compatible validation schema from a model's decorator configuration.
+ * @see {@link QJsonSchemaGenerator} — standard JSON Schema variant
+ */
 export { AjvSchemaGenerator as QAjvSchemaGenerator } from './core/services/schema-generators.service';
