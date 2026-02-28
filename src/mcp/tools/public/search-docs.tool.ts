@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { spawn } from 'child_process';
 
@@ -16,6 +16,7 @@ import { spawn } from 'child_process';
  *
  * @see {@link QExplainErrorTool} — explain a specific QuickModel error
  * @see {@link QInspectModelTool} — inspect a model definition
+ * @see {@link QCheckMissingJSDocsTool} — scan for undocumented exports
  *
  * @internal Registered on the MCP server; not part of the public library API.
  */

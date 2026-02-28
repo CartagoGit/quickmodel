@@ -44,6 +44,7 @@
  *
  * @see {@link QType} — decorator that uses `IClassFieldDecoratorCtx` for TC39 mode
  * @see {@link QRule} — decorator that also relies on this polyfill for TS 4.1 compat
+ * @see {@link createTC39Guard} — guard used inside TC39-path initializers
  * @module
  */
 

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
 import { join, resolve as pathResolve, dirname } from 'path';
@@ -21,6 +21,7 @@ import { join, resolve as pathResolve, dirname } from 'path';
  *
  * @see {@link QScaffoldFeatureTool} — scaffold full transformer/tool boilerplate
  * @see {@link QRunTestsTool} — run tests after generation
+ * @see {@link QCheckProjectHealthTool} — verify project health after generation
  *
  * @internal Registered on the MCP server; not part of the public library API.
  */

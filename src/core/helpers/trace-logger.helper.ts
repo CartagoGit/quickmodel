@@ -35,6 +35,16 @@ const CONSOLE_FN: Record<IConsoleLevel, (...args: unknown[]) => void> = {
 	verbose: (...args) => console.debug(...args),
 };
 
+/** @internal ANSI escape codes per level (used when colors are enabled). */
+const ANSI_COLOR: Record<IConsoleLevel, string> = {
+	error: '\x1b[91m', // bright red
+	warn: '\x1b[33m', // yellow
+	info: '\x1b[36m', // cyan
+	debug: '\x1b[90m', // gray
+	verbose: '\x1b[35m', // magenta
+};
+const ANSI_RESET = '\x1b[0m';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Per-model decorator options shape (minimal — avoids circular import)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,8 +140,11 @@ export class TraceLogger {
 	/** @internal Cached global sink function. */
 	private static _globalSink: ((entry: IQTraceEntry) => void) | undefined =
 		undefined;
-	/** @internal Cached log prefix (default: 'QuickModel', configurable via `trace.prefix`). */
+	/** @internal Cached log prefix (configurable via `trace.prefix`). */
 	private static _globalPrefix: string = 'QM';
+	/** @internal Whether to colorize console output (auto-detected from TTY when not configured). */
+	private static _globalColors: boolean =
+		typeof process !== 'undefined' && process.stdout?.isTTY === true;
 
 	// ── cache refresh ──────────────────────────────────────────────────────────
 
@@ -159,6 +172,11 @@ export class TraceLogger {
 		TraceLogger._globalEvents = traceCfg?.events;
 		TraceLogger._globalSink = traceCfg?.sink;
 		TraceLogger._globalPrefix = traceCfg?.prefix ?? 'QM';
+		TraceLogger._globalColors =
+			traceCfg?.colors !== undefined
+				? traceCfg.colors
+				: typeof process !== 'undefined' &&
+					process.stdout?.isTTY === true;
 
 		// Emit config-change only after a real re-configure (not initial load).
 		if (prevRef !== undefined) {
@@ -294,9 +312,12 @@ export class TraceLogger {
 		const modelPart = entry.field
 			? `${entry.model}:${entry.field}`
 			: entry.model;
-		const prefix = `[${TraceLogger._globalPrefix}][${params.level.toUpperCase()}][${modelPart}][${entry.event}]`;
-		const consoleFn =
-			CONSOLE_FN[params.level as IConsoleLevel] ?? console.debug;
+		const rawPrefix = `[${TraceLogger._globalPrefix}][${params.level.toUpperCase()}][${modelPart}][${entry.event}]`;
+		const lvl = params.level as IConsoleLevel;
+		const prefix = TraceLogger._globalColors
+			? `${ANSI_COLOR[lvl] ?? ''}${rawPrefix}${ANSI_RESET}`
+			: rawPrefix;
+		const consoleFn = CONSOLE_FN[lvl] ?? console.debug;
 
 		if (
 			params.level === 'verbose' &&

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 
 /**
@@ -74,6 +74,7 @@ function extractDecorators(code: string): Set<string> {
  *
  * @see {@link QInspectModelTool} — inspect a single model structure
  * @see {@link QCheckApiCompatibilityTool} — detect breaking changes in the public API
+ * @see {@link QMigrationPrompt} — guided workflow for migrating between model versions
  */
 export class QDiffModelsTool extends QAbstractTool<
 	z.ZodObject<{

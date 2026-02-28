@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 
 /**
@@ -96,6 +96,7 @@ const VALIDATORS: IValidatorEntry[] = [
  *
  * @see {@link QCheckIntegrityTool} — run transformer-level integrity checks
  * @see {@link QSimulateValidationTool} — simulate @QRule predicate validation
+ * @see {@link IsEmail} — example built-in validator decorator listed here
  */
 export class QListValidatorsTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'list_validators';

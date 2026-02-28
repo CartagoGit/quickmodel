@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { Quick } from '../../../core/decorators/quick.decorator';
 import { QModel } from '../../../core/models/quick.model';

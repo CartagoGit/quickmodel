@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractPrompt } from '../abstract-prompt';
 
 /**

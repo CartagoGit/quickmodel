@@ -1,0 +1,44 @@
+version: 2
+updates:
+    # ── npm dependencies ──────────────────────────────────────────────────────
+    - package-ecosystem: 'npm'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+      open-pull-requests-limit: 10
+      # Group minor/patch updates to reduce PR noise.
+      # Each major version gets its own PR so breaking changes are explicit.
+      groups:
+          minor-and-patch:
+              update-types:
+                  - 'minor'
+                  - 'patch'
+      # Critical runtime deps: review individually, never auto-merge.
+      ignore:
+          # Zod: MCP layer + ZodSchemaGenerator depend on it.
+          # A minor/patch bump is fine but require CI to pass before merging.
+          - dependency-name: 'zod'
+            update-types: ['version-update:semver-major']
+          # Faker: optional dep for mock generation.
+          - dependency-name: '@faker-js/faker'
+            update-types: ['version-update:semver-major']
+      labels:
+          - 'dependencies'
+      commit-message:
+          prefix: 'chore'
+          prefix-development: 'chore'
+
+    # ── GitHub Actions ────────────────────────────────────────────────────────
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+      labels:
+          - 'dependencies'
+          - 'github-actions'
+      commit-message:
+          prefix: 'chore'

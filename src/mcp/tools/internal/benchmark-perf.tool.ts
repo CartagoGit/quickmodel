@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { QModel } from '../../../core/models/quick.model';
 import { Quick } from '../../../core/decorators/quick.decorator';
@@ -21,6 +21,7 @@ import { Quick } from '../../../core/decorators/quick.decorator';
  *
  * @see {@link QRoundtripTool} — test correctness of a round-trip (not just speed)
  * @see {@link QCheckBundleSizeTool} — check output size after optimisation
+ * @see {@link QCheckProjectHealthTool} — comprehensive quality gate that runs lint+typecheck+tests
  *
  * @internal Registered on the MCP server; not part of the public library API.
  */

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 
 /**
  * Interface definition for any MCP tool in the QuickModel ecosystem.

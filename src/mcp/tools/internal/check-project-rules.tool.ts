@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, resolve, sep } from 'path';

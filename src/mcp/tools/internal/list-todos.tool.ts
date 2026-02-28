@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative, resolve, sep } from 'path';
@@ -24,6 +24,7 @@ const ANNOTATION_TYPES: ITodoType[] = ['TODO', 'FIXME', 'HACK', 'XXX'];
  *
  * @see {@link QCheckMissingJSDocsTool} — find exports missing documentation
  * @see {@link QProjectStatusTool} — overall project health snapshot
+ * @see {@link QListTodosTool} — this tool itself (self-reference for API completeness)
  */
 export class QListTodosTool extends QAbstractTool<
 	z.ZodObject<{

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
@@ -19,6 +19,7 @@ import { spawnCommand } from './utils';
  *
  * @see {@link QSyncDocsTool} — auto-generate docs content from source code
  * @see {@link QCheckMissingJSDocsTool} — find exports missing JSDoc before building
+ * @see {@link QCheckProjectHealthTool} — verify project is healthy before building docs
  *
  * @internal Registered on the MCP server; not part of the public library API.
  */

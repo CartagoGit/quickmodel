@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { TransformerLookupService } from '../../../core/services/transformer-lookup.service';
 
@@ -16,6 +16,7 @@ import { TransformerLookupService } from '../../../core/services/transformer-loo
  *
  * @see {@link QSimulateTransformationTool} — simulate a specific transformation
  * @see {@link QListValidatorsTool} — list built-in validator decorators
+ * @see {@link QTransformerRegistry} — registry that backs this tool's list
  *
  * @internal Registered on the MCP server; not part of the public library API.
  */

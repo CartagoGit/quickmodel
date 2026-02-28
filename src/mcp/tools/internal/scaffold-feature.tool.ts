@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
 import { join, dirname, resolve, sep } from 'path';
@@ -9,6 +9,7 @@ import { join, dirname, resolve, sep } from 'path';
  *
  * @see {@link QCreateModelTool} — scaffold a new QModel class
  * @see {@link QGenerateTestTool} — generate test boilerplate for a source file
+ * @see {@link QCheckProjectRulesTool} — verify scaffolded code follows project rules
  */
 export class QScaffoldFeatureTool extends QAbstractTool<
 	z.ZodObject<{

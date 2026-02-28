@@ -1,0 +1,6 @@
+# bunfig.toml — Bun configuration for QuickModel
+
+[test]
+# Preload the global test setup before running any tests.
+# This ensures QConfig defaults are properly set and reset between tests.
+preload = ["./tests/setup.ts"]

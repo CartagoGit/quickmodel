@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 
 /**
  * Represents a single message in an MCP Prompt response.

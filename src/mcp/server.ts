@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import type { IQMcpTool } from './tools/abstract-tool';
 import type { IQMcpPrompt } from './prompts/abstract-prompt';
 import {

@@ -20,6 +20,7 @@
  *
  * @see {@link qGroups5} — the TS 5.0+ form-group helper exported here
  * @see {@link IQGroupsMap} — the typed map type produced by `qGroups5`
+ * @see {@link Forms.qGroups} — TS 4.1-compatible alternative (requires `as const`)
  * @module compat/ts5/forms
  */
 

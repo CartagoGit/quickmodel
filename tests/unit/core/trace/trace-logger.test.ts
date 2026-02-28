@@ -505,7 +505,9 @@ describe('IQTraceEntry structure', () => {
 describe('logPrefix config', () => {
 	it('uses "QM" as default prefix', () => {
 		const spy = spyOn(console, 'info').mockImplementation(() => {});
-		QConfig.configure({ defaults: { trace: { verbosity: 'info' } } });
+		QConfig.configure({
+			defaults: { trace: { verbosity: 'info', colors: false } },
+		});
 
 		TraceLogger.emit({
 			level: 'info',
@@ -523,7 +525,9 @@ describe('logPrefix config', () => {
 	it('uses the configured custom prefix', () => {
 		const spy = spyOn(console, 'info').mockImplementation(() => {});
 		QConfig.configure({
-			defaults: { trace: { verbosity: 'info', prefix: 'Acme' } },
+			defaults: {
+				trace: { verbosity: 'info', prefix: 'Acme', colors: false },
+			},
 		});
 
 		TraceLogger.emit({
@@ -548,7 +552,9 @@ describe('logPrefix config', () => {
 		(TraceLogger as any)._configRef = undefined;
 
 		const spy = spyOn(console, 'info').mockImplementation(() => {});
-		QConfig.configure({ defaults: { trace: { verbosity: 'info' } } });
+		QConfig.configure({
+			defaults: { trace: { verbosity: 'info', colors: false } },
+		});
 
 		TraceLogger.emit({
 			level: 'info',

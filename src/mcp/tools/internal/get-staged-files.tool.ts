@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { spawnCommand } from './utils';
 
@@ -10,6 +10,7 @@ import { spawnCommand } from './utils';
  *
  * @see {@link QPreCommitCheckTool} — run pre-commit checks on staged files
  * @see {@link QLintCheckTool} — run ESLint on specific files
+ * @see {@link QTypecheckTool} — run TypeScript type-checking on specific files
  */
 export class QGetStagedFilesTool extends QAbstractTool<
 	z.ZodObject<Record<never, never>>

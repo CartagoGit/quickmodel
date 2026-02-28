@@ -22,7 +22,7 @@ export default tseslint.config(
 		],
 	},
 	eslint.configs.recommended,
-	securityPlugin.configs.recommended,
+	/** @type {any} */ (securityPlugin).configs.recommended,
 	...tseslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,
 	{
@@ -182,6 +182,36 @@ export default tseslint.config(
 		files: ['src/transformers/**', 'src/core/bases/**'],
 		rules: {
 			'max-params': 'off',
+		},
+	},
+	// ── Capa MCP: centralización de zod ───────────────────────────────────────
+	// Todos los archivos de src/mcp/ deben importar `z` desde '@mcp/deps' en lugar de
+	// hacerlo directamente desde 'zod'. Esto garantiza un único punto de adaptación si
+	// zod cambia su API entre versiones: solo se edita src/mcp/deps.ts.
+	// El propio deps.ts queda excluido del override (no puede importarse a sí mismo).
+	{
+		files: ['src/mcp/**/*.ts'],
+		ignores: ['src/mcp/deps.ts'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['quickmodel'],
+							message:
+								"PROHIBIDO: auto-importar el paquete desde sí mismo. Usa rutas internas '@/core/...', '@/transformers/...', etc.",
+						},
+						// Dentro de src/mcp/** el alias @mcp/* es válido y @mcp/deps es la forma
+						// canónica de obtener `z`. NO se restringe @mcp aquí para no bloquear @mcp/deps.
+						{
+							group: ['zod'],
+							message:
+								"PROHIBIDO: importar 'zod' directamente en src/mcp/. Usa 'import { z } from \"@mcp/deps\"' para centralizar el acoplamiento con zod.",
+						},
+					],
+				},
+			],
 		},
 	}
 );

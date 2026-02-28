@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
 import { resolve as pathResolve, dirname } from 'path';
@@ -14,6 +14,7 @@ import { esMcp } from '../../locales/es.mcp';
  *
  * @see {@link QUpdateDocsTool} — trigger the full documentation build pipeline
  * @see {@link QCheckMissingJSDocsTool} — find exports missing JSDoc before syncing
+ * @see {@link esMcp} — Spanish locale strings used to generate documentation pages
  */
 export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'update_docs_content';

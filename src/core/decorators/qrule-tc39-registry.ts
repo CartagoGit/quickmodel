@@ -29,6 +29,7 @@
  *
  * @see {@link QRule} — the decorator that uses this guard to prevent duplicate registrations
  * @see {@link QModel} — model class whose prototype is tracked by the WeakSet
+ * @see {@link QType} — sibling decorator that uses the same TC39 initialization pattern
  *
  * @example
  * ```typescript

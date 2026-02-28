@@ -3,6 +3,7 @@
  *
  * @see {@link BaseTransformer} — base class for all transformers exported here
  * @see {@link QTransformerRegistry} — registry where these transformers are registered
+ * @see {@link Quick} — use `@Quick({ field: TransformerType })` to activate any transformer listed here
  */
 
 export * from './bigint.transformer';

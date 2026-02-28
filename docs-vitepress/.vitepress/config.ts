@@ -118,470 +118,179 @@ export default defineConfig({
 			{ icon: 'npm', link: 'https://www.npmjs.com/~cartago-git' },
 		],
 		sidebar: {
-			'/tsdoc/quickmodel/namespaces/Types/': [
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Advanced',
-							link: '/tsdoc/quickmodel/namespaces/Advanced/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/quickmodel/namespaces/Utils/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/quickmodel/namespaces/Forms/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/quickmodel/namespaces/Compat/',
-						},
-					],
-				},
-				{
-					text: 'Types Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/quickmodel/namespaces/Types/',
-						},
-						{
-							text: 'Interfaces',
-							collapsed: false,
-							items: [
-								{
-									text: 'IQAdvancedOptions',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQAdvancedOptions',
-								},
-								{
-									text: 'IQAnyRecord',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQAnyRecord',
-								},
-								{
-									text: 'IQOptions',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQOptions',
-								},
-								{
-									text: 'IQPropertyOptions',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQPropertyOptions',
-								},
-								{
-									text: 'IQSerializationOptions',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQSerializationOptions',
-								},
-								{
-									text: 'IQTypeOptions',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQTypeOptions',
-								},
-								{
-									text: 'IQTransformer',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQTransformer',
-								},
-								{
-									text: 'IQValidationResult',
-									link: '/tsdoc/quickmodel/namespaces/Types/interfaces/IQValidationResult',
-								},
-							],
-						},
-						{
-							text: 'Types',
-							collapsed: true,
-							items: [
-								{
-									text: 'IQAlias',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQAlias',
-								},
-								{
-									text: 'IQConstructor',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQConstructor',
-								},
-								{
-									text: 'IQDiscriminatorConfig',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQDiscriminatorConfig',
-								},
-								{
-									text: 'IQExtractCommonKeys',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractCommonKeys',
-								},
-								{
-									text: 'IQExtractConstructors',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractConstructors',
-								},
-								{
-									text: 'IQExtractIQModelInterface',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractIQModelInterface',
-								},
-								{
-									text: 'IQExtractInstanceType',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractInstanceType',
-								},
-								{
-									text: 'IQExtractValidDiscriminatorKeys',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQExtractValidDiscriminatorKeys',
-								},
-								{
-									text: 'IQMockType',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQMockType',
-								},
-								{
-									text: 'IQMockerFn',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQMockerFn',
-								},
-								{
-									text: 'IQModelData',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQModelData',
-								},
-								{
-									text: 'IQModelInstance',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQModelInstance',
-								},
-								{
-									text: 'IQModelInterface',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQModelInterface',
-								},
-								{
-									text: 'IQNativeConstructor',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQNativeConstructor',
-								},
-								{
-									text: 'IQSerialized',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSerialized',
-								},
-								{
-									text: 'IQSerializedInterface',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSerializedInterface',
-								},
-								{
-									text: 'IQSerializerFn',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSerializerFn',
-								},
-								{
-									text: 'IQSpec',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSpec',
-								},
-								{
-									text: 'IQSpecs',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQSpecs',
-								},
-								{
-									text: 'IQTransform',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransform',
-								},
-								{
-									text: 'IQTransformerFn',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransformerFn',
-								},
-								{
-									text: 'IQTransformerFunction',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransformerFunction',
-								},
-								{
-									text: 'IQTransformerKey',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTransformerKey',
-								},
-								{
-									text: 'IQTypeGuardFunction',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTypeGuardFunction',
-								},
-								{
-									text: 'IQTypeSpec',
-									link: '/tsdoc/quickmodel/namespaces/Types/type-aliases/IQTypeSpec',
-								},
-							],
-						},
-					],
-				},
-			],
-			'/tsdoc/quickmodel/namespaces/Advanced/': [
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Types',
-							link: '/tsdoc/quickmodel/namespaces/Types/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/quickmodel/namespaces/Utils/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/quickmodel/namespaces/Forms/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/quickmodel/namespaces/Compat/',
-						},
-					],
-				},
-				{
-					text: 'Advanced Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/quickmodel/namespaces/Advanced/',
-						},
-						{
-							text: 'Classes',
-							items: [
-								{
-									text: 'QMockGenerator',
-									link: '/tsdoc/quickmodel/namespaces/Advanced/classes/QMockGenerator',
-								},
-								{
-									text: 'QTransformerRegistry',
-									link: '/tsdoc/quickmodel/namespaces/Advanced/classes/QTransformerRegistry',
-								},
-							],
-						},
-					],
-				},
-			],
-			'/tsdoc/quickmodel/namespaces/Utils/': [
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Types',
-							link: '/tsdoc/quickmodel/namespaces/Types/',
-						},
-						{
-							text: 'Advanced',
-							link: '/tsdoc/quickmodel/namespaces/Advanced/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/quickmodel/namespaces/Forms/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/quickmodel/namespaces/Compat/',
-						},
-					],
-				},
-				{
-					text: 'Utils Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/quickmodel/namespaces/Utils/',
-						},
-						{
-							text: 'Classes',
-							items: [
-								{
-									text: 'QMockBuilder',
-									link: '/tsdoc/quickmodel/namespaces/Utils/classes/QMockBuilder',
-								},
-								{
-									text: 'QModelError',
-									link: '/tsdoc/quickmodel/namespaces/Utils/classes/QModelError',
-								},
-							],
-						},
-						{
-							text: 'Functions',
-							items: [
-								{
-									text: 'QType',
-									link: '/tsdoc/quickmodel/namespaces/Utils/functions/QType',
-								},
-							],
-						},
-					],
-				},
-			],
-			'/tsdoc/quickmodel/namespaces/Forms/': [
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Types',
-							link: '/tsdoc/quickmodel/namespaces/Types/',
-						},
-						{
-							text: 'Advanced',
-							link: '/tsdoc/quickmodel/namespaces/Advanced/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/quickmodel/namespaces/Utils/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/quickmodel/namespaces/Compat/',
-						},
-					],
-				},
-				{
-					text: 'Forms Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/quickmodel/namespaces/Forms/',
-						},
-						{
-							text: 'Functions',
-							collapsed: false,
-							items: [
-								{
-									text: 'qCheckRules',
-									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRules',
-								},
-								{
-									text: 'qCheckRulesAsync',
-									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRulesAsync',
-								},
-								{
-									text: 'qCheckRulesByGroup',
-									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRulesByGroup',
-								},
-								{
-									text: 'qCheckRulesByGroupAsync',
-									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qCheckRulesByGroupAsync',
-								},
-								{
-									text: 'qGetGroups',
-									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qGetGroups',
-								},
-								{
-									text: 'qGroups',
-									link: '/tsdoc/quickmodel/namespaces/Forms/functions/qGroups',
-								},
-							],
-						},
-						{
-							text: 'Interfaces',
-							collapsed: true,
-							items: [
-								{
-									text: 'IQCheckRulesAsyncOptions',
-									link: '/tsdoc/quickmodel/namespaces/Forms/interfaces/IQCheckRulesAsyncOptions',
-								},
-								{
-									text: 'IQCheckRulesOptions',
-									link: '/tsdoc/quickmodel/namespaces/Forms/interfaces/IQCheckRulesOptions',
-								},
-							],
-						},
-						{
-							text: 'Types',
-							collapsed: true,
-							items: [
-								{
-									text: 'IQGroupsMap',
-									link: '/tsdoc/quickmodel/namespaces/Forms/type-aliases/IQGroupsMap',
-								},
-							],
-						},
-					],
-				},
-			],
-			'/tsdoc/quickmodel/namespaces/Compat/': [
-				{
-					text: 'Navigation',
-					items: [
-						{ text: 'Back to Core', link: '/tsdoc/' },
-						{
-							text: 'Types',
-							link: '/tsdoc/quickmodel/namespaces/Types/',
-						},
-						{
-							text: 'Advanced',
-							link: '/tsdoc/quickmodel/namespaces/Advanced/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/quickmodel/namespaces/Utils/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/quickmodel/namespaces/Forms/',
-						},
-					],
-				},
-				{
-					text: 'Compat (TS5) Namespace',
-					items: [
-						{
-							text: 'Overview',
-							link: '/tsdoc/quickmodel/namespaces/Compat/',
-						},
-						{
-							text: 'Functions',
-							collapsed: false,
-							items: [
-								{
-									text: 'qGroups5',
-									link: '/tsdoc/quickmodel/namespaces/Compat/functions/qGroups5',
-								},
-							],
-						},
-					],
-				},
-			],
 			'/tsdoc/': [
 				{
-					text: 'Navigation',
+					text: 'API Reference',
+					link: '/tsdoc/',
+					items: [{ text: 'Overview', link: '/tsdoc/' }],
+				},
+				{
+					text: 'Core',
+					collapsed: false,
 					items: [
+						{ text: 'QModel', link: '/tsdoc/classes/QModel' },
+						{ text: '@Quick', link: '/tsdoc/functions/Quick' },
+						{ text: 'QConfig', link: '/tsdoc/variables/QConfig' },
 						{
-							text: 'Advanced',
-							link: '/tsdoc/quickmodel/namespaces/Advanced/',
-						},
-						{
-							text: 'Types',
-							link: '/tsdoc/quickmodel/namespaces/Types/',
-						},
-						{
-							text: 'Utils',
-							link: '/tsdoc/quickmodel/namespaces/Utils/',
-						},
-						{
-							text: 'Forms',
-							link: '/tsdoc/quickmodel/namespaces/Forms/',
-						},
-						{
-							text: 'Compat (TS5)',
-							link: '/tsdoc/quickmodel/namespaces/Compat/',
+							text: 'IQImplements',
+							link: '/tsdoc/type-aliases/IQImplements',
 						},
 					],
 				},
 				{
-					text: 'API Reference',
+					text: 'Decorators',
+					collapsed: false,
 					items: [
-						{ text: 'Overview', link: '/tsdoc/' },
+						{ text: '@QType', link: '/tsdoc/functions/QType' },
+						{ text: '@QRule', link: '/tsdoc/functions/QRule' },
+						{ text: '@QField', link: '/tsdoc/functions/QField' },
+						{ text: '@QAlias', link: '/tsdoc/functions/QAlias' },
+						{ text: '@QGroup', link: '/tsdoc/functions/QGroup' },
 						{
-							text: 'Core Classes',
-							items: [
-								{
-									text: 'QModel',
-									link: '/tsdoc/classes/QModel',
-								},
-							],
+							text: '@QComputed',
+							link: '/tsdoc/functions/QComputed',
+						},
+					],
+				},
+				{
+					text: 'Forms & Validation',
+					collapsed: false,
+					items: [
+						{
+							text: 'qCheckRules',
+							link: '/tsdoc/functions/qCheckRules',
 						},
 						{
-							text: 'Core Decorators',
-							items: [
-								{
-									text: '@Quick',
-									link: '/tsdoc/functions/Quick',
-								},
-							],
+							text: 'qCheckRulesAsync',
+							link: '/tsdoc/functions/qCheckRulesAsync',
 						},
 						{
-							text: 'Core Types',
-							items: [
-								{
-									text: 'IQImplements',
-									link: '/tsdoc/type-aliases/IQImplements',
-								},
-							],
+							text: 'qCheckRulesByGroup',
+							link: '/tsdoc/functions/qCheckRulesByGroup',
+						},
+						{
+							text: 'qCheckRulesByGroupAsync',
+							link: '/tsdoc/functions/qCheckRulesByGroupAsync',
+						},
+						{
+							text: 'qGetGroups',
+							link: '/tsdoc/functions/qGetGroups',
+						},
+						{ text: 'qGroups', link: '/tsdoc/functions/qGroups' },
+					],
+				},
+				{
+					text: 'Schema Generators',
+					collapsed: true,
+					items: [
+						{
+							text: 'All Generators',
+							link: '/tsdoc/classes/SchemaGenerators',
+						},
+					],
+				},
+				{
+					text: 'Mocking',
+					collapsed: true,
+					items: [
+						{
+							text: 'QMockGenerator',
+							link: '/tsdoc/classes/QMockGenerator',
+						},
+						{
+							text: 'QMockBuilder',
+							link: '/tsdoc/classes/QMockBuilder',
+						},
+					],
+				},
+				{
+					text: 'Advanced',
+					collapsed: true,
+					items: [
+						{
+							text: 'QBaseTransformer',
+							link: '/tsdoc/classes/QBaseTransformer',
+						},
+						{
+							text: 'QTransformerRegistry',
+							link: '/tsdoc/classes/QTransformerRegistry',
+						},
+						{
+							text: 'QSerializer',
+							link: '/tsdoc/classes/QSerializer',
+						},
+						{
+							text: 'QDeserializer',
+							link: '/tsdoc/classes/QDeserializer',
+						},
+					],
+				},
+				{
+					text: 'Utilities',
+					collapsed: true,
+					items: [
+						{
+							text: 'QModelError',
+							link: '/tsdoc/classes/QModelError',
+						},
+						{ text: 'QLogger', link: '/tsdoc/variables/QLogger' },
+					],
+				},
+				{
+					text: 'Testing',
+					collapsed: true,
+					items: [
+						{
+							text: 'quickmodelMatchers',
+							link: '/tsdoc/functions/quickmodelMatchers',
+						},
+					],
+				},
+				{
+					text: 'Interfaces',
+					collapsed: true,
+					items: [
+						{
+							text: 'IQAdvancedOptions',
+							link: '/tsdoc/interfaces/IQAdvancedOptions',
+						},
+						{
+							text: 'IQCreateManyOptions',
+							link: '/tsdoc/interfaces/IQCreateManyOptions',
+						},
+						{
+							text: 'IQCreateManyError',
+							link: '/tsdoc/interfaces/IQCreateManyError',
+						},
+						{
+							text: 'IQCreateManyResult',
+							link: '/tsdoc/interfaces/IQCreateManyResult',
+						},
+						{
+							text: 'IQFormSchemaEntry',
+							link: '/tsdoc/interfaces/IQFormSchemaEntry',
+						},
+						{
+							text: 'IQFormSchemaGroup',
+							link: '/tsdoc/interfaces/IQFormSchemaGroup',
+						},
+						{
+							text: 'IQValidationReport',
+							link: '/tsdoc/interfaces/IQValidationReport',
+						},
+					],
+				},
+				{
+					text: 'Types',
+					collapsed: true,
+					items: [
+						{
+							text: 'IQImplements',
+							link: '/tsdoc/type-aliases/IQImplements',
+						},
+						{
+							text: 'IQAliasedSerializedInterface',
+							link: '/tsdoc/type-aliases/IQAliasedSerializedInterface',
 						},
 					],
 				},

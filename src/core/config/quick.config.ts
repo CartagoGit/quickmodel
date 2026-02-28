@@ -204,6 +204,29 @@ export interface IQConfig {
 			 * @param entry - The structured trace record
 			 */
 			sink?: (entry: IQTraceEntry) => void;
+
+			/**
+			 * Whether to colorize console output using ANSI escape codes.
+			 *
+			 * Each log level gets a distinct color:
+			 * - `error` → bright red
+			 * - `warn`  → yellow
+			 * - `info`  → cyan
+			 * - `debug` → gray
+			 * - `verbose` → magenta
+			 *
+			 * When omitted, colors are **auto-detected** from `process.stdout.isTTY`
+			 * (enabled in interactive terminals, disabled in CI/pipes automatically).
+			 *
+			 * Set `false` to force plain text output, `true` to force colors even
+			 * in non-TTY environments.
+			 *
+			 * @example
+			 * ```typescript
+			 * QConfig.configure({ defaults: { trace: { verbosity: 'info', colors: false } } });
+			 * ```
+			 */
+			colors?: boolean;
 		};
 
 		/**

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve, sep } from 'path';
@@ -12,6 +12,7 @@ import { join, resolve, sep } from 'path';
  *
  * @see {@link QCheckApiCompatibilityTool} — detect breaking API changes before release
  * @see {@link QCheckProjectHealthTool} — comprehensive release gate
+ * @see {@link QMcpServer} — server that registers this tool as an internal tool
  */
 export class QCheckChangelogTool extends QAbstractTool<
 	z.ZodObject<{

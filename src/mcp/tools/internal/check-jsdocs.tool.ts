@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -17,6 +17,7 @@ import { join } from 'path';
  *
  * @see {@link QCheckApiCompatibilityTool} — detect breaking changes in public API
  * @see {@link QCheckProjectHealthTool} — comprehensive project health check
+ * @see {@link QListTodosTool} — find TODO/FIXME annotation markers in source
  *
  * @internal Registered on the MCP server; not part of the public library API.
  */
