@@ -6,7 +6,7 @@
  * test-data generation, `QModelError` for error handling, and `QLogger`
  * for conditional debug logging that respects `QConfig.enableDebugLogs`.
  *
- * @module @cartago-git/quickmodel/utils
+ * @module quickmodel/utils
  */
 
 export { QType } from './core/decorators/qtype.decorator';
@@ -22,7 +22,7 @@ export { QMockBuilder } from './core/services/mock-builder.service';
  *
  * @example
  * ```typescript
- * import { QLogger } from '@cartago-git/quickmodel/utils';
+ * import { QLogger } from 'quickmodel/utils';
  *
  * QLogger.debug('Transforming value', MyModel, rawValue);
  * QLogger.warn('Unexpected null in required field', MyModel);

@@ -13,7 +13,7 @@ Cliente GraphQL  ◄──  Return del resolver  ◄──  DTO salida QModel  �
 
 ```typescript
 import { QModel, Quick, QRule, QField } from 'quickmodel';
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 interface ICreateUserInput {
 	name: string;
@@ -76,7 +76,7 @@ const resolvers = {
 ## Reglas asíncronas — comprobación de unicidad antes de mutar
 
 ```typescript
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 @Quick({ name: 'string', email: 'string', age: 'number', role: 'string' }, {})
 class CreateUserInput extends QModel<ICreateUserInput> {

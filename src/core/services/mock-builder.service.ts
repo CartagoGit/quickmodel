@@ -19,6 +19,7 @@ export class QMockBuilder<
 	TInstance,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
+	/** @internal Whether `@Quick()`-decorated fields have been registered by the dummy-instantiation pass. */
 	private _fieldsRegistered = false;
 
 	/**

@@ -114,7 +114,7 @@ console.assert(dto.isVerified === true); // boolean ✅
 ### Validation
 
 ```typescript
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 const result = qCheckRules(dto);
 if (!result.valid) {
@@ -176,7 +176,7 @@ export async function action({ request }: { request: Request }) {
 
 ```typescript
 import { Preferences } from '@capacitor/preferences';
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 async function saveSettings(dto: AppSettingsDto): Promise<void> {
 	const result = await qCheckRulesAsync(dto);

@@ -57,6 +57,7 @@ export class QPreCommitCheckTool extends QAbstractTool<
 			),
 	});
 
+	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
 	async execute(args: { files?: string[] }): Promise<{
@@ -126,6 +127,12 @@ export class QPreCommitCheckTool extends QAbstractTool<
 		};
 	}
 
+	/**
+	 * Parses raw ESLint JSON stdout into a list of lint issues.
+	 *
+	 * @param raw - Raw ESLint `--format=json` stdout string
+	 * @returns Array of structured `ILintIssue` objects
+	 */
 	private parseEslintOutput(raw: string): ILintIssue[] {
 		const issues: ILintIssue[] = [];
 		if (!raw || !raw.trim()) return issues;

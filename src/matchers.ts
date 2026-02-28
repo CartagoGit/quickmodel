@@ -7,12 +7,12 @@
  * ```typescript
  * // vitest.setup.ts or bun test setup file
  * import { expect } from 'vitest'; // or 'bun:test'
- * import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+ * import { quickmodelMatchers } from 'quickmodel/matchers';
  *
  * expect.extend(quickmodelMatchers);
  * ```
  *
- * @module @cartago-git/quickmodel/matchers
+ * @module quickmodel/matchers
  */
 import 'reflect-metadata';
 import { QFIELD_METADATA_KEY } from '@/core/decorators/qfield.decorator';

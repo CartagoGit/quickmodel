@@ -111,6 +111,12 @@ export class Logger {
 		return false;
 	}
 
+	/**
+	 * Extracts a human-readable name string from a logging context.
+	 *
+	 * @param context - A string name, constructor function, or object with a constructor
+	 * @returns Display name for the context, or `'Unknown'` if it cannot be determined
+	 */
 	private static getName(context: any): string {
 		if (typeof context === 'string') return context;
 		if (typeof context === 'function') return context.name;

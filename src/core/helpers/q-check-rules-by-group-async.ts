@@ -41,8 +41,8 @@ import type {
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from '@cartago-git/quickmodel';
- * import { qGroups, qCheckRulesByGroupAsync } from '@cartago-git/quickmodel/forms';
+ * import { QRule, QGroup } from 'quickmodel';
+ * import { qGroups, qCheckRulesByGroupAsync } from 'quickmodel/forms';
  *
  * const Groups = qGroups('identity', 'security');
  *

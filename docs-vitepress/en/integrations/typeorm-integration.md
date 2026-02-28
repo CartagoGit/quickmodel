@@ -93,7 +93,7 @@ console.log(dto.displayLabel); // '[USER] Alice'
 ## Saving a DTO to the repository
 
 ```typescript
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 const dto = new UserDto({
 	id: 0,
@@ -247,7 +247,7 @@ get displayLabel(): string {
 Use `@QRule` with `Promise.resolve()` for async business rules:
 
 ```typescript
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 @Quick({ name: 'string', email: 'string' }, {})
 class CreateUserDto extends QModel<{ name: string; email: string }> {

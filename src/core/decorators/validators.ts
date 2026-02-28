@@ -34,8 +34,8 @@ import { QRule } from './qrule.decorator';
  *
  * @example
  * ```typescript
- * import { Quick, QModel } from '@cartago-git/quickmodel';
- * import { IsEmail, Min, MaxLength } from '@cartago-git/quickmodel';
+ * import { Quick, QModel } from 'quickmodel';
+ * import { IsEmail, Min, MaxLength } from 'quickmodel';
  *
  * @Quick({ age: 'number' })
  * class UserForm extends QModel<IUserForm> {

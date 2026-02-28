@@ -48,10 +48,15 @@ export class Deserializer<
 >
 	implements IQDeserializer<TInterface, TModel>, IRecursiveDeserializer
 {
+	/** @internal Service for resolving transformers by key or constructor name. */
 	private readonly transformerLookup: TransformerLookupService;
+	/** @internal Service for creating model instances. */
 	private readonly instanceFactory: InstanceFactoryService;
+	/** @internal Service that populates/hydrates a model instance from raw data. */
 	private readonly populationService: PopulationService;
+	/** @internal Service that coerces individual field values via the registered transformers. */
 	private readonly valueTransformer: ValueTransformerService;
+	/** @internal Service that validates model instances against `@QType()` integrity rules. */
 	private readonly integrityService: IntegrityService;
 
 	/**

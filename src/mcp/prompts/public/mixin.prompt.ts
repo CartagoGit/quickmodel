@@ -68,7 +68,7 @@ export class QMixinPrompt extends QAbstractPrompt<{
 						'---\n\n' +
 						'**Step 1 — Wire the mixin**\n\n' +
 						'```typescript\n' +
-						`import { QModel } from '@cartago-git/quickmodel';\n` +
+						`import { QModel } from 'quickmodel';\n` +
 						`import { ${base_class} } from './your-base';\n\n` +
 						`@Quick({ /* transformers */ })\n` +
 						`export class MyModel extends QModel.extends(${base_class}) implements IQImplements<typeof MyModel> {\n` +
@@ -81,7 +81,7 @@ export class QMixinPrompt extends QAbstractPrompt<{
 						'---\n\n' +
 						'**Step 2 — Add the `IQImplements` interface for strong typing**\n\n' +
 						'```typescript\n' +
-						`import { IQImplements } from '@cartago-git/quickmodel';\n\n` +
+						`import { IQImplements } from 'quickmodel';\n\n` +
 						`export class MyModel\n` +
 						`  extends QModel.extends(${base_class})\n` +
 						`  implements IQImplements<typeof MyModel> {\n` +
@@ -102,7 +102,7 @@ export class QMixinPrompt extends QAbstractPrompt<{
 						'```\n\n' +
 						'If you need to check for QuickModel capability, use:\n' +
 						'```typescript\n' +
-						`import { isQModel } from '@cartago-git/quickmodel';\n` +
+						`import { isQModel } from 'quickmodel';\n` +
 						`isQModel(instance); // ✅ true\n` +
 						'```\n\n' +
 						'---\n\n' +
@@ -113,7 +113,7 @@ export class QMixinPrompt extends QAbstractPrompt<{
 				this.user(
 					`Please check this ${base_class} mixin implementation for common errors:\n\n` +
 						`\`\`\`typescript\n` +
-						`import { QModel, IQImplements } from '@cartago-git/quickmodel';\n` +
+						`import { QModel, IQImplements } from 'quickmodel';\n` +
 						`import { ${base_class} } from './base';\n\n` +
 						`@Quick({ /* transformers */ })\n` +
 						`export class MyModel extends QModel.extends(${base_class}) implements IQImplements<typeof MyModel> {\n` +

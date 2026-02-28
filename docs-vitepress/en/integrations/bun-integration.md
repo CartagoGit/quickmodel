@@ -194,7 +194,7 @@ Use `qCheckRulesAsync` for rules that need to hit a database or external service
 ```typescript
 // dto/register.dto.ts
 import { QModel, Quick, QRule } from 'quickmodel';
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 import { db } from './db';
 
 @Quick(

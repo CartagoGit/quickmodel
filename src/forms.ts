@@ -1,7 +1,7 @@
 /**
  * Form-validation helpers for framework-agnostic use.
  *
- * Import from `@cartago-git/quickmodel/forms` **instead of the root entry**
+ * Import from `quickmodel/forms` **instead of the root entry**
  * to keep these utilities tree-shakeable and avoid pulling in the full
  * QuickModel runtime for apps that only need lightweight validation.
  *
@@ -18,16 +18,16 @@
  *
  * **TS 5.0+ only** (mutable array without `as const`):
  * ```ts
- * import { qGroups5 } from '@cartago-git/quickmodel/compat/ts5/forms';
+ * import { qGroups5 } from 'quickmodel/compat/ts5/forms';
  * const Groups = qGroups5(['identity', 'security']);
  * ```
  *
  * ## Quick-start example (Angular / any framework)
  *
  * ```ts
- * import { QRule, QGroup } from '@cartago-git/quickmodel';
+ * import { QRule, QGroup } from 'quickmodel';
  * import { qGroups, qCheckRules, qGetGroups, qCheckRulesByGroup, qCheckRulesByGroupAsync }
- *   from '@cartago-git/quickmodel/forms';
+ *   from 'quickmodel/forms';
  *
  * const Groups = qGroups('identity', 'security');
  *

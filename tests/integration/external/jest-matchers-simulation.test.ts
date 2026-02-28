@@ -11,7 +11,7 @@
  * ```typescript
  * // jest.setup.ts
  * import { expect } from '@jest/globals';
- * import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+ * import { quickmodelMatchers } from 'quickmodel/matchers';
  * expect.extend(quickmodelMatchers);
  * ```
  */

@@ -17,7 +17,8 @@ QuickModel proporciona una capa de validaci√≥n y tipo para aplicaciones React ‚Ä
 
 ```typescript
 // models/contact-form.ts
-import { QField, QRule, qCheckRules } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class ContactForm {
 	@QField({ label: 'Nombre', required: true })
@@ -98,7 +99,7 @@ const { valid, errors } = form.checkRules();
 ```typescript
 // hooks/useQuickResolver.ts
 import type { Resolver } from 'react-hook-form';
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 export function createQuickResolver<T extends object>(
 	FormClass: new () => T

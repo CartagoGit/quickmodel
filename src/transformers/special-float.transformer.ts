@@ -198,8 +198,8 @@ export class SpecialFloatTransformer
  *
  * @example
  * ```typescript
- * import { QTransformerRegistry } from '@cartago-git/quickmodel/core';
- * import { NanTransformer } from '@cartago-git/quickmodel/transformers/special-float';
+ * import { QTransformerRegistry } from 'quickmodel/core';
+ * import { NanTransformer } from 'quickmodel/transformers/special-float';
  *
  * QTransformerRegistry.register('nan', NanTransformer);
  * ```

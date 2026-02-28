@@ -81,7 +81,7 @@ export class QInterfaceToModelTool extends QAbstractTool<
 				: '@Quick({})';
 
 		return {
-			code: `import { QModel, Quick } from '@cartago-git/quickmodel';
+			code: `import { QModel, Quick } from 'quickmodel';
 
 ${decoratorString}
 export class ${name}Model extends QModel<${name}Model> {

@@ -96,6 +96,7 @@ import {
  * instantiates this class automatically.
  */
 export class QMcpServer {
+	/** @internal The underlying `@modelcontextprotocol/sdk` server instance. */
 	private server: McpServer;
 
 	constructor(options?: { name?: string; version?: string }) {

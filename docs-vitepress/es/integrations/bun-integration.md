@@ -194,7 +194,7 @@ Usa `qCheckRulesAsync` para reglas que necesitan acceder a una base de datos o s
 ```typescript
 // dto/register.dto.ts
 import { QModel, Quick, QRule } from 'quickmodel';
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 import { db } from './db';
 
 @Quick(

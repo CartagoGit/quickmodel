@@ -23,6 +23,7 @@ export class QCheckSecurityTool extends QAbstractTool<z.ZodObject<{}>> {
 		'Run the security test suite to verify protection against vulnerabilities (XSS, Injection, Path Traversal, etc.).';
 	schema = z.object({});
 
+	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
 	async execute(_args: {}): Promise<{

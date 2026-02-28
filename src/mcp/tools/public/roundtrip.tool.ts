@@ -86,6 +86,13 @@ export class QRoundtripTool extends QAbstractTool<
 		};
 	}
 
+	/**
+	 * Computes a field-level diff between two plain objects.
+	 *
+	 * @param obj1 - Expected object (e.g. first serialization)
+	 * @param obj2 - Actual object (e.g. round-trip serialization)
+	 * @returns Record of differing keys with `{ expected, got }` values
+	 */
 	private computeDiff(
 		obj1: Record<string, unknown>,
 		obj2: Record<string, unknown>
@@ -102,6 +109,12 @@ export class QRoundtripTool extends QAbstractTool<
 		return result;
 	}
 
+	/**
+	 * Hydrates a string type token into the corresponding global constructor.
+	 *
+	 * @param options - String token (e.g. `'Date'`) or already-hydrated value
+	 * @returns The resolved constructor or the original value if not a known token
+	 */
 	private hydrateOptions(options: any): any {
 		if (typeof options === 'string') {
 			switch (options) {

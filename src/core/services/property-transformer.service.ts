@@ -198,6 +198,12 @@ function _getPropTransformMeta(
  * @internal Used by `PopulationService`.
  */
 export class PropertyTransformer {
+	/**
+	 * Creates a new PropertyTransformer.
+	 * @param valueTransformer - Service that coerces individual field values
+	 * @param transformerLookup - Service for resolving transformers by key
+	 * @param recursiveDeserializer - Deserializer used for nested model instantiation
+	 */
 	constructor(
 		private readonly valueTransformer: ValueTransformerService,
 		private readonly transformerLookup: TransformerLookupService,

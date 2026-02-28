@@ -8,6 +8,7 @@
  * - Arrow function protection
  */
 export class SecurityInspector {
+	/** @internal Cache of template model instances keyed by constructor, used to inspect default values without mutating real instances. */
 	private static readonly templateCache = new WeakMap<
 		Function,
 		Record<string, unknown> | null

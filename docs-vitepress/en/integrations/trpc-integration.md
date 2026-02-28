@@ -63,7 +63,7 @@ class CreateUserInput extends QModel<ICreateUserInput> {
 
 ```typescript
 import { initTRPC, TRPCError } from '@trpc/server';
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 const trpc = initTRPC.create();
 
@@ -166,7 +166,7 @@ const loggingMiddleware = trpc.middleware(async ({ ctx, next, rawInput }) => {
 ## Async DB Validation
 
 ```typescript
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 export const createUser = trpc.procedure
   .input((raw) => new CreateUserInput(raw as object))
@@ -212,7 +212,7 @@ export const listUsers = trpc.procedure
 
 ```typescript
 import { TRPCError } from '@trpc/server';
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 function validateOrThrow<T>(
 	dto: T extends QModel<infer I> ? QModel<I> : never

@@ -348,12 +348,12 @@ type IUser = { name: string };
 	// no-restricted-imports: no barrel imports
 	// ──────────────────────────────────────────────────────────────────────────
 	describe('no-restricted-imports rule', () => {
-		it('should detect auto-import from @cartago-git/quickmodel in src', async () => {
+		it('should detect auto-import from quickmodel in src', async () => {
 			const mockSrcDir = join(mockProjectRoot, 'src');
 			mkdirSync(mockSrcDir, { recursive: true });
 			writeFileSync(
 				join(mockSrcDir, 'self-import.ts'),
-				`import { QModel } from '@cartago-git/quickmodel';`
+				`import { QModel } from 'quickmodel';`
 			);
 			const result = await tool.execute({ targetDir: mockProjectRoot });
 			const hasError = result.errors.some(

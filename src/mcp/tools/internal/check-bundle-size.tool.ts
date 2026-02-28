@@ -28,6 +28,7 @@ export class QCheckBundleSizeTool extends QAbstractTool<z.ZodObject<{}>> {
 
 	schema = z.object({});
 
+	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
 	/** Override in tests to inject mock dist file list */
@@ -74,6 +75,11 @@ export class QCheckBundleSizeTool extends QAbstractTool<z.ZodObject<{}>> {
 		return { status: 'ok', files, total_bytes, summary };
 	}
 
+	/**
+	 * Reads all files from the dist directory and returns their sizes.
+	 * @param dirPath - Absolute path to the dist directory to scan
+	 * @returns Array of `IBundleFile` entries with file name and byte size
+	 */
 	private readDistDir(dirPath: string): IBundleFile[] {
 		const result: IBundleFile[] = [];
 		let entries: string[];

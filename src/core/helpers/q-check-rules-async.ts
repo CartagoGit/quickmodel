@@ -58,8 +58,8 @@ export interface IQCheckRulesAsyncOptions extends IQRulesAsyncOptions {
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from '@cartago-git/quickmodel';
- * import { qGroups, qCheckRulesAsync } from '@cartago-git/quickmodel/forms';
+ * import { QRule, QGroup } from 'quickmodel';
+ * import { qGroups, qCheckRulesAsync } from 'quickmodel/forms';
  *
  * const Groups = qGroups('identity', 'security');
  *

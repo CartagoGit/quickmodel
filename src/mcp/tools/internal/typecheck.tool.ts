@@ -28,6 +28,7 @@ export class QTypecheckTool extends QAbstractTool<
 
 	schema = z.object({});
 
+	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
 	async execute(_args: Record<never, never>): Promise<{
@@ -64,6 +65,12 @@ export class QTypecheckTool extends QAbstractTool<
 		return { passed, errors, total, summary };
 	}
 
+	/**
+	 * Parses `tsc --noEmit` output into structured type errors.
+	 *
+	 * @param output - Combined stdout+stderr from `tsc --noEmit`
+	 * @returns Array of `ITypeError` objects for each detected error
+	 */
 	private parseTscOutput(output: string): ITypeError[] {
 		const errors: ITypeError[] = [];
 		// Literal regex to detect tsc error lines: file(line,col): error TSxxxx: msg

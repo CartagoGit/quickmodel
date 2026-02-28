@@ -22,7 +22,7 @@ describe('QCreateModelTool', () => {
 		const result = await tool.execute(args);
 
 		expect(result.code).toContain(
-			"import { Quick, QModel } from '@cartago-git/quickmodel';"
+			"import { Quick, QModel } from 'quickmodel';"
 		);
 		expect(result.code).toContain('interface IUser {');
 		expect(result.code).toContain('name: string;');

@@ -16,7 +16,7 @@
  * In a real Node:test project:
  * ```typescript
  * // test/helpers.ts
- * import { assertQModel } from '@cartago-git/quickmodel/node-matchers';
+ * import { assertQModel } from 'quickmodel/node-matchers';
  *
  * // test/order.test.ts
  * import { describe, it } from 'node:test';

@@ -14,7 +14,7 @@
  * ```typescript
  * // test/helpers/quickmodel.ts
  * import type { ExecutionContext } from 'ava';
- * import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
+ * import { quickmodelMatchers } from 'quickmodel/matchers';
  *
  * export function assertValid(ctl: ExecutionContext, model: object) {
  *   const result = quickmodelMatchers.toBeValidQModel(model);

@@ -1,7 +1,7 @@
 /**
  * QuickModel - Public API
  *
- * @module @cartago-git/quickmodel
+ * @module quickmodel
  * @license MIT
  */
 
@@ -67,7 +67,7 @@ export { QConfig } from './core/config/quick.config';
  * @remarks
  * Also available via subpath import:
  * ```typescript
- * import { ... } from '@cartago-git/quickmodel/types';
+ * import { ... } from 'quickmodel/types';
  * ```
  */
 export * as Types from './types';
@@ -78,7 +78,7 @@ export * as Types from './types';
  * @remarks
  * Also available via subpath import:
  * ```typescript
- * import { ... } from '@cartago-git/quickmodel/advanced';
+ * import { ... } from 'quickmodel/advanced';
  * ```
  */
 export * as Advanced from './advanced';
@@ -89,7 +89,7 @@ export * as Advanced from './advanced';
  * @remarks
  * Also available via subpath import:
  * ```typescript
- * import { ... } from '@cartago-git/quickmodel/utils';
+ * import { ... } from 'quickmodel/utils';
  * ```
  */
 export * as Utils from './utils';
@@ -100,7 +100,7 @@ export * as Utils from './utils';
  * @remarks
  * Also available via subpath import:
  * ```typescript
- * import { ... } from '@cartago-git/quickmodel/forms';
+ * import { ... } from 'quickmodel/forms';
  * ```
  */
 export * as Forms from './forms';
@@ -111,7 +111,7 @@ export * as Forms from './forms';
  * @remarks
  * Also available via subpath import:
  * ```typescript
- * import { ... } from '@cartago-git/quickmodel/compat/ts5/forms';
+ * import { ... } from 'quickmodel/compat/ts5/forms';
  * ```
  */
 export * as Compat from './compat/ts5/forms';

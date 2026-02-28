@@ -23,6 +23,7 @@ export class QCheckMissingJSDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		'Scan the source code for exported members that are missing JSDoc documentation.';
 	schema = z.object({});
 
+	/** @internal `fs` module reference; can be overridden in tests to inject a mock filesystem. */
 	protected _fs = fs;
 
 	async execute(): Promise<{

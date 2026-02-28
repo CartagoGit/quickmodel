@@ -46,6 +46,12 @@ export class JsonSchemaGenerator {
 		return schema;
 	}
 
+	/**
+	 * Maps a transformer token to a JSON Schema type descriptor.
+	 * @internal
+	 * @param transformer - Transformer function, constructor, or string token
+	 * @returns JSON Schema-compatible type descriptor object
+	 */
 	private static _getJsonSchemaType(transformer: any): Record<string, any> {
 		if (!transformer) {
 			return { type: 'string' }; // Default
@@ -157,6 +163,12 @@ export class ZodSchemaGenerator {
 		return z.object(shape);
 	}
 
+	/**
+	 * Maps a transformer token to a Zod schema type.
+	 * @internal
+	 * @param transformer - Transformer function, constructor, or string token
+	 * @returns A `z.ZodTypeAny` schema for the field
+	 */
 	private static _getZodType(transformer: any): z.ZodTypeAny {
 		if (!transformer) {
 			return z.string(); // Default
@@ -215,6 +227,12 @@ export class MongoSchemaGenerator {
 		return schema;
 	}
 
+	/**
+	 * Maps a transformer token to its Mongoose/MongoDB schema type equivalent.
+	 * @internal
+	 * @param transformer - Transformer function, constructor, or string token
+	 * @returns Native constructor or array suitable for a Mongoose field definition
+	 */
 	private static _getMongoType(transformer: any): any {
 		if (!transformer) {
 			return String; // Default
@@ -272,6 +290,12 @@ export class TypeScriptSchemaGenerator {
 		return tsInterface;
 	}
 
+	/**
+	 * Maps a transformer token to its TypeScript type string.
+	 * @internal
+	 * @param transformer - Transformer function, constructor, or string token
+	 * @returns TypeScript type string (e.g. `'string'`, `'Date'`, `'Map<string, any>'`)
+	 */
 	private static _getTypeScriptType(transformer: any): string {
 		if (!transformer) {
 			return 'string'; // Default
@@ -332,6 +356,12 @@ export class GraphQLSchemaGenerator {
 		return graphqlType;
 	}
 
+	/**
+	 * Maps a transformer token to its GraphQL SDL scalar type.
+	 * @internal
+	 * @param transformer - Transformer function, constructor, or string token
+	 * @returns Non-nullable GraphQL scalar type string (e.g. `'String!'`, `'Float!'`, `'DateTime!'`)
+	 */
 	private static _getGraphQLType(transformer: any): string {
 		if (!transformer) {
 			return 'String!'; // Default (non-nullable)
@@ -392,6 +422,12 @@ export class OpenAPISchemaGenerator {
 		return schema;
 	}
 
+	/**
+	 * Maps a transformer token to its OpenAPI 3.0 type descriptor.
+	 * @internal
+	 * @param transformer - Transformer function, constructor, or string token
+	 * @returns OpenAPI-compatible type descriptor object
+	 */
 	private static _getOpenAPIType(transformer: any): Record<string, any> {
 		if (!transformer) {
 			return { type: 'string' }; // Default

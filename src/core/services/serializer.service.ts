@@ -252,6 +252,7 @@ export class Serializer<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > implements IQSerializer<TModel, TInterface> {
+	/** @internal Map of transformer key (string or constructor) → `IQTransformer` instances used during value serialization. */
 	private readonly transformers: Map<
 		string | Function,
 		IQTransformer<unknown, unknown>
@@ -429,15 +430,19 @@ export class Serializer<
 
 		const result: Record<string, unknown> = {};
 
-		// Cycle detection
-		const visited = seen || new WeakSet<object>();
-		if (visited.has(model)) {
-			// Circular reference detected
-			// We return a special marker that is JSON compatible but informative
-			return { __circular: true } as unknown as TInterface;
-			// Or we could throw, but returning a safe value is often better for logging
+		// OPT#SER-B: lazy WeakSet — skip allocation for flat models (no object-type fields).
+		// When `seen` is provided, reuse it directly (no alloc). When null, the WeakSet is
+		// materialized on first object-type field encountered in the loop below.
+		let _visited: WeakSet<object> | null = seen ?? null;
+		if (_visited !== null) {
+			// Fast-path: caller already provided a WeakSet for cycle tracking
+			if (_visited.has(model as object)) {
+				// Circular reference detected
+				// We return a special marker that is JSON compatible but informative
+				return { __circular: true } as unknown as TInterface;
+			}
+			_visited.add(model as object);
 		}
-		visited.add(model);
 
 		// Get all property keys
 		const keys = new Set<string>();
@@ -461,6 +466,11 @@ export class Serializer<
 		for (const key of getterKeys) {
 			keys.add(key);
 		}
+
+		// OPT#SER-A: pre-compute child depth options once — reuse for every field.
+		// Avoids creating a new `{ ...activeOptions, _depth: depth+1 }` object per field
+		// in the hot loop below (N allocs → 1 alloc per serialize() call).
+		const _childOpts = _nextDepthOpts(activeOptions, depth);
 
 		// Serialize with transformers
 		for (const key of keys) {
@@ -528,10 +538,21 @@ export class Serializer<
 				}
 			}
 
-			result[outputKey] = this.serializeValue(value, visited, {
-				...activeOptions,
-				_depth: depth + 1,
-			});
+			// OPT#SER-B: materialize the WeakSet only when we actually have an object value
+			// that needs cycle tracking. Flat models (all primitives) skip the alloc entirely.
+			if (
+				_visited === null &&
+				typeof value === 'object' &&
+				value !== null
+			) {
+				_visited = new WeakSet<object>();
+				_visited.add(model as object);
+			}
+			result[outputKey] = this.serializeValue(
+				value,
+				_visited ?? undefined,
+				_childOpts
+			);
 		}
 
 		return result as TInterface;

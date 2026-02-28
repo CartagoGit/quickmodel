@@ -36,6 +36,7 @@ export class QGenerateTestTool extends QAbstractTool<
 	});
 
 	// Dependency Injection for FS
+	/** @internal `fs` module reference; can be overridden in tests to inject a mock filesystem. */
 	protected _fs = fs;
 
 	async execute(args: {

@@ -27,7 +27,7 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	description =
 		'Enforce internal project rules: @Quick over @QType in tests, no console.log, ' +
 		'id-length (min 3 chars), max-params (max 3), naming-convention (I prefix for ' +
-		'interfaces/types), and no-restricted-imports (@cartago-git/quickmodel, bare @mcp).';
+		'interfaces/types), and no-restricted-imports (quickmodel, bare @mcp).';
 	schema = z.object({
 		targetDir: z
 			.string()
@@ -122,6 +122,13 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	}
 
 	// ── Rule 3 helper ─────────────────────────────────────────────────────────
+	/**
+	 * Checks source code for identifiers shorter than the configured minimum length.
+	 *
+	 * @param content - Source file content to analyse
+	 * @param relativePath - File path used in error messages
+	 * @param errors - Mutable array to push violation messages into
+	 */
 	private checkIdLength(
 		content: string,
 		relativePath: string,
@@ -200,6 +207,12 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		}
 	}
 
+	/**
+	 * Returns `true` when the given identifier name violates the id-length rule.
+	 *
+	 * @param name - Identifier name to test
+	 * @returns `true` if the name is too short and not in the exception list
+	 */
 	private isShortViolation(name: string): boolean {
 		if (name.length >= 3) return false;
 		if (ID_LENGTH_EXCEPTIONS.has(name)) return false;
@@ -208,6 +221,13 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	}
 
 	// ── Rule 4 helper ─────────────────────────────────────────────────────────
+	/**
+	 * Checks function/method declarations for exceeding the maximum allowed parameter count.
+	 *
+	 * @param content - Source file content to analyse
+	 * @param relativePath - File path used in error messages
+	 * @param errors - Mutable array to push violation messages into
+	 */
 	private checkMaxParams(
 		content: string,
 		relativePath: string,
@@ -263,6 +283,12 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		}
 	}
 
+	/**
+	 * Counts the number of parameters in a parameter-list string, respecting nested generics.
+	 *
+	 * @param paramsStr - Raw parameter list string from a function signature
+	 * @returns Number of distinct parameters
+	 */
 	private countParams(paramsStr: string): number {
 		let depth = 0;
 		let count = 1;
@@ -275,6 +301,13 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	}
 
 	// ── Rule 5 helper ─────────────────────────────────────────────────────────
+	/**
+	 * Checks interface and type-alias declarations for the required `I` prefix.
+	 *
+	 * @param content - Source file content to analyse
+	 * @param relativePath - File path used in error messages
+	 * @param errors - Mutable array to push violation messages into
+	 */
 	private checkNamingConvention(
 		content: string,
 		relativePath: string,
@@ -348,6 +381,13 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 	}
 
 	// ── Rule 6 helper ─────────────────────────────────────────────────────────
+	/**
+	 * Checks import/require statements for forbidden package references.
+	 *
+	 * @param content - Source file content to analyse
+	 * @param relativePath - File path used in error messages
+	 * @param errors - Mutable array to push violation messages into
+	 */
 	private checkRestrictedImports(
 		content: string,
 		relativePath: string,
@@ -377,13 +417,11 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 
 			// No auto-import from the published package name
 			if (
-				/from\s+['"]@cartago-git\/quickmodel['"]/.test(line) ||
-				/require\s*\(\s*['"]@cartago-git\/quickmodel['"]\s*\)/.test(
-					line
-				)
+				/from\s+['"]quickmodel['"]/.test(line) ||
+				/require\s*\(\s*['"]quickmodel['"]\s*\)/.test(line)
 			) {
 				errors.push(
-					`[Rule: no-restricted-imports] Auto-import from '@cartago-git/quickmodel' is forbidden at ${relativePath}:${idx + 1}. Use internal paths like '@/core/...'.`
+					`[Rule: no-restricted-imports] Auto-import from 'quickmodel' is forbidden at ${relativePath}:${idx + 1}. Use internal paths like '@/core/...'.`
 				);
 			}
 
@@ -396,6 +434,13 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 		}
 	}
 
+	/**
+	 * Recursively collects all files with the given extension under a directory.
+	 *
+	 * @param dir - Root directory to traverse
+	 * @param extension - File extension to filter by (e.g. `.ts`)
+	 * @returns Array of absolute file paths
+	 */
 	private getAllFiles(dir: string, extension: string): string[] {
 		let results: string[] = [];
 		try {

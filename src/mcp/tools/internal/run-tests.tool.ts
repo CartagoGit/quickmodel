@@ -37,6 +37,7 @@ export class QRunTestsTool extends QAbstractTool<
 			),
 	});
 
+	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
 	async execute(args: { pattern?: string }): Promise<{
@@ -85,12 +86,25 @@ export class QRunTestsTool extends QAbstractTool<
 		};
 	}
 
+	/**
+	 * Parses a pass or fail count from Bun test output.
+	 *
+	 * @param raw - Combined stdout+stderr from `bun test`
+	 * @param label - Whether to count `'pass'` or `'fail'` results
+	 * @returns Integer count, `0` if not found
+	 */
 	private parseCount(raw: string, label: 'pass' | 'fail'): number {
 		const pattern = label === 'pass' ? /(\d+)\s+pass/ : /(\d+)\s+fail/;
 		const match = raw.match(pattern);
 		return match?.[1] !== undefined ? parseInt(match[1], 10) : 0;
 	}
 
+	/**
+	 * Extracts individual test failure names from Bun test output.
+	 *
+	 * @param raw - Combined stdout+stderr from `bun test`
+	 * @returns Array of `ITestError` objects for each detected failure
+	 */
 	private parseFailures(raw: string): ITestError[] {
 		const errors: ITestError[] = [];
 		// Match lines like: ✗ test name (Xms)  or  ● test name

@@ -34,6 +34,7 @@ export class QScaffoldFeatureTool extends QAbstractTool<
 			),
 	});
 
+	/** @internal File-system abstraction, injectable for testing. */
 	protected _fs = fs;
 
 	async execute(args: {

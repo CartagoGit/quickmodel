@@ -107,6 +107,13 @@ export class QListTodosTool extends QAbstractTool<
 		return { items, total: items.length };
 	}
 
+	/**
+	 * Recursively collects files with the given extensions under a directory.
+	 *
+	 * @param dir - Root directory to traverse
+	 * @param exts - File extensions to include (e.g. `['.ts', '.js']`)
+	 * @returns Array of absolute file paths
+	 */
 	private collectFiles(dir: string, exts: string[]): string[] {
 		const result: string[] = [];
 		let entries: string[];

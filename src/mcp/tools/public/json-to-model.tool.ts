@@ -115,7 +115,7 @@ export class QJsonToModelTool extends QAbstractTool<
 				? `@Quick({\n${decorators.join(',\n')}\n})`
 				: '@Quick({})';
 
-		const code = `import { QModel, Quick } from '@cartago-git/quickmodel';
+		const code = `import { QModel, Quick } from 'quickmodel';
 
 ${decoratorString}
 export class ${className} extends QModel<${className}> {

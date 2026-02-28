@@ -23,7 +23,7 @@ if (command === 'mcp') {
 QuickModel CLI v${pkg.version}
 
 Usage:
-  npx @cartago-git/quickmodel mcp    Start the Model Context Protocol server
-  npx @cartago-git/quickmodel help   Show this help
+  npx quickmodel mcp    Start the Model Context Protocol server
+  npx quickmodel help   Show this help
 `);
 }

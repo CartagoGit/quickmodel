@@ -1,5 +1,5 @@
 {
-	"name": "@cartago-git/quickmodel",
+	"name": "quickmodel",
 	"version": "1.0.0",
 	"type": "module",
 	"description": "Sistema de serialización/deserialización de modelos TypeScript con arquitectura SOLID",
@@ -250,7 +250,7 @@
 	},
 	"homepage": "https://github.com/CartagoGit/quickmodel#readme",
 	"lint-staged": {
-		"*.{ts,js,mjs}": [
+		"*.{ts,js}": [
 			"eslint --fix",
 			"prettier --write"
 		],

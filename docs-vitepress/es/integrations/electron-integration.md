@@ -15,7 +15,7 @@ Renderer (no confiable)                  Main (confiable)
 
 ```typescript
 import { QModel, Quick, QRule, QField } from 'quickmodel';
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 interface IUserPrefs {
 	theme: string;

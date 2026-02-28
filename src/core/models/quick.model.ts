@@ -232,13 +232,19 @@ export abstract class QModel<
 	TAliasMap extends Record<string, string> = Record<never, never>,
 > {
 	// SOLID - Dependency Inversion: Services injected as dependencies
+	/** @internal Singleton deserializer used by all QModel instances. */
 	private static readonly deserializer = new Deserializer();
+	/** @internal Singleton serializer used by all QModel instances. */
 	private static readonly serializer = new Serializer();
+	/** @internal Singleton service that converts QModel instances to plain interface objects. */
 	private static readonly toInterfaceService = new ToInterfaceService();
+	/** @internal Singleton mock generator used by `QModel.mock()`. */
 	private static readonly QMockGenerator = new QMockGenerator();
+	/** @internal Singleton integrity/validation service used by `checkIntegrity()` and `isValid()`. */
 	private static readonly validation = new IntegrityService();
 
 	// Store initial state for change tracking and reset
+	/** @internal Snapshot of the serialized constructor input; used by `isDirty()` and `reset()`. */
 	private __initData?: IQSerializedInterface<TInterface>;
 
 	/**
@@ -692,6 +698,7 @@ export abstract class QModel<
 	}
 
 	// Temporary property for unprocessed data (removed after initialize)
+	/** @internal Holds the raw constructor input until `initialize()` completes. Removed (set to `undefined`) after hydration. */
 	private readonly __tempData?: IQModelData<TInterface>;
 
 	/**

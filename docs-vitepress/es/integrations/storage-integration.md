@@ -315,7 +315,7 @@ const restored = new UserRecordDto(JSON.parse(text) as object);
 Usa `qCheckRulesAsync` para ejecutar reglas de negocio asíncronas (p. ej. comprobaciones de unicidad) antes de escribir en cualquier capa de almacenamiento:
 
 ```typescript
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 async function save(dto: UserRecordDto) {
 	const result = await qCheckRulesAsync(dto, {

@@ -36,6 +36,7 @@ export class QUpdateDocsTool extends QAbstractTool<
 
 	// Dependency Injection point for testing
 	// Using explicit property so tests can override it without spying on global modules
+	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
 	async execute(args: { action: 'build' | 'clean' }): Promise<{

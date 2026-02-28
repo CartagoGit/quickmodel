@@ -253,7 +253,7 @@ describe('QExportJsonSchemaTool - Full Coverage', () => {
 
 	test('should export schema for simple model', async () => {
 		const code = `
-      import { QModel, Quick } from '@cartago-git/quickmodel';
+      import { QModel, Quick } from 'quickmodel';
 
       interface IUser {
         id: number;
@@ -277,7 +277,7 @@ describe('QExportJsonSchemaTool - Full Coverage', () => {
 
 	test('should handle code with transformers', async () => {
 		const code = `
-      import { QModel, Quick } from '@cartago-git/quickmodel';
+      import { QModel, Quick } from 'quickmodel';
 
       @Quick({ created: Date })
       class Model extends QModel<any> {

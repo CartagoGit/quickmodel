@@ -16,7 +16,7 @@
  *
  * By replacing them with this equivalent polyfills we lower the minimum
  * supported TypeScript version from 5.4 → 4.1 for the main package entry
- * point (`@cartago-git/quickmodel`).
+ * point (`quickmodel`).
  *
  * ### `INoInfer<T>` — polyfill for `NoInfer<T>` (TS 5.4+)
  *

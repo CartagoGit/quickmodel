@@ -7,7 +7,7 @@
 > **Documento único de planificación.** Contiene el historial resumido de tareas completadas y el backlog de
 > propuestas para sprints futuros (Mar 2026+).
 > Documentos históricos en archivo: [`.archived/PENDING_CONFIGS.md`](../../.archived/PENDING_CONFIGS.md) · [`.archived/REFACTORING.md`](../../.archived/REFACTORING.md)
-> Propuestas con diseño detallado: [FormData ↔ QModel](./form-data/index.md)
+> Propuestas con diseño detallado: [FormData ↔ QModel](./form-data/FormData.md)
 
 ## 📊 Progreso General
 
@@ -306,7 +306,7 @@ new Event({ id: '1' });
 **Impacto:** Medio-alto — Server Actions, multipart uploads, round-trip FormData ↔ QModel
 **Esfuerzo estimado:** 6-8 horas | **Tests estimados:** ~25
 
-> 📄 **Diseño detallado:** [proposals/form-data/index.md](./form-data/index.md)
+> 📄 **Diseño detallado:** [proposals/form-data/FormData.md](./form-data/FormData.md)
 
 > **Hallazgo de análisis:** `blob`, `file` y `formdata` están declarados en `IQAliasType` pero **no tienen transformer implementado** en `web-apis.transformer.ts`. Esta propuesta los implementa, y sobre esa base construye la API pública `fromFormData()`/`toFormData()`/`toReadableStream()`.
 

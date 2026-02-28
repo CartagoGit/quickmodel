@@ -10,10 +10,14 @@ import { QConfig } from '../config/quick.config';
  * - Stack overflow prevention
  */
 export class RecursionGuard {
+	/** @internal Default maximum recursion depth used when no `maxRecursionDepth` is configured. */
 	private static readonly DEFAULT_MAX_DEPTH = 50;
 
 	/**
-	 * Validates that the current recursion depth doesn't exceed the maximum
+	 * Validates that the current recursion depth doesn't exceed the maximum.
+	 *
+	 * @param currentDepth - The current recursion depth counter
+	 * @throws {Error} If `currentDepth` exceeds the configured or default maximum
 	 */
 	public validateDepth(currentDepth: number): void {
 		const config = QConfig.get();
@@ -29,7 +33,10 @@ export class RecursionGuard {
 	}
 
 	/**
-	 * Creates a recursion context with incremented depth
+	 * Creates a recursion context with incremented depth.
+	 *
+	 * @param existingContext - Optional previous context whose `visited` set and `depth` are inherited
+	 * @returns A new context object with `visited` WeakSet and `depth` incremented by 1
 	 */
 	public createContext(existingContext?: {
 		visited?: WeakSet<object>;
@@ -45,7 +52,11 @@ export class RecursionGuard {
 	}
 
 	/**
-	 * Checks if an object has already been visited (circular reference detection)
+	 * Checks if an object has already been visited (circular reference detection).
+	 *
+	 * @param data - The value to test for circularity
+	 * @param visited - The WeakSet of already-visited object references for this recursion cycle
+	 * @returns `true` if `data` is an object that was already in `visited`; `false` otherwise
 	 */
 	public hasCircularReference(
 		data: unknown,
@@ -61,7 +72,9 @@ export class RecursionGuard {
 	}
 
 	/**
-	 * Gets the maximum allowed depth
+	 * Gets the maximum allowed recursion depth from config, falling back to the default.
+	 *
+	 * @returns The configured `maxRecursionDepth` or the default (50) if not set
 	 */
 	public getMaxDepth(): number {
 		return (

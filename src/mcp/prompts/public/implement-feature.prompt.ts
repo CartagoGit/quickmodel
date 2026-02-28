@@ -86,7 +86,7 @@ export class QImplementFeaturePrompt extends QAbstractPrompt<{
 						`  - \`max-params\`: maximum 3 positional parameters per function\n` +
 						`  - \`no-console\`: no \`console.log\` in \`src/\`\n` +
 						`  - Interfaces and type aliases must have \`I\` prefix (e.g. \`IMyInterface\`)\n` +
-						`  - No bare \`@cartago-git/quickmodel\` or \`@mcp\` imports inside \`src/\`\n` +
+						`  - No bare \`quickmodel\` or \`@mcp\` imports inside \`src/\`\n` +
 						`- Run \`bun test <test-file>\` — tests MUST pass now\n\n` +
 						`---\n\n` +
 						`### Step 3 — 🚦 MANDATORY Lint Gate\n\n` +

@@ -186,7 +186,9 @@ export class PopulationService {
 		}
 		PopulationService._warnedPolicyClasses.clear();
 	}
+	/** @internal Handles dot-notation path transformation (e.g. `'address.city'`) during population. */
 	private readonly dotNotationHandler: DotNotationHandler;
+	/** @internal Handles per-property type transformation and coercion during population. */
 	private readonly propertyTransformer: PropertyTransformer;
 
 	constructor(

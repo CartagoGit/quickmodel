@@ -23,7 +23,7 @@
  * The first two overloads are published in the `.d.ts` without any TS5-only
  * syntax (`const T`), so they work in TS 3.4+ consumers.
  * The third overload is provided as a separate export (`qGroups5`) via
- * `@cartago-git/quickmodel/compat/ts5/forms`, usable only when the consumer's
+ * `quickmodel/compat/ts5/forms`, usable only when the consumer's
  * compiler is TS 5.0+.
  *
  * ## See also

@@ -4,7 +4,7 @@
  * This entry point exports internal interfaces and types that are part of the
  * public API surface (e.g. return types) but not main library features.
  *
- * @module @cartago-git/quickmodel/types
+ * @module quickmodel/types
  */
 
 // Core Interfaces

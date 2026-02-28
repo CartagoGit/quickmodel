@@ -139,6 +139,7 @@ export interface IQConfig {
  * such as enabling Strict Mode globally.
  */
 export class QModelConfigService {
+	/** @internal Current global configuration. Modified by `configure()` and reset by `reset()`. */
 	private config: IQConfig = {};
 
 	/**
@@ -196,7 +197,7 @@ export class QModelConfigService {
  * @example
  * **1. Enable Strict Mode Globally**
  * ```typescript
- * import { QConfig } from '@cartago-git/quickmodel';
+ * import { QConfig } from 'quickmodel';
  *
  * // Reject any property not defined in the model
  * QConfig.configure({

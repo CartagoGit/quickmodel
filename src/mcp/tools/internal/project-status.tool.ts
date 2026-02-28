@@ -57,6 +57,7 @@ export class QProjectStatusTool extends QAbstractTool<
 
 	schema = z.object({});
 
+	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
 	async execute(_args: Record<never, never>): Promise<{
@@ -85,6 +86,11 @@ export class QProjectStatusTool extends QAbstractTool<
 		return { passed, tests, lint, typecheck, summary };
 	}
 
+	/**
+	 * Runs the full test suite and returns pass/fail counts.
+	 *
+	 * @returns Test status with `passed`, `total_pass`, and `total_fail`
+	 */
 	private async runTests(): Promise<ITestStatus> {
 		let rawOutput = '';
 		let exitedClean = false;
@@ -116,6 +122,11 @@ export class QProjectStatusTool extends QAbstractTool<
 		};
 	}
 
+	/**
+	 * Runs ESLint and returns error/warning counts.
+	 *
+	 * @returns Lint status with `passed`, `total_errors`, and `total_warnings`
+	 */
 	private async runLint(): Promise<ILintStatus> {
 		let rawOutput = '';
 
@@ -152,6 +163,11 @@ export class QProjectStatusTool extends QAbstractTool<
 		};
 	}
 
+	/**
+	 * Runs TypeScript type-checking and returns error count.
+	 *
+	 * @returns Typecheck status with `passed` and `total` error count
+	 */
 	private async runTypecheck(): Promise<ITypecheckStatus> {
 		let rawOutput = '';
 

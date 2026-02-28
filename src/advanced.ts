@@ -4,7 +4,7 @@
  * This entry point exports runtime classes and utilities intended for advanced usage,
  * plugins, or custom integrations.
  *
- * @module @cartago-git/quickmodel/advanced
+ * @module quickmodel/advanced
  */
 
 export { QMockGenerator } from './core/services/mock-generator.service';
@@ -19,7 +19,7 @@ export { IntegrityService } from './core/services/integrity.service';
  *
  * @example
  * ```typescript
- * import { QBaseTransformer } from '@cartago-git/quickmodel/advanced';
+ * import { QBaseTransformer } from 'quickmodel/advanced';
  *
  * class MoneyTransformer extends QBaseTransformer<string, Money> {
  *   deserialize(value: string | null | undefined): Money | null {
@@ -43,7 +43,7 @@ export { BaseTransformer as QBaseTransformer } from './core/bases/base-transform
  *
  * @example
  * ```typescript
- * import { QSerializer } from '@cartago-git/quickmodel/advanced';
+ * import { QSerializer } from 'quickmodel/advanced';
  *
  * const serializer = new QSerializer();
  * const plain = serializer.serialize(myModelInstance);
@@ -58,7 +58,7 @@ export { Serializer as QSerializer } from './core/services/serializer.service';
  *
  * @example
  * ```typescript
- * import { QDeserializer } from '@cartago-git/quickmodel/advanced';
+ * import { QDeserializer } from 'quickmodel/advanced';
  *
  * const deserializer = new QDeserializer();
  * const instance = deserializer.deserialize(UserModel, rawData);

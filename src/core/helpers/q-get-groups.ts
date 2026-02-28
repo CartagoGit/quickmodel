@@ -30,8 +30,8 @@ import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from '@cartago-git/quickmodel';
- * import { qGroups, qGetGroups } from '@cartago-git/quickmodel/forms';
+ * import { QRule, QGroup } from 'quickmodel';
+ * import { qGroups, qGetGroups } from 'quickmodel/forms';
  *
  * const Groups = qGroups('identity', 'security');
  *

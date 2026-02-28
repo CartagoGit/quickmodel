@@ -12,7 +12,7 @@ import { QCOMPUTED_METADATA_KEY } from '../constants/metadata-keys';
  * @example
  * **Basic usage**
  * ```typescript
- * import { QModel, Quick, QComputed } from '@cartago-git/quickmodel';
+ * import { QModel, Quick, QComputed } from 'quickmodel';
  *
  * interface IUser {
  *   firstName: string;

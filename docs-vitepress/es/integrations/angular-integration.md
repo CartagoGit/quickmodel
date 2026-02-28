@@ -18,7 +18,8 @@ QuickModel funciona como capa de validación y tipo en cualquier versión de Ang
 
 ```typescript
 // user-form.ts
-import { QField, QRule, qCheckRules } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class UserForm {
 	@QField({ label: 'Nombre de usuario', required: true })

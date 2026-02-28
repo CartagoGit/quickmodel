@@ -103,6 +103,12 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 		return result;
 	}
 
+	/**
+	 * Resolves a type-name string to the corresponding global constructor.
+	 *
+	 * @param name - Constructor name (e.g. `'Date'`, `'Map'`)
+	 * @returns The matching global constructor, or `undefined` if unknown
+	 */
 	private resolveConstructor(name: string): unknown {
 		switch (name) {
 			case 'Date':

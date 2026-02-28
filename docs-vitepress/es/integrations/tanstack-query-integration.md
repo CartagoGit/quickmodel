@@ -140,7 +140,8 @@ async function crearProducto(data: object): Promise<IProducto> {
 ### Variante con clase plana
 
 ```typescript
-import { QField, QRule, qCheckRules } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class CrearProductoForm {
 	@QField({ label: 'Nombre del Producto', required: true })

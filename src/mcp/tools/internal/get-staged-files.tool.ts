@@ -19,6 +19,7 @@ export class QGetStagedFilesTool extends QAbstractTool<
 
 	schema = z.object({});
 
+	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
 	async execute(_args: Record<never, never>): Promise<{

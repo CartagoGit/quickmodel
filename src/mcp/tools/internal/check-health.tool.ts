@@ -23,6 +23,7 @@ export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 		'Run a comprehensive health check: Lint, Typecheck, and Run Tests.';
 	schema = z.object({});
 
+	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */
 	protected _spawn = spawnCommand;
 
 	async execute(): Promise<{ status: 'ok' | 'error'; output: string }> {

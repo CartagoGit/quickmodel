@@ -18,7 +18,8 @@ QuickModel encaja con la Composition API de Vue, stores Pinia, adaptadores VeeVa
 ```typescript
 // composables/useProfileForm.ts
 import { reactive, computed } from 'vue';
-import { QField, QRule, qCheckRules } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class ProfileForm {
 	@QField({ label: 'Bio', required: true })
@@ -139,7 +140,8 @@ export const useUserStore = defineStore('user', {
 ```typescript
 // composables/useQField.ts
 import { ref, computed } from 'vue';
-import { qCheckRules, QField, QRule } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 export function useQField<T extends object>(form: T, fieldName: keyof T) {
 	const value = ref(form[fieldName]);

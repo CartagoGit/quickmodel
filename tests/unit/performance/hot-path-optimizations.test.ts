@@ -580,3 +580,204 @@ describe('OPT#4 — lazy WeakSet / lazy recursionContext', () => {
 		expect(usr.lastName).toBe('García');
 	});
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 8: OPT#SER-A — pre-computed _childOpts en serialize()
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface IMultiFieldModel {
+	nom: string;
+	age: number;
+	active: boolean;
+	score: number;
+	tag: string;
+	rank: number;
+}
+
+@Quick({}, { unknownPropertyPolicy: 'keep' })
+class MultiFieldModel extends QModel<IMultiFieldModel> {
+	declare nom: string;
+	declare age: number;
+	declare active: boolean;
+	declare score: number;
+	declare tag: string;
+	declare rank: number;
+}
+
+interface IDateRichModel {
+	nom: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+@Quick({ createdAt: Date, updatedAt: Date }, { unknownPropertyPolicy: 'keep' })
+class DateRichModel extends QModel<IDateRichModel> {
+	declare nom: string;
+	declare createdAt: Date;
+	declare updatedAt: Date;
+}
+
+describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
+	test('serialize() devuelve todos los campos de un modelo multi-campo', () => {
+		const mdl = new MultiFieldModel({
+			nom: 'Juana',
+			age: 30,
+			active: true,
+			score: 9.5,
+			tag: 'beta',
+			rank: 3,
+		});
+
+		const result = mdl.serialize();
+
+		expect(result.nom).toBe('Juana');
+		expect(result.age).toBe(30);
+		expect(result.active).toBe(true);
+		expect(result.score).toBe(9.5);
+		expect(result.tag).toBe('beta');
+		expect(result.rank).toBe(3);
+	});
+
+	test('serialize() resultado es un NUEVO objeto (no aliased)', () => {
+		const mdl = new MultiFieldModel({
+			nom: 'Luis',
+			age: 22,
+			active: false,
+			score: 7.0,
+			tag: 'alpha',
+			rank: 1,
+		});
+
+		const res1 = mdl.serialize();
+		const res2 = mdl.serialize();
+
+		expect(res1).not.toBe(res2);
+		expect(res1).toEqual(res2);
+	});
+
+	test('serialize() convierte Date a ISO string (Date-rich model)', () => {
+		const isoCreated = '2025-03-01T10:00:00.000Z';
+		const isoUpdated = '2025-06-15T12:30:00.000Z';
+
+		const mdl = new DateRichModel({
+			nom: 'Pedro',
+			createdAt: new Date(isoCreated),
+			updatedAt: new Date(isoUpdated),
+		});
+
+		const result = mdl.serialize();
+
+		expect(result.nom).toBe('Pedro');
+		expect(result.createdAt).toBe(isoCreated);
+		expect(result.updatedAt).toBe(isoUpdated);
+	});
+
+	test('serialize() múltiples veces devuelve resultados iguales (idempotente)', () => {
+		const mdl = new MultiFieldModel({
+			nom: 'Idempotente',
+			age: 99,
+			active: true,
+			score: 1.0,
+			tag: 'x',
+			rank: 0,
+		});
+
+		const results = Array.from({ length: 5 }, () => mdl.serialize());
+
+		for (let idx = 1; idx < results.length; idx++) {
+			expect(results[idx]).toEqual(results[0]);
+		}
+	});
+
+	test('serialize() en modelo con anidamiento sigue siendo correcto', () => {
+		// PersonAddr / CityAddress son modelos ya definidos arriba en Suite 6/7
+		const addr = new CityAddress({ city: 'Madrid', zip: '28001' });
+		const person = new PersonAddr({ nom: 'Sara', address: addr });
+
+		const result = person.serialize();
+
+		expect(result.nom).toBe('Sara');
+		expect((result.address as Record<string, unknown>).city).toBe('Madrid');
+		expect((result.address as Record<string, unknown>).zip).toBe('28001');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 9: OPT#SER-B — lazy WeakSet en serialize()
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ISelfRefNode {
+	nom: string;
+	age: number;
+	ref?: ISelfRefNode;
+}
+
+@Quick({}, { unknownPropertyPolicy: 'keep' })
+class SelfRefNode extends QModel<ISelfRefNode> {
+	declare nom: string;
+	declare age: number;
+	declare ref?: ISelfRefNode;
+}
+
+describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
+	test('modelo flat (solo primitivos) serializa correctamente con lazy WeakSet', () => {
+		const mdl = new MultiFieldModel({
+			nom: 'Flat',
+			age: 10,
+			active: false,
+			score: 0,
+			tag: 'none',
+			rank: 0,
+		});
+
+		const result = mdl.serialize();
+
+		expect(result.nom).toBe('Flat');
+		expect(result.age).toBe(10);
+	});
+
+	test('referencia circular en campo objeto produce marker __circular (lazy WeakSet)', () => {
+		// Construir un grafo circular a mano (sin pasar por el constructor)
+		const nodeA = new SelfRefNode({ nom: 'NodeA', age: 1 });
+		const nodeB = new SelfRefNode({ nom: 'NodeB', age: 2 });
+
+		// Circular: nodeA.ref → nodeB, nodeB.ref → nodeA
+		(nodeA as Record<string, unknown>).ref = nodeB;
+		(nodeB as Record<string, unknown>).ref = nodeA;
+
+		const result = nodeA.serialize();
+
+		// nodeA.ref (nodeB) serializa bien, pero nodeB.ref (nodeA) ya fue visitado → __circular
+		expect(result.nom).toBe('NodeA');
+		const refB = result.ref as Record<string, unknown>;
+		expect(refB.nom).toBe('NodeB');
+		expect(refB.ref).toEqual({ __circular: true });
+	});
+
+	test('primitivos antes del campo circular no rompen la detección de ciclo', () => {
+		// Similar al anterior pero verifica que campos anteriores al circular se serializan
+		const nodeA = new SelfRefNode({ nom: 'Alpha', age: 42 });
+		(nodeA as Record<string, unknown>).ref = nodeA; // self-reference
+
+		const result = nodeA.serialize();
+
+		expect(result.nom).toBe('Alpha');
+		expect(result.age).toBe(42);
+		// El campo ref es el propio nodeA que ya fue visitado → __circular
+		expect(result.ref).toEqual({ __circular: true });
+	});
+
+	test('anidamiento válido (no circular) sigue funcionando con lazy WeakSet', () => {
+		const child = new SelfRefNode({ nom: 'Hijo', age: 5 });
+		const parent = new SelfRefNode({ nom: 'Padre', age: 40, ref: child });
+
+		const result = parent.serialize();
+
+		expect(result.nom).toBe('Padre');
+		expect(result.age).toBe(40);
+		const ref = result.ref as Record<string, unknown>;
+		expect(ref.nom).toBe('Hijo');
+		expect(ref.age).toBe(5);
+		expect(ref.ref).toBeUndefined();
+	});
+});

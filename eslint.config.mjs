@@ -89,14 +89,14 @@ export default tseslint.config(
 			// ---------------------------------------------------------------------------
 
 			// PROHIBIR auto-importación desde el nombre del paquete publicado
-			// Dentro de src/, importar '@cartago-git/quickmodel' crea una dependencia circular al barrel.
+			// Dentro de src/, importar 'quickmodel' crea una dependencia circular al barrel.
 			// Además se prohíbe importar '@mcp' sin especificar archivo.
 			'no-restricted-imports': [
 				'error',
 				{
 					patterns: [
 						{
-							group: ['@cartago-git/quickmodel'],
+							group: ['quickmodel'],
 							message:
 								"PROHIBIDO: auto-importar el paquete desde sí mismo. Usa rutas internas '@/core/...', '@/transformers/...', etc.",
 						},

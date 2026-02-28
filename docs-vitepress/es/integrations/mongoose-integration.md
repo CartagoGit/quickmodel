@@ -18,7 +18,7 @@ UserDto (QModel)  ──► checkRules()  ──► toInterface() ──► Mode
 
 ```typescript
 import { QModel, Quick, QField, QComputed } from 'quickmodel';
-import { qCheckRules } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 interface IUser {
 	id: string;

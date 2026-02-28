@@ -38,6 +38,7 @@ import { SpecialFloatTransformer } from '@/transformers/special-float.transforme
  * - Single Responsibility: Only handles transformer registration and lookup.
  */
 export class TransformerLookupService {
+	/** @internal Map of normalized lowercase transformer name → `IQTransformer` instances. Built at construction time from the global registry. */
 	private readonly transformers: Map<string, IQTransformer<unknown, unknown>>;
 	/** Cache: normalized lowercase key per string input to avoid repeated .toLowerCase() calls */
 	private readonly _strKeyCache = new Map<string, string>();

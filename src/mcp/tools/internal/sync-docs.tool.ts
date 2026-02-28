@@ -18,6 +18,7 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		'Auto-generate documentation files for Tools and Transformers based on current code.';
 	schema = z.object({});
 
+	/** @internal File-system abstraction, injectable for testing. */
 	protected _fs = fs;
 
 	async execute(): Promise<{ summary: string; updatedFiles: string[] }> {
@@ -121,6 +122,14 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		};
 	}
 
+	/**
+	 * Generates a Markdown section listing all tools in a category.
+	 *
+	 * @param tools - Array of tool instances to document
+	 * @param texts - Locale-specific text strings
+	 * @param descLookup - Function resolving a tool's localised description
+	 * @returns Markdown string with one `##` section per tool
+	 */
 	private generateToolMd(
 		tools: any[],
 		texts: Record<string, any>,
@@ -165,6 +174,13 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		return md;
 	}
 
+	/**
+	 * Generates a Markdown table listing all registered transformers.
+	 *
+	 * @param transformers - Array of transformer name strings
+	 * @param texts - Locale-specific text strings
+	 * @returns Markdown string with a formatted table
+	 */
 	private generateTransformerMd(
 		transformers: string[],
 		texts: Record<string, any>
@@ -184,6 +200,13 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		return md;
 	}
 
+	/**
+	 * Writes `content` to `path`, creating parent directories as needed.
+	 *
+	 * @param path - Absolute destination file path
+	 * @param content - Markdown content to write
+	 * @param updatedFiles - Mutable array; the path is pushed after writing
+	 */
 	private writeDoc(path: string, content: string, updatedFiles: string[]) {
 		// Ensure dir exists
 		this._fs.mkdirSync(dirname(path), { recursive: true });
@@ -191,6 +214,13 @@ export class QSyncDocsTool extends QAbstractTool<z.ZodObject<{}>> {
 		updatedFiles.push(path);
 	}
 
+	/**
+	 * Injects `content` into an existing file between auto-generated markers.
+	 *
+	 * @param path - Absolute path to the target documentation file
+	 * @param content - Markdown content to inject
+	 * @param updatedFiles - Mutable array; the path is pushed after injection
+	 */
 	private injectDoc(path: string, content: string, updatedFiles: string[]) {
 		if (!this._fs.existsSync(path)) {
 			console.warn(

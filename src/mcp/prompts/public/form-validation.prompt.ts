@@ -63,14 +63,14 @@ export class QFormValidationPrompt extends QAbstractPrompt<{
 						'**Step 1 — @QField (form metadata)**\n' +
 						'Add `@QField` to each property to define widget type, label, required flag, and hints:\n' +
 						'```typescript\n' +
-						"import { QField } from '@cartago-git/quickmodel';\n\n" +
+						"import { QField } from 'quickmodel';\n\n" +
 						"@QField({ widget: 'input', label: 'Email', required: true, hint: 'Enter a valid email' })\n" +
 						'declare email: string;\n' +
 						'```\n\n' +
 						'**Step 2 — @QRule (validation predicates)**\n' +
 						'Add `@QRule` for business-logic constraints. Each rule has a `predicate` and `message`:\n' +
 						'```typescript\n' +
-						"import { QRule } from '@cartago-git/quickmodel';\n\n" +
+						"import { QRule } from 'quickmodel';\n\n" +
 						"@QRule({ predicate: (val) => val.includes('@'), message: 'Must be a valid email' })\n" +
 						"@QField({ widget: 'input', label: 'Email' })\n" +
 						'declare email: string;\n' +

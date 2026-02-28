@@ -87,7 +87,8 @@ For lighter form validation without coercion or serialization, use a plain class
 ```svelte
 <!-- ContactForm.svelte -->
 <script lang="ts">
-import { QField, QRule, qCheckRules } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class ContactForm {
   @QField({ label: 'Name', required: true })

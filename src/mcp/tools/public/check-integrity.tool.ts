@@ -84,6 +84,12 @@ export class QCheckIntegrityTool extends QAbstractTool<
 		return { valid, errors, evaluated, summary };
 	}
 
+	/**
+	 * Hydrates a string type token into the corresponding global constructor.
+	 *
+	 * @param options - String token (e.g. `'Date'`) or already-hydrated value
+	 * @returns The resolved constructor or the original value if not a known token
+	 */
 	private hydrateOptions(options: any): any {
 		if (typeof options === 'string') {
 			switch (options) {

@@ -22,6 +22,7 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 			),
 	});
 
+	/** @internal `fs` module reference; can be overridden in tests to inject a mock filesystem. */
 	protected _fs = fs;
 
 	async execute(args: { baselineFile?: string }): Promise<{
@@ -87,6 +88,12 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 		};
 	}
 
+	/**
+	 * Scans a directory for exported TypeScript symbols.
+	 *
+	 * @param dir - Directory path to scan recursively
+	 * @returns Record of exported symbol name → `true`
+	 */
 	private scanExports(dir: string): Record<string, boolean> {
 		const exports: Record<string, boolean> = {};
 		const files = this.getAllFiles(dir);
@@ -106,6 +113,12 @@ export class QCheckApiCompatibilityTool extends QAbstractTool<
 		return exports;
 	}
 
+	/**
+	 * Recursively collects all non-declaration TypeScript source files under a directory.
+	 *
+	 * @param dir - Root directory to traverse
+	 * @returns Array of absolute file paths
+	 */
 	private getAllFiles(dir: string): string[] {
 		let results: string[] = [];
 		const list = this._fs.readdirSync(dir);

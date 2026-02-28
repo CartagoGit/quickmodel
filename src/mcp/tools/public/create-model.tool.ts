@@ -70,7 +70,7 @@ export class QCreateModelTool extends QAbstractTool<
 			.join('\n  ');
 
 		const code = `
-import { Quick, QModel } from '@cartago-git/quickmodel';
+import { Quick, QModel } from 'quickmodel';
 
 interface I${className} {
   ${interfaceProps}
@@ -87,6 +87,12 @@ export class ${className} extends QModel<I${className}> {
 		return { code };
 	}
 
+	/**
+	 * Maps a QuickModel type token string to its TypeScript primitive/class name.
+	 *
+	 * @param type - Type token (e.g. `'Date'`, `'string'`)
+	 * @returns Corresponding TypeScript type string, or `'any'` as fallback
+	 */
 	private mapTypeToTs(type: string): string {
 		// Basic mapping for TS types from string representation
 		if (['Date', 'RegExp', 'BigInt'].includes(type)) return type;

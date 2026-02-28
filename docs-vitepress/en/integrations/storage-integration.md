@@ -316,7 +316,7 @@ const restored = new UserRecordDto(JSON.parse(text) as object);
 Use `qCheckRulesAsync` to run async business rules (e.g. uniqueness checks) before writing to any storage layer:
 
 ```typescript
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 async function save(dto: UserRecordDto) {
 	const result = await qCheckRulesAsync(dto, {

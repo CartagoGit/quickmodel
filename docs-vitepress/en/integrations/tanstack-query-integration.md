@@ -146,7 +146,8 @@ function AddProductForm() {
 ### Plain Class Variant
 
 ```typescript
-import { QField, QRule, qCheckRules } from 'quickmodel';
+import { QField, QRule } from 'quickmodel';
+import { qCheckRules } from 'quickmodel/forms';
 
 class CreateProductForm {
 	@QField({ label: 'Product Name', required: true })

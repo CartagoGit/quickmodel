@@ -14,8 +14,8 @@
  * In a real Jasmine project the setup is:
  * ```typescript
  * // jasmine.setup.ts  (or in beforeAll())
- * import { quickmodelMatchers } from '@cartago-git/quickmodel/matchers';
- * import { toJasmineMatchers } from '@cartago-git/quickmodel/matchers'; // adapter
+ * import { quickmodelMatchers } from 'quickmodel/matchers';
+ * import { toJasmineMatchers } from 'quickmodel/matchers'; // adapter
  * jasmine.addMatchers(toJasmineMatchers(quickmodelMatchers));
  * ```
  */
@@ -27,7 +27,7 @@ import { quickmodelMatchers } from '@/matchers';
 // Jasmine matcher adapter
 // ---------------------------------------------------------------------------
 // The adapter converts { pass, message() } → Jasmine's factory format.
-// This is what you'd ship in a real @cartago-git/quickmodel/jasmine-matchers module.
+// This is what you'd ship in a real quickmodel/jasmine-matchers module.
 
 type IQuickMatcher = (
 	received: object,
@@ -55,7 +55,7 @@ type IJasmineMatchersObject = Record<string, () => IJasmineMatcherFactory>;
  * @example
  * ```typescript
  * import { jasmine } from 'jasmine';
- * import { quickmodelMatchers, toJasmineMatchers } from '@cartago-git/quickmodel/matchers';
+ * import { quickmodelMatchers, toJasmineMatchers } from 'quickmodel/matchers';
  *
  * beforeAll(() => jasmine.addMatchers(toJasmineMatchers(quickmodelMatchers)));
  * ```

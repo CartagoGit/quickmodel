@@ -5,7 +5,7 @@
  * This file is intentionally separate from `q-groups.ts` because the
  * `const` type-parameter syntax (`<const T extends …>`) is only valid in
  * TypeScript 5.0+. Keeping it isolated ensures that consumers on TS 4.x can
- * safely use `@cartago-git/quickmodel/forms` without encountering a
+ * safely use `quickmodel/forms` without encountering a
  * `.d.ts` parse error from this syntax.
  *
  * @see {@link Forms.qGroups} for the TS 4.1-compatible version (spread / `as const`).
@@ -23,11 +23,11 @@ import type { IQGroupsMap } from './q-groups';
  *
  * ```ts
  * // TS < 5 — use qGroups with as const:
- * import { qGroups } from '@cartago-git/quickmodel/forms';
+ * import { qGroups } from 'quickmodel/forms';
  * const Groups = qGroups(['identity', 'security'] as const);
  *
  * // TS 5+ — use qGroups5, no as const needed:
- * import { qGroups5 } from '@cartago-git/quickmodel/compat/ts5/forms';
+ * import { qGroups5 } from 'quickmodel/compat/ts5/forms';
  * const Groups = qGroups5(['identity', 'security']);
  * ```
  *

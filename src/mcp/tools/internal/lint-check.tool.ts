@@ -63,6 +63,7 @@ export class QLintCheckTool extends QAbstractTool<
 			),
 	});
 
+	/** @internal Command spawner, overridable in tests. */
 	protected _spawn = spawnCommand;
 
 	async execute(args: {
@@ -97,6 +98,12 @@ export class QLintCheckTool extends QAbstractTool<
 		return this.parseResult(rawOutput);
 	}
 
+	/**
+	 * Resolves the ESLint target paths from tool arguments.
+	 *
+	 * @param args - Tool arguments with optional `targetDir` and `targetFiles`
+	 * @returns Array of paths to pass to ESLint
+	 */
 	private buildTargets(args: {
 		targetDir?: string;
 		targetFiles?: string[];
@@ -107,6 +114,12 @@ export class QLintCheckTool extends QAbstractTool<
 		return [args.targetDir ?? 'src'];
 	}
 
+	/**
+	 * Parses ESLint JSON output into a structured lint result.
+	 *
+	 * @param rawOutput - Raw ESLint `--format=json` stdout string
+	 * @returns Structured object with `passed`, `errors`, `warnings`, and a human-readable `summary`
+	 */
 	private parseResult(rawOutput: string): {
 		passed: boolean;
 		errors: ILintIssue[];

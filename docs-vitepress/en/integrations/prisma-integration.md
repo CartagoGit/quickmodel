@@ -262,7 +262,7 @@ return post.serialize(); // includes excerpt ✅
 ## DB Uniqueness Validation
 
 ```typescript
-import { qCheckRulesAsync } from 'quickmodel';
+import { qCheckRulesAsync } from 'quickmodel/forms';
 
 class CreateUserWithUniquenessDto extends CreateUserDto {}
 

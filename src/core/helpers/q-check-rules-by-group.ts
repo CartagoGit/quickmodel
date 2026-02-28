@@ -31,8 +31,8 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from '@cartago-git/quickmodel';
- * import { qGroups, qCheckRulesByGroup } from '@cartago-git/quickmodel/forms';
+ * import { QRule, QGroup } from 'quickmodel';
+ * import { qGroups, qCheckRulesByGroup } from 'quickmodel/forms';
  *
  * const Groups = qGroups('identity', 'security');
  *

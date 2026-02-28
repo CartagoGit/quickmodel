@@ -17,7 +17,7 @@
  * ```typescript
  * // test/setup.ts (loaded via --require)
  * import * as chai from 'chai';
- * import { quickmodelChaiPlugin } from '@cartago-git/quickmodel/chai-matchers';
+ * import { quickmodelChaiPlugin } from 'quickmodel/chai-matchers';
  * chai.use(quickmodelChaiPlugin);
  * ```
  */
