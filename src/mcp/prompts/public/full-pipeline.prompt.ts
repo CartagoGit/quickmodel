@@ -26,7 +26,7 @@ export class QFullPipelinePrompt extends QAbstractPrompt<{
 	title = 'Walk the Full QuickModel Pipeline';
 	description =
 		'Guides the AI through the complete QuickModel data lifecycle: ' +
-		'raw data → create() → checkIntegrity() → checkRules() → serialize() / toJSON(). ' +
+		'raw data → create() → checkIntegrity() → checkRules() → validate() → serialize() / toJSON(). ' +
 		'Uses check_integrity, simulate_validation, and simulate_transformation to verify each step.';
 
 	argsSchema = {
