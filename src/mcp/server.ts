@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from '@mcp/deps';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import type { IQMcpTool } from './tools/abstract-tool';
 import type { IQMcpPrompt } from './prompts/abstract-prompt';
@@ -33,8 +33,6 @@ import {
 	QVerifyDeliveryPrompt,
 	QDrizzlePrompt,
 } from './prompts/public';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
 import { safeStringify } from '../core/helpers/transform-helpers';
 
 import {

@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: prefer-quick — @QType appears as a string literal inside a test fixture that verifies the validate-examples tool detects it; not an actual decorator usage
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { QValidateExamplesTool } from '../../../../src/mcp/tools/internal/validate-examples.tool';
 import { join } from 'path';

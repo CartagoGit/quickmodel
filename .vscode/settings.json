@@ -31,6 +31,9 @@
 	"chat.tools.edits.autoApprove": {
 		"**": true
 	},
+	"chat.tools.terminal.fileWrites.autoApprove": {
+		"**": true
+	},
 	"chat.tools.global.autoApprove": true,
 	"chat.tools.urls.autoApprove": {
 		"*": true

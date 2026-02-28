@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: prefer-quick — this entire file tests @QType({ fileMode }) behaviour; @Quick does not expose fileMode, so @QType is required
 /**
  * TDD tests — @QType({ fileMode }) per-field decorator
  *

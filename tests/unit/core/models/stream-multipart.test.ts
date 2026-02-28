@@ -1,4 +1,5 @@
-// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
+// @quickmodel-rule-ignore: prefer-quick — @QType({ fileMode }) is used intentionally here to test fileMode streaming behaviour; @Quick has no fileMode option
+// @quickmodel-rule-ignore: no-as-unknown — test file intentionally passes wrong types to verify edge-case handling
 /**
  * TDD tests — Tarea 5: toReadableStream({ multipart: true })
  *
