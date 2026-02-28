@@ -164,16 +164,21 @@ export class QModelConfigService {
 	 * Retrieves the current global configuration.
 	 * Includes all active defaults.
 	 *
-	 * @returns The current configuration object.
+	 * @returns The current `IQConfig` object (same reference held internally — do not mutate).
+	 * @see IQConfig
 	 */
 	public get(): IQConfig {
 		return this.config;
 	}
 
 	/**
-	 * Resets the configuration to initial state.
-	 * Useful for testing.
+	 * Resets the configuration to the initial empty state.
+	 *
+	 * Clears all defaults previously set via `configure()`. Useful in unit tests
+	 * to prevent configuration leakage between test cases.
+	 *
 	 * @internal
+	 * @see QConfig
 	 */
 	public reset(): void {
 		this.config = {};
