@@ -131,6 +131,7 @@ export class QProjectStateResource extends QAbstractResource {
 			if (!existsSync(indexPath)) return [];
 			const content = readFileSync(indexPath, 'utf-8');
 			const collected: string[] = [];
+			// eslint-disable-next-line security/detect-unsafe-regex -- input is the project's own src/index.ts (controlled, not user-supplied)
 			const pattern = /export\s+(?:type\s+)?{([^}]+)}/g;
 			let match: RegExpExecArray | null;
 			while ((match = pattern.exec(content)) !== null) {

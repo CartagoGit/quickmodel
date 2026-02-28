@@ -29,6 +29,7 @@ function extractPublicExports(): string[] {
 	try {
 		const content = readFileSync(join(ROOT, 'src', 'index.ts'), 'utf-8');
 		const collected: string[] = [];
+		// eslint-disable-next-line security/detect-unsafe-regex -- input is the project's own src/index.ts (controlled, not user-supplied)
 		const pattern = /export\s+(?:type\s+)?{([^}]+)}/g;
 		let match: RegExpExecArray | null;
 		while ((match = pattern.exec(content)) !== null) {
@@ -79,16 +80,22 @@ function extractDecorators(): string[] {
 function extractMigrationNotes(version: string): string {
 	try {
 		const changelog = readFileSync(join(ROOT, 'CHANGELOG.md'), 'utf-8');
-		// Find the section for this version
-		const versionPattern = new RegExp(
-			`## \\[${version.replace(/\./g, '\\.')}\\][^\n]*\n([\\s\\S]*?)(?=\n## \\[|$)`,
-			'm'
+		// Find the section for this version using a line-based parser (avoids dynamic RegExp)
+		const lines = changelog.split('\n');
+		const header = `## [${version}]`;
+		const startIdx = lines.findIndex((line) => line.startsWith(header));
+		if (startIdx === -1) return '';
+		const nextIdx = lines.findIndex(
+			(line, idx) => idx > startIdx && line.startsWith('## [')
 		);
-		const versionMatch = versionPattern.exec(changelog);
-		if (versionMatch?.[1]) {
-			return versionMatch[1].trim().slice(0, 500); // cap at 500 chars
-		}
-		return '';
+		const section = (
+			nextIdx === -1
+				? lines.slice(startIdx + 1)
+				: lines.slice(startIdx + 1, nextIdx)
+		)
+			.join('\n')
+			.trim();
+		return section.slice(0, 500); // cap at 500 chars
 	} catch {
 		return '';
 	}
