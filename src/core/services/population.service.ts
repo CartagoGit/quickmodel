@@ -203,6 +203,15 @@ export class PopulationService {
 
 	/**
 	 * Populates a model instance with data from a plain object.
+	 *
+	 * Applies all decorator-registered transformers, handles unknown property
+	 * policies, dot-notation paths, discriminated unions, and security checks.
+	 * Results are written directly onto `instance` via lazy getters.
+	 *
+	 * @param instance - The model instance to populate
+	 * @param data - Raw input data (plain object or another model instance)
+	 * @param params.modelClass - The constructor function of the model being populated
+	 * @param params.context - Optional recursion context for cycle detection
 	 */
 	public populateInstance<T extends Record<string, unknown>>(
 		instance: Record<string, unknown>,

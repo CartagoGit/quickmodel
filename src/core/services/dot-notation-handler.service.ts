@@ -31,6 +31,19 @@ export class DotNotationHandler {
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
 
+	/**
+	 * Applies type transformation to a dot-notation property path on a model instance.
+	 *
+	 * Traverses the path (e.g. `'address.city'`) and transforms the leaf value using the
+	 * registered transformer for that property on `modelClass`. Security-filtered: silently
+	 * returns if any path component is a prototype-pollution key (`__proto__`, `constructor`,
+	 * `prototype`).
+	 *
+	 * @param instance - The model instance being populated
+	 * @param applyConfig.path - Dot-notation property path (e.g. `'address.city'`)
+	 * @param applyConfig.modelClass - The constructor function providing decorator metadata
+	 * @param applyConfig.recursionContext - Optional cycle-detection context
+	 */
 	public apply(
 		instance: Record<string, unknown>,
 		applyConfig: {

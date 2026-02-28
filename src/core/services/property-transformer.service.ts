@@ -196,6 +196,19 @@ export class PropertyTransformer {
 		private readonly recursiveDeserializer: IRecursiveDeserializer
 	) {}
 
+	/**
+	 * Transforms a single property value using the registered type metadata for this
+	 * (class, key) pair.
+	 *
+	 * Resolves the transformer via cached metadata (decorator config, design types,
+	 * discriminators) and delegates the actual conversion to `ValueTransformerService`.
+	 * The result is written back onto `context.instance[key]`.
+	 *
+	 * @param key - Property name on the model instance
+	 * @param value - The raw input value to transform
+	 * @param context - Full population context (model class, metadata caches,
+	 *   recursion guard, coercion strategy, etc.)
+	 */
 	public transformProperty(
 		key: string,
 		value: any,

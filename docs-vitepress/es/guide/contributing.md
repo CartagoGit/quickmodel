@@ -253,12 +253,20 @@ export default defineConfig({
 
 ### Path Aliases
 
-**Siempre usar path aliases `@/*` en lugar de imports relativos:**
+**Siempre usar path aliases en lugar de imports relativos.** Aliases disponibles (definidos en `tsconfig.json`):
+
+| Alias        | Apunta a    |
+| ------------ | ----------- |
+| `@/*`        | `src/*`     |
+| `@mcp/*`     | `src/mcp/*` |
+| `@tests/*`   | `tests/*`   |
+| `@scripts/*` | `scripts/*` |
 
 ```typescript
 // ✅ CORRECTO
 import { QModel } from '@/core/models/quick.model';
 import { Serializer } from '@/core/services/serializer.service';
+import { McpServer } from '@mcp/server';
 
 // ❌ INCORRECTO
 import { QModel } from '../../core/models/quick.model';

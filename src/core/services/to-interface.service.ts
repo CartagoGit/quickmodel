@@ -28,6 +28,21 @@ export class ToInterfaceService<
 	TModel extends Record<string, unknown> = Record<string, unknown>,
 	TInterface extends Record<string, unknown> = Record<string, unknown>,
 > {
+	/**
+	 * Converts a model instance back to its original interface representation.
+	 *
+	 * Reads the `__initData` snapshot stored at construction time and returns
+	 * each value in the format it was originally supplied (e.g. a `string` stays
+	 * a `string`, a `RegExp` stays a `RegExp` — not serialized to JSON). Use
+	 * `Serializer.serialize()` when you need JSON-safe output instead.
+	 *
+	 * @param model - The model instance to convert
+	 * @param seen - Optional `WeakSet` for circular-reference tracking (pass an
+	 *   `Array` to carry original collection data through recursive calls)
+	 * @param depth - Current recursion depth; throws at 512 to prevent stack overflow
+	 * @returns Plain object matching `T` with values in their original input format
+	 * @template T - The target interface shape
+	 */
 	toInterface<T extends Record<string, unknown> = TInterface>(
 		model: TModel,
 		seen?: WeakSet<object>,
@@ -164,6 +179,22 @@ export class ToInterfaceService<
 		return result as T;
 	}
 
+	/**
+	 * @internal Recursively converts a single property value back to its original
+	 * interface format.
+	 *
+	 * Handles all built-in type conversions in reverse:
+	 * - Date → ISO string (or original string if input was a string)
+	 * - RegExp → original string pattern or RegExp
+	 * - BigInt → original string representation
+	 * - Set / Map → Array / Array-of-entries
+	 * - Nested `QModel` → delegated via `instance.toInterface()`
+	 *
+	 * @param currentValue - The current (possibly-transformed) value on the model instance
+	 * @param originalValue - The value as it was in the constructor input (`__initData`)
+	 * @param options - Cycle-detection context, production flag, property key, depth
+	 * @returns The value formatted to match the original interface
+	 */
 	private convertToInterfaceFormat(
 		currentValue: unknown,
 		originalValue: unknown,

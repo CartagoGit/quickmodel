@@ -12,7 +12,7 @@ export const scenario: IBenchScenario = {
 		yup: 75_083,
 		arktype: 6_676_905,
 		joi: 206_422,
-		QuickModel: 112_427,
+		QuickModel: 118_701,
 		'class-transformer': null,
 		'class-validator': null,
 		superjson: null,

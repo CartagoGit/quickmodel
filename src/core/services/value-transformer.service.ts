@@ -366,6 +366,16 @@ export class ValueTransformerService {
 		return value;
 	}
 
+	/**
+	 * @internal Heuristically infers a transformer from a raw value with no explicit type annotation.
+	 *
+	 * Checks for:
+	 * - ISO 8601 date strings → `DateTransformer`
+	 * - Objects with a `__type` marker (serialized Map/Set/RegExp/Symbol/BigInt/Error/Buffer)
+	 *
+	 * @param value - The raw value to inspect
+	 * @returns A matching transformer, or `undefined` if none detected
+	 */
 	private detectTransformerFromValue(
 		value: unknown
 	): IQTransformer<unknown> | undefined {
@@ -400,6 +410,23 @@ export class ValueTransformerService {
 		return undefined;
 	}
 
+	/**
+	 * Validates or coerces a primitive value to the expected JavaScript type.
+	 *
+	 * In `'strict'` mode, throws a `QModelError` if the value does not already match
+	 * the expected type. In `'loose'` mode, attempts safe coercion (e.g. `'42'` → `42`).
+	 *
+	 * Supported expected types: `Number`, `String`, `Boolean`.
+	 * Other types are returned as-is (no error, no coercion).
+	 *
+	 * @param options.key - Property name (used in error messages)
+	 * @param options.value - The raw value to validate/coerce
+	 * @param options.expectedType - The constructor (`Number`, `String`, `Boolean`, …)
+	 * @param options.className - Model class name (used in error messages)
+	 * @param options.strategy - `'strict'` | `'loose'`
+	 * @returns The original or coerced value
+	 * @throws {QModelError} In strict mode when type mismatch cannot be resolved
+	 */
 	public validateOrCoercePrimitive(options: {
 		key: string;
 		value: unknown;

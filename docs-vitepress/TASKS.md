@@ -299,7 +299,19 @@ new Event({ id: '1' });
 // → createdAt = new Date(), status = 'draft', tags = []
 ```
 
-> ⚠️ **Propuesta G — `QModel.fromFormData(fd: FormData)`** — **CUESTIONABLE** (🟢 Baja, 2h, ~10 tests): El patrón ya funciona con `new Model(Object.fromEntries(fd), { coercionStrategy: 'loose' })`. Añadir un método oficial solo aporta ergonomía marginal. **Candidata a eliminar** salvo que el equipo lo considere un contrato importante de la API pública.
+> ⚠️ **Propuesta G — `QModel.fromFormData(fd: FormData)` + `toFormData()`** — 🟡 **Media** (3-4h, ~15 tests): API bidireccional FormData ↔ QModel. `fromFormData()` como método estático ya existe el patrón con `Object.fromEntries()`, pero la versión oficial maneja campos `File`/`Blob` (no colapsables a string) y hace la coerción implícita correctamente. La dirección inversa `toFormData()` es **genuinamente no trivial**: mapea campos `ArrayBuffer`/`Uint8Array` a `Blob` entries, `number`/`boolean` a strings, y permite el round-trip completo `FormData → QModel → FormData` para Server Actions (Next.js/Remix/SvelteKit), reenvíos y multipart uploads. Los tipos `blob`, `file` y `formdata` ya están declarados en `IQAliasType` — la intención de soporte existe.
+
+```typescript
+// Entrada desde formulario HTML / Server Action
+const dto = UploadDto.fromFormData(request.formData());
+// → campos text: string, campos File: File object, coercionStrategy: 'loose' implícito
+
+// Conversión inversa (útil para reenvíos, proxies, tests)
+const fd = dto.toFormData();
+// → ArrayBuffer/Uint8Array fields → Blob entries automáticamente
+// → number/boolean → string
+// → File fields → File entry preservada
+```
 
 ---
 
@@ -606,9 +618,9 @@ User.getSchema('prisma');
 | K    | Plugin system                    | ⚠️ v2.0 candidato | 3-4h     | Bajo ahora       | Prematuro sin ecosistema         |
 | L    | Guía WebSocket / SSE             | 🟢 Baja           | 2-3h     | Medio            | **Requiere Prop B**              |
 
-**Tiempo total propuestas (sin cuestionables):** ~55-65h
+**Tiempo total propuestas (sin cuestionables):** ~60-72h
 **Propuestas alta prioridad (A+B+D+O):** ~12-15h
-**Propuestas cuestionables (G, I, K):** ~10-13h — revisar antes de implementar
+**Propuestas cuestionables (I, K):** ~7-9h — revisar antes de implementar
 
 ---
 
@@ -623,10 +635,11 @@ User.getSchema('prisma');
 6.  Prop. S   → getSchema('prisma') (2-3h, cierra circuito Task #41)
 7.  Prop. D   → QModelCollection<T> (cierra ciclo createMany)
 8.  Prop. C   → getSchema('valibot') + getSchema('yup') (bajo riesgo, alto valor)
-9.  Prop. M   → patch() mutable (complementa copy, sencillo)
-10. Prop. N   → @QVersion + migrations (cierra loop Storage / Task #55)
-11. Prop. E   → I18n (requiere decisiones de diseño)
-12. P/Q/F/H   → @QReadonly, per-class config, @QDefault, @QTransform
-13. J/L       → schemas extra (drizzle/typebox), WebSocket docs
-⚠️ Revisar antes de implementar: G (fromFormData), I (audit trail), K (plugin system)
+9.  Prop. G   → fromFormData() + toFormData() (round-trip FormData ↔ QModel)
+10. Prop. M   → patch() mutable (complementa copy, sencillo)
+11. Prop. N   → @QVersion + migrations (cierra loop Storage / Task #55)
+12. Prop. E   → I18n (requiere decisiones de diseño)
+13. P/Q/F/H   → @QReadonly, per-class config, @QDefault, @QTransform
+14. J/L       → schemas extra (drizzle/typebox), WebSocket docs
+⚠️ Revisar antes de implementar: I (audit trail), K (plugin system)
 ```

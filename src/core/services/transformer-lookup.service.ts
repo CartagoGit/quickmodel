@@ -44,6 +44,7 @@ export class TransformerLookupService {
 	/** Cache: normalized lowercase name per constructor Function */
 	private readonly _fnKeyCache = new WeakMap<Function, string>();
 
+	/** @internal Initializes the service and registers all built-in default transformers. */
 	constructor() {
 		this.transformers = new Map();
 		this.registerDefaultTransformers();
@@ -112,6 +113,7 @@ export class TransformerLookupService {
 		return Array.from(this.transformers.keys());
 	}
 
+	/** @internal Registers all built-in type transformers (date, bigint, symbol, regexp, error, map, set, …). */
 	private registerDefaultTransformers(): void {
 		const dateTransformer = new DateTransformer();
 		const bigintTransformer = new BigIntTransformer();
