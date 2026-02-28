@@ -306,6 +306,63 @@ const stream = dto.toReadableStream({
 });
 ```
 
+### multipart: true — streaming de formulario completo
+
+Cuando necesitas subir un formulario completo (campos de texto + ficheros
+binarios) a un backend que solo acepta `POST multipart/form-data`, puedes
+streamear el **mensaje entero** sin materializar ningún `FormData` en memoria:
+
+```typescript
+const stream = dto.toReadableStream({ multipart: true });
+
+await fetch('/api/upload', {
+	method: 'POST',
+	body: stream,
+	headers: {
+		'Content-Type': `multipart/form-data; boundary=${stream.boundary}`,
+	},
+});
+```
+
+El stream expone la propiedad `boundary` (generada automáticamente como 32
+caracteres hex aleatorios) que debes incluir en la cabecera `Content-Type`.
+Pasa un valor personalizado si el receptor requiere un token concreto:
+
+```typescript
+const stream = dto.toReadableStream({
+	multipart: true,
+	boundary: 'mi-boundary-personalizado',
+	chunkSize: 64 * 1024, // tamaño de chunk para campos binarios
+});
+```
+
+**Qué se emite:**
+
+| Tipo del campo                                        | Comportamiento                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| `string` / `number` / `boolean`                       | Emitido como parte `text/plain`                              |
+| `File` / `Blob`                                       | Streamed de forma lazy como parte binaria con `Content-Type` |
+| `File` / `Blob` + `@QType({ fileMode: 'reference' })` | Parte de texto con solo el nombre del fichero                |
+| `null` / `undefined`                                  | El campo se omite silenciosamente                            |
+
+La salida cumple RFC 2046 y puede ser parseada por cualquier parser estándar
+`multipart/form-data`, incluido el `Request.formData()` nativo de navegadores
+y Bun:
+
+```typescript
+// Verificación de round-trip
+const req = new Request('https://api/upload', {
+	method: 'POST',
+	headers: {
+		'Content-Type': `multipart/form-data; boundary=${stream.boundary}`,
+	},
+	body: stream,
+});
+const fd = await req.formData();
+// fd.get('nombre') === dto.nombre ✅
+// (fd.get('avatar') as File).arrayBuffer() === bytes originales ✅
+```
+
 ### fromStream(stream, opts)
 
 Reconstruye un campo binario acumulando los chunks de un `ReadableStream` entrante.
@@ -350,6 +407,7 @@ await UploadDto.pipeStream(req.body, s3UploadStream, {
 │
 └── NO → toReadableStream() / fromStream() / pipeStream()
          ├── Subir a S3/CDN                   → toReadableStream({ field }) → S3 body
+         ├── Enviar formulario completo       → toReadableStream({ multipart: true })
          ├── Recibir upload grande            → fromStream(req.body, { field })
          ├── Pipe directo sin memoria         → pipeStream(src, dst)
          └── Progreso en tiempo real          → callbacks onChunk / onProgress

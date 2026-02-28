@@ -304,6 +304,63 @@ const stream = dto.toReadableStream({
 });
 ```
 
+### multipart: true — full form streaming
+
+When uploading a complete form (text fields + binary files) to a backend that
+only accepts `POST multipart/form-data`, you can stream the **entire** message
+without materializing a `FormData` object in memory:
+
+```typescript
+const stream = dto.toReadableStream({ multipart: true });
+
+await fetch('/api/upload', {
+	method: 'POST',
+	body: stream,
+	headers: {
+		'Content-Type': `multipart/form-data; boundary=${stream.boundary}`,
+	},
+});
+```
+
+The stream exposes a `boundary` property (auto-generated as 32 random hex
+characters) that you must include in the `Content-Type` header. Pass a custom
+value if the receiver requires a specific token:
+
+```typescript
+const stream = dto.toReadableStream({
+	multipart: true,
+	boundary: 'my-custom-boundary',
+	chunkSize: 64 * 1024, // per-chunk size for binary fields
+});
+```
+
+**What gets emitted:**
+
+| Field type                                            | Behaviour                                            |
+| ----------------------------------------------------- | ---------------------------------------------------- |
+| `string` / `number` / `boolean`                       | Emitted as a `text/plain` part                       |
+| `File` / `Blob`                                       | Streamed lazily as a binary part with `Content-Type` |
+| `File` / `Blob` + `@QType({ fileMode: 'reference' })` | Text part containing the filename only               |
+| `null` / `undefined`                                  | Field silently skipped                               |
+
+The output is fully RFC 2046 compliant and can be parsed by any standard
+`multipart/form-data` parser, including the native `Request.formData()` in
+browsers and Bun:
+
+```typescript
+// Round-trip verification
+const req = new Request('https://api/upload', {
+	method: 'POST',
+	headers: {
+		'Content-Type': `multipart/form-data; boundary=${stream.boundary}`,
+	},
+	body: stream,
+});
+const fd = await req.formData();
+// fd.get('name') === dto.name ✅
+// (fd.get('avatar') as File).arrayBuffer() === original bytes ✅
+```
+
 ### fromStream(stream, opts)
 
 Reconstructs a binary field by accumulating chunks from an incoming `ReadableStream`.
@@ -348,6 +405,7 @@ Does the file fit comfortably in memory? (< ~50 MB)
 │
 └── NO  → toReadableStream() / fromStream() / pipeStream()
           ├── Upload to S3/CDN                → toReadableStream({ field }) → S3 body
+          ├── Full form upload in streaming   → toReadableStream({ multipart: true })
           ├── Receive large upload            → fromStream(req.body, { field })
           ├── Zero-memory pipe                → pipeStream(src, dst)
           └── Real-time progress              → onChunk / onProgress callbacks

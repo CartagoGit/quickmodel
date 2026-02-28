@@ -83,7 +83,11 @@ import {
 	blobToReadableStream,
 	streamToBlob,
 	pipeReadableToWritable,
+	modelToMultipartStream,
 	type IToReadableStreamOptions,
+	type IToReadableStreamSingleField,
+	type IToReadableStreamMultipart,
+	type IQMultipartStream,
 	type IFromStreamOptions,
 	type IPipeStreamOptions,
 } from '@/core/helpers/stream.helpers';
@@ -591,30 +595,87 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Creates a `ReadableStream<Uint8Array>` from a binary field (Blob or File) in the model.
+	 * Creates a `ReadableStream<Uint8Array>` from a binary field, or a full
+	 * `multipart/form-data` stream from all model fields.
 	 *
-	 * The field value is sliced lazily into chunks — it is never fully loaded into memory
-	 * at once. Use this for large files (> 50 MB) or server-side streaming uploads.
+	 * **Single-field mode** (`{ field: 'video' }`):
+	 * Emits the raw bytes of a single Blob/File field. The file is never fully
+	 * in memory at once. Use for large binary uploads.
 	 *
-	 * @param options - Must include `field` (name of the binary field)
-	 * @returns `ReadableStream<Uint8Array>`
+	 * **Multipart mode** (`{ multipart: true }`):
+	 * Encodes every model field as an RFC 2046 `multipart/form-data` message.
+	 * Binary fields are streamed lazily; text fields are inlined. The returned
+	 * stream exposes a `boundary` property for the `Content-Type` header.
 	 *
-	 * @throws `Error` if the field is null, undefined, or not a Blob/File
+	 * @param options - `{ field }` for single-field or `{ multipart: true }` for full form
+	 * @returns `ReadableStream<Uint8Array>` (single-field) or `IQMultipartStream` (multipart)
+	 *
+	 * @throws `Error` in single-field mode if the field is null/undefined or not a Blob/File
 	 *
 	 * @see {@link QModel.fromStream} — inverse: populate a field from a readable stream
 	 * @see {@link QModel.pipeStream} — zero-copy pipe between streams
 	 *
-	 * @example
+	 * @example Single-field
 	 * ```typescript
 	 * const stream = dto.toReadableStream({ field: 'video', chunkSize: 64 * 1024 });
 	 * return new Response(stream, { headers: { 'Content-Type': dto.video.type } });
 	 * ```
 	 *
+	 * @example Multipart
+	 * ```typescript
+	 * const stream = dto.toReadableStream({ multipart: true });
+	 * await fetch('/upload', {
+	 *   method: 'POST',
+	 *   body: stream,
+	 *   headers: { 'Content-Type': `multipart/form-data; boundary=${stream.boundary}` },
+	 * });
+	 * ```
+	 *
 	 * @group Serialization
 	 */
+	toReadableStream(options: IToReadableStreamMultipart): IQMultipartStream;
+	toReadableStream(
+		options: IToReadableStreamSingleField
+	): ReadableStream<Uint8Array>;
 	toReadableStream(
 		options: IToReadableStreamOptions
-	): ReadableStream<Uint8Array> {
+	): ReadableStream<Uint8Array> | IQMultipartStream {
+		// ── Multipart mode ──────────────────────────────────────────────────
+		if ('multipart' in options && options.multipart) {
+			const { boundary, chunkSize, onChunk } = options;
+			const values = this[QUICK_VALUES_KEY];
+
+			// Collect per-field fileModes from @QType({ fileMode }) decorators
+			const classproto = Object.getPrototypeOf(this) as object;
+			const qtypeFields = Reflect.getMetadata(
+				QTYPES_METADATA_KEY,
+				classproto
+			) as Array<string | symbol> | undefined;
+			let fieldFileModes: Record<string, string> | null = null;
+			if (qtypeFields?.length) {
+				for (const fieldKey of qtypeFields) {
+					const fMode = Reflect.getMetadata(
+						'qtype:fileMode',
+						classproto,
+						fieldKey
+					) as string | undefined;
+					if (fMode) {
+						if (fieldFileModes === null) fieldFileModes = {};
+						fieldFileModes[String(fieldKey)] = fMode;
+					}
+				}
+			}
+
+			return modelToMultipartStream({
+				values,
+				fieldFileModes,
+				boundary,
+				chunkSize,
+				onChunk,
+			});
+		}
+
+		// ── Single-field mode ────────────────────────────────────────────────
 		const { field, chunkSize, onChunk } = options;
 		const values = this[QUICK_VALUES_KEY];
 		const val: unknown = values[field];
@@ -1585,7 +1646,6 @@ export abstract class QModel<
 	 *
 	 * **SOLID — Single Responsibility:** Delegates serialization to the `QSerializer` service.
 	 *
-	 * @param seen    - Optional `WeakSet` to track circular references (pass `undefined` normally).
 	 * @param options - Optional `pick`/`omit` field list to filter the result.
 	 * @returns The {@link IQAliasedSerializedInterface} snapshot with all complex types converted to primitives.
 	 *
@@ -2784,7 +2844,6 @@ export abstract class QModel<
 	 * @returns `true` if all serialized fields are equal, `false` otherwise
 	 *
 	 * @see {@link QModel.diff} — field-by-field diff with before/after values
-	 * @see {@link QModel.deepEqual} — internal deep equality primitive (private)
 	 * @see {@link QModel.copy} — create an equal copy with a new reference
 	 *
 	 * @example

@@ -10,24 +10,16 @@
  * (`QModel.toReadableStream`, `QModel.fromStream`, `QModel.pipeStream`) delegates here.
  *
  * @module core/helpers/stream.helpers
+ * @see {@link QModel.toReadableStream} — public API for emitting a field as a stream
+ * @see {@link QModel.fromStream} — public API for accumulating a stream into a field
+ * @see {@link QModel.pipeStream} — public API for piping between streams
  */
 
 /** Default chunk size: 256 KB */
 const DEFAULT_CHUNK_SIZE = 256 * 1024;
 
-/**
- * Options for `toReadableStream()`.
- * @public
- * @see {@link QModel.toReadableStream} — public API that uses these options
- * @see {@link blobToReadableStream} — underlying implementation
- */
-export interface IToReadableStreamOptions {
-	/**
-	 * Name of the field containing the binary value (Blob or File).
-	 * Required when called from `QModel.toReadableStream()`.
-	 */
-	field: string;
-
+/** Shared chunk-emission options used in both single-field and multipart modes. */
+interface IStreamChunkOptions {
 	/**
 	 * Size of each emitted chunk in bytes.
 	 * @default 262144 (256 KB)
@@ -35,11 +27,82 @@ export interface IToReadableStreamOptions {
 	chunkSize?: number;
 
 	/**
-	 * Callback invoked after each chunk is emitted.
+	 * Callback invoked after each binary chunk is emitted.
 	 * @param chunk - The emitted chunk
-	 * @param total - Total byte size of the source
+	 * @param total - Total byte size of the source Blob/File
 	 */
 	onChunk?: (chunk: Uint8Array, total: number) => void;
+}
+
+/**
+ * Options for `toReadableStream()` in single-field mode.
+ *
+ * Use when you need to stream a single Blob/File field as raw bytes.
+ *
+ * @public
+ * @see {@link QModel.toReadableStream}
+ */
+export type IToReadableStreamSingleField = IStreamChunkOptions & {
+	/** Name of the binary field to stream. Required in single-field mode. */
+	field: string;
+	multipart?: never;
+	boundary?: never;
+};
+
+/**
+ * Options for `toReadableStream()` in multipart mode.
+ *
+ * Use when you need to stream all model fields as a complete
+ * `multipart/form-data` message (RFC 2046) without loading any binary
+ * into memory all at once.
+ *
+ * The returned stream exposes a `boundary` property to build the
+ * `Content-Type` header:
+ * ```typescript
+ * const stream = dto.toReadableStream({ multipart: true });
+ * // Content-Type: multipart/form-data; boundary=${stream.boundary}
+ * ```
+ *
+ * @public
+ * @see {@link QModel.toReadableStream}
+ * @see {@link IQMultipartStream}
+ */
+export type IToReadableStreamMultipart = IStreamChunkOptions & {
+	/**
+	 * When `true`, stream all fields as a full `multipart/form-data` message.
+	 * `field` must not be provided in this mode.
+	 */
+	multipart: true;
+	/**
+	 * Custom boundary string. Auto-generated (32 hex chars) when omitted.
+	 * Must not appear in any field value.
+	 */
+	boundary?: string;
+	field?: never;
+};
+
+/**
+ * Options for `toReadableStream()`.
+ *
+ * Discriminated union — provide either `field` (single-field raw stream)
+ * or `multipart: true` (full `multipart/form-data` stream).
+ *
+ * @public
+ */
+export type IToReadableStreamOptions =
+	| IToReadableStreamSingleField
+	| IToReadableStreamMultipart;
+
+/**
+ * A `ReadableStream<Uint8Array>` that also carries the multipart boundary
+ * string used to build the `Content-Type` header.
+ *
+ * @public
+ * @see {@link modelToMultipartStream}
+ */
+export interface IQMultipartStream extends ReadableStream<Uint8Array> {
+	/** The boundary token used to delimit parts in the multipart body. */
+	readonly boundary: string;
 }
 
 /**
@@ -103,6 +166,8 @@ export interface IPipeStreamOptions {
  * @param chunkSize - Size of each emitted chunk in bytes (default: 256 KB)
  * @param onChunk   - Optional callback after each chunk is enqueued
  * @returns `ReadableStream<Uint8Array>`
+ * @see {@link QModel.toReadableStream} — public API that delegates here
+ * @see {@link IToReadableStreamOptions} — options passed from the public API
  */
 export function blobToReadableStream(
 	blob: Blob,
@@ -154,6 +219,9 @@ export interface IStreamToBlobOptions {
  * @param options - Optional byte limit, progress callback, and MIME type
  * @returns `Promise<Blob>`
  * @throws {RangeError} If `options.maxBytes` is exceeded
+ * @see {@link QModel.fromStream} — public API that delegates here
+ * @see {@link IStreamToBlobOptions} — accepted options
+ * @see {@link pipeReadableToWritable} — zero-copy alternative when accumulation is not needed
  */
 export async function streamToBlob(
 	stream: ReadableStream<Uint8Array>,
@@ -192,6 +260,165 @@ export async function streamToBlob(
 }
 
 // ---------------------------------------------------------------------------
+// modelToMultipartStream
+// ---------------------------------------------------------------------------
+
+/**
+ * Generates a random RFC 2046 boundary token (32 lowercase hex characters).
+ */
+function generateBoundary(): string {
+	const arr = new Uint8Array(16);
+	crypto.getRandomValues(arr);
+	return Array.from(arr, (byt) => byt.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Async generator that yields RFC 2046 multipart/form-data parts for every
+ * field in `values`.
+ *
+ * - Null / undefined fields are silently skipped.
+ * - `File`/`Blob` fields whose `fileMode` is **not** `'reference'` are emitted
+ *   as binary parts, streamed in chunks of `chunkSize` bytes.
+ * - `File`/`Blob` fields whose `fileMode` is `'reference'` are emitted as
+ *   a text part containing the filename (same behaviour as serialize).
+ * - All other values are coerced to string and emitted as text parts.
+ */
+interface IBuildPartsConfig {
+	values: Record<string, unknown>;
+	fieldFileModes: Record<string, string> | null;
+	boundary: string;
+	chunkSize: number;
+	onChunk: ((chunk: Uint8Array, total: number) => void) | undefined;
+}
+async function* buildMultipartParts(
+	config: IBuildPartsConfig
+): AsyncGenerator<Uint8Array> {
+	const { values, fieldFileModes, boundary, chunkSize, onChunk } = config;
+	const enc = new TextEncoder();
+	const CRLF = '\r\n';
+
+	for (const [key, val] of Object.entries(values)) {
+		if (val === null || val === undefined) continue;
+
+		const fileMode = fieldFileModes?.[key];
+
+		if (val instanceof Blob && fileMode !== 'reference') {
+			// Binary part — stream the Blob lazily
+			const filename = val instanceof File ? val.name : 'blob';
+			const mimeType = val.type || 'application/octet-stream';
+			const header =
+				`--${boundary}${CRLF}` +
+				`Content-Disposition: form-data; name="${key}"; filename="${filename}"${CRLF}` +
+				`Content-Type: ${mimeType}${CRLF}` +
+				`${CRLF}`;
+			yield enc.encode(header);
+
+			const total = val.size;
+			let offset = 0;
+			while (offset < total) {
+				const end = Math.min(offset + chunkSize, total);
+				const slice = val.slice(offset, end);
+				const buf = await slice.arrayBuffer();
+				const chunk = new Uint8Array(buf);
+				yield chunk;
+				onChunk?.(chunk, total);
+				offset = end;
+			}
+
+			yield enc.encode(CRLF);
+		} else {
+			// Text part — coerce to string (respects fileMode: 'reference')
+			let strVal: string;
+			if (val instanceof Blob) {
+				// fileMode === 'reference'
+				strVal = val instanceof File ? val.name : '[Blob]';
+			} else {
+				strVal = String(val);
+			}
+
+			const part =
+				`--${boundary}${CRLF}` +
+				`Content-Disposition: form-data; name="${key}"${CRLF}` +
+				`${CRLF}` +
+				`${strVal}${CRLF}`;
+			yield enc.encode(part);
+		}
+	}
+
+	yield enc.encode(`--${boundary}--${CRLF}`);
+}
+
+/**
+ * Options for {@link modelToMultipartStream}.
+ * @public
+ */
+export interface IModelToMultipartStreamOptions {
+	/** Plain record of field name → value. */
+	values: Record<string, unknown>;
+	/** Per-field fileMode from `@QType({ fileMode })` decorators, or null. */
+	fieldFileModes: Record<string, string> | null;
+	/** RFC 2046 boundary token. Auto-generated when omitted. */
+	boundary?: string;
+	/** Bytes per chunk for binary fields. @default 262144 */
+	chunkSize?: number;
+	/** Optional callback after each binary chunk. */
+	onChunk?: (chunk: Uint8Array, total: number) => void;
+}
+
+/**
+ * Creates a `multipart/form-data` `ReadableStream<Uint8Array>` from a plain
+ * record of field values.
+ *
+ * Binary fields (`Blob`/`File`) are emitted lazily in chunks — they are never
+ * fully loaded into memory at once. Text fields are inlined as-is.
+ *
+ * The returned stream has a `boundary` property that must be included in the
+ * `Content-Type` header of the outgoing request:
+ *
+ * ```typescript
+ * const stream = modelToMultipartStream({ values, fieldFileModes });
+ * headers['Content-Type'] = `multipart/form-data; boundary=${stream.boundary}`;
+ * ```
+ *
+ * @param opts - All configuration in a single object (see {@link IModelToMultipartStreamOptions})
+ * @returns `IQMultipartStream` — `ReadableStream` augmented with `boundary`
+ *
+ * @public
+ */
+export function modelToMultipartStream(
+	opts: IModelToMultipartStreamOptions
+): IQMultipartStream {
+	const {
+		values,
+		fieldFileModes,
+		boundary: rawBoundary,
+		chunkSize = DEFAULT_CHUNK_SIZE,
+		onChunk,
+	} = opts;
+	const boundary = rawBoundary ?? generateBoundary();
+	const gen = buildMultipartParts({
+		values,
+		fieldFileModes,
+		boundary,
+		chunkSize,
+		onChunk,
+	});
+
+	const stream = new ReadableStream<Uint8Array>({
+		async pull(controller) {
+			const { done, value } = await gen.next();
+			if (done) {
+				controller.close();
+			} else {
+				controller.enqueue(value);
+			}
+		},
+	});
+
+	return Object.assign(stream, { boundary }) as IQMultipartStream;
+}
+
+// ---------------------------------------------------------------------------
 // pipeReadableToWritable
 // ---------------------------------------------------------------------------
 
@@ -214,6 +441,8 @@ export interface IPipeReadableToWritableOptions {
  * @param dst     - Destination stream
  * @param options - Optional byte limit and progress callback
  * @throws {RangeError} If `options.maxBytes` is exceeded
+ * @see {@link QModel.pipeStream} — public API that delegates here
+ * @see {@link streamToBlob} — accumulates all bytes instead of piping
  */
 export async function pipeReadableToWritable(
 	src: ReadableStream<Uint8Array>,
