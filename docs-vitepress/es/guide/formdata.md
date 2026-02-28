@@ -151,6 +151,55 @@ const fd = await dto.toFormData({
 | `Uint8Array`                    | auto-wrap en `Blob` + append              | `.append(k, '[binary]')` | `.append(k, dataURI)` |
 | `string` / `number` / `boolean` | `.append(k, String(v))` — todos los modos |
 
+### spoofMethod — tunelización de métodos HTTP
+
+Algunos backends (**Laravel**, **Symfony**, **Rails**) solo aceptan `multipart/form-data`
+con `POST`. Para trabajar con esas APIs, puedes inyectar un campo `_method` como la
+**primera** entrada del `FormData` — el backend lo lee y enruta la petición como si
+fuera `PUT`, `PATCH` o `DELETE`.
+
+```typescript
+// Opción de llamada puntual
+const fd = await dto.toFormData({ spoofMethod: 'PUT' });
+// FormData: _method=PUT, name=Alice, avatar=<File>
+```
+
+#### Cascada de tres niveles (menor → mayor prioridad)
+
+| Nivel                 | Dónde                         | Ejemplo                                             |
+| --------------------- | ----------------------------- | --------------------------------------------------- |
+| **Global**            | `QConfig.defaults`            | `QConfig.set({ defaults: { spoofMethod: 'PUT' } })` |
+| **Decorador**         | `@Quick({}, { spoofMethod })` | `@Quick({}, { spoofMethod: 'PATCH' })`              |
+| **Opción de llamada** | `toFormData({ spoofMethod })` | `toFormData({ spoofMethod: 'DELETE' })`             |
+
+Un nivel superior siempre gana. Si `spoofMethod` es `undefined` en todos los niveles,
+no se añade ningún campo `_method`.
+
+```typescript
+// 1. Global — aplica a todos los modelos a menos que se sobreescriba
+QConfig.set({ defaults: { spoofMethod: 'PUT' } });
+
+// 2. Decorador — sobreescribe el global para un modelo concreto
+@Quick({}, { spoofMethod: 'PATCH' })
+class UploadDto extends QModel<IUploadDto> { ... }
+
+// 3. Opción de llamada — mayor prioridad, sobreescribe todo
+const fd = await dto.toFormData({ spoofMethod: 'DELETE' });
+// → _method=DELETE (ignora el PUT global y el PATCH del decorador)
+```
+
+#### Valores con seguridad de tipos — `IQSpoofMethod`
+
+La opción `spoofMethod` está tipada como `IQSpoofMethod`, que proporciona autocompletado
+para todos los métodos HTTP estándar (RFC 7231, WebDAV, DeltaV) más un comodín
+`string & {}` para métodos personalizados:
+
+```typescript
+import type { IQSpoofMethod } from 'quickmodel';
+
+const methods: IQSpoofMethod[] = ['PUT', 'PATCH', 'DELETE', 'PURGE', 'SEARCH'];
+```
+
 ---
 
 ## Capa 4 — Streaming

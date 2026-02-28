@@ -151,6 +151,55 @@ const fd = await dto.toFormData({
 | `Uint8Array`                    | auto-wrap in `Blob` + append        | `.append(k, '[binary]')` | `.append(k, dataURI)` |
 | `string` / `number` / `boolean` | `.append(k, String(v))` — all modes |
 
+### spoofMethod — HTTP method tunneling
+
+Some backends (**Laravel**, **Symfony**, **Rails**) only accept `multipart/form-data`
+with `POST`. To work with those APIs you can inject a `_method` field as the **first**
+entry in the `FormData` — the backend then reads it and routes the request as if it
+were `PUT`, `PATCH`, or `DELETE`.
+
+```typescript
+// One-time call option
+const fd = await dto.toFormData({ spoofMethod: 'PUT' });
+// FormData: _method=PUT, name=Alice, avatar=<File>
+```
+
+#### Three-level cascade (lowest → highest priority)
+
+| Level           | Where                         | Example                                             |
+| --------------- | ----------------------------- | --------------------------------------------------- |
+| **Global**      | `QConfig.defaults`            | `QConfig.set({ defaults: { spoofMethod: 'PUT' } })` |
+| **Decorator**   | `@Quick({}, { spoofMethod })` | `@Quick({}, { spoofMethod: 'PATCH' })`              |
+| **Call option** | `toFormData({ spoofMethod })` | `toFormData({ spoofMethod: 'DELETE' })`             |
+
+A higher-level value always wins. If `spoofMethod` is `undefined` at all levels, no
+`_method` field is added.
+
+```typescript
+// 1. Global default — applies to every model unless overridden
+QConfig.set({ defaults: { spoofMethod: 'PUT' } });
+
+// 2. Decorator — override the global default for a specific model
+@Quick({}, { spoofMethod: 'PATCH' })
+class UploadDto extends QModel<IUploadDto> { ... }
+
+// 3. Call option — highest priority, overrides everything
+const fd = await dto.toFormData({ spoofMethod: 'DELETE' });
+// → _method=DELETE (ignores global PUT and decorator PATCH)
+```
+
+#### Type-safe values — `IQSpoofMethod`
+
+The `spoofMethod` option is typed as `IQSpoofMethod`, which provides autocomplete for
+all standard HTTP methods (RFC 7231, WebDAV, DeltaV) plus a `string & {}` catch-all
+for custom methods:
+
+```typescript
+import type { IQSpoofMethod } from 'quickmodel';
+
+const methods: IQSpoofMethod[] = ['PUT', 'PATCH', 'DELETE', 'PURGE', 'SEARCH'];
+```
+
 ---
 
 ## Layer 4 — Streaming
