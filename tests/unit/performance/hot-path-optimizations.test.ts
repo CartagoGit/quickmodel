@@ -255,7 +255,7 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 describe('Optimization #5 — fast-path primitivos: mejora de rendimiento medible', () => {
 	const ITERS = 2_000;
 
-	function runMicrobench(label: string, func: () => void): number {
+	function runMicrobench(_label: string, func: () => void): number {
 		// Warm-up extended: 500 iters to ensure JIT stabilizes (Bun JIT needs more than 50)
 		for (let idx = 0; idx < 500; idx++) func();
 		// Take the best of 3 trials to reduce noise from GC pressure
@@ -267,10 +267,6 @@ describe('Optimization #5 — fast-path primitivos: mejora de rendimiento medibl
 			const ops = Math.round((ITERS / elapsed) * 1000);
 			if (ops > best) best = ops;
 		}
-		const elapsed3 = (ITERS / best) * 1000;
-		console.log(
-			`\n  [${label}] best: ${best.toLocaleString()} ops/sec | ${elapsed3.toFixed(2)}μs avg`
-		);
 		return best;
 	}
 
@@ -945,10 +941,6 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 			void mdl.serialize();
 		});
 
-		console.log(
-			`\n  [OPT#VAL-A serialize flat] ${opsPerSec.toLocaleString()} ops/sec`
-		);
-
 		// PRE-optimización baseline: ~55-65k ops/sec (each primitive value runs 20+ instanceof checks)
 		// POST OPT#VAL-A: string/number/boolean retornan antes del primer instanceof → ~90k+
 		expect(opsPerSec).toBeGreaterThan(90_000);
@@ -1107,10 +1099,6 @@ describe('OPT#NEST-A — nested model branch en serializeValue()', () => {
 		const opsPerSec = runMicrobench(() => {
 			void outer.serialize();
 		});
-
-		console.log(
-			`\n  [OPT#NEST-A serialize nested] ${opsPerSec.toLocaleString()} ops/sec`
-		);
 
 		// PRE-optimización: ~45-50k (spread alloc + 2 delete operations per nested model)
 		// POST OPT#NEST-A: selective opts build, no delete → ~55k+

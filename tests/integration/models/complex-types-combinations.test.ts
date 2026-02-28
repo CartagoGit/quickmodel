@@ -140,11 +140,6 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 		});
 
 		const IQSerialized = entity.serialize();
-		console.log(
-			'IQSerialized ComplexEntity:',
-			JSON.stringify(IQSerialized, null, 2)
-		);
-
 		const deserialized = ComplexEntity.deserialize(IQSerialized);
 
 		// Validaciones
@@ -396,12 +391,6 @@ describe('MixedUnionModel: union types con tipos complejos', () => {
 				optionalEntity: null,
 				multiType: new Map(),
 			});
-
-			console.log(
-				`Test case ${index + 1}:`,
-				model.value,
-				typeof model.value
-			);
 
 			if (index === 0) expect(typeof model.value).toBe('string');
 			if (index === 1) expect(typeof model.value).toBe('number');

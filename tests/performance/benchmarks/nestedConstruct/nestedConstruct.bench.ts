@@ -19,12 +19,6 @@ export function describeBench(): void {
 					items: orderRaw.items.map((item) => ({ ...item })),
 				};
 			});
-			console.log(
-				`\n[BENCH #11] Plain JS: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  🔧 Manual BigInt/Date construction per field — brittle bajo cambios de schema'
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -45,12 +39,6 @@ export function describeBench(): void {
 					pti(CTOrder, orderRaw);
 				}
 			);
-			console.log(
-				`\n[BENCH #11] class-transformer: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  total permanece como string — BigInt no soportado sin @Transform manual'
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -61,12 +49,6 @@ export function describeBench(): void {
 				() => {
 					void new Order(orderRaw as unknown as IOrder);
 				}
-			);
-			console.log(
-				`\n[BENCH #11] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Un solo decorador @Quick — BigInt + Date + nested objects en una llamada'
 			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
@@ -104,15 +86,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #11 — Nested construction (Plain JS / CT / QuickModel)',
 				allResults
-			);
-			console.log(
-				'\n  ✅ QuickModel: un @Quick por clase padre — cero clases auxiliares ni decoradores extra'
-			);
-			console.log(
-				'  ⚠️  class-transformer: @Type decorator por propiedad anidada, BigInt no soportado'
-			);
-			console.log(
-				'  🔧 Plain JS: mapeo manual profundo, frágil ante cambios de schema\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

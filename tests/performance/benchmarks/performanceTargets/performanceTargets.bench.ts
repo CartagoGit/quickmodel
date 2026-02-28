@@ -29,13 +29,7 @@ export function describeBench(): void {
 			const holder = new DateHolder(input as unknown as IDateHolder);
 			const elapsed = performance.now() - start;
 
-			const transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
-			console.log(
-				`\n[BENCH #6] QuickModel: ${transformsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				`  → ${elapsed.toFixed(2)}ms total para 10k Date objects (1k roundtrip: ver test siguiente)`
-			);
+			const _transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
 
 			expect(holder.dates[0]).toBeInstanceOf(Date);
 			expect(holder.dates[9_999]).toBeInstanceOf(Date);
@@ -73,13 +67,7 @@ export function describeBench(): void {
 			const holder = pti(CTDateHolder, input);
 			const elapsed = performance.now() - start;
 
-			const transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
-			console.log(
-				`\n[BENCH #6] class-transformer: ${transformsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				`  → ${elapsed.toFixed(2)}ms total para 10k Date objects con @Type(() => Date)`
-			);
+			const _transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
 
 			expect(holder.dates[0]).toBeInstanceOf(Date);
 			expect(holder.dates[9_999]).toBeInstanceOf(Date);
@@ -109,11 +97,7 @@ export function describeBench(): void {
 			models.forEach((model) => model.serialize());
 			const elapsed = performance.now() - start;
 
-			const opsPerSec = Math.round((1_000 / elapsed) * 1_000);
-			console.log(
-				`\n  [#6 roundtrip] 1k create+serialize: ${elapsed.toFixed(2)}ms (${opsPerSec.toLocaleString()} ops/sec)`
-			);
-			console.log(`  SLA: < 50ms`);
+			const _opsPerSec = Math.round((1_000 / elapsed) * 1_000);
 			expect(elapsed).toBeLessThan(50);
 		});
 	});

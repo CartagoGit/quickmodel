@@ -39,12 +39,6 @@ export function describeBench(): void {
 					JSON.parse(JSON.stringify(obj));
 				}
 			);
-			console.log(
-				`\n[BENCH #3] Plain JSON (baseline): ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  JSON.parse pierde: Date → string, BigInt → error, Map/Set → {}'
-			);
 			expect(res.totalMs).toBeLessThan(2000);
 		});
 
@@ -67,12 +61,6 @@ export function describeBench(): void {
 				const { json, meta } = sjn.serialize(obj);
 				sjn.deserialize({ json, meta });
 			});
-			console.log(
-				`\n[BENCH #3] superjson: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Preserva Date, BigInt, Map, Set, RegExp, undefined, URL\n  ⚠️  No transforma JSON crudo → requiere objeto ya tipado'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -98,12 +86,6 @@ export function describeBench(): void {
 					pti(CTSimpleUser, plain);
 				}
 			);
-			console.log(
-				`\n[BENCH #3] class-transformer: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Preserva Date con @Type(() => Date)  |  ❌ BigInt, Map, Set requieren @Transform adicional'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -112,12 +94,6 @@ export function describeBench(): void {
 				const serialized = complexUserInstance.serialize();
 				ComplexUser.deserialize(serialized);
 			});
-			console.log(
-				`\n[BENCH #3] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Preserva Date, BigInt, Map y Set sin configuración adicional'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -173,15 +149,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #3 — Roundtrip serialización (Plain JSON / superjson / CT / QuickModel)',
 				allResults
-			);
-			console.log(
-				'\n  🚫 Zod, TypeBox, valibot, yup: sin serialización nativa (necesitan superjson u otro)'
-			);
-			console.log(
-				'  ⚠️  superjson: preserva muchos tipos PERO requiere objeto ya tipado en memoria'
-			);
-			console.log(
-				'  ✅ QuickModel: transforma JSON crudo → tipos + serializa/deserializa — pipeline completo\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

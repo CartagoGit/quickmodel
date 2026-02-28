@@ -45,10 +45,6 @@ export function describeBench(): void {
 					JSON.parse(JSON.stringify({ ...complexUserRaw }));
 				}
 			);
-			console.log(
-				`\n[BENCH #7] Plain JSON: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log('  ❌ Date→string | ❌ BigInt→error | ❌ Map/Set→{}');
 			expect(res.totalMs).toBeLessThan(2000);
 		});
 
@@ -63,12 +59,6 @@ export function describeBench(): void {
 				const result = sjn.serialize(superjsonFullObj);
 				sjn.deserialize(result);
 			});
-			console.log(
-				`\n[BENCH #7] superjson: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Date/BigInt/Map/Set/RegExp  |  ⚠️  requiere objeto ya tipado (no transforma JSON crudo)'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -82,12 +72,6 @@ export function describeBench(): void {
 					);
 					ComplexUser.deserialize(inst.serialize());
 				}
-			);
-			console.log(
-				`\n[BENCH #7] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ JSON crudo → Date/BigInt/Map/Set automático + roundtrip lossless'
 			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
@@ -132,54 +116,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #7 — Fidelidad tipos en serialización (Plain JSON / superjson / CT / QuickModel)',
 				allResults
-			);
-			console.log(
-				'\n┌──────────────────────────────────────────────────────────────────┐'
-			);
-			console.log(
-				'│  Tipos preservados en roundtrip                                  │'
-			);
-			console.log(
-				'├────────────────────────┬───────┬────────────┬──────┬────────────┤'
-			);
-			console.log(
-				'│ Tipo                   │  JSON │  superjson │  CT  │ QuickModel │'
-			);
-			console.log(
-				'├────────────────────────┼───────┼────────────┼──────┼────────────┤'
-			);
-			console.log(
-				'│ Date                   │  ❌   │     ✅     │  ✅  │     ✅     │'
-			);
-			console.log(
-				'│ BigInt                 │  ❌   │     ✅     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ Map                    │  ❌   │     ✅     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ Set                    │  ❌   │     ✅     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ RegExp                 │  ❌   │     ✅     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ URL                    │  ❌   │     ✅     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ TypedArray             │  ❌   │     ❌     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ Symbol                 │  ❌   │     ❌     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ Error                  │  ❌   │     ✅     │  ❌  │     ✅     │'
-			);
-			console.log(
-				'│ JSON crudo → tipado    │  ❌   │     ❌     │  ⚠️  │     ✅     │'
-			);
-			console.log(
-				'└────────────────────────┴───────┴────────────┴──────┴────────────┘\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

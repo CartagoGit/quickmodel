@@ -51,8 +51,8 @@ interface IErrorData {
  *
  * // From string
  * const req1 = new Request({ lastError: "TypeError: Invalid input" });
- * console.log(req1.lastError instanceof Error); // true
- * console.log(req1.lastError.name); // "TypeError"
+ * req1.lastError instanceof Error; // → true
+ * req1.lastError.name; // → "TypeError"
  *
  * // From object
  * const req2 = new Request({
@@ -61,7 +61,7 @@ interface IErrorData {
  *
  * // Serialization
  * const data = req1.serialize();
- * console.log(data.lastError); // "TypeError: Invalid input"
+ * data.lastError; // → "TypeError: Invalid input"
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

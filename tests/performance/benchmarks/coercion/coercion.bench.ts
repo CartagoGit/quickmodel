@@ -43,9 +43,6 @@ export function describeBench(): void {
 					vbSafe(schemas.complexSchema, complexUserRaw);
 				}
 			);
-			console.log(
-				`\n[BENCH #2] valibot: ${res.opsPerSec.toLocaleString()} ops/sec — Date+BigInt+Map+Set manual`
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -56,9 +53,6 @@ export function describeBench(): void {
 				() => {
 					zodComplexUser.safeParse(complexUserRaw);
 				}
-			);
-			console.log(
-				`\n[BENCH #2] Zod: ${res.opsPerSec.toLocaleString()} ops/sec — Date+BigInt+Map+Set manual`
 			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
@@ -80,12 +74,6 @@ export function describeBench(): void {
 					pti(CTComplexUser, complexUserRaw);
 				}
 			);
-			console.log(
-				`\n[BENCH #2] class-transformer: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  Solo mapea Date via @Type — BigInt, Map y Set quedan como string/array/array'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -102,12 +90,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 2: class-validator', ITERS, () => {
 				validateSync(obj);
 			});
-			console.log(
-				`\n[BENCH #2] class-validator: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  No coerciona tipos — solo valida que los valores ya tratados sean correctos'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -120,9 +102,6 @@ export function describeBench(): void {
 						complexUserRaw as unknown as IComplexUser
 					);
 				}
-			);
-			console.log(
-				`\n[BENCH #2] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec — Date+BigInt+Map+Set automático`
 			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
@@ -193,21 +172,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #2 — Coerción tipos complejos (valibot/Zod/CT/CT+CV vs QuickModel)',
 				allResults
-			);
-			console.log(
-				'\n  ✅ QuickModel: un solo decorador @Quick({...}) — cero código adicional'
-			);
-			console.log(
-				'  ⚠️  valibot/Zod: requieren pipe(transform()) / z.coerce por cada campo'
-			);
-			console.log(
-				'  ⚠️  class-transformer: solo Date via @Type — BigInt/Map/Set no soportados'
-			);
-			console.log(
-				'  ⚠️  CT+CV combo: coerción parcial (Date) + validación — 2 librerías para lo que QM hace con 1'
-			);
-			console.log(
-				'  🚫 Plain JS / TypeBox / yup: no soportan esta conversión\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

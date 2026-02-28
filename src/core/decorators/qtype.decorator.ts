@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: prefer-quick — this file defines @QType itself; its @example blocks legitimately use @QType to document its API
 /**
  * @fileoverview Universal \@QType() decorator for QModel properties.
  *

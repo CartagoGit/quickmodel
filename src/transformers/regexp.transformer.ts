@@ -55,7 +55,7 @@ interface IRegExpData {
  *
  * // Serialization
  * const data = config1.serialize();
- * console.log(data.emailPattern); // "/^[a-z]+@[a-z]+\\.com$/i"
+ * data.emailPattern; // → "/^[a-z]+@[a-z]+\\.com$/i"
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

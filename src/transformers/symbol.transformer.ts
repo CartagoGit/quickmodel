@@ -36,17 +36,18 @@ import {
  *
  * @example
  * ```typescript
+ * @Quick({ id: QSymbol })
  * class Entity extends QuickModel<IEntity> {
- *   @QType(QSymbol) declare id: symbol;
+ *   declare id: symbol;
  * }
  *
  * const entity = new Entity({ id: "unique-id" });
- * console.log(typeof entity.id); // 'symbol'
- * console.log(entity.id === Symbol.for("unique-id")); // true
+ * typeof entity.id; // → 'symbol'
+ * (entity.id === Symbol.for("unique-id")); // → true
  *
  * const data = entity.serialize();
- * console.log(typeof data.id); // 'string'
- * console.log(data.id); // "unique-id"
+ * typeof data.id; // → 'string'
+ * data.id; // → "unique-id"
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

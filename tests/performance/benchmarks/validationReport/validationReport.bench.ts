@@ -22,12 +22,6 @@ export function describeBench(): void {
 					instance.validationReport();
 				}
 			);
-			console.log(
-				`\n[BENCH #15] QuickModel: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Retorna: { valid, integrity[], rules: { valid, errors[] } } — todo tipado'
-			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -35,16 +29,11 @@ export function describeBench(): void {
 			const result = runBench('[BENCH #15] Zod', ITERATIONS, () => {
 				zodSignupReportSchema.safeParse(invalidData);
 			});
-			console.log(
-				`\n[BENCH #15] Zod: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log('  ⚠️  solo validación, sin coerción ni integridad');
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
 		test('yup — validateSync() con abortEarly:false (captura todos los errores) ⚠️', () => {
 			if (!yupMod) {
-				console.log('  yup no instalado — skipping');
 				return;
 			}
 			const yupSignupSchema = yupMod
@@ -67,9 +56,6 @@ export function describeBench(): void {
 					// ValidationError esperado con datos inválidos
 				}
 			});
-			console.log(
-				`\n[BENCH #15] yup: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -86,18 +72,11 @@ export function describeBench(): void {
 				if (invalidData.age < 18) errors.push('Must be 18+');
 				void { valid: errors.length === 0, errors };
 			});
-			console.log(
-				`\n[BENCH #15] Plain JS: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  if/push manual — sin categorías integridad/reglas, sin tipado, frágil ante cambios de schema'
-			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
 		test('joi — compile().validate() (sync, errors.details) ⚠️', () => {
 			if (!joiMod) {
-				console.log('  joi no instalado — skipping');
 				return;
 			}
 			const joiSignupSchema = joiMod.object({
@@ -129,9 +108,6 @@ export function describeBench(): void {
 			const result = runBench('[BENCH #15] joi', ITERATIONS, () => {
 				joiSignupSchema.validate(invalidData, { abortEarly: false });
 			});
-			console.log(
-				`\n[BENCH #15] joi: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -212,15 +188,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #15 — Structured error report (QuickModel / Zod / yup / joi / Plain JS)',
 				allResults
-			);
-			console.log(
-				'  ✅ QuickModel validationReport(): { valid, integrity[], rules: { valid, errors[] } }'
-			);
-			console.log(
-				'     — integrity: errores de tipos/coerción | rules: errores de @QRule — TODO en 1 llamada'
-			);
-			console.log(
-				'  ⚠️  Zod/yup/joi: solo errores de validación, sin categorías integridad vs reglas de negocio\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

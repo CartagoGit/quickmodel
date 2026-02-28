@@ -22,7 +22,6 @@ describe('Robustness: Circular References Infinite Loop', () => {
 
 		// Should NOT throw anymore
 		const json = JSON.stringify(node1);
-		console.log('Circular JSON:', json);
 		expect(json).toContain('__circular');
 	});
 

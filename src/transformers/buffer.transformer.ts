@@ -44,11 +44,11 @@ import {
  * const file = new FileModel({
  *   data: [72, 101, 108, 108, 111] // "Hello" in bytes
  * });
- * console.log(file.data instanceof ArrayBuffer); // true
- * console.log(file.data.byteLength); // 5
+ * file.data instanceof ArrayBuffer; // → true
+ * file.data.byteLength; // → 5
  *
  * const json = file.serialize();
- * console.log(json.data); // [72, 101, 108, 108, 111]
+ * json.data; // → [72, 101, 108, 108, 111]
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends
@@ -171,11 +171,11 @@ export class ArrayBufferTransformer
  * const data = new BinaryData({
  *   view: [0, 255, 128] // byte array
  * });
- * console.log(data.view instanceof DataView); // true
- * console.log(data.view.byteLength); // 3
+ * data.view instanceof DataView; // → true
+ * data.view.byteLength; // → 3
  *
  * const json = data.serialize();
- * console.log(json.view); // [0, 255, 128]
+ * json.view; // → [0, 255, 128]
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

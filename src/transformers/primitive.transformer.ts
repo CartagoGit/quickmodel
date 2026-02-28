@@ -65,7 +65,7 @@ type IPrimitiveTypeMap = {
  *
  * // Values are validated but not transformed
  * const json = config.serialize();
- * console.log(json); // { name: "server", port: 3000, enabled: true }
+ * json; // → { name: "server", port: 3000, enabled: true }
  *
  * // Type mismatch throws error
  * new Config({ name: 123 }); // Error: Expected string, got number

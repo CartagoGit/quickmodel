@@ -93,8 +93,6 @@ class ArraysAndUnionsModel extends QModel<IArraysAndUnions> {
 
 describe('Metadata de arrays y union types', () => {
 	test('Verificar metadata de arrays', () => {
-		console.log('\n=== METADATA DE ARRAYS ===\n');
-
 		const arrayProps = ['strArray', 'numArray', 'modelArray'];
 
 		arrayProps.forEach((prop) => {
@@ -103,15 +101,15 @@ describe('Metadata de arrays y union types', () => {
 				ArraysAndUnionsModel.prototype,
 				prop
 			);
-			console.log(`${prop}:`.padEnd(15), metadata?.name || 'undefined');
+			// Sin @QType, TypeScript puede o no emitir metadata de tipo
+			// El comportamiento observable es que el valor es Function o undefined
+			expect(
+				metadata === undefined || typeof metadata === 'function'
+			).toBe(true);
 		});
-
-		console.log('\n');
 	});
 
 	test('Verificar metadata de union types', () => {
-		console.log('\n=== METADATA DE UNION TYPES ===\n');
-
 		const unionProps = [
 			'role',
 			'status',
@@ -128,10 +126,11 @@ describe('Metadata de arrays y union types', () => {
 				ArraysAndUnionsModel.prototype,
 				prop
 			);
-			console.log(`${prop}:`.padEnd(15), metadata?.name || 'undefined');
+			// Union types y literales: TypeScript emite Object o String o Number
+			expect(
+				metadata === undefined || typeof metadata === 'function'
+			).toBe(true);
 		});
-
-		console.log('\n');
 	});
 
 	test('Probar comportamiento de arrays sin especificar tipo', () => {
@@ -151,30 +150,6 @@ describe('Metadata de arrays y union types', () => {
 		};
 
 		const model = new ArraysAndUnionsModel(data);
-
-		console.log('\n=== RESULTADO ARRAYS ===');
-		console.log(
-			'strArray:',
-			model.strArray,
-			'→ tipo:',
-			model.strArray?.constructor.name
-		);
-		console.log(
-			'numArray:',
-			model.numArray,
-			'→ tipo:',
-			model.numArray?.constructor.name
-		);
-		console.log('modelArray:', model.modelArray);
-		console.log(
-			'modelArray[0] tipo:',
-			model.modelArray?.[0]?.constructor.name
-		);
-		console.log(
-			'¿modelArray[0] es Tag?',
-			model.modelArray?.[0] instanceof Tag
-		);
-		console.log('\n');
 
 		// Los arrays de primitivos funcionan
 		expect(model.strArray).toEqual(['a', 'b', 'c']);
@@ -198,30 +173,6 @@ describe('Metadata de arrays y union types', () => {
 		};
 
 		const model = new ArraysAndUnionsModel(data);
-
-		console.log('\n=== RESULTADO UNION TYPES ===');
-		console.log('role:', model.role, '→ tipo:', typeof model.role);
-		console.log('status:', model.status, '→ tipo:', typeof model.status);
-		console.log(
-			'literalStr:',
-			model.literalStr,
-			'→ tipo:',
-			typeof model.literalStr
-		);
-		console.log(
-			'literalNum:',
-			model.literalNum,
-			'→ tipo:',
-			typeof model.literalNum
-		);
-		console.log(
-			'nullable:',
-			model.nullable,
-			'→ tipo:',
-			typeof model.nullable
-		);
-		console.log('mixed:', model.mixed, '→ tipo:', typeof model.mixed);
-		console.log('\n');
 
 		// Union types se preservan como su valor real
 		expect(model.role).toBe('admin');

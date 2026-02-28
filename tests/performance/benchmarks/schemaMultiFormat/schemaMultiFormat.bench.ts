@@ -28,18 +28,11 @@ export function describeBench(): void {
 					}
 				}
 			);
-			console.log(
-				`\n[BENCH #14] QuickModel: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				`  ✅ × 7 formatos por iteración — equivalente a ~${(result.opsPerSec * 7).toLocaleString()} exports/sec`
-			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
 		test('TypeBox — JSON Schema nativo (1 formato: stringify del Type) ⚠️', () => {
 			if (!typeboxMod) {
-				console.log('  TypeBox no instalado — skipping');
 				return;
 			}
 			const tbox = typeboxMod;
@@ -52,10 +45,6 @@ export function describeBench(): void {
 			const result = runBench('[BENCH #14] TypeBox', ITERATIONS, () => {
 				JSON.stringify(tbSchemaProduct);
 			});
-			console.log(
-				`\n[BENCH #14] TypeBox: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log('  ⚠️  solo 1 formato: JSON Schema');
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -75,10 +64,6 @@ export function describeBench(): void {
 				};
 				void schema;
 			});
-			console.log(
-				`\n[BENCH #14] Plain JS: ${result.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log('  ⚠️  solo 1 formato: JSON Schema manual');
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -129,18 +114,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #14 — Schema multi-format (QM × 7 / TypeBox × 1 / Plain JS × 1)',
 				allResults
-			);
-			console.log(
-				`  ✅ QuickModel genera ${ALL_FORMATS.length} formatos por llamada: JSON Schema, Zod, OpenAPI 3.0, TypeScript, GraphQL SDL, MongoDB, AJV`
-			);
-			console.log(
-				`  ✅ Equivalente en exports/sec: ~${(qmResult.opsPerSec * ALL_FORMATS.length).toLocaleString()}`
-			);
-			console.log(
-				'  ⚠️  TypeBox: el Type object ES el schema — acceso O(1), pero solo JSON Schema nativo'
-			);
-			console.log(
-				'  ⚠️  Plain JS: object literal estático, 1 formato, sin reutilización ni decoradores\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

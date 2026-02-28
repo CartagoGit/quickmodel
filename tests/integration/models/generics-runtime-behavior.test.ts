@@ -202,7 +202,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 
 		// Como SimpleModel es un tipo concreto (no genérico),
 		// TypeScript emite la metadata correcta
-		expect(valueType).toBe(SimpleModel);
+		expect(_valueType).toBe(SimpleModel);
 		expect(container.value).toBeInstanceOf(SimpleModel);
 		expect(container.value.id).toBe('1');
 		expect(container.value.name).toBe('Test');

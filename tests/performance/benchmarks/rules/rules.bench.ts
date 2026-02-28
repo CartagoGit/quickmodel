@@ -45,12 +45,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 8: class-validator', ITERS, () => {
 				validateSync(obj);
 			});
-			console.log(
-				`\n[BENCH #8] class-validator: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  Sin grupos nativos — filtrar por @ValidationGroups requiere groups config separada'
-			);
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
 
@@ -69,12 +63,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 8: vest', ITERS, () => {
 				vestSuite.suite(validSignupData);
 			});
-			console.log(
-				`\n[BENCH #8] vest: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Tiene grupos via only.group() — pero require crear la suite fuera de la clase'
-			);
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
 
@@ -90,12 +78,6 @@ export function describeBench(): void {
 					abortEarly: false,
 				});
 			});
-			console.log(
-				`\n[BENCH #8] joi: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  Sin grupos nativos — require schemas separados por sección'
-			);
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
 
@@ -107,12 +89,6 @@ export function describeBench(): void {
 				() => {
 					qCheckRules(form);
 				}
-			);
-			console.log(
-				`\n[BENCH #8] QuickModel @QRule: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ Decoradores co-ubicados con la clase, zero setup externo'
 			);
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
@@ -130,12 +106,6 @@ export function describeBench(): void {
 					errors.push('Must contain uppercase');
 				void errors;
 			});
-			console.log(
-				`\n[BENCH #8] Plain JS: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  if/else manual — sin grupos, sin decoradores, frágil ante cambios de schema'
-			);
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
 
@@ -213,28 +183,9 @@ export function describeBench(): void {
 				);
 			}
 
-			const cvIcon = cvMod ? '✅' : 'N/I';
-			const vestIcon = vestMod ? '⚠️ ' : 'N/I';
-			const joiIcon = joiMod ? '⚠️ ' : 'N/I';
-
-			console.log(`
-┌──────────────────────────────────────────────────────────────────────────┐
-│  COMPARATIVA — API de reglas de negocio y formularios                    │
-├───────────────────────────────────────┬──────┬──────┬──────┬────────────┤
-│ Capacidad                             │  CV  │ vest │  joi │ QuickModel │
-├───────────────────────────────────────┼──────┼──────┼──────┼────────────┤
-│ Decoradores co-ubicados en la clase   │  ✅  │  ❌  │  ❌  │     ✅     │
-│ Grupos de campos nativos              │  ⚠️  │  ✅  │  ❌  │     ✅     │
-│ Filtrar validación por grupo          │  ⚠️  │  ✅  │  ❌  │     ✅     │
-│ checkRulesByGroup() en una llamada    │  ❌  │  ⚠️  │  ❌  │     ✅     │
-│ Predicados async (DB, API)            │  ❌  │  ⚠️  │  ✅  │     ✅     │
-│ Timeout por predicado async           │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Modo serial/paralelo (async)          │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Schema de formulario (getFormSchema)  │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Integración con coerción de tipos     │  ❌  │  ❌  │  ❌  │     ✅     │
-│ Works on any class (no QModel needed) │ ${cvIcon} │ ${vestIcon}│ ${joiIcon}│     ✅     │
-└───────────────────────────────────────┴──────┴──────┴──────┴────────────┘
-  CV = class-validator | vest = vestjs | ⚠️ = posible con config extra\n`);
+			const _cvIcon = cvMod ? '✅' : 'N/I';
+			const _vestIcon = vestMod ? '⚠️ ' : 'N/I';
+			const _joiIcon = joiMod ? '⚠️ ' : 'N/I';
 
 			expect(allResults.length).toBeGreaterThan(0);
 		});

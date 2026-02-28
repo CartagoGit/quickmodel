@@ -43,10 +43,10 @@ import {
  * const config = new Config({
  *   metadata: { key1: "value1", key2: 123 }
  * });
- * console.log(config.metadata instanceof Map); // true
+ * config.metadata instanceof Map; // → true
  *
  * const data = config.serialize();
- * console.log(data.metadata); // { key1: "value1", key2: 123 }
+ * data.metadata; // → { key1: "value1", key2: 123 }
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends
@@ -484,11 +484,11 @@ export class MapTransformer<K = string, V = unknown>
  * const config = new Config({
  *   tags: ["tag1", "tag2", "tag1"] // duplicate will be removed
  * });
- * console.log(config.tags instanceof Set); // true
- * console.log(config.tags.size); // 2
+ * config.tags instanceof Set; // → true
+ * config.tags.size; // → 2
  *
  * const data = config.serialize();
- * console.log(Array.isArray(data.tags)); // true
+ * Array.isArray(data.tags); // → true
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

@@ -23,12 +23,6 @@ export function describeBench(): void {
 					isActive: apiProfileSnakeRaw.is_active,
 				};
 			});
-			console.log(
-				`\n[BENCH #9] Plain JS: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  🔧 Hardcoded mapper — breaks on every field name change'
-			);
 			expect(res.totalMs).toBeLessThan(2000);
 		});
 
@@ -49,12 +43,6 @@ export function describeBench(): void {
 					pti(CTApiProfile, apiProfileSnakeRaw);
 				}
 			);
-			console.log(
-				`\n[BENCH #9] class-transformer: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  Keeps original snake_case keys — real rename needs @Expose({name}) + excludeExtraneousValues'
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -67,12 +55,6 @@ export function describeBench(): void {
 						apiProfileSnakeRaw as unknown as IProfileCamel
 					);
 				}
-			);
-			console.log(
-				`\n[BENCH #9] QuickModel @QAlias: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ @QAlias("first_name") → firstName — zero-boilerplate, compatible con coerción + validation'
 			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
@@ -111,15 +93,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #9 — Field alias mapping (Plain JS / CT / QuickModel)',
 				allResults
-			);
-			console.log(
-				'\n  ✅ QuickModel @QAlias: zero glue code, works with coerción de tipos integrada'
-			);
-			console.log(
-				'  ⚠️  class-transformer: sin @Expose+@Transform no renombra — requiere setup por campo'
-			);
-			console.log(
-				'  🔧 Plain JS: mapper manual brittle — se rompe con cada cambio de campo\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

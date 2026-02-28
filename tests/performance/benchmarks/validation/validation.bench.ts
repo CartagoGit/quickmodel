@@ -31,9 +31,6 @@ export function describeBench(): void {
 					active: true,
 				};
 			});
-			console.log(
-				`\n[BENCH #1] Plain JS (baseline): ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(100);
 		});
 
@@ -51,9 +48,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 1: TypeBox', ITERS, () => {
 				check(schemas.simpleSchema, simpleUserData);
 			});
-			console.log(
-				`\n[BENCH #1] TypeBox: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -71,9 +65,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 1: valibot', ITERS, () => {
 				vbSafe(schemas.simpleSchema, simpleUserData);
 			});
-			console.log(
-				`\n[BENCH #1] valibot: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -81,9 +72,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 1: Zod', ITERS, () => {
 				zodSimpleUser.safeParse(simpleUserData);
 			});
-			console.log(
-				`\n[BENCH #1] Zod: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -100,9 +88,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 1: yup', ITERS, () => {
 				validate(simpleUserData);
 			});
-			console.log(
-				`\n[BENCH #1] yup: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(30_000);
 		});
 
@@ -116,9 +101,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 1: arktype', ITERS, () => {
 				schemas.simpleSchema(simpleUserData);
 			});
-			console.log(
-				`\n[BENCH #1] arktype: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -134,9 +116,6 @@ export function describeBench(): void {
 					abortEarly: false,
 				});
 			});
-			console.log(
-				`\n[BENCH #1] joi: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -144,9 +123,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 1: QuickModel', ITERS, () => {
 				void new SimpleUser(simpleUserData);
 			});
-			console.log(
-				`\n[BENCH #1] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -236,12 +212,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #1 — Validación simple (TypeBox/valibot/arktype/Zod/yup/joi/QuickModel vs Plain JS)',
 				allResults
-			);
-			console.log(
-				'\n  ℹ️  class-transformer excluido: serializa clases, no valida schemas'
-			);
-			console.log(
-				'  ℹ️  QuickModel hace validación + coerción + integridad en una sola llamada\n'
 			);
 
 			const qmOps =

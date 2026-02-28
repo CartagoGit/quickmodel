@@ -41,9 +41,6 @@ export function describeBench(): void {
 						.catch(() => {});
 				}
 			);
-			console.log(
-				`\n[BENCH #12] yup async: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
 			expect(res.totalMs).toBeLessThan(30_000);
 		});
 
@@ -63,9 +60,6 @@ export function describeBench(): void {
 						.catch(() => {});
 				}
 			);
-			console.log(
-				`\n[BENCH #12] joi async: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
 			expect(res.totalMs).toBeLessThan(30_000);
 		});
 
@@ -78,12 +72,6 @@ export function describeBench(): void {
 						mode: 'parallel',
 					});
 				}
-			);
-			console.log(
-				`\n[BENCH #12] QuickModel async: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ parallel mode — Promise.allSettled sobre todos los @QRule async; timeoutMs por regla soportado'
 			);
 			expect(res.totalMs).toBeLessThan(30_000);
 		});
@@ -103,12 +91,6 @@ export function describeBench(): void {
 					]);
 					void results;
 				}
-			);
-			console.log(
-				`\n[BENCH #12] Plain JS async: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  Promise.all manual — sin timeout, sin grupos, sin reporte tipado'
 			);
 			expect(res.totalMs).toBeLessThan(30_000);
 		});
@@ -206,15 +188,6 @@ export function describeBench(): void {
 					allResults
 				);
 			}
-			console.log(
-				'\n  ✅ QM parallel mode: Promise.allSettled — todas las reglas concurrentes'
-			);
-			console.log(
-				'  💡 serial mode también disponible para reglas dependientes'
-			);
-			console.log(
-				'  💡 timeoutMs por regla — ideal para predicados DB/API con timeout\n'
-			);
 
 			expect(allResults.length).toBeGreaterThan(0);
 		});

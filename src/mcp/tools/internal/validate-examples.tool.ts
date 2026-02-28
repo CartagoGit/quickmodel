@@ -167,6 +167,12 @@ export class QValidateExamplesTool extends QAbstractTool<
 		const issues: IExampleIssue[] = [];
 		let count = 0;
 
+		// Files that document @QType itself are allowed to use @QType in examples
+		const firstLines = content.split('\n').slice(0, 5).join('\n');
+		const ignorePreferQuick = firstLines.includes(
+			'@quickmodel-rule-ignore: prefer-quick'
+		);
+
 		// Match JSDoc blocks
 		const jsdocRegex = /\/\*\*([\s\S]*?)\*\//g;
 		let jsdocMatch = jsdocRegex.exec(content);
@@ -196,7 +202,10 @@ export class QValidateExamplesTool extends QAbstractTool<
 				);
 
 				for (const rule of FORBIDDEN_PATTERNS) {
-					if (rule.pattern.test(exampleBody)) {
+					if (
+						rule.pattern.test(exampleBody) &&
+						!(ignorePreferQuick && rule.message.includes('@QType'))
+					) {
 						issues.push({
 							file: relativePath,
 							symbol: symbolName,

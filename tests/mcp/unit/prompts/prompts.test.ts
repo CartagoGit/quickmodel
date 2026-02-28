@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 import { QAbstractPrompt } from '../../../../src/mcp/prompts/abstract-prompt';
+import { QAbstractInternalPrompt } from '../../../../src/mcp/prompts/abstract-internal-prompt';
 import { QFromTypescriptPrompt } from '../../../../src/mcp/prompts/public/from-typescript.prompt';
 import { QDebugModelPrompt } from '../../../../src/mcp/prompts/public/debug-model.prompt';
 import { QGenerateTestDataPrompt } from '../../../../src/mcp/prompts/public/generate-test-data.prompt';
@@ -89,6 +90,72 @@ describe('QAbstractPrompt', () => {
 		const prompt = new ConcretePrompt();
 		expect(prompt.argsSchema.input).toBeDefined();
 		expect(() => prompt.argsSchema.input.parse('test')).not.toThrow();
+	});
+});
+
+// ── QAbstractInternalPrompt ─────────────────────────────────────────────────
+
+describe('QAbstractInternalPrompt', () => {
+	class ConcreteInternalPrompt extends QAbstractInternalPrompt<{
+		msg: z.ZodString;
+	}> {
+		name = 'test_internal_prompt';
+		title = 'Test Internal Prompt';
+		description = 'A test internal prompt';
+		argsSchema = { msg: z.string().describe('Message') };
+
+		execute(args: { msg: string }): Promise<IQPromptResult> {
+			return Promise.resolve({
+				messages: [
+					this.user(`First: ${args.msg}`),
+					this.assistant('Acknowledged'),
+					this.user(`Second: ${args.msg}`),
+				],
+			});
+		}
+	}
+
+	it('injects INTERNAL_PROMPT_CONTEXT into the first user message', async () => {
+		const prompt = new ConcreteInternalPrompt();
+		const result = await prompt.execute({ msg: 'hello' });
+		const firstUserText = result.messages[0]?.content.text ?? '';
+		expect(firstUserText).toContain(
+			'Contexto obligatorio del proyecto QuickModel'
+		);
+		expect(firstUserText).toContain('First: hello');
+	});
+
+	it('does NOT inject context into subsequent user messages', async () => {
+		const prompt = new ConcreteInternalPrompt();
+		const result = await prompt.execute({ msg: 'hello' });
+		const secondUserText = result.messages[2]?.content.text ?? '';
+		expect(secondUserText).not.toContain('Contexto obligatorio');
+		expect(secondUserText).toContain('Second: hello');
+	});
+
+	it('context includes the tee rule for temp files', async () => {
+		const prompt = new ConcreteInternalPrompt();
+		const result = await prompt.execute({ msg: 'test' });
+		const contextText = result.messages[0]?.content.text ?? '';
+		expect(contextText).toContain('tee');
+		expect(contextText).toContain('./tmp/');
+	});
+
+	it('context forbids the > redirect operator', async () => {
+		const prompt = new ConcreteInternalPrompt();
+		const result = await prompt.execute({ msg: 'test' });
+		const contextText = result.messages[0]?.content.text ?? '';
+		expect(contextText).toMatch(/NUNCA.*>|>.*NUNCA|aprobación manual/i);
+	});
+
+	it('does NOT re-inject context on a second execute() call on the same instance', async () => {
+		const prompt = new ConcreteInternalPrompt();
+		await prompt.execute({ msg: 'first run' });
+		const result2 = await prompt.execute({ msg: 'second run' });
+		// _contextSent stays true after first call — no double injection
+		const textAfterSecondCall = result2.messages[0]?.content.text ?? '';
+		expect(textAfterSecondCall).not.toContain('Contexto obligatorio');
+		expect(textAfterSecondCall).toContain('First: second run');
 	});
 });
 

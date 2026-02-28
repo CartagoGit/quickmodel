@@ -40,10 +40,10 @@ import {
  * }
  *
  * const event = new Event({ createdAt: "2024-01-01T00:00:00.000Z" });
- * console.log(event.createdAt instanceof Date); // true
+ * event.createdAt instanceof Date; // → true
  *
  * const data = event.serialize();
- * console.log(data.createdAt); // "2024-01-01T00:00:00.000Z"
+ * data.createdAt; // → "2024-01-01T00:00:00.000Z"
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

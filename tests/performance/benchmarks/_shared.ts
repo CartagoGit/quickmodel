@@ -119,36 +119,13 @@ export async function runBenchAsync(
 	return { name, iterations, totalMs, opsPerSec, avgMicros };
 }
 
-export function notInstalled(lib: string): void {
-	console.log(`\n[SKIP] ${lib} no está instalado — test omitido`);
-}
+export function notInstalled(_lib: string): void {}
 
-export function printComparison(title: string, results: IBenchResult[]): void {
-	const fastest = Math.max(...results.map((res) => res.opsPerSec));
-	console.log(
-		'\n┌─────────────────────────────────────────────────────────────┐'
-	);
-	console.log(`│ ${title.padEnd(61)}│`);
-	console.log(
-		'├───────────────────────┬────────────┬─────────────┬──────────┤'
-	);
-	console.log(
-		'│ Library               │  ops/sec   │  avg (μs)   │ relative │'
-	);
-	console.log(
-		'├───────────────────────┼────────────┼─────────────┼──────────┤'
-	);
-	for (const res of results) {
-		const lib = (res.name.split(':')[1]?.trim() ?? res.name).padEnd(21);
-		const ops = res.opsPerSec.toLocaleString().padStart(10);
-		const avg = res.avgMicros.toFixed(2).padStart(11);
-		const pct =
-			((res.opsPerSec / fastest) * 100).toFixed(0).padStart(7) + '%';
-		console.log(`│ ${lib} │ ${ops} │ ${avg} │ ${pct} │`);
-	}
-	console.log(
-		'└───────────────────────┴────────────┴─────────────┴──────────┘'
-	);
+export function printComparison(
+	_title: string,
+	_results: IBenchResult[]
+): void {
+	// Output suprimido — los asserts de rendimiento están en cada test individual
 }
 
 // ─────────────────────────────────────────────────────────────

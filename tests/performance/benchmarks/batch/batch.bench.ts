@@ -45,9 +45,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 4: TypeBox batch', CYCLES, () => {
 				for (const item of dataset) check(schemas.simpleSchema, item);
 			});
-			console.log(
-				`\n[BENCH #4] TypeBox: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -65,9 +62,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 4: valibot batch', CYCLES, () => {
 				for (const item of dataset) vbSafe(schemas.simpleSchema, item);
 			});
-			console.log(
-				`\n[BENCH #4] valibot: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -75,9 +69,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 4: Zod batch', CYCLES, () => {
 				for (const item of dataset) zodSimpleUser.safeParse(item);
 			});
-			console.log(
-				`\n[BENCH #4] Zod: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -94,9 +85,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 4: yup batch', CYCLES, () => {
 				for (const item of dataset) validate(item);
 			});
-			console.log(
-				`\n[BENCH #4] yup: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -110,9 +98,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 4: arktype batch', CYCLES, () => {
 				for (const item of dataset) schemas.simpleSchema(item);
 			});
-			console.log(
-				`\n[BENCH #4] arktype: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -127,9 +112,6 @@ export function describeBench(): void {
 				for (const item of dataset)
 					schemas.simpleSchema.validate(item, { abortEarly: false });
 			});
-			console.log(
-				`\n[BENCH #4] joi: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -143,9 +125,6 @@ export function describeBench(): void {
 				() => {
 					for (const model of models) model.isValid();
 				}
-			);
-			console.log(
-				`\n[BENCH #4] QuickModel: ${res.opsPerSec.toLocaleString()} cycles/sec`
 			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
@@ -162,12 +141,6 @@ export function describeBench(): void {
 					);
 				}
 			});
-			console.log(
-				`\n[BENCH #4] Plain JS: ${res.opsPerSec.toLocaleString()} cycles/sec`
-			);
-			console.log(
-				'  ⚠️  typeof manual — sin coerción, sin mensajes de error, frágil ante cambios de schema'
-			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
 
@@ -268,12 +241,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #4 — Batch validation 1k obj (TypeBox/valibot/arktype/Zod/yup/joi/QuickModel/Plain JS)',
 				allResults
-			);
-			console.log(
-				'\n  ℹ️  class-transformer excluido: no valida — necesita class-validator por separado'
-			);
-			console.log(
-				'  ⚠️  Plain JS: typeof manual — sin coerción, sin mensajes; referencia de velocidad máxima\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

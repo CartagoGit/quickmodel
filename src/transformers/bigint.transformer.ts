@@ -44,10 +44,10 @@ import {
  * }
  *
  * const account = new Account({ balance: "9007199254740991" });
- * console.log(typeof account.balance); // 'bigint'
+ * typeof account.balance; // → 'bigint'
  *
  * const data = account.serialize();
- * console.log(typeof data.balance); // 'string'
+ * typeof data.balance; // → 'string'
  * ```
  *
  * @see {@link BaseTransformer} — abstract base this class extends

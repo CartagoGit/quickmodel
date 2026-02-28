@@ -14,12 +14,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 10: Plain JS', ITERS, () => {
 				void (JSON.stringify(mutated) !== snapshot);
 			});
-			console.log(
-				`\n[BENCH #10] Plain JS JSON.stringify: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ⚠️  O(n) — serializa el objeto completo en cada check; costoso con objetos grandes'
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -39,15 +33,6 @@ export function describeBench(): void {
 				});
 				void (next !== baseState);
 			});
-			console.log(
-				`\n[BENCH #10] Immer: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ produce() retorna nueva ref si hay cambios — O(1) via structural sharing'
-			);
-			console.log(
-				'  ⚠️  Sin getDirtyFields(), patch() ni reset() — gestión manual de estado'
-			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
 
@@ -61,12 +46,6 @@ export function describeBench(): void {
 					void user.isDirty();
 					user.reset();
 				}
-			);
-			console.log(
-				`\n[BENCH #10] QuickModel isDirty: ${res.opsPerSec.toLocaleString()} ops/sec`
-			);
-			console.log(
-				'  ✅ patch() + isDirty() — field-level Set tracking, reset() restaura al estado inicial'
 			);
 			expect(res.totalMs).toBeLessThan(5000);
 		});
@@ -103,15 +82,6 @@ export function describeBench(): void {
 			printComparison(
 				'Benchmark #10 — Change detection (Plain JS JSON.stringify vs QuickModel isDirty)',
 				allResults
-			);
-			console.log(
-				'\n  ✅ QuickModel isDirty() — O(1), campo a campo con getDirtyFields() disponible'
-			);
-			console.log(
-				'  ⚠️  JSON.stringify — O(n): serializa todo el objeto en cada llamada'
-			);
-			console.log(
-				'  💡 isDirty("name") verifica un solo campo — aun más rápido\n'
 			);
 
 			expect(allResults.length).toBeGreaterThan(0);

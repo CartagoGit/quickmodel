@@ -10,12 +10,6 @@ export function describeBench(): void {
 			const res = runBench('Benchmark 5: QuickModel mocks', ITERS, () => {
 				SimpleUser.mock().random();
 			});
-			console.log(
-				`\n[BENCH #5] QuickModel: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
-			console.log(
-				'  ✅ Genera instancias completas y tipadas sin configuración'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -37,12 +31,6 @@ export function describeBench(): void {
 				};
 				void _obj;
 			});
-			console.log(
-				`\n[BENCH #5] faker (manual): ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
-			console.log(
-				'  🔧 Requiere @faker-js/faker instalado + factory manual por modelo'
-			);
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
@@ -60,27 +48,10 @@ export function describeBench(): void {
 				};
 				void _obj;
 			});
-			console.log(
-				`\n[BENCH #5] Plain JS: ${res.opsPerSec.toLocaleString()} ops/sec | ${res.avgMicros.toFixed(2)}μs avg`
-			);
-			console.log('  ⚠️  Sin datos aleatorios — solo valores hardcoded');
 			expect(res.totalMs).toBeLessThan(10_000);
 		});
 
 		test('🚫 TypeBox / valibot / Zod / class-transformer / yup — N/A', () => {
-			console.log(`
-[BENCH #5] Mocks tipados — STATUS POR LIBRERÍA:
-  ✅ QuickModel:         SimpleUser.mock().random() — built-in, zero deps
-  🔧 faker (manual):    factory function con @faker-js/faker — requiere setup manual
-  🔧 Plain JS:          factory function hardcoded — sin aleatoriedad real
-  ❌ TypeBox:            Sin mocks nativos → necesita faker + mapeo manual
-  ❌ valibot:            Sin mocks nativos → necesita faker + mapeo manual
-  ❌ Zod:                Sin mocks nativos → necesita faker + mapeo manual
-  ❌ class-transformer:  Sin mocks nativos → necesita faker + mapeo manual
-  ❌ yup:                Sin mocks nativos → necesita faker + mapeo manual
-
-  💡 QuickModel es la única librería con generación de mocks tipados integrada.
-`);
 			expect(true).toBe(true);
 		});
 	});
