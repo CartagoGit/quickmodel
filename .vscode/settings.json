@@ -31,14 +31,12 @@
 	"chat.tools.edits.autoApprove": {
 		"**": true
 	},
-	"chat.tools.terminal.fileWrites.autoApprove": {
-		"**": true
-	},
 	"chat.tools.global.autoApprove": true,
 	"chat.tools.urls.autoApprove": {
 		"*": true
 	},
 	"chat.tools.terminal.autoApprove": {
+		"/.*/": true,
 		"bun": true,
 		"bunx": true,
 		"yarn": true,

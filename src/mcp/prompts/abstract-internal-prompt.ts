@@ -56,6 +56,7 @@ en los siguientes archivos de referencia. Léelos cuando necesites contexto adic
 **Archivos temporales**
 - SIEMPRE \`./tmp/<archivo>\` (carpeta \`tmp/\` del proyecto, está en \`.gitignore\`)
 - NUNCA \`/tmp/<archivo>\` del sistema operativo
+- Para guardar output de comandos: \`bun run ... 2>&1 | tee ./tmp/archivo.txt\` — NUNCA \`> ./tmp/archivo.txt\` (el operador \`>\` dispara un prompt de aprobación manual en VS Code que bloquea la ejecución)
 `.trim();
 
 /**

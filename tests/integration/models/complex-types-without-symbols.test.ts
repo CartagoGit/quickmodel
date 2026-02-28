@@ -67,20 +67,50 @@ class ComplexTypesModel
 
 describe('Tipos complejos SIN symbols', () => {
 	test('Verificar metadata emitida por TypeScript', () => {
-		console.log('\n=== METADATA PARA TIPOS COMPLEJOS ===\n');
-
-		const types = ['pattern', 'error', 'buffer', 'view', 'uint8', 'tags'];
-
-		types.forEach((prop) => {
-			const metadata = Reflect.getMetadata(
+		// RegExp, Error, ArrayBuffer, DataView, Uint8Array emiten su propio tipo en reflect-metadata
+		expect(
+			Reflect.getMetadata(
 				'design:type',
 				ComplexTypesModel.prototype,
-				prop
-			);
-			console.log(`${prop}:`.padEnd(12), metadata?.name || 'undefined');
-		});
-
-		console.log('\n');
+				'pattern'
+			)
+		).toBe(RegExp);
+		expect(
+			Reflect.getMetadata(
+				'design:type',
+				ComplexTypesModel.prototype,
+				'error'
+			)
+		).toBe(Error);
+		expect(
+			Reflect.getMetadata(
+				'design:type',
+				ComplexTypesModel.prototype,
+				'buffer'
+			)
+		).toBe(ArrayBuffer);
+		expect(
+			Reflect.getMetadata(
+				'design:type',
+				ComplexTypesModel.prototype,
+				'view'
+			)
+		).toBe(DataView);
+		expect(
+			Reflect.getMetadata(
+				'design:type',
+				ComplexTypesModel.prototype,
+				'uint8'
+			)
+		).toBe(Uint8Array);
+		// Los arrays emiten Array como design:type
+		expect(
+			Reflect.getMetadata(
+				'design:type',
+				ComplexTypesModel.prototype,
+				'tags'
+			)
+		).toBe(Array);
 	});
 
 	test('Probar RegExp sin QRegExp symbol', () => {
@@ -93,27 +123,11 @@ describe('Tipos complejos SIN symbols', () => {
 			tags: [{ id: '1', name: 'tag1' }],
 		};
 
-		try {
-			const model = new ComplexTypesModel(data);
+		const model = new ComplexTypesModel(data);
 
-			console.log('\n=== RESULTADO RegExp ===');
-			console.log('pattern:', model.pattern);
-			console.log('tipo:', model.pattern?.constructor.name);
-			console.log('¿Es RegExp?', model.pattern instanceof RegExp);
-
-			if (model.pattern instanceof RegExp) {
-				console.log('✅ RegExp funciona automáticamente!\n');
-				expect(model.pattern).toBeInstanceOf(RegExp);
-				expect(model.pattern.source).toBe('^test$');
-				expect(model.pattern.flags).toBe('i');
-			} else {
-				console.log('❌ RegExp NO funciona sin symbol\n');
-				console.log('Valor recibido:', model.pattern);
-			}
-		} catch (err: unknown) {
-			const error = err as Error;
-			console.log('❌ Error al crear modelo con RegExp:', error.message);
-		}
+		expect(model.pattern).toBeInstanceOf(RegExp);
+		expect(model.pattern.source).toBe('^test$');
+		expect(model.pattern.flags).toBe('i');
 	});
 
 	test('Probar Error sin QError symbol', () => {
@@ -130,26 +144,10 @@ describe('Tipos complejos SIN symbols', () => {
 			tags: [{ id: '1', name: 'tag1' }],
 		};
 
-		try {
-			const model = new ComplexTypesModel(data);
+		const model = new ComplexTypesModel(data);
 
-			console.log('\n=== RESULTADO Error ===');
-			console.log('error:', model.error);
-			console.log('tipo:', model.error?.constructor.name);
-			console.log('¿Es Error?', model.error instanceof Error);
-
-			if (model.error instanceof Error) {
-				console.log('✅ Error funciona automáticamente!\n');
-				expect(model.error).toBeInstanceOf(Error);
-				expect(model.error.message).toBe('Test error');
-			} else {
-				console.log('❌ Error NO funciona sin symbol\n');
-				console.log('Valor recibido:', model.error);
-			}
-		} catch (err: unknown) {
-			const error = err as Error;
-			console.log('❌ Error al crear modelo con Error:', error.message);
-		}
+		expect(model.error).toBeInstanceOf(Error);
+		expect(model.error.message).toBe('Test error');
 	});
 
 	test('Probar Uint8Array sin QUint8Array symbol', () => {
@@ -162,29 +160,10 @@ describe('Tipos complejos SIN symbols', () => {
 			tags: [{ id: '1', name: 'tag1' }],
 		};
 
-		try {
-			const model = new ComplexTypesModel(data);
+		const model = new ComplexTypesModel(data);
 
-			console.log('\n=== RESULTADO Uint8Array ===');
-			console.log('uint8:', model.uint8);
-			console.log('tipo:', model.uint8?.constructor.name);
-			console.log('¿Es Uint8Array?', model.uint8 instanceof Uint8Array);
-
-			if (model.uint8 instanceof Uint8Array) {
-				console.log('✅ Uint8Array funciona automáticamente!\n');
-				expect(model.uint8).toBeInstanceOf(Uint8Array);
-				expect(Array.from(model.uint8)).toEqual([1, 2, 3]);
-			} else {
-				console.log('❌ Uint8Array NO funciona sin symbol\n');
-				console.log('Valor recibido:', model.uint8);
-			}
-		} catch (err: unknown) {
-			const error = err as Error;
-			console.log(
-				'❌ Error al crear modelo con Uint8Array:',
-				error.message
-			);
-		}
+		expect(model.uint8).toBeInstanceOf(Uint8Array);
+		expect(Array.from(model.uint8)).toEqual([1, 2, 3]);
 	});
 
 	test('Probar ArrayBuffer sin symbol', () => {
@@ -197,31 +176,9 @@ describe('Tipos complejos SIN symbols', () => {
 			tags: [{ id: '1', name: 'tag1' }],
 		};
 
-		try {
-			const model = new ComplexTypesModel(data);
+		const model = new ComplexTypesModel(data);
 
-			console.log('\n=== RESULTADO ArrayBuffer ===');
-			console.log('buffer:', model.buffer);
-			console.log('tipo:', model.buffer?.constructor.name);
-			console.log(
-				'¿Es ArrayBuffer?',
-				model.buffer instanceof ArrayBuffer
-			);
-
-			if (model.buffer instanceof ArrayBuffer) {
-				console.log('✅ ArrayBuffer funciona automáticamente!\n');
-				expect(model.buffer).toBeInstanceOf(ArrayBuffer);
-			} else {
-				console.log('❌ ArrayBuffer NO funciona sin symbol\n');
-				console.log('Valor recibido:', model.buffer);
-			}
-		} catch (err: unknown) {
-			const error = err as Error;
-			console.log(
-				'❌ Error al crear modelo con ArrayBuffer:',
-				error.message
-			);
-		}
+		expect(model.buffer).toBeInstanceOf(ArrayBuffer);
 	});
 
 	test('Probar DataView sin symbol', () => {
@@ -234,28 +191,9 @@ describe('Tipos complejos SIN symbols', () => {
 			tags: [{ id: '1', name: 'tag1' }],
 		};
 
-		try {
-			const model = new ComplexTypesModel(data);
+		const model = new ComplexTypesModel(data);
 
-			console.log('\n=== RESULTADO DataView ===');
-			console.log('view:', model.view);
-			console.log('tipo:', model.view?.constructor.name);
-			console.log('¿Es DataView?', model.view instanceof DataView);
-
-			if (model.view instanceof DataView) {
-				console.log('✅ DataView funciona automáticamente!\n');
-				expect(model.view).toBeInstanceOf(DataView);
-			} else {
-				console.log('❌ DataView NO funciona sin symbol\n');
-				console.log('Valor recibido:', model.view);
-			}
-		} catch (err: unknown) {
-			const error = err as Error;
-			console.log(
-				'❌ Error al crear modelo con DataView:',
-				error.message
-			);
-		}
+		expect(model.view).toBeInstanceOf(DataView);
 	});
 
 	test('Probar Array de modelos sin especificar Tag', () => {
@@ -271,31 +209,14 @@ describe('Tipos complejos SIN symbols', () => {
 			],
 		};
 
-		try {
-			const model = new ComplexTypesModel(data);
+		const model = new ComplexTypesModel(data);
 
-			console.log('\n=== RESULTADO Array de modelos ===');
-			console.log('tags:', model.tags);
-			console.log('tags[0] tipo:', model.tags?.[0]?.constructor.name);
-			console.log('¿tags[0] es Tag?', model.tags?.[0] instanceof Tag);
-
-			if (model.tags?.[0] instanceof Tag) {
-				console.log('✅ Array de modelos funciona automáticamente!\n');
-				expect(model.tags[0]).toBeInstanceOf(Tag);
-				expect(model.tags[0].id).toBe('1');
-				expect(model.tags[0].name).toBe('tag1');
-			} else {
-				console.log(
-					'❌ Array de modelos NO funciona sin especificar clase\n'
-				);
-				console.log('Valor recibido:', model.tags);
-			}
-		} catch (err: unknown) {
-			const error = err as Error;
-			console.log(
-				'❌ Error al crear modelo con array de modelos:',
-				error.message
-			);
-		}
+		// Sin especificar @QType(Tag), el array no auto-infiere la clase Tag
+		// Los items son plain objects (límite documentado del sistema)
+		expect(model.tags).toHaveLength(2);
+		expect(model.tags?.[0]?.id).toBe('1');
+		expect(model.tags?.[0]?.name).toBe('tag1');
+		// NO son instancias de Tag sin especificación explícita del tipo
+		expect(model.tags?.[0] instanceof Tag).toBe(false);
 	});
 });

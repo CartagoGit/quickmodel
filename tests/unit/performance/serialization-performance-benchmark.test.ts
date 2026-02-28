@@ -41,12 +41,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 		const end = performance.now();
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== BASELINE: Plain Objects ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 10k objetos
 	});
@@ -68,13 +63,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 		const end = performance.now();
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== CREAR INSTANCIAS (constructor) ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por instancia`);
-		console.log(`Overhead vs plain: ${(avgTime * 1000 - 10).toFixed(2)}μs`);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 10k instancias
 	});
@@ -100,12 +89,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / users.length;
-
-		console.log('\n=== SERIALIZACIÓN (serialize) ===');
-		console.log(`Iteraciones: ${users.length}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
+		const _avgTime = totalTime / users.length;
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
 	});
@@ -129,12 +113,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / plainUsers.length;
-
-		console.log('\n=== DESERIALIZACIÓN (deserialize) ===');
-		console.log(`Iteraciones: ${plainUsers.length}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por objeto`);
+		const _avgTime = totalTime / plainUsers.length;
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
 	});
@@ -193,12 +172,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== ARRAY PEQUEÑO (10 items) - CON INFERENCIA ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(250); // Debe ser < 250ms para 1k carts
 	});
@@ -222,12 +196,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== ARRAY PEQUEÑO (10 items) - SIN INFERENCIA ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por cart`);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k carts
 	});
@@ -251,14 +220,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== ARRAY GRANDE (100 items) - CON INFERENCIA ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(
-			`Promedio: ${avgTime.toFixed(2)}ms por cart (100 productos)`
-		);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 carts grandes
 	});
@@ -279,13 +241,6 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-
-		console.log('\n=== ARRAY MUY GRANDE (1000 items) ===');
-		console.log(`Tiempo: ${totalTime.toFixed(2)}ms`);
-		console.log(`Items deserializados: ${cart.items.length}`);
-		console.log(
-			`Promedio: ${(totalTime / cart.items.length).toFixed(3)}ms por item`
-		);
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1000 items
 		expect(cart.items[0]).toBeInstanceOf(Product);
@@ -358,14 +313,7 @@ describe('Performance: Costo de anidación profunda', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== ANIDACIÓN 4 NIVELES (10 users cada uno) ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(
-			`Promedio: ${(avgTime * 1000).toFixed(2)}μs por estructura`
-		);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k estructuras
 	});
@@ -392,12 +340,7 @@ describe('Performance: Costo de anidación profunda', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log('\n=== ANIDACIÓN 4 NIVELES (100 users cada uno) ===');
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${avgTime.toFixed(2)}ms por estructura`);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 estructuras
 	});
@@ -444,14 +387,7 @@ describe('Performance: Tipos complejos', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const avgTime = totalTime / iterations;
-
-		console.log(
-			'\n=== TIPOS COMPLEJOS (Date, BigInt, RegExp, Map, Set) ==='
-		);
-		console.log(`Iteraciones: ${iterations}`);
-		console.log(`Tiempo total: ${totalTime.toFixed(2)}ms`);
-		console.log(`Promedio: ${(avgTime * 1000).toFixed(2)}μs por modelo`);
+		const _avgTime = totalTime / iterations;
 
 		expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k modelos
 	});
@@ -459,50 +395,6 @@ describe('Performance: Tipos complejos', () => {
 
 describe('Performance: Resumen y conclusiones', () => {
 	test('Resumen: Overhead de la librería', () => {
-		console.log(`
-=== RESUMEN DE RENDIMIENTO ===
-
-📊 Benchmarks realizados:
-   ✅ Plain objects (baseline)
-   ✅ Instancias QModel
-   ✅ Serialización (serialize)
-   ✅ Deserialización (deserialize)
-   ✅ Inferencia de arrays (pequeños y grandes)
-   ✅ Anidación profunda (4 niveles)
-   ✅ Tipos complejos (Date, BigInt, RegExp, Map, Set)
-
-🎯 Resultados típicos:
-   - Crear instancia: ~50-100μs
-   - Serializar: ~30-50μs
-   - Deserializar: ~50-80μs
-   - Inferencia (10 items): ~100-150μs
-   - Anidación 4 niveles: ~150-250μs
-
-✅ Performance en casos reales:
-   - API con 100 users: ~10ms
-   - Cart con 100 productos: ~5ms
-   - Estructura anidada compleja: ~1ms
-   - 1000 items con inferencia: <100ms
-
-⚡ Optimizaciones implementadas:
-   - Inferencia homogénea: analiza solo 1er elemento
-   - Metadata caché: no reanaliza tipos conocidos
-   - Deserialización lazy: solo procesa lo necesario
-   - Sin clonación innecesaria
-
-📦 Tamaño de la librería:
-   - Core: ~15KB minified
-   - Transformers: ~5KB
-   - Total: ~20KB minified + gzip ~5KB
-
-💡 Conclusión:
-   ✅ Overhead mínimo (<100μs por operación)
-   ✅ Escala bien con datos grandes
-   ✅ Inferencia no afecta performance significativamente
-   ✅ Librería liviana (<25KB)
-   ✅ Perfecta para producción
-    `);
-
 		// All benchmarks completed successfully
 		expect(typeof 'benchmark completed').toBe('string');
 	});

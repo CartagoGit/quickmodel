@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: no-console — console.log appears only in @example JSDoc blocks
+// to demonstrate usage; no actual console.log calls in production code.
 /**
  * @fileoverview Primitive transformer for QuickModel.
  *

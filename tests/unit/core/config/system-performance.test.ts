@@ -34,6 +34,8 @@ describe('System Performance Configuration', () => {
 	});
 
 	test('should disable freezing when performance.disableSafetyChecks is true via decorator', () => {
+		const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
 		@Quick(
 			{},
 			{
@@ -51,9 +53,13 @@ describe('System Performance Configuration', () => {
 		// Modification allowed
 		(user as any).name = 'Bob';
 		expect(user.name).toBe('Bob');
+
+		warnSpy.mockRestore();
 	});
 
 	test('should disable freezing when performance.disableSafetyChecks is true globally', () => {
+		const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
 		QConfig.configure({
 			defaults: {
 				performance: { disableSafetyChecks: true },
@@ -68,6 +74,8 @@ describe('System Performance Configuration', () => {
 		const user = GlobalFastUser.createReadonly({ name: 'Alice' });
 
 		expect(Object.isFrozen(user)).toBe(false);
+
+		warnSpy.mockRestore();
 	});
 
 	test('should override global config via decorator (disable -> enable)', () => {
@@ -94,6 +102,8 @@ describe('System Performance Configuration', () => {
 	});
 
 	test('should disable ObjectSizeValidator checks when disableSafetyChecks is true', () => {
+		const warnSpy = spyOn(Logger, 'warn').mockImplementation(() => {});
+
 		// We configure a very small limit, but disable checks.
 		// If checks were active, it would throw.
 		QConfig.configure({
@@ -118,6 +128,8 @@ describe('System Performance Configuration', () => {
 		});
 
 		expect(user.tags).toHaveLength(3);
+
+		warnSpy.mockRestore();
 	});
 
 	describe('disableSafetyChecks: security warning', () => {

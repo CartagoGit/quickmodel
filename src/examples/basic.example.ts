@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: no-console — this is a standalone demo script; console.log calls
+// are intentional output for the interactive example, not production library code.
 // @quickmodel-rule-ignore: no-as-unknown — example file uses structural bypass to demonstrate
 // runtime class instantiation patterns; these casts are not representative of user-facing API.
 /**

@@ -98,20 +98,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			metadata: new Map([['type', 'number']]),
 		});
 
-		console.log('\n=== TYPE ERASURE ===');
-		console.log(
-			'strContainer.constructor.name:',
-			strContainer.constructor.name
-		);
-		console.log(
-			'numContainer.constructor.name:',
-			numContainer.constructor.name
-		);
-		console.log(
-			'¿Son la misma clase?',
-			strContainer.constructor === numContainer.constructor
-		);
-
 		// Ambos son instancias de GenericContainer
 		expect(strContainer).toBeInstanceOf(GenericContainer);
 		expect(numContainer).toBeInstanceOf(GenericContainer);
@@ -134,7 +120,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			metadata: new Map(),
 		});
 
-		const valueType = Reflect.getMetadata(
+		const _valueType = Reflect.getMetadata(
 			'design:type',
 			container,
 			'value'
@@ -144,10 +130,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			container,
 			'metadata'
 		);
-
-		console.log('\n=== METADATA ===');
-		console.log('value design:type:', valueType?.name);
-		console.log('metadata design:type:', metadataType?.name);
 
 		// Metadata NO incluye el tipo genérico T
 		// Si value: T donde T = string, la metadata solo dice "Object"
@@ -172,20 +154,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			metadata: new Map([['type', 'number']]),
 		});
 
-		console.log('\n=== CLASES ESPECÍFICAS ===');
-		console.log(
-			'strContainer.constructor.name:',
-			strContainer.constructor.name
-		);
-		console.log(
-			'numContainer.constructor.name:',
-			numContainer.constructor.name
-		);
-		console.log(
-			'¿Son clases diferentes?',
-			strContainer.constructor !== numContainer.constructor
-		);
-
 		// Son clases DIFERENTES en runtime
 		expect(strContainer).toBeInstanceOf(StringContainer);
 		expect(numContainer).toBeInstanceOf(NumberContainer);
@@ -204,9 +172,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			numContainer,
 			'value'
 		);
-
-		console.log('StringContainer.value type:', strValueType?.name);
-		console.log('NumberContainer.value type:', numValueType?.name);
 
 		expect(strValueType).toBe(String);
 		expect(numValueType).toBe(Number);
@@ -229,14 +194,11 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			metadata: new Map([['type', 'model']]),
 		});
 
-		const valueType = Reflect.getMetadata(
+		const _valueType = Reflect.getMetadata(
 			'design:type',
 			container,
 			'value'
 		);
-
-		console.log('\n=== MODELO ANIDADO ===');
-		console.log('value design:type:', valueType?.name);
 
 		// Como SimpleModel es un tipo concreto (no genérico),
 		// TypeScript emite la metadata correcta
@@ -260,11 +222,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 
 		const IQSerialized = original.serialize();
 		const deserialized = StringContainer.deserialize(IQSerialized);
-
-		console.log('\n=== SERIALIZACIÓN ===');
-		console.log('Original:', original.value);
-		console.log('IQSerialized:', JSON.stringify(IQSerialized, null, 2));
-		console.log('Deserialized:', deserialized.value);
 
 		// Funciona correctamente
 		expect(deserialized).toBeInstanceOf(StringContainer);
@@ -316,10 +273,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			count: 2,
 		});
 
-		console.log('\n=== ARRAYS DE GENÉRICOS ===');
-		console.log('items[0]:', list.items[0]);
-		console.log('¿items[0] es Task?', list.items[0] instanceof Task);
-
 		// ✅ La inferencia automática funciona SIN @QType(Task)
 		// Analiza las propiedades {taskId, description, completed}
 		// y encuentra que coinciden con Task
@@ -333,34 +286,6 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 	});
 
 	test('Conclusión: Los genéricos son para type-safety, no para runtime', () => {
-		console.log('\n=== CONCLUSIÓN ===');
-		console.log(`
-✅ Genéricos en TypeScript:
-   - Proporcionan type-safety en COMPILE-TIME
-   - Se borran completamente en RUNTIME (type erasure)
-   - No afectan la metadata emitida por TypeScript
-
-✅ QModel funciona correctamente porque:
-   - Usa reflect-metadata para tipos concretos (Date, BigInt, etc.)
-   - Usa inferencia runtime para arrays (analiza propiedades)
-   - NO depende de los genéricos para funcionar
-   - NO necesita @QType(ModelClass) - solo @QType()
-
-⚠️  Limitación:
-   - GenericContainer<string> y GenericContainer<number>
-     son indistinguibles en runtime
-   - Si necesitas distinguirlos, usa clases específicas
-   - Si dos modelos tienen EXACTAMENTE las mismas propiedades,
-     usa @QType(ModelClass) explícito para desambiguar
-
-✅ Recomendación:
-   - Usa genéricos para type-safety (IModel<T>)
-   - QModel<IUser> funciona perfectamente
-   - Solo @QType() sin argumentos es suficiente
-   - El sistema detecta tipos reales en runtime
-   - Los genéricos no interfieren con el funcionamiento
-    `);
-
 		expect(typeof 'genéricos en QModel').toBe('string'); // Test documenta comportamiento
 	});
 });

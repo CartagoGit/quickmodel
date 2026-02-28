@@ -164,7 +164,7 @@ export class QIntegratePrompt extends QAbstractPrompt<{
 						(model_code
 							? `Use the schema I provided above.`
 							: `Here is a sample data object from ${library} for the use case "${use_case}":\n` +
-								`\`\`\`typescript\n// TODO: paste a sample ${library} data object here\n\`\`\``) +
+								`\`\`\`typescript\n// FILL IN: paste a sample ${library} data object here\n\`\`\``) +
 						`\n\nGenerate the QuickModel DTO, validate it, simulate the transformation, ` +
 						`and generate the integration test suite.`
 				),

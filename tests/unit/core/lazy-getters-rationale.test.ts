@@ -6,8 +6,6 @@ import { describe, test, expect } from 'bun:test';
 
 describe('Sin lazy getters', () => {
 	test('Comparación: Con lazy getters vs Sin lazy getters', () => {
-		console.log('\n=== COMPARACIÓN ===\n');
-
 		// Versión 1: CON lazy getters (como funciona QModel actualmente)
 		class ModelConGetters {
 			__quickValues__: any = {};
@@ -46,18 +44,6 @@ describe('Sin lazy getters', () => {
 		const conGetters = new ModelConGetters({ id: 1, name: 'Test' });
 		const sinGetters = new ModelSinGetters({ id: 1, name: 'Test' });
 
-		console.log('--- CON Lazy Getters ---');
-		console.log('conGetters.id:', conGetters.id);
-		console.log('conGetters.name:', conGetters.name);
-		console.log('conGetters.__quickValues__:', conGetters.__quickValues__);
-		console.log('Object.keys(conGetters):', Object.keys(conGetters));
-
-		console.log('\n--- SIN Lazy Getters ---');
-		console.log('sinGetters.id:', (sinGetters as any).id);
-		console.log('sinGetters.name:', (sinGetters as any).name);
-		console.log('sinGetters.__quickValues__:', sinGetters.__quickValues__);
-		console.log('Object.keys(sinGetters):', Object.keys(sinGetters));
-
 		// Verificaciones
 		expect(conGetters.id).toBe(1);
 		expect((sinGetters as any).id).toBeUndefined(); // ❌ No hay getter
@@ -65,8 +51,6 @@ describe('Sin lazy getters', () => {
 	});
 
 	test('Problemas sin lazy getters', () => {
-		console.log('\n\n=== PROBLEMAS SIN LAZY GETTERS ===\n');
-
 		class ModelSinGetters {
 			__quickValues__: any = {};
 			constructor(data: any) {
@@ -76,64 +60,42 @@ describe('Sin lazy getters', () => {
 
 		const model = new ModelSinGetters({ id: 1, name: 'Test', age: 25 });
 
-		console.log(
-			'❌ Problema 1: No puedes acceder a las propiedades directamente'
-		);
-		console.log('   model.id:', (model as any).id);
-		console.log(
-			'   Deberías usar: model.__quickValues__.id:',
-			model.__quickValues__.id
-		);
+		// Sin lazy getters, las propiedades no son accesibles directamente
+		expect((model as any).id).toBeUndefined();
+		expect((model as any).name).toBeUndefined();
+		// Los datos sí están en __quickValues__
+		expect(model.__quickValues__.id).toBe(1);
 
-		console.log('\n❌ Problema 2: Serialización JSON incompleta');
+		// JSON.stringify solo serializa __quickValues__, no las propiedades directas
 		const json = JSON.stringify(model);
-		console.log('   JSON.stringify(model):', json);
-		console.log('   (Solo incluye __quickValues__, no las propiedades)');
+		const parsed = JSON.parse(json) as Record<string, unknown>;
+		expect(Object.keys(parsed)).toContain('__quickValues__');
+		// Las propiedades NO son claves de nivel raíz (solo están dentro de __quickValues__)
+		expect(Object.keys(parsed)).not.toContain('id');
+		expect(Object.keys(parsed)).not.toContain('name');
 
-		console.log('\n❌ Problema 3: Iteración con for..in no funciona');
-		console.log('   for (let key in model):');
-		for (const key in model) {
-			console.log(`     ${key}: ${(model as any)[key]}`);
-		}
-		console.log('   (Solo muestra __quickValues__)');
+		// Object.keys solo devuelve __quickValues__
+		expect(Object.keys(model)).toEqual(['__quickValues__']);
 
-		console.log(
-			'\n❌ Problema 4: Object.keys() no devuelve las propiedades'
-		);
-		console.log('   Object.keys(model):', Object.keys(model));
-		console.log(
-			'   Deberías usar: Object.keys(model.__quickValues__):',
-			Object.keys(model.__quickValues__)
-		);
-
-		console.log('\n❌ Problema 5: Spreads no funcionan');
+		// Spread solo copia __quickValues__
 		const spread = { ...model };
-		console.log('   { ...model }:', spread);
-		console.log('   (Solo copia __quickValues__)');
+		expect(spread).not.toHaveProperty('id');
+		expect(spread).toHaveProperty('__quickValues__');
 
-		console.log(
-			'\n❌ Problema 6: TypeScript piensa que las propiedades existen'
-		);
 		interface IUser {
 			id: number;
 			name: string;
 		}
 		class UserSinGetters extends ModelSinGetters implements IUser {
-			declare id: number; // TypeScript: "Esta propiedad existe"
-			declare name: string; // TypeScript: "Esta propiedad existe"
+			declare id: number;
+			declare name: string;
 		}
 		const user = new UserSinGetters({ id: 1, name: 'John' });
-		// TypeScript permite esto sin errores:
-		console.log(
-			'   user.id (TypeScript dice que existe):',
-			(user as any).id
-		);
-		console.log('   Pero en runtime es:', typeof (user as any).id);
+		// TypeScript permite acceder a user.id pero en runtime es undefined
+		expect((user as any).id).toBeUndefined();
 	});
 
 	test('Ventajas de los lazy getters', () => {
-		console.log('\n\n=== VENTAJAS DE LOS LAZY GETTERS ===\n');
-
 		class ModelConGetters {
 			__quickValues__: any = {};
 			constructor(data: any) {
@@ -155,45 +117,28 @@ describe('Sin lazy getters', () => {
 
 		const model = new ModelConGetters({ id: 1, name: 'Test', age: 25 });
 
-		console.log('✅ Ventaja 1: Acceso directo natural');
-		console.log('   model.id:', (model as any).id);
+		// Con lazy getters, las propiedades son accesibles directamente
+		expect((model as any).id).toBe(1);
+		expect((model as any).name).toBe('Test');
 
-		console.log('\n✅ Ventaja 2: Serialización JSON completa');
+		// JSON.stringify incluye todas las propiedades
 		const json = JSON.stringify(model);
-		console.log('   JSON.stringify(model):', json);
+		expect(json).toContain('"id":1');
+		expect(json).toContain('"name":"Test"');
 
-		console.log('\n✅ Ventaja 3: Iteración funciona');
-		console.log('   for (let key in model):');
-		for (const key in model) {
-			if (!key.startsWith('__')) {
-				console.log(`     ${key}: ${(model as any)[key]}`);
-			}
-		}
+		// Object.keys incluye las propiedades (además de __quickValues__)
+		const keys = Object.keys(model).filter((key) => !key.startsWith('__'));
+		expect(keys).toContain('id');
+		expect(keys).toContain('name');
+		expect(keys).toContain('age');
 
-		console.log('\n✅ Ventaja 4: Object.keys() correcto');
-		console.log(
-			'   Object.keys(model).filter(k => !k.startsWith("__")):',
-			Object.keys(model).filter((key) => !key.startsWith('__'))
-		);
-
-		console.log('\n✅ Ventaja 5: Spreads funcionan');
+		// Spreads incluyen las propiedades
 		const spread = { ...model };
 		delete (spread as any).__quickValues__;
-		console.log('   { ...model }:', spread);
-
-		console.log('\n✅ Ventaja 6: TypeScript y runtime coinciden');
-		console.log('   model.name existe en TypeScript: ✓');
-		console.log(
-			'   model.name existe en runtime:',
-			typeof (model as any).name
-		);
+		expect(spread).toMatchObject({ id: 1, name: 'Test', age: 25 });
 	});
 
 	test('Alternativa sin getters: Copiar propiedades directamente', () => {
-		console.log(
-			'\n\n=== ALTERNATIVA: COPIAR PROPIEDADES DIRECTAMENTE ===\n'
-		);
-
 		class ModelCopiado {
 			__quickValues__: any = {};
 
@@ -209,20 +154,13 @@ describe('Sin lazy getters', () => {
 
 		const model = new ModelCopiado({ id: 1, name: 'Test' });
 
-		console.log('Propiedades copiadas:');
-		console.log('  model.id:', (model as any).id);
-		console.log('  model.name:', (model as any).name);
+		// Las propiedades son accesibles (copiadas directamente)
+		expect((model as any).id).toBe(1);
+		expect((model as any).name).toBe('Test');
 
-		console.log('\n❌ Problema: Los datos están duplicados');
-		console.log('  model.__quickValues__:', model.__quickValues__);
-		console.log('  model.id también almacenado directamente');
-		console.log('  Memoria duplicada: ✗');
-
-		console.log('\n❌ Problema: Cambios no se sincronizan');
+		// Pero al mutar la propiedad directa, __quickValues__ queda desincronizado
 		(model as any).id = 999;
-		console.log('  Después de model.id = 999:');
-		console.log('    model.id:', (model as any).id);
-		console.log('    model.__quickValues__.id:', model.__quickValues__.id);
-		console.log('  (Están desincronizados!)');
+		expect((model as any).id).toBe(999);
+		expect(model.__quickValues__.id).toBe(1); // __quickValues__ NO se actualizó
 	});
 });

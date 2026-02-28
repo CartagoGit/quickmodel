@@ -1,5 +1,6 @@
 // @quickmodel-rule-ignore: no-as-unknown — QModel is a metaprogramming framework;
 // structural type bypasses for dynamic constructor dispatch, `this`-as-record,
+// @quickmodel-rule-ignore: no-console — console.log appears only in @example JSDoc blocks to demonstrate usage.
 // deepFreeze result narrowing, mixin pattern, and prototype mutation are unavoidable.
 /**
  * QModel - Type-safe serialization and mock generation for TypeScript models

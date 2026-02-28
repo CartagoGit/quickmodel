@@ -42,7 +42,8 @@ describe('New Internal Tools', () => {
 				location: loc,
 			});
 
-			expect(result.message).toContain('complete');
+			expect(result.message).toContain('Scaffolded');
+			expect(result.testPath).toBe('');
 			const expPath = join(
 				process.cwd(),
 				loc,
@@ -61,7 +62,8 @@ describe('New Internal Tools', () => {
 				location: loc,
 			});
 
-			expect(result.message).toContain('complete');
+			expect(result.message).toContain('Scaffolded');
+			expect(result.testPath).toBe('');
 			const expPath = join(process.cwd(), loc, 'my-new-tool.tool.ts');
 			expect(existsSync(expPath)).toBe(true);
 		});
@@ -105,7 +107,7 @@ describe('New Internal Tools', () => {
 
 			expect(content).toContain('QAbstractTool');
 			expect(content).toContain('execute');
-			expect(content).toContain("import { z } from 'zod'");
+			expect(content).toContain("import { z } from '@mcp/deps'");
 		});
 	});
 

@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: no-console — string literals in descriptions reference console.log
+// as a pattern to detect in @example blocks; no actual console.log calls in this file.
 import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import * as fs from 'fs';

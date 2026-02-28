@@ -1,5 +1,7 @@
 // @quickmodel-rule-ignore: no-as-unknown — this file contains string literals describing the rule,
 // which include the text "as unknown" as part of error messages; these are not TypeScript casts.
+// @quickmodel-rule-ignore: no-console — string literals in rule descriptions and warning messages
+// reference "console.log" as example text; no actual console.log calls exist in this file.
 import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';

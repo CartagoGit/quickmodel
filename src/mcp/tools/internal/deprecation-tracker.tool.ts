@@ -124,15 +124,18 @@ export class QDeprecationTrackerTool extends QAbstractTool<
 		while (jsdocMatch !== null) {
 			const jsdocBody = jsdocMatch[1] ?? '';
 
-			if (!/@deprecated/.test(jsdocBody)) {
+			// Only match @deprecated when it appears as a JSDoc tag at the start of
+			// a line (e.g. " * @deprecated ..."), not when mentioned in description text
+			if (!/\n[ \t]*\*[ \t]+@deprecated/.test(jsdocBody)) {
 				jsdocMatch = jsdocRegex.exec(content);
 				continue;
 			}
 
-			// Extract @deprecated message
-			const deprecatedMatch = /@deprecated\s*(.*?)(?=@|\*\/|$)/s.exec(
-				jsdocBody
-			);
+			// Extract @deprecated message (only from a proper JSDoc tag line)
+			const deprecatedMatch =
+				/\n[ \t]*\*[ \t]+@deprecated\s*(.*?)(?=\n[ \t]*\*[ \t]+@|\*\/|$)/s.exec(
+					jsdocBody
+				);
 			const rawMessage = deprecatedMatch
 				? (deprecatedMatch[1] ?? '').replace(/\n\s*\*\s*/g, ' ').trim()
 				: '';

@@ -77,15 +77,28 @@ export class QImplementFeaturePrompt extends QAbstractInternalPrompt<{
 					`## 🔴→🟢 TDD implementation of: ${feature_description}\n\n` +
 						`Follow this mandatory cycle. **You are NOT done until all gates pass.**\n\n` +
 						`---\n\n` +
+						`### Step 0 — 🏗️ Scaffold first (new tools & transformers only)\n\n` +
+						`If this feature requires creating a **new tool or transformer** (not modifying existing code), ` +
+						`call \`scaffold_feature\` BEFORE writing anything:\n` +
+						`\`\`\`json\n{ "type": "tool", "name": "my-feature-name" }\n\`\`\`\n` +
+						`or\n` +
+						`\`\`\`json\n{ "type": "transformer", "name": "my-type-name" }\n\`\`\`\n\n` +
+						`This generates:\n` +
+						`- The **source file** with typed STEP comments (correct imports, class structure, registration reminder)\n` +
+						`- A **test skeleton** already placed at the right path, ready for TDD assertions\n\n` +
+						`Use the returned \`testPath\` as your test file in Steps 1–2.\n` +
+						`Skip this step if modifying existing files.\n\n` +
+						`---\n\n` +
 						`### Step 1 — 🔴 Write the failing test first\n\n` +
 						`Before writing any production code:\n` +
-						`1. Create the test file (e.g. \`tests/mcp/unit/...\`)\n` +
+						`1. Use the test skeleton from Step 0 (or create one at e.g. \`tests/mcp/unit/...\`)\n` +
 						`2. Write tests that describe the expected behaviour\n` +
 						`3. Run \`bun test <test-file>\` — tests MUST fail at this point\n` +
 						`4. Confirm "X pass, Y fail" in the output\n\n` +
 						`---\n\n` +
 						`### Step 2 — 🟢 Implement the minimum code to pass\n\n` +
 						`Now write the production code:\n` +
+						`- If scaffolded in Step 0, fill in the \`STEP\` comments in the source file\n` +
 						`- Follow **strict TypeScript** (\`strict: true\`, \`noImplicitAny\`, \`noUncheckedIndexedAccess\`)\n` +
 						`- **Avoid \`as unknown\`**: it signals that the types are wrong — fix them instead. \`as any\` is even worse and never acceptable. If there is a genuinely unavoidable edge case, add \`// @quickmodel-rule-ignore: no-as-unknown\` on that line.\n` +
 						`- Respect **ESLint rules**:\n` +
