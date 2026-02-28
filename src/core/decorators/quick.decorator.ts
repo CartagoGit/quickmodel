@@ -678,7 +678,7 @@ export function Quick<
 		// Add static method for creating instances (used by deserializer)
 		// This allows us to bypass the field initialization problem with `!`
 		// Properties are already registered by the decorator, so we just create the instance
-		(target as unknown as Record<string, Function>).__createQuickInstance =
+		(target as unknown as Record<string, Function>).__createQuickInstance = // @quickmodel-rule-ignore: no-as-unknown — adding a hidden static factory to the class prototype; constructor type has no index signature
 			function (_data: Record<string, unknown>) {
 				// Create instance without calling constructor
 				const instance = Object.create(target.prototype);

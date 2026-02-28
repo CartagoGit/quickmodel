@@ -383,7 +383,7 @@ export class PopulationService {
 		const reusableTransformCtx = {
 			propertyKey: '',
 			className: classNameCached,
-			metadata: undefined as unknown as Record<string, unknown>,
+			metadata: undefined as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown — placeholder overwritten per field in the hot-path loop
 		};
 
 		// OPT#4c: Lazy recursionContext — only created when a field actually needs recursive population.

@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 /**
  * CRITICAL TESTS: Null & Undefined Safety
  *
@@ -279,25 +280,19 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 
 describe('Null Safety: Edge Cases', () => {
 	test('should handle null as entire model data', () => {
-		try {
-			new User(null as unknown as IUser);
-
-			// Might not throw, just log
-			console.warn('⚠️  Null model data accepted without error');
-		} catch (error) {
-			expect(error).toBeDefined();
-		}
+		// QModel accepts null gracefully — does not throw, fields become undefined
+		const user = new User(null as unknown as IUser);
+		expect(user).toBeInstanceOf(User);
+		expect(user.id).toBeUndefined();
+		expect(user.name).toBeUndefined();
 	});
 
 	test('should handle undefined as entire model data', () => {
-		try {
-			new User(undefined as unknown as IUser);
-
-			// Might not throw, just log
-			console.warn('⚠️  Undefined model data accepted without error');
-		} catch (error) {
-			expect(error).toBeDefined();
-		}
+		// QModel accepts undefined gracefully — does not throw, fields become undefined
+		const user = new User(undefined as unknown as IUser);
+		expect(user).toBeInstanceOf(User);
+		expect(user.id).toBeUndefined();
+		expect(user.name).toBeUndefined();
 	});
 
 	test('should handle empty object', () => {

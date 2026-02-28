@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 /**
  * Unit tests for IntegrityService — covers core validation behaviour and
  * the WeakMap caches added for performance (class meta + merged opts).

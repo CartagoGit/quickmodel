@@ -1,3 +1,6 @@
+// @quickmodel-rule-ignore: no-as-unknown — ToInterfaceService accesses private
+// __initData via dynamic key lookup and reconstructs generic T from recursive calls;
+// both require structural bypasses that TypeScript's strict mode can't infer.
 import { QUICK_OPTIONS_KEY } from '../constants/metadata-keys';
 import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
 

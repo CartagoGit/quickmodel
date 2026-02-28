@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: no-as-unknown — SecurityInspector instantiates an
+// arbitrary class constructor with unknown arity; TypeScript has no way to type this.
 /**
  * SecurityInspector - Handles security validations during model population
  *

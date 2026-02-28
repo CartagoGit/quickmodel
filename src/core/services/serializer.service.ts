@@ -1,3 +1,6 @@
+// @quickmodel-rule-ignore: no-as-unknown — serializer uses `this`-as-record for
+// dynamic key access and returns a sentinel value typed as TInterface to abort
+// circular-reference cycles; both patterns are structurally unavoidable.
 /**
  * Service for serializing model instances to JSON-compatible format.
  *

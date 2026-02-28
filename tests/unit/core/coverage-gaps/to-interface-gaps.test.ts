@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, spyOn } from 'bun:test';
 import { QModel, Quick } from '../../../../src';
 import { ToInterfaceService } from '../../../../src/core/services/to-interface.service';
 
@@ -234,7 +234,12 @@ describe('ToInterface Coverage Gaps', () => {
 
 		process.env.NODE_ENV = 'production';
 		// Should not throw, should return current value (string)
+		const consoleSpy = spyOn(console, 'error').mockImplementation(
+			() => undefined
+		);
 		const res = mismatchModel.toInterface();
+		expect(consoleSpy).toHaveBeenCalled();
+		consoleSpy.mockRestore();
 		expect(res).toEqual({ obj: 'not-an-object' });
 
 		process.env.NODE_ENV = originalEnv;

@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: no-as-unknown — spreading a runtime-constructed Record
+// into a generic TData result cannot be expressed without a structural bypass.
 /**
  * Service for generating mock data for models.
  * Uses faker to generate realistic random data.

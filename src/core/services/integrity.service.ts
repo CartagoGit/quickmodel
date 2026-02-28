@@ -396,11 +396,12 @@ export class IntegrityService {
 				if (
 					transformer &&
 					'checkIntegrity' in transformer &&
-					typeof (transformer as unknown as IQIntegrityChecker)
-						.checkIntegrity === 'function'
+					typeof (transformer as Record<string, unknown>)[
+						'checkIntegrity'
+					] === 'function'
 				) {
-					const checker =
-						transformer as unknown as IQIntegrityChecker;
+					const checker = transformer as typeof transformer &
+						IQIntegrityChecker;
 					const context = {
 						propertyKey: key,
 						className: className,

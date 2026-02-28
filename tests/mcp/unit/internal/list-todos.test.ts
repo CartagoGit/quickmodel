@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { QListTodosTool } from '../../../../src/mcp/tools/internal/list-todos.tool';
 import { join } from 'path';

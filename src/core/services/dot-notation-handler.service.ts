@@ -151,7 +151,7 @@ export class DotNotationHandler {
 					DataView,
 				];
 
-				if (transformableTypes.includes(arrayElementClass as unknown)) {
+				if (transformableTypes.includes(arrayElementClass)) {
 					current[lastKey] =
 						this.valueTransformer.transformNestedArray(
 							value,

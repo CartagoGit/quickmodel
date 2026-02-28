@@ -154,18 +154,21 @@
 	},
 	"files": [
 		"dist",
+		"api-manifest.json",
 		"README.md",
 		"LICENSE",
 		"CHANGELOG.md"
 	],
 	"sideEffects": false,
 	"scripts": {
-		"build": "bun run clean && bun run check && tsup",
+		"build": "bun run clean && bun run check && tsup && bun run build:manifest",
+		"build:manifest": "bun run scripts/generate-api-manifest.ts",
 		"check": "bun run format && bun run lint && bun run typecheck && bun test",
 		"mcp": "bun run src/mcp/server.ts",
 		"mcp:setup": "bun run scripts/setup-mcp.ts",
 		"dev": "tsup --watch",
 		"test": "bun test",
+		"test:noise": "bun test 2>&1 | grep -vE '^\\s*(\\(pass\\)|\\(fail\\)|\\(skip\\)|[0-9]+ (pass|fail|skip)|[0-9]+ expect\\(\\)|Ran [0-9]+|bun test v|tests/.*\\.test\\.ts:)' | grep -v '^\\s*$'",
 		"test:coverage": "bun test --coverage",
 		"bench": "bun --expose-gc test tests/performance",
 		"bench:compare": "bun --expose-gc test tests/performance/comparison-benchmarks.test.ts",

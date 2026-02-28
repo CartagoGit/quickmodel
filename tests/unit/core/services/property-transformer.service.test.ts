@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { PropertyTransformer } from '@/core/services/property-transformer.service';
 import { ValueTransformerService } from '@/core/services/value-transformer.service';

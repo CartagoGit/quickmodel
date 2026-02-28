@@ -1,0 +1,45 @@
+{
+	"version": "1.0.0",
+	"generatedAt": "2026-02-28T22:01:13.290Z",
+	"publicExports": [
+		"IQImplements",
+		"QModel",
+		"IQCreateManyOptions",
+		"IQCreateManyError",
+		"IQCreateManyResult",
+		"IQValidationReport",
+		"Quick",
+		"QConfig",
+		"IQFormSchemaEntry",
+		"IQFormSchemaGroup",
+		"IQAliasedSerializedInterface",
+		"IQAdvancedOptions",
+		"QModelCollection",
+		"IQCollectionRulesResult"
+	],
+	"transformers": [
+		"special-float",
+		"typed-array",
+		"primitive",
+		"buffer",
+		"date",
+		"weak-collections",
+		"error",
+		"symbol",
+		"bigint",
+		"map-set",
+		"web-apis",
+		"regexp"
+	],
+	"decorators": [
+		"@Qrule()",
+		"@Qtype()",
+		"@Qgroup()",
+		"@Qalias()",
+		"@Quick()",
+		"@Qsensitive()",
+		"@Qfield()",
+		"@Qcomputed()"
+	],
+	"migrationNotes": ""
+}

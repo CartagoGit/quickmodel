@@ -1,8 +1,13 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from '@mcp/deps';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import type { IQMcpTool } from './tools/abstract-tool';
 import type { IQMcpPrompt } from './prompts/abstract-prompt';
+import type { IQMcpResource } from './resources/abstract-resource';
+import { QProjectStateResource } from './resources/internal/project-state.resource';
+import { QApiReferenceResource } from './resources/external/api-reference.resource';
 import {
 	QFromTypescriptPrompt,
 	QDebugModelPrompt,
@@ -139,6 +144,41 @@ export class QMcpServer {
 			name: options?.name || name,
 			version: options?.version || version,
 		});
+	}
+
+	/**
+	 * Detects whether the MCP server is running inside the QuickModel source repo
+	 * (internal mode) or from an external consumer project.
+	 *
+	 * @param cwd - Directory to inspect. Defaults to `process.cwd()`.
+	 * @returns `true` when `src/mcp/server.ts` exists in `cwd` (internal repo).
+	 *
+	 * @see {@link QMcpServer.getDefaultResources} — uses this to pick the right resource
+	 */
+	public static isInternalMode(cwd: string = process.cwd()): boolean {
+		return existsSync(join(cwd, 'src', 'mcp', 'server.ts'));
+	}
+
+	/**
+	 * Returns the appropriate MCP resource for the current execution context.
+	 *
+	 * - **Internal mode** (running inside the QuickModel repo): returns
+	 *   `QProjectStateResource` — live project state, version, changed files,
+	 *   public exports, and path aliases.
+	 * - **External mode** (running from a consumer project): returns
+	 *   `QApiReferenceResource` — versioned public API manifest bundled with
+	 *   the npm package.
+	 *
+	 * @returns Array containing the single appropriate `IQMcpResource` instance.
+	 *
+	 * @see {@link QMcpServer.isInternalMode} — detection logic
+	 * @see {@link QProjectStateResource} — internal resource
+	 * @see {@link QApiReferenceResource} — external resource
+	 */
+	public static getDefaultResources(): IQMcpResource[] {
+		return QMcpServer.isInternalMode()
+			? [new QProjectStateResource()]
+			: [new QApiReferenceResource()];
 	}
 
 	/**
@@ -284,6 +324,40 @@ export class QMcpServer {
 	}
 
 	/**
+	 * Registers a collection of MCP resources on the underlying `McpServer`.
+	 *
+	 * Each resource is registered with its `name`, `uri`, `description`, `mimeType`,
+	 * and a read callback that delegates to `resource.read()` on every access.
+	 *
+	 * @param resources - Array of `IQMcpResource` instances to register.
+	 *
+	 * @see {@link QMcpServer.getDefaultResources} — returns the appropriate resource set
+	 * @see {@link QProjectStateResource} — internal project state resource
+	 * @see {@link QApiReferenceResource} — external API reference resource
+	 */
+	public registerResources(resources: IQMcpResource[]): void {
+		for (const resource of resources) {
+			this.server.registerResource(
+				resource.name,
+				resource.uri,
+				{
+					description: resource.description,
+					mimeType: resource.mimeType,
+				},
+				async (uri) => ({
+					contents: [
+						{
+							uri: uri.toString(),
+							mimeType: resource.mimeType,
+							text: await resource.read(),
+						},
+					],
+				})
+			);
+		}
+	}
+
+	/**
 	 * Registers a collection of prompts on the underlying `McpServer`.
 	 *
 	 * @param prompts - Array of `IQMcpPrompt` instances to register.
@@ -388,6 +462,7 @@ if (import.meta.main) {
 	const server = new QMcpServer();
 	server.registerTools(QMcpServer.getDefaultTools());
 	server.registerPrompts(QMcpServer.getDefaultPrompts());
+	server.registerResources(QMcpServer.getDefaultResources());
 
 	server.start().catch((error) => {
 		console.error('Fatal error in MCP Server:', error);

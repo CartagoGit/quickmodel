@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';

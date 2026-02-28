@@ -6,7 +6,10 @@ import {
 	QFIELD_METADATA_KEY,
 } from '../../../core/decorators/qfield.decorator';
 import type { IQFieldMeta } from '../../../core/decorators/qfield.decorator';
-import { QGROUP_METADATA_KEY } from '../../../core/decorators/qgroup.decorator';
+import {
+	QGROUP_METADATA_KEY,
+	type IQFormSchemaGroup,
+} from '../../../core/decorators/qgroup.decorator';
 
 /** @internal Intermediate representation of a parsed `@QField`-decorated property. */
 interface IParsedField {
@@ -63,7 +66,10 @@ export class QGetFormSchemaTool extends QAbstractTool<
 	async execute(args: {
 		code: string;
 		grouped?: boolean;
-	}): Promise<{ schema: Array<Record<string, unknown>>; count: number }> {
+	}): Promise<{
+		schema: IQFormSchemaGroup[] | Array<Record<string, unknown>>;
+		count: number;
+	}> {
 		await Promise.resolve();
 
 		const parsedFields = this.parseFields(args.code);
@@ -92,12 +98,10 @@ export class QGetFormSchemaTool extends QAbstractTool<
 		}
 		Reflect.defineMetadata(QFIELD_FIELDS_KEY, fieldNames, proto);
 
-		let schema: Array<Record<string, unknown>>;
+		let schema: IQFormSchemaGroup[] | Array<Record<string, unknown>>;
 
 		if (args.grouped) {
-			schema = DynamicForm.getFormSchemaGrouped() as unknown as Array<
-				Record<string, unknown>
-			>;
+			schema = DynamicForm.getFormSchemaGrouped();
 		} else {
 			schema = DynamicForm.getFormSchema() as Array<
 				Record<string, unknown>

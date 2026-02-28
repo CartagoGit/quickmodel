@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 /**
  * Backend Framework Integration Patterns — QuickModel
  * (Express / Fastify / Hono)
