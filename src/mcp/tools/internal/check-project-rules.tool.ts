@@ -1,3 +1,5 @@
+// @quickmodel-rule-ignore: no-as-unknown — this file contains string literals describing the rule,
+// which include the text "as unknown" as part of error messages; these are not TypeScript casts.
 import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { readFileSync, readdirSync, statSync } from 'fs';
