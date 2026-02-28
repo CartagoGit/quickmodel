@@ -40,7 +40,7 @@ class ProfileDto extends QModel<IProfileDto> { ... }
 
 ### Serialización y deserialización
 
-**BlobTransformer** hacer un round-trip de objetos `Blob` mediante un descriptor ligero:
+**BlobTransformer** hace un round-trip de objetos `Blob` mediante un descriptor ligero:
 
 ```typescript
 // Forma serializada
@@ -198,6 +198,65 @@ para todos los métodos HTTP estándar (RFC 7231, WebDAV, DeltaV) más un comod�
 import type { IQSpoofMethod } from 'quickmodel';
 
 const methods: IQSpoofMethod[] = ['PUT', 'PATCH', 'DELETE', 'PURGE', 'SEARCH'];
+```
+
+### fileMode por campo — `@QType({ fileMode })`
+
+Cuando un campo _siempre_ necesita una estrategia de serialización concreta
+independientemente del punto de llamada, decláralo directamente en la propiedad con
+`@QType`. Así evitas repetir el override en cada llamada a `toFormData()`.
+
+```typescript
+class UploadDto extends QModel<IUploadDto> {
+	declare name: string;
+
+	// Siempre serializar como base64 — consumidor de API legacy
+	@QType({ type: File, fileMode: 'base64' })
+	declare signature: File;
+
+	// Siempre mantener referencia de ruta — asset gestionado por CDN
+	@QType({ type: File, fileMode: 'reference' })
+	declare thumbnail: File;
+}
+```
+
+**Orden de prioridad (menor → mayor):**
+
+| Nivel                           | Dónde                                 | Se aplica a                      |
+| ------------------------------- | ------------------------------------- | -------------------------------- |
+| **Decorador**                   | `@QType({ fileMode })`                | ese campo en todas las llamadas  |
+| **Opción de llamada**           | `toFormData({ fileMode })`            | todos los campos en esta llamada |
+| **Opción de llamada por campo** | `toFormData({ fields: { k: mode } })` | ese campo en esta llamada        |
+
+Una opción de llamada por campo siempre gana. Si no se proporciona ninguna opción de
+llamada, se aplica el valor del decorador. Si el decorador no tiene `fileMode`, el
+campo vuelve a `'auto'` por defecto.
+
+### serialize({ fileMode }) — campos binarios en JSON plano
+
+`serialize()` también acepta `fileMode` para controlar cómo se representan los campos
+`File`/`Blob` en la salida de objeto plano / JSON — útil para logging, caché o
+transporte por una API que no usa multipart.
+
+```typescript
+// Default: File → { name, size, type, lastModified }
+const plain = dto.serialize();
+
+// Solo referencia — sin datos binarios en la salida JSON
+const plain = dto.serialize({ fileMode: 'reference' });
+// { avatar: 'foto.jpg', ... }
+
+// Base64 — incrustar el binario dentro del JSON
+const plain = dto.serialize({ fileMode: 'base64' });
+// { avatar: 'data:image/jpeg;base64,/9j/...', ... }
+```
+
+**Default global con `QConfig`:**
+
+```typescript
+QConfig.set({ defaults: { fileMode: 'reference' } });
+// cada llamada a serialize() / toFormData() usará 'reference' por defecto
+// salvo que se sobreescriba a nivel de decorador o de llamada
 ```
 
 ---

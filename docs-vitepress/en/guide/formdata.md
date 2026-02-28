@@ -200,6 +200,65 @@ import type { IQSpoofMethod } from 'quickmodel';
 const methods: IQSpoofMethod[] = ['PUT', 'PATCH', 'DELETE', 'PURGE', 'SEARCH'];
 ```
 
+### fileMode per field — `@QType({ fileMode })`
+
+When a field _always_ needs a specific serialization strategy regardless of the call
+site, declare it directly on the property with `@QType`. This avoids repeating the
+override in every `toFormData()` call.
+
+```typescript
+class UploadDto extends QModel<IUploadDto> {
+	declare name: string;
+
+	// Always serialize as base64 — legacy API consumer
+	@QType({ type: File, fileMode: 'base64' })
+	declare signature: File;
+
+	// Always keep path reference — CDN-managed asset
+	@QType({ type: File, fileMode: 'reference' })
+	declare thumbnail: File;
+}
+```
+
+**Priority order (lowest → highest):**
+
+| Level                     | Where                                 | Applied to               |
+| ------------------------- | ------------------------------------- | ------------------------ |
+| **Decorator**             | `@QType({ fileMode })`                | that field in every call |
+| **Call option**           | `toFormData({ fileMode })`            | all fields in this call  |
+| **Per-field call option** | `toFormData({ fields: { k: mode } })` | that field in this call  |
+
+A field-level call option always wins. If neither call option is provided, the
+decorator default applies. If the decorator has no `fileMode`, the field falls back to
+`'auto'`.
+
+### serialize({ fileMode }) — binary fields in plain JSON
+
+`serialize()` also accepts `fileMode` so you can control how `File`/`Blob` fields
+are represented in plain-object / JSON output — useful for logging, caching, or
+transport over a non-multipart API.
+
+```typescript
+// Default: File → { name, size, type, lastModified }
+const plain = dto.serialize();
+
+// Reference only — no binary data in the JSON output
+const plain = dto.serialize({ fileMode: 'reference' });
+// { avatar: 'foto.jpg', ... }
+
+// Base64 — embed the binary inside the JSON
+const plain = dto.serialize({ fileMode: 'base64' });
+// { avatar: 'data:image/jpeg;base64,/9j/...', ... }
+```
+
+**Global default via `QConfig`:**
+
+```typescript
+QConfig.set({ defaults: { fileMode: 'reference' } });
+// every serialize() / toFormData() call now defaults to 'reference'
+// unless overridden at decorator or call level
+```
+
 ---
 
 ## Layer 4 — Streaming
