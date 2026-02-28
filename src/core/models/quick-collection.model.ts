@@ -7,7 +7,7 @@ import type { IQSerializationOptions } from '@/core/interfaces/serializer.interf
  * Any `QModel` subclass satisfies this interface automatically.
  * @internal
  */
-export interface IQModelInstance {
+export interface IQCollectionItem {
 	serialize(opts?: IQSerializationOptions): object;
 	checkRules(): IQRulesResult;
 }
@@ -35,7 +35,7 @@ interface ISortByOptions {
  * A typed constructor that can instantiate a `QModel`-like class.
  * @internal
  */
-type IQModelCtor<TInstance extends IQModelInstance> = new (
+type IQModelCtor<TInstance extends IQCollectionItem> = new (
 	data: Record<string, unknown>
 ) => TInstance;
 
@@ -66,7 +66,7 @@ type IQModelCtor<TInstance extends IQModelInstance> = new (
  * @see {@link QModel.collection} — static alias on each model class
  * @see {@link QModel.createMany} — creates instances but returns a plain array
  */
-export class QModelCollection<TInstance extends IQModelInstance> {
+export class QModelCollection<TInstance extends IQCollectionItem> {
 	readonly #items: TInstance[];
 	readonly #ctor: IQModelCtor<TInstance>;
 
@@ -90,7 +90,7 @@ export class QModelCollection<TInstance extends IQModelInstance> {
 	 * const col = QModelCollection.from(UserModel, await db.select().from(users));
 	 * ```
 	 */
-	static from<TInstance extends IQModelInstance>(
+	static from<TInstance extends IQCollectionItem>(
 		ctor: IQModelCtor<TInstance>,
 		data: Array<Record<string, unknown>>
 	): QModelCollection<TInstance> {

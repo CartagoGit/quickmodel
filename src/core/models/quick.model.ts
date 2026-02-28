@@ -64,7 +64,7 @@ import {
 import { QSENSITIVE_FIELDS_KEY } from '@/core/decorators/qsensitive.decorator';
 import {
 	QModelCollection,
-	type IQModelInstance,
+	type IQCollectionItem,
 } from '@/core/models/quick-collection.model';
 import { deepFreeze } from '@/core/helpers/transform-helpers';
 import { QConfig } from '@/core/config/quick.config';
@@ -572,7 +572,7 @@ export abstract class QModel<
 	 * @see {@link QModelCollection.from} — underlying factory method
 	 * @see {@link QModel.createMany} — similar but returns a plain array with error reporting
 	 */
-	static collection<TInst extends IQModelInstance>(
+	static collection<TInst extends IQCollectionItem>(
 		this: new (data: Record<string, unknown>) => TInst,
 		data: Array<Record<string, unknown>>
 	): QModelCollection<TInst> {
