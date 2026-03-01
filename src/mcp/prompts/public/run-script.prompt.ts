@@ -94,7 +94,9 @@ export class QRunScriptPrompt extends QAbstractInternalPrompt<{
 						`| Check | Requirement |\n` +
 						`|-------|-------------|\n` +
 						`| Minimal | Does it do exactly what is needed and nothing else? |\n` +
-						`| Safe paths | Are file paths constructed safely? No path traversal risk |\n` +
+						`| Safe paths | File paths are safe. NEVER use /tmp — use ./tmp/ of the project instead |\n` +
+						`| No \`>\` redirects | **NEVER** use \`>\` or \`>>\` — they can trigger VS Code approval prompts that block the agent. Use \`| tee ./tmp/file.txt\` to capture output. To write/edit files use VS Code tools: replace_string_in_file / create_file |\n` +
+						`| No file edits via terminal | NEVER edit source files using head/tail/sed/awk + \`>\`. Use replace_string_in_file or create_file tools |\n` +
 						`| No credentials | No tokens, keys or passwords embedded in the script |\n` +
 						`| No destructive writes | If it writes files, are they the ones we intend to change? |\n` +
 						`| Error handling | Does it exit non-zero on failure? |\n` +

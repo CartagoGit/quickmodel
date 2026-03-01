@@ -4,19 +4,20 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname, join } from 'path';
 
 /**
- * Default TTL in milliseconds (30 minutes).
- * Agents doing long-running work should call `update` (heartbeat) periodically to refresh.
- * Entries that exceed this threshold without a heartbeat are auto-purged on the next registry read,
- * which prevents indefinite blocking when an agent crashes or VS Code restarts.
+ * Default TTL in milliseconds (5 minutes).
+ * Any call to `execute()` that carries a valid `agentId` with an active claim automatically
+ * refreshes the TTL — no explicit `update` call needed as long as the agent is making requests.
+ * If no activity is observed for this duration the entry is auto-purged on the next registry
+ * read, freeing the files for other agents.
  */
-const DEFAULT_TTL_MS = 30 * 60 * 1000;
+const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
 /**
- * Default staleness threshold (5 minutes) used by `force` claim.
- * If the conflicting agent's last `updatedAt` is older than this, `force: true` will override the lock,
- * assuming the agent crashed or was terminated without calling `release`.
+ * Default staleness threshold (1 minute) used by `force` claim.
+ * If the conflicting agent's last `updatedAt` is older than this, `force: true` will override
+ * the lock, assuming the agent crashed or VS Code restarted.
  */
-const DEFAULT_STALE_MS = 5 * 60 * 1000;
+const DEFAULT_STALE_MS = 60 * 1000;
 
 /** A single active agent entry in the registry. */
 interface IAgentEntry {
@@ -319,11 +320,18 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	_ttlMs: number = DEFAULT_TTL_MS;
 
 	/**
-	 * @internal Staleness threshold for `force` claim override (default: 5 minutes).
+	 * @internal Staleness threshold for `force` claim override (default: 1 minute).
 	 * When `force: true` is passed to `claim`, a conflicting agent whose `updatedAt`
 	 * is older than this value is considered crashed and its lock is overridden.
 	 */
 	_staleCrashMs: number = DEFAULT_STALE_MS;
+
+	/**
+	 * @internal Path to the human-readable status file written after every registry mutation.
+	 * Any agent or developer can read `tmp/agent-status.md` to see current state at a glance.
+	 * Override in tests to avoid polluting `tmp/`.
+	 */
+	_statusPath: string = join(process.cwd(), 'tmp', 'agent-status.md');
 
 	// ── Registry I/O ──────────────────────────────────────────────────────────
 
@@ -368,6 +376,72 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			JSON.stringify(reg, null, 2),
 			'utf-8'
 		);
+		this.writeStatusFile(reg);
+	}
+
+	/**
+	 * Writes a human-readable markdown table to `tmp/agent-status.md` after every mutation.
+	 * Acts as a live "notice board": agents and developers can read the file directly
+	 * instead of calling `check`. Never throws — status is informational.
+	 */
+	private writeStatusFile(reg: IAgentRegistry): void {
+		const now = new Date();
+		const agents = Object.values(reg.agents);
+
+		const formatAgo = (iso: string): string => {
+			const diffMs = now.getTime() - new Date(iso).getTime();
+			if (diffMs < 1000) return 'just now';
+			const sec = Math.floor(diffMs / 1000);
+			if (sec < 60) return `${sec}s ago`;
+			const min = Math.floor(sec / 60);
+			const rem = sec % 60;
+			return rem === 0 ? `${min}m ago` : `${min}m ${rem}s ago`;
+		};
+
+		const formatExpiry = (iso: string): string => {
+			const diffMs = new Date(iso).getTime() - now.getTime();
+			if (diffMs <= 0) return 'EXPIRED';
+			const sec = Math.ceil(diffMs / 1000);
+			if (sec < 60) return `${sec}s`;
+			const min = Math.floor(sec / 60);
+			const rem = sec % 60;
+			return rem === 0 ? `${min}m` : `${min}m ${rem}s`;
+		};
+
+		const rows =
+			agents.length === 0
+				? '_No active agents._'
+				: [
+						'| Agent | Task | Files | Last activity | Expires in |',
+						'|-------|------|-------|---------------|------------|',
+						...agents.map(
+							(agt) =>
+								`| ${agt.agentId} | ${agt.task} | ${
+									agt.files.length > 0
+										? agt.files
+												.map((fil) => `\`${fil}\``)
+												.join(', ')
+										: '—'
+								} | ${formatAgo(agt.updatedAt)} | ${formatExpiry(agt.expiresAt)} |`
+						),
+					].join('\n');
+
+		const content = [
+			'# Agent Coordination Status',
+			`_Updated: ${now.toISOString()} — ${agents.length} active agent(s)_`,
+			'',
+			rows,
+			'',
+			'> TTL: 5 min of inactivity auto-releases the lock.',
+			'> Any `agent_coordinate` call with a valid `agentId` acts as an implicit heartbeat.',
+		].join('\n');
+
+		try {
+			mkdirSync(dirname(this._statusPath), { recursive: true });
+			writeFileSync(this._statusPath, content, 'utf-8');
+		} catch {
+			// Status file is informational — never fail the main operation
+		}
 	}
 
 	private makeExpiry(ttlMs?: number): string {
@@ -568,10 +642,13 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		};
 	}
 
-	// ── execute ───────────────────────────────────────────────────────────────
-
 	/**
 	 * Executes the requested coordination action.
+	 *
+	 * Before dispatching, implicitly refreshes the TTL of the calling agent if they have
+	 * an active claim and the action is `check`. This means any agent that is monitoring
+	 * the registry (e.g. watching for new agents) keeps their lock alive automatically —
+	 * no explicit `update` call needed while the agent is actively working.
 	 *
 	 * @param args - Validated coordination arguments.
 	 * @returns A structured result whose shape depends on the action.
@@ -587,6 +664,23 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	}): Promise<ICoordinateResult> {
 		await Promise.resolve();
 		const { reg, purgedStale } = this.readRegistry();
+
+		// ── Implicit heartbeat ────────────────────────────────────────────────
+		// Any check() call from an agent that already has a claim silently refreshes
+		// their TTL, simulating websocket-style "connection = liveness". We skip this
+		// for claim (handler sets it itself), release, and purge (intentional removals).
+		const { agentId, action } = args;
+		if (agentId && action === 'check') {
+			const entry = reg.agents[agentId];
+			if (entry) {
+				reg.agents[agentId] = {
+					...entry,
+					updatedAt: new Date().toISOString(),
+					expiresAt: this.makeExpiry(args.ttlMs),
+				};
+				this.saveRegistry(reg);
+			}
+		}
 
 		switch (args.action) {
 			case 'check':
