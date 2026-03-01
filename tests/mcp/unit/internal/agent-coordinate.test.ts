@@ -873,9 +873,9 @@ describe('QAgentCoordinateTool', () => {
 		});
 	});
 
-	// ── force threshold (1 min default) ──────────────────────────────────────
+	// ── force threshold (30 s default) ─────────────────────────────────────
 
-	describe('force threshold is 1 minute', () => {
+	describe('force threshold is 30 seconds', () => {
 		it('force=true does NOT override a claim that is only 30 seconds old', async () => {
 			const tool = makeTool();
 			const thirtySecAgo = new Date(Date.now() - 30 * 1000).toISOString();

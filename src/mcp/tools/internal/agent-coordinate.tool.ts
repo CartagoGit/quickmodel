@@ -13,20 +13,20 @@ import {
 import { dirname, join } from 'path';
 
 /**
- * Default TTL in milliseconds (5 minutes).
+ * Default TTL in milliseconds (2 minutes).
  * Any call to `execute()` that carries a valid `agentId` with an active claim automatically
  * refreshes the TTL — no explicit `update` call needed as long as the agent is making requests.
  * If no activity is observed for this duration the entry is auto-purged on the next registry
  * read, freeing the files for other agents.
  */
-const DEFAULT_TTL_MS = 5 * 60 * 1000;
+const DEFAULT_TTL_MS = 2 * 60 * 1000;
 
 /**
- * Default staleness threshold (1 minute) used by `force` claim.
+ * Default staleness threshold (30 seconds) used by `force` claim.
  * If the conflicting agent's last `updatedAt` is older than this, `force: true` will override
  * the lock, assuming the agent crashed or VS Code restarted.
  */
-const DEFAULT_STALE_MS = 60 * 1000;
+const DEFAULT_STALE_MS = 30 * 1000;
 
 /** A single active agent entry in the registry. */
 interface IAgentEntry {
@@ -214,10 +214,10 @@ type ICoordinateResult =
  * - `src/**` does NOT conflict with `tests/**`
  *
  * ### TTL and crash resilience
- * Claims expire automatically after **5 minutes** unless the agent sends a heartbeat — any
+ * Claims expire automatically after **2 minutes** unless the agent sends a heartbeat — any
  * `check` call that includes a valid `agentId` refreshes the TTL automatically.
  * Use `force: true` on `claim` to immediately override a lock whose `updatedAt` is older than
- * ~1 minute (configurable via `_staleCrashMs`). Stale entries are also pruned silently on every
+ * ~30 seconds (configurable via `_staleCrashMs`). Stale entries are also pruned silently on every
  * `readRegistry` call.
  *
  * @example
@@ -236,7 +236,7 @@ type ICoordinateResult =
  *
  * // 3b. Conflict from a crashed agent — force override:
  * await agent_coordinate({ action: 'claim', agentId: 'agent-C', task: 'update guide', files: ['docs-vitepress/en/guide/qmodel.md'], force: true });
- * // → { claimed: true } — if agent-A's updatedAt > 1 min ago (assumed crashed)
+ * // → { claimed: true } — if agent-A's updatedAt > 30 s ago (assumed crashed)
  * // → { claimed: false, conflict: true } — if agent-A is still actively sending heartbeats
  *
  * // 4. Heartbeat for long tasks (call every ~15 min):
@@ -276,11 +276,11 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		'Coordinate parallel agent work to prevent file conflicts. ' +
 		'action="check": list all active agents — ALWAYS call this first. ' +
 		'action="claim": register task + files; uses glob-aware overlap detection; returns conflict:true if blocked. ' +
-		'  Set force=true to override a stale lock (updatedAt older than ~1 min) from a crashed agent. ' +
+		'  Set force=true to override a stale lock (updatedAt older than ~30 s) from a crashed agent. ' +
 		'action="release": free the claim when done. ' +
 		'action="update": refresh TTL heartbeat for long-running tasks (call every ~15 min). ' +
 		'action="purge": forcibly clear stuck/stale claims (optional agentId to target one). ' +
-		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 5 min without heartbeat.';
+		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 2 min without heartbeat.';
 
 	schema = z.object({
 		action: z
@@ -310,17 +310,17 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			),
 		ttlMs: z
 			.number()
-			.max(1_800_000)
+			.max(600_000)
 			.optional()
 			.describe(
-				'Custom TTL in milliseconds for this claim. Defaults to 300000 (5 minutes). ' +
+				'Custom TTL in milliseconds for this claim. Defaults to 120000 (2 minutes). ' +
 					'Any check() call with agentId acts as an implicit heartbeat and resets this timer.'
 			),
 		force: z
 			.boolean()
 			.optional()
 			.describe(
-				'If true, overrides a conflicting claim whose updatedAt is older than ~1 min ' +
+				'If true, overrides a conflicting claim whose updatedAt is older than ~30 s ' +
 					'(i.e. the agent likely crashed or VS Code restarted). ' +
 					'Does NOT override a fresh, active claim — use purge for that.'
 			),
@@ -333,7 +333,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	_ttlMs: number = DEFAULT_TTL_MS;
 
 	/**
-	 * @internal Staleness threshold for `force` claim override (default: 1 minute).
+	 * @internal Staleness threshold for `force` claim override (default: 30 seconds).
 	 * When `force: true` is passed to `claim`, a conflicting agent whose `updatedAt`
 	 * is older than this value is considered crashed and its lock is overridden.
 	 */
@@ -383,11 +383,11 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	private static _lastActivityAt: number = 0;
 
 	/**
-	 * @internal Ticker interval in milliseconds (default 30 s).
+	 * @internal Ticker interval in milliseconds (default 60 s).
 	 * Override **before** the first claim in tests:
 	 * `QAgentCoordinateTool._tickerIntervalMs = 50;`
 	 */
-	static _tickerIntervalMs: number = 30_000;
+	static _tickerIntervalMs: number = 60_000;
 
 	/**
 	 * @internal Inactivity threshold in ms. When `> 0` it overrides the computed
@@ -414,7 +414,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		QAgentCoordinateTool._lastActivityAt = 0;
 		QAgentCoordinateTool._tickerRegistryPath = null;
 		QAgentCoordinateTool._tickerStatusPath = null;
-		QAgentCoordinateTool._tickerIntervalMs = 30_000;
+		QAgentCoordinateTool._tickerIntervalMs = 60_000;
 		QAgentCoordinateTool._inactivityThresholdMs = 0;
 	}
 
@@ -585,9 +585,9 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			'',
 			rows,
 			'',
-			'> TTL: 5 min of inactivity auto-releases the lock.',
+			'> TTL: 2 min of inactivity auto-releases the lock.',
 			'> Any `agent_coordinate` call with a valid `agentId` acts as an implicit heartbeat.',
-			'> Ticker: status refreshes every 30 s while agents are active; stops automatically on idle.',
+			'> Ticker: status refreshes every 60 s while agents are active; stops automatically on idle.',
 		].join('\n');
 
 		try {

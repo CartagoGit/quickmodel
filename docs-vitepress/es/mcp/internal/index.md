@@ -22,7 +22,7 @@ Las siguientes herramientas se usan para desarrollo interno.
 
 ## `agent_coordinate`
 
-Coordina el trabajo de agentes paralelos y previene conflictos de archivos. `check`: lista todos los agentes activos (llamar siempre primero). `claim`: registra tarea + archivos; usa detección glob-aware de solapamiento; devuelve `conflict:true` si bloqueado. `release`: libera el claim al terminar. `update`: refresca el heartbeat TTL (llamar cada ~15 min). `purge`: fuerza limpiar claims bloqueados. Registro en `tmp/agent-registry.json`; las entradas expiran en **5 min** sin heartbeat. Seguro entre procesos mediante lock atómico (`tmp/agent-registry.json.lock`).
+Coordina el trabajo de agentes paralelos y previene conflictos de archivos. `check`: lista todos los agentes activos (llamar siempre primero). `claim`: registra tarea + archivos; usa detección glob-aware de solapamiento; devuelve `conflict:true` si bloqueado. `release`: libera el claim al terminar. `update`: refresca el heartbeat TTL (llamar cada ~15 min). `purge`: fuerza limpiar claims bloqueados. Registro en `tmp/agent-registry.json`; las entradas expiran en **2 min** sin heartbeat. Seguro entre procesos mediante lock atómico (`tmp/agent-registry.json.lock`).
 
 ```json
 {
@@ -42,7 +42,7 @@ Coordina el trabajo de agentes paralelos y previene conflictos de archivos. `che
 		"optional": true
 	},
 	"ttlMs": {
-		"description": "TTL personalizado en ms para este claim. Por defecto 300000 (5 minutos). Cualquier llamada check() con agentId actúa como heartbeat implícito.",
+		"description": "TTL personalizado en ms para este claim. Por defecto 120000 (2 minutos). Cualquier llamada check() con agentId actúa como heartbeat implícito.",
 		"optional": true
 	},
 	"force": {

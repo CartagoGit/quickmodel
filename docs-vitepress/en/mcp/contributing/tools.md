@@ -32,14 +32,14 @@ Coordinate parallel agent work and prevent file conflicts. Multiple VS Code wind
 1. Agent calls `claim` → declares which files it will touch → stored in `tmp/agent-registry.json`
 2. Any other agent calling `claim` with overlapping files gets `conflict: true` immediately
 3. Agent calls `release` when done → entry deleted from the registry
-4. If an agent crashes without releasing, its entry expires automatically after 5 min (TTL)
+4. If an agent crashes without releasing, its entry expires automatically after 2 min (TTL)
 
 ### Safety mechanisms
 
 - **Glob-aware conflict detection** — `src/**` conflicts with `src/core/qm.ts`; `docs/en/**` does NOT conflict with `docs/es/**`
 - **Implicit heartbeat** — any `check` call with `agentId` automatically renews the TTL (no need to call `update` while actively working)
 - **Cross-process file lock** — atomic `open('wx')` ensures only one of N concurrent processes writes at a time; stale locks (process crashed) auto-removed after 5 s
-- **`force` override** — if a conflicting agent's `updatedAt` is older than ~1 min, `force: true` overrides its lock (assumed crashed)
+- **`force` override** — if a conflicting agent's `updatedAt` is older than ~30 s, `force: true` overrides its lock (assumed crashed)
 
 ### Actions
 
@@ -71,11 +71,11 @@ Coordinate parallel agent work and prevent file conflicts. Multiple VS Code wind
 		"optional": true
 	},
 	"ttlMs": {
-		"description": "Custom TTL in milliseconds for this claim. Defaults to 300000 (5 minutes). Any check() call with agentId acts as an implicit heartbeat.",
+		"description": "Custom TTL in milliseconds for this claim. Defaults to 120000 (2 minutes). Any check() call with agentId acts as an implicit heartbeat.",
 		"optional": true
 	},
 	"force": {
-		"description": "If true, overrides a conflicting claim whose updatedAt is older than ~1 min (likely crashed). Does NOT override a fresh active claim.",
+		"description": "If true, overrides a conflicting claim whose updatedAt is older than ~30 s (likely crashed). Does NOT override a fresh active claim.",
 		"optional": true
 	}
 }

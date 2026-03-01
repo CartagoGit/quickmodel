@@ -78,9 +78,9 @@ Función clave: `patternsOverlap(patA, patB)` → conservadora (prefiere falso p
 
 ## TTL y heartbeat implícito
 
-- TTL por defecto: **5 minutos** (`DEFAULT_TTL_MS = 5 * 60 * 1000`)
+- TTL por defecto: **2 minutos** (`DEFAULT_TTL_MS = 2 * 60 * 1000`)
 - Cualquier llamada a `check` con `agentId` válido **renueva automáticamente** el TTL — el agente no necesita llamar a `update` mientras esté haciendo `check` periódicamente
-- TTL personalizable por claim con el campo `ttlMs` (máx. 30 min)
+- TTL personalizable por claim con el campo `ttlMs`
 
 ---
 
@@ -89,7 +89,7 @@ Función clave: `patternsOverlap(patA, patB)` → conservadora (prefiere falso p
 Las entradas expiradas se eliminan en tres momentos distintos:
 
 1. **En cada `execute()`** — `readRegistry()` barre expirados antes de hacer cualquier operación y reescribe el JSON si borró algo
-2. **Ticker en background** — corre cada 30 s mientras haya agentes activos; purga expirados y actualiza `agent-status.md`; se detiene solo cuando el JSON queda vacío o tras inactividad > 60 s
+2. **Ticker en background** — corre cada 60 s mientras haya agentes activos; purga expirados y actualiza `agent-status.md`; se detiene solo cuando el JSON queda vacío o tras inactividad > 120 s
 3. **`release` explícito** — elimina la entrada al instante sin esperar el TTL
 
 El JSON nunca crece indefinidamente: solo contiene agentes **activos en ese momento**.
@@ -159,11 +159,11 @@ statSync(lockPath).mtimeMs → antigüedad > _lockStaleMs → unlinkSync(lockPat
 
 ## `force` — tomar el control de un agente crasheado
 
-Si un agente tiene un claim activo (TTL no expirado) pero lleva más de 1 minuto sin heartbeat (`updatedAt` viejo), otro agente puede usar `force: true` para sobrescribir su claim. El threshold es configurable con `_staleCrashMs` (default `DEFAULT_STALE_MS = 60_000`).
+Si un agente tiene un claim activo (TTL no expirado) pero lleva más de 30 segundos sin heartbeat (`updatedAt` viejo), otro agente puede usar `force: true` para sobrescribir su claim. El threshold es configurable con `_staleCrashMs` (default `DEFAULT_STALE_MS = 30_000`).
 
 ```
-force=true + updatedAt hace 2 min → override ✅ (asumimos crash)
-force=true + updatedAt hace 30 s  → conflict ✅ (agente sigue activo)
+force=true + updatedAt hace 2 min  → override ✅ (asumimos crash)
+force=true + updatedAt hace 20 s   → conflict ✅ (agente sigue activo)
 ```
 
 ---
@@ -187,7 +187,7 @@ Fichero: `tests/mcp/unit/internal/agent-coordinate.test.ts` — **60 tests**.
 | Update edge cases                   | 2     |
 | agent-status.md                     | 3     |
 | Implicit heartbeat                  | 4     |
-| Force threshold 1 min               | 2     |
+| Force threshold 30 s                | 2     |
 | Ticker                              | 6     |
 | Lock / cross-process mutex          | 5     |
 

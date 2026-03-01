@@ -71,11 +71,11 @@ Coordina el trabajo de agentes paralelos y previene conflictos de archivos. Cada
 		"optional": true
 	},
 	"ttlMs": {
-		"description": "TTL personalizado en ms para este claim. Por defecto 300000 (5 minutos). Cualquier llamada check() con agentId actúa como heartbeat implícito.",
+		"description": "TTL personalizado en ms para este claim. Por defecto 120000 (2 minutos). Cualquier llamada check() con agentId actúa como heartbeat implícito.",
 		"optional": true
 	},
 	"force": {
-		"description": "Si true, anula un claim conflictivo cuyo updatedAt tiene más de ~1 min (probablemente crasheado). NO anula un claim activo fresco.",
+		"description": "Si true, anula un claim conflictivo cuyo updatedAt tiene más de ~30 s (probablemente crasheado). NO anula un claim activo fresco.",
 		"optional": true
 	}
 }
