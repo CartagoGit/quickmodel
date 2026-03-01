@@ -323,7 +323,7 @@ describe('QModelCollection — flatMap()', () => {
 		// Generate two tag strings per product
 		const tags = col.flatMap((prod) => [
 			prod.category,
-			`${p.category}-alt`,
+			`${prod.category}-alt`,
 		]);
 		expect(tags).toHaveLength(10);
 		expect(tags[0]).toBe('fruit');
