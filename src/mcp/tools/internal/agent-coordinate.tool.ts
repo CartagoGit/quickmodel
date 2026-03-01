@@ -271,7 +271,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		'action="release": free the claim when done. ' +
 		'action="update": refresh TTL heartbeat for long-running tasks (call every ~15 min). ' +
 		'action="purge": forcibly clear stuck/stale claims (optional agentId to target one). ' +
-		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 30 min without heartbeat.';
+		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 5 min without heartbeat.';
 
 	schema = z.object({
 		action: z
@@ -441,17 +441,8 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	}
 
 	/**
-	 * Delegates to the static helper using this instance's `_statusPath`.
-	 * @internal
-	 */
-	private writeStatusFile(reg: IAgentRegistry): void {
-		QAgentCoordinateTool._writeStatusToPath(this._statusPath, reg);
-	}
-
-	/**
-	 * Writes the markdown status table to `statusPath`. Used by both the instance
-	 * (`writeStatusFile`) and the static ticker (`_runTick`) so the logic
-	 * lives in exactly one place.
+	 * Writes the markdown status table to `statusPath`. Used by both `saveRegistry`
+	 * and the static ticker (`_runTick`) so the logic lives in exactly one place.
 	 *
 	 * Never throws — the file is informational only.
 	 * @internal
