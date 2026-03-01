@@ -1,42 +1,62 @@
 /**
- * SchemaToModelService — reverse of `QModel.getSchema()`.
+ * SchemaToModelService — inverse of `QModel.getSchema()`.
  *
- * Converts a formal schema (JSON Schema Draft-07 or OpenAPI component schema)
- * into a complete QuickModel class definition (TypeScript source string).
+ * Converts a formal schema back into a complete QuickModel class definition
+ * (TypeScript source string). The API mirrors `getSchema()` exactly:
  *
- * This is the **inverse** of `QModel.getSchema('json')` / `getSchema('openapi')`:
- * - `getSchema('json')` exports the model structure → JSON Schema
- * - `SchemaToModelService.fromJsonSchema(schema)` imports a JSON Schema → QModel class
+ * ```typescript
+ * // Forward: model → schema
+ * const json = User.getSchema('json');         // Record<string, unknown>
+ * const ts   = User.getSchema('typescript');   // string (TS interface)
  *
- * **Zero runtime dependencies** — pure string composition.
+ * // Reverse: schema → model class
+ * const code = QModel.fromSchema('json', json, 'User');
+ * const code2 = QModel.fromSchema('typescript', ts, 'User');
+ * ```
+ *
+ * **Supported formats** (the ones whose output can be parsed back):
+ *
+ * | Format         | Input type              | Parser                              |
+ * |----------------|-------------------------|-------------------------------------|
+ * | `'json'`       | `Record<string,unknown>`| JSON Schema Draft-07 properties map |
+ * | `'openapi'`    | `Record<string,unknown>`| OpenAPI 3.0 component schema / doc  |
+ * | `'ajv'`        | `Record<string,unknown>`| AJV-compatible JSON Schema (= json) |
+ * | `'typescript'` | `string`                | TypeScript `interface` source       |
  *
  * JSON Schema → QuickModel type-mapping:
  *
- * | JSON Schema type                    | @Quick transformer | TypeScript type      |
- * |-------------------------------------|--------------------|----------------------|
- * | `string`                            | _(none)_           | `string`             |
- * | `string` + `format: date-time/date` | `Date`             | `Date`               |
- * | `string` + `format: bigint`         | `BigInt`           | `bigint`             |
- * | `number`                            | `Number`           | `number`             |
- * | `integer`                           | `Number`           | `number`             |
- * | `integer` + `format: int64`         | `BigInt`           | `bigint`             |
- * | `boolean`                           | `Boolean`          | `boolean`            |
- * | `array` + `items.type: string`      | `[String]`         | `string[]`           |
- * | `array` + `items.type: number`      | `[Number]`         | `number[]`           |
- * | `array` + `items.type: boolean`     | `[Boolean]`        | `boolean[]`          |
- * | `array` + `items (date-time)`       | `[Date]`           | `Date[]`             |
- * | `array` (no items)                  | _(none)_           | `unknown[]`          |
+ * | JSON Schema type + format           | @Quick transformer | TypeScript type           |
+ * |-------------------------------------|--------------------|---------------------------|
+ * | `string`                            | _(none)_           | `string`                  |
+ * | `string` + `format: date-time/date` | `Date`             | `Date`                    |
+ * | `string` + `format: bigint`         | `BigInt`           | `bigint`                  |
+ * | `number`                            | `Number`           | `number`                  |
+ * | `integer`                           | `Number`           | `number`                  |
+ * | `integer` + `format: int64`         | `BigInt`           | `bigint`                  |
+ * | `boolean`                           | `Boolean`          | `boolean`                 |
+ * | `array` + `items: string`           | `[String]`         | `string[]`                |
+ * | `array` + `items: number`           | `[Number]`         | `number[]`                |
+ * | `array` + `items: boolean`          | `[Boolean]`        | `boolean[]`               |
+ * | `array` + `items: date-time`        | `[Date]`           | `Date[]`                  |
+ * | `array` (no items)                  | _(none)_           | `unknown[]`               |
  * | `object`                            | _(none)_           | `Record<string, unknown>` |
- * | _(unknown)_                         | _(none)_           | `unknown`            |
+ * | _(unknown)_                         | _(none)_           | `unknown`                 |
+ *
+ * **Zero runtime dependencies** — pure string composition.
  *
  * @see {@link QModel.fromSchema} — static entry point on QModel
  * @see {@link QFromSchemaTool} — MCP tool wrapping this service
  * @module core/services/schema-to-model
  */
 
+import type {
+	IFromSchemaFormat,
+	IFromSchemaInput,
+} from '@/core/types/schema-types';
+
 // ── Internal types ───────────────────────────────────────────────────────────
 
-/** @internal Minimal JSON Schema property descriptor used for type mapping. */
+/** @internal Minimal JSON Schema property descriptor. */
 interface IJsonSchemaProp {
 	type?: string;
 	format?: string;
@@ -51,131 +71,89 @@ interface IJsonSchemaObject {
 	required?: string[];
 }
 
-/** @internal OpenAPI document shape (minimal — only what we need). */
-interface IOpenApiDoc {
+/** @internal OpenAPI document shape (minimal). */
+interface IOpenApiDoc extends IJsonSchemaObject {
 	components?: {
 		schemas?: Record<string, IJsonSchemaObject>;
 	};
-	// Allow also being used as a direct schema object
-	type?: string;
-	title?: string;
-	properties?: Record<string, IJsonSchemaProp>;
-	required?: string[];
 }
-
-// ── Type-mapping helpers ─────────────────────────────────────────────────────
 
 /** @internal Result of mapping a single JSON Schema property. */
 interface IFieldMapping {
-	/** Transformer token for @Quick (e.g. 'Number', '[Date]') or undefined if not needed. */
+	/** Transformer token for @Quick or `undefined` if not needed (default = string). */
 	transformer: string | undefined;
-	/** TypeScript type string (e.g. 'number', 'Date', 'string[]'). */
+	/** TypeScript type string. */
 	tsType: string;
 }
 
+// ── JSON Schema property mapper ──────────────────────────────────────────────
+
 /**
  * @internal Maps a single JSON Schema property descriptor to QModel tokens.
- * @param forArrayItem - When true, plain `string` returns transformer `String`
- *   (needed for `[String]` array notation in @Quick).
+ * @param forArrayItem - When true, plain `string` items return `'String'`
+ *   so the caller can build `[String]` notation.
  */
-function mapProperty(
+function mapJsonSchemaProp(
 	prop: IJsonSchemaProp,
 	forArrayItem = false
 ): IFieldMapping {
 	const typ = (prop.type ?? '').toLowerCase();
 	const fmt = (prop.format ?? '').toLowerCase();
 
-	// Array
 	if (typ === 'array') {
-		if (!prop.items) {
-			return { transformer: undefined, tsType: 'unknown[]' };
-		}
-		// For array items, always pass forArrayItem=true so string items get transformer 'String'
-		const inner = mapProperty(prop.items, true);
+		if (!prop.items) return { transformer: undefined, tsType: 'unknown[]' };
+		const inner = mapJsonSchemaProp(prop.items, true);
 		const arr = inner.transformer ? `[${inner.transformer}]` : undefined;
 		const arrTs =
 			inner.tsType === 'unknown' ? 'unknown[]' : `${inner.tsType}[]`;
 		return { transformer: arr, tsType: arrTs };
 	}
 
-	// boolean
-	if (typ === 'boolean') {
-		return { transformer: 'Boolean', tsType: 'boolean' };
-	}
+	if (typ === 'boolean') return { transformer: 'Boolean', tsType: 'boolean' };
 
-	// integer with int64 format → BigInt
-	if (typ === 'integer' && fmt === 'int64') {
+	if (typ === 'integer' && fmt === 'int64')
 		return { transformer: 'BigInt', tsType: 'bigint' };
-	}
+	if (typ === 'integer') return { transformer: 'Number', tsType: 'number' };
 
-	// integer (general) → Number
-	if (typ === 'integer') {
-		return { transformer: 'Number', tsType: 'number' };
-	}
+	if (typ === 'number') return { transformer: 'Number', tsType: 'number' };
 
-	// number → Number
-	if (typ === 'number') {
-		return { transformer: 'Number', tsType: 'number' };
-	}
-
-	// string variants
 	if (typ === 'string') {
-		if (fmt === 'date-time' || fmt === 'date') {
+		if (fmt === 'date-time' || fmt === 'date')
 			return { transformer: 'Date', tsType: 'Date' };
-		}
-		if (fmt === 'bigint') {
+		if (fmt === 'bigint')
 			return { transformer: 'BigInt', tsType: 'bigint' };
-		}
-		// Plain string — no transformer needed for single fields (@Quick default).
-		// For array items we need 'String' so @Quick can use [String] notation.
 		return {
 			transformer: forArrayItem ? 'String' : undefined,
 			tsType: 'string',
 		};
 	}
 
-	// object
-	if (typ === 'object') {
+	if (typ === 'object')
 		return { transformer: undefined, tsType: 'Record<string, unknown>' };
-	}
 
 	return { transformer: undefined, tsType: 'unknown' };
 }
 
-// ── Code generator ───────────────────────────────────────────────────────────
+// ── Code generator helpers ───────────────────────────────────────────────────
 
-/** @internal Generates QModel TypeScript source from a JSON Schema object. */
-function generateFromJsonSchemaObject(
-	schema: IJsonSchemaObject,
-	className: string
-): string {
+interface IRenderQModelClassArgs {
+	className: string;
+	interfaceLines: string[];
+	decoratorLines: string[];
+	declareLines: string[];
+}
+
+/** @internal Renders the import + interface + @Quick + class source. */
+function renderQModelClass({
+	className,
+	interfaceLines,
+	decoratorLines,
+	declareLines,
+}: IRenderQModelClassArgs): string {
 	const iName = `I${className}`;
-	const props = schema.properties ?? {};
-	const required = new Set(schema.required ?? []);
-
-	const quickDecorators: string[] = [];
-	const interfaceLines: string[] = [];
-	const declareLines: string[] = [];
-
-	for (const [key, prop] of Object.entries(props)) {
-		const { transformer, tsType } = mapProperty(prop);
-		const isRequired = required.has(key);
-		const optional = isRequired ? '' : '?';
-
-		// @Quick entry only when transformer is needed
-		if (transformer !== undefined) {
-			quickDecorators.push(`\t${key}: ${transformer}`);
-		}
-
-		interfaceLines.push(`\t${key}${optional}: ${tsType};`);
-		// declare lines never carry '?' — QModel property declarations are always non-optional;
-		// optionality is expressed through the interface generic parameter.
-		declareLines.push(`\tdeclare ${key}: ${tsType};`);
-	}
-
 	const quickConfig =
-		quickDecorators.length > 0
-			? `@Quick({\n${quickDecorators.join(',\n')}\n})`
+		decoratorLines.length > 0
+			? `@Quick({\n${decoratorLines.join(',\n')}\n})`
 			: '@Quick({})';
 
 	return [
@@ -193,91 +171,220 @@ function generateFromJsonSchemaObject(
 	].join('\n');
 }
 
+// ── JSON / OpenAPI / AJV → QModel ────────────────────────────────────────────
+
+/** @internal Parses a plain JSON Schema object (properties + required) into QModel code. */
+function fromJsonSchemaObject(
+	schema: IJsonSchemaObject,
+	className: string
+): string {
+	const props = schema.properties ?? {};
+	const required = new Set(schema.required ?? []);
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const [key, prop] of Object.entries(props)) {
+		const { transformer, tsType } = mapJsonSchemaProp(prop);
+		const optional = required.has(key) ? '' : '?';
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}${optional}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+// ── TypeScript interface → QModel ────────────────────────────────────────────
+
+/** @internal Infers a @Quick transformer token from a TypeScript type string. */
+function inferTransformerFromTsType(tsType: string): string | undefined {
+	if (tsType.includes('Date')) return 'Date';
+	if (tsType.includes('BigInt') || tsType === 'bigint') return 'BigInt';
+	if (tsType.includes('RegExp')) return 'RegExp';
+	if (tsType.startsWith('Set')) return 'Set';
+	if (tsType.startsWith('Map')) return 'Map';
+	if (tsType.startsWith('URL')) return 'URL';
+	if (tsType === 'number') return 'Number';
+	if (tsType === 'boolean') return 'Boolean';
+	if (tsType.endsWith('[]')) {
+		const elem = tsType.slice(0, -2).trim();
+		const inner = inferTransformerFromTsType(elem);
+		return inner ? `[${inner}]` : undefined;
+	}
+	return undefined;
+}
+
+/** @internal Parses a TypeScript interface string into QModel code. */
+function fromTypeScriptInterface(src: string, className?: string): string {
+	const interfaceMatch = src.match(/interface\s+(\w+)\s*{([\s\S]*?)}/);
+	if (!interfaceMatch) {
+		throw new Error(
+			'[QuickModel] fromSchema("typescript"): no interface declaration found in input. ' +
+				'Provide a TypeScript interface string (e.g. the output of getSchema("typescript")).'
+		);
+	}
+
+	const ifaceName = interfaceMatch[1] ?? 'IGeneratedModel';
+	const body = interfaceMatch[2] ?? '';
+
+	const baseName =
+		className ??
+		(ifaceName.startsWith('I') &&
+		ifaceName.length > 1 &&
+		ifaceName[1] === (ifaceName[1] ?? '').toUpperCase()
+			? ifaceName.slice(1)
+			: ifaceName);
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('//')) continue;
+
+		const propMatch = trim.match(/(\w+)(\??):\s*([^;]+);?/);
+		if (!propMatch) continue;
+
+		const key = propMatch[1];
+		const optional = propMatch[2] === '?' ? '?' : '';
+		const tsType = (propMatch[3] ?? 'string').trim();
+		const transformer = inferTransformerFromTsType(tsType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}${optional}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	const iName = `I${baseName}`;
+	const quickConfig =
+		decoratorLines.length > 0
+			? `@Quick({\n${decoratorLines.join(',\n')}\n})`
+			: '@Quick({})';
+
+	return [
+		`import { QModel, Quick } from 'quickmodel';`,
+		'',
+		`interface ${iName} {`,
+		...interfaceLines,
+		`}`,
+		'',
+		quickConfig,
+		`export class ${baseName} extends QModel<${iName}> {`,
+		...declareLines,
+		`}`,
+		'',
+	].join('\n');
+}
+
 // ── Public service ───────────────────────────────────────────────────────────
 
 /**
- * Converts a JSON Schema / OpenAPI schema into a QuickModel TypeScript class.
+ * Converts a formal schema (produced by `getSchema`) back into a QuickModel
+ * TypeScript class definition.
+ *
+ * This is the **inverse** of `QModel.getSchema()`:
+ * - `getSchema(format)` exports model structure → schema
+ * - `SchemaToModelService.fromSchema(format, schema)` imports schema → model class
  *
  * @example
  * ```typescript
- * const code = SchemaToModelService.fromJsonSchema({
- *   type: 'object',
- *   properties: { id: { type: 'number' }, name: { type: 'string' } },
- *   required: ['id'],
- * }, 'User');
- * // → TypeScript source for a User class extending QModel<IUser>
+ * // Round-trip: model → JSON Schema → model class
+ * const jsonSchema = User.getSchema('json');
+ * const code = SchemaToModelService.fromSchema('json', jsonSchema, 'User');
+ *
+ * // From a TypeScript interface string
+ * const tsInterface = User.getSchema('typescript');
+ * const code2 = SchemaToModelService.fromSchema('typescript', tsInterface, 'User');
  * ```
  *
- * @see {@link QModel.fromSchema} — public entry point
+ * @see {@link QModel.fromSchema} — static method on QModel
  * @see {@link QFromSchemaTool} — MCP tool
  */
 export class SchemaToModelService {
 	/**
-	 * Converts a JSON Schema Draft-07 object (with `type: 'object'` and
-	 * `properties`) into a QuickModel class definition.
+	 * Converts a schema (produced by `getSchema`) back into a QuickModel class.
 	 *
-	 * @param schema - JSON Schema object. Must have `type: 'object'` and `properties`.
-	 * @param className - Optional class name. Falls back to `schema.title`, then `'GeneratedModel'`.
-	 * @returns TypeScript source code string.
+	 * Supported formats:
+	 * - `'json'` — JSON Schema Draft-07 object (`Record<string, unknown>`)
+	 * - `'openapi'` — OpenAPI 3.0 component schema or full document (`Record<string, unknown>`)
+	 * - `'ajv'` — AJV JSON Schema object, same structure as `'json'`
+	 * - `'typescript'` — TypeScript interface source string
+	 *
+	 * @param format - Schema format (must match a supported `IFromSchemaFormat` value)
+	 * @param schema - The schema to convert (type depends on `format`)
+	 * @param className - Optional class name override. Falls back to `schema.title` or `'GeneratedModel'`.
+	 * @returns TypeScript source code string for a class extending `QModel`.
+	 * @throws {Error} For `'openapi'`: when `className` is not found in `components.schemas`.
+	 * @throws {Error} For `'typescript'`: when no `interface` declaration is found in the source.
 	 */
-	static fromJsonSchema(
-		schema: Record<string, unknown>,
+	static fromSchema<T extends IFromSchemaFormat>(
+		format: T,
+		schema: IFromSchemaInput<T>,
 		className?: string
 	): string {
-		const resolvedName =
-			className ??
-			(typeof (schema as IJsonSchemaObject).title === 'string'
-				? (schema as IJsonSchemaObject).title
-				: undefined) ??
-			'GeneratedModel';
+		switch (format) {
+			case 'json':
+			case 'ajv': {
+				const obj = schema as Record<string, unknown>;
+				const name =
+					className ??
+					(typeof (obj as IJsonSchemaObject).title === 'string'
+						? (obj as IJsonSchemaObject).title
+						: undefined) ??
+					'GeneratedModel';
+				return fromJsonSchemaObject(obj as IJsonSchemaObject, name);
+			}
 
-		return generateFromJsonSchemaObject(
-			schema as IJsonSchemaObject,
-			resolvedName
-		);
-	}
+			case 'openapi': {
+				const doc = schema as IOpenApiDoc;
+				if (doc.components?.schemas) {
+					const resolvedName =
+						className ??
+						Object.keys(doc.components.schemas)[0] ??
+						'GeneratedModel';
+					const inner = doc.components.schemas[resolvedName];
+					if (!inner) {
+						const available = Object.keys(
+							doc.components.schemas
+						).join(', ');
+						throw new Error(
+							`[QuickModel] fromSchema("openapi"): schema '${resolvedName}' not found in ` +
+								`components.schemas. Available: ${available || '(none)'}`
+						);
+					}
+					return fromJsonSchemaObject(inner, resolvedName);
+				}
+				const name =
+					className ??
+					(typeof doc.title === 'string' ? doc.title : undefined) ??
+					'GeneratedModel';
+				return fromJsonSchemaObject(doc as IJsonSchemaObject, name);
+			}
 
-	/**
-	 * Converts an OpenAPI document or component schema into a QuickModel class.
-	 *
-	 * Accepts two shapes:
-	 * 1. A full OpenAPI document with `components.schemas` — extracts the schema
-	 *    for `className` from `components.schemas[className]`.
-	 * 2. A bare OpenAPI/JSON Schema object (same as `fromJsonSchema`).
-	 *
-	 * @param doc - OpenAPI document or component schema object.
-	 * @param className - Class name to generate. When `doc` has `components.schemas`,
-	 *   this is also the key used to look up the schema.
-	 * @returns TypeScript source code string.
-	 * @throws {Error} When `components.schemas[className]` does not exist in the document.
-	 */
-	static fromOpenApiSchema(
-		doc: Record<string, unknown>,
-		className?: string
-	): string {
-		const typedDoc = doc as IOpenApiDoc;
+			case 'typescript': {
+				return fromTypeScriptInterface(schema as string, className);
+			}
 
-		// If it has components.schemas, look up the schema by className
-		if (typedDoc.components?.schemas) {
-			const resolvedName =
-				className ??
-				Object.keys(typedDoc.components.schemas)[0] ??
-				'GeneratedModel';
-
-			const schema = typedDoc.components.schemas[resolvedName];
-			if (!schema) {
-				const available = Object.keys(typedDoc.components.schemas).join(
-					', '
-				);
+			default: {
+				const exhaustive: never = format;
 				throw new Error(
-					`[QuickModel] Schema '${resolvedName}' not found in components.schemas. ` +
-						`Available: ${available || '(none)'}`
+					`[QuickModel] fromSchema: unsupported format '${exhaustive as string}'. ` +
+						`Supported: json, openapi, ajv, typescript.`
 				);
 			}
-			return generateFromJsonSchemaObject(schema, resolvedName);
 		}
-
-		// Treat doc as a bare JSON/OpenAPI schema object
-		return SchemaToModelService.fromJsonSchema(doc, className);
 	}
 }

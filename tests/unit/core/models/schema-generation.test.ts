@@ -63,20 +63,25 @@ describe('QModel Unified Schema Generation API', () => {
 		});
 
 		test('should include correct property types in JSON Schema', () => {
-			const schema = User.getSchema('json');
+			const schema = User.getSchema('json') as Record<
+				string,
+				Record<string, unknown>
+			>;
 
-			expect(schema.properties.id).toMatchObject({ type: 'number' });
-			expect(schema.properties.name).toMatchObject({ type: 'string' });
-			expect(schema.properties.email).toMatchObject({ type: 'string' });
-			expect(schema.properties.birth).toMatchObject({
+			expect(schema.properties['id']).toMatchObject({ type: 'number' });
+			expect(schema.properties['name']).toMatchObject({ type: 'string' });
+			expect(schema.properties['email']).toMatchObject({
+				type: 'string',
+			});
+			expect(schema.properties['birth']).toMatchObject({
 				type: 'string',
 				format: 'date-time',
 			});
-			expect(schema.properties.balance).toMatchObject({
+			expect(schema.properties['balance']).toMatchObject({
 				type: 'string',
 				pattern: '^-?\\d+$',
 			});
-			expect(schema.properties.tags).toMatchObject({
+			expect(schema.properties['tags']).toMatchObject({
 				type: 'array',
 				items: { type: 'string' },
 				uniqueItems: true,
@@ -108,20 +113,23 @@ describe('QModel Unified Schema Generation API', () => {
 				tags: ['typescript', 'node', 'bun'],
 			});
 
-			const schema = user.getSchema('json');
+			const schema = user.getSchema('json') as Record<
+				string,
+				Record<string, unknown>
+			>;
 
-			expect(schema.properties.id).toHaveProperty('example', 42);
-			expect(schema.properties.name).toHaveProperty(
+			expect(schema.properties['id']).toHaveProperty('example', 42);
+			expect(schema.properties['name']).toHaveProperty(
 				'example',
 				'John Doe'
 			);
-			expect(schema.properties.email).toHaveProperty(
+			expect(schema.properties['email']).toHaveProperty(
 				'example',
 				'john@example.com'
 			);
-			expect(schema.properties.birth).toHaveProperty('example');
-			expect(schema.properties.balance).toHaveProperty('example');
-			expect(schema.properties.tags).toHaveProperty('example');
+			expect(schema.properties['birth']).toHaveProperty('example');
+			expect(schema.properties['balance']).toHaveProperty('example');
+			expect(schema.properties['tags']).toHaveProperty('example');
 		});
 	});
 
@@ -188,12 +196,15 @@ describe('QModel Unified Schema Generation API', () => {
 		});
 
 		test('MongoDB schema should use correct Mongoose types', () => {
-			const mongoSchema = User.getSchema('mongo');
+			const mongoSchema = User.getSchema('mongo') as Record<
+				string,
+				{ type: unknown }
+			>;
 
 			// Verificar que usa constructores nativos de JS
-			expect(mongoSchema.id.type).toBe(Number);
-			expect(mongoSchema.name.type).toBe(String);
-			expect(mongoSchema.birth.type).toBe(Date);
+			expect(mongoSchema['id'].type).toBe(Number);
+			expect(mongoSchema['name'].type).toBe(String);
+			expect(mongoSchema['birth'].type).toBe(Date);
 		});
 	});
 
@@ -261,20 +272,23 @@ describe('QModel Unified Schema Generation API', () => {
 		});
 
 		test('OpenAPI schema should use correct types', () => {
-			const openapiSchema = User.getSchema('openapi');
+			const openapiSchema = User.getSchema('openapi') as Record<
+				string,
+				Record<string, unknown>
+			>;
 
-			expect(openapiSchema.properties.id).toMatchObject({
+			expect(openapiSchema.properties['id']).toMatchObject({
 				type: 'number',
 				format: 'double',
 			}); // Number maps to number/double
-			expect(openapiSchema.properties.name).toMatchObject({
+			expect(openapiSchema.properties['name']).toMatchObject({
 				type: 'string',
 			});
-			expect(openapiSchema.properties.birth).toMatchObject({
+			expect(openapiSchema.properties['birth']).toMatchObject({
 				type: 'string',
 				format: 'date-time',
 			});
-			expect(openapiSchema.properties.tags).toMatchObject({
+			expect(openapiSchema.properties['tags']).toMatchObject({
 				type: 'array',
 				items: { type: 'string' },
 			});
@@ -298,9 +312,9 @@ describe('QModel Unified Schema Generation API', () => {
 			const ajvSchema = User.getSchema('ajv');
 
 			// AJV usa JSON Schema Draft-07
-			expect(ajvSchema.properties).toHaveProperty('id');
-			expect(ajvSchema.properties).toHaveProperty('name');
-			expect(ajvSchema.required).toContain('id');
+			expect(ajvSchema['properties']).toHaveProperty('id');
+			expect(ajvSchema['properties']).toHaveProperty('name');
+			expect(ajvSchema['required']).toContain('id');
 		});
 	});
 
@@ -341,26 +355,35 @@ describe('QModel Unified Schema Generation API', () => {
 		}
 
 		test('should handle nested objects in JSON Schema', () => {
-			const schema = Complex.getSchema('json');
+			const schema = Complex.getSchema('json') as Record<
+				string,
+				Record<string, unknown>
+			>;
 
-			expect(schema.properties.nested).toMatchObject({
+			expect(schema.properties['nested']).toMatchObject({
 				type: 'object',
 			});
 		});
 
 		test('should handle multi-dimensional arrays', () => {
-			const schema = Complex.getSchema('json');
+			const schema = Complex.getSchema('json') as Record<
+				string,
+				Record<string, unknown>
+			>;
 
-			expect(schema.properties.matrix).toMatchObject({
+			expect(schema.properties['matrix']).toMatchObject({
 				type: 'array',
 				items: { type: 'any' }, // Generic array without element type info
 			});
 		});
 
 		test('should handle Map transformations', () => {
-			const schema = Complex.getSchema('json');
+			const schema = Complex.getSchema('json') as Record<
+				string,
+				Record<string, unknown>
+			>;
 
-			expect(schema.properties.mapData).toMatchObject({
+			expect(schema.properties['mapData']).toMatchObject({
 				type: 'array',
 				items: {
 					type: 'array',

@@ -117,6 +117,11 @@ import {
 	type IFromStreamOptions,
 	type IPipeStreamOptions,
 } from '@/core/helpers/stream.helpers';
+import { SchemaToModelService } from '@/core/services/schema-to-model.service';
+import type {
+	IFromSchemaFormat,
+	IFromSchemaInput,
+} from '@/core/types/schema-types';
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
 // Metadata is immutable after decorators run (class-definition time), so
@@ -3624,6 +3629,49 @@ export abstract class QModel<
 		}
 
 		return (this.constructor as typeof QModel).getSchema(type);
+	}
+
+	/**
+	 * Converts a formal schema back into a QuickModel class definition (TypeScript source).
+	 *
+	 * This is the **inverse** of `QModel.getSchema()`:
+	 * ```typescript
+	 * // Forward: model → schema
+	 * const json = User.getSchema('json');
+	 *
+	 * // Reverse: schema → model class source
+	 * const code = QModel.fromSchema('json', json, 'User');
+	 * ```
+	 *
+	 * Supported formats:
+	 * - `'json'` — JSON Schema Draft-07 object
+	 * - `'openapi'` — OpenAPI 3.0 component schema or full document
+	 * - `'ajv'` — AJV-compatible JSON Schema (same structure as `'json'`)
+	 * - `'typescript'` — TypeScript interface source string
+	 *
+	 * @param format - Schema format to parse.
+	 * @param schema - The schema to convert (type depends on `format`).
+	 * @param className - Optional class name override. Falls back to `schema.title` or `'GeneratedModel'`.
+	 * @returns TypeScript source code string for a class extending `QModel`.
+	 *
+	 * @example
+	 * ```typescript
+	 * import 'quickmodel/schema'; // register schema generators first
+	 *
+	 * const jsonSchema = User.getSchema('json');
+	 * const code = QModel.fromSchema('json', jsonSchema, 'User');
+	 * // → complete TypeScript source for class User extends QModel<IUser>
+	 * ```
+	 *
+	 * @see {@link SchemaToModelService} — service powering this method
+	 * @see {@link QFromSchemaTool} — MCP tool wrapping this method
+	 */
+	static fromSchema<T extends IFromSchemaFormat>(
+		format: T,
+		schema: IFromSchemaInput<T>,
+		className?: string
+	): string {
+		return SchemaToModelService.fromSchema(format, schema, className);
 	}
 
 	/**

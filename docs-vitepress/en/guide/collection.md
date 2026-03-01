@@ -147,6 +147,22 @@ const report = UserModel.collection(dbRows)
 | `.sortBy(field, opts?)`             | Sort by field                               |
 | `.paginate(page, size)`             | Paginate                                    |
 | `.groupBy(field)`                   | Group into a record                         |
+| `.size`                             | Total item count                            |
+| `.count(fn?)`                       | Conditional count (all if no predicate)     |
+| `.isEmpty`                          | `true` when the collection is empty         |
+| `.first()`                          | First instance or `undefined`               |
+| `.last()`                           | Last instance or `undefined`                |
+| `.every(fn)`                        | `true` if all items satisfy the predicate   |
+| `.some(fn)`                         | `true` if at least one item matches         |
+| `.map(fn)`                          | Map instances to any value                  |
+| `.flatMap(fn)`                      | FlatMap instances                           |
+| `.reduce(fn, init)`                 | Reduce to a single value                    |
+| `.sum(field)`                       | Sum of a numeric field                      |
+| `.avg(field)`                       | Average of a numeric field                  |
+| `.min(field)`                       | Minimum value of a numeric field            |
+| `.max(field)`                       | Maximum value of a numeric field            |
+| `.unique(field)`                    | Unique values of a field                    |
+| `.toMap(keyField)`                  | Convert to `Map` keyed by a field           |
 | `.serialize(opts?)`                 | Array of plain objects                      |
 | `.toJSON()`                         | JSON string                                 |
 | `.toCSV(opts?)`                     | CSV string                                  |

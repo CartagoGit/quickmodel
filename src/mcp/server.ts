@@ -63,6 +63,7 @@ import {
 	QGenerateFeatureTestsTool,
 	QExplainTransformationTool,
 	QGenerateIntegrationTestTool,
+	QFromSchemaTool,
 } from './tools/public';
 
 import {
@@ -224,6 +225,7 @@ export class QMcpServer {
 			new QGenerateFeatureTestsTool(),
 			new QExplainTransformationTool(),
 			new QGenerateIntegrationTestTool(),
+			new QFromSchemaTool(),
 		];
 	}
 

@@ -2,7 +2,7 @@
 
 > **Fecha de revisión:** 1 de marzo de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 3300+ tests passing | Cobertura >97% líneas | v1.0.0
+> **Estado actual:** 4358+ tests passing | Cobertura >97% líneas | v1.0.0 | 37 guías EN+ES
 
 > **Documento único de planificación.** Contiene el historial resumido de tareas completadas y el backlog de
 > propuestas para sprints futuros (Mar 2026+).

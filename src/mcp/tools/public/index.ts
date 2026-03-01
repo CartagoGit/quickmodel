@@ -27,3 +27,4 @@ export * from './diff-models.tool';
 export * from './explain-transformation.tool';
 export * from './generate-feature-tests.tool';
 export * from './generate-integration-test.tool';
+export * from './from-schema.tool';

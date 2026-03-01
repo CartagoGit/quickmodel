@@ -138,20 +138,36 @@ const informe = UserModel.collection(filasDB)
 
 ## Referencia de API
 
-| Miembro                             | Descripción                                      |
-| ----------------------------------- | ------------------------------------------------ |
-| `QModelCollection.from(Ctor, data)` | Fábrica — crea colección desde array crudo       |
-| `Model.collection(data)`            | Alias estático en cualquier subclase de `QModel` |
-| `.where(fn)`                        | Filtrado — devuelve nueva colección              |
-| `.find(fn)`                         | Encuentra la primera instancia coincidente       |
-| `.sortBy(field, opts?)`             | Ordenar por campo                                |
-| `.paginate(page, size)`             | Paginación                                       |
-| `.groupBy(field)`                   | Agrupar en un Record                             |
-| `.serialize(opts?)`                 | Array de objetos planos                          |
-| `.toJSON()`                         | String JSON                                      |
-| `.toCSV(opts?)`                     | String CSV                                       |
-| `.checkAllRules()`                  | Validar todas las instancias                     |
-| `.toArray()`                        | Array plano de instancias del modelo             |
+| Miembro                             | Descripción                                        |
+| ----------------------------------- | -------------------------------------------------- |
+| `QModelCollection.from(Ctor, data)` | Fábrica — crea colección desde array crudo         |
+| `Model.collection(data)`            | Alias estático en cualquier subclase de `QModel`   |
+| `.where(fn)`                        | Filtrado — devuelve nueva colección                |
+| `.find(fn)`                         | Encuentra la primera instancia coincidente         |
+| `.sortBy(field, opts?)`             | Ordenar por campo                                  |
+| `.paginate(page, size)`             | Paginación                                         |
+| `.groupBy(field)`                   | Agrupar en un Record                               |
+| `.size`                             | Número total de elementos                          |
+| `.count(fn?)`                       | Conteo condicional (todos si no hay predicado)     |
+| `.isEmpty`                          | `true` cuando la colección está vacía              |
+| `.first()`                          | Primera instancia o `undefined`                    |
+| `.last()`                           | Última instancia o `undefined`                     |
+| `.every(fn)`                        | `true` si todos los elementos cumplen el predicado |
+| `.some(fn)`                         | `true` si al menos un elemento coincide            |
+| `.map(fn)`                          | Mapear instancias a cualquier valor                |
+| `.flatMap(fn)`                      | FlatMap de instancias                              |
+| `.reduce(fn, init)`                 | Reducir a un único valor                           |
+| `.sum(field)`                       | Suma de un campo numérico                          |
+| `.avg(field)`                       | Media de un campo numérico                         |
+| `.min(field)`                       | Valor mínimo de un campo numérico                  |
+| `.max(field)`                       | Valor máximo de un campo numérico                  |
+| `.unique(field)`                    | Valores únicos de un campo                         |
+| `.toMap(keyField)`                  | Convertir a `Map` indexado por campo               |
+| `.serialize(opts?)`                 | Array de objetos planos                            |
+| `.toJSON()`                         | String JSON                                        |
+| `.toCSV(opts?)`                     | String CSV                                         |
+| `.checkAllRules()`                  | Validar todas las instancias                       |
+| `.toArray()`                        | Array plano de instancias del modelo               |
 
 ## Ver también
 

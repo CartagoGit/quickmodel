@@ -377,6 +377,46 @@ export default defineConfig({
 							],
 						},
 						{
+							text: 'Field Decorators',
+							link: '/en/guide/qdefault',
+							items: [
+								{
+									text: 'Default Values (@QDefault)',
+									link: '/en/guide/qdefault',
+								},
+								{
+									text: 'Readonly Fields (@QReadonly)',
+									link: '/en/guide/qreadonly',
+								},
+								{
+									text: 'Transform Fields (@QTransform)',
+									link: '/en/guide/qtransform',
+								},
+								{
+									text: 'Sensitive Fields (@QSensitive)',
+									link: '/en/guide/sensitive-fields',
+								},
+							],
+						},
+						{
+							text: 'Advanced',
+							link: '/en/guide/collection',
+							items: [
+								{
+									text: 'Collections (QModelCollection)',
+									link: '/en/guide/collection',
+								},
+								{
+									text: 'Schema Migrations (@QVersion)',
+									link: '/en/guide/migrations',
+								},
+								{
+									text: 'Per-Class Configuration',
+									link: '/en/guide/per-class-config',
+								},
+							],
+						},
+						{
 							text: 'Validation',
 							link: '/en/guide/validation',
 							items: [
@@ -387,6 +427,10 @@ export default defineConfig({
 								{
 									text: 'Built-in Validators',
 									link: '/en/guide/validators',
+								},
+								{
+									text: 'Internationalization (i18n)',
+									link: '/en/guide/i18n',
 								},
 								{
 									text: '⚡ Benchmarks',
@@ -775,6 +819,46 @@ export default defineConfig({
 							],
 						},
 						{
+							text: 'Decoradores de Campo',
+							link: '/es/guide/qdefault',
+							items: [
+								{
+									text: 'Valores por Defecto (@QDefault)',
+									link: '/es/guide/qdefault',
+								},
+								{
+									text: 'Campos de Solo Lectura (@QReadonly)',
+									link: '/es/guide/qreadonly',
+								},
+								{
+									text: 'Transformar Campos (@QTransform)',
+									link: '/es/guide/qtransform',
+								},
+								{
+									text: 'Campos Sensibles (@QSensitive)',
+									link: '/es/guide/sensitive-fields',
+								},
+							],
+						},
+						{
+							text: 'Avanzado',
+							link: '/es/guide/collection',
+							items: [
+								{
+									text: 'Colecciones (QModelCollection)',
+									link: '/es/guide/collection',
+								},
+								{
+									text: 'Migraciones de Esquema (@QVersion)',
+									link: '/es/guide/migrations',
+								},
+								{
+									text: 'Configuración por Clase',
+									link: '/es/guide/per-class-config',
+								},
+							],
+						},
+						{
 							text: 'Validación',
 							link: '/es/guide/validation',
 							items: [
@@ -785,6 +869,10 @@ export default defineConfig({
 								{
 									text: 'Validadores Integrados',
 									link: '/es/guide/validators',
+								},
+								{
+									text: 'Internacionalización (i18n)',
+									link: '/es/guide/i18n',
 								},
 								{
 									text: '⚡ Benchmarks',
