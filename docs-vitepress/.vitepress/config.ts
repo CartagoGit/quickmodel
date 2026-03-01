@@ -414,6 +414,10 @@ export default defineConfig({
 									text: 'Per-Class Configuration',
 									link: '/en/guide/per-class-config',
 								},
+								{
+									text: 'Reserved Words & $qm Namespace',
+									link: '/en/guide/reserved-words',
+								},
 							],
 						},
 						{
@@ -855,6 +859,10 @@ export default defineConfig({
 								{
 									text: 'Configuración por Clase',
 									link: '/es/guide/per-class-config',
+								},
+								{
+									text: 'Palabras Reservadas y namespace $qm',
+									link: '/es/guide/reserved-words',
 								},
 							],
 						},

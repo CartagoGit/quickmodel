@@ -8,6 +8,8 @@ const SUPPORTED_FORMATS = {
 	openapi: 'openapi',
 	ajv: 'ajv',
 	typescript: 'typescript',
+	graphql: 'graphql',
+	prisma: 'prisma',
 } as const;
 
 /**
@@ -45,10 +47,11 @@ export class QFromSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	description =
 		'Convert a formal schema back into a QuickModel class definition. ' +
 		'This is the inverse of get_model_schema: given a JSON Schema, OpenAPI schema, AJV schema, ' +
-		'or TypeScript interface, generate a ready-to-use QModel class with @Quick decorators. ' +
-		'Supported formats: json, openapi, ajv, typescript. ' +
+		'TypeScript interface, GraphQL SDL type, or Prisma model block, ' +
+		'generate a ready-to-use QModel class with @Quick decorators. ' +
+		'Supported formats: json, openapi, ajv, typescript, graphql, prisma. ' +
 		'For json/openapi/ajv: provide the schema as a JSON string. ' +
-		'For typescript: provide the interface source directly. ' +
+		'For typescript/graphql/prisma: provide the source string directly. ' +
 		'Returns { code } — TypeScript source for a class extending QModel.';
 
 	schema = z.object({
@@ -56,11 +59,13 @@ export class QFromSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 			.string()
 			.describe(
 				'The schema to convert. For json/openapi/ajv: a valid JSON string. ' +
-					'For typescript: a TypeScript interface source string.'
+					'For typescript/graphql/prisma: a source string (interface, SDL type, or model block).'
 			),
 		format: z
 			.enum(SUPPORTED_FORMATS)
-			.describe('Schema format: json | openapi | ajv | typescript'),
+			.describe(
+				'Schema format: json | openapi | ajv | typescript | graphql | prisma'
+			),
 		className: z
 			.string()
 			.optional()
@@ -91,9 +96,13 @@ export class QFromSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 
 		const { schema, format, className } = args;
 
-		if (format === 'typescript') {
+		if (
+			format === 'typescript' ||
+			format === 'graphql' ||
+			format === 'prisma'
+		) {
 			const code = SchemaToModelService.fromSchema(
-				'typescript',
+				format,
 				schema,
 				className
 			);

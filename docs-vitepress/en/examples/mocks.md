@@ -156,11 +156,11 @@ describe('Order', () => {
 		expect(order.isValid()).toBe(true);
 	});
 
-	it('serializes with toJSON()', () => {
+	it('serializes correctly', () => {
 		const order = Order.mock().sample({ total: 50 });
-		const json = order.toJSON();
-		expect(typeof json.createdAt).toBe('string');
-		expect(json.total).toBe(50);
+		const plain = order.serialize();
+		expect(typeof plain.createdAt).toBe('string');
+		expect(plain.total).toBe(50);
 	});
 });
 ```

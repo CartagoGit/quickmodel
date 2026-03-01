@@ -57,10 +57,10 @@ console.log(user.fullName); // 'Alice Smith'
 console.log(user.initials); // 'A.S.' (available on instance but not serialized)
 console.log(user.formattedSalary); // '$75,000.00'
 
-const json = user.toJSON();
-console.log(json.fullName); // 'Alice Smith' ✅ included
-console.log(json.formattedSalary); // '$75,000.00'  ✅ included
-console.log(json.initials); // undefined ❌ not included (no @QComputed)
+const plain = user.serialize();
+console.log(plain.fullName); // 'Alice Smith' ✅ included
+console.log(plain.formattedSalary); // '$75,000.00'  ✅ included
+console.log(plain.initials); // undefined ❌ not included (no @QComputed)
 ```
 
 ## Product Model with Calculations
@@ -115,13 +115,13 @@ const product = Product.create({
 	discountRate: 10,
 });
 
-const json = product.toJSON();
-console.log(json.priceNet); // 1000
-console.log(json.vatAmount); // 200
-console.log(json.priceGross); // 1200
-console.log(json.discount); // 120
-console.log(json.finalPrice); // 1080
-console.log(json.priceLabel); // '$1080 (was $1200)'
+const plain = product.serialize();
+console.log(plain.priceNet); // 1000
+console.log(plain.vatAmount); // 200
+console.log(plain.priceGross); // 1200
+console.log(plain.discount); // 120
+console.log(plain.finalPrice); // 1080
+console.log(plain.priceLabel); // '$1080 (was $1200)'
 ```
 
 ## Person Model with Age and Status
@@ -186,7 +186,7 @@ const person = Person.create({
 
 console.log(person.summary); // 'Alice Smith, 35 years old (Administrator)'
 
-const serialized = person.toJSON();
+const serialized = person.serialize();
 // {
 //   firstName: 'Alice', lastName: 'Smith',
 //   birthDate: '1990-06-15T00:00:00.000Z', role: 'admin',

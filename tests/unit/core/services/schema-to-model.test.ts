@@ -631,3 +631,234 @@ describe("fromSchema('typescript')", () => {
 		).toThrow(/no interface declaration/);
 	});
 });
+
+// ── fromSchema('graphql') ────────────────────────────────────────────────────
+
+describe("fromSchema('graphql') — primitivos", () => {
+	const sdl = [
+		'type Product {',
+		'\tname: String!',
+		'\tprice: Float!',
+		'\tstock: Int!',
+		'\tactive: Boolean!',
+		'}',
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('export class Product extends QModel<IProduct>');
+	});
+
+	test('genera interfaz IProduct', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('interface IProduct {');
+	});
+
+	test('Float! → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('price: Number');
+	});
+
+	test('Int! → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('stock: Number');
+	});
+
+	test('Boolean! → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('active: Boolean');
+	});
+
+	test('String! → no aparece como transformer en @Quick (es el default)', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+	});
+
+	test('genera declare para cada propiedad', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('declare name: string;');
+		expect(code).toContain('declare price: number;');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('campos no-nullable (!) → sin ? en la interfaz', () => {
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toMatch(/\bname: string;/);
+		expect(code).not.toMatch(/\bname\?:/);
+	});
+});
+
+describe("fromSchema('graphql') — tipos especiales", () => {
+	test('DateTime! → transformer Date', () => {
+		const sdl = 'type Event {\n\tcreatedAt: DateTime!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('[String!]! → transformer [String] (array)', () => {
+		const sdl = 'type Post {\n\ttags: [String!]!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('tags: [String]');
+		expect(code).toContain('declare tags: string[];');
+	});
+
+	test('[Float!]! → transformer [Number] (array de números)', () => {
+		const sdl = 'type Report {\n\tscores: [Float!]!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('scores: [Number]');
+		expect(code).toContain('declare scores: number[];');
+	});
+
+	test('JSON! → Record<string, unknown> sin transformer', () => {
+		const sdl = 'type Config {\n\tmeta: JSON!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('declare meta: Record<string, unknown>;');
+		expect(code).not.toMatch(/meta:\s*\w+[^\n]*\n.*@Quick/s);
+	});
+
+	test('campo nullable (sin !) → opcional en la interfaz', () => {
+		const sdl = 'type Draft {\n\ttitle: String\n\tscore: Float\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('title?: string;');
+		expect(code).toContain('score?: number;');
+	});
+});
+
+describe("fromSchema('graphql') — className y errores", () => {
+	test('className se infiere del nombre del type block', () => {
+		const sdl = 'type Invoice {\n\tamount: Float!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('export class Invoice extends QModel<IInvoice>');
+	});
+
+	test('className explícito tiene prioridad sobre el nombre del type block', () => {
+		const sdl = 'type Invoice {\n\tamount: Float!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl, 'Bill');
+		expect(code).toContain('export class Bill extends QModel<IBill>');
+		expect(code).not.toContain('Invoice');
+	});
+
+	test('@Quick({}) cuando todos los campos son String!', () => {
+		const sdl = 'type Label {\n\tkey: String!\n\tvalue: String!\n}';
+		const code = SchemaToModelService.fromSchema('graphql', sdl);
+		expect(code).toContain('@Quick({})');
+		expect(code).not.toMatch(/@Quick\(\{\s*\w+:/);
+	});
+
+	test('lanza error si no hay type block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema('graphql', 'query { user { id } }')
+		).toThrow(/no `type` block found/);
+	});
+});
+
+// ── fromSchema('prisma') ─────────────────────────────────────────────────────
+
+describe("fromSchema('prisma') — primitivos", () => {
+	const model = [
+		'model Order {',
+		'\tname      String',
+		'\ttotal     Float',
+		'\tquantity  Int',
+		'\tactive    Boolean',
+		'}',
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('export class Order extends QModel<IOrder>');
+	});
+
+	test('genera interfaz IOrder', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('interface IOrder {');
+	});
+
+	test('Float → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('total: Number');
+	});
+
+	test('Int → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('quantity: Number');
+	});
+
+	test('Boolean → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('active: Boolean');
+	});
+
+	test('String → no aparece como transformer en @Quick (es el default)', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+	});
+
+	test('genera declare para cada propiedad', () => {
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('declare name: string;');
+		expect(code).toContain('declare total: number;');
+		expect(code).toContain('declare active: boolean;');
+	});
+});
+
+describe("fromSchema('prisma') — tipos especiales", () => {
+	test('DateTime → transformer Date', () => {
+		const model = 'model Log {\n\tcreatedAt  DateTime\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('BigInt → transformer BigInt', () => {
+		const model = 'model Finance {\n\tamount  BigInt\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('Json → Record<string, unknown> sin transformer', () => {
+		const model = 'model Config {\n\tmeta  Json\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('declare meta: Record<string, unknown>;');
+	});
+
+	test('campo opcional (PrismaType?) → ? en la interfaz', () => {
+		const model = 'model Profile {\n\tbio  String?\n\tscore  Float?\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('bio?: string;');
+		expect(code).toContain('score?: number;');
+	});
+});
+
+describe("fromSchema('prisma') — className y errores", () => {
+	test('className se infiere del nombre del model block', () => {
+		const model = 'model Payment {\n\tamount  Float\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('export class Payment extends QModel<IPayment>');
+	});
+
+	test('className explícito tiene prioridad sobre el nombre del model block', () => {
+		const model = 'model Payment {\n\tamount  Float\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model, 'Charge');
+		expect(code).toContain('export class Charge extends QModel<ICharge>');
+		expect(code).not.toContain('Payment');
+	});
+
+	test('@Quick({}) cuando todos los campos son String', () => {
+		const model = 'model Tag {\n\tslug  String\n\tlabel  String\n}';
+		const code = SchemaToModelService.fromSchema('prisma', model);
+		expect(code).toContain('@Quick({})');
+		expect(code).not.toMatch(/@Quick\(\{\s*\w+:/);
+	});
+
+	test('lanza error si no hay model block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema(
+				'prisma',
+				'datasource db { url = "" }'
+			)
+		).toThrow(/no `model` block found/);
+	});
+});

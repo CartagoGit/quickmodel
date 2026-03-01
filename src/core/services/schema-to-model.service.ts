@@ -22,6 +22,8 @@
  * | `'openapi'`    | `Record<string,unknown>`| OpenAPI 3.0 component schema / doc  |
  * | `'ajv'`        | `Record<string,unknown>`| AJV-compatible JSON Schema (= json) |
  * | `'typescript'` | `string`                | TypeScript `interface` source       |
+ * | `'graphql'`    | `string`                | GraphQL SDL `type` block            |
+ * | `'prisma'`     | `string`                | Prisma `model` block                |
  *
  * JSON Schema → QuickModel type-mapping:
  *
@@ -279,7 +281,195 @@ function fromTypeScriptInterface(src: string, className?: string): string {
 	});
 }
 
-// ── Public service ───────────────────────────────────────────────────────────
+// ── GraphQL SDL → QModel ————————————————————————————————————————————
+
+/**
+ * @internal Maps a single GraphQL SDL scalar type to QModel tokens.
+ *
+ * | GraphQL type   | transformer | tsType                   |
+ * |----------------|-------------|---------------------------|
+ * | `Float!`       | `Number`    | `number`                  |
+ * | `Int!`         | `Number`    | `number`                  |
+ * | `Boolean!`     | `Boolean`   | `boolean`                 |
+ * | `DateTime!`    | `Date`      | `Date`                    |
+ * | `BigInt!`      | `BigInt`    | `bigint`                  |
+ * | `[T!]!`        | `[T]`       | `T[]`                     |
+ * | `JSON!`        | _(none)_    | `Record<string, unknown>` |
+ * | `String!`/`ID!`| _(none)_    | `string`                  |
+ */
+function mapGraphQLType(gqlType: string): IFieldMapping {
+	// Strip non-null marker for analysis
+	const base = gqlType.replace(/!/g, '').trim();
+
+	// Array type: [ElementType]
+	if (base.startsWith('[') && base.endsWith(']')) {
+		const inner = base.slice(1, -1).replace(/!/g, '').trim();
+		const innerMapping = mapGraphQLType(inner);
+		const arr = innerMapping.transformer
+			? `[${innerMapping.transformer}]`
+			: undefined;
+		const arrTs =
+			inner === 'unknown' ? 'unknown[]' : `${innerMapping.tsType}[]`;
+		return { transformer: arr, tsType: arrTs };
+	}
+
+	switch (base) {
+		case 'Float':
+		case 'Int':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'Boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'DateTime':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'BigInt':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'JSON':
+			return {
+				transformer: undefined,
+				tsType: 'Record<string, unknown>',
+			};
+		case 'String':
+		case 'ID':
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+/** @internal Parses a GraphQL SDL `type` block string into QModel code. */
+function fromGraphQLSchema(src: string, className?: string): string {
+	const typeMatch = src.match(/type\s+(\w+)\s*\{([\s\S]*?)\}/);
+	if (!typeMatch) {
+		throw new Error(
+			'[QuickModel] fromSchema("graphql"): no `type` block found in input. ' +
+				'Provide a GraphQL SDL type definition (e.g. the output of getSchema("graphql")).'
+		);
+	}
+
+	const typeName = typeMatch[1] ?? 'GeneratedModel';
+	const body = typeMatch[2] ?? '';
+	const baseName = className ?? typeName;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('#')) continue;
+
+		// fieldName: GqlType — e.g. `name: String!`
+		const propMatch = trim.match(/^(\w+)\s*:\s*(.+)$/);
+		if (!propMatch) continue;
+
+		const key = propMatch[1];
+		const rawType = (propMatch[2] ?? '').trim();
+		// Fields without `!` suffix are nullable (optional)
+		const optional = rawType.endsWith('!') ? '' : '?';
+		const { transformer, tsType } = mapGraphQLType(rawType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}${optional}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+// ── Prisma model → QModel ———————————————————————————————————————————
+
+/**
+ * @internal Maps a Prisma scalar type name to QModel tokens.
+ *
+ * | Prisma type  | transformer | tsType                   |
+ * |--------------|-------------|---------------------------|
+ * | `Float`      | `Number`    | `number`                  |
+ * | `Int`        | `Number`    | `number`                  |
+ * | `Boolean`    | `Boolean`   | `boolean`                 |
+ * | `DateTime`   | `Date`      | `Date`                    |
+ * | `BigInt`     | `BigInt`    | `bigint`                  |
+ * | `Json`       | _(none)_    | `Record<string, unknown>` |
+ * | `String`     | _(none)_    | `string`                  |
+ */
+function mapPrismaType(prismaType: string): IFieldMapping {
+	// Strip optional marker (`?`) for lookup
+	const base = prismaType.replace('?', '').trim();
+
+	switch (base) {
+		case 'Float':
+		case 'Int':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'Boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'DateTime':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'BigInt':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'Json':
+			return {
+				transformer: undefined,
+				tsType: 'Record<string, unknown>',
+			};
+		case 'String':
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+/** @internal Parses a Prisma `model` block string into QModel code. */
+function fromPrismaSchema(src: string, className?: string): string {
+	const modelMatch = src.match(/model\s+(\w+)\s*\{([\s\S]*?)\}/);
+	if (!modelMatch) {
+		throw new Error(
+			'[QuickModel] fromSchema("prisma"): no `model` block found in input. ' +
+				'Provide a Prisma model definition string (e.g. the output of getSchema("prisma")).'
+		);
+	}
+
+	const modelName = modelMatch[1] ?? 'GeneratedModel';
+	const body = modelMatch[2] ?? '';
+	const baseName = className ?? modelName;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		// Skip blank lines, comments, and model-level attributes (@@)
+		if (!trim || trim.startsWith('//') || trim.startsWith('@@')) continue;
+
+		// fieldName  PrismaType  (optional: PrismaType?)
+		const propMatch = trim.match(/^(\w+)\s+(\S+)/);
+		if (!propMatch) continue;
+
+		const key = propMatch[1];
+		const rawType = (propMatch[2] ?? '').trim();
+		const optional = rawType.endsWith('?') ? '?' : '';
+		const { transformer, tsType } = mapPrismaType(rawType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}${optional}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+// ── Public service ——————————————————————————————————————————————————————
 
 /**
  * Converts a formal schema (produced by `getSchema`) back into a QuickModel
@@ -312,13 +502,17 @@ export class SchemaToModelService {
 	 * - `'openapi'` — OpenAPI 3.0 component schema or full document (`Record<string, unknown>`)
 	 * - `'ajv'` — AJV JSON Schema object, same structure as `'json'`
 	 * - `'typescript'` — TypeScript interface source string
+	 * - `'graphql'` — GraphQL SDL `type` block string
+	 * - `'prisma'` — Prisma `model` block string
 	 *
 	 * @param format - Schema format (must match a supported `IFromSchemaFormat` value)
 	 * @param schema - The schema to convert (type depends on `format`)
-	 * @param className - Optional class name override. Falls back to `schema.title` or `'GeneratedModel'`.
+	 * @param className - Optional class name override. Falls back to schema name or `'GeneratedModel'`.
 	 * @returns TypeScript source code string for a class extending `QModel`.
 	 * @throws {Error} For `'openapi'`: when `className` is not found in `components.schemas`.
 	 * @throws {Error} For `'typescript'`: when no `interface` declaration is found in the source.
+	 * @throws {Error} For `'graphql'`: when no `type` block is found in the source.
+	 * @throws {Error} For `'prisma'`: when no `model` block is found in the source.
 	 */
 	static fromSchema<T extends IFromSchemaFormat>(
 		format: T,
@@ -368,11 +562,19 @@ export class SchemaToModelService {
 				return fromTypeScriptInterface(schema as string, className);
 			}
 
+			case 'graphql': {
+				return fromGraphQLSchema(schema as string, className);
+			}
+
+			case 'prisma': {
+				return fromPrismaSchema(schema as string, className);
+			}
+
 			default: {
 				const exhaustive: never = format;
 				throw new Error(
 					`[QuickModel] fromSchema: unsupported format '${exhaustive as string}'. ` +
-						`Supported: json, openapi, ajv, typescript.`
+						`Supported: json, openapi, ajv, typescript, graphql, prisma.`
 				);
 			}
 		}

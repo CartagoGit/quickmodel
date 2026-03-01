@@ -103,7 +103,7 @@ async function saveUser(data: IUserRegister): Promise<void> {
 
 	await fetch('/api/users', {
 		method: 'POST',
-		body: JSON.stringify(user.toJSON()),
+		body: user.toJSON(), // toJSON() already returns a JSON string
 	});
 }
 ```

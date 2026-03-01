@@ -64,7 +64,7 @@ console.log(user.isActive); // true
 console.log(user.createdAt instanceof Date); // true
 
 // Serialize back to snake_case ✅
-const serialized = user.toJSON();
+const serialized = user.serialize();
 console.log(serialized.first_name); // 'Jane'
 console.log(serialized.created_at); // '2026-01-10T10:00:00.000Z'
 ```
@@ -75,8 +75,8 @@ console.log(serialized.created_at); // '2026-01-10T10:00:00.000Z'
 
 ```typescript
 const user = User.create(apiResponse);
-const json = user.toJSON();
-const userCopy = User.create(json);
+const plain = user.serialize(); // serialize() returns the original shape (snake_case with aliases)
+const userCopy = User.create(plain);
 
 console.log(userCopy.firstName === user.firstName); // true
 ```
@@ -148,9 +148,9 @@ console.log(order.shippingAddress.cityName); // 'New York'
 console.log(order.placedAt instanceof Date); // true
 
 // Serialized back to snake_case ✅
-const json = order.toJSON();
-console.log(json.order_id); // 'ORD-001'
-console.log(json.shipping_address.city_name); // 'New York'
+const plain = order.serialize();
+console.log(plain.order_id); // 'ORD-001'
+console.log(plain.shipping_address.city_name); // 'New York'
 ```
 
 ## Alias with @QField for Forms
@@ -188,7 +188,7 @@ const form = ProfileForm.create({
 const schema = ProfileForm.getFormSchema();
 console.log(schema[0].field); // 'firstName' (property name, not alias)
 console.log(form.firstName); // 'Alice'
-console.log(form.toJSON()); // { first_name: 'Alice', last_name: 'Smith', ... }
+console.log(form.serialize()); // { first_name: 'Alice', last_name: 'Smith', ... }
 ```
 
 ## Best Practices
