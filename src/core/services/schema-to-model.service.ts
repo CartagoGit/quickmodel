@@ -208,6 +208,13 @@ function fromJsonSchemaObject(
 
 /** @internal Infers a @Quick transformer token from a TypeScript type string. */
 function inferTransformerFromTsType(tsType: string): string | undefined {
+	// Arrays must be checked first — before substring checks like `.includes('Date')`
+	// to avoid `Date[]` matching the `Date` branch before the array branch.
+	if (tsType.endsWith('[]')) {
+		const elem = tsType.slice(0, -2).trim();
+		const inner = inferTransformerFromTsType(elem);
+		return inner ? `[${inner}]` : undefined;
+	}
 	if (tsType.includes('Date')) return 'Date';
 	if (tsType.includes('BigInt') || tsType === 'bigint') return 'BigInt';
 	if (tsType.includes('RegExp')) return 'RegExp';
@@ -216,11 +223,6 @@ function inferTransformerFromTsType(tsType: string): string | undefined {
 	if (tsType.startsWith('URL')) return 'URL';
 	if (tsType === 'number') return 'Number';
 	if (tsType === 'boolean') return 'Boolean';
-	if (tsType.endsWith('[]')) {
-		const elem = tsType.slice(0, -2).trim();
-		const inner = inferTransformerFromTsType(elem);
-		return inner ? `[${inner}]` : undefined;
-	}
 	return undefined;
 }
 

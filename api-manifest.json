@@ -1,6 +1,6 @@
 {
 	"version": "1.0.0",
-	"generatedAt": "2026-02-28T22:01:13.290Z",
+	"generatedAt": "2026-03-01T12:15:57.481Z",
 	"publicExports": [
 		"IQImplements",
 		"QModel",
@@ -8,14 +8,20 @@
 		"IQCreateManyError",
 		"IQCreateManyResult",
 		"IQValidationReport",
+		"IQClassConfig",
 		"Quick",
 		"QConfig",
+		"IQConfig",
 		"IQFormSchemaEntry",
 		"IQFormSchemaGroup",
+		"IQSerializedInterface",
 		"IQAliasedSerializedInterface",
 		"IQAdvancedOptions",
+		"IQValidateOptions",
 		"QModelCollection",
-		"IQCollectionRulesResult"
+		"IQCollectionRulesResult",
+		"IQCSVOptions",
+		"SchemaToModelService"
 	],
 	"transformers": [
 		"special-float",
@@ -33,13 +39,17 @@
 	],
 	"decorators": [
 		"@Qrule()",
+		"@Qdefault()",
+		"@Qtransform()",
 		"@Qtype()",
+		"@Qversion()",
 		"@Qgroup()",
 		"@Qalias()",
 		"@Quick()",
 		"@Qsensitive()",
 		"@Qfield()",
-		"@Qcomputed()"
+		"@Qcomputed()",
+		"@Qreadonly()"
 	],
 	"migrationNotes": ""
 }

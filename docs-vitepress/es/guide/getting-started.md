@@ -63,8 +63,9 @@ const user = new User(apiData);
 console.log(user.createdAt instanceof Date); // ¡true!
 
 // 2. Serialización (Auto-formato)
-const json = user.toJSON();
+const plain = user.serialize();
 // {"createdAt": "2024-01-01T...", "tags": ["a", "b"], ...}
+// Usa user.toJSON() para obtener un string JSON directamente
 ```
 
 ## Métodos de Instanciación

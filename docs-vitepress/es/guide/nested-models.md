@@ -352,7 +352,7 @@ if (owner.pets[0] instanceof Dog) {
 
 ## Serialización de Modelos Anidados
 
-`toJSON()` serializa recursivamente todos los modelos anidados:
+`serialize()` serializa recursivamente todos los modelos anidados (devuelve un objeto plano). Usa `toJSON()` si necesitas un string JSON.
 
 ```typescript
 const user = new User({
@@ -369,7 +369,7 @@ const user = new User({
 	},
 });
 
-const json = user.toJSON();
+const plain = user.serialize();
 // {
 //   id: 1,
 //   email: 'john@example.com',
@@ -425,7 +425,7 @@ const child = new Node({
 root.children.push(child);
 
 // La serialización maneja referencias circulares
-const json = root.toJSON(); // Funciona sin recursión infinita
+const plain = root.serialize(); // Funciona sin recursión infinita
 ```
 
 ## Mejores Prácticas

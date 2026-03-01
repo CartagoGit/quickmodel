@@ -125,8 +125,8 @@ const product = new Product({
 console.log(product.price instanceof Money); // true
 console.log(product.price.toString()); // '999.99 USD'
 
-const json = product.toJSON();
-console.log(json.price); // { amount: 999.99, currency: 'USD' }
+const plain = product.serialize();
+console.log(plain.price); // { amount: 999.99, currency: 'USD' }
 ```
 
 ## Example: Color Type

@@ -1,379 +1,371 @@
 /**
  * TDD Tests: SchemaToModelService
  *
- * Convierte cualquier schema generado por getSchema() de vuelta en código fuente TypeScript
- * de una clase QModel.
+ * Verifica que `fromSchema(format, schema, className?)` — inverso de `getSchema()` —
+ * produce código TypeScript correcto para todos los formatos soportados:
+ * json · openapi · ajv · typescript
  *
  * @see {@link SchemaToModelService}
- * @see {@link QModel.fromSchema} — método estático que envuelve este servicio
+ * @see {@link QModel.fromSchema} — entry point estático en QModel
  */
 import { describe, test, expect } from 'bun:test';
 import { SchemaToModelService } from '@/core/services/schema-to-model.service';
 
-// ── JSON Schema básico ──────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-const simpleJsonSchema = {
-	type: 'object',
-	title: 'User',
-	properties: {
-		id: { type: 'number' },
-		name: { type: 'string' },
-		active: { type: 'boolean' },
-	},
-	required: ['id', 'name'],
-};
+/** Fabricar código desde un JSON Schema con valores por defecto cómodos. */
+function jsonCode(
+	props: Record<string, unknown>,
+	opts: { required?: string[]; title?: string; className?: string } = {}
+): string {
+	return SchemaToModelService.fromSchema(
+		'json',
+		{
+			type: 'object',
+			title: opts.title,
+			properties: props,
+			required: opts.required,
+		},
+		opts.className
+	);
+}
 
-describe("SchemaToModelService.fromSchema('json') \u2014 tipos primitivos", () => {
-	test('genera una clase con extends QModel', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
-		expect(code).toContain('extends QModel<IUser>');
+// ── fromSchema('json') — tipos primitivos ────────────────────────────────────
+
+describe("fromSchema('json') — primitivos", () => {
+	const schema = {
+		type: 'object',
+		title: 'User',
+		properties: {
+			id: { type: 'number' },
+			name: { type: 'string' },
+			active: { type: 'boolean' },
+		},
+		required: ['id', 'name'],
+	};
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
+		expect(code).toContain('export class User extends QModel<IUser>');
 	});
 
-	test('genera @Quick con transformers para Number y Boolean', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
+	test('genera interfaz IUser', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
+		expect(code).toContain('interface IUser {');
+	});
+
+	test('number → transformer Number en @Quick', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
 		expect(code).toContain('id: Number');
+	});
+
+	test('boolean → transformer Boolean en @Quick', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
 		expect(code).toContain('active: Boolean');
 	});
 
-	test('String no aparece en @Quick (es el transformer por defecto)', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
+	test('string no aparece como transformer en @Quick (es el default)', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
 		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
 	});
 
 	test('genera declare para cada propiedad', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
 		expect(code).toContain('declare id: number;');
 		expect(code).toContain('declare name: string;');
 		expect(code).toContain('declare active: boolean;');
 	});
 
-	test('genera interfaz IUser con los tipos correctos', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
-		expect(code).toContain('interface IUser');
-		expect(code).toContain('id: number;');
-		expect(code).toContain('name: string;');
+	test('campos required → no opcionales en la interfaz', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
+		expect(code).toMatch(/\bid: number;/);
+		expect(code).not.toMatch(/\bid\?:/);
+		expect(code).toMatch(/\bname: string;/);
 	});
 
-	test('campos no-required son opcionales en la interfaz', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
+	test('campos no-required → opcionales en la interfaz', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
 		expect(code).toContain('active?: boolean;');
 	});
 
-	test('campos required NO son opcionales en la interfaz', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			simpleJsonSchema,
-			'User'
-		);
-		expect(code).toMatch(/id:\s*number;/);
-		expect(code).not.toMatch(/id\?:/);
+	test("incluye import { QModel, Quick } from 'quickmodel'", () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'User');
+		expect(code).toContain("import { QModel, Quick } from 'quickmodel'");
 	});
 
-	test('incluye import de quickmodel', () => {
+	test('@Quick({}) cuando no hay transformers (solo strings)', () => {
+		const code = jsonCode(
+			{ first: { type: 'string' }, last: { type: 'string' } },
+			{ className: 'Name' }
+		);
+		expect(code).toContain('@Quick({})');
+		expect(code).not.toMatch(/@Quick\(\{\s*\w+:/);
+	});
+
+	test('type object → Record<string, unknown>', () => {
+		const code = jsonCode(
+			{ meta: { type: 'object' } },
+			{ className: 'Doc' }
+		);
+		expect(code).toContain('declare meta: Record<string, unknown>;');
+	});
+
+	test('tipo desconocido → unknown', () => {
+		const code = jsonCode({ raw: { type: 'null' } }, { className: 'Doc' });
+		expect(code).toContain('declare raw: unknown;');
+	});
+
+	test('schema sin propiedades → clase vacía válida', () => {
 		const code = SchemaToModelService.fromSchema(
 			'json',
-			simpleJsonSchema,
-			'User'
+			{ type: 'object' },
+			'Empty'
 		);
-		expect(code).toContain("from 'quickmodel'");
+		expect(code).toContain('export class Empty extends QModel<IEmpty>');
+		expect(code).toContain('@Quick({})');
 	});
 });
 
-// ── Date y formato date-time ────────────────────────────────────────────────
+// ── fromSchema('json') — Date ────────────────────────────────────────────────
 
-const dateSchema = {
-	type: 'object',
-	title: 'Event',
-	properties: {
-		name: { type: 'string' },
-		startedAt: { type: 'string', format: 'date-time' },
-		createdAt: { type: 'string', format: 'date' },
-		description: { type: 'string' },
-	},
-};
+describe("fromSchema('json') — Date", () => {
+	const schema = {
+		type: 'object',
+		properties: {
+			name: { type: 'string' },
+			startedAt: { type: 'string', format: 'date-time' },
+			createdAt: { type: 'string', format: 'date' },
+		},
+	};
 
-describe("SchemaToModelService.fromSchema('json') \u2014 Date", () => {
-	test('string/date-time \u2192 transformer Date', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			dateSchema,
-			'Event'
-		);
+	test('string/date-time → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Event');
 		expect(code).toContain('startedAt: Date');
 	});
 
-	test('string/date \u2192 transformer Date', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			dateSchema,
-			'Event'
-		);
+	test('string/date → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Event');
 		expect(code).toContain('createdAt: Date');
 	});
 
-	test('campos Date en declare tienen tipo Date', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			dateSchema,
-			'Event'
-		);
+	test('declare tiene tipo Date', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Event');
 		expect(code).toContain('declare startedAt: Date;');
 		expect(code).toContain('declare createdAt: Date;');
 	});
 
-	test('string sin format \u2192 tipo string en declare', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			dateSchema,
-			'Event'
-		);
+	test('string sin format → tipo string', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Event');
 		expect(code).toContain('declare name: string;');
-		expect(code).toContain('declare description: string;');
 	});
 });
 
-// ── Arrays ──────────────────────────────────────────────────────────────────
+// ── fromSchema('json') — BigInt ──────────────────────────────────────────────
 
-const arraySchema = {
-	type: 'object',
-	title: 'Collection',
-	properties: {
-		tags: { type: 'array', items: { type: 'string' } },
-		scores: { type: 'array', items: { type: 'number' } },
-		flags: { type: 'array', items: { type: 'boolean' } },
-		dates: {
-			type: 'array',
-			items: { type: 'string', format: 'date-time' },
+describe("fromSchema('json') — BigInt", () => {
+	const schema = {
+		type: 'object',
+		properties: {
+			amount: { type: 'integer', format: 'int64' },
+			balance: { type: 'string', format: 'bigint' },
+			count: { type: 'integer' },
+			rank: { type: 'integer', format: 'int32' },
 		},
-		misc: { type: 'array' },
-	},
-};
+	};
 
-describe("SchemaToModelService.fromSchema('json') \u2014 Arrays", () => {
-	test('array<string> \u2192 [String] en @Quick', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			arraySchema,
-			'Collection'
-		);
+	test('integer/int64 → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Finance');
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('string/bigint → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Finance');
+		expect(code).toContain('balance: BigInt');
+		expect(code).toContain('declare balance: bigint;');
+	});
+
+	test('integer sin format → Number (no BigInt)', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Finance');
+		expect(code).toContain('count: Number');
+		expect(code).toContain('declare count: number;');
+	});
+
+	test('integer/int32 → Number (no BigInt)', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Finance');
+		expect(code).toContain('rank: Number');
+		expect(code).toContain('declare rank: number;');
+	});
+});
+
+// ── fromSchema('json') — Arrays ──────────────────────────────────────────────
+
+describe("fromSchema('json') — Arrays", () => {
+	const schema = {
+		type: 'object',
+		properties: {
+			tags: { type: 'array', items: { type: 'string' } },
+			scores: { type: 'array', items: { type: 'number' } },
+			flags: { type: 'array', items: { type: 'boolean' } },
+			dates: {
+				type: 'array',
+				items: { type: 'string', format: 'date-time' },
+			},
+			misc: { type: 'array' },
+		},
+	};
+
+	test('array<string> → [String] en @Quick', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Coll');
 		expect(code).toContain('tags: [String]');
-	});
-
-	test('array<number> \u2192 [Number] en @Quick', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			arraySchema,
-			'Collection'
-		);
-		expect(code).toContain('scores: [Number]');
-	});
-
-	test('array<boolean> \u2192 [Boolean] en @Quick', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			arraySchema,
-			'Collection'
-		);
-		expect(code).toContain('flags: [Boolean]');
-	});
-
-	test('array<date-time> \u2192 [Date] en @Quick', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			arraySchema,
-			'Collection'
-		);
-		expect(code).toContain('dates: [Date]');
-	});
-
-	test('declare de arrays tienen tipo correcto', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			arraySchema,
-			'Collection'
-		);
 		expect(code).toContain('declare tags: string[];');
+	});
+
+	test('array<number> → [Number] en @Quick', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Coll');
+		expect(code).toContain('scores: [Number]');
 		expect(code).toContain('declare scores: number[];');
+	});
+
+	test('array<boolean> → [Boolean] en @Quick', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Coll');
+		expect(code).toContain('flags: [Boolean]');
 		expect(code).toContain('declare flags: boolean[];');
+	});
+
+	test('array<date-time> → [Date] en @Quick', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Coll');
+		expect(code).toContain('dates: [Date]');
 		expect(code).toContain('declare dates: Date[];');
 	});
 
-	test('array sin items \u2192 unknown[] en declare, sin transformer en @Quick', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			arraySchema,
-			'Collection'
-		);
+	test('array sin items → unknown[], sin transformer', () => {
+		const code = SchemaToModelService.fromSchema('json', schema, 'Coll');
 		expect(code).toContain('declare misc: unknown[];');
+		expect(code).not.toMatch(/misc:\s*\[/);
 	});
 });
 
-// ── BigInt ──────────────────────────────────────────────────────────────────
+// ── fromSchema('json') — className ───────────────────────────────────────────
 
-const bigintSchema = {
-	type: 'object',
-	title: 'Finance',
-	properties: {
-		amount: { type: 'integer', format: 'int64' },
-		balance: { type: 'string', format: 'bigint' },
-	},
-};
-
-describe("SchemaToModelService.fromSchema('json') \u2014 BigInt", () => {
-	test('integer/int64 \u2192 transformer BigInt', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			bigintSchema,
-			'Finance'
-		);
-		expect(code).toContain('amount: BigInt');
-	});
-
-	test('string/bigint \u2192 transformer BigInt', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			bigintSchema,
-			'Finance'
-		);
-		expect(code).toContain('balance: BigInt');
-	});
-});
-
-// ── integer normal (no BigInt) ───────────────────────────────────────────────
-
-const intSchema = {
-	type: 'object',
-	title: 'Counter',
-	properties: {
-		count: { type: 'integer' },
-		rank: { type: 'integer', format: 'int32' },
-	},
-};
-
-describe("SchemaToModelService.fromSchema('json') \u2014 integer sin BigInt", () => {
-	test('integer sin format \u2192 Number', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			intSchema,
-			'Counter'
-		);
-		expect(code).toContain('count: Number');
-	});
-
-	test('integer/int32 \u2192 Number (no BigInt)', () => {
-		const code = SchemaToModelService.fromSchema(
-			'json',
-			intSchema,
-			'Counter'
-		);
-		expect(code).toContain('rank: Number');
-	});
-});
-
-// ── className inferido desde title ──────────────────────────────────────────
-
-describe("SchemaToModelService.fromSchema('json') \u2014 className inferido", () => {
-	test('infiere className desde schema.title si no se provee', () => {
+describe("fromSchema('json') — className", () => {
+	test('infiere className desde schema.title', () => {
 		const schema = {
 			type: 'object',
 			title: 'Product',
 			properties: { price: { type: 'number' } },
 		};
 		const code = SchemaToModelService.fromSchema('json', schema);
-		expect(code).toContain('class Product extends QModel');
+		expect(code).toContain('export class Product extends QModel<IProduct>');
 	});
 
-	test('usa "GeneratedModel" si no hay title ni className', () => {
+	test('usa "GeneratedModel" cuando no hay title ni className', () => {
 		const schema = {
 			type: 'object',
 			properties: { val: { type: 'string' } },
 		};
 		const code = SchemaToModelService.fromSchema('json', schema);
-		expect(code).toContain('class GeneratedModel extends QModel');
+		expect(code).toContain(
+			'export class GeneratedModel extends QModel<IGeneratedModel>'
+		);
+	});
+
+	test('className explícito tiene prioridad sobre title', () => {
+		const schema = {
+			type: 'object',
+			title: 'OldName',
+			properties: { val: { type: 'string' } },
+		};
+		const code = SchemaToModelService.fromSchema('json', schema, 'NewName');
+		expect(code).toContain('export class NewName extends QModel<INewName>');
+		expect(code).not.toContain('OldName');
 	});
 });
 
 // ── fromSchema('openapi') ────────────────────────────────────────────────────
 
-describe("SchemaToModelService.fromSchema('openapi')", () => {
-	test('extrae el primer esquema de components.schemas', () => {
-		const openapi = {
-			components: {
-				schemas: {
-					User: {
-						type: 'object',
-						properties: {
-							id: { type: 'number' },
-							name: { type: 'string' },
-						},
+describe("fromSchema('openapi')", () => {
+	const openapiDoc = {
+		components: {
+			schemas: {
+				User: {
+					type: 'object',
+					properties: {
+						id: { type: 'number' },
+						email: { type: 'string' },
 					},
+					required: ['id'],
+				},
+				Order: {
+					type: 'object',
+					properties: { total: { type: 'number' } },
 				},
 			},
-		};
+		},
+	};
+
+	test('extrae esquema por className en components.schemas', () => {
 		const code = SchemaToModelService.fromSchema(
 			'openapi',
-			openapi,
+			openapiDoc,
 			'User'
 		);
-		expect(code).toContain('class User extends QModel<IUser>');
+		expect(code).toContain('export class User extends QModel<IUser>');
 		expect(code).toContain('id: Number');
+		expect(code).toContain('declare email: string;');
 	});
 
-	test('acepta un esquema OpenAPI directo (sin components)', () => {
+	test('auto-selecciona el primer key cuando no se da className', () => {
+		const code = SchemaToModelService.fromSchema('openapi', openapiDoc);
+		// El primer key es 'User'
+		expect(code).toContain('export class User extends QModel<IUser>');
+	});
+
+	test('puede extraer un esquema distinto del primero por className', () => {
+		const code = SchemaToModelService.fromSchema(
+			'openapi',
+			openapiDoc,
+			'Order'
+		);
+		expect(code).toContain('export class Order extends QModel<IOrder>');
+	});
+
+	test('acepta esquema bare sin components (como JSON Schema)', () => {
 		const schema = {
 			type: 'object',
-			title: 'Order',
-			properties: { total: { type: 'number' }, ref: { type: 'string' } },
+			title: 'Invoice',
+			properties: { ref: { type: 'string' } },
 		};
 		const code = SchemaToModelService.fromSchema(
 			'openapi',
 			schema,
-			'Order'
+			'Invoice'
 		);
-		expect(code).toContain('class Order extends QModel<IOrder>');
+		expect(code).toContain('export class Invoice extends QModel<IInvoice>');
 	});
 
-	test('lanza error si className no est\u00e1 en components.schemas', () => {
-		const openapi = {
-			components: {
-				schemas: { Product: { type: 'object', properties: {} } },
-			},
+	test('infiere className desde title en schema bare sin components', () => {
+		const schema = {
+			type: 'object',
+			title: 'Receipt',
+			properties: { total: { type: 'number' } },
 		};
+		const code = SchemaToModelService.fromSchema('openapi', schema);
+		expect(code).toContain('export class Receipt extends QModel<IReceipt>');
+	});
+
+	test('lanza error si className no existe en components.schemas', () => {
 		expect(() =>
-			SchemaToModelService.fromSchema('openapi', openapi, 'Unknown')
-		).toThrow();
+			SchemaToModelService.fromSchema('openapi', openapiDoc, 'Unknown')
+		).toThrow(/not found in.*components\.schemas/i);
 	});
 });
 
-// ── fromSchema('ajv') — mismo comportamiento que 'json' ──────────────────────
+// ── fromSchema('ajv') — equivalente a 'json' ─────────────────────────────────
 
-describe("SchemaToModelService.fromSchema('ajv')", () => {
-	test('ajv procesa primitivos igual que json', () => {
-		const ajvSchema = {
+describe("fromSchema('ajv')", () => {
+	test('procesa primitivos igual que json', () => {
+		const schema = {
 			type: 'object',
 			title: 'Widget',
 			properties: {
@@ -383,106 +375,197 @@ describe("SchemaToModelService.fromSchema('ajv')", () => {
 			},
 			required: ['count'],
 		};
-		const code = SchemaToModelService.fromSchema(
-			'ajv',
-			ajvSchema,
-			'Widget'
-		);
-		expect(code).toContain('class Widget extends QModel<IWidget>');
+		const code = SchemaToModelService.fromSchema('ajv', schema, 'Widget');
+		expect(code).toContain('export class Widget extends QModel<IWidget>');
 		expect(code).toContain('count: Number');
 		expect(code).toContain('active: Boolean');
 		expect(code).toContain('declare label: string;');
+		expect(code).toContain('count: number;');
+		expect(code).toContain('label?: string;');
 	});
 
-	test('ajv procesa Date igual que json', () => {
-		const ajvSchema = {
+	test('procesa Date igual que json', () => {
+		const schema = {
 			type: 'object',
-			properties: {
-				name: { type: 'string' },
-				created: { type: 'string', format: 'date-time' },
-			},
+			properties: { created: { type: 'string', format: 'date-time' } },
 		};
-		const code = SchemaToModelService.fromSchema(
-			'ajv',
-			ajvSchema,
-			'Record'
-		);
+		const code = SchemaToModelService.fromSchema('ajv', schema, 'Rec');
 		expect(code).toContain('created: Date');
 		expect(code).toContain('declare created: Date;');
 	});
 
-	test('ajv infiere className desde title si no se pasa', () => {
-		const ajvSchema = {
+	test('procesa arrays igual que json', () => {
+		const schema = {
+			type: 'object',
+			properties: {
+				tags: { type: 'array', items: { type: 'string' } },
+				scores: { type: 'array', items: { type: 'number' } },
+			},
+		};
+		const code = SchemaToModelService.fromSchema('ajv', schema, 'Bag');
+		expect(code).toContain('tags: [String]');
+		expect(code).toContain('scores: [Number]');
+		expect(code).toContain('declare tags: string[];');
+	});
+
+	test('@Quick({}) cuando todas las propiedades son string', () => {
+		const schema = {
+			type: 'object',
+			properties: { name: { type: 'string' } },
+		};
+		const code = SchemaToModelService.fromSchema('ajv', schema, 'Plain');
+		expect(code).toContain('@Quick({})');
+	});
+
+	test('infiere className desde title', () => {
+		const schema = {
 			type: 'object',
 			title: 'ItemAJV',
 			properties: { val: { type: 'number' } },
 		};
-		const code = SchemaToModelService.fromSchema('ajv', ajvSchema);
-		expect(code).toContain('class ItemAJV extends QModel');
+		const code = SchemaToModelService.fromSchema('ajv', schema);
+		expect(code).toContain('export class ItemAJV extends QModel<IItemAJV>');
 	});
 });
 
 // ── fromSchema('typescript') ─────────────────────────────────────────────────
 
-describe("SchemaToModelService.fromSchema('typescript')", () => {
-	const userInterface = [
+describe("fromSchema('typescript')", () => {
+	// Interface construida con campos representativos de todos los transformers
+	const fullInterface = [
 		'interface IUser {',
 		'  id: number;',
 		'  name: string;',
 		'  active: boolean;',
 		'  createdAt: Date;',
+		'  balance: bigint;',
+		'  pattern: RegExp;',
+		'  tags: Set<string>;',
+		'  index: Map<string, number>;',
+		'  homepage: URL;',
 		'}',
 	].join('\n');
 
-	test('genera class con extends QModel inferido desde IUser', () => {
+	test('infiere class User desde IUser (elimina prefijo I)', () => {
 		const code = SchemaToModelService.fromSchema(
 			'typescript',
-			userInterface
+			fullInterface
 		);
-		expect(code).toContain('class User extends QModel<IUser>');
+		expect(code).toContain('export class User extends QModel<IUser>');
 	});
 
-	test('produce @Quick con transformers para Number, Boolean, Date', () => {
+	test('number → Number', () => {
 		const code = SchemaToModelService.fromSchema(
 			'typescript',
-			userInterface
+			fullInterface
 		);
 		expect(code).toContain('id: Number');
-		expect(code).toContain('active: Boolean');
-		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare id: number;');
 	});
 
-	test('produce declare para cada campo', () => {
+	test('boolean → Boolean', () => {
 		const code = SchemaToModelService.fromSchema(
 			'typescript',
-			userInterface
+			fullInterface
 		);
-		expect(code).toContain('declare id: number;');
-		expect(code).toContain('declare name: string;');
+		expect(code).toContain('active: Boolean');
 		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('Date → Date', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).toContain('createdAt: Date');
 		expect(code).toContain('declare createdAt: Date;');
 	});
 
-	test('respeta optionalidad de campos', () => {
+	test('bigint → BigInt', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).toContain('balance: BigInt');
+		expect(code).toContain('declare balance: bigint;');
+	});
+
+	test('RegExp → RegExp', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).toContain('pattern: RegExp');
+		expect(code).toContain('declare pattern: RegExp;');
+	});
+
+	test('Set<...> → Set', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).toContain('tags: Set');
+		expect(code).toContain('declare tags: Set<string>;');
+	});
+
+	test('Map<...> → Map', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).toContain('index: Map');
+		expect(code).toContain('declare index: Map<string, number>;');
+	});
+
+	test('URL → URL', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).toContain('homepage: URL');
+		expect(code).toContain('declare homepage: URL;');
+	});
+
+	test('string no produce transformer → @Quick solo tiene el resto', () => {
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			fullInterface
+		);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+	});
+
+	test('arrays tipados → transformer correcto [Number], [Date]', () => {
+		const src = [
+			'interface IReport {',
+			'  scores: number[];',
+			'  dates: Date[];',
+			'  labels: string[];',
+			'}',
+		].join('\n');
+		const code = SchemaToModelService.fromSchema('typescript', src);
+		expect(code).toContain('scores: [Number]');
+		expect(code).toContain('dates: [Date]');
+		expect(code).toContain('declare scores: number[];');
+		expect(code).toContain('declare dates: Date[];');
+		// string[] → sin transformer (default)
+		expect(code).not.toMatch(/labels:\s*\[String\]/);
+	});
+
+	test('campos opcionales mantienen ? en la interfaz generada', () => {
 		const src = [
 			'interface IPost {',
 			'  title: string;',
 			'  content?: string;',
+			'  author?: number;',
 			'}',
 		].join('\n');
 		const code = SchemaToModelService.fromSchema('typescript', src, 'Post');
 		expect(code).toContain('title: string;');
 		expect(code).toContain('content?: string;');
+		expect(code).toContain('author?: number;');
 	});
 
-	test('infiere BigInt desde bigint', () => {
-		const src = ['interface IBig {', '  amount: bigint;', '}'].join('\n');
-		const code = SchemaToModelService.fromSchema('typescript', src, 'Big');
-		expect(code).toContain('amount: BigInt');
-		expect(code).toContain('declare amount: bigint;');
-	});
-
-	test('acepta className expl\u00edcito sobrescribiendo el del interface', () => {
+	test('className explícito tiene prioridad sobre el nombre del interface', () => {
 		const src = ['interface ISomeModel {', '  value: number;', '}'].join(
 			'\n'
 		);
@@ -491,10 +574,54 @@ describe("SchemaToModelService.fromSchema('typescript')", () => {
 			src,
 			'Custom'
 		);
-		expect(code).toContain('class Custom extends QModel<ICustom>');
+		expect(code).toContain('export class Custom extends QModel<ICustom>');
+		expect(code).not.toContain('SomeModel');
 	});
 
-	test('lanza error si no hay interface en el c\u00f3digo fuente', () => {
+	test('interface sin prefijo I → nombre de clase = nombre del interface', () => {
+		const src = ['interface Person {', '  age: number;', '}'].join('\n');
+		const code = SchemaToModelService.fromSchema('typescript', src);
+		expect(code).toContain('export class Person extends QModel<IPerson>');
+	});
+
+	test('comentarios en el body del interface son ignorados', () => {
+		const src = [
+			'interface IItem {',
+			'  // identificador único',
+			'  id: number;',
+			'  name: string;',
+			'}',
+		].join('\n');
+		const code = SchemaToModelService.fromSchema('typescript', src, 'Item');
+		expect(code).toContain('declare id: number;');
+		expect(code).toContain('declare name: string;');
+		// El comentario no debe aparecer como campo
+		expect(code).not.toContain('identificador');
+	});
+
+	test('@Quick({}) cuando todos los campos son string', () => {
+		const src = [
+			'interface ILabel {',
+			'  key: string;',
+			'  value: string;',
+			'}',
+		].join('\n');
+		const code = SchemaToModelService.fromSchema(
+			'typescript',
+			src,
+			'Label'
+		);
+		expect(code).toContain('@Quick({})');
+		expect(code).not.toMatch(/@Quick\(\{\s*\w+:/);
+	});
+
+	test('incluye import correcto', () => {
+		const src = ['interface IX {', '  val: number;', '}'].join('\n');
+		const code = SchemaToModelService.fromSchema('typescript', src, 'X');
+		expect(code).toContain("import { QModel, Quick } from 'quickmodel'");
+	});
+
+	test('lanza error si no hay interface en el código fuente', () => {
 		expect(() =>
 			SchemaToModelService.fromSchema(
 				'typescript',

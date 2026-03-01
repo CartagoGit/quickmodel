@@ -352,7 +352,7 @@ if (owner.pets[0] instanceof Dog) {
 
 ## Serialization of Nested Models
 
-`toJSON()` recursively serializes all nested models:
+`serialize()` recursively serializes all nested models (returns a plain object). Use `toJSON()` if you need a JSON string.
 
 ```typescript
 const user = new User({
@@ -369,7 +369,7 @@ const user = new User({
 	},
 });
 
-const json = user.toJSON();
+const plain = user.serialize();
 // {
 //   id: 1,
 //   email: 'john@example.com',
@@ -425,7 +425,7 @@ const child = new Node({
 root.children.push(child);
 
 // Serialization handles circular references
-const json = root.toJSON(); // Works without infinite recursion
+const plain = root.serialize(); // Works without infinite recursion
 ```
 
 ## Best Practices

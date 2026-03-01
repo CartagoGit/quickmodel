@@ -128,7 +128,7 @@ Puedes crear arrays donde todos los elementos compartan algunas propiedades comu
 
 ```typescript
 // 10 usuarios, todos con isActive = true
-const activeUsers = User.mock().array(10, { isActive: true });
+const activeUsers = User.mock().array(10, 'random', () => ({ isActive: true }));
 ```
 
 Esto genera 10 usuarios únicos, pero **fuerza** que todos tengan `isActive: true`.

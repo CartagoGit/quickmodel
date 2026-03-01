@@ -87,10 +87,11 @@ console.log(user.metadata instanceof Map); // true
 
 ## Step 4: Serialize Back to JSON
 
-When you need to send data back to the API:
+When you need to send data back to the API, use `serialize()` to get a plain object, or `toJSON()` for a JSON string:
 
 ```typescript
-const json = user.toJSON();
+// serialize() → plain JavaScript object (most common)
+const plain = user.serialize();
 // {
 //   id: 1,
 //   name: 'John Doe',
@@ -99,6 +100,10 @@ const json = user.toJSON();
 //   tags: ['typescript', 'node'],
 //   metadata: [['key1', 'val1'], ['key2', 'val2']]
 // }
+
+// toJSON() → JSON string (for fetch body, WebSockets, etc.)
+const jsonStr = user.toJSON();
+// '{"id":1,"name":"John Doe",...}'
 ```
 
 ## Step 5: Testing with Mocks
