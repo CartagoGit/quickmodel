@@ -13,11 +13,44 @@ Las siguientes herramientas se usan para desarrollo interno.
 - **Documentación**: Sincroniza docs (`update_docs`, `update_docs_content`), comprueba JSDocs faltantes (`check_jsdocs`).
 - **QA**: Comprueba salud del proyecto (`check_project_health`), cobertura (`get_coverage_report`), compatibilidad de API, tamaño del bundle y CHANGELOG.
 - **CI / Flujo de desarrollo**: Ejecuta tests (`run_tests`), lint (`lint_check`), typecheck (`typecheck`), simula pre-commit (`pre_commit_check`), archivos en staging (`get_staged_files`) y snapshot consolidado de salud (`project_status`).
+- **Coordinación de agentes**: Previene conflictos de archivos entre sesiones de agentes paralelas (`agent_coordinate`).
 - **Rendimiento**: Benchmarks de rendimiento (`benchmark_performance`).
 
 <!-- TOOLS-START -->
 
 <!-- _Mantenido manualmente. El equivalente en inglés se genera automáticamente por QSyncDocsTool._ -->
+
+## `agent_coordinate`
+
+Coordina el trabajo de agentes paralelos para prevenir conflictos de archivos. `check`: lista todos los agentes activos (llamar siempre primero). `claim`: registra tarea + archivos; usa detección glob-aware de solapamiento; devuelve `conflict:true` si bloqueado. Usa `force=true` para anular un lock de un agente caido. `release`: libera el claim al terminar. `update`: refresca el heartbeat TTL (llamar cada ~15 min). `purge`: fuerza limpiar claims bloqueados. Registro en `tmp/agent-registry.json`; las entradas expiran en 30 min sin heartbeat.
+
+```json
+{
+	"action": {
+		"description": "Operación: claim | check | release | update | purge"
+	},
+	"agentId": {
+		"description": "Identificador único del agente, p.ej. \"copilot-session-1\". Requerido para claim, release, update.",
+		"optional": true
+	},
+	"task": {
+		"description": "Descripción corta de la tarea, p.ej. \"migrar docs $qm\". Requerido para claim.",
+		"optional": true
+	},
+	"files": {
+		"description": "Rutas de archivos o patrones glob a bloquear, p.ej. [\"docs-vitepress/en/**\"]. Glob-aware.",
+		"optional": true
+	},
+	"ttlMs": {
+		"description": "TTL personalizado en ms (defecto 1800000 = 30 min).",
+		"optional": true
+	},
+	"force": {
+		"description": "Si true, anula un lock obsoleto (updatedAt más antiguo de ~5 min) de un agente caido.",
+		"optional": true
+	}
+}
+```
 
 ## `benchmark_performance`
 

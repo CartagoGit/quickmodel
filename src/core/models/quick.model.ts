@@ -804,7 +804,15 @@ export abstract class QModel<
 	get $qm(): IQMHandle<TInterface, TAliasMap, this> {
 		const ref = this;
 		return {
-			serialize: (seenOrOpt?, opt?) => ref.serialize(seenOrOpt, opt),
+			serialize: (
+				seenOrOpt?: WeakSet<object> | IQSerializationOptions,
+				opt?: IQSerializationOptions
+			) => {
+				if (seenOrOpt === undefined || seenOrOpt instanceof WeakSet) {
+					return ref.serialize(seenOrOpt, opt);
+				}
+				return ref.serialize(seenOrOpt);
+			},
 			toFormData: (opt?) => ref.toFormData(opt),
 			toReadableStream: (opt) => {
 				if ('multipart' in opt && opt.multipart) {
@@ -2380,13 +2388,13 @@ export abstract class QModel<
 	 *
 	 * @example Basic usage
 	 * ```typescript
-	 * const result = await user.checkRulesAsync();
+	 * const result = await user.$qm.checkRulesAsync();
 	 * if (!result.valid) console.log(result.errors);
 	 * ```
 	 *
 	 * @example With timeout
 	 * ```typescript
-	 * const result = await user.checkRulesAsync({ timeoutMs: 200, timeoutMessage: 'Service unavailable' });
+	 * const result = await user.$qm.checkRulesAsync({ timeoutMs: 200, timeoutMessage: 'Service unavailable' });
 	 * result.errors.forEach((err) => {
 	 *   if (err.timedOut) console.warn(`${err.field} timed out`);
 	 * });
@@ -2394,7 +2402,7 @@ export abstract class QModel<
 	 *
 	 * @example Serial execution (e.g. check format first, then uniqueness)
 	 * ```typescript
-	 * const result = await user.checkRulesAsync({ mode: 'serial' });
+	 * const result = await user.$qm.checkRulesAsync({ mode: 'serial' });
 	 * ```
 	 *
 	 */
@@ -2418,8 +2426,8 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * if (!(await user.isValidAsync())) {
-	 *   const report = await user.validationReportAsync();
+	 * if (!(await user.$qm.isValidAsync())) {
+	 *   const report = await user.$qm.validationReportAsync();
 	 *   console.log(report.integrity, report.rules.errors);
 	 * }
 	 * ```
@@ -2443,7 +2451,7 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * const report = await user.validationReportAsync({ timeoutMs: 300 });
+	 * const report = await user.$qm.validationReportAsync({ timeoutMs: 300 });
 	 * if (!report.valid) {
 	 *   console.log('Integrity:', report.integrity);
 	 *   console.log('Rules:', report.rules.errors);
@@ -2479,18 +2487,18 @@ export abstract class QModel<
 	 *
 	 * @example Sync
 	 * ```typescript
-	 * const result = user.validate();
+	 * const result = user.$qm.validate();
 	 * if (!result.valid) console.log(result.rules.errors);
 	 * ```
 	 *
 	 * @example Async
 	 * ```typescript
-	 * const result = await user.validate({ async: true });
+	 * const result = await user.$qm.validate({ async: true });
 	 * ```
 	 *
 	 * @example Group filter
 	 * ```typescript
-	 * const result = user.validate({ groups: ['personal'] });
+	 * const result = user.$qm.validate({ groups: ['personal'] });
 	 * ```
 	 *
 	 */
@@ -3064,7 +3072,7 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'John', age: 30 });
-	 * user.patch({ name: 'Jane' });
+	 * user.$qm.patch({ name: 'Jane' });
 	 *
 	 * const dirty = user.getDirtyFields();
 	 * dirty.has('name'); // true

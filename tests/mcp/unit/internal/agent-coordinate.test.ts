@@ -1,0 +1,726 @@
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { QAgentCoordinateTool } from '../../../../src/mcp/tools/internal/agent-coordinate.tool';
+import { join } from 'path';
+import { rmSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+
+const TMP_REGISTRY = join(process.cwd(), 'tests', 'temp_agent_registry.json');
+
+function makeTool(ttlMs?: number): QAgentCoordinateTool {
+	const tool = new QAgentCoordinateTool();
+	tool._registryPath = TMP_REGISTRY;
+	if (ttlMs !== undefined) tool._ttlMs = ttlMs;
+	return tool;
+}
+
+describe('QAgentCoordinateTool', () => {
+	beforeEach(() => {
+		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
+	});
+
+	afterEach(() => {
+		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
+	});
+
+	// ── Metadata ────────────────────────────────────────────────────────────
+
+	it('has correct metadata', () => {
+		const tool = makeTool();
+		expect(tool.name).toBe('agent_coordinate');
+		expect(tool.description).toBeDefined();
+		expect(tool.schema).toBeDefined();
+	});
+
+	// ── check ────────────────────────────────────────────────────────────────
+
+	describe('check', () => {
+		it('returns zero agents when registry does not exist', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.agents).toHaveLength(0);
+			expect(res.total).toBe(0);
+			expect(res.summary).toContain('0');
+		});
+
+		it('returns registered agents after a claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(1);
+			expect(res.agents[0]?.agentId).toBe('agent-A');
+			expect(res.agents[0]?.task).toBe('migrate docs');
+		});
+
+		it('auto-purges stale entries and reports count', async () => {
+			// Write a registry with an already-expired entry
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'dead-agent': {
+							agentId: 'dead-agent',
+							task: 'old task',
+							files: ['src/**'],
+							startedAt: '2020-01-01T00:00:00.000Z',
+							updatedAt: '2020-01-01T00:00:00.000Z',
+							expiresAt: '2020-01-01T02:00:00.000Z', // expired long ago
+						},
+					},
+				})
+			);
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+			expect(res.purgedStale).toBe(1);
+		});
+	});
+
+	// ── claim ─────────────────────────────────────────────────────────────────
+
+	describe('claim — exact file matching', () => {
+		it('claims successfully when no conflicts', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+			expect(res.summary).toContain('agent-A');
+			expect(res.summary).toContain('migrate docs');
+		});
+
+		it('detects conflict on exact duplicate file', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: ['docs-vitepress/en/guide/qmodel.md'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'fix examples',
+				files: ['docs-vitepress/en/guide/qmodel.md'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+			expect(res.claimedBy).toBe('agent-A');
+			expect(res.conflictingFiles).toContain(
+				'docs-vitepress/en/guide/qmodel.md'
+			);
+		});
+
+		it('allows two agents on completely different files', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'fix tests',
+				files: ['tests/unit/**'],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+			expect(res.otherAgents).toHaveLength(1);
+		});
+	});
+
+	describe('claim — glob-aware conflict detection', () => {
+		it('glob vs specific file: conflict when file is under glob base', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate all docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'edit one guide',
+				files: ['docs-vitepress/en/guide/qmodel.md'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+			expect(res.claimedBy).toBe('agent-A');
+		});
+
+		it('specific file vs glob: conflict when file is under glob base', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'edit one guide',
+				files: ['docs-vitepress/en/guide/qmodel.md'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'migrate all docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+		});
+
+		it('glob vs sub-glob: conflict when one glob base prefixes the other', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'all src',
+				files: ['src/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'just core',
+				files: ['src/core/**'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+		});
+
+		it('sibling globs do NOT conflict', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'en docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'es docs',
+				files: ['docs-vitepress/es/**'],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+
+		it('different exact files do NOT conflict', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task a',
+				files: ['src/core/models/quick.model.ts'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'task b',
+				files: ['src/core/models/qm-handle.ts'],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+
+		it('empty files list never conflicts', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task a',
+				files: ['src/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'task b',
+				files: [],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+	});
+
+	describe('claim — re-claim behaviour', () => {
+		it('allows same agent to re-claim without conflict', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task 1',
+				files: ['src/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task 2',
+				files: ['src/**'],
+			});
+			expect(res.claimed).toBe(true);
+		});
+
+		it('preserves startedAt on re-claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task 1',
+				files: [],
+			});
+			const first = await tool.execute({ action: 'check' });
+			const startedAt = first.agents[0]?.startedAt;
+
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task 2',
+				files: [],
+			});
+			const second = await tool.execute({ action: 'check' });
+			expect(second.agents[0]?.startedAt).toBe(startedAt);
+		});
+
+		it('returns error when agentId or task missing', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'claim' });
+			expect(res.claimed).toBe(false);
+		});
+	});
+
+	// ── release ───────────────────────────────────────────────────────────────
+
+	describe('release', () => {
+		it('releases an existing claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: [],
+			});
+			const res = await tool.execute({
+				action: 'release',
+				agentId: 'agent-A',
+			});
+			expect(res.released).toBe(true);
+			expect(res.summary).toContain('agent-A');
+		});
+
+		it('check returns empty after release', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: [],
+			});
+			await tool.execute({ action: 'release', agentId: 'agent-A' });
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+		});
+
+		it('returns failure when agentId missing', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'release' });
+			expect(res.released).toBe(false);
+		});
+
+		it('returns failure when releasing unknown agent', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'release',
+				agentId: 'ghost',
+			});
+			expect(res.released).toBe(false);
+			expect(res.summary).toContain('ghost');
+		});
+	});
+
+	// ── update ────────────────────────────────────────────────────────────────
+
+	describe('update (heartbeat)', () => {
+		it('refreshes expiresAt for an existing claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'long task',
+				files: [],
+			});
+			const before = (await tool.execute({ action: 'check' })).agents[0]
+				?.expiresAt;
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'agent-A',
+			});
+			expect(res.updated).toBe(true);
+			expect(res.expiresAt).toBeDefined();
+			// The new expiry should be >= the old one
+			expect(new Date(res.expiresAt).getTime()).toBeGreaterThanOrEqual(
+				new Date(before ?? 0).getTime()
+			);
+		});
+
+		it('returns failure when agentId missing', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'update' });
+			expect(res.updated).toBe(false);
+		});
+
+		it('returns failure when agent has no active claim', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'ghost',
+			});
+			expect(res.updated).toBe(false);
+		});
+	});
+
+	// ── purge ─────────────────────────────────────────────────────────────────
+
+	describe('purge', () => {
+		it('purges a specific agent by agentId', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task',
+				files: [],
+			});
+			const res = await tool.execute({
+				action: 'purge',
+				agentId: 'agent-A',
+			});
+			expect(res.purged).toBe(1);
+			expect(res.remaining).toBe(0);
+		});
+
+		it('purges all agents when no agentId given', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task A',
+				files: [],
+			});
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'task B',
+				files: [],
+			});
+			const res = await tool.execute({ action: 'purge' });
+			expect(res.purged).toBe(2);
+			expect(res.remaining).toBe(0);
+		});
+
+		it('reports cleanly when target agent not found', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'purge',
+				agentId: 'ghost',
+			});
+			expect(res.purged).toBe(0);
+		});
+
+		it('after purge the slot is free for a new claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task',
+				files: ['src/**'],
+			});
+			await tool.execute({ action: 'purge', agentId: 'agent-A' });
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'new task',
+				files: ['src/**'],
+			});
+			expect(res.claimed).toBe(true);
+		});
+	});
+
+	// ── TTL ───────────────────────────────────────────────────────────────────
+
+	describe('TTL auto-expiry', () => {
+		it('an expired claim is purged on next read and causes no conflict', async () => {
+			const tool = makeTool(1); // TTL = 1 ms
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'will expire',
+				files: ['src/**'],
+			});
+			// Wait for TTL to lapse
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			const tool2 = makeTool();
+			tool2._registryPath = TMP_REGISTRY;
+			const res = await tool2.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'new task',
+				files: ['src/**'],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+
+		it('custom ttlMs per claim arg overrides instance default', async () => {
+			const tool = makeTool(60_000); // instance TTL = 1 min
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'short task',
+				files: ['src/**'],
+				ttlMs: 1, // per-claim TTL = 1 ms
+			});
+			// Wait for per-claim TTL to lapse
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'new task',
+				files: ['src/**'],
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+	});
+
+	// ── force ──────────────────────────────────────────────────────────────
+
+	describe('force claim (crash resilience)', () => {
+		it('force=true overrides a stale lock (updatedAt older than _staleCrashMs)', async () => {
+			const tool = makeTool();
+			// Write a registry entry that was last updated long ago
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			const longAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString(); // 10 min ago
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'crashed-agent': {
+							agentId: 'crashed-agent',
+							task: 'stuck task',
+							files: ['src/**'],
+							startedAt: longAgo,
+							updatedAt: longAgo,
+							expiresAt: new Date(
+								Date.now() + 60 * 60 * 1000
+							).toISOString(), // not expired yet
+						},
+					},
+				})
+			);
+			tool._staleCrashMs = 5 * 60 * 1000; // 5 min threshold
+
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'take over',
+				files: ['src/**'],
+				force: true,
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+
+		it('force=true does NOT override a fresh, active claim', async () => {
+			const tool = makeTool();
+			// Agent A claims right now (updatedAt = now)
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'active task',
+				files: ['src/**'],
+			});
+			tool._staleCrashMs = 5 * 60 * 1000; // 5 min threshold
+
+			// Agent B tries force but agent-A is fresh
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'sneaky take',
+				files: ['src/**'],
+				force: true,
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+			expect(res.claimedBy).toBe('agent-A');
+		});
+
+		it('conflict message mentions purge and force options', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'active task',
+				files: ['src/**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'blocked task',
+				files: ['src/**'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+			expect(res.summary).toContain('purge');
+			expect(res.summary).toContain('force');
+		});
+	});
+
+	// ── registry resilience ───────────────────────────────────────────────
+
+	describe('registry resilience', () => {
+		it('corrupted JSON in registry file falls back to empty registry', async () => {
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(TMP_REGISTRY, '{ invalid json :::');
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+			expect(res.agents).toHaveLength(0);
+		});
+
+		it('valid JSON with missing agents key falls back to empty registry', async () => {
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(TMP_REGISTRY, JSON.stringify({ version: 1 }));
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+		});
+
+		it('valid JSON with null agents key falls back to empty registry', async () => {
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(TMP_REGISTRY, JSON.stringify({ agents: null }));
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+		});
+	});
+
+	// ── glob edge cases ───────────────────────────────────────────────────
+
+	describe('glob edge cases', () => {
+		it('root-level glob (*.ts) conflicts with any file', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'root glob',
+				files: ['*.ts'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'some file',
+				files: ['src/anything.ts'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+		});
+
+		it('** (double-star alone) conflicts with any file', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'everything',
+				files: ['**'],
+			});
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'specific file',
+				files: ['src/core/models/quick.model.ts'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+		});
+
+		it('when multiple agents conflict, first conflict is returned', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task A',
+				files: ['src/**'],
+			});
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'task B',
+				files: ['tests/**'],
+			});
+			// agent-C wants both — will hit the first conflict found
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-C',
+				task: 'task C',
+				files: ['src/**', 'tests/**'],
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+			// claimedBy is one of the two conflicting agents
+			expect(['agent-A', 'agent-B']).toContain(res.claimedBy);
+		});
+	});
+
+	// ── update edge cases ─────────────────────────────────────────────────
+
+	describe('update edge cases', () => {
+		it('updatedAt actually changes after update call', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'long task',
+				files: [],
+			});
+			const before = (await tool.execute({ action: 'check' })).agents[0]
+				?.updatedAt;
+			// Small delay to ensure timestamp differs
+			await new Promise((resolve) => setTimeout(resolve, 5));
+			await tool.execute({ action: 'update', agentId: 'agent-A' });
+			const after = (await tool.execute({ action: 'check' })).agents[0]
+				?.updatedAt;
+			expect(after).not.toBe(before);
+		});
+
+		it('update with custom ttlMs sets expiry accordingly', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'long task',
+				files: [],
+			});
+			const customTtl = 10 * 60 * 1000; // 10 minutes
+			const before = Date.now();
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'agent-A',
+				ttlMs: customTtl,
+			});
+			expect(res.updated).toBe(true);
+			const expiryMs = new Date(res.expiresAt).getTime();
+			// Should be ~10 min from now (allow ±2 seconds)
+			expect(expiryMs).toBeGreaterThanOrEqual(before + customTtl - 2000);
+			expect(expiryMs).toBeLessThanOrEqual(before + customTtl + 2000);
+		});
+	});
+});
