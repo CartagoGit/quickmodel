@@ -195,7 +195,7 @@ const user = new Usuario({
 	edad: 17.5,
 	rol: 'hacker',
 });
-const { valid, errors } = user.checkRules();
+const { valid, errors } = user.$qm.checkRules();
 // valid: false
 // errors: [
 //   { field: 'nombre', message: 'Debe tener al menos 2 caracteres' },
