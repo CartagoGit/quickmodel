@@ -101,6 +101,8 @@ import {
 	PrismaSchemaGenerator,
 	ValibotSchemaGenerator,
 	YupSchemaGenerator,
+	DrizzleSchemaGenerator,
+	TypeBoxSchemaGenerator,
 } from '@/core/services/schema-generators.service';
 import {
 	formDataToPlainObject,
@@ -3519,6 +3521,12 @@ export abstract class QModel<
 				break;
 			case 'yup':
 				result = YupSchemaGenerator.generate(config);
+				break;
+			case 'drizzle':
+				result = DrizzleSchemaGenerator.generate(config);
+				break;
+			case 'typebox':
+				result = TypeBoxSchemaGenerator.generate(config);
 				break;
 			default:
 				throw new Error(`Unknown schema type: ${type}`);

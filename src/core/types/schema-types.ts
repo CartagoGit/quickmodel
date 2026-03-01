@@ -5,7 +5,7 @@
  */
 
 /**
- * The ten schema formats supported by `QModel.getSchema()` / `get_model_schema` MCP tool.
+ * The **twelve** schema formats supported by `QModel.getSchema()` / `get_model_schema` MCP tool.
  *
  * | Value | Generator | Output |
  * |---|---|---|
@@ -19,6 +19,8 @@
  * | `'prisma'` | `PrismaSchemaGenerator` | Prisma `model` block string |
  * | `'valibot'` | `ValibotSchemaGenerator` | Valibot v1.x `v.object(…)` source string |
  * | `'yup'` | `YupSchemaGenerator` | Yup `yup.object(…)` source string |
+ * | `'drizzle'` | `DrizzleSchemaGenerator` | Drizzle ORM `pgTable(…)` source string |
+ * | `'typebox'` | `TypeBoxSchemaGenerator` | TypeBox `Type.Object(…)` source string |
  *
  * @see {@link JsonSchemaGenerator}
  * @see {@link OpenAPISchemaGenerator}
@@ -38,4 +40,6 @@ export type IQSchemaType =
 	| 'ajv' // AJV validator schema
 	| 'prisma' // Prisma model block string
 	| 'valibot' // Valibot v1.x schema source string
-	| 'yup'; // Yup schema source string
+	| 'yup' // Yup schema source string
+	| 'drizzle' // Drizzle ORM pgTable source string
+	| 'typebox'; // TypeBox Type.Object(…) source string

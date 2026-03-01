@@ -1,0 +1,39 @@
+<div class="ict-wrapper">
+	<!-- ═══════════════════════════════════════════════════════
+	     IDE TAB BAR (eje superior)
+	     ═══════════════════════════════════════════════════════ -->
+	<TabBar
+		:tabs="IDE_ITEMS"
+		:model-value="activeIDE"
+		@update:model-value="setIDE" />
+
+	<!-- ═══════════════════════════════════════════════════════
+	     PM TAB BAR (eje inferior, dentro del panel)
+	     ═══════════════════════════════════════════════════════ -->
+	<div class="ict-inner">
+		<TabBar
+			:tabs="PM_ITEMS"
+			:model-value="activePM"
+			class="ict-pm-bar"
+			@update:model-value="setPM" />
+
+		<!-- Ruta del archivo de configuración -->
+		<div class="ict-file-path">
+			<span class="ict-file-label">{{ configPath }}</span>
+			<span
+				v-if="scopeNote"
+				class="ict-scope-note">
+				{{ scopeNote }}
+			</span>
+		</div>
+
+		<!-- Bloque JSON animado -->
+		<Transition
+			:name="'bm-tab-' + pmDirection"
+			mode="out-in">
+			<pre
+				:key="activeIDE + '-' + activePM"
+				class="ict-code"><code>{{ configJson }}</code></pre>
+		</Transition>
+	</div>
+</div>

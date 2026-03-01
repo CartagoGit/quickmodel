@@ -34,7 +34,10 @@ export class QJsonToModelTool extends QAbstractTool<
 > {
 	name = 'json_to_model';
 	description =
-		'Convert a JSON string into a QuickModel class definition with inferred types.';
+		'Convert a JSON string into a QuickModel class definition with inferred types. ' +
+		'Generates an I-prefixed interface, @Quick decorator with transformer tokens, and declare fields. ' +
+		'Date detection: ISO 8601 strings become Date. Numbers/booleans become their transformer equivalents. ' +
+		'Returns { code } — ready-to-use TypeScript source.';
 	schema = z.object({
 		json: z.string().describe('The JSON string to convert'),
 		className: z
@@ -81,6 +84,7 @@ export class QJsonToModelTool extends QAbstractTool<
 		}
 
 		const props: string[] = [];
+		const interfaceProps: string[] = [];
 		const decorators: string[] = [];
 
 		for (const [key, value] of Object.entries(data)) {
@@ -89,26 +93,27 @@ export class QJsonToModelTool extends QAbstractTool<
 
 			if (typeof value === 'string') {
 				type = 'string';
-				// Simple heuristic for dates
+				// Simple heuristic for dates (ISO 8601 patterns)
 				if (
 					/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value) ||
-					/\d{4}-\d{2}-\d{2}/.test(value)
+					/^\d{4}-\d{2}-\d{2}$/.test(value)
 				) {
-					transformer = 'date';
+					type = 'Date';
+					transformer = 'Date';
 				} else {
-					transformer = 'string';
+					transformer = "'string'";
 				}
 			} else if (typeof value === 'number') {
 				type = 'number';
-				transformer = 'number';
+				transformer = "'number'";
 			} else if (typeof value === 'boolean') {
 				type = 'boolean';
-				transformer = 'boolean';
+				transformer = "'boolean'";
 			} else if (Array.isArray(value)) {
-				type = 'any[]';
+				type = 'unknown[]';
 				// We typically don't guess array types deep enough here for this simple tool
 			} else if (typeof value === 'object') {
-				type = 'any'; // Nested objects would need recursion or 'any'
+				type = 'Record<string, unknown>'; // Nested objects
 			}
 
 			// Handle key safety
@@ -120,20 +125,26 @@ export class QJsonToModelTool extends QAbstractTool<
 			}
 
 			if (transformer) {
-				decorators.push(`    ${safeKey}: '${transformer}'`);
+				decorators.push(`\t${safeKey}: ${transformer}`);
 			}
-			props.push(`    public ${safeKey}: ${type};`);
+			interfaceProps.push(`\t${safeKey}: ${type};`);
+			props.push(`\tdeclare ${safeKey}: ${type};`);
 		}
 
-		const decoratorString =
+		const iName = `I${className}`;
+		const quickConfig =
 			decorators.length > 0
 				? `@Quick({\n${decorators.join(',\n')}\n})`
 				: '@Quick({})';
 
 		const code = `import { QModel, Quick } from 'quickmodel';
 
-${decoratorString}
-export class ${className} extends QModel<${className}> {
+interface ${iName} {
+${interfaceProps.join('\n')}
+}
+
+${quickConfig}
+export class ${className} extends QModel<${iName}> {
 ${props.join('\n')}
 }`;
 

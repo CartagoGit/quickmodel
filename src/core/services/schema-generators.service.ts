@@ -18,6 +18,8 @@ export { ZodSchemaGenerator } from '@/core/services/zod-schema-generator.service
 export { PrismaSchemaGenerator } from '@/core/services/prisma-schema-generator.service';
 export { ValibotSchemaGenerator } from '@/core/services/valibot-schema-generator.service';
 export { YupSchemaGenerator } from '@/core/services/yup-schema-generator.service';
+export { DrizzleSchemaGenerator } from '@/core/services/drizzle-schema-generator.service';
+export { TypeBoxSchemaGenerator } from '@/core/services/typebox-schema-generator.service';
 
 /**
  * Base schema generator configuration

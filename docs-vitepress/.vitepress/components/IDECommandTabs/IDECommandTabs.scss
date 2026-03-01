@@ -1,0 +1,103 @@
+// ─────────────────────────────────────────────────────────────
+// IDECommandTabs — estilos BEM
+// Bloque raíz: .ict  (ide-command-tabs)
+//
+// Bloques:
+//   .ict-wrapper    — contenedor raíz
+//   .ict-inner      — panel interno (PM bar + código)
+//   .ict-pm-bar     — ajuste de margen para el segundo TabBar
+//   .ict-file-path  — cabecera con la ruta del archivo
+//   .ict-file-label — ruta del archivo en monospace
+//   .ict-scope-note — nota de alcance (global vs proyecto)
+//   .ict-code       — bloque JSON pre-formateado
+// ─────────────────────────────────────────────────────────────
+
+// ── Wrapper ───────────────────────────────────────────────────
+
+.ict-wrapper {
+	margin: 1rem 0;
+}
+
+// ── Panel interno ─────────────────────────────────────────────
+
+.ict-inner {
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 0 0 8px 8px;
+	overflow: hidden;
+	// Desplazamos el borde superior para que solape con el TabBar de IDEs
+	margin-top: -2px;
+}
+
+// ── TabBar de PM (margen interior del segundo TabBar) ─────────
+
+.ict-pm-bar {
+	background: var(--vp-c-bg-soft);
+	border-bottom: 1px solid var(--vp-c-divider) !important;
+	margin-bottom: 0 !important;
+
+	// Overriding TabBar margin (scoped en el hijo, usamos :deep)
+	:deep(.tab-bar) {
+		border-bottom: none;
+		margin-bottom: 0;
+		background: transparent;
+	}
+}
+
+// ── Cabecera con ruta del archivo ─────────────────────────────
+
+.ict-file-path {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 10px 16px 8px;
+	background: var(--vp-c-bg-soft);
+	border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.ict-file-label {
+	font-family: var(--vp-font-family-mono);
+	font-size: 0.8rem;
+	color: var(--vp-c-brand-1);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.ict-scope-note {
+	font-size: 0.72rem;
+	color: var(--vp-c-text-3);
+	font-style: italic;
+	line-height: 1.3;
+}
+
+// ── Bloque de código JSON ─────────────────────────────────────
+
+.ict-code {
+	margin: 0;
+	padding: 1.25rem 1.5rem;
+	background: var(--vp-c-bg);
+	overflow-x: auto;
+
+	code {
+		font-family: var(--vp-font-family-mono);
+		font-size: 0.875rem;
+		line-height: 1.7;
+		color: var(--vp-c-text-1);
+		white-space: pre;
+	}
+}
+
+// ── Mobile ────────────────────────────────────────────────────
+
+@media (max-width: 640px) {
+	.ict-file-label {
+		font-size: 0.72rem;
+	}
+
+	.ict-code {
+		padding: 1rem;
+
+		code {
+			font-size: 0.78rem;
+		}
+	}
+}
