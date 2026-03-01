@@ -30,8 +30,7 @@ import type {
  * common field names such as `copy`, `validate`, `diff`, or `history` could
  * silently shadow built-in methods.
  *
- * In v1.x both APIs coexist (root-level methods are `@deprecated`).
- * In v2.0.0 the root-level methods will be removed.
+ * Both APIs coexist: root-level methods and `$qm` are fully interchangeable.
  *
  * @typeParam TInterface  - The plain-data interface the model wraps.
  * @typeParam TAliasMap   - The `@QAlias` mapping for this model class.

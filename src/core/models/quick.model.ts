@@ -787,8 +787,7 @@ export abstract class QModel<
 	 * user-defined domain data, eliminating reserved-word collisions with
 	 * names like `copy`, `diff`, `validate`, `history`, etc.
 	 *
-	 * In v1.x both the root-level methods **and** `$qm` coexist.
-	 * Root-level methods are marked `@deprecated` and will be removed in v2.0.0.
+	 * Root-level methods remain available alongside `$qm` for backward compatibility.
 	 *
 	 * @example
 	 * ```typescript
@@ -861,7 +860,6 @@ export abstract class QModel<
 	 * ```
 	 *
 	 * @group Serialization
-	 * @deprecated Use `instance.$qm.toFormData()` instead. Will be removed in v2.0.0.
 	 */
 	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
 		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
@@ -936,7 +934,6 @@ export abstract class QModel<
 	 * ```
 	 *
 	 * @group Serialization
-	 * @deprecated Use `instance.$qm.toReadableStream()` instead. Will be removed in v2.0.0.
 	 */
 	toReadableStream(options: IToReadableStreamMultipart): IQMultipartStream;
 	toReadableStream(
@@ -2093,7 +2090,6 @@ export abstract class QModel<
 	 * // { id: '1', name: 'John' }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.serialize()` instead. Will be removed in v2.0.0.
 	 */
 	serialize(
 		options?: IQSerializationOptions
@@ -2264,7 +2260,6 @@ export abstract class QModel<
 	 * // ]
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.checkRules()` instead. Will be removed in v2.0.0.
 	 */
 	checkRules(): IQRulesResult {
 		return qCheckRules(this);
@@ -2288,7 +2283,6 @@ export abstract class QModel<
 	 * }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.hasIntegrity()` instead. Will be removed in v2.0.0.
 	 */
 	hasIntegrity(): boolean {
 		return this.checkIntegrity().length === 0;
@@ -2319,7 +2313,6 @@ export abstract class QModel<
 	 * }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.isValid()` instead. Will be removed in v2.0.0.
 	 */
 	isValid(): boolean {
 		return this.hasIntegrity() && this.checkRules().valid;
@@ -2349,7 +2342,6 @@ export abstract class QModel<
 	 * }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.validationReport()` instead. Will be removed in v2.0.0.
 	 */
 	validationReport(): IQValidationReport {
 		const integrity = this.checkIntegrity();
@@ -2405,7 +2397,6 @@ export abstract class QModel<
 	 * const result = await user.checkRulesAsync({ mode: 'serial' });
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.checkRulesAsync()` instead. Will be removed in v2.0.0.
 	 */
 	async checkRulesAsync(
 		options?: IQRulesAsyncOptions
@@ -2433,7 +2424,6 @@ export abstract class QModel<
 	 * }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.isValidAsync()` instead. Will be removed in v2.0.0.
 	 */
 	async isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
 		return (
@@ -2460,7 +2450,6 @@ export abstract class QModel<
 	 * }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.validationReportAsync()` instead. Will be removed in v2.0.0.
 	 */
 	async validationReportAsync(
 		options?: IQRulesAsyncOptions
@@ -2504,7 +2493,6 @@ export abstract class QModel<
 	 * const result = user.validate({ groups: ['personal'] });
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.validate()` instead. Will be removed in v2.0.0.
 	 */
 	validate(
 		options: IQValidateOptions & { async: true }
@@ -3042,7 +3030,6 @@ export abstract class QModel<
 	 * user.isDirty('age');   // false (age unchanged)
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.isDirty()` instead. Will be removed in v2.0.0.
 	 */
 	isDirty(field?: string): boolean {
 		if (field === undefined) {
@@ -3154,7 +3141,6 @@ export abstract class QModel<
 	 * await api.patch(`/users/${user.id}`, changes);
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.getChanges()` instead. Will be removed in v2.0.0.
 	 */
 	getChanges(): Partial<IQSerializedInterface<TInterface>> {
 		const current = this.toInterface();
@@ -3237,7 +3223,6 @@ export abstract class QModel<
 	 * console.log(user.email); // 'john@example.com' (unchanged)
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.patch()` instead. Will be removed in v2.0.0.
 	 */
 	patch(patch: Partial<IQModelData<TInterface>>): void {
 		// @QReadonly guard — reject any patch that targets an immutable field
@@ -3319,7 +3304,6 @@ export abstract class QModel<
 	 * updated.isDirty(); // false
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.copy()` instead. Will be removed in v2.0.0.
 	 */
 	copy(partial?: Partial<IQModelData<TInterface>>): this {
 		// @QReadonly guard — reject copy() calls that include an immutable field
@@ -3420,7 +3404,6 @@ export abstract class QModel<
 	 * // { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.diff()` instead. Will be removed in v2.0.0.
 	 */
 	diff(other: this): Record<string, { before: unknown; after: unknown }> {
 		const selfData = this.serialize() as Record<string, unknown>;
@@ -3463,7 +3446,6 @@ export abstract class QModel<
 	 * a.equals(b); // false
 	 * ```
 	 *
-	 * @deprecated Use `instance.$qm.equals()` instead. Will be removed in v2.0.0.
 	 */
 	equals(other: this): boolean {
 		return Object.keys(this.diff(other)).length === 0;
