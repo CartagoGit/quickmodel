@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { QAgentCoordinateTool } from '../../../../src/mcp/tools/internal/agent-coordinate.tool';
 import { join } from 'path';
-import { rmSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { rmSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 
 const TMP_REGISTRY = join(process.cwd(), 'tests', 'temp_agent_registry.json');
+const TMP_STATUS = join(process.cwd(), 'tests', 'temp_agent_status.md');
 
 function makeTool(ttlMs?: number): QAgentCoordinateTool {
 	const tool = new QAgentCoordinateTool();
 	tool._registryPath = TMP_REGISTRY;
+	tool._statusPath = TMP_STATUS;
 	if (ttlMs !== undefined) tool._ttlMs = ttlMs;
 	return tool;
 }
@@ -15,10 +17,12 @@ function makeTool(ttlMs?: number): QAgentCoordinateTool {
 describe('QAgentCoordinateTool', () => {
 	beforeEach(() => {
 		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
+		if (existsSync(TMP_STATUS)) rmSync(TMP_STATUS);
 	});
 
 	afterEach(() => {
 		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
+		if (existsSync(TMP_STATUS)) rmSync(TMP_STATUS);
 	});
 
 	// ── Metadata ────────────────────────────────────────────────────────────
@@ -821,34 +825,35 @@ describe('QAgentCoordinateTool', () => {
 		});
 
 		it('implicit heartbeat keeps claim alive past original TTL', async () => {
-			const tool = makeTool(50); // TTL = 50 ms
+			const tool = makeTool(100); // TTL = 100 ms
 			await tool.execute({
 				action: 'claim',
 				agentId: 'agent-A',
 				task: 'monitored task',
 				files: ['src/**'],
 			});
-			// Heartbeat every 20 ms for 90 ms total (3 heartbeats)
+			// Heartbeat every 40 ms for 3 iterations = ~120 ms total
+			// Each heartbeat resets expiry to now+100 ms, so claim stays alive
 			for (let idx = 0; idx < 3; idx++) {
-				await new Promise((resolve) => setTimeout(resolve, 20));
+				await new Promise((resolve) => setTimeout(resolve, 40));
 				await tool.execute({ action: 'check', agentId: 'agent-A' });
 			}
-			// Agent should still be alive after 90 ms despite TTL = 50 ms
+			// After ~120 ms, last heartbeat was ~0-40 ms ago → expiry is still > now
 			const res = await tool.execute({ action: 'check' });
 			expect(res.total).toBe(1);
 			expect(res.agents[0]?.agentId).toBe('agent-A');
 		});
 
 		it('claim without heartbeat expires after TTL', async () => {
-			const tool = makeTool(30); // TTL = 30 ms
+			const tool = makeTool(50); // TTL = 50 ms
 			await tool.execute({
 				action: 'claim',
 				agentId: 'agent-A',
 				task: 'short task',
 				files: ['src/**'],
 			});
-			// No heartbeat — wait for TTL to lapse
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			// No heartbeat — wait 3× the TTL to be safe
+			await new Promise((resolve) => setTimeout(resolve, 150));
 			const res = await tool.execute({ action: 'check' });
 			expect(res.agents.some((agt) => agt.agentId === 'agent-A')).toBe(
 				false
