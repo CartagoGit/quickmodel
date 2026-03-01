@@ -20,7 +20,11 @@ import { spawnCommand } from './utils';
  */
 export class QGetCoverageReportTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'get_coverage_report';
-	description = 'Run tests with coverage and report the summary.';
+	description =
+		'Run the Bun test suite with V8 coverage instrumentation and report per-file results. ' +
+		'Reports: lines, functions, branches, and statements coverage percentages per source file. ' +
+		'Use after implementing a new feature to verify its test coverage meets project standards (≥ 80%). ' +
+		'Returns { passed, files[], overall, summary } — structured coverage data.';
 	schema = z.object({});
 
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */

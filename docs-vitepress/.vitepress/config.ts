@@ -415,6 +415,10 @@ export default defineConfig({
 									link: '/en/guide/fromurl',
 								},
 								{
+									text: 'WebSocket & SSE',
+									link: '/en/guide/websocket-sse',
+								},
+								{
 									text: '⚡ Benchmarks',
 									link: '/en/guide/forms#performance',
 								},
@@ -775,6 +779,10 @@ export default defineConfig({
 								{
 									text: 'Parámetros URL (fromURL)',
 									link: '/es/guide/fromurl',
+								},
+								{
+									text: 'WebSocket y SSE',
+									link: '/es/guide/websocket-sse',
 								},
 								{
 									text: '⚡ Benchmarks',

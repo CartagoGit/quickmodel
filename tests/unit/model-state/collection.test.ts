@@ -200,7 +200,7 @@ describe('QModelCollection — serialización', () => {
 	it('toJSON() devuelve un JSON string de array', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const json = col.toJSON();
-		const parsed = JSON.parse(json) as unknown[];
+		const parsed = JSON.parse(json) as unknown[]; // @quickmodel-rule-ignore: no-as-unknown
 		expect(Array.isArray(parsed)).toBe(true);
 		expect(parsed).toHaveLength(5);
 	});

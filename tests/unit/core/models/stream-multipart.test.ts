@@ -123,10 +123,10 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 		const stream = dto.toReadableStream({ multipart: true });
 
 		expect(
-			typeof (stream as unknown as { boundary: string }).boundary
+			typeof (stream as unknown as { boundary: string }).boundary // @quickmodel-rule-ignore: no-as-unknown
 		).toBe('string');
 		expect(
-			(stream as unknown as { boundary: string }).boundary.length
+			(stream as unknown as { boundary: string }).boundary.length // @quickmodel-rule-ignore: no-as-unknown
 		).toBeGreaterThan(0);
 	});
 
@@ -140,6 +140,7 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 		});
 
 		expect((stream as unknown as { boundary: string }).boundary).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			custom
 		);
 	});
@@ -158,14 +159,14 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 		const dto = new UploadForm({
 			title: 'test',
 			tags: 'a',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ field: 'avatar' });
 
 		expect(stream).toBeInstanceOf(ReadableStream);
 		expect(
-			(stream as unknown as { boundary?: string }).boundary
+			(stream as unknown as { boundary?: string }).boundary // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });
@@ -178,7 +179,7 @@ describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 	test('el boundary aparece en el contenido del stream', async () => {
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
 		const stream = dto.toReadableStream({ multipart: true });
-		const boundary = (stream as unknown as { boundary: string }).boundary;
+		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const text = await readStreamAsText(stream);
 
@@ -207,7 +208,7 @@ describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 	test('el stream finaliza con --boundary-- (cierre RFC 2046)', async () => {
 		const dto = new TextForm({ nombre: 'Carlos', edad: '40' });
 		const stream = dto.toReadableStream({ multipart: true });
-		const boundary = (stream as unknown as { boundary: string }).boundary;
+		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const text = await readStreamAsText(stream);
 
@@ -236,7 +237,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 		const dto = new UploadForm({
 			title: 'img-test',
 			tags: 'foto',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ multipart: true });
@@ -251,7 +252,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 		const dto = new UploadForm({
 			title: 'png-test',
 			tags: 'x',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ multipart: true });
@@ -268,7 +269,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 		const dto = new UploadForm({
 			title: 'bytes-test',
 			tags: 'raw',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ multipart: true });
@@ -306,7 +307,7 @@ describe('toReadableStream({ multipart: true }) — respeto de @QType fileMode',
 		const file = new File([data], 'thumb.webp', { type: 'image/webp' });
 		const dto = new DecoratedForm({
 			label: 'portada',
-			thumb: file as unknown as IFileSerialized,
+			thumb: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ multipart: true });
@@ -326,7 +327,7 @@ describe('toReadableStream({ multipart: true }) — round-trip', () => {
 	test('el stream parseado con Request.formData() recupera los campos de texto', async () => {
 		const dto = new TextForm({ nombre: 'Elena', edad: '35' });
 		const stream = dto.toReadableStream({ multipart: true });
-		const boundary = (stream as unknown as { boundary: string }).boundary;
+		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const req = new Request('http://localhost', {
 			method: 'POST',
@@ -350,11 +351,11 @@ describe('toReadableStream({ multipart: true }) — round-trip', () => {
 		const dto = new UploadForm({
 			title: 'roundtrip',
 			tags: 'test',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ multipart: true });
-		const boundary = (stream as unknown as { boundary: string }).boundary;
+		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const req = new Request('http://localhost', {
 			method: 'POST',

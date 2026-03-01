@@ -196,19 +196,19 @@ describe('Serializer auto-encoding', () => {
 	test('NaN serializes to { __qm: "nan" } automatically', () => {
 		const stats = new Stats({ hits: NaN, ratio: 0.5, boost: 1 });
 		const serialized = stats.serialize();
-		expect(serialized.hits as unknown).toEqual({ __qm: 'nan' });
+		expect(serialized.hits as unknown).toEqual({ __qm: 'nan' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('Infinity serializes to { __qm: "inf" } automatically', () => {
 		const stats = new Stats({ hits: 10, ratio: Infinity, boost: 1 });
 		const serialized = stats.serialize();
-		expect(serialized.ratio as unknown).toEqual({ __qm: 'inf' });
+		expect(serialized.ratio as unknown).toEqual({ __qm: 'inf' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('-Infinity serializes to { __qm: "-inf" } automatically', () => {
 		const stats = new Stats({ hits: 10, ratio: -Infinity, boost: 1 });
 		const serialized = stats.serialize();
-		expect(serialized.ratio as unknown).toEqual({ __qm: '-inf' });
+		expect(serialized.ratio as unknown).toEqual({ __qm: '-inf' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('finite numbers pass through unchanged', () => {
@@ -225,7 +225,7 @@ describe('Serializer auto-encoding', () => {
 describe('Deserializer auto-decoding', () => {
 	test('{ __qm: "nan" } in data deserializes to NaN', () => {
 		const stats = new Stats({
-			hits: { __qm: 'nan' } as unknown as number,
+			hits: { __qm: 'nan' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 			ratio: 0.5,
 			boost: 1,
 		});
@@ -235,7 +235,7 @@ describe('Deserializer auto-decoding', () => {
 	test('{ __qm: "inf" } in data deserializes to Infinity', () => {
 		const stats = new Stats({
 			hits: 10,
-			ratio: { __qm: 'inf' } as unknown as number,
+			ratio: { __qm: 'inf' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 			boost: 1,
 		});
 		expect(stats.ratio).toBe(Infinity);
@@ -244,7 +244,7 @@ describe('Deserializer auto-decoding', () => {
 	test('{ __qm: "-inf" } in data deserializes to -Infinity', () => {
 		const stats = new Stats({
 			hits: 10,
-			ratio: { __qm: '-inf' } as unknown as number,
+			ratio: { __qm: '-inf' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 			boost: 1,
 		});
 		expect(stats.ratio).toBe(-Infinity);
@@ -302,17 +302,17 @@ class ScoreInf extends QModel<IScore> {
 describe('Explicit transformer key', () => {
 	test("@Quick({ val: 'nan' }) — NaN round-trips", () => {
 		const model = new ScoreNan({
-			val: { __qm: 'nan' } as unknown as number,
+			val: { __qm: 'nan' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		expect(model.val).toBeNaN();
-		expect(model.serialize().val as unknown).toEqual({ __qm: 'nan' });
+		expect(model.serialize().val as unknown).toEqual({ __qm: 'nan' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test("@Quick({ val: 'infinity' }) — Infinity round-trips", () => {
 		const model = new ScoreInf({
-			val: { __qm: 'inf' } as unknown as number,
+			val: { __qm: 'inf' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		expect(model.val).toBe(Infinity);
-		expect(model.serialize().val as unknown).toEqual({ __qm: 'inf' });
+		expect(model.serialize().val as unknown).toEqual({ __qm: 'inf' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 });

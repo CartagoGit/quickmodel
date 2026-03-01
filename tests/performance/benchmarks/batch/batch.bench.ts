@@ -117,7 +117,7 @@ export function describeBench(): void {
 
 		test('QuickModel — isValid() × 1k', () => {
 			const models = dataset.map(
-				(item) => new SimpleUser(item as unknown as ISimpleUser)
+				(item) => new SimpleUser(item as unknown as ISimpleUser) // @quickmodel-rule-ignore: no-as-unknown
 			);
 			const res = runBench(
 				'Benchmark 4: QuickModel batch',
@@ -151,7 +151,7 @@ export function describeBench(): void {
 				}),
 				runBench('Benchmark 4: QuickModel batch', CYCLES, () => {
 					const models = dataset.map(
-						(item) => new SimpleUser(item as unknown as ISimpleUser)
+						(item) => new SimpleUser(item as unknown as ISimpleUser) // @quickmodel-rule-ignore: no-as-unknown
 					);
 					for (const model of models) model.isValid();
 				}),

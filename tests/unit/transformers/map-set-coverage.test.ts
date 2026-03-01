@@ -305,7 +305,7 @@ describe('MapTransformer — coverage gaps', () => {
 			const result = transformer.serialize(map);
 			// Symbol keys → serialized as array of tuples
 			expect(Array.isArray(result)).toBe(true);
-			const tuples = result as unknown as [string, unknown][];
+			const tuples = result as unknown as [string, unknown][]; // @quickmodel-rule-ignore: no-as-unknown
 			expect(tuples[0][0]).toBe('myKey');
 			expect(tuples[0][1]).toBe('value');
 		});
@@ -458,7 +458,7 @@ describe('SetTransformer — coverage gaps', () => {
 				'Model'
 			);
 			expect(result).toBeInstanceOf(Set);
-			const inner = Array.from(result!)[0] as unknown[];
+			const inner = Array.from(result!)[0] as unknown[]; // @quickmodel-rule-ignore: no-as-unknown
 			expect(inner[0]).toBeInstanceOf(Date);
 			expect(inner[1]).toBeInstanceOf(Date);
 		});

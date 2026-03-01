@@ -163,7 +163,7 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 	test('deserialización de string a Date sigue funcionando', () => {
 		const inst = new ComplexModel({
 			idt: 'id-003',
-			createdAt: '2024-06-15T12:00:00.000Z' as unknown as Date,
+			createdAt: '2024-06-15T12:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		expect(inst.createdAt).toBeInstanceOf(Date);
 		expect(inst.createdAt.getFullYear()).toBe(2024);
@@ -194,7 +194,7 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 			declare tag: string;
 		}
 
-		const inst = new LooseModel({ tag: 42 as unknown as string });
+		const inst = new LooseModel({ tag: 42 as unknown as string }); // @quickmodel-rule-ignore: no-as-unknown
 		expect(inst.tag).toBe('42');
 	});
 
@@ -239,7 +239,7 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 	test('propiedades undefined se asignan como undefined', () => {
 		const inst = new SimplePrimitive({
 			idt: 'id-null',
-			nom: undefined as unknown as string,
+			nom: undefined as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 			age: 30,
 			active: true,
 		});
@@ -292,7 +292,7 @@ describe('Optimization #5 — fast-path primitivos: mejora de rendimiento medibl
 	test('construcción de modelo complejo supera 35k ops/sec tras optimizaciones', () => {
 		const complexData = {
 			idt: 'usr-002',
-			createdAt: '2024-03-15T10:00:00.000Z' as unknown as Date,
+			createdAt: '2024-03-15T10:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 		};
 		const opsPerSec = runMicrobench('ComplexModel hot path', () => {
 			void new ComplexModel(complexData);
@@ -749,7 +749,7 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		expect(result.nom).toBe('NodeA');
 		const refB = result.ref;
 		expect(refB?.nom).toBe('NodeB');
-		expect(refB?.ref as unknown).toEqual({ __circular: true });
+		expect(refB?.ref as unknown).toEqual({ __circular: true }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('primitivos antes del campo circular no rompen la detección de ciclo', () => {
@@ -762,7 +762,7 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		expect(result.nom).toBe('Alpha');
 		expect(result.age).toBe(42);
 		// El campo ref es el propio nodeA que ya fue visitado → __circular
-		expect(result.ref as unknown).toEqual({ __circular: true });
+		expect(result.ref as unknown).toEqual({ __circular: true }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('anidamiento válido (no circular) sigue funcionando con lazy WeakSet', () => {

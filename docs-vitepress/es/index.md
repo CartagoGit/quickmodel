@@ -82,11 +82,11 @@ onMounted(() => {
 })
 </script>
 
-<BenchmarkChart />
-
 ## 💡 ¿Por qué QuickModel? {.landing-title}
 
 <WhyQuickModel />
+
+<BenchmarkChart />
 
 ## 🚀 Ejemplos Rápidos {.landing-title}
 

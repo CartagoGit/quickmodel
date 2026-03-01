@@ -1,92 +1,16 @@
-# Installation & Setup
+# MCP — Installation & Setup
 
-Choose your scenario:
+The QuickModel MCP server exposes all its tools to any IDE that supports the [Model Context Protocol](https://modelcontextprotocol.io/). Pick your scenario below.
 
-- **[Scenario A](#scenario-a-quickmodel-installed-locally-internet-available)** — `quickmodel` is in your `package.json` and you have internet access.
-- **[Scenario B](#scenario-b-quickmodel-installed-locally-no-internet)** — `quickmodel` is in your `package.json` but you have **no internet access**.
-- **[Scenario C](#scenario-c-quickmodel-not-installed-in-your-project)** — `quickmodel` is not a dependency of your project.
+Each block shows a two-axis selector: **IDE** on top, **package manager** below. The JSON configuration updates automatically for every combination.
 
 ---
 
 ## Scenario A — quickmodel installed locally, internet available
 
-`npx`, `bunx`, `pnpm exec` and `yarn dlx` all check `node_modules/.bin/` first before downloading anything. If `quickmodel` is installed, your local version is used automatically.
+`npx`, `bunx`, `pnpm exec` and `yarn` all resolve `node_modules/.bin/` first — your installed version is used automatically, **nothing is downloaded**.
 
-### Visual Studio Code
-
-::: info
-Requires the **GitHub Copilot Chat** extension.
-:::
-
-Create `.vscode/mcp.json` in your project root:
-
-<CommandTabs>
-<template #npm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "npx",
-			"args": ["quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #bun>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "bunx",
-			"args": ["quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #pnpm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "pnpm",
-			"args": ["exec", "quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #yarn>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "yarn",
-			"args": ["quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-</CommandTabs>
-
-### Cursor / Windsurf / Google Antigravity
-
-| Package manager | Command                    |
-| --------------- | -------------------------- |
-| npm             | `npx quickmodel mcp`       |
-| bun             | `bunx quickmodel mcp`      |
-| pnpm            | `pnpm exec quickmodel mcp` |
-| yarn            | `yarn quickmodel mcp`      |
+<IDECommandTabs scenario="a" />
 
 ---
 
@@ -94,72 +18,15 @@ Create `.vscode/mcp.json` in your project root:
 
 Two options — use whichever fits your workflow.
 
-### Option 1 — point directly to the local binary
+### Option 1 — direct path to the local binary
 
-The binary is always available at `node_modules/.bin/quickmodel` regardless of internet access.
+`node_modules/.bin/quickmodel` is always present after installation, regardless of internet access.
 
-<CommandTabs>
-<template #npm>
+<IDECommandTabs scenario="b1" />
 
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "node_modules/.bin/quickmodel",
-			"args": ["mcp"]
-		}
-	}
-}
-```
+### Option 2 — `package.json` script
 
-</template>
-<template #bun>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "bun",
-			"args": ["run", "quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #pnpm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "node_modules/.bin/quickmodel",
-			"args": ["mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #yarn>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "node_modules/.bin/quickmodel",
-			"args": ["mcp"]
-		}
-	}
-}
-```
-
-</template>
-</CommandTabs>
-
-### Option 2 — add a script to your `package.json`
-
-Add this to your `package.json` `scripts` section:
+Add an `mcp` script to your `package.json`:
 
 ```json
 {
@@ -169,149 +36,30 @@ Add this to your `package.json` `scripts` section:
 }
 ```
 
-Then configure the IDE to run that script:
+Then point the IDE at that script:
 
-<CommandTabs>
-<template #npm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "npm",
-			"args": ["run", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #bun>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "bun",
-			"args": ["run", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #pnpm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "pnpm",
-			"args": ["run", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #yarn>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "yarn",
-			"args": ["mcp"]
-		}
-	}
-}
-```
-
-</template>
-</CommandTabs>
+<IDECommandTabs scenario="b2" />
 
 ::: tip
-Option 2 is also convenient for **CI environments** or **team projects** where everyone shares the same `package.json` — no need to configure the binary path manually on each machine.
+Option 2 is also handy for **CI environments** and **team projects** — everyone shares the same `package.json`, no per-machine binary path needed.
 :::
 
 ---
 
 ## Scenario C — quickmodel not installed in your project
 
-The package is downloaded on demand without being added to your `node_modules`.
+The package is fetched on demand. **No `npm install` required** — nothing is written to your `node_modules`.
 
-### Visual Studio Code
+<IDECommandTabs scenario="c" />
 
-::: info
-Requires the **GitHub Copilot Chat** extension.
-:::
+---
 
-Create `.vscode/mcp.json` in your project root:
+## IDE reference
 
-<CommandTabs>
-<template #npm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "npx",
-			"args": ["-y", "quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #bun>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "bunx",
-			"args": ["quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #pnpm>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "pnpm",
-			"args": ["dlx", "quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-<template #yarn>
-
-```json
-{
-	"servers": {
-		"quickmodel": {
-			"command": "yarn",
-			"args": ["dlx", "quickmodel", "mcp"]
-		}
-	}
-}
-```
-
-</template>
-</CommandTabs>
-
-### Cursor / Windsurf / Google Antigravity
-
-| Package manager | Command                   |
-| --------------- | ------------------------- |
-| npm             | `npx -y quickmodel mcp`   |
-| bun             | `bunx quickmodel mcp`     |
-| pnpm            | `pnpm dlx quickmodel mcp` |
-| yarn            | `yarn dlx quickmodel mcp` |
+| IDE               | Config file                                                                                                                        | Key               | Restart required |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------------- |
+| 💙 VS Code        | `.vscode/mcp.json`                                                                                                                 | `servers`         | Reload window    |
+| 🎯 Cursor         | `.cursor/mcp.json` (project) · `~/.cursor/mcp.json` (global)                                                                       | `mcpServers`      | Yes              |
+| 🌊 Windsurf       | `~/.codeium/windsurf/mcp_config.json`                                                                                              | `mcpServers`      | Yes              |
+| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers`      | Yes              |
+| ⚡ Zed            | Project: `.zed/settings.json` · Global: `~/.config/zed/settings.json`                                                              | `context_servers` | No               |

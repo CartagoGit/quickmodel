@@ -99,7 +99,7 @@ export function describeBench(): void {
 				ITERS,
 				() => {
 					void new ComplexUser(
-						complexUserRaw as unknown as IComplexUser
+						complexUserRaw as unknown as IComplexUser // @quickmodel-rule-ignore: no-as-unknown
 					);
 				}
 			);
@@ -113,7 +113,7 @@ export function describeBench(): void {
 				}),
 				runBench('Benchmark 2: QuickModel (auto)', ITERS, () => {
 					void new ComplexUser(
-						complexUserRaw as unknown as IComplexUser
+						complexUserRaw as unknown as IComplexUser // @quickmodel-rule-ignore: no-as-unknown
 					);
 				}),
 			];

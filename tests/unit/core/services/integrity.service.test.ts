@@ -69,7 +69,7 @@ describe('IntegrityService', () => {
 		it('returns [] for a model instance with no typed fields', () => {
 			const inst = new PlainModel({ name: 'Alice', age: 30 });
 			const errs = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: PlainModel }
 			);
 			expect(errs).toEqual([]);
@@ -78,7 +78,7 @@ describe('IntegrityService', () => {
 		it('returns [] when typed Date field holds a valid Date', () => {
 			const inst = new DateModel({ createdAt: new Date('2024-01-01') });
 			const errs = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: DateModel }
 			);
 			expect(errs).toEqual([]);
@@ -88,10 +88,10 @@ describe('IntegrityService', () => {
 			// Create with a valid date, then manually corrupt the field
 			const inst = new DateModel({ createdAt: new Date('2024-01-01') });
 			// Direct assignment to simulate a value that bypasses coercion
-			(inst as unknown as Record<string, unknown>).createdAt =
+			(inst as unknown as Record<string, unknown>).createdAt = // @quickmodel-rule-ignore: no-as-unknown
 				'not-a-date';
 			const errs = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: DateModel }
 			);
 			expect(errs.length).toBeGreaterThan(0);
@@ -101,7 +101,7 @@ describe('IntegrityService', () => {
 		it('infers modelClass from instance.constructor when omitted', () => {
 			const inst = new DateModel({ createdAt: new Date() });
 			const errs = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>
+				inst as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
 			);
 			expect(errs).toEqual([]);
 		});
@@ -114,7 +114,7 @@ describe('IntegrityService', () => {
 			const inst = new DateModel({ createdAt: new Date() });
 			expect(
 				svc.isValid(
-					inst as unknown as Record<string, unknown>,
+					inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 					DateModel
 				)
 			).toBe(true);
@@ -122,10 +122,10 @@ describe('IntegrityService', () => {
 
 		it('returns false when a typed field has the wrong runtime type', () => {
 			const inst = new DateModel({ createdAt: new Date() });
-			(inst as unknown as Record<string, unknown>).createdAt = 'bad';
+			(inst as unknown as Record<string, unknown>).createdAt = 'bad'; // @quickmodel-rule-ignore: no-as-unknown
 			expect(
 				svc.isValid(
-					inst as unknown as Record<string, unknown>,
+					inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 					DateModel
 				)
 			).toBe(false);
@@ -141,11 +141,11 @@ describe('IntegrityService', () => {
 				balance: BigInt(42),
 			});
 			// Corrupt both fields
-			(inst as unknown as Record<string, unknown>).createdAt = 'bad-date';
-			(inst as unknown as Record<string, unknown>).balance = 'bad-bigint';
+			(inst as unknown as Record<string, unknown>).createdAt = 'bad-date'; // @quickmodel-rule-ignore: no-as-unknown
+			(inst as unknown as Record<string, unknown>).balance = 'bad-bigint'; // @quickmodel-rule-ignore: no-as-unknown
 
 			const errs = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
 			// Both fields should be reported when accumulating
@@ -164,11 +164,11 @@ describe('IntegrityService', () => {
 				balance: BigInt(42),
 			});
 			// Corrupt both fields
-			(inst as unknown as Record<string, unknown>).createdAt = 'bad-date';
-			(inst as unknown as Record<string, unknown>).balance = 'bad-bigint';
+			(inst as unknown as Record<string, unknown>).createdAt = 'bad-date'; // @quickmodel-rule-ignore: no-as-unknown
+			(inst as unknown as Record<string, unknown>).balance = 'bad-bigint'; // @quickmodel-rule-ignore: no-as-unknown
 
 			const errs = fastSvc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
 			expect(errs.length).toBe(1);
@@ -183,12 +183,12 @@ describe('IntegrityService', () => {
 				createdAt: new Date(),
 				balance: BigInt(42),
 			});
-			(inst as unknown as Record<string, unknown>).createdAt = 'bad';
-			(inst as unknown as Record<string, unknown>).balance = 'bad';
+			(inst as unknown as Record<string, unknown>).createdAt = 'bad'; // @quickmodel-rule-ignore: no-as-unknown
+			(inst as unknown as Record<string, unknown>).balance = 'bad'; // @quickmodel-rule-ignore: no-as-unknown
 
 			// First call: default strategy (accumulate) — should collect ≥1 error
 			const before = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
 
@@ -199,7 +199,7 @@ describe('IntegrityService', () => {
 
 			// Second call on same instance/class — cache must have been invalidated
 			const after = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
 
@@ -215,7 +215,7 @@ describe('IntegrityService', () => {
 	describe('class-meta cache — repeated calls return consistent results', () => {
 		it('returns identical results on repeated calls for the same class', () => {
 			const inst = new DateModel({ createdAt: new Date() });
-			const raw = inst as unknown as Record<string, unknown>;
+			const raw = inst as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 
 			const first = svc.checkIntegrity(raw, { modelClass: DateModel });
 			const second = svc.checkIntegrity(raw, { modelClass: DateModel });
@@ -230,11 +230,11 @@ describe('IntegrityService', () => {
 			const plainInst = new PlainModel({ name: 'Bob', age: 25 });
 
 			const dateErrs = svc.checkIntegrity(
-				dateInst as unknown as Record<string, unknown>,
+				dateInst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: DateModel }
 			);
 			const plainErrs = svc.checkIntegrity(
-				plainInst as unknown as Record<string, unknown>,
+				plainInst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: PlainModel }
 			);
 
@@ -248,7 +248,7 @@ describe('IntegrityService', () => {
 	describe('cycle detection', () => {
 		it('returns [] on revisited objects within the same cycle', () => {
 			const inst = new PlainModel({ name: 'X', age: 1 });
-			const raw = inst as unknown as Record<string, unknown>;
+			const raw = inst as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 			const seen = new WeakSet<object>();
 			seen.add(raw); // pre-mark as already visited
 
@@ -262,7 +262,7 @@ describe('IntegrityService', () => {
 		it('returns error when MAX_DEPTH is exceeded', () => {
 			const inst = new PlainModel({ name: 'deep', age: 1 });
 			const errs = svc.checkIntegrity(
-				inst as unknown as Record<string, unknown>,
+				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{
 					modelClass: PlainModel,
 					ctx: { seen: new WeakSet(), depth: 201 },

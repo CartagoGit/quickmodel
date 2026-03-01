@@ -297,7 +297,7 @@ describe('Zustand — persist middleware: serialize ↔ rehydrate', () => {
 			id: 'u5',
 			name: 'Hank',
 			email: 'h@example.com',
-			age: '28' as unknown as number,
+			age: '28' as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 			plan: 'free',
 		});
 		const restored = deserializeState(serializeState(original));

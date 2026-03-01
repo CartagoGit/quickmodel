@@ -106,7 +106,7 @@ interface IJasmineExpect {
 
 function jasmineExpect(actual: unknown): IJasmineExpect {
 	const jasmineMatchers = toJasmineMatchers(
-		quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+		quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 	);
 
 	function call(name: string, negate: boolean, ...args: unknown[]): void {
@@ -208,7 +208,7 @@ function makeInvalidProduct(): ProductDto {
 describe('Jasmine Integration: toJasmineMatchers() adapter', () => {
 	test('adapter produces a factory for every matcher', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const expectedKeys = [
 			'toBeValidQModel',
@@ -226,7 +226,7 @@ describe('Jasmine Integration: toJasmineMatchers() adapter', () => {
 
 	test('each compare() returns { pass: boolean, message: string }', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const product = makeValidProduct();
 
@@ -237,7 +237,7 @@ describe('Jasmine Integration: toJasmineMatchers() adapter', () => {
 
 	test('compare() for valid model returns pass=true', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const product = makeValidProduct();
 		const result = adapted['toBeValidQModel']().compare(product);
@@ -246,7 +246,7 @@ describe('Jasmine Integration: toJasmineMatchers() adapter', () => {
 
 	test('compare() for invalid model returns pass=false with message', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const product = makeInvalidProduct();
 		const result = adapted['toBeValidQModel']().compare(product);
@@ -256,7 +256,7 @@ describe('Jasmine Integration: toJasmineMatchers() adapter', () => {
 
 	test('toHaveQRuleError compare() passes extra args correctly', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const product = makeInvalidProduct();
 		const result = adapted['toHaveQRuleError']().compare(
@@ -416,7 +416,7 @@ describe('Jasmine Integration: toHaveDirtyField(field)', () => {
 describe('Jasmine Integration: error message quality', () => {
 	test('toBeValidQModel failure message lists field errors', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const product = makeInvalidProduct();
 		const result = adapted['toBeValidQModel']().compare(product);
@@ -426,7 +426,7 @@ describe('Jasmine Integration: error message quality', () => {
 
 	test('toHaveQRuleError negated message is descriptive', () => {
 		const adapted = toJasmineMatchers(
-			quickmodelMatchers as unknown as Record<string, IQuickMatcher>
+			quickmodelMatchers as unknown as Record<string, IQuickMatcher> // @quickmodel-rule-ignore: no-as-unknown
 		);
 		const product = makeValidProduct();
 		const result = adapted['toHaveQRuleError']().compare(product, 'price');

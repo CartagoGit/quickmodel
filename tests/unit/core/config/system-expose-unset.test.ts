@@ -27,7 +27,7 @@ describe('Expose Unset Fields Configuration', () => {
 
 		const instance = new DefaultModel({ req: 'exists', opt: undefined });
 		const json = serializer.serialize(
-			instance as unknown as Record<string, unknown>
+			instance as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
 		) as any;
 
 		expect(json.req).toBe('exists');
@@ -59,7 +59,7 @@ describe('Expose Unset Fields Configuration', () => {
 		// missing is not assigned at all
 
 		const json = serializer.serialize(
-			instance as unknown as Record<string, unknown>
+			instance as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
 		) as any;
 
 		expect(json.req).toBe('exists');
@@ -88,7 +88,7 @@ describe('Expose Unset Fields Configuration', () => {
 		instance.opt = undefined; // Explicitly set
 
 		const json = serializer.serialize(
-			instance as unknown as Record<string, unknown>
+			instance as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
 		) as any;
 		expect('opt' in json).toBe(true);
 	});

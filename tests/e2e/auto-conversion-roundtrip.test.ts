@@ -510,13 +510,13 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 			const userWithUndefined = new TestUser({
 				...testData,
 				defaultProp: undefined,
-			} as unknown as ITestUser);
+			} as unknown as ITestUser); // @quickmodel-rule-ignore: no-as-unknown
 			expect(userWithUndefined.defaultProp).toBeUndefined();
 
 			// Caso 2: Campo ausente - también es undefined actualmente
 			// TODO: Considerar restaurar defaults cuando el campo falta completamente
 			const dataWithoutField = { ...testData };
-			delete (dataWithoutField as unknown as { defaultProp?: string })
+			delete (dataWithoutField as unknown as { defaultProp?: string }) // @quickmodel-rule-ignore: no-as-unknown
 				.defaultProp;
 			const userWithoutField = new TestUser(dataWithoutField);
 

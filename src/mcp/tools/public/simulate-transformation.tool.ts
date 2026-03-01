@@ -19,7 +19,11 @@ export class QSimulateTransformationTool extends QAbstractTool<
 > {
 	name = 'simulate_transformation';
 	description =
-		'Simulates a QuickModel data transformation given an input object and a configuration map.';
+		'Simulate how QuickModel transforms a raw data object given a @Quick-style config. ' +
+		'Accepts the same type tokens as @Quick: constructors (Date, Number, Boolean, BigInt, Set, Map, RegExp, URL), ' +
+		'array wrappers ([Date], [Number]), nested QModel subclasses, and string aliases ("number", "boolean", "string"). ' +
+		'Useful for debugging unexpected transformation behavior without needing a live class. ' +
+		'Returns { result } — the fully transformed plain object.';
 	schema = z.object({
 		data: z
 			.record(z.string(), z.any())

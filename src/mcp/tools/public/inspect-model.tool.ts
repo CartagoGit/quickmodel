@@ -31,7 +31,11 @@ export class QInspectModelTool extends QAbstractTool<
 > {
 	name = 'inspect_model';
 	description =
-		'Analyze a QuickModel class definition and explain its structure.';
+		'Parse a QuickModel class definition (source code) and extract its structural metadata. ' +
+		'Reports: class name, list of fields with their transformer tokens, detected decorators ' +
+		'(@Quick, @QField, @QRule, @QAlias, @QGroup, @QComputed), interface reference, and all @Quick options. ' +
+		'Uses regex-based static analysis — no TypeScript compiler required. ' +
+		'Returns { className, fields[], decorators[], quickOptions } — structured model metadata.';
 	schema = z.object({
 		code: z.string().describe('The TypeScript code of the model class'),
 	});

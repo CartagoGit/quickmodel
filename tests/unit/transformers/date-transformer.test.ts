@@ -54,7 +54,7 @@ describe('Unit: Date Transformer', () => {
 		const date = new Date('2024-01-01T00:00:00.000Z');
 		const event = new Event({
 			id: '1',
-			createdAt: date as unknown as string,
+			createdAt: date as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 			updatedAt: null,
 		});
 

@@ -69,6 +69,9 @@ export class QInterfaceToModelTool extends QAbstractTool<
 		}
 
 		const name = interfaceMatch[1];
+		if (!name) {
+			throw new Error('Could not extract interface name');
+		}
 		// Strip leading 'I' prefix for the class base name (if the interface already has it)
 		const baseName =
 			name.startsWith('I') &&

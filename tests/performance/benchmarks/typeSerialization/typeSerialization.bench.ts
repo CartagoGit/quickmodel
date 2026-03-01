@@ -21,7 +21,7 @@ export function describeBench(): void {
 	describe('Benchmark #7 — Fidelidad de tipos en serialización (1k iteraciones)', () => {
 		const ITERS = 1_000;
 		const complexUserInstance = new ComplexUser(
-			complexUserRaw as unknown as IComplexUser
+			complexUserRaw as unknown as IComplexUser // @quickmodel-rule-ignore: no-as-unknown
 		);
 
 		const superjsonFullObj = {
@@ -68,7 +68,7 @@ export function describeBench(): void {
 				ITERS,
 				() => {
 					const inst = new ComplexUser(
-						complexUserRaw as unknown as IComplexUser
+						complexUserRaw as unknown as IComplexUser // @quickmodel-rule-ignore: no-as-unknown
 					);
 					ComplexUser.deserialize(inst.serialize());
 				}

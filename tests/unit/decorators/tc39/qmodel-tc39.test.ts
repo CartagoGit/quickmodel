@@ -183,7 +183,7 @@ describe('@Quick + @QType — TC39 — full deserialization', () => {
 	test('date string is deserialized to Date instance', () => {
 		const user = UserModel.create({
 			name: 'Alice',
-			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date,
+			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 42,
 		});
 		expect(user.createdAt).toBeInstanceOf(Date);
@@ -193,7 +193,7 @@ describe('@Quick + @QType — TC39 — full deserialization', () => {
 	test('string field is correctly assigned', () => {
 		const user = UserModel.create({
 			name: 'Bob',
-			createdAt: '2021-01-01T00:00:00.000Z' as unknown as Date,
+			createdAt: '2021-01-01T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 10,
 		});
 		expect(typeof user.name).toBe('string');
@@ -203,7 +203,7 @@ describe('@Quick + @QType — TC39 — full deserialization', () => {
 	test('@QRule predicate runs: valid name passes', () => {
 		const user = UserModel.create({
 			name: 'Alice',
-			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date,
+			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 5,
 		});
 		const result = user.checkRules();
@@ -213,7 +213,7 @@ describe('@Quick + @QType — TC39 — full deserialization', () => {
 	test('@QRule predicate runs: too-short name fails', () => {
 		const user = UserModel.create({
 			name: 'A',
-			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date,
+			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 5,
 		});
 		const result = user.checkRules();
@@ -235,7 +235,7 @@ describe('@QRule — TC39 — type inference with @QType', () => {
 		// The test below confirms runtime behaviour: date rule rejects old dates.
 		const user = UserModel.create({
 			name: 'Alice',
-			createdAt: '1990-06-15T00:00:00.000Z' as unknown as Date,
+			createdAt: '1990-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 5,
 		});
 		const result = user.checkRules();

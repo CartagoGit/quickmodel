@@ -134,7 +134,7 @@ export class User extends QModel<IUser> {
 }
 
 // Generate a Zod schema from QuickModel metadata
-const UserZodSchema = User.getSchema('zod') as z.ZodObject<z.ZodRawShape>;
+const UserZodSchema = User.getSchema('zod');
 // → z.object({ id: z.number(), email: z.string() })
 
 export function parseUser(data: unknown): User {

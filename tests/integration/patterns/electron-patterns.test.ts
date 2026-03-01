@@ -225,7 +225,7 @@ describe('IPC boundary — serialize/populate', () => {
 			modifiedAt: new Date('2025-06-01T10:00:00.000Z'),
 		});
 		const wire = simulateIpcWire(dto.serialize());
-		const restored = new FileRecordDto(wire as unknown as IFileRecord);
+		const restored = new FileRecordDto(wire as unknown as IFileRecord); // @quickmodel-rule-ignore: no-as-unknown
 		// After IPC, Date was ISO string — QModel loose coercion restores Date
 		expect(restored.modifiedAt).toBeInstanceOf(Date);
 		expect(restored.modifiedAt.getFullYear()).toBe(2025);
@@ -249,7 +249,7 @@ describe('unknownPropertyPolicy: strip — cross-process security', () => {
 		};
 		const dto = new UserPrefsDto(malicious as IUserPrefs);
 		expect(
-			(dto as unknown as Record<string, unknown>)['polluted']
+			(dto as unknown as Record<string, unknown>)['polluted'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -265,10 +265,10 @@ describe('unknownPropertyPolicy: strip — cross-process security', () => {
 		};
 		const dto = new UserPrefsDto(payload as IUserPrefs);
 		expect(
-			(dto as unknown as Record<string, unknown>)['adminOverride']
+			(dto as unknown as Record<string, unknown>)['adminOverride'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['_internalToken']
+			(dto as unknown as Record<string, unknown>)['_internalToken'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -471,7 +471,7 @@ describe('createMany() for local file loading (CSV/JSON import)', () => {
 			},
 		];
 		const { instances } = FileRecordDto.createMany(
-			rows as unknown as IFileRecord[]
+			rows as unknown as IFileRecord[] // @quickmodel-rule-ignore: no-as-unknown
 		);
 		expect(instances[0]?.modifiedAt).toBeInstanceOf(Date);
 	});

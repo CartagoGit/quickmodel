@@ -357,6 +357,261 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 
 		return rows.join('\n');
 	}
+	// ─── Functional utilities ────────────────────────────────────────────────
+
+	/**
+	 * Returns `true` when the collection contains no elements.
+	 *
+	 * @example
+	 * ```typescript
+	 * QModelCollection.from(UserModel, []).isEmpty; // → true
+	 * ```
+	 */
+	get isEmpty(): boolean {
+		return this.#items.length === 0;
+	}
+
+	/**
+	 * Returns the first instance in the collection, or `undefined` when empty.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.first()?.name; // → 'Alice'
+	 * ```
+	 */
+	first(): TInstance | undefined {
+		return this.#items[0];
+	}
+
+	/**
+	 * Returns the last instance in the collection, or `undefined` when empty.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.last()?.name; // → 'Eve'
+	 * ```
+	 */
+	last(): TInstance | undefined {
+		return this.#items[this.#items.length - 1];
+	}
+
+	/**
+	 * Counts the number of instances that satisfy `predicate`.
+	 * When called without arguments, returns the total collection size.
+	 *
+	 * @param predicate - Optional filter function.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.count();                       // → 5
+	 * col.count(u => u.active === true); // → 3
+	 * ```
+	 */
+	count(predicate?: (item: TInstance) => boolean): number {
+		if (predicate === undefined) return this.#items.length;
+		let cnt = 0;
+		for (const item of this.#items) {
+			if (predicate(item)) cnt++;
+		}
+		return cnt;
+	}
+
+	/**
+	 * Returns `true` when **every** instance satisfies `predicate`.
+	 * Returns `true` for an empty collection (vacuous truth).
+	 *
+	 * @param predicate - A function receiving a model instance and returning a boolean.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.every(u => u.age >= 18); // → true
+	 * ```
+	 */
+	every(predicate: (item: TInstance) => boolean): boolean {
+		return this.#items.every(predicate);
+	}
+
+	/**
+	 * Returns `true` when **at least one** instance satisfies `predicate`.
+	 * Returns `false` for an empty collection.
+	 *
+	 * @param predicate - A function receiving a model instance and returning a boolean.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.some(u => u.role === 'admin'); // → true
+	 * ```
+	 */
+	some(predicate: (item: TInstance) => boolean): boolean {
+		return this.#items.some(predicate);
+	}
+
+	/**
+	 * Applies `transform` to each instance and returns a plain array of the results.
+	 *
+	 * Unlike `toArray()`, this returns transformed values rather than model instances.
+	 *
+	 * @param transform - A function receiving a model instance and returning any value.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.map(u => u.name);       // → ['Alice', 'Bob', ...]
+	 * col.map(u => u.serialize()); // → plain-object array
+	 * ```
+	 */
+	map<TResult>(transform: (item: TInstance) => TResult): TResult[] {
+		return this.#items.map(transform);
+	}
+
+	/**
+	 * Applies `transform` to each instance and flattens the result one level.
+	 *
+	 * @param transform - A function receiving a model instance and returning an array.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.flatMap(u => [u.name, u.email]); // → ['Alice', 'a@b.com', 'Bob', ...]
+	 * ```
+	 */
+	flatMap<TResult>(transform: (item: TInstance) => TResult[]): TResult[] {
+		return this.#items.flatMap(transform);
+	}
+
+	/**
+	 * Reduces the collection to a single accumulated value.
+	 *
+	 * @param reducer - A function receiving the current accumulator and the current instance.
+	 * @param initial - The initial accumulator value.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.reduce((total, p) => total + p.price, 0); // → sum of prices
+	 * ```
+	 */
+	reduce<TAcc>(
+		reducer: (acc: TAcc, item: TInstance) => TAcc,
+		initial: TAcc
+	): TAcc {
+		return this.#items.reduce(reducer, initial);
+	}
+
+	/**
+	 * Returns the sum of a numeric field across all instances.
+	 * Returns `0` for an empty collection.
+	 *
+	 * @param field - Name of a numeric property on the model.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.sum('price'); // → 7.0
+	 * col.sum('stock'); // → 390
+	 * ```
+	 */
+	sum(field: keyof TInstance): number {
+		let total = 0;
+		for (const item of this.#items) {
+			const val = item[field];
+			if (typeof val === 'number') total += val;
+		}
+		return total;
+	}
+
+	/**
+	 * Returns the instance with the **minimum** value of `field`, or `undefined` when empty.
+	 *
+	 * @param field - Name of a numeric property (or string-comparable property) on the model.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.min('price')?.name; // → 'Banana'
+	 * ```
+	 */
+	min(field: keyof TInstance): TInstance | undefined {
+		if (this.#items.length === 0) return undefined;
+		let minItem = this.#items[0] as TInstance;
+		for (let idx = 1; idx < this.#items.length; idx++) {
+			const item = this.#items[idx] as TInstance;
+			const cur = item[field];
+			const best = minItem[field];
+			if (typeof cur === 'number' && typeof best === 'number') {
+				if (cur < best) minItem = item;
+			} else if (String(cur) < String(best)) {
+				minItem = item;
+			}
+		}
+		return minItem;
+	}
+
+	/**
+	 * Returns the instance with the **maximum** value of `field`, or `undefined` when empty.
+	 *
+	 * @param field - Name of a numeric property (or string-comparable property) on the model.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.max('price')?.name; // → 'Elderberry'
+	 * ```
+	 */
+	max(field: keyof TInstance): TInstance | undefined {
+		if (this.#items.length === 0) return undefined;
+		let maxItem = this.#items[0] as TInstance;
+		for (let idx = 1; idx < this.#items.length; idx++) {
+			const item = this.#items[idx] as TInstance;
+			const cur = item[field];
+			const best = maxItem[field];
+			if (typeof cur === 'number' && typeof best === 'number') {
+				if (cur > best) maxItem = item;
+			} else if (String(cur) > String(best)) {
+				maxItem = item;
+			}
+		}
+		return maxItem;
+	}
+
+	/**
+	 * Returns a new collection keeping only the **first** occurrence of each unique
+	 * value of `field`. Subsequent items sharing the same field value are discarded.
+	 *
+	 * @param field - Name of the property whose value determines uniqueness.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.unique('category'); // one item per category
+	 * ```
+	 */
+	unique(field: keyof TInstance): QModelCollection<TInstance> {
+		const seen = new Set<unknown>();
+		const result: TInstance[] = [];
+		for (const item of this.#items) {
+			const val = item[field];
+			if (!seen.has(val)) {
+				seen.add(val);
+				result.push(item);
+			}
+		}
+		return new QModelCollection(this.#ctor, result);
+	}
+
+	/**
+	 * Returns a `Map` indexing each instance by the string or number value of `field`.
+	 * When duplicate values exist, the **last** occurrence wins.
+	 *
+	 * @param field - Name of the property to use as the map key.
+	 *
+	 * @example
+	 * ```typescript
+	 * const byId = col.toMap('id');
+	 * byId.get(1)?.name; // → 'Alice'
+	 * ```
+	 */
+	toMap(field: keyof TInstance): Map<unknown, TInstance> {
+		const map = new Map<unknown, TInstance>();
+		for (const item of this.#items) {
+			map.set(item[field], item);
+		}
+		return map;
+	}
+
 	// ─── Validation ─────────────────────────────────────────────────────────
 
 	/**

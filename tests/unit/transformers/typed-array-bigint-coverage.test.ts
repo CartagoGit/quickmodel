@@ -33,7 +33,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 		test('should handle null/undefined/empty string as 0n', () => {
 			const arr = ['10', null, undefined, '', '20'];
 			const result = transformer.deserialize(
-				arr as unknown as string[],
+				arr as unknown as string[], // @quickmodel-rule-ignore: no-as-unknown
 				propertyKey,
 				className
 			);
@@ -56,7 +56,7 @@ describe('Transformer Coverage: TypedArray (BigInt)', () => {
 		test('should deserialize from object values', () => {
 			const obj = { '0': '10', '1': '20' };
 			const result = transformer.deserialize(
-				obj as unknown as Record<number, number>,
+				obj as unknown as Record<number, number>, // @quickmodel-rule-ignore: no-as-unknown
 				propertyKey,
 				className
 			);

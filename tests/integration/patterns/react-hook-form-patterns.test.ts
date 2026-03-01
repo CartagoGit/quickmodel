@@ -241,6 +241,7 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 		);
 		expect(capturedDto).not.toBeNull();
 		expect((capturedDto as unknown as UserSignupDto).username).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'alice_01'
 		);
 	});

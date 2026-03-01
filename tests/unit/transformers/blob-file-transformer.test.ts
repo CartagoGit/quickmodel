@@ -90,8 +90,13 @@ describe('Unit: BlobTransformer', () => {
 	});
 
 	test('tipo no soportado (number) lanza QModelError', () => {
-		expect(() =>
-			transformer.deserialize(42 as unknown as ArrayBuffer, propKey, cls)
+		expect(
+			() =>
+				transformer.deserialize(
+					42 as unknown as ArrayBuffer,
+					propKey,
+					cls
+				) // @quickmodel-rule-ignore: no-as-unknown
 		).toThrow(/BlobTransformer/);
 	});
 
@@ -193,7 +198,7 @@ describe('Unit: FileTransformer', () => {
 					size: 100,
 					type: 'image/png',
 					lastModified: 0,
-				} as unknown as IFileSerialized,
+				} as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 				propKey,
 				cls
 			)
@@ -203,7 +208,7 @@ describe('Unit: FileTransformer', () => {
 	test('tipo no soportado (boolean) lanza QModelError', () => {
 		expect(() =>
 			transformer.deserialize(
-				true as unknown as IFileSerialized,
+				true as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 				propKey,
 				cls
 			)
@@ -284,7 +289,7 @@ describe('Integración: alias "blob" y "file" en @Quick()', () => {
 		const dto = new ArticleDto({
 			title: 'Post',
 			thumbnail:
-				'data:image/png;base64,aGVsbG8=' as unknown as IBlobSerialized,
+				'data:image/png;base64,aGVsbG8=' as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		expect(dto.thumbnail).toBeInstanceOf(Blob);
 	});
@@ -293,7 +298,7 @@ describe('Integración: alias "blob" y "file" en @Quick()', () => {
 		const dto = new ArticleDto({
 			title: 'Post',
 			thumbnail:
-				'data:image/png;base64,aGVsbG8=' as unknown as IBlobSerialized,
+				'data:image/png;base64,aGVsbG8=' as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		const serialized = dto.serialize();
 		expect((serialized.thumbnail as IBlobSerialized)._blobRef).toBe(true);
@@ -326,7 +331,7 @@ describe('Integración: alias "blob" y "file" en @Quick()', () => {
 		});
 		const dto = new ProfileDto({
 			username: 'bob',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		const serialized = dto.serialize();
 		expect((serialized.avatar as IFileSerialized).name).toBe('img.png');
@@ -369,7 +374,7 @@ describe('Integración: constructor Blob/File en @Quick()', () => {
 		const file = new File(['pdf'], 'report.pdf', {
 			type: 'application/pdf',
 		});
-		const dto = new UploadDto({ doc: file as unknown as IFileSerialized });
+		const dto = new UploadDto({ doc: file as unknown as IFileSerialized }); // @quickmodel-rule-ignore: no-as-unknown
 		const out = dto.serialize();
 		expect(typeof (out.doc as IFileSerialized).name).toBe('string');
 	});

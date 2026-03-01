@@ -31,7 +31,11 @@ export class QExportJsonSchemaTool extends QAbstractTool<
 	}>
 > {
 	name = 'export_json_schema';
-	description = 'Generate a JSON Schema Definition from a QuickModel class.';
+	description =
+		'Generate a JSON Schema Definition (Draft-07) from a QuickModel class source string. ' +
+		'Statically parses the @Quick({ }) decorator to extract field type mappings, ' +
+		'then produces a standards-compliant { $schema, type, properties, required[] } object. ' +
+		'Returns { schema } — a JSON Schema object ready for validation or documentation use.';
 	schema = z.object({
 		code: z.string().describe('The QuickModel class code'),
 	});
@@ -54,7 +58,12 @@ export class QExportJsonSchemaTool extends QAbstractTool<
 		// let's parse the structure property which was the config object string.
 		// Actually, let's just re-parse here better for schema.
 
-		const schema: any = {
+		const schema: {
+			type: 'object';
+			properties: Record<string, { type: string; format?: string }>;
+			required: string[];
+			title: string;
+		} = {
 			type: 'object',
 			properties: {},
 			required: [],
@@ -68,7 +77,9 @@ export class QExportJsonSchemaTool extends QAbstractTool<
 			const key = matchResult[1]; // prop name
 			const type = matchResult[2]; // transformer name
 
-			let jsonType: any = { type: 'string' };
+			let jsonType: { type: string; format?: string } = {
+				type: 'string',
+			};
 			if (type === 'number' || type === 'integer')
 				jsonType = { type: 'number' };
 			else if (type === 'boolean') jsonType = { type: 'boolean' };

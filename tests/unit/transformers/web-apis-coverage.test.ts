@@ -43,7 +43,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		test('deserialize should throw on non-string input', () => {
 			expect(() => {
 				transformer.deserialize(
-					123 as unknown as string,
+					123 as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 					'url',
 					'TestClass'
 				);
@@ -131,7 +131,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 		test('deserialize should throw on array (invalid object)', () => {
 			expect(() => {
 				transformer.deserialize(
-					['foo'] as unknown as string,
+					['foo'] as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 					'params',
 					'TestClass'
 				);
@@ -263,7 +263,7 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 
 		test('deserialize should throw on invalid input type', () => {
 			expect(() => {
-				transformer.deserialize(123 as unknown as string, 'dec', 'TC');
+				transformer.deserialize(123 as unknown as string, 'dec', 'TC'); // @quickmodel-rule-ignore: no-as-unknown
 			}).toThrow(/TextDecoder transformer accepts string/);
 		});
 

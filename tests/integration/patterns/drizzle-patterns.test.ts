@@ -194,10 +194,10 @@ describe('DTO from Drizzle query result', () => {
 		};
 		const dto = new UserRowDto(drizzleRow);
 		expect(
-			(dto as unknown as Record<string, unknown>)['posts']
+			(dto as unknown as Record<string, unknown>)['posts'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['_drizzleInternal']
+			(dto as unknown as Record<string, unknown>)['_drizzleInternal'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -328,10 +328,10 @@ describe('Create input — toInterface() for db.insert().values()', () => {
 		const dto = new CreateUserDto(formPayload);
 		const values = dto.toInterface();
 		expect(
-			(values as unknown as Record<string, unknown>)['_csrf']
+			(values as unknown as Record<string, unknown>)['_csrf'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(values as unknown as Record<string, unknown>)['submitBtn']
+			(values as unknown as Record<string, unknown>)['submitBtn'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });
@@ -504,13 +504,13 @@ describe("unknownPropertyPolicy: 'strip' — internal Drizzle columns", () => {
 		};
 		const dto = new UserRowDto(row);
 		expect(
-			(dto as unknown as Record<string, unknown>)['updatedAt']
+			(dto as unknown as Record<string, unknown>)['updatedAt'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['deletedAt']
+			(dto as unknown as Record<string, unknown>)['deletedAt'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['version']
+			(dto as unknown as Record<string, unknown>)['version'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -530,10 +530,10 @@ describe("unknownPropertyPolicy: 'strip' — internal Drizzle columns", () => {
 		};
 		const dto = new UserRowDto(row);
 		expect(
-			(dto as unknown as Record<string, unknown>)['addresses']
+			(dto as unknown as Record<string, unknown>)['addresses'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['profile']
+			(dto as unknown as Record<string, unknown>)['profile'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });
@@ -778,7 +778,7 @@ describe('@QComputed() for non-stored derived fields', () => {
 		});
 		const iface = dto.toInterface();
 		expect(
-			(iface as unknown as Record<string, unknown>)['displayName']
+			(iface as unknown as Record<string, unknown>)['displayName'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });

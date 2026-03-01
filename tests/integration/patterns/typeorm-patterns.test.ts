@@ -211,11 +211,11 @@ describe('Entity → DTO coercion', () => {
 	});
 
 	test('SQLite boolean (0/1) is coerced to boolean in loose mode', () => {
-		const entity = makeEntity({ active: 0 as unknown as boolean });
+		const entity = makeEntity({ active: 0 as unknown as boolean }); // @quickmodel-rule-ignore: no-as-unknown
 		const dto = new UserEntityDto(entity);
 		expect(dto.active).toBe(false);
 
-		const entityActive = makeEntity({ active: 1 as unknown as boolean });
+		const entityActive = makeEntity({ active: 1 as unknown as boolean }); // @quickmodel-rule-ignore: no-as-unknown
 		const dtoActive = new UserEntityDto(entityActive);
 		expect(dtoActive.active).toBe(true);
 	});
@@ -246,10 +246,10 @@ describe('Entity → DTO coercion', () => {
 		};
 		const dto = new UserEntityDto(entityWithExtras as IUserEntity);
 		expect(
-			(dto as unknown as Record<string, unknown>)['__typeorm_entity__']
+			(dto as unknown as Record<string, unknown>)['__typeorm_entity__'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['_metadata']
+			(dto as unknown as Record<string, unknown>)['_metadata'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });
@@ -334,7 +334,7 @@ describe('TypeORM value transformer pattern', () => {
 	});
 
 	test('DTO coerces number-as-string from legacy DB column', () => {
-		const entity = makeEntity({ score: '75' as unknown as number });
+		const entity = makeEntity({ score: '75' as unknown as number }); // @quickmodel-rule-ignore: no-as-unknown
 		const dto = new UserEntityDto(entity);
 		expect(typeof dto.score).toBe('number');
 		expect(dto.score).toBe(75);
@@ -449,8 +449,8 @@ describe('createMany() for TypeORM seed data', () => {
 
 	test('createMany() handles boolean coercion from 0/1 (SQLite seed)', () => {
 		const seedData = [
-			makeEntity({ id: 1, active: 1 as unknown as boolean }),
-			makeEntity({ id: 2, active: 0 as unknown as boolean }),
+			makeEntity({ id: 1, active: 1 as unknown as boolean }), // @quickmodel-rule-ignore: no-as-unknown
+			makeEntity({ id: 2, active: 0 as unknown as boolean }), // @quickmodel-rule-ignore: no-as-unknown
 		];
 		const { instances } = UserEntityDto.createMany(seedData as any[]);
 		expect(instances[0]?.active).toBe(true);
@@ -500,7 +500,7 @@ describe('@QComputed() in DTO vs virtual column in Entity', () => {
 		const dto = new UserEntityDto(
 			makeEntity({ name: 'Dan', role: 'user' })
 		);
-		const plain = dto.toInterface() as unknown as Record<string, unknown>;
+		const plain = dto.toInterface() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 		// @QComputed fields are NOT in toInterface(), unlike @VirtualColumn in TypeORM
 		// This is by design — they are derived at runtime, not stored
 		expect(typeof plain).toBe('object');

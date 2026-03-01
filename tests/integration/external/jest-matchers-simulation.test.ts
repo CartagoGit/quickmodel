@@ -23,7 +23,7 @@ import { quickmodelMatchers } from '@/matchers';
 
 // Extend bun:test's expect (same call that users make in Jest)
 expect.extend(
-	quickmodelMatchers as unknown as Parameters<typeof expect.extend>[0]
+	quickmodelMatchers as unknown as Parameters<typeof expect.extend>[0] // @quickmodel-rule-ignore: no-as-unknown
 );
 
 // TS augmentation for this file

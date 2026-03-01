@@ -68,7 +68,7 @@ describe('Null Safety: Deep Optional Chaining', () => {
 		const user = new User({
 			id: 1,
 			name: 'John',
-			profile: null as unknown as IProfile,
+			profile: null as unknown as IProfile, // @quickmodel-rule-ignore: no-as-unknown
 			bio: null,
 		});
 
@@ -248,7 +248,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			name: 'John',
 			profile: {
 				address: {
-					city: null as unknown as string,
+					city: null as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 				},
 			},
 			bio: null,
@@ -281,7 +281,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 describe('Null Safety: Edge Cases', () => {
 	test('should handle null as entire model data', () => {
 		// QModel accepts null gracefully — does not throw, fields become undefined
-		const user = new User(null as unknown as IUser);
+		const user = new User(null as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		expect(user).toBeInstanceOf(User);
 		expect(user.id).toBeUndefined();
 		expect(user.name).toBeUndefined();
@@ -289,7 +289,7 @@ describe('Null Safety: Edge Cases', () => {
 
 	test('should handle undefined as entire model data', () => {
 		// QModel accepts undefined gracefully — does not throw, fields become undefined
-		const user = new User(undefined as unknown as IUser);
+		const user = new User(undefined as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		expect(user).toBeInstanceOf(User);
 		expect(user.id).toBeUndefined();
 		expect(user.name).toBeUndefined();
@@ -297,10 +297,10 @@ describe('Null Safety: Edge Cases', () => {
 
 	test('should handle empty object', () => {
 		try {
-			new User({} as unknown as IUser);
+			new User({} as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 
 			// Will likely work but fields will be undefined
-			const user = new User({} as unknown as IUser);
+			const user = new User({} as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 			expect(user.id).toBeUndefined();
 		} catch (error) {
 			// OK if it throws

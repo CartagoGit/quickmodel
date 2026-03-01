@@ -21,7 +21,7 @@ export function describeBench(): void {
 	describe('Benchmark #3 — Roundtrip serialización (1k iteraciones)', () => {
 		const ITERS = 1_000;
 		const complexUserInstance = new ComplexUser(
-			complexUserRaw as unknown as IComplexUser
+			complexUserRaw as unknown as IComplexUser // @quickmodel-rule-ignore: no-as-unknown
 		);
 
 		test('[baseline] Plain JSON — stringify + parse (pierde Date/BigInt/Map/Set)', () => {

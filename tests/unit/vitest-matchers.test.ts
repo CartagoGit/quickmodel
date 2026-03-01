@@ -14,7 +14,7 @@ import { quickmodelMatchers } from '@/matchers';
 
 // Extend bun:test's expect with custom matchers
 expect.extend(
-	quickmodelMatchers as unknown as Parameters<typeof expect.extend>[0]
+	quickmodelMatchers as unknown as Parameters<typeof expect.extend>[0] // @quickmodel-rule-ignore: no-as-unknown
 );
 
 // Augment bun:test Matchers interface for this file only

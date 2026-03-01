@@ -62,3 +62,25 @@ export type {
 	IQCollectionRulesResult,
 	IQCSVOptions,
 } from './core/models/quick-collection.model';
+
+// ============================================================================
+// AUTO-REGISTRATION — backward compatibility for the main 'quickmodel' entry.
+//
+// Importing these sub-modules at module-initialisation time wires all schema
+// generators and mock services into their respective registries, so that
+// QModel.getSchema() and QModel.mock() work out of the box for consumers who
+// import from 'quickmodel' (the default entry point).
+//
+// Consumers who import from 'quickmodel/core' instead get a lighter bundle and
+// can opt-in selectively:
+//
+//   import { QModel } from 'quickmodel/core';
+//   import 'quickmodel/schema'; // enables getSchema()
+//   import 'quickmodel/mock';   // enables mock()
+//
+// NOTE: These files are listed in `"sideEffects"` in package.json so that
+// consumer bundlers (webpack, Vite, esbuild) do NOT eliminate them even when
+// their named exports are not explicitly referenced.
+// ============================================================================
+import './schema'; // side-effect: registers all 13 schema generators
+import './mock'; // side-effect: registers QMockGenerator + QMockBuilder

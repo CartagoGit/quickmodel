@@ -304,7 +304,7 @@ class UserDataService {
 	save(data: Record<string, unknown>): object {
 		const record = new UserRecord(data);
 		this.store.set(
-			(record as unknown as Record<string, unknown>)['id'] as string,
+			(record as unknown as Record<string, unknown>)['id'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			record
 		);
 		return record.serialize();

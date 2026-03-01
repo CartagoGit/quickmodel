@@ -26,7 +26,9 @@ import { spawnCommand } from './utils';
 export class QCheckProjectHealthTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'check_project_health';
 	description =
-		'Run a comprehensive health check: Lint, Typecheck, and Run Tests.';
+		'Run a full project health check equivalent to `bun run check`: lint (ESLint), TypeScript type-checking (tsc --noEmit), and the Bun test suite. ' +
+		'Use before any commit or delivery to confirm zero lint errors, zero type errors, and all tests pass. ' +
+		'Returns { passed, lint, typecheck, tests, summary } — structured results for each gate.';
 	schema = z.object({});
 
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */

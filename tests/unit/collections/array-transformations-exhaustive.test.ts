@@ -143,7 +143,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 			const data = new Data({
 				dates: [
 					'2026-01-01T00:00:00.000Z',
-					null as unknown as string,
+					null as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 					'2026-12-31T23:59:59.999Z',
 				],
 			});
@@ -494,7 +494,7 @@ describe('Array Transformations - Exhaustive Tests', () => {
 				id: 1,
 				posts: [
 					{ id: 1, title: 'Post 1' },
-					null as unknown as IPost,
+					null as unknown as IPost, // @quickmodel-rule-ignore: no-as-unknown
 					{ id: 2, title: 'Post 2' },
 				],
 			});

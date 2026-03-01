@@ -362,6 +362,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 			// Fallback: se deserializó como array de números
 			expect(Array.isArray(buf)).toBe(true);
 			expect(Array.from(buf as unknown as number[])).toEqual([
+				// @quickmodel-rule-ignore: no-as-unknown
 				255, 0, 128,
 			]);
 		}

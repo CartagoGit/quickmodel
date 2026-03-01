@@ -31,3 +31,5 @@ export * from './deprecation-tracker.tool';
 export * from './manage-proposal.tool';
 export * from './patch-jsdoc.tool';
 export * from './validate-examples.tool';
+export * from './add-to-sidebar.tool';
+export * from './create-guide-page.tool';

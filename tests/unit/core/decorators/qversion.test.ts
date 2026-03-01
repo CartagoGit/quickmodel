@@ -87,7 +87,7 @@ describe('@QVersion — migración v1 → v2', () => {
 			lastName: 'Martin',
 			email: 'a@b.com',
 			_v: 1,
-		} as unknown as IUserV2);
+		} as unknown as IUserV2); // @quickmodel-rule-ignore: no-as-unknown
 
 		expect(user.fullName).toBe('Alice Martin');
 		expect(user.email).toBe('a@b.com');
@@ -119,7 +119,7 @@ describe('@QVersion — migración multistep v1 → v3', () => {
 			content: 'Hello',
 			label: 'news',
 			_v: 1,
-		} as unknown as IDocV3);
+		} as unknown as IDocV3); // @quickmodel-rule-ignore: no-as-unknown
 
 		expect(doc.body).toBe('Hello');
 		expect(doc.tags).toEqual(['news']);
@@ -130,7 +130,7 @@ describe('@QVersion — migración multistep v1 → v3', () => {
 			body: 'World',
 			label: 'tech',
 			_v: 2,
-		} as unknown as IDocV3);
+		} as unknown as IDocV3); // @quickmodel-rule-ignore: no-as-unknown
 
 		expect(doc.body).toBe('World');
 		expect(doc.tags).toEqual(['tech']);
@@ -167,7 +167,7 @@ describe('@QVersion — integridad con serialize()', () => {
 			lastName: 'Jones',
 			email: 'e@f.com',
 			_v: 1,
-		} as unknown as IUserV2);
+		} as unknown as IUserV2); // @quickmodel-rule-ignore: no-as-unknown
 
 		const plain = user.serialize() as Record<string, unknown>;
 		expect(plain['fullName']).toBe('Eve Jones');

@@ -231,7 +231,7 @@ describe('Svelte — writable store wrapping QModel', () => {
 			received = val;
 		});
 		expect(received).not.toBeNull();
-		expect((received as unknown as TaskModel).label).toBe('Buy milk');
+		expect((received as unknown as TaskModel).label).toBe('Buy milk'); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('update() via merge() triggers subscriber', () => {

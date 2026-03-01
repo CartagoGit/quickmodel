@@ -24,7 +24,10 @@ import { spawnCommand } from './utils';
 export class QCheckSecurityTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'check_security';
 	description =
-		'Run the security test suite to verify protection against vulnerabilities (XSS, Injection, Path Traversal, etc.).';
+		'Run the project security test suite (tests/security/) to verify protection against known attack vectors. ' +
+		'Covers: prototype pollution, ReDoS/Denial-of-Service via malicious inputs, type-confusion injection, ' +
+		'deep-nesting DoS, unsafe deserialization, and transformer bypass attempts. ' +
+		'Returns { passed, failures[], summary } — run this after any change to transformers, validators, or deserialization logic.';
 	schema = z.object({});
 
 	/** @internal `spawnCommand` reference; can be overridden in tests to inject a mock spawn function. */

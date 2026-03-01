@@ -2,7 +2,12 @@ import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
 import { Quick } from '../../../core/decorators/quick.decorator';
 import { QModel } from '../../../core/models/quick.model';
-import type { IQSchemaType } from '../../../core/types/schema-types';
+import type {
+	IQSchemaReturnType,
+	IQSchemaType,
+} from '../../../core/types/schema-types';
+// Side-effect: registers all schema generators so QModel.getSchema() works at runtime.
+import '../../../schema';
 
 const VALID_FORMATS = [
 	'json',
@@ -15,11 +20,14 @@ const VALID_FORMATS = [
 	'prisma',
 	'valibot',
 	'yup',
+	'drizzle',
+	'typebox',
+	'effect-schema',
 ] as const;
 
 /**
  * Tool to generate a model schema in any supported format using the real QModel.getSchema() API.
- * Supports all 10 formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup.
+ * Supports all 12 formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup, drizzle, typebox.
  *
  * @see {@link QExportJsonSchemaTool} — export a standalone JSON Schema definition
  * @see {@link QGetFormSchemaTool} — get a form-oriented schema for UI frameworks
@@ -29,8 +37,9 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	name = 'get_model_schema';
 	description =
 		'Generate a model schema in any supported format from a QuickModel class definition. ' +
-		'Supported formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup. ' +
-		'Uses the real QModel.getSchema() API for accurate output.';
+		'Supported formats (13): json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup, drizzle, typebox, effect-schema. ' +
+		'Uses the real QModel.getSchema() API for accurate output. ' +
+		'Returns { schema, format } — schema type varies by format (object for json/openapi/ajv/mongo, ZodObject for zod, string for all others).';
 
 	schema = z.object({
 		code: z
@@ -41,7 +50,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 		format: z
 			.enum(VALID_FORMATS)
 			.describe(
-				'Schema format to generate: json | openapi | zod | mongo | typescript | graphql | ajv | prisma | valibot | yup'
+				'Schema format to generate: json | openapi | zod | mongo | typescript | graphql | ajv | prisma | valibot | yup | drizzle | typebox | effect-schema'
 			),
 	});
 
@@ -51,31 +60,25 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	 * @param args - Tool arguments.
 	 * @param args.code - TypeScript source code of the QuickModel class.
 	 * @param args.format - Target schema format (`"json"`, `"openapi"`, `"zod"`, `"mongo"`,
-	 *   `"typescript"`, `"graphql"`, `"ajv"`, `"prisma"`, `"valibot"`, `"yup"`).
+	 *   `"typescript"`, `"graphql"`, `"ajv"`, `"prisma"`, `"valibot"`, `"yup"`, `"drizzle"`, `"typebox"`).
 	 * @returns `{ schema, format }` — the generated schema object and the format used.
 	 * @throws {Error} When `format` is not one of the supported values.
 	 * @see {@link QAbstractTool.execute} — base contract for this method
 	 * @see {@link QExportJsonSchemaTool} — simpler alternative for JSON Schema only
 	 */
+	execute<T extends IQSchemaType>(args: {
+		code: string;
+		format: T;
+	}): Promise<{ schema: IQSchemaReturnType<T>; format: T }>;
 	async execute(args: {
 		code: string;
-		format:
-			| 'json'
-			| 'openapi'
-			| 'zod'
-			| 'mongo'
-			| 'typescript'
-			| 'graphql'
-			| 'ajv'
-			| 'prisma'
-			| 'valibot'
-			| 'yup';
-	}): Promise<{ schema: unknown; format: string }> {
+		format: IQSchemaType;
+	}): Promise<{ schema: unknown; format: IQSchemaType }> {
 		await Promise.resolve();
 
 		const { code, format } = args;
 
-		if (!VALID_FORMATS.includes(format as IQSchemaType)) {
+		if (!VALID_FORMATS.includes(format)) {
 			throw new Error(
 				`Unsupported format: "${format}". Valid formats: ${VALID_FORMATS.join(', ')}`
 			);
@@ -89,7 +92,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 			[key: string]: any;
 		}
 
-		const schema = DynamicModel.getSchema(format as IQSchemaType);
+		const schema = DynamicModel.getSchema(format);
 
 		return { schema, format };
 	}

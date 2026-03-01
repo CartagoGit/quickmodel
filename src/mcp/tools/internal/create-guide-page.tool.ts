@@ -4,21 +4,6 @@ import * as fs from 'fs';
 import { join, resolve, sep } from 'path';
 
 /**
- * Args accepted by {@link QCreateGuidePageTool}.
- * @see {@link QCreateGuidePageTool} — tool that processes these arguments
- * @internal
- */
-interface ICreateGuidePageArgs {
-	slug: string;
-	title_en: string;
-	title_es: string;
-	description_en?: string;
-	description_es?: string;
-	/** Override base path (defaults to `process.cwd()`). Used in tests. */
-	base_path?: string;
-}
-
-/**
  * Result returned by {@link QCreateGuidePageTool}.
  * @see {@link QCreateGuidePageTool} — tool whose `execute` returns this union
  * @internal
@@ -105,7 +90,9 @@ export class QCreateGuidePageTool extends QAbstractTool<
 	 * @returns `{ success: true, en_path, es_path, message }` or `{ success: false, error }`.
 	 * @see {@link QAbstractTool.execute} — base contract for this method
 	 */
-	async execute(args: ICreateGuidePageArgs): Promise<ICreateGuidePageResult> {
+	async execute(
+		args: z.infer<typeof this.schema>
+	): Promise<ICreateGuidePageResult> {
 		await Promise.resolve();
 
 		// Validate slug: must start/end with alphanumeric, only lowercase letters/digits/hyphens, no consecutive hyphens

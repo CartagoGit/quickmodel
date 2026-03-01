@@ -247,14 +247,14 @@ describe('Interface Conversion - Edge Cases', () => {
 				id: '1',
 				tags: [
 					'a',
-					null as unknown as string,
+					null as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 					'b',
-					undefined as unknown as string,
+					undefined as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 					'c',
 				],
 				metadata: {
 					key: 'test',
-					values: [1, null as unknown as number, 3],
+					values: [1, null as unknown as number, 3], // @quickmodel-rule-ignore: no-as-unknown
 				},
 			});
 

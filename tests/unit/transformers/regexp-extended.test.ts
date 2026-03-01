@@ -44,7 +44,7 @@ describe('Unit: RegExp Transformer Extended Coverage', () => {
 	test('deserialize: should throw on invalid type', () => {
 		expect(() => {
 			transformer.deserialize(
-				123 as unknown as string,
+				123 as unknown as string, // @quickmodel-rule-ignore: no-as-unknown
 				'regex',
 				'TestClass'
 			);

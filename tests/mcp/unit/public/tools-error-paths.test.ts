@@ -34,8 +34,10 @@ describe('QInterfaceToModelTool — error paths', () => {
 			}
 		`;
 		const result = await tool.execute({ code });
-		expect(result.code).toContain("createdAt: 'date'");
-		expect(result.code).toContain("name: 'string'");
+		// Date: should appear in @Quick decorator as transformer token
+		expect(result.code).toContain('createdAt: Date');
+		// string: no explicit transformer in @Quick (it's the default), but should appear in declares
+		expect(result.code).toContain('declare name: string;');
 	});
 
 	it('should infer number transformer for number types', async () => {
@@ -71,7 +73,7 @@ describe('QInterfaceToModelTool — error paths', () => {
 		`;
 		const result = await tool.execute({ code });
 		expect(result.code).toContain('nickname?');
-		expect(result.code).toContain('public name:');
+		expect(result.code).toContain('declare name:');
 	});
 
 	it('should generate @Quick({}) when interface has no parseable properties', async () => {
@@ -111,14 +113,14 @@ describe('QJsonToModelTool — additional error paths', () => {
 		const tool = new QJsonToModelTool();
 		const json = JSON.stringify({ tags: ['a', 'b'], count: 1 });
 		const result = await tool.execute({ json, className: 'TaggedModel' });
-		expect(result.code).toContain('public tags: any[];');
+		expect(result.code).toContain('declare tags: unknown[];');
 	});
 
 	it('should handle nested object values as any', async () => {
 		const tool = new QJsonToModelTool();
 		const json = JSON.stringify({ meta: { key: 'value' }, id: 1 });
 		const result = await tool.execute({ json, className: 'MetaModel' });
-		expect(result.code).toContain('public meta: any;');
+		expect(result.code).toContain('declare meta: Record<string, unknown>;');
 	});
 
 	it('should quote non-identifier keys in generated code', async () => {

@@ -30,7 +30,10 @@ export class QGenerateTestTool extends QAbstractTool<
 > {
 	name = 'generate_test';
 	description =
-		'Internal tool to generate a starter test file for a source component.';
+		'Generate a scaffold Bun test file for a given source file path. ' +
+		'Reads the source file, extracts exported class/function names, and produces a tests/unit/ file ' +
+		'with describe/test blocks, import statements, and placeholder assertions. ' +
+		'Returns { testFile, code } — absolute path and full source of the generated test.';
 	schema = z.object({
 		sourceFile: z
 			.string()

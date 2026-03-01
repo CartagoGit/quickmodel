@@ -75,7 +75,7 @@ class UserModel extends QModel<IUser> {
 
 beforeEach(() => {
 	QConfig.reset();
-	(TraceLogger as unknown as Record<string, unknown>)._configRef = undefined;
+	(TraceLogger as unknown as Record<string, unknown>)._configRef = undefined; // @quickmodel-rule-ignore: no-as-unknown
 });
 
 afterEach(() => {

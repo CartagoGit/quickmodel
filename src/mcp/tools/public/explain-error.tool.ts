@@ -28,7 +28,10 @@ export class QExplainErrorTool extends QAbstractTool<
 > {
 	name = 'explain_error';
 	description =
-		'Explain a QuickModel validation error in human-readable language.';
+		'Explain a QuickModel validation or integrity error in human-readable language. ' +
+		'Accepts a JSON-stringified error object (e.g. { code, field, message, value }) and returns a plain explanation. ' +
+		'Handles: INVALID_TYPE, REQUIRED, COERCION_FAILED, RULE_FAILED, RULE_ASYNC_FAILED, and generic error shapes. ' +
+		'Returns { explanation, field?, code? } — human-readable text suitable for display in error UIs.';
 	schema = z.object({
 		error: z.string().describe('The JSON string of the validation error'),
 	});

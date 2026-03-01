@@ -150,7 +150,7 @@ function expressValidateBody<TDto extends QModel<object>>(
 				return;
 			}
 			// Attach coerced DTO to request (simulating req.dto)
-			(req as unknown as Record<string, unknown>)['dto'] = dto;
+			(req as unknown as Record<string, unknown>)['dto'] = dto; // @quickmodel-rule-ignore: no-as-unknown
 			next();
 		} catch (_err) {
 			res.status = 400;
@@ -177,7 +177,7 @@ describe('Express — validation middleware pattern', () => {
 		});
 		expect(nextCalled).toBe(true);
 		expect(res.status).toBe(200);
-		const dto = (req as unknown as Record<string, unknown>)[
+		const dto = (req as unknown as Record<string, unknown>)[ // @quickmodel-rule-ignore: no-as-unknown
 			'dto'
 		] as CreateUserDto;
 		expect(dto).toBeInstanceOf(CreateUserDto);
@@ -218,7 +218,7 @@ describe('Express — validation middleware pattern', () => {
 		const res: IMockResponse = { status: 200, body: null };
 		const middleware = expressValidateBody(CreateUserDto);
 		middleware(req, res, () => {});
-		const dto = (req as unknown as Record<string, unknown>)[
+		const dto = (req as unknown as Record<string, unknown>)[ // @quickmodel-rule-ignore: no-as-unknown
 			'dto'
 		] as CreateUserDto;
 		const serialized = dto.serialize() as Record<string, unknown>;
@@ -237,7 +237,7 @@ describe('Express — validation middleware pattern', () => {
 		const res: IMockResponse = { status: 200, body: null };
 		const middleware = expressValidateBody(CreateUserDto);
 		middleware(req, res, () => {});
-		const dto = (req as unknown as Record<string, unknown>)[
+		const dto = (req as unknown as Record<string, unknown>)[ // @quickmodel-rule-ignore: no-as-unknown
 			'dto'
 		] as CreateUserDto;
 		const out = dto.serialize() as Record<string, unknown>;
@@ -667,7 +667,7 @@ class BlogPostRepository {
 	create(data: Record<string, unknown>): object {
 		const post = new BlogPostModel(data);
 		this.store.set(
-			(post as unknown as Record<string, unknown>)['id'] as string,
+			(post as unknown as Record<string, unknown>)['id'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			post
 		);
 		return post.serialize();

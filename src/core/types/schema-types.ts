@@ -5,7 +5,7 @@
  */
 
 /**
- * The **twelve** schema formats supported by `QModel.getSchema()` / `get_model_schema` MCP tool.
+ * The **thirteen** schema formats supported by `QModel.getSchema()` / `get_model_schema` MCP tool.
  *
  * | Value | Generator | Output |
  * |---|---|---|
@@ -21,6 +21,7 @@
  * | `'yup'` | `YupSchemaGenerator` | Yup `yup.object(…)` source string |
  * | `'drizzle'` | `DrizzleSchemaGenerator` | Drizzle ORM `pgTable(…)` source string |
  * | `'typebox'` | `TypeBoxSchemaGenerator` | TypeBox `Type.Object(…)` source string |
+ * | `'effect-schema'` | `EffectSchemaGenerator` | Effect.ts `Schema.Struct(…)` source string |
  *
  * @see {@link JsonSchemaGenerator}
  * @see {@link OpenAPISchemaGenerator}
@@ -42,4 +43,34 @@ export type IQSchemaType =
 	| 'valibot' // Valibot v1.x schema source string
 	| 'yup' // Yup schema source string
 	| 'drizzle' // Drizzle ORM pgTable source string
-	| 'typebox'; // TypeBox Type.Object(…) source string
+	| 'typebox' // TypeBox Type.Object(…) source string
+	| 'effect-schema'; // Effect.ts Schema.Struct(…) source string
+
+/**
+ * Maps each `IQSchemaType` to the concrete TypeScript type returned by `QModel.getSchema()`.
+ *
+ * | Format | Return type | Notes |
+ * |---|---|---|
+ * | `'json'`, `'openapi'`, `'mongo'`, `'ajv'` | `Record<string, unknown>` | Plain schema objects |
+ * | `'zod'` | `import('zod').ZodObject<any>` | Live Zod validator |
+ * | All others | `string` | Generated source-code strings |
+ *
+ * @example
+ * ```typescript
+ * const json = User.getSchema('json');   // Record<string, unknown>
+ * const zod  = User.getSchema('zod');    // ZodObject<any>
+ * const ts   = User.getSchema('typescript'); // string
+ * ```
+ *
+ * @see {@link IQSchemaType} — the accepted format literals
+ * @see {@link QModel.getSchema} — the method that uses this mapping
+ */
+export type IQSchemaReturnType<T extends IQSchemaType> = T extends
+	| 'json'
+	| 'openapi'
+	| 'mongo'
+	| 'ajv'
+	? Record<string, unknown>
+	: T extends 'zod'
+		? import('zod').ZodObject<any>
+		: string;

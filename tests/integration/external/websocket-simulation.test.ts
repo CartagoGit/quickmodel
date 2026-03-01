@@ -73,7 +73,7 @@ function createWsPipe(): IWsPipe {
 			clientSent.push(data);
 		},
 		simulateReceive(data: string) {
-			this.onmessage?.({ data } as unknown as string);
+			this.onmessage?.({ data } as unknown as string); // @quickmodel-rule-ignore: no-as-unknown
 		},
 	};
 
@@ -84,7 +84,7 @@ function createWsPipe(): IWsPipe {
 			serverSent.push(data);
 		},
 		simulateReceive(data: string) {
-			this.onmessage?.({ data } as unknown as string);
+			this.onmessage?.({ data } as unknown as string); // @quickmodel-rule-ignore: no-as-unknown
 		},
 	};
 
@@ -1119,7 +1119,7 @@ describe('Security: socket message attack vectors', () => {
 			isAdmin: true,
 			_internalToken: 'supersecret',
 			role: 'superadmin',
-		} as unknown as IChatMessage;
+		} as unknown as IChatMessage; // @quickmodel-rule-ignore: no-as-unknown
 
 		pipe.clientSocket.send(JSON.stringify(maliciousPayload));
 		pipe.flushClientToServer();
@@ -1130,13 +1130,13 @@ describe('Security: socket message attack vectors', () => {
 		expect(received!.author).toBe('Hacker');
 		// Campos inyectados NO presentes
 		expect(
-			(received as unknown as Record<string, unknown>)['isAdmin']
+			(received as unknown as Record<string, unknown>)['isAdmin'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(received as unknown as Record<string, unknown>)['_internalToken']
+			(received as unknown as Record<string, unknown>)['_internalToken'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(received as unknown as Record<string, unknown>)['role']
+			(received as unknown as Record<string, unknown>)['role'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -1174,13 +1174,13 @@ describe('Security: socket message attack vectors', () => {
 
 		expect(received!.userId).toBe('attacker');
 		expect(
-			(received as unknown as Record<string, unknown>)['isVerified']
+			(received as unknown as Record<string, unknown>)['isVerified'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(received as unknown as Record<string, unknown>)['adminToken']
+			(received as unknown as Record<string, unknown>)['adminToken'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(received as unknown as Record<string, unknown>)['permissions']
+			(received as unknown as Record<string, unknown>)['permissions'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 

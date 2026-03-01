@@ -364,7 +364,7 @@ class CartStore {
 	addItem(data: Record<string, unknown>): void {
 		const item = new CartItem(data);
 		this.items.set(
-			(item as unknown as Record<string, unknown>)['sku'] as string,
+			(item as unknown as Record<string, unknown>)['sku'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			item
 		);
 	}
@@ -576,6 +576,7 @@ describe('React — useQModel hook simulation', () => {
 			})
 		);
 		expect((hook.getSnapshot() as unknown as UserProfile).displayName).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'Alice Smith'
 		);
 	});
@@ -591,6 +592,7 @@ describe('React — useQModel hook simulation', () => {
 		);
 		hook.update((prev) => prev.copy({ bio: 'New bio' }));
 		expect((hook.getSnapshot() as unknown as UserProfile).bio).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'New bio'
 		);
 	});

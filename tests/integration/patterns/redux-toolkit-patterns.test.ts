@@ -647,6 +647,7 @@ describe('DevTools — readable payloads via serialize()', () => {
 		const payloads = instances.map((inst) => inst.serialize());
 		expect(payloads.every((pay) => !(pay instanceof QModel))).toBe(true);
 		expect(JSON.parse(JSON.stringify(payloads)) as unknown[]).toHaveLength(
+			// @quickmodel-rule-ignore: no-as-unknown
 			2
 		);
 	});

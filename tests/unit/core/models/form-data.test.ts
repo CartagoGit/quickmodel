@@ -223,7 +223,7 @@ describe('toFormData: File y Blob con fileMode default', () => {
 		const dto = new UploadForm({
 			userId: '1',
 			title: 'test',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 			thumbnail: null,
 		});
 
@@ -240,7 +240,7 @@ describe('toFormData: File y Blob con fileMode default', () => {
 			userId: '1',
 			title: 'test',
 			avatar: null,
-			thumbnail: blob as unknown as IBlobSerialized,
+			thumbnail: blob as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const formData = await dto.toFormData();
@@ -262,7 +262,7 @@ describe('toFormData: fileMode reference', () => {
 		const dto = new UploadForm({
 			userId: '1',
 			title: 'test',
-			avatar: file as unknown as IFileSerialized,
+			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 			thumbnail: null,
 		});
 
@@ -279,7 +279,7 @@ describe('toFormData: fileMode reference', () => {
 			userId: '1',
 			title: 'test',
 			avatar: null,
-			thumbnail: blob as unknown as IBlobSerialized,
+			thumbnail: blob as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const formData = await dto.toFormData({ fileMode: 'reference' });
@@ -302,7 +302,7 @@ describe('toFormData: fileMode base64', () => {
 			userId: '1',
 			title: 'test',
 			avatar: null,
-			thumbnail: blob as unknown as IBlobSerialized,
+			thumbnail: blob as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const formData = await dto.toFormData({ fileMode: 'base64' });

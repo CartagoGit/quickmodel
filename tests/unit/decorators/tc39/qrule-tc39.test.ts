@@ -96,7 +96,7 @@ describe('@QRule — TC39 path: basic rule registration', () => {
 			Product.prototype,
 			'price'
 		);
-		expect(rules[0]?.predicate as unknown).toBe(isPositive);
+		expect(rules[0]?.predicate as unknown).toBe(isPositive); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('accepts a lazy () => string message', () => {
@@ -258,6 +258,6 @@ describe('@QRule — TC39 path: async predicate', () => {
 			'email'
 		);
 		expect(rules).toHaveLength(1);
-		expect(rules[0]?.predicate as unknown).toBe(asyncIsUnique);
+		expect(rules[0]?.predicate as unknown).toBe(asyncIsUnique); // @quickmodel-rule-ignore: no-as-unknown
 	});
 });

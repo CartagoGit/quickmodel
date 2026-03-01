@@ -26,7 +26,7 @@ export function describeBench(): void {
 			};
 
 			const start = performance.now();
-			const holder = new DateHolder(input as unknown as IDateHolder);
+			const holder = new DateHolder(input as unknown as IDateHolder); // @quickmodel-rule-ignore: no-as-unknown
 			const elapsed = performance.now() - start;
 
 			const _transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
@@ -92,7 +92,7 @@ export function describeBench(): void {
 
 			const start = performance.now();
 			const models = rawData.map(
-				(raw) => new Payment(raw as unknown as IPayment)
+				(raw) => new Payment(raw as unknown as IPayment) // @quickmodel-rule-ignore: no-as-unknown
 			);
 			models.forEach((model) => model.serialize());
 			const elapsed = performance.now() - start;

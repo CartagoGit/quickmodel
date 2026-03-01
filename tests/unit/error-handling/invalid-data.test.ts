@@ -87,7 +87,7 @@ describe('Error Handling: Invalid Data Types', () => {
 	test('should throw descriptive error when string passed for number', () => {
 		expect(() => {
 			new User({
-				id: 'not a number' as unknown as number,
+				id: 'not a number' as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 				name: 'John',
 				email: 'john@test.com',
 				age: 25,
@@ -127,7 +127,7 @@ describe('Error Handling: Invalid Data Types', () => {
 
 	test('should ALLOW null (treated as optional runtime value)', () => {
 		const user = new User({
-			id: null as unknown as number,
+			id: null as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 			name: 'John',
 			email: 'john@test.com',
 			age: 25,
@@ -146,7 +146,7 @@ describe('Error Handling: Nested Property Errors', () => {
 				id: 1,
 				address: {
 					street: 'Main St',
-					zipCode: 12345 as unknown as string, // should be string
+					zipCode: 12345 as unknown as string, // should be string  // @quickmodel-rule-ignore: no-as-unknown
 				},
 			});
 		}).toThrow(/zipCode|address/i);
@@ -235,7 +235,7 @@ describe('Error Handling: Array Type Mismatches', () => {
 	test('should detect array with wrong element types', () => {
 		expect(() => {
 			new Data({
-				numbers: ['not', 'numbers'] as unknown as number[],
+				numbers: ['not', 'numbers'] as unknown as number[], // @quickmodel-rule-ignore: no-as-unknown
 				dates: [],
 			});
 		}).toThrow(/number/i);
@@ -248,7 +248,7 @@ describe('Error Handling: Type Coercion vs Validation', () => {
 		// This provides robust runtime validation requested in robustness requirements.
 		expect(() => {
 			new User({
-				id: '123' as unknown as number, // String '123' is invalid for Number type
+				id: '123' as unknown as number, // String '123' is invalid for Number type  // @quickmodel-rule-ignore: no-as-unknown
 				name: 'John',
 				email: 'john@test.com',
 				age: 25,

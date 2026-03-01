@@ -52,7 +52,7 @@ describe('@QRule — legacy path: rule registration', () => {
 			Product.prototype,
 			'price'
 		);
-		expect(rules[0]?.predicate as unknown).toBe(isPositive);
+		expect(rules[0]?.predicate as unknown).toBe(isPositive); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('accepts a lazy () => string message', () => {
@@ -180,7 +180,7 @@ describe('@QRule — legacy path: rule registration', () => {
 			'email'
 		);
 		expect(rules).toHaveLength(1);
-		expect(rules[0]?.predicate as unknown).toBe(asyncIsUnique);
+		expect(rules[0]?.predicate as unknown).toBe(asyncIsUnique); // @quickmodel-rule-ignore: no-as-unknown
 	});
 });
 

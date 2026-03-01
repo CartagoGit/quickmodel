@@ -408,8 +408,8 @@ describe('QModel.create() factory method', () => {
 			const user1 = new UserWithDeclare(data);
 			const user2 = UserWithCreate.create(data);
 
-			expect(user1.id).toBe((user2 as unknown as IUser).id);
-			expect(user1.name).toBe((user2 as unknown as IUser).name);
+			expect(user1.id).toBe((user2 as unknown as IUser).id); // @quickmodel-rule-ignore: no-as-unknown
+			expect(user1.name).toBe((user2 as unknown as IUser).name); // @quickmodel-rule-ignore: no-as-unknown
 			expect(user1.toInterface()).toEqual(user2.toInterface());
 		});
 	});

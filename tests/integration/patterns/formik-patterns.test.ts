@@ -258,7 +258,7 @@ describe('Formik validate adapter', () => {
 			name: 'Carol',
 			email: 'carol@x.com',
 			password: 'Password1',
-			age: '29' as unknown as number, // simulates HTML input string
+			age: '29' as unknown as number, // simulates HTML input string  // @quickmodel-rule-ignore: no-as-unknown
 			role: 'admin',
 			newsletter: false,
 		});

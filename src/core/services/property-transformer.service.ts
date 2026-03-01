@@ -14,6 +14,61 @@ import {
 } from '@/transformers/special-float.transformer';
 
 // ---------------------------------------------------------------------------
+// Module-level frozen Sets for hot-path type checks — created ONCE at module
+// load time instead of inside each function call (eliminates O(n) array alloc
+// + Array#includes per construction).
+// ---------------------------------------------------------------------------
+
+/**
+ * @internal All types that can be handled by a primitive/value transformer.
+ * Used for the `isPrimitiveOrTransformable` check inside array-transform paths.
+ */
+const _TRANSFORMABLE_TYPES = new Set<unknown>([
+	Date,
+	BigInt,
+	Number,
+	String,
+	Boolean,
+	RegExp,
+	Symbol,
+	Error,
+	URL,
+	URLSearchParams,
+	Int8Array,
+	Uint8Array,
+	Uint8ClampedArray,
+	Int16Array,
+	Uint16Array,
+	Int32Array,
+	Uint32Array,
+	Float32Array,
+	Float64Array,
+	BigInt64Array,
+	BigUint64Array,
+	ArrayBuffer,
+	DataView,
+]);
+
+/**
+ * @internal Subset of typed-array constructors — used to decide whether an
+ * array element that is itself an array should be forwarded to the TypedArray
+ * path or the regular element-mapping path.
+ */
+const _TYPED_ARRAY_CTORS = new Set<unknown>([
+	Int8Array,
+	Uint8Array,
+	Uint8ClampedArray,
+	Int16Array,
+	Uint16Array,
+	Int32Array,
+	Uint32Array,
+	Float32Array,
+	Float64Array,
+	BigInt64Array,
+	BigUint64Array,
+]);
+
+// ---------------------------------------------------------------------------
 // Module-level per-(constructor, key) cache for transformProperty() hot path
 // Safe because decorator metadata is immutable after class definition
 // ---------------------------------------------------------------------------
@@ -517,34 +572,8 @@ export class PropertyTransformer {
 				arrayNestingDepth >= 2 &&
 				Array.isArray(value)
 			) {
-				const transformableTypes = [
-					Date,
-					BigInt,
-					Number,
-					String,
-					Boolean,
-					RegExp,
-					Symbol,
-					Error,
-					URL,
-					URLSearchParams,
-					Int8Array,
-					Uint8Array,
-					Uint8ClampedArray,
-					Int16Array,
-					Uint16Array,
-					Int32Array,
-					Uint32Array,
-					Float32Array,
-					Float64Array,
-					BigInt64Array,
-					BigUint64Array,
-					ArrayBuffer,
-					DataView,
-				];
-
 				const isPrimitiveOrTransformable =
-					transformableTypes.includes(arrayElementClass);
+					_TRANSFORMABLE_TYPES.has(arrayElementClass);
 
 				if (
 					isPrimitiveOrTransformable &&
@@ -624,52 +653,13 @@ export class PropertyTransformer {
 					);
 				}
 
-				const transformableTypes = [
-					Date,
-					BigInt,
-					Number,
-					String,
-					Boolean,
-					RegExp,
-					Symbol,
-					Error,
-					URL,
-					URLSearchParams,
-					Int8Array,
-					Uint8Array,
-					Uint8ClampedArray,
-					Int16Array,
-					Uint16Array,
-					Int32Array,
-					Uint32Array,
-					Float32Array,
-					Float64Array,
-					BigInt64Array,
-					BigUint64Array,
-					ArrayBuffer,
-					DataView,
-				];
-
 				const isPrimitiveOrTransformable =
-					transformableTypes.includes(arrayElementClass);
+					_TRANSFORMABLE_TYPES.has(arrayElementClass);
 				const hasDiscriminator = !!discriminators?.[targetKey];
 
 				if (isPrimitiveOrTransformable && !hasDiscriminator) {
-					const typedArrayConstructors = [
-						Int8Array,
-						Uint8Array,
-						Uint8ClampedArray,
-						Int16Array,
-						Uint16Array,
-						Int32Array,
-						Uint32Array,
-						Float32Array,
-						Float64Array,
-						BigInt64Array,
-						BigUint64Array,
-					];
 					const isTypedArrayElement =
-						typedArrayConstructors.includes(arrayElementClass);
+						_TYPED_ARRAY_CTORS.has(arrayElementClass);
 
 					return value.map((item) => {
 						if (item === null || item === undefined) return item;

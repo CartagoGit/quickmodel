@@ -1,12 +1,9 @@
 /**
  * DrizzleSchemaGenerator — Drizzle ORM `pgTable` column definition from QuickModel metadata.
  *
- * Produces a TypeScript source string that imports Drizzle ORM helpers and
- * declares a `const <classNameTable> = pgTable('<tableName>', { … })` with each
- * field mapped to the appropriate Drizzle column type.
- *
- * It targets the **PostgreSQL** dialect (`drizzle-orm/pg-core`) as default,
- * which is the most common. MySQL and SQLite imports follow the same API.
+ * Produces a TypeScript source string that declares a `export const <table> = pgTable(…)`
+ * with each field mapped to the appropriate Drizzle column type (pg-core dialect).
+ * The required import is included as a commented hint at the top of the output.
  *
  * **Zero runtime dependencies** — pure string composition.
  *
@@ -17,21 +14,26 @@
 
 import type { ISchemaGeneratorConfig } from '@/core/services/schema-generators.service';
 
-/**
- * Converts a camelCase class name to a snake_case table name.
- * @internal
- */
+/** @internal */
 function toSnakeCase(str: string): string {
 	return str
 		.replace(/([A-Z])/g, (match) => `_${match.toLowerCase()}`)
 		.replace(/^_/, '');
 }
 
+/** @internal */
+function toCamelCase(str: string): string {
+	return str.replace(/_([a-z])/g, (_, chr: string) => chr.toUpperCase());
+}
+
+/** @internal */
+function isArrayToken(transformer: unknown): boolean {
+	return Array.isArray(transformer);
+}
+
 /**
  * Generates a Drizzle ORM (`drizzle-orm/pg-core`) `pgTable` source string from
  * QuickModel decorator configuration.
- *
- * Maps QuickModel type specs to Drizzle column helpers:
  *
  * | QuickModel  | Drizzle column                              |
  * |-------------|---------------------------------------------|
@@ -40,35 +42,25 @@ function toSnakeCase(str: string): string {
  * | `Boolean`   | `boolean('field')`                          |
  * | `Date`      | `timestamp('field')`                        |
  * | `BigInt`    | `bigint('field', { mode: 'number' })`       |
- * | `Set`/`Map` | `json('field')`                             |
+ * | `[Type]`    | `jsonb('field')`                            |
+ * | `Set`/`Map` | `jsonb('field')`                            |
  * | _(default)_ | `varchar('field', { length: 255 })`         |
  *
- * @example
- * ```ts
- * const src = DrizzleSchemaGenerator.generate({
- *   className: 'User',
- *   decoratorConfig: { id: Number, name: String, createdAt: Date },
- *   properties: ['id', 'name', 'createdAt'],
- * });
- * ```
- *
- * @see {@link ISchemaGeneratorConfig} — config shape
- * @see {@link QModel.getSchema} — entry point for `getSchema('drizzle')`
- * @see {@link PrismaSchemaGenerator} — Prisma equivalent
+ * @see {@link ISchemaGeneratorConfig}
+ * @see {@link QModel.getSchema}
  */
 export class DrizzleSchemaGenerator {
 	/**
 	 * Generates a Drizzle ORM `pgTable` source string.
+	 * The output **starts with `export const`** for direct use in a Drizzle project.
 	 *
 	 * @param config - Class name, decorator type-map, and ordered property list
-	 * @returns TypeScript source string with the `pgTable` call and imports
+	 * @returns TypeScript source string
 	 */
 	static generate(config: ISchemaGeneratorConfig): string {
 		const { className, decoratorConfig, properties } = config;
 		const tableName = toSnakeCase(className) + 's';
-		const varName = tableName.replace(/_([a-z])/g, (_, chr: string) =>
-			chr.toUpperCase()
-		);
+		const varName = toCamelCase(tableName);
 
 		const usedTypes = new Set<string>();
 
@@ -84,11 +76,11 @@ export class DrizzleSchemaGenerator {
 			})
 			.join('\n');
 
-		const imports = ['pgTable', ...usedTypes].sort().join(', ');
+		const usedImports = ['pgTable', ...Array.from(usedTypes).sort()].join(
+			', '
+		);
 
 		return [
-			`import { ${imports} } from 'drizzle-orm/pg-core';`,
-			'',
 			`export const ${varName} = pgTable('${tableName}', {`,
 			columns,
 			'});',
@@ -96,22 +88,21 @@ export class DrizzleSchemaGenerator {
 			`export type I${className}Select = typeof ${varName}.$inferSelect;`,
 			`export type I${className}Insert = typeof ${varName}.$inferInsert;`,
 			'',
+			`// Required: import { ${usedImports} } from 'drizzle-orm/pg-core';`,
+			'',
 		].join('\n');
 	}
 
-	/**
-	 * Maps a transformer token to a Drizzle column helper call and the helper names used.
-	 *
-	 * @internal
-	 * @param prop - The property name (used as column name)
-	 * @param transformer - Transformer constructor or string token
-	 * @returns Column expression string and helper names required in the import
-	 */
+	/** @internal */
 	private static _getColumn(
 		prop: string,
 		transformer: unknown
 	): { col: string; types: string[] } {
 		const colName = toSnakeCase(prop);
+
+		if (isArrayToken(transformer)) {
+			return { col: `jsonb('${colName}')`, types: ['jsonb'] };
+		}
 
 		if (!transformer) {
 			return {
@@ -139,7 +130,9 @@ export class DrizzleSchemaGenerator {
 				};
 			case 'set':
 			case 'map':
-				return { col: `json('${colName}')`, types: ['json'] };
+			case 'array':
+			case 'object':
+				return { col: `jsonb('${colName}')`, types: ['jsonb'] };
 			default:
 				return {
 					col: `varchar('${colName}', { length: 255 })`,

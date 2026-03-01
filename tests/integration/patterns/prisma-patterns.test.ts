@@ -180,10 +180,10 @@ describe('DTO from Prisma result', () => {
 		};
 		const dto = new UserRecordDto(prismaRow);
 		expect(
-			(dto as unknown as Record<string, unknown>)['_count']
+			(dto as unknown as Record<string, unknown>)['_count'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['_prisma']
+			(dto as unknown as Record<string, unknown>)['_prisma'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -310,7 +310,7 @@ describe('Create input — toInterface() for prisma.create()', () => {
 		const dto = new CreateUserDto(formData);
 		const input = dto.toInterface();
 		expect(
-			(input as unknown as Record<string, unknown>)['_csrf']
+			(input as unknown as Record<string, unknown>)['_csrf'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });

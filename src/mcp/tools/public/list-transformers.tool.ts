@@ -23,7 +23,9 @@ import { TransformerLookupService } from '../../../core/services/transformer-loo
 export class QListTransformersTool extends QAbstractTool<z.ZodObject<{}>> {
 	name = 'list_transformers';
 	description =
-		'List all available data transformers in QuickModel (e.g., string, date, email).';
+		'List all built-in data transformers registered in QuickModel. ' +
+		'Each transformer corresponds to a type token accepted by @Quick() (e.g. Date, Number, Boolean, BigInt, Set, Map, RegExp, URL). ' +
+		'Returns { transformers[] } — sorted list of all available transformer identifiers.';
 	schema = z.object({});
 
 	/**

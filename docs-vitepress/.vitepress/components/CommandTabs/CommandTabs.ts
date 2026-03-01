@@ -7,15 +7,15 @@
 import { ref, computed } from 'vue';
 import type { ITabItem } from '../TabBar/TabBar';
 
-const TAB_ORDER = ['npm', 'bun', 'pnpm', 'yarn'] as const;
+const TAB_ORDER = ['npm', 'yarn', 'pnpm', 'bun'] as const;
 type ITabKey = (typeof TAB_ORDER)[number];
 
 /** Tabs fijas — los nombres de gestores de paquetes no requieren i18n. */
 export const TAB_ITEMS: ITabItem[] = [
 	{ key: 'npm', icon: '📦', label: 'npm' },
-	{ key: 'bun', icon: '🐰', label: 'bun' },
-	{ key: 'pnpm', icon: '🏃', label: 'pnpm' },
 	{ key: 'yarn', icon: '🧶', label: 'yarn' },
+	{ key: 'pnpm', icon: '🏃', label: 'pnpm' },
+	{ key: 'bun', icon: '🐰', label: 'bun' },
 ];
 
 /**

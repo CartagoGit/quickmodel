@@ -104,7 +104,7 @@ describe('@QTransform — interacción con tipos coercionados', () => {
 		const evt = new EventModel({
 			title: 'concert',
 			startDate: '2026-06-01',
-		} as unknown as IEvent);
+		} as unknown as IEvent); // @quickmodel-rule-ignore: no-as-unknown
 		expect(evt.title).toBe('CONCERT');
 		expect(evt.startDate).toBeInstanceOf(Date);
 	});
@@ -121,7 +121,7 @@ describe('@QTransform — valor undefined/null', () => {
 	}
 
 	it('recibe undefined si el campo está ausente', () => {
-		const obj = new MaybeModel({} as unknown as IMaybe);
+		const obj = new MaybeModel({} as unknown as IMaybe); // @quickmodel-rule-ignore: no-as-unknown
 		expect(obj.label).toBe('');
 	});
 });
@@ -167,7 +167,7 @@ describe('@QTransform — herencia', () => {
 			name: '  Admin  ',
 			bio: '',
 			role: '  superadmin  ',
-		} as unknown as IAdmin);
+		} as unknown as IAdmin); // @quickmodel-rule-ignore: no-as-unknown
 		expect(admin.email).toBe('admin@example.com'); // del padre
 		expect(admin.role).toBe('SUPERADMIN'); // del hijo
 	});

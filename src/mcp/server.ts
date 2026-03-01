@@ -32,6 +32,10 @@ import {
 	QTraceModelPrompt,
 	QVerifyDeliveryPrompt,
 	QDrizzlePrompt,
+	QRunScriptPrompt,
+	QWriteGuidePrompt,
+	QCheckDocsCoherencePrompt,
+	QIntegratePrompt,
 } from './prompts/public';
 import { safeStringify } from '../core/helpers/transform-helpers';
 
@@ -88,6 +92,8 @@ import {
 	QManageProposalTool,
 	QPatchJSDocTool,
 	QValidateExamplesTool,
+	QAddToSidebarTool,
+	QCreateGuidePageTool,
 } from './tools/internal';
 /**
  * Main entry point for the **QuickModel MCP Server**.
@@ -184,8 +190,9 @@ export class QMcpServer {
 	 * AI coding assistants).
 	 *
 	 * @remarks
-	 * Includes ~20 tools covering: model creation, mock generation, schema
-	 * export, form schema, roundtrip checks, rule simulation, and more.
+	 * Includes 23 tools covering: model creation, mock generation, schema
+	 * export, form schema, roundtrip checks, rule simulation, transformation
+	 * explain, integration test generation, and more.
 	 *
 	 * @returns A fresh array of instantiated public `IQMcpTool`s.
 	 *
@@ -224,9 +231,9 @@ export class QMcpServer {
 	 * Returns only the internal development and maintenance tool instances.
 	 *
 	 * @remarks
-	 * Includes ~20 tools covering: health checks, lint, typecheck, test runner,
+	 * Includes 28 tools covering: health checks, lint, typecheck, test runner,
 	 * coverage, bundle-size analysis, changelog verification, API compatibility,
-	 * benchmarking, scaffold, and more.
+	 * benchmarking, scaffold, sidebar management, guide page creation, and more.
 	 *
 	 * @returns A fresh array of instantiated internal `IQMcpTool`s.
 	 *
@@ -261,6 +268,8 @@ export class QMcpServer {
 			new QManageProposalTool(),
 			new QPatchJSDocTool(),
 			new QValidateExamplesTool(),
+			new QAddToSidebarTool(),
+			new QCreateGuidePageTool(),
 		];
 	}
 
@@ -286,12 +295,15 @@ export class QMcpServer {
 	 * @remarks
 	 * Prompts guide AI agents through common QuickModel workflows, e.g.
 	 * converting TypeScript interfaces, debugging models, security review,
-	 * migration, and more.
+	 * migration, Drizzle integration, custom transformer authoring, and more.
+	 * Includes 27 skills covering end-user and internal development workflows.
 	 *
 	 * @returns A fresh array of instantiated `IQMcpPrompt`s.
 	 *
 	 * @see {@link QMcpServer.registerPrompts} — register these on the server
-	 * @see {@link QFromTypescriptPrompt} — example: convert TS interface to QModel
+	 * @see {@link QFromTypescriptPrompt} — convert a TS interface to a QModel class
+	 * @see {@link QImplementFeaturePrompt} — full 9-phase implementation workflow
+	 * @see {@link QVerifyDeliveryPrompt} — gate checks before declaring work done
 	 */
 	public static getDefaultPrompts(): IQMcpPrompt[] {
 		return [
@@ -318,6 +330,10 @@ export class QMcpServer {
 			new QTraceModelPrompt(),
 			new QVerifyDeliveryPrompt(),
 			new QDrizzlePrompt(),
+			new QRunScriptPrompt(),
+			new QWriteGuidePrompt(),
+			new QCheckDocsCoherencePrompt(),
+			new QIntegratePrompt(),
 		];
 	}
 

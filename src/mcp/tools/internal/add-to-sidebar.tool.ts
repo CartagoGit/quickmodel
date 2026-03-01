@@ -16,21 +16,6 @@ interface IInsertGuideOpts {
 }
 
 /**
- * Args accepted by {@link QAddToSidebarTool}.
- * @see {@link QAddToSidebarTool} — tool that processes these arguments
- * @internal
- */
-interface IAddToSidebarArgs {
-	slug: string;
-	text_en: string;
-	text_es: string;
-	section_en: string;
-	section_es: string;
-	/** Override path to VitePress config (used in tests). */
-	config_path?: string;
-}
-
-/**
  * Result returned by {@link QAddToSidebarTool}.
  * @see {@link QAddToSidebarTool} — tool whose `execute` returns this union
  * @internal
@@ -111,7 +96,9 @@ export class QAddToSidebarTool extends QAbstractTool<
 	 * @returns `{ success: true, message }` or `{ success: false, error }`.
 	 * @see {@link QAbstractTool.execute} — base contract for this method
 	 */
-	async execute(args: IAddToSidebarArgs): Promise<IAddToSidebarResult> {
+	async execute(
+		args: z.infer<typeof this.schema>
+	): Promise<IAddToSidebarResult> {
 		await Promise.resolve();
 
 		const configPath =

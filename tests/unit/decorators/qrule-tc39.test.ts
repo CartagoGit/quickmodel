@@ -179,7 +179,7 @@ describe('@QRule — TC39 path: rule registration via initializer', () => {
 			proto,
 			'qty'
 		);
-		expect(rules[0]?.predicate as unknown).toBe(myPredicate);
+		expect(rules[0]?.predicate as unknown).toBe(myPredicate); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('accepts lazy () => string message via TC39 path', () => {
@@ -374,6 +374,6 @@ describe('@QRule — TC39 path: async predicate', () => {
 			proto,
 			'email'
 		);
-		expect(rules[0]?.predicate as unknown).toBe(asyncPredicate);
+		expect(rules[0]?.predicate as unknown).toBe(asyncPredicate); // @quickmodel-rule-ignore: no-as-unknown
 	});
 });

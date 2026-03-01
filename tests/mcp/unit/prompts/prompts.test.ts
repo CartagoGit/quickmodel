@@ -2460,3 +2460,231 @@ describe('QIntegratePrompt', () => {
 		expect(allText).toContain('generate_integration_test');
 	});
 });
+
+// ── QTraceModelPrompt ─────────────────────────────────────────────────────────
+
+import { QTraceModelPrompt } from '../../../../src/mcp/prompts/public/trace-model.prompt';
+
+describe('QTraceModelPrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QTraceModelPrompt();
+		expect(prompt.name).toBe('quickmodel_trace_model');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+		expect(prompt.argsSchema.model_code).toBeDefined();
+		expect(prompt.argsSchema.goal).toBeDefined();
+		expect(prompt.argsSchema.sample_data).toBeDefined();
+	});
+
+	it('execute() with only model_code returns valid result', async () => {
+		const prompt = new QTraceModelPrompt();
+		const result = await prompt.execute({
+			model_code: 'class UserModel extends QModel<IUserModel> {}',
+		});
+		assertValidResult(result);
+		expect(result.messages).toHaveLength(3);
+	});
+
+	it('execute() without goal uses generic step 2 text', async () => {
+		const prompt = new QTraceModelPrompt();
+		const result = await prompt.execute({
+			model_code: 'class OrderModel extends QModel<IOrderModel> {}',
+		});
+		const assistantMsg = result.messages[1]?.content.text ?? '';
+		expect(assistantMsg).toContain('inspect_model');
+		expect(assistantMsg).not.toContain('Based on the goal');
+	});
+
+	it('execute() with goal includes goal text in assistant message', async () => {
+		const prompt = new QTraceModelPrompt();
+		const result = await prompt.execute({
+			model_code: 'class PaymentModel extends QModel<IPaymentModel> {}',
+			goal: 'see all rule failures',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('see all rule failures');
+		const assistantMsg = result.messages[1]?.content.text ?? '';
+		expect(assistantMsg).toContain('Based on the goal');
+	});
+
+	it('execute() with sample_data adds step 6 in assistant message', async () => {
+		const prompt = new QTraceModelPrompt();
+		const sampleJson = '{"name":"Alice","age":30}';
+		const result = await prompt.execute({
+			model_code: 'class ProfileModel extends QModel<IProfileModel> {}',
+			sample_data: sampleJson,
+		});
+		const assistantMsg = result.messages[1]?.content.text ?? '';
+		expect(assistantMsg).toContain('simulate_rules');
+		const userMsg = result.messages[2]?.content.text ?? '';
+		expect(userMsg).toContain(sampleJson);
+	});
+
+	it('execute() with all params combines goal and sample_data', async () => {
+		const prompt = new QTraceModelPrompt();
+		const result = await prompt.execute({
+			model_code: 'class FullModel extends QModel<IFullModel> {}',
+			goal: 'debug transformation pipeline',
+			sample_data: '{"id":1}',
+		});
+		assertValidResult(result);
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('debug transformation pipeline');
+		expect(allText).toContain('{"id":1}');
+	});
+
+	it('execute() references verbosity levels in assistant message', async () => {
+		const prompt = new QTraceModelPrompt();
+		const result = await prompt.execute({
+			model_code: 'class LogModel extends QModel<ILogModel> {}',
+		});
+		const assistantMsg = result.messages[1]?.content.text ?? '';
+		expect(assistantMsg).toContain('verbose');
+		expect(assistantMsg).toContain('debug');
+		expect(assistantMsg).toContain('info');
+	});
+});
+
+// ── QWriteGuidePrompt ─────────────────────────────────────────────────────────
+
+import { QWriteGuidePrompt } from '../../../../src/mcp/prompts/public/write-guide.prompt';
+
+describe('QWriteGuidePrompt', () => {
+	it('should have correct metadata', () => {
+		const prompt = new QWriteGuidePrompt();
+		expect(prompt.name).toBe('quickmodel_write_guide');
+		expect(prompt.title).toBeDefined();
+		expect(prompt.description).toBeDefined();
+		expect(prompt.argsSchema).toBeDefined();
+		expect(prompt.argsSchema.slug).toBeDefined();
+		expect(prompt.argsSchema.title_en).toBeDefined();
+		expect(prompt.argsSchema.title_es).toBeDefined();
+		expect(prompt.argsSchema.section_en).toBeDefined();
+		expect(prompt.argsSchema.section_es).toBeDefined();
+		expect(prompt.argsSchema.description).toBeDefined();
+	});
+
+	it('execute() with required args only returns valid result', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'drizzle-integration',
+			title_en: 'Drizzle ORM Integration',
+			title_es: 'Integración con Drizzle ORM',
+			section_en: 'Core',
+			section_es: 'Núcleo',
+		});
+		assertValidResult(result);
+		expect(result.messages).toHaveLength(3);
+	});
+
+	it('execute() includes slug and titles in messages', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'zod-integration',
+			title_en: 'Zod Integration',
+			title_es: 'Integración con Zod',
+			section_en: 'Core',
+			section_es: 'Núcleo',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('zod-integration');
+		expect(allText).toContain('Zod Integration');
+		expect(allText).toContain('Integración con Zod');
+	});
+
+	it('execute() references create_guide_page tool in messages', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'my-feature',
+			title_en: 'My Feature',
+			title_es: 'Mi Funcionalidad',
+			section_en: 'Reference',
+			section_es: 'Referencia',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('create_guide_page');
+	});
+
+	it('execute() references add_to_sidebar tool in messages', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'my-feature',
+			title_en: 'My Feature',
+			title_es: 'Mi Funcionalidad',
+			section_en: 'Reference',
+			section_es: 'Referencia',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('add_to_sidebar');
+	});
+
+	it('execute() references search_docs tool in messages', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'performance-guide',
+			title_en: 'Performance Guide',
+			title_es: 'Guía de Rendimiento',
+			section_en: 'Performance',
+			section_es: 'Rendimiento',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain('search_docs');
+	});
+
+	it('execute() with description includes it in user message', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'security-guide',
+			title_en: 'Security Guide',
+			title_es: 'Guía de Seguridad',
+			section_en: 'Reference',
+			section_es: 'Referencia',
+			description: 'Covers input sanitization and threat modeling',
+		});
+		const allText = result.messages
+			.map((msg) => msg.content.text)
+			.join(' ');
+		expect(allText).toContain(
+			'Covers input sanitization and threat modeling'
+		);
+	});
+
+	it('execute() without description does not include description arg in calls', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'simple-guide',
+			title_en: 'Simple Guide',
+			title_es: 'Guía Simple',
+			section_en: 'Introduction',
+			section_es: 'Introducción',
+		});
+		const assistantMsg = result.messages[1]?.content.text ?? '';
+		// description_en should not appear when no description is passed
+		expect(assistantMsg).not.toContain('description_en');
+	});
+
+	it('execute() result description contains title_en', async () => {
+		const prompt = new QWriteGuidePrompt();
+		const result = await prompt.execute({
+			slug: 'effect-integration',
+			title_en: 'Effect Integration',
+			title_es: 'Integración con Effect',
+			section_en: 'Core',
+			section_es: 'Núcleo',
+		});
+		expect(result.description).toContain('Effect Integration');
+	});
+});

@@ -124,7 +124,7 @@ export function describeBench(): void {
 				const obj2 = Object.assign(
 					new CVSignup2(),
 					validSignupData
-				) as unknown as Record<string, unknown>;
+				) as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 				allResults.push(
 					runBench('Benchmark 8: class-validator', ITERS, () => {
 						validateSync(obj2);

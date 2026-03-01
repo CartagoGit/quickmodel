@@ -226,10 +226,10 @@ describe('Input DTO — QModel as resolver arg', () => {
 		};
 		const dto = new CreateUserInput(args.input as ICreateUserInput);
 		expect(
-			(dto as unknown as Record<string, unknown>)['__resolveInfo']
+			(dto as unknown as Record<string, unknown>)['__resolveInfo'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(dto as unknown as Record<string, unknown>)['_clientMutationId']
+			(dto as unknown as Record<string, unknown>)['_clientMutationId'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -237,7 +237,7 @@ describe('Input DTO — QModel as resolver arg', () => {
 		const dto = new CreateUserInput({
 			name: 'Carol',
 			email: 'c@c.com',
-			age: '28' as unknown as number,
+			age: '28' as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 			role: 'guest',
 		});
 		expect(typeof dto.age).toBe('number');

@@ -63,7 +63,7 @@ export function describeBench(): void {
 				CYCLES,
 				() => {
 					SimpleUser.createMany(
-						bulkDataset as unknown as ISimpleUser[]
+						bulkDataset as unknown as ISimpleUser[] // @quickmodel-rule-ignore: no-as-unknown
 					);
 				}
 			);
@@ -80,7 +80,7 @@ export function describeBench(): void {
 				}),
 				runBench('Benchmark 13: QuickModel createMany', CYCLES, () => {
 					SimpleUser.createMany(
-						bulkDataset as unknown as ISimpleUser[]
+						bulkDataset as unknown as ISimpleUser[] // @quickmodel-rule-ignore: no-as-unknown
 					);
 				}),
 			];

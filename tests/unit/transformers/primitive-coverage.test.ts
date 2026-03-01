@@ -26,7 +26,7 @@ describe('Transformer Coverage: Primitives', () => {
 			expect(
 				StringTransformer.checkIntegrity(
 					'ok',
-					{} as unknown as IQIntegrityContext
+					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
 			).toBe(true);
 		});
@@ -34,7 +34,7 @@ describe('Transformer Coverage: Primitives', () => {
 			expect(
 				StringTransformer.checkIntegrity(
 					null,
-					{} as unknown as IQIntegrityContext
+					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
 			).toBe(true);
 		});
@@ -58,7 +58,7 @@ describe('Transformer Coverage: Primitives', () => {
 			expect(
 				NumberTransformer.checkIntegrity(
 					123,
-					{} as unknown as IQIntegrityContext
+					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
 			).toBe(true);
 		});
@@ -79,7 +79,7 @@ describe('Transformer Coverage: Primitives', () => {
 			expect(
 				BooleanTransformer.checkIntegrity(
 					false,
-					{} as unknown as IQIntegrityContext
+					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
 			).toBe(true);
 		});

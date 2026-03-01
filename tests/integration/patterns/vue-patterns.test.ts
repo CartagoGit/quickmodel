@@ -171,7 +171,7 @@ class ArticlePiniaStore {
 	addArticle(data: Record<string, unknown>): void {
 		const article = new ArticleModel(data);
 		this.articles.set(
-			(article as unknown as Record<string, unknown>)['id'] as string,
+			(article as unknown as Record<string, unknown>)['id'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			article
 		);
 	}

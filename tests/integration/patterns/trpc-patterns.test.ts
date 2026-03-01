@@ -197,10 +197,10 @@ describe('tRPC input — QModel as input validator', () => {
 		};
 		const input = new CreateUserInput(raw);
 		expect(
-			(input as unknown as Record<string, unknown>)['extra']
+			(input as unknown as Record<string, unknown>)['extra'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(input as unknown as Record<string, unknown>)['__proto__']
+			(input as unknown as Record<string, unknown>)['__proto__'] // @quickmodel-rule-ignore: no-as-unknown
 		).not.toBe('injected');
 	});
 
@@ -393,7 +393,7 @@ describe('tRPC batch query — createMany', () => {
 		];
 		const { instances } = UserOutput.createMany(batch as any[]);
 		expect(
-			(instances[0] as unknown as Record<string, unknown>)['_internal']
+			(instances[0] as unknown as Record<string, unknown>)['_internal'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 

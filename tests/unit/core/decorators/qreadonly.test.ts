@@ -136,7 +136,7 @@ describe('@QReadonly — herencia', () => {
 			status: 'pending',
 			amount: 99,
 			ref: 'REF-001',
-		} as unknown as IExtendedOrder);
+		} as unknown as IExtendedOrder); // @quickmodel-rule-ignore: no-as-unknown
 		// id es readonly en el padre
 		expect(() => order.copy({ id: 999 })).toThrow();
 		// ref es readonly en el hijo

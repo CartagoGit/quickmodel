@@ -311,7 +311,7 @@ describe('QModel Unified Schema Generation API', () => {
 	describe('Error Handling', () => {
 		test('should throw on invalid schema type', () => {
 			expect(() => User.getSchema('invalid' as any)).toThrow(
-				/Unknown schema type: invalid/
+				/Unknown schema type: 'invalid'/
 			);
 		});
 

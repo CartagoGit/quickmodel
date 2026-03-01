@@ -24,7 +24,11 @@ export class QSearchDocsTool extends QAbstractTool<
 	z.ZodObject<{ query: z.ZodString }>
 > {
 	name = 'search_docs';
-	description = 'Search the QuickModel documentation for a query string.';
+	description =
+		'Search the QuickModel documentation (docs-vitepress/) for a query term using grep. ' +
+		'Searches both English (en/) and Spanish (es/) pages, returning matching lines with file paths and line numbers. ' +
+		'Useful for finding API references, guide sections, or examples without reading full files. ' +
+		'Returns { results[] } — matched lines with context.';
 	schema = z.object({
 		query: z.string().describe('The search term or phrase'),
 	});

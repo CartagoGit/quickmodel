@@ -203,10 +203,10 @@ describe('localStorage — basic operations', () => {
 			JSON.parse(storage.get('user')!) as Record<string, unknown>
 		);
 		expect(
-			(restored as unknown as Record<string, unknown>)['_meta']
+			(restored as unknown as Record<string, unknown>)['_meta'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(restored as unknown as Record<string, unknown>)['_ts']
+			(restored as unknown as Record<string, unknown>)['_ts'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -256,7 +256,7 @@ describe('localStorage — schema versioning', () => {
 		};
 		const dto = new UserRecordDto(oldPayload);
 		expect(
-			(dto as unknown as Record<string, unknown>)['legacy_id']
+			(dto as unknown as Record<string, unknown>)['legacy_id'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 

@@ -24,7 +24,11 @@ export class QValidateUsageTool extends QAbstractTool<
 > {
 	name = 'validate_usage';
 	description =
-		'Analyzes a code snippet to check for common QuickModel usage errors (e.g. missing declare, wrong inheritance).';
+		'Statically analyze a TypeScript code snippet for common QuickModel usage mistakes. ' +
+		'Detects: missing `extends QModel`, fields declared with `public` instead of `declare`, ' +
+		'QModel generic parameter without I-prefix (e.g. QModel<User> should be QModel<IUser>), ' +
+		'missing QuickModel decorators, and @QField used without @QRule. ' +
+		'Returns { valid, issues[], detectedDecorators[] } — valid is true when no blocking issues are found.';
 	schema = z.object({
 		code: z.string().describe('The TypeScript code to analyze'),
 	});
@@ -55,6 +59,28 @@ export class QValidateUsageTool extends QAbstractTool<
 			issues.push(
 				'Properties in QModel classes should be defined with "declare"'
 			);
+		}
+
+		// Detect fields declared with 'public' keyword (should be 'declare')
+		const publicFieldPattern = /\bpublic\s+\w+\??\s*:/g;
+		const publicFieldMatches = args.code.match(publicFieldPattern);
+		if (publicFieldMatches && publicFieldMatches.length > 0) {
+			issues.push(
+				`Found ${publicFieldMatches.length} field(s) declared with 'public' instead of 'declare': ` +
+					`use 'declare' for QModel property declarations (e.g. 'declare name: string')`
+			);
+		}
+
+		// Detect QModel<X> where X does not start with 'I'
+		const qModelGenericPattern = /extends\s+QModel\s*<\s*([A-Z]\w*)/g;
+		let genericMatch: RegExpExecArray | null;
+		while ((genericMatch = qModelGenericPattern.exec(args.code)) !== null) {
+			const typeName = genericMatch[1];
+			if (typeName && !typeName.startsWith('I')) {
+				issues.push(
+					`QModel generic parameter '${typeName}' should use the I-prefix convention (e.g. I${typeName})`
+				);
+			}
 		}
 
 		const detectedDecorators = QUICKMODEL_DECORATORS.filter((dec) =>

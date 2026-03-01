@@ -272,7 +272,7 @@ describe('Document → DTO coercion via doc.toObject()', () => {
 		const doc = makeUserDoc();
 		const dto = new UserDto(docToObject(doc));
 		expect(
-			(dto as unknown as Record<string, unknown>)['__v']
+			(dto as unknown as Record<string, unknown>)['__v'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -292,7 +292,7 @@ describe('Document → DTO coercion via doc.toObject()', () => {
 	});
 
 	test('number-as-string from legacy schema coerced to number via loose', () => {
-		const doc = makeUserDoc({ score: '95' as unknown as number });
+		const doc = makeUserDoc({ score: '95' as unknown as number }); // @quickmodel-rule-ignore: no-as-unknown
 		const dto = new UserDto(docToObject(doc));
 		expect(dto.score).toBe(95);
 		expect(typeof dto.score).toBe('number');
@@ -458,7 +458,7 @@ describe('dto.toInterface() as Mongoose Model.create() payload', () => {
 		const dto = new UserDto(
 			docToObject(makeUserDoc({ name: 'Dan', role: 'admin' }))
 		);
-		const plain = dto.toInterface() as unknown as Record<string, unknown>;
+		const plain = dto.toInterface() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 		expect(plain['name']).toBe('Dan');
 		// computed fields are NOT persisted
 		expect(typeof plain).toBe('object');
@@ -545,8 +545,8 @@ describe('createMany() for Mongoose insertMany() seed data', () => {
 
 	test('number-as-string age coerced in bulk createMany()', () => {
 		const docs = [
-			makeUserDoc({ age: '25' as unknown as number }),
-			makeUserDoc({ age: '33' as unknown as number, email: 'two@x.com' }),
+			makeUserDoc({ age: '25' as unknown as number }), // @quickmodel-rule-ignore: no-as-unknown
+			makeUserDoc({ age: '33' as unknown as number, email: 'two@x.com' }), // @quickmodel-rule-ignore: no-as-unknown
 		];
 		const { instances } = UserDto.createMany(docs.map(docToObject));
 		expect(instances[0]?.age).toBe(25);

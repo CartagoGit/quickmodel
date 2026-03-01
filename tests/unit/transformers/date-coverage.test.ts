@@ -109,6 +109,7 @@ describe('Transformer Coverage: DateTransformer', () => {
 
 		test('should fail validation for invalid type', () => {
 			const result = transformer.checkIntegrity({} as unknown as string, {
+				// @quickmodel-rule-ignore: no-as-unknown
 				propertyKey,
 				target: {},
 			});

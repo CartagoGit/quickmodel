@@ -19,7 +19,11 @@ export class QGenerateMockDataTool extends QAbstractTool<
 > {
 	name = 'generate_mock';
 	description =
-		'Generate mock data for a given schema definition using QuickModel.';
+		'Generate realistic mock data records for a field schema definition. ' +
+		'Accepts a schema map (field → transformer type) and an optional count (default 1). ' +
+		'Generates plausible values per type: ISO strings for Date, random numbers for Number/BigInt, ' +
+		'lorem words for String, booleans, empty arrays for array types. ' +
+		'Returns { mocks[] } — array of plain objects matching the schema.';
 	schema = z.object({
 		schema: z
 			.record(z.string(), z.string())

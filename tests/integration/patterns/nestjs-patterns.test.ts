@@ -487,7 +487,7 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 		);
 
 		// Simulate update
-		(user as unknown as Record<string, unknown>).score = 85;
+		(user as unknown as Record<string, unknown>).score = 85; // @quickmodel-rule-ignore: no-as-unknown
 		expect((user.serialize() as Record<string, unknown>).scoreLabel).toBe(
 			'good'
 		);

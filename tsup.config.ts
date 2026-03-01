@@ -10,6 +10,7 @@ export default defineConfig({
 		matchers: 'src/matchers.ts',
 		mock: 'src/mock.ts',
 		schema: 'src/schema.ts',
+		decorators: 'src/decorators.ts',
 		validators: 'src/core/decorators/validators.ts',
 		'compat/ts5/forms': 'src/compat/ts5/forms.ts',
 		'core/index': 'src/core/index.ts',

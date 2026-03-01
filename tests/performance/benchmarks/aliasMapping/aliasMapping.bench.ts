@@ -52,7 +52,7 @@ export function describeBench(): void {
 				ITERS,
 				() => {
 					void new ApiProfile(
-						apiProfileSnakeRaw as unknown as IProfileCamel
+						apiProfileSnakeRaw as unknown as IProfileCamel // @quickmodel-rule-ignore: no-as-unknown
 					);
 				}
 			);
@@ -71,7 +71,7 @@ export function describeBench(): void {
 				}),
 				runBench('Benchmark 9: QuickModel @QAlias', ITERS, () => {
 					void new ApiProfile(
-						apiProfileSnakeRaw as unknown as IProfileCamel
+						apiProfileSnakeRaw as unknown as IProfileCamel // @quickmodel-rule-ignore: no-as-unknown
 					);
 				}),
 			];

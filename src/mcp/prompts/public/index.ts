@@ -27,3 +27,7 @@ export { QSyncProjectPrompt } from './sync-project.prompt';
 export { QTraceModelPrompt } from './trace-model.prompt';
 export { QVerifyDeliveryPrompt } from './verify-delivery.prompt';
 export { QDrizzlePrompt } from './drizzle.prompt';
+export { QRunScriptPrompt } from './run-script.prompt';
+export { QWriteGuidePrompt } from './write-guide.prompt';
+export { QCheckDocsCoherencePrompt } from './check-docs-coherence.prompt';
+export { QIntegratePrompt } from './integrate.prompt';

@@ -61,7 +61,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		const file = new File([data], 'video.mp4', { type: 'video/mp4' });
 		const dto = new VideoUpload({
 			title: 'test',
-			video: file as unknown as IFileSerialized,
+			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ field: 'video' });
@@ -74,7 +74,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		const file = new File([data], 'video.mp4', { type: 'video/mp4' });
 		const dto = new VideoUpload({
 			title: 'test',
-			video: file as unknown as IFileSerialized,
+			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const stream = dto.toReadableStream({ field: 'video' });
@@ -90,7 +90,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 		const dto = new VideoUpload({
 			title: 'test',
-			video: file as unknown as IFileSerialized,
+			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		const receivedChunks: Uint8Array[] = [];
@@ -113,7 +113,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		const file = new File([data], 'test.bin');
 		const dto = new VideoUpload({
 			title: 'test',
-			video: file as unknown as IFileSerialized,
+			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		let capturedTotal = 0;
@@ -139,7 +139,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		const file = new File(['bytes'], 'x.bin');
 		const dto = new VideoUpload({
 			title: 'test',
-			video: file as unknown as IFileSerialized,
+			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
 		expect(() =>

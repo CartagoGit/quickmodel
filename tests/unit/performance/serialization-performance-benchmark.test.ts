@@ -167,7 +167,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 
 		const start = performance.now();
 		for (let idx = 0; idx < iterations; idx++) {
-			new Cart(data as unknown as ICart);
+			new Cart(data as unknown as ICart); // @quickmodel-rule-ignore: no-as-unknown
 		}
 		const end = performance.now();
 
@@ -191,7 +191,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 
 		const start = performance.now();
 		for (let idx = 0; idx < iterations; idx++) {
-			new CartExplicit(data as unknown as ICart);
+			new CartExplicit(data as unknown as ICart); // @quickmodel-rule-ignore: no-as-unknown
 		}
 		const end = performance.now();
 
@@ -215,7 +215,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 
 		const start = performance.now();
 		for (let idx = 0; idx < iterations; idx++) {
-			new Cart(data as unknown as ICart);
+			new Cart(data as unknown as ICart); // @quickmodel-rule-ignore: no-as-unknown
 		}
 		const end = performance.now();
 
@@ -237,7 +237,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		};
 
 		const start = performance.now();
-		const cart = new Cart(data as unknown as ICart);
+		const cart = new Cart(data as unknown as ICart); // @quickmodel-rule-ignore: no-as-unknown
 		const end = performance.now();
 
 		const totalTime = end - start;
@@ -308,7 +308,7 @@ describe('Performance: Costo de anidación profunda', () => {
 
 		const start = performance.now();
 		for (let idx = 0; idx < iterations; idx++) {
-			new Level1<User>(data as unknown as ILevel1<User>);
+			new Level1<User>(data as unknown as ILevel1<User>); // @quickmodel-rule-ignore: no-as-unknown
 		}
 		const end = performance.now();
 
@@ -335,7 +335,7 @@ describe('Performance: Costo de anidación profunda', () => {
 
 		const start = performance.now();
 		for (let idx = 0; idx < iterations; idx++) {
-			new Level1<User>(data as unknown as ILevel1<User>);
+			new Level1<User>(data as unknown as ILevel1<User>); // @quickmodel-rule-ignore: no-as-unknown
 		}
 		const end = performance.now();
 

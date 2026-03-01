@@ -144,13 +144,13 @@ describe('MCP Public Tools', () => {
 			});
 
 			const result = await tool.execute({ json, className: 'User' });
-			expect(result.code).toContain('class User extends QModel<User>');
-			expect(result.code).toContain(
-				"@Quick({\n    name: 'string',\n    age: 'number',\n    isAdmin: 'boolean'\n})"
-			);
-			expect(result.code).toContain('public name: string;');
-			expect(result.code).toContain('public age: number;');
-			expect(result.code).toContain('public isAdmin: boolean;');
+			expect(result.code).toContain('class User extends QModel<IUser>');
+			expect(result.code).toContain("name: 'string'");
+			expect(result.code).toContain("age: 'number'");
+			expect(result.code).toContain("isAdmin: 'boolean'");
+			expect(result.code).toContain('declare name: string;');
+			expect(result.code).toContain('declare age: number;');
+			expect(result.code).toContain('declare isAdmin: boolean;');
 		});
 
 		it('should infer date type', async () => {
@@ -164,8 +164,8 @@ describe('MCP Public Tools', () => {
 				json,
 				className: 'DateModel',
 			});
-			expect(result.code).toContain("createdAt: 'date'");
-			expect(result.code).toContain("birth: 'date'");
+			expect(result.code).toContain('createdAt: Date');
+			expect(result.code).toContain('birth: Date');
 		});
 
 		it('should fail on invalid json', async () => {

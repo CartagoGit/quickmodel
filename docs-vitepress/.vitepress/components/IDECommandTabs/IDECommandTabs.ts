@@ -2,7 +2,7 @@
 // IDECommandTabs — doble eje de tabs: IDE × gestor de paquetes.
 //
 // Eje izquierdo: IDE (vscode / cursor / windsurf / claude / zed)
-// Eje derecho:   PM  (npm  / bun   / pnpm    / yarn)
+// Eje derecho:   PM  (npm  / yarn  / pnpm    / bun)
 //
 // Cada combinación produce el JSON correcto para ese IDE
 // usando los comandos correctos para ese gestor.
@@ -16,7 +16,7 @@ import type { ITabItem } from '../TabBar/TabBar';
 const IDE_ORDER = ['vscode', 'cursor', 'windsurf', 'claude', 'zed'] as const;
 type IIDEKey = (typeof IDE_ORDER)[number];
 
-const PM_ORDER = ['npm', 'bun', 'pnpm', 'yarn'] as const;
+const PM_ORDER = ['npm', 'yarn', 'pnpm', 'bun'] as const;
 type IPMKey = (typeof PM_ORDER)[number];
 
 export type IScenario = 'a' | 'b1' | 'b2' | 'c';
@@ -76,7 +76,10 @@ function getCommand(scenario: IScenario, pmKey: IPMKey): ICommandDef {
 					command: 'node_modules/.bin/quickmodel',
 					args: ['mcp'],
 				},
-				bun: { command: 'bun', args: ['run', 'quickmodel', 'mcp'] },
+				bun: {
+					command: 'bun',
+					args: ['node_modules/.bin/quickmodel', 'mcp'],
+				},
 			}[pmKey];
 		case 'b2':
 			return {

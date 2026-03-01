@@ -29,7 +29,11 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 	z.ZodObject<{ iterations: z.ZodDefault<z.ZodNumber> }>
 > {
 	name = 'benchmark_performance';
-	description = 'Run performance benchmarks for QuickModel transformations.';
+	description =
+		'Run performance benchmarks for QuickModel model construction and transformation pipelines. ' +
+		'Measures ops/sec for typical workloads (Date coercion, nested models, arrays, @QDefault, @QTransform). ' +
+		'Useful for detecting performance regressions after changes to the core construction path. ' +
+		'Returns { results[], summary } — throughput and timing for each benchmark case.';
 	schema = z.object({
 		iterations: z
 			.number()

@@ -24,7 +24,7 @@ describe('QGetModelSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode, format: 'json' });
 
 		expect(result.schema).toBeDefined();
-		const schema = result.schema as any;
+		const schema = result.schema;
 		expect(schema.type).toBe('object');
 		expect(schema.properties).toBeDefined();
 	});
@@ -37,7 +37,7 @@ describe('QGetModelSchemaTool', () => {
 		});
 
 		expect(typeof result.schema).toBe('string');
-		expect(result.schema as string).toContain('interface');
+		expect(result.schema).toContain('interface');
 	});
 
 	it('should generate zod schema as object', async () => {
@@ -56,7 +56,7 @@ describe('QGetModelSchemaTool', () => {
 		});
 
 		expect(result.schema).toBeDefined();
-		const schema = result.schema as any;
+		const schema = result.schema;
 		expect(schema.type).toBe('object');
 	});
 
@@ -68,7 +68,7 @@ describe('QGetModelSchemaTool', () => {
 		});
 
 		expect(result.schema).toBeDefined();
-		const schema = result.schema as any;
+		const schema = result.schema;
 		expect(schema).toBeObject();
 	});
 
@@ -80,7 +80,7 @@ describe('QGetModelSchemaTool', () => {
 		});
 
 		expect(typeof result.schema).toBe('string');
-		expect(result.schema as string).toContain('type');
+		expect(result.schema).toContain('type');
 	});
 
 	it('should generate ajv schema', async () => {
@@ -88,7 +88,7 @@ describe('QGetModelSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode, format: 'ajv' });
 
 		expect(result.schema).toBeDefined();
-		const schema = result.schema as any;
+		const schema = result.schema;
 		expect(schema.type).toBe('object');
 	});
 
@@ -99,11 +99,10 @@ describe('QGetModelSchemaTool', () => {
 		expect(result.format).toBe('json');
 	});
 
-	it('should throw on unsupported format', async () => {
+	it('should throw on unsupported format', () => {
 		const tool = new QGetModelSchemaTool();
 
-		// eslint-disable-next-line @typescript-eslint/await-thenable
-		await expect(
+		expect(
 			tool.execute({ code: sampleCode, format: 'invalid' as any })
 		).rejects.toThrow();
 	});

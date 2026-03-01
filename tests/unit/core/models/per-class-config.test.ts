@@ -121,14 +121,14 @@ describe('QModel.configure() — coercionStrategy override', () => {
 	it('LooseModel acepta string como number (coercionStrategy: loose)', () => {
 		// In strict mode, '42' would stay as-is (no coercion to number for non-@Quick-typed fields)
 		// In loose mode, string → number coercion is attempted
-		const obj = new LooseModel({ count: '42' } as unknown as ILoose);
+		const obj = new LooseModel({ count: '42' } as unknown as ILoose); // @quickmodel-rule-ignore: no-as-unknown
 		expect(typeof obj.count).toBe('number');
 		expect(obj.count).toBe(42);
 	});
 
 	it('LooseModel no afecta a DefaultModel (que sigue strict)', () => {
 		// Trigger LooseModel per-class config (coercionStrategy: 'loose')
-		new LooseModel({ count: '42' } as unknown as ILoose);
+		new LooseModel({ count: '42' } as unknown as ILoose); // @quickmodel-rule-ignore: no-as-unknown
 		// Global config must remain untouched by LooseModel's static config
 		expect(QConfig.get().defaults?.coercionStrategy).toBe('strict');
 		// DefaultModel uses global strip policy — LooseModel's config has not bled over
@@ -161,7 +161,7 @@ describe('QModel.configure() — combinación con @Quick() options', () => {
 			id: 1,
 			data: 'test',
 			unknown: 'val',
-		} as unknown as ICombined);
+		} as unknown as ICombined); // @quickmodel-rule-ignore: no-as-unknown
 		const plain = obj.serialize() as Record<string, unknown>;
 		expect(plain['unknown']).toBe('val'); // keep from static config
 	});
@@ -185,7 +185,7 @@ describe('QModel.configure() — herencia', () => {
 			name: 'A',
 			extra: 'X',
 			unknown: 'Y',
-		} as unknown as IChild);
+		} as unknown as IChild); // @quickmodel-rule-ignore: no-as-unknown
 		const plain = obj.serialize() as Record<string, unknown>;
 		// ChildKeepModel doesn't override static config, so it inherits KeepModel.config
 		expect(plain['unknown']).toBe('Y');

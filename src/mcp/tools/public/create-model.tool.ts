@@ -17,7 +17,11 @@ export class QCreateModelTool extends QAbstractTool<
 > {
 	name = 'create_model';
 	description =
-		'Generates the TypeScript code for a class extending QModel based on a list of properties. Use this to quickly create new models.';
+		'Generate a complete QuickModel class from a property schema. ' +
+		'Produces an I-prefixed interface, a @Quick({}) decorator with transformer tokens, ' +
+		'and declare-typed property declarations. ' +
+		'Supported type values: "string", "number", "boolean", "Date", "BigInt", "Set", "Map", "RegExp", "URL", or "[Type]" for arrays. ' +
+		'Returns { code } — ready-to-use TypeScript source.';
 	schema = z.object({
 		className: z.string().describe('The name of the class (e.g., "User")'),
 		properties: z

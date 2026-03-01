@@ -28,7 +28,7 @@ describe('Unit: Buffer Transformers Coverage', () => {
 		test('deserialize: should throw on non-array', () => {
 			expect(() => {
 				transformer.deserialize(
-					'invalid' as unknown as number[],
+					'invalid' as unknown as number[], // @quickmodel-rule-ignore: no-as-unknown
 					'p',
 					'C'
 				);
@@ -84,7 +84,7 @@ describe('Unit: Buffer Transformers Coverage', () => {
 		test('deserialize: should throw on invalid type', () => {
 			expect(() => {
 				transformer.deserialize(
-					'invalid' as unknown as number[],
+					'invalid' as unknown as number[], // @quickmodel-rule-ignore: no-as-unknown
 					'p',
 					'C'
 				);
@@ -138,7 +138,7 @@ describe('Unit: Buffer Transformers Coverage', () => {
 			test('deserialize: should throw on invalid input', () => {
 				expect(() => {
 					transformer.deserialize(
-						'invalid' as unknown as number[],
+						'invalid' as unknown as number[], // @quickmodel-rule-ignore: no-as-unknown
 						'p',
 						'C'
 					);

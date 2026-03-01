@@ -47,7 +47,7 @@ export function describeBench(): void {
 				'Benchmark 11: QuickModel nested',
 				ITERS,
 				() => {
-					void new Order(orderRaw as unknown as IOrder);
+					void new Order(orderRaw as unknown as IOrder); // @quickmodel-rule-ignore: no-as-unknown
 				}
 			);
 			expect(res.totalMs).toBeLessThan(5000);
@@ -65,7 +65,7 @@ export function describeBench(): void {
 					};
 				}),
 				runBench('Benchmark 11: QuickModel nested', ITERS, () => {
-					void new Order(orderRaw as unknown as IOrder);
+					void new Order(orderRaw as unknown as IOrder); // @quickmodel-rule-ignore: no-as-unknown
 				}),
 			];
 

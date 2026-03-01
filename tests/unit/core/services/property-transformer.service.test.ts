@@ -16,13 +16,13 @@ const mockValueTransformer = {
 	transformByDesignType: mockTransformByDesignType,
 	transformNestedArray: mockTransformNestedArray,
 	transformNestedModelArray: mockTransformNestedModelArray,
-} as unknown as ValueTransformerService;
+} as unknown as ValueTransformerService; // @quickmodel-rule-ignore: no-as-unknown
 
 const mockGetTransformer = mock(() => null as any);
 
 const mockTransformerLookup = {
 	getTransformer: mockGetTransformer,
-} as unknown as TransformerLookupService;
+} as unknown as TransformerLookupService; // @quickmodel-rule-ignore: no-as-unknown
 
 const mockDeserialize = mock((val) => val);
 

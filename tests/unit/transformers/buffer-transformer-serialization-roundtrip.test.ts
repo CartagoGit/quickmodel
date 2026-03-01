@@ -27,7 +27,7 @@ describe('Unit: Buffer Transformer', () => {
 
 	test('Should serialize ArrayBuffer', () => {
 		const buffer = new Uint8Array([1, 2, 3, 4]).buffer;
-		const model = new BufferData({ buffer: buffer as unknown as number[] });
+		const model = new BufferData({ buffer: buffer as unknown as number[] }); // @quickmodel-rule-ignore: no-as-unknown
 
 		const json = model.toJSON();
 		const parsed = JSON.parse(json);
@@ -38,7 +38,7 @@ describe('Unit: Buffer Transformer', () => {
 
 	test('Should deserialize ArrayBuffer', () => {
 		const buffer = new Uint8Array([1, 2, 3, 4]).buffer;
-		const model = new BufferData({ buffer: buffer as unknown as number[] });
+		const model = new BufferData({ buffer: buffer as unknown as number[] }); // @quickmodel-rule-ignore: no-as-unknown
 		const deserialized = BufferData.fromJSON(model.toJSON());
 
 		expect(deserialized.buffer).toBeInstanceOf(ArrayBuffer);
@@ -47,7 +47,7 @@ describe('Unit: Buffer Transformer', () => {
 	test('Should maintain buffer data after roundtrip', () => {
 		const original = new Uint8Array([10, 20, 30, 40, 50]);
 		const model = new BufferData({
-			buffer: original.buffer as unknown as number[],
+			buffer: original.buffer as unknown as number[], // @quickmodel-rule-ignore: no-as-unknown
 		});
 		const deserialized = BufferData.fromJSON(model.toJSON());
 
@@ -57,7 +57,7 @@ describe('Unit: Buffer Transformer', () => {
 
 	test('Should handle empty buffer', () => {
 		const buffer = new ArrayBuffer(0);
-		const model = new BufferData({ buffer: buffer as unknown as number[] });
+		const model = new BufferData({ buffer: buffer as unknown as number[] }); // @quickmodel-rule-ignore: no-as-unknown
 		const deserialized = BufferData.fromJSON(model.toJSON());
 
 		expect(deserialized.buffer).toBeInstanceOf(ArrayBuffer);
@@ -72,7 +72,7 @@ describe('Unit: Buffer Transformer', () => {
 			view[idx] = idx % 256;
 		}
 
-		const model = new BufferData({ buffer: buffer as unknown as number[] });
+		const model = new BufferData({ buffer: buffer as unknown as number[] }); // @quickmodel-rule-ignore: no-as-unknown
 		const deserialized = BufferData.fromJSON(model.toJSON());
 
 		expect(deserialized.buffer.byteLength).toBe(size);
@@ -84,7 +84,7 @@ describe('Unit: Buffer Transformer', () => {
 
 	test('Should handle buffer with binary data', () => {
 		const buffer = new Uint8Array([0, 255, 128, 1, 254]).buffer;
-		const model = new BufferData({ buffer: buffer as unknown as number[] });
+		const model = new BufferData({ buffer: buffer as unknown as number[] }); // @quickmodel-rule-ignore: no-as-unknown
 		const deserialized = BufferData.fromJSON(model.toJSON());
 
 		const result = new Uint8Array(deserialized.buffer);
@@ -94,7 +94,7 @@ describe('Unit: Buffer Transformer', () => {
 	test('Should handle buffer created from different typed arrays', () => {
 		const int16Buffer = new Int16Array([1000, -1000, 500]).buffer;
 		const model = new BufferData({
-			buffer: int16Buffer as unknown as number[],
+			buffer: int16Buffer as unknown as number[], // @quickmodel-rule-ignore: no-as-unknown
 		});
 		const deserialized = BufferData.fromJSON(model.toJSON());
 

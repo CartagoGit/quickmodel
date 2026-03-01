@@ -19,9 +19,18 @@ import { Deserializer } from '@/core/services/deserializer.service';
 import { Serializer } from '@/core/services/serializer.service';
 import type { IQSerializationOptions } from '@/core/interfaces/serializer.interface';
 import { ToInterfaceService } from '@/core/services/to-interface.service';
-import { QMockGenerator } from '@/core/services/mock-generator.service';
+import type { QMockGenerator } from '@/core/services/mock-generator.service';
 import { IntegrityService } from '@/core/services/integrity.service';
-import { QMockBuilder } from '@/core/services/mock-builder.service';
+import type { QMockBuilder } from '@/core/services/mock-builder.service';
+import {
+	getSchemaGenerator,
+	getAddExamplesFn,
+	hasSchemaGenerators,
+} from '@/core/helpers/schema-registry';
+import {
+	getMockGenSingleton,
+	getMockBuilderCtor,
+} from '@/core/helpers/mock-registry';
 import type {
 	IQModelInstance,
 	IQModelInterface,
@@ -91,20 +100,6 @@ import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 import type { IQAdvancedOptions } from '@/core/interfaces/quick-options.interface';
 import type { INoInfer } from '@/core/types/ts-polyfills.type';
 import {
-	JsonSchemaGenerator,
-	ZodSchemaGenerator,
-	MongoSchemaGenerator,
-	TypeScriptSchemaGenerator,
-	GraphQLSchemaGenerator,
-	OpenAPISchemaGenerator,
-	AjvSchemaGenerator,
-	PrismaSchemaGenerator,
-	ValibotSchemaGenerator,
-	YupSchemaGenerator,
-	DrizzleSchemaGenerator,
-	TypeBoxSchemaGenerator,
-} from '@/core/services/schema-generators.service';
-import {
 	formDataToPlainObject,
 	plainObjectToFormData,
 	type IFromFormDataOptions,
@@ -154,6 +149,30 @@ const _SETTER_META_CACHE = new WeakMap<Function, Map<string, IQSetterMeta>>();
  * @see {@link QModel.getSchema} — static method that populates this cache
  */
 const _GET_SCHEMA_CACHE = new WeakMap<Function, Map<string, unknown>>();
+
+/**
+ * @internal Cached @QTransform field list per class constructor.
+ *
+ * Populated once on first construction, then reused on all subsequent constructions.
+ * Eliminates the prototype chain walk + `Reflect.getOwnMetadata` calls that otherwise
+ * execute on EVERY model construction even when no `@QTransform` decorators are present.
+ *
+ * Value is `readonly string[]` — empty frozen array for classes with no @QTransform fields.
+ */
+const _QTRANSFORM_FIELDS_CACHE = new WeakMap<Function, readonly string[]>();
+
+/**
+ * @internal Cached @QDefault field list per class constructor.
+ *
+ * Same rationale as `_QTRANSFORM_FIELDS_CACHE` — eliminates the per-construction
+ * prototype chain walk for classes that never use `@QDefault`.
+ *
+ * Value is `readonly string[]` — empty frozen array for classes with no @QDefault fields.
+ */
+const _QDEFAULT_FIELDS_CACHE = new WeakMap<Function, readonly string[]>();
+
+// Shared empty frozen array to avoid re-allocating per class with no @QTransform/@QDefault
+const _EMPTY_FIELDS: readonly string[] = Object.freeze([]);
 // ──────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -383,13 +402,17 @@ export abstract class QModel<
 	private static readonly serializer = new Serializer();
 	/** @internal Singleton service that converts QModel instances to plain interface objects. */
 	private static readonly toInterfaceService = new ToInterfaceService();
-	/** @internal Lazy-initialized mock generator — instantiated only on first call to `.mock()`. */
+	/**
+	 * @internal Lazy-initialized mock generator — resolved via mock-registry on first call.
+	 * The registry is populated by importing `quickmodel/mock`.
+	 * The full `quickmodel` entry imports it automatically; `quickmodel/core` does not.
+	 */
 	private static _mockGenInstance: QMockGenerator | undefined;
 
-	/** @internal Returns the singleton QMockGenerator, creating it on first access. */
+	/** @internal Returns the singleton QMockGenerator via the lazy mock-registry. */
 	private static get _mockGen(): QMockGenerator {
 		if (!QModel._mockGenInstance) {
-			QModel._mockGenInstance = new QMockGenerator();
+			QModel._mockGenInstance = getMockGenSingleton();
 		}
 		return QModel._mockGenInstance;
 	}
@@ -1061,7 +1084,8 @@ export abstract class QModel<
 		const ModelClass: new (data: any) => ILocalInstanceType =
 			this as unknown as IModelConstructor<ILocalInstanceType>;
 
-		return new QMockBuilder(
+		const BuilderCtor = getMockBuilderCtor();
+		return new BuilderCtor(
 			ModelClass,
 			QModel._mockGen
 		) as unknown as QMockBuilder<IQModelInstance<T>, IQModelInterface<T>>;
@@ -1573,36 +1597,44 @@ export abstract class QModel<
 			_CLASS_INIT_CACHE.set(clsCtor, clsInitCache);
 		}
 		if (clsInitCache.typeMap) {
-			Object.keys(clsInitCache.typeMap).forEach((key) =>
-				propertyNames.add(key)
-			);
+			for (const key of Object.keys(clsInitCache.typeMap)) {
+				propertyNames.add(key);
+			}
 		}
 		if (clsInitCache.qTypes) {
-			clsInitCache.qTypes.forEach((key) => propertyNames.add(key));
+			for (const key of clsInitCache.qTypes) {
+				propertyNames.add(key);
+			}
 		}
 
 		// OPT-10: Pass Set directly — installLazyGetters now accepts Iterable<string>
 		this.installLazyGetters(propertyNames);
 
 		// @QTransform — apply post-deserialization field pipelines
-		// Walk the prototype chain to collect all @QTransform-decorated fields (incl. inherited)
-		const _transformFields: string[] = [];
-		const _seenTransformFields = new Set<string>();
-		let _tProto: object | null = this.constructor.prototype as
-			| object
-			| null;
-		while (_tProto !== null && _tProto !== Object.prototype) {
-			const _ownTFields =
-				(Reflect.getOwnMetadata(QTRANSFORM_FIELDS_KEY, _tProto) as
-					| string[]
-					| undefined) ?? [];
-			for (const fld of _ownTFields) {
-				if (!_seenTransformFields.has(fld)) {
-					_seenTransformFields.add(fld);
-					_transformFields.push(fld);
+		// OPT: Cache the field list per class constructor to avoid prototype-chain walk every construction.
+		let _transformFields = _QTRANSFORM_FIELDS_CACHE.get(this.constructor);
+		if (_transformFields === undefined) {
+			const _collected: string[] = [];
+			const _seen = new Set<string>();
+			let _tProto: object | null = this.constructor.prototype as
+				| object
+				| null;
+			while (_tProto !== null && _tProto !== Object.prototype) {
+				const _ownTFields =
+					(Reflect.getOwnMetadata(QTRANSFORM_FIELDS_KEY, _tProto) as
+						| string[]
+						| undefined) ?? [];
+				for (const fld of _ownTFields) {
+					if (!_seen.has(fld)) {
+						_seen.add(fld);
+						_collected.push(fld);
+					}
 				}
+				_tProto = Object.getPrototypeOf(_tProto) as object | null;
 			}
-			_tProto = Object.getPrototypeOf(_tProto) as object | null;
+			_transformFields =
+				_collected.length > 0 ? _collected : _EMPTY_FIELDS;
+			_QTRANSFORM_FIELDS_CACHE.set(this.constructor, _transformFields);
 		}
 
 		if (_transformFields.length > 0) {
@@ -1626,22 +1658,29 @@ export abstract class QModel<
 		}
 
 		// @QDefault — apply field defaults for any fields still undefined after deserialization
-		// Walk the prototype chain to collect all @QDefault-decorated fields from parent classes too
-		const _defaultFields: string[] = [];
-		const _seenDefaultFields = new Set<string>();
-		let _proto: object | null = this.constructor.prototype as object | null;
-		while (_proto !== null && _proto !== Object.prototype) {
-			const _ownFields =
-				(Reflect.getOwnMetadata(QDEFAULT_FIELDS_KEY, _proto) as
-					| string[]
-					| undefined) ?? [];
-			for (const fld of _ownFields) {
-				if (!_seenDefaultFields.has(fld)) {
-					_seenDefaultFields.add(fld);
-					_defaultFields.push(fld);
+		// OPT: Cache the field list per class constructor to avoid prototype-chain walk every construction.
+		let _defaultFields = _QDEFAULT_FIELDS_CACHE.get(this.constructor);
+		if (_defaultFields === undefined) {
+			const _collected: string[] = [];
+			const _seen = new Set<string>();
+			let _proto: object | null = this.constructor.prototype as
+				| object
+				| null;
+			while (_proto !== null && _proto !== Object.prototype) {
+				const _ownFields =
+					(Reflect.getOwnMetadata(QDEFAULT_FIELDS_KEY, _proto) as
+						| string[]
+						| undefined) ?? [];
+				for (const fld of _ownFields) {
+					if (!_seen.has(fld)) {
+						_seen.add(fld);
+						_collected.push(fld);
+					}
 				}
+				_proto = Object.getPrototypeOf(_proto) as object | null;
 			}
-			_proto = Object.getPrototypeOf(_proto) as object | null;
+			_defaultFields = _collected.length > 0 ? _collected : _EMPTY_FIELDS;
+			_QDEFAULT_FIELDS_CACHE.set(this.constructor, _defaultFields);
 		}
 
 		if (_defaultFields.length > 0) {
@@ -1716,8 +1755,22 @@ export abstract class QModel<
 
 	/**
 	 * Checks if a property has a custom accessor (getter/setter) on the prototype chain.
+	 *
+	 * OPT: Result cached per (class, key) in `_HAS_ACCESSOR_CACHE`. The prototype chain
+	 * is only traversed on the FIRST construction per class per property key; all subsequent
+	 * constructions hit the cache in O(1). The cache is also shared with `installLazyGetters`
+	 * so the work is paid at most once per (class, key) across both callers.
 	 */
 	private hasAccessor(key: string): boolean {
+		const clsCon = this.constructor;
+		let accessorCache = _HAS_ACCESSOR_CACHE.get(clsCon);
+		if (!accessorCache) {
+			accessorCache = new Map<string, boolean>();
+			_HAS_ACCESSOR_CACHE.set(clsCon, accessorCache);
+		}
+		const cached = accessorCache.get(key);
+		if (cached !== undefined) return cached;
+
 		let current = Object.getPrototypeOf(this);
 		while (current && current !== Object.prototype) {
 			const descriptor = Object.getOwnPropertyDescriptor(current, key);
@@ -1727,10 +1780,14 @@ export abstract class QModel<
 					current,
 					key
 				);
-				if (!isGenerated) return true;
+				if (!isGenerated) {
+					accessorCache.set(key, true);
+					return true;
+				}
 			}
 			current = Object.getPrototypeOf(current);
 		}
+		accessorCache.set(key, false);
 		return false;
 	}
 
@@ -3459,9 +3516,12 @@ export abstract class QModel<
 	 * // "type User {\n\tid: Float!\n\tname: String!\n\tcreatedAt: DateTime!\n\tbalance: String!\n}"
 	 * ```
 	 */
+	static getSchema<
+		T extends import('@/core/types/schema-types').IQSchemaType,
+	>(type: T): import('@/core/types/schema-types').IQSchemaReturnType<T>;
 	static getSchema(
 		type: import('@/core/types/schema-types').IQSchemaType
-	): any {
+	): unknown {
 		// ── OPT: Per-class, per-format cache ─────────────────────────────────
 		// Schema metadata is immutable after class definition (decorators ran).
 		// Caching the result avoids: require(), Reflect.getMetadata(), object
@@ -3490,47 +3550,23 @@ export abstract class QModel<
 			properties,
 		};
 
-		let result: unknown;
-		switch (type) {
-			case 'json':
-				result = JsonSchemaGenerator.generate(config);
-				break;
-			case 'zod':
-				result = ZodSchemaGenerator.generate(config);
-				break;
-			case 'mongo':
-				result = MongoSchemaGenerator.generate(config);
-				break;
-			case 'typescript':
-				result = TypeScriptSchemaGenerator.generate(config);
-				break;
-			case 'graphql':
-				result = GraphQLSchemaGenerator.generate(config);
-				break;
-			case 'openapi':
-				result = OpenAPISchemaGenerator.generate(config);
-				break;
-			case 'ajv':
-				result = AjvSchemaGenerator.generate(config);
-				break;
-			case 'prisma':
-				result = PrismaSchemaGenerator.generate(config);
-				break;
-			case 'valibot':
-				result = ValibotSchemaGenerator.generate(config);
-				break;
-			case 'yup':
-				result = YupSchemaGenerator.generate(config);
-				break;
-			case 'drizzle':
-				result = DrizzleSchemaGenerator.generate(config);
-				break;
-			case 'typebox':
-				result = TypeBoxSchemaGenerator.generate(config);
-				break;
-			default:
-				throw new Error(`Unknown schema type: ${type}`);
+		const gen = getSchemaGenerator(type);
+		if (!gen) {
+			if (hasSchemaGenerators()) {
+				throw new Error(
+					`[QuickModel] Unknown schema type: '${type}'. ` +
+						`Registered formats: json, zod, mongo, typescript, graphql, openapi, ajv, prisma, valibot, yup, drizzle, typebox, effect-schema.`
+				);
+			}
+			throw new Error(
+				`[QuickModel] Schema generation is not available for type '${type}'. ` +
+					`Import 'quickmodel/schema' to enable getSchema():\n\n` +
+					`  import 'quickmodel/schema';\n\n` +
+					`If you are using the full 'quickmodel' package (not 'quickmodel/core'), ` +
+					`this should have been registered automatically.`
+			);
 		}
+		const result = gen(config);
 		classCache.set(type, result);
 		return result;
 	}
@@ -3567,15 +3603,27 @@ export abstract class QModel<
 	 * // }
 	 * ```
 	 */
-	getSchema(type: import('@/core/types/schema-types').IQSchemaType): any {
-		const classSchema = (this.constructor as typeof QModel).getSchema(type);
-
-		// For JSON/OpenAPI, add examples from instance
+	getSchema<T extends import('@/core/types/schema-types').IQSchemaType>(
+		type: T
+	): import('@/core/types/schema-types').IQSchemaReturnType<T>;
+	getSchema(type: import('@/core/types/schema-types').IQSchemaType): unknown {
+		// For JSON/OpenAPI, add examples from instance — call with narrowed literal so TS infers Record
 		if (type === 'json' || type === 'openapi') {
-			return JsonSchemaGenerator.addExamples(classSchema, this);
+			const classSchema = (this.constructor as typeof QModel).getSchema(
+				type
+			);
+			const addExamples = getAddExamplesFn();
+			if (
+				addExamples &&
+				typeof classSchema === 'object' &&
+				classSchema !== null
+			) {
+				return addExamples(classSchema, this);
+			}
+			return classSchema;
 		}
 
-		return classSchema;
+		return (this.constructor as typeof QModel).getSchema(type);
 	}
 
 	/**
