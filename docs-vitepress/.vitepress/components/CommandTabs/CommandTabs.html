@@ -1,0 +1,33 @@
+<div class="ct-wrapper">
+	<!-- ═══════════════════════════════════════════════════════
+	     TAB BAR — gestores de paquetes
+	     ═══════════════════════════════════════════════════════ -->
+	<TabBar
+		:tabs="TAB_ITEMS"
+		:model-value="activeTab"
+		@update:model-value="setTab" />
+
+	<!-- ═══════════════════════════════════════════════════════
+	     TAB PANELS (animated) — slot por gestor
+	     ═══════════════════════════════════════════════════════ -->
+	<Transition
+		:name="'bm-tab-' + tabDirection"
+		mode="out-in">
+		<div
+			:key="activeTab"
+			class="ct-panel">
+			<slot
+				v-if="activeTab === 'npm'"
+				name="npm" />
+			<slot
+				v-else-if="activeTab === 'bun'"
+				name="bun" />
+			<slot
+				v-else-if="activeTab === 'pnpm'"
+				name="pnpm" />
+			<slot
+				v-else-if="activeTab === 'yarn'"
+				name="yarn" />
+		</div>
+	</Transition>
+</div>

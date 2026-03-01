@@ -8,6 +8,7 @@ import {
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_OPTIONS_KEY,
+	QUICK_EXPLICIT_OPTIONS_KEY,
 	QUICK_TYPE_MAP_KEY,
 	QCOMPUTED_METADATA_KEY,
 } from '../constants/metadata-keys';
@@ -88,7 +89,7 @@ const _MERGED_RUNTIME_META = new WeakMap<Function, IQMergedMetaCacheEntry>();
 /** Builds and caches the merged (model + global) runtime options for a class */
 function _getMergedRuntimeOptions(
 	modelClass: Function,
-	options: IQAdvancedOptions
+	_options: IQAdvancedOptions
 ): IQMergedRuntimeOptions {
 	const rawGlobalDefaults = QConfig.get().defaults;
 	const globalDefaults = rawGlobalDefaults as IQAdvancedOptions | undefined;
@@ -97,28 +98,62 @@ function _getMergedRuntimeOptions(
 		return cached.merged;
 	}
 	const gDef = globalDefaults || ({} as IQAdvancedOptions);
+
+	// Per-class static config — set via `static override readonly config = QModel.configure({...})`
+	// Priority order: @Quick() options > static config > global defaults
+	// Using Reflect.get to safely read the static `config` property without unsafe type casts
+	const staticCfg = Reflect.get(modelClass, 'config') as
+		| IQAdvancedOptions
+		| undefined;
+	const sCfg = staticCfg ?? ({} as IQAdvancedOptions);
+
+	// Explicit options: only what the user passed to @Quick() — without global defaults baked in.
+	// This allows static config to override global defaults (e.g. unknownPropertyPolicy)
+	// even when the @Quick() decorator pre-merged global defaults into QUICK_OPTIONS_KEY.
+	const explicitOpts =
+		(Reflect.getMetadata(QUICK_EXPLICIT_OPTIONS_KEY, modelClass) as
+			| IQAdvancedOptions
+			| undefined) ?? ({} as IQAdvancedOptions);
+
 	const merged: IQMergedRuntimeOptions = {
 		disableSafetyChecks:
-			options?.performance?.disableSafetyChecks ??
+			explicitOpts?.performance?.disableSafetyChecks ??
+			sCfg?.performance?.disableSafetyChecks ??
 			gDef?.performance?.disableSafetyChecks ??
 			false,
 		unknownPolicy:
-			options.unknownPropertyPolicy ||
+			explicitOpts.unknownPropertyPolicy ||
+			sCfg.unknownPropertyPolicy ||
 			gDef.unknownPropertyPolicy ||
 			'strip',
 		maxArrayLength:
-			options.maxArrayLength ?? gDef.maxArrayLength ?? 5000000,
+			explicitOpts.maxArrayLength ??
+			sCfg.maxArrayLength ??
+			gDef.maxArrayLength ??
+			5000000,
 		normalization: {
 			...gDef.normalization,
-			...options.normalization,
+			...sCfg.normalization,
+			...explicitOpts.normalization,
 		},
 		coercionStrategy:
-			options.coercionStrategy || gDef.coercionStrategy || 'strict',
+			explicitOpts.coercionStrategy ||
+			sCfg.coercionStrategy ||
+			gDef.coercionStrategy ||
+			'strict',
 		nullToUndefined:
-			options.nullToUndefined ?? gDef.nullToUndefined ?? false,
-		transformCase: options.transformCase || gDef.transformCase,
+			explicitOpts.nullToUndefined ??
+			sCfg.nullToUndefined ??
+			gDef.nullToUndefined ??
+			false,
+		transformCase:
+			explicitOpts.transformCase ||
+			sCfg.transformCase ||
+			gDef.transformCase,
 		stripInternal:
-			options.stripInternalIdentifiers ?? gDef.stripInternalIdentifiers,
+			explicitOpts.stripInternalIdentifiers ??
+			sCfg.stripInternalIdentifiers ??
+			gDef.stripInternalIdentifiers,
 		maxRecursionDepth: rawGlobalDefaults?.maxRecursionDepth ?? 50,
 	};
 	_MERGED_RUNTIME_META.set(modelClass, { configRef: globalDefaults, merged });

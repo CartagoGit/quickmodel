@@ -23,6 +23,7 @@ import {
 import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
 import { Logger } from '@/core/helpers/logger.helper';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
+import { QConfig } from '@/core/config/quick.config';
 
 /**
  * Tracks class#field pairs already warned about async predicates.
@@ -165,7 +166,13 @@ export function qCheckRules(
 					err: thrownErr,
 					ruleTrace: rule.options?.trace,
 				});
-				errors.push({ field, message: ruleMessage, value });
+				errors.push({
+					field,
+					message:
+						QConfig.get().i18n?.resolver?.(ruleMessage) ??
+						ruleMessage,
+					value,
+				});
 			} else if (!passes) {
 				TraceLogger.traceRule({
 					event: 'rule-fail',
@@ -176,7 +183,13 @@ export function qCheckRules(
 					value,
 					ruleTrace: rule.options?.trace,
 				});
-				errors.push({ field, message: ruleMessage, value });
+				errors.push({
+					field,
+					message:
+						QConfig.get().i18n?.resolver?.(ruleMessage) ??
+						ruleMessage,
+					value,
+				});
 			} else {
 				TraceLogger.traceRule({
 					event: 'rule-pass',

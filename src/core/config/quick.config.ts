@@ -267,6 +267,36 @@ export interface IQConfig {
 			disableSafetyChecks?: boolean;
 		};
 	};
+
+	/**
+	 * Internationalization (i18n) settings for validation messages.
+	 *
+	 * When a `resolver` is provided, every validation error message emitted by
+	 * `checkRules()` or `checkRulesAsync()` is passed through it before being
+	 * returned to the caller. This allows keys like `'validation.name.minLength'`
+	 * to be translated to the user's active locale.
+	 *
+	 * @example
+	 * ```typescript
+	 * QConfig.configure({
+	 *   i18n: {
+	 *     resolver: (key) => t(key), // pass to your i18n library
+	 *   },
+	 * });
+	 * ```
+	 */
+	i18n?: {
+		/**
+		 * A function that receives a message key (or raw message string) and returns
+		 * the translated string for the active locale.
+		 *
+		 * Called only when a rule **fails** — never called for passing rules.
+		 *
+		 * @param key - The raw message string or i18n key defined in `@QRule()`.
+		 * @returns The translated string (or the original key as fallback).
+		 */
+		resolver?: (key: string) => string;
+	};
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -28,25 +28,36 @@ El entry point `/compat/ts5/forms` requiere TypeScript **5.0+** por los parámet
 
 Elige tu gestor de paquetes preferido:
 
-::: code-group
+<CommandTabs>
+<template #npm>
 
-```bash [npm]
+```bash
 npm install quickmodel
 ```
 
-```bash [yarn]
-yarn add quickmodel
-```
+</template>
+<template #bun>
 
-```bash [pnpm]
-pnpm add quickmodel
-```
-
-```bash [bun]
+```bash
 bun add quickmodel
 ```
 
-:::
+</template>
+<template #pnpm>
+
+```bash
+pnpm add quickmodel
+```
+
+</template>
+<template #yarn>
+
+```bash
+yarn add quickmodel
+```
+
+</template>
+</CommandTabs>
 
 ## Configuración de TypeScript
 

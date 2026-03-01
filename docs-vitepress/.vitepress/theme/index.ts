@@ -9,6 +9,7 @@ import BenchmarkChart from '../components/BenchmarkChart/BenchmarkChart.vue';
 import QuickExamples from '../components/QuickExamples/QuickExamples.vue';
 import WhyQuickModel from '../components/WhyQuickModel/WhyQuickModel.vue';
 import TabBar from '../components/TabBar/TabBar.vue';
+import CommandTabs from '../components/CommandTabs/CommandTabs.vue';
 import FeaturesCarousel from '../components/FeaturesCarousel/FeaturesCarousel.vue';
 import IntegrationMarquee from '../components/IntegrationMarquee/IntegrationMarquee.vue';
 import { setupNavInterceptors } from '../composables/useNavInterceptors';
@@ -33,6 +34,7 @@ export default {
 		app.component('QuickExamples', QuickExamples);
 		app.component('WhyQuickModel', WhyQuickModel);
 		app.component('TabBar', TabBar);
+		app.component('CommandTabs', CommandTabs);
 		app.component('FeaturesCarousel', FeaturesCarousel);
 		app.component('IntegrationMarquee', IntegrationMarquee);
 

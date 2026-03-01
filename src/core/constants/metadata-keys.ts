@@ -63,6 +63,14 @@ export const QUICK_DISCRIMINATORS_KEY = '__quickDiscriminators__';
 export const QUICK_OPTIONS_KEY = '__quickOptions__';
 
 /**
+ * Key for storing only the explicitly-passed advanced options from `@Quick()`.
+ * Unlike `QUICK_OPTIONS_KEY`, this does NOT include global defaults merged at decoration time.
+ * Used by `_getMergedRuntimeOptions` to correctly apply per-class `static config` priority
+ * over global defaults that were baked into the decorator options.
+ */
+export const QUICK_EXPLICIT_OPTIONS_KEY = '__quickExplicitOptions__';
+
+/**
  * Key for the internal force hydration method in `QModel`.
  * This symbol hides the method from the public API while allowing the `@Quick` decorator to access it.
  *

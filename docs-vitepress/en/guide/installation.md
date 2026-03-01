@@ -28,25 +28,36 @@ The `/compat/ts5/forms` entry point requires TypeScript **5.0+** due to `const` 
 
 Choose your preferred package manager:
 
-::: code-group
+<CommandTabs>
+<template #npm>
 
-```bash [npm]
+```bash
 npm install quickmodel
 ```
 
-```bash [yarn]
-yarn add quickmodel
-```
+</template>
+<template #bun>
 
-```bash [pnpm]
-pnpm add quickmodel
-```
-
-```bash [bun]
+```bash
 bun add quickmodel
 ```
 
-:::
+</template>
+<template #pnpm>
+
+```bash
+pnpm add quickmodel
+```
+
+</template>
+<template #yarn>
+
+```bash
+yarn add quickmodel
+```
+
+</template>
+</CommandTabs>
 
 ## TypeScript Configuration
 

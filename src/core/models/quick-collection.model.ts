@@ -24,6 +24,25 @@ export interface IQCollectionRulesResult {
 }
 
 /**
+ * Options for `QModelCollection.toCSV()`.
+ *
+ * @see {@link QModelCollection.toCSV}
+ */
+export interface IQCSVOptions {
+	/** Column delimiter. Default: `','`. */
+	delimiter?: string;
+	/** Whether to include the header row. Default: `true`. */
+	includeHeaders?: boolean;
+	/**
+	 * Subset of serialized fields to include, in the specified order.
+	 * When omitted, all fields from the serialized output are used.
+	 */
+	fields?: string[];
+	/** String used for `null` or `undefined` values. Default: `''`. */
+	nullValue?: string;
+}
+
+/**
  * Options for `QModelCollection.sortBy()`.
  */
 interface ISortByOptions {
@@ -268,7 +287,76 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	toJSON(): string {
 		return JSON.stringify(this.serialize());
 	}
+	/**
+	 * Exports the collection to a CSV-formatted string (RFC 4180).
+	 *
+	 * Values are serialized via each instance's `serialize()` method. Cells that
+	 * contain the delimiter, a newline, or a double-quote are automatically
+	 * wrapped in double-quotes; embedded double-quotes are escaped by doubling.
+	 *
+	 * @param options - Optional CSV generation options.
+	 * @returns A CSV string. Returns `''` when the collection is empty.
+	 *
+	 * @example Basic export
+	 * ```typescript
+	 * const csv = UserCollection.from(UserModel, rows).toCSV();
+	 * // id,name,email
+	 * // 1,Alice,alice@example.com
+	 * // 2,Bob,bob@example.com
+	 * ```
+	 *
+	 * @example Semicolon-delimited, subset of fields
+	 * ```typescript
+	 * col.toCSV({ delimiter: ';', fields: ['name', 'email'] });
+	 * ```
+	 *
+	 * @see {@link IQCSVOptions}
+	 */
+	toCSV(options?: IQCSVOptions): string {
+		if (this.#items.length === 0) return '';
 
+		const delimiter = options?.delimiter ?? ',';
+		const includeHeaders = options?.includeHeaders ?? true;
+		const nullValue = options?.nullValue ?? '';
+
+		const serialized = this.#items.map(
+			(item) => item.serialize() as Record<string, unknown>
+		);
+
+		const firstRow = serialized[0];
+		if (firstRow === undefined) return '';
+
+		const fields = options?.fields ?? Object.keys(firstRow);
+
+		const escapeCell = (value: unknown): string => {
+			const str =
+				value === null || value === undefined
+					? nullValue
+					: String(value);
+			if (
+				str.includes(delimiter) ||
+				str.includes('\n') ||
+				str.includes('"')
+			) {
+				return `"${str.replace(/"/g, '""')}"`;
+			}
+			return str;
+		};
+
+		const rows: string[] = [];
+
+		if (includeHeaders) {
+			rows.push(fields.map((fld) => escapeCell(fld)).join(delimiter));
+		}
+
+		for (const row of serialized) {
+			rows.push(
+				fields.map((fld) => escapeCell(row[fld])).join(delimiter)
+			);
+		}
+
+		return rows.join('\n');
+	}
 	// ─── Validation ─────────────────────────────────────────────────────────
 
 	/**

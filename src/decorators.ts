@@ -62,3 +62,16 @@ export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
 export { QComputed } from './core/decorators/qcomputed.decorator';
 
 export { QSensitive } from './core/decorators/qsensitive.decorator';
+
+export { QDefault } from './core/decorators/qdefault.decorator';
+export type { IQDefaultDescriptor } from './core/decorators/qdefault.decorator';
+
+export {
+	QReadonly,
+	ImmutableFieldError,
+} from './core/decorators/qreadonly.decorator';
+
+export { QTransform } from './core/decorators/qtransform.decorator';
+export type { IQTransformFn } from './core/decorators/qtransform.decorator';
+export { QVersion } from './core/decorators/qversion.decorator';
+export type { IQVersionConfig } from './core/decorators/qversion.decorator';

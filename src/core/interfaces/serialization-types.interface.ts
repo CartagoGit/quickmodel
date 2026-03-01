@@ -162,7 +162,7 @@ export type IQSerializedInterface<T> = {
  * @template TAliasMap - Literal map `{ propertyName: 'alias_name' }` from `@Quick({ alias: ... })`
  *
  * @see {@link IQSerializedInterface} — non-aliased variant
- * @see {@link QAlias} — property-level decorator that also produces key remapping
+ * @see `QAlias` — property-level decorator (from `quickmodel/decorators`) that also produces key remapping
  * @see {@link QModel.serialize} — returns this type when a `TAliasMap` is provided
  *
  * @example

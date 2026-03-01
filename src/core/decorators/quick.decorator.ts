@@ -91,6 +91,7 @@ import {
 	QUICK_DESIGN_TYPES_KEY,
 	QUICK_DISCRIMINATORS_KEY,
 	QUICK_OPTIONS_KEY,
+	QUICK_EXPLICIT_OPTIONS_KEY,
 	FORCE_HYDRATION_KEY,
 } from '../constants/metadata-keys';
 import { QALIAS_METADATA_KEY, QALIAS_FIELDS_KEY } from './qalias.decorator';
@@ -564,6 +565,16 @@ export function Quick<
 			Reflect.defineMetadata(QUICK_OPTIONS_KEY, mergedOptions, target);
 		}
 
+		// Store only the explicitly-passed options (without global defaults).
+		// Used by _getMergedRuntimeOptions to give static config priority over
+		// global defaults that were baked into the decorator options at decoration time.
+		const explicitOptions = { ...advancedOptions, ...extraOptions };
+		Reflect.defineMetadata(
+			QUICK_EXPLICIT_OPTIONS_KEY,
+			explicitOptions,
+			target
+		);
+
 		// Store type map if provided
 		if (typeMap) {
 			Reflect.defineMetadata(QUICK_TYPE_MAP_KEY, typeMap, target);
@@ -828,6 +839,7 @@ export function Quick<
 			QUICK_DESIGN_TYPES_KEY,
 			QUICK_DECORATOR_KEY,
 			QUICK_OPTIONS_KEY,
+			QUICK_EXPLICIT_OPTIONS_KEY,
 		];
 
 		for (const key of keysToCopy) {

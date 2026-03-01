@@ -1,0 +1,25 @@
+// ─────────────────────────────────────────────────────────────
+// CommandTabs — estilos BEM
+// Bloque raíz: .ct  (command-tabs)
+//
+// Bloques:
+//   .ct-wrapper  — contenedor raíz
+//   .ct-panel    — panel de contenido del tab activo
+// ─────────────────────────────────────────────────────────────
+
+// ── Wrapper ───────────────────────────────────────────────────
+
+.ct-wrapper {
+	margin: 1rem 0;
+}
+
+// ── Panel ─────────────────────────────────────────────────────
+
+.ct-panel {
+	// VitePress envuelve los bloques de código en div.language-*
+	// Eliminamos el margen superior para que queden pegados al TabBar.
+	:deep(div[class*='language-']) {
+		margin-top: 0;
+		border-radius: 8px;
+	}
+}

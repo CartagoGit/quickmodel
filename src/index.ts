@@ -23,10 +23,12 @@ export type {
 	IQCreateManyError,
 	IQCreateManyResult,
 	IQValidationReport,
+	IQClassConfig,
 } from './core/models/quick.model';
 
 export { Quick } from './core/decorators/quick.decorator';
 export { QConfig } from './core/config/quick.config';
+export type { IQConfig } from './core/config/quick.config';
 
 // ============================================================================
 // PUBLIC API - Submodules
@@ -49,7 +51,14 @@ export { QConfig } from './core/config/quick.config';
 // ============================================================================
 export type { IQFormSchemaEntry } from './core/decorators/qfield.decorator';
 export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
-export type { IQAliasedSerializedInterface } from './core/interfaces/serialization-types.interface';
+export type {
+	IQSerializedInterface,
+	IQAliasedSerializedInterface,
+} from './core/interfaces/serialization-types.interface';
 export type { IQAdvancedOptions } from './core/interfaces/quick-options.interface';
+export type { IQValidateOptions } from './core/models/quick.model';
 export { QModelCollection } from './core/models/quick-collection.model';
-export type { IQCollectionRulesResult } from './core/models/quick-collection.model';
+export type {
+	IQCollectionRulesResult,
+	IQCSVOptions,
+} from './core/models/quick-collection.model';

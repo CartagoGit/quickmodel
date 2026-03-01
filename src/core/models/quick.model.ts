@@ -67,6 +67,21 @@ import {
 } from '../constants/metadata-keys';
 import { QSENSITIVE_FIELDS_KEY } from '@/core/decorators/qsensitive.decorator';
 import {
+	QDEFAULT_FIELDS_KEY,
+	QDEFAULT_VALUE_KEY,
+	type IQDefaultDescriptor,
+} from '@/core/decorators/qdefault.decorator';
+import {
+	collectReadonlyFields,
+	ImmutableFieldError,
+} from '@/core/decorators/qreadonly.decorator';
+import {
+	QTRANSFORM_FIELDS_KEY,
+	QTRANSFORM_PIPELINE_KEY,
+	type IQTransformFn,
+} from '@/core/decorators/qtransform.decorator';
+import { applyMigrations } from '@/core/decorators/qversion.decorator';
+import {
 	QModelCollection,
 	type IQCollectionItem,
 } from '@/core/models/quick-collection.model';
@@ -207,6 +222,16 @@ export type IQValidateResult = IQValidationReport;
 // Public API uses only @Quick() decorator
 export { Quick } from '@/core/decorators/quick.decorator';
 export type { IQImplements } from '@/core/interfaces/model.interface';
+
+/**
+ * Options allowed in a per-class `static config = QModel.configure({...})` declaration.
+ *
+ * Acts as a class-level override for specific `QConfig.defaults` settings, without
+ * affecting the global `QConfig` or sibling model classes.
+ *
+ * @see {@link QModel.configure} — factory that produces this descriptor
+ */
+export type IQClassConfig = Partial<IQAdvancedOptions>;
 
 /**
  * Options accepted by {@link QModel.createMany}.
@@ -388,6 +413,27 @@ export abstract class QModel<
 	private __initData?: IQSerializedInterface<TInterface>;
 
 	/**
+	 * Optional per-class configuration override.
+	 *
+	 * Assign the result of `QModel.configure({...})` here to override specific
+	 * `QConfig.defaults` settings for this class only, without affecting siblings
+	 * or the global configuration.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick()
+	 * class InternalDto extends QModel<IInternalDto> {
+	 *   static override readonly config = QModel.configure({
+	 *     unknownPropertyPolicy: 'keep',
+	 *   });
+	 * }
+	 * ```
+	 *
+	 * @see {@link QModel.configure} — factory method that produces this value
+	 */
+	static readonly config?: IQClassConfig;
+
+	/**
 	 * Internal property storage for transformed values.
 	 * Explicitly defined to avoid 'any' usage and dynamic assignment.
 	 * @internal
@@ -452,6 +498,38 @@ export abstract class QModel<
 		// Use generics to cast 'this' to the constructor type
 		const Constructor = this;
 		return new Constructor(data);
+	}
+
+	/**
+	 * Produces a per-class configuration descriptor to be assigned to the
+	 * `static readonly config` property of a `QModel` subclass.
+	 *
+	 * Class-level config overrides specific `QConfig.defaults` settings for that
+	 * class only, without affecting sibling classes or the global configuration.
+	 * If the same option is set both here and in the `@Quick()` second parameter,
+	 * the `@Quick()` option takes precedence.
+	 *
+	 * @param opts - A subset of `IQAdvancedOptions` to apply to this class.
+	 * @returns The options object (passed through; used as-is by the population service).
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick()
+	 * class InternalDto extends QModel<IInternalDto> {
+	 *   static override readonly config = QModel.configure({
+	 *     unknownPropertyPolicy: 'keep',
+	 *     coercionStrategy: 'strict',
+	 *   });
+	 *   declare id: string;
+	 * }
+	 * // InternalDto keeps unknown properties; other models are unaffected.
+	 * ```
+	 *
+	 * @see {@link IQClassConfig} — the type returned by this method
+	 * @see {@link QConfig} — global configuration singleton
+	 */
+	static configure(opts: IQClassConfig): IQClassConfig {
+		return opts;
 	}
 
 	/**
@@ -1353,6 +1431,9 @@ export abstract class QModel<
 			}
 		}
 
+		// @QVersion: Apply pending schema migrations before deserialization
+		workData = applyMigrations(this.constructor, workData);
+
 		// Store ORIGINAL data (before transformations) for format preservation in toInterface()
 		// IMPORTANT: Must be done BEFORE deserialization to preserve original types
 		const initDataClone: Record<string, unknown> = {};
@@ -1500,6 +1581,91 @@ export abstract class QModel<
 
 		// OPT-10: Pass Set directly — installLazyGetters now accepts Iterable<string>
 		this.installLazyGetters(propertyNames);
+
+		// @QTransform — apply post-deserialization field pipelines
+		// Walk the prototype chain to collect all @QTransform-decorated fields (incl. inherited)
+		const _transformFields: string[] = [];
+		const _seenTransformFields = new Set<string>();
+		let _tProto: object | null = this.constructor.prototype as
+			| object
+			| null;
+		while (_tProto !== null && _tProto !== Object.prototype) {
+			const _ownTFields =
+				(Reflect.getOwnMetadata(QTRANSFORM_FIELDS_KEY, _tProto) as
+					| string[]
+					| undefined) ?? [];
+			for (const fld of _ownTFields) {
+				if (!_seenTransformFields.has(fld)) {
+					_seenTransformFields.add(fld);
+					_transformFields.push(fld);
+				}
+			}
+			_tProto = Object.getPrototypeOf(_tProto) as object | null;
+		}
+
+		if (_transformFields.length > 0) {
+			const _tStorage = this[QUICK_VALUES_KEY];
+			for (const fld of _transformFields) {
+				// Collect the pipeline from closest prototype (most specific wins for override)
+				const pipeline = Reflect.getMetadata(
+					QTRANSFORM_PIPELINE_KEY,
+					this.constructor.prototype,
+					fld
+				) as IQTransformFn<unknown>[] | undefined;
+				if (!pipeline || pipeline.length === 0) continue;
+				let val = _tStorage[fld];
+				for (const tfn of pipeline) {
+					val = tfn(val);
+				}
+				const _tStorageKey = `${QUICK_PROPERTY_KEYS}${fld}`;
+				(this as Record<string, unknown>)[_tStorageKey] = val;
+				_tStorage[fld] = val;
+			}
+		}
+
+		// @QDefault — apply field defaults for any fields still undefined after deserialization
+		// Walk the prototype chain to collect all @QDefault-decorated fields from parent classes too
+		const _defaultFields: string[] = [];
+		const _seenDefaultFields = new Set<string>();
+		let _proto: object | null = this.constructor.prototype as object | null;
+		while (_proto !== null && _proto !== Object.prototype) {
+			const _ownFields =
+				(Reflect.getOwnMetadata(QDEFAULT_FIELDS_KEY, _proto) as
+					| string[]
+					| undefined) ?? [];
+			for (const fld of _ownFields) {
+				if (!_seenDefaultFields.has(fld)) {
+					_seenDefaultFields.add(fld);
+					_defaultFields.push(fld);
+				}
+			}
+			_proto = Object.getPrototypeOf(_proto) as object | null;
+		}
+
+		if (_defaultFields.length > 0) {
+			const storage = this[QUICK_VALUES_KEY];
+			for (const fld of _defaultFields) {
+				const cur = storage[fld];
+				if (cur === undefined || cur === null) {
+					const meta = Reflect.getMetadata(
+						QDEFAULT_VALUE_KEY,
+						this.constructor.prototype,
+						fld
+					) as IQDefaultDescriptor<unknown> | undefined;
+					if (meta !== undefined) {
+						const resolved =
+							'factory' in meta
+								? (meta.factory as () => unknown)()
+								: meta.value;
+						const storageKey = `${QUICK_PROPERTY_KEYS}${fld}`;
+						(this as Record<string, unknown>)[storageKey] =
+							resolved;
+						storage[fld] = resolved;
+						propertyNames.add(fld);
+					}
+				}
+			}
+		}
 
 		// Trace construction lifecycle
 		if (TraceLogger.isEnabled('info', this.constructor)) {
@@ -2976,6 +3142,23 @@ export abstract class QModel<
 	 * ```
 	 */
 	patch(patch: Partial<IQModelData<TInterface>>): void {
+		// @QReadonly guard — reject any patch that targets an immutable field
+		if (patch !== undefined) {
+			const roFields = collectReadonlyFields(
+				this.constructor.prototype as object
+			);
+			if (roFields.length > 0) {
+				for (const fld of roFields) {
+					if (fld in patch) {
+						throw new ImmutableFieldError(
+							fld,
+							(this.constructor as { name?: string }).name ??
+								'QModel'
+						);
+					}
+				}
+			}
+		}
 		const Constructor = this.constructor as unknown as IModelConstructor<
 			QModel<TInterface>
 		>;
@@ -3039,6 +3222,23 @@ export abstract class QModel<
 	 * ```
 	 */
 	copy(partial?: Partial<IQModelData<TInterface>>): this {
+		// @QReadonly guard — reject copy() calls that include an immutable field
+		if (partial !== undefined) {
+			const roFields = collectReadonlyFields(
+				this.constructor.prototype as object
+			);
+			if (roFields.length > 0) {
+				for (const fld of roFields) {
+					if (fld in partial) {
+						throw new ImmutableFieldError(
+							fld,
+							(this.constructor as { name?: string }).name ??
+								'QModel'
+						);
+					}
+				}
+			}
+		}
 		// Use deserialize() (Object.create) instead of new Constructor() to avoid
 		// TypeScript property initializers (e.g. `id!: string` compiles to
 		// `this.id = undefined`) overwriting QModel's lazy getters after construction.

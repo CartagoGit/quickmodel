@@ -25,6 +25,7 @@ import {
 } from '@/core/decorators/qrule.decorator';
 import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
+import { QConfig } from '@/core/config/quick.config';
 
 /**
  * Options for {@link qCheckRulesAsync}. Extends {@link IQRulesAsyncOptions}
@@ -215,7 +216,7 @@ export async function qCheckRulesAsync(
 
 		errors.push({
 			field: descriptor.field,
-			message,
+			message: QConfig.get().i18n?.resolver?.(message) ?? message,
 			value: descriptor.value,
 			...(timedOut ? { timedOut: true as const } : {}),
 		});

@@ -19,7 +19,14 @@
 		"quickmodel": {
 			"IQDiscriminatorConfig": "#",
 			"IQTypeGuardFunction": "#",
-			"IQSpoofMethod": "#"
+			"IQSpoofMethod": "#",
+			"IQAnyRecord": "#",
+			"IQRulesResult": "#",
+			"IQFieldMeta": "#",
+			"IQSerialized": "#",
+			"QModelConfigService": "#",
+			"QModelConfigService.configure": "#",
+			"QAlias": "#"
 		}
 	}
 }
