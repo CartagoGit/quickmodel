@@ -16,11 +16,13 @@ function makeTool(ttlMs?: number): QAgentCoordinateTool {
 
 describe('QAgentCoordinateTool', () => {
 	beforeEach(() => {
+		QAgentCoordinateTool._resetForTest();
 		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
 		if (existsSync(TMP_STATUS)) rmSync(TMP_STATUS);
 	});
 
 	afterEach(() => {
+		QAgentCoordinateTool._resetForTest();
 		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
 		if (existsSync(TMP_STATUS)) rmSync(TMP_STATUS);
 	});
@@ -928,6 +930,108 @@ describe('QAgentCoordinateTool', () => {
 			});
 			expect(res.claimed).toBe(true);
 			expect(res.conflict).toBe(false);
+		});
+	});
+
+	// ── ticker ────────────────────────────────────────────────────────────
+
+	describe('ticker', () => {
+		it('starts after first claim when registry has agents', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 50;
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'ticker-agent',
+				task: 'test ticker start',
+				files: [],
+			});
+			expect(QAgentCoordinateTool._tickerHandle).not.toBeNull();
+		});
+
+		it('does not create a second ticker on subsequent claims', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 50;
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'ticker-agent-a',
+				task: 'first claim',
+				files: [],
+			});
+			const firstHandle = QAgentCoordinateTool._tickerHandle;
+			await tool.execute({
+				action: 'claim',
+				agentId: 'ticker-agent-b',
+				task: 'second claim',
+				files: ['other/**'],
+			});
+			expect(QAgentCoordinateTool._tickerHandle).toBe(firstHandle);
+		});
+
+		it('stops automatically on inactivity after 2x interval', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 50;
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'idle-agent',
+				task: 'idle test',
+				files: [],
+			});
+			expect(QAgentCoordinateTool._tickerHandle).not.toBeNull();
+			// After 150 ms, two ticks will have fired with idle > 50 ms threshold
+			await Bun.sleep(150);
+			expect(QAgentCoordinateTool._tickerHandle).toBeNull();
+		});
+
+		it('stops when all agents expire and registry becomes empty', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 5000; // disable inactivity stop
+			// ttl = 50 ms so the agent expires before the second tick
+			const tool = makeTool(50);
+			await tool.execute({
+				action: 'claim',
+				agentId: 'expiring-agent',
+				task: 'soon to expire',
+				files: [],
+			});
+			// Wait long enough for two ticks; second tick will see the expired agent
+			await Bun.sleep(200);
+			expect(QAgentCoordinateTool._tickerHandle).toBeNull();
+		});
+
+		it('purges expired agents from registry JSON when stopping on empty registry', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 5000;
+			const tool = makeTool(50);
+			await tool.execute({
+				action: 'claim',
+				agentId: 'temp-agent',
+				task: 'verify purge',
+				files: [],
+			});
+			await Bun.sleep(200);
+			const raw = readFileSync(TMP_REGISTRY, 'utf-8');
+			const reg = JSON.parse(raw) as { agents: Record<string, unknown> };
+			expect(Object.keys(reg.agents).length).toBe(0);
+		});
+
+		it('refreshes agent-status.md on each tick while agents are active', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 50;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000;
+			// Long TTL so the agent does not expire during the test
+			const tool = makeTool(60_000);
+			await tool.execute({
+				action: 'claim',
+				agentId: 'long-lived-agent',
+				task: 'md refresh test',
+				files: [],
+			});
+			const mdBefore = readFileSync(TMP_STATUS, 'utf-8');
+			// Wait for at least one tick
+			await Bun.sleep(90);
+			const mdAfter = readFileSync(TMP_STATUS, 'utf-8');
+			// The _Updated_ timestamp inside the .md must have changed
+			expect(mdAfter).not.toBe(mdBefore);
 		});
 	});
 });

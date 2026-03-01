@@ -195,7 +195,7 @@ type ICoordinateResult =
  * | `check` | List all active agents. **Call this first** to pick a safe work area. |
  * | `claim` | Lock a task + files. Conflict-detected via glob-aware overlap matching. |
  * | `release` | Free the claim when the work is done or aborted. |
- * | `update` | Heartbeat — refresh TTL of an existing claim. Call every ~30 min for long tasks. |
+ * | `update` | Heartbeat — refresh TTL of an existing claim. Also: any `check` call with `agentId` auto-refreshes. |
  * | `purge` | Force-clear stuck/stale claims without waiting for TTL expiry. |
  *
  * ### Conflict detection
@@ -205,10 +205,10 @@ type ICoordinateResult =
  * - `src/**` does NOT conflict with `tests/**`
  *
  * ### TTL and crash resilience
- * Claims expire automatically after **30 minutes** unless the agent calls `update` (heartbeat).
- * This prevents indefinite blocking when an agent crashes or VS Code restarts.
+ * Claims expire automatically after **5 minutes** unless the agent sends a heartbeat — any
+ * `check` call that includes a valid `agentId` refreshes the TTL automatically.
  * Use `force: true` on `claim` to immediately override a lock whose `updatedAt` is older than
- * ~5 minutes (configurable via `_staleCrashMs`). Stale entries are also pruned silently on every
+ * ~1 minute (configurable via `_staleCrashMs`). Stale entries are also pruned silently on every
  * `readRegistry` call.
  *
  * @example
@@ -227,7 +227,7 @@ type ICoordinateResult =
  *
  * // 3b. Conflict from a crashed agent — force override:
  * await agent_coordinate({ action: 'claim', agentId: 'agent-C', task: 'update guide', files: ['docs-vitepress/en/guide/qmodel.md'], force: true });
- * // → { claimed: true } — if agent-A's updatedAt > 5 min ago (assumed crashed)
+ * // → { claimed: true } — if agent-A's updatedAt > 1 min ago (assumed crashed)
  * // → { claimed: false, conflict: true } — if agent-A is still actively sending heartbeats
  *
  * // 4. Heartbeat for long tasks (call every ~15 min):
@@ -267,7 +267,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		'Coordinate parallel agent work to prevent file conflicts. ' +
 		'action="check": list all active agents — ALWAYS call this first. ' +
 		'action="claim": register task + files; uses glob-aware overlap detection; returns conflict:true if blocked. ' +
-		'  Set force=true to override a stale lock (updatedAt older than ~5 min) from a crashed agent. ' +
+		'  Set force=true to override a stale lock (updatedAt older than ~1 min) from a crashed agent. ' +
 		'action="release": free the claim when done. ' +
 		'action="update": refresh TTL heartbeat for long-running tasks (call every ~15 min). ' +
 		'action="purge": forcibly clear stuck/stale claims (optional agentId to target one). ' +
@@ -300,14 +300,14 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			.number()
 			.optional()
 			.describe(
-				'Custom TTL in milliseconds for this claim. Defaults to 1800000 (30 minutes). ' +
-					'Call update periodically for long-running tasks.'
+				'Custom TTL in milliseconds for this claim. Defaults to 300000 (5 minutes). ' +
+					'Any check() call with agentId acts as an implicit heartbeat and resets this timer.'
 			),
 		force: z
 			.boolean()
 			.optional()
 			.describe(
-				'If true, overrides a conflicting claim whose updatedAt is older than ~5 min ' +
+				'If true, overrides a conflicting claim whose updatedAt is older than ~1 min ' +
 					'(i.e. the agent likely crashed or VS Code restarted). ' +
 					'Does NOT override a fresh, active claim — use purge for that.'
 			),
@@ -332,6 +332,58 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	 * Override in tests to avoid polluting `tmp/`.
 	 */
 	_statusPath: string = join(process.cwd(), 'tmp', 'agent-status.md');
+
+	// ── Singleton ticker (static — one per process, cannot accumulate) ────────
+
+	/**
+	 * @internal Single `setInterval` handle shared across all instances in the process.
+	 * `null` when the ticker is not running. Static guarantees only one ticker exists
+	 * regardless of how many `QAgentCoordinateTool` instances are created.
+	 */
+	private static _tickerHandle: ReturnType<typeof setInterval> | null = null;
+
+	/**
+	 * @internal Epoch ms of the last real operation (claim/release/update/purge).
+	 * Updated inside `saveRegistry`. The ticker reads this to detect inactivity:
+	 * if no operation happened for `2 × _tickerIntervalMs`, it stops itself.
+	 */
+	private static _lastActivityAt: number = 0;
+
+	/**
+	 * @internal Ticker interval in milliseconds (default 30 s).
+	 * Override **before** the first claim in tests:
+	 * `QAgentCoordinateTool._tickerIntervalMs = 50;`
+	 */
+	static _tickerIntervalMs: number = 30_000;
+
+	/**
+	 * @internal Inactivity threshold in ms. When `> 0` it overrides the computed
+	 * `2 × _tickerIntervalMs`. Set in tests to control how quickly the ticker stops.
+	 */
+	static _inactivityThresholdMs: number = 0;
+
+	/** @internal Registry path captured when the ticker started. */
+	private static _tickerRegistryPath: string | null = null;
+
+	/** @internal Status path captured when the ticker started. */
+	private static _tickerStatusPath: string | null = null;
+
+	/**
+	 * Resets all static ticker state. **Call in `afterEach` when testing ticker behaviour**
+	 * to avoid state leaking between tests.
+	 * @internal
+	 */
+	static _resetForTest(): void {
+		if (QAgentCoordinateTool._tickerHandle !== null) {
+			clearInterval(QAgentCoordinateTool._tickerHandle);
+			QAgentCoordinateTool._tickerHandle = null;
+		}
+		QAgentCoordinateTool._lastActivityAt = 0;
+		QAgentCoordinateTool._tickerRegistryPath = null;
+		QAgentCoordinateTool._tickerStatusPath = null;
+		QAgentCoordinateTool._tickerIntervalMs = 30_000;
+		QAgentCoordinateTool._inactivityThresholdMs = 0;
+	}
 
 	// ── Registry I/O ──────────────────────────────────────────────────────────
 
@@ -376,15 +428,38 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			JSON.stringify(reg, null, 2),
 			'utf-8'
 		);
-		this.writeStatusFile(reg);
+		// Mark real activity so the ticker inactivity guard resets correctly
+		QAgentCoordinateTool._lastActivityAt = Date.now();
+		QAgentCoordinateTool._writeStatusToPath(this._statusPath, reg);
+		// Start the ticker if there are active agents and it is not already running
+		if (Object.keys(reg.agents).length > 0) {
+			QAgentCoordinateTool._startTicker(
+				this._registryPath,
+				this._statusPath
+			);
+		}
 	}
 
 	/**
-	 * Writes a human-readable markdown table to `tmp/agent-status.md` after every mutation.
-	 * Acts as a live "notice board": agents and developers can read the file directly
-	 * instead of calling `check`. Never throws — status is informational.
+	 * Delegates to the static helper using this instance's `_statusPath`.
+	 * @internal
 	 */
 	private writeStatusFile(reg: IAgentRegistry): void {
+		QAgentCoordinateTool._writeStatusToPath(this._statusPath, reg);
+	}
+
+	/**
+	 * Writes the markdown status table to `statusPath`. Used by both the instance
+	 * (`writeStatusFile`) and the static ticker (`_runTick`) so the logic
+	 * lives in exactly one place.
+	 *
+	 * Never throws — the file is informational only.
+	 * @internal
+	 */
+	private static _writeStatusToPath(
+		statusPath: string,
+		reg: IAgentRegistry
+	): void {
 		const now = new Date();
 		const agents = Object.values(reg.agents);
 
@@ -434,14 +509,142 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			'',
 			'> TTL: 5 min of inactivity auto-releases the lock.',
 			'> Any `agent_coordinate` call with a valid `agentId` acts as an implicit heartbeat.',
+			'> Ticker: status refreshes every 30 s while agents are active; stops automatically on idle.',
 		].join('\n');
 
 		try {
-			mkdirSync(dirname(this._statusPath), { recursive: true });
-			writeFileSync(this._statusPath, content, 'utf-8');
+			mkdirSync(dirname(statusPath), { recursive: true });
+			writeFileSync(statusPath, content, 'utf-8');
 		} catch {
 			// Status file is informational — never fail the main operation
 		}
+	}
+
+	/**
+	 * Starts the singleton background ticker if it is not already running.
+	 *
+	 * Guards:
+	 * - `_tickerHandle !== null` → already running, no second ticker
+	 * - `handle.unref()` → timer will NOT prevent the process from exiting naturally
+	 *
+	 * @internal
+	 */
+	private static _startTicker(regPath: string, statusPath: string): void {
+		if (QAgentCoordinateTool._tickerHandle !== null) return; // already running
+		QAgentCoordinateTool._tickerRegistryPath = regPath;
+		QAgentCoordinateTool._tickerStatusPath = statusPath;
+		const handle = setInterval(
+			() => QAgentCoordinateTool._runTick(),
+			QAgentCoordinateTool._tickerIntervalMs
+		);
+		// unref: the ticker must NOT keep the process alive when all MCP work is done
+		if (typeof handle.unref === 'function') {
+			handle.unref();
+		}
+		QAgentCoordinateTool._tickerHandle = handle;
+	}
+
+	/**
+	 * Background tick logic — runs every `_tickerIntervalMs` milliseconds.
+	 *
+	 * Stops itself when:
+	 * 1. No real operation happened for `2 × _tickerIntervalMs` (inactivity guard) —
+	 *    catches zombie/stuck processes where the MCP is no longer active.
+	 * 2. Registry is empty or unreadable — no agents left to track.
+	 *
+	 * Otherwise: purges expired entries, rewrites `agent-status.md`.
+	 * @internal
+	 */
+	private static _runTick(): void {
+		// ── 1. Inactivity guard ──────────────────────────────────────────────────
+		// If no real saveRegistry call happened recently, the MCP is likely idle or
+		// dead. Stop the ticker so it does not run indefinitely as a zombie.
+		const idleMs = Date.now() - QAgentCoordinateTool._lastActivityAt;
+		const threshold =
+			QAgentCoordinateTool._inactivityThresholdMs > 0
+				? QAgentCoordinateTool._inactivityThresholdMs
+				: 2 * QAgentCoordinateTool._tickerIntervalMs;
+		if (idleMs > threshold) {
+			clearInterval(QAgentCoordinateTool._tickerHandle!);
+			QAgentCoordinateTool._tickerHandle = null;
+			return;
+		}
+
+		const regPath = QAgentCoordinateTool._tickerRegistryPath;
+		const statusPath = QAgentCoordinateTool._tickerStatusPath;
+		if (!regPath || !statusPath) return;
+
+		// ── 2. Read registry ─────────────────────────────────────────────────────
+		let reg: IAgentRegistry;
+		try {
+			if (!existsSync(regPath)) {
+				clearInterval(QAgentCoordinateTool._tickerHandle!);
+				QAgentCoordinateTool._tickerHandle = null;
+				return;
+			}
+			const parsed = JSON.parse(
+				readFileSync(regPath, 'utf-8')
+			) as unknown;
+			if (
+				typeof parsed !== 'object' ||
+				parsed === null ||
+				typeof (parsed as Record<string, unknown>)['agents'] !==
+					'object' ||
+				(parsed as Record<string, unknown>)['agents'] === null
+			) {
+				clearInterval(QAgentCoordinateTool._tickerHandle!);
+				QAgentCoordinateTool._tickerHandle = null;
+				return;
+			}
+			reg = parsed as IAgentRegistry;
+		} catch {
+			// IO error — stop ticker; will restart on next real operation
+			clearInterval(QAgentCoordinateTool._tickerHandle!);
+			QAgentCoordinateTool._tickerHandle = null;
+			return;
+		}
+
+		// ── 3. Purge expired entries ─────────────────────────────────────────────
+		const now = Date.now();
+		let purged = 0;
+		for (const [aid, entry] of Object.entries(reg.agents)) {
+			if (new Date(entry.expiresAt).getTime() < now) {
+				delete reg.agents[aid];
+				purged++;
+			}
+		}
+
+		// ── 4. Stop if empty ─────────────────────────────────────────────────────
+		if (Object.keys(reg.agents).length === 0) {
+			clearInterval(QAgentCoordinateTool._tickerHandle!);
+			QAgentCoordinateTool._tickerHandle = null;
+			// Write final empty status so the .md reflects reality
+			QAgentCoordinateTool._writeStatusToPath(statusPath, reg);
+			if (purged > 0) {
+				try {
+					mkdirSync(dirname(regPath), { recursive: true });
+					writeFileSync(
+						regPath,
+						JSON.stringify(reg, null, 2),
+						'utf-8'
+					);
+				} catch {
+					/* best effort */
+				}
+			}
+			return;
+		}
+
+		// ── 5. Write updated .md (and purged registry if needed) ─────────────────
+		if (purged > 0) {
+			try {
+				mkdirSync(dirname(regPath), { recursive: true });
+				writeFileSync(regPath, JSON.stringify(reg, null, 2), 'utf-8');
+			} catch {
+				/* best effort */
+			}
+		}
+		QAgentCoordinateTool._writeStatusToPath(statusPath, reg);
 	}
 
 	private makeExpiry(ttlMs?: number): string {
