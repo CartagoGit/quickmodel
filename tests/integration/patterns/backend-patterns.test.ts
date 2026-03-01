@@ -143,7 +143,7 @@ function expressValidateBody<TDto extends QModel<object>>(
 	): void {
 		try {
 			const dto = new DtoClass(req.body);
-			const validation = dto.checkRules();
+			const validation = dto.$qm.checkRules();
 			if (!validation.valid) {
 				res.status = 422;
 				res.body = { errors: validation.errors };
@@ -221,7 +221,7 @@ describe('Express — validation middleware pattern', () => {
 		const dto = (req as unknown as Record<string, unknown>)[ // @quickmodel-rule-ignore: no-as-unknown
 			'dto'
 		] as CreateUserDto;
-		const serialized = dto.serialize() as Record<string, unknown>;
+		const serialized = dto.$qm.serialize() as Record<string, unknown>;
 		expect('injectField' in serialized).toBe(false);
 	});
 
@@ -240,7 +240,7 @@ describe('Express — validation middleware pattern', () => {
 		const dto = (req as unknown as Record<string, unknown>)[ // @quickmodel-rule-ignore: no-as-unknown
 			'dto'
 		] as CreateUserDto;
-		const out = dto.serialize() as Record<string, unknown>;
+		const out = dto.$qm.serialize() as Record<string, unknown>;
 		expect(out['displayName']).toBe('carol (viewer)');
 	});
 
@@ -254,7 +254,7 @@ describe('Express — validation middleware pattern', () => {
 		// StrictDto with empty body should not throw (fields may be undefined)
 		// Test that qCheckRules properly delegates
 		const dto = new StrictDto({});
-		const validation = dto.checkRules();
+		const validation = dto.$qm.checkRules();
 		expect(validation.valid).toBe(false);
 	});
 });
@@ -298,7 +298,7 @@ function fastifyDtoHook<TDto extends QModel<object>>(
 ): TDto | null {
 	try {
 		const dto = new DtoClass(req.body);
-		const validation = dto.checkRules();
+		const validation = dto.$qm.checkRules();
 		if (!validation.valid) {
 			reply.code(422).send({ errors: validation.errors });
 			return null;
@@ -337,7 +337,7 @@ describe('Fastify — DTO coercion + validation hook', () => {
 			dueDate: new Date('2030-01-01'),
 			paid: false,
 		});
-		const out = invoice.serialize() as Record<string, unknown>;
+		const out = invoice.$qm.serialize() as Record<string, unknown>;
 		expect(out['formattedAmount']).toBe('150.75 EUR');
 	});
 
@@ -350,7 +350,7 @@ describe('Fastify — DTO coercion + validation hook', () => {
 			dueDate: new Date('2020-01-01'), // past date
 			paid: false,
 		});
-		const out = invoice.serialize() as Record<string, unknown>;
+		const out = invoice.$qm.serialize() as Record<string, unknown>;
 		expect(out['isOverdue']).toBe(true);
 	});
 
@@ -363,7 +363,7 @@ describe('Fastify — DTO coercion + validation hook', () => {
 			dueDate: new Date('2020-01-01'), // past
 			paid: true,
 		});
-		const out = invoice.serialize() as Record<string, unknown>;
+		const out = invoice.$qm.serialize() as Record<string, unknown>;
 		expect(out['isOverdue']).toBe(false);
 	});
 
@@ -421,7 +421,7 @@ function honoValidator<TDto extends QModel<object>>(
 		const body = await ctx.req.json();
 		try {
 			const dto = new DtoClass(body);
-			const validation = dto.checkRules();
+			const validation = dto.$qm.checkRules();
 			if (!validation.valid) {
 				return ctx.json({ errors: validation.errors }, 422);
 			}
@@ -456,7 +456,7 @@ describe('Hono — validator middleware pattern', () => {
 		let capturedDto: CreateUserDto | null = null;
 		const handler = honoValidator(CreateUserDto, (dto) => {
 			capturedDto = dto;
-			return Promise.resolve(ctx.json(dto.serialize(), 201));
+			return Promise.resolve(ctx.json(dto.$qm.serialize(), 201));
 		});
 		const response = await handler(ctx, () => Promise.resolve());
 		expect(capturedDto).not.toBeNull();
@@ -490,7 +490,7 @@ describe('Hono — validator middleware pattern', () => {
 		});
 		let serialized: Record<string, unknown> = {};
 		const handler = honoValidator(CreateUserDto, (dto) => {
-			serialized = dto.serialize() as Record<string, unknown>;
+			serialized = dto.$qm.serialize() as Record<string, unknown>;
 			return Promise.resolve(ctx.json(serialized, 200));
 		});
 		await handler(ctx, () => Promise.resolve());
@@ -670,26 +670,26 @@ class BlogPostRepository {
 			(post as unknown as Record<string, unknown>)['id'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			post
 		);
-		return post.serialize();
+		return post.$qm.serialize();
 	}
 
 	findById(idArg: string): object | null {
 		const post = this.store.get(idArg);
-		return post ? post.serialize() : null;
+		return post ? post.$qm.serialize() : null;
 	}
 
 	publish(idArg: string): object | null {
 		const post = this.store.get(idArg);
 		if (!post) return null;
-		const published = post.copy({ publishedAt: new Date() });
+		const published = post.$qm.copy({ publishedAt: new Date() });
 		this.store.set(idArg, published);
-		return published.serialize();
+		return published.$qm.serialize();
 	}
 
 	findPublished(): object[] {
 		return [...this.store.values()]
 			.filter((post) => post.isPublished)
-			.map((post) => post.serialize());
+			.map((post) => post.$qm.serialize());
 	}
 
 	count(): number {

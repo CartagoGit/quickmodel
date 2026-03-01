@@ -83,7 +83,7 @@ type ITypedArray =
  * audio.samples instanceof Float32Array; // → true
  * audio.largeNumbers instanceof BigInt64Array; // → true
  *
- * const json = audio.serialize();
+ * const json = audio.$qm.serialize();
  * json.samples; // → [0.5, -0.3, 0.8]
  * json.largeNumbers; // → ["9007199254740991", "123456789012345"]
  * ```

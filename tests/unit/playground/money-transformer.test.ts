@@ -85,7 +85,7 @@ describe('Custom Transformer Type Safety', () => {
 		expect(product.price.toString()).toBe('999.99 USD');
 
 		// Use serialize() to get the object structure, not toJSON() which returns a string
-		const json = product.serialize();
+		const json = product.$qm.serialize();
 		expect(json.price).toEqual({ amount: 999.99, currency: 'USD' });
 	});
 });

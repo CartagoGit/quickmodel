@@ -98,7 +98,7 @@ function reactiveModel<T extends QModel<any>>(instance: T): IReactiveModel<T> {
 			if (typeof key !== 'string') return false;
 			// merge() produces a new instance → new reference → signal version ++
 			// Angular's change detection fires because the reference changed.
-			sig.update((mdl) => mdl.copy({ [key]: value } as Partial<T>));
+			sig.update((mdl) => mdl.$qm.copy({ [key]: value } as Partial<T>));
 			return true;
 		},
 		has(_, key) {
@@ -197,7 +197,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			// Angular pattern: immutable update via merge()
 			// patch() mutates in-place and returns void — merge() returns a new instance
 			cartSignal.update((current) =>
-				current.copy({ total: current.total + 25 })
+				current.$qm.copy({ total: current.total + 25 })
 			);
 
 			expect(cartSignal().total).toBe(75);
@@ -267,7 +267,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			const versionBefore = cartSignal.version();
 
 			// ✅ Correct Angular pattern → always triggers re-render
-			cartSignal.update((cart) => cart.copy({ total: 120 }));
+			cartSignal.update((cart) => cart.$qm.copy({ total: 120 }));
 
 			expect(cartSignal.version()).toBe(versionBefore + 1);
 			expect(cartSignal().total).toBe(120);
@@ -306,7 +306,7 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			expect(priceLabel()).toBe('COMP-001: $50');
 
-			productSignal.update((prod) => prod.copy({ price: 75 }));
+			productSignal.update((prod) => prod.$qm.copy({ price: 75 }));
 
 			expect(priceLabel()).toBe('COMP-001: $75');
 		});
@@ -362,7 +362,9 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			cartSignal.update((cart) =>
-				cart.copy({ updatedAt: new Date('2025-12-31T23:59:59.000Z') })
+				cart.$qm.copy({
+					updatedAt: new Date('2025-12-31T23:59:59.000Z'),
+				})
 			);
 
 			expect(cartSignal().updatedAt).toBeInstanceOf(Date);
@@ -380,7 +382,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			productSignal.update((prod) =>
-				prod.copy({ tags: new Set(['beta', 'gamma']) })
+				prod.$qm.copy({ tags: new Set(['beta', 'gamma']) })
 			);
 
 			expect(productSignal().tags).toBeInstanceOf(Set);
@@ -565,7 +567,7 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			cart.total = 75;
 
-			const json = cart.serialize();
+			const json = cart.$qm.serialize();
 			expect(json.total).toBe(75);
 			expect(typeof json.updatedAt).toBe('string'); // Date serialized
 		});

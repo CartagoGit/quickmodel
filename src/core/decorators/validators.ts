@@ -55,7 +55,7 @@ import { QRule } from './qrule.decorator';
  * }
  *
  * const form = new UserForm({ email: 'bad', age: 15, username: 'alice' });
- * const { valid, errors } = form.checkRules();
+ * const { valid, errors } = form.$qm.checkRules();
  * // valid  → false
  * // errors → [{ field: 'email', … }, { field: 'age', … }]
  * ```

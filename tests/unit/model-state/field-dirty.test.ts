@@ -58,7 +58,7 @@ describe('QModel — isDirty(field?)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			expect(user.isDirty()).toBe(false);
+			expect(user.$qm.isDirty()).toBe(false);
 		});
 
 		test('true cuando hay cambios', () => {
@@ -71,7 +71,7 @@ describe('QModel — isDirty(field?)', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 			user.name = 'Jane';
-			expect(user.isDirty()).toBe(true);
+			expect(user.$qm.isDirty()).toBe(true);
 		});
 	});
 
@@ -86,9 +86,9 @@ describe('QModel — isDirty(field?)', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 			user.name = 'Jane';
-			expect(user.isDirty('email')).toBe(false);
-			expect(user.isDirty('age')).toBe(false);
-			expect(user.isDirty('id')).toBe(false);
+			expect(user.$qm.isDirty('email')).toBe(false);
+			expect(user.$qm.isDirty('age')).toBe(false);
+			expect(user.$qm.isDirty('id')).toBe(false);
 		});
 
 		test('true para el campo que cambió', () => {
@@ -101,7 +101,7 @@ describe('QModel — isDirty(field?)', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 			user.name = 'Jane';
-			expect(user.isDirty('name')).toBe(true);
+			expect(user.$qm.isDirty('name')).toBe(true);
 		});
 
 		test('true para campo Date que cambió', () => {
@@ -114,8 +114,8 @@ describe('QModel — isDirty(field?)', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 			user.createdAt = new Date('2025-06-15T00:00:00.000Z');
-			expect(user.isDirty('createdAt')).toBe(true);
-			expect(user.isDirty('name')).toBe(false);
+			expect(user.$qm.isDirty('createdAt')).toBe(true);
+			expect(user.$qm.isDirty('name')).toBe(false);
 		});
 
 		test('false para campo Date que NO cambió', () => {
@@ -128,25 +128,25 @@ describe('QModel — isDirty(field?)', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 			user.name = 'Jane';
-			expect(user.isDirty('createdAt')).toBe(false);
+			expect(user.$qm.isDirty('createdAt')).toBe(false);
 		});
 
 		test('true para campo BigInt que cambió', () => {
 			const order = new Order({ id: 1, total: '1000' });
 			order.total = 9999n;
-			expect(order.isDirty('total')).toBe(true);
-			expect(order.isDirty('id')).toBe(false);
+			expect(order.$qm.isDirty('total')).toBe(true);
+			expect(order.$qm.isDirty('id')).toBe(false);
 		});
 
 		test('false para campo opcional que no estaba y sigue sin estar', () => {
 			const order = new Order({ id: 1, total: '500' });
-			expect(order.isDirty('note')).toBe(false);
+			expect(order.$qm.isDirty('note')).toBe(false);
 		});
 
 		test('true para campo opcional que se añadió', () => {
 			const order = new Order({ id: 1, total: '500' });
 			order.note = 'express';
-			expect(order.isDirty('note')).toBe(true);
+			expect(order.$qm.isDirty('note')).toBe(true);
 		});
 
 		test('false para campo inexistente — no lanza, solo devuelve false', () => {
@@ -158,8 +158,10 @@ describe('QModel — isDirty(field?)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			expect(() => user.isDirty('nonExistentField' as any)).not.toThrow();
-			expect(user.isDirty('nonExistentField' as any)).toBe(false);
+			expect(() =>
+				user.$qm.isDirty('nonExistentField' as any)
+			).not.toThrow();
+			expect(user.$qm.isDirty('nonExistentField' as any)).toBe(false);
 		});
 
 		test('varios campos cambiados — solo los correctos aparecen como dirty', () => {
@@ -174,10 +176,10 @@ describe('QModel — isDirty(field?)', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			expect(user.isDirty('name')).toBe(true);
-			expect(user.isDirty('age')).toBe(true);
-			expect(user.isDirty('email')).toBe(false);
-			expect(user.isDirty('active')).toBe(false);
+			expect(user.$qm.isDirty('name')).toBe(true);
+			expect(user.$qm.isDirty('age')).toBe(true);
+			expect(user.$qm.isDirty('email')).toBe(false);
+			expect(user.$qm.isDirty('active')).toBe(false);
 		});
 
 		test('después de reset(), ningún campo está dirty', () => {
@@ -191,13 +193,13 @@ describe('QModel — isDirty(field?)', () => {
 			});
 			user.name = 'Jane';
 			user.age = 31;
-			expect(user.isDirty('name')).toBe(true);
+			expect(user.$qm.isDirty('name')).toBe(true);
 
 			user.reset();
 
-			expect(user.isDirty()).toBe(false);
-			expect(user.isDirty('name')).toBe(false);
-			expect(user.isDirty('age')).toBe(false);
+			expect(user.$qm.isDirty()).toBe(false);
+			expect(user.$qm.isDirty('name')).toBe(false);
+			expect(user.$qm.isDirty('age')).toBe(false);
 		});
 
 		test('después de patch(), solo los campos parcheados están dirty', () => {
@@ -209,10 +211,10 @@ describe('QModel — isDirty(field?)', () => {
 				active: true,
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
-			user.patch({ name: 'Jane' });
+			user.$qm.patch({ name: 'Jane' });
 
-			expect(user.isDirty('name')).toBe(true);
-			expect(user.isDirty('email')).toBe(false);
+			expect(user.$qm.isDirty('name')).toBe(true);
+			expect(user.$qm.isDirty('email')).toBe(false);
 		});
 	});
 });

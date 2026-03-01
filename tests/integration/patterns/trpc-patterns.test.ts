@@ -231,7 +231,7 @@ describe('tRPC output — serialize() as procedure output', () => {
 			role: 'user',
 			age: 25,
 		});
-		const payload = out.serialize();
+		const payload = out.$qm.serialize();
 		expect(typeof payload).toBe('object');
 		expect((payload as Record<string, unknown>)['uid']).toBe('u1');
 	});
@@ -244,7 +244,7 @@ describe('tRPC output — serialize() as procedure output', () => {
 			role: 'admin',
 			age: 30,
 		});
-		const payload = out.serialize() as Record<string, unknown>;
+		const payload = out.$qm.serialize() as Record<string, unknown>;
 		expect(payload['label']).toBe('Bob (admin)');
 	});
 
@@ -258,7 +258,7 @@ describe('tRPC output — serialize() as procedure output', () => {
 			sql_idx: 777,
 		};
 		const out = new UserOutput(dbRow);
-		const payload = out.serialize() as Record<string, unknown>;
+		const payload = out.$qm.serialize() as Record<string, unknown>;
 		expect(payload['sql_idx']).toBeUndefined();
 	});
 });
@@ -550,7 +550,10 @@ describe('tRPC router — typed procedure chain', () => {
 			name: 'Bob Jr',
 			age: 31,
 		});
-		const updated = outputDto.copy({ name: patch.name, age: patch.age });
+		const updated = outputDto.$qm.copy({
+			name: patch.name,
+			age: patch.age,
+		});
 		expect(updated.name).toBe('Bob Jr');
 		expect(updated.email).toBe('bob@x.com'); // unchanged
 	});
@@ -563,7 +566,7 @@ describe('tRPC router — typed procedure chain', () => {
 			role: 'user',
 			age: 22,
 		});
-		const serialized = JSON.stringify(out.serialize());
+		const serialized = JSON.stringify(out.$qm.serialize());
 		const restored = JSON.parse(serialized) as Record<string, unknown>;
 		expect(restored['name']).toBe('JSON Test');
 		expect(restored['label']).toBe('JSON Test (user)');
@@ -591,7 +594,7 @@ describe('updateUser — patch with copy()', () => {
 			name: 'Alice Updated',
 			age: 26,
 		});
-		const updated = existing.copy({ name: patch.name, age: patch.age });
+		const updated = existing.$qm.copy({ name: patch.name, age: patch.age });
 		expect(updated.name).toBe('Alice Updated');
 		expect(updated.age).toBe(26);
 		expect(existing.name).toBe('Alice'); // immutable
@@ -599,16 +602,16 @@ describe('updateUser — patch with copy()', () => {
 
 	test('patch does not affect unchanged fields', () => {
 		const existing = new UserOutput(userDb.get('u1')!);
-		const updated = existing.copy({ name: 'New Name' });
+		const updated = existing.$qm.copy({ name: 'New Name' });
 		expect(updated.email).toBe('alice@x.com');
 		expect(updated.role).toBe('user');
 	});
 
 	test('copy() creates an immutable snapshot', () => {
 		const existing = new UserOutput(userDb.get('u1')!);
-		const updated = existing.copy({ age: 99 });
+		const updated = existing.$qm.copy({ age: 99 });
 		expect(updated.age).toBe(99);
-		expect(updated.isDirty()).toBe(false); // copy() sets __initData = merged state
-		expect(existing.isDirty()).toBe(false);
+		expect(updated.$qm.isDirty()).toBe(false); // copy() sets __initData = merged state
+		expect(existing.$qm.isDirty()).toBe(false);
 	});
 });

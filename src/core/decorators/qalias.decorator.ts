@@ -69,10 +69,10 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  * console.log(user.firstName); // 'Alice'
  *
  * // Output: alias keys
- * user.serialize(); // { first_name: 'Alice', ... }
+ * user.$qm.serialize(); // { first_name: 'Alice', ... }
  *
  * // Roundtrip
- * const copy = User.create(user.serialize());
+ * const copy = User.create(user.$qm.serialize());
  * copy.firstName === 'Alice'; // true
  * ```
  *

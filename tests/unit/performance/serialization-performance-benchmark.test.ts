@@ -84,7 +84,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 		const start = performance.now();
 		for (const user of users) {
-			user.serialize();
+			user.$qm.serialize();
 		}
 		const end = performance.now();
 

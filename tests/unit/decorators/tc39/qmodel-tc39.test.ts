@@ -206,7 +206,7 @@ describe('@Quick + @QType — TC39 — full deserialization', () => {
 			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 5,
 		});
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(true);
 	});
 
@@ -216,7 +216,7 @@ describe('@Quick + @QType — TC39 — full deserialization', () => {
 			createdAt: '2023-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 5,
 		});
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(
 			result.errors.some((err) => err.message === 'Name too short')
@@ -238,7 +238,7 @@ describe('@QRule — TC39 — type inference with @QType', () => {
 			createdAt: '1990-06-15T00:00:00.000Z' as unknown as Date, // @quickmodel-rule-ignore: no-as-unknown
 			score: 5,
 		});
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(
 			result.errors.some(

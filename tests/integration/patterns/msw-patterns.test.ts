@@ -167,7 +167,7 @@ function createGetUserHandler(
 		const user = store.get(id);
 		if (!user)
 			return { status: 404, body: { error: `User ${id} not found` } };
-		return { status: 200, body: user.serialize() as IUser };
+		return { status: 200, body: user.$qm.serialize() as IUser };
 	};
 }
 
@@ -181,7 +181,7 @@ function createListUsersHandler(rawUsers: object[]): IHandlerResponse<IUser[]> {
 	}
 	return {
 		status: 200,
-		body: instances.map((usr) => usr.serialize() as IUser),
+		body: instances.map((usr) => usr.$qm.serialize() as IUser),
 	};
 }
 
@@ -192,7 +192,7 @@ function createPostUserHandler(
 	IUser | { errors: Array<{ field: string; message: string }> }
 > {
 	const dto = new CreateUserDto(body);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 	if (!valid) {
 		return {
 			status: 422,
@@ -201,7 +201,7 @@ function createPostUserHandler(
 	}
 	// Simulate DB insert
 	const created: IUser = {
-		...(dto.serialize() as ICreateUser),
+		...(dto.$qm.serialize() as ICreateUser),
 		id: 'new-id-123',
 	};
 	return { status: 201, body: created };
@@ -393,7 +393,7 @@ describe('MSW — Reusable fixture factory', () => {
 			username: 'fixture_user',
 			age: 30,
 		});
-		const body = user.serialize();
+		const body = user.$qm.serialize();
 		expect(body).toHaveProperty('id', 'u99');
 		expect(body).toHaveProperty('displayName');
 	});
@@ -456,7 +456,7 @@ describe('MSW — PostDto: Date coercion and @QComputed preview', () => {
 
 	test('serialized posts include preview', () => {
 		const { instances } = PostDto.createMany(rawPosts as any[]);
-		const serialized = instances.map((post) => post.serialize());
+		const serialized = instances.map((post) => post.$qm.serialize());
 		serialized.forEach((post) => {
 			expect(post).toHaveProperty('preview');
 		});

@@ -209,7 +209,7 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 		onError: (errors: Record<string, string>) => void
 	): void {
 		const dto = new UserSignupDto(formData);
-		const { valid, errors } = dto.checkRules();
+		const { valid, errors } = dto.$qm.checkRules();
 		if (valid) {
 			onValid(dto);
 		} else {
@@ -433,7 +433,7 @@ describe('React Hook Form — isDirty() integration', () => {
 			age: 20,
 			role: 'user',
 		});
-		expect(dto.isDirty()).toBe(false);
+		expect(dto.$qm.isDirty()).toBe(false);
 	});
 
 	test('direct mutation marks field as dirty', () => {
@@ -445,8 +445,8 @@ describe('React Hook Form — isDirty() integration', () => {
 			role: 'user',
 		});
 		dto.username = 'changed_name';
-		expect(dto.isDirty('username')).toBe(true);
-		expect(dto.isDirty('email')).toBe(false);
+		expect(dto.$qm.isDirty('username')).toBe(true);
+		expect(dto.$qm.isDirty('email')).toBe(false);
 	});
 
 	test('merge() returns new instance flagged as dirty (has pending changes)', () => {
@@ -457,9 +457,9 @@ describe('React Hook Form — isDirty() integration', () => {
 			age: 22,
 			role: 'user',
 		});
-		const updated = dto.copy({ username: 'renamed' });
+		const updated = dto.$qm.copy({ username: 'renamed' });
 		expect(updated.username).toBe('renamed'); // value was applied
-		expect(updated.isDirty()).toBe(true); // model has pending changes vs original snapshot
+		expect(updated.$qm.isDirty()).toBe(true); // model has pending changes vs original snapshot
 	});
 
 	test('reset() clears dirty state', () => {
@@ -471,9 +471,9 @@ describe('React Hook Form — isDirty() integration', () => {
 			role: 'user',
 		});
 		dto.age = 99;
-		expect(dto.isDirty()).toBe(true);
+		expect(dto.$qm.isDirty()).toBe(true);
 		dto.reset();
-		expect(dto.isDirty()).toBe(false);
+		expect(dto.$qm.isDirty()).toBe(false);
 	});
 });
 

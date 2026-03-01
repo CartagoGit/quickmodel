@@ -157,7 +157,7 @@ describe('@Quick — ${modelName}', () => {
 
 	it('should round-trip serialize → populate without data loss', () => {
 		const original = ${modelName}.create({ id: 7, name: 'Dave', createdAt: '2024-03-01T00:00:00.000Z' });
-		const serialized = original.serialize();
+		const serialized = original.$qm.serialize();
 		const copy = ${modelName}.create(serialized);
 		expect(copy.id).toBe(original.id);
 		expect(copy.name).toBe(original.name);
@@ -181,13 +181,13 @@ function buildQRuleTests(
 	const edgeCases = withEdge
 		? `
 	it('should accumulate multiple rule failures', () => {
-		const result = ${modelName}.create({ email: 'bad', age: 15 }).checkRules();
+		const result = ${modelName}.create({ email: 'bad', age: 15 }).$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThanOrEqual(2);
 	});
 
 	it('should pass all rules with valid data', () => {
-		const result = ${modelName}.create({ email: 'valid@example.com', age: 25 }).checkRules();
+		const result = ${modelName}.create({ email: 'valid@example.com', age: 25 }).$qm.checkRules();
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});`
@@ -216,25 +216,25 @@ class ${modelName} extends QModel<I${modelName}> {
 
 describe('@QRule — ${modelName}', () => {
 	it('should fail validation with invalid email', () => {
-		const result = ${modelName}.create({ email: 'notanemail', age: 25 }).checkRules();
+		const result = ${modelName}.create({ email: 'notanemail', age: 25 }).$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
 
 	it('should fail validation when age < 18', () => {
-		const result = ${modelName}.create({ email: 'ok@ok.com', age: 16 }).checkRules();
+		const result = ${modelName}.create({ email: 'ok@ok.com', age: 16 }).$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'age')).toBe(true);
 	});
 
 	it('should include the configured error message on failure', () => {
-		const result = ${modelName}.create({ email: 'bad', age: 25 }).checkRules();
+		const result = ${modelName}.create({ email: 'bad', age: 25 }).$qm.checkRules();
 		const emailError = result.errors.find((err) => err.field === 'email');
 		expect(emailError?.message).toBe('Invalid email format');
 	});
 
 	it('should pass when all rules are satisfied', () => {
-		const result = ${modelName}.create({ email: 'user@domain.com', age: 30 }).checkRules();
+		const result = ${modelName}.create({ email: 'user@domain.com', age: 30 }).$qm.checkRules();
 		expect(result.valid).toBe(true);
 	});
 ${edgeCases}
@@ -304,7 +304,7 @@ describe('@QField — ${modelName}', () => {
 
 	it('should include validation rules via validationReport()', () => {
 		const instance = ${modelName}.create({ email: 'bad', password: '123' });
-		const report = instance.validationReport();
+		const report = instance.$qm.validationReport();
 		expect(report.some((item) => !item.valid)).toBe(true);
 	});
 ${edgeCases}
@@ -359,7 +359,7 @@ describe('@QAlias — ${modelName}', () => {
 
 	it('should serialize aliased property back to alias key', () => {
 		const instance = ${modelName}.create({ user_name: 'Carol', created_at: '2024-01-01T00:00:00.000Z' });
-		const serialized = instance.serialize();
+		const serialized = instance.$qm.serialize();
 		expect('user_name' in serialized || 'name' in serialized).toBe(true);
 	});
 
@@ -443,7 +443,7 @@ function buildQComputedTests(
 		? `
 	it('should recompute after data mutation via copy()', () => {
 		const original = ${modelName}.create({ firstName: 'Alice', lastName: 'Smith' });
-		const updated = original.copy({ firstName: 'Bob' });
+		const updated = original.$qm.copy({ firstName: 'Bob' });
 		const result = JSON.parse(updated.toJSON());
 		expect(result.fullName).toBe('Bob Smith');
 	});`

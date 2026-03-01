@@ -54,7 +54,7 @@ interface IRegExpData {
  * const config2 = new Config({ emailPattern: { source: "^test$", flags: "g" } });
  *
  * // Serialization
- * const data = config1.serialize();
+ * const data = config1.$qm.serialize();
  * data.emailPattern; // → "/^[a-z]+@[a-z]+\\.com$/i"
  * ```
  *

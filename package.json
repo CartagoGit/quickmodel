@@ -159,7 +159,11 @@
 		"LICENSE",
 		"CHANGELOG.md"
 	],
-	"sideEffects": false,
+	"sideEffects": [
+		"./dist/index.*",
+		"./dist/schema.*",
+		"./dist/mock.*"
+	],
 	"scripts": {
 		"build": "bun run clean && bun run check && tsup && bun run build:manifest",
 		"build:manifest": "bun run scripts/generate-api-manifest.ts",
@@ -196,12 +200,11 @@
 		"prepare": "husky"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.26.0",
-		"reflect-metadata": "^0.2.2",
-		"zod": "^4.3.6"
+		"reflect-metadata": "^0.2.2"
 	},
 	"optionalDependencies": {
-		"@faker-js/faker": "^10.2.0"
+		"@faker-js/faker": "^10.2.0",
+		"@modelcontextprotocol/sdk": "^1.26.0"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.4.2",
@@ -246,10 +249,14 @@
 		"yup": "^1.7.1"
 	},
 	"peerDependencies": {
-		"typescript": ">=3.4.0"
+		"typescript": ">=3.4.0",
+		"zod": "^4.0.0"
 	},
 	"peerDependenciesMeta": {
 		"typescript": {
+			"optional": true
+		},
+		"zod": {
 			"optional": true
 		}
 	},

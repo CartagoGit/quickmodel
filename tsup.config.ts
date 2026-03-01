@@ -47,9 +47,11 @@ export default defineConfig({
 	minifySyntax: true,
 	minifyWhitespace: true,
 	outDir: 'dist',
-	// @modelcontextprotocol/sdk must be external: it ships with the CLI binary
-	// and is a runtime dependency that should not be bundled.
-	external: ['reflect-metadata', '@modelcontextprotocol/sdk'],
+	// @modelcontextprotocol/sdk and zod must be external: they are peer/optional
+	// dependencies that must be present in the consumer's node_modules at runtime
+	// but should NOT be bundled — this avoids duplicate copies and respects
+	// the consumer's own version resolution.
+	external: ['reflect-metadata', '@modelcontextprotocol/sdk', 'zod'],
 	// Soporte para path aliases (@/*)
 	esbuildOptions(options) {
 		options.alias = {

@@ -205,7 +205,7 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 			age: 25,
 			active: false,
 		});
-		const serialized = original.serialize();
+		const serialized = original.$qm.serialize();
 		const restored = SimplePrimitive.deserialize(serialized);
 		expect(restored.idt).toBe(original.idt);
 		expect(restored.nom).toBe(original.nom);
@@ -369,7 +369,7 @@ describe('Optimization #9 — skip workData copy when no @QAlias', () => {
 			email_address: 'd@j.com',
 		};
 		const usr = new AliasedUser(raw as any);
-		const json = usr.serialize() as Record<string, unknown>;
+		const json = usr.$qm.serialize() as Record<string, unknown>;
 		expect(json['first_name']).toBe('Dave');
 		expect(json['last_name']).toBe('Jones');
 		expect(json['firstName']).toBeUndefined();
@@ -382,8 +382,8 @@ describe('Optimization #9 — skip workData copy when no @QAlias', () => {
 			email_address: 'e@b.com',
 		};
 		const usr = new AliasedUser(raw as any);
-		expect(() => usr.isDirty()).not.toThrow();
-		expect(usr.isDirty()).toBe(false);
+		expect(() => usr.$qm.isDirty()).not.toThrow();
+		expect(usr.$qm.isDirty()).toBe(false);
 	});
 });
 
@@ -626,7 +626,7 @@ describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
 			rank: 3,
 		});
 
-		const result = mdl.serialize();
+		const result = mdl.$qm.serialize();
 
 		expect(result.nom).toBe('Juana');
 		expect(result.age).toBe(30);
@@ -646,8 +646,8 @@ describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
 			rank: 1,
 		});
 
-		const res1 = mdl.serialize();
-		const res2 = mdl.serialize();
+		const res1 = mdl.$qm.serialize();
+		const res2 = mdl.$qm.serialize();
 
 		expect(res1).not.toBe(res2);
 		expect(res1).toEqual(res2);
@@ -663,7 +663,7 @@ describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
 			updatedAt: new Date(isoUpdated),
 		});
 
-		const result = mdl.serialize();
+		const result = mdl.$qm.serialize();
 
 		expect(result.nom).toBe('Pedro');
 		expect(result.createdAt).toBe(isoCreated);
@@ -680,7 +680,7 @@ describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
 			rank: 0,
 		});
 
-		const results = Array.from({ length: 5 }, () => mdl.serialize());
+		const results = Array.from({ length: 5 }, () => mdl.$qm.serialize());
 
 		for (let idx = 1; idx < results.length; idx++) {
 			expect(results[idx]).toEqual(results[0]);
@@ -692,7 +692,7 @@ describe('OPT#SER-A — pre-computed _childOpts en serialize()', () => {
 		const addr = new CityAddress({ city: 'Madrid', zip: '28001' });
 		const person = new PersonAddr({ fullName: 'Sara', address: addr });
 
-		const result = person.serialize();
+		const result = person.$qm.serialize();
 
 		expect(result.fullName).toBe('Sara');
 		expect((result.address as Record<string, unknown>).city).toBe('Madrid');
@@ -728,7 +728,7 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 			rank: 0,
 		});
 
-		const result = mdl.serialize();
+		const result = mdl.$qm.serialize();
 
 		expect(result.nom).toBe('Flat');
 		expect(result.age).toBe(10);
@@ -743,7 +743,7 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		nodeA.ref = nodeB;
 		nodeB.ref = nodeA;
 
-		const result = nodeA.serialize();
+		const result = nodeA.$qm.serialize();
 
 		// nodeA.ref (nodeB) serializa bien, pero nodeB.ref (nodeA) ya fue visitado → __circular
 		expect(result.nom).toBe('NodeA');
@@ -757,7 +757,7 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		const nodeA = new SelfRefNode({ nom: 'Alpha', age: 42 });
 		nodeA.ref = nodeA; // self-reference
 
-		const result = nodeA.serialize();
+		const result = nodeA.$qm.serialize();
 
 		expect(result.nom).toBe('Alpha');
 		expect(result.age).toBe(42);
@@ -769,7 +769,7 @@ describe('OPT#SER-B — lazy WeakSet en serialize()', () => {
 		const child = new SelfRefNode({ nom: 'Hijo', age: 5 });
 		const parent = new SelfRefNode({ nom: 'Padre', age: 40, ref: child });
 
-		const result = parent.serialize();
+		const result = parent.$qm.serialize();
 
 		expect(result.nom).toBe('Padre');
 		expect(result.age).toBe(40);
@@ -829,8 +829,8 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 			tag: '',
 			rank: 0,
 		});
-		expect(mdl.serialize().nom).toBe('hello world');
-		expect(mdl.serialize().tag).toBe('');
+		expect(mdl.$qm.serialize().nom).toBe('hello world');
+		expect(mdl.$qm.serialize().tag).toBe('');
 	});
 
 	test('number finito serializa como number (sin conversión)', () => {
@@ -842,7 +842,7 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 			tag: 'y',
 			rank: -7,
 		});
-		const out = mdl.serialize();
+		const out = mdl.$qm.serialize();
 		expect(out.age).toBe(42);
 		expect(out.score).toBe(3.14);
 		expect(out.rank).toBe(-7);
@@ -865,8 +865,8 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 			tag: 'd',
 			rank: 0,
 		});
-		expect(mdlTrue.serialize().active).toBe(true);
-		expect(mdlFalse.serialize().active).toBe(false);
+		expect(mdlTrue.$qm.serialize().active).toBe(true);
+		expect(mdlFalse.$qm.serialize().active).toBe(false);
 	});
 
 	test('número cero y string vacío no se convierten a falsy/undefined', () => {
@@ -878,7 +878,7 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 			tag: '',
 			rank: 0,
 		});
-		const out = mdl.serialize();
+		const out = mdl.$qm.serialize();
 		expect(out.nom).toBe('');
 		expect(out.age).toBe(0);
 		expect(out.active).toBe(false);
@@ -893,21 +893,21 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 		const mdl = new SpecialFloatModel({ val: 0 });
 		// Asignar NaN directamente porque el constructor puede coercionar
 		mdl.val = NaN;
-		const out = mdl.serialize() as Record<string, unknown>;
+		const out = mdl.$qm.serialize() as Record<string, unknown>;
 		expect(out.val).toEqual({ __qm: 'nan' });
 	});
 
 	test('Infinity produce token especial { __qm: "inf" } (no short-circuited)', () => {
 		const mdl = new SpecialFloatModel({ val: 0 });
 		mdl.val = Infinity;
-		const out = mdl.serialize() as Record<string, unknown>;
+		const out = mdl.$qm.serialize() as Record<string, unknown>;
 		expect(out.val).toEqual({ __qm: 'inf' });
 	});
 
 	test('-Infinity produce token especial { __qm: "-inf" } (no short-circuited)', () => {
 		const mdl = new SpecialFloatModel({ val: 0 });
 		mdl.val = -Infinity;
-		const out = mdl.serialize() as Record<string, unknown>;
+		const out = mdl.$qm.serialize() as Record<string, unknown>;
 		expect(out.val).toEqual({ __qm: '-inf' });
 	});
 
@@ -938,7 +938,7 @@ describe('OPT#VAL-A — short-circuit primitivos en serializeValue()', () => {
 		});
 
 		const opsPerSec = runMicrobench(() => {
-			void mdl.serialize();
+			void mdl.$qm.serialize();
 		});
 
 		// PRE-optimización baseline: ~55-65k ops/sec (each primitive value runs 20+ instanceof checks)
@@ -986,7 +986,7 @@ describe('OPT#NEST-A — nested model branch en serializeValue()', () => {
 		const inner = new InnerNode({ val: 'inner-val', num: 42 });
 		const outer = new OuterNode({ nom: 'outer', inner });
 
-		const out = outer.serialize() as {
+		const out = outer.$qm.serialize() as {
 			nom: string;
 			inner: { val: string; num: number };
 		};
@@ -1026,7 +1026,7 @@ describe('OPT#NEST-A — nested model branch en serializeValue()', () => {
 		const outer = new DateOuter({ label: 'parent', child: inner });
 
 		// Serialize con dateStrategy explícita en el padre
-		const out = outer.serialize(undefined, {
+		const out = outer.$qm.serialize(undefined, {
 			dateStrategy: 'timestamp',
 		}) as {
 			label: string;
@@ -1060,7 +1060,7 @@ describe('OPT#NEST-A — nested model branch en serializeValue()', () => {
 		const lvl2 = new DeeplyNested({ val: 'lvl2', child: lvl3 });
 		const lvl1 = new DeeplyNested({ val: 'lvl1', child: lvl2 });
 
-		const out = lvl1.serialize() as {
+		const out = lvl1.$qm.serialize() as {
 			val: string;
 			child?: {
 				val: string;
@@ -1097,7 +1097,7 @@ describe('OPT#NEST-A — nested model branch en serializeValue()', () => {
 		const outer = new OuterNode({ nom: 'bench-outer', inner });
 
 		const opsPerSec = runMicrobench(() => {
-			void outer.serialize();
+			void outer.$qm.serialize();
 		});
 
 		// PRE-optimización: ~45-50k (spread alloc + 2 delete operations per nested model)

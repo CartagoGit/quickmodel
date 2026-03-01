@@ -296,15 +296,15 @@ describe('React Native — AsyncStorage roundtrip', () => {
 	});
 
 	test('serialize produces plain object safe for JSON.stringify', () => {
-		const serialized = dto.serialize();
+		const serialized = dto.$qm.serialize();
 		expect(() => JSON.stringify(serialized)).not.toThrow();
 	});
 
 	test('new dto from JSON.parse(serialize()) restores values', () => {
-		const stored = JSON.stringify(dto.serialize());
+		const stored = JSON.stringify(dto.$qm.serialize());
 		const parsed = JSON.parse(stored) as Record<string, unknown>;
 		const restored = new UserProfileDto(parsed);
-		expect(restored.serialize()).toEqual(dto.serialize());
+		expect(restored.$qm.serialize()).toEqual(dto.$qm.serialize());
 	});
 
 	test('createMany restores list from AsyncStorage array', () => {
@@ -335,14 +335,14 @@ describe('React Native — AsyncStorage roundtrip', () => {
 	});
 
 	test('copy preserves original before write', () => {
-		const updated = dto.copy({ name: 'Nueva' });
+		const updated = dto.$qm.copy({ name: 'Nueva' });
 		expect(dto.name).toBe('Grace');
 		expect(updated.name).toBe('Nueva');
 	});
 
 	test('isDirty detects pending changes', () => {
-		const updated = dto.copy({ name: 'Nueva' });
-		expect(updated.isDirty()).toBe(true);
+		const updated = dto.$qm.copy({ name: 'Nueva' });
+		expect(updated.$qm.isDirty()).toBe(true);
 	});
 });
 
@@ -361,7 +361,7 @@ describe('Expo Router — route validation', () => {
 		if (!result.valid) {
 			return { success: false, errors: result.errors };
 		}
-		return { success: true, data: dto.serialize() as IUserProfile };
+		return { success: true, data: dto.$qm.serialize() as IUserProfile };
 	}
 
 	test('route action validates before submit', () => {
@@ -437,7 +437,7 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('serialize output is safe for Preferences.set', () => {
 		const dto = new AppSettingsDto(validSettings);
-		const raw = JSON.stringify(dto.serialize());
+		const raw = JSON.stringify(dto.$qm.serialize());
 		const parsed = JSON.parse(raw) as Record<string, unknown>;
 		const restored = new AppSettingsDto(parsed);
 		expect(restored.theme).toBe('dark');
@@ -446,7 +446,7 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('populate rehydrates settings from Preferences.get', () => {
 		const dto = new AppSettingsDto(validSettings);
-		prefs.set('settings', JSON.stringify(dto.serialize()));
+		prefs.set('settings', JSON.stringify(dto.$qm.serialize()));
 		const stored = prefs.get('settings');
 		expect(stored).toBeDefined();
 		const restored = new AppSettingsDto(
@@ -458,13 +458,13 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('TTL pattern stores expiry with data', () => {
 		const dto = new AppSettingsDto(validSettings);
-		const ttlEntry = { data: dto.serialize(), exp: Date.now() + 1000 };
+		const ttlEntry = { data: dto.$qm.serialize(), exp: Date.now() + 1000 };
 		expect(ttlEntry.exp).toBeGreaterThan(Date.now());
 	});
 
 	test('expired TTL entry is detected', () => {
 		const dto = new AppSettingsDto(validSettings);
-		const ttlEntry = { data: dto.serialize(), exp: Date.now() - 1 };
+		const ttlEntry = { data: dto.$qm.serialize(), exp: Date.now() - 1 };
 		expect(ttlEntry.exp).toBeLessThan(Date.now());
 	});
 
@@ -562,7 +562,7 @@ describe('Ionic — form patterns', () => {
 			qty: 3,
 			tag: 'hot',
 		});
-		const updated = dto.copy({ price: 15 });
+		const updated = dto.$qm.copy({ price: 15 });
 		expect(dto.price).toBe(10);
 		expect(updated.price).toBe(15);
 	});
@@ -628,13 +628,13 @@ describe('Cordova — localStorage persistence', () => {
 
 	test('serialize is safe for JSON.stringify/parse roundtrip', () => {
 		const dto = new UserProfileDto(profile);
-		const stored = JSON.stringify(dto.serialize());
+		const stored = JSON.stringify(dto.$qm.serialize());
 		expect(() => JSON.parse(stored)).not.toThrow();
 	});
 
 	test('populate restores from parsed storage value', () => {
 		const dto = new UserProfileDto(profile);
-		const stored = JSON.stringify(dto.serialize());
+		const stored = JSON.stringify(dto.$qm.serialize());
 		const restored = new UserProfileDto(
 			JSON.parse(stored) as Record<string, unknown>
 		);
@@ -645,7 +645,7 @@ describe('Cordova — localStorage persistence', () => {
 	test('deviceready pattern initializes dto from storage', () => {
 		const storage = new Map<string, string>();
 		const dto = new UserProfileDto(profile);
-		storage.set('user', JSON.stringify(dto.serialize()));
+		storage.set('user', JSON.stringify(dto.$qm.serialize()));
 
 		const raw = storage.get('user');
 		expect(raw).toBeDefined();
@@ -657,7 +657,7 @@ describe('Cordova — localStorage persistence', () => {
 
 	test('same serialize/populate contract works in both Cordova and Capacitor', () => {
 		const cordovaDto = new UserProfileDto(profile);
-		const serialized = cordovaDto.serialize();
+		const serialized = cordovaDto.$qm.serialize();
 
 		const capacitorDto = new UserProfileDto(
 			serialized as Record<string, unknown>

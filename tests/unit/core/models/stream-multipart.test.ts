@@ -112,7 +112,7 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 	test('devuelve un ReadableStream', () => {
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 
 		expect(stream).toBeInstanceOf(ReadableStream);
 	});
@@ -120,7 +120,7 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 	test('el stream devuelto expone la propiedad boundary (string no vacío)', () => {
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 
 		expect(
 			typeof (stream as unknown as { boundary: string }).boundary // @quickmodel-rule-ignore: no-as-unknown
@@ -134,7 +134,7 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
 		const custom = 'mi-boundary-personalizado';
 
-		const stream = dto.toReadableStream({
+		const stream = dto.$qm.toReadableStream({
 			multipart: true,
 			boundary: custom,
 		});
@@ -148,7 +148,9 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 	test('multipart: true sin campo field no lanza error', () => {
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
 
-		expect(() => dto.toReadableStream({ multipart: true })).not.toThrow();
+		expect(() =>
+			dto.$qm.toReadableStream({ multipart: true })
+		).not.toThrow();
 	});
 
 	test('sin multipart, field sigue siendo obligatorio y el comportamiento es el mismo', () => {
@@ -162,7 +164,7 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ field: 'avatar' });
+		const stream = dto.$qm.toReadableStream({ field: 'avatar' });
 
 		expect(stream).toBeInstanceOf(ReadableStream);
 		expect(
@@ -178,7 +180,7 @@ describe('toReadableStream({ multipart: true }) — boundary y tipo de retorno',
 describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 	test('el boundary aparece en el contenido del stream', async () => {
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const text = await readStreamAsText(stream);
@@ -188,7 +190,7 @@ describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 
 	test('el stream contiene el nombre de campo de texto en Content-Disposition', async () => {
 		const dto = new TextForm({ nombre: 'Ana', edad: '30' });
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 
 		const text = await readStreamAsText(stream);
 
@@ -197,7 +199,7 @@ describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 
 	test('el stream contiene el valor del campo de texto', async () => {
 		const dto = new TextForm({ nombre: 'Beatriz', edad: '25' });
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 
 		const text = await readStreamAsText(stream);
 
@@ -207,7 +209,7 @@ describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 
 	test('el stream finaliza con --boundary-- (cierre RFC 2046)', async () => {
 		const dto = new TextForm({ nombre: 'Carlos', edad: '40' });
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const text = await readStreamAsText(stream);
@@ -217,7 +219,7 @@ describe('toReadableStream({ multipart: true }) — partes de texto', () => {
 
 	test('todos los campos de texto están presentes en el stream', async () => {
 		const dto = new TextForm({ nombre: 'Diana', edad: '22' });
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 
 		const text = await readStreamAsText(stream);
 
@@ -240,7 +242,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const text = await readStreamAsText(stream);
 
 		expect(text).toContain('filename="foto.jpg"');
@@ -255,7 +257,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const text = await readStreamAsText(stream);
 
 		expect(text).toContain('Content-Type: image/png');
@@ -272,7 +274,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const bytes = await readStreamAsBytes(stream);
 
 		// Los bytes 0xDE 0xAD 0xBE 0xEF deben aparecer en el stream
@@ -288,7 +290,7 @@ describe('toReadableStream({ multipart: true }) — partes binarias', () => {
 			avatar: null,
 		});
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const text = await readStreamAsText(stream);
 
 		// El campo de texto sí aparece, la parte del campo binario null no
@@ -310,7 +312,7 @@ describe('toReadableStream({ multipart: true }) — respeto de @QType fileMode',
 			thumb: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const text = await readStreamAsText(stream);
 
 		// En modo reference se emite el nombre, no datos binarios ni Content-Type de imagen
@@ -326,7 +328,7 @@ describe('toReadableStream({ multipart: true }) — respeto de @QType fileMode',
 describe('toReadableStream({ multipart: true }) — round-trip', () => {
 	test('el stream parseado con Request.formData() recupera los campos de texto', async () => {
 		const dto = new TextForm({ nombre: 'Elena', edad: '35' });
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const req = new Request('http://localhost', {
@@ -354,7 +356,7 @@ describe('toReadableStream({ multipart: true }) — round-trip', () => {
 			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ multipart: true });
+		const stream = dto.$qm.toReadableStream({ multipart: true });
 		const boundary = (stream as unknown as { boundary: string }).boundary; // @quickmodel-rule-ignore: no-as-unknown
 
 		const req = new Request('http://localhost', {

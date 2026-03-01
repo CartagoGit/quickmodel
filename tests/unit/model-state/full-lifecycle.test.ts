@@ -168,13 +168,13 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.isDirty()).toBe(false);
-			expect(user.isDirty()).toBe(user.hasChanges());
+			expect(user.$qm.isDirty()).toBe(false);
+			expect(user.$qm.isDirty()).toBe(user.hasChanges());
 
 			user.name = 'Jane';
 
-			expect(user.isDirty()).toBe(true);
-			expect(user.isDirty()).toBe(user.hasChanges());
+			expect(user.$qm.isDirty()).toBe(true);
+			expect(user.$qm.isDirty()).toBe(user.hasChanges());
 		});
 	});
 
@@ -221,7 +221,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.getChanges()).toEqual({});
+			expect(user.$qm.getChanges()).toEqual({});
 		});
 
 		test('should return only modified fields with current values', () => {
@@ -236,7 +236,7 @@ describe('State Management Methods', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const changes = user.getChanges();
+			const changes = user.$qm.getChanges();
 
 			expect(changes.name).toBe('Jane');
 			expect(changes.age).toBe(31);
@@ -255,7 +255,7 @@ describe('State Management Methods', () => {
 
 			user.name = 'Jane';
 
-			const patchData = user.getChanges();
+			const patchData = user.$qm.getChanges();
 
 			// Only send changed fields to API
 			expect(Object.keys(patchData).length).toBe(1);
@@ -332,7 +332,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.patch({ name: 'Jane', age: 31 });
+			user.$qm.patch({ name: 'Jane', age: 31 });
 
 			expect(user.name).toBe('Jane');
 			expect(user.age).toBe(31);
@@ -348,7 +348,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.patch({ createdAt: '2024-12-31T00:00:00.000Z' });
+			user.$qm.patch({ createdAt: '2024-12-31T00:00:00.000Z' });
 
 			expect(user.createdAt).toBeInstanceOf(Date);
 			expect(user.createdAt.toISOString()).toBe(
@@ -372,7 +372,7 @@ describe('State Management Methods', () => {
 				updatedAt: '2024-06-15T10:30:00.000Z',
 			};
 
-			user.patch(apiResponse);
+			user.$qm.patch(apiResponse);
 
 			expect(user.name).toBe('Jane');
 			expect(user.age).toBe(31);

@@ -10,6 +10,7 @@ export default tseslint.config(
 		ignores: [
 			'dist/',
 			'node_modules/',
+			'tmp/',
 			'docs/',
 			'docs-vitepress/public/**/*',
 			'docs-vitepress/tsdoc/**/*',

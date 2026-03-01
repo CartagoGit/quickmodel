@@ -180,7 +180,7 @@ class ArticlePiniaStore {
 	updateArticle(idArg: string, patch: Partial<IArticle>): boolean {
 		const article = this.articles.get(idArg);
 		if (!article) return false;
-		const updated = article.copy(patch);
+		const updated = article.$qm.copy(patch);
 		this.articles.set(idArg, updated);
 		return true;
 	}
@@ -194,19 +194,19 @@ class ArticlePiniaStore {
 	get selectedArticle(): object | undefined {
 		if (!this.selectedId) return undefined;
 		const art = this.articles.get(this.selectedId);
-		return art ? art.serialize() : undefined;
+		return art ? art.$qm.serialize() : undefined;
 	}
 
 	// getter: publishedArticles
 	get publishedArticles(): object[] {
 		return [...this.articles.values()]
 			.filter((art) => art.published)
-			.map((art) => art.serialize());
+			.map((art) => art.$qm.serialize());
 	}
 
 	// getter: allArticles
 	get allArticles(): object[] {
-		return [...this.articles.values()].map((art) => art.serialize());
+		return [...this.articles.values()].map((art) => art.$qm.serialize());
 	}
 }
 
@@ -501,7 +501,7 @@ async function useFetchProductList(rawData: object[]): Promise<{
 	await Bun.sleep(1); // simulate async fetch
 	const { instances, errors } = ProductModel.createMany(rawData as any[]);
 	return {
-		products: instances.map((item) => item.serialize()),
+		products: instances.map((item) => item.$qm.serialize()),
 		failedCount: errors.length,
 	};
 }

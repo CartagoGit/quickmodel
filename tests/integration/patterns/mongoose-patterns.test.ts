@@ -372,7 +372,7 @@ describe('Mongoose repository pattern with QModel layer', () => {
 		): Promise<UserDto | undefined> {
 			const existing = await this.findById(id);
 			if (!existing) return undefined;
-			const updated = existing.copy(patch);
+			const updated = existing.$qm.copy(patch);
 			const doc = await this.model.findByIdAndUpdate(
 				id,
 				updated.toInterface() as Partial<IUserDoc>
@@ -473,7 +473,7 @@ describe('copy() + findByIdAndUpdate() partial update', () => {
 	test('copy() creates immutable patch for update', () => {
 		const doc = makeUserDoc({ name: 'Eve', score: 20 });
 		const dto = new UserDto(docToObject(doc));
-		const updated = dto.copy({ score: 100, role: 'admin' });
+		const updated = dto.$qm.copy({ score: 100, role: 'admin' });
 		expect(updated.score).toBe(100);
 		expect(updated.role).toBe('admin');
 		expect(dto.score).toBe(20); // original unchanged
@@ -481,14 +481,14 @@ describe('copy() + findByIdAndUpdate() partial update', () => {
 
 	test('copy() isDirty() = false (clean snapshot for next change tracking)', () => {
 		const dto = new UserDto(docToObject(makeUserDoc()));
-		const updated = dto.copy({ score: 75 });
-		expect(updated.isDirty()).toBe(false);
+		const updated = dto.$qm.copy({ score: 75 });
+		expect(updated.$qm.isDirty()).toBe(false);
 	});
 
 	test('copy() toInterface() produces valid findByIdAndUpdate patch', () => {
 		const doc = makeUserDoc({ name: 'Frank', email: 'frank@x.com' });
 		const dto = new UserDto(docToObject(doc));
-		const patched = dto.copy({ email: 'frank-new@x.com' });
+		const patched = dto.$qm.copy({ email: 'frank-new@x.com' });
 		const updatePayload = patched.toInterface();
 		expect(updatePayload.email).toBe('frank-new@x.com');
 	});

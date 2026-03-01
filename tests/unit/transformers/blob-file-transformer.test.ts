@@ -300,14 +300,14 @@ describe('Integración: alias "blob" y "file" en @Quick()', () => {
 			thumbnail:
 				'data:image/png;base64,aGVsbG8=' as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
-		const serialized = dto.serialize();
+		const serialized = dto.$qm.serialize();
 		expect((serialized.thumbnail as IBlobSerialized)._blobRef).toBe(true);
 	});
 
 	test('ArticleDto null thumbnail → null en modelo y serialización', () => {
 		const dto = new ArticleDto({ title: 'Empty', thumbnail: null });
 		expect(dto.thumbnail).toBeNull();
-		expect(dto.serialize().thumbnail).toBeNull();
+		expect(dto.$qm.serialize().thumbnail).toBeNull();
 	});
 
 	test('ProfileDto hidrata File desde IFileSerialized', () => {
@@ -333,14 +333,14 @@ describe('Integración: alias "blob" y "file" en @Quick()', () => {
 			username: 'bob',
 			avatar: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
-		const serialized = dto.serialize();
+		const serialized = dto.$qm.serialize();
 		expect((serialized.avatar as IFileSerialized).name).toBe('img.png');
 	});
 
 	test('ProfileDto null avatar → null en modelo y serialización', () => {
 		const dto = new ProfileDto({ username: 'carol', avatar: null });
 		expect(dto.avatar).toBeNull();
-		expect(dto.serialize().avatar).toBeNull();
+		expect(dto.$qm.serialize().avatar).toBeNull();
 	});
 });
 
@@ -386,7 +386,7 @@ describe('Integración: constructor Blob/File en @Quick()', () => {
 			type: 'application/pdf',
 		});
 		const dto = new UploadDto({ doc: file as unknown as IFileSerialized }); // @quickmodel-rule-ignore: no-as-unknown
-		const out = dto.serialize();
+		const out = dto.$qm.serialize();
 		expect(typeof (out.doc as IFileSerialized).name).toBe('string');
 	});
 });

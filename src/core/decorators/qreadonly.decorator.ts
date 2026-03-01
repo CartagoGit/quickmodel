@@ -19,7 +19,7 @@ export const QREADONLY_FIELDS_KEY = '__qReadonly_fields__';
  * @example
  * ```typescript
  * try {
- *   order.copy({ id: 999 });
+ *   order.$qm.copy({ id: 999 });
  * } catch (err) {
  *   if (err instanceof ImmutableFieldError) {
  *     console.error(err.field); // 'id'

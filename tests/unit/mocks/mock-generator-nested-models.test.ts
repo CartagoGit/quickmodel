@@ -111,7 +111,7 @@ describe('Unit: Mock Generator - Nested Models', () => {
 		});
 
 		const mock = User.mock().random({
-			address: customAddress.serialize(),
+			address: customAddress.$qm.serialize(),
 		});
 
 		expect(mock.address.city).toBe('New York');

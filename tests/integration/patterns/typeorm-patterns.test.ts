@@ -294,7 +294,7 @@ describe('dto.toInterface() as repository.save() payload', () => {
 	test('copy() + toInterface() provides partial update payload', () => {
 		const entity = makeEntity({ id: 5, score: 50 });
 		const dto = new UserEntityDto(entity);
-		const updated = dto.copy({ score: 200, role: 'admin' });
+		const updated = dto.$qm.copy({ score: 200, role: 'admin' });
 		const updatePayload = updated.toInterface();
 		expect(updatePayload.score).toBe(200);
 		expect(updatePayload.role).toBe('admin');
@@ -377,7 +377,7 @@ describe('Repository pattern with QModel layer', () => {
 			const entity = this.store.get(id);
 			if (!entity) return undefined;
 			const existing = new UserEntityDto(entity);
-			const updated = existing.copy(patch);
+			const updated = existing.$qm.copy(patch);
 			const payload = { ...updated.toInterface(), id } as IUserEntity;
 			this.store.set(id, payload);
 			return new UserEntityDto(payload);
@@ -518,7 +518,7 @@ describe('copy() + repository.update() partial update', () => {
 	test('copy() preserves all fields and updates only the given patch', () => {
 		const entity = makeEntity({ id: 7, name: 'Eve', score: 30 });
 		const dto = new UserEntityDto(entity);
-		const updated = dto.copy({ score: 500, role: 'admin' });
+		const updated = dto.$qm.copy({ score: 500, role: 'admin' });
 		expect(updated.score).toBe(500);
 		expect(updated.role).toBe('admin');
 		expect(updated.name).toBe('Eve'); // unchanged
@@ -532,7 +532,7 @@ describe('copy() + repository.update() partial update', () => {
 			email: 'frank@x.com',
 		});
 		const dto = new UserEntityDto(entity);
-		const patched = dto.copy({ email: 'frank-updated@x.com' });
+		const patched = dto.$qm.copy({ email: 'frank-updated@x.com' });
 		// repository.update({ where: { id: 8 }, ...patched.toInterface() })
 		const updatePayload = patched.toInterface();
 		expect(updatePayload.email).toBe('frank-updated@x.com');
@@ -540,8 +540,8 @@ describe('copy() + repository.update() partial update', () => {
 
 	test('copy() result has isDirty() = false (fresh snapshot)', () => {
 		const dto = new UserEntityDto(makeEntity({ id: 9 }));
-		const updated = dto.copy({ score: 100 });
-		expect(updated.isDirty()).toBe(false); // copy() injects __initData = merged state
+		const updated = dto.$qm.copy({ score: 100 });
+		expect(updated.$qm.isDirty()).toBe(false); // copy() injects __initData = merged state
 	});
 });
 

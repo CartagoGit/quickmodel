@@ -201,12 +201,12 @@ describe('System: E-Commerce Cart', () => {
 			userId: 'user-123',
 			items: [
 				{
-					product: laptop.serialize(),
+					product: laptop.$qm.serialize(),
 					quantity: 1,
 					addedAt: new Date().toISOString(),
 				},
 				{
-					product: mouse.serialize(),
+					product: mouse.$qm.serialize(),
 					quantity: 2,
 					addedAt: new Date().toISOString(),
 				},
@@ -240,7 +240,7 @@ describe('System: E-Commerce Cart', () => {
 		const order = new Order({
 			id: crypto.randomUUID(),
 			userId: cart.userId,
-			items: cart.items.map((item) => item.serialize()),
+			items: cart.items.map((item) => item.$qm.serialize()),
 			total: cart.getTotal().toString(),
 			status: 'pending',
 			createdAt: new Date().toISOString(),
@@ -297,7 +297,7 @@ describe('System: E-Commerce Cart', () => {
 			userId: 'user-1',
 			items: [
 				{
-					product: product.serialize(),
+					product: product.$qm.serialize(),
 					quantity: 2,
 					addedAt: new Date().toISOString(),
 				},
@@ -335,7 +335,7 @@ describe('System: E-Commerce Cart', () => {
 			userId: 'user-1',
 			items: [
 				{
-					product: product.serialize(),
+					product: product.$qm.serialize(),
 					quantity: 1,
 					addedAt: new Date().toISOString(),
 				},

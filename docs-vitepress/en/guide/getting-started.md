@@ -8,15 +8,15 @@ QuickModel is a TypeScript library that provides automatic serialization and des
 
 - **Zero Configuration**: Works out of the box with TypeScript decorators (`@Quick`, `@QType`).
 - **Type-Safe**: Full TypeScript support with strict type checking and type inference.
-- **Automatic Transformations**: 33 built-in transformers for `Date`, `BigInt`, `Map`, `Set`, `RegExp`, `Buffer`, `URL`, `TypedArray`, `WeakMap`, and more.
+- **Automatic Transformations**: 32 built-in transformers for `Date`, `BigInt`, `Map`, `Set`, `RegExp`, `Buffer`, `URL`, `TypedArray`, `WeakMap`, and more.
 - **Business Validation**: `@QRule` decorator with 14 built-in validators, async validations, and group-based rule checking.
 - **State Management**: Change tracking with `isDirty`, partial updates via `copy(partial)` and `patch()`, and `reset()` to restore the original snapshot.
 - **Computed & Alias Properties**: `@QComputed` for derived fields and `@QAlias` for property aliasing.
-- **Schema Generation**: Export to 10 formats (`json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`, `prisma`, `valibot`, `yup`) via `getSchema()`.
+- **Schema Generation**: Export to 13 formats (`json`, `openapi`, `zod`, `mongo`, `typescript`, `graphql`, `ajv`, `prisma`, `valibot`, `yup`, `drizzle`, `typebox`, `effect-schema`) via `getSchema()`.
 - **Form Integration**: Generate form schemas with `@QField` and `@QGroup` decorators and `getFormSchema()`.
 - **Mock Generation**: Built-in mock data generation for testing (`User.mock().random()`, `User.mock().fromSchema()`).
 - **CLI Scaffolding**: Generate model classes, transformer skeletons, and integration boilerplate via `npx quickmodel generate`.
-- **MCP Server**: 20 public AI assistant tools and 20 prompt templates for AI-assisted development.
+- **MCP Server**: 24 public AI assistant tools and 27 workflow skills (prompts) for AI-assisted development.
 - **Security**: Built-in DoS protection, payload size limits, recursion guards, and XSS prevention.
 - **SOLID Architecture**: Clean, extensible design — register custom transformers without modifying core code.
 

@@ -63,6 +63,10 @@ export interface IQMHandle<
 	serialize(
 		options?: IQSerializationOptions
 	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	serialize(
+		seen?: WeakSet<object>,
+		options?: IQSerializationOptions
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
 
 	/**
 	 * Converts the model to a `FormData` instance.

@@ -45,7 +45,7 @@ import {
  * typeof entity.id; // → 'symbol'
  * (entity.id === Symbol.for("unique-id")); // → true
  *
- * const data = entity.serialize();
+ * const data = entity.$qm.serialize();
  * typeof data.id; // → 'string'
  * data.id; // → "unique-id"
  * ```

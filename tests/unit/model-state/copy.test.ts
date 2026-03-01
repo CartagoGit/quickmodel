@@ -81,18 +81,18 @@ const BASE_USER = {
 describe('QModel — copy() sin argumentos', () => {
 	test('devuelve una instancia diferente (nueva referencia)', () => {
 		const user = new User(BASE_USER);
-		const copied = user.copy();
+		const copied = user.$qm.copy();
 		expect(copied).not.toBe(user);
 	});
 
 	test('es instancia de la misma clase', () => {
 		const user = new User(BASE_USER);
-		expect(user.copy()).toBeInstanceOf(User);
+		expect(user.$qm.copy()).toBeInstanceOf(User);
 	});
 
 	test('los valores son idénticos al original', () => {
 		const user = new User(BASE_USER);
-		const copied = user.copy();
+		const copied = user.$qm.copy();
 		expect(copied.id).toBe(user.id);
 		expect(copied.name).toBe(user.name);
 		expect(copied.age).toBe(user.age);
@@ -102,7 +102,7 @@ describe('QModel — copy() sin argumentos', () => {
 
 	test('los campos Date son nuevas instancias con el mismo valor', () => {
 		const user = new User(BASE_USER);
-		const copied = user.copy();
+		const copied = user.$qm.copy();
 		expect(copied.createdAt).toBeInstanceOf(Date);
 		expect(copied.createdAt.getTime()).toBe(user.createdAt.getTime());
 		expect(copied.createdAt).not.toBe(user.createdAt);
@@ -110,14 +110,14 @@ describe('QModel — copy() sin argumentos', () => {
 
 	test('modificar el original NO afecta a la copia', () => {
 		const user = new User(BASE_USER);
-		const copied = user.copy();
+		const copied = user.$qm.copy();
 		user.name = 'Jane';
 		expect(copied.name).toBe('John');
 	});
 
 	test('modificar la copia NO afecta al original', () => {
 		const user = new User(BASE_USER);
-		const copied = user.copy();
+		const copied = user.$qm.copy();
 		copied.name = 'Jane';
 		expect(user.name).toBe('John');
 	});
@@ -125,14 +125,14 @@ describe('QModel — copy() sin argumentos', () => {
 	test('la copia está limpia (isDirty = false)', () => {
 		const user = new User(BASE_USER);
 		user.name = 'Dirty';
-		const copied = user.copy();
-		expect(copied.isDirty()).toBe(false);
+		const copied = user.$qm.copy();
+		expect(copied.$qm.isDirty()).toBe(false);
 	});
 
 	test('reset() en la copia vuelve al estado del momento de la copia', () => {
 		const user = new User(BASE_USER);
 		user.name = 'Dirty';
-		const copied = user.copy(); // copia el estado "Dirty"
+		const copied = user.$qm.copy(); // copia el estado "Dirty"
 		copied.name = 'Bob';
 		copied.reset();
 		expect(copied.name).toBe('Dirty'); // vuelve al estado de la copia, no al original
@@ -140,25 +140,25 @@ describe('QModel — copy() sin argumentos', () => {
 
 	test('equals() entre original y copia es true', () => {
 		const user = new User(BASE_USER);
-		expect(user.equals(user.copy())).toBe(true);
+		expect(user.$qm.equals(user.$qm.copy())).toBe(true);
 	});
 
 	test('tipos complejos (BigInt) se copian correctamente', () => {
 		const order = new Order({ id: 1, total: '1000' });
-		const copied = order.copy();
+		const copied = order.$qm.copy();
 		expect(typeof copied.total).toBe('bigint');
 		expect(copied.total).toBe(1000n);
 	});
 
 	test('campos opcionales ausentes se preservan', () => {
 		const order = new Order({ id: 1, total: '500' });
-		const copied = order.copy();
+		const copied = order.$qm.copy();
 		expect(copied.note).toBeUndefined();
 	});
 
 	test('campos opcionales presentes se preservan', () => {
 		const order = new Order({ id: 1, total: '500', note: 'express' });
-		const copied = order.copy();
+		const copied = order.$qm.copy();
 		expect(copied.note).toBe('express');
 	});
 });
@@ -170,17 +170,17 @@ describe('QModel — copy(partial)', () => {
 	describe('inmutabilidad', () => {
 		test('devuelve objeto diferente al original', () => {
 			const user = new User(BASE_USER);
-			expect(user.copy({ name: 'Jane' })).not.toBe(user);
+			expect(user.$qm.copy({ name: 'Jane' })).not.toBe(user);
 		});
 
 		test('es instancia de la misma clase', () => {
 			const user = new User(BASE_USER);
-			expect(user.copy({ name: 'Jane' })).toBeInstanceOf(User);
+			expect(user.$qm.copy({ name: 'Jane' })).toBeInstanceOf(User);
 		});
 
 		test('el original NO se modifica', () => {
 			const user = new User(BASE_USER);
-			user.copy({ name: 'Jane', age: 99 });
+			user.$qm.copy({ name: 'Jane', age: 99 });
 			expect(user.name).toBe('John');
 			expect(user.age).toBe(30);
 		});
@@ -189,14 +189,14 @@ describe('QModel — copy(partial)', () => {
 	describe('valores en la nueva instancia', () => {
 		test('los campos del partial se actualizan', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ name: 'Jane', age: 31 });
+			const copied = user.$qm.copy({ name: 'Jane', age: 31 });
 			expect(copied.name).toBe('Jane');
 			expect(copied.age).toBe(31);
 		});
 
 		test('los campos no incluidos conservan el valor original', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ name: 'Jane' });
+			const copied = user.$qm.copy({ name: 'Jane' });
 			expect(copied.id).toBe('1');
 			expect(copied.email).toBe('j@e.com');
 			expect(copied.active).toBe(true);
@@ -204,7 +204,9 @@ describe('QModel — copy(partial)', () => {
 
 		test('campos Date se transforman correctamente', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ createdAt: '2025-06-15T00:00:00.000Z' });
+			const copied = user.$qm.copy({
+				createdAt: '2025-06-15T00:00:00.000Z',
+			});
 			expect(copied.createdAt).toBeInstanceOf(Date);
 			expect(copied.createdAt.toISOString()).toBe(
 				'2025-06-15T00:00:00.000Z'
@@ -213,14 +215,14 @@ describe('QModel — copy(partial)', () => {
 
 		test('campos BigInt se transforman correctamente', () => {
 			const order = new Order({ id: 1, total: '1000' });
-			const copied = order.copy({ total: '9999' });
+			const copied = order.$qm.copy({ total: '9999' });
 			expect(typeof copied.total).toBe('bigint');
 			expect(copied.total).toBe(9999n);
 		});
 
 		test('copy({}) equivale a copy() — misma referencia nueva, mismos datos', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({});
+			const copied = user.$qm.copy({});
 			expect(copied).not.toBe(user);
 			expect(copied.name).toBe(user.name);
 			expect(copied.age).toBe(user.age);
@@ -231,23 +233,23 @@ describe('QModel — copy(partial)', () => {
 	describe('estado de la nueva instancia', () => {
 		test('la nueva instancia NO está dirty', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ name: 'Jane' });
-			expect(copied.isDirty()).toBe(false);
+			const copied = user.$qm.copy({ name: 'Jane' });
+			expect(copied.$qm.isDirty()).toBe(false);
 		});
 
 		test('reset() en la nueva instancia vuelve al estado del copy', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ name: 'Jane' });
+			const copied = user.$qm.copy({ name: 'Jane' });
 			copied.name = 'Bob';
 			copied.reset();
 			expect(copied.name).toBe('Jane'); // vuelve a Jane, NO a John
-			expect(copied.isDirty()).toBe(false);
+			expect(copied.$qm.isDirty()).toBe(false);
 		});
 
 		test('encadenar copy() funciona correctamente', () => {
 			const user = new User(BASE_USER);
-			const user2 = user.copy({ name: 'Jane' });
-			const user3 = user2.copy({ age: 99 });
+			const user2 = user.$qm.copy({ name: 'Jane' });
+			const user3 = user2.$qm.copy({ age: 99 });
 
 			expect(user3.name).toBe('Jane');
 			expect(user3.age).toBe(99);
@@ -261,8 +263,8 @@ describe('QModel — copy(partial)', () => {
 	describe('serialize y diff', () => {
 		test('serialize() refleja los valores del copy', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ name: 'Jane', age: 31 });
-			const serialized = copied.serialize();
+			const copied = user.$qm.copy({ name: 'Jane', age: 31 });
+			const serialized = copied.$qm.serialize();
 			expect(serialized.name).toBe('Jane');
 			expect(serialized.age).toBe(31);
 			expect(serialized.email).toBe('j@e.com');
@@ -270,8 +272,8 @@ describe('QModel — copy(partial)', () => {
 
 		test('diff() entre original y copy muestra solo los campos cambiados', () => {
 			const user = new User(BASE_USER);
-			const copied = user.copy({ name: 'Jane' });
-			const differences = user.diff(copied);
+			const copied = user.$qm.copy({ name: 'Jane' });
+			const differences = user.$qm.diff(copied);
 			expect(Object.keys(differences)).toEqual(['name']);
 			expect(differences.name).toEqual({ before: 'John', after: 'Jane' });
 		});
@@ -303,7 +305,7 @@ describe('QModel — copy() con estilos de declaración', () => {
 
 	test('declare: copy() produce instancia independiente', () => {
 		const config = new ConfigDeclare(configData);
-		const copied = config.copy();
+		const copied = config.$qm.copy();
 		expect(copied).toBeInstanceOf(ConfigDeclare);
 		expect(copied.apiUrl).toBe(config.apiUrl);
 		expect(copied.timeout).toBe(config.timeout);
@@ -314,7 +316,7 @@ describe('QModel — copy() con estilos de declaración', () => {
 
 	test('declare: copy(partial) sobreescribe los campos indicados', () => {
 		const config = new ConfigDeclare(configData);
-		const copied = config.copy({ timeout: 9999 });
+		const copied = config.$qm.copy({ timeout: 9999 });
 		expect(copied.timeout).toBe(9999);
 		expect(copied.apiUrl).toBe('https://api.example.com');
 	});
@@ -326,7 +328,7 @@ describe('QModel — copy() con estilos de declaración', () => {
 describe('QModel — copy() como herramienta de reactividad', () => {
 	test('copy() produce nueva referencia detectable por cualquier signal/store', () => {
 		const user = new User(BASE_USER);
-		const user2 = user.copy({ name: 'Bob' });
+		const user2 = user.$qm.copy({ name: 'Bob' });
 		expect(user2).not.toBe(user); // nueva referencia → framework detecta cambio
 		expect(user2.name).toBe('Bob');
 		expect(user.name).toBe('John'); // original intacto
@@ -334,8 +336,8 @@ describe('QModel — copy() como herramienta de reactividad', () => {
 
 	test('patch() + copy() como patrón batch: mutar rápido y luego emitir nueva ref', () => {
 		const user = new User(BASE_USER);
-		user.patch({ name: 'Bob', age: 31 }); // mutaciones rápidas
-		const emitted = user.copy(); // nueva ref para el signal/store
+		user.$qm.patch({ name: 'Bob', age: 31 }); // mutaciones rápidas
+		const emitted = user.$qm.copy(); // nueva ref para el signal/store
 		expect(emitted).not.toBe(user);
 		expect(emitted.name).toBe('Bob');
 		expect(emitted.age).toBe(31);

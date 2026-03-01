@@ -70,7 +70,7 @@ describe('serialize fileMode: default (auto / binary) — comportamiento existen
 			buffer: null,
 			bytes: null,
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.avatar).toMatchObject({
 			name: 'foto.jpg',
 			size: 1024,
@@ -87,7 +87,7 @@ describe('serialize fileMode: default (auto / binary) — comportamiento existen
 			buffer: null,
 			bytes: null,
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.thumbnail).toMatchObject({
 			size: 512,
 			type: 'image/png',
@@ -103,8 +103,8 @@ describe('serialize fileMode: default (auto / binary) — comportamiento existen
 			buffer: null,
 			bytes: null,
 		});
-		const withBinary = dto.serialize({ fileMode: 'binary' });
-		const withDefault = dto.serialize();
+		const withBinary = dto.$qm.serialize({ fileMode: 'binary' });
+		const withDefault = dto.$qm.serialize();
 		expect(withBinary.avatar).toEqual(withDefault.avatar);
 	});
 
@@ -116,8 +116,8 @@ describe('serialize fileMode: default (auto / binary) — comportamiento existen
 			buffer: null,
 			bytes: null,
 		});
-		const withAuto = dto.serialize({ fileMode: 'auto' });
-		const withDefault = dto.serialize();
+		const withAuto = dto.$qm.serialize({ fileMode: 'auto' });
+		const withDefault = dto.$qm.serialize();
 		expect(withAuto.thumbnail).toEqual(withDefault.thumbnail);
 	});
 });
@@ -135,7 +135,7 @@ describe("serialize fileMode: 'reference' — campos binarios como strings descr
 			buffer: null,
 			bytes: null,
 		});
-		const result = dto.serialize({ fileMode: 'reference' });
+		const result = dto.$qm.serialize({ fileMode: 'reference' });
 		expect(result.avatar).toBe('profile.png');
 	});
 
@@ -147,7 +147,7 @@ describe("serialize fileMode: 'reference' — campos binarios como strings descr
 			buffer: null,
 			bytes: null,
 		});
-		const result = dto.serialize({ fileMode: 'reference' });
+		const result = dto.$qm.serialize({ fileMode: 'reference' });
 		expect(result.thumbnail).toBe('[Blob]');
 	});
 
@@ -159,7 +159,7 @@ describe("serialize fileMode: 'reference' — campos binarios como strings descr
 			buffer: new ArrayBuffer(256),
 			bytes: null,
 		});
-		const result = dto.serialize({ fileMode: 'reference' });
+		const result = dto.$qm.serialize({ fileMode: 'reference' });
 		expect(result.buffer).toBe('[binary]');
 	});
 
@@ -171,7 +171,7 @@ describe("serialize fileMode: 'reference' — campos binarios como strings descr
 			buffer: null,
 			bytes: new Uint8Array([1, 2, 3, 4]),
 		});
-		const result = dto.serialize({ fileMode: 'reference' });
+		const result = dto.$qm.serialize({ fileMode: 'reference' });
 		expect(result.bytes).toBe('[binary]');
 	});
 
@@ -183,7 +183,7 @@ describe("serialize fileMode: 'reference' — campos binarios como strings descr
 			buffer: null,
 			bytes: null,
 		});
-		const result = dto.serialize({ fileMode: 'reference' });
+		const result = dto.$qm.serialize({ fileMode: 'reference' });
 		expect(result.name).toBe('Alice');
 	});
 
@@ -195,7 +195,7 @@ describe("serialize fileMode: 'reference' — campos binarios como strings descr
 			buffer: new ArrayBuffer(8),
 			bytes: new Uint8Array([0, 1]),
 		});
-		const result = dto.serialize({ fileMode: 'reference' });
+		const result = dto.$qm.serialize({ fileMode: 'reference' });
 		expect(result.avatar).toBe('img.jpg');
 		expect(result.thumbnail).toBe('[Blob]');
 		expect(result.buffer).toBe('[binary]');

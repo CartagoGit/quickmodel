@@ -384,7 +384,7 @@ describe('Mutation resolver — validation and error mapping', () => {
 // ---------------------------------------------------------------------------
 
 describe('Output serialization — serialize() as GraphQL response', () => {
-	test('dto.serialize() returns plain JSON-safe object', () => {
+	test('dto.$qm.serialize() returns plain JSON-safe object', () => {
 		const dto = new UserResponse({
 			id: 1,
 			name: 'Helen',
@@ -393,7 +393,7 @@ describe('Output serialization — serialize() as GraphQL response', () => {
 			role: 'admin',
 			bio: 'Dev',
 		});
-		const serialized = dto.serialize();
+		const serialized = dto.$qm.serialize();
 		expect(typeof serialized).toBe('object');
 		expect(serialized).not.toBeInstanceOf(QModel);
 	});
@@ -407,7 +407,7 @@ describe('Output serialization — serialize() as GraphQL response', () => {
 			role: 'user',
 			bio: '',
 		});
-		const out = dto.serialize() as Record<string, unknown>;
+		const out = dto.$qm.serialize() as Record<string, unknown>;
 		expect(out['id']).toBe(2);
 		expect(out['name']).toBe('Ivan');
 		expect(out['email']).toBe('ivan@x.com');
@@ -509,7 +509,7 @@ describe('createMany() in list query — bulk coercion from DB resolver', () => 
 			},
 		];
 		const { instances } = UserResponse.createMany(rows as any[]);
-		const response = instances.map((dto) => dto.serialize());
+		const response = instances.map((dto) => dto.$qm.serialize());
 		expect(response.length).toBe(2);
 		expect((response[0] as Record<string, unknown>)['name']).toBe('Dave');
 	});
@@ -562,7 +562,10 @@ describe('copy() in update mutation resolver', () => {
 			body: 'Initial body text here',
 			published: false,
 		});
-		const updated = post.copy({ title: 'Updated Title', published: true });
+		const updated = post.$qm.copy({
+			title: 'Updated Title',
+			published: true,
+		});
 		expect(updated.title).toBe('Updated Title');
 		expect(updated.published).toBe(true);
 		expect(updated.body).toBe('Initial body text here');
@@ -575,7 +578,7 @@ describe('copy() in update mutation resolver', () => {
 			body: 'Original body content test',
 			published: false,
 		});
-		const updated = post.copy({
+		const updated = post.$qm.copy({
 			title: 'New Valid Title',
 			body: 'Updated body content here',
 		});
@@ -589,7 +592,7 @@ describe('copy() in update mutation resolver', () => {
 			body: 'Valid body content',
 			published: false,
 		});
-		const bad = post.copy({ title: 'AB' }); // too short
+		const bad = post.$qm.copy({ title: 'AB' }); // too short
 		const { valid, errors } = qCheckRules(bad);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'title')).toBe(true);

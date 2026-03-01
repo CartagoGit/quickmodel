@@ -107,7 +107,7 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			last_name: 'Jones',
 			email_address: 'd@j.com',
 		} as any);
-		const json = usr.serialize();
+		const json = usr.$qm.serialize();
 		expect((json as any)['first_name']).toBe('Dave');
 		expect((json as any)['last_name']).toBe('Jones');
 		expect((json as any)['email_address']).toBe('d@j.com');
@@ -119,7 +119,7 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			last_name: 'Black',
 			email_address: 'e@b.com',
 		} as any);
-		const json = usr.serialize();
+		const json = usr.$qm.serialize();
 		expect((json as any)['firstName']).toBeUndefined();
 		expect((json as any)['lastName']).toBeUndefined();
 	});
@@ -130,7 +130,7 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			nom: 'partial',
 			createdAt: new Date('2024-06-01'),
 		} as any);
-		const json = mdl.serialize();
+		const json = mdl.$qm.serialize();
 		expect((json as any)['user_id']).toBe('u-456');
 		expect((json as any)['nom']).toBe('partial');
 		expect((json as any)['userId']).toBeUndefined();
@@ -142,7 +142,7 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			last_name: 'Castle',
 			email_address: 'f@c.com',
 		} as any);
-		const serialized = original.serialize();
+		const serialized = original.$qm.serialize();
 		const restored = new ApiUser(serialized as any);
 		expect(restored.firstName).toBe('Frank');
 		expect(restored.lastName).toBe('Castle');
@@ -170,7 +170,7 @@ describe('@Quick alias option — comportamiento de serialize() y limitación de
 
 		// El tipo declarado de serialize() es IQSerializedInterface<IApiUser> (firstName, etc.)
 		// pero el valor real en runtime usa claves alias. Cast necesario para acceso type-safe.
-		const json = usr.serialize() as Record<string, unknown>;
+		const json = usr.$qm.serialize() as Record<string, unknown>;
 		expect(json['first_name']).toBe('Grace');
 		expect(json['last_name']).toBe('Hopper');
 		expect(json['email_address']).toBe('g@h.com');
@@ -183,7 +183,7 @@ describe('@Quick alias option — comportamiento de serialize() y limitación de
 			createdAt: '2024-03-01T00:00:00.000Z' as any,
 		} as any);
 
-		const json = mdl.serialize() as Record<string, unknown>;
+		const json = mdl.$qm.serialize() as Record<string, unknown>;
 		expect(json['user_id']).toBe('u-789');
 		// `nom` no tiene alias: sigue accesible por su nombre de propiedad
 		expect(json['nom']).toBe('typed');
@@ -209,7 +209,7 @@ describe('@Quick alias option — compatibilidad con @QAlias', () => {
 		expect(inst.nom).toBe('test');
 		expect(inst.createdAt).toBeInstanceOf(Date);
 
-		const json = inst.serialize();
+		const json = inst.$qm.serialize();
 		// Sin alias, las claves son las del modelo
 		expect(json.nom).toBe('test');
 	});
@@ -264,7 +264,7 @@ describe('QModel segundo genérico — serialize() type-safe con alias keys', ()
 
 		// Estas líneas deben compilar SIN cast — el tipo de json es
 		// IQAliasedSerializedInterface<ITypedUser, ITypedUserAliases>
-		const json = usr.serialize();
+		const json = usr.$qm.serialize();
 		expect(json.first_name).toBe('Alice');
 		expect(json.last_name).toBe('Smith');
 		expect(json.email_address).toBe('alice@example.com');
@@ -276,7 +276,7 @@ describe('QModel segundo genérico — serialize() type-safe con alias keys', ()
 			last_name: 'Jones',
 			email_address: 'b@j.com',
 		} as any);
-		const json = usr.serialize();
+		const json = usr.$qm.serialize();
 		// En runtime las claves originales no existen
 		expect((json as any).firstName).toBeUndefined();
 		expect((json as any).lastName).toBeUndefined();
@@ -289,7 +289,7 @@ describe('QModel segundo genérico — serialize() type-safe con alias keys', ()
 		}
 
 		const inst = new PlainModel({ val: 'hello' });
-		const json = inst.serialize();
+		const json = inst.$qm.serialize();
 		// Sin TAliasMap el tipo es IQSerializedInterface<T> — sin cambios
 		expect(json.val).toBe('hello');
 	});

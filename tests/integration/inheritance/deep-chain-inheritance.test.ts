@@ -80,7 +80,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 			});
 
 			// serialize() returns a plain object; toJSON() returns a JSON string
-			const plain = instance.serialize();
+			const plain = instance.$qm.serialize();
 
 			expect(plain).toHaveProperty('nameA', 'alice');
 			expect(plain).toHaveProperty('nameB', 'bob');
@@ -233,7 +233,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 
 			const instance = ChainD.create(data);
 			// serialize() → plain object; pass that directly to create() for roundtrip
-			const plain = instance.serialize();
+			const plain = instance.$qm.serialize();
 			const restored = ChainD.create(plain as any);
 
 			expect(restored.fieldA).toBeInstanceOf(Date);
@@ -479,7 +479,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 			});
 
 			// serialize() returns plain object; toJSON() returns a JSON string
-			const plain = instance.serialize();
+			const plain = instance.$qm.serialize();
 
 			expect(plain).toHaveProperty('strA', 'alpha');
 			expect(plain).toHaveProperty('strB', 'beta');

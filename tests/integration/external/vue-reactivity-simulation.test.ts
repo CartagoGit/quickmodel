@@ -167,7 +167,7 @@ describe('Integration: Vue Reactivity Simulation', () => {
 
 			// The backing store (__quickValues__) must reflect the change
 			expect(user.age).toBe(36);
-			expect(user.serialize().age).toBe(36);
+			expect(user.$qm.serialize().age).toBe(36);
 		});
 	});
 
@@ -182,7 +182,7 @@ describe('Integration: Vue Reactivity Simulation', () => {
 			const reactiveUser = createVueReactive(user, tracker);
 
 			// Vue devtools / Pinia use serialize() to snapshot state
-			const json = reactiveUser.serialize();
+			const json = reactiveUser.$qm.serialize();
 
 			expect(json.name).toBe('Eve');
 			expect(json.age).toBe(28);
@@ -202,7 +202,7 @@ describe('Integration: Vue Reactivity Simulation', () => {
 			// JSON.stringify(proxy) would double-encode it (that's the toJSON() contract).
 			// The idiomatic serialization through a reactive proxy is:
 			//   JSON.stringify(proxy.serialize()) — uses the plain-object form
-			const str = JSON.stringify(reactiveUser.serialize());
+			const str = JSON.stringify(reactiveUser.$qm.serialize());
 			const parsed = JSON.parse(str) as IUser;
 
 			expect(parsed.name).toBe('Frank');

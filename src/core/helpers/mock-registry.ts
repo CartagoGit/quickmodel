@@ -106,3 +106,32 @@ export function getMockBuilderCtor(): IMockBuilderCtor {
 export function hasMockServices(): boolean {
 	return _mockGenGetter !== undefined && _mockBuilderCtor !== undefined;
 }
+
+/**
+ * Resets the mock services registry to its initial (unregistered) state.
+ *
+ * **For testing purposes only.** Use this in `beforeEach` blocks that need
+ * to verify the "not registered" guard paths in `getMockGenSingleton()` and
+ * `getMockBuilderCtor()`.
+ *
+ * @internal
+ */
+export function _resetMockServicesForTesting(): void {
+	_mockGenGetter = undefined;
+	_mockBuilderCtor = undefined;
+}
+
+/**
+ * Returns the current raw registry state (getter + ctor, possibly undefined).
+ *
+ * **For testing purposes only.** Use this with `registerMockServices()` to
+ * save and restore mock services around tests that temporarily register fakes.
+ *
+ * @internal
+ */
+export function _getMockServicesState(): {
+	getter: IMockGenGetter | undefined;
+	ctor: IMockBuilderCtor | undefined;
+} {
+	return { getter: _mockGenGetter, ctor: _mockBuilderCtor };
+}

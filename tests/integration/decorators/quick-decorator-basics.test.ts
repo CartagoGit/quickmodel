@@ -197,7 +197,7 @@ describe('Integration: @Quick() Decorator Basics', () => {
 			createdAt: '2024-01-01T00:00:00.000Z',
 		});
 
-		const IQSerialized = user.serialize();
+		const IQSerialized = user.$qm.serialize();
 
 		expect(IQSerialized.id).toBe('1');
 		// BigInt se serializa como objeto con __type

@@ -663,7 +663,7 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			score: 50,
 			createdAt: new Date(),
 		});
-		const updated = existing.copy({ score: 100, role: 'admin' });
+		const updated = existing.$qm.copy({ score: 100, role: 'admin' });
 		expect(updated.score).toBe(100);
 		expect(updated.role).toBe('admin');
 		expect(existing.score).toBe(50); // original untouched
@@ -680,7 +680,7 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			score: 20,
 			createdAt: new Date(),
 		});
-		const patched = dto.copy({ active: true });
+		const patched = dto.$qm.copy({ active: true });
 		const updateData = patched.toInterface();
 		expect(updateData.active).toBe(true);
 		expect(updateData.id).toBe(101);
@@ -698,7 +698,7 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			score: 0,
 			createdAt: originalDate,
 		});
-		const updated = dto.copy({ score: 77 });
+		const updated = dto.$qm.copy({ score: 77 });
 		expect(updated.createdAt).toBeInstanceOf(Date);
 		expect(updated.createdAt.getTime()).toBe(originalDate.getTime());
 	});
@@ -712,9 +712,9 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			age: 28,
 			role: 'user',
 		});
-		const patched = dto.copy({ name: 'Daniel' });
+		const patched = dto.$qm.copy({ name: 'Daniel' });
 		// copy() sets __initData = merged state → new instance is not dirty
-		expect(patched.isDirty()).toBe(false);
+		expect(patched.$qm.isDirty()).toBe(false);
 		expect(patched.name).toBe('Daniel');
 	});
 });
@@ -761,7 +761,7 @@ describe('@QComputed() for non-stored derived fields', () => {
 			score: 65,
 			createdAt: new Date(),
 		});
-		const serialized = dto.serialize() as Record<string, unknown>;
+		const serialized = dto.$qm.serialize() as Record<string, unknown>;
 		expect(serialized['displayName']).toBe('[USER] Henry');
 	});
 

@@ -62,7 +62,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(product.inStock).toBe(true);
 
 			// Serialize
-			const IQSerialized = product.serialize();
+			const IQSerialized = product.$qm.serialize();
 			expect(IQSerialized).toEqual(productData);
 
 			// toInterface
@@ -78,7 +78,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(product.price).toBe(999.99);
 			expect(product.inStock).toBe(true);
 
-			const IQSerialized = product.serialize();
+			const IQSerialized = product.$qm.serialize();
 			expect(IQSerialized).toEqual(productData);
 
 			const iface = product.toInterface();
@@ -93,7 +93,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(product.price).toBe(999.99);
 			expect(product.inStock).toBe(true);
 
-			const IQSerialized = product.serialize();
+			const IQSerialized = product.$qm.serialize();
 			expect(IQSerialized).toEqual(productData);
 
 			const iface = product.toInterface();
@@ -193,7 +193,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags.has('premium')).toBe(true);
 
 			// Serialize back
-			const IQSerialized = order.serialize();
+			const IQSerialized = order.$qm.serialize();
 			expect(IQSerialized.total).toBe('123456789012345');
 			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 			expect(Array.isArray(IQSerialized.tags)).toBe(true);
@@ -212,7 +212,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.tags).toBeInstanceOf(Set);
 			expect(order.tags.has('urgent')).toBe(true);
 
-			const IQSerialized = order.serialize();
+			const IQSerialized = order.$qm.serialize();
 			expect(IQSerialized.total).toBe('123456789012345');
 			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
@@ -225,7 +225,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(order.createdAt).toBeInstanceOf(Date);
 			expect(order.tags).toBeInstanceOf(Set);
 
-			const IQSerialized = order.serialize();
+			const IQSerialized = order.$qm.serialize();
 			expect(IQSerialized.total).toBe('123456789012345');
 			expect(IQSerialized.createdAt).toBe('2024-01-15T10:30:00.000Z');
 		});
@@ -314,7 +314,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(customer.address.city).toBe('New York');
 			expect(customer.address.zipCode).toBe('10001');
 
-			const IQSerialized = customer.serialize();
+			const IQSerialized = customer.$qm.serialize();
 			expect(IQSerialized).toEqual(customerData);
 		});
 
@@ -326,7 +326,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(customer.address.street).toBe('123 Main St');
 			expect(customer.address.city).toBe('New York');
 
-			const IQSerialized = customer.serialize();
+			const IQSerialized = customer.$qm.serialize();
 			expect(IQSerialized).toEqual(customerData);
 		});
 
@@ -337,7 +337,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(customer.address).toBeInstanceOf(AddressOptional);
 			expect(customer.address.street).toBe('123 Main St');
 
-			const IQSerialized = customer.serialize();
+			const IQSerialized = customer.$qm.serialize();
 			expect(IQSerialized).toEqual(customerData);
 		});
 	});
@@ -388,7 +388,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(Array.isArray(team.scores)).toBe(true);
 			expect(team.scores).toEqual([95, 87, 92]);
 
-			const IQSerialized = team.serialize();
+			const IQSerialized = team.$qm.serialize();
 			expect(IQSerialized).toEqual(teamData);
 		});
 
@@ -400,7 +400,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(team.members).toEqual(['Alice', 'Bob', 'Charlie']);
 			expect(team.scores).toEqual([95, 87, 92]);
 
-			const IQSerialized = team.serialize();
+			const IQSerialized = team.$qm.serialize();
 			expect(IQSerialized).toEqual(teamData);
 		});
 
@@ -411,7 +411,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(Array.isArray(team.members)).toBe(true);
 			expect(team.members).toEqual(['Alice', 'Bob', 'Charlie']);
 
-			const IQSerialized = team.serialize();
+			const IQSerialized = team.$qm.serialize();
 			expect(IQSerialized).toEqual(teamData);
 		});
 	});
@@ -466,7 +466,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(settings.getChangedFields()).toContain('maxItems');
 			expect(settings.getChangedFields()).not.toContain('notifications');
 
-			const changes = settings.getChanges();
+			const changes = settings.$qm.getChanges();
 			expect(changes.theme).toBe('light');
 			expect(changes.maxItems).toBe(100);
 			expect(changes.notifications).toBeUndefined();
@@ -484,7 +484,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(settings.getChangedFields()).toContain('theme');
 			expect(settings.getChangedFields()).toContain('maxItems');
 
-			const changes = settings.getChanges();
+			const changes = settings.$qm.getChanges();
 			expect(changes.theme).toBe('light');
 			expect(changes.maxItems).toBe(100);
 		});
@@ -500,7 +500,7 @@ describe('@Quick() with declaration styles', () => {
 			expect(settings.hasChanges()).toBe(true);
 			expect(settings.getChangedFields()).toContain('theme');
 
-			const changes = settings.getChanges();
+			const changes = settings.$qm.getChanges();
 			expect(changes.theme).toBe('light');
 			expect(changes.maxItems).toBe(100);
 		});
@@ -547,7 +547,7 @@ describe('@Quick() with declaration styles', () => {
 			const config = new ConfigDeclare(configData);
 
 			// Clone
-			const copied = config.copy();
+			const copied = config.$qm.copy();
 			expect(copied).toBeInstanceOf(ConfigDeclare);
 			expect(copied.apiUrl).toBe(config.apiUrl);
 			expect(copied.timeout).toBe(config.timeout);
@@ -565,7 +565,7 @@ describe('@Quick() with declaration styles', () => {
 		test('!: should copied and reset', () => {
 			const config = new ConfigExclamation(configData);
 
-			const copied = config.copy();
+			const copied = config.$qm.copy();
 			expect(copied).toBeInstanceOf(ConfigExclamation);
 			expect(copied.apiUrl).toBe(config.apiUrl);
 
@@ -580,7 +580,7 @@ describe('@Quick() with declaration styles', () => {
 		test('?: should copied and reset', () => {
 			const config = new ConfigOptional(configData);
 
-			const copied = config.copy();
+			const copied = config.$qm.copy();
 			expect(copied).toBeInstanceOf(ConfigOptional);
 			expect(copied.apiUrl).toBe(config.apiUrl);
 

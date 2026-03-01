@@ -460,7 +460,7 @@ describe('Mocha/Chai Integration: type coercion (Mocha workflow)', () => {
 
 	test('roundtrip: serialize() + re-create matches original', () => {
 		const original = makeValidSubscription();
-		const serialized = original.serialize();
+		const serialized = original.$qm.serialize();
 		const restored = new SubscriptionDto(serialized);
 		expect(() =>
 			chaiExpect(original).to.matchQModel(restored)

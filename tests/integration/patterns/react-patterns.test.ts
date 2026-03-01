@@ -244,7 +244,7 @@ function processOrderAction(raw: Record<string, unknown>): {
 } {
 	try {
 		const dto = new OrderItemDto(raw);
-		return { success: true, data: dto.serialize() };
+		return { success: true, data: dto.$qm.serialize() };
 	} catch {
 		return { success: false, error: 'Invalid order data' };
 	}
@@ -272,7 +272,7 @@ describe('React/Next.js — Server Action coercion', () => {
 			orderedAt: '2024-01-15T08:00:00.000Z',
 		});
 		expect(dto.orderedAt).toBeInstanceOf(Date);
-		const serialized = dto.serialize() as Record<string, unknown>;
+		const serialized = dto.$qm.serialize() as Record<string, unknown>;
 		expect(typeof serialized['orderedAt']).toBe('string');
 	});
 
@@ -283,7 +283,7 @@ describe('React/Next.js — Server Action coercion', () => {
 			unitPrice: 12.5,
 			orderedAt: new Date(),
 		});
-		const out = dto.serialize() as Record<string, unknown>;
+		const out = dto.$qm.serialize() as Record<string, unknown>;
 		expect(out['totalPrice']).toBe(50);
 	});
 
@@ -296,7 +296,7 @@ describe('React/Next.js — Server Action coercion', () => {
 			__proto__: {},
 			internalToken: 'secret',
 		});
-		const out = dto.serialize() as Record<string, unknown>;
+		const out = dto.$qm.serialize() as Record<string, unknown>;
 		expect('internalToken' in out).toBe(false);
 	});
 
@@ -320,7 +320,7 @@ describe('React/Next.js — Server Action coercion', () => {
 		expect(errors).toHaveLength(0);
 		const totals = instances.map(
 			(item) =>
-				(item.serialize() as Record<string, unknown>)['totalPrice']
+				(item.$qm.serialize() as Record<string, unknown>)['totalPrice']
 		);
 		expect(totals).toEqual([20, 100]);
 	});
@@ -358,7 +358,7 @@ class CartStore {
 	private items = new Map<string, CartItem>();
 
 	getState(): object[] {
-		return [...this.items.values()].map((item) => item.serialize());
+		return [...this.items.values()].map((item) => item.$qm.serialize());
 	}
 
 	addItem(data: Record<string, unknown>): void {
@@ -373,7 +373,7 @@ class CartStore {
 		const item = this.items.get(sku);
 		if (!item) return false;
 		// Use merge (immutable) to get new state, update store
-		const updated = item.copy({ qty });
+		const updated = item.$qm.copy({ qty });
 		this.items.set(sku, updated);
 		return true;
 	}
@@ -590,7 +590,7 @@ describe('React — useQModel hook simulation', () => {
 				avatarUrl: '',
 			})
 		);
-		hook.update((prev) => prev.copy({ bio: 'New bio' }));
+		hook.update((prev) => prev.$qm.copy({ bio: 'New bio' }));
 		expect((hook.getSnapshot() as unknown as UserProfile).bio).toBe(
 			// @quickmodel-rule-ignore: no-as-unknown
 			'New bio'
@@ -604,7 +604,7 @@ describe('React — useQModel hook simulation', () => {
 			bio: '',
 			avatarUrl: '',
 		});
-		const out = profile.serialize() as Record<string, unknown>;
+		const out = profile.$qm.serialize() as Record<string, unknown>;
 		expect(out['initials']).toBe('CW');
 	});
 
@@ -621,7 +621,7 @@ describe('React — useQModel hook simulation', () => {
 		hook.subscribe(() => {
 			callCount++;
 		});
-		hook.update((prev) => prev.copy({ displayName: 'David' }));
+		hook.update((prev) => prev.$qm.copy({ displayName: 'David' }));
 		expect(callCount).toBe(1);
 	});
 
@@ -639,7 +639,7 @@ describe('React — useQModel hook simulation', () => {
 			callCount++;
 		});
 		unsub();
-		hook.update((prev) => prev.copy({ bio: 'updated' }));
+		hook.update((prev) => prev.$qm.copy({ bio: 'updated' }));
 		expect(callCount).toBe(0);
 	});
 

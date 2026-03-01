@@ -307,24 +307,24 @@ class UserDataService {
 			(record as unknown as Record<string, unknown>)['id'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			record
 		);
-		return record.serialize();
+		return record.$qm.serialize();
 	}
 
 	findById(idArg: string): object | undefined {
 		const record = this.store.get(idArg);
-		return record ? record.serialize() : undefined;
+		return record ? record.$qm.serialize() : undefined;
 	}
 
 	findAll(): object[] {
-		return [...this.store.values()].map((rec) => rec.serialize());
+		return [...this.store.values()].map((rec) => rec.$qm.serialize());
 	}
 
 	update(idArg: string, patch: Partial<IUserRecord>): object | null {
 		const record = this.store.get(idArg);
 		if (!record) return null;
-		const updated = record.copy(patch);
+		const updated = record.$qm.copy(patch);
 		this.store.set(idArg, updated);
-		return updated.serialize();
+		return updated.$qm.serialize();
 	}
 }
 
@@ -409,13 +409,13 @@ describe('Angular — Service / Repository pattern', () => {
 			email: 'helen@example.com',
 			score: 70,
 		});
-		expect(record.isDirty()).toBe(false);
+		expect(record.$qm.isDirty()).toBe(false);
 		record.score = 80;
-		expect(record.isDirty()).toBe(true);
-		expect(record.isDirty('score')).toBe(true);
-		expect(record.isDirty('email')).toBe(false);
+		expect(record.$qm.isDirty()).toBe(true);
+		expect(record.$qm.isDirty('score')).toBe(true);
+		expect(record.$qm.isDirty('email')).toBe(false);
 		record.reset();
-		expect(record.isDirty()).toBe(false);
+		expect(record.$qm.isDirty()).toBe(false);
 		expect(record.score).toBe(70);
 	});
 
@@ -427,16 +427,16 @@ describe('Angular — Service / Repository pattern', () => {
 			email: 'ivan@example.com',
 			score: 70,
 		});
-		const updated = record.copy({ score: 90 });
+		const updated = record.$qm.copy({ score: 90 });
 		// Original untouched
-		expect(record.isDirty()).toBe(false);
+		expect(record.$qm.isDirty()).toBe(false);
 		expect(record.score).toBe(70);
 		// New instance has merged value
 		expect(updated.score).toBe(90);
 		expect(updated).not.toBe(record);
 		// Mutating original does not affect new instance
 		record.score = 55;
-		expect(record.isDirty()).toBe(true);
+		expect(record.$qm.isDirty()).toBe(true);
 		expect(updated.score).toBe(90);
 	});
 });
@@ -498,7 +498,7 @@ describe('Angular — HttpClient interceptor coercion', () => {
 			_internalMeta: 'stripped',
 			debugToken: 'secret',
 		});
-		const serialized = dto.serialize() as Record<string, unknown>;
+		const serialized = dto.$qm.serialize() as Record<string, unknown>;
 		expect('_internalMeta' in serialized).toBe(false);
 		expect('debugToken' in serialized).toBe(false);
 	});
@@ -600,7 +600,7 @@ describe('Angular — Signals reactive state (v17+)', () => {
 		const sig = new QSignal(
 			new ProfileModel({ name: 'Bob', bio: 'Designer', followers: 500 })
 		);
-		sig.update((prev) => prev.copy({ followers: 600 }));
+		sig.update((prev) => prev.$qm.copy({ followers: 600 }));
 		expect(sig.read().followers).toBe(600);
 	});
 
@@ -618,13 +618,13 @@ describe('Angular — Signals reactive state (v17+)', () => {
 			bio: 'Tester',
 			followers: 100,
 		});
-		expect(model.isDirty()).toBe(false);
+		expect(model.$qm.isDirty()).toBe(false);
 		model.bio = 'Senior Tester';
-		expect(model.isDirty()).toBe(true);
-		expect(model.isDirty('bio')).toBe(true);
-		expect(model.isDirty('name')).toBe(false);
+		expect(model.$qm.isDirty()).toBe(true);
+		expect(model.$qm.isDirty('bio')).toBe(true);
+		expect(model.$qm.isDirty('name')).toBe(false);
 		model.reset();
-		expect(model.isDirty()).toBe(false);
+		expect(model.$qm.isDirty()).toBe(false);
 		expect(model.bio).toBe('Tester');
 	});
 
@@ -966,7 +966,7 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		expect(result.errors[0].message).toBe('Username too short');
 	});
 
-	test('QModel.checkRulesAsync() tiene el mismo comportamiento que qCheckRulesAsync()', async () => {
+	test('QModel.$qm.checkRulesAsync() tiene el mismo comportamiento que qCheckRulesAsync()', async () => {
 		// Verifica que el método en QModel delega correctamente al helper
 
 		@Quick({ username: 'string', name: 'string' })
@@ -988,7 +988,7 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		});
 
 		// Método en instancia QModel
-		const result = await instance.checkRulesAsync();
+		const result = await instance.$qm.checkRulesAsync();
 
 		expect(result.valid).toBe(false);
 		expect(result.errors[0].field).toBe('username');

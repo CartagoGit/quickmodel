@@ -60,7 +60,7 @@ interface IErrorData {
  * });
  *
  * // Serialization
- * const data = req1.serialize();
+ * const data = req1.$qm.serialize();
  * data.lastError; // → "TypeError: Invalid input"
  * ```
  *

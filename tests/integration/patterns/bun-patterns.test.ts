@@ -138,11 +138,11 @@ function handleCreateProduct(rawBody: unknown): {
 		return { status: 400, body: { error: 'Invalid JSON body' } };
 	}
 	const dto = new ProductDto(rawBody as Record<string, unknown>);
-	const validation = dto.checkRules();
+	const validation = dto.$qm.checkRules();
 	if (!validation.valid) {
 		return { status: 422, body: { errors: validation.errors } };
 	}
-	return { status: 201, body: dto.serialize() };
+	return { status: 201, body: dto.$qm.serialize() };
 }
 
 /**
@@ -166,7 +166,7 @@ function handleOrderMessage(rawMessage: string): {
 	}
 
 	const dto = new OrderDto(parsed as Record<string, unknown>);
-	const validation = dto.checkRules();
+	const validation = dto.$qm.checkRules();
 	if (!validation.valid) {
 		return {
 			ok: false,
@@ -176,7 +176,7 @@ function handleOrderMessage(rawMessage: string): {
 			),
 		};
 	}
-	return { ok: true, data: dto.serialize() };
+	return { ok: true, data: dto.$qm.serialize() };
 }
 
 // ---------------------------------------------------------------------------
@@ -378,7 +378,7 @@ describe('Bun.file() — bulk product loading with createMany()', () => {
 		);
 
 		products.forEach((prod) => {
-			const serialized = prod.serialize();
+			const serialized = prod.$qm.serialize();
 			const restored = new ProductDto(serialized);
 			expect(restored.id).toBe(prod.id);
 			expect(restored.price).toBe(prod.price);
@@ -442,7 +442,7 @@ describe('Bun async handler — qCheckRulesAsync()', () => {
 // 5. JSON Response builder — typical Bun Response pattern
 // ---------------------------------------------------------------------------
 
-describe('Bun Response pattern — new Response(JSON.stringify(dto.serialize()))', () => {
+describe('Bun Response pattern — new Response(JSON.stringify(dto.$qm.serialize()))', () => {
 	test('serialized DTO produces valid JSON for a Bun Response', () => {
 		const raw = {
 			id: 'prod-999',
@@ -454,7 +454,7 @@ describe('Bun Response pattern — new Response(JSON.stringify(dto.serialize()))
 		};
 
 		const dto = new ProductDto(raw);
-		const serialized = dto.serialize();
+		const serialized = dto.$qm.serialize();
 		const json = JSON.stringify(serialized);
 
 		// Verify the JSON can be parsed back
@@ -479,7 +479,7 @@ describe('Bun Response pattern — new Response(JSON.stringify(dto.serialize()))
 		});
 
 		// Simulate HTTP round-trip: serialize → JSON string → parse → new model
-		const json = JSON.stringify(original.serialize());
+		const json = JSON.stringify(original.$qm.serialize());
 		const parsed = JSON.parse(json) as Record<string, unknown>;
 		const restored = new ProductDto(parsed);
 

@@ -141,7 +141,7 @@ describe('@QAlias — output remapping (serialize)', () => {
 			emailAddress: 'alice@example.com',
 		});
 
-		const output = user.serialize();
+		const output = user.$qm.serialize();
 
 		expect(output).toHaveProperty('first_name', 'Alice');
 		expect(output).toHaveProperty('last_name', 'Smith');
@@ -170,7 +170,7 @@ describe('@QAlias — output remapping (serialize)', () => {
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
 
-		const output = profile.serialize();
+		const output = profile.$qm.serialize();
 
 		expect(output).toHaveProperty('full_name', 'Jane Doe');
 		expect(output).toHaveProperty('birthDate'); // no alias → original key
@@ -185,7 +185,7 @@ describe('@QAlias — full roundtrip', () => {
 			emailAddress: 'alice@example.com',
 		});
 
-		const serialized = original.serialize();
+		const serialized = original.$qm.serialize();
 		const restored = UserModel.create(serialized);
 
 		expect(restored.firstName).toBe('Alice');
@@ -230,7 +230,7 @@ describe('@QAlias — inheritance', () => {
 		};
 		const child = ChildModel.create(data);
 
-		const output = child.serialize();
+		const output = child.$qm.serialize();
 
 		expect(output).toHaveProperty('first_name', 'Dan');
 		expect(output).toHaveProperty('phone_number', '555-1234');

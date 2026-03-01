@@ -43,7 +43,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const serialized = user.serialize();
+		const serialized = user.$qm.serialize();
 		expect(serialized).not.toHaveProperty('fullName');
 	});
 
@@ -96,7 +96,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const serialized = user.serialize();
+		const serialized = user.$qm.serialize();
 		expect(serialized).toHaveProperty('fullName', 'Alice Smith');
 	});
 
@@ -148,7 +148,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const serialized = user.serialize();
+		const serialized = user.$qm.serialize();
 		expect(serialized).toHaveProperty('upperFirstName', 'ALICE');
 	});
 
@@ -176,7 +176,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const serialized = user.serialize();
+		const serialized = user.$qm.serialize();
 		// Regular fields still present
 		expect(serialized).toHaveProperty('firstName', 'Alice');
 		expect(serialized).toHaveProperty('lastName', 'Smith');
@@ -218,7 +218,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const serialized = user.serialize();
+		const serialized = user.$qm.serialize();
 		expect(serialized).toHaveProperty('fullName', 'Alice Smith');
 		expect(serialized).toHaveProperty('initials', 'A.S.');
 		expect(serialized).not.toHaveProperty('upperFullName');
@@ -256,7 +256,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const serialized = user.serialize();
+		const serialized = user.$qm.serialize();
 		expect(serialized).toHaveProperty('fullName', 'Alice Smith');
 		expect(serialized).toHaveProperty('birthYear', 1990);
 	});

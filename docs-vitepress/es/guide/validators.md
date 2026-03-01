@@ -25,7 +25,7 @@ declare email: string;
 
 ### `@IsUrl()`
 
-Valida que el valor es una URL válida (debe empezar por `http://` o `https://`).
+Valida que el valor es una URL sintácticamente válida (usa el constructor nativo `URL` — acepta cualquier esquema válido).
 
 ```typescript
 @IsUrl()
@@ -70,7 +70,7 @@ declare handle: string;
 
 ### `@IsUuid()`
 
-Valida que el valor es un UUID v4 válido.
+Valida que el valor es un UUID válido (v1–v5).
 
 ```typescript
 @IsUuid()
@@ -259,22 +259,22 @@ class Usuario extends QModel<IUsuario> {
 
 ## Todos los validadores de un vistazo
 
-| Decorador         | Valida                                     |
-| :---------------- | :----------------------------------------- |
-| `@IsEmail()`      | Dirección de email válida                  |
-| `@IsUrl()`        | URL que empieza por `http://` o `https://` |
-| `@IsNotEmpty()`   | Cadena no vacía ni solo espacios           |
-| `@MinLength(n)`   | Longitud de cadena ≥ `n`                   |
-| `@MaxLength(n)`   | Longitud de cadena ≤ `n`                   |
-| `@Matches(regex)` | Cadena coincide con la RegExp indicada     |
-| `@IsUuid()`       | UUID v4 válido                             |
-| `@IsDateString()` | Cadena de fecha ISO 8601 válida            |
-| `@Min(n)`         | Número ≥ `n`                               |
-| `@Max(n)`         | Número ≤ `n`                               |
-| `@IsInt()`        | Entero (sin parte decimal)                 |
-| `@IsPositive()`   | Número > 0                                 |
-| `@IsNegative()`   | Número < 0                                 |
-| `@IsIn(values[])` | Valor entre los permitidos                 |
+| Decorador         | Valida                                       |
+| :---------------- | :------------------------------------------- |
+| `@IsEmail()`      | Dirección de email válida                    |
+| `@IsUrl()`        | URL sintácticamente válida (vía `new URL()`) |
+| `@IsNotEmpty()`   | Cadena no vacía ni solo espacios             |
+| `@MinLength(n)`   | Longitud de cadena ≥ `n`                     |
+| `@MaxLength(n)`   | Longitud de cadena ≤ `n`                     |
+| `@Matches(regex)` | Cadena coincide con la RegExp indicada       |
+| `@IsUuid()`       | UUID válido (v1–v5)                          |
+| `@IsDateString()` | Cadena de fecha ISO 8601 válida              |
+| `@Min(n)`         | Número ≥ `n`                                 |
+| `@Max(n)`         | Número ≤ `n`                                 |
+| `@IsInt()`        | Entero (sin parte decimal)                   |
+| `@IsPositive()`   | Número > 0                                   |
+| `@IsNegative()`   | Número < 0                                   |
+| `@IsIn(values[])` | Valor entre los permitidos                   |
 
 > Todos los validadores son wrappers sobre `@QRule`. Puedes combinarlos libremente con predicados `@QRule` personalizados en la misma propiedad.
 

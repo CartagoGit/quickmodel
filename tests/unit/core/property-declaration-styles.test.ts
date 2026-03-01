@@ -150,7 +150,7 @@ describe('Property Declaration Styles', () => {
 	describe('Serialization', () => {
 		test('declare: should serialize correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const IQSerialized = user.serialize();
+			const IQSerialized = user.$qm.serialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('John Doe');
@@ -161,7 +161,7 @@ describe('Property Declaration Styles', () => {
 
 		test('!: should serialize correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const IQSerialized = user.serialize();
+			const IQSerialized = user.$qm.serialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('John Doe');
@@ -172,7 +172,7 @@ describe('Property Declaration Styles', () => {
 
 		test('?: should serialize correctly', () => {
 			const user = new UserWithOptional(testData);
-			const IQSerialized = user.serialize();
+			const IQSerialized = user.$qm.serialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('John Doe');
@@ -299,7 +299,7 @@ describe('Property Declaration Styles', () => {
 	describe('Cloning', () => {
 		test('declare: should copied correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const copied = user.copy();
+			const copied = user.$qm.copy();
 
 			expect(copied).toBeInstanceOf(UserWithDeclare);
 			expect(copied.id).toBe(user.id);
@@ -311,7 +311,7 @@ describe('Property Declaration Styles', () => {
 
 		test('!: should copied correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const copied = user.copy();
+			const copied = user.$qm.copy();
 
 			expect(copied).toBeInstanceOf(UserWithExclamation);
 			expect(copied.id).toBe(user.id);
@@ -323,7 +323,7 @@ describe('Property Declaration Styles', () => {
 
 		test('?: should copied correctly', () => {
 			const user = new UserWithOptional(testData);
-			const copied = user.copy();
+			const copied = user.$qm.copy();
 
 			expect(copied).toBeInstanceOf(UserWithOptional);
 			expect(copied.id).toBe(user.id);

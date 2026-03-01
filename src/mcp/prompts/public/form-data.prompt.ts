@@ -97,7 +97,7 @@ export class QFormDataPrompt extends QAbstractPrompt<{
 						`| Method / Option | Purpose |\n` +
 						`|---|---|\n` +
 						`| \`Model.fromFormData(fd)\` | Parse FormData → typed model instance (auto-detect File/Blob/string) |\n` +
-						`| \`dto.toFormData()\` | Build FormData from model fields |\n` +
+						`| \`dto.$qm.toFormData()\` | Build FormData from model fields |\n` +
 						`| \`fileSource: 'auto'\` (default) | Runtime inspection: File→File, ArrayBuffer→Blob, "data:"→Blob, URL→string |\n` +
 						`| \`fileSource: 'binary'\` | Preserve all as File/Blob |\n` +
 						`| \`fileSource: 'reference'\` | Treat string values as paths/URLs, no binary deserialisation |\n` +
@@ -110,8 +110,8 @@ export class QFormDataPrompt extends QAbstractPrompt<{
 						`### Streaming API (> 50 MB)\n\n` +
 						`| Method | Purpose |\n` +
 						`|---|---|\n` +
-						`| \`dto.toReadableStream({ field, chunkSize?, onChunk? })\` | Emit model field as \`ReadableStream<Uint8Array>\` — never full file in memory |\n` +
-						`| \`dto.toReadableStream({ multipart: true, onChunk? })\` | Emit all fields as a complete \`multipart/form-data\` stream |\n` +
+						`| \`dto.$qm.toReadableStream({ field, chunkSize?, onChunk? })\` | Emit model field as \`ReadableStream<Uint8Array>\` — never full file in memory |\n` +
+						`| \`dto.$qm.toReadableStream({ multipart: true, onChunk? })\` | Emit all fields as a complete \`multipart/form-data\` stream |\n` +
 						`| \`Model.fromStream(stream, { field, maxBytes?, onProgress? })\` | Accumulate incoming stream chunks into a model Blob field |\n` +
 						`| \`Model.pipeStream(src, dst, { maxBytes?, onProgress? })\` | Zero-memory pipe from source to destination (S3, WriteStream, …) |\n\n` +
 						`---\n\n` +

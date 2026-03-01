@@ -311,8 +311,8 @@ export interface IQCreateManyResult<TInstance> {
  * }
  *
  * const user = new User({ first_name: 'Alice', last_name: 'Smith' });
- * user.serialize().first_name; // ✅ typed correctly — IDE autocomplete works
- * user.serialize().last_name;  // ✅
+ * user.$qm.serialize().first_name; // ✅ typed correctly — IDE autocomplete works
+ * user.$qm.serialize().last_name;  // ✅
  * ```
  * @see {@link Quick} — class decorator required before extending `QModel`
  * @see {@link QModel.create} — preferred factory method for creating instances
@@ -804,7 +804,7 @@ export abstract class QModel<
 	get $qm(): IQMHandle<TInterface, TAliasMap, this> {
 		const ref = this;
 		return {
-			serialize: (opt?) => ref.serialize(opt),
+			serialize: (seenOrOpt?, opt?) => ref.serialize(seenOrOpt, opt),
 			toFormData: (opt?) => ref.toFormData(opt),
 			toReadableStream: (opt) => {
 				if ('multipart' in opt && opt.multipart) {
@@ -2080,13 +2080,13 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const data = user.serialize();
+	 * const data = user.$qm.serialize();
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 *
 	 * @example With pick filter
 	 * ```typescript
-	 * const partial = user.serialize(undefined, { pick: ['id', 'name'] });
+	 * const partial = user.$qm.serialize(undefined, { pick: ['id', 'name'] });
 	 * // { id: '1', name: 'John' }
 	 * ```
 	 *
@@ -2249,7 +2249,7 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'Jo', age: -1, email: 'notanemail' });
-	 * const result = user.checkRules();
+	 * const result = user.$qm.checkRules();
 	 *
 	 * console.log(result.valid); // false
 	 * console.log(result.errors);
@@ -2278,7 +2278,7 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ age: 30, active: true });
-	 * if (!user.hasIntegrity()) {
+	 * if (!user.$qm.hasIntegrity()) {
 	 *   console.error('Type integrity violated');
 	 * }
 	 * ```
@@ -2306,9 +2306,9 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
-	 * if (!user.isValid()) {
+	 * if (!user.$qm.isValid()) {
 	 *   const integrityErrors = user.checkIntegrity();
-	 *   const ruleErrors = user.checkRules().errors;
+	 *   const ruleErrors = user.$qm.checkRules().errors;
 	 *   // handle errors...
 	 * }
 	 * ```
@@ -2332,7 +2332,7 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * const report = user.validationReport();
+	 * const report = user.$qm.validationReport();
 	 *
 	 * if (!report.valid) {
 	 *   // transformer-level failures:
@@ -2888,7 +2888,7 @@ export abstract class QModel<
 	 *
 	 * user.createdAt;        // Date object (transformed)
 	 * user.toInterface();    // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
-	 * user.serialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
+	 * user.$qm.serialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
 	 * ```
 	 *
 	 * @example
@@ -2900,7 +2900,7 @@ export abstract class QModel<
 	 *
 	 * account.balance;       // 999999999999999n (bigint transformed)
 	 * account.toInterface(); // { balance: '999999999999999' } - STRING preserved
-	 * account.serialize();   // { balance: '999999999999999' } - string for JSON
+	 * account.$qm.serialize();   // { balance: '999999999999999' } - string for JSON
 	 * ```
 	 *
 	 * @example
@@ -3025,9 +3025,9 @@ export abstract class QModel<
 	 * const user = new User({ id: '1', name: 'John', age: 30 });
 	 * user.name = 'Jane';
 	 *
-	 * user.isDirty();        // true  (any field changed)
-	 * user.isDirty('name');  // true  (name changed)
-	 * user.isDirty('age');   // false (age unchanged)
+	 * user.$qm.isDirty();        // true  (any field changed)
+	 * user.$qm.isDirty('name');  // true  (name changed)
+	 * user.$qm.isDirty('age');   // false (age unchanged)
 	 * ```
 	 *
 	 */
@@ -3134,7 +3134,7 @@ export abstract class QModel<
 	 * user.name = 'Jane';
 	 * user.age = 31;
 	 *
-	 * const changes = user.getChanges();
+	 * const changes = user.$qm.getChanges();
 	 * // { name: 'Jane', age: 31 }
 	 *
 	 * // Use for PATCH request
@@ -3216,7 +3216,7 @@ export abstract class QModel<
 	 *   email: 'john@example.com'
 	 * });
 	 *
-	 * user.patch({ name: 'Jane', age: 31 });
+	 * user.$qm.patch({ name: 'Jane', age: 31 });
 	 *
 	 * console.log(user.name); // 'Jane'
 	 * console.log(user.age); // 31
@@ -3274,14 +3274,14 @@ export abstract class QModel<
 	 * it is safe to use with any signal / store / ref system:
 	 * ```typescript
 	 * // Angular
-	 * userSignal.update(u => u.copy({ name: 'Bob' }))
+	 * userSignal.update(u => u.$qm.copy({ name: 'Bob' }))
 	 * // Vue
-	 * userRef.value = user.copy({ name: 'Bob' })
+	 * userRef.value = user.$qm.copy({ name: 'Bob' })
 	 * // React
-	 * setUser(user.copy({ name: 'Bob' }))
+	 * setUser(user.$qm.copy({ name: 'Bob' }))
 	 * // patch() batch + copy() to emit
-	 * user.patch({ name: 'Bob', age: 31 })
-	 * userSignal.set(user.copy())
+	 * user.$qm.patch({ name: 'Bob', age: 31 })
+	 * userSignal.set(user.$qm.copy())
 	 * ```
 	 *
 	 * @param partial - Optional fields to override in the new instance
@@ -3295,13 +3295,13 @@ export abstract class QModel<
 	 * ```typescript
 	 * const user = new User({ name: 'John', age: 30 });
 	 *
-	 * const clone   = user.copy();                 // identical copy
-	 * const updated = user.copy({ name: 'Jane' }); // copy with override
+	 * const clone   = user.$qm.copy();                 // identical copy
+	 * const updated = user.$qm.copy({ name: 'Jane' }); // copy with override
 	 *
 	 * user.name;     // 'John'  ← original unchanged
 	 * updated.name;  // 'Jane'
 	 * updated.age;   // 30      ← fields not in partial are preserved
-	 * updated.isDirty(); // false
+	 * updated.$qm.isDirty(); // false
 	 * ```
 	 *
 	 */
@@ -3400,7 +3400,7 @@ export abstract class QModel<
 	 * const a = new User({ name: 'John', age: 30 });
 	 * const b = new User({ name: 'Jane', age: 31 });
 	 *
-	 * a.diff(b);
+	 * a.$qm.diff(b);
 	 * // { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
 	 * ```
 	 *
@@ -3440,10 +3440,10 @@ export abstract class QModel<
 	 * ```typescript
 	 * const a = new User({ id: '1', name: 'John' });
 	 * const b = new User({ id: '1', name: 'John' });
-	 * a.equals(b); // true
+	 * a.$qm.equals(b); // true
 	 *
 	 * a.name = 'Jane';
-	 * a.equals(b); // false
+	 * a.$qm.equals(b); // false
 	 * ```
 	 *
 	 */

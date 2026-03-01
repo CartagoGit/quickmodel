@@ -154,7 +154,7 @@ describe('TanStack Query — queryFn: single resource', () => {
 	function fetchProduct(id: string): IProduct {
 		const raw = { ...rawProduct, id };
 		const dto = new ProductDto(raw);
-		return dto.serialize() as IProduct;
+		return dto.$qm.serialize() as IProduct;
 	}
 
 	test('coerces string price to number', () => {
@@ -192,7 +192,7 @@ describe('TanStack Query — queryFn: list with createMany()', () => {
 		if (errors.length > 0) {
 			throw new Error(`Failed to parse ${errors.length} products`);
 		}
-		return instances.map((dto) => dto.serialize() as IProduct);
+		return instances.map((dto) => dto.$qm.serialize() as IProduct);
 	}
 
 	test('returns correct number of products', () => {
@@ -241,7 +241,7 @@ describe('TanStack Query — useMutation: validate before mutate', () => {
 	): Promise<IProduct | null> {
 		await Promise.resolve(); // simulate async context (e.g. network call)
 		const dto = new CreateProductDto(data);
-		const { valid, errors } = dto.checkRules();
+		const { valid, errors } = dto.$qm.checkRules();
 		if (!valid) {
 			throw new Error(
 				errors.map((err) => `${err.field}: ${err.message}`).join(', ')
@@ -249,7 +249,7 @@ describe('TanStack Query — useMutation: validate before mutate', () => {
 		}
 		// Simulate API call — return serialized DTO
 		const created: IProduct = {
-			...(dto.serialize() as ICreateProduct),
+			...(dto.$qm.serialize() as ICreateProduct),
 			id: 'new-id',
 			inStock: true,
 		};
@@ -318,7 +318,7 @@ describe('TanStack Query — Optimistic updates with merge()', () => {
 		current: CartItemDto,
 		patch: Partial<ICartItem>
 	): CartItemDto {
-		return current.copy(patch);
+		return current.$qm.copy(patch);
 	}
 
 	test('merge() returns a new instance (immutable)', () => {
@@ -356,7 +356,7 @@ describe('TanStack Query — Optimistic updates with merge()', () => {
 describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () => {
 	test('serialize() output can reconstruct the same DTO', () => {
 		const original = new ProductDto(rawProduct);
-		const cached = original.serialize();
+		const cached = original.$qm.serialize();
 		const rehydrated = new ProductDto(cached as Record<string, unknown>);
 		expect(rehydrated.id).toBe(original.id);
 		expect(rehydrated.price).toBe(original.price);
@@ -365,7 +365,7 @@ describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () =
 
 	test('cached list can be rehydrated as new DTO instances', () => {
 		const { instances } = ProductDto.createMany(rawProductList as any[]);
-		const cachedList = instances.map((dto) => dto.serialize());
+		const cachedList = instances.map((dto) => dto.$qm.serialize());
 		// Simulate reading from cache
 		const rehydrated = cachedList.map(
 			(item) => new ProductDto(item as Record<string, unknown>)
@@ -377,7 +377,7 @@ describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () =
 	test('rehydrated DTO has correct @QComputed values', () => {
 		const original = new ProductDto(rawProduct);
 		const rehydrated = new ProductDto(
-			original.serialize() as Record<string, unknown>
+			original.$qm.serialize() as Record<string, unknown>
 		);
 		expect(rehydrated.displayPrice).toBe('$29.99');
 	});
@@ -436,7 +436,7 @@ describe('TanStack Query — Infinite queries: createMany() per page', () => {
 		const { instances, errors } = ProductDto.createMany(pageData as any[]);
 		if (errors.length > 0) throw new Error('Parse error');
 		return {
-			items: instances.map((dto) => dto.serialize() as IProduct),
+			items: instances.map((dto) => dto.$qm.serialize() as IProduct),
 			nextCursor: pageData.length === 2 ? String(page + 1) : null,
 		};
 	}
@@ -475,7 +475,7 @@ describe('TanStack Query — isDirty() for staleness detection', () => {
 			inStock: true,
 			category: 'tools',
 		});
-		expect(dto.isDirty()).toBe(false);
+		expect(dto.$qm.isDirty()).toBe(false);
 	});
 
 	test('mutated field is detected as dirty', () => {
@@ -487,8 +487,8 @@ describe('TanStack Query — isDirty() for staleness detection', () => {
 			category: 'tools',
 		});
 		dto.price = 15; // simulated local edit before sync
-		expect(dto.isDirty('price')).toBe(true);
-		expect(dto.isDirty('name')).toBe(false);
+		expect(dto.$qm.isDirty('price')).toBe(true);
+		expect(dto.$qm.isDirty('name')).toBe(false);
 	});
 
 	test('merge() returns new instance with pending changes (isDirty)', () => {
@@ -499,9 +499,9 @@ describe('TanStack Query — isDirty() for staleness detection', () => {
 			inStock: true,
 			category: 'tools',
 		});
-		const updated = dto.copy({ price: 15 });
+		const updated = dto.$qm.copy({ price: 15 });
 		expect(updated.price).toBe(15); // value was changed
-		expect(updated.isDirty()).toBe(true); // model has pending changes vs original snapshot
+		expect(updated.$qm.isDirty()).toBe(true); // model has pending changes vs original snapshot
 	});
 
 	test('reset() clears dirty state', () => {
@@ -513,9 +513,9 @@ describe('TanStack Query — isDirty() for staleness detection', () => {
 			category: 'tools',
 		});
 		dto.price = 99;
-		expect(dto.isDirty()).toBe(true);
+		expect(dto.$qm.isDirty()).toBe(true);
 		dto.reset();
-		expect(dto.isDirty()).toBe(false);
+		expect(dto.$qm.isDirty()).toBe(false);
 	});
 });
 

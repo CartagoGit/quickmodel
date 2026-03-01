@@ -40,12 +40,12 @@ describe('@IsEmail', () => {
 
 	test('valid email passes', () => {
 		const frm = new Form({ email: 'user@example.com' });
-		expect(frm.checkRules().valid).toBe(true);
+		expect(frm.$qm.checkRules().valid).toBe(true);
 	});
 
 	test('missing @ fails', () => {
 		const frm = new Form({ email: 'notanemail' });
-		const result = frm.checkRules();
+		const result = frm.$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors[0]?.field).toBe('email');
 	});
@@ -57,7 +57,7 @@ describe('@IsEmail', () => {
 			declare email: string;
 		}
 		const frm = new EmailFrm({ email: 'bad' });
-		expect(frm.checkRules().errors[0]?.message).toBe('Custom message');
+		expect(frm.$qm.checkRules().errors[0]?.message).toBe('Custom message');
 	});
 });
 
@@ -74,12 +74,12 @@ describe('@IsUrl', () => {
 
 	test('valid URL passes', () => {
 		const frm = new Form({ url: 'https://example.com' });
-		expect(frm.checkRules().valid).toBe(true);
+		expect(frm.$qm.checkRules().valid).toBe(true);
 	});
 
 	test('plain string fails', () => {
 		const frm = new Form({ url: 'not-a-url' });
-		expect(frm.checkRules().valid).toBe(false);
+		expect(frm.$qm.checkRules().valid).toBe(false);
 	});
 });
 

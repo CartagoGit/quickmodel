@@ -25,7 +25,7 @@ declare email: string;
 
 ### `@IsUrl()`
 
-Validates that the value is a valid URL (must start with `http://` or `https://`).
+Validates that the value is a syntactically valid URL (uses the built-in `URL` constructor — accepts any valid scheme).
 
 ```typescript
 @IsUrl()
@@ -70,7 +70,7 @@ declare handle: string;
 
 ### `@IsUuid()`
 
-Validates that the value is a valid UUID v4.
+Validates that the value is a valid UUID (v1–v5).
 
 ```typescript
 @IsUuid()
@@ -254,22 +254,22 @@ class User extends QModel<IUser> {
 
 ## All Validators at a Glance
 
-| Decorator         | Validates                                 |
-| :---------------- | :---------------------------------------- |
-| `@IsEmail()`      | Valid email address                       |
-| `@IsUrl()`        | URL starting with `http://` or `https://` |
-| `@IsNotEmpty()`   | Non-empty, non-blank string               |
-| `@MinLength(n)`   | String length ≥ `n`                       |
-| `@MaxLength(n)`   | String length ≤ `n`                       |
-| `@Matches(regex)` | String matches the given RegExp           |
-| `@IsUuid()`       | Valid UUID v4                             |
-| `@IsDateString()` | Valid ISO 8601 date string                |
-| `@Min(n)`         | Number ≥ `n`                              |
-| `@Max(n)`         | Number ≤ `n`                              |
-| `@IsInt()`        | Integer (no decimal part)                 |
-| `@IsPositive()`   | Number > 0                                |
-| `@IsNegative()`   | Number < 0                                |
-| `@IsIn(values[])` | Value is one of the allowed values        |
+| Decorator         | Validates                                     |
+| :---------------- | :-------------------------------------------- |
+| `@IsEmail()`      | Valid email address                           |
+| `@IsUrl()`        | Any syntactically valid URL (via `new URL()`) |
+| `@IsNotEmpty()`   | Non-empty, non-blank string                   |
+| `@MinLength(n)`   | String length ≥ `n`                           |
+| `@MaxLength(n)`   | String length ≤ `n`                           |
+| `@Matches(regex)` | String matches the given RegExp               |
+| `@IsUuid()`       | Valid UUID (v1–v5)                            |
+| `@IsDateString()` | Valid ISO 8601 date string                    |
+| `@Min(n)`         | Number ≥ `n`                                  |
+| `@Max(n)`         | Number ≤ `n`                                  |
+| `@IsInt()`        | Integer (no decimal part)                     |
+| `@IsPositive()`   | Number > 0                                    |
+| `@IsNegative()`   | Number < 0                                    |
+| `@IsIn(values[])` | Value is one of the allowed values            |
 
 > All validators are thin wrappers over `@QRule`. You can mix them freely with custom `@QRule` predicates on the same property.
 

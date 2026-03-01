@@ -95,7 +95,7 @@ describe('@Quick() excludeFields option', () => {
 				token: 'xyz',
 				cache: [],
 			} as any);
-			const result = session.serialize();
+			const result = session.$qm.serialize();
 			expect(result).not.toHaveProperty('cache');
 		});
 
@@ -119,7 +119,7 @@ describe('@Quick() excludeFields option', () => {
 				password: 'secret',
 				internalMeta: 'debug',
 			});
-			const result = account.serialize() as any;
+			const result = account.$qm.serialize() as any;
 			expect(result.id).toBe(42);
 			expect(result.name).toBe('Bob');
 		});
@@ -173,7 +173,7 @@ describe('@Quick() excludeFields option', () => {
 				internalMeta: 'debug',
 			});
 			// password already excluded by decorator; also omit 'name' at runtime
-			const result = account.serialize(undefined, {
+			const result = account.$qm.serialize(undefined, {
 				omit: ['name'],
 			}) as any;
 			expect(result).not.toHaveProperty('password');

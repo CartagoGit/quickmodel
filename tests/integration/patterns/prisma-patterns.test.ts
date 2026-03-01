@@ -503,7 +503,7 @@ describe('copy() + prisma.update() partial update', () => {
 			active: true,
 			score: 50,
 		});
-		const updated = existing.copy({ score: 100, role: 'admin' });
+		const updated = existing.$qm.copy({ score: 100, role: 'admin' });
 		expect(updated.score).toBe(100);
 		expect(updated.role).toBe('admin');
 		expect(existing.score).toBe(50); // immutable
@@ -519,9 +519,9 @@ describe('copy() + prisma.update() partial update', () => {
 			active: false,
 			score: 20,
 		});
-		const patched = dto.copy({ active: true });
+		const patched = dto.$qm.copy({ active: true });
 		expect(patched.active).toBe(true);
-		expect(patched.isDirty()).toBe(false); // copy() sets __initData = merged state
+		expect(patched.$qm.isDirty()).toBe(false); // copy() sets __initData = merged state
 	});
 
 	test('toInterface() of copy() is suitable for prisma.update() data arg', () => {
@@ -534,7 +534,7 @@ describe('copy() + prisma.update() partial update', () => {
 			active: true,
 			score: 0,
 		});
-		const patched = dto.copy({ name: 'Caroline' });
+		const patched = dto.$qm.copy({ name: 'Caroline' });
 		const updateData = patched.toInterface();
 		expect(updateData.name).toBe('Caroline');
 		expect(updateData.uid).toBe('upd3');
@@ -571,7 +571,7 @@ describe('@QComputed() for derived fields', () => {
 			views: 0,
 		});
 
-		postStore.set('post1', post.serialize());
+		postStore.set('post1', post.$qm.serialize());
 		expect(post.excerpt.endsWith('…')).toBe(true);
 		expect(post.excerpt.length).toBeLessThanOrEqual(101);
 	});
@@ -707,7 +707,7 @@ describe('Prisma type coercion — Decimal, DateTime, Json', () => {
 			metadata: '{"key":"val"}',
 			tags: '["a","b"]',
 		});
-		const payload = dto.serialize() as Record<string, unknown>;
+		const payload = dto.$qm.serialize() as Record<string, unknown>;
 		expect(payload['price']).toBe(29.99);
 		expect(payload['metadata']).toBe('{"key":"val"}');
 	});

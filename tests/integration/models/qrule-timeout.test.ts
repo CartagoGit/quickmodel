@@ -64,7 +64,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 25,
 			});
 
-			const result = await user.checkRulesAsync(tightOptions);
+			const result = await user.$qm.checkRulesAsync(tightOptions);
 
 			// email times out, but username rule #2 passes within budget
 			const usernameErrors = result.errors.filter(
@@ -84,7 +84,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 25,
 			});
 
-			const result = await user.checkRulesAsync(tightOptions);
+			const result = await user.$qm.checkRulesAsync(tightOptions);
 
 			const emailErr = result.errors.find((err) => err.field === 'email');
 			expect(emailErr).toBeDefined();
@@ -105,7 +105,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 15, // fails the sync rule
 			});
 
-			const result = await user.checkRulesAsync(tightOptions);
+			const result = await user.$qm.checkRulesAsync(tightOptions);
 
 			const ageErr = result.errors.find((err) => err.field === 'age');
 			expect(ageErr).toBeDefined();
@@ -124,7 +124,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 25,
 			});
 
-			const result = await user.checkRulesAsync(); // no timeout
+			const result = await user.$qm.checkRulesAsync(); // no timeout
 
 			expect(result.valid).toBe(true);
 			expect(result.errors).toHaveLength(0);
@@ -141,7 +141,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 25,
 			});
 
-			const result = await user.checkRulesAsync(tightOptions);
+			const result = await user.$qm.checkRulesAsync(tightOptions);
 
 			expect(result.valid).toBe(false);
 		},
@@ -157,7 +157,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 25,
 			});
 
-			const valid = await user.isValidAsync(tightOptions);
+			const valid = await user.$qm.isValidAsync(tightOptions);
 			expect(valid).toBe(false);
 		},
 		{ timeout: 500 }
@@ -172,7 +172,7 @@ describe('QRule timeout — integration (real delays)', () => {
 				age: 25,
 			});
 
-			const report = await user.validationReportAsync(tightOptions);
+			const report = await user.$qm.validationReportAsync(tightOptions);
 
 			expect(report.valid).toBe(false);
 			const timedOutErrors = report.rules.errors.filter(
@@ -194,7 +194,7 @@ describe('QRule timeout — integration (real delays)', () => {
 			}
 
 			const model = AuthModel.create({ token: 'abc123' });
-			const result = await model.checkRulesAsync({ timeoutMs: 200 });
+			const result = await model.$qm.checkRulesAsync({ timeoutMs: 200 });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors[0]?.timedOut).toBeUndefined(); // rejection ≠ timeout
@@ -215,7 +215,7 @@ describe('QRule timeout — integration (real delays)', () => {
 			}
 
 			const model = EmailModel.create({ email: 'test@example.com' });
-			const result = await model.checkRulesAsync({
+			const result = await model.$qm.checkRulesAsync({
 				timeoutMs: 30,
 				timeoutMessage: () => `${serviceName} did not respond in time`,
 			});
@@ -227,7 +227,7 @@ describe('QRule timeout — integration (real delays)', () => {
 
 			// Verify lazy evaluation: change service name and re-validate
 			serviceName = 'auth-service';
-			const result2 = await model.checkRulesAsync({
+			const result2 = await model.$qm.checkRulesAsync({
 				timeoutMs: 30,
 				timeoutMessage: () => `${serviceName} did not respond in time`,
 			});
@@ -269,7 +269,7 @@ describe('QRule timeout — abandon semantics (predicate resolves late but is ig
 			const model = LateButValidModel.create({ email: 'ok@example.com' });
 
 			// Budget: 40 ms — predicate arrives at 200 ms — already abandoned
-			const result = await model.checkRulesAsync({
+			const result = await model.$qm.checkRulesAsync({
 				timeoutMs: 40,
 				timeoutMessage: 'Service too slow — please retry',
 			});
@@ -300,7 +300,7 @@ describe('QRule timeout — abandon semantics (predicate resolves late but is ig
 			const model = LateAndInvalidModel.create({
 				email: 'taken@example.com',
 			});
-			const result = await model.checkRulesAsync({
+			const result = await model.$qm.checkRulesAsync({
 				timeoutMs: 40,
 				timeoutMessage: 'Took too long',
 			});
@@ -362,7 +362,7 @@ describe('QRule timeout — abandon semantics (predicate resolves late but is ig
 			});
 
 			const start = Date.now();
-			const result = await model.checkRulesAsync({
+			const result = await model.$qm.checkRulesAsync({
 				timeoutMs: 50,
 				timeoutMessage: 'Field timed out',
 			});
@@ -416,7 +416,7 @@ describe('QRule timeout — abandon semantics (predicate resolves late but is ig
 			});
 
 			const start = Date.now();
-			const result = await model.checkRulesAsync({ timeoutMs: 50 });
+			const result = await model.$qm.checkRulesAsync({ timeoutMs: 50 });
 			const elapsed = Date.now() - start;
 
 			// All three timed out

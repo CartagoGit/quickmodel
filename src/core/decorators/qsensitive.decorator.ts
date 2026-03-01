@@ -49,10 +49,10 @@ export const QSENSITIVE_FIELDS_KEY = '__qSensitive_fields__';
  * }
  *
  * const user = new User({ id: 1, email: 'a@b.com', password: 'secret', token: 'tok' });
- * user.serialize();
+ * user.$qm.serialize();
  * // → { id: 1, email: 'a@b.com' }  ← password and token excluded
  *
- * user.serialize({ includeSensitive: true });
+ * user.$qm.serialize({ includeSensitive: true });
  * // → { id: 1, email: 'a@b.com', password: 'secret', token: 'tok' }
  *
  * user.password; // → 'secret'  ← still accessible as instance property

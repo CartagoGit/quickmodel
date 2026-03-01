@@ -6,13 +6,14 @@
  * `tsup.config.ts` las externaliza de forma explícita.
  *
  * Reglas que valida este test:
- * 1. `@modelcontextprotocol/sdk` → debe estar en `dependencies` (no devDependencies)
- *    porque el binario `dist/cli.js` lo necesita en runtime des de cualquier máquina.
+ * 1. `@modelcontextprotocol/sdk` → debe estar en `optionalDependencies` (no dependencies
+ *    ni devDependencies) porque solo lo necesitan los usuarios del CLI/MCP.
  * 2. `@modelcontextprotocol/sdk` → debe estar en la lista `external` de tsup para
  *    que no se incruste en el shared chunk que afecta a todos los entry points.
  * 3. `@faker-js/faker` → correctamente en `optionalDependencies`, no en dependencies
  *    ni devDependencies.
- * 4. El campo `sideEffects: false` debe mantenerse para tree-shaking.
+ * 4. El campo `sideEffects` debe ser un array listando los archivos con efectos
+ *    secundarios reales (registros de schemas/mocks), no `false`.
  */
 
 import { describe, test, expect } from 'bun:test';
@@ -36,16 +37,23 @@ function readTsupSource(): string {
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('Bundle configuration integrity', () => {
-	test('@modelcontextprotocol/sdk must be in dependencies (not devDependencies)', () => {
+	test('@modelcontextprotocol/sdk must be in optionalDependencies (not dependencies or devDependencies)', () => {
 		const pkg = readPkg();
 		const deps = (pkg['dependencies'] as Record<string, string>) ?? {};
 		const devDeps =
 			(pkg['devDependencies'] as Record<string, string>) ?? {};
+		const optDeps =
+			(pkg['optionalDependencies'] as Record<string, string>) ?? {};
+
+		expect(
+			optDeps['@modelcontextprotocol/sdk'],
+			'@modelcontextprotocol/sdk should be in optionalDependencies (optional CLI/MCP dep)'
+		).toBeDefined();
 
 		expect(
 			deps['@modelcontextprotocol/sdk'],
-			'@modelcontextprotocol/sdk should be in dependencies (CLI runtime dep)'
-		).toBeDefined();
+			'@modelcontextprotocol/sdk should NOT be in dependencies'
+		).toBeUndefined();
 
 		expect(
 			devDeps['@modelcontextprotocol/sdk'],
@@ -81,9 +89,28 @@ describe('Bundle configuration integrity', () => {
 		).toBeUndefined();
 	});
 
-	test('package.json sideEffects must be false for tree-shaking', () => {
+	test('package.json sideEffects must be an array listing side-effect files', () => {
 		const pkg = readPkg();
-		expect(pkg['sideEffects']).toBe(false);
+		const sideEffects = pkg['sideEffects'];
+
+		expect(
+			Array.isArray(sideEffects),
+			'sideEffects should be an array (not false)'
+		).toBe(true);
+
+		const arr = sideEffects as string[];
+		expect(
+			arr.some((entry) => entry.includes('index')),
+			'sideEffects should include dist/index.*'
+		).toBe(true);
+		expect(
+			arr.some((entry) => entry.includes('schema')),
+			'sideEffects should include dist/schema.*'
+		).toBe(true);
+		expect(
+			arr.some((entry) => entry.includes('mock')),
+			'sideEffects should include dist/mock.*'
+		).toBe(true);
 	});
 
 	test('tsup external must include reflect-metadata', () => {

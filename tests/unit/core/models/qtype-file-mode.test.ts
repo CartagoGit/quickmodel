@@ -110,7 +110,7 @@ describe("@QType({ fileMode: 'reference' }) — forma options-only", () => {
 			signature: null,
 			raw: null,
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.avatar).toBe('profile.png');
 	});
 
@@ -121,7 +121,7 @@ describe("@QType({ fileMode: 'reference' }) — forma options-only", () => {
 			signature: makeBlob(),
 			raw: null,
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.signature).toBe('[Blob]');
 	});
 
@@ -132,7 +132,7 @@ describe("@QType({ fileMode: 'reference' }) — forma options-only", () => {
 			signature: null,
 			raw: new ArrayBuffer(64),
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.raw).toBe('[binary]');
 	});
 
@@ -143,7 +143,7 @@ describe("@QType({ fileMode: 'reference' }) — forma options-only", () => {
 			signature: null,
 			raw: null,
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.name).toBe('Alice');
 	});
 });
@@ -159,7 +159,7 @@ describe("@QType(File, { fileMode: 'reference' }) — forma explícita con tipo"
 			avatar: makeFile('doc.pdf', 'application/pdf'),
 			signature: null,
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.avatar).toBe('doc.pdf');
 	});
 
@@ -169,7 +169,7 @@ describe("@QType(File, { fileMode: 'reference' }) — forma explícita con tipo"
 			avatar: null,
 			signature: makeBlob('image/gif', 256),
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 		expect(result.signature).toBe('[Blob]');
 	});
 });
@@ -186,7 +186,7 @@ describe('precedencia: serialize({ fileMode }) sobreescribe el decorador', () =>
 			signature: null,
 			raw: null,
 		});
-		const result = dto.serialize({ fileMode: 'binary' });
+		const result = dto.$qm.serialize({ fileMode: 'binary' });
 		// call option 'binary' gana sobre el decorador 'reference'
 		expect(typeof result.avatar).toBe('object');
 		expect((result.avatar as Record<string, unknown>)?.name).toBe(
@@ -201,7 +201,7 @@ describe('precedencia: serialize({ fileMode }) sobreescribe el decorador', () =>
 			signature: null,
 			raw: null,
 		});
-		const result = dto.serialize(); // sin call option
+		const result = dto.$qm.serialize(); // sin call option
 		expect(result.avatar).toBe('img.jpg');
 	});
 });
@@ -217,7 +217,7 @@ describe('@QType({ fileMode }) solo afecta al campo decorado', () => {
 			decoratedAvatar: makeFile('decorated.jpg'),
 			rawAvatar: makeFile('raw.jpg'),
 		});
-		const result = dto.serialize();
+		const result = dto.$qm.serialize();
 
 		// Con decorador → reference
 		expect(result.decoratedAvatar).toBe('decorated.jpg');

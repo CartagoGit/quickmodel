@@ -27,7 +27,7 @@ describe('Unit: BigInt Transformer', () => {
 			balance: '999999999999999999',
 		});
 
-		const IQSerialized = account.serialize();
+		const IQSerialized = account.$qm.serialize();
 
 		expect(IQSerialized.balance).toBe('999999999999999999');
 		expect(typeof IQSerialized.balance).toBe('string');
@@ -51,7 +51,7 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(9007199254740992n);
-		expect(account.serialize().balance).toBe(huge);
+		expect(account.$qm.serialize().balance).toBe(huge);
 	});
 
 	test('should roundtrip bigint correctly', () => {
@@ -74,7 +74,7 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(0n);
-		expect(account.serialize().balance).toBe('0');
+		expect(account.$qm.serialize().balance).toBe('0');
 	});
 
 	test('should handle negative bigint', () => {
@@ -84,6 +84,6 @@ describe('Unit: BigInt Transformer', () => {
 		});
 
 		expect(account.balance).toBe(-999999n);
-		expect(account.serialize().balance).toBe('-999999');
+		expect(account.$qm.serialize().balance).toBe('-999999');
 	});
 });

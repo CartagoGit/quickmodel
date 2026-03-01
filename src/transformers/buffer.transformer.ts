@@ -47,7 +47,7 @@ import {
  * file.data instanceof ArrayBuffer; // → true
  * file.data.byteLength; // → 5
  *
- * const json = file.serialize();
+ * const json = file.$qm.serialize();
  * json.data; // → [72, 101, 108, 108, 111]
  * ```
  *
@@ -174,7 +174,7 @@ export class ArrayBufferTransformer
  * data.view instanceof DataView; // → true
  * data.view.byteLength; // → 3
  *
- * const json = data.serialize();
+ * const json = data.$qm.serialize();
  * json.view; // → [0, 255, 128]
  * ```
  *

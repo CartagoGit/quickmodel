@@ -215,7 +215,7 @@ describe('Genéricos: Type erasure y runtime behavior', () => {
 			]),
 		});
 
-		const IQSerialized = original.serialize();
+		const IQSerialized = original.$qm.serialize();
 		const deserialized = StringContainer.deserialize(IQSerialized);
 
 		// Funciona correctamente

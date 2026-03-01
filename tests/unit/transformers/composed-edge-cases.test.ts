@@ -53,7 +53,7 @@ describe('Composed Transformers Edge Cases', () => {
 				events: [['global.key1', '2024-06-15T12:00:00.000Z']],
 			});
 
-			const serialized = model.serialize();
+			const serialized = model.$qm.serialize();
 			expect(Array.isArray(serialized.events)).toBe(true);
 			expect(serialized.events[0][0]).toBe('global.key1'); // Symbol serialized as string
 			expect(serialized.events[0][1]).toMatch(/2024-06-15/); // Date serialized
@@ -104,7 +104,7 @@ describe('Composed Transformers Edge Cases', () => {
 				data: [[[['x', '999999999999999']]]],
 			});
 
-			const serialized = model.serialize();
+			const serialized = model.$qm.serialize();
 			expect(Array.isArray(serialized.data)).toBe(true); // Array<Set<Map>> → Array
 			expect(Array.isArray(serialized.data[0])).toBe(true); // Set<Map> → Array
 
@@ -168,7 +168,7 @@ describe('Composed Transformers Edge Cases', () => {
 				calendars: [['2024-01-01'], [], ['2024-12-31', '2024-06-15']],
 			});
 
-			const serialized = model.serialize();
+			const serialized = model.$qm.serialize();
 			expect(serialized.calendars).toHaveLength(3);
 			expect(serialized.calendars[0]).toHaveLength(1);
 			expect(serialized.calendars[1]).toHaveLength(0);
@@ -304,7 +304,7 @@ describe('Composed Transformers Edge Cases', () => {
 				matrix3D: [[['2024-01-01T00:00:00.000Z']]],
 			});
 
-			const serialized = model.serialize();
+			const serialized = model.$qm.serialize();
 			expect(serialized.matrix3D[0][0][0]).toMatch(/2024-01-01/);
 		});
 	});
@@ -389,7 +389,7 @@ describe('Composed Transformers Edge Cases', () => {
 			});
 
 			// Should serialize without throwing
-			expect(() => model.serialize()).not.toThrow();
+			expect(() => model.$qm.serialize()).not.toThrow();
 		});
 	});
 });

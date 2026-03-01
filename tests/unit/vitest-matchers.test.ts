@@ -229,13 +229,13 @@ describe('toMatchQModel(expected)', () => {
 
 	test('QModel vs plain serialized object matches', () => {
 		const profile = makeValidProfile();
-		const serialized = profile.serialize() as object;
+		const serialized = profile.$qm.serialize() as object;
 		expect(profile).toMatchQModel(serialized);
 	});
 
 	test('different values do not match', () => {
 		const profileA = makeValidProfile();
-		const profileB = profileA.copy({ score: 50 });
+		const profileB = profileA.$qm.copy({ score: 50 });
 		expect(profileA).not.toMatchQModel(profileB);
 	});
 
@@ -247,7 +247,7 @@ describe('toMatchQModel(expected)', () => {
 
 	test('copy() result matches updated data', () => {
 		const original = makeValidProfile();
-		const updated = original.copy({ score: 80 });
+		const updated = original.$qm.copy({ score: 80 });
 		const expected = new ProfileModel({
 			id: 'p1',
 			username: 'alice_01',
@@ -275,7 +275,7 @@ describe('toBeIntact()', () => {
 
 	test('merged model is intact', () => {
 		const profile = makeValidProfile();
-		const updated = profile.copy({ score: 50 });
+		const updated = profile.$qm.copy({ score: 50 });
 		expect(updated).toBeIntact();
 	});
 });
@@ -320,7 +320,7 @@ describe('toHaveDirtyField(field)', () => {
 
 	test('merge() result has no dirty fields', () => {
 		const profile = makeValidProfile();
-		const updated = profile.copy({ score: 60 });
+		const updated = profile.$qm.copy({ score: 60 });
 		expect(updated).not.toHaveDirtyField('score'); // new snapshot
 	});
 });

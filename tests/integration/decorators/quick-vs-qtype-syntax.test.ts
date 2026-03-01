@@ -139,7 +139,7 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 		});
 		test('debe serializar correctamente', () => {
 			const instance = new QuickTestDeclare(testData);
-			const IQSerialized = instance.serialize();
+			const IQSerialized = instance.$qm.serialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('Test Item');
@@ -165,7 +165,7 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new QuickTestDeclare(testData);
-			const IQSerialized = instance1.serialize();
+			const IQSerialized = instance1.$qm.serialize();
 			const instance2 = new QuickTestDeclare(IQSerialized);
 
 			expect(instance2.id).toBe('test-123');
@@ -217,7 +217,7 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('debe serializar correctamente', () => {
 			const instance = new QuickTestBang(testData);
-			const IQSerialized = instance.serialize();
+			const IQSerialized = instance.$qm.serialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('Test Item');
@@ -243,7 +243,7 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 
 		test('debe deserializar correctamente después de serialización', () => {
 			const instance1 = new QuickTestBang(testData);
-			const IQSerialized = instance1.serialize();
+			const IQSerialized = instance1.$qm.serialize();
 			const instance2 = new QuickTestBang(IQSerialized);
 
 			expect(instance2.id).toBe('test-123');
@@ -271,15 +271,15 @@ describe('Syntax Comparison with @Quick(): declare vs !', () => {
 			const instanceDeclare = new QuickTestDeclare(testData);
 			const instanceBang = new QuickTestBang(testData);
 
-			const serializedDeclare = instanceDeclare.serialize();
-			const serializedBang = instanceBang.serialize();
+			const serializedDeclare = instanceDeclare.$qm.serialize();
+			const serializedBang = instanceBang.$qm.serialize();
 
 			expect(serializedDeclare).toEqual(serializedBang);
 		});
 
 		test('ambas sintaxis deben ser intercambiables en deserialización', () => {
 			const instanceBang = new QuickTestBang(testData);
-			const IQSerialized = instanceBang.serialize();
+			const IQSerialized = instanceBang.$qm.serialize();
 
 			// Deserializar el JSON del modelo Bang en modelo Declare
 			const instanceDeclare = new QuickTestDeclare(IQSerialized);

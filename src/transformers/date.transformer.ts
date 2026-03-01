@@ -42,7 +42,7 @@ import {
  * const event = new Event({ createdAt: "2024-01-01T00:00:00.000Z" });
  * event.createdAt instanceof Date; // → true
  *
- * const data = event.serialize();
+ * const data = event.$qm.serialize();
  * data.createdAt; // → "2024-01-01T00:00:00.000Z"
  * ```
  *

@@ -109,13 +109,13 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 		);
 		const preview = new SwelteDerived(
 			() =>
-				(note.current.serialize() as Record<string, unknown>)[
+				(note.current.$qm.serialize() as Record<string, unknown>)[
 					'preview'
 				] as string
 		);
 		expect(preview.current).toBe('Initial body');
 		// Update via immutable merge — re-assign state
-		note.current = note.current.copy({ body: 'Updated body content' });
+		note.current = note.current.$qm.copy({ body: 'Updated body content' });
 		expect(preview.current).toBe('Updated body content');
 	});
 
@@ -131,12 +131,12 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 		);
 		const charCount = new SwelteDerived(
 			() =>
-				(note.current.serialize() as Record<string, unknown>)[
+				(note.current.$qm.serialize() as Record<string, unknown>)[
 					'charCount'
 				] as number
 		);
 		expect(charCount.current).toBe(3);
-		note.current = note.current.copy({ body: 'abcdef' });
+		note.current = note.current.$qm.copy({ body: 'abcdef' });
 		expect(charCount.current).toBe(6);
 	});
 
@@ -151,7 +151,7 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 			})
 		);
 		expect(state.current.pinned).toBe(false);
-		state.current = state.current.copy({ pinned: true });
+		state.current = state.current.$qm.copy({ pinned: true });
 		expect(state.current.pinned).toBe(true);
 	});
 
@@ -240,7 +240,7 @@ describe('Svelte — writable store wrapping QModel', () => {
 		);
 		const values: boolean[] = [];
 		store.subscribe((val) => values.push(val.done));
-		store.update((prev) => prev.copy({ done: true }));
+		store.update((prev) => prev.$qm.copy({ done: true }));
 		expect(values).toEqual([false, true]);
 	});
 
@@ -251,7 +251,7 @@ describe('Svelte — writable store wrapping QModel', () => {
 		const values: boolean[] = [];
 		const unsub = store.subscribe((val) => values.push(val.done));
 		unsub();
-		store.update((prev) => prev.copy({ done: true }));
+		store.update((prev) => prev.$qm.copy({ done: true }));
 		expect(values).toHaveLength(1); // only initial emit
 	});
 
@@ -416,7 +416,7 @@ async function kitLoadFunction(apiResponse: object[]): Promise<{
 	await Bun.sleep(1);
 	const { instances } = EventModel.createMany(apiResponse as any[]);
 	return {
-		events: instances.map((evt) => evt.serialize()),
+		events: instances.map((evt) => evt.$qm.serialize()),
 		count: instances.length,
 	};
 }

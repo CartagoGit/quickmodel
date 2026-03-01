@@ -240,7 +240,7 @@ describe('Integration: Mock Generator - Real World', () => {
 
 		const mock = Order.mock().random({
 			status: 'shipped',
-			shippingAddress: customAddress.serialize(),
+			shippingAddress: customAddress.$qm.serialize(),
 			items: customItems,
 			metadata: {
 				paymentMethod: 'credit-card',

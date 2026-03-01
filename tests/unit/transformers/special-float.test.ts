@@ -195,25 +195,25 @@ class Stats extends QModel<IStats> {
 describe('Serializer auto-encoding', () => {
 	test('NaN serializes to { __qm: "nan" } automatically', () => {
 		const stats = new Stats({ hits: NaN, ratio: 0.5, boost: 1 });
-		const serialized = stats.serialize();
+		const serialized = stats.$qm.serialize();
 		expect(serialized.hits as unknown).toEqual({ __qm: 'nan' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('Infinity serializes to { __qm: "inf" } automatically', () => {
 		const stats = new Stats({ hits: 10, ratio: Infinity, boost: 1 });
-		const serialized = stats.serialize();
+		const serialized = stats.$qm.serialize();
 		expect(serialized.ratio as unknown).toEqual({ __qm: 'inf' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('-Infinity serializes to { __qm: "-inf" } automatically', () => {
 		const stats = new Stats({ hits: 10, ratio: -Infinity, boost: 1 });
-		const serialized = stats.serialize();
+		const serialized = stats.$qm.serialize();
 		expect(serialized.ratio as unknown).toEqual({ __qm: '-inf' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test('finite numbers pass through unchanged', () => {
 		const stats = new Stats({ hits: 42, ratio: 0.9, boost: 2 });
-		const serialized = stats.serialize();
+		const serialized = stats.$qm.serialize();
 		expect(serialized.hits).toBe(42);
 	});
 });
@@ -258,7 +258,7 @@ describe('Deserializer auto-decoding', () => {
 describe('Lossless roundtrip (NaN / Infinity)', () => {
 	test('NaN survives serialize → JSON.parse → new Model()', () => {
 		const original = new Stats({ hits: NaN, ratio: 0.5, boost: 1 });
-		const jsonString = JSON.stringify(original.serialize());
+		const jsonString = JSON.stringify(original.$qm.serialize());
 		const parsed = JSON.parse(jsonString) as IStats;
 		const restored = new Stats(parsed);
 		expect(restored.hits).toBeNaN();
@@ -266,7 +266,7 @@ describe('Lossless roundtrip (NaN / Infinity)', () => {
 
 	test('Infinity survives serialize → JSON.parse → new Model()', () => {
 		const original = new Stats({ hits: 10, ratio: Infinity, boost: 1 });
-		const jsonString = JSON.stringify(original.serialize());
+		const jsonString = JSON.stringify(original.$qm.serialize());
 		const parsed = JSON.parse(jsonString) as IStats;
 		const restored = new Stats(parsed);
 		expect(restored.ratio).toBe(Infinity);
@@ -274,7 +274,7 @@ describe('Lossless roundtrip (NaN / Infinity)', () => {
 
 	test('-Infinity survives serialize → JSON.parse → new Model()', () => {
 		const original = new Stats({ hits: 10, ratio: -Infinity, boost: 1 });
-		const jsonString = JSON.stringify(original.serialize());
+		const jsonString = JSON.stringify(original.$qm.serialize());
 		const parsed = JSON.parse(jsonString) as IStats;
 		const restored = new Stats(parsed);
 		expect(restored.ratio).toBe(-Infinity);
@@ -305,7 +305,7 @@ describe('Explicit transformer key', () => {
 			val: { __qm: 'nan' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		expect(model.val).toBeNaN();
-		expect(model.serialize().val as unknown).toEqual({ __qm: 'nan' }); // @quickmodel-rule-ignore: no-as-unknown
+		expect(model.$qm.serialize().val as unknown).toEqual({ __qm: 'nan' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	test("@Quick({ val: 'infinity' }) — Infinity round-trips", () => {
@@ -313,6 +313,6 @@ describe('Explicit transformer key', () => {
 			val: { __qm: 'inf' } as unknown as number, // @quickmodel-rule-ignore: no-as-unknown
 		});
 		expect(model.val).toBe(Infinity);
-		expect(model.serialize().val as unknown).toEqual({ __qm: 'inf' }); // @quickmodel-rule-ignore: no-as-unknown
+		expect(model.$qm.serialize().val as unknown).toEqual({ __qm: 'inf' }); // @quickmodel-rule-ignore: no-as-unknown
 	});
 });

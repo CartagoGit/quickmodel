@@ -64,7 +64,7 @@ type IPrimitiveTypeMap = {
  * });
  *
  * // Values are validated but not transformed
- * const json = config.serialize();
+ * const json = config.$qm.serialize();
  * json; // → { name: "server", port: 3000, enabled: true }
  *
  * // Type mismatch throws error

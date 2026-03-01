@@ -318,6 +318,7 @@ const logTests = (obj: User) => {
 console.log('\n====================================');
 
 const user = new User(baseObj);
+
 logTests(user);
 
 console.log('\n====================================');

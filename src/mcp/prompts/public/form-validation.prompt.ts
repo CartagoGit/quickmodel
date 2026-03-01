@@ -103,7 +103,7 @@ export class QFormValidationPrompt extends QAbstractPrompt<{
 						'// Grouped by @QGroup sections\n' +
 						'const grouped = MyForm.getFormSchemaGrouped();\n\n' +
 						'// Run validations on an instance\n' +
-						'const result = instance.checkRules(); // { valid, errors[] }\n' +
+						'const result = instance.$qm.checkRules(); // { valid, errors[] }\n' +
 						'```'
 				),
 				this.user(

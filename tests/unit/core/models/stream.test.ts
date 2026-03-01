@@ -64,7 +64,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ field: 'video' });
+		const stream = dto.$qm.toReadableStream({ field: 'video' });
 
 		expect(stream).toBeInstanceOf(ReadableStream);
 	});
@@ -77,7 +77,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.toReadableStream({ field: 'video' });
+		const stream = dto.$qm.toReadableStream({ field: 'video' });
 		const result = await readStream(stream);
 
 		expect(result).toEqual(data);
@@ -94,7 +94,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 
 		const receivedChunks: Uint8Array[] = [];
-		const stream = dto.toReadableStream({
+		const stream = dto.$qm.toReadableStream({
 			field: 'video',
 			chunkSize: 30, // 30 bytes por chunk → 4 chunks (30+30+30+10)
 			onChunk: (chunk) => {
@@ -117,7 +117,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 
 		let capturedTotal = 0;
-		const stream = dto.toReadableStream({
+		const stream = dto.$qm.toReadableStream({
 			field: 'video',
 			onChunk: (_, total) => {
 				capturedTotal = total;
@@ -132,7 +132,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 	test('campo null → lanza error', () => {
 		const dto = new VideoUpload({ title: 'no-video', video: null });
 
-		expect(() => dto.toReadableStream({ field: 'video' })).toThrow();
+		expect(() => dto.$qm.toReadableStream({ field: 'video' })).toThrow();
 	});
 
 	test('campo inexistente → lanza error', () => {
@@ -143,7 +143,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 
 		expect(() =>
-			dto.toReadableStream({ field: 'nonExistentField' as 'video' })
+			dto.$qm.toReadableStream({ field: 'nonExistentField' as 'video' })
 		).toThrow();
 	});
 });

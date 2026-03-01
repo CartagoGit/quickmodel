@@ -186,7 +186,7 @@ describe('E2E: User Registration Flow', () => {
 		expect(retrievedUser.isAdult()).toBe(true);
 
 		// STEP 10: Test copied functionality
-		const clonedUser = retrievedUser.copy();
+		const clonedUser = retrievedUser.$qm.copy();
 		expect(clonedUser).not.toBe(retrievedUser);
 		expect(clonedUser.email).toBe(retrievedUser.email);
 		expect(clonedUser.profile.address).not.toBe(

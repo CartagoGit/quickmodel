@@ -411,7 +411,7 @@ describe('Native WebSocket simulation', () => {
 			metadata: new Map([['source', 'web']]),
 		});
 
-		pipe.clientSocket.send(JSON.stringify(original.serialize()));
+		pipe.clientSocket.send(JSON.stringify(original.$qm.serialize()));
 		pipe.flushClientToServer();
 
 		expect(received).not.toBeNull();
@@ -446,7 +446,7 @@ describe('Native WebSocket simulation', () => {
 			metadata: new Map(),
 		});
 
-		pipe.clientSocket.send(JSON.stringify(original.serialize()));
+		pipe.clientSocket.send(JSON.stringify(original.$qm.serialize()));
 		pipe.flushClientToServer();
 
 		expect(received!.wordCount).toBe(3);
@@ -477,7 +477,7 @@ describe('Native WebSocket simulation', () => {
 			metadata: new Map(),
 		});
 
-		pipe.clientSocket.send(JSON.stringify(valid.serialize()));
+		pipe.clientSocket.send(JSON.stringify(valid.$qm.serialize()));
 		pipe.flushClientToServer();
 		expect(validationResult!.valid).toBe(true);
 		expect(validationResult!.errors).toHaveLength(0);
@@ -503,7 +503,7 @@ describe('Native WebSocket simulation', () => {
 			activeRooms: new Set(['room-1', 'room-3']),
 		});
 
-		pipe.serverSocket.send(JSON.stringify(presence.serialize()));
+		pipe.serverSocket.send(JSON.stringify(presence.$qm.serialize()));
 		pipe.flushServerToClient();
 
 		expect(clientReceived!.userId).toBe('u-99');
@@ -532,7 +532,7 @@ describe('Native WebSocket simulation', () => {
 			low: 186.5,
 		});
 
-		pipe.clientSocket.send(JSON.stringify(tick.serialize()));
+		pipe.clientSocket.send(JSON.stringify(tick.$qm.serialize()));
 		pipe.flushClientToServer();
 
 		expect(received!.symbol).toBe('AAPL');
@@ -583,7 +583,7 @@ describe('Native WebSocket simulation', () => {
 		];
 
 		const { instances: batch } = StockTickDto.createMany(rawTicks as any[]);
-		const serialized = batch.map((dto) => dto.serialize());
+		const serialized = batch.map((dto) => dto.$qm.serialize());
 
 		pipe.clientSocket.send(JSON.stringify(serialized));
 		pipe.flushClientToServer();
@@ -617,7 +617,7 @@ describe('Socket.IO simulation', () => {
 			metadata: new Map([['channel', 'general']]),
 		});
 
-		client.emit('chat:message', msg.serialize());
+		client.emit('chat:message', msg.$qm.serialize());
 
 		expect(serverReceived!.id).toBe('sio-001');
 		expect(serverReceived!.author).toBe('Eve');
@@ -643,9 +643,13 @@ describe('Socket.IO simulation', () => {
 			activeRooms: new Set(['room-main']),
 		});
 
-		client.emit('user:presence', presence.serialize(), (res: unknown) => {
-			ackResult = res as { valid: boolean; errors: string[] };
-		});
+		client.emit(
+			'user:presence',
+			presence.$qm.serialize(),
+			(res: unknown) => {
+				ackResult = res as { valid: boolean; errors: string[] };
+			}
+		);
 
 		expect(ackResult).not.toBeNull();
 		expect(ackResult!.valid).toBe(true);
@@ -674,7 +678,7 @@ describe('Socket.IO simulation', () => {
 
 		// Servidor emite a todos
 		for (const { server } of [pair1, pair2, pair3]) {
-			server.emit('presence:update', presence.serialize());
+			server.emit('presence:update', presence.$qm.serialize());
 		}
 
 		expect(received).toHaveLength(3);
@@ -705,7 +709,7 @@ describe('Socket.IO simulation', () => {
 				high: 110 + idx * 10,
 				low: 90 + idx * 10,
 			});
-			client.emit('stock:tick', tick.serialize());
+			client.emit('stock:tick', tick.$qm.serialize());
 		}
 
 		expect(ticks).toHaveLength(5);
@@ -721,7 +725,7 @@ describe('Socket.IO simulation', () => {
 
 		server.on('presence:update', (raw: unknown) => {
 			if (latestPresence) {
-				latestPresence = latestPresence.copy(
+				latestPresence = latestPresence.$qm.copy(
 					raw as Partial<IPresenceEvent>
 				);
 			} else {
@@ -737,7 +741,7 @@ describe('Socket.IO simulation', () => {
 			activeRooms: new Set(['room-a']),
 		});
 
-		client.emit('presence:update', initial.serialize());
+		client.emit('presence:update', initial.$qm.serialize());
 		expect(latestPresence!.status).toBe('online');
 
 		// Patch: solo cambia status
@@ -763,7 +767,7 @@ describe('Server-Sent Events (SSE) simulation', () => {
 
 		const raw = formatSseEvent({
 			type: 'stock:tick',
-			data: JSON.stringify(tick.serialize()),
+			data: JSON.stringify(tick.$qm.serialize()),
 			id: 'sse-evt-001',
 		});
 
@@ -786,7 +790,7 @@ describe('Server-Sent Events (SSE) simulation', () => {
 
 		const raw = formatSseEvent({
 			type: 'stock:tick',
-			data: JSON.stringify(original.serialize()),
+			data: JSON.stringify(original.$qm.serialize()),
 			id: 'sse-001',
 		});
 
@@ -832,7 +836,7 @@ describe('Server-Sent Events (SSE) simulation', () => {
 			const dto = new StockTickDto(raw);
 			return formatSseEvent({
 				type: 'stock:tick',
-				data: JSON.stringify(dto.serialize()),
+				data: JSON.stringify(dto.$qm.serialize()),
 				id: `sse-${idx}`,
 			});
 		});
@@ -878,11 +882,11 @@ describe('Server-Sent Events (SSE) simulation', () => {
 		const stream = [
 			formatSseEvent({
 				type: 'chat:message',
-				data: JSON.stringify(msg.serialize()),
+				data: JSON.stringify(msg.$qm.serialize()),
 			}),
 			formatSseEvent({
 				type: 'user:presence',
-				data: JSON.stringify(pres.serialize()),
+				data: JSON.stringify(pres.$qm.serialize()),
 			}),
 		];
 
@@ -926,7 +930,7 @@ describe('uWebSockets.js ArrayBuffer binary simulation', () => {
 
 		// Simula uWebSockets send(buffer)
 		const buffer: ArrayBuffer = encoder.encode(
-			JSON.stringify(original.serialize())
+			JSON.stringify(original.$qm.serialize())
 		).buffer;
 
 		// Simula uWebSockets message handler recibir ArrayBuffer
@@ -953,7 +957,7 @@ describe('uWebSockets.js ArrayBuffer binary simulation', () => {
 		});
 
 		const buffer: ArrayBuffer = encoder.encode(
-			JSON.stringify(tick.serialize())
+			JSON.stringify(tick.$qm.serialize())
 		).buffer;
 		const raw = decoder.decode(buffer);
 		const reconstructed = new StockTickDto(JSON.parse(raw) as IStockTick);
@@ -979,7 +983,9 @@ describe('uWebSockets.js ArrayBuffer binary simulation', () => {
 				high: 110 + idx * 50,
 				low: 90 + idx * 50,
 			});
-			queue.push(encoder.encode(JSON.stringify(dto.serialize())).buffer);
+			queue.push(
+				encoder.encode(JSON.stringify(dto.$qm.serialize())).buffer
+			);
 		}
 
 		// Draining the queue
@@ -1017,7 +1023,7 @@ describe('STOMP over WebSocket simulation', () => {
 				destination: '/topic/chat.general',
 				'content-type': 'application/json',
 			},
-			body: JSON.stringify(msg.serialize()),
+			body: JSON.stringify(msg.$qm.serialize()),
 		});
 
 		expect(frame).toContain('SEND\n');
@@ -1045,7 +1051,7 @@ describe('STOMP over WebSocket simulation', () => {
 				'message-id': 'msg-abc-123',
 				subscription: 'sub-0',
 			},
-			body: JSON.stringify(original.serialize()),
+			body: JSON.stringify(original.$qm.serialize()),
 		});
 
 		const parsed = parseStompFrame(rawFrame);
@@ -1077,7 +1083,7 @@ describe('STOMP over WebSocket simulation', () => {
 				'message-id': 'pres-001',
 				subscription: 'sub-presence',
 			},
-			body: JSON.stringify(presence.serialize()),
+			body: JSON.stringify(presence.$qm.serialize()),
 		});
 
 		const parsed = parseStompFrame(messageFrame);

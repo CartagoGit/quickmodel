@@ -55,7 +55,7 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 			current = current.next;
 		}
 
-		expect(() => data.serialize()).toThrow(/Maximum recursion depth/);
+		expect(() => data.$qm.serialize()).toThrow(/Maximum recursion depth/);
 	});
 
 	test('should prevent stack overflow on deep serialize (Nested Models)', () => {
@@ -80,6 +80,6 @@ describe('Recursion Depth Security (Stack Overflow Prevention)', () => {
 			current = next;
 		}
 
-		expect(() => root.serialize()).toThrow(/Maximum recursion depth/);
+		expect(() => root.$qm.serialize()).toThrow(/Maximum recursion depth/);
 	});
 });

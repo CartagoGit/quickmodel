@@ -356,7 +356,7 @@ describe('Node:test Integration: type coercion', () => {
 
 	test('roundtrip: serialize() + re-create matches original', () => {
 		const original = makeValidInvoice();
-		const restored = new InvoiceDto(original.serialize());
+		const restored = new InvoiceDto(original.$qm.serialize());
 		expect(() => assertQModel.matches(original, restored)).not.toThrow();
 	});
 });

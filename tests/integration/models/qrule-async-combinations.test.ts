@@ -60,7 +60,7 @@ describe('no timeoutMs — all predicates awaited to completion', () => {
 				name: 'alice',
 				email: 'taken@x.com',
 			});
-			const result = await model.checkRulesAsync();
+			const result = await model.$qm.checkRulesAsync();
 
 			expect(result.valid).toBe(false);
 			expect(result.errors).toHaveLength(1);
@@ -81,7 +81,7 @@ describe('no timeoutMs — all predicates awaited to completion', () => {
 			}
 
 			const model = AllPassModel.create({ code: 'ok' });
-			expect((await model.checkRulesAsync()).valid).toBe(true);
+			expect((await model.$qm.checkRulesAsync()).valid).toBe(true);
 		},
 		{ timeout: 500 }
 	);
@@ -219,7 +219,7 @@ describe('varying timeoutMs across calls on the same model', () => {
 	test(
 		'budget 20 ms — both async rules time out',
 		async () => {
-			const result = await model.checkRulesAsync({ timeoutMs: 20 });
+			const result = await model.$qm.checkRulesAsync({ timeoutMs: 20 });
 			const timedOut = result.errors.filter((err) => err.timedOut);
 			expect(timedOut.map((err) => err.field).sort()).toEqual([
 				'email',
@@ -232,7 +232,7 @@ describe('varying timeoutMs across calls on the same model', () => {
 	test(
 		'budget 50 ms — name passes (30 ms), email times out (80 ms)',
 		async () => {
-			const result = await model.checkRulesAsync({ timeoutMs: 50 });
+			const result = await model.$qm.checkRulesAsync({ timeoutMs: 50 });
 			expect(
 				result.errors.find((err) => err.field === 'name')
 			).toBeUndefined();
@@ -246,7 +246,7 @@ describe('varying timeoutMs across calls on the same model', () => {
 	test(
 		'budget 120 ms — both async rules pass, sync rule passes',
 		async () => {
-			const result = await model.checkRulesAsync({ timeoutMs: 120 });
+			const result = await model.$qm.checkRulesAsync({ timeoutMs: 120 });
 			expect(result.valid).toBe(true);
 		},
 		{ timeout: 500 }
@@ -255,7 +255,7 @@ describe('varying timeoutMs across calls on the same model', () => {
 	test(
 		'no budget — all resolve fully, valid:true',
 		async () => {
-			const result = await model.checkRulesAsync();
+			const result = await model.$qm.checkRulesAsync();
 			expect(result.valid).toBe(true);
 		},
 		{ timeout: 500 }
@@ -509,7 +509,7 @@ describe('sync and async rules coexist — sync unaffected by timeoutMs', () => 
 				age: 15,
 				email: 'ok@x.com',
 			});
-			const result = await model.checkRulesAsync({
+			const result = await model.$qm.checkRulesAsync({
 				timeoutMs: 50,
 				timeoutMessage: 'Timeout',
 			});
@@ -545,7 +545,7 @@ describe('sync and async rules coexist — sync unaffected by timeoutMs', () => 
 				age: 15,
 				email: 'ok@x.com',
 			});
-			const result = await model.checkRulesAsync({ timeoutMs: 400 });
+			const result = await model.$qm.checkRulesAsync({ timeoutMs: 400 });
 
 			// async rules passed (name taken / email taken = no errors for those)
 			expect(result.errors.find((err) => err.timedOut)).toBeUndefined();
@@ -707,7 +707,7 @@ describe('full combination: heterogeneous delays, timeouts, outcomes', () => {
 			fieldD: 'val',
 			fieldE: 'val',
 		});
-		result = await model.checkRulesAsync(budget);
+		result = await model.$qm.checkRulesAsync(budget);
 	});
 
 	test('fieldA (instant pass) — no error', () => {
@@ -761,7 +761,7 @@ describe('full combination: heterogeneous delays, timeouts, outcomes', () => {
 				fieldE: 'v',
 			});
 			const start = Date.now();
-			await model.checkRulesAsync(budget);
+			await model.$qm.checkRulesAsync(budget);
 			const elapsed = Date.now() - start;
 
 			// Sequential would be: 0+20+20+60+15 ≈ 115 ms.
@@ -793,7 +793,7 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 25,
 			});
-			expect(await model.isValidAsync({ timeoutMs: 30 })).toBe(false);
+			expect(await model.$qm.isValidAsync({ timeoutMs: 30 })).toBe(false);
 		},
 		{ timeout: 500 }
 	);
@@ -805,7 +805,7 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 25,
 			});
-			expect(await model.isValidAsync({ timeoutMs: 300 })).toBe(true);
+			expect(await model.$qm.isValidAsync({ timeoutMs: 300 })).toBe(true);
 		},
 		{ timeout: 500 }
 	);
@@ -817,7 +817,7 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 25,
 			});
-			expect(await model.isValidAsync()).toBe(true);
+			expect(await model.$qm.isValidAsync()).toBe(true);
 		},
 		{ timeout: 500 }
 	);
@@ -829,7 +829,9 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 10,
 			});
-			expect(await model.isValidAsync({ timeoutMs: 300 })).toBe(false);
+			expect(await model.$qm.isValidAsync({ timeoutMs: 300 })).toBe(
+				false
+			);
 		},
 		{ timeout: 500 }
 	);
@@ -841,7 +843,9 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 25,
 			});
-			const report = await model.validationReportAsync({ timeoutMs: 30 });
+			const report = await model.$qm.validationReportAsync({
+				timeoutMs: 30,
+			});
 
 			expect(report.valid).toBe(false);
 			expect(report.integrity).toHaveLength(0); // no type mismatches
@@ -857,7 +861,7 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 25,
 			});
-			const report = await model.validationReportAsync({
+			const report = await model.$qm.validationReportAsync({
 				timeoutMs: 300,
 			});
 			expect(report.valid).toBe(true);
@@ -872,7 +876,7 @@ describe('isValidAsync and validationReportAsync with all option variants', () =
 				email: 'ok@x.com',
 				age: 25,
 			});
-			const report = await model.validationReportAsync({
+			const report = await model.$qm.validationReportAsync({
 				timeoutMs: 30,
 				timeoutMessage: () => 'report timeout',
 			});

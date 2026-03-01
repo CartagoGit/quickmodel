@@ -30,7 +30,7 @@ describe('Robustness: Partial Updates (PATCH)', () => {
 			age: 30,
 		});
 
-		user.patch({ name: 'Jane' });
+		user.$qm.patch({ name: 'Jane' });
 
 		expect(user.name).toBe('Jane');
 		expect(user.email).toBe('john@example.com');
@@ -48,7 +48,7 @@ describe('Robustness: Partial Updates (PATCH)', () => {
 
 		// Current patch implementation uses { ...current, ...patch }
 		// So explicit undefined SHOULD overwrite with undefined (if allowed)
-		user.patch({ age: undefined });
+		user.$qm.patch({ age: undefined });
 
 		expect(user.age).toBeUndefined();
 		expect(user.name).toBe('John');
@@ -63,7 +63,7 @@ describe('Robustness: Partial Updates (PATCH)', () => {
 
 		// Try to patch with invalid type
 		expect(() => {
-			user.patch({ age: 'invalid' as any });
+			user.$qm.patch({ age: 'invalid' as any });
 		}).toThrow(/expected/i); // Expect validation error
 	});
 
@@ -103,7 +103,7 @@ describe('Robustness: Partial Updates (PATCH)', () => {
 		// So current.address (object) will be REPLACED by patch.address (object).
 		// Wait, serialize() returns IQSerialized data.
 
-		profile.patch({
+		profile.$qm.patch({
 			address: { city: 'LA' } as any, // Missing zip!
 		});
 

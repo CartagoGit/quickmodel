@@ -131,13 +131,13 @@ export const whyFeatureSections: IWhyFeatureSection[] = [
 		titleEn: 'Security & Protection',
 		titleEs: 'Seguridad y Protección',
 		bodyEn: `<ul>
-			<li><strong>Circular references</strong>: <code>toJSON()</code> doesn't crash, returns <code>{ __circular: true }</code>.</li>
+			<li><strong>Circular references</strong>: serialization doesn't crash — circular fields are replaced with <code>{ __circular: true }</code> in the output.</li>
 <li><strong>Injection</strong>: validates URLs (blocks <code>javascript:</code>) and limits RegExp length.</li>
 <li><strong>Prototype pollution</strong>: <code>__proto__</code> properties automatically excluded.</li>
 <li><strong>Strict mode</strong>: <code>unknownPropertyPolicy: 'error'</code> throws on unexpected properties in public APIs.</li>
 </ul>`,
 		bodyEs: `<ul>
-			<li><strong>Referencias circulares</strong>: <code>toJSON()</code> no crashea, devuelve <code>{ __circular: true }</code>.</li>
+			<li><strong>Referencias circulares</strong>: la serialización no crashea — los campos circulares se reemplazan por <code>{ __circular: true }</code> en la salida.</li>
 			<li><strong>Inyección</strong>: valida URLs (bloquea <code>javascript:</code>) y limita longitud de RegExp.</li>
 			<li><strong>Contaminación de prototipos</strong>: propiedades <code>__proto__</code> excluidas automáticamente.</li>
 			<li><strong>Modo estricto</strong>: <code>unknownPropertyPolicy: 'error'</code> lanza error ante propiedades inesperadas en APIs públicas.</li>

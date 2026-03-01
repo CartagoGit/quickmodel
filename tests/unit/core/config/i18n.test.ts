@@ -45,7 +45,7 @@ class UserI18n extends QModel<IUser> {
 describe('QConfig.i18n.resolver — sync checkRules()', () => {
 	test('sin resolver, checkRules() devuelve la clave cruda como mensaje', () => {
 		const user = new UserI18n({ name: 'AB', age: 5 });
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors[0]?.message).toBe('validation.name.minLength');
 	});
@@ -66,7 +66,7 @@ describe('QConfig.i18n.resolver — sync checkRules()', () => {
 		});
 
 		const user = new UserI18n({ name: 'AB', age: 5 });
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors[0]?.message).toBe('El nombre es demasiado corto');
 	});
@@ -83,7 +83,7 @@ describe('QConfig.i18n.resolver — sync checkRules()', () => {
 		});
 
 		const user = new UserI18n({ name: 'Alice', age: 30 });
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(true);
 		expect(called).toBe(false);
 	});
@@ -103,7 +103,7 @@ describe('QConfig.i18n.resolver — sync checkRules()', () => {
 		});
 
 		const obj = new FnMessageModel({ val: '' });
-		const result = obj.checkRules();
+		const result = obj.$qm.checkRules();
 		expect(result.errors[0]?.message).toBe('Campo requerido');
 	});
 
@@ -114,7 +114,7 @@ describe('QConfig.i18n.resolver — sync checkRules()', () => {
 			},
 		});
 		const user = new UserI18n({ name: 'AB', age: -1 });
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.valid).toBe(false);
 		expect(
 			result.errors.every((err) => err.message.startsWith('[ES] '))
@@ -131,7 +131,7 @@ describe('QConfig.i18n.resolver — async checkRulesAsync()', () => {
 		});
 
 		const user = new UserI18n({ name: 'AB', age: 5 });
-		const result = await user.checkRulesAsync();
+		const result = await user.$qm.checkRulesAsync();
 		expect(result.valid).toBe(false);
 		expect(result.errors[0]?.message).toMatch(/^ASYNC:/);
 	});
@@ -141,7 +141,7 @@ describe('QConfig.i18n — aislamiento entre tests', () => {
 	test('resolver del test anterior no afecta a este test (cleanup funciona)', () => {
 		// No resolver set in this test
 		const user = new UserI18n({ name: 'AB', age: 5 });
-		const result = user.checkRules();
+		const result = user.$qm.checkRules();
 		expect(result.errors[0]?.message).toBe('validation.name.minLength');
 	});
 });

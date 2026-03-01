@@ -46,7 +46,7 @@ import {
  * const account = new Account({ balance: "9007199254740991" });
  * typeof account.balance; // → 'bigint'
  *
- * const data = account.serialize();
+ * const data = account.$qm.serialize();
  * typeof data.balance; // → 'string'
  * ```
  *

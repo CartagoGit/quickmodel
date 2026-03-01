@@ -121,7 +121,7 @@ describe('Constructor Aliases', () => {
 		test('Should serialize correctly', () => {
 			const model = new ModelWithConstructors(testData);
 
-			const IQSerialized = model.serialize();
+			const IQSerialized = model.$qm.serialize();
 
 			expect(IQSerialized.pattern).toMatchObject({
 				__type: 'regexp',
@@ -173,7 +173,7 @@ describe('Constructor Aliases', () => {
 		test('Should perform round-trip correctly', () => {
 			const original = new ModelWithConstructors(testData);
 
-			const IQSerialized = original.serialize();
+			const IQSerialized = original.$qm.serialize();
 			const restored = ModelWithConstructors.deserialize(IQSerialized);
 
 			expect(restored.pattern.toString()).toBe(
@@ -195,7 +195,7 @@ describe('Constructor Aliases', () => {
 		test('Should serialize correctly', () => {
 			const model = new ModelWithSymbols(testData);
 
-			const IQSerialized = model.serialize();
+			const IQSerialized = model.$qm.serialize();
 
 			expect(IQSerialized.pattern).toMatchObject({
 				__type: 'regexp',
@@ -247,7 +247,7 @@ describe('Constructor Aliases', () => {
 		test('Should perform round-trip correctly', () => {
 			const original = new ModelWithSymbols(testData);
 
-			const IQSerialized = original.serialize();
+			const IQSerialized = original.$qm.serialize();
 			const restored = ModelWithSymbols.deserialize(IQSerialized);
 
 			expect(restored.pattern.toString()).toBe(
@@ -270,8 +270,8 @@ describe('Constructor Aliases', () => {
 			const model1 = new ModelWithConstructors(testData);
 			const model2 = new ModelWithSymbols(testData);
 
-			const serialized1 = model1.serialize();
-			const serialized2 = model2.serialize();
+			const serialized1 = model1.$qm.serialize();
+			const serialized2 = model2.$qm.serialize();
 
 			expect(serialized1).toEqual(serialized2);
 		});

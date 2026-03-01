@@ -79,7 +79,7 @@ export class QAddQGroupPrompt extends QAbstractPrompt<{
 						`}\n\n` +
 						`// Always-on validation:\n` +
 						`const order = new OrderModel(data);\n` +
-						`order.checkRules();                       // validates everything\n\n` +
+						`order.$qm.checkRules();                       // validates everything\n\n` +
 						`// Conditional — only when shipping is needed:\n` +
 						`order.checkGroups('${exampleGroup}');     // validates only grouped fields\n` +
 						`\`\`\`\n\n` +
