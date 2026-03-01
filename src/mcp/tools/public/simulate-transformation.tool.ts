@@ -60,7 +60,7 @@ export class QSimulateTransformationTool extends QAbstractTool<
 			[key: string]: any;
 		}
 
-		const instance = DynamicModel.create(args.data);
+		const instance = DynamicModel.create(this.capInputArrays(args.data));
 
 		// QModel.$qToJSON() returns a serialized JSON string.
 		// We parse it back to an object to return structured data to the MCP client.
@@ -129,5 +129,27 @@ export class QSimulateTransformationTool extends QAbstractTool<
 		}
 
 		return options;
+	}
+
+	/** Maximum number of items allowed in any single array field of the input data. */
+	private static readonly MAX_ARRAY_LENGTH = 1000;
+
+	/**
+	 * Caps all array values in a plain data object to {@link QSimulateTransformationTool.MAX_ARRAY_LENGTH} items.
+	 * Prevents memory exhaustion when the caller supplies oversized arrays.
+	 *
+	 * @param data - Raw input data record
+	 * @returns A shallow copy with every array value truncated to the limit
+	 */
+	private capInputArrays(
+		data: Record<string, unknown>
+	): Record<string, unknown> {
+		const res: Record<string, unknown> = {};
+		for (const [key, val] of Object.entries(data)) {
+			res[key] = Array.isArray(val)
+				? val.slice(0, QSimulateTransformationTool.MAX_ARRAY_LENGTH)
+				: val;
+		}
+		return res;
 	}
 }

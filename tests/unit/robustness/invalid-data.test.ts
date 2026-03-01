@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing unknown properties in permissive policy
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -35,7 +36,10 @@ describe('Robustness: Invalid Data Handling', () => {
 		const user = User.create(data);
 
 		// They are preserved in runtime (Permissive)
-		expect((user as any).extraField).toBe('Hack');
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect((user as unknown as Record<string, unknown>)['extraField']).toBe(
+			'Hack'
+		);
 
 		// And preserved in serialization
 		const json = user.toJSON();

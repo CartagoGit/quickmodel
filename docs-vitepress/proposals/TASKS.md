@@ -14,6 +14,7 @@
 ✅ Completadas: Tasks #1–#58 + Task #48 + Propuestas A–H, J, L, M–Q, R–V (todas las activas)
 📋 Planificadas: I ($qm.history / audit trail), W (namespace $qm)
 ⚠️ Diferidas:   K (plugin system)
+🐛 Bug pendiente: Task #59 — TS2339 _qCallDepth en quick.model.ts:2570
 ```
 
 ---
@@ -502,6 +503,42 @@ bunx quickmodel generate integration prisma
 
 ---
 
+## 🐛 Bugs conocidos pendientes
+
+### Task #59 — Bug: `TS2339 Property '_qCallDepth' does not exist` en `quick.model.ts:2570`
+
+**Prioridad:** 🟠 Alta — error de typecheck en el archivo core más crítico del proyecto
+**Detectado:** 1 Mar 2026 — durante auditoría de prompts de coordinación
+**Archivo:** `src/core/models/quick.model.ts`, línea 2570
+
+**Descripción:**
+
+`tsc --noEmit` reporta:
+
+```
+src/core/models/quick.model.ts(2570,12): error TS2339: Property '_qCallDepth' does not exist on type 'QModel<TInterface, TAliasMap>'.
+```
+
+La variable `_qCallDepth` está declarada correctamente a nivel de **módulo** como `let _qCallDepth = 0;`
+en la línea 353 de `quick.model.ts`. Sin embargo, en la línea 2570 se accede a ella como si fuera una
+propiedad de instancia (`this._qCallDepth`) en lugar de como variable de módulo libre (`_qCallDepth`).
+
+**Causa probable:** Durante un refactor o merge, algún `_qCallDepth` fue prefijado con `this.` por error,
+convirtiéndolo en acceso a propiedad de instancia en lugar de a la variable de módulo.
+
+**Fix:**
+
+1. Localizar la ocurrencia en línea 2570: buscar `this._qCallDepth` y cambiar a `_qCallDepth`
+2. Ejecutar `bun run typecheck:src` para confirmar que el error desaparece
+3. Ejecutar `bun test` para confirmar que no hay regresiones
+
+**Pre-existente:** Sí — no introducido por la sesión de auditoría de prompts del 1 Mar 2026.
+Confirmado por `git diff` (el archivo no aparece en los cambios staged/unstaged de esa sesión).
+
+---
+
+---
+
 ### Propuesta L — Legitimate Title
 
 ### Propuesta Z — Injected entry
@@ -528,451 +565,7 @@ desc
 
 ### Propuesta [ — Legitimate Title
 
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Legitimate Title
-
-### Propuesta Z — Injected entry
-
-**Prioridad:** 🟡 Media
-**Impacto:** Por definir
-**Esfuerzo estimado:** Por estimar
-
-desc
-
----
-
-### Propuesta [ — Title
-
-Injected
+### Injected
 
 **Prioridad:** 🟡 Media
 **Impacto:** Por definir

@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing that direct assignment bypasses guard on frozen object
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -16,7 +17,8 @@ describe('Robustness: Readonly Models', () => {
 		expect(Object.isFrozen(user)).toBe(true);
 
 		try {
-			(user as any).name = 'Jane';
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing that direct assignment bypasses guard
+			(user as unknown as Record<string, unknown>)['name'] = 'Jane';
 		} catch (_) {
 			// Strict mode JS throws, sloppy mode ignores silently but fails assignment
 		}

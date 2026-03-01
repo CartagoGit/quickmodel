@@ -61,7 +61,7 @@ export class QCheckDocsCoherencePrompt extends QAbstractInternalPrompt<
 						`Before modifying any file:\n` +
 						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is currently modifying docs or source files.\n` +
 						`   If \`agents[]\` is non-empty: check their staged/unstaged git changes. Wait for them to commit or stash if their changes overlap with docs-vitepress or src.\n` +
-						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, description \`"docs coherence audit"\`,\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"docs coherence audit"\`,\n` +
 						`   and \`files: ["docs-vitepress/**", "src/**"]\`.\n` +
 						`3. If \`conflict: true\` → **STOP immediately**. Do not modify any file. Inform the user and wait.\n` +
 						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +

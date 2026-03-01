@@ -109,7 +109,7 @@ export class QWriteGuidePrompt extends QAbstractInternalPrompt<{
 						`Before creating or modifying any file:\n` +
 						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is working on overlapping docs.\n` +
 						`   If \`agents[]\` is non-empty: review their staged/unstaged git changes and wait for them to commit or stash docs changes if there is overlap.\n` +
-						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, description \`"write guide: ${slug}"\`, and\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"write guide: ${slug}"\`, and\n` +
 						`   \`files: ["docs-vitepress/en/**", "docs-vitepress/es/**", "docs-vitepress/.vitepress/config.ts"]\`.\n` +
 						`3. If \`conflict: true\` → **STOP immediately**. Do not create or modify any file. Inform the user and wait.\n` +
 						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +

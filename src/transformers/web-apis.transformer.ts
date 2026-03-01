@@ -403,7 +403,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 
 		if (typeof value === 'string') {
 			try {
-				return new TextDecoder(value as any);
+				return new TextDecoder(value);
 			} catch (_error) {
 				throw new QModelError(
 					`${className}.${propertyKey}: Invalid encoding "${value}". ` +
@@ -422,7 +422,7 @@ export class TextDecoderTransformer extends BaseTransformer<
 			const encoding =
 				(value as { encoding?: string }).encoding || 'utf-8';
 			try {
-				return new TextDecoder(encoding as any);
+				return new TextDecoder(encoding);
 			} catch (_error) {
 				throw new QModelError(
 					`${className}.${propertyKey}: Invalid encoding "${encoding}". ` +

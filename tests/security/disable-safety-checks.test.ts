@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: security tests verifying prototype pollution prevention
 /**
  * Behavior verification tests for disableSafetyChecks flag.
  *
@@ -110,9 +111,15 @@ describe('disableSafetyChecks: behavior verification', () => {
 		// The instance gets populated normally...
 		expect(instance.id).toBe(1);
 		// ...but __proto__ injection is blocked
-		expect((instance as any).hacked).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(instance as unknown as Record<string, unknown>)['hacked']
+		).toBeUndefined();
 		// Global Object prototype must not be polluted
-		expect(({} as any).hacked).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			({} as unknown as Record<string, unknown>)['hacked']
+		).toBeUndefined();
 		expect(warnSpy).toHaveBeenCalledWith(
 			expect.stringContaining('disableSafetyChecks is ENABLED')
 		);
@@ -133,7 +140,8 @@ describe('disableSafetyChecks: behavior verification', () => {
 		const instance = new Risky({
 			name: 'ok',
 			constructor: { hacked: true },
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing constructor key injection
+		} as unknown as Record<string, unknown>);
 		expect(instance.name).toBe('ok');
 		// constructor should not be overwritten with the object value
 		expect(typeof instance.constructor).toBe('function');
@@ -157,9 +165,13 @@ describe('disableSafetyChecks: behavior verification', () => {
 		const instance = new Risky({
 			name: 'ok',
 			prototype: { hacked: true },
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing prototype key injection
+		} as unknown as Record<string, unknown>);
 		expect(instance.name).toBe('ok');
-		expect((Risky as any).hacked).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(Risky as unknown as Record<string, unknown>)['hacked']
+		).toBeUndefined();
 		expect(warnSpy).toHaveBeenCalledWith(
 			expect.stringContaining('disableSafetyChecks is ENABLED')
 		);

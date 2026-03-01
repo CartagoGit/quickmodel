@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing with incomplete constructor input
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -19,7 +20,7 @@ describe('Security: Information Disclosure (Private Fields)', () => {
 			private apiToken = 'my-token';
 		}
 
-		const user = new User({ id: 1 } as any);
+		const user = new User({ id: 1 } as unknown as IUser);
 		user._internalId = 'secret';
 		user.__deepSecret = 'top_secret';
 		// @ts-expect-error testing invalid input

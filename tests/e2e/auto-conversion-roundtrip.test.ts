@@ -643,14 +643,17 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 	describe('17. Métodos custom en el modelo', () => {
 		test('custom methods work correctly', () => {
 			// Add a custom method to TestUser
-
-			(TestUser.prototype as any).getFullInfo = function () {
+			// @quickmodel-rule-ignore: no-as-unknown
+			(TestUser.prototype as unknown as Record<string, unknown>)[
+				'getFullInfo'
+			] = function () {
 				return `${this.name} (${this.email})`;
 			};
 
-			expect((user as any).getFullInfo()).toBe(
-				'John Doe (john@example.com)'
-			);
+			// @quickmodel-rule-ignore: no-as-unknown
+			expect(
+				(user as unknown as { getFullInfo(): string }).getFullInfo()
+			).toBe('John Doe (john@example.com)');
 		});
 	});
 });

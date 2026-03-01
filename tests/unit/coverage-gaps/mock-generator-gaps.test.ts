@@ -153,7 +153,7 @@ describe('QMockGenerator Coverage Gaps', () => {
 
 		// We use @Quick to define the property with a custom transformer
 		@Quick({
-			val: CustomTransformer as any,
+			val: CustomTransformer,
 		})
 		class TransformerNoMocker {
 			declare val: string;

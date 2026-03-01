@@ -105,7 +105,14 @@ export class QIntegratePrompt extends QAbstractPrompt<{
 
 				this.assistant(
 					`## 🔗 QuickModel × ${library} Integration\n\n` +
-						`I'll guide you through the complete integration in 6 steps.\n\n` +
+						`I'll guide you through the complete integration in 7 steps (Step 0 first — registration, then Steps 1–6).\n\n` +
+						`---\n\n` +
+						`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before generating or writing any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is writing to the same source area\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"integrate ${library}"\`, and \`files\` (paths of model + test files you will create)\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not write any file until the conflict is resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
 						`---\n\n` +
 						`### Step 1 — Analyse ${library} data types\n\n` +
 						`First I'll examine the ${library} data structures involved in: **${use_case}**\n\n` +

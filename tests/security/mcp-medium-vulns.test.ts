@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — test file casts tool result items to unknown[] to inspect serialized output
 import { describe, test, expect } from 'bun:test';
 import { QManageProposalTool } from '../../src/mcp/tools/internal/manage-proposal.tool';
 import { QCreateGuidePageTool } from '../../src/mcp/tools/internal/create-guide-page.tool';
@@ -16,7 +17,7 @@ describe('MED-02 — deserializeFromJson: type guard after JSON.parse', () => {
 		declare name: string;
 	}
 
-	const deser = new Deserializer<{ name: string }>('SimpleModel');
+	const deser = new Deserializer<{ name: string }>();
 
 	test('should throw QModelError for null input', () => {
 		expect(() => deser.deserializeFromJson('null', SimpleModel)).toThrow(
@@ -64,7 +65,7 @@ describe('MED-03 — Content injection in Markdown tools', () => {
 				description: 'desc',
 			});
 			expect(result.success).toBe(false);
-			expect((result as any).error).toMatch(/unsafe/i);
+			if (!result.success) expect(result.error).toMatch(/unsafe/i);
 		});
 
 		test('should reject title with carriage return', async () => {
@@ -74,7 +75,7 @@ describe('MED-03 — Content injection in Markdown tools', () => {
 				description: 'desc',
 			});
 			expect(result.success).toBe(false);
-			expect((result as any).error).toMatch(/unsafe/i);
+			if (!result.success) expect(result.error).toMatch(/unsafe/i);
 		});
 
 		test('should accept a normal title', async () => {
@@ -87,10 +88,7 @@ describe('MED-03 — Content injection in Markdown tools', () => {
 				tasks_path: '/nonexistent/TASKS.md',
 			});
 			// Should fail on path traversal OR missing file, NOT on title validation
-			const err = (result as any).error as string | undefined;
-			if (err !== undefined) {
-				expect(err).not.toMatch(/unsafe/i);
-			}
+			if (!result.success) expect(result.error).not.toMatch(/unsafe/i);
 		});
 	});
 
@@ -104,7 +102,7 @@ describe('MED-03 — Content injection in Markdown tools', () => {
 				title_es: 'Título',
 			});
 			expect(result.success).toBe(false);
-			expect((result as any).error).toMatch(/unsafe/i);
+			if (!result.success) expect(result.error).toMatch(/unsafe/i);
 		});
 
 		test('should reject title_es with newline', async () => {
@@ -114,7 +112,7 @@ describe('MED-03 — Content injection in Markdown tools', () => {
 				title_es: 'Título\nInjected',
 			});
 			expect(result.success).toBe(false);
-			expect((result as any).error).toMatch(/unsafe/i);
+			if (!result.success) expect(result.error).toMatch(/unsafe/i);
 		});
 	});
 });
@@ -126,17 +124,16 @@ describe('MED-04 — DynamicModel: restrictive limits in simulation tools', () =
 		const tool = new QSimulateTransformationTool();
 		// Build an array with 1500 items — must not crash / exhaust memory
 		const bigArray = Array.from({ length: 1500 }, (_, idx) => idx);
-		// Should complete without hanging; result may be truncated or throw gracefully
+		// Should complete without hanging; result must preserve the field with cap applied
 		const result = await tool.execute({
 			data: { items: bigArray },
 			options: {},
 		});
-		// If it returns a result, the items array must be capped
-		if (result.result['items'] !== undefined) {
-			expect(
-				(result.result['items'] as unknown[]).length
-			).toBeLessThanOrEqual(1000);
-		}
+		// @Quick({}) preserves undeclared fields — items must be present and capped
+		expect(result.result['items']).toBeDefined();
+		expect(
+			(result.result['items'] as unknown[]).length
+		).toBeLessThanOrEqual(1000);
 	});
 
 	test('QRoundtripTool should enforce maxArrayLength <= 1000', async () => {
@@ -146,12 +143,11 @@ describe('MED-04 — DynamicModel: restrictive limits in simulation tools', () =
 			data: { items: bigArray },
 			options: {},
 		});
-		// Should not exhaust memory; output items must be capped if present
-		if (result.serialized['items'] !== undefined) {
-			expect(
-				(result.serialized['items'] as unknown[]).length
-			).toBeLessThanOrEqual(1000);
-		}
+		// Should not exhaust memory; @Quick({}) preserves fields — items must be present and capped
+		expect(result.serialized['items']).toBeDefined();
+		expect(
+			(result.serialized['items'] as unknown[]).length
+		).toBeLessThanOrEqual(1000);
 	});
 });
 
@@ -163,9 +159,21 @@ describe('MED-05 — QSearchDocsTool: query length limit', () => {
 		// Try to construct a >200 char query — the schema should reject it or the tool
 		// should handle it gracefully
 		const longQuery = 'a'.repeat(300);
-		// We just call execute and expect it to return gracefully (empty or truncated results)
-		// Bun test doesn't use async assertions here; just ensure no unhandled throw
-		const promise = tool.execute({ query: longQuery });
-		expect(promise).resolves.toBeDefined();
+		const parsed = tool.schema.safeParse({ query: longQuery });
+		expect(parsed.success).toBe(false);
+	});
+
+	test('should accept query of exactly 200 chars', () => {
+		const tool = new QSearchDocsTool();
+		const exactQuery = 'a'.repeat(200);
+		const parsed = tool.schema.safeParse({ query: exactQuery });
+		expect(parsed.success).toBe(true);
+	});
+
+	test('should resolve gracefully when called directly with a long query', async () => {
+		const tool = new QSearchDocsTool();
+		const longQuery = 'a'.repeat(300);
+		const result = await tool.execute({ query: longQuery });
+		expect(result).toBeDefined();
 	});
 });

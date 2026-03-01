@@ -446,7 +446,9 @@ export class IntegrityService {
 				if (
 					typeof value === 'object' &&
 					'checkIntegrity' in value &&
-					typeof (value as any).checkIntegrity === 'function'
+					typeof (value as Record<string, unknown>)[
+						'checkIntegrity'
+					] === 'function'
 				) {
 					try {
 						// Pass 'seen' set to recursive call

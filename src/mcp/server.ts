@@ -394,7 +394,16 @@ export class QMcpServer {
 					argsSchema: prompt.argsSchema,
 				},
 				async (args) => {
-					return (await prompt.execute(args as any)) as any;
+					// Convert ShapeOutput<argsSchema> → Record<string,string> without unsafe casts;
+					// MCP SDK validates all prompt arg values as strings before the callback fires.
+					const promptArgs: Record<string, string> =
+						Object.fromEntries(
+							Object.entries(args).map(([key, val]) => [
+								key,
+								String(val),
+							])
+						);
+					return await prompt.execute(promptArgs);
 				}
 			);
 		}

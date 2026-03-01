@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing strict setters with unknown properties
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -19,7 +20,8 @@ describe('Robustness: Strict Setters', () => {
 			new StrictUser({
 				birthDate: new Date(),
 				unknownProperty: 'value', // This is an unknown property
-			} as any);
+				// @quickmodel-rule-ignore: no-as-unknown — intentional: passing unknown property to test strict mode
+			} as unknown as IUser);
 		}).toThrow('Strict Mode');
 	});
 
@@ -38,9 +40,13 @@ describe('Robustness: Strict Setters', () => {
 		const user = new LaxUser({
 			birthDate: new Date(),
 			unknownProperty: 'value', // Should be kept
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: passing unknown property to test keep policy
+		} as unknown as IUser);
 
 		// Assert: Unknown property should be kept
-		expect((user as any).unknownProperty).toBe('value');
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(user as unknown as Record<string, unknown>)['unknownProperty']
+		).toBe('value');
 	});
 });

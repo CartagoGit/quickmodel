@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: alias tests pass alias-keyed objects where model interface is expected
 /**
  * Tests for @Quick({ }, { alias: { prop: 'alias_key' } }) feature.
  *
@@ -68,7 +69,8 @@ describe('@Quick alias option — deserialización (input remapping)', () => {
 			first_name: 'Alice',
 			last_name: 'Smith',
 			email_address: 'alice@example.com',
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IApiUser
+		} as unknown as IApiUser);
 		expect(usr.firstName).toBe('Alice');
 		expect(usr.lastName).toBe('Smith');
 		expect(usr.emailAddress).toBe('alice@example.com');
@@ -79,9 +81,16 @@ describe('@Quick alias option — deserialización (input remapping)', () => {
 			first_name: 'Bob',
 			last_name: 'Jones',
 			email_address: 'bob@example.com',
-		} as any);
-		expect((usr as any).first_name).toBeUndefined();
-		expect((usr as any).last_name).toBeUndefined();
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IApiUser
+		} as unknown as IApiUser);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(usr as unknown as Record<string, unknown>)['first_name']
+		).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(usr as unknown as Record<string, unknown>)['last_name']
+		).toBeUndefined();
 	});
 
 	test('partial alias: solo las claves con alias se remapean', () => {
@@ -89,7 +98,8 @@ describe('@Quick alias option — deserialización (input remapping)', () => {
 			user_id: 'u-123',
 			nom: 'test',
 			createdAt: new Date('2024-01-01'),
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias key user_id not in IPartialAlias
+		} as unknown as IPartialAlias);
 		expect(mdl.userId).toBe('u-123');
 		expect(mdl.nom).toBe('test');
 		expect(mdl.createdAt).toBeInstanceOf(Date);
@@ -106,11 +116,12 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			first_name: 'Dave',
 			last_name: 'Jones',
 			email_address: 'd@j.com',
-		} as any);
-		const json = usr.$qSerialize();
-		expect((json as any)['first_name']).toBe('Dave');
-		expect((json as any)['last_name']).toBe('Jones');
-		expect((json as any)['email_address']).toBe('d@j.com');
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys
+		} as unknown as IApiUser);
+		const json = usr.$qSerialize() as Record<string, unknown>;
+		expect(json['first_name']).toBe('Dave');
+		expect(json['last_name']).toBe('Jones');
+		expect(json['email_address']).toBe('d@j.com');
 	});
 
 	test('serialize() NO emite los nombres de propiedad del modelo cuando hay alias', () => {
@@ -118,10 +129,13 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			first_name: 'Eve',
 			last_name: 'Black',
 			email_address: 'e@b.com',
-		} as any);
-		const json = usr.$qSerialize();
-		expect((json as any)['firstName']).toBeUndefined();
-		expect((json as any)['lastName']).toBeUndefined();
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys
+		} as unknown as IApiUser);
+		const json = usr.$qSerialize() as Record<string, unknown>;
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(json['firstName']).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(json['lastName']).toBeUndefined();
 	});
 
 	test('partial alias: solo las claves con alias se remapean en output', () => {
@@ -129,11 +143,12 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			user_id: 'u-456',
 			nom: 'partial',
 			createdAt: new Date('2024-06-01'),
-		} as any);
-		const json = mdl.$qSerialize();
-		expect((json as any)['user_id']).toBe('u-456');
-		expect((json as any)['nom']).toBe('partial');
-		expect((json as any)['userId']).toBeUndefined();
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias key user_id
+		} as unknown as IPartialAlias);
+		const json = mdl.$qSerialize() as Record<string, unknown>;
+		expect(json['user_id']).toBe('u-456');
+		expect(json['nom']).toBe('partial');
+		expect(json['userId']).toBeUndefined();
 	});
 
 	test('roundtrip completo: construir → serializar → reconstruir', () => {
@@ -141,9 +156,11 @@ describe('@Quick alias option — serialización (output remapping)', () => {
 			first_name: 'Frank',
 			last_name: 'Castle',
 			email_address: 'f@c.com',
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys
+		} as unknown as IApiUser);
 		const serialized = original.$qSerialize();
-		const restored = new ApiUser(serialized as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: serialized output has alias keys, not IApiUser keys
+		const restored = new ApiUser(serialized as unknown as IApiUser);
 		expect(restored.firstName).toBe('Frank');
 		expect(restored.lastName).toBe('Castle');
 		expect(restored.emailAddress).toBe('f@c.com');
@@ -166,7 +183,8 @@ describe('@Quick alias option — comportamiento de serialize() y limitación de
 			first_name: 'Grace',
 			last_name: 'Hopper',
 			email_address: 'g@h.com',
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys
+		} as unknown as IApiUser);
 
 		// El tipo declarado de serialize() es IQSerializedInterface<IApiUser> (firstName, etc.)
 		// pero el valor real en runtime usa claves alias. Cast necesario para acceso type-safe.
@@ -180,8 +198,10 @@ describe('@Quick alias option — comportamiento de serialize() y limitación de
 		const mdl = new PartialAliasModel({
 			user_id: 'u-789',
 			nom: 'typed',
-			createdAt: '2024-03-01T00:00:00.000Z' as any,
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: string date for Date field
+			createdAt: '2024-03-01T00:00:00.000Z' as unknown as Date,
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias key user_id
+		} as unknown as IPartialAlias);
 
 		const json = mdl.$qSerialize() as Record<string, unknown>;
 		expect(json['user_id']).toBe('u-789');
@@ -260,7 +280,8 @@ describe('QModel segundo genérico — serialize() type-safe con alias keys', ()
 			first_name: 'Alice',
 			last_name: 'Smith',
 			email_address: 'alice@example.com',
-		} as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in ITypedUser
+		} as unknown as ITypedUser);
 
 		// Estas líneas deben compilar SIN cast — el tipo de json es
 		// IQAliasedSerializedInterface<ITypedUser, ITypedUserAliases>
@@ -275,11 +296,12 @@ describe('QModel segundo genérico — serialize() type-safe con alias keys', ()
 			first_name: 'Bob',
 			last_name: 'Jones',
 			email_address: 'b@j.com',
-		} as any);
-		const json = usr.$qSerialize();
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in ITypedUser
+		} as unknown as ITypedUser);
+		const json = usr.$qSerialize() as Record<string, unknown>;
 		// En runtime las claves originales no existen
-		expect((json as any).firstName).toBeUndefined();
-		expect((json as any).lastName).toBeUndefined();
+		expect(json['firstName']).toBeUndefined();
+		expect(json['lastName']).toBeUndefined();
 	});
 
 	test('QModel sin segundo genérico sigue funcionando exactamente igual', () => {

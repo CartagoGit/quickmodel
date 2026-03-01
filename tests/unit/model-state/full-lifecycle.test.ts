@@ -169,12 +169,12 @@ describe('State Management Methods', () => {
 			});
 
 			expect(user.$qIsDirty()).toBe(false);
-			expect(user.$qIsDirty()).toBe(user.hasChanges());
+			expect(user.$qIsDirty()).toBe(user.$qHasChanges());
 
 			user.name = 'Jane';
 
 			expect(user.$qIsDirty()).toBe(true);
-			expect(user.$qIsDirty()).toBe(user.hasChanges());
+			expect(user.$qIsDirty()).toBe(user.$qHasChanges());
 		});
 	});
 

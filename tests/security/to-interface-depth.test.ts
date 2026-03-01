@@ -32,8 +32,11 @@ describe('Security: toInterface Recursion Depth', () => {
 
 		// If depth is tracking correctly, it should throw at ~512
 		// If depth is lost (undefined/NaN), it will finish successfully (or crash process if too deep)
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: testing recursive depth with mismatched type
 		expect(() => {
-			service.toInterface(deepModel, [deepOriginal] as any);
+			service.toInterface(deepModel, [deepOriginal] as unknown as [
+				typeof deepOriginal,
+			]);
 		}).toThrow(/Maximum recursion depth/);
 	});
 

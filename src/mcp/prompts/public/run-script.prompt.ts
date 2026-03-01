@@ -81,6 +81,14 @@ export class QRunScriptPrompt extends QAbstractInternalPrompt<{
 						`Python one-liners, bash pipelines, Node.js snippets. ` +
 						`The goal is to make every such execution **intentional, auditable, and clean**.\n\n` +
 						`---\n\n` +
+						`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`If this script will produce **code changes** (Phase 4), register before applying them:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent owns the files you will modify\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"run-script: ${purpose}"\`, and \`files\` (the files the script output will be applied to)\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not apply any code change until the conflict is resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n` +
+						`> If the script is read-only (output is informational only, no file writes), skip this step.\n\n` +
+						`---\n\n` +
 						`### Phase 1 — Document intent\n\n` +
 						`Before running anything, state explicitly:\n\n` +
 						`- **What it reads:** which files, APIs, environment variables or data sources\n` +

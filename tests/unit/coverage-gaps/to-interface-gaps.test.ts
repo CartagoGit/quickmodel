@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: accessing private __initData field for testing internal state
 import { describe, it, expect } from 'bun:test';
 import { ToInterfaceService } from '../../../src/core/services/to-interface.service';
 import 'reflect-metadata';
@@ -13,7 +14,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 		};
 
 		// Mock initData with Wrapper Objects
-		(model as any).__initData = {
+		// @quickmodel-rule-ignore: no-as-unknown
+		(model as unknown as Record<string, unknown>)['__initData'] = {
 			num: new Number(123),
 			str: new String('test'),
 			bool: new Boolean(true),
@@ -37,7 +39,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 			val2: 456n,
 		};
 
-		(model as any).__initData = {
+		// @quickmodel-rule-ignore: no-as-unknown
+		(model as unknown as Record<string, unknown>)['__initData'] = {
 			val1: { __type: 'bigint' }, // Object format
 			val2: '456', // String format
 		};
@@ -57,7 +60,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 		};
 
 		// Simulating the structure
-		(model as any).__initData = {
+		// @quickmodel-rule-ignore: no-as-unknown
+		(model as unknown as Record<string, unknown>)['__initData'] = {
 			root: obj,
 		};
 
@@ -72,7 +76,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 			obj: nullProtoObj,
 		};
 
-		(model as any).__initData = {
+		// @quickmodel-rule-ignore: no-as-unknown
+		(model as unknown as Record<string, unknown>)['__initData'] = {
 			obj: nullProtoObj,
 		};
 
@@ -87,7 +92,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 			reg: /abc/i,
 		};
 
-		(model as any).__initData = {
+		// @quickmodel-rule-ignore: no-as-unknown
+		(model as unknown as Record<string, unknown>)['__initData'] = {
 			reg: '/abc/i',
 		};
 
@@ -95,7 +101,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 		expect(result.reg).toBe('/abc/i');
 
 		// Case: Object input { source: 'abc', flags: 'i' }
-		(model as any).__initData = {
+		// @quickmodel-rule-ignore: no-as-unknown
+		(model as unknown as Record<string, unknown>)['__initData'] = {
 			reg: { source: 'abc', flags: 'i' },
 		};
 

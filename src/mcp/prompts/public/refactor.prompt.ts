@@ -73,7 +73,7 @@ export class QRefactorPrompt extends QAbstractInternalPrompt<{
 						`   If \`agents[]\` is non-empty: check what they are currently changing (staged/unstaged files via git). ` +
 						`   For a mass-rename this is critical — ask them to commit or stash before you start, ` +
 						`   so your rename acts on a clean known baseline.\n` +
-						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, a description of the refactor, and the \`files\` globs:\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, \`task\` (a short description of the refactor), and the \`files\` globs:\n` +
 						`   - Targeted refactor (a few files): list the specific paths\n` +
 						`   - **Wide-scope / mass-rename:** claim \`["src/**", "tests/**"]\` or \`["src/**", "tests/**", "docs-vitepress/**"]\`\n` +
 						`   - **For mass operations, also set \`ttlMs: 1800000\` (30 min)** — default is 2 min which may expire mid-rename\n` +

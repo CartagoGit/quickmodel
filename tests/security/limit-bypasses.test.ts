@@ -37,8 +37,8 @@ describe('Security: Limits Bypass Attempts', () => {
 		}).toThrow(/too many properties/);
 	});
 
-	test('should apply recursion limits when using .$qFromJSON()', () => {
-		// $qFromJSON parses the string then populates
+	test('should apply recursion limits when using .fromJSON()', () => {
+		// fromJSON parses the string then populates
 
 		interface INode {
 			next?: INode;
@@ -56,7 +56,7 @@ describe('Security: Limits Bypass Attempts', () => {
 		}
 
 		try {
-			Node.$qFromJSON(jsonStr);
+			Node.fromJSON(jsonStr);
 			// Verify it failed
 			expect(true).toBe(false); // Should not reach here
 		} catch (err: any) {

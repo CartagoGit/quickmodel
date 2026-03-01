@@ -97,7 +97,14 @@ export class QDrizzlePrompt extends QAbstractPrompt<{
 						patternDesc
 				),
 				this.assistant(
-					`I will generate a QuickModel DTO from this Drizzle schema following these steps:\n\n` +
+					`I will generate a QuickModel DTO from this Drizzle schema.\n\n` +
+						`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before writing any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is writing to the same source area\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"drizzle DTO: ${dto_name ?? 'untitled'}"\`, and \`files\` (the path where the new DTO file will be saved)\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not write any file until the conflict is resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
 						`**Step 1 — Analyze column types**\n` +
 						`I will map each Drizzle column to its QuickModel transformer:\n` +
 						`- \`integer()\` / \`serial()\` / \`bigint()\` / \`doublePrecision()\` / \`real()\` → \`'number'\`\n` +

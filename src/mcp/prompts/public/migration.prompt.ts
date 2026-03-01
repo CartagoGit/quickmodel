@@ -41,7 +41,14 @@ export class QMigrationPrompt extends QAbstractPrompt<{
 						`\`\`\`typescript\n${legacy_code}\n\`\`\``
 				),
 				this.assistant(
-					'I will migrate this code to idiomatic QuickModel v2. Here is the step-by-step upgrade plan:\n\n' +
+					'I will migrate this code to idiomatic QuickModel v2.\n\n' +
+						'### Step 0 — 🤝 Register your work (mandatory)\n\n' +
+						'Before modifying any file:\n' +
+						'1. Call `agent_coordinate` with `action: "check"` — confirm no other agent is writing to the same files\n' +
+						'2. Call `agent_coordinate` with `action: "claim"`, your `agentId`, task `"migration: <ClassName> to QuickModel v2"`, and `files` (path(s) of the file(s) you will modify)\n' +
+						'3. If `conflict: true` → **STOP**. Do not touch any file until the conflict is resolved.\n' +
+						'4. Release when done: `agent_coordinate action="release"`\n\n' +
+						'---\n\n' +
 						'### Migration checklist\n' +
 						'1. **Extend `QModel<T>`** — the class must extend `QModel<ClassName>`\n' +
 						'2. **Add `@Quick({})`** — every model needs the `@Quick` decorator with at least an empty options object\n' +

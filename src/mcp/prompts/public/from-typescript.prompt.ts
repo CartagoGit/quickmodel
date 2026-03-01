@@ -47,7 +47,15 @@ export class QFromTypescriptPrompt extends QAbstractPrompt<{
 					`I have this TypeScript interface and I want to create a QuickModel class from it:\n\n\`\`\`typescript\n${typescript}\n\`\`\`\n${namePart}`
 				),
 				this.assistant(
-					'I will convert this interface into a QuickModel class step by step:\n\n' +
+					'I will convert this interface into a QuickModel class step by step.\n\n' +
+						'### Step 0 — 🤝 Register your work (mandatory)\n\n' +
+						'Before writing any file:\n' +
+						'1. Call `agent_coordinate` with `action: "check"` — confirm no other agent is writing to the same source area\n' +
+						'2. Call `agent_coordinate` with `action: "claim"`, your `agentId`, task `"from-typescript: <ModelName>"`, and `files` (the path where the new model file will be saved, e.g. `["src/..."]`)\n' +
+						'3. If `conflict: true` → **STOP**. Do not write any file until the conflict is resolved.\n' +
+						'4. Release when done: `agent_coordinate action="release"`\n\n' +
+						'---\n\n' +
+						'### Conversion steps\n\n' +
 						'1. First, call `interface_to_model` to generate the initial QModel class with the correct `@Quick` decorator mapping all transformable types (Date, BigInt, Set, Map, RegExp, etc.)\n' +
 						'2. Then call `validate_usage` on the generated code to check for correctness and best practices\n' +
 						'3. If there are validation issues, fix them and validate again\n\n' +

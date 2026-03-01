@@ -107,6 +107,13 @@ export class QCreateGuidePageTool extends QAbstractTool<
 			};
 		}
 
+		if (/[\r\n]/.test(args.title_en) || /[\r\n]/.test(args.title_es)) {
+			return {
+				success: false,
+				error: 'Unsafe title: newline characters are not allowed in title_en or title_es',
+			};
+		}
+
 		const cwd = resolve(args.base_path ?? process.cwd());
 		const safeCwd = cwd + sep;
 

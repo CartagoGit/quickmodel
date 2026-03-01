@@ -209,15 +209,15 @@ describe('QModel — la API $q* es accesible', () => {
 		expect(typeof json).toBe('string');
 		expect(JSON.parse(json)).toMatchObject({ sku: 'ABC-1' });
 	});
-	it('Product.$qFromJSON() restaura instancia desde string', () => {
+	it('Product.fromJSON() restaura instancia desde string', () => {
 		const json = makeProduct().$qToJSON();
-		const restored = Product.$qFromJSON(json);
+		const restored = Product.fromJSON(json);
 		expect(restored).toBeInstanceOf(Product);
 		expect(restored.sku).toBe('ABC-1');
 	});
-	it('Product.$qDeserializeJson() es alias de $qFromJSON', () => {
+	it('Product.deserializeJson() es alias de fromJSON', () => {
 		const json = makeProduct().$qToJSON();
-		const restored = Product.$qDeserializeJson(json);
+		const restored = Product.deserializeJson(json);
 		expect(restored).toBeInstanceOf(Product);
 		expect(restored.price).toBe(99);
 	});
@@ -285,15 +285,15 @@ describe('QModelCollection — la API $q* es accesible', () => {
 		const parsed = JSON.parse(json) as unknown[];
 		expect(parsed.length).toBe(2);
 	});
-	it('QModelCollection.$qFromJSON() restaura colección', () => {
+	it('QModelCollection.fromJSON() restaura colección', () => {
 		const json = makeCollection().$qToJSON();
-		const restored = QModelCollection.$qFromJSON(Product, json);
+		const restored = QModelCollection.fromJSON(Product, json);
 		expect(restored).toBeInstanceOf(QModelCollection);
 		expect(restored.$qSize).toBe(2);
 		expect(restored.$qFirst()).toBeInstanceOf(Product);
 	});
-	it('QModelCollection.$qFromArray() crea colección desde array', () => {
-		const col = QModelCollection.$qFromArray(Product, [
+	it('QModelCollection.fromArray() crea colección desde array', () => {
+		const col = QModelCollection.fromArray(Product, [
 			{ sku: 'X', price: 1 },
 		]);
 		expect(col.$qSize).toBe(1);

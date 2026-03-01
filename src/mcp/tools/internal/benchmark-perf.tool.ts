@@ -85,22 +85,25 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 			(performance.now() - startInst) / count;
 
 		// 2. Transformation (Plain Object -> Model)
+		// @quickmodel-rule-ignore: no-as-unknown — benchmark payload uses a string birthDate to exercise
+		// the deserialization path; create() overloads expect BenchmarkModel | IQSerializedInterface<>,
+		// but the test intentionally supplies a pre-deserialization plain object.
 		const payload = {
 			name: 'Test User',
 			age: 25,
 			isActive: true,
 			birthDate: '2023-01-01',
 			tags: ['a', 'b'],
-		};
+		} as unknown as BenchmarkModel;
 		const startTrans = performance.now();
 		for (let idx = 0; idx < count; idx++) {
-			BenchmarkModel.create(payload as any);
+			BenchmarkModel.create(payload);
 		}
 		results['transformation_avg_ms'] =
 			(performance.now() - startTrans) / count;
 
 		// 3. Serialization (Model -> Plain Object)
-		const instance = BenchmarkModel.create(payload as any);
+		const instance = BenchmarkModel.create(payload);
 		const startSer = performance.now();
 		for (let idx = 0; idx < count; idx++) {
 			instance.$qToJSON();

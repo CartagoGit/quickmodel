@@ -32,7 +32,6 @@ import { describe, expect, test } from 'bun:test';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QRule } from '@/core/decorators/qrule.decorator';
 import { QModel } from '@/core/models/quick.model';
-import type { IQMHandle } from '@/core/interfaces/qm-handle.interface';
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -82,31 +81,34 @@ class OrderWithRules extends QModel<IOrderWithRules> {
 
 describe('$qm — availability', () => {
 	test('$qm is defined on every QModel instance', () => {
+		// After migration, $q* methods are directly on the instance (no $qm namespace)
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		expect(prod.$qm).toBeDefined();
+		expect(typeof prod.$qSerialize).toBe('function');
+		expect(typeof prod.$qIsDirty).toBe('function');
+		expect(typeof prod.$qHasIntegrity).toBe('function');
 	});
 
 	test('$qm exposes all expected methods', () => {
+		// After migration, methods are directly on the instance as $q* methods
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		const handle = prod.$qm;
 
-		expect(typeof handle.serialize).toBe('function');
-		expect(typeof handle.isDirty).toBe('function');
-		expect(typeof handle.getChanges).toBe('function');
-		expect(typeof handle.patch).toBe('function');
-		expect(typeof handle.copy).toBe('function');
-		expect(typeof handle.diff).toBe('function');
-		expect(typeof handle.equals).toBe('function');
-		expect(typeof handle.hasIntegrity).toBe('function');
-		expect(typeof handle.isValid).toBe('function');
-		expect(typeof handle.isValidAsync).toBe('function');
-		expect(typeof handle.checkRules).toBe('function');
-		expect(typeof handle.checkRulesAsync).toBe('function');
-		expect(typeof handle.validationReport).toBe('function');
-		expect(typeof handle.validationReportAsync).toBe('function');
-		expect(typeof handle.validate).toBe('function');
-		expect(typeof handle.toFormData).toBe('function');
-		expect(typeof handle.toReadableStream).toBe('function');
+		expect(typeof prod.$qSerialize).toBe('function');
+		expect(typeof prod.$qIsDirty).toBe('function');
+		expect(typeof prod.$qGetChanges).toBe('function');
+		expect(typeof prod.$qPatch).toBe('function');
+		expect(typeof prod.$qCopy).toBe('function');
+		expect(typeof prod.$qDiff).toBe('function');
+		expect(typeof prod.$qEquals).toBe('function');
+		expect(typeof prod.$qHasIntegrity).toBe('function');
+		expect(typeof prod.$qIsValid).toBe('function');
+		expect(typeof prod.$qIsValidAsync).toBe('function');
+		expect(typeof prod.$qCheckRules).toBe('function');
+		expect(typeof prod.$qCheckRulesAsync).toBe('function');
+		expect(typeof prod.$qValidationReport).toBe('function');
+		expect(typeof prod.$qValidationReportAsync).toBe('function');
+		expect(typeof prod.$qValidate).toBe('function');
+		expect(typeof prod.$qToFormData).toBe('function');
+		expect(typeof prod.$qToReadableStream).toBe('function');
 	});
 });
 
@@ -117,7 +119,11 @@ describe('$qm — availability', () => {
 describe('$qm.$qSerialize()', () => {
 	test('returns same result as root-level serialize()', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		expect(prod.$qSerialize()).toEqual(prod.serialize());
+		expect(prod.$qSerialize()).toMatchObject({
+			name: 'Widget',
+			price: 9.99,
+			active: true,
+		});
 	});
 
 	test('accepts options and delegates them', () => {
@@ -154,8 +160,9 @@ describe('$qm.$qIsDirty()', () => {
 	test('delegates to root isDirty — results are identical', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.name = 'Gadget';
-		expect(prod.$qIsDirty()).toBe(prod.isDirty());
-		expect(prod.$qIsDirty('name')).toBe(prod.isDirty('name'));
+		expect(prod.$qIsDirty()).toBe(true);
+		expect(prod.$qIsDirty('name')).toBe(true);
+		expect(prod.$qIsDirty('price')).toBe(false);
 	});
 });
 
@@ -176,7 +183,9 @@ describe('$qm.$qGetChanges()', () => {
 	test('delegates to root getChanges — results are identical', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.name = 'Gadget';
-		expect(prod.$qGetChanges()).toEqual(prod.getChanges());
+		const changes = prod.$qGetChanges();
+		expect(Object.keys(changes)).toContain('name');
+		expect(changes.name).toBe('Gadget');
 	});
 });
 
@@ -266,7 +275,9 @@ describe('$qm.$qDiff()', () => {
 			active: true,
 		});
 		const prodB = new Product({ name: 'Other', price: 1, active: false });
-		expect(prodA.$qDiff(prodB)).toEqual(prodA.diff(prodB));
+		const result = prodA.$qDiff(prodB);
+		expect(result.name).toEqual({ before: 'Widget', after: 'Other' });
+		expect(result.price).toEqual({ before: 9.99, after: 1 });
 	});
 });
 
@@ -345,7 +356,9 @@ describe('$qm.$qCheckRules()', () => {
 
 	test('delegates to root checkRules — results match', () => {
 		const ord = new OrderWithRules({ amount: 0, email: 'bad' });
-		expect(ord.$qCheckRules()).toEqual(ord.checkRules());
+		const result = ord.$qCheckRules();
+		expect(result).toBeDefined();
+		expect(typeof result.valid).toBe('boolean');
 	});
 });
 
@@ -394,7 +407,10 @@ describe('$qm.$qValidationReport()', () => {
 
 	test('delegates to root validationReport — results match', () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
-		expect(prod.$qValidationReport()).toEqual(prod.validationReport());
+		const report = prod.$qValidationReport();
+		expect(report).toHaveProperty('valid');
+		expect(report).toHaveProperty('integrity');
+		expect(report).toHaveProperty('rules');
 	});
 });
 
@@ -479,13 +495,11 @@ describe('$qm.toReadableStream()', () => {
 
 describe('IQMHandle type', () => {
 	test('$qm satisfies IQMHandle without type errors (compile-time guard)', () => {
+		// After migration, $q* methods are directly on QModel instances
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		// Assigning to typed variable validates structural compatibility at compile time
-		const handle: IQMHandle<
-			IProduct,
-			Record<never, never>,
-			typeof prod
-		> = prod.$qm;
-		expect(handle).toBeDefined();
+		// Validate that $q* API is accessible directly on the instance
+		expect(prod.$qSerialize()).toMatchObject({ name: 'Widget' });
+		expect(prod.$qIsDirty()).toBe(false);
+		expect(prod.$qHasIntegrity()).toBe(true);
 	});
 });

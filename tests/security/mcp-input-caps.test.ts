@@ -46,13 +46,13 @@ describe('LOW-05 — validate_usage: code string must be capped', () => {
 
 	test('schema should reject code longer than 50 000 chars', () => {
 		const huge = 'x'.repeat(50_001);
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ code: huge });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept code within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: 'class Foo extends QModel<IFoo> {}',
 		});
@@ -67,13 +67,13 @@ describe('LOW-06 — json_to_model: json/className strings must be capped', () =
 
 	test('schema should reject json longer than 50 000 chars', () => {
 		const huge = '{"x":"' + 'a'.repeat(50_001) + '"}';
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ json: huge });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should reject className longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			json: '{}',
 			className: 'A'.repeat(101),
@@ -82,7 +82,7 @@ describe('LOW-06 — json_to_model: json/className strings must be capped', () =
 	});
 
 	test('schema should accept json within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ json: '{"name":"Alice"}' });
 		expect(result.success).toBe(true);
 	});
@@ -95,13 +95,13 @@ describe('LOW-07 — interface_to_model: code string must be capped', () => {
 
 	test('schema should reject code longer than 50 000 chars', () => {
 		const huge = 'x'.repeat(50_001);
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ code: huge });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept code within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: 'interface IFoo { name: string; }',
 		});
@@ -115,13 +115,13 @@ describe('LOW-08 — generate_feature_tests: decorator/model_name strings must b
 	const tool = new QGenerateFeatureTestsTool();
 
 	test('schema should reject decorator longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ decorator: '@'.repeat(101) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should reject model_name longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			decorator: '@Quick',
 			model_name: 'A'.repeat(101),
@@ -130,7 +130,7 @@ describe('LOW-08 — generate_feature_tests: decorator/model_name strings must b
 	});
 
 	test('schema should accept valid inputs', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			decorator: '@Quick',
 			model_name: 'TestModel',
@@ -145,13 +145,13 @@ describe('LOW-09 — generate_integration_test: model name strings must be cappe
 	const tool = new QGenerateIntegrationTestTool();
 
 	test('schema should reject base_model longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ base_model: 'A'.repeat(101) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should reject child_model longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			base_model: 'BaseModel',
 			child_model: 'A'.repeat(101),
@@ -160,7 +160,7 @@ describe('LOW-09 — generate_integration_test: model name strings must be cappe
 	});
 
 	test('schema should accept valid inputs', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			base_model: 'UserModel',
 			child_model: 'AdminModel',

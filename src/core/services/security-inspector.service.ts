@@ -159,7 +159,7 @@ export class SecurityInspector {
 		if (
 			template &&
 			key in template &&
-			typeof (template as any)[key] === 'function' &&
+			typeof template[key] === 'function' &&
 			!decoratedFields.includes(key)
 		) {
 			return true;

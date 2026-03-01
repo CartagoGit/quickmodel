@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing type confusion with wrong input types
 import { describe, test, expect } from 'bun:test';
 import { Quick, QModel } from '../../src/index';
 
@@ -21,7 +22,8 @@ describe('Security: Type Confusion via __type Injection', () => {
 		};
 
 		try {
-			const user = new User(payload as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing type confusion injection
+			const user = new User(payload as unknown as IUser);
 			// If it didn't throw, ensure it didn't create a Date
 			expect(user.age).not.toBeInstanceOf(Date);
 		} catch (_error) {
@@ -47,7 +49,8 @@ describe('Security: Type Confusion via __type Injection', () => {
 		};
 
 		try {
-			const config = new Config(payload as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing type confusion injection
+			const config = new Config(payload as unknown as IConfig);
 			// If it didn't throw, ensure it didn't create a Map
 			expect(config.active).not.toBeInstanceOf(Map);
 		} catch (_error) {

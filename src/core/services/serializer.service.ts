@@ -1099,7 +1099,11 @@ export class Serializer<
 				includeDoubleUnderscore: options?.includeDoubleUnderscore,
 			};
 
-			return this.serialize(value as any, visited, childOptions);
+			return this.serialize(
+				value as unknown as Parameters<typeof this.serialize>[0],
+				visited,
+				childOptions
+			); // @quickmodel-rule-ignore: no-as-unknown — value is a QModel instance narrowed by _isQModelCtor; TypeScript can't resolve the generic TInterface at this dynamic call site
 		}
 
 		// Plain Object (recursive serialization)

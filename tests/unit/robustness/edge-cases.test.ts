@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: edge-case tests using wrong types to verify guard behavior
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -17,8 +18,14 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		);
 		const user = new User(payload);
 
-		expect((user as any).admin).toBeUndefined();
-		expect((Object.prototype as any).admin).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(user as unknown as Record<string, unknown>)['admin']
+		).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(Object.prototype as unknown as Record<string, unknown>)['admin']
+		).toBeUndefined();
 	});
 
 	// Scenario 2: Extra properties (Parameter Pollution)
@@ -31,12 +38,19 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 			declare name: string;
 		}
 
-		const user = new User({ name: 'John', isAdmin: true } as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: passing extra properties for behavior documentation
+		const user = new User({
+			name: 'John',
+			isAdmin: true,
+		} as unknown as IUser);
 
 		// Default behavior: it usually copies them.
 		// Robustness improvement: should we strip them?
 		// For now, let's document behavior.
-		expect((user as any).isAdmin).toBe(true);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect((user as unknown as Record<string, unknown>)['isAdmin']).toBe(
+			true
+		);
 	});
 
 	// Scenario 3: Null safety for required fields (Runtime check vs Type check)
@@ -52,7 +66,8 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		}
 
 		// Passing null to Date transformer
-		const user = new User({ name: 'John', date: null } as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: passing null for typed field to test null safety
+		const user = new User({ name: 'John', date: null } as unknown as IUser);
 		expect(user.date).toBeNull();
 	});
 
@@ -69,7 +84,8 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		// Currently it throws QModelError (verified in validation test)
 		// But what if we just construct it?
 		expect(() => {
-			new User({ date: 'not-a-date' } as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: passing invalid date string to test error handling
+			new User({ date: 'not-a-date' } as unknown as IUser);
 		}).toThrow();
 	});
 });

@@ -1,4 +1,6 @@
 import { z } from '@mcp/deps';
+import type { IQImplements } from '../../../core/interfaces/model.interface';
+import type { IQOptions } from '../../../core/interfaces/quick.interface';
 import { QAbstractTool } from '../abstract-tool';
 import { QModel } from '../../../core/models/quick.model';
 import { Quick } from '../../../core/decorators/quick.decorator';
@@ -60,12 +62,13 @@ export class QGenerateMockDataTool extends QAbstractTool<
 
 		// Apply decorators manually
 		// @Quick(args.schema)
-		Quick(args.schema as any)(DynamicModel);
+		// @quickmodel-rule-ignore: no-as-unknown — args.schema is Record<string, unknown> from Zod; values are transformer-type strings, compatible with IQImplements at runtime
+		Quick(args.schema as unknown as IQImplements<IQOptions>)(DynamicModel);
 
 		// Generate mocks
-		const mocks: any[] = [];
+		const mocks: Array<Record<string, unknown>> = [];
 		for (let idx = 0; idx < args.count; idx++) {
-			mocks.push((DynamicModel.mock().random() as any).$qSerialize());
+			mocks.push(DynamicModel.mock().random().$qSerialize());
 		}
 
 		return mocks;

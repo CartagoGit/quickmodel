@@ -134,7 +134,8 @@ export class Deserializer<
 
 		// 2. Resolve single transformer
 		// Check if spec is a registered key first
-		const transformer = this.getTransformer(spec as any);
+		// @quickmodel-rule-ignore: no-as-unknown — spec is typed `unknown` at this call site (generic SmartSetter path); narrowed by Array.isArray above; null/undefined safely return undefined from the registry
+		const transformer = this.getTransformer(spec as IQTransformerKey);
 		if (transformer) {
 			return transformer.deserialize(value, key, 'SmartSetter');
 		}
@@ -145,10 +146,17 @@ export class Deserializer<
 		if (
 			typeof spec === 'function' &&
 			// Check if it looks like a model class (heuristic)
-			(spec.prototype || (spec as any).create)
+			// @quickmodel-rule-ignore: no-as-unknown — spec is IQTransformerKey narrowed to function; accessing .create is a duck-type heuristic for model classes
+			(spec.prototype ||
+				(spec as unknown as Record<string, unknown>)['create'])
 		) {
 			// It's a nested model class
-			if (value instanceof (spec as any)) return value;
+			// @quickmodel-rule-ignore: no-as-unknown — spec is a verified function/constructor; dynamic instanceof check for already-instantiated values
+			if (
+				value instanceof
+				(spec as unknown as new (...args: unknown[]) => unknown)
+			)
+				return value;
 			if (value && typeof value === 'object') {
 				return this.deserialize(
 					value as Record<string, unknown>,
@@ -256,7 +264,18 @@ export class Deserializer<
 		json: string,
 		modelClass: new (data: Record<string, unknown>) => TResult
 	): TResult {
-		const data = JSON.parse(json) as Record<string, unknown>;
-		return this.deserialize(data, modelClass);
+		const data: unknown = JSON.parse(json);
+		if (data === null || Array.isArray(data) || typeof data !== 'object') {
+			throw new QModelError(
+				`Expected a JSON object, but received: ${
+					data === null
+						? 'null'
+						: Array.isArray(data)
+							? 'array'
+							: typeof data
+				}`
+			);
+		}
+		return this.deserialize(data as Record<string, unknown>, modelClass);
 	}
 }

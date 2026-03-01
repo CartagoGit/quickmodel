@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: forcing runtime type mismatch to test $qToInterface error handling
 import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
 
@@ -14,7 +15,8 @@ describe('ToInterfaceService Extended Coverage', () => {
 
 		const data = new Data({ obj: { a: 1 } });
 		// Change type at runtime
-		(data as any).obj = 'not an object';
+		// @quickmodel-rule-ignore: no-as-unknown
+		(data as unknown as Record<string, unknown>)['obj'] = 'not an object';
 
 		// Access private service to force !isProduction (default in tests)
 		// Or simply rely on QModel.toInterface calls
@@ -46,8 +48,11 @@ describe('ToInterfaceService Extended Coverage', () => {
 		const result = container.$qToInterface();
 
 		// Should serialize properties but not methods
-		expect(result.instance as any).toEqual({ prop: 'value' });
-		expect((result.instance as any).method).toBeUndefined();
+		expect(result.instance).toEqual({ prop: 'value' });
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(result.instance as unknown as Record<string, unknown>)['method']
+		).toBeUndefined();
 	});
 
 	it('should handle runtime type mismatch in production silently', () => {
@@ -65,7 +70,8 @@ describe('ToInterfaceService Extended Coverage', () => {
 		}
 
 		const data = new Data({ obj: { a: 1 } });
-		(data as any).obj = 'not an object';
+		// @quickmodel-rule-ignore: no-as-unknown
+		(data as unknown as Record<string, unknown>)['obj'] = 'not an object';
 
 		// Should NOT throw in production
 		let result;
@@ -75,7 +81,8 @@ describe('ToInterfaceService Extended Coverage', () => {
 			process.env.NODE_ENV = originalEnv;
 		}
 
-		expect(result.obj as any).toBe('not an object');
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(result.obj as unknown as string).toBe('not an object');
 	});
 
 	it('should handle generic objects with methods (skipping methods)', () => {
@@ -92,8 +99,14 @@ describe('ToInterfaceService Extended Coverage', () => {
 		const result = data.$qToInterface();
 
 		// Should retain 'a' but skip 'func'
-		expect(result.obj as any).toEqual({ a: 1 });
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(result.obj as unknown as Record<string, unknown>).toEqual({
+			a: 1,
+		});
 		// We expect type casting for testing dynamic result
-		expect((result.obj as any).func).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(result.obj as unknown as Record<string, unknown>)['func']
+		).toBeUndefined();
 	});
 });

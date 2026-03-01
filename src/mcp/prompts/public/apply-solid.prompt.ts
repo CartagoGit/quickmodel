@@ -82,7 +82,7 @@ export class QApplySolidPrompt extends QAbstractInternalPrompt<{
 						`Before touching any file:\n` +
 						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is working on overlapping files.\n` +
 						`   If \`agents[]\` is non-empty: check what staged/unstaged changes they have (via git) and wait for them to commit or stash if there is overlap.\n` +
-						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, description \`"apply SOLID to ${file_paths}"\`, and \`files: [${lintTarget}]\`.\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"apply SOLID to ${file_paths}"\`, and \`files: [${lintTarget}]\`.\n` +
 						`3. If \`conflict: true\` → **STOP immediately**. Do not modify any file. Inform the user and wait.\n` +
 						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +
 						`---\n\n` +

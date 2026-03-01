@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: forcing wrong type onto typed field to test integrity check rejection
 import { describe, it, expect } from 'bun:test';
 import { IntegrityService } from '../../../src/core/services/integrity.service';
 import { Quick } from '../../../src/core/decorators/quick.decorator';
@@ -36,7 +37,8 @@ describe('IntegrityService Coverage Gaps', () => {
 		// Simulate an invalid child.
 		// We force invalid data that violates 'string' type expectation.
 		const cFail = new Child();
-		(cFail as any).name = 123; // Error: should be string
+		// @quickmodel-rule-ignore: no-as-unknown
+		(cFail as unknown as Record<string, unknown>)['name'] = 123; // Error: should be string
 
 		parent.children = [cFail];
 
@@ -66,19 +68,19 @@ describe('IntegrityService Coverage Gaps', () => {
 		};
 
 		// Register under a string key — string keys go through fieldType lookup in getTransformer
-		QTransformerRegistry.register(BROKEN_KEY, brokenTransformer as any);
+		QTransformerRegistry.register(BROKEN_KEY, brokenTransformer);
 
 		// Using string key in @Quick triggers QType(string) → sets fieldType = BROKEN_KEY
-		@Quick({ field: BROKEN_KEY } as any)
+		@Quick({ field: BROKEN_KEY })
 		class ModelWithBrokenValidator {
 			[key: string]: any;
 			declare field: unknown;
 		}
 
 		const instance = new ModelWithBrokenValidator();
-		(instance as any).field = 'some-value';
+		instance['field'] = 'some-value';
 
-		const results = service.checkIntegrity(instance as any);
+		const results = service.checkIntegrity(instance);
 
 		// The service should have caught the error and returned an error result
 		expect(results.length).toBeGreaterThan(0);

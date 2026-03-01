@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing that __ properties are excluded from serialization
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -145,7 +146,8 @@ describe('Model Serialization (toJSON)', () => {
 		});
 
 		// Manually add internal prop
-		(user as any).__internal = 'secret';
+		// @quickmodel-rule-ignore: no-as-unknown
+		(user as unknown as Record<string, unknown>)['__internal'] = 'secret';
 
 		const jsonString = user.toJSON();
 		expect(jsonString).not.toContain('__internal');

@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: passing extra properties to verify non-strict mode behavior
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -27,7 +28,14 @@ describe('Strict Mode Verification', () => {
 		}
 
 		// Extra property 'admin' should NOT throw by default
-		const user = User.create({ name: 'Test', admin: true } as any);
-		expect((user as any).admin).toBe(true);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: testing that extra properties are kept
+		const user = User.create({
+			name: 'Test',
+			admin: true,
+		} as unknown as IUser);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect((user as unknown as Record<string, unknown>)['admin']).toBe(
+			true
+		);
 	});
 });

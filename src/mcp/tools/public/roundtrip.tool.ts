@@ -78,13 +78,13 @@ export class QRoundtripTool extends QAbstractTool<
 			[key: string]: any;
 		}
 
-		const serial1 = new DynamicModel(args.data).$qSerialize() as Record<
+		const serial1 = new DynamicModel(
+			this.capInputArrays(args.data)
+		).$qSerialize() as Record<string, unknown>;
+		const serial2 = new DynamicModel(serial1).$qSerialize() as Record<
 			string,
 			unknown
 		>;
-		const serial2 = new DynamicModel(
-			serial1 as any
-		).$qSerialize() as Record<string, unknown>;
 
 		const diff = this.computeDiff(serial1, serial2);
 		const lossless = Object.keys(diff).length === 0;
@@ -187,5 +187,27 @@ export class QRoundtripTool extends QAbstractTool<
 		}
 
 		return options;
+	}
+
+	/** Maximum number of items allowed in any single array field of the input data. */
+	private static readonly MAX_ARRAY_LENGTH = 1000;
+
+	/**
+	 * Caps all array values in a plain data object to {@link QRoundtripTool.MAX_ARRAY_LENGTH} items.
+	 * Prevents memory exhaustion when the caller supplies oversized arrays.
+	 *
+	 * @param data - Raw input data record
+	 * @returns A shallow copy with every array value truncated to the limit
+	 */
+	private capInputArrays(
+		data: Record<string, unknown>
+	): Record<string, unknown> {
+		const res: Record<string, unknown> = {};
+		for (const [key, val] of Object.entries(data)) {
+			res[key] = Array.isArray(val)
+				? val.slice(0, QRoundtripTool.MAX_ARRAY_LENGTH)
+				: val;
+		}
+		return res;
 	}
 }

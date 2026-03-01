@@ -56,7 +56,7 @@ export function deepFreeze<T>(
 
 		const propNames = Object.getOwnPropertyNames(obj);
 		for (const name of propNames) {
-			const value = (obj as any)[name];
+			const value = (obj as Record<string, unknown>)[name];
 			if (value && typeof value === 'object') {
 				deepFreeze(value, visited, depth + 1);
 			}

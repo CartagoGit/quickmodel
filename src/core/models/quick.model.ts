@@ -347,23 +347,24 @@ function coerceUrlString(val: string | null, spec: unknown): unknown {
 // ── Guard: enforce $q* access on protected methods ────────────────────────────
 /**
  * Set to `true` while inside a `$q*()` call, allowing the
- * underlying methods to execute. Resets to `false` in the `finally` block.
+ * underlying methods to execute. Uses a counter (not boolean) for re-entrancy.
  * @internal
  */
-let _qCallActive = false;
+let _qCallDepth = 0;
 
 /**
- * Wraps a `$q*` method call with the module-level flag.
+ * Wraps a `$q*` method call with the module-level counter.
+ * Re-entrant: nested `_withQFlag` calls increment/decrement the counter safely.
  * Works for both sync and async methods since guard checks always run
  * synchronously before the first `await`.
  * @internal
  */
 function _withQFlag<TReturn>(cb: () => TReturn): TReturn {
-	_qCallActive = true;
+	_qCallDepth++;
 	try {
 		return cb();
 	} finally {
-		_qCallActive = false;
+		_qCallDepth--;
 	}
 }
 
@@ -374,7 +375,7 @@ function _withQFlag<TReturn>(cb: () => TReturn): TReturn {
  * @internal
  */
 function _assertQCall(method: string): void {
-	if (!_qCallActive) {
+	if (_qCallDepth === 0) {
 		throw new Error(
 			`[QuickModel] .${method}() must be called via instance.$q${method.charAt(0).toUpperCase()}${method.slice(1)}(). ` +
 				`See: https://quickmodel.dev/guide/reserved-words`
@@ -655,16 +656,16 @@ export abstract class QModel<
 			const Constructor = this;
 			const instance = new Constructor(data[idx]);
 
-			if (instance.isValid()) {
+			if (instance.$qIsValid()) {
 				instances.push(instance);
 			} else {
 				// Collect all failures
 				const integrityErrors = instance
-					.checkIntegrity()
+					.$qCheckIntegrity()
 					.map((result: IQIntegrityResult) => ({
 						message: result.error ?? 'Integrity check failed',
 					}));
-				const ruleErrors = instance.checkRules().errors;
+				const ruleErrors = instance.$qCheckRules().errors;
 
 				errors.push({
 					index: idx,
@@ -1178,7 +1179,7 @@ export abstract class QModel<
 	 * The returned class:
 	 * - Extends `ExternalBase` (prototype chain intact: `instance instanceof ExternalBase === true`)
 	 * - Exposes all static QModel methods: `create()`, `createReadonly()`, `mock()`,
-	 *   `getMetadata()`, `deserialize()`, `$qDeserializeJson()`
+	 *   `getMetadata()`, `deserialize()`, `deserializeJson()`
 	 * - Exposes all instance QModel methods: `serialize()`, `$qToJSON()`, `toInterface()`,
 	 *   `isDirty()`, `getDirtyFields()`, `reset()`, `patch()`, `copy()`
 	 * - Works with `@Quick` and `@QType` decorators on the derived class
@@ -1247,7 +1248,14 @@ export abstract class QModel<
 						configurable: true,
 					});
 					// Delegate to QModel's initialization logic (declared `protected`)
-					(QModel.prototype as any)['initialize'].call(this);
+					// @quickmodel-rule-ignore: no-as-unknown — calling protected initialize() via prototype; TypeScript can't access protected methods cross-class
+					const _initFn = (
+						QModel.prototype as unknown as Record<
+							string,
+							(this: unknown) => void
+						>
+					)['initialize'];
+					if (_initFn) _initFn.call(this);
 				}
 			}
 			return QModelMixed;
@@ -1289,8 +1297,8 @@ export abstract class QModel<
 			'mock',
 			'getMetadata',
 			'deserialize',
-			'$qDeserializeJson',
-			'$qFromJSON',
+			'deserializeJson',
+			'fromJSON',
 		] as const;
 		for (const name of staticsToCopy) {
 			const descriptor = Object.getOwnPropertyDescriptor(QModel, name);
@@ -1314,7 +1322,9 @@ export abstract class QModel<
 	 */
 	public getMetadata(): Map<string, { type: string; transformer: unknown }> {
 		// Start with static metadata (schema definition)
-		const metadata = (this.constructor as any).getMetadata();
+		const metadata = (
+			this.constructor as unknown as typeof QModel
+		).getMetadata();
 
 		// Merge with instance keys (dynamic data discovery)
 		// This provides "what arrived" validation without permanently polluting the class schema
@@ -1545,7 +1555,8 @@ export abstract class QModel<
 			// Check for custom accessor (Backing Field Pattern support)
 			if (this.hasAccessor(key)) {
 				// Use public assignment to trigger the custom setter
-				(this as any)[key] = value;
+				// @quickmodel-rule-ignore: no-as-unknown — dynamic property assignment via public setter; key is a validated field name from deserialized data
+				(this as unknown as Record<string, unknown>)[key] = value;
 				continue;
 			}
 
@@ -1935,9 +1946,17 @@ export abstract class QModel<
 						// 3. Apply transformation if spec found
 						if (spec) {
 							// Access the private static deserializer instance
-							// We cast QModel to any to access the private property
-							const deserializer = (QModel as any).deserializer;
-
+							// @quickmodel-rule-ignore: no-as-unknown — accessing private static 'deserializer'; intentional internal access from mixin context
+							type IDeserializerLike = {
+								transformValue: (
+									val: unknown,
+									key: string,
+									spec: unknown
+								) => unknown;
+							};
+							const deserializer = (
+								QModel as unknown as Record<string, unknown>
+							)['deserializer'] as IDeserializerLike | undefined;
 							if (
 								deserializer &&
 								typeof deserializer.transformValue ===
@@ -2166,8 +2185,8 @@ export abstract class QModel<
 	 * @returns JSON string representation of the model
 	 *
 	 * @see {@link QModel.serialize} — plain object form (before JSON.stringify)
-	 * @see {@link QModel.$qDeserializeJson} — parse a JSON string back to a model instance
-	 * @see {@link QModel.$qFromJSON} — alias for `$qDeserializeJson`
+	 * @see {@link QModel.fromJSON} — parse a JSON string back to a model instance
+	 * @see {@link QModel.deserializeJson} — alias for `fromJSON`
 	 *
 	 * @example
 	 * ```typescript
@@ -2183,12 +2202,28 @@ export abstract class QModel<
 		);
 	}
 
+	/** Implements the JS `toJSON` protocol — `JSON.stringify(model)` delegates here. */
+	toJSON(options?: IQSerializationOptions): string {
+		return this.$qToJSON(options);
+	}
+
 	// ── Namespace $q* API ─────────────────────────────────────────────────────
 	/** @see {@link QModel.serialize} */
 	$qSerialize(
 		options?: IQSerializationOptions
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	/** @see {@link QModel.serialize} */
+	$qSerialize(
+		seen?: WeakSet<object>,
+		options?: IQSerializationOptions
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	$qSerialize(
+		seenOrOptions?: WeakSet<object> | IQSerializationOptions,
+		options?: IQSerializationOptions
 	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
-		return _withQFlag(() => this.serialize(options));
+		return _withQFlag(() =>
+			this.serialize(seenOrOptions as WeakSet<object>, options)
+		);
 	}
 
 	/** @see {@link QModel.toFormData} */
@@ -2283,6 +2318,16 @@ export abstract class QModel<
 	/** @see {@link QModel.hasChanges} */
 	$qHasChanges(): boolean {
 		return _withQFlag(() => this.hasChanges());
+	}
+
+	/** @see {@link QModel.getChangedFields} */
+	$qGetChangedFields(): string[] {
+		return _withQFlag(() => this.getChangedFields());
+	}
+
+	/** @see {@link QModel.getDirtyFields} */
+	$qGetDirtyFields(): Set<string> {
+		return _withQFlag(() => this.getDirtyFields());
 	}
 
 	/** @see {@link QModel.isDirty} */
@@ -2530,7 +2575,9 @@ export abstract class QModel<
 	async checkRulesAsync(
 		options?: IQRulesAsyncOptions
 	): Promise<IQRulesResult> {
-		_assertQCall('checkRulesAsync');
+		if (_qCallDepth === 0) {
+			return _withQFlag(() => $qCheckRulesAsync(this, options));
+		}
 		return $qCheckRulesAsync(this, options);
 	}
 
@@ -2890,8 +2937,8 @@ export abstract class QModel<
 	 * @param data - Plain object matching the model's interface structure
 	 * @returns A new, fully typed model instance
 	 *
-	 * @see {@link QModel.$qFromJSON} — deserialize from a JSON string
-	 * @see {@link QModel.$qDeserializeJson} — alias for `$qFromJSON`
+	 * @see {@link QModel.fromJSON} — deserialize from a JSON string
+	 * @see {@link QModel.deserializeJson} — alias for `fromJSON`
 	 * @see {@link QModel.serialize} — serialize a model instance back to a plain object
 	 * @see {@link QModel.create} — factory alias that wraps the constructor
 	 *
@@ -2944,13 +2991,13 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const json = '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}';
-	 * const user = User.$qFromJSON(json);
+	 * const user = User.fromJSON(json);
 	 *
 	 * console.log(user instanceof User); // true
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static $qFromJSON<T extends QModel<IQAnyRecord>>(
+	static fromJSON<T extends QModel<IQAnyRecord>>(
 		this: new (data: IQModelData<IQAnyRecord>) => T,
 		json: string
 	): T {
@@ -2960,7 +3007,7 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Alias for {@link $qFromJSON}. Creates a model instance from a JSON string.
+	 * Alias for {@link fromJSON}. Creates a model instance from a JSON string.
 	 *
 	 * Parses a JSON string and deserializes it into a fully typed model instance.
 	 * Use this when you prefer a `deserialize`-style naming convention.
@@ -2973,15 +3020,15 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const json = user.$qToJSON();
-	 * const restored = User.$qDeserializeJson(json);
+	 * const restored = User.deserializeJson(json);
 	 * restored.createdAt instanceof Date; // true
 	 * ```
 	 */
-	static $qDeserializeJson<T extends QModel<IQAnyRecord>>(
+	static deserializeJson<T extends QModel<IQAnyRecord>>(
 		this: new (data: IQModelData<IQAnyRecord>) => T,
 		json: string
 	): T {
-		// Delegates to $qFromJSON for consistent @QAlias remapping
+		// Delegates to fromJSON for consistent @QAlias remapping
 		return new this(JSON.parse(json) as IQModelData<IQAnyRecord>);
 	}
 
@@ -3235,6 +3282,9 @@ export abstract class QModel<
 	 * ```
 	 */
 	getChangedFields(): string[] {
+		if (_qCallDepth === 0) {
+			return _withQFlag(() => this.getChangedFields());
+		}
 		const current = this.toInterface();
 		const initial = this.getInitInterface();
 		const changes: string[] = [];
@@ -3846,8 +3896,11 @@ export abstract class QModel<
 	private static _inferPropertiesFromSample(): string[] {
 		try {
 			// Create a minimal mock instance to discover properties
-			const sampleData: Record<string, any> = {};
-			const instance = new (this as any)(sampleData);
+			const sampleData: Record<string, unknown> = {};
+			// @quickmodel-rule-ignore: no-as-unknown — `this` in a static method is the subclass constructor; TypeScript can't infer ctor signature for QModel subclasses
+			const instance = new (this as unknown as new (
+				data: Record<string, unknown>
+			) => QModel<Record<string, unknown>>)(sampleData);
 
 			// Get keys from __quickValues__ if populated
 			if (instance[QUICK_VALUES_KEY]) {

@@ -505,10 +505,11 @@ export function Quick<
 	if (
 		typeMap &&
 		'unknownPropertyPolicy' in typeMap &&
-		typeof (typeMap as any).unknownPropertyPolicy === 'string'
+		typeof (typeMap as Record<string, unknown>)['unknownPropertyPolicy'] ===
+			'string'
 	) {
 		throw new Error(
-			`[QuickModel] Misconfiguration detected: 'unknownPropertyPolicy: ${(typeMap as any).unknownPropertyPolicy}' found in type map. ` +
+			`[QuickModel] Misconfiguration detected: 'unknownPropertyPolicy: ${(typeMap as Record<string, unknown>)['unknownPropertyPolicy']}' found in type map. ` +
 				`Did you mean to pass options as the second argument? \n` +
 				`Correct usage: @Quick({ /* types */ }, { unknownPropertyPolicy: 'error' })`
 		);
@@ -546,15 +547,21 @@ export function Quick<
 
 			if (
 				'dateStrategy' in typeMap &&
-				typeof (typeMap as any).dateStrategy === 'string' &&
+				typeof (typeMap as Record<string, unknown>)['dateStrategy'] ===
+					'string' &&
 				['iso', 'timestamp', 'native'].includes(
-					(typeMap as any).dateStrategy
+					(typeMap as Record<string, unknown>)[
+						'dateStrategy'
+					] as string
 				)
 			) {
 				// It IS an option object passed as first arg
-				mergedOptions = { ...mergedOptions, ...(typeMap as any) };
+				mergedOptions = {
+					...mergedOptions,
+					...(typeMap as Record<string, unknown>),
+				};
 				// Do NOT register 'dateStrategy' as a property type!
-				delete (typeMap as any).dateStrategy;
+				delete (typeMap as Record<string, unknown>)['dateStrategy'];
 			}
 		}
 

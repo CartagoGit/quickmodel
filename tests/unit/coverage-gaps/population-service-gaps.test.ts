@@ -1,18 +1,27 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: passing stub objects to service constructors and testing prototype-pollution guards
 import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
 import { QUICK_DESIGN_TYPES_KEY } from '@/core/constants/metadata-keys';
 import { PopulationService } from '@/core/services/population.service';
 import { TransformerLookupService } from '@/core/services/transformer-lookup.service';
-import { ValueTransformerService } from '@/core/services/value-transformer.service';
+import {
+	ValueTransformerService,
+	type IRecursiveDeserializer,
+} from '@/core/services/value-transformer.service';
 
 describe('PopulationService Coverage Gaps', () => {
 	it('should throw validation error when calling populateInstance directly with metadata', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(lookup, {} as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: stub IRecursiveDeserializer not needed for this test
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as unknown as IRecursiveDeserializer
+		);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,
-			{} as any
+			// @quickmodel-rule-ignore: no-as-unknown
+			{} as unknown as IRecursiveDeserializer
 		);
 
 		class TestModel {}
@@ -35,11 +44,16 @@ describe('PopulationService Coverage Gaps', () => {
 
 	it('should throw validation error for String mismatch', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(lookup, {} as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: stub IRecursiveDeserializer not needed for this test
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as unknown as IRecursiveDeserializer
+		);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,
-			{} as any
+			// @quickmodel-rule-ignore: no-as-unknown
+			{} as unknown as IRecursiveDeserializer
 		);
 		class StrModel {}
 		Reflect.defineMetadata(
@@ -49,7 +63,8 @@ describe('PopulationService Coverage Gaps', () => {
 		);
 		expect(() =>
 			service.populateInstance(
-				new StrModel() as any,
+				// @quickmodel-rule-ignore: no-as-unknown
+				new StrModel() as unknown as Record<string, unknown>,
 				{ val: 123 },
 				{ modelClass: StrModel }
 			)
@@ -58,11 +73,16 @@ describe('PopulationService Coverage Gaps', () => {
 
 	it('should throw validation error for Boolean mismatch', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(lookup, {} as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: stub IRecursiveDeserializer not needed for this test
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as unknown as IRecursiveDeserializer
+		);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,
-			{} as any
+			// @quickmodel-rule-ignore: no-as-unknown
+			{} as unknown as IRecursiveDeserializer
 		);
 		class BoolModel {}
 		Reflect.defineMetadata(
@@ -72,7 +92,8 @@ describe('PopulationService Coverage Gaps', () => {
 		);
 		expect(() =>
 			service.populateInstance(
-				new BoolModel() as any,
+				// @quickmodel-rule-ignore: no-as-unknown
+				new BoolModel() as unknown as Record<string, unknown>,
 				{ val: 'true' },
 				{ modelClass: BoolModel }
 			)
@@ -92,11 +113,16 @@ describe('PopulationService Coverage Gaps', () => {
 
 	it('should prevent prototype pollution via population', () => {
 		const lookup = new TransformerLookupService();
-		const valueTransformer = new ValueTransformerService(lookup, {} as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: stub IRecursiveDeserializer not needed for this test
+		const valueTransformer = new ValueTransformerService(
+			lookup,
+			{} as unknown as IRecursiveDeserializer
+		);
 		const service = new PopulationService(
 			valueTransformer,
 			lookup,
-			{} as any
+			// @quickmodel-rule-ignore: no-as-unknown
+			{} as unknown as IRecursiveDeserializer
 		);
 
 		class EmptyModel {}
@@ -113,7 +139,10 @@ describe('PopulationService Coverage Gaps', () => {
 		expect(instance.constructor.polluted).toBeUndefined();
 		expect(instance.prototype).toBeUndefined();
 		// Ensure global Object prototype is not polluted
-		expect(({} as any).polluted).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			({} as unknown as Record<string, unknown>)['polluted']
+		).toBeUndefined();
 	});
 
 	it('should prevent prototype pollution via dot notation', () => {
@@ -135,6 +164,9 @@ describe('PopulationService Coverage Gaps', () => {
 		expect(instance).toBeDefined();
 
 		// The security check in applyDotNotationTransform should prevent this
-		expect(({} as any).polluted).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			({} as unknown as Record<string, unknown>)['polluted']
+		).toBeUndefined();
 	});
 });

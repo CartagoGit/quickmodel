@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: accessing dynamic properties on serialized output
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 
@@ -70,10 +71,14 @@ describe('Private/Protected Properties Serialization', () => {
 		const user = new StrictUser({ id: 1, _ignored: 'visible' });
 
 		// Pass option manually via serialize() or toJSON()
-		const json = user.$qSerialize(undefined, { includeUnderscore: true });
+		const json = user.$qSerialize(undefined, {
+			includeUnderscore: true,
+		}) as Record<string, unknown>;
 
-		expect((json as any).id).toBe(1);
-		expect((json as any)._ignored).toBe('visible');
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(json['id']).toBe(1);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(json['_ignored']).toBe('visible');
 	});
 
 	test('should INCLUDE double underscore properties when configured', () => {
@@ -82,10 +87,12 @@ describe('Private/Protected Properties Serialization', () => {
 
 		const json = user.$qSerialize(undefined, {
 			includeDoubleUnderscore: true,
-		});
+		}) as Record<string, unknown>;
 
-		expect((json as any).id).toBe(1);
-		expect((json as any).__meta).toBe('internal_data');
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(json['id']).toBe(1);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(json['__meta']).toBe('internal_data');
 	});
 
 	test('should include standard properties', () => {

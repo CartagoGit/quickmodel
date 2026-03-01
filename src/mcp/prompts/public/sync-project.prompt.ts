@@ -36,10 +36,17 @@ export class QSyncProjectPrompt extends QAbstractInternalPrompt<
 						`Start by calling \`project_status\` to get a consolidated snapshot.`
 				),
 				this.assistant(
-					`I'll run a full project sync now. Here is the plan:\n\n` +
+					`I'll run a full project sync now.\n\n` +
 						`## Sync plan\n\n` +
+						`**Step 0 — 🤝 Register your work (mandatory):**\n` +
+						`Before making any change to source, tests or docs:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is modifying the same files\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"sync project"\`, and \`files: ["src/**", "tests/**", "docs-vitepress/**"]\`\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not modify any file until the conflict is resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
 						`**Step 1 — Health snapshot:** Call \`project_status\` to get the current state ` +
-						`of tests, lint and typecheck all at once.\n\n` +
+						+`of tests, lint and typecheck all at once.\n\n` +
 						`**Step 2 — Fix failures (if any):**\n` +
 						`- If tests fail → diagnose and fix; then re-run \`run_tests\` until \`passed: true\`.\n` +
 						`- If lint errors → fix each violation; then re-run \`lint_check\` until \`passed: true\`.\n` +

@@ -184,9 +184,9 @@ export class ValueTransformerService {
 					}
 				} else if (typeof discriminatorConfig === 'string') {
 					// Handle simple string case: discriminatorConfig is the field name
-					const discriminatorValue = (item as any)[
-						discriminatorConfig
-					];
+					const discriminatorValue = (
+						item as Record<string, unknown>
+					)[discriminatorConfig];
 
 					if (typeof discriminatorValue === 'string') {
 						// Try to match value to class name (case-insensitive)
@@ -207,11 +207,14 @@ export class ValueTransformerService {
 					'field' in discriminatorConfig
 				) {
 					const { field, mapping } = discriminatorConfig;
-					const discriminatorValue = (item as any)[field];
+					const discriminatorValue = (
+						item as Record<string, unknown>
+					)[field];
 
 					if (
 						discriminatorValue &&
 						mapping &&
+						typeof discriminatorValue === 'string' &&
 						mapping[discriminatorValue]
 					) {
 						targetClass = mapping[discriminatorValue] as new (
@@ -237,7 +240,11 @@ export class ValueTransformerService {
 						return item;
 
 					// 2. Instance check (e.g. valid Date, valid Model instance)
-					if (item instanceof (type as any)) {
+					// @quickmodel-rule-ignore: no-as-unknown — dynamic instanceof check against polymorphic type from array; type is validated at runtime via discriminator config
+					if (
+						item instanceof
+						(type as unknown as new (...args: unknown[]) => unknown)
+					) {
 						return item; // Already transformed/correct type
 					}
 				}
@@ -278,9 +285,14 @@ export class ValueTransformerService {
 			if (targetClass === Boolean) return Boolean(item);
 
 			// If target class has a custom transformer, use it
-			if (this.transformerLookup.getTransformer(targetClass as any)) {
+			// @quickmodel-rule-ignore: no-as-unknown — targetClass is a Function resolved via discriminator config; IQTransformerKey accepts { name: string } which all constructors satisfy
+			if (
+				this.transformerLookup.getTransformer(
+					targetClass as unknown as { name: string }
+				)
+			) {
 				const transformer = this.transformerLookup.getTransformer(
-					targetClass as any
+					targetClass as unknown as { name: string }
 				);
 				if (transformer) {
 					return transformer.deserialize(
@@ -395,8 +407,9 @@ export class ValueTransformerService {
 		}
 
 		// Check via registry
+		// @quickmodel-rule-ignore: no-as-unknown — designType is Function | undefined; IQTransformerKey accepts { name: string } which all Functions satisfy
 		const transformer = this.transformerLookup.getTransformer(
-			designType as any
+			designType as unknown as { name: string }
 		);
 		if (transformer) {
 			return transformer.deserialize(

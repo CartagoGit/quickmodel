@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing error handling with malformed inputs
 import { describe, test, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
 import { MapTransformer } from '@/transformers/map-set.transformer';
@@ -19,7 +20,8 @@ describe('Security: Unsafe Error Reporting (DoS via Circular References)', () =>
 		// Using raw transformer to isolate the crash
 		expect(() => {
 			transformer.deserialize(
-				maliciousPayload as any,
+				// @quickmodel-rule-ignore: no-as-unknown — intentional: malformed payload to trigger error
+				maliciousPayload as unknown as unknown[],
 				'mapField',
 				'TestClass'
 			);
@@ -46,7 +48,8 @@ describe('Security: Unsafe Error Reporting (DoS via Circular References)', () =>
 		// This triggers validation error inside RegExpTransformer
 		// We verify it doesn't try to stringify the circular object in the error message
 		expect(() => {
-			new Test({ regex: circularObj } as any);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: malformed input to trigger error
+			new Test({ regex: circularObj } as unknown as ITest);
 		}).toThrow();
 	});
 });

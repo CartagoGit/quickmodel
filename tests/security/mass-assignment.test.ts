@@ -14,7 +14,9 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 		const payload = { name: 'John', isAdmin: true };
 		const user = new User(payload);
 
-		expect((user as any).isAdmin).toBe(true);
+		expect((user as unknown as Record<string, unknown>)['isAdmin']).toBe(
+			true
+		);
 	});
 
 	it('should prevent mass assignment in strict mode', () => {
@@ -43,7 +45,9 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 		expect(user.name).toBe('John');
 
 		// Calling it should work
-		expect(() => (user as any).save()).not.toThrow();
+		expect(() =>
+			(user as unknown as { save(): string }).save()
+		).not.toThrow();
 	});
 
 	it('should throw informative error when @Quick uses wrong syntax', () => {

@@ -26,12 +26,13 @@ interface IProposalEntry {
 type IManageProposalResult =
 	| {
 			action: 'list';
+			success: true;
 			proposals: IProposalEntry[];
 			total: number;
 			summary: string;
 	  }
 	| { action: 'add'; success: true; letter: string; message: string }
-	| { action: 'get-next-id'; letter: string; summary: string }
+	| { action: 'get-next-id'; success: true; letter: string; summary: string }
 	| { success: false; error: string };
 
 /** Priority emoji map. */
@@ -179,6 +180,14 @@ export class QManageProposalTool extends QAbstractTool<
 				error: 'title and description are required for action="add"',
 			};
 		}
+
+		if (/[\r\n]/.test(args.title)) {
+			return {
+				success: false,
+				error: 'Unsafe title: newline characters are not allowed',
+			};
+		}
+
 		return this.handleAdd(tasksPath, content, args);
 	}
 
@@ -192,6 +201,7 @@ export class QManageProposalTool extends QAbstractTool<
 		const proposals = this.parseProposals(content);
 		return {
 			action: 'list',
+			success: true,
 			proposals,
 			total: proposals.length,
 			summary: `Found ${proposals.length} proposal(s) in the backlog`,
@@ -215,6 +225,7 @@ export class QManageProposalTool extends QAbstractTool<
 		const nextLetter = String.fromCharCode(nextCode);
 		return {
 			action: 'get-next-id',
+			success: true,
 			letter: nextLetter,
 			summary: `Next proposal letter: ${nextLetter}`,
 		};

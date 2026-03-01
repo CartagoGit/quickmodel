@@ -840,8 +840,18 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(result.objectWithNull.z!.w).toBe(null);
 
 		// Object.create(null) - debe preservar estructura
-		expect((result.objectNoProto as any).key).toBe('value');
-		expect((result.objectNoProto as any).nested.prop).toBe(42);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect((result.objectNoProto as Record<string, unknown>)['key']).toBe(
+			'value'
+		);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(
+				(result.objectNoProto as Record<string, unknown>)[
+					'nested'
+				] as Record<string, unknown>
+			)['prop']
+		).toBe(42);
 
 		// Objeto profundamente anidado
 		expect(result.objectDeeplyNested.level1.l1val).toBe(1);

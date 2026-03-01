@@ -58,7 +58,14 @@ export class QAddQGroupPrompt extends QAbstractPrompt<{
 							: '')
 				),
 				this.assistant(
-					`### @QGroup — Conditional validation groups\n\n` +
+					`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before modifying the model file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is writing to the same source area\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"add-qgroup: ${exampleGroup}"\`, and \`files\` (the path of the model file you will modify)\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not modify any file until the conflict is resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
+						`### @QGroup — Conditional validation groups\n\n` +
 						`\`@QGroup(name)\` marks a field as belonging to a named validation group. ` +
 						`\`model.checkGroups(groupName)\` then evaluates **only** the \`@QRule\` predicates ` +
 						`of fields in that group, ignoring all other rules.\n\n` +

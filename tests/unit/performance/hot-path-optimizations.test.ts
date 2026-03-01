@@ -175,7 +175,8 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 				idt: 'x',
 				nom: 'y',
 				extra: 'unauthorized',
-			} as any);
+				// @quickmodel-rule-ignore: no-as-unknown — intentional: testing strict mode with extra property
+			} as unknown as IStrictModel);
 		}).toThrow();
 	});
 
@@ -219,7 +220,10 @@ describe('Optimization correctness — comportamiento intacto tras optimizacione
 		);
 		const inst = new SimplePrimitive(malicious);
 		// Prototype pollution must be blocked — (({}) as any).isAdmin debe ser undefined
-		expect(({} as any).isAdmin).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			({} as unknown as Record<string, unknown>)['isAdmin']
+		).toBeUndefined();
 		expect(inst.idt).toBe('x');
 	});
 
@@ -331,7 +335,8 @@ describe('Optimization #9 — skip workData copy when no @QAlias', () => {
 			last_name: 'Smith',
 			email_address: 'alice@example.com',
 		};
-		const usr = new AliasedUser(raw as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IAliasedUser
+		const usr = new AliasedUser(raw as unknown as IAliasedUser);
 		expect(usr.firstName).toBe('Alice');
 		expect(usr.lastName).toBe('Smith');
 		expect(usr.emailAddress).toBe('alice@example.com');
@@ -356,9 +361,13 @@ describe('Optimization #9 — skip workData copy when no @QAlias', () => {
 			last_name: 'Brown',
 			email_address: 'c@b.com',
 		};
-		const usr = new AliasedUser(raw as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IAliasedUser
+		const usr = new AliasedUser(raw as unknown as IAliasedUser);
 		// La propiedad debe ser accesible con el nombre del modelo, no el alias
-		expect((usr as any).first_name).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(usr as unknown as Record<string, unknown>)['first_name']
+		).toBeUndefined();
 		expect(usr.firstName).toBe('Charlie');
 	});
 
@@ -368,7 +377,8 @@ describe('Optimization #9 — skip workData copy when no @QAlias', () => {
 			last_name: 'Jones',
 			email_address: 'd@j.com',
 		};
-		const usr = new AliasedUser(raw as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IAliasedUser
+		const usr = new AliasedUser(raw as unknown as IAliasedUser);
 		const json = usr.$qSerialize() as Record<string, unknown>;
 		expect(json['first_name']).toBe('Dave');
 		expect(json['last_name']).toBe('Jones');
@@ -381,7 +391,8 @@ describe('Optimization #9 — skip workData copy when no @QAlias', () => {
 			last_name: 'Black',
 			email_address: 'e@b.com',
 		};
-		const usr = new AliasedUser(raw as any);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IAliasedUser
+		const usr = new AliasedUser(raw as unknown as IAliasedUser);
 		expect(() => usr.$qIsDirty()).not.toThrow();
 		expect(usr.$qIsDirty()).toBe(false);
 	});
@@ -414,8 +425,12 @@ describe('Optimization NEW-A — fast-path unknown+keep+primitive fields', () =>
 			nom: 'Bob',
 			age: 25,
 			extra: 'value',
-		} as any);
-		expect((inst as any).extra).toBe('value');
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: extra field to test keep policy
+		} as unknown as IExtraFields);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect((inst as unknown as Record<string, unknown>)['extra']).toBe(
+			'value'
+		);
 	});
 
 	test('campo unknown numérico se asigna como número, no se convierte', () => {
@@ -429,9 +444,14 @@ describe('Optimization NEW-A — fast-path unknown+keep+primitive fields', () =>
 			nom: 'Dave',
 			age: 1,
 			flag: true,
-		} as any);
-		expect(typeof (inst as any).flag).toBe('boolean');
-		expect((inst as any).flag).toBe(true);
+			// @quickmodel-rule-ignore: no-as-unknown — intentional: extra boolean field to test keep policy
+		} as unknown as IExtraFields);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			typeof (inst as unknown as Record<string, unknown>)['flag']
+		).toBe('boolean');
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect((inst as unknown as Record<string, unknown>)['flag']).toBe(true);
 	});
 
 	test('prototype pollution sigue bloqueada aunque policy sea keep', () => {
@@ -439,14 +459,25 @@ describe('Optimization NEW-A — fast-path unknown+keep+primitive fields', () =>
 			'{"nom":"x","age":1,"__proto__":{"isAdmin":true}}'
 		);
 		new ExtraFields(mal);
-		expect(({} as any).isAdmin).toBeUndefined();
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			({} as unknown as Record<string, unknown>)['isAdmin']
+		).toBeUndefined();
 	});
 
 	test('campo unknown con objeto como valor sigue procesándose (no fast-path)', () => {
 		// objetos no son primitivos → no aplica el fast-path → se asigna igualmente
 		const nested = { sub: 'value' };
-		const inst = new ExtraFields({ nom: 'Eve', age: 5, nested } as any);
-		expect((inst as any).nested).toStrictEqual(nested);
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: extra nested field to test non-primitive path
+		const inst = new ExtraFields({
+			nom: 'Eve',
+			age: 5,
+			nested,
+		} as unknown as IExtraFields);
+		// @quickmodel-rule-ignore: no-as-unknown
+		expect(
+			(inst as unknown as Record<string, unknown>)['nested']
+		).toStrictEqual(nested);
 	});
 });
 
@@ -513,8 +544,9 @@ describe('OPT#4 — lazy WeakSet / lazy recursionContext', () => {
 			address: {
 				street: '123 Main St',
 				city: 'Springfield',
+				// @quickmodel-rule-ignore: no-as-unknown — intentional: string date for Date field
 				createdAt: '2024-01-01',
-			} as any,
+			} as unknown as ICity,
 		});
 
 		expect(person.fullName).toBe('Alice');
@@ -532,16 +564,18 @@ describe('OPT#4 — lazy WeakSet / lazy recursionContext', () => {
 			address: {
 				street: '1 First St',
 				city: 'CityA',
+				// @quickmodel-rule-ignore: no-as-unknown — intentional: string date for Date field
 				createdAt: '2024-01-01',
-			} as any,
+			} as unknown as ICity,
 		});
 		const personB = new PersonAddr({
 			fullName: 'Bob',
 			address: {
 				street: '2 Second St',
 				city: 'CityB',
+				// @quickmodel-rule-ignore: no-as-unknown — intentional: string date for Date field
 				createdAt: '2024-06-15',
-			} as any,
+			} as unknown as ICity,
 		});
 
 		expect(personA.address.city).toBe('CityA');
@@ -569,10 +603,11 @@ describe('OPT#4 — lazy WeakSet / lazy recursionContext', () => {
 	test('@QAlias en modelo no-anidado sigue funcionando (lazy WeakSet no se crea)', () => {
 		// ApiProfile-like test: campos con @QAlias, sin tipos anidados.
 		// El WeakSet lazy NO debe crearse para este modelo.
+		// @quickmodel-rule-ignore: no-as-unknown — intentional: alias keys not in IAliasPrimitive
 		const usr = new AliasPrimitive({
 			first_name: 'Ana',
 			last_name: 'García',
-		} as any);
+		} as unknown as IAliasPrimitive);
 
 		expect(usr.firstName).toBe('Ana');
 		expect(usr.lastName).toBe('García');

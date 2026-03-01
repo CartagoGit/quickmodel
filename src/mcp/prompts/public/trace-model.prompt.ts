@@ -70,7 +70,14 @@ export class QTraceModelPrompt extends QAbstractPrompt<{
 						`**Model code:**\n\`\`\`typescript\n${model_code}\n\`\`\``
 				),
 				this.assistant(
-					'I will set up tracing for this QuickModel step by step:\n\n' +
+					'I will set up tracing for this QuickModel.\n\n' +
+						'### Step 0 — 🤝 Register your work (mandatory)\n\n' +
+						'Before modifying any file:\n' +
+						'1. Call `agent_coordinate` with `action: "check"` — confirm no other agent is writing to the same source area\n' +
+						'2. Call `agent_coordinate` with `action: "claim"`, your `agentId`, task `"trace-model setup"`, and `files` (the path of the model file you will annotate)\n' +
+						'3. If `conflict: true` → **STOP**. Do not modify any file until the conflict is resolved.\n' +
+						'4. Release when done: `agent_coordinate action="release"`\n\n' +
+						'---\n\n' +
 						'1. Call `inspect_model` to understand the model structure, fields, and existing `@QRule` decorators\n' +
 						(goal
 							? `2. Based on the goal ("${goal}"), determine the right trace scope:\n` +

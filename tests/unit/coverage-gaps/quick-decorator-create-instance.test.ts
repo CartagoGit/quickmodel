@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: accessing hidden static __createQuickInstance for white-box coverage test
 import { describe, it, expect } from 'bun:test';
 import { Quick } from '../../../src/core/decorators/quick.decorator';
 import { QModel } from '../../../src/core/models/quick.model';
@@ -13,15 +14,20 @@ describe('Quick Decorator - Internal Methods Coverage', () => {
 			declare id: number;
 		}
 
-		const StaticModel = TestModel as any;
+		// @quickmodel-rule-ignore: no-as-unknown
+		const StaticModel = TestModel as unknown as {
+			__createQuickInstance(data: Record<string, unknown>): TestModel;
+		};
 
 		// 1. Verify existence
-		expect(StaticModel.__createQuickInstance).toBeDefined();
-		expect(typeof StaticModel.__createQuickInstance).toBe('function');
+		const createInstanceFn =
+			StaticModel.__createQuickInstance.bind(StaticModel);
+		expect(createInstanceFn).toBeDefined();
+		expect(typeof createInstanceFn).toBe('function');
 
 		// 2. Execute directly to force coverage
 		const data = { id: 999 };
-		const instance = StaticModel.__createQuickInstance(data);
+		const instance = createInstanceFn(data);
 
 		// 3. Verify result
 		expect(instance).toBeInstanceOf(TestModel);

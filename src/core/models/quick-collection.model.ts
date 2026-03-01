@@ -121,17 +121,17 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 
 	/**
 	 * Creates a `QModelCollection` from a raw data array.
-	 * `$q`-prefixed alias for {@link QModelCollection.from}.
+	 * Alias for {@link QModelCollection.from}.
 	 *
 	 * @param ctor - The `QModel` subclass constructor.
 	 * @param data - Array of raw plain-object rows.
 	 *
 	 * @example
 	 * ```typescript
-	 * const col = QModelCollection.$qFromArray(UserModel, rows);
+	 * const col = QModelCollection.fromArray(UserModel, rows);
 	 * ```
 	 */
-	static $qFromArray<TInstance extends IQCollectionItem>(
+	static fromArray<TInstance extends IQCollectionItem>(
 		ctor: IQModelCtor<TInstance>,
 		data: ReadonlyArray<object>
 	): QModelCollection<TInstance> {
@@ -337,22 +337,21 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * @example
 	 * ```typescript
 	 * const json = col.$qToJSON();
-	 * const restored = QModelCollection.$qFromJSON(UserModel, json);
+	 * const restored = QModelCollection.fromJSON(UserModel, json);
 	 * restored.$qFirst(); // → UserModel instance
 	 * ```
 	 */
-	static $qFromJSON<TInstance extends IQCollectionItem>(
+	static fromJSON<TInstance extends IQCollectionItem>(
 		ctor: IQModelCtor<TInstance>,
 		json: string
 	): QModelCollection<TInstance> {
 		const parsed = JSON.parse(json) as unknown;
 		if (!Array.isArray(parsed)) {
-			throw new TypeError(
-				'[QuickModel] $qFromJSON: expected a JSON array'
-			);
+			throw new TypeError('[QuickModel] fromJSON: expected a JSON array');
 		}
 		return QModelCollection.from(ctor, parsed as ReadonlyArray<object>);
 	}
+
 	/**
 	 * Exports the collection to a CSV-formatted string (RFC 4180).
 	 *
@@ -720,5 +719,128 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 			}
 		}
 		return { valid: errors.length === 0, errors };
+	}
+
+	// ─── Backward-compat aliases (deprecated) ────────────────────────────────
+
+	/** @deprecated Use `$qSize` */
+	get size(): number {
+		return this.$qSize;
+	}
+
+	/** @deprecated Use `$qIsEmpty` */
+	get isEmpty(): boolean {
+		return this.$qIsEmpty;
+	}
+
+	/** @deprecated Use `$qWhere()` */
+	where(
+		predicate: (item: TInstance) => boolean
+	): QModelCollection<TInstance> {
+		return this.$qWhere(predicate);
+	}
+
+	/** @deprecated Use `$qFind()` */
+	find(predicate: (item: TInstance) => boolean): TInstance | undefined {
+		return this.$qFind(predicate);
+	}
+
+	/** @deprecated Use `$qSortBy()` */
+	sortBy(
+		field: keyof TInstance,
+		options?: { desc?: boolean; order?: 'asc' | 'desc' }
+	): QModelCollection<TInstance> {
+		const order = options?.desc ? 'desc' : (options?.order ?? 'asc');
+		return this.$qSortBy(field, { order });
+	}
+
+	/** @deprecated Use `$qPaginate()` */
+	paginate(page: number, pageSize: number): QModelCollection<TInstance> {
+		return this.$qPaginate(page, pageSize);
+	}
+
+	/** @deprecated Use `$qGroupBy()` */
+	groupBy(field: keyof TInstance): Record<string, TInstance[]> {
+		return this.$qGroupBy(field);
+	}
+
+	/** @deprecated Use `$qSerialize()` */
+	serialize(
+		options?: IQSerializationOptions
+	): ReturnType<TInstance['$qSerialize']>[] {
+		return this.$qSerialize(options);
+	}
+
+	/** @deprecated Use `$qCheckAllRules()` */
+	checkAllRules(): IQCollectionRulesResult {
+		return this.$qCheckAllRules();
+	}
+
+	/** @deprecated Use `$qFirst()` */
+	first(): TInstance | undefined {
+		return this.$qFirst();
+	}
+
+	/** @deprecated Use `$qLast()` */
+	last(): TInstance | undefined {
+		return this.$qLast();
+	}
+
+	/** @deprecated Use `$qCount()` */
+	count(predicate?: (item: TInstance) => boolean): number {
+		return this.$qCount(predicate);
+	}
+
+	/** @deprecated Use `$qEvery()` */
+	every(predicate: (item: TInstance) => boolean): boolean {
+		return this.$qEvery(predicate);
+	}
+
+	/** @deprecated Use `$qSome()` */
+	some(predicate: (item: TInstance) => boolean): boolean {
+		return this.$qSome(predicate);
+	}
+
+	/** @deprecated Use `$qMap()` */
+	map<TResult>(transform: (item: TInstance) => TResult): TResult[] {
+		return this.$qMap(transform);
+	}
+
+	/** @deprecated Use `$qFlatMap()` */
+	flatMap<TResult>(transform: (item: TInstance) => TResult[]): TResult[] {
+		return this.$qFlatMap(transform);
+	}
+
+	/** @deprecated Use `$qReduce()` */
+	reduce<TAcc>(
+		reduceFn: (acc: TAcc, item: TInstance) => TAcc,
+		initial: TAcc
+	): TAcc {
+		return this.$qReduce(reduceFn, initial);
+	}
+
+	/** @deprecated Use `$qSum()` */
+	sum(field: keyof TInstance): number {
+		return this.$qSum(field);
+	}
+
+	/** @deprecated Use `$qAvg()` */
+	avg(field: keyof TInstance): number {
+		return this.$qAvg(field);
+	}
+
+	/** @deprecated Use `$qMin()` */
+	min(field: keyof TInstance): TInstance | undefined {
+		return this.$qMin(field);
+	}
+
+	/** @deprecated Use `$qMax()` */
+	max(field: keyof TInstance): TInstance | undefined {
+		return this.$qMax(field);
+	}
+
+	/** @deprecated Use `$qToCSV()` */
+	toCSV(options?: IQCSVOptions): string {
+		return this.$qToCSV(options);
 	}
 }

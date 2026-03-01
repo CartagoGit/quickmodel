@@ -16,10 +16,13 @@ export interface IQPromptMessage {
 
 /**
  * Result returned by a prompt handler.
+ * @internal Satisfies the MCP SDK's `{ [x: string]: unknown }` index signature requirement on the handler return type.
  * @see {@link IQPromptMessage} — individual messages that make up the result
  * @see {@link IQMcpPrompt.execute} — method that returns this type
  */
 export interface IQPromptResult {
+	/** @internal Satisfies the MCP SDK's `{ [x: string]: unknown }` index signature requirement. */
+	[key: string]: unknown;
 	description?: string;
 	messages: IQPromptMessage[];
 }

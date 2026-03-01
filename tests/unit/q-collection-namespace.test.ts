@@ -294,34 +294,34 @@ describe('$qToJSON()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qFromJSON — deserializar colección desde JSON string
+// fromJSON — deserializar colección desde JSON string
 // ---------------------------------------------------------------------------
 
-describe('QModelCollection.$qFromJSON()', () => {
+describe('QModelCollection.fromJSON()', () => {
 	it('crea una colección a partir de un JSON string roundtrip', () => {
 		const original = makeCollection();
 		const json = original.$qToJSON();
-		const restored = QModelCollection.$qFromJSON(UserModel, json);
+		const restored = QModelCollection.fromJSON(UserModel, json);
 		expect(restored).toBeInstanceOf(QModelCollection);
 		expect(restored.$qSize).toBe(3);
 	});
 
 	it('las instancias restauradas son de la clase correcta', () => {
 		const json = makeCollection().$qToJSON();
-		const restored = QModelCollection.$qFromJSON(UserModel, json);
+		const restored = QModelCollection.fromJSON(UserModel, json);
 		expect(restored.$qFirst()).toBeInstanceOf(UserModel);
 	});
 
 	it('preserva los valores de los campos', () => {
 		const json = makeCollection().$qToJSON();
-		const restored = QModelCollection.$qFromJSON(UserModel, json);
+		const restored = QModelCollection.fromJSON(UserModel, json);
 		expect(restored.$qFirst()?.name).toBe('Alice');
 		expect(restored.$qFirst()?.age).toBe(30);
 	});
 
 	it('lanza SyntaxError si el JSON es inválido', () => {
 		expect(() =>
-			QModelCollection.$qFromJSON(UserModel, 'not-valid-json')
+			QModelCollection.fromJSON(UserModel, 'not-valid-json')
 		).toThrow(SyntaxError);
 	});
 });

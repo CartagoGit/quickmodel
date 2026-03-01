@@ -107,6 +107,9 @@ export class QCheckProjectRulesTool extends QAbstractTool<
 			}
 			// Rule 7: no-as-unknown (also applies to tests)
 			this.checkAsUnknown(content, relativePath, errors);
+			// Rule 8: no-as-any does NOT apply to tests — the ESLint test override already
+			// sets @typescript-eslint/no-explicit-any: off for test files, and tests
+			// legitimately need `as any` to simulate malformed inputs and edge-case scenarios.
 		}
 
 		// ── Src-level rules (Rules 2-6) ──────────────────────────────────────

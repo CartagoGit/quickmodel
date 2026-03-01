@@ -113,14 +113,18 @@ export class MapTransformer<K = string, V = unknown>
 			typeof value === 'object' &&
 			value !== null &&
 			'name' in value &&
-			'message' in value &&
-			typeof (value as any).name === 'string' &&
-			typeof (value as any).message === 'string'
+			'message' in value
 		) {
-			const error = new Error((value as any).message);
-			error.name = (value as any).name;
-			if ('stack' in value) error.stack = (value as any).stack as string;
-			return error;
+			const rec = value as Record<string, unknown>;
+			const errName = rec['name'];
+			const errMsg = rec['message'];
+			if (typeof errName === 'string' && typeof errMsg === 'string') {
+				const error = new Error(errMsg);
+				error.name = errName;
+				const errStack = rec['stack'];
+				if (typeof errStack === 'string') error.stack = errStack;
+				return error;
+			}
 		}
 
 		return value;
@@ -547,14 +551,18 @@ export class SetTransformer<V = unknown>
 			typeof value === 'object' &&
 			value !== null &&
 			'name' in value &&
-			'message' in value &&
-			typeof (value as any).name === 'string' &&
-			typeof (value as any).message === 'string'
+			'message' in value
 		) {
-			const error = new Error((value as any).message);
-			error.name = (value as any).name;
-			if ('stack' in value) error.stack = (value as any).stack as string;
-			return error;
+			const rec = value as Record<string, unknown>;
+			const errName = rec['name'];
+			const errMsg = rec['message'];
+			if (typeof errName === 'string' && typeof errMsg === 'string') {
+				const error = new Error(errMsg);
+				error.name = errName;
+				const errStack = rec['stack'];
+				if (typeof errStack === 'string') error.stack = errStack;
+				return error;
+			}
 		}
 
 		return value;

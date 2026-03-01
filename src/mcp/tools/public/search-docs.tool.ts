@@ -30,7 +30,7 @@ export class QSearchDocsTool extends QAbstractTool<
 		'Useful for finding API references, guide sections, or examples without reading full files. ' +
 		'Returns { results[] } — matched lines with context.';
 	schema = z.object({
-		query: z.string().describe('The search term or phrase'),
+		query: z.string().max(200).describe('The search term or phrase'),
 	});
 
 	/**

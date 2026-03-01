@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: accessing private convertToInterfaceFormat method directly for white-box tests
 import { describe, it, expect } from 'bun:test';
 import { ToInterfaceService } from '../../../src/core/services/to-interface.service';
 import { QModel } from '../../../src/core/models/quick.model';
@@ -6,8 +7,22 @@ import { Quick } from '../../../src/core/decorators/quick.decorator';
 describe('ToInterfaceService Coverage Gaps - Deep Dive', () => {
 	// Helper access to private method
 	const service = new ToInterfaceService();
-	const convert = (current: any, original: any) => {
-		return (service as any).convertToInterfaceFormat(current, original, {
+	const convert = (current: unknown, original: unknown) => {
+		// @quickmodel-rule-ignore: no-as-unknown
+		return (
+			service as unknown as {
+				convertToInterfaceFormat(
+					current: unknown,
+					original: unknown,
+					opts: {
+						seen: WeakSet<object>;
+						isProduction: boolean;
+						propertyKey?: string;
+						depth: number;
+					}
+				): unknown;
+			}
+		).convertToInterfaceFormat(current, original, {
 			seen: new WeakSet(),
 			isProduction: false,
 			propertyKey: 'testProp',

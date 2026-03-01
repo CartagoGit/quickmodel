@@ -67,7 +67,14 @@ export class QDebugModelPrompt extends QAbstractPrompt<{
 						dataSection
 				),
 				this.assistant(
-					'I will debug this QuickModel step by step:\n\n' +
+					'I will debug this QuickModel step by step.\n\n' +
+						'### Step 0 — 🤝 Register your work (mandatory)\n\n' +
+						'Before writing the corrected file:\n' +
+						'1. Call `agent_coordinate` with `action: "check"` — confirm no other agent is writing to the same source area\n' +
+						'2. Call `agent_coordinate` with `action: "claim"`, your `agentId`, task `"debug-model: fix"`, and `files` (the path of the model file you will correct)\n' +
+						'3. If `conflict: true` → **STOP**. Do not modify any file until the conflict is resolved.\n' +
+						'4. Release when done: `agent_coordinate action="release"`\n\n' +
+						'---\n\n' +
 						'1. Call `inspect_model` to analyze the model structure, decorators, and configuration\n' +
 						(error
 							? '2. Call `explain_error` to translate the error into plain language and identify the root cause\n'
