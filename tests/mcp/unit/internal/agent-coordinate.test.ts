@@ -1,10 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { QAgentCoordinateTool } from '../../../../src/mcp/tools/internal/agent-coordinate.tool';
 import { join } from 'path';
-import { rmSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import {
+	rmSync,
+	existsSync,
+	readFileSync,
+	writeFileSync,
+	mkdirSync,
+	unlinkSync,
+} from 'fs';
 
 const TMP_REGISTRY = join(process.cwd(), 'tests', 'temp_agent_registry.json');
 const TMP_STATUS = join(process.cwd(), 'tests', 'temp_agent_status.md');
+const TMP_LOCK = TMP_REGISTRY + '.lock';
 
 function makeTool(ttlMs?: number): QAgentCoordinateTool {
 	const tool = new QAgentCoordinateTool();
@@ -19,12 +27,14 @@ describe('QAgentCoordinateTool', () => {
 		QAgentCoordinateTool._resetForTest();
 		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
 		if (existsSync(TMP_STATUS)) rmSync(TMP_STATUS);
+		if (existsSync(TMP_LOCK)) rmSync(TMP_LOCK);
 	});
 
 	afterEach(() => {
 		QAgentCoordinateTool._resetForTest();
 		if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
 		if (existsSync(TMP_STATUS)) rmSync(TMP_STATUS);
+		if (existsSync(TMP_LOCK)) rmSync(TMP_LOCK);
 	});
 
 	// ── Metadata ────────────────────────────────────────────────────────────
@@ -1032,6 +1042,76 @@ describe('QAgentCoordinateTool', () => {
 			const mdAfter = readFileSync(TMP_STATUS, 'utf-8');
 			// The _Updated_ timestamp inside the .md must have changed
 			expect(mdAfter).not.toBe(mdBefore);
+		});
+	});
+
+	// ── lock / cross-process mutex ─────────────────────────────────────────
+
+	describe('lock / cross-process mutex', () => {
+		it('lock file is removed after a successful execute()', async () => {
+			const tool = makeTool();
+			await tool.execute({ action: 'check' });
+			expect(existsSync(TMP_LOCK)).toBe(false);
+		});
+
+		it('lock file is removed even when execute() returns a non-trivial result', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task',
+				files: ['src/**'],
+			});
+			await tool.execute({ action: 'release', agentId: 'agent-A' });
+			expect(existsSync(TMP_LOCK)).toBe(false);
+		});
+
+		it('sequential execute() calls complete without deadlock', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'first',
+				files: [],
+			});
+			const res = await tool.execute({ action: 'check' });
+			await tool.execute({ action: 'release', agentId: 'agent-A' });
+			expect(res.total).toBe(1);
+			expect(existsSync(TMP_LOCK)).toBe(false);
+		});
+
+		it('auto-removes a stale lock and executes successfully', async () => {
+			const tool = makeTool();
+			tool._lockRetries = 3;
+			tool._lockRetryMs = 5;
+			tool._lockStaleMs = 0; // every lock is immediately stale
+			// Simulate a crashed process that left its lock behind
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(TMP_LOCK, '', 'utf-8');
+			// execute() must clear the stale lock and complete normally
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+			expect(existsSync(TMP_LOCK)).toBe(false);
+		});
+
+		it('throws after max retries when a fresh lock is held', async () => {
+			const tool = makeTool();
+			tool._lockRetries = 2;
+			tool._lockRetryMs = 5;
+			tool._lockStaleMs = 60_000; // lock is considered fresh for 1 min
+			// Create a "held" lock file (simulating another active process)
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(TMP_LOCK, '', 'utf-8');
+			let thrown = false;
+			try {
+				await tool.execute({ action: 'check' });
+			} catch (err) {
+				thrown = true;
+				expect((err as Error).message).toContain('lock');
+			}
+			expect(thrown).toBe(true);
+			// Manually release so afterEach cleanup works
+			unlinkSync(TMP_LOCK);
 		});
 	});
 });

@@ -1,6 +1,15 @@
 import { z } from '@mcp/deps';
 import { QAbstractTool } from '../abstract-tool';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import {
+	readFileSync,
+	writeFileSync,
+	existsSync,
+	mkdirSync,
+	openSync,
+	closeSync,
+	unlinkSync,
+	statSync,
+} from 'fs';
 import { dirname, join } from 'path';
 
 /**
@@ -279,18 +288,21 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			.describe('Operation: claim | check | release | update | purge'),
 		agentId: z
 			.string()
+			.max(100)
 			.optional()
 			.describe(
 				'Unique agent identifier, e.g. "copilot-session-1". Required for claim, release, update.'
 			),
 		task: z
 			.string()
+			.max(200)
 			.optional()
 			.describe(
 				'Short task description, e.g. "migrate docs $qm". Required for claim.'
 			),
 		files: z
-			.array(z.string())
+			.array(z.string().max(500))
+			.max(50)
 			.optional()
 			.describe(
 				'File paths or glob patterns to lock, e.g. ["docs-vitepress/en/**", "src/core/**"]. ' +
@@ -298,6 +310,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			),
 		ttlMs: z
 			.number()
+			.max(1_800_000)
 			.optional()
 			.describe(
 				'Custom TTL in milliseconds for this claim. Defaults to 300000 (5 minutes). ' +
@@ -332,6 +345,26 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	 * Override in tests to avoid polluting `tmp/`.
 	 */
 	_statusPath: string = join(process.cwd(), 'tmp', 'agent-status.md');
+
+	/**
+	 * @internal Maximum number of attempts to acquire the file lock before giving up.
+	 * Each attempt waits `_lockRetryMs` ms. Default: 20 × 10 ms = 200 ms max wait.
+	 * Override in tests to make contention scenarios fail faster.
+	 */
+	_lockRetries: number = 20;
+
+	/**
+	 * @internal Milliseconds to wait between lock acquisition attempts.
+	 * @see {@link _lockRetries}
+	 */
+	_lockRetryMs: number = 10;
+
+	/**
+	 * @internal A lock file older than this many ms is considered stale (the owning process
+	 * crashed without releasing). It will be removed automatically and the lock re-attempted.
+	 * Default: 5 s.
+	 */
+	_lockStaleMs: number = 5_000;
 
 	// ── Singleton ticker (static — one per process, cannot accumulate) ────────
 
@@ -383,6 +416,60 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		QAgentCoordinateTool._tickerStatusPath = null;
 		QAgentCoordinateTool._tickerIntervalMs = 30_000;
 		QAgentCoordinateTool._inactivityThresholdMs = 0;
+	}
+
+	// ── File-level mutex (cross-process safety) ─────────────────────────────
+
+	/**
+	 * Acquires an exclusive file lock via `open(lockPath, 'wx')` — atomically guaranteed
+	 * by the OS. Retries up to `_lockRetries` times (`_lockRetryMs` ms apart) before
+	 * throwing. Stale locks (older than `_lockStaleMs`) are cleared automatically.
+	 *
+	 * Serializes concurrent registry writes across multiple VS Code windows: each window
+	 * runs its own Extension Host + MCP server process and could otherwise produce
+	 * corrupted writes via interleaved read-modify-write cycles.
+	 * @internal
+	 */
+	private async _acquireLock(): Promise<void> {
+		const lockPath = this._registryPath + '.lock';
+		for (let idx = 0; idx < this._lockRetries; idx++) {
+			try {
+				closeSync(openSync(lockPath, 'wx'));
+				return; // lock acquired
+			} catch {
+				// Check if the existing lock is stale (owner process crashed)
+				try {
+					const mtime = statSync(lockPath).mtimeMs;
+					if (Date.now() - mtime > this._lockStaleMs) {
+						unlinkSync(lockPath);
+						continue; // retry immediately after clearing stale lock
+					}
+				} catch {
+					// Lock was removed between attempts — retry
+				}
+				if (idx === this._lockRetries - 1) {
+					throw new Error(
+						`agent_coordinate: failed to acquire registry lock after ${this._lockRetries} retries`
+					);
+				}
+				await new Promise<void>((resolve) =>
+					setTimeout(resolve, this._lockRetryMs)
+				);
+			}
+		}
+	}
+
+	/**
+	 * Releases the file lock by removing the lock file. Always called in `finally` — never
+	 * throws. A missing lock file (already removed) is silently ignored.
+	 * @internal
+	 */
+	private _releaseLock(): void {
+		try {
+			unlinkSync(this._registryPath + '.lock');
+		} catch {
+			// Already released or never acquired — fine
+		}
 	}
 
 	// ── Registry I/O ──────────────────────────────────────────────────────────
@@ -856,43 +943,47 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		ttlMs?: number;
 		force?: boolean;
 	}): Promise<ICoordinateResult> {
-		await Promise.resolve();
-		const { reg, purgedStale } = this.readRegistry();
+		await this._acquireLock();
+		try {
+			const { reg, purgedStale } = this.readRegistry();
 
-		// ── Implicit heartbeat ────────────────────────────────────────────────
-		// Any check() call from an agent that already has a claim silently refreshes
-		// their TTL, simulating websocket-style "connection = liveness". We skip this
-		// for claim (handler sets it itself), release, and purge (intentional removals).
-		const { agentId, action } = args;
-		if (agentId && action === 'check') {
-			const entry = reg.agents[agentId];
-			if (entry) {
-				reg.agents[agentId] = {
-					...entry,
-					updatedAt: new Date().toISOString(),
-					expiresAt: this.makeExpiry(args.ttlMs),
-				};
-				this.saveRegistry(reg);
+			// ── Implicit heartbeat ────────────────────────────────────────────────
+			// Any check() call from an agent that already has a claim silently refreshes
+			// their TTL, simulating websocket-style "connection = liveness". We skip this
+			// for claim (handler sets it itself), release, and purge (intentional removals).
+			const { agentId, action } = args;
+			if (agentId && action === 'check') {
+				const entry = reg.agents[agentId];
+				if (entry) {
+					reg.agents[agentId] = {
+						...entry,
+						updatedAt: new Date().toISOString(),
+						expiresAt: this.makeExpiry(args.ttlMs),
+					};
+					this.saveRegistry(reg);
+				}
 			}
-		}
 
-		switch (args.action) {
-			case 'check':
-				return this.handleCheck(reg, purgedStale);
-			case 'release':
-				return this.handleRelease(reg, args.agentId);
-			case 'update':
-				return this.handleUpdate(reg, args.agentId, args.ttlMs);
-			case 'purge':
-				return this.handlePurge(reg, args.agentId);
-			default:
-				return this.handleClaim(reg, {
-					agentId: args.agentId,
-					task: args.task,
-					files: args.files ?? [],
-					ttlMs: args.ttlMs,
-					force: args.force,
-				});
+			switch (args.action) {
+				case 'check':
+					return this.handleCheck(reg, purgedStale);
+				case 'release':
+					return this.handleRelease(reg, args.agentId);
+				case 'update':
+					return this.handleUpdate(reg, args.agentId, args.ttlMs);
+				case 'purge':
+					return this.handlePurge(reg, args.agentId);
+				default:
+					return this.handleClaim(reg, {
+						agentId: args.agentId,
+						task: args.task,
+						files: args.files ?? [],
+						ttlMs: args.ttlMs,
+						force: args.force,
+					});
+			}
+		} finally {
+			this._releaseLock();
 		}
 	}
 }
