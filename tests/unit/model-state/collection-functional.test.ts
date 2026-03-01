@@ -335,3 +335,24 @@ describe('QModelCollection — flatMap()', () => {
 		expect(col.flatMap((prod) => [prod.name])).toEqual([]);
 	});
 });
+
+describe('QModelCollection — avg()', () => {
+	it('avg() returns the average value of a numeric field', () => {
+		const col = QModelCollection.from(ProductModel, PRODUCTS);
+		// prices: 1.5, 0.5, 0.8, 1.2, 3.0 → sum=7.0 / 5 = 1.4
+		const result = col.avg('price');
+		expect(result).toBeCloseTo(1.4);
+	});
+
+	it('avg() on empty collection returns 0', () => {
+		const col = QModelCollection.from(ProductModel, []);
+		expect(col.avg('price')).toBe(0);
+	});
+
+	it('avg() by stock field', () => {
+		const col = QModelCollection.from(ProductModel, PRODUCTS);
+		// stocks: 100, 200, 50, 30, 10 → sum=390 / 5 = 78
+		const result = col.avg('stock');
+		expect(result).toBeCloseTo(78);
+	});
+});

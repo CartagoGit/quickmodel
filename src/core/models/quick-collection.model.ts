@@ -517,6 +517,23 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	}
 
 	/**
+	 * Returns the **arithmetic average** of a numeric field across all instances.
+	 * Returns `0` for an empty collection.
+	 *
+	 * @param field - Name of a numeric property on the model.
+	 *
+	 * @example
+	 * ```typescript
+	 * col.avg('price'); // → 2.3
+	 * col.avg('score'); // → 87.5
+	 * ```
+	 */
+	avg(field: keyof TInstance): number {
+		if (this.#items.length === 0) return 0;
+		return this.sum(field) / this.#items.length;
+	}
+
+	/**
 	 * Returns the instance with the **minimum** value of `field`, or `undefined` when empty.
 	 *
 	 * @param field - Name of a numeric property (or string-comparable property) on the model.

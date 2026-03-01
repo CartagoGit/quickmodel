@@ -62,6 +62,7 @@ export type {
 	IQCollectionRulesResult,
 	IQCSVOptions,
 } from './core/models/quick-collection.model';
+export { SchemaToModelService } from './core/services/schema-to-model.service';
 
 // ============================================================================
 // AUTO-REGISTRATION — backward compatibility for the main 'quickmodel' entry.
