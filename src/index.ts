@@ -57,6 +57,7 @@ export type {
 } from './core/interfaces/serialization-types.interface';
 export type { IQAdvancedOptions } from './core/interfaces/quick-options.interface';
 export type { IQValidateOptions } from './core/models/quick.model';
+export type { IQMHandle } from './core/interfaces/qm-handle.interface';
 export { QModelCollection } from './core/models/quick-collection.model';
 export type {
 	IQCollectionRulesResult,

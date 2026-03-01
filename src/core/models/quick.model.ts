@@ -122,6 +122,12 @@ import type {
 	IFromSchemaFormat,
 	IFromSchemaInput,
 } from '@/core/types/schema-types';
+import type {
+	IQValidationReport,
+	IQValidateOptions,
+	IQValidateResult,
+} from '@/core/types/validation-types';
+import type { IQMHandle } from '@/core/interfaces/qm-handle.interface';
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
 // Metadata is immutable after decorators run (class-definition time), so
@@ -180,69 +186,13 @@ const _QDEFAULT_FIELDS_CACHE = new WeakMap<Function, readonly string[]>();
 const _EMPTY_FIELDS: readonly string[] = Object.freeze([]);
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Combined validation report from both `checkIntegrity()` and `checkRules()`.
- * Returned by {@link QModel.validationReport}.
- *
- * @see {@link QModel.validationReport} — the method that produces this report
- * @see {@link IQRulesResult} — the `rules` field type
- */
-export interface IQValidationReport {
-	/**
-	 * `true` when both integrity checks and all `@QRule` predicates pass.
-	 * Equivalent to `checkIntegrity().length === 0 && checkRules().valid`.
-	 */
-	valid: boolean;
-	/** Results from transformer-level integrity checks. Empty array = all pass. */
-	integrity: IQIntegrityResult[];
-	/** Results from `@QRule` business-logic predicates. */
-	rules: IQRulesResult;
-}
-
-/**
- * Options accepted by {@link QModel.validate}.
- *
- * @see {@link QModel.validate} — unified validation method
- */
-export interface IQValidateOptions {
-	/**
-	 * When `true`, runs async predicates via `checkRulesAsync()` and returns a
-	 * `Promise<IQValidateResult>`. When omitted or `false`, returns `IQValidateResult`
-	 * synchronously.
-	 */
-	async?: boolean;
-	/**
-	 * When provided, only rules associated with these groups (via `@QGroup`) are
-	 * evaluated. Combines results from all listed groups.
-	 */
-	groups?: string[];
-	/**
-	 * Maximum time (ms) each async predicate may take before being marked as
-	 * timed out. Only meaningful when `async: true`.
-	 */
-	timeoutMs?: number;
-	/**
-	 * Custom error message used when a predicate exceeds `timeoutMs`.
-	 * Only meaningful when `async: true` and `timeoutMs` is set.
-	 */
-	timeoutMessage?: string;
-	/**
-	 * Execution mode for async predicates.
-	 * - `'parallel'` *(default)* — all predicates run concurrently.
-	 * - `'serial'` — predicates run sequentially in field-declaration order.
-	 * Only meaningful when `async: true`.
-	 */
-	mode?: 'parallel' | 'serial';
-}
-
-/**
- * Result returned by {@link QModel.validate}.
- *
- * Has the same shape as {@link IQValidationReport}.
- *
- * @see {@link IQValidationReport} — identical structure
- */
-export type IQValidateResult = IQValidationReport;
+// Validation report types are defined in a dedicated file so that
+// qm-handle.interface.ts can import them without a circular dependency.
+export type {
+	IQValidationReport,
+	IQValidateOptions,
+	IQValidateResult,
+} from '@/core/types/validation-types';
 
 // Internal exports only (QType is implementation detail)
 // Public API uses only @Quick() decorator
@@ -830,6 +780,64 @@ export abstract class QModel<
 	}
 
 	/**
+	 * Returns the {@link IQMHandle} — a namespace object that groups all
+	 * QuickModel infrastructure methods under a single `$qm` property.
+	 *
+	 * Using `$qm` keeps every other instance property available for
+	 * user-defined domain data, eliminating reserved-word collisions with
+	 * names like `copy`, `diff`, `validate`, `history`, etc.
+	 *
+	 * In v1.x both the root-level methods **and** `$qm` coexist.
+	 * Root-level methods are marked `@deprecated` and will be removed in v2.0.0.
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ name: 'Alice', age: 30 });
+	 *
+	 * user.$qm.patch({ age: 31 });
+	 * user.$qm.isDirty('age');          // true
+	 * const clone = user.$qm.copy({ name: 'Bob' });
+	 * const result = user.$qm.validate();
+	 * ```
+	 *
+	 * @see {@link IQMHandle} — full API surface of this namespace handle
+	 */
+	get $qm(): IQMHandle<TInterface, TAliasMap, this> {
+		const ref = this;
+		return {
+			serialize: (opt?) => ref.serialize(opt),
+			toFormData: (opt?) => ref.toFormData(opt),
+			toReadableStream: (opt) => {
+				if ('multipart' in opt && opt.multipart) {
+					return ref.toReadableStream(opt);
+				}
+				return ref.toReadableStream(opt);
+			},
+			isDirty: (fld?) => ref.isDirty(fld),
+			getChanges: () => ref.getChanges(),
+			patch: (dat) => ref.patch(dat),
+			copy: (par?) => ref.copy(par),
+			diff: (oth) => ref.diff(oth),
+			equals: (oth) => ref.equals(oth),
+			hasIntegrity: () => ref.hasIntegrity(),
+			isValid: () => ref.isValid(),
+			isValidAsync: (opt?) => ref.isValidAsync(opt),
+			checkRules: () => ref.checkRules(),
+			checkRulesAsync: (opt?) => ref.checkRulesAsync(opt),
+			validationReport: () => ref.validationReport(),
+			validationReportAsync: (opt?) => ref.validationReportAsync(opt),
+			validate: (opt?) => {
+				if (opt?.async === true) {
+					return ref.validate({ ...opt, async: true as const });
+				}
+				return ref.validate(
+					opt as IQValidateOptions & { async?: false }
+				);
+			},
+		};
+	}
+
+	/**
 	 * Builds a `FormData` from the model's current property values.
 	 *
 	 * Binary fields (`File`, `Blob`, `ArrayBuffer`, `Uint8Array`) are encoded
@@ -853,6 +861,7 @@ export abstract class QModel<
 	 * ```
 	 *
 	 * @group Serialization
+	 * @deprecated Use `instance.$qm.toFormData()` instead. Will be removed in v2.0.0.
 	 */
 	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
 		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
@@ -927,6 +936,7 @@ export abstract class QModel<
 	 * ```
 	 *
 	 * @group Serialization
+	 * @deprecated Use `instance.$qm.toReadableStream()` instead. Will be removed in v2.0.0.
 	 */
 	toReadableStream(options: IToReadableStreamMultipart): IQMultipartStream;
 	toReadableStream(
@@ -2082,6 +2092,8 @@ export abstract class QModel<
 	 * const partial = user.serialize(undefined, { pick: ['id', 'name'] });
 	 * // { id: '1', name: 'John' }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.serialize()` instead. Will be removed in v2.0.0.
 	 */
 	serialize(
 		options?: IQSerializationOptions
@@ -2251,6 +2263,8 @@ export abstract class QModel<
 	 * //   { field: 'email', message: 'Must be a valid email',              value: 'notanemail' }
 	 * // ]
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.checkRules()` instead. Will be removed in v2.0.0.
 	 */
 	checkRules(): IQRulesResult {
 		return qCheckRules(this);
@@ -2273,6 +2287,8 @@ export abstract class QModel<
 	 *   console.error('Type integrity violated');
 	 * }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.hasIntegrity()` instead. Will be removed in v2.0.0.
 	 */
 	hasIntegrity(): boolean {
 		return this.checkIntegrity().length === 0;
@@ -2302,6 +2318,8 @@ export abstract class QModel<
 	 *   // handle errors...
 	 * }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.isValid()` instead. Will be removed in v2.0.0.
 	 */
 	isValid(): boolean {
 		return this.hasIntegrity() && this.checkRules().valid;
@@ -2330,6 +2348,8 @@ export abstract class QModel<
 	 *   console.log(report.rules.errors);
 	 * }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.validationReport()` instead. Will be removed in v2.0.0.
 	 */
 	validationReport(): IQValidationReport {
 		const integrity = this.checkIntegrity();
@@ -2384,6 +2404,8 @@ export abstract class QModel<
 	 * ```typescript
 	 * const result = await user.checkRulesAsync({ mode: 'serial' });
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.checkRulesAsync()` instead. Will be removed in v2.0.0.
 	 */
 	async checkRulesAsync(
 		options?: IQRulesAsyncOptions
@@ -2410,6 +2432,8 @@ export abstract class QModel<
 	 *   console.log(report.integrity, report.rules.errors);
 	 * }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.isValidAsync()` instead. Will be removed in v2.0.0.
 	 */
 	async isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
 		return (
@@ -2435,6 +2459,8 @@ export abstract class QModel<
 	 *   console.log('Rules:', report.rules.errors);
 	 * }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.validationReportAsync()` instead. Will be removed in v2.0.0.
 	 */
 	async validationReportAsync(
 		options?: IQRulesAsyncOptions
@@ -2477,6 +2503,8 @@ export abstract class QModel<
 	 * ```typescript
 	 * const result = user.validate({ groups: ['personal'] });
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.validate()` instead. Will be removed in v2.0.0.
 	 */
 	validate(
 		options: IQValidateOptions & { async: true }
@@ -3013,6 +3041,8 @@ export abstract class QModel<
 	 * user.isDirty('name');  // true  (name changed)
 	 * user.isDirty('age');   // false (age unchanged)
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.isDirty()` instead. Will be removed in v2.0.0.
 	 */
 	isDirty(field?: string): boolean {
 		if (field === undefined) {
@@ -3123,6 +3153,8 @@ export abstract class QModel<
 	 * // Use for PATCH request
 	 * await api.patch(`/users/${user.id}`, changes);
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.getChanges()` instead. Will be removed in v2.0.0.
 	 */
 	getChanges(): Partial<IQSerializedInterface<TInterface>> {
 		const current = this.toInterface();
@@ -3204,6 +3236,8 @@ export abstract class QModel<
 	 * console.log(user.age); // 31
 	 * console.log(user.email); // 'john@example.com' (unchanged)
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.patch()` instead. Will be removed in v2.0.0.
 	 */
 	patch(patch: Partial<IQModelData<TInterface>>): void {
 		// @QReadonly guard — reject any patch that targets an immutable field
@@ -3284,6 +3318,8 @@ export abstract class QModel<
 	 * updated.age;   // 30      ← fields not in partial are preserved
 	 * updated.isDirty(); // false
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.copy()` instead. Will be removed in v2.0.0.
 	 */
 	copy(partial?: Partial<IQModelData<TInterface>>): this {
 		// @QReadonly guard — reject copy() calls that include an immutable field
@@ -3383,6 +3419,8 @@ export abstract class QModel<
 	 * a.diff(b);
 	 * // { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.diff()` instead. Will be removed in v2.0.0.
 	 */
 	diff(other: this): Record<string, { before: unknown; after: unknown }> {
 		const selfData = this.serialize() as Record<string, unknown>;
@@ -3424,6 +3462,8 @@ export abstract class QModel<
 	 * a.name = 'Jane';
 	 * a.equals(b); // false
 	 * ```
+	 *
+	 * @deprecated Use `instance.$qm.equals()` instead. Will be removed in v2.0.0.
 	 */
 	equals(other: this): boolean {
 		return Object.keys(this.diff(other)).length === 0;
