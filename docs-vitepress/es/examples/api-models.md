@@ -51,7 +51,7 @@ async function createUser(userData: Partial<IUser>): Promise<User> {
 	const response = await fetch('https://api.example.com/users', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(user.toJSON()),
+		body: user.toJSON(), // toJSON() ya devuelve el string JSON
 	});
 
 	const data = await response.json();
@@ -62,7 +62,7 @@ async function updateUser(user: User): Promise<User> {
 	const response = await fetch(`https://api.example.com/users/${user.id}`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(user.toJSON()),
+		body: user.toJSON(),
 	});
 
 	const data = await response.json();
@@ -199,7 +199,7 @@ class UserService {
 		const response = await fetch(`${this.baseURL}/users`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(user.toJSON()),
+			body: user.toJSON(),
 		});
 		const data = await response.json();
 		return new User(data);
@@ -209,7 +209,7 @@ class UserService {
 		const response = await fetch(`${this.baseURL}/users/${user.id}`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(user.toJSON()),
+			body: user.toJSON(),
 		});
 		const data = await response.json();
 		return new User(data);

@@ -109,6 +109,59 @@ describe('New Internal Tools', () => {
 			expect(content).toContain('execute');
 			expect(content).toContain("import { z } from '@mcp/deps'");
 		});
+
+		it('generates test skeleton for transformer when no location is given', async () => {
+			const tool = new QScaffoldFeatureTool();
+			const written: Record<string, string> = {};
+			const mockFs = {
+				existsSync: () => false,
+				mkdirSync: () => undefined,
+				writeFileSync: (pth: string, cnt: string) => {
+					written[pth] = cnt;
+				},
+			};
+			(tool as any)._fs = mockFs;
+
+			const result = await tool.execute({
+				type: 'transformer',
+				name: 'my-type',
+			});
+
+			expect(result.testPath).toContain('my-type.transformer.test.ts');
+			expect(result.message).toContain('Scaffolded');
+			const testContent = Object.values(written).find((cnt) =>
+				cnt.includes('MyTypeTransformer')
+			);
+			expect(testContent).toBeDefined();
+			expect(testContent).toContain('deserialize');
+			expect(testContent).toContain('serialize');
+		});
+
+		it('generates test skeleton for tool when no location is given', async () => {
+			const tool = new QScaffoldFeatureTool();
+			const written: Record<string, string> = {};
+			const mockFs = {
+				existsSync: () => false,
+				mkdirSync: () => undefined,
+				writeFileSync: (pth: string, cnt: string) => {
+					written[pth] = cnt;
+				},
+			};
+			(tool as any)._fs = mockFs;
+
+			const result = await tool.execute({
+				type: 'tool',
+				name: 'my-tool',
+			});
+
+			expect(result.testPath).toContain('my-tool.tool.test.ts');
+			expect(result.message).toContain('Scaffolded');
+			// The test file is the one at result.testPath
+			const testContent = written[result.testPath];
+			expect(testContent).toBeDefined();
+			expect(testContent).toContain('import { describe, it, expect }');
+			expect(testContent).toContain('QMyToolTool');
+		});
 	});
 
 	describe('QCheckApiCompatibilityTool', () => {

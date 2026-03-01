@@ -2,7 +2,7 @@
 
 > **Fecha de revisión:** 1 de marzo de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
-> **Estado actual:** 4358+ tests passing | Cobertura >97% líneas | v1.0.0 | 37 guías EN+ES
+> **Estado actual:** 4358+ tests passing | Cobertura >97% líneas | v1.0.0 | 38 guías EN+ES
 
 > **Documento único de planificación.** Contiene el historial resumido de tareas completadas y el backlog de
 > propuestas para sprints futuros (Mar 2026+).
@@ -12,7 +12,8 @@
 
 ```
 ✅ Completadas: Tasks #1–#58 + Task #48 + Propuestas A–H, J, L, M–Q, R–V (todas las activas)
-⚠️ Diferidas:  I (audit trail), K (plugin system)
+📋 Planificadas: I ($qm.history / audit trail), W (namespace $qm)
+⚠️ Diferidas:   K (plugin system)
 ```
 
 ---
@@ -235,26 +236,37 @@ class User extends QModel<IUser> {
 
 ---
 
-### Propuesta I — Audit trail / historial de cambios
+### Propuesta I — `$qm.history` / Audit Trail _(Planificada para v2.0.0)_
 
-**Prioridad:** 🟢 Baja — ⚠️ **CUESTIONABLE**
-**Impacto:** Medio — CRUD empresariales
-**Esfuerzo estimado:** 4-5 horas | **Tests estimados:** ~20
+**Prioridad:** 🟡 Media
+**Impacto:** Medio-alto — CRUD empresariales, trazabilidad de mutaciones
+**Esfuerzo estimado:** ~7 horas | **Tests estimados:** ~25
+**Depende de:** Propuesta W (namespace `$qm`)
 
-> **⚠️ Overlap significativo** con funcionalidad ya existente: `isDirty()`, `getChanges()`, y la futura Propuesta B (`diff()`). La combinación `copy()` + `diff()` + `@QVersion` cubre el 90% de estos casos. **Considerar eliminar** o diferir hasta que B, M y N estén implementadas y se evalúe si sigue existiendo un hueco real.
+> ✅ **Re-evaluada y desbloqueada** (1 Mar 2026). El diseño anterior tenía dos problemas: (1) la propiedad `history` colisionaría con campos de dominio del usuario, y (2) parecía solapar con `isDirty()`/`getChanges()`. Ambos resueltos: (1) se ubica bajo `$qm.history` por diseño, y (2) el audit trail cubre la dimensión **temporal** (traza cronológica de mutaciones), que `getChanges()` y `diff()` no cubren.
 
-Historial completo de mutaciones en una instancia. Opt-in vía `QConfig` para no penalizar rendimiento por defecto.
+**Especificación completa:** [AUDIT-TRAIL.md](./AUDIT-TRAIL.md)
 
 ```typescript
-QConfig.configure({ audit: { enabled: true, maxEntries: 100 } });
+// Opt-in por clase — zero overhead si no se activa
+@Quick({ name: 'string' }, { audit: { enabled: true, maxEntries: 50 } })
+class Contract extends QModel<IContract> {
+	declare name: string;
+}
 
-const user = new User({ id: 1, name: 'Alice' });
-user.copy({ name: 'Alice M.' });
+contract.$qm.patch({ name: 'v2' });
+contract.$qm.patch({ name: 'v3' });
 
-user.history;
-// → [{ field: 'name', from: 'Alice', to: 'Alice M.', at: Date }]
+contract.$qm.history.value;
+// → [
+//   { field: 'name', from: 'v1', to: 'v2', at: Date, method: 'patch' },
+//   { field: 'name', from: 'v2', to: 'v3', at: Date, method: 'patch' },
+// ]
 
-user.clearHistory();
+contract.$qm.history.stop(); // pausa grabación
+contract.$qm.history.start(); // reanuda
+contract.$qm.history.clear(); // vacía entradas
+contract.$qm.history.configure({ maxEntries: 20 });
 ```
 
 ---
@@ -429,34 +441,34 @@ bunx quickmodel generate integration prisma
 
 ## 📊 Resumen priorizado de propuestas
 
-| Prop  | Nombre                                                                     | Prioridad       | Esfuerzo | Impacto    | Relación con existente                  |
-| ----- | -------------------------------------------------------------------------- | --------------- | -------- | ---------- | --------------------------------------- |
-| ~~A~~ | ~~`@QSensitive`~~                                                          | ✅ Completada   | —        | —          | qsensitive.decorator.ts — 2026          |
-| ~~B~~ | ~~`QModel.diff()` + `equals()`~~                                           | ✅ Completada   | —        | —          | quick.model.ts:3031 — 1 Mar 2026        |
-| ~~C~~ | ~~`getSchema('valibot'/'yup')`~~                                           | ✅ Completada   | —        | —          | valibot/yup generators — 2026           |
-| ~~D~~ | ~~`QModelCollection<T>`~~                                                  | ✅ Completada   | —        | —          | quick-collection.model.ts — 2026        |
-| ~~M~~ | ~~`QModel.patch()`~~                                                       | ✅ Completada   | —        | —          | quick.model.ts:2886 — 1 Mar 2026        |
-| ~~O~~ | ~~`validate()` unificado~~                                                 | ✅ Completada   | —        | —          | quick.model.ts:2159 — 1 Mar 2026        |
-| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada   | —        | —          | generate.command.ts — 2026              |
-| ~~S~~ | ~~`getSchema('prisma')`~~                                                  | ✅ Completada   | —        | —          | prisma-schema-generator — 2026          |
-| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada   | —        | —          | Task #58 — 28 Feb 2026                  |
-| ~~T~~ | ~~`QModel.fromURL(searchParams)`~~                                         | ✅ Completada   | —        | —          | quick.model.ts:700 — 1 Mar 2026         |
-| ~~N~~ | ~~`@QVersion` + migrations~~                                               | ✅ Completada   | —        | —          | qversion.decorator.ts — 1 Mar 2026      |
-| ~~E~~ | ~~I18n mensajes~~                                                          | ✅ Completada   | —        | —          | i18n resolver en QConfig — 1 Mar 2026   |
-| ~~U~~ | ~~`QModelCollection.toCSV()`~~                                             | ✅ Completada   | —        | —          | quick-collection.model.ts — 1 Mar 2026  |
-| ~~F~~ | ~~`@QDefault`~~                                                            | ✅ Completada   | —        | —          | qdefault.decorator.ts — 1 Mar 2026      |
-| ~~P~~ | ~~`@QReadonly`~~                                                           | ✅ Completada   | —        | —          | qreadonly.decorator.ts — 1 Mar 2026     |
-| ~~H~~ | ~~`@QTransform` pipeline~~                                                 | ✅ Completada   | —        | —          | qtransform.decorator.ts — 1 Mar 2026    |
-| ~~Q~~ | ~~Config per-class `QModel.configure()`~~                                  | ✅ Completada   | —        | —          | quick.model.ts — 1 Mar 2026             |
-| ~~V~~ | ~~`getSchema('effect-schema')`~~                                           | ✅ Completada   | —        | —          | effect-schema-generator — 1 Mar 2026    |
-| ~~J~~ | ~~`getSchema('drizzle'/'typebox')`~~                                       | ✅ Completada   | —        | —          | drizzle/typebox generators — 1 Mar 2026 |
-| ~~L~~ | ~~Guía WebSocket / SSE~~                                                   | ✅ Completada   | —        | —          | websocket-sse.md EN+ES — 1 Mar 2026     |
-| I     | Audit trail                                                                | ⚠️ Cuestionable | 4-5h     | Medio      | Overlap `isDirty()`/`diff()`            |
-| K     | Plugin system                                                              | ⚠️ Diferida     | 3-4h     | Bajo ahora | Prematuro sin ecosistema                |
+| Prop  | Nombre                                                                     | Prioridad      | Esfuerzo | Impacto    | Relación con existente                                 |
+| ----- | -------------------------------------------------------------------------- | -------------- | -------- | ---------- | ------------------------------------------------------ |
+| ~~A~~ | ~~`@QSensitive`~~                                                          | ✅ Completada  | —        | —          | qsensitive.decorator.ts — 2026                         |
+| ~~B~~ | ~~`QModel.diff()` + `equals()`~~                                           | ✅ Completada  | —        | —          | quick.model.ts:3031 — 1 Mar 2026                       |
+| ~~C~~ | ~~`getSchema('valibot'/'yup')`~~                                           | ✅ Completada  | —        | —          | valibot/yup generators — 2026                          |
+| ~~D~~ | ~~`QModelCollection<T>`~~                                                  | ✅ Completada  | —        | —          | quick-collection.model.ts — 2026                       |
+| ~~M~~ | ~~`QModel.patch()`~~                                                       | ✅ Completada  | —        | —          | quick.model.ts:2886 — 1 Mar 2026                       |
+| ~~O~~ | ~~`validate()` unificado~~                                                 | ✅ Completada  | —        | —          | quick.model.ts:2159 — 1 Mar 2026                       |
+| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada  | —        | —          | generate.command.ts — 2026                             |
+| ~~S~~ | ~~`getSchema('prisma')`~~                                                  | ✅ Completada  | —        | —          | prisma-schema-generator — 2026                         |
+| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada  | —        | —          | Task #58 — 28 Feb 2026                                 |
+| ~~T~~ | ~~`QModel.fromURL(searchParams)`~~                                         | ✅ Completada  | —        | —          | quick.model.ts:700 — 1 Mar 2026                        |
+| ~~N~~ | ~~`@QVersion` + migrations~~                                               | ✅ Completada  | —        | —          | qversion.decorator.ts — 1 Mar 2026                     |
+| ~~E~~ | ~~I18n mensajes~~                                                          | ✅ Completada  | —        | —          | i18n resolver en QConfig — 1 Mar 2026                  |
+| ~~U~~ | ~~`QModelCollection.toCSV()`~~                                             | ✅ Completada  | —        | —          | quick-collection.model.ts — 1 Mar 2026                 |
+| ~~F~~ | ~~`@QDefault`~~                                                            | ✅ Completada  | —        | —          | qdefault.decorator.ts — 1 Mar 2026                     |
+| ~~P~~ | ~~`@QReadonly`~~                                                           | ✅ Completada  | —        | —          | qreadonly.decorator.ts — 1 Mar 2026                    |
+| ~~H~~ | ~~`@QTransform` pipeline~~                                                 | ✅ Completada  | —        | —          | qtransform.decorator.ts — 1 Mar 2026                   |
+| ~~Q~~ | ~~Config per-class `QModel.configure()`~~                                  | ✅ Completada  | —        | —          | quick.model.ts — 1 Mar 2026                            |
+| ~~V~~ | ~~`getSchema('effect-schema')`~~                                           | ✅ Completada  | —        | —          | effect-schema-generator — 1 Mar 2026                   |
+| ~~J~~ | ~~`getSchema('drizzle'/'typebox')`~~                                       | ✅ Completada  | —        | —          | drizzle/typebox generators — 1 Mar 2026                |
+| ~~L~~ | ~~Guía WebSocket / SSE~~                                                   | ✅ Completada  | —        | —          | websocket-sse.md EN+ES — 1 Mar 2026                    |
+| W     | Namespace `$qm` (refactor v2.0)                                            | 📋 Planificada | 16-22h   | Alto       | [QM-NAMESPACE-REFACTOR.md](./QM-NAMESPACE-REFACTOR.md) |
+| I     | `$qm.history` / Audit Trail                                                | 📋 Planificada | ~7h      | Medio-alto | Depende de W — [AUDIT-TRAIL.md](./AUDIT-TRAIL.md)      |
+| K     | Plugin system                                                              | ⚠️ Diferida    | 3-4h     | Bajo ahora | Prematuro sin ecosistema                               |
 
-**Tiempo total propuestas pendientes (sin cuestionables):** ~45-55h
-**Propuestas alta prioridad (T):** ~2h
-**Propuestas cuestionables (I, K):** ~7-9h — revisar antes de implementar
+**Tiempo total sprint v2.0 (W + I):** ~23-29h
+**Diferidas indefinidamente (K):** ~3-4h — revisar cuando haya ecosistema
 
 ---
 
@@ -484,5 +496,6 @@ bunx quickmodel generate integration prisma
 ✅  Prop. V   → getSchema('effect-schema') — 1 Mar 2026
 ✅  Prop. J   → getSchema('drizzle'/'typebox') — 1 Mar 2026
 ✅  Prop. L   → Guía WebSocket / SSE — 1 Mar 2026
-⚠️ Revisar antes de implementar: I (audit trail), K (plugin system)
+📋 Siguiente sprint (v2.0): W (namespace $qm) → I ($qm.history / audit trail)
+⚠️ Diferida indefinidamente: K (plugin system)
 ```

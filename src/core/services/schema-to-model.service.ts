@@ -297,14 +297,14 @@ function fromTypeScriptInterface(src: string, className?: string): string {
  * | `JSON!`        | _(none)_    | `Record<string, unknown>` |
  * | `String!`/`ID!`| _(none)_    | `string`                  |
  */
-function mapGraphQLType(gqlType: string): IFieldMapping {
+function mapGraphQLType(gqlType: string, forArrayItem = false): IFieldMapping {
 	// Strip non-null marker for analysis
 	const base = gqlType.replace(/!/g, '').trim();
 
 	// Array type: [ElementType]
 	if (base.startsWith('[') && base.endsWith(']')) {
 		const inner = base.slice(1, -1).replace(/!/g, '').trim();
-		const innerMapping = mapGraphQLType(inner);
+		const innerMapping = mapGraphQLType(inner, true);
 		const arr = innerMapping.transformer
 			? `[${innerMapping.transformer}]`
 			: undefined;
@@ -331,7 +331,10 @@ function mapGraphQLType(gqlType: string): IFieldMapping {
 		case 'String':
 		case 'ID':
 		default:
-			return { transformer: undefined, tsType: 'string' };
+			return {
+				transformer: forArrayItem ? 'String' : undefined,
+				tsType: 'string',
+			};
 	}
 }
 

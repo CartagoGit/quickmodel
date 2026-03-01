@@ -51,8 +51,8 @@ console.log(user.createdAt instanceof Date); // true
 console.log(user.createdAt.getFullYear()); // 2026
 
 // 5. Serializa de vuelta a JSON
-const json = user.toJSON();
-console.log(json.createdAt); // '2026-01-10T10:00:00.000Z'
+const plain = user.serialize();
+console.log(plain.createdAt); // '2026-01-10T10:00:00.000Z'
 ```
 
 ## Explicación Paso a Paso
@@ -107,11 +107,12 @@ const user = new User(apiResponse);
 
 ### 5. Serializa de Vuelta
 
-Usa `toJSON()` para convertir de vuelta al formato de API:
+Usa `serialize()` para obtener un objeto plano (acceso a propiedades, cuerpos REST, etc.), o `toJSON()` para un string JSON:
 
 ```typescript
-const json = user.toJSON();
+const plain = user.serialize();
 // Las fechas se convierten de vuelta a strings ISO
+// (usa user.toJSON() si necesitas el string JSON directamente)
 ```
 
 ## Trabajando con Arrays
@@ -283,9 +284,9 @@ console.log('Tags:', Array.from(user.tags).join(', '));
 user.name = 'Jane Doe';
 user.tags.add('quickmodel');
 
-// Serializar de vuelta
-const updatedData = user.toJSON();
-console.log('Datos actualizados:', updatedData);
+// Serializar de vuelta al formato JSON (listo para fetch, WebSockets, etc.)
+const jsonStr = user.toJSON();
+console.log('Datos actualizados:', jsonStr);
 
 // Generar mocks para testing
 const testUsers = User.mock().array(3, 'random', () => ({ tags: ['test'] }));

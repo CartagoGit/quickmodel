@@ -57,10 +57,10 @@ console.log(user.fullName); // 'María García'
 console.log(user.initials); // 'M.G.' (disponible en instancia, pero no en serialización)
 console.log(user.formattedSalary); // '45.000,00 €'
 
-const json = user.toJSON();
-console.log(json.fullName); // 'María García' ✅ incluido
-console.log(json.formattedSalary); // '45.000,00 €'  ✅ incluido
-console.log(json.initials); // undefined ❌ no incluido (sin @QComputed)
+const plain = user.serialize();
+console.log(plain.fullName); // 'María García' ✅ incluido
+console.log(plain.formattedSalary); // '45.000,00 €'  ✅ incluido
+console.log(plain.initials); // undefined ❌ no incluido (sin @QComputed)
 ```
 
 ## Modelo de Producto con Cálculos
@@ -115,13 +115,13 @@ const product = Product.create({
 	discountRate: 10,
 });
 
-const json = product.toJSON();
-console.log(json.priceNet); // 1000
-console.log(json.vatAmount); // 210
-console.log(json.priceGross); // 1210
-console.log(json.discount); // 121
-console.log(json.finalPrice); // 1089
-console.log(json.priceLabel); // '1089€ (antes 1210€)'
+const plain = product.serialize();
+console.log(plain.priceNet); // 1000
+console.log(plain.vatAmount); // 210
+console.log(plain.priceGross); // 1210
+console.log(plain.discount); // 121
+console.log(plain.finalPrice); // 1089
+console.log(plain.priceLabel); // '1089€ (antes 1210€)'
 ```
 
 ## Modelo de Persona con Edad y Estado
@@ -190,7 +190,7 @@ const person = Person.create({
 
 console.log(person.summary); // 'Carlos Ruiz, 35 años (Administrador)'
 
-const serialized = person.toJSON();
+const serialized = person.serialize();
 // {
 //   firstName: 'Carlos', lastName: 'Ruiz',
 //   birthDate: '1990-06-15T00:00:00.000Z',
@@ -257,7 +257,7 @@ console.log(order.subtotal); // 89.97
 console.log(order.discountAmount); // 4.5
 console.log(order.total); // 85.47
 
-const json = order.toJSON();
+const plain = order.serialize();
 // Claves de salida = aliases (snake_case)
 // {
 //   unit_price: 29.99, quantity: 3, discount_pct: 5,

@@ -20,6 +20,15 @@ const MOCK_MANIFEST = JSON.stringify({
 	migrationNotes: 'No breaking changes.',
 });
 
+describe('QApiReferenceResource — _resolveDefaultDir', () => {
+	it('default constructor does not throw and preserves URI', () => {
+		// no args → triggers the private static _resolveDefaultDir() (lines 78-87)
+		const res = new QApiReferenceResource();
+		expect(res.uri).toBe('quickmodel://api/reference');
+		expect(res.name).toBe('quickmodel-api-reference');
+	});
+});
+
 describe('QApiReferenceResource — metadata', () => {
 	it('uri is quickmodel://api/reference', () => {
 		const res = new QApiReferenceResource(TMP);

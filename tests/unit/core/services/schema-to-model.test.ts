@@ -714,7 +714,8 @@ describe("fromSchema('graphql') — tipos especiales", () => {
 		const sdl = 'type Config {\n\tmeta: JSON!\n}';
 		const code = SchemaToModelService.fromSchema('graphql', sdl);
 		expect(code).toContain('declare meta: Record<string, unknown>;');
-		expect(code).not.toMatch(/meta:\s*\w+[^\n]*\n.*@Quick/s);
+		// JSON no tiene transformer → @Quick({}) vacío
+		expect(code).toContain('@Quick({})');
 	});
 
 	test('campo nullable (sin !) → opcional en la interfaz', () => {

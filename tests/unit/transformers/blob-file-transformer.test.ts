@@ -358,6 +358,17 @@ describe('Integración: constructor Blob/File en @Quick()', () => {
 		declare doc: File | null;
 	}
 
+	test('deserialize throws on malformed data URI (missing comma separator)', () => {
+		const transformer = new BlobTransformer();
+		expect(() => {
+			transformer.deserialize(
+				'data:image/pngbase64NOCOMMA', // malformed — no comma
+				'thumbnail',
+				'ArticleDto'
+			);
+		}).toThrow(/malformed data URI/);
+	});
+
 	test('@Quick({ doc: File }) hidrata IFileSerialized en File', () => {
 		const dto = new UploadDto({
 			doc: {

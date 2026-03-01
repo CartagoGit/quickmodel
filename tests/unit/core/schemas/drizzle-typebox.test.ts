@@ -12,6 +12,13 @@ class UserSchema extends QModel<{ id: number; name: string; active: boolean }> {
 	declare active: boolean;
 }
 
+// Used to hit the `default` branch in TypeboxSchemaGenerator._getTypeBoxType()
+// URL is not in the switch cases (number|boolean|date|bigint|set|map) → falls to default
+@Quick({ link: URL })
+class LinkSchema extends QModel<{ link: URL }> {
+	declare link: URL;
+}
+
 @Quick({ price: Number, label: String, createdAt: Date })
 class ProductSchema extends QModel<{
 	price: number;
@@ -109,5 +116,13 @@ describe("getSchema('typebox') — tipos primitivos", () => {
 	test('incluye el import comment de @sinclair/typebox', () => {
 		const result = UserSchema.getSchema('typebox');
 		expect(result).toContain('@sinclair/typebox');
+	});
+
+	test('custom/unknown transformer → fallback Type.String() (default case)', () => {
+		// URL no está en el switch del generador TypeBox → default case
+		// LinkSchema is defined at module level with @Quick({ link: URL })
+		const result = LinkSchema.getSchema('typebox');
+		expect(result).toContain('link:');
+		expect(result).toContain('Type.String()');
 	});
 });

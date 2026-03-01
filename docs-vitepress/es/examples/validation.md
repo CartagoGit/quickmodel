@@ -104,7 +104,7 @@ async function saveUser(data: IUserRegister): Promise<void> {
 	// Continuar con el guardado...
 	await fetch('/api/users', {
 		method: 'POST',
-		body: JSON.stringify(user.toJSON()),
+		body: user.toJSON(), // toJSON() ya devuelve un string JSON
 	});
 }
 ```

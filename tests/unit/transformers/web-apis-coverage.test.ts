@@ -272,6 +272,17 @@ describe('Unit: Web APIs Transformers Coverage', () => {
 			expect(transformer.deserialize(dec, 'dec', 'TC')).toBe(dec);
 		});
 
+		test('deserialize null → returns null (early-return guard handles it)', () => {
+			// The transformer returns null early at line 399 before reaching line 441
+			const result = transformer.deserialize(null, 'dec', 'TC');
+			expect(result).toBeNull();
+		});
+
+		test('deserialize undefined → returns null (early-return guard handles it)', () => {
+			const result = transformer.deserialize(undefined, 'dec', 'TC');
+			expect(result).toBeNull();
+		});
+
 		test('serialize should return config', () => {
 			const dec = new TextDecoder('utf-8');
 			expect(transformer.serialize(dec)).toEqual({ encoding: 'utf-8' });
