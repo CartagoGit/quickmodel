@@ -1,6 +1,6 @@
 # QuickModel - Tareas Pendientes y Propuestas
 
-> **Fecha de revisión:** 28 de febrero de 2026 (actualizado)
+> **Fecha de revisión:** 1 de marzo de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
 > **Estado actual:** 3300+ tests passing | Cobertura >97% líneas | v1.0.0
 
@@ -11,8 +11,8 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#58 + Task #48 + Propuestas A, D, G, O, R, S
-⏳  Backlog:     Propuestas B, C, E, F, H, I, J, K, L, M, N, P, Q (ver sección final)
+✅ Completadas: Tasks #1–#58 + Task #48 + Propuestas A, B, C, D, G, M, O, R, S
+⏳  Backlog:     Propuestas E, F, H, I, J, K, L, N, P, Q + Nuevas: T, U, V (ver sección final)
 ```
 
 ---
@@ -20,7 +20,7 @@
 ## ✅ Historial de tareas completadas
 
 | #   | Tarea                                                                                | Commit / Detalle          |
-| --- | ------------------------------------------------------------------------------------ | ------------------------- |
+| --- | ------------------------------------------------------------------------------------ | ------------------------- | --- | --- | -------------------------------------------------------------------- | ---------- |
 | 1   | Remover `console.log` de producción                                                  | `2be2df2`                 |
 | 2   | MCP tools coverage 50% → 80%                                                         | `5e80d64`                 |
 | 2.5 | Schema Generation API — 7 formatos                                                   | `b9bb875`                 |
@@ -79,7 +79,11 @@
 | 56  | Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 | 23 Feb 2026               |
 | 57  | Test Runners — Jest, Jasmine, Mocha/Chai, Node:test, AVA                             | 147 tests, guías EN+ES    |
 | 58  | `fromFormData()` + `toFormData()` + `toReadableStream()` + Blob/File transformers    | 28 Feb 2026               |
-| 48  | Drizzle ORM integration patterns — 35 tests, guía EN+ES, skill MCP                   | 1 Mar 2026                |
+| 48  | Drizzle ORM integration patterns — 35 tests, guía EN+ES, skill MCP                   | 1 Mar 2026                |     | O   | `validate()` método unificado — overloads sync/async, soporte groups | 1 Mar 2026 |
+| B   | `QModel.diff(other)` — before/after por campo; `equals()` boolean                    | 1 Mar 2026                |
+| M   | `QModel.patch(partial)` — mutación in-place con dirty tracking                       | 1 Mar 2026                |
+| C   | `getSchema('valibot')` + `getSchema('yup')` — 2 nuevos generadores                   | 1 Mar 2026                |
+| S   | `getSchema('prisma')` — Prisma model block desde metadatos QModel                    | 1 Mar 2026                |
 
 ---
 
@@ -128,61 +132,22 @@ user.serialize({ includeSensitive: true }); // override explícito
 
 ---
 
-### Propuesta B — `QModel.diff(other)` method
+### ✅ Propuesta B — `QModel.diff(other)` + `equals(other)` _(Completada)_
 
 **Prioridad:** 🔴 Alta
-**Impacto:** Alto — auditorías, sincronización, UI de "cambios pendientes"
-**Esfuerzo estimado:** 3-4 horas | **Tests estimados:** ~20
-
-Diferencia profunda entre dos instancias QModel independientes. Complementa `isDirty()` (que compara con el estado inicial de la misma instancia).
-
-**API propuesta:**
+**Completada:** 1 Mar 2026 — `quick.model.ts` líneas 3031–3073. `diff()` retorna `Record<string, { before, after }>` usando valores serializados para comparación consistente de `Date`, `bigint`, etc. `equals()` delega en `diff()` y retorna `boolean`.
 
 ```typescript
-const original = new User({ id: 1, name: 'Alice', email: 'a@b.com' });
-const updated = new User({ id: 1, name: 'Alice M.', email: 'alice@new.com' });
-
-const changes = original.diff(updated);
-// → {
-//     changed: { name: { from: 'Alice', to: 'Alice M.' }, email: { from: 'a@b.com', to: 'alice@new.com' } },
-//     added:   {},
-//     removed: {}
-//   }
-
-original.diff(updated, { deep: true }); // diff recursivo en nested models
-original.diffSummary(updated); // array plano de strings legibles
+a.diff(b); // → { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
+a.equals(b); // → false
 ```
-
-**Archivos:**
-
-- `src/core/services/diff.service.ts` — `QModelDiffService`
-- `src/core/models/quick.model.ts` — métodos `diff()` y `diffSummary()`
-- `src/core/types/diff-types.ts` — `IQDiffResult`, `IQDiffEntry`
-- `tests/unit/core/models/diff.test.ts`
-- `docs-vitepress/en/guide/qmodel.md` — sección "Diff & Change Detection" + ES
 
 ---
 
-### Propuesta C — `getSchema('valibot')` y `getSchema('yup')`
+### ✅ Propuesta C — `getSchema('valibot')` y `getSchema('yup')` _(Completada)_
 
 **Prioridad:** 🟡 Media
-**Impacto:** Alto estratégico — Valibot es el sucesor moderno de Zod en 2026
-**Esfuerzo estimado:** 2h × 2 formatos | **Tests estimados:** ~10 por formato
-
-Los **7 formatos actuales** declarados en `IQSchemaType` son: `json`, `zod`, `mongo`, `typescript`, `graphql`, `openapi`, `ajv`. Esta propuesta añade dos más al mismo patrón establecido en `SchemaGeneratorsService`.
-
-```typescript
-User.getSchema('valibot'); // → schema Valibot v1.x
-User.getSchema('yup'); // → yup.object().shape({ ... })
-```
-
-**Por qué Valibot:** bundle size ~10× menor que Zod, tree-shakeable, TypeScript-first, adopción creciente en Vite/SvelteKit/Hono en 2026.
-
-**Archivos:**
-
-- `src/core/types/schema-types.ts` — añadir `'valibot' | 'yup'` al tipo `IQSchemaType`
-- `src/core/services/schema-generators.service.ts` — nuevas clases `ValibotSchemaGenerator` y `YupSchemaGenerator`
-- `tests/unit/core/services/schema-generators.test.ts`
+**Completada:** 1 Mar 2026 — `ValibotSchemaGenerator` en `valibot-schema-generator.service.ts`, `YupSchemaGenerator` en `yup-schema-generator.service.ts`. Tipos `'valibot'` y `'yup'` añadidos a `IQSchemaType`. Schema API ahora soporta **10 formatos**: json, zod, mongo, typescript, graphql, openapi, ajv, prisma, valibot, yup.
 
 ---
 
@@ -379,25 +344,10 @@ Patrones a cubrir: emisión tipada, recepción tipada, `diff()` para enviar solo
 
 ---
 
-### Propuesta M — `QModel.patch(partial)` mutable in-place
+### ✅ Propuesta M — `QModel.patch(partial)` mutable in-place _(Completada)_
 
 **Prioridad:** 🟡 Media
-**Impacto:** Medio — contraparte mutable de `copy()` para casos donde la inmutabilidad no es necesaria
-**Esfuerzo estimado:** 2-3 horas | **Tests estimados:** ~15
-
-`copy()` devuelve una nueva instancia (inmutable). `patch()` muta la instancia actual y actualiza el historial de `isDirty()`.
-
-```typescript
-const user = new User({ id: 1, name: 'Alice' });
-user.patch({ name: 'Alice M.' }); // muta la instancia
-user.isDirty('name'); // → true
-user.getChanges(); // → { name: { from: 'Alice', to: 'Alice M.' } }
-```
-
-**Archivos:**
-
-- `src/core/models/quick.model.ts` — método `patch(partial: Partial<T>)`
-- `tests/unit/core/models/patch.test.ts`
+**Completada:** 1 Mar 2026 — `quick.model.ts` línea 2886. Muta la instancia actual preservando dirty tracking via `isDirty()` / `getChanges()`.
 
 ---
 
@@ -437,27 +387,10 @@ const user = new User({ firstName: 'Alice', lastName: 'M.', _v: 1 });
 
 ---
 
-### Propuesta O — `validate()` método unificado
+### ✅ Propuesta O — `validate()` método unificado _(Completada)_
 
 **Prioridad:** 🔴 Alta
-**Impacto:** Alto — simplifica la API de validación (pain point frecuente)
-**Esfuerzo estimado:** 1-2 horas | **Tests estimados:** ~10
-
-Unifica `hasIntegrity()` + `checkRules()` + `validationReport()` en una sola llamada. El problema actual: los usuarios deben saber qué función llamar según el contexto.
-
-```typescript
-const result = user.validate();
-// → { valid: boolean, integrity: boolean, rules: IQRuleError[], report: IQValidationReport }
-
-await user.validate({ async: true }); // incluye checkRulesAsync()
-user.validate({ groups: ['address'] }); // solo un grupo de reglas
-```
-
-**Archivos:**
-
-- `src/core/models/quick.model.ts` — método `validate(opts?)`
-- `src/core/types/validation-types.ts` — `IQValidateResult`
-- `tests/unit/core/models/validate.test.ts`
+**Completada:** 1 Mar 2026 — `quick.model.ts` línea 2159. Overloads para sync/async, soporte `groups`, retorna `IQValidateResult` con `{ valid, integrity, rules }`.
 
 ---
 
@@ -539,32 +472,10 @@ bunx quickmodel generate integration prisma
 
 ---
 
-### Propuesta S — `getSchema('prisma')`
+### ✅ Propuesta S — `getSchema('prisma')` _(Completada)_
 
 **Prioridad:** 🟡 Media
-**Impacto:** Alto — cierra el circuito con Task #41 (Prisma ya implementada)
-**Esfuerzo estimado:** 2-3 horas | **Tests estimados:** ~10
-
-Generar definiciones de columnas Prisma desde los metadatos QModel. Task #41 está completada (patrón de uso documentado) pero no existe ningún generador de schema `.prisma`. El patrón del servicio `SchemaGeneratorsService` ya está establecido — es el único generador que falta para tener cobertura completa del ecosistema de datos.
-
-```typescript
-User.getSchema('prisma');
-// → `
-// model User {
-//   id    Int    @id
-//   name  String
-//   email String
-//   birth DateTime?
-// }
-// `
-```
-
-**Archivos:**
-
-- `src/core/types/schema-types.ts` — añadir `'prisma'` al tipo `IQSchemaType`
-- `src/core/services/schema-generators.service.ts` — nueva clase `PrismaSchemaGenerator`
-- `tests/unit/core/services/schema-generators.test.ts`
-- Nota en guía `prisma-integration.md` existente
+**Completada:** 1 Mar 2026 — `prisma-schema-generator.service.ts` + `'prisma'` en `IQSchemaType`. Cierra el circuito con Task #41.
 
 ---
 
@@ -573,27 +484,30 @@ User.getSchema('prisma');
 | Prop  | Nombre                                                                     | Prioridad       | Esfuerzo | Impacto          | Relación con existente           |
 | ----- | -------------------------------------------------------------------------- | --------------- | -------- | ---------------- | -------------------------------- |
 | ~~A~~ | ~~`@QSensitive`~~                                                          | ✅ Completada   | —        | —                | qsensitive.decorator.ts — 2026   |
-| B     | `QModel.diff()`                                                            | 🔴 Alta         | 3-4h     | Alto             | Complementa `isDirty()`/`copy()` |
+| ~~B~~ | ~~`QModel.diff()` + `equals()`~~                                           | ✅ Completada   | —        | —                | quick.model.ts:3031 — 1 Mar 2026 |
+| ~~C~~ | ~~`getSchema('valibot'/'yup')`~~                                           | ✅ Completada   | —        | —                | valibot/yup generators — 2026    |
 | ~~D~~ | ~~`QModelCollection<T>`~~                                                  | ✅ Completada   | —        | —                | quick-collection.model.ts — 2026 |
-| O     | `validate()` unificado                                                     | 🔴 Alta         | 1-2h     | Alto (DX)        | Unifica API validación           |
-| C     | `getSchema('valibot'/'yup')`                                               | 🟡 Media        | 2h×2     | Alto estratégico | +2 a los 7 formatos existentes   |
-| E     | I18n mensajes                                                              | 🟡 Media        | 4h       | Medio            | Extiende `QConfig`               |
-| M     | `QModel.patch()` mutable                                                   | 🟡 Media        | 2-3h     | Medio            | Contraparte mutable de `copy()`  |
+| ~~M~~ | ~~`QModel.patch()`~~                                                       | ✅ Completada   | —        | —                | quick.model.ts:2886 — 1 Mar 2026 |
+| ~~O~~ | ~~`validate()` unificado~~                                                 | ✅ Completada   | —        | —                | quick.model.ts:2159 — 1 Mar 2026 |
+| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada   | —        | —                | generate.command.ts — 2026       |
+| ~~S~~ | ~~`getSchema('prisma')`~~                                                  | ✅ Completada   | —        | —                | prisma-schema-generator — 2026   |
+| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada   | —        | —                | Task #58 — 28 Feb 2026           |
+| **T** | **`QModel.fromURL(searchParams)`**                                         | 🔴 Alta         | 2h       | Alto (DX)        | Complementa `fromFormData()`     |
 | N     | `@QVersion` + migrations                                                   | 🟡 Media        | 4-5h     | Medio            | Complementa Task #55             |
+| E     | I18n mensajes                                                              | 🟡 Media        | 4h       | Medio            | Extiende `QConfig`               |
 | P     | `@QReadonly`                                                               | 🟡 Media        | 2h       | Medio            | Nuevo decorator                  |
 | Q     | Config per-class                                                           | 🟡 Media        | 3h       | Medio            | Extiende `QConfig`               |
-| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada   | —        | —                | generate.command.ts — 2026       |
-| S     | `getSchema('prisma')`                                                      | 🟡 Media        | 2-3h     | Alto             | Cierra circuito Task #41         |
+| **U** | **`QModelCollection.toCSV()`**                                             | 🟡 Media        | 1.5h     | Alto enterprise  | QModelCollection ya existe       |
 | F     | `@QDefault`                                                                | 🟢 Baja         | 2h       | Medio            | Nuevo decorator                  |
-| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada   | —        | —                | Task #58 — 28 Feb 2026           |
 | H     | `@QTransform` pipeline                                                     | 🟢 Baja         | 2-3h     | Medio            | Complementa `@QType`             |
-| I     | Audit trail                                                                | ⚠️ Cuestionable | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`     |
+| **V** | **`getSchema('effect-schema')`**                                           | 🟢 Baja         | 3h       | Estratégico 2026 | Effect.ts ecosystem              |
 | J     | `getSchema('drizzle'/'typebox')`                                           | 🟢 Baja         | 2h×2     | Medio            | +2 a Schema API + Task #48       |
+| L     | Guía WebSocket / SSE                                                       | 🟢 Baja         | 2-3h     | Medio            | diff() ya existe                 |
+| I     | Audit trail                                                                | ⚠️ Cuestionable | 4-5h     | Medio            | Overlap `isDirty()`/`diff()`     |
 | K     | Plugin system                                                              | ⚠️ Diferida     | 3-4h     | Bajo ahora       | Prematuro sin ecosistema         |
-| L     | Guía WebSocket / SSE                                                       | 🟢 Baja         | 2-3h     | Medio            | **Requiere Prop B**              |
 
-**Tiempo total propuestas (sin cuestionables):** ~70-85h
-**Propuestas alta prioridad (A+B+D+O):** ~12-15h
+**Tiempo total propuestas pendientes (sin cuestionables):** ~45-55h
+**Propuestas alta prioridad (T):** ~2h
 **Propuestas cuestionables (I, K):** ~7-9h — revisar antes de implementar
 
 ---
@@ -601,19 +515,23 @@ User.getSchema('prisma');
 ## 🔁 Orden recomendado de implementación
 
 ```
-1.  ~~Task #48~~ ✅ Drizzle ORM (35 tests, docs EN+ES, skill MCP — completada 1 Mar 2026)
-2.  Prop. O   → validate() unificado (1-2h, mayor ROI: alto impacto, mínimo riesgo)
-3.  ~~Prop. R~~   ✅ CLI generate subcommand (generate.command.ts — completada 2026)
-4.  Prop. A   → @QSensitive (seguridad / GDPR)
-5.  Prop. B   → QModel.diff() (complementa copy/isDirty)
-6.  Prop. S   → getSchema('prisma') (2-3h, cierra circuito Task #41)
-7.  Prop. D   → QModelCollection<T> (cierra ciclo createMany)
-8.  Prop. C   → getSchema('valibot') + getSchema('yup') (bajo riesgo, alto valor)
-9.  ~~Prop. G~~   ✅ fromFormData() + toFormData() (Task #58 — completada)
-10. Prop. M   → patch() mutable (complementa copy, sencillo)
-11. Prop. N   → @QVersion + migrations (cierra loop Storage / Task #55)
-12. Prop. E   → I18n (requiere decisiones de diseño)
-13. P/Q/F/H   → @QReadonly, per-class config, @QDefault, @QTransform
-14. J/L       → schemas extra (drizzle/typebox), WebSocket docs
+✅  Task #48  Drizzle ORM (1 Mar 2026)
+✅  Prop. A   @QSensitive (2026)
+✅  Prop. B   QModel.diff() + equals() (1 Mar 2026)
+✅  Prop. C   getSchema('valibot'/'yup') (1 Mar 2026)
+✅  Prop. D   QModelCollection<T> (2026)
+✅  Prop. G   fromFormData() + toFormData() (Task #58 — 28 Feb 2026)
+✅  Prop. M   patch() mutable (1 Mar 2026)
+✅  Prop. O   validate() unificado (1 Mar 2026)
+✅  Prop. R   CLI generate subcommand (2026)
+✅  Prop. S   getSchema('prisma') (1 Mar 2026)
+
+1.  Prop. T   → fromURL(URLSearchParams) — 2h, cierra triada form/stream/url
+2.  Prop. U   → QModelCollection.toCSV() — 1.5h, win enterprise
+3.  Prop. N   → @QVersion + migrations — cierra loop Task #55
+4.  Prop. E   → I18n — requiere decisiones de diseño
+5.  P/Q/F/H   → @QReadonly, per-class config, @QDefault, @QTransform
+6.  Prop. V   → getSchema('effect-schema') — estratégico
+7.  J/L       → schemas extra (drizzle/typebox), WebSocket docs
 ⚠️ Revisar antes de implementar: I (audit trail), K (plugin system)
 ```
