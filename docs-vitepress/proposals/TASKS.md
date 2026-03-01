@@ -218,32 +218,9 @@ class User extends QModel<IUser> {
 
 ---
 
-### Propuesta F — `@QDefault` decorator
+### ✅ Propuesta F — `@QDefault` decorator _(Completada — ver entrada definitiva abajo)_
 
-**Prioridad:** 🟢 Baja
-**Impacto:** Medio — DX para DTOs con campos opcionales
-**Esfuerzo estimado:** 2 horas | **Tests estimados:** ~12
-
-Valores por defecto declarativos por campo. Solo activa cuando el valor entrante es `undefined` o `null`, a diferencia del constructor que siempre ejecuta el default.
-
-```typescript
-@Quick({ createdAt: Date })
-class Event extends QModel<IEvent> {
-	declare id: string;
-
-	@QDefault(() => new Date())
-	declare createdAt: Date;
-
-	@QDefault('draft')
-	declare status: string;
-
-	@QDefault(() => [])
-	declare tags: string[];
-}
-
-new Event({ id: '1' });
-// → createdAt = new Date(), status = 'draft', tags = []
-```
+> Implementada el 1 Mar 2026. Ver entrada completa más abajo.
 
 ### ✅ Propuesta G — `fromFormData()` + `toFormData()` + transformers Blob/File — **COMPLETADA** (Task #58)
 
@@ -252,25 +229,9 @@ new Event({ id: '1' });
 
 ---
 
-### Propuesta H — `@QTransform` pipeline decorator
+### ✅ Propuesta H — `@QTransform` pipeline decorator _(Completada — ver entrada definitiva abajo)_
 
-**Prioridad:** 🟢 Baja
-**Impacto:** Medio — DX para transformaciones custom a nivel de campo
-**Esfuerzo estimado:** 2-3 horas | **Tests estimados:** ~12
-
-Transformaciones ejecutadas después de deserializar, antes de asignar. Composable. Complementa `coercionStrategy: 'loose'` (global) con transforms por campo.
-
-```typescript
-@Quick()
-class User extends QModel<IUser> {
-	@QTransform((v) => v.trim().toLowerCase())
-	declare email: string;
-
-	@QTransform((v) => v.trim())
-	@QTransform((v) => v[0].toUpperCase() + v.slice(1)) // composición
-	declare name: string;
-}
-```
+> Implementada el 1 Mar 2026. Ver entrada completa más abajo.
 
 ---
 
@@ -425,59 +386,15 @@ const user = new User({ firstName: 'Alice', lastName: 'M.', _v: 1 });
 
 ---
 
-### Propuesta P — `@QReadonly` decorator
+### ✅ Propuesta P — `@QReadonly` decorator _(Completada — ver entrada definitiva arriba)_
 
-**Prioridad:** 🟡 Media
-**Impacto:** Medio — contratos más estrictos para campos inmutables tras construcción
-**Esfuerzo estimado:** 2 horas | **Tests estimados:** ~12
-
-Campos marcados como readonly generan error si se intenta cambiarlos vía `copy()` o `patch()`.
-
-```typescript
-@Quick()
-class User extends QModel<IUser> {
-	@QReadonly()
-	declare id: number; // no puede ser modificado tras construcción
-
-	declare name: string;
-}
-
-user.copy({ id: 999 }); // → throws ImmutableFieldError
-user.copy({ name: 'Bob' }); // ✅ permitido
-```
-
-**Archivos:**
-
-- `src/core/decorators/qreadonly.decorator.ts` (nuevo)
-- `src/core/models/quick.model.ts` — validación en `copy()` y `patch()`
-- `tests/unit/core/decorators/qreadonly.test.ts`
+> Implementada el 1 Mar 2026. Ver entrada completa en la sección anterior.
 
 ---
 
-### Propuesta Q — `User.configure({})` per-class config
+### ✅ Propuesta Q — `User.configure({})` per-class config _(Completada — ver entrada definitiva arriba)_
 
-**Prioridad:** 🟡 Media
-**Impacto:** Medio — elimina la necesidad de `QConfig.configure()` global para casos puntuales
-**Esfuerzo estimado:** 3 horas | **Tests estimados:** ~15
-
-Override local de configuración por clase, sin afectar el `QConfig` global. Útil para diferentes políticas por dominio.
-
-```typescript
-@Quick()
-class InternalDto extends QModel<IInternalDto> {
-	static override config = QModel.configure({
-		unknownPropertyPolicy: 'keep',
-		coercionStrategy: 'strict',
-	});
-}
-// No afecta a otras clases que usen el QConfig global
-```
-
-**Archivos:**
-
-- `src/core/models/quick.model.ts` — soporte para `static config` override
-- `src/core/config/quick.config.ts` — `QModel.configure(opts)` estático
-- `tests/unit/core/models/per-class-config.test.ts`
+> Implementada el 1 Mar 2026. Ver entrada completa en la sección anterior.
 
 ---
 

@@ -3554,12 +3554,12 @@ export abstract class QModel<
 		if (!gen) {
 			if (hasSchemaGenerators()) {
 				throw new Error(
-					`[QuickModel] Unknown schema type: '${type}'. ` +
+					`[QuickModel] Unknown schema type: '${String(type)}'. ` +
 						`Registered formats: json, zod, mongo, typescript, graphql, openapi, ajv, prisma, valibot, yup, drizzle, typebox, effect-schema.`
 				);
 			}
 			throw new Error(
-				`[QuickModel] Schema generation is not available for type '${type}'. ` +
+				`[QuickModel] Schema generation is not available. ` +
 					`Import 'quickmodel/schema' to enable getSchema():\n\n` +
 					`  import 'quickmodel/schema';\n\n` +
 					`If you are using the full 'quickmodel' package (not 'quickmodel/core'), ` +

@@ -9,12 +9,22 @@
 
 ## 📊 Estado actual del benchmark principal
 
-| #   | Benchmark      | QuickModel | Competidor               | Ratio   |
+<<<<<<< Updated upstream
+| # | Benchmark | QuickModel | Competidor | Ratio |
 | --- | -------------- | ---------- | ------------------------ | ------- |
-| 1   | Simple 10k it. | ~100 ms    | Zod ~9 ms                | 11×     |
-| 4   | isValid 1k it. | ~78 ms     | TypeBox ~17 ms           | 4.6×    |
-| 9   | @QAlias 2k it. | ~24 ms     | class-transformer ~25 ms | ≈1× ✅  |
-| 13  | Bulk 5×500 obj | ~489 ms    | Zod ~13 ms               | **37×** |
+| 1 | Simple 10k it. | ~100 ms | Zod ~9 ms | 11× |
+| 4 | isValid 1k it. | ~78 ms | TypeBox ~17 ms | 4.6× |
+| 9 | @QAlias 2k it. | ~24 ms | class-transformer ~25 ms | ≈1× ✅ |
+| 13 | Bulk 5×500 obj | ~489 ms | Zod ~13 ms | **37×** |
+=======
+| # | Benchmark | QuickModel | Competidor | Ratio |
+|----|--------------------|------------|-------------|-------|
+| 1 | Simple 10k it. | ~100 ms | Zod ~9 ms | 11× |
+| 4 | isValid 1k it. | ~78 ms | TypeBox ~17 ms | 4.6× |
+| 9 | @QAlias 2k it. | ~24 ms | class-transformer ~25 ms | ≈1× ✅ |
+| 13 | Bulk 5×500 obj | ~489 ms | Zod ~13 ms | **37×** |
+
+> > > > > > > Stashed changes
 
 > Las 6 optimizaciones del sprint anterior (Sets de módulo, WeakMap de metadatos, caché de
 > accessor) ya están aplicadas y verificadas con 3276 tests passing. Las propuestas de este
@@ -32,7 +42,12 @@
 
 `installLazyGetters()` llama a `Object.defineProperty(this, key, {...})` **N veces por instancia**
 en cada construcción — una llamada por propiedad decorada. Para un modelo con 5 campos son
+<<<<<<< Updated upstream
 5 `defineProperty` en el _objeto instancia_, cada vez.
+=======
+5 `defineProperty` en el _objeto instancia_, cada vez.
+
+> > > > > > > Stashed changes
 
 ```typescript
 // src/core/models/quick.model.ts — método installLazyGetters (~L1798)
@@ -67,6 +82,11 @@ private installLazyGetters(keys: Iterable<string>): void {
 ```
 
 **Guardas necesarias:**
+<<<<<<< Updated upstream
+
+=======
+
+> > > > > > > Stashed changes
 
 - No sobreescribir getters de `@QType` (ya registrados con `qtype:generated`)
 - No sobreescribir accessors de usuario (ya controlado por `_HAS_ACCESSOR_CACHE`)
@@ -145,7 +165,11 @@ con solo `declare` (sin inicializadores JS como `name = 'Default'`) nunca restau
 ```typescript
 // src/core/decorators/quick.decorator.ts ~L806 — SIEMPRE ejecutado
 if (typeof instance[FORCE_HYDRATION_KEY] === 'function') {
+<<<<<<< Updated upstream
 	instance[FORCE_HYDRATION_KEY]();
+=======
+    instance[FORCE_HYDRATION_KEY]();
+>>>>>>> Stashed changes
 }
 ```
 
@@ -158,6 +182,7 @@ eso para los getters de `@QType`. Añadir un flag análogo `_hasJsInitializers`:
 ```typescript
 // En el closure de @Quick — se ejecuta UNA VEZ al decorar la clase
 const _hasJsInitializers = (() => {
+<<<<<<< Updated upstream
 	// Crear instancia de prueba sin datos para detectar si alguna propiedad
 	// tiene valor por defecto asignado por TS (i.e. existe como own property antes de QModel)
 	const probe = Object.create(originalConstructor.prototype);
@@ -167,11 +192,24 @@ const _hasJsInitializers = (() => {
 		/* ignorar — solo queremos ver qué propiedades se asignan */
 	}
 	return Object.keys(probe).some((k) => !k.startsWith('__'));
+=======
+    // Crear instancia de prueba sin datos para detectar si alguna propiedad
+    // tiene valor por defecto asignado por TS (i.e. existe como own property antes de QModel)
+    const probe = Object.create(originalConstructor.prototype);
+    try {
+        originalConstructor.call(probe);
+    } catch { /* ignorar — solo queremos ver qué propiedades se asignan */ }
+    return Object.keys(probe).some(k => !k.startsWith('__'));
+>>>>>>> Stashed changes
 })();
 
 // En wrappedConstructor
 if (_hasJsInitializers && typeof instance[FORCE_HYDRATION_KEY] === 'function') {
+<<<<<<< Updated upstream
 	instance[FORCE_HYDRATION_KEY]();
+=======
+    instance[FORCE_HYDRATION_KEY]();
+>>>>>>> Stashed changes
 }
 ```
 
@@ -252,8 +290,13 @@ Exponer `QTransformerRegistry.size` (el `Map` interno ya tiene `.size`) y añadi
 ```typescript
 // Fast path: si el registro está vacío, saltar normalizeKey() por completo
 if (QTransformerRegistry.size > 0) {
+<<<<<<< Updated upstream
 	const customTransformer = QTransformerRegistry.get(key);
 	if (customTransformer) return customTransformer;
+=======
+    const customTransformer = QTransformerRegistry.get(key);
+    if (customTransformer) return customTransformer;
+>>>>>>> Stashed changes
 }
 ```
 
@@ -277,7 +320,11 @@ siguientes del mismo objeto.
 
 ```typescript
 // src/core/models/quick.model.ts — final del constructor
+<<<<<<< Updated upstream
 Reflect.deleteProperty(this, '__tempData'); // ← muta hidden class
+=======
+Reflect.deleteProperty(this, '__tempData');  // ← muta hidden class
+>>>>>>> Stashed changes
 ```
 
 ### Qué se haría
@@ -298,14 +345,26 @@ el caso dado que `__tempData` empieza por `__`:
 
 ## 📊 Resumen priorizado
 
-| Prop    | Nombre                                  | Prioridad | Esfuerzo | Benchmarks   | Impacto estimado    |
+<<<<<<< Updated upstream
+| Prop | Nombre | Prioridad | Esfuerzo | Benchmarks | Impacto estimado |
 | ------- | --------------------------------------- | --------- | -------- | ------------ | ------------------- |
-| PROP-W  | Lazy getters en prototipo               | 🔴 Alta   | 3-4 h    | #1, #13      | −25-40% en #13      |
-| PROP-X  | `structuredClone` lazy para `initData`  | 🔴 Alta   | 2-3 h    | #1, #13, #10 | −10-20% en #1       |
-| PROP-Y  | Skip `FORCE_HYDRATION_KEY` pure-declare | 🟡 Media  | 2 h      | #1           | −5-10% en #1        |
-| PROP-Z  | Caché estático de `propertyNames`       | 🟡 Media  | 1-2 h    | #1           | −3-8% en #1         |
-| PROP-AA | Guard registro vacío TransformerLookup  | 🟢 Baja   | 0.5 h    | todos        | micro — sin riesgo  |
-| PROP-AB | `Reflect.deleteProperty` → asignación   | 🟢 Baja   | 0.25 h   | #1, #13      | micro — cero riesgo |
+| PROP-W | Lazy getters en prototipo | 🔴 Alta | 3-4 h | #1, #13 | −25-40% en #13 |
+| PROP-X | `structuredClone` lazy para `initData` | 🔴 Alta | 2-3 h | #1, #13, #10 | −10-20% en #1 |
+| PROP-Y | Skip `FORCE_HYDRATION_KEY` pure-declare | 🟡 Media | 2 h | #1 | −5-10% en #1 |
+| PROP-Z | Caché estático de `propertyNames` | 🟡 Media | 1-2 h | #1 | −3-8% en #1 |
+| PROP-AA | Guard registro vacío TransformerLookup | 🟢 Baja | 0.5 h | todos | micro — sin riesgo |
+| PROP-AB | `Reflect.deleteProperty` → asignación | 🟢 Baja | 0.25 h | #1, #13 | micro — cero riesgo |
+=======
+| Prop | Nombre | Prioridad | Esfuerzo | Benchmarks | Impacto estimado |
+|--------|-----------------------------------------|------------|----------|---------------|---------------------------|
+| PROP-W | Lazy getters en prototipo | 🔴 Alta | 3-4 h | #1, #13 | −25-40% en #13 |
+| PROP-X | `structuredClone` lazy para `initData` | 🔴 Alta | 2-3 h | #1, #13, #10 | −10-20% en #1 |
+| PROP-Y | Skip `FORCE_HYDRATION_KEY` pure-declare | 🟡 Media | 2 h | #1 | −5-10% en #1 |
+| PROP-Z | Caché estático de `propertyNames` | 🟡 Media | 1-2 h | #1 | −3-8% en #1 |
+| PROP-AA | Guard registro vacío TransformerLookup | 🟢 Baja | 0.5 h | todos | micro — sin riesgo |
+| PROP-AB | `Reflect.deleteProperty` → asignación | 🟢 Baja | 0.25 h | #1, #13 | micro — cero riesgo |
+
+> > > > > > > Stashed changes
 
 **Tiempo total:** ~9-12 horas
 **Impacto acumulado potencial (W+X):** Benchmark #13 (Bulk 489ms → estimado ~280-350ms),

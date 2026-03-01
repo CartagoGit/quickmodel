@@ -46,6 +46,10 @@ export const esLocale = {
 			'Ya viene incluida dentro del bundle de QuickModel. No necesitas importarla manualmente en tu proyecto.',
 		reqFakerDesc:
 			'Incluida como dependencia opcional. Se instala automáticamente con el paquete. Solo se activa si usas <code>mock()</code>.',
+		reqZodDesc:
+			'Incluida con el paquete — sin instalación manual. Solo se activa cuando llamas a <code>getSchema("zod")</code>. Si nunca usas la exportación de schema Zod, no tiene ningún impacto en tu bundle.',
+		reqMcpSdkDesc:
+			'Incluida con el paquete — sin instalación manual. Solo se usa si ejecutas el servidor MCP integrado (<code>quickmodel mcp</code>). Si usas QuickModel únicamente como librería de modelado, esta dependencia nunca se carga.',
 		reqTsconfigTitle: 'Configuración del tsconfig.json',
 		reqTsconfigOption: 'Opción',
 		reqTsconfigLegacy: 'Legacy (TS 3.4+)',

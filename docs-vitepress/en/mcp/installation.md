@@ -20,9 +20,23 @@ Two options — use whichever fits your workflow.
 
 ### Option 1 — direct path to the local binary
 
+<<<<<<< Updated upstream
+
 `node_modules/.bin/quickmodel` is always present after installation, regardless of internet access.
 
 <IDECommandTabs scenario="b1" />
+
+### Option 2 — `package.json` script
+
+# Add an `mcp` script to your `package.json`:
+
+`node_modules/.bin/quickmodel` is always present after installation, regardless of internet access.
+
+> > > > > > > Stashed changes
+
+<IDECommandTabs scenario="b1" />
+
+# <<<<<<< Updated upstream
 
 ### Option 2 — `package.json` script
 
@@ -36,7 +50,8 @@ Add an `mcp` script to your `package.json`:
 }
 ```
 
-Then point the IDE at that script:
+> > > > > > > Stashed changes
+> > > > > > > Then point the IDE at that script:
 
 <IDECommandTabs scenario="b2" />
 
@@ -56,10 +71,21 @@ The package is fetched on demand. **No `npm install` required** — nothing is w
 
 ## IDE reference
 
-| IDE               | Config file                                                                                                                        | Key               | Restart required |
+<<<<<<< Updated upstream
+| IDE | Config file | Key | Restart required |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------------- |
-| 💙 VS Code        | `.vscode/mcp.json`                                                                                                                 | `servers`         | Reload window    |
-| 🎯 Cursor         | `.cursor/mcp.json` (project) · `~/.cursor/mcp.json` (global)                                                                       | `mcpServers`      | Yes              |
-| 🌊 Windsurf       | `~/.codeium/windsurf/mcp_config.json`                                                                                              | `mcpServers`      | Yes              |
-| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers`      | Yes              |
-| ⚡ Zed            | Project: `.zed/settings.json` · Global: `~/.config/zed/settings.json`                                                              | `context_servers` | No               |
+| 💙 VS Code | `.vscode/mcp.json` | `servers` | Reload window |
+| 🎯 Cursor | `.cursor/mcp.json` (project) · `~/.cursor/mcp.json` (global) | `mcpServers` | Yes |
+| 🌊 Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | Yes |
+| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers` | Yes |
+| ⚡ Zed | Project: `.zed/settings.json` · Global: `~/.config/zed/settings.json` | `context_servers` | No |
+=======
+| IDE | Config file | Key | Restart required |
+| --- | --- | --- | --- |
+| 💙 VS Code | `.vscode/mcp.json` | `servers` | Reload window |
+| 🎯 Cursor | `.cursor/mcp.json` (project) · `~/.cursor/mcp.json` (global) | `mcpServers` | Yes |
+| 🌊 Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | Yes |
+| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers` | Yes |
+| ⚡ Zed | Project: `.zed/settings.json` · Global: `~/.config/zed/settings.json` | `context_servers` | No |
+
+> > > > > > > Stashed changes

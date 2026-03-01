@@ -18,20 +18,33 @@ tipos complejos (`Date`, `bigint`, `Set`, `Map`, …) a primitivos seguros para 
 import { Quick, QModel } from 'quickmodel';
 
 interface IChatMessage {
+<<<<<<< Updated upstream
 	id: string;
 	text: string;
 	sentAt: string; // ISO string
+=======
+  id: string;
+  text: string;
+  sentAt: string; // ISO string
+>>>>>>> Stashed changes
 }
 
 @Quick({ sentAt: Date })
 class ChatMessage extends QModel<IChatMessage> {
+<<<<<<< Updated upstream
 	declare id: string;
 	declare text: string;
 	declare sentAt: Date;
+=======
+  declare id: string;
+  declare text: string;
+  declare sentAt: Date;
+>>>>>>> Stashed changes
 }
 
 // Servidor WebSocket con Bun
 Bun.serve({
+<<<<<<< Updated upstream
 	port: 3000,
 	websocket: {
 		message(ws, raw) {
@@ -43,6 +56,19 @@ Bun.serve({
 			ws.send(JSON.stringify(msg.serialize()));
 		},
 	},
+=======
+  port: 3000,
+  websocket: {
+    message(ws, raw) {
+      // Deserializar mensaje entrante
+      const msg = new ChatMessage(JSON.parse(raw as string));
+      console.log(msg.sentAt instanceof Date); // true
+
+      // Serializar y emitir
+      ws.send(JSON.stringify(msg.serialize()));
+    },
+  },
+>>>>>>> Stashed changes
 });
 ```
 
@@ -52,6 +78,7 @@ Bun.serve({
 const ws = new WebSocket('ws://localhost:3000');
 
 ws.onmessage = (event) => {
+<<<<<<< Updated upstream
 	const msg = new ChatMessage(JSON.parse(event.data));
 	// msg.sentAt ya es un objeto Date
 	console.log(`[${msg.sentAt.toISOString()}] ${msg.text}`);
@@ -63,6 +90,15 @@ const salida = new ChatMessage({
 	text: '¡Hola!',
 	sentAt: new Date(),
 });
+=======
+  const msg = new ChatMessage(JSON.parse(event.data));
+  // msg.sentAt ya es un objeto Date
+  console.log(`[${msg.sentAt.toISOString()}] ${msg.text}`);
+};
+
+// Enviar un mensaje
+const salida = new ChatMessage({ id: crypto.randomUUID(), text: '¡Hola!', sentAt: new Date() });
+>>>>>>> Stashed changes
 ws.send(salida.toJSON());
 ```
 
@@ -81,6 +117,7 @@ import { ChatMessage } from './models';
 const wss = new WebSocketServer({ port: 3001 });
 
 wss.on('connection', (socket) => {
+<<<<<<< Updated upstream
 	socket.on('message', (raw) => {
 		const msg = new ChatMessage(JSON.parse(raw.toString()));
 		console.log(msg.sentAt instanceof Date); // true
@@ -88,6 +125,15 @@ wss.on('connection', (socket) => {
 		// Echo con serialización
 		socket.send(JSON.stringify(msg.serialize()));
 	});
+=======
+  socket.on('message', (raw) => {
+    const msg = new ChatMessage(JSON.parse(raw.toString()));
+    console.log(msg.sentAt instanceof Date); // true
+
+    // Echo con serialización
+    socket.send(JSON.stringify(msg.serialize()));
+  });
+>>>>>>> Stashed changes
 });
 ```
 
@@ -106,21 +152,34 @@ import { streamSSE } from 'hono/streaming';
 import { Quick, QModel } from 'quickmodel';
 
 interface IStockTick {
+<<<<<<< Updated upstream
 	symbol: string;
 	price: number;
 	ts: string;
+=======
+  symbol: string;
+  price: number;
+  ts: string;
+>>>>>>> Stashed changes
 }
 
 @Quick({ ts: Date })
 class StockTick extends QModel<IStockTick> {
+<<<<<<< Updated upstream
 	declare symbol: string;
 	declare price: number;
 	declare ts: Date;
+=======
+  declare symbol: string;
+  declare price: number;
+  declare ts: Date;
+>>>>>>> Stashed changes
 }
 
 const app = new Hono();
 
 app.get('/stocks/:symbol', (ctx) =>
+<<<<<<< Updated upstream
 	streamSSE(ctx, async (stream) => {
 		let seq = 0;
 		while (true) {
@@ -139,6 +198,26 @@ app.get('/stocks/:symbol', (ctx) =>
 			await stream.sleep(1000);
 		}
 	})
+=======
+  streamSSE(ctx, async (stream) => {
+    let seq = 0;
+    while (true) {
+      const tick = new StockTick({
+        symbol: ctx.req.param('symbol'),
+        price: 100 + Math.random(),
+        ts: new Date(),
+      });
+
+      await stream.writeSSE({
+        data: JSON.stringify(tick.serialize()),
+        event: 'tick',
+        id: String(seq++),
+      });
+
+      await stream.sleep(1000);
+    }
+  })
+>>>>>>> Stashed changes
 );
 ```
 
@@ -149,13 +228,20 @@ app.get('/stocks/:symbol', (ctx) =>
 import { Quick, QModel } from 'quickmodel';
 
 interface IEvent {
+<<<<<<< Updated upstream
 	type: string;
 	payload: string;
 	ts: string;
+=======
+  type: string;
+  payload: string;
+  ts: string;
+>>>>>>> Stashed changes
 }
 
 @Quick({ ts: Date })
 class AppEvent extends QModel<IEvent> {
+<<<<<<< Updated upstream
 	declare type: string;
 	declare payload: string;
 	declare ts: Date;
@@ -188,6 +274,40 @@ export async function GET() {
 			Connection: 'keep-alive',
 		},
 	});
+=======
+  declare type: string;
+  declare payload: string;
+  declare ts: Date;
+}
+
+export async function GET() {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      for (let idx = 0; idx < 5; idx++) {
+        const event = new AppEvent({
+          type: 'ping',
+          payload: `mensaje-${idx}`,
+          ts: new Date(),
+        });
+
+        const data = `data: ${JSON.stringify(event.serialize())}\n\n`;
+        controller.enqueue(encoder.encode(data));
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
+>>>>>>> Stashed changes
 }
 ```
 
@@ -197,9 +317,15 @@ export async function GET() {
 const source = new EventSource('/api/events');
 
 source.addEventListener('tick', (event) => {
+<<<<<<< Updated upstream
 	const tick = new StockTick(JSON.parse(event.data));
 	console.log(tick.ts instanceof Date); // true
 	console.log(tick.price);
+=======
+  const tick = new StockTick(JSON.parse(event.data));
+  console.log(tick.ts instanceof Date); // true
+  console.log(tick.price);
+>>>>>>> Stashed changes
 });
 
 source.onerror = () => source.close();
@@ -213,6 +339,7 @@ Usa `isValid()` o `checkRules()` para proteger los mensajes salientes:
 
 ```typescript
 ws.on('message', (raw) => {
+<<<<<<< Updated upstream
 	const msg = new ChatMessage(JSON.parse(raw.toString()));
 
 	if (!msg.isValid()) {
@@ -222,6 +349,17 @@ ws.on('message', (raw) => {
 	}
 
 	difundir(msg.serialize());
+=======
+  const msg = new ChatMessage(JSON.parse(raw.toString()));
+
+  if (!msg.isValid()) {
+    const { rules } = msg.validationReport();
+    ws.send(JSON.stringify({ error: rules.errors }));
+    return;
+  }
+
+  difundir(msg.serialize());
+>>>>>>> Stashed changes
 });
 ```
 
@@ -229,12 +367,22 @@ ws.on('message', (raw) => {
 
 ## Consejos
 
-| Escenario                                    | Recomendación                                                    |
+<<<<<<< Updated upstream
+| Escenario | Recomendación |
 | -------------------------------------------- | ---------------------------------------------------------------- |
-| Ticks de alta frecuencia (>1 000/s)          | Usa `@Quick({}, { performance: { disableSafetyChecks: true } })` |
-| Propiedades desconocidas de fuentes externas | Usa `unknownPropertyPolicy: 'keep'`                              |
-| Payloads binarios grandes                    | Usa `toReadableStream()` + `pipeStream()` en lugar de JSON       |
-| Variante de modelo por conexión              | Usa `QModel.configure()` con `static config` por clase           |
+| Ticks de alta frecuencia (>1 000/s) | Usa `@Quick({}, { performance: { disableSafetyChecks: true } })` |
+| Propiedades desconocidas de fuentes externas | Usa `unknownPropertyPolicy: 'keep'` |
+| Payloads binarios grandes | Usa `toReadableStream()` + `pipeStream()` en lugar de JSON |
+| Variante de modelo por conexión | Usa `QModel.configure()` con `static config` por clase |
+=======
+| Escenario | Recomendación |
+|---|---|
+| Ticks de alta frecuencia (>1 000/s) | Usa `@Quick({}, { performance: { disableSafetyChecks: true } })` |
+| Propiedades desconocidas de fuentes externas | Usa `unknownPropertyPolicy: 'keep'` |
+| Payloads binarios grandes | Usa `toReadableStream()` + `pipeStream()` en lugar de JSON |
+| Variante de modelo por conexión | Usa `QModel.configure()` con `static config` por clase |
+
+> > > > > > > Stashed changes
 
 ---
 

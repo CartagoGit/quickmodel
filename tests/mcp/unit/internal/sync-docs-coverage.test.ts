@@ -1,13 +1,18 @@
 /**
- * Dedicated coverage tests for QSyncDocsTool.
+ * Dedicated coverage tests for QSyncDocsTool private methods.
  *
- * The general all-tools.test.ts mocks `getDefaultTools` but the real
- * execute() calls `getDefaultInternalTools` + `getDefaultPublicTools`.
- * This file provides the correct mock so all private methods are covered:
- *   - generateToolMd
- *   - generateTransformerMd
- *   - writeDoc
- *   - injectDoc (all three branches: not-found / no-marker / marker-present)
+ * Testing strategy: access private methods via `(tool as any).method()` to
+ * avoid polluting the global module registry with `mock.module()`.
+ * This covers all uncovered branches WITHOUT causing cross-file contamination.
+ *
+ * Covered:
+ *   - generateToolMd (lines 123-154): HTML escaping, schema shape iteration
+ *   - generateTransformerMd (lines 165-180): table generation, sorting
+ *   - writeDoc (lines 191-194): mkdirSync + writeFileSync + push
+ *   - injectDoc (lines 205-229):
+ *       Branch A — file not found → skip
+ *       Branch B — file found, no marker → append
+ *       Branch C — file found, marker present → replace
  */
 import { describe, it, expect, mock } from 'bun:test';
 import { z } from 'zod';

@@ -99,6 +99,72 @@ describe('QGetModelSchemaTool', () => {
 		expect(result.format).toBe('json');
 	});
 
+	it('should generate prisma schema as string', async () => {
+		const tool = new QGetModelSchemaTool();
+		const result = await tool.execute({
+			code: sampleCode,
+			format: 'prisma',
+		});
+
+		expect(typeof result.schema).toBe('string');
+		expect(result.schema).toContain('model');
+	});
+
+	it('should generate valibot schema as string', async () => {
+		const tool = new QGetModelSchemaTool();
+		const result = await tool.execute({
+			code: sampleCode,
+			format: 'valibot',
+		});
+
+		expect(typeof result.schema).toBe('string');
+		expect(result.schema).toContain('v.object(');
+	});
+
+	it('should generate yup schema as string', async () => {
+		const tool = new QGetModelSchemaTool();
+		const result = await tool.execute({
+			code: sampleCode,
+			format: 'yup',
+		});
+
+		expect(typeof result.schema).toBe('string');
+		expect(result.schema).toContain('yup.object(');
+	});
+
+	it('should generate drizzle schema as string', async () => {
+		const tool = new QGetModelSchemaTool();
+		const result = await tool.execute({
+			code: sampleCode,
+			format: 'drizzle',
+		});
+
+		expect(typeof result.schema).toBe('string');
+		expect(result.schema).toContain('pgTable(');
+	});
+
+	it('should generate typebox schema as string', async () => {
+		const tool = new QGetModelSchemaTool();
+		const result = await tool.execute({
+			code: sampleCode,
+			format: 'typebox',
+		});
+
+		expect(typeof result.schema).toBe('string');
+		expect(result.schema).toContain('Type.Object(');
+	});
+
+	it('should generate effect-schema as string', async () => {
+		const tool = new QGetModelSchemaTool();
+		const result = await tool.execute({
+			code: sampleCode,
+			format: 'effect-schema',
+		});
+
+		expect(typeof result.schema).toBe('string');
+		expect(result.schema).toContain('Schema.Struct(');
+	});
+
 	it('should throw on unsupported format', () => {
 		const tool = new QGetModelSchemaTool();
 
