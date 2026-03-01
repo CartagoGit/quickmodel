@@ -58,9 +58,10 @@ describe('QGetFormSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode });
 
 		for (const entry of result.schema) {
-			expect(typeof entry.field).toBe('string');
-			expect(typeof entry.widget).toBe('string');
-			expect(typeof entry.label).toBe('string');
+			const field = entry as Record<string, unknown>;
+			expect(typeof field['field']).toBe('string');
+			expect(typeof field['widget']).toBe('string');
+			expect(typeof field['label']).toBe('string');
 		}
 	});
 
@@ -70,10 +71,10 @@ describe('QGetFormSchemaTool', () => {
 
 		const nameEntry = result.schema.find(
 			(entry: any) => entry.field === 'name'
-		);
+		) as any;
 		const ageEntry = result.schema.find(
 			(entry: any) => entry.field === 'age'
-		);
+		) as any;
 
 		expect(nameEntry?.required).toBe(true);
 		expect(ageEntry?.required).toBeFalsy();
@@ -85,7 +86,7 @@ describe('QGetFormSchemaTool', () => {
 
 		const emailEntry = result.schema.find(
 			(entry: any) => entry.field === 'email'
-		);
+		) as any;
 		expect(emailEntry?.hint).toBeDefined();
 	});
 

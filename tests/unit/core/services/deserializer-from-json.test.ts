@@ -16,7 +16,7 @@ import { Quick, QModel } from '@/index';
 // Simple model fixture
 // ---------------------------------------------------------------------------
 
-interface IProduct {
+interface IProduct extends Record<string, unknown> {
 	name: string;
 	price: number;
 	createdAt: Date;

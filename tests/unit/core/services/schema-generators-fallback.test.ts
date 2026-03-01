@@ -140,7 +140,9 @@ describe('QModel.getSchema("json"): properties not in type map are excluded', ()
 
 		// createdAt IS present because it IS in the type map
 		expect(schema.properties).toHaveProperty('createdAt');
-		expect(schema.properties.createdAt).toMatchObject({
+		expect(
+			(schema.properties as Record<string, unknown>)['createdAt']
+		).toMatchObject({
 			type: 'string',
 			format: 'date-time',
 		});
@@ -158,10 +160,11 @@ describe('QModel.getSchema("json"): properties not in type map are excluded', ()
 		const schema = FullUser.getSchema('json');
 
 		// All types correct when explicitly mapped
-		expect(schema.properties.id).toEqual({ type: 'number' });
-		expect(schema.properties.name).toEqual({ type: 'string' });
-		expect(schema.properties.active).toEqual({ type: 'boolean' });
-		expect(schema.properties.createdAt).toMatchObject({
+		const props = schema.properties as Record<string, unknown>;
+		expect(props['id']).toEqual({ type: 'number' });
+		expect(props['name']).toEqual({ type: 'string' });
+		expect(props['active']).toEqual({ type: 'boolean' });
+		expect(props['createdAt']).toMatchObject({
 			type: 'string',
 			format: 'date-time',
 		});
@@ -201,10 +204,11 @@ describe('QModel.getSchema("json"): properties not in type map are excluded', ()
 
 		const schema = ProductModel.getSchema('json');
 
-		expect(schema.properties.id).toEqual({ type: 'number' });
-		expect(schema.properties.score).toEqual({ type: 'number' });
-		expect(schema.properties.verified).toEqual({ type: 'boolean' });
-		expect(schema.properties.tags).toMatchObject({ type: 'array' });
+		const schemaProps = schema.properties as Record<string, unknown>;
+		expect(schemaProps['id']).toEqual({ type: 'number' });
+		expect(schemaProps['score']).toEqual({ type: 'number' });
+		expect(schemaProps['verified']).toEqual({ type: 'boolean' });
+		expect(schemaProps['tags']).toMatchObject({ type: 'array' });
 	});
 });
 
@@ -222,6 +226,8 @@ describe('Cross-generator fallback consistency', () => {
 			properties: ['mystery'],
 		});
 
-		expect(jsonSchema.properties.mystery).toEqual({ type: 'string' });
+		expect(
+			(jsonSchema.properties as Record<string, unknown>)['mystery']
+		).toEqual({ type: 'string' });
 	});
 });

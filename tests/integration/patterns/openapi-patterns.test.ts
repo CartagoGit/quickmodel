@@ -232,7 +232,7 @@ describe('JSON Schema Draft-07 — requestBody usage', () => {
 	test('JSON Schema properties match OpenAPI properties keys', () => {
 		const jsonSchema = CreateUserDto.getSchema('json');
 		const openapiSchema = CreateUserDto.getSchema('openapi');
-		const jsonKeys = Object.keys(jsonSchema.properties);
+		const jsonKeys = Object.keys(jsonSchema.properties as object);
 		const openapiKeys = Object.keys(
 			openapiSchema.properties as Record<string, unknown>
 		);
@@ -297,8 +297,8 @@ describe('AJV schema — fast validation adapter', () => {
 		const ajv = CreateUserDto.getSchema('ajv');
 		const json = CreateUserDto.getSchema('json');
 		// Both expose properties and required — AJV is a superset for validation
-		expect(Object.keys(ajv.properties)).toEqual(
-			expect.arrayContaining(Object.keys(json.properties))
+		expect(Object.keys(ajv.properties as object)).toEqual(
+			expect.arrayContaining(Object.keys(json.properties as object))
 		);
 	});
 });

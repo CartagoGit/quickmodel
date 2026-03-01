@@ -15,15 +15,15 @@ import {
 export function describeBench(): void {
 	describe('Resumen — Feature matrix comparativa por categoría', () => {
 		test('Feature matrix completa con contexto por benchmark', () => {
-			const _tbIcon = typeboxMod ? '✅' : 'N/I';
-			const _vbIcon = valibotMod ? '⚠️ ' : 'N/I';
-			const _ctIcon = ctMod ? '⚠️ ' : 'N/I';
-			const _ypIcon = yupMod ? '⚠️ ' : 'N/I';
-			const _arkIcon = arktypeMod ? '✅' : 'N/I';
-			const _sjIcon = superjsonMod ? '✅' : 'N/I';
-			const _cvIcon = cvMod ? '✅' : 'N/I';
-			const _vestIcon = vestMod ? '⚠️ ' : 'N/I';
-			const _joiIcon = joiMod ? '⚠️ ' : 'N/I';
+			void (typeboxMod ? '✅' : 'N/I'); // _tbIcon
+			void (valibotMod ? '⚠️ ' : 'N/I'); // _vbIcon
+			void (ctMod ? '⚠️ ' : 'N/I'); // _ctIcon
+			void (yupMod ? '⚠️ ' : 'N/I'); // _ypIcon
+			void (arktypeMod ? '✅' : 'N/I'); // _arkIcon
+			void (superjsonMod ? '✅' : 'N/I'); // _sjIcon
+			void (cvMod ? '✅' : 'N/I'); // _cvIcon
+			void (vestMod ? '⚠️ ' : 'N/I'); // _vestIcon
+			void (joiMod ? '⚠️ ' : 'N/I'); // _joiIcon
 
 			expect(true).toBe(true);
 		});

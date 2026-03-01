@@ -189,7 +189,9 @@ describe('QSyncDocsTool – injectDoc', () => {
 			updatedFiles
 		);
 		expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
-		const written = mockFs.writeFileSync.mock.calls[0]?.[1] as string;
+		const written = (
+			mockFs.writeFileSync.mock.calls[0] as unknown[]
+		)?.[1] as string;
 		expect(written).toContain('# Existing docs');
 		expect(written).toContain('<!-- TOOLS-START -->');
 		expect(written).toContain('## `my_tool`');
@@ -210,7 +212,9 @@ describe('QSyncDocsTool – injectDoc', () => {
 			updatedFiles
 		);
 		expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
-		const written = mockFs.writeFileSync.mock.calls[0]?.[1] as string;
+		const written = (
+			mockFs.writeFileSync.mock.calls[0] as unknown[]
+		)?.[1] as string;
 		expect(written).toContain('# Reference');
 		expect(written).toContain(MARKER);
 		expect(written).toContain('new_tool');

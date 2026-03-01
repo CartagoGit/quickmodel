@@ -237,6 +237,7 @@ function fromTypeScriptInterface(src: string, className?: string): string {
 	const ifaceName = interfaceMatch[1] ?? 'IGeneratedModel';
 	const body = interfaceMatch[2] ?? '';
 
+	// Derive class name: strip leading 'I' from PascalCase interface names (e.g. IUser → User)
 	const baseName =
 		className ??
 		(ifaceName.startsWith('I') &&
@@ -268,25 +269,12 @@ function fromTypeScriptInterface(src: string, className?: string): string {
 		declareLines.push(`\tdeclare ${key}: ${tsType};`);
 	}
 
-	const iName = `I${baseName}`;
-	const quickConfig =
-		decoratorLines.length > 0
-			? `@Quick({\n${decoratorLines.join(',\n')}\n})`
-			: '@Quick({})';
-
-	return [
-		`import { QModel, Quick } from 'quickmodel';`,
-		'',
-		`interface ${iName} {`,
-		...interfaceLines,
-		`}`,
-		'',
-		quickConfig,
-		`export class ${baseName} extends QModel<${iName}> {`,
-		...declareLines,
-		`}`,
-		'',
-	].join('\n');
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
 }
 
 // ── Public service ───────────────────────────────────────────────────────────

@@ -29,7 +29,7 @@ export function describeBench(): void {
 			const holder = new DateHolder(input as unknown as IDateHolder); // @quickmodel-rule-ignore: no-as-unknown
 			const elapsed = performance.now() - start;
 
-			const _transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
+			void Math.round((10_000 / elapsed) * 1_000); // _transformsPerSec
 
 			expect(holder.dates[0]).toBeInstanceOf(Date);
 			expect(holder.dates[9_999]).toBeInstanceOf(Date);
@@ -67,7 +67,7 @@ export function describeBench(): void {
 			const holder = pti(CTDateHolder, input);
 			const elapsed = performance.now() - start;
 
-			const _transformsPerSec = Math.round((10_000 / elapsed) * 1_000);
+			void Math.round((10_000 / elapsed) * 1_000); // _transformsPerSec
 
 			expect(holder.dates[0]).toBeInstanceOf(Date);
 			expect(holder.dates[9_999]).toBeInstanceOf(Date);
@@ -97,7 +97,7 @@ export function describeBench(): void {
 			models.forEach((model) => model.serialize());
 			const elapsed = performance.now() - start;
 
-			const _opsPerSec = Math.round((1_000 / elapsed) * 1_000);
+			void Math.round((1_000 / elapsed) * 1_000); // _opsPerSec
 			expect(elapsed).toBeLessThan(50);
 		});
 	});

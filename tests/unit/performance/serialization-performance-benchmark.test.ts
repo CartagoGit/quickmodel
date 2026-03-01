@@ -41,7 +41,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 		const end = performance.now();
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 10k objetos
 	});
@@ -63,7 +63,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 
 		const end = performance.now();
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 10k instancias
 	});
@@ -89,7 +89,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / users.length;
+		void (totalTime / users.length); // _avgTime
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
 	});
@@ -113,7 +113,7 @@ describe('Performance: Costo de serialización/deserialización', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / plainUsers.length;
+		void (totalTime / plainUsers.length); // _avgTime
 
 		expect(totalTime).toBeLessThan(100); // Debe ser < 100ms para 1k objetos
 	});
@@ -172,7 +172,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(250); // Debe ser < 250ms para 1k carts
 	});
@@ -196,7 +196,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k carts
 	});
@@ -220,7 +220,7 @@ describe('Performance: Costo de inferencia de arrays', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 carts grandes
 	});
@@ -313,7 +313,7 @@ describe('Performance: Costo de anidación profunda', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(300); // Debe ser < 300ms para 1k estructuras
 	});
@@ -340,7 +340,7 @@ describe('Performance: Costo de anidación profunda', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(500); // Debe ser < 500ms para 100 estructuras
 	});
@@ -387,7 +387,7 @@ describe('Performance: Tipos complejos', () => {
 		const end = performance.now();
 
 		const totalTime = end - start;
-		const _avgTime = totalTime / iterations;
+		void (totalTime / iterations); // _avgTime
 
 		expect(totalTime).toBeLessThan(200); // Debe ser < 200ms para 1k modelos
 	});

@@ -184,8 +184,11 @@ export function describeBench(): void {
 			}
 
 			const _cvIcon = cvMod ? '✅' : 'N/I';
+			void _cvIcon;
 			const _vestIcon = vestMod ? '⚠️ ' : 'N/I';
+			void _vestIcon;
 			const _joiIcon = joiMod ? '⚠️ ' : 'N/I';
+			void _joiIcon;
 
 			expect(allResults.length).toBeGreaterThan(0);
 		});
