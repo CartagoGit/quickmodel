@@ -43,7 +43,7 @@ import { QModelError } from '@/core/errors/quickmodel.error';
  * class Model extends QModel<IModel> {
  *   declare cache: WeakMap<object, string>;
  * }
- * model.toJSON(); // Throws error
+ * model.$qToJSON(); // Throws error
  * ```
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap | MDN WeakMap}
@@ -159,7 +159,7 @@ export class WeakMapTransformer extends BaseTransformer<
  * class Model extends QModel<IModel> {
  *   declare tracked: WeakSet<object>;
  * }
- * model.toJSON(); // Throws error
+ * model.$qToJSON(); // Throws error
  * ```
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet | MDN WeakSet}

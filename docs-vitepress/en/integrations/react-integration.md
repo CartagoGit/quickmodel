@@ -125,12 +125,12 @@ const [form, setForm] = useState(() => new LoginForm({}));
 
 const handleChange = (field: keyof ILoginForm, value: string) => {
 	// copy() is IMMUTABLE — captures the new instance
-	setForm((prev) => prev.$qm.copy({ [field]: value }) as LoginForm);
+	setForm((prev) => prev.$qCopy({ [field]: value }) as LoginForm);
 };
 
 const handleSubmit = (e: FormEvent) => {
 	e.preventDefault();
-	const { valid, errors: ruleErrors } = form.$qm.checkRules();
+	const { valid, errors: ruleErrors } = form.$qCheckRules();
 	if (!valid) {
 		const map: Record<string, string> = {};
 		ruleErrors.forEach((err) => {
@@ -188,7 +188,7 @@ export function createQModelResolver<T extends QModel<object>>(
 ): Resolver<T> {
 	return (values) => {
 		const instance = new FormClass(values);
-		const { valid, errors } = instance.$qm.checkRules();
+		const { valid, errors } = instance.$qCheckRules();
 		if (valid) return { values, errors: {} };
 		return {
 			values: {},
@@ -249,7 +249,7 @@ export async function createOrder(formData: FormData) {
 	const raw = Object.fromEntries(formData);
 	const dto = new OrderItemDto(raw); // auto-coerces strings to numbers
 	// dto.totalPrice is available as a @QComputed field
-	return dto.$qm.serialize();
+	return dto.$qSerialize();
 }
 ```
 
@@ -303,7 +303,7 @@ const useCartStore = create<ICartStore>((set, get) => ({
 			if (!current) return state;
 			const items = new Map(state.items);
 			// copy() is IMMUTABLE — always capture the returned new instance
-			items.set(sku, current.$qm.copy({ qty }));
+			items.set(sku, current.$qCopy({ qty }));
 			return { items };
 		}),
 
@@ -325,11 +325,11 @@ export function useQModel<T extends object, M extends QModel<T>>(initial: M) {
 	const [model, dispatch] = useReducer((_prev: M, next: M) => next, initial);
 
 	const update = useCallback(
-		(patch: Partial<T>) => dispatch(model.$qm.copy(patch) as M), // as M is safe: M extends QModel<T>
+		(patch: Partial<T>) => dispatch(model.$qCopy(patch) as M), // as M is safe: M extends QModel<T>
 		[model]
 	);
 
-	return { model, update, snapshot: model.$qm.serialize() };
+	return { model, update, snapshot: model.$qSerialize() };
 }
 ```
 
@@ -367,5 +367,5 @@ if (!result.valid) {
 const raw = await fetch('/api/products').then((r) => r.json());
 const { instances, errors } = ProductModel.createMany(raw);
 // All items are coerced and type-safe
-const serialized = instances.map((p) => p.$qm.serialize());
+const serialized = instances.map((p) => p.$qSerialize());
 ```

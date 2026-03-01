@@ -24,7 +24,7 @@ describe('Security: toInterface Injection', () => {
 		const model = new Nesthetic(hazardousPayload);
 
 		// 3. toInterface()
-		const output = model.toInterface();
+		const output = model.$qToInterface();
 
 		// 4. Verify output is clean
 		const outputUntouched = output.untouched;
@@ -46,7 +46,7 @@ describe('Security: toInterface Injection', () => {
 		};
 
 		const model = new Nesthetic(payload);
-		const output = model.toInterface();
+		const output = model.$qToInterface();
 		const obj = output.untouched;
 
 		expect(obj).not.toHaveProperty('constructor', 'fake');
@@ -65,7 +65,7 @@ describe('Security: toInterface Injection', () => {
 		};
 
 		const model = new Nesthetic(payload);
-		const output = model.toInterface();
+		const output = model.$qToInterface();
 		const arr = output.untouched as any[];
 
 		expect(Array.isArray(arr)).toBe(true);
@@ -88,7 +88,7 @@ describe('Security: toInterface Injection', () => {
 		const payload = { untouched: nullProtoObj };
 		const model = new Nesthetic(payload);
 
-		const output = model.toInterface();
+		const output = model.$qToInterface();
 		const resultObj = output.untouched;
 
 		expect(resultObj.valid).toBe('data');
@@ -108,7 +108,7 @@ describe('Security: toInterface Injection', () => {
         }`);
 
 		const model = new Nesthetic(payload);
-		const output = model.toInterface();
+		const output = model.$qToInterface();
 		const nested = output.untouched.level1.level2;
 
 		expect(nested.clean).toBe('yes');

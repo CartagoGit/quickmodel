@@ -96,7 +96,7 @@ describe('Deserializer.deserializeFromJson', () => {
 		expect(instance.count).toBe(42);
 	});
 
-	test('roundtrip: JSON.stringify(instance.$qm.serialize()) ↔ deserializeFromJson produces equivalent instance', () => {
+	test('roundtrip: JSON.stringify(instance.$qSerialize()) ↔ deserializeFromJson produces equivalent instance', () => {
 		const deserializer = new Deserializer<IProduct, Product>();
 
 		const original = new Product({
@@ -105,7 +105,7 @@ describe('Deserializer.deserializeFromJson', () => {
 			createdAt: new Date('2024-03-01'),
 		});
 
-		const json = JSON.stringify(original.$qm.serialize());
+		const json = JSON.stringify(original.$qSerialize());
 		const roundtrip = deserializer.deserializeFromJson(json, Product);
 
 		expect(roundtrip.name).toBe(original.name);

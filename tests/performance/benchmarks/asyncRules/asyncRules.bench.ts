@@ -1,7 +1,5 @@
 import { describe, expect, test } from 'bun:test';
 
-import { qCheckRulesAsync } from '@/forms';
-
 import type { IBenchResult } from '../bench.types';
 import {
 	runBenchAsync,
@@ -37,7 +35,7 @@ export function describeBench(): void {
 				ITERS,
 				async () => {
 					await asyncYupSchema
-						.validate(validSignupData, { abortEarly: false })
+						.$qValidate(validSignupData, { abortEarly: false })
 						.catch(() => {});
 				}
 			);
@@ -149,7 +147,7 @@ export function describeBench(): void {
 						ITERS,
 						async () => {
 							await asyncYupSchema2
-								.validate(validSignupData, {
+								.$qValidate(validSignupData, {
 									abortEarly: false,
 								})
 								.catch(() => {});

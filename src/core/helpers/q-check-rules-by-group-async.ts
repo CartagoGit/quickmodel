@@ -15,8 +15,8 @@
  * @module
  */
 
-import { qGetGroups } from './q-get-groups';
-import { qCheckRulesAsync } from './q-check-rules-async';
+import { $qGetGroups } from './q-get-groups';
+import { $qCheckRulesAsync } from './q-check-rules-async';
 import type {
 	IQRulesResult,
 	IQRulesAsyncOptions,
@@ -76,18 +76,18 @@ import type {
  * @see {@link qCheckRulesByGroup} — synchronous variant of this function
  * @see {@link qCheckRulesAsync} — async check without group segmentation
  */
-export async function qCheckRulesByGroupAsync(
+export async function $qCheckRulesByGroupAsync(
 	instance: object,
 	options?: Omit<IQRulesAsyncOptions, 'mode'> & {
 		mode?: IQRulesAsyncOptions['mode'];
 	}
 ): Promise<Record<string, IQRulesResult>> {
-	const groups = qGetGroups(instance);
+	const groups = $qGetGroups(instance);
 	const result: Record<string, IQRulesResult> = {};
 
 	await Promise.all(
 		groups.map(async (grp) => {
-			result[grp] = await qCheckRulesAsync(instance, {
+			result[grp] = await $qCheckRulesAsync(instance, {
 				...options,
 				group: grp,
 			});

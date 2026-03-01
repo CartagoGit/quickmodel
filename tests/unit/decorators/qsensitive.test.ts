@@ -60,7 +60,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			password: 'secret123',
 			token: 'tok_abc',
 		});
-		const result = user.$qm.serialize() as Record<string, unknown>;
+		const result = user.$qSerialize() as Record<string, unknown>;
 		expect(result['password']).toBeUndefined();
 		expect(result['token']).toBeUndefined();
 	});
@@ -73,7 +73,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			password: 'secret123',
 			token: 'tok_abc',
 		});
-		const result = user.$qm.serialize() as Record<string, unknown>;
+		const result = user.$qSerialize() as Record<string, unknown>;
 		expect(result['id']).toBe(1);
 		expect(result['name']).toBe('Alice');
 		expect(result['email']).toBe('alice@example.com');
@@ -87,7 +87,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			password: 'secret123',
 			token: 'tok_abc',
 		});
-		const result = user.$qm.serialize({ includeSensitive: true }) as Record<
+		const result = user.$qSerialize({ includeSensitive: true }) as Record<
 			string,
 			unknown
 		>;
@@ -116,7 +116,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			password: 'secret123',
 			token: 'tok_abc',
 		});
-		const iface = user.toInterface();
+		const iface = user.$qToInterface();
 		expect(iface.password).toBe('secret123');
 	});
 
@@ -137,7 +137,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			username: 'alice',
 			apiKey: 'sk_live_abc123',
 		});
-		const result = profile.$qm.serialize() as Record<string, unknown>;
+		const result = profile.$qSerialize() as Record<string, unknown>;
 		expect(result['apiKey']).toBeUndefined();
 		expect(result['id']).toBe('p1');
 		expect(result['username']).toBe('alice');
@@ -149,7 +149,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			username: 'alice',
 			apiKey: 'sk_live_abc123',
 		});
-		const result = profile.$qm.serialize({
+		const result = profile.$qSerialize({
 			includeSensitive: true,
 		}) as Record<string, unknown>;
 		expect(result['apiKey']).toBe('sk_live_abc123');
@@ -163,7 +163,7 @@ describe('@QSensitive — exclusión por defecto', () => {
 			password: 'secret123',
 			token: 'tok_abc',
 		});
-		const copy = user.$qm.copy({ name: 'Bob' });
+		const copy = user.$qCopy({ name: 'Bob' });
 		expect(copy.password).toBe('secret123');
 	});
 
@@ -175,8 +175,8 @@ describe('@QSensitive — exclusión por defecto', () => {
 			password: 'secret123',
 			token: 'tok_abc',
 		});
-		const copy = user.$qm.copy({ name: 'Bob' });
-		const result = copy.$qm.serialize() as Record<string, unknown>;
+		const copy = user.$qCopy({ name: 'Bob' });
+		const result = copy.$qSerialize() as Record<string, unknown>;
 		expect(result['password']).toBeUndefined();
 		expect(result['token']).toBeUndefined();
 	});
@@ -191,6 +191,6 @@ describe('@QSensitive — exclusión por defecto', () => {
 			token: 'tok_abc',
 		});
 		// No hay reglas en este modelo, pero checkRules debe ejecutarse sin errores
-		expect(() => user.$qm.checkRules()).not.toThrow();
+		expect(() => user.$qCheckRules()).not.toThrow();
 	});
 });

@@ -201,9 +201,9 @@ const existing = new UserRecordDto(
 );
 
 // Apply only the fields that changed:
-const updated = existing.$qm.copy({ score: 100, role: 'admin' });
+const updated = existing.$qCopy({ score: 100, role: 'admin' });
 
-if (updated.$qm.isDirty()) {
+if (updated.$qIsDirty()) {
 	await prisma.user.update({
 		where: { uid: updated.uid },
 		data: { score: updated.score, role: updated.role },
@@ -256,7 +256,7 @@ class PostRecordDto extends QModel<IPostRecord> {
 const post = new PostRecordDto(
 	await prisma.post.findUniqueOrThrow({ where: { pid } })
 );
-return post.$qm.serialize(); // includes excerpt ✅
+return post.$qSerialize(); // includes excerpt ✅
 ```
 
 ## DB Uniqueness Validation

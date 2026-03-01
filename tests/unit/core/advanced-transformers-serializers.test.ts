@@ -42,7 +42,7 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 		expect(event.timestamp.toISOString()).toBe('2024-01-01T00:00:00.000Z');
 
 		// 2. Check toInterface (Serialization back to original format)
-		const output = event.toInterface();
+		const output = event.$qToInterface();
 		expect(output.timestamp).toBeTypeOf('number');
 		expect(output.timestamp).toBe(inputTime);
 
@@ -76,7 +76,7 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 
 		// toInterface should return the current value because no serializer is defined,
 		// and the standard string behavior preserves the value.
-		expect(user.toInterface().email).toBe('TEST@EXAMPLE.COM');
+		expect(user.$qToInterface().email).toBe('TEST@EXAMPLE.COM');
 	});
 
 	test('should allow one-way serialization (serializer only)', () => {
@@ -105,7 +105,7 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 		expect(item.code).toBe('123');
 
 		// Output is transformed (custom serializer)
-		const output = item.toInterface();
+		const output = item.$qToInterface();
 		expect(output.code).toBe('PREFIX_123');
 	});
 
@@ -138,7 +138,7 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 		expect(time.stamp.toISOString()).toBe(new Date(1000000).toISOString());
 
 		// 2. Serialization (Option serializer)
-		const output = time.toInterface();
+		const output = time.$qToInterface();
 		expect(output.stamp).toBe(1000);
 	});
 
@@ -222,7 +222,7 @@ describe('Advanced Options: Custom Transformers & Serializers', () => {
 		}
 
 		const data = new Data({ value: 100 });
-		const raw = data.toInterface();
+		const raw = data.$qToInterface();
 
 		expect(data.value).toBe(100); // Model has correct value
 		expect(raw.value).toBe(999); // Serializer overrode the output

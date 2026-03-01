@@ -13,8 +13,8 @@
  * @module
  */
 
-import { qGetGroups } from './q-get-groups';
-import { qCheckRules } from './q-check-rules';
+import { $qGetGroups } from './q-get-groups';
+import { $qCheckRules } from './q-check-rules';
 import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
 
 /**
@@ -68,14 +68,14 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  * @see {@link qCheckRules} — the underlying function called per group
  * @see {@link qCheckRulesByGroupAsync} — async variant of this function
  */
-export function qCheckRulesByGroup(
+export function $qCheckRulesByGroup(
 	instance: object
 ): Record<string, IQRulesResult> {
-	const groups = qGetGroups(instance);
+	const groups = $qGetGroups(instance);
 	const result: Record<string, IQRulesResult> = {};
 
 	for (const group of groups) {
-		result[group] = qCheckRules(instance, { group });
+		result[group] = $qCheckRules(instance, { group });
 	}
 
 	return result;

@@ -42,7 +42,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		expect(user.active).toBe(true);
 
 		// Serialization should work
-		const json = user.$qm.serialize();
+		const json = user.$qSerialize();
 		expect(json).toEqual({
 			id: '1',
 			name: 'Alice',
@@ -315,7 +315,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 			date: new Date('2024-01-01'),
 		});
 
-		const copied = original.$qm.copy();
+		const copied = original.$qCopy();
 
 		expect(copied).not.toBe(original);
 		expect(copied.id).toBe(original.id);
@@ -351,7 +351,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		const auto = new UserAuto(data);
 
 		// Both should work identically
-		expect(manual.$qm.serialize()).toEqual(auto.$qm.serialize());
+		expect(manual.$qSerialize()).toEqual(auto.$qSerialize());
 		expect(manual.toJSON()).toBe(auto.toJSON());
 	});
 });

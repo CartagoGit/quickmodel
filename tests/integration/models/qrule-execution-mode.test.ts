@@ -62,7 +62,7 @@ describe('default mode (undefined) — behaves as parallel', () => {
 				gamma: 'x',
 			});
 			const start = Date.now();
-			const result = await model.$qm.checkRulesAsync(); // no mode
+			const result = await model.$qCheckRulesAsync(); // no mode
 			const elapsed = Date.now() - start;
 
 			expect(result.valid).toBe(true);
@@ -95,7 +95,7 @@ describe("mode: 'parallel' — explicit opt-in mirrors default", () => {
 				valY: 'b',
 			});
 			const start = Date.now();
-			await model.$qm.checkRulesAsync({ mode: 'parallel' });
+			await model.$qCheckRulesAsync({ mode: 'parallel' });
 			const elapsed = Date.now() - start;
 
 			expect(elapsed).toBeLessThan(100);
@@ -114,8 +114,8 @@ describe("mode: 'parallel' — explicit opt-in mirrors default", () => {
 
 			const model = SameModel.create({ val: 'val' });
 			const [noMode, explicitParallel] = await Promise.all([
-				model.$qm.checkRulesAsync(),
-				model.$qm.checkRulesAsync({ mode: 'parallel' }),
+				model.$qCheckRulesAsync(),
+				model.$qCheckRulesAsync({ mode: 'parallel' }),
 			]);
 
 			expect(noMode.valid).toBe(explicitParallel.valid);
@@ -395,7 +395,7 @@ describe('timing: serial O(Σ) vs parallel O(max)', () => {
 		'serial mode: total time ≥ Σ individual times',
 		async () => {
 			const start = Date.now();
-			await instance.$qm.checkRulesAsync({ mode: 'serial' });
+			await instance.$qCheckRulesAsync({ mode: 'serial' });
 			const elapsed = Date.now() - start;
 
 			// 3 × 40 ms = 120 ms minimum for serial
@@ -408,7 +408,7 @@ describe('timing: serial O(Σ) vs parallel O(max)', () => {
 		'parallel mode: total time ≈ max individual time',
 		async () => {
 			const start = Date.now();
-			await instance.$qm.checkRulesAsync({ mode: 'parallel' });
+			await instance.$qCheckRulesAsync({ mode: 'parallel' });
 			const elapsed = Date.now() - start;
 
 			// All three fire simultaneously — should finish in ~40 ms
@@ -761,8 +761,8 @@ describe('serial vs parallel — identical outcomes for deterministic predicates
 
 	beforeAll(async () => {
 		[serialResult, parallelResult] = await Promise.all([
-			instance.$qm.checkRulesAsync({ mode: 'serial' }),
-			instance.$qm.checkRulesAsync({ mode: 'parallel' }),
+			instance.$qCheckRulesAsync({ mode: 'serial' }),
+			instance.$qCheckRulesAsync({ mode: 'parallel' }),
 		]);
 	});
 
@@ -809,7 +809,7 @@ describe('isValidAsync and validationReportAsync respect mode option', () => {
 		async () => {
 			const model = PropModel.create({ email: 'ok@x.com', age: 25 });
 			expect(
-				await model.$qm.isValidAsync({ mode: 'serial', timeoutMs: 300 })
+				await model.$qIsValidAsync({ mode: 'serial', timeoutMs: 300 })
 			).toBe(true);
 		},
 		{ timeout: 600 }
@@ -820,7 +820,7 @@ describe('isValidAsync and validationReportAsync respect mode option', () => {
 		async () => {
 			const model = PropModel.create({ email: 'ok@x.com', age: 25 });
 			expect(
-				await model.$qm.isValidAsync({ mode: 'serial', timeoutMs: 30 })
+				await model.$qIsValidAsync({ mode: 'serial', timeoutMs: 30 })
 			).toBe(false);
 		},
 		{ timeout: 500 }
@@ -831,7 +831,7 @@ describe('isValidAsync and validationReportAsync respect mode option', () => {
 		async () => {
 			const model = PropModel.create({ email: 'ok@x.com', age: 25 });
 			expect(
-				await model.$qm.isValidAsync({
+				await model.$qIsValidAsync({
 					mode: 'parallel',
 					timeoutMs: 30,
 				})
@@ -844,7 +844,7 @@ describe('isValidAsync and validationReportAsync respect mode option', () => {
 		'validationReportAsync — serial mode: timedOut in report.rules',
 		async () => {
 			const model = PropModel.create({ email: 'ok@x.com', age: 25 });
-			const report = await model.$qm.validationReportAsync({
+			const report = await model.$qValidationReportAsync({
 				mode: 'serial',
 				timeoutMs: 30,
 			});
@@ -860,7 +860,7 @@ describe('isValidAsync and validationReportAsync respect mode option', () => {
 		'validationReportAsync — parallel mode: timedOut in report.rules',
 		async () => {
 			const model = PropModel.create({ email: 'ok@x.com', age: 25 });
-			const report = await model.$qm.validationReportAsync({
+			const report = await model.$qValidationReportAsync({
 				mode: 'parallel',
 				timeoutMs: 30,
 			});
@@ -875,7 +875,7 @@ describe('isValidAsync and validationReportAsync respect mode option', () => {
 		'validationReportAsync — serial, no timeout, sync fail: valid:false',
 		async () => {
 			const model = PropModel.create({ email: 'ok@x.com', age: 10 });
-			const report = await model.$qm.validationReportAsync({
+			const report = await model.$qValidationReportAsync({
 				mode: 'serial',
 			});
 
@@ -903,8 +903,8 @@ describe('edge cases', () => {
 			const model = NoRulesModel.create({ name: 'alice' });
 
 			const [serialRes, parallelRes] = await Promise.all([
-				model.$qm.checkRulesAsync({ mode: 'serial' }),
-				model.$qm.checkRulesAsync({ mode: 'parallel' }),
+				model.$qCheckRulesAsync({ mode: 'serial' }),
+				model.$qCheckRulesAsync({ mode: 'parallel' }),
 			]);
 
 			expect(serialRes.valid).toBe(true);
@@ -924,8 +924,8 @@ describe('edge cases', () => {
 
 			const model = SingleFieldModel.create({ val: 'ok' });
 			const [serialRes, parallelRes] = await Promise.all([
-				model.$qm.checkRulesAsync({ mode: 'serial' }),
-				model.$qm.checkRulesAsync({ mode: 'parallel' }),
+				model.$qCheckRulesAsync({ mode: 'serial' }),
+				model.$qCheckRulesAsync({ mode: 'parallel' }),
 			]);
 
 			expect(serialRes).toEqual(parallelRes);

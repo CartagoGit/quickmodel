@@ -212,7 +212,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Números primitivos
 		expect(result.numPrimitive).toBe(42);
@@ -295,7 +295,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// String primitivo
 		expect(result.strPrimitive).toBe('hello world');
@@ -372,7 +372,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// BigInt primitivo
 		expect(result.bigintPrimitive).toBe(999999999999n);
@@ -452,7 +452,7 @@ describe('toInterface() - All Types Preservation', () => {
 		expect(model.dateISO).toBeInstanceOf(Date);
 		expect(model.dateNow).toBeInstanceOf(Date);
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Debe devolver strings ISO (formato original)
 		expect(result.dateISO).toBe(date1);
@@ -511,7 +511,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// RegExp como string "/pattern/flags" - debe preservarse como string
 		expect(result.regexpString).toBe('/test/gi');
@@ -583,7 +583,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Array mixto con diferentes tipos
 		expect(Array.isArray(result.arrayMixed)).toBe(true);
@@ -672,7 +672,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Map como array de pares
 		expect(Array.isArray(result.mapAsArray)).toBe(true);
@@ -736,7 +736,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Set como array
 		expect(Array.isArray(result.setAsArray)).toBe(true);
@@ -822,7 +822,7 @@ describe('toInterface() - All Types Preservation', () => {
 		};
 
 		const model = new AllTypesModel(data);
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Objeto plano con anidamiento múltiple
 		expect(typeof result.plainObject).toBe('object');
@@ -910,7 +910,7 @@ describe('toInterface() - All Types Preservation', () => {
 		model.strWrapper = 'changed';
 		model.boolWrapper = false;
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 
 		// Debe devolver WRAPPERS porque __initData tenía wrappers
 		expect(result.numWrapper).toBeInstanceOf(Number);

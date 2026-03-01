@@ -103,7 +103,7 @@ export class QBenchmarkPerformanceTool extends QAbstractTool<
 		const instance = BenchmarkModel.create(payload as any);
 		const startSer = performance.now();
 		for (let idx = 0; idx < count; idx++) {
-			instance.toJSON();
+			instance.$qToJSON();
 		}
 		results['serialization_avg_ms'] =
 			(performance.now() - startSer) / count;

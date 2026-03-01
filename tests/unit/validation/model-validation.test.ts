@@ -32,7 +32,7 @@ describe('Model Validation', () => {
 			birthDate: '2000-01-01T00:00:00.000Z',
 		});
 
-		const errors = user.checkIntegrity();
+		const errors = user.$qCheckIntegrity();
 		expect(errors).toBeArray();
 		expect(errors).toHaveLength(0);
 	});
@@ -83,10 +83,10 @@ describe('Model Validation', () => {
 		}
 
 		const validContact = Contact.create({ email: 'test@test.com' });
-		expect(validContact.checkIntegrity()).toHaveLength(0);
+		expect(validContact.$qCheckIntegrity()).toHaveLength(0);
 
 		const invalidContact = Contact.create({ email: 'invalid' });
-		const errors = invalidContact.checkIntegrity();
+		const errors = invalidContact.$qCheckIntegrity();
 
 		expect(errors).toHaveLength(1);
 		expect(errors[0].error).toBe('Invalid email');

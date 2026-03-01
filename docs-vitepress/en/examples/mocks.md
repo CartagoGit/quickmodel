@@ -146,19 +146,19 @@ describe('Order', () => {
 
 	it('fails validation when total is 0', () => {
 		const order = Order.mock().random({ total: 0 });
-		const result = order.$qm.checkRules();
+		const result = order.$qCheckRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors[0].field).toBe('total');
 	});
 
 	it('passes validation with correct data', () => {
 		const order = Order.mock().random({ total: 99.99, status: 'paid' });
-		expect(order.$qm.isValid()).toBe(true);
+		expect(order.$qIsValid()).toBe(true);
 	});
 
 	it('serializes correctly', () => {
 		const order = Order.mock().sample({ total: 50 });
-		const plain = order.$qm.serialize();
+		const plain = order.$qSerialize();
 		expect(typeof plain.createdAt).toBe('string');
 		expect(plain.total).toBe(50);
 	});

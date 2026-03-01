@@ -199,7 +199,7 @@ describe('QModel.toPlain()', () => {
 // serialize({ pick, omit })
 // ===========================================================================
 
-describe('QModel.$qm.serialize() with pick/omit options', () => {
+describe('QModel.$qSerialize() with pick/omit options', () => {
 	let user: User;
 
 	beforeEach(() => {
@@ -214,7 +214,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('pick: should include ONLY the specified fields', () => {
-		const result = user.$qm.serialize(undefined, {
+		const result = user.$qSerialize(undefined, {
 			pick: ['id', 'name'],
 		}) as Record<string, unknown>;
 
@@ -226,7 +226,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('pick: selected transformed fields should still be serialized (Date → ISO string)', () => {
-		const result = user.$qm.serialize(undefined, {
+		const result = user.$qSerialize(undefined, {
 			pick: ['id', 'createdAt'],
 		}) as Record<string, unknown>;
 
@@ -237,14 +237,14 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('pick: selected bigint field should still be serialized (bigint → string)', () => {
-		const result = user.$qm.serialize(undefined, { pick: ['balance'] });
+		const result = user.$qSerialize(undefined, { pick: ['balance'] });
 
 		expect(typeof result.balance).toBe('string');
 		expect(result.balance).toBe('55555');
 	});
 
 	test('omit: should exclude ONLY the specified fields', () => {
-		const result = user.$qm.serialize(undefined, {
+		const result = user.$qSerialize(undefined, {
 			omit: ['createdAt', 'balance'],
 		});
 
@@ -257,7 +257,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('omit: should serialize remaining transformed fields correctly', () => {
-		const result = user.$qm.serialize(undefined, { omit: ['balance'] });
+		const result = user.$qSerialize(undefined, { omit: ['balance'] });
 
 		// createdAt should still be serialized as ISO string
 		expect(typeof result.createdAt).toBe('string');
@@ -265,7 +265,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('neither pick nor omit: should serialize all fields as before', () => {
-		const result = user.$qm.serialize();
+		const result = user.$qSerialize();
 
 		expect(result.id).toBe('42');
 		expect(result.name).toBe('Bob');
@@ -276,7 +276,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('pick with empty array should return empty object', () => {
-		const result = user.$qm.serialize(undefined, { pick: [] }) as Record<
+		const result = user.$qSerialize(undefined, { pick: [] }) as Record<
 			string,
 			unknown
 		>;
@@ -285,7 +285,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 	});
 
 	test('omit with all field names should return empty object', () => {
-		const result = user.$qm.serialize(undefined, {
+		const result = user.$qSerialize(undefined, {
 			omit: ['id', 'name', 'age', 'email', 'createdAt', 'balance'],
 		}) as Record<string, unknown>;
 
@@ -294,7 +294,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 
 	test('pick takes precedence if both pick and omit are provided', () => {
 		// pick wins: only id should appear, omit is ignored
-		const result = user.$qm.serialize(undefined, {
+		const result = user.$qSerialize(undefined, {
 			pick: ['id'],
 			omit: ['id', 'name'],
 		}) as Record<string, unknown>;
@@ -307,7 +307,7 @@ describe('QModel.$qm.serialize() with pick/omit options', () => {
 // diff(other)
 // ===========================================================================
 
-describe('QModel.$qm.diff()', () => {
+describe('QModel.$qDiff()', () => {
 	test('should return empty object when both instances are equal', () => {
 		const userA = new User({
 			id: '1',
@@ -326,7 +326,7 @@ describe('QModel.$qm.diff()', () => {
 			balance: '100',
 		});
 
-		expect(userA.$qm.diff(userB)).toEqual({});
+		expect(userA.$qDiff(userB)).toEqual({});
 	});
 
 	test('should return changed primitive fields with before/after', () => {
@@ -347,7 +347,7 @@ describe('QModel.$qm.diff()', () => {
 			balance: '100',
 		});
 
-		const diff = userA.$qm.diff(userB);
+		const diff = userA.$qDiff(userB);
 
 		expect(Object.keys(diff).sort()).toEqual(['age', 'name']);
 		expect(diff.name).toEqual({ before: 'John', after: 'Jane' });
@@ -372,14 +372,14 @@ describe('QModel.$qm.diff()', () => {
 			balance: '100',
 		});
 
-		const diff = userA.$qm.diff(userB);
+		const diff = userA.$qDiff(userB);
 
 		expect('createdAt' in diff).toBe(true);
 		expect(diff.createdAt.before).toBe('2024-01-01T00:00:00.000Z');
 		expect(diff.createdAt.after).toBe('2025-06-15T00:00:00.000Z');
 	});
 
-	test('diff is asymmetric: a.$qm.diff(b) has before=a, after=b', () => {
+	test('diff is asymmetric: a.$qDiff(b) has before=a, after=b', () => {
 		const userA = new User({
 			id: '1',
 			name: 'Alice',
@@ -397,8 +397,8 @@ describe('QModel.$qm.diff()', () => {
 			balance: '1',
 		});
 
-		const diffAB = userA.$qm.diff(userB);
-		const diffBA = userB.$qm.diff(userA);
+		const diffAB = userA.$qDiff(userB);
+		const diffBA = userB.$qDiff(userA);
 
 		// From a's perspective: before=Alice, after=Bob
 		expect(diffAB.name).toEqual({ before: 'Alice', after: 'Bob' });
@@ -424,7 +424,7 @@ describe('QModel.$qm.diff()', () => {
 			balance: '9999',
 		});
 
-		const diff = userA.$qm.diff(userB);
+		const diff = userA.$qDiff(userB);
 
 		expect('balance' in diff).toBe(true);
 	});
@@ -447,7 +447,7 @@ describe('QModel.$qm.diff()', () => {
 			balance: '100',
 		});
 
-		const diff = userA.$qm.diff(userB);
+		const diff = userA.$qDiff(userB);
 
 		expect('id' in diff).toBe(false);
 		expect('name' in diff).toBe(true);
@@ -461,7 +461,7 @@ describe('QModel.$qm.diff()', () => {
 			tags: ['a', 'b'],
 		});
 
-		const diff = productA.$qm.diff(productB);
+		const diff = productA.$qDiff(productB);
 
 		expect('price' in diff).toBe(true);
 		expect(diff.price).toEqual({ before: 10, after: 20 });
@@ -473,7 +473,7 @@ describe('QModel.$qm.diff()', () => {
 // equals(other)
 // ===========================================================================
 
-describe('QModel.$qm.equals()', () => {
+describe('QModel.$qEquals()', () => {
 	test('should return true for two equal instances', () => {
 		const userA = new User({
 			id: '1',
@@ -492,7 +492,7 @@ describe('QModel.$qm.equals()', () => {
 			balance: '100',
 		});
 
-		expect(userA.$qm.equals(userB)).toBe(true);
+		expect(userA.$qEquals(userB)).toBe(true);
 	});
 
 	test('should return false when any field differs', () => {
@@ -513,10 +513,10 @@ describe('QModel.$qm.equals()', () => {
 			balance: '100',
 		});
 
-		expect(userA.$qm.equals(userB)).toBe(false);
+		expect(userA.$qEquals(userB)).toBe(false);
 	});
 
-	test('equals is symmetric: a.$qm.equals(b) === b.$qm.equals(a)', () => {
+	test('equals is symmetric: a.$qEquals(b) === b.$qEquals(a)', () => {
 		const userA = new User({
 			id: '1',
 			name: 'Alice',
@@ -534,10 +534,10 @@ describe('QModel.$qm.equals()', () => {
 			balance: '1',
 		});
 
-		expect(userA.$qm.equals(userB)).toBe(userB.$qm.equals(userA));
+		expect(userA.$qEquals(userB)).toBe(userB.$qEquals(userA));
 	});
 
-	test('equals is reflexive: a.$qm.equals(a) === true', () => {
+	test('equals is reflexive: a.$qEquals(a) === true', () => {
 		const userA = new User({
 			id: '1',
 			name: 'John',
@@ -547,7 +547,7 @@ describe('QModel.$qm.equals()', () => {
 			balance: '1',
 		});
 
-		expect(userA.$qm.equals(userA)).toBe(true);
+		expect(userA.$qEquals(userA)).toBe(true);
 	});
 
 	test('equals should compare Dates correctly (same moment → true)', () => {
@@ -569,7 +569,7 @@ describe('QModel.$qm.equals()', () => {
 			balance: '1',
 		});
 
-		expect(userA.$qm.equals(userB)).toBe(true);
+		expect(userA.$qEquals(userB)).toBe(true);
 	});
 
 	test('equals should compare Dates correctly (different moment → false)', () => {
@@ -590,7 +590,7 @@ describe('QModel.$qm.equals()', () => {
 			balance: '1',
 		});
 
-		expect(userA.$qm.equals(userB)).toBe(false);
+		expect(userA.$qEquals(userB)).toBe(false);
 	});
 
 	test('equals should compare bigint correctly', () => {
@@ -611,7 +611,7 @@ describe('QModel.$qm.equals()', () => {
 			balance: '999',
 		});
 
-		expect(userA.$qm.equals(userB)).toBe(false);
+		expect(userA.$qEquals(userB)).toBe(false);
 	});
 
 	test('copied() result should equal original via equals()', () => {
@@ -624,7 +624,7 @@ describe('QModel.$qm.equals()', () => {
 			balance: '100',
 		});
 
-		expect(user.$qm.equals(user.$qm.copy())).toBe(true);
+		expect(user.$qEquals(user.$qCopy())).toBe(true);
 	});
 
 	test('equals with plain models and arrays', () => {
@@ -632,7 +632,7 @@ describe('QModel.$qm.equals()', () => {
 		const productB = new Product({ sku: 'X', price: 5, tags: ['a', 'b'] });
 		const productC = new Product({ sku: 'X', price: 5, tags: ['a'] });
 
-		expect(productA.$qm.equals(productB)).toBe(true);
-		expect(productA.$qm.equals(productC)).toBe(false);
+		expect(productA.$qEquals(productB)).toBe(true);
+		expect(productA.$qEquals(productC)).toBe(false);
 	});
 });

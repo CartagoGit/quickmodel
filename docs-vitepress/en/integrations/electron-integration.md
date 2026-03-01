@@ -60,7 +60,7 @@ class UserPrefsDto extends QModel<IUserPrefs> {
 
 const dto = new UserPrefsDto(currentPrefs);
 // Send clean JSON over IPC:
-await window.electron.savePrefs(dto.$qm.serialize());
+await window.electron.savePrefs(dto.$qSerialize());
 
 // ── Main process (main.ts) ──────────────────────────────────────────────────
 
@@ -128,7 +128,7 @@ class FileRecordDto extends QModel<IFileRecord> {
 
 // Main → Renderer:
 const dto = new FileRecordDto(fileFromDisk);
-ipcRenderer.send('file-loaded', dto.$qm.serialize()); // Date → ISO string
+ipcRenderer.send('file-loaded', dto.$qSerialize()); // Date → ISO string
 
 // Renderer receives:
 ipcMain.on('file-loaded', (_, payload) => {
@@ -152,7 +152,7 @@ contextBridge.exposeInMainWorld('electron', {
 const dto = new UserPrefsDto(userChanges);
 const { valid, errors } = qCheckRules(dto);
 if (valid) {
-	await window.electron.savePrefs(dto.$qm.serialize() as IUserPrefs);
+	await window.electron.savePrefs(dto.$qSerialize() as IUserPrefs);
 } else {
 	showErrors(errors);
 }
@@ -168,7 +168,7 @@ ipcMain.handle('import-files', async () => {
 	) as IFileRecord[];
 	const { instances, errors } = FileRecordDto.createMany(raw);
 	if (errors.length > 0) console.warn('Skipped invalid rows:', errors.length);
-	return instances.map((dto) => dto.$qm.serialize());
+	return instances.map((dto) => dto.$qSerialize());
 });
 
 // Renderer:
@@ -189,18 +189,18 @@ const prefs = new UserPrefsDto(await window.electron.loadPrefs());
 prefs.theme = 'dark';
 prefs.fontSize = 18;
 
-console.log(prefs.$qm.isDirty()); // true → show save dialog
+console.log(prefs.$qIsDirty()); // true → show save dialog
 
 window.addEventListener('beforeunload', (e) => {
-	if (prefs.$qm.isDirty()) {
+	if (prefs.$qIsDirty()) {
 		e.preventDefault();
 		e.returnValue = ''; // Electron shows "Leave page?" dialog
 	}
 });
 
 // After saving:
-const saved = prefs.$qm.copy({ theme: 'dark', fontSize: 18 });
-console.log(saved.$qm.isDirty()); // false — fresh snapshot
+const saved = prefs.$qCopy({ theme: 'dark', fontSize: 18 });
+console.log(saved.$qIsDirty()); // false — fresh snapshot
 ```
 
 ## @QComputed fields in Electron

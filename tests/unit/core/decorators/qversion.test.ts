@@ -169,7 +169,7 @@ describe('@QVersion — integridad con serialize()', () => {
 			_v: 1,
 		} as unknown as IUserV2); // @quickmodel-rule-ignore: no-as-unknown
 
-		const plain = user.$qm.serialize() as Record<string, unknown>;
+		const plain = user.$qSerialize();
 		expect(plain['fullName']).toBe('Eve Jones');
 		expect(plain['email']).toBe('e@f.com');
 	});

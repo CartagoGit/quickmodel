@@ -57,6 +57,15 @@ export class QCheckDocsCoherencePrompt extends QAbstractInternalPrompt<
 						`I will run a structured audit across all four dimensions. ` +
 						`**This is NOT done until every dimension reports clean.**\n\n` +
 						`---\n\n` +
+						`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before modifying any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is currently modifying docs or source files.\n` +
+						`   If \`agents[]\` is non-empty: check their staged/unstaged git changes. Wait for them to commit or stash if their changes overlap with docs-vitepress or src.\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, description \`"docs coherence audit"\`,\n` +
+						`   and \`files: ["docs-vitepress/**", "src/**"]\`.\n` +
+						`3. If \`conflict: true\` → **STOP immediately**. Do not modify any file. Inform the user and wait.\n` +
+						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
 						`### Dimension 1 — JSDoc coverage and accuracy\n\n` +
 						`Call \`check_jsdocs\` to find:\n` +
 						`- Public exports without a JSDoc block\n` +
@@ -103,7 +112,8 @@ export class QCheckDocsCoherencePrompt extends QAbstractInternalPrompt<
 						`- [ ] Every \`en/\` page has a matching \`es/\` counterpart with equivalent content\n` +
 						`- [ ] Sidebar EN: all entries resolve, titles match, no orphans, no ghosts\n` +
 						`- [ ] Sidebar ES: same\n` +
-						`- [ ] All MCP tool/skill \`description\` fields reflect current behaviour`
+						`- [ ] All MCP tool/skill \`description\` fields reflect current behaviour\n` +
+						`- [ ] \`agent_coordinate release\` called`
 				),
 
 				this.user(

@@ -47,7 +47,7 @@ describe('checkRulesAsync() — async predicates', () => {
 			email: 'alice@example.com',
 			age: 30,
 		});
-		const result = user.$qm.checkRulesAsync();
+		const result = user.$qCheckRulesAsync();
 
 		expect(result).toBeInstanceOf(Promise);
 		const resolved = await result;
@@ -61,7 +61,7 @@ describe('checkRulesAsync() — async predicates', () => {
 			email: 'alice@example.com',
 			age: 25,
 		});
-		const result = await user.$qm.checkRulesAsync();
+		const result = await user.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
@@ -73,7 +73,7 @@ describe('checkRulesAsync() — async predicates', () => {
 			email: 'taken@example.com',
 			age: 25,
 		});
-		const result = await user.$qm.checkRulesAsync();
+		const result = await user.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(false);
 		const emailError = result.errors.find((err) => err.field === 'email');
@@ -86,7 +86,7 @@ describe('checkRulesAsync() — async predicates', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		const result = await user.$qm.checkRulesAsync();
+		const result = await user.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(false);
 		expect(result.errors[0].field).toBe('name');
@@ -99,7 +99,7 @@ describe('checkRulesAsync() — async predicates', () => {
 			email: 'taken@example.com',
 			age: 15,
 		});
-		const result = await user.$qm.checkRulesAsync();
+		const result = await user.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThanOrEqual(3);
@@ -111,7 +111,7 @@ describe('checkRulesAsync() — async predicates', () => {
 			email: 'ok@example.com',
 			age: 200,
 		});
-		const result = await user.$qm.checkRulesAsync();
+		const result = await user.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(false);
 		const ageErrors = result.errors.filter((err) => err.field === 'age');
@@ -120,13 +120,13 @@ describe('checkRulesAsync() — async predicates', () => {
 
 	test('model with only sync rules works with checkRulesAsync()', async () => {
 		const model = OnlySyncRules.create({ name: 'Alice' });
-		const result = await model.$qm.checkRulesAsync();
+		const result = await model.$qCheckRulesAsync();
 		expect(result.valid).toBe(true);
 	});
 
 	test('model with only async rules', async () => {
 		const model = OnlyAsyncRules.create({ email: 'taken@example.com' });
-		const result = await model.$qm.checkRulesAsync();
+		const result = await model.$qCheckRulesAsync();
 		expect(result.valid).toBe(false);
 	});
 
@@ -138,7 +138,7 @@ describe('checkRulesAsync() — async predicates', () => {
 		}
 
 		const broken = Broken.create({ posX: 1 });
-		const result = await broken.$qm.checkRulesAsync();
+		const result = await broken.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(false);
 		expect(result.errors[0].field).toBe('posX');
@@ -156,7 +156,7 @@ describe('isValidAsync()', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		const result = user.$qm.isValidAsync();
+		const result = user.$qIsValidAsync();
 		expect(result).toBeInstanceOf(Promise);
 	});
 
@@ -166,7 +166,7 @@ describe('isValidAsync()', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		expect(await user.$qm.isValidAsync()).toBe(true);
+		expect(await user.$qIsValidAsync()).toBe(true);
 	});
 
 	test('resolves false when async rule fails', async () => {
@@ -175,7 +175,7 @@ describe('isValidAsync()', () => {
 			email: 'taken@example.com',
 			age: 25,
 		});
-		expect(await user.$qm.isValidAsync()).toBe(false);
+		expect(await user.$qIsValidAsync()).toBe(false);
 	});
 
 	test('resolves false when integrity fails', async () => {
@@ -185,8 +185,8 @@ describe('isValidAsync()', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		expect(await user.$qm.isValidAsync()).toBe(
-			user.$qm.hasIntegrity() && (await user.$qm.checkRulesAsync()).valid
+		expect(await user.$qIsValidAsync()).toBe(
+			user.$qHasIntegrity() && (await user.$qCheckRulesAsync()).valid
 		);
 	});
 });
@@ -202,7 +202,7 @@ describe('validationReportAsync()', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		const validationReportAsync = user.$qm.validationReportAsync();
+		const validationReportAsync = user.$qValidationReportAsync();
 		expect(validationReportAsync).toBeInstanceOf(Promise);
 
 		const report = await validationReportAsync;
@@ -217,7 +217,7 @@ describe('validationReportAsync()', () => {
 			email: 'ok@example.com',
 			age: 25,
 		});
-		const report = await user.$qm.validationReportAsync();
+		const report = await user.$qValidationReportAsync();
 		expect(report.valid).toBe(true);
 	});
 
@@ -227,7 +227,7 @@ describe('validationReportAsync()', () => {
 			email: 'taken@example.com',
 			age: 25,
 		});
-		const report = await user.$qm.validationReportAsync();
+		const report = await user.$qValidationReportAsync();
 		expect(report.valid).toBe(false);
 		expect(report.rules.errors.length).toBeGreaterThan(0);
 	});
@@ -239,8 +239,8 @@ describe('validationReportAsync()', () => {
 			age: 25,
 		});
 		const [report, isValid] = await Promise.all([
-			user.$qm.validationReportAsync(),
-			user.$qm.isValidAsync(),
+			user.$qValidationReportAsync(),
+			user.$qIsValidAsync(),
 		]);
 		expect(report.valid).toBe(isValid);
 	});
@@ -280,7 +280,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 		}
 
 		const model = SlowEmailModel.create({ email: 'available@example.com' });
-		const resultPromise = model.$qm.checkRulesAsync();
+		const resultPromise = model.$qCheckRulesAsync();
 
 		// Simulate DB latency: resolve the predicate now
 		gate.resolve(true);
@@ -300,7 +300,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 		}
 
 		const model = SlowEmailModel.create({ email: 'taken@example.com' });
-		const resultPromise = model.$qm.checkRulesAsync();
+		const resultPromise = model.$qCheckRulesAsync();
 
 		// Simulate DB saying "email is taken"
 		gate.resolve(false);
@@ -325,7 +325,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 		}
 
 		const model = MultiSlowModel.create({ username: 'Jo', bio: 'Hi' });
-		const resultPromise = model.$qm.checkRulesAsync();
+		const resultPromise = model.$qCheckRulesAsync();
 
 		// Both predicates resolve independently (simulating different response times)
 		gateUsername.resolve(false);
@@ -348,7 +348,7 @@ describe('checkRulesAsync() — timed predicates with deferred promises', () => 
 		}
 
 		const model = UnstableModel.create({ token: 'abc' });
-		const resultPromise = model.$qm.checkRulesAsync();
+		const resultPromise = model.$qCheckRulesAsync();
 
 		// Simulate service crash
 		gate.reject(new Error('Connection timeout'));
@@ -383,7 +383,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = SlowModel.create({ email: 'ok@example.com' });
-			const result = await model.$qm.checkRulesAsync({ timeoutMs: 20 });
+			const result = await model.$qCheckRulesAsync({ timeoutMs: 20 });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors[0]?.field).toBe('email');
@@ -407,7 +407,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = SlowModel.create({ email: 'ok@example.com' });
-			const result = await model.$qm.checkRulesAsync({
+			const result = await model.$qCheckRulesAsync({
 				timeoutMs: 20,
 				timeoutMessage:
 					'Validation service unavailable — try again later',
@@ -442,7 +442,7 @@ describe('checkRulesAsync() — timeout option', () => {
 
 			lang = 'es';
 			const model = SlowModel.create({ email: 'x@x.com' });
-			const result = await model.$qm.checkRulesAsync({
+			const result = await model.$qCheckRulesAsync({
 				timeoutMs: 20,
 				timeoutMessage: () => msgs[lang] ?? 'unavailable',
 			});
@@ -466,7 +466,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = FastModel.create({ email: 'ok@example.com' });
-			const result = await model.$qm.checkRulesAsync({ timeoutMs: 200 });
+			const result = await model.$qCheckRulesAsync({ timeoutMs: 200 });
 
 			expect(result.valid).toBe(true);
 			expect(result.errors).toHaveLength(0);
@@ -487,7 +487,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = FastModel.create({ age: 10 });
-			const result = await model.$qm.checkRulesAsync({ timeoutMs: 200 });
+			const result = await model.$qCheckRulesAsync({ timeoutMs: 200 });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors[0]?.timedOut).toBeUndefined();
@@ -509,7 +509,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = SlowModel.create({ code: 'valid' });
-			const result = await model.$qm.checkRulesAsync(); // no timeout
+			const result = await model.$qCheckRulesAsync(); // no timeout
 
 			expect(result.valid).toBe(true);
 		},
@@ -535,7 +535,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = MixedModel.create({ email: 'ok@x.com', age: 10 });
-			const result = await model.$qm.checkRulesAsync({ timeoutMs: 30 });
+			const result = await model.$qCheckRulesAsync({ timeoutMs: 30 });
 
 			expect(result.valid).toBe(false);
 			const emailErr = result.errors.find((err) => err.field === 'email');
@@ -561,7 +561,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = SlowModel.create({ email: 'ok@x.com' });
-			const valid = await model.$qm.isValidAsync({ timeoutMs: 20 });
+			const valid = await model.$qIsValidAsync({ timeoutMs: 20 });
 
 			expect(valid).toBe(false);
 		},
@@ -581,7 +581,7 @@ describe('checkRulesAsync() — timeout option', () => {
 			}
 
 			const model = SlowModel.create({ email: 'ok@x.com' });
-			const report = await model.$qm.validationReportAsync({
+			const report = await model.$qValidationReportAsync({
 				timeoutMs: 20,
 			});
 

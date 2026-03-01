@@ -24,7 +24,7 @@ interface ISimulatedRule {
 }
 
 /**
- * Tool to run business-logic rules through the *real* `instance.$qm.checkRules()` API.
+ * Tool to run business-logic rules through the *real* `instance.$qCheckRules()` API.
  *
  * Unlike `simulate_validation` (which evaluates predicates standalone), this tool
  * wires predicates via `@QRule` metadata and routes them through `checkRules()`.
@@ -48,7 +48,7 @@ export class QSimulateRulesTool extends QAbstractTool<
 > {
 	name = 'simulate_rules';
 	description =
-		'Run business-logic rules through the real instance.$qm.checkRules() API. ' +
+		'Run business-logic rules through the real instance.$qCheckRules() API. ' +
 		'Applies rules via @QRule metadata so the result format matches production IQRulesResult exactly. ' +
 		'Predicate strings have access to `value` (field value) and `data` (full data object). ' +
 		'Use simulate_validation for standalone predicate evaluation; use this when you need to verify ' +
@@ -159,7 +159,7 @@ export class QSimulateRulesTool extends QAbstractTool<
 		}
 
 		const instance = new DynamicModel(data);
-		const result = instance.$qm.checkRules();
+		const result = instance.$qCheckRules();
 
 		return {
 			valid: result.valid,

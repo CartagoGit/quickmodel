@@ -65,7 +65,7 @@ export class QGenerateMockDataTool extends QAbstractTool<
 		// Generate mocks
 		const mocks: any[] = [];
 		for (let idx = 0; idx < args.count; idx++) {
-			mocks.push((DynamicModel.mock().random() as any).$qm.serialize());
+			mocks.push((DynamicModel.mock().random() as any).$qSerialize());
 		}
 
 		return mocks;

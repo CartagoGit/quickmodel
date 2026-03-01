@@ -72,14 +72,14 @@ afterEach(() => {
 describe('spoofMethod: campo _method en toFormData()', () => {
 	test('inserta _method cuando se pasa spoofMethod en toFormData()', async () => {
 		const dto = new ProfileDto({ name: 'Alice' });
-		const formData = await dto.$qm.toFormData({ spoofMethod: 'PUT' });
+		const formData = await dto.$qToFormData({ spoofMethod: 'PUT' });
 
 		expect(formData.get('_method')).toBe('PUT');
 	});
 
 	test('_method es el primer campo del FormData resultante', async () => {
 		const dto = new ProfileDto({ name: 'Alice' });
-		const formData = await dto.$qm.toFormData({ spoofMethod: 'PUT' });
+		const formData = await dto.$qToFormData({ spoofMethod: 'PUT' });
 		const entries = getEntries(formData);
 
 		expect(entries[0]?.[0]).toBe('_method');
@@ -101,7 +101,7 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 		const dto = new ProfileDto({ name: 'test' });
 
 		for (const method of methods) {
-			const formData = await dto.$qm.toFormData({ spoofMethod: method });
+			const formData = await dto.$qToFormData({ spoofMethod: method });
 			expect(formData.get('_method')).toBe(method);
 		}
 	});
@@ -119,7 +119,7 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 		const dto = new ProfileDto({ name: 'test' });
 
 		for (const method of methods) {
-			const formData = await dto.$qm.toFormData({ spoofMethod: method });
+			const formData = await dto.$qToFormData({ spoofMethod: method });
 			expect(formData.get('_method')).toBe(method);
 		}
 	});
@@ -140,7 +140,7 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 		const dto = new ProfileDto({ name: 'test' });
 
 		for (const method of methods) {
-			const formData = await dto.$qm.toFormData({ spoofMethod: method });
+			const formData = await dto.$qToFormData({ spoofMethod: method });
 			expect(formData.get('_method')).toBe(method);
 		}
 	});
@@ -149,14 +149,14 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 		const dto = new ProfileDto({ name: 'test' });
 
 		for (const method of ['PURGE', 'SEARCH', 'X-CUSTOM-METHOD']) {
-			const formData = await dto.$qm.toFormData({ spoofMethod: method });
+			const formData = await dto.$qToFormData({ spoofMethod: method });
 			expect(formData.get('_method')).toBe(method);
 		}
 	});
 
 	test('no inserta _method si ningún nivel define spoofMethod', async () => {
 		const dto = new ProfileDto({ name: 'Alice' });
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData.has('_method')).toBe(false);
 	});
@@ -164,7 +164,7 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 	test('sin QConfig y sin decorador, toFormData sin spoofMethod no añade _method', async () => {
 		// Aseguramos que QConfig está limpio (lo hace beforeEach)
 		const dto = new ProfileDto({ name: 'Alice' });
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData.has('_method')).toBe(false);
 	});
@@ -173,7 +173,7 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 		QConfig.configure({ defaults: {} });
 
 		const dto = new ProfileDto({ name: 'Alice' });
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData.has('_method')).toBe(false);
 	});
@@ -182,7 +182,7 @@ describe('spoofMethod: campo _method en toFormData()', () => {
 describe('spoofMethod: cascada de configuración', () => {
 	test('toFormData spoofMethod sobreescribe el del decorador', async () => {
 		const dto = new PatchProfileDto({ name: 'Alice' }); // decorador: PATCH
-		const formData = await dto.$qm.toFormData({ spoofMethod: 'DELETE' }); // call: DELETE
+		const formData = await dto.$qToFormData({ spoofMethod: 'DELETE' }); // call: DELETE
 
 		expect(formData.get('_method')).toBe('DELETE');
 	});
@@ -191,7 +191,7 @@ describe('spoofMethod: cascada de configuración', () => {
 		QConfig.configure({ defaults: { spoofMethod: 'PUT' } }); // global: PUT
 
 		const dto = new PatchProfileDto({ name: 'Alice' }); // decorador: PATCH
-		const formData = await dto.$qm.toFormData(); // sin option en call
+		const formData = await dto.$qToFormData(); // sin option en call
 
 		expect(formData.get('_method')).toBe('PATCH');
 	});
@@ -200,7 +200,7 @@ describe('spoofMethod: cascada de configuración', () => {
 		QConfig.configure({ defaults: { spoofMethod: 'PUT' } });
 
 		const dto = new ProfileDto({ name: 'Alice' }); // sin decorador ni call
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData.get('_method')).toBe('PUT');
 	});
@@ -208,8 +208,8 @@ describe('spoofMethod: cascada de configuración', () => {
 	test('precedencia completa: toFormData > decorador > QConfig.defaults', async () => {
 		QConfig.configure({ defaults: { spoofMethod: 'PUT' } }); // global
 		const dto = new PatchProfileDto({ name: 'Alice' }); // decorador: PATCH
-		const formDataGlobal = await dto.$qm.toFormData(); // hereda decorador
-		const formDataCall = await dto.$qm.toFormData({
+		const formDataGlobal = await dto.$qToFormData(); // hereda decorador
+		const formDataCall = await dto.$qToFormData({
 			spoofMethod: 'DELETE',
 		}); // máxima prioridad
 
@@ -223,7 +223,7 @@ describe('spoofMethod: cascada de configuración', () => {
 		QConfig.configure({ defaults: { spoofMethod: 'PUT' } });
 
 		const dto = new DeleteProfileDto({ name: 'Alice' }); // decorador: DELETE
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData.get('_method')).toBe('DELETE');
 	});

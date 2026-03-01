@@ -338,7 +338,7 @@ describe('Jest Integration: full workflow with type coercion', () => {
 
 	test('serialize() + re-create produces identical model', () => {
 		const original = makeValidOrder();
-		const serialized = original.$qm.serialize();
+		const serialized = original.$qSerialize();
 		const restored = new OrderDto(serialized);
 		expect(original).toMatchQModel(restored);
 	});

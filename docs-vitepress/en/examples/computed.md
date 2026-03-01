@@ -57,7 +57,7 @@ console.log(user.fullName); // 'Alice Smith'
 console.log(user.initials); // 'A.S.' (available on instance but not serialized)
 console.log(user.formattedSalary); // '$75,000.00'
 
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 console.log(plain.fullName); // 'Alice Smith' ✅ included
 console.log(plain.formattedSalary); // '$75,000.00'  ✅ included
 console.log(plain.initials); // undefined ❌ not included (no @QComputed)
@@ -115,7 +115,7 @@ const product = Product.create({
 	discountRate: 10,
 });
 
-const plain = product.$qm.serialize();
+const plain = product.$qSerialize();
 console.log(plain.priceNet); // 1000
 console.log(plain.vatAmount); // 200
 console.log(plain.priceGross); // 1200
@@ -186,7 +186,7 @@ const person = Person.create({
 
 console.log(person.summary); // 'Alice Smith, 35 years old (Administrator)'
 
-const serialized = person.$qm.serialize();
+const serialized = person.$qSerialize();
 // {
 //   firstName: 'Alice', lastName: 'Smith',
 //   birthDate: '1990-06-15T00:00:00.000Z', role: 'admin',

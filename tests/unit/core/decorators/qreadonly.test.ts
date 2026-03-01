@@ -36,7 +36,7 @@ describe('@QReadonly — construcción normal', () => {
 
 	it('serialize() incluye el campo readonly', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		const plain = order.$qm.serialize() as Record<string, unknown>;
+		const plain = order.$qSerialize() as Record<string, unknown>;
 		expect(plain['id']).toBe(1);
 	});
 });
@@ -44,23 +44,23 @@ describe('@QReadonly — construcción normal', () => {
 describe('@QReadonly — copy() con campo readonly incluido → error', () => {
 	it('lanza ImmutableFieldError cuando copy() intenta cambiar un campo readonly', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		expect(() => order.$qm.copy({ id: 999 })).toThrow();
+		expect(() => order.$qCopy({ id: 999 })).toThrow();
 	});
 
 	it('el mensaje de error menciona el nombre del campo', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		expect(() => order.$qm.copy({ id: 999 })).toThrow('id');
+		expect(() => order.$qCopy({ id: 999 })).toThrow('id');
 	});
 
 	it('copy() sin partial no lanza (clonación pura)', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		expect(() => order.$qm.copy()).not.toThrow();
-		expect(order.$qm.copy().id).toBe(1);
+		expect(() => order.$qCopy()).not.toThrow();
+		expect(order.$qCopy().id).toBe(1);
 	});
 
 	it('copy() con campos no-readonly funciona normalmente', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		const updated = order.$qm.copy({ status: 'shipped' });
+		const updated = order.$qCopy({ status: 'shipped' });
 		expect(updated.status).toBe('shipped');
 		expect(updated.id).toBe(1); // readonly preserved
 	});
@@ -69,12 +69,12 @@ describe('@QReadonly — copy() con campo readonly incluido → error', () => {
 describe('@QReadonly — patch() con campo readonly incluido → error', () => {
 	it('lanza ImmutableFieldError cuando patch() incluye un campo readonly', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		expect(() => order.$qm.patch({ id: 999 })).toThrow();
+		expect(() => order.$qPatch({ id: 999 })).toThrow();
 	});
 
 	it('patch() con campos no-readonly funciona normalmente', () => {
 		const order = new OrderModel({ id: 1, status: 'pending', amount: 99 });
-		expect(() => order.$qm.patch({ status: 'shipped' })).not.toThrow();
+		expect(() => order.$qPatch({ status: 'shipped' })).not.toThrow();
 		expect(order.status).toBe('shipped');
 	});
 });
@@ -102,7 +102,7 @@ describe('@QReadonly — múltiples campos readonly', () => {
 			createdAt: '2026-01-01',
 			name: 'Test',
 		});
-		const cloned = entity.$qm.copy({ name: 'Updated' });
+		const cloned = entity.$qCopy({ name: 'Updated' });
 		expect(cloned.id).toBe(42);
 		expect(cloned.createdAt).toBe('2026-01-01');
 		expect(cloned.name).toBe('Updated');
@@ -115,7 +115,7 @@ describe('@QReadonly — múltiples campos readonly', () => {
 			name: 'Test',
 		});
 		expect(() =>
-			entity.$qm.copy({ id: 99, createdAt: '2026-02-01' })
+			entity.$qCopy({ id: 99, createdAt: '2026-02-01' })
 		).toThrow();
 	});
 });
@@ -138,8 +138,8 @@ describe('@QReadonly — herencia', () => {
 			ref: 'REF-001',
 		} as unknown as IExtendedOrder); // @quickmodel-rule-ignore: no-as-unknown
 		// id es readonly en el padre
-		expect(() => order.$qm.copy({ id: 999 })).toThrow();
+		expect(() => order.$qCopy({ id: 999 })).toThrow();
 		// ref es readonly en el hijo
-		expect(() => order.$qm.copy({ ref: 'REF-002' })).toThrow();
+		expect(() => order.$qCopy({ ref: 'REF-002' })).toThrow();
 	});
 });

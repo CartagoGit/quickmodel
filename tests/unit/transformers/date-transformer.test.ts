@@ -33,7 +33,7 @@ describe('Unit: Date Transformer', () => {
 			updatedAt: null,
 		});
 
-		const IQSerialized = event.$qm.serialize();
+		const IQSerialized = event.$qSerialize();
 
 		expect(IQSerialized.createdAt).toBe('2024-01-01T00:00:00.000Z');
 		expect(typeof IQSerialized.createdAt).toBe('string');
@@ -94,7 +94,7 @@ describe('Unit: Date Transformer', () => {
 		});
 
 		expect(event.createdAt.getMilliseconds()).toBe(999);
-		expect(event.$qm.serialize().createdAt).toContain('.999Z');
+		expect(event.$qSerialize().createdAt).toContain('.999Z');
 	});
 
 	test('should handle timezone information', () => {
@@ -106,7 +106,7 @@ describe('Unit: Date Transformer', () => {
 
 		// Date is always in UTC internally
 		expect(event.createdAt.getUTCHours()).toBe(14);
-		expect(event.$qm.serialize().createdAt).toContain('14:30:00');
+		expect(event.$qSerialize().createdAt).toContain('14:30:00');
 	});
 
 	test('should handle various date formats', () => {

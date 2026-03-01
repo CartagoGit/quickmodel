@@ -96,7 +96,7 @@ function createUserStore() {
 	return {
 		get: () => state,
 		update: (patch: Partial<IUser>) => {
-			state = state.$qm.copy(patch);
+			state = state.$qCopy(patch);
 		},
 		reset: (initialData: Record<string, unknown>) => {
 			state = new UserModel(initialData);
@@ -116,14 +116,14 @@ function createCartStore() {
 		updateQty: (productId: string, qty: number) => {
 			const current = items.get(productId);
 			if (!current) return;
-			items.set(productId, current.$qm.copy({ qty }));
+			items.set(productId, current.$qCopy({ qty }));
 		},
 		removeItem: (productId: string) => {
 			items.delete(productId);
 		},
 		total: () =>
 			[...items.values()].reduce((sum, item) => sum + item.total, 0),
-		getAll: () => [...items.values()].map((item) => item.$qm.serialize()),
+		getAll: () => [...items.values()].map((item) => item.$qSerialize()),
 	};
 }
 
@@ -241,7 +241,7 @@ describe('Zustand — Normalized Map store with CartItemModel', () => {
 describe('Zustand — persist middleware: serialize ↔ rehydrate', () => {
 	// Simulate persist: save to "storage" then restore
 	function serializeState(model: UserModel): string {
-		return JSON.stringify(model.$qm.serialize());
+		return JSON.stringify(model.$qSerialize());
 	}
 
 	function deserializeState(stored: string): UserModel {
@@ -287,9 +287,9 @@ describe('Zustand — persist middleware: serialize ↔ rehydrate', () => {
 			plan: 'free',
 		});
 		const restored = deserializeState(serializeState(original));
-		const updated = restored.$qm.copy({ plan: 'pro' });
+		const updated = restored.$qCopy({ plan: 'pro' });
 		expect(updated.plan).toBe('pro');
-		expect(updated.$qm.isDirty()).toBe(true); // model has pending changes
+		expect(updated.$qIsDirty()).toBe(true); // model has pending changes
 	});
 
 	test('types are preserved after JSON roundtrip', () => {
@@ -352,7 +352,7 @@ describe('Zustand — createMany() for bulk load into store', () => {
 
 	test('createMany() strips server fields', () => {
 		const { instances } = UserModel.createMany(rawUsers as any[]);
-		const serialized = instances.map((usr) => usr.$qm.serialize()) as Array<
+		const serialized = instances.map((usr) => usr.$qSerialize()) as Array<
 			Record<string, unknown>
 		>;
 		serialized.forEach((item) => {
@@ -380,7 +380,7 @@ describe('Zustand — merge() vs immer compatibility', () => {
 			qty: 10,
 			price: 0.5,
 		});
-		const updated = model.$qm.copy({ qty: 20 });
+		const updated = model.$qCopy({ qty: 20 });
 
 		expect(updated).not.toBe(model); // new instance
 		expect(updated.qty).toBe(20);
@@ -394,7 +394,7 @@ describe('Zustand — merge() vs immer compatibility', () => {
 			qty: 3,
 			price: 2,
 		});
-		const updated = model.$qm.copy({ qty: 6 });
+		const updated = model.$qCopy({ qty: 6 });
 		expect(updated.total).toBe(12);
 	});
 
@@ -405,7 +405,7 @@ describe('Zustand — merge() vs immer compatibility', () => {
 			qty: 1,
 			price: 0.25,
 		});
-		const final = model.$qm.copy({ qty: 5 }).copy({ price: 0.5 });
+		const final = model.$qCopy({ qty: 5 }).$qCopy({ price: 0.5 });
 		expect(final.qty).toBe(5);
 		expect(final.price).toBe(0.5);
 		expect(final.total).toBe(2.5);

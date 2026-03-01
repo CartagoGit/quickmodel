@@ -16,8 +16,6 @@ import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
-import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -209,7 +207,7 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 		onError: (errors: Record<string, string>) => void
 	): void {
 		const dto = new UserSignupDto(formData);
-		const { valid, errors } = dto.$qm.checkRules();
+		const { valid, errors } = dto.$qCheckRules();
 		if (valid) {
 			onValid(dto);
 		} else {
@@ -285,7 +283,7 @@ describe('React Hook Form — handleSubmit: DTO coercion on submit', () => {
 		);
 		const serialized = (
 			capturedDto as UserSignupDto | null
-		)?.serialize() as Record<string, unknown> | undefined;
+		)?.$qSerialize() as Record<string, unknown> | undefined;
 		expect(serialized).not.toHaveProperty('_csrf');
 	});
 
@@ -433,7 +431,7 @@ describe('React Hook Form — isDirty() integration', () => {
 			age: 20,
 			role: 'user',
 		});
-		expect(dto.$qm.isDirty()).toBe(false);
+		expect(dto.$qIsDirty()).toBe(false);
 	});
 
 	test('direct mutation marks field as dirty', () => {
@@ -445,8 +443,8 @@ describe('React Hook Form — isDirty() integration', () => {
 			role: 'user',
 		});
 		dto.username = 'changed_name';
-		expect(dto.$qm.isDirty('username')).toBe(true);
-		expect(dto.$qm.isDirty('email')).toBe(false);
+		expect(dto.$qIsDirty('username')).toBe(true);
+		expect(dto.$qIsDirty('email')).toBe(false);
 	});
 
 	test('merge() returns new instance flagged as dirty (has pending changes)', () => {
@@ -457,9 +455,9 @@ describe('React Hook Form — isDirty() integration', () => {
 			age: 22,
 			role: 'user',
 		});
-		const updated = dto.$qm.copy({ username: 'renamed' });
+		const updated = dto.$qCopy({ username: 'renamed' });
 		expect(updated.username).toBe('renamed'); // value was applied
-		expect(updated.$qm.isDirty()).toBe(true); // model has pending changes vs original snapshot
+		expect(updated.$qIsDirty()).toBe(true); // model has pending changes vs original snapshot
 	});
 
 	test('reset() clears dirty state', () => {
@@ -471,9 +469,9 @@ describe('React Hook Form — isDirty() integration', () => {
 			role: 'user',
 		});
 		dto.age = 99;
-		expect(dto.$qm.isDirty()).toBe(true);
-		dto.reset();
-		expect(dto.$qm.isDirty()).toBe(false);
+		expect(dto.$qIsDirty()).toBe(true);
+		dto.$qReset();
+		expect(dto.$qIsDirty()).toBe(false);
 	});
 });
 

@@ -129,7 +129,7 @@ async function importEmployees(csvData: IEmployee[]): Promise<void> {
 		await fetch('/api/employees/bulk', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(instances.map((emp) => emp.$qm.serialize())),
+			body: JSON.stringify(instances.map((emp) => emp.$qSerialize())),
 		});
 	}
 

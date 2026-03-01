@@ -131,7 +131,7 @@ Defaults are **not** re-applied by `copy()` or `patch()`. They only run on the i
 const order = new OrderModel({ id: 'o1' });
 order.status; // → 'pending'
 
-const updated = order.$qm.copy({ retries: 3 });
+const updated = order.$qCopy({ retries: 3 });
 updated.status; // → 'pending'  (new instance copying from 'pending')
 ```
 

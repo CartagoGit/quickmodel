@@ -1,7 +1,7 @@
 /**
- * @fileoverview TDD tests for `qCheckRulesAsync`.
+ * @fileoverview TDD tests for `$qCheckRulesAsync`.
  *
- * Mirrors the coverage of `qCheckRules` plus the async-specific dimensions:
+ * Mirrors the coverage of `$qCheckRules` plus the async-specific dimensions:
  * - Async predicates (Promises) are properly awaited
  * - Group filtering works the same as in the sync version
  * - `timeoutMs` triggers `timedOut: true` on slow predicates
@@ -16,8 +16,8 @@ import { describe, test, expect } from 'bun:test';
 import 'reflect-metadata';
 import { QRule } from '@/core/decorators/qrule.decorator';
 import { QGroup } from '@/core/decorators/qgroup.decorator';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
-import { qCheckRulesByGroupAsync } from '@/core/helpers/q-check-rules-by-group-async';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRulesByGroupAsync } from '@/core/helpers/q-check-rules-by-group-async';
 
 // =============================================================================
 // Shared test fixtures
@@ -73,10 +73,10 @@ class EmptyForm {
 }
 
 // =============================================================================
-// qCheckRulesAsync — no group filter
+// $qCheckRulesAsync — no group filter
 // =============================================================================
 
-describe('qCheckRulesAsync — no group filter', () => {
+describe('$qCheckRulesAsync — no group filter', () => {
 	test('resolves valid:true when all sync + async rules pass', async () => {
 		const form = new ContactFormAsync();
 		form.name = 'Alice';
@@ -84,7 +84,7 @@ describe('qCheckRulesAsync — no group filter', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -96,7 +96,7 @@ describe('qCheckRulesAsync — no group filter', () => {
 		form.password = 'weak';
 		form.street = '';
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThan(0);
 	});
@@ -108,7 +108,7 @@ describe('qCheckRulesAsync — no group filter', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		const errEntry = result.errors.find((err) => err.field === 'name');
 		expect(errEntry).toBeDefined();
 		expect(errEntry?.message).toBe('Name too short');
@@ -122,14 +122,14 @@ describe('qCheckRulesAsync — no group filter', () => {
 		form.password = 'Secret1!';
 		form.street = ''; // fails
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'street')).toBe(true);
 	});
 
 	test('works on a class with no rules — returns valid:true', async () => {
 		const form = new EmptyForm();
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -139,17 +139,17 @@ describe('qCheckRulesAsync — no group filter', () => {
 		form.name = '';
 		form.age = -1;
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors).toHaveLength(2);
 	});
 });
 
 // =============================================================================
-// qCheckRulesAsync — group filter
+// $qCheckRulesAsync — group filter
 // =============================================================================
 
-describe('qCheckRulesAsync — group filter', () => {
+describe('$qCheckRulesAsync — group filter', () => {
 	test('evaluates only rules from the specified group', async () => {
 		const form = new ContactFormAsync();
 		form.name = 'Alice';
@@ -157,7 +157,7 @@ describe('qCheckRulesAsync — group filter', () => {
 		form.password = 'weak'; // security fails — should be ignored
 		form.street = ''; // ungrouped fails — should be ignored
 
-		const result = await qCheckRulesAsync(form, { group: 'identity' });
+		const result = await $qCheckRulesAsync(form, { group: 'identity' });
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -169,7 +169,7 @@ describe('qCheckRulesAsync — group filter', () => {
 		form.password = 'Secret1!'; // security passes
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesAsync(form, { group: 'identity' });
+		const result = await $qCheckRulesAsync(form, { group: 'identity' });
 		expect(result.valid).toBe(false);
 		expect(result.errors.map((err) => err.field).sort()).toEqual([
 			'email',
@@ -184,7 +184,7 @@ describe('qCheckRulesAsync — group filter', () => {
 		form.password = 'Secret1!';
 		form.street = ''; // would fail but is ungrouped
 
-		const result = await qCheckRulesAsync(form, { group: 'identity' });
+		const result = await $qCheckRulesAsync(form, { group: 'identity' });
 		expect(result.errors.some((err) => err.field === 'street')).toBe(false);
 	});
 
@@ -195,17 +195,17 @@ describe('qCheckRulesAsync — group filter', () => {
 		form.password = 'weak';
 		form.street = '';
 
-		const result = await qCheckRulesAsync(form, { group: 'nonexistent' });
+		const result = await $qCheckRulesAsync(form, { group: 'nonexistent' });
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
 });
 
 // =============================================================================
-// qCheckRulesAsync — timeout
+// $qCheckRulesAsync — timeout
 // =============================================================================
 
-describe('qCheckRulesAsync — timeoutMs', () => {
+describe('$qCheckRulesAsync — timeoutMs', () => {
 	test('slow predicate triggers timedOut:true in the error', async () => {
 		class SlowForm {
 			@QRule(async (val: string) => {
@@ -216,7 +216,7 @@ describe('qCheckRulesAsync — timeoutMs', () => {
 		}
 
 		const form = new SlowForm();
-		const result = await qCheckRulesAsync(form, { timeoutMs: 30 });
+		const result = await $qCheckRulesAsync(form, { timeoutMs: 30 });
 		expect(result.valid).toBe(false);
 		const errEntry = result.errors.find((err) => err.field === 'field');
 		expect(errEntry?.timedOut).toBe(true);
@@ -233,7 +233,7 @@ describe('qCheckRulesAsync — timeoutMs', () => {
 		}
 
 		const form = new SlowForm();
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			timeoutMs: 30,
 			timeoutMessage: 'Service unavailable',
 		});
@@ -253,7 +253,7 @@ describe('qCheckRulesAsync — timeoutMs', () => {
 
 		const form = new FastForm();
 		form.field = 'x';
-		const result = await qCheckRulesAsync(form, { timeoutMs: 100 });
+		const result = await $qCheckRulesAsync(form, { timeoutMs: 100 });
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -268,7 +268,7 @@ describe('qCheckRulesAsync — timeoutMs', () => {
 		}
 
 		const form = new SlowForm();
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			timeoutMs: 30,
 			timeoutMessage: () => 'Lazy timeout message',
 		});
@@ -278,10 +278,10 @@ describe('qCheckRulesAsync — timeoutMs', () => {
 });
 
 // =============================================================================
-// qCheckRulesAsync — execution mode
+// $qCheckRulesAsync — execution mode
 // =============================================================================
 
-describe('qCheckRulesAsync — mode: serial', () => {
+describe('$qCheckRulesAsync — mode: serial', () => {
 	test('returns same result as parallel for independent rules', async () => {
 		const form = new ContactFormAsync();
 		form.name = 'A'; // fails
@@ -289,8 +289,8 @@ describe('qCheckRulesAsync — mode: serial', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const parallel = await qCheckRulesAsync(form);
-		const serial = await qCheckRulesAsync(form, { mode: 'serial' });
+		const parallel = await $qCheckRulesAsync(form);
+		const serial = await $qCheckRulesAsync(form, { mode: 'serial' });
 
 		expect(serial.valid).toBe(parallel.valid);
 		expect(serial.errors.map((err) => err.field)).toEqual(
@@ -314,7 +314,7 @@ describe('qCheckRulesAsync — mode: serial', () => {
 		}
 
 		const form = new SerialForm();
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			mode: 'serial',
 			timeoutMs: 30,
 		});
@@ -327,7 +327,7 @@ describe('qCheckRulesAsync — mode: serial', () => {
 // Edge cases — group + timeoutMs combined, serial + group combined
 // =============================================================================
 
-describe('qCheckRulesAsync — group + timeoutMs combined', () => {
+describe('$qCheckRulesAsync — group + timeoutMs combined', () => {
 	test('only the targeted group is evaluated and timeout applies within it', async () => {
 		class MixedGroupForm {
 			@QRule(async (val: string) => {
@@ -344,7 +344,7 @@ describe('qCheckRulesAsync — group + timeoutMs combined', () => {
 
 		const form = new MixedGroupForm();
 		// Only evaluate 'identity' with a short timeout — fieldB (security) must be ignored
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			group: 'identity',
 			timeoutMs: 30,
 		});
@@ -368,7 +368,7 @@ describe('qCheckRulesAsync — group + timeoutMs combined', () => {
 
 		const form = new FastGroupForm();
 		form.name = 'Alice';
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			group: 'identity',
 			timeoutMs: 100,
 		});
@@ -377,7 +377,7 @@ describe('qCheckRulesAsync — group + timeoutMs combined', () => {
 	});
 });
 
-describe('qCheckRulesAsync — mode: serial + group combined', () => {
+describe('$qCheckRulesAsync — mode: serial + group combined', () => {
 	test('serial execution is limited to the specified group only', async () => {
 		const form = new ContactFormAsync();
 		form.name = 'Alice';
@@ -385,7 +385,7 @@ describe('qCheckRulesAsync — mode: serial + group combined', () => {
 		form.password = 'weak'; // security fails — must be ignored
 		form.street = ''; // ungrouped fails — must be ignored
 
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			mode: 'serial',
 			group: 'identity',
 		});
@@ -400,7 +400,7 @@ describe('qCheckRulesAsync — mode: serial + group combined', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesAsync(form, {
+		const result = await $qCheckRulesAsync(form, {
 			mode: 'serial',
 			group: 'identity',
 		});
@@ -413,10 +413,10 @@ describe('qCheckRulesAsync — mode: serial + group combined', () => {
 });
 
 // =============================================================================
-// qCheckRulesByGroupAsync
+// $qCheckRulesByGroupAsync
 // =============================================================================
 
-describe('qCheckRulesByGroupAsync', () => {
+describe('$qCheckRulesByGroupAsync', () => {
 	test('resolves one key per @QGroup group name', async () => {
 		const form = new ContactFormAsync();
 		form.name = 'Alice';
@@ -424,13 +424,13 @@ describe('qCheckRulesByGroupAsync', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		expect(Object.keys(result).sort()).toEqual(['identity', 'security']);
 	});
 
 	test('each entry is a valid IQRulesResult', async () => {
 		const form = new ContactFormAsync();
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		for (const entry of Object.values(result)) {
 			expect(typeof entry.valid).toBe('boolean');
 			expect(Array.isArray(entry.errors)).toBe(true);
@@ -444,7 +444,7 @@ describe('qCheckRulesByGroupAsync', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		expect(result['identity']?.valid).toBe(true);
 		expect(result['security']?.valid).toBe(true);
 	});
@@ -456,7 +456,7 @@ describe('qCheckRulesByGroupAsync', () => {
 		form.password = 'Secret1!'; // security passes
 		form.street = '42 Main St';
 
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		expect(result['identity']?.valid).toBe(false);
 		expect(result['security']?.valid).toBe(true);
 	});
@@ -468,7 +468,7 @@ describe('qCheckRulesByGroupAsync', () => {
 		form.password = 'weak'; // security errors
 		form.street = ''; // ungrouped — must not appear in any group
 
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		expect(
 			result['identity']?.errors.every(
 				(err) => err.field === 'name' || err.field === 'email'
@@ -495,20 +495,20 @@ describe('qCheckRulesByGroupAsync', () => {
 		}
 
 		const form = new SlowGroupForm();
-		const result = await qCheckRulesByGroupAsync(form, { timeoutMs: 30 });
+		const result = await $qCheckRulesByGroupAsync(form, { timeoutMs: 30 });
 		expect(result['identity']?.valid).toBe(false);
 		expect(result['identity']?.errors[0]?.timedOut).toBe(true);
 	});
 
 	test('returns empty object when no @QGroup decorators are present', async () => {
 		const form = new PlainSyncForm();
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 
 	test('returns empty object when no decorators at all', async () => {
 		const form = new EmptyForm();
-		const result = await qCheckRulesByGroupAsync(form);
+		const result = await $qCheckRulesByGroupAsync(form);
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 });

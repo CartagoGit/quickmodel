@@ -102,7 +102,7 @@ function createQModelValidator<T extends object>(
 ) {
 	return (data: FieldValues): true | FieldErrors => {
 		const dto = new (DtoClass as new (data: object) => QModel<T>)(data);
-		const { valid, errors } = dto.$qm.checkRules();
+		const { valid, errors } = dto.$qCheckRules();
 		if (valid) return true;
 		const fieldErrors: FieldErrors = {};
 		for (const err of errors) {
@@ -129,8 +129,8 @@ function SignupForm() {
 	} = useForm({
 		resolver: async (values) => {
 			const dto = new UserSignupDto(values);
-			const { valid, errors: ruleErrors } = dto.$qm.checkRules();
-			if (valid) return { values: dto.$qm.serialize(), errors: {} };
+			const { valid, errors: ruleErrors } = dto.$qCheckRules();
+			if (valid) return { values: dto.$qSerialize(), errors: {} };
 			const fieldErrors: Record<string, { message: string }> = {};
 			for (const err of ruleErrors) {
 				if (!fieldErrors[err.field]) {
@@ -144,7 +144,7 @@ function SignupForm() {
 	const onValid = (data: object) => {
 		const dto = new UserSignupDto(data);
 		console.log(dto.displayName); // QComputed works on valid submit
-		// send dto.$qm.serialize() to the API
+		// send dto.$qSerialize() to the API
 	};
 
 	return (
@@ -219,10 +219,10 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 	const [dto, setDto] = useState(() => new UserSignupDto(initialData));
 
 	const handleSave = async () => {
-		if (!dto.$qm.isDirty()) return; // nothing changed
-		await saveProfile(dto.$qm.serialize());
+		if (!dto.$qIsDirty()) return; // nothing changed
+		await saveProfile(dto.$qSerialize());
 		dto.reset(); // clear dirty state
-		setDto(new UserSignupDto(dto.$qm.serialize() as IUserSignup));
+		setDto(new UserSignupDto(dto.$qSerialize() as IUserSignup));
 	};
 
 	return (
@@ -230,7 +230,7 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 			{/* ... fields ... */}
 			<button
 				onClick={handleSave}
-				disabled={!dto.$qm.isDirty()}>
+				disabled={!dto.$qIsDirty()}>
 				Save changes
 			</button>
 		</form>

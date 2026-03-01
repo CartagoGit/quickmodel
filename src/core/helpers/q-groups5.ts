@@ -1,5 +1,5 @@
 /**
- * `qGroups5` — TS 5.0+ variant of {@link Forms.qGroups} that accepts
+ * `$qGroups5` — TS 5.0+ variant of {@link Forms.$qGroups} that accepts
  * a **mutable array** without requiring `as const`.
  *
  * This file is intentionally separate from `q-groups.ts` because the
@@ -29,13 +29,13 @@ import type { IQGroupsMap } from './q-groups';
  * const Groups = qGroups(['identity', 'security'] as const);
  *
  * // TS 5+ — use qGroups5, no as const needed:
- * import { qGroups5 } from 'quickmodel/compat/ts5/forms';
- * const Groups = qGroups5(['identity', 'security']);
+ * import { $qGroups5 } from 'quickmodel/compat/ts5/forms';
+ * const Groups = $qGroups5(['identity', 'security']);
  * ```
  *
  * @example
  * ```ts
- * const Groups = qGroups5(['identity', 'security', 'payment']);
+ * const Groups = $qGroups5(['identity', 'security', 'payment']);
  * // Groups.identity → type 'identity' ✅  (no as const required)
  * // Groups.typo    → compile error    ✅
  *
@@ -49,7 +49,7 @@ import type { IQGroupsMap } from './q-groups';
  * @see {@link Forms.qGroups} — TS 4.1-compatible version requiring `as const`
  * @see {@link IQGroupsMap} — map type returned by this function
  */
-export function qGroups5<const T extends string[]>(
+export function $qGroups5<const T extends string[]>(
 	groups: T
 ): IQGroupsMap<T[number]> {
 	return Object.fromEntries(

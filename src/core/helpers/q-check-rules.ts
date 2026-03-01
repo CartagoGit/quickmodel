@@ -97,7 +97,7 @@ export interface IQCheckRulesOptions {
  * // { valid: true, errors: [] }
  * ```
  */
-export function qCheckRules(
+export function $qCheckRules(
 	instance: object,
 	options?: IQCheckRulesOptions
 ): IQRulesResult {

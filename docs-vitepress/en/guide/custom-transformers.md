@@ -125,7 +125,7 @@ const product = new Product({
 console.log(product.price instanceof Money); // true
 console.log(product.price.toString()); // '999.99 USD'
 
-const plain = product.$qm.serialize();
+const plain = product.$qSerialize();
 console.log(plain.price); // { amount: 999.99, currency: 'USD' }
 ```
 

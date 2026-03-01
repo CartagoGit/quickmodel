@@ -64,7 +64,7 @@ let charCount = $derived(note.charCount);  // number — inferred from NoteModel
 
 function updateBody(newBody: string) {
   // copy() is IMMUTABLE — reassign the $state variable
-  note = note.$qm.copy({ body: newBody });
+  note = note.$qCopy({ body: newBody });
 }
 </script>
 
@@ -138,8 +138,8 @@ function createTaskStore(initial: ITask) {
 
 	return {
 		subscribe,
-		toggle: () => update((task) => task.$qm.copy({ done: !task.done })),
-		setLabel: (label: string) => update((task) => task.$qm.copy({ label })),
+		toggle: () => update((task) => task.$qCopy({ done: !task.done })),
+		setLabel: (label: string) => update((task) => task.$qCopy({ label })),
 	};
 }
 
@@ -244,7 +244,7 @@ class EventModel extends QModel<IEvent> {
 export const load: PageServerLoad = async ({ fetch }) => {
 	const raw = await fetch('/api/events').then((r) => r.json());
 	const { instances } = EventModel.createMany(raw);
-	return { events: instances.map((evt) => evt.$qm.serialize()) };
+	return { events: instances.map((evt) => evt.$qSerialize()) };
 };
 ```
 
@@ -273,8 +273,8 @@ const result = await qCheckRulesAsync(form, { mode: 'serial' });
 ```typescript
 const original = new ArticleModel({ ... });
 // User edits
-const edited = original.$qm.copy({ title: 'Updated Title' });
+const edited = original.$qCopy({ title: 'Updated Title' });
 
-original.$qm.diff(edited);
+original.$qDiff(edited);
 // → { title: { before: 'Old Title', after: 'Updated Title' } }
 ```

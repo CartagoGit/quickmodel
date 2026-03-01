@@ -549,7 +549,7 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 
 		test('returns plain object', () => {
 			user = user || new TestUser(testData);
-			interfaceData = user.$qm.serialize();
+			interfaceData = user.$qSerialize();
 			expect(typeof interfaceData).toBe('object');
 			expect(interfaceData.constructor).toBe(Object);
 		});
@@ -583,21 +583,21 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 
 	describe('14. Roundtrip (Model → Interface → Model)', () => {
 		test('dates preserved through roundtrip', () => {
-			const interfaceData = user.$qm.serialize();
+			const interfaceData = user.$qSerialize();
 			const restored = new TestUser(interfaceData);
 			expect(restored.createdAt).toBeInstanceOf(Date);
 			expect(restored.createdAt.getTime()).toBe(user.createdAt.getTime());
 		});
 
 		test('BigInt preserved through roundtrip', () => {
-			const interfaceData = user.$qm.serialize();
+			const interfaceData = user.$qSerialize();
 			const restored = new TestUser(interfaceData);
 			expect(typeof restored.bigNumber).toBe('bigint');
 			expect(restored.bigNumber).toBe(user.bigNumber);
 		});
 
 		test('Set preserved through roundtrip', () => {
-			const interfaceData = user.$qm.serialize();
+			const interfaceData = user.$qSerialize();
 			const restored = new TestUser(interfaceData);
 			expect(restored.tags).toBeInstanceOf(Set);
 			expect(restored.tags.size).toBe(user.tags.size);
@@ -605,7 +605,7 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 		});
 
 		test('Map preserved through roundtrip', () => {
-			const interfaceData = user.$qm.serialize();
+			const interfaceData = user.$qSerialize();
 			const restored = new TestUser(interfaceData);
 			expect(restored.metadata).toBeInstanceOf(Map);
 			expect(restored.metadata.size).toBe(user.metadata.size);

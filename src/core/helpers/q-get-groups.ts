@@ -56,7 +56,7 @@ import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
  * qGetGroups(form); // ['identity', 'security']
  * ```
  */
-export function qGetGroups(instance: object): string[] {
+export function $qGetGroups(instance: object): string[] {
 	const proto = Object.getPrototypeOf(instance) as object;
 	const fields: string[] = Reflect.getMetadata(QRULE_FIELDS_KEY, proto) ?? [];
 

@@ -40,7 +40,7 @@ Bun.serve({
 			console.log(msg.sentAt instanceof Date); // true
 
 			// Serialize and broadcast
-			ws.send(JSON.stringify(msg.$qm.serialize()));
+			ws.send(JSON.stringify(msg.$qSerialize()));
 		},
 	},
 });
@@ -86,7 +86,7 @@ wss.on('connection', (socket) => {
 		console.log(msg.sentAt instanceof Date); // true
 
 		// Echo back serialized
-		socket.send(JSON.stringify(msg.$qm.serialize()));
+		socket.send(JSON.stringify(msg.$qSerialize()));
 	});
 });
 ```
@@ -131,7 +131,7 @@ app.get('/stocks/:symbol', (ctx) =>
 			});
 
 			await stream.writeSSE({
-				data: JSON.stringify(tick.$qm.serialize()),
+				data: JSON.stringify(tick.$qSerialize()),
 				event: 'tick',
 				id: String(seq++),
 			});
@@ -173,7 +173,7 @@ export async function GET() {
 					ts: new Date(),
 				});
 
-				const data = `data: ${JSON.stringify(event.$qm.serialize())}\n\n`;
+				const data = `data: ${JSON.stringify(event.$qSerialize())}\n\n`;
 				controller.enqueue(encoder.encode(data));
 				await new Promise((resolve) => setTimeout(resolve, 500));
 			}
@@ -215,13 +215,13 @@ Use `isValid()` or `checkRules()` to guard outgoing messages:
 ws.on('message', (raw) => {
 	const msg = new ChatMessage(JSON.parse(raw.toString()));
 
-	if (!msg.$qm.isValid()) {
-		const { rules } = msg.$qm.validationReport();
+	if (!msg.$qIsValid()) {
+		const { rules } = msg.$qValidationReport();
 		ws.send(JSON.stringify({ error: rules.errors }));
 		return;
 	}
 
-	broadcast(msg.$qm.serialize());
+	broadcast(msg.$qSerialize());
 });
 ```
 

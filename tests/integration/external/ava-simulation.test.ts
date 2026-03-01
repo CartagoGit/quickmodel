@@ -461,7 +461,7 @@ describe('AVA Integration: type coercion', () => {
 	test('roundtrip: serialize() + re-create passes assertMatches', () => {
 		const ctl = createAvaContext();
 		const original = makeValidReport();
-		const restored = new ReportDto(original.$qm.serialize());
+		const restored = new ReportDto(original.$qSerialize());
 		expect(() =>
 			qModelMacros.assertMatches(ctl, original, restored)
 		).not.toThrow();

@@ -13,7 +13,6 @@ import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Simulated Mongoose document shapes
@@ -352,7 +351,7 @@ describe('Mongoose repository pattern with QModel layer', () => {
 			if (!valid) throw new Error(errors[0]?.message);
 			const doc = await this.model.create({
 				_id: new ObjectId(),
-				...(dto.toInterface() as Omit<IUserDoc, '_id' | '__v'>),
+				...(dto.$qToInterface() as Omit<IUserDoc, '_id' | '__v'>),
 				active: true,
 				score: 0,
 				createdAt: new Date(),
@@ -372,10 +371,10 @@ describe('Mongoose repository pattern with QModel layer', () => {
 		): Promise<UserDto | undefined> {
 			const existing = await this.findById(id);
 			if (!existing) return undefined;
-			const updated = existing.$qm.copy(patch);
+			const updated = existing.$qCopy(patch);
 			const doc = await this.model.findByIdAndUpdate(
 				id,
-				updated.toInterface() as Partial<IUserDoc>
+				updated.$qToInterface() as Partial<IUserDoc>
 			);
 			return doc ? new UserDto(docToObject(doc)) : undefined;
 		}
@@ -440,7 +439,7 @@ describe('Mongoose repository pattern with QModel layer', () => {
 // 3. dto.toInterface() as payload for Model.create()
 // ---------------------------------------------------------------------------
 
-describe('dto.toInterface() as Mongoose Model.create() payload', () => {
+describe('dto.$qToInterface() as Mongoose Model.create() payload', () => {
 	test('toInterface() returns plain object suitable for Model.create()', () => {
 		const dto = new CreateUserDto({
 			name: 'Carol',
@@ -448,7 +447,7 @@ describe('dto.toInterface() as Mongoose Model.create() payload', () => {
 			age: 28,
 			role: 'guest',
 		});
-		const payload = dto.toInterface();
+		const payload = dto.$qToInterface();
 		expect(payload instanceof QModel).toBe(false);
 		expect(typeof payload).toBe('object');
 		expect(payload.name).toBe('Carol');
@@ -458,7 +457,7 @@ describe('dto.toInterface() as Mongoose Model.create() payload', () => {
 		const dto = new UserDto(
 			docToObject(makeUserDoc({ name: 'Dan', role: 'admin' }))
 		);
-		const plain = dto.toInterface() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
+		const plain = dto.$qToInterface() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 		expect(plain['name']).toBe('Dan');
 		// computed fields are NOT persisted
 		expect(typeof plain).toBe('object');
@@ -473,7 +472,7 @@ describe('copy() + findByIdAndUpdate() partial update', () => {
 	test('copy() creates immutable patch for update', () => {
 		const doc = makeUserDoc({ name: 'Eve', score: 20 });
 		const dto = new UserDto(docToObject(doc));
-		const updated = dto.$qm.copy({ score: 100, role: 'admin' });
+		const updated = dto.$qCopy({ score: 100, role: 'admin' });
 		expect(updated.score).toBe(100);
 		expect(updated.role).toBe('admin');
 		expect(dto.score).toBe(20); // original unchanged
@@ -481,15 +480,15 @@ describe('copy() + findByIdAndUpdate() partial update', () => {
 
 	test('copy() isDirty() = false (clean snapshot for next change tracking)', () => {
 		const dto = new UserDto(docToObject(makeUserDoc()));
-		const updated = dto.$qm.copy({ score: 75 });
-		expect(updated.$qm.isDirty()).toBe(false);
+		const updated = dto.$qCopy({ score: 75 });
+		expect(updated.$qIsDirty()).toBe(false);
 	});
 
 	test('copy() toInterface() produces valid findByIdAndUpdate patch', () => {
 		const doc = makeUserDoc({ name: 'Frank', email: 'frank@x.com' });
 		const dto = new UserDto(docToObject(doc));
-		const patched = dto.$qm.copy({ email: 'frank-new@x.com' });
-		const updatePayload = patched.toInterface();
+		const patched = dto.$qCopy({ email: 'frank-new@x.com' });
+		const updatePayload = patched.$qToInterface();
 		expect(updatePayload.email).toBe('frank-new@x.com');
 	});
 });
@@ -537,7 +536,7 @@ describe('createMany() for Mongoose insertMany() seed data', () => {
 			}),
 		];
 		const { instances } = UserDto.createMany(docs.map(docToObject));
-		const payloads = instances.map((dto) => dto.toInterface());
+		const payloads = instances.map((dto) => dto.$qToInterface());
 		expect(payloads.length).toBe(2);
 		expect(payloads[0]?.name).toBe('Dave');
 		expect(payloads[1]?.role).toBe('admin');

@@ -42,9 +42,9 @@ export function describeBench(): void {
 				'Benchmark 10: QuickModel isDirty',
 				ITERS,
 				() => {
-					user.patch({ name: 'Bob Builder', age: 31 });
-					void user.isDirty();
-					user.reset();
+					user.$qPatch({ name: 'Bob Builder', age: 31 });
+					void user.$qIsDirty();
+					user.$qReset();
 				}
 			);
 			expect(res.totalMs).toBeLessThan(5000);
@@ -74,9 +74,9 @@ export function describeBench(): void {
 						]
 					: []),
 				runBench('Benchmark 10: QuickModel isDirty', ITERS, () => {
-					user.patch({ name: 'Bob Builder', age: 31 });
-					void user.isDirty();
-					user.reset();
+					user.$qPatch({ name: 'Bob Builder', age: 31 });
+					void user.$qIsDirty();
+					user.$qReset();
 				}),
 			];
 			printComparison(

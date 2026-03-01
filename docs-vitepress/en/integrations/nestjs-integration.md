@@ -127,7 +127,7 @@ export class UsersService {
 	create(data: object): object {
 		const dto = new CreateUserDto(data);
 
-		const result = dto.$qm.checkRules();
+		const result = dto.$qCheckRules();
 		if (!result.valid) {
 			throw new BadRequestException({
 				message: 'Validation failed',
@@ -135,7 +135,7 @@ export class UsersService {
 			});
 		}
 
-		return dto.$qm.serialize();
+		return dto.$qSerialize();
 	}
 }
 ```
@@ -170,7 +170,7 @@ export class QuickModelValidationPipe implements PipeTransform {
 			value as object
 		);
 
-		const result = instance.$qm.checkRules();
+		const result = instance.$qCheckRules();
 		if (!result.valid) {
 			throw new BadRequestException({
 				message: 'Validation failed',
@@ -234,7 +234,7 @@ export class CreateOrderDto extends QModel<ICreateOrderBody> {
 // In your service:
 const order = new CreateOrderDto(body);
 // order.shippingAddress is already an AddressDto instance
-const addrResult = order.shippingAddress.$qm.checkRules();
+const addrResult = order.shippingAddress.$qCheckRules();
 if (!addrResult.valid) {
 	throw new BadRequestException({ errors: addrResult.errors });
 }
@@ -280,7 +280,7 @@ export class AuthService {
 		const dto = new RegisterDto(data);
 
 		// evaluates both sync AND async predicates — all in parallel by default
-		const result = await dto.$qm.checkRulesAsync();
+		const result = await dto.$qCheckRulesAsync();
 		if (!result.valid) {
 			throw new BadRequestException({
 				message: 'Registration failed',
@@ -288,7 +288,7 @@ export class AuthService {
 			});
 		}
 
-		return this.saveUser(dto.$qm.serialize());
+		return this.saveUser(dto.$qSerialize());
 	}
 }
 ```
@@ -299,7 +299,7 @@ export class AuthService {
 
 ```typescript
 // Give each DB predicate a 300 ms budget — prevents hanging requests
-const result = await dto.$qm.checkRulesAsync({
+const result = await dto.$qCheckRulesAsync({
 	timeoutMs: 300,
 	timeoutMessage: 'Service temporarily unavailable',
 });
@@ -317,7 +317,7 @@ By default all predicates run **in parallel**. Use `mode: 'serial'` when predica
 
 ```typescript
 // Serial: format check runs first, DB call only happens if format passes
-const result = await dto.$qm.checkRulesAsync({
+const result = await dto.$qCheckRulesAsync({
 	mode: 'serial',
 	timeoutMs: 300,
 });

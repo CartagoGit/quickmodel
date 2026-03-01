@@ -62,10 +62,10 @@ export class QSimulateTransformationTool extends QAbstractTool<
 
 		const instance = DynamicModel.create(args.data);
 
-		// QModel.toJSON() returns a serialized JSON string.
+		// QModel.$qToJSON() returns a serialized JSON string.
 		// We parse it back to an object to return structured data to the MCP client.
 		// This ensures all complex types (Date, BigInt, Set) are properly converted to their JSON representations.
-		return { result: JSON.parse(instance.toJSON()) };
+		return { result: JSON.parse(instance.$qToJSON()) };
 	}
 
 	/**

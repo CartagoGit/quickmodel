@@ -94,7 +94,7 @@ export function describeBench(): void {
 			const models = rawData.map(
 				(raw) => new Payment(raw as unknown as IPayment) // @quickmodel-rule-ignore: no-as-unknown
 			);
-			models.forEach((model) => model.$qm.serialize());
+			models.forEach((model) => model.$qSerialize());
 			const elapsed = performance.now() - start;
 
 			void Math.round((1_000 / elapsed) * 1_000); // _opsPerSec

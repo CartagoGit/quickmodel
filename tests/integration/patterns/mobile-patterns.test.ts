@@ -15,8 +15,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -232,7 +232,7 @@ describe('React Native — TextInput coercion', () => {
 			phone: '1234567',
 			isVerified: false,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -245,7 +245,7 @@ describe('React Native — TextInput coercion', () => {
 			phone: '1234567',
 			isVerified: false,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'name')).toBe(true);
 	});
@@ -259,7 +259,7 @@ describe('React Native — TextInput coercion', () => {
 			phone: '1234567',
 			isVerified: false,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -296,15 +296,15 @@ describe('React Native — AsyncStorage roundtrip', () => {
 	});
 
 	test('serialize produces plain object safe for JSON.stringify', () => {
-		const serialized = dto.$qm.serialize();
+		const serialized = dto.$qSerialize();
 		expect(() => JSON.stringify(serialized)).not.toThrow();
 	});
 
 	test('new dto from JSON.parse(serialize()) restores values', () => {
-		const stored = JSON.stringify(dto.$qm.serialize());
+		const stored = JSON.stringify(dto.$qSerialize());
 		const parsed = JSON.parse(stored) as Record<string, unknown>;
 		const restored = new UserProfileDto(parsed);
-		expect(restored.$qm.serialize()).toEqual(dto.$qm.serialize());
+		expect(restored.$qSerialize()).toEqual(dto.$qSerialize());
 	});
 
 	test('createMany restores list from AsyncStorage array', () => {
@@ -335,14 +335,14 @@ describe('React Native — AsyncStorage roundtrip', () => {
 	});
 
 	test('copy preserves original before write', () => {
-		const updated = dto.$qm.copy({ name: 'Nueva' });
+		const updated = dto.$qCopy({ name: 'Nueva' });
 		expect(dto.name).toBe('Grace');
 		expect(updated.name).toBe('Nueva');
 	});
 
 	test('isDirty detects pending changes', () => {
-		const updated = dto.$qm.copy({ name: 'Nueva' });
-		expect(updated.$qm.isDirty()).toBe(true);
+		const updated = dto.$qCopy({ name: 'Nueva' });
+		expect(updated.$qIsDirty()).toBe(true);
 	});
 });
 
@@ -357,11 +357,11 @@ describe('Expo Router — route validation', () => {
 
 	function routeAction(params: Record<string, unknown>): IRouteResult {
 		const dto = new UserProfileDto(params);
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		if (!result.valid) {
 			return { success: false, errors: result.errors };
 		}
-		return { success: true, data: dto.$qm.serialize() as IUserProfile };
+		return { success: true, data: dto.$qSerialize() as IUserProfile };
 	}
 
 	test('route action validates before submit', () => {
@@ -437,7 +437,7 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('serialize output is safe for Preferences.set', () => {
 		const dto = new AppSettingsDto(validSettings);
-		const raw = JSON.stringify(dto.$qm.serialize());
+		const raw = JSON.stringify(dto.$qSerialize());
 		const parsed = JSON.parse(raw) as Record<string, unknown>;
 		const restored = new AppSettingsDto(parsed);
 		expect(restored.theme).toBe('dark');
@@ -446,7 +446,7 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('populate rehydrates settings from Preferences.get', () => {
 		const dto = new AppSettingsDto(validSettings);
-		prefs.set('settings', JSON.stringify(dto.$qm.serialize()));
+		prefs.set('settings', JSON.stringify(dto.$qSerialize()));
 		const stored = prefs.get('settings');
 		expect(stored).toBeDefined();
 		const restored = new AppSettingsDto(
@@ -458,25 +458,25 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('TTL pattern stores expiry with data', () => {
 		const dto = new AppSettingsDto(validSettings);
-		const ttlEntry = { data: dto.$qm.serialize(), exp: Date.now() + 1000 };
+		const ttlEntry = { data: dto.$qSerialize(), exp: Date.now() + 1000 };
 		expect(ttlEntry.exp).toBeGreaterThan(Date.now());
 	});
 
 	test('expired TTL entry is detected', () => {
 		const dto = new AppSettingsDto(validSettings);
-		const ttlEntry = { data: dto.$qm.serialize(), exp: Date.now() - 1 };
+		const ttlEntry = { data: dto.$qSerialize(), exp: Date.now() - 1 };
 		expect(ttlEntry.exp).toBeLessThan(Date.now());
 	});
 
 	test('checkRulesAsync validates before native API call', async () => {
 		const dto = new AppSettingsDto(validSettings);
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
 	test('checkRules detects invalid theme', () => {
 		const dto = new AppSettingsDto({ ...validSettings, theme: 'rainbow' });
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'theme')).toBe(true);
 	});
@@ -550,7 +550,7 @@ describe('Ionic — form patterns', () => {
 			subject: 'Test',
 			rating: 5,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -562,7 +562,7 @@ describe('Ionic — form patterns', () => {
 			qty: 3,
 			tag: 'hot',
 		});
-		const updated = dto.$qm.copy({ price: 15 });
+		const updated = dto.$qCopy({ price: 15 });
 		expect(dto.price).toBe(10);
 		expect(updated.price).toBe(15);
 	});
@@ -573,7 +573,7 @@ describe('Ionic — form patterns', () => {
 // ---------------------------------------------------------------------------
 
 describe('Ionic + Angular — reactive forms', () => {
-	test('qCheckRules errors map to AbstractControl errors structure', () => {
+	test('$qCheckRules errors map to AbstractControl errors structure', () => {
 		const dto = new ContactFormDto({
 			fullName: 'Q',
 			msg: 'short',
@@ -581,7 +581,7 @@ describe('Ionic + Angular — reactive forms', () => {
 			subject: 'Hi',
 			rating: 10,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 
 		const controlErrors = result.errors.reduce<Record<string, string>>(
@@ -596,7 +596,7 @@ describe('Ionic + Angular — reactive forms', () => {
 		expect(typeof controlErrors['rating']).toBe('string');
 	});
 
-	test('valid form submits dto.toInterface()', () => {
+	test('valid form submits dto.$qToInterface()', () => {
 		const dto = new ContactFormDto({
 			fullName: 'Rosa',
 			msg: 'This is a valid message with enough content',
@@ -604,9 +604,9 @@ describe('Ionic + Angular — reactive forms', () => {
 			subject: 'Test subject',
 			rating: 4,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
-		const iface = dto.toInterface();
+		const iface = dto.$qToInterface();
 		expect(iface.fullName).toBe('Rosa');
 		expect(iface.rating).toBe(4);
 	});
@@ -628,13 +628,13 @@ describe('Cordova — localStorage persistence', () => {
 
 	test('serialize is safe for JSON.stringify/parse roundtrip', () => {
 		const dto = new UserProfileDto(profile);
-		const stored = JSON.stringify(dto.$qm.serialize());
+		const stored = JSON.stringify(dto.$qSerialize());
 		expect(() => JSON.parse(stored)).not.toThrow();
 	});
 
 	test('populate restores from parsed storage value', () => {
 		const dto = new UserProfileDto(profile);
-		const stored = JSON.stringify(dto.$qm.serialize());
+		const stored = JSON.stringify(dto.$qSerialize());
 		const restored = new UserProfileDto(
 			JSON.parse(stored) as Record<string, unknown>
 		);
@@ -645,7 +645,7 @@ describe('Cordova — localStorage persistence', () => {
 	test('deviceready pattern initializes dto from storage', () => {
 		const storage = new Map<string, string>();
 		const dto = new UserProfileDto(profile);
-		storage.set('user', JSON.stringify(dto.$qm.serialize()));
+		storage.set('user', JSON.stringify(dto.$qSerialize()));
 
 		const raw = storage.get('user');
 		expect(raw).toBeDefined();
@@ -657,7 +657,7 @@ describe('Cordova — localStorage persistence', () => {
 
 	test('same serialize/populate contract works in both Cordova and Capacitor', () => {
 		const cordovaDto = new UserProfileDto(profile);
-		const serialized = cordovaDto.$qm.serialize();
+		const serialized = cordovaDto.$qSerialize();
 
 		const capacitorDto = new UserProfileDto(
 			serialized as Record<string, unknown>

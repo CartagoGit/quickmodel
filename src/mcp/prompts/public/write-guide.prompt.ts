@@ -105,6 +105,15 @@ export class QWriteGuidePrompt extends QAbstractInternalPrompt<{
 					`## ✍️ Documentation guide: ${title_en}\n\n` +
 						`I'll follow the complete doc-creation pipeline. Here are the steps:\n\n` +
 						`---\n\n` +
+						`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before creating or modifying any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is working on overlapping docs.\n` +
+						`   If \`agents[]\` is non-empty: review their staged/unstaged git changes and wait for them to commit or stash docs changes if there is overlap.\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, description \`"write guide: ${slug}"\`, and\n` +
+						`   \`files: ["docs-vitepress/en/**", "docs-vitepress/es/**", "docs-vitepress/.vitepress/config.ts"]\`.\n` +
+						`3. If \`conflict: true\` → **STOP immediately**. Do not create or modify any file. Inform the user and wait.\n` +
+						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
 						`### Step 1 — Scaffold the page files\n\n` +
 						`Call \`create_guide_page\` to create the EN and ES markdown stubs:\n\n` +
 						`\`\`\`\n` +
@@ -155,7 +164,7 @@ export class QWriteGuidePrompt extends QAbstractInternalPrompt<{
 						`update_docs_content()\n` +
 						`\`\`\`\n\n` +
 						`---\n\n` +
-						`**DONE when:** Steps 1–4 complete successfully and the new page has complete EN + ES content (not a stub).`
+						`**DONE when:** Steps 0–4 complete successfully, the new page has complete EN + ES content (not a stub), and \`agent_coordinate release\` has been called.`
 				),
 				this.user(
 					`Go ahead — start with \`create_guide_page\` and proceed through each step. ` +

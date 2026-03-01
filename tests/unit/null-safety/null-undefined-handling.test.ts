@@ -190,7 +190,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 			required: 'test',
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		expect(json.value).toBeNull();
 		expect(json.value).not.toBeUndefined();
@@ -203,7 +203,7 @@ describe('Null Safety: Nullable vs Optional', () => {
 			required: 'test',
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		// Undefined should be omitted from JSON by default
 		expect('optional' in json).toBe(false);
@@ -235,7 +235,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			required: 'test',
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 		const restored = Data.deserialize(json);
 
 		expect(restored.value).toBeNull();
@@ -254,7 +254,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			bio: null,
 		});
 
-		const json = user.$qm.serialize();
+		const json = user.$qSerialize();
 		const restored = User.deserialize(json);
 
 		expect(restored.profile?.address?.city).toBeNull();
@@ -269,7 +269,7 @@ describe('Null Safety: Roundtrip with Null/Undefined', () => {
 			] as ITimeline['events'],
 		});
 
-		const json = timeline.$qm.serialize();
+		const json = timeline.$qSerialize();
 		const restored = Timeline.deserialize(json);
 
 		expect(restored.events[0]).toBeInstanceOf(Date);

@@ -51,8 +51,8 @@ import type {
 	IQRulesResult,
 	IQRulesAsyncOptions,
 } from '@/core/decorators/qrule.decorator';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 import {
 	QFIELD_METADATA_KEY,
 	QFIELD_FIELDS_KEY,
@@ -127,7 +127,6 @@ import type {
 	IQValidateOptions,
 	IQValidateResult,
 } from '@/core/types/validation-types';
-import type { IQMHandle } from '@/core/interfaces/qm-handle.interface';
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
 // Metadata is immutable after decorators run (class-definition time), so
@@ -186,8 +185,7 @@ const _QDEFAULT_FIELDS_CACHE = new WeakMap<Function, readonly string[]>();
 const _EMPTY_FIELDS: readonly string[] = Object.freeze([]);
 // ──────────────────────────────────────────────────────────────────────────────
 
-// Validation report types are defined in a dedicated file so that
-// qm-handle.interface.ts can import them without a circular dependency.
+// Validation report types are defined in a dedicated file to avoid circular dependencies.
 export type {
 	IQValidationReport,
 	IQValidateOptions,
@@ -262,7 +260,7 @@ export interface IQCreateManyResult<TInstance> {
  *
  * **Key Features:**
  * - 🔄 **Type Transformation**: Convert strings to Date, BigInt, RegExp, etc.
- * - 📦 **Serialization**: Safe `toJSON()` and `deserialize()` methods.
+ * - 📦 **Serialization**: Safe `$qToJSON()` and `deserialize()` methods.
  * - 🎭 **Mocking**: Built-in mock generator using Faker.js.
  * - 🔍 **Validation**: Integrity checks for required properties.
  *
@@ -311,8 +309,8 @@ export interface IQCreateManyResult<TInstance> {
  * }
  *
  * const user = new User({ first_name: 'Alice', last_name: 'Smith' });
- * user.$qm.serialize().first_name; // ✅ typed correctly — IDE autocomplete works
- * user.$qm.serialize().last_name;  // ✅
+ * user.$qSerialize().first_name; // ✅ typed correctly — IDE autocomplete works
+ * user.$qSerialize().last_name;  // ✅
  * ```
  * @see {@link Quick} — class decorator required before extending `QModel`
  * @see {@link QModel.create} — preferred factory method for creating instances
@@ -345,6 +343,45 @@ function coerceUrlString(val: string | null, spec: unknown): unknown {
 	}
 	return val;
 }
+
+// ── Guard: enforce $q* access on protected methods ────────────────────────────
+/**
+ * Set to `true` while inside a `$q*()` call, allowing the
+ * underlying methods to execute. Resets to `false` in the `finally` block.
+ * @internal
+ */
+let _qCallActive = false;
+
+/**
+ * Wraps a `$q*` method call with the module-level flag.
+ * Works for both sync and async methods since guard checks always run
+ * synchronously before the first `await`.
+ * @internal
+ */
+function _withQFlag<TReturn>(cb: () => TReturn): TReturn {
+	_qCallActive = true;
+	try {
+		return cb();
+	} finally {
+		_qCallActive = false;
+	}
+}
+
+/**
+ * Called at the start of every guarded QModel method. Throws if the code path
+ * did not arrive through `instance.$q*()`, preventing
+ * accidental direct calls on methods that must be accessed via the namespace.
+ * @internal
+ */
+function _assertQCall(method: string): void {
+	if (!_qCallActive) {
+		throw new Error(
+			`[QuickModel] .${method}() must be called via instance.$q${method.charAt(0).toUpperCase()}${method.slice(1)}(). ` +
+				`See: https://quickmodel.dev/guide/reserved-words`
+		);
+	}
+}
+// ──────────────────────────────────────────────────────────────────────────────
 
 export abstract class QModel<
 	TInterface extends IQAnyRecord,
@@ -780,71 +817,6 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Returns the {@link IQMHandle} — a namespace object that groups all
-	 * QuickModel infrastructure methods under a single `$qm` property.
-	 *
-	 * Using `$qm` keeps every other instance property available for
-	 * user-defined domain data, eliminating reserved-word collisions with
-	 * names like `copy`, `diff`, `validate`, `history`, etc.
-	 *
-	 * Root-level methods remain available alongside `$qm` for backward compatibility.
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ name: 'Alice', age: 30 });
-	 *
-	 * user.$qm.patch({ age: 31 });
-	 * user.$qm.isDirty('age');          // true
-	 * const clone = user.$qm.copy({ name: 'Bob' });
-	 * const result = user.$qm.validate();
-	 * ```
-	 *
-	 * @see {@link IQMHandle} — full API surface of this namespace handle
-	 */
-	get $qm(): IQMHandle<TInterface, TAliasMap, this> {
-		const ref = this;
-		return {
-			serialize: (
-				seenOrOpt?: WeakSet<object> | IQSerializationOptions,
-				opt?: IQSerializationOptions
-			) => {
-				if (seenOrOpt === undefined || seenOrOpt instanceof WeakSet) {
-					return ref.serialize(seenOrOpt, opt);
-				}
-				return ref.serialize(seenOrOpt);
-			},
-			toFormData: (opt?) => ref.toFormData(opt),
-			toReadableStream: (opt) => {
-				if ('multipart' in opt && opt.multipart) {
-					return ref.toReadableStream(opt);
-				}
-				return ref.toReadableStream(opt);
-			},
-			isDirty: (fld?) => ref.isDirty(fld),
-			getChanges: () => ref.getChanges(),
-			patch: (dat) => ref.patch(dat),
-			copy: (par?) => ref.copy(par),
-			diff: (oth) => ref.diff(oth),
-			equals: (oth) => ref.equals(oth),
-			hasIntegrity: () => ref.hasIntegrity(),
-			isValid: () => ref.isValid(),
-			isValidAsync: (opt?) => ref.isValidAsync(opt),
-			checkRules: () => ref.checkRules(),
-			checkRulesAsync: (opt?) => ref.checkRulesAsync(opt),
-			validationReport: () => ref.validationReport(),
-			validationReportAsync: (opt?) => ref.validationReportAsync(opt),
-			validate: (opt?) => {
-				if (opt?.async === true) {
-					return ref.validate({ ...opt, async: true as const });
-				}
-				return ref.validate(
-					opt as IQValidateOptions & { async?: false }
-				);
-			},
-		};
-	}
-
-	/**
 	 * Builds a `FormData` from the model's current property values.
 	 *
 	 * Binary fields (`File`, `Blob`, `ArrayBuffer`, `Uint8Array`) are encoded
@@ -870,7 +842,7 @@ export abstract class QModel<
 	 * @group Serialization
 	 */
 	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
-		_assertQmCall('toFormData');
+		_assertQCall('toFormData');
 		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
 		const localOptions = Reflect.getMetadata(
 			QUICK_OPTIONS_KEY,
@@ -951,7 +923,7 @@ export abstract class QModel<
 	toReadableStream(
 		options: IToReadableStreamOptions
 	): ReadableStream<Uint8Array> | IQMultipartStream {
-		_assertQmCall('toReadableStream');
+		_assertQCall('toReadableStream');
 		// ── Multipart mode ──────────────────────────────────────────────────
 		if ('multipart' in options && options.multipart) {
 			const { boundary, chunkSize, onChunk } = options;
@@ -1206,8 +1178,8 @@ export abstract class QModel<
 	 * The returned class:
 	 * - Extends `ExternalBase` (prototype chain intact: `instance instanceof ExternalBase === true`)
 	 * - Exposes all static QModel methods: `create()`, `createReadonly()`, `mock()`,
-	 *   `getMetadata()`, `deserialize()`, `deserializeJson()`
-	 * - Exposes all instance QModel methods: `serialize()`, `toJSON()`, `toInterface()`,
+	 *   `getMetadata()`, `deserialize()`, `$qDeserializeJson()`
+	 * - Exposes all instance QModel methods: `serialize()`, `$qToJSON()`, `toInterface()`,
 	 *   `isDirty()`, `getDirtyFields()`, `reset()`, `patch()`, `copy()`
 	 * - Works with `@Quick` and `@QType` decorators on the derived class
 	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
@@ -1283,7 +1255,7 @@ export abstract class QModel<
 		const QModelMixed = makeMixed(ExternalBase);
 
 		// ── 2. Copy all INSTANCE methods from QModel.prototype ─────────────────
-		// This includes: serialize, toJSON, toInterface, isDirty, reset, patch, merge,
+		// This includes: serialize, $qToJSON, toInterface, isDirty, reset, patch, merge,
 		// getMetadata (instance), initialize, installLazyGetters, hasAccessor, etc.
 		for (const name of Object.getOwnPropertyNames(QModel.prototype)) {
 			if (name === 'constructor') continue;
@@ -1317,7 +1289,8 @@ export abstract class QModel<
 			'mock',
 			'getMetadata',
 			'deserialize',
-			'deserializeJson',
+			'$qDeserializeJson',
+			'$qFromJSON',
 		] as const;
 		for (const name of staticsToCopy) {
 			const descriptor = Object.getOwnPropertyDescriptor(QModel, name);
@@ -2049,7 +2022,7 @@ export abstract class QModel<
 	 *
 	 * @see {@link QModel.serialize} — JSON-safe form (converts Date → string, bigint → string, etc.)
 	 * @see {@link QModel.toInterface} — original-input-format snapshot
-	 * @see {@link QModel.toJSON} — JSON string shortcut
+	 * @see {@link QModel.$qToJSON} — JSON string shortcut
 	 *
 	 * @example
 	 * ```typescript
@@ -2083,20 +2056,20 @@ export abstract class QModel<
 	 * @param options - Optional `pick`/`omit` field list to filter the result.
 	 * @returns The {@link IQAliasedSerializedInterface} snapshot with all complex types converted to primitives.
 	 *
-	 * @see {@link QModel.toJSON} for a JSON-string shortcut
+	 * @see {@link QModel.$qToJSON} for a JSON-string shortcut
 	 * @see {@link QModel.toPlain} for a plain snapshot that keeps runtime types
 	 * @see {@link QModel.toInterface} for the original-input-format snapshot
 	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const data = user.$qm.serialize();
+	 * const data = user.$qSerialize();
 	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
 	 * ```
 	 *
 	 * @example With pick filter
 	 * ```typescript
-	 * const partial = user.$qm.serialize(undefined, { pick: ['id', 'name'] });
+	 * const partial = user.$qSerialize(undefined, { pick: ['id', 'name'] });
 	 * // { id: '1', name: 'John' }
 	 * ```
 	 *
@@ -2112,6 +2085,7 @@ export abstract class QModel<
 		seenOrOptions?: WeakSet<object> | IQSerializationOptions,
 		options?: IQSerializationOptions
 	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
+		_assertQCall('serialize');
 		const seen =
 			seenOrOptions instanceof WeakSet ? seenOrOptions : undefined;
 		const opts =
@@ -2192,20 +2166,160 @@ export abstract class QModel<
 	 * @returns JSON string representation of the model
 	 *
 	 * @see {@link QModel.serialize} — plain object form (before JSON.stringify)
-	 * @see {@link QModel.deserializeJson} — parse a JSON string back to a model instance
-	 * @see {@link QModel.fromJSON} — alias for `deserializeJson`
+	 * @see {@link QModel.$qDeserializeJson} — parse a JSON string back to a model instance
+	 * @see {@link QModel.$qFromJSON} — alias for `$qDeserializeJson`
 	 *
 	 * @example
 	 * ```typescript
 	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const json = user.toJSON();
+	 * const json = user.$qToJSON();
 	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
 	 * ```
 	 */
-	toJSON(_key?: string, options?: IQSerializationOptions): string {
-		// Delegate to serialize() so @QAlias remapping is applied before JSON encoding
-		return JSON.stringify(this.serialize(undefined, options));
+	$qToJSON(options?: IQSerializationOptions): string {
+		// Delegate to serialize() through the guard flag so @QAlias remapping is applied
+		return _withQFlag(() =>
+			JSON.stringify(this.serialize(undefined, options))
+		);
 	}
+
+	// ── Namespace $q* API ─────────────────────────────────────────────────────
+	/** @see {@link QModel.serialize} */
+	$qSerialize(
+		options?: IQSerializationOptions
+	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
+		return _withQFlag(() => this.serialize(options));
+	}
+
+	/** @see {@link QModel.toFormData} */
+	$qToFormData(options?: IToFormDataOptions): Promise<FormData> {
+		return _withQFlag(() => this.toFormData(options));
+	}
+
+	/** @see {@link QModel.toReadableStream} */
+	$qToReadableStream(
+		options: IToReadableStreamOptions
+	): ReadableStream<Uint8Array> | IQMultipartStream {
+		return _withQFlag(
+			() =>
+				this.toReadableStream(
+					options as IToReadableStreamSingleField
+				) as ReadableStream<Uint8Array> | IQMultipartStream
+		);
+	}
+
+	/** @see {@link QModel.checkIntegrity} */
+	$qCheckIntegrity(): IQIntegrityResult[] {
+		return _withQFlag(() => this.checkIntegrity());
+	}
+
+	/** @see {@link QModel.hasIntegrity} */
+	$qHasIntegrity(): boolean {
+		return _withQFlag(() => this.hasIntegrity());
+	}
+
+	/** @see {@link QModel.checkRules} */
+	$qCheckRules(): IQRulesResult {
+		return _withQFlag(() => this.checkRules());
+	}
+
+	/** @see {@link QModel.isValid} */
+	$qIsValid(): boolean {
+		return _withQFlag(() => this.isValid());
+	}
+
+	/** @see {@link QModel.validationReport} */
+	$qValidationReport(): IQValidationReport {
+		return _withQFlag(() => this.validationReport());
+	}
+
+	/** @see {@link QModel.checkRulesAsync} */
+	$qCheckRulesAsync(options?: IQRulesAsyncOptions): Promise<IQRulesResult> {
+		return _withQFlag(() => this.checkRulesAsync(options));
+	}
+
+	/** @see {@link QModel.isValidAsync} */
+	$qIsValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
+		return _withQFlag(() => this.isValidAsync(options));
+	}
+
+	/** @see {@link QModel.validationReportAsync} */
+	$qValidationReportAsync(
+		options?: IQRulesAsyncOptions
+	): Promise<IQValidationReport> {
+		return _withQFlag(() => this.validationReportAsync(options));
+	}
+
+	/** @see {@link QModel.validate} */
+	$qValidate(
+		options: IQValidateOptions & { async: true }
+	): Promise<IQValidateResult>;
+	$qValidate(
+		options?: IQValidateOptions & { async?: false | undefined }
+	): IQValidateResult;
+	$qValidate(
+		options?: IQValidateOptions
+	): IQValidateResult | Promise<IQValidateResult> {
+		if (options?.async === true) {
+			return _withQFlag(() =>
+				this.validate(options as IQValidateOptions & { async: true })
+			);
+		}
+		return _withQFlag(() =>
+			this.validate(options as IQValidateOptions & { async?: false })
+		);
+	}
+
+	/** @see {@link QModel.toInterface} */
+	$qToInterface(seen?: WeakSet<object>, depth?: number): TInterface {
+		return _withQFlag(() => this.toInterface(seen, depth));
+	}
+
+	/** @see {@link QModel.getInitInterface} */
+	$qGetInitInterface(): IQSerializedInterface<TInterface> {
+		return _withQFlag(() => this.getInitInterface());
+	}
+
+	/** @see {@link QModel.hasChanges} */
+	$qHasChanges(): boolean {
+		return _withQFlag(() => this.hasChanges());
+	}
+
+	/** @see {@link QModel.isDirty} */
+	$qIsDirty(field?: string): boolean {
+		return _withQFlag(() => this.isDirty(field));
+	}
+
+	/** @see {@link QModel.getChanges} */
+	$qGetChanges(): Partial<IQSerializedInterface<TInterface>> {
+		return _withQFlag(() => this.getChanges());
+	}
+
+	/** @see {@link QModel.reset} */
+	$qReset(): void {
+		return _withQFlag(() => this.reset());
+	}
+
+	/** @see {@link QModel.patch} */
+	$qPatch(data: Partial<IQModelData<TInterface>>): void {
+		return _withQFlag(() => this.patch(data));
+	}
+
+	/** @see {@link QModel.copy} */
+	$qCopy(partial?: Partial<IQModelData<TInterface>>): this {
+		return _withQFlag(() => this.copy(partial));
+	}
+
+	/** @see {@link QModel.diff} */
+	$qDiff(other: this): Record<string, { before: unknown; after: unknown }> {
+		return _withQFlag(() => this.diff(other));
+	}
+
+	/** @see {@link QModel.equals} */
+	$qEquals(other: this): boolean {
+		return _withQFlag(() => this.equals(other));
+	}
+	// ─────────────────────────────────────────────────────────────────────────
 
 	/**
 	 * Checks the model instance for type integrity.
@@ -2229,6 +2343,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	checkIntegrity(): IQIntegrityResult[] {
+		_assertQCall('checkIntegrity');
 		type IModelAsRecord = Record<string, unknown>;
 		return QModel._validation.checkIntegrity(
 			this as unknown as IModelAsRecord
@@ -2259,7 +2374,7 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'Jo', age: -1, email: 'notanemail' });
-	 * const result = user.$qm.checkRules();
+	 * const result = user.$qCheckRules();
 	 *
 	 * console.log(result.valid); // false
 	 * console.log(result.errors);
@@ -2272,7 +2387,8 @@ export abstract class QModel<
 	 *
 	 */
 	checkRules(): IQRulesResult {
-		return qCheckRules(this);
+		_assertQCall('checkRules');
+		return $qCheckRules(this);
 	}
 
 	/**
@@ -2288,13 +2404,14 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ age: 30, active: true });
-	 * if (!user.$qm.hasIntegrity()) {
+	 * if (!user.$qHasIntegrity()) {
 	 *   console.error('Type integrity violated');
 	 * }
 	 * ```
 	 *
 	 */
 	hasIntegrity(): boolean {
+		_assertQCall('hasIntegrity');
 		return this.checkIntegrity().length === 0;
 	}
 
@@ -2316,15 +2433,16 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
-	 * if (!user.$qm.isValid()) {
+	 * if (!user.$qIsValid()) {
 	 *   const integrityErrors = user.checkIntegrity();
-	 *   const ruleErrors = user.$qm.checkRules().errors;
+	 *   const ruleErrors = user.$qCheckRules().errors;
 	 *   // handle errors...
 	 * }
 	 * ```
 	 *
 	 */
 	isValid(): boolean {
+		_assertQCall('isValid');
 		return this.hasIntegrity() && this.checkRules().valid;
 	}
 
@@ -2342,7 +2460,7 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * const report = user.$qm.validationReport();
+	 * const report = user.$qValidationReport();
 	 *
 	 * if (!report.valid) {
 	 *   // transformer-level failures:
@@ -2354,6 +2472,7 @@ export abstract class QModel<
 	 *
 	 */
 	validationReport(): IQValidationReport {
+		_assertQCall('validationReport');
 		const integrity = this.checkIntegrity();
 		const rules = this.checkRules();
 		return {
@@ -2390,13 +2509,13 @@ export abstract class QModel<
 	 *
 	 * @example Basic usage
 	 * ```typescript
-	 * const result = await user.$qm.checkRulesAsync();
+	 * const result = await user.$qCheckRulesAsync();
 	 * if (!result.valid) console.log(result.errors);
 	 * ```
 	 *
 	 * @example With timeout
 	 * ```typescript
-	 * const result = await user.$qm.checkRulesAsync({ timeoutMs: 200, timeoutMessage: 'Service unavailable' });
+	 * const result = await user.$qCheckRulesAsync({ timeoutMs: 200, timeoutMessage: 'Service unavailable' });
 	 * result.errors.forEach((err) => {
 	 *   if (err.timedOut) console.warn(`${err.field} timed out`);
 	 * });
@@ -2404,14 +2523,15 @@ export abstract class QModel<
 	 *
 	 * @example Serial execution (e.g. check format first, then uniqueness)
 	 * ```typescript
-	 * const result = await user.$qm.checkRulesAsync({ mode: 'serial' });
+	 * const result = await user.$qCheckRulesAsync({ mode: 'serial' });
 	 * ```
 	 *
 	 */
 	async checkRulesAsync(
 		options?: IQRulesAsyncOptions
 	): Promise<IQRulesResult> {
-		return qCheckRulesAsync(this, options);
+		_assertQCall('checkRulesAsync');
+		return $qCheckRulesAsync(this, options);
 	}
 
 	/**
@@ -2428,14 +2548,15 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * if (!(await user.$qm.isValidAsync())) {
-	 *   const report = await user.$qm.validationReportAsync();
+	 * if (!(await user.$qIsValidAsync())) {
+	 *   const report = await user.$qValidationReportAsync();
 	 *   console.log(report.integrity, report.rules.errors);
 	 * }
 	 * ```
 	 *
 	 */
 	async isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
+		_assertQCall('isValidAsync');
 		return (
 			this.hasIntegrity() && (await this.checkRulesAsync(options)).valid
 		);
@@ -2453,7 +2574,7 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * const report = await user.$qm.validationReportAsync({ timeoutMs: 300 });
+	 * const report = await user.$qValidationReportAsync({ timeoutMs: 300 });
 	 * if (!report.valid) {
 	 *   console.log('Integrity:', report.integrity);
 	 *   console.log('Rules:', report.rules.errors);
@@ -2464,6 +2585,7 @@ export abstract class QModel<
 	async validationReportAsync(
 		options?: IQRulesAsyncOptions
 	): Promise<IQValidationReport> {
+		_assertQCall('validationReportAsync');
 		const integrity = this.checkIntegrity();
 		const rules = await this.checkRulesAsync(options);
 		return {
@@ -2489,18 +2611,18 @@ export abstract class QModel<
 	 *
 	 * @example Sync
 	 * ```typescript
-	 * const result = user.$qm.validate();
+	 * const result = user.$qValidate();
 	 * if (!result.valid) console.log(result.rules.errors);
 	 * ```
 	 *
 	 * @example Async
 	 * ```typescript
-	 * const result = await user.$qm.validate({ async: true });
+	 * const result = await user.$qValidate({ async: true });
 	 * ```
 	 *
 	 * @example Group filter
 	 * ```typescript
-	 * const result = user.$qm.validate({ groups: ['personal'] });
+	 * const result = user.$qValidate({ groups: ['personal'] });
 	 * ```
 	 *
 	 */
@@ -2513,6 +2635,7 @@ export abstract class QModel<
 	validate(
 		options?: IQValidateOptions
 	): IQValidateResult | Promise<IQValidateResult> {
+		_assertQCall('validate');
 		const integrity = this.checkIntegrity();
 
 		if (options?.async === true) {
@@ -2523,7 +2646,7 @@ export abstract class QModel<
 				return (async () => {
 					const allErrors: IQRulesResult['errors'] = [];
 					for (const grp of groups) {
-						const res = await qCheckRulesAsync(this, {
+						const res = await $qCheckRulesAsync(this, {
 							...asyncOpts,
 							group: grp,
 						});
@@ -2541,7 +2664,7 @@ export abstract class QModel<
 				})();
 			}
 			return (async () => {
-				const rules = await qCheckRulesAsync(this, asyncOpts);
+				const rules = await $qCheckRulesAsync(this, asyncOpts);
 				return {
 					valid: integrity.length === 0 && rules.valid,
 					integrity,
@@ -2556,7 +2679,7 @@ export abstract class QModel<
 			// Combine rules for each requested group
 			const allErrors: IQRulesResult['errors'] = [];
 			for (const grp of groups) {
-				const res = qCheckRules(this, { group: grp });
+				const res = $qCheckRules(this, { group: grp });
 				allErrors.push(...res.errors);
 			}
 			const combinedRules: IQRulesResult = {
@@ -2767,8 +2890,8 @@ export abstract class QModel<
 	 * @param data - Plain object matching the model's interface structure
 	 * @returns A new, fully typed model instance
 	 *
-	 * @see {@link QModel.fromJSON} — deserialize from a JSON string
-	 * @see {@link QModel.deserializeJson} — alias for `fromJSON`
+	 * @see {@link QModel.$qFromJSON} — deserialize from a JSON string
+	 * @see {@link QModel.$qDeserializeJson} — alias for `$qFromJSON`
 	 * @see {@link QModel.serialize} — serialize a model instance back to a plain object
 	 * @see {@link QModel.create} — factory alias that wraps the constructor
 	 *
@@ -2821,13 +2944,13 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const json = '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}';
-	 * const user = User.fromJSON(json);
+	 * const user = User.$qFromJSON(json);
 	 *
 	 * console.log(user instanceof User); // true
 	 * console.log(user.createdAt instanceof Date); // true
 	 * ```
 	 */
-	static fromJSON<T extends QModel<IQAnyRecord>>(
+	static $qFromJSON<T extends QModel<IQAnyRecord>>(
 		this: new (data: IQModelData<IQAnyRecord>) => T,
 		json: string
 	): T {
@@ -2837,7 +2960,7 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Alias for {@link fromJSON}. Creates a model instance from a JSON string.
+	 * Alias for {@link $qFromJSON}. Creates a model instance from a JSON string.
 	 *
 	 * Parses a JSON string and deserializes it into a fully typed model instance.
 	 * Use this when you prefer a `deserialize`-style naming convention.
@@ -2849,16 +2972,16 @@ export abstract class QModel<
 	 *
 	 * @example
 	 * ```typescript
-	 * const json = user.toJSON();
-	 * const restored = User.deserializeJson(json);
+	 * const json = user.$qToJSON();
+	 * const restored = User.$qDeserializeJson(json);
 	 * restored.createdAt instanceof Date; // true
 	 * ```
 	 */
-	static deserializeJson<T extends QModel<IQAnyRecord>>(
+	static $qDeserializeJson<T extends QModel<IQAnyRecord>>(
 		this: new (data: IQModelData<IQAnyRecord>) => T,
 		json: string
 	): T {
-		// Delegates to fromJSON for consistent @QAlias remapping
+		// Delegates to $qFromJSON for consistent @QAlias remapping
 		return new this(JSON.parse(json) as IQModelData<IQAnyRecord>);
 	}
 
@@ -2870,7 +2993,7 @@ export abstract class QModel<
 	 * **Key differences:**
 	 * - `toInterface()` → Preserves ORIGINAL input format (string stays string, RegExp stays RegExp)
 	 * - `serialize()` → Converts to JSON-compatible format (Date → ISO string, RegExp → object, etc.)
-	 * - `toJSON()` → Same as serialize() but returns JSON string
+	 * - `$qToJSON()` → Same as serialize() but returns JSON string
 	 *
 	 * **How it works:**
 	 * - Reads `__initData` (stored BEFORE transformations)
@@ -2898,7 +3021,7 @@ export abstract class QModel<
 	 *
 	 * user.createdAt;        // Date object (transformed)
 	 * user.toInterface();    // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
-	 * user.$qm.serialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
+	 * user.$qSerialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
 	 * ```
 	 *
 	 * @example
@@ -2910,7 +3033,7 @@ export abstract class QModel<
 	 *
 	 * account.balance;       // 999999999999999n (bigint transformed)
 	 * account.toInterface(); // { balance: '999999999999999' } - STRING preserved
-	 * account.$qm.serialize();   // { balance: '999999999999999' } - string for JSON
+	 * account.$qSerialize();   // { balance: '999999999999999' } - string for JSON
 	 * ```
 	 *
 	 * @example
@@ -2928,6 +3051,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	toInterface(seen?: WeakSet<object>, depth?: number): TInterface {
+		_assertQCall('toInterface');
 		return QModel.toInterfaceService.toInterface<TInterface>(
 			this as unknown as Record<string, unknown>,
 			seen,
@@ -2980,6 +3104,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	getInitInterface(): IQSerializedInterface<TInterface> {
+		_assertQCall('getInitInterface');
 		return { ...(this.__initData as IQSerializedInterface<TInterface>) };
 	}
 
@@ -3007,6 +3132,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	hasChanges(): boolean {
+		_assertQCall('hasChanges');
 		const current = this.toInterface();
 		const initial = this.getInitInterface();
 		return !this.deepEqual(current, initial);
@@ -3035,13 +3161,14 @@ export abstract class QModel<
 	 * const user = new User({ id: '1', name: 'John', age: 30 });
 	 * user.name = 'Jane';
 	 *
-	 * user.$qm.isDirty();        // true  (any field changed)
-	 * user.$qm.isDirty('name');  // true  (name changed)
-	 * user.$qm.isDirty('age');   // false (age unchanged)
+	 * user.$qIsDirty();        // true  (any field changed)
+	 * user.$qIsDirty('name');  // true  (name changed)
+	 * user.$qIsDirty('age');   // false (age unchanged)
 	 * ```
 	 *
 	 */
 	isDirty(field?: string): boolean {
+		_assertQCall('isDirty');
 		if (field === undefined) {
 			return this.hasChanges();
 		}
@@ -3074,7 +3201,7 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const user = new User({ name: 'John', age: 30 });
-	 * user.$qm.patch({ name: 'Jane' });
+	 * user.$qPatch({ name: 'Jane' });
 	 *
 	 * const dirty = user.getDirtyFields();
 	 * dirty.has('name'); // true
@@ -3144,7 +3271,7 @@ export abstract class QModel<
 	 * user.name = 'Jane';
 	 * user.age = 31;
 	 *
-	 * const changes = user.$qm.getChanges();
+	 * const changes = user.$qGetChanges();
 	 * // { name: 'Jane', age: 31 }
 	 *
 	 * // Use for PATCH request
@@ -3153,6 +3280,7 @@ export abstract class QModel<
 	 *
 	 */
 	getChanges(): Partial<IQSerializedInterface<TInterface>> {
+		_assertQCall('getChanges');
 		const current = this.toInterface();
 		const initial = this.getInitInterface();
 		const changes: Partial<IQSerializedInterface<TInterface>> = {};
@@ -3192,6 +3320,7 @@ export abstract class QModel<
 	 * ```
 	 */
 	reset(): void {
+		_assertQCall('reset');
 		const initial = this.getInitInterface();
 		const Constructor = this.constructor as unknown as IModelConstructor<
 			QModel<TInterface>
@@ -3226,7 +3355,7 @@ export abstract class QModel<
 	 *   email: 'john@example.com'
 	 * });
 	 *
-	 * user.$qm.patch({ name: 'Jane', age: 31 });
+	 * user.$qPatch({ name: 'Jane', age: 31 });
 	 *
 	 * console.log(user.name); // 'Jane'
 	 * console.log(user.age); // 31
@@ -3235,6 +3364,7 @@ export abstract class QModel<
 	 *
 	 */
 	patch(patch: Partial<IQModelData<TInterface>>): void {
+		_assertQCall('patch');
 		// @QReadonly guard — reject any patch that targets an immutable field
 		if (patch !== undefined) {
 			const roFields = collectReadonlyFields(
@@ -3284,14 +3414,14 @@ export abstract class QModel<
 	 * it is safe to use with any signal / store / ref system:
 	 * ```typescript
 	 * // Angular
-	 * userSignal.update(u => u.$qm.copy({ name: 'Bob' }))
+	 * userSignal.update(u => u.$qCopy({ name: 'Bob' }))
 	 * // Vue
-	 * userRef.value = user.$qm.copy({ name: 'Bob' })
+	 * userRef.value = user.$qCopy({ name: 'Bob' })
 	 * // React
-	 * setUser(user.$qm.copy({ name: 'Bob' }))
+	 * setUser(user.$qCopy({ name: 'Bob' }))
 	 * // patch() batch + copy() to emit
-	 * user.$qm.patch({ name: 'Bob', age: 31 })
-	 * userSignal.set(user.$qm.copy())
+	 * user.$qPatch({ name: 'Bob', age: 31 })
+	 * userSignal.set(user.$qCopy())
 	 * ```
 	 *
 	 * @param partial - Optional fields to override in the new instance
@@ -3305,17 +3435,18 @@ export abstract class QModel<
 	 * ```typescript
 	 * const user = new User({ name: 'John', age: 30 });
 	 *
-	 * const clone   = user.$qm.copy();                 // identical copy
-	 * const updated = user.$qm.copy({ name: 'Jane' }); // copy with override
+	 * const clone   = user.$qCopy();                 // identical copy
+	 * const updated = user.$qCopy({ name: 'Jane' }); // copy with override
 	 *
 	 * user.name;     // 'John'  ← original unchanged
 	 * updated.name;  // 'Jane'
 	 * updated.age;   // 30      ← fields not in partial are preserved
-	 * updated.$qm.isDirty(); // false
+	 * updated.$qIsDirty(); // false
 	 * ```
 	 *
 	 */
 	copy(partial?: Partial<IQModelData<TInterface>>): this {
+		_assertQCall('copy');
 		// @QReadonly guard — reject copy() calls that include an immutable field
 		if (partial !== undefined) {
 			const roFields = collectReadonlyFields(
@@ -3410,12 +3541,13 @@ export abstract class QModel<
 	 * const a = new User({ name: 'John', age: 30 });
 	 * const b = new User({ name: 'Jane', age: 31 });
 	 *
-	 * a.$qm.diff(b);
+	 * a.$qDiff(b);
 	 * // { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
 	 * ```
 	 *
 	 */
 	diff(other: this): Record<string, { before: unknown; after: unknown }> {
+		_assertQCall('diff');
 		const selfData = this.serialize() as Record<string, unknown>;
 		const otherData = other.serialize() as Record<string, unknown>;
 		const result: Record<string, { before: unknown; after: unknown }> = {};
@@ -3450,14 +3582,15 @@ export abstract class QModel<
 	 * ```typescript
 	 * const a = new User({ id: '1', name: 'John' });
 	 * const b = new User({ id: '1', name: 'John' });
-	 * a.$qm.equals(b); // true
+	 * a.$qEquals(b); // true
 	 *
 	 * a.name = 'Jane';
-	 * a.$qm.equals(b); // false
+	 * a.$qEquals(b); // false
 	 * ```
 	 *
 	 */
 	equals(other: this): boolean {
+		_assertQCall('equals');
 		return Object.keys(this.diff(other)).length === 0;
 	}
 
@@ -3696,7 +3829,7 @@ export abstract class QModel<
 	 * ```
 	 *
 	 * @see {@link SchemaToModelService} — service powering this method
-	 * @see {@link QFromSchemaTool} — MCP tool wrapping this method
+	 * @see `QFromSchemaTool` — MCP tool wrapping this method
 	 */
 	static fromSchema<T extends IFromSchemaFormat>(
 		format: T,

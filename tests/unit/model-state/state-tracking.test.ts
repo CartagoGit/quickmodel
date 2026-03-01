@@ -39,7 +39,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.id).toBe('1');
 			expect(iface.name).toBe('John');
@@ -62,7 +62,7 @@ describe('QModel State Tracking', () => {
 			user.age = 31;
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.name).toBe('Jane');
 			expect(iface.age).toBe(31);
@@ -83,7 +83,7 @@ describe('QModel State Tracking', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const init = user.getInitInterface();
+			const init = user.$qGetInitInterface();
 
 			expect(init.name).toBe('John');
 			expect(init.age).toBe(30);
@@ -99,8 +99,8 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const init1 = user.getInitInterface();
-			const init2 = user.getInitInterface();
+			const init1 = user.$qGetInitInterface();
+			const init2 = user.$qGetInitInterface();
 
 			// Different objects (defensive copy)
 			expect(init1).not.toBe(init2);
@@ -120,8 +120,8 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.hasChanges()).toBe(false);
-			expect(user.$qm.isDirty()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
+			expect(user.$qIsDirty()).toBe(false);
 		});
 
 		test('should return true after modification', () => {
@@ -135,8 +135,8 @@ describe('QModel State Tracking', () => {
 
 			user.name = 'Jane';
 
-			expect(user.hasChanges()).toBe(true);
-			expect(user.$qm.isDirty()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
+			expect(user.$qIsDirty()).toBe(true);
 		});
 
 		test('should detect changes in transformed types', () => {
@@ -150,7 +150,7 @@ describe('QModel State Tracking', () => {
 
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 		});
 
 		test('should return false if changed back to original value', () => {
@@ -163,10 +163,10 @@ describe('QModel State Tracking', () => {
 			});
 
 			user.name = 'Jane';
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 
 			user.name = 'John';
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 		});
 	});
 
@@ -229,7 +229,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.$qm.getChanges()).toEqual({});
+			expect(user.$qGetChanges()).toEqual({});
 		});
 
 		test('should return only modified fields with current values', () => {
@@ -244,7 +244,7 @@ describe('QModel State Tracking', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const changes = user.$qm.getChanges();
+			const changes = user.$qGetChanges();
 
 			expect(changes).toEqual({
 				name: 'Jane',
@@ -265,7 +265,7 @@ describe('QModel State Tracking', () => {
 
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			const changes = user.$qm.getChanges();
+			const changes = user.$qGetChanges();
 
 			expect(changes.createdAt).toBe('2024-12-31T00:00:00.000Z');
 			expect(typeof changes.createdAt).toBe('string');
@@ -282,7 +282,7 @@ describe('QModel State Tracking', () => {
 
 			user.email = 'jane@example.com';
 
-			const patchData = user.$qm.getChanges();
+			const patchData = user.$qGetChanges();
 
 			// Only send changed fields to API
 			expect(Object.keys(patchData)).toEqual(['email']);
@@ -304,7 +304,7 @@ describe('QModel State Tracking', () => {
 			user.age = 31;
 			user.email = 'jane@example.com';
 
-			user.reset();
+			user.$qReset();
 
 			expect(user.name).toBe('John');
 			expect(user.age).toBe(30);
@@ -322,7 +322,7 @@ describe('QModel State Tracking', () => {
 
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			user.reset();
+			user.$qReset();
 
 			expect(user.createdAt).toBeInstanceOf(Date);
 			expect(user.createdAt.toISOString()).toBe(
@@ -340,10 +340,10 @@ describe('QModel State Tracking', () => {
 			});
 
 			user.name = 'Jane';
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 
-			user.reset();
-			expect(user.hasChanges()).toBe(false);
+			user.$qReset();
+			expect(user.$qHasChanges()).toBe(false);
 		});
 
 		test('should work with form cancel/undo', () => {
@@ -362,7 +362,7 @@ describe('QModel State Tracking', () => {
 			user.email = 'jane@example.com';
 
 			// User clicks "Cancel" button
-			user.reset();
+			user.$qReset();
 
 			// Form reverts to original values
 			expect(user.name).toBe('John');
@@ -381,7 +381,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.$qm.patch({ name: 'Jane', age: 31 });
+			user.$qPatch({ name: 'Jane', age: 31 });
 
 			expect(user.name).toBe('Jane');
 			expect(user.age).toBe(31);
@@ -398,7 +398,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.$qm.patch({ createdAt: '2024-12-31T00:00:00.000Z' });
+			user.$qPatch({ createdAt: '2024-12-31T00:00:00.000Z' });
 
 			expect(user.createdAt).toBeInstanceOf(Date);
 			expect(user.createdAt.toISOString()).toBe(
@@ -416,7 +416,7 @@ describe('QModel State Tracking', () => {
 			});
 
 			// Simulate PATCH request to update email
-			user.$qm.patch({ email: 'newemail@example.com' });
+			user.$qPatch({ email: 'newemail@example.com' });
 
 			// Server response applied
 			expect(user.email).toBe('newemail@example.com');
@@ -432,10 +432,10 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.$qm.patch({ name: 'Jane' });
-			expect(user.hasChanges()).toBe(true);
+			user.$qPatch({ name: 'Jane' });
+			expect(user.$qHasChanges()).toBe(true);
 
-			const changes = user.$qm.getChanges();
+			const changes = user.$qGetChanges();
 			expect(changes).toEqual({ name: 'Jane' });
 		});
 	});
@@ -451,26 +451,26 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 
 			// 2. Update (form editing)
 			user.name = 'Jane';
 			user.age = 31;
 
-			expect(user.$qm.isDirty()).toBe(true);
+			expect(user.$qIsDirty()).toBe(true);
 			expect(user.getChangedFields()).toEqual(['name', 'age']);
 
 			// 3. Get changes for PATCH request
-			const patchData = user.$qm.getChanges();
+			const patchData = user.$qGetChanges();
 			expect(patchData).toEqual({ name: 'Jane', age: 31 });
 
 			// 4. Simulate successful save - reset baseline
 			// In real app, you'd create new instance from server response
 			const saved = new User({
-				...user.toInterface(),
+				...user.$qToInterface(),
 			});
 
-			expect(saved.hasChanges()).toBe(false);
+			expect(saved.$qHasChanges()).toBe(false);
 		});
 
 		test('form with cancel functionality', () => {
@@ -486,14 +486,14 @@ describe('QModel State Tracking', () => {
 			user.name = 'Jane';
 			user.email = 'jane@example.com';
 
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 			expect(user.getChangedFields()).toContain('name');
 
 			// User clicks cancel
-			user.reset();
+			user.$qReset();
 
 			// No unsaved changes
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 			expect(user.name).toBe('John');
 		});
 
@@ -514,7 +514,7 @@ describe('QModel State Tracking', () => {
 
 			if (apiCallFailed) {
 				// Rollback
-				user.reset();
+				user.$qReset();
 				expect(user.name).toBe('John');
 			}
 		});

@@ -619,3 +619,435 @@ Injected
 **Esfuerzo estimado:** Por estimar
 
 desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc

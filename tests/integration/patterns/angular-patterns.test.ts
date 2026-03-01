@@ -12,13 +12,10 @@
 import { describe, test, expect, beforeEach, spyOn, afterEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QGroup, QField } from '@/decorators';
-import { qGroups } from '@/core/helpers/q-groups';
 import {
 	qCheckRules,
 	_resetAsyncWarnedKeys,
 } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
-import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // Plain form class — Angular Reactive Forms pattern
@@ -307,24 +304,24 @@ class UserDataService {
 			(record as unknown as Record<string, unknown>)['id'] as string, // @quickmodel-rule-ignore: no-as-unknown
 			record
 		);
-		return record.$qm.serialize();
+		return record.$qSerialize();
 	}
 
 	findById(idArg: string): object | undefined {
 		const record = this.store.get(idArg);
-		return record ? record.$qm.serialize() : undefined;
+		return record ? record.$qSerialize() : undefined;
 	}
 
 	findAll(): object[] {
-		return [...this.store.values()].map((rec) => rec.$qm.serialize());
+		return [...this.store.values()].map((rec) => rec.$qSerialize());
 	}
 
 	update(idArg: string, patch: Partial<IUserRecord>): object | null {
 		const record = this.store.get(idArg);
 		if (!record) return null;
-		const updated = record.$qm.copy(patch);
+		const updated = record.$qCopy(patch);
 		this.store.set(idArg, updated);
-		return updated.$qm.serialize();
+		return updated.$qSerialize();
 	}
 }
 
@@ -409,13 +406,13 @@ describe('Angular — Service / Repository pattern', () => {
 			email: 'helen@example.com',
 			score: 70,
 		});
-		expect(record.$qm.isDirty()).toBe(false);
+		expect(record.$qIsDirty()).toBe(false);
 		record.score = 80;
-		expect(record.$qm.isDirty()).toBe(true);
-		expect(record.$qm.isDirty('score')).toBe(true);
-		expect(record.$qm.isDirty('email')).toBe(false);
-		record.reset();
-		expect(record.$qm.isDirty()).toBe(false);
+		expect(record.$qIsDirty()).toBe(true);
+		expect(record.$qIsDirty('score')).toBe(true);
+		expect(record.$qIsDirty('email')).toBe(false);
+		record.$qReset();
+		expect(record.$qIsDirty()).toBe(false);
 		expect(record.score).toBe(70);
 	});
 
@@ -427,16 +424,16 @@ describe('Angular — Service / Repository pattern', () => {
 			email: 'ivan@example.com',
 			score: 70,
 		});
-		const updated = record.$qm.copy({ score: 90 });
+		const updated = record.$qCopy({ score: 90 });
 		// Original untouched
-		expect(record.$qm.isDirty()).toBe(false);
+		expect(record.$qIsDirty()).toBe(false);
 		expect(record.score).toBe(70);
 		// New instance has merged value
 		expect(updated.score).toBe(90);
 		expect(updated).not.toBe(record);
 		// Mutating original does not affect new instance
 		record.score = 55;
-		expect(record.$qm.isDirty()).toBe(true);
+		expect(record.$qIsDirty()).toBe(true);
 		expect(updated.score).toBe(90);
 	});
 });
@@ -498,7 +495,7 @@ describe('Angular — HttpClient interceptor coercion', () => {
 			_internalMeta: 'stripped',
 			debugToken: 'secret',
 		});
-		const serialized = dto.$qm.serialize() as Record<string, unknown>;
+		const serialized = dto.$qSerialize() as Record<string, unknown>;
 		expect('_internalMeta' in serialized).toBe(false);
 		expect('debugToken' in serialized).toBe(false);
 	});
@@ -600,7 +597,7 @@ describe('Angular — Signals reactive state (v17+)', () => {
 		const sig = new QSignal(
 			new ProfileModel({ name: 'Bob', bio: 'Designer', followers: 500 })
 		);
-		sig.update((prev) => prev.$qm.copy({ followers: 600 }));
+		sig.update((prev) => prev.$qCopy({ followers: 600 }));
 		expect(sig.read().followers).toBe(600);
 	});
 
@@ -608,7 +605,7 @@ describe('Angular — Signals reactive state (v17+)', () => {
 		const sig = new QSignal(
 			new ProfileModel({ name: 'Carol', bio: 'Engineer', followers: 999 })
 		);
-		const out = sig.read().serialize() as Record<string, unknown>;
+		const out = sig.read().$qSerialize() as Record<string, unknown>;
 		expect(out['summary']).toBe('Carol · 999 followers');
 	});
 
@@ -618,13 +615,13 @@ describe('Angular — Signals reactive state (v17+)', () => {
 			bio: 'Tester',
 			followers: 100,
 		});
-		expect(model.$qm.isDirty()).toBe(false);
+		expect(model.$qIsDirty()).toBe(false);
 		model.bio = 'Senior Tester';
-		expect(model.$qm.isDirty()).toBe(true);
-		expect(model.$qm.isDirty('bio')).toBe(true);
-		expect(model.$qm.isDirty('name')).toBe(false);
-		model.reset();
-		expect(model.$qm.isDirty()).toBe(false);
+		expect(model.$qIsDirty()).toBe(true);
+		expect(model.$qIsDirty('bio')).toBe(true);
+		expect(model.$qIsDirty('name')).toBe(false);
+		model.$qReset();
+		expect(model.$qIsDirty()).toBe(false);
 		expect(model.bio).toBe('Tester');
 	});
 
@@ -775,7 +772,7 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 			},
 		];
 		const { instances } = UserRecord.createMany(raw as any[]);
-		const out = instances[0].serialize() as Record<string, unknown>;
+		const out = instances[0].$qSerialize() as Record<string, unknown>;
 		expect(out['tier']).toBe('gold');
 		expect(out['fullName']).toBe('Dave Brown');
 	});
@@ -966,7 +963,7 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		expect(result.errors[0].message).toBe('Username too short');
 	});
 
-	test('QModel.$qm.checkRulesAsync() tiene el mismo comportamiento que qCheckRulesAsync()', async () => {
+	test('QModel.$qCheckRulesAsync() tiene el mismo comportamiento que qCheckRulesAsync()', async () => {
 		// Verifica que el método en QModel delega correctamente al helper
 
 		@Quick({ username: 'string', name: 'string' })
@@ -988,7 +985,7 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		});
 
 		// Método en instancia QModel
-		const result = await instance.$qm.checkRulesAsync();
+		const result = await instance.$qCheckRulesAsync();
 
 		expect(result.valid).toBe(false);
 		expect(result.errors[0].field).toBe('username');

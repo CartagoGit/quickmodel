@@ -54,7 +54,7 @@ describe('Validation Trigger Configuration', () => {
 		expect(instance).toBeInstanceOf(ManualLax);
 
 		// Manual validation detects it
-		const errors = instance.checkIntegrity();
+		const errors = instance.$qCheckIntegrity();
 		expect(errors.length).toBeGreaterThan(0);
 		expect(errors[0]?.error).toContain('Value is invalid');
 	});

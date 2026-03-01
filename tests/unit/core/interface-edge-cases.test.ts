@@ -30,7 +30,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// This should not throw or hang
 			expect(() => {
-				const iface = node.toInterface();
+				const iface = node.$qToInterface();
 				// Should complete without hanging
 				expect(iface).toBeDefined();
 			}).not.toThrow();
@@ -53,8 +53,8 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// Should not hang
 			expect(() => {
-				const parentIface = parent.toInterface();
-				const childIface = child.toInterface();
+				const parentIface = parent.$qToInterface();
+				const childIface = child.$qToInterface();
 				expect(parentIface).toBeDefined();
 				expect(childIface).toBeDefined();
 			}).not.toThrow();
@@ -86,7 +86,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				nested: null,
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(iface.value).toBeNull();
 			expect(iface.nested).toBeNull();
@@ -99,7 +99,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				nested: undefined,
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			// undefined might be omitted or preserved depending on implementation
 			expect(iface.value === undefined || !('value' in iface)).toBe(true);
@@ -113,7 +113,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				},
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(iface.nested).toBeDefined();
 			expect(iface.nested?.prop).toBeNull();
@@ -151,7 +151,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(typeof iface.createdAt).toBe('string');
 			expect(iface.createdAt).toBe('2024-01-01T00:00:00.000Z');
@@ -166,7 +166,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			// Set invalid date
 			model.createdAt = new Date('invalid');
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			// Should return 'Invalid Date' string or handle gracefully
 			expect(typeof iface.createdAt).toBe('string');
@@ -179,7 +179,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				updatedAt: null,
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(iface.updatedAt).toBeNull();
 		});
@@ -215,7 +215,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				},
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(Array.isArray(iface.tags)).toBe(true);
 			expect(iface.tags.length).toBe(0);
@@ -236,7 +236,7 @@ describe('Interface Conversion - Edge Cases', () => {
 			model.tags.push('d');
 			model.metadata.values.push(6);
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(iface.tags).toEqual(['a', 'b', 'c', 'd']);
 			expect(iface.metadata.values).toEqual([1, 2, 3, 4, 5, 6]);
@@ -258,7 +258,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				},
 			});
 
-			const iface = model.toInterface();
+			const iface = model.$qToInterface();
 
 			expect(iface.tags).toBeDefined();
 			expect(iface.metadata.values).toBeDefined();
@@ -286,8 +286,8 @@ describe('Interface Conversion - Edge Cases', () => {
 				age: 30,
 			});
 
-			const init1 = user.getInitInterface();
-			const init2 = user.getInitInterface();
+			const init1 = user.$qGetInitInterface();
+			const init2 = user.$qGetInitInterface();
 
 			// Should be different objects
 			expect(init1).not.toBe(init2);
@@ -302,12 +302,12 @@ describe('Interface Conversion - Edge Cases', () => {
 				age: 30,
 			});
 
-			const init = user.getInitInterface();
+			const init = user.$qGetInitInterface();
 			init.name = 'Mutated';
 			init.age = 999;
 
 			// Get again, should still have original values
-			const init2 = user.getInitInterface();
+			const init2 = user.$qGetInitInterface();
 			expect(init2.name).toBe('John');
 			expect(init2.age).toBe(30);
 		});
@@ -319,13 +319,13 @@ describe('Interface Conversion - Edge Cases', () => {
 				age: 30,
 			});
 
-			const init1 = user.getInitInterface();
+			const init1 = user.$qGetInitInterface();
 
 			// Modify instance
 			user.name = 'Jane';
 			user.age = 31;
 
-			const init2 = user.getInitInterface();
+			const init2 = user.$qGetInitInterface();
 
 			// Both should have original values
 			expect(init1.name).toBe('John');
@@ -371,7 +371,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const iface = account.toInterface();
+			const iface = account.$qToInterface();
 
 			expect(typeof iface.balance).toBe('string');
 			expect(iface.balance).toBe('999999999999999999');
@@ -386,8 +386,8 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			account.balance = BigInt('2000');
 
-			const iface = account.toInterface();
-			const init = account.getInitInterface();
+			const iface = account.$qToInterface();
+			const init = account.$qGetInitInterface();
 
 			expect(iface.balance).toBe('2000');
 			expect(init.balance).toBe('1000');
@@ -401,7 +401,7 @@ describe('Interface Conversion - Edge Cases', () => {
 				pattern: '^test\\d+$',
 			});
 
-			const iface = account.toInterface();
+			const iface = account.$qToInterface();
 
 			expect(typeof iface.pattern).toBe('string');
 			expect(iface.pattern).toBe('^test\\d+$');
@@ -431,7 +431,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// Should not throw
 			expect(() => {
-				const iface = model.toInterface();
+				const iface = model.$qToInterface();
 				expect(iface).toBeDefined();
 			}).not.toThrow();
 		});
@@ -448,7 +448,7 @@ describe('Interface Conversion - Edge Cases', () => {
 
 			// Should not throw
 			expect(() => {
-				const iface = model.toInterface();
+				const iface = model.$qToInterface();
 				expect(iface).toBeDefined();
 			}).not.toThrow();
 		});

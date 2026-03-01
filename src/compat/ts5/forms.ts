@@ -24,6 +24,6 @@
  * @module compat/ts5/forms
  */
 
-export { qGroups5 } from '@/core/helpers/q-groups5';
+export { $qGroups5 } from '@/core/helpers/q-groups5';
 // Re-export IQGroupsMap for convenience so consumers don't need two imports
 export type { IQGroupsMap } from '@/core/helpers/q-groups';

@@ -110,7 +110,9 @@ export function describeBench(): void {
 			}
 			const res = runBench('Benchmark 4: joi batch', CYCLES, () => {
 				for (const item of dataset)
-					schemas.simpleSchema.validate(item, { abortEarly: false });
+					schemas.simpleSchema.$qValidate(item, {
+						abortEarly: false,
+					});
 			});
 			expect(res.opsPerSec).toBeGreaterThan(0);
 		});
@@ -123,7 +125,7 @@ export function describeBench(): void {
 				'Benchmark 4: QuickModel batch',
 				CYCLES,
 				() => {
-					for (const model of models) model.isValid();
+					for (const model of models) model.$qIsValid();
 				}
 			);
 			expect(res.opsPerSec).toBeGreaterThan(0);
@@ -153,7 +155,7 @@ export function describeBench(): void {
 					const models = dataset.map(
 						(item) => new SimpleUser(item as unknown as ISimpleUser) // @quickmodel-rule-ignore: no-as-unknown
 					);
-					for (const model of models) model.isValid();
+					for (const model of models) model.$qIsValid();
 				}),
 			];
 			const tbSchemas = buildTypeboxSchemas();
@@ -217,7 +219,7 @@ export function describeBench(): void {
 					0,
 					runBench('Benchmark 4: joi batch', CYCLES, () => {
 						for (const item of dataset)
-							joiSchemas.simpleSchema.validate(item, {
+							joiSchemas.simpleSchema.$qValidate(item, {
 								abortEarly: false,
 							});
 					})

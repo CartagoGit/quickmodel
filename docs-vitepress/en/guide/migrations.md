@@ -117,7 +117,7 @@ After migration, `_v` is updated to the current version but **not included** in 
 
 ```typescript
 const user = new UserModel({ firstName: 'Alice', lastName: 'Smith', _v: 1 });
-user.$qm.serialize();
+user.$qSerialize();
 // → { fullName: 'Alice Smith' }  — no _v in output
 ```
 

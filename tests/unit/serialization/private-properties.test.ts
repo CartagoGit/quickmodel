@@ -70,7 +70,7 @@ describe('Private/Protected Properties Serialization', () => {
 		const user = new StrictUser({ id: 1, _ignored: 'visible' });
 
 		// Pass option manually via serialize() or toJSON()
-		const json = user.$qm.serialize(undefined, { includeUnderscore: true });
+		const json = user.$qSerialize(undefined, { includeUnderscore: true });
 
 		expect((json as any).id).toBe(1);
 		expect((json as any)._ignored).toBe('visible');
@@ -80,7 +80,7 @@ describe('Private/Protected Properties Serialization', () => {
 		const user = new User({ id: 1, name: 'John' });
 		user.__meta = 'internal_data';
 
-		const json = user.$qm.serialize(undefined, {
+		const json = user.$qSerialize(undefined, {
 			includeDoubleUnderscore: true,
 		});
 

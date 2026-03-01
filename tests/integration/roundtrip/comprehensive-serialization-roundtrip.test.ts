@@ -297,7 +297,7 @@ describe('CompleteModel - All Supported Types', () => {
 	describe('7. Serialization type conversions', () => {
 		test('should serialize special types to interface-compatible primitives', () => {
 			const model = new CompleteModel(testData);
-			const serialized = model.$qm.serialize();
+			const serialized = model.$qSerialize();
 			expect(typeof serialized.amount).toBe('string');
 			// Symbol serializes to an object descriptor { __type: 'symbol', key: ... }
 			expect(typeof serialized.key).toBe('object');
@@ -308,7 +308,7 @@ describe('CompleteModel - All Supported Types', () => {
 
 		test('should serialize Map to object and Set to array', () => {
 			const model = new CompleteModel(testData);
-			const serialized = model.$qm.serialize();
+			const serialized = model.$qSerialize();
 			expect(typeof serialized.settings).toBe('object');
 			expect(Array.isArray(serialized.settings)).toBe(false);
 			expect(Array.isArray(serialized.items)).toBe(true);
@@ -318,9 +318,9 @@ describe('CompleteModel - All Supported Types', () => {
 	describe('8. Round-trip (Interface → Model → Interface → Model)', () => {
 		test('should preserve all field values across double round-trip', () => {
 			const model = new CompleteModel(testData);
-			const serialized = model.$qm.serialize();
+			const serialized = model.$qSerialize();
 			const model2 = new CompleteModel(serialized);
-			const serialized2 = model2.$qm.serialize();
+			const serialized2 = model2.$qSerialize();
 			const model3 = new CompleteModel(serialized2);
 
 			expect(model3.id).toBe(model.id);

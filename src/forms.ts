@@ -67,14 +67,14 @@
  * @see {@link qGroups} — typed group-name map helper
  */
 
-export { qGroups } from './core/helpers/q-groups';
+export { $qGroups } from './core/helpers/q-groups';
 export type { IQGroupsMap } from './core/helpers/q-groups';
 
-export { qGetGroups } from './core/helpers/q-get-groups';
-export { qCheckRules } from './core/helpers/q-check-rules';
+export { $qGetGroups } from './core/helpers/q-get-groups';
+export { $qCheckRules } from './core/helpers/q-check-rules';
 export type { IQCheckRulesOptions } from './core/helpers/q-check-rules';
-export { qCheckRulesAsync } from './core/helpers/q-check-rules-async';
+export { $qCheckRulesAsync } from './core/helpers/q-check-rules-async';
 export type { IQCheckRulesAsyncOptions } from './core/helpers/q-check-rules-async';
-export { qCheckRulesByGroup } from './core/helpers/q-check-rules-by-group';
-export { qCheckRulesByGroupAsync } from './core/helpers/q-check-rules-by-group-async';
+export { $qCheckRulesByGroup } from './core/helpers/q-check-rules-by-group';
+export { $qCheckRulesByGroupAsync } from './core/helpers/q-check-rules-by-group-async';
 export type { IQRulesResult } from './core/decorators/qrule.decorator';

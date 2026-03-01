@@ -23,7 +23,7 @@ describe('ToInterfaceService Additional Gaps', () => {
 		// Recursion continues.
 		// convertToInterfaceFormat called with node.
 		// node is in seen -> THROW.
-		expect(() => node.toInterface()).toThrow();
+		expect(() => node.$qToInterface()).toThrow();
 	});
 
 	it('should handle invalid Date objects by returning string representation', () => {
@@ -45,7 +45,7 @@ describe('ToInterfaceService Additional Gaps', () => {
 		// invalidDate.toISOString() throws.
 		// Catch block: returns originalValue ('2024-01-01T00:00:00.000Z')
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 		expect(result.date).toBe('2024-01-01T00:00:00.000Z');
 	});
 
@@ -71,7 +71,7 @@ describe('ToInterfaceService Additional Gaps', () => {
 
 		// originalValue='2020-01-01'.
 		// result should be '2020-01-01'.
-		expect(model2.toInterface().date).toBe('2020-01-01T00:00:00.000Z');
+		expect(model2.$qToInterface().date).toBe('2020-01-01T00:00:00.000Z');
 	});
 
 	it('should fallback to String(current) if originalValue is not string in catch block', () => {
@@ -97,7 +97,7 @@ describe('ToInterfaceService Additional Gaps', () => {
 		// Catch: typeof originalValue === 'string' ? ... : String(currentValue)
 		// originalValue is Date (object), so returns String(currentValue) -> "Invalid Date"
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 		expect(result.date).toBe('Invalid Date');
 	});
 });

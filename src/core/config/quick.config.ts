@@ -22,6 +22,8 @@
  * QConfig.configure(config);
  * ```
  */
+import type { IQSpoofMethod } from '@/core/types/form-data.type';
+
 export interface IQConfig {
 	/**
 	 * Default options applied to all models decorated with `@Quick`.
@@ -107,7 +109,7 @@ export interface IQConfig {
 		 *
 		 * @see {@link IQSpoofMethod}
 		 */
-		spoofMethod?: import('@/core/types/form-data.type').IQSpoofMethod;
+		spoofMethod?: IQSpoofMethod;
 
 		/**
 		 * Strategy for reporting integrity errors.

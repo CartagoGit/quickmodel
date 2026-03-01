@@ -55,6 +55,47 @@ La carpeta `tmp/` está en `.gitignore` y siempre existe en el proyecto. Úsala 
 
 > **IMPORTANTE:** Usa siempre `| tee ./tmp/archivo.txt` en lugar de `> ./tmp/archivo.txt`. El operador `>` dispara un prompt de aprobación manual en VS Code Copilot aunque el comando esté en la lista de auto-aprobados. `tee` está auto-aprobado y escribe el mismo resultado.
 
+## 🤝 COORDINACIÓN ENTRE AGENTES — OBLIGATORIA
+
+> **REGLA CRÍTICA — SIN EXCEPCIONES:** Antes de modificar **cualquier archivo** del proyecto — ya sea mediante un skill, mediante `replace_string_in_file`, mediante un comando de terminal o de cualquier otra forma — **DEBES registrar tu trabajo en el sistema de coordinación.**
+
+Esto incluye explícitamente:
+
+- Implementar una feature nueva
+- Refactorizar código existente (incluye mass-renames como `.$qm` → `.$q*` que tocan cientos de archivos)
+- Corregir errores de lint o typecheck
+- Actualizar documentación
+- Cualquier otra operación de escritura sobre archivos del workspace
+
+**Protocolo obligatorio — siempre, antes del primer cambio:**
+
+1. Llama a `agent_coordinate` con `action: "check"` — verifica qué agentes están activos y qué archivos tienen bloqueados
+    - Si `agents[]` no está vacío: **revisa sus cambios antes de empezar** — comprueba qué tienen en staged/unstaged (`git status`, `git diff`). Para un mass-rename es crítico que el otro agente haga commit o stash primero, para que tu rename parta de una base limpia
+2. Llama a `agent_coordinate` con `action: "claim"`, tu `agentId`, una descripción de tu `task` y los `files` que vas a modificar
+    - Para cambios acotados: `["src/mcp/tools/public/my-tool.ts", "tests/mcp/unit/public/my-tool.test.ts"]`
+    - **Para refactors que tocan varios directorios: `["src/**", "tests/**"]`**
+    - **Para mass-renames en todo el proyecto: `["src/**", "tests/**", "docs-vitepress/**"]`\*\*
+    - **Para operaciones largas (>100 archivos), añade `ttlMs: 1800000` (30 min)** — el TTL por defecto es 2 min
+3. Si la respuesta es `conflict: true` → **PARA INMEDIATAMENTE**. No toques ningún archivo. Informa al usuario qué agente tiene el conflicto y espera
+4. Al terminar (todos los gates pasan), llama a `agent_coordinate` con `action: "release"` para liberar tu claim
+
+**¿Por qué?** Sin registro, dos agentes que hacen el mismo mass-rename simultáneamente se sobreescriben entre sí y corrompen el código, obligando al usuario a parar ambos manualmente y revertir a mano.
+
+```bash
+# Tarea acotada
+agent_coordinate claim agentId="copilot-1" task="add email tool" files=["src/mcp/tools/**","tests/mcp/**"]
+
+# Mass-rename o refactor amplio — reclama TODO
+agent_coordinate claim agentId="copilot-1" task="rename .$qm to .$q*" files=["src/**","tests/**","docs-vitepress/**"]
+
+# → conflict: false → puedes proceder
+# → conflict: true  → PARA y avisa al usuario
+```
+
+> **Esta regla está integrada como Step 0 en `quickmodel_implement_feature`, `quickmodel_refactor`, `quickmodel_fix_lint` y `quickmodel_fix_typecheck`.** Si usas esos skills, el Step 0 ya lo recuerda. Si no usas ningún skill (operación directa), aplica el protocolo manualmente antes de la primera escritura.
+
+---
+
 ## 🚨 REGLAS DE CÓDIGO — SIEMPRE OBLIGATORIAS
 
 > **Principio fundamental:** Las reglas se aplican **mientras se escribe**, no se parchean después.

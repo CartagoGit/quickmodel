@@ -33,7 +33,7 @@ class User extends QModel<IUser> {
 ```typescript
 const user = new User({ name: 'Jo', age: -1, email: 'notanemail' });
 
-const result = user.$qm.checkRules();
+const result = user.$qCheckRules();
 
 console.log(result.valid); // false
 console.log(result.errors);
@@ -87,7 +87,7 @@ class Post extends QModel<IPost> {
 }
 
 const post = Post.create({ publishedAt: '2025-01-01', title: 'Hello' });
-console.log(post.$qm.checkRules().valid); // true
+console.log(post.$qCheckRules().valid); // true
 ```
 
 ## Stacking Multiple Rules
@@ -103,7 +103,7 @@ declare age: number;
 
 ```typescript
 const u = new User({ ..., age: 17.5 });
-const result = u.$qm.checkRules();
+const result = u.$qCheckRules();
 // errors includes two messages: 'Must be at least 18...' and 'Age must be a whole number'
 ```
 
@@ -113,7 +113,7 @@ When all rules pass, `checkRules()` returns `{ valid: true, errors: [] }`.
 
 ```typescript
 const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
-const result = user.$qm.checkRules();
+const result = user.$qCheckRules();
 // { valid: true, errors: [] }
 ```
 
@@ -144,7 +144,7 @@ class User extends QModel<IUser> {
 }
 
 const user = new User({ email: 'bad', age: -1, name: '' });
-user.$qm.checkRules();
+user.$qCheckRules();
 // errors → [ email invalid, age too small, name too short, name empty ]
 ```
 
@@ -207,15 +207,15 @@ const model = new SignupModel({
 });
 
 // All rules:
-model.$qm.checkRules();
+model.$qCheckRules();
 // { valid: false, errors: [{ field: 'name', message: 'Name too short', ... }] }
 
 // Only 'identity' group — ignore 'security' (e.g. step 1 of 2):
-model.$qm.checkRules({ group: 'identity' });
+model.$qCheckRules({ group: 'identity' });
 // { valid: false, errors: [{ field: 'name', ... }] }
 
 // 'security' group only:
-model.$qm.checkRules({ group: 'security' });
+model.$qCheckRules({ group: 'security' });
 // { valid: true, errors: [] }
 ```
 
@@ -227,7 +227,7 @@ import { qGroups } from 'quickmodel/forms';
 const Groups = qGroups('identity', 'security');
 // Groups.identity === 'identity'  (fully typed — no typos possible)
 
-model.$qm.checkRules({ group: Groups.identity });
+model.$qCheckRules({ group: Groups.identity });
 ```
 
 > [!NOTE]
@@ -240,7 +240,7 @@ Boolean shortcut for `checkIntegrity().length === 0`.
 Returns `true` when every field value conforms to its declared transformer type (no DoS limits exceeded, no type mismatches).
 
 ```typescript
-if (!user.$qm.hasIntegrity()) {
+if (!user.$qHasIntegrity()) {
 	const errors = user.checkIntegrity();
 	// handle transformer-level violations...
 }
@@ -253,10 +253,10 @@ Single boolean gate that combines both checks: `hasIntegrity() && checkRules().v
 Returns `true` only when the instance has **full type integrity** and **all business rules pass**.
 
 ```typescript
-if (!user.$qm.isValid()) {
+if (!user.$qIsValid()) {
 	// dig into specific failures:
 	const integrityErrors = user.checkIntegrity(); // type-level
-	const ruleErrors = user.$qm.checkRules().errors; // business-logic
+	const ruleErrors = user.$qCheckRules().errors; // business-logic
 }
 ```
 
@@ -273,7 +273,7 @@ if (!user.$qm.isValid()) {
 Single call that runs both checks and returns detailed results.
 
 ```typescript
-const report = user.$qm.validationReport();
+const report = user.$qValidationReport();
 
 if (!report.valid) {
 	// transformer-level failures:
@@ -336,8 +336,8 @@ Both approaches are valid; pick the one that fits your architecture.
 ```typescript
 const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
 
-const updated = user.$qm.copy({ age: -5 });
-const result = updated.$qm.checkRules();
+const updated = user.$qCopy({ age: -5 });
+const result = updated.$qCheckRules();
 
 console.log(result.valid); // false
 console.log(result.errors[0].field); // 'age'
@@ -453,7 +453,7 @@ Like `checkRules()` but awaits each predicate. Use this when any `@QRule` contai
 declare email: string;
 
 // Evaluate
-const result = await user.$qm.checkRulesAsync();
+const result = await user.$qCheckRulesAsync();
 if (!result.valid) {
 	console.log(result.errors); // [{ field: 'email', message: '...', value: '...' }]
 }
@@ -470,10 +470,10 @@ By default all predicates run **in parallel** (`mode: 'parallel'`), so total tim
 
 ```typescript
 // Parallel (default) — all predicates race simultaneously
-const result = await user.$qm.checkRulesAsync();
+const result = await user.$qCheckRulesAsync();
 
 // Serial — predicates run in field-declaration order
-const result = await user.$qm.checkRulesAsync({ mode: 'serial' });
+const result = await user.$qCheckRulesAsync({ mode: 'serial' });
 ```
 
 | Mode                     | Total time              | When to use                              |
@@ -486,7 +486,7 @@ const result = await user.$qm.checkRulesAsync({ mode: 'serial' });
 Pass `timeoutMs` to give each predicate a maximum budget. Predicates that exceed it fail with `timedOut: true` in the error entry. Optionally provide a custom `timeoutMessage`:
 
 ```typescript
-const result = await user.$qm.checkRulesAsync({
+const result = await user.$qCheckRulesAsync({
 	timeoutMs: 200,
 	timeoutMessage: 'Service unavailable', // or () => i18n.t('errors.timeout')
 });
@@ -502,7 +502,7 @@ Options can be combined freely:
 
 ```typescript
 // Serial execution with a 300 ms budget per predicate
-const result = await user.$qm.checkRulesAsync({
+const result = await user.$qCheckRulesAsync({
 	mode: 'serial',
 	timeoutMs: 300,
 });
@@ -513,7 +513,7 @@ const result = await user.$qm.checkRulesAsync({
 Async equivalent of `isValid()`. Returns `Promise<boolean>`.
 
 ```typescript
-if (await user.$qm.isValidAsync()) {
+if (await user.$qIsValidAsync()) {
 	// integrity OK + all async @QRule predicates pass
 }
 ```
@@ -523,7 +523,7 @@ if (await user.$qm.isValidAsync()) {
 Async equivalent of `validationReport()`. Returns `Promise<IQValidationReport>`.
 
 ```typescript
-const report = await user.$qm.validationReportAsync();
+const report = await user.$qValidationReportAsync();
 if (!report.valid) {
 	report.integrity.forEach((err) => console.error(err.error));
 	report.rules.errors.forEach((err) => console.error(err.field, err.message));

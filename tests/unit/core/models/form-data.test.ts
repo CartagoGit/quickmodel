@@ -191,7 +191,7 @@ describe('fromFormData: override por campo (fields)', () => {
 describe('toFormData: primitivos', () => {
 	test('campos string → FormData entries correctas', async () => {
 		const dto = new SimpleForm({ name: 'Dave', age: '22' });
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData).toBeInstanceOf(FormData);
 		expect(formData.get('name')).toBe('Dave');
@@ -205,7 +205,7 @@ describe('toFormData: primitivos', () => {
 			avatar: null,
 			thumbnail: null,
 		});
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 
 		expect(formData).toBeInstanceOf(FormData);
 		// Los campos null/undefined no se incluyen como binarios
@@ -227,7 +227,7 @@ describe('toFormData: File y Blob con fileMode default', () => {
 			thumbnail: null,
 		});
 
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 		const entry = formData.get('avatar');
 
 		expect(entry).toBeInstanceOf(File);
@@ -243,7 +243,7 @@ describe('toFormData: File y Blob con fileMode default', () => {
 			thumbnail: blob as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const formData = await dto.$qm.toFormData();
+		const formData = await dto.$qToFormData();
 		const entry = formData.get('thumbnail');
 
 		expect(entry).toBeInstanceOf(Blob);
@@ -266,7 +266,7 @@ describe('toFormData: fileMode reference', () => {
 			thumbnail: null,
 		});
 
-		const formData = await dto.$qm.toFormData({ fileMode: 'reference' });
+		const formData = await dto.$qToFormData({ fileMode: 'reference' });
 		const entry = formData.get('avatar');
 
 		expect(typeof entry).toBe('string');
@@ -282,7 +282,7 @@ describe('toFormData: fileMode reference', () => {
 			thumbnail: blob as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const formData = await dto.$qm.toFormData({ fileMode: 'reference' });
+		const formData = await dto.$qToFormData({ fileMode: 'reference' });
 		const entry = formData.get('thumbnail');
 
 		expect(entry).toBe('[Blob]');
@@ -305,7 +305,7 @@ describe('toFormData: fileMode base64', () => {
 			thumbnail: blob as unknown as IBlobSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const formData = await dto.$qm.toFormData({ fileMode: 'base64' });
+		const formData = await dto.$qToFormData({ fileMode: 'base64' });
 		const entry = formData.get('thumbnail') as string;
 
 		expect(typeof entry).toBe('string');
@@ -327,7 +327,7 @@ describe('Round-trip: fromFormData → toFormData', () => {
 		formData1.append('avatar', file);
 
 		const dto = UploadForm.fromFormData(formData1);
-		const formData2 = await dto.$qm.toFormData();
+		const formData2 = await dto.$qToFormData();
 
 		expect(formData2.get('avatar')).toBeInstanceOf(File);
 		expect((formData2.get('avatar') as File).name).toBe('profile.png');
@@ -340,7 +340,7 @@ describe('Round-trip: fromFormData → toFormData', () => {
 		formData1.append('avatar', new File([], 'x.bin'));
 
 		const dto = UploadForm.fromFormData(formData1);
-		const formData2 = await dto.$qm.toFormData();
+		const formData2 = await dto.$qToFormData();
 
 		expect(formData2.get('userId')).toBe('99');
 		expect(formData2.get('title')).toBe('Revisión enero');

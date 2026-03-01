@@ -58,7 +58,7 @@ export function describeBench(): void {
 				metadata: new Map([['role', 'admin']]),
 			};
 			const res = runBench('Benchmark 3: superjson', ITERS, () => {
-				const { json, meta } = sjn.serialize(obj);
+				const { json, meta } = sjn.$qSerialize(obj);
 				sjn.deserialize({ json, meta });
 			});
 			expect(res.totalMs).toBeLessThan(10_000);
@@ -91,7 +91,7 @@ export function describeBench(): void {
 
 		test('QuickModel — serialize() + deserialize() con tipos preservados ✅', () => {
 			const res = runBench('Benchmark 3: QuickModel', ITERS, () => {
-				const serialized = complexUserInstance.serialize();
+				const serialized = complexUserInstance.$qSerialize();
 				ComplexUser.deserialize(serialized);
 			});
 			expect(res.totalMs).toBeLessThan(10_000);
@@ -103,7 +103,7 @@ export function describeBench(): void {
 					JSON.parse(JSON.stringify(simpleUserData));
 				}),
 				runBench('Benchmark 3: QuickModel (full)', ITERS, () => {
-					ComplexUser.deserialize(complexUserInstance.serialize());
+					ComplexUser.deserialize(complexUserInstance.$qSerialize());
 				}),
 			];
 			if (superjsonMod) {
@@ -123,7 +123,7 @@ export function describeBench(): void {
 					1,
 					0,
 					runBench('Benchmark 3: superjson', ITERS, () => {
-						const { json, meta } = sjn.serialize(sjObj);
+						const { json, meta } = sjn.$qSerialize(sjObj);
 						sjn.deserialize({ json, meta });
 					})
 				);

@@ -19,7 +19,7 @@ export function describeBench(): void {
 				'[BENCH #15] QuickModel',
 				ITERATIONS,
 				() => {
-					instance.validationReport();
+					instance.$qValidationReport();
 				}
 			);
 			expect(result.opsPerSec).toBeGreaterThan(0);
@@ -75,7 +75,7 @@ export function describeBench(): void {
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
 
-		test('joi — compile().validate() (sync, errors.details) ⚠️', () => {
+		test('joi — compile().$qValidate() (sync, errors.details) ⚠️', () => {
 			if (!joiMod) {
 				return;
 			}
@@ -106,7 +106,7 @@ export function describeBench(): void {
 					.messages({ 'number.min': 'Must be 18+' }),
 			});
 			const result = runBench('[BENCH #15] joi', ITERATIONS, () => {
-				joiSignupSchema.validate(invalidData, { abortEarly: false });
+				joiSignupSchema.$qValidate(invalidData, { abortEarly: false });
 			});
 			expect(result.opsPerSec).toBeGreaterThan(0);
 		});
@@ -117,7 +117,7 @@ export function describeBench(): void {
 			const instance = new SignupReportModel(invalidData);
 			allResults.push(
 				runBench('[BENCH #15] QuickModel', ITERATIONS, () =>
-					instance.validationReport()
+					instance.$qValidationReport()
 				)
 			);
 			allResults.push(
@@ -164,7 +164,7 @@ export function describeBench(): void {
 				});
 				allResults.push(
 					runBench('[BENCH #15] joi', ITERATIONS, () =>
-						joiSch.validate(invalidData, { abortEarly: false })
+						joiSch.$qValidate(invalidData, { abortEarly: false })
 					)
 				);
 			}

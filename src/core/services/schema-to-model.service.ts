@@ -47,7 +47,7 @@
  * **Zero runtime dependencies** — pure string composition.
  *
  * @see {@link QModel.fromSchema} — static entry point on QModel
- * @see {@link QFromSchemaTool} — MCP tool wrapping this service
+ * @see `QFromSchemaTool` — MCP tool wrapping this service
  * @module core/services/schema-to-model
  */
 
@@ -494,7 +494,7 @@ function fromPrismaSchema(src: string, className?: string): string {
  * ```
  *
  * @see {@link QModel.fromSchema} — static method on QModel
- * @see {@link QFromSchemaTool} — MCP tool
+ * @see `QFromSchemaTool` — MCP tool
  */
 export class SchemaToModelService {
 	/**

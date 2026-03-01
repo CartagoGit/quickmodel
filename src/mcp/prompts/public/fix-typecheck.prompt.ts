@@ -63,6 +63,13 @@ export class QFixTypecheckPrompt extends QAbstractInternalPrompt<{
 				),
 				this.assistant(
 					`I'll fix each TypeScript type error systematically. Here's my plan:\n\n` +
+						`## Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before modifying any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent owns the same files\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"fix typecheck"\`, and \`files\` for what you will change\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not touch any file until resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
 						`## Common TS Error Quick Reference\n\n` +
 						`| Code | Meaning | Fix strategy |\n` +
 						`|------|---------|-------------|\n` +

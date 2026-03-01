@@ -16,14 +16,14 @@ describe('ToInterface Coverage Gaps', () => {
 
 		// Initialize with null
 		const parent = new Parent({ child: null });
-		expect(parent.toInterface()).toEqual({ child: null });
+		expect(parent.$qToInterface()).toEqual({ child: null });
 
 		// Update to instance
 		parent.child = new Child({ name: 'New' });
 
 		// toInterface should now recurse into custom model serialization
 		// The uncovered lines at 402-413 handle this case: original is null, current is object with toInterface
-		expect(parent.toInterface()).toEqual({ child: { name: 'New' } });
+		expect(parent.$qToInterface()).toEqual({ child: { name: 'New' } });
 	});
 
 	it('should handle circular reference in conversion', () => {
@@ -43,7 +43,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const originalEnv = process.env.NODE_ENV;
 		process.env.NODE_ENV = 'test'; // Ensure throws
 
-		expect(() => circular.toInterface()).toThrow('Circular reference');
+		expect(() => circular.$qToInterface()).toThrow('Circular reference');
 
 		process.env.NODE_ENV = originalEnv;
 	});
@@ -66,7 +66,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const mapWrapper = new Wrapper({ items: [] });
 		mapWrapper.items.push(new Map([['a', 1]]));
 
-		expect(mapWrapper.toInterface()).toEqual({ items: [[['a', 1]]] });
+		expect(mapWrapper.$qToInterface()).toEqual({ items: [[['a', 1]]] });
 	});
 
 	it('should handle BigInt conversion from string original', () => {
@@ -77,7 +77,7 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 		const mixedModel = new Mixed({ val: '100' });
 		mixedModel.val = 100n;
-		expect(mixedModel.toInterface()).toEqual({ val: '100' });
+		expect(mixedModel.$qToInterface()).toEqual({ val: '100' });
 	});
 
 	it('should handle Object.create(null)', () => {
@@ -91,7 +91,7 @@ describe('ToInterface Coverage Gaps', () => {
 		noProto.a = 1;
 
 		const nullProtoModel = new NullProto({ obj: noProto });
-		expect(nullProtoModel.toInterface()).toEqual({ obj: { a: 1 } });
+		expect(nullProtoModel.$qToInterface()).toEqual({ obj: { a: 1 } });
 	});
 	it('should handle Set to Array conversion in nested array', () => {
 		// Covers line 155: return Array.from(currentValue);
@@ -103,7 +103,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const setWrapper = new Wrapper({ items: [] });
 		setWrapper.items.push(new Set(['a', 'b']));
 
-		expect(setWrapper.toInterface()).toEqual({ items: [['a', 'b']] });
+		expect(setWrapper.$qToInterface()).toEqual({ items: [['a', 'b']] });
 	});
 
 	it('should preserve Date string if already string', () => {
@@ -119,7 +119,7 @@ describe('ToInterface Coverage Gaps', () => {
 		});
 		dateStrModel.date = '2024-01-01T00:00:00.000Z'; // Still a string
 
-		expect(dateStrModel.toInterface()).toEqual({
+		expect(dateStrModel.$qToInterface()).toEqual({
 			date: '2024-01-01T00:00:00.000Z',
 		});
 	});
@@ -135,7 +135,9 @@ describe('ToInterface Coverage Gaps', () => {
 		const dateFallbackModel = new DateFallback({ date: new Date() });
 		dateFallbackModel.date = 123456789;
 
-		expect(dateFallbackModel.toInterface()).toEqual({ date: '123456789' });
+		expect(dateFallbackModel.$qToInterface()).toEqual({
+			date: '123456789',
+		});
 	});
 
 	it('should serialize custom class instance using properties matching original', () => {
@@ -163,7 +165,7 @@ describe('ToInterface Coverage Gaps', () => {
 		customModel.data = new CustomData(99, 'updated');
 
 		// Expect serialization to extract properties 'a' and 'b' and ignore 'method'
-		expect(customModel.toInterface()).toEqual({
+		expect(customModel.$qToInterface()).toEqual({
 			data: { a: 99, b: 'updated' },
 		});
 	});
@@ -183,7 +185,7 @@ describe('ToInterface Coverage Gaps', () => {
 		// Set to instance
 		parentNull.child = new Nested({ val: 'test' });
 
-		expect(parentNull.toInterface()).toEqual({ child: { val: 'test' } });
+		expect(parentNull.$qToInterface()).toEqual({ child: { val: 'test' } });
 	});
 
 	it('should handle wrapper objects (Number, String, Boolean)', () => {
@@ -208,10 +210,12 @@ describe('ToInterface Coverage Gaps', () => {
 		});
 
 		// If we keep them as wrappers
-		expect(wrappersModel.toInterface().numWrapper).toBeInstanceOf(Number);
-		expect(wrappersModel.toInterface().strWrapper).toBeInstanceOf(String);
-		expect(wrappersModel.toInterface().boolWrapper).toBeInstanceOf(Boolean);
-		expect(wrappersModel.toInterface().numWrapper.valueOf()).toBe(123);
+		expect(wrappersModel.$qToInterface().numWrapper).toBeInstanceOf(Number);
+		expect(wrappersModel.$qToInterface().strWrapper).toBeInstanceOf(String);
+		expect(wrappersModel.$qToInterface().boolWrapper).toBeInstanceOf(
+			Boolean
+		);
+		expect(wrappersModel.$qToInterface().numWrapper.valueOf()).toBe(123);
 	});
 
 	it('should throw/log error on object type mismatch in development', () => {
@@ -228,7 +232,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const originalEnv = process.env.NODE_ENV;
 		process.env.NODE_ENV = 'test'; // Not production
 
-		expect(() => mismatchModel.toInterface()).toThrow(
+		expect(() => mismatchModel.$qToInterface()).toThrow(
 			'Cannot convert property'
 		);
 
@@ -237,7 +241,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const consoleSpy = spyOn(console, 'error').mockImplementation(
 			() => undefined
 		);
-		const res = mismatchModel.toInterface();
+		const res = mismatchModel.$qToInterface();
 		expect(consoleSpy).toHaveBeenCalled();
 		consoleSpy.mockRestore();
 		expect(res).toEqual({ obj: 'not-an-object' });
@@ -258,7 +262,7 @@ describe('ToInterface Coverage Gaps', () => {
 		// Update to string
 		symbolWrapperModel.sym = 'new-symbol-desc';
 
-		const res = symbolWrapperModel.toInterface();
+		const res = symbolWrapperModel.$qToInterface();
 		expect(typeof res.sym).toBe('symbol');
 		expect(res.sym.toString()).toBe('Symbol(new-symbol-desc)');
 	});
@@ -297,7 +301,7 @@ describe('ToInterface Coverage Gaps', () => {
 		customModel2.data = new CustomData(2);
 
 		// Should effectively copied it as plain object?
-		expect(customModel2.toInterface()).toEqual({ data: { a: 2 } });
+		expect(customModel2.$qToInterface()).toEqual({ data: { a: 2 } });
 	});
 
 	it('should handle String original with BigInt current', () => {
@@ -309,7 +313,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const stringBigIntModel = new StringBigInt({ val: 'initial' });
 		stringBigIntModel.val = 999n;
 
-		expect(stringBigIntModel.toInterface()).toEqual({ val: '999' });
+		expect(stringBigIntModel.$qToInterface()).toEqual({ val: '999' });
 	});
 	it('should throw on maximum recursion depth', () => {
 		const deepObj: any = {};
@@ -325,7 +329,7 @@ describe('ToInterface Coverage Gaps', () => {
 		}
 
 		const deepModel = new Deep({ root: deepObj });
-		expect(() => deepModel.toInterface()).toThrow(
+		expect(() => deepModel.$qToInterface()).toThrow(
 			'QuickModel Security: Maximum recursion depth'
 		);
 	});
@@ -345,7 +349,7 @@ describe('ToInterface Coverage Gaps', () => {
 			current = next;
 		}
 
-		expect(() => head.toInterface()).toThrow(
+		expect(() => head.$qToInterface()).toThrow(
 			'QuickModel Security: Maximum recursion depth'
 		);
 	});

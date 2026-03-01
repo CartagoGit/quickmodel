@@ -41,7 +41,7 @@ describe('Configuration: integrityErrorStrategy', () => {
 		(user as any).age = 'not-a-number';
 		(user as any).isActive = 123;
 
-		const errors = user.checkIntegrity();
+		const errors = user.$qCheckIntegrity();
 		// PrimitiveTransformer for 'number' checks typeof value === 'number'
 		expect(errors.length).toBeGreaterThanOrEqual(1);
 		// "not-a-number" is string, expected number. Error.
@@ -65,7 +65,7 @@ describe('Configuration: integrityErrorStrategy', () => {
 		(user as any).age = 'NaN';
 		(user as any).isActive = 123;
 
-		const errors = user.checkIntegrity();
+		const errors = user.$qCheckIntegrity();
 		expect(errors.length).toBe(2);
 	});
 
@@ -90,7 +90,7 @@ describe('Configuration: integrityErrorStrategy', () => {
 		// but relies on decorator execution order for 'decoratedFields'.
 		// Regardless, we expect exactly 1 error.
 
-		const errors = user.checkIntegrity();
+		const errors = user.$qCheckIntegrity();
 		expect(errors.length).toBe(1);
 	});
 
@@ -112,7 +112,7 @@ describe('Configuration: integrityErrorStrategy', () => {
 		(user as any).age = 'NaN';
 		(user as any).isActive = 123;
 
-		const errors = user.checkIntegrity();
+		const errors = user.$qCheckIntegrity();
 		expect(errors.length).toBe(1);
 	});
 
@@ -146,7 +146,7 @@ describe('Configuration: integrityErrorStrategy', () => {
 		parent.child2 = new Child({});
 		(parent.child2 as any).val = 'bad';
 
-		const errors = parent.checkIntegrity();
+		const errors = parent.$qCheckIntegrity();
 		// Should find error in child1 and stop before checking child2?
 		// Or if nested returns array of 1, parent pushes it to results.
 		// Parent loop checks child1 -> returns [error].
@@ -186,7 +186,7 @@ describe('Configuration: integrityErrorStrategy', () => {
 		(parentModel.child2 as any).val = 'err';
 		(parentModel.child2 as any).val2 = 'err'; // failFast should only report 1 from here
 
-		const errors = parentModel.checkIntegrity();
+		const errors = parentModel.$qCheckIntegrity();
 		// Child 1 returns 1 error (stopped early)
 		// Child 2 returns 1 error (stopped early)
 		// Parent accumulates -> Total 2 errors

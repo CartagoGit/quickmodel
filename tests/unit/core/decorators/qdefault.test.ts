@@ -127,20 +127,20 @@ describe('@QDefault — null tratado como "ausente"', () => {
 describe('@QDefault — serialize() y copy() respetan el default', () => {
 	it('serialize() incluye el campo con su valor por defecto', () => {
 		const evt = new EventModel({ id: 'e1' } as unknown as IEvent); // @quickmodel-rule-ignore: no-as-unknown
-		const plain = evt.$qm.serialize() as Record<string, unknown>;
+		const plain = evt.$qSerialize() as Record<string, unknown>;
 		expect(plain['status']).toBe('draft');
 		expect(plain['priority']).toBe(1);
 	});
 
 	it('copy() preserva el default si no se sobreescribe', () => {
 		const evt = new EventModel({ id: 'e1' } as unknown as IEvent); // @quickmodel-rule-ignore: no-as-unknown
-		const copy = evt.$qm.copy({});
+		const copy = evt.$qCopy({});
 		expect(copy.status).toBe('draft');
 	});
 
 	it('copy() permite sobreescribir un campo que tenía default', () => {
 		const evt = new EventModel({ id: 'e1' } as unknown as IEvent); // @quickmodel-rule-ignore: no-as-unknown
-		const updated = evt.$qm.copy({ status: 'archived' });
+		const updated = evt.$qCopy({ status: 'archived' });
 		expect(updated.status).toBe('archived');
 	});
 });

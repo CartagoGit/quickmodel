@@ -124,7 +124,7 @@ describe('Expose Unset Fields Configuration', () => {
 
 		// Use toInterface() to check the object structure before JSON stringification
 		// (JSON.stringify removes undefined, so we test the interface object)
-		const output = parent.toInterface();
+		const output = parent.$qToInterface();
 
 		// Parent exposes unset
 		expect(output).toHaveProperty('exposed');
@@ -133,7 +133,7 @@ describe('Expose Unset Fields Configuration', () => {
 		// Child hides unset (when serialized individually)
 		// Note: Parent.toInterface() returns the child Model instance as-is,
 		// so we must call toInterface() on the child to verify its serialization logic.
-		const childOutput = parent.child.toInterface();
+		const childOutput = parent.child.$qToInterface();
 		expect(childOutput).not.toHaveProperty('hidden');
 	});
 });

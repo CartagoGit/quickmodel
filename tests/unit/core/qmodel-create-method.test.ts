@@ -261,7 +261,7 @@ describe('QModel.create() factory method', () => {
 			}
 
 			const order = Order.create({ orderId: 'ORD-1', total: 250.5 });
-			const plain = order.toInterface();
+			const plain = order.$qToInterface();
 
 			expect(plain.orderId).toBe('ORD-1');
 			expect(plain.total).toBe(250.5);
@@ -410,7 +410,7 @@ describe('QModel.create() factory method', () => {
 
 			expect(user1.id).toBe((user2 as unknown as IUser).id); // @quickmodel-rule-ignore: no-as-unknown
 			expect(user1.name).toBe((user2 as unknown as IUser).name); // @quickmodel-rule-ignore: no-as-unknown
-			expect(user1.toInterface()).toEqual(user2.toInterface());
+			expect(user1.$qToInterface()).toEqual(user2.$qToInterface());
 		});
 	});
 });

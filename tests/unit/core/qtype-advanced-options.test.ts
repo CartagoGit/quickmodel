@@ -53,7 +53,7 @@ describe('Advanced Options with @QType Decorator', () => {
 		expect(manual.timestamp.toISOString()).toBe('2024-01-01T00:00:00.000Z');
 
 		// 3. Test Serialization (toInterface)
-		const output = manual.toInterface();
+		const output = manual.$qToInterface();
 
 		// Serializer should reverse the date
 		expect(output.timestamp).toBe(1704067200);

@@ -205,7 +205,7 @@ function simulatePipeTransform<T extends QModel<object>>(
 	rawBody: object
 ): { instance: T } | { error: IBadRequestBody } {
 	const instance = new DtoClass(rawBody);
-	const result = instance.$qm.checkRules();
+	const result = instance.$qCheckRules();
 
 	if (!result.valid) {
 		return {
@@ -232,11 +232,11 @@ class UserRepository {
 
 	findById(id: string): object | null {
 		const user = this.store.get(id);
-		return user ? user.$qm.serialize() : null;
+		return user ? user.$qSerialize() : null;
 	}
 
 	findAll(): object[] {
-		return [...this.store.values()].map((usr) => usr.$qm.serialize());
+		return [...this.store.values()].map((usr) => usr.$qSerialize());
 	}
 }
 
@@ -289,7 +289,7 @@ describe('NestJS Pattern: DTO coercion at controller boundary', () => {
 			birthDate: '1996-03-20T00:00:00.000Z',
 			active: true,
 		});
-		const plain = dto.$qm.serialize();
+		const plain = dto.$qSerialize();
 		expect(plain).not.toBeInstanceOf(QModel);
 		expect(typeof plain).toBe('object');
 		expect(plain.name).toBe('Charlie');
@@ -319,7 +319,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		expect(dto.$qm.checkRules().valid).toBe(true);
+		expect(dto.$qCheckRules().valid).toBe(true);
 	});
 
 	test('collects all validation errors from a malformed body', () => {
@@ -330,7 +330,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		const { valid, errors } = dto.$qm.checkRules();
+		const { valid, errors } = dto.$qCheckRules();
 		expect(valid).toBe(false);
 		expect(errors.length).toBeGreaterThanOrEqual(3);
 	});
@@ -343,7 +343,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		const { errors } = dto.$qm.checkRules();
+		const { errors } = dto.$qCheckRules();
 		const err = errors[0];
 		expect(err).toHaveProperty('field');
 		expect(err).toHaveProperty('message');
@@ -358,7 +358,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		const { errors } = dto.$qm.checkRules();
+		const { errors } = dto.$qCheckRules();
 		expect(errors[0]?.field).toBe('email');
 	});
 
@@ -370,7 +370,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		const { errors } = dto.$qm.checkRules();
+		const { errors } = dto.$qCheckRules();
 		const ageErrors = errors.filter((err) => err.field === 'age');
 		expect(ageErrors).toHaveLength(1); // only "must be realistic" fails
 		expect(ageErrors[0]?.message).toBe('Age must be realistic');
@@ -384,7 +384,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		expect(good.$qm.isValid()).toBe(true);
+		expect(good.$qIsValid()).toBe(true);
 
 		const bad = new CreateUserDto({
 			name: '',
@@ -393,7 +393,7 @@ describe('NestJS Pattern: @QRule validation', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		expect(bad.$qm.isValid()).toBe(false);
+		expect(bad.$qIsValid()).toBe(false);
 	});
 });
 
@@ -451,7 +451,7 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 			role: 'admin',
 			score: 95,
 		});
-		const response = user.$qm.serialize();
+		const response = user.$qSerialize();
 		expect(response).toHaveProperty('fullName', 'Jane Doe');
 		expect(response).toHaveProperty('age', 36);
 		expect(response).toHaveProperty('isAdmin', true);
@@ -482,15 +482,15 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 			score: 40,
 		});
 		// scoreLabel should be 'poor' initially
-		expect(
-			(user.$qm.serialize() as Record<string, unknown>).scoreLabel
-		).toBe('poor');
+		expect((user.$qSerialize() as Record<string, unknown>).scoreLabel).toBe(
+			'poor'
+		);
 
 		// Simulate update
 		(user as unknown as Record<string, unknown>).score = 85; // @quickmodel-rule-ignore: no-as-unknown
-		expect(
-			(user.$qm.serialize() as Record<string, unknown>).scoreLabel
-		).toBe('good');
+		expect((user.$qSerialize() as Record<string, unknown>).scoreLabel).toBe(
+			'good'
+		);
 	});
 
 	test('stored properties and computed fields both appear in serialize()', () => {
@@ -501,7 +501,7 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 			role: 'user',
 			score: 55,
 		});
-		const response = user.$qm.serialize();
+		const response = user.$qSerialize();
 		// Stored fields
 		expect(response).toHaveProperty('firstName', 'Eve');
 		expect(response).toHaveProperty('lastName', 'White');
@@ -523,7 +523,7 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 		}
 
 		const obj = new WithPlainGetter({ value: 5 });
-		const serialized = obj.$qm.serialize();
+		const serialized = obj.$qSerialize();
 		expect(serialized).not.toHaveProperty('doubled');
 		expect(serialized).toHaveProperty('value', 5);
 	});
@@ -619,7 +619,7 @@ describe('NestJS Pattern: async @QRule (DB uniqueness)', () => {
 			email: 'new@example.com', // not in REGISTERED_EMAILS
 			password: 'Secure1Pass',
 		});
-		const result = await dto.$qm.checkRulesAsync();
+		const result = await dto.$qCheckRulesAsync();
 		expect(result.valid).toBe(true);
 	});
 
@@ -629,7 +629,7 @@ describe('NestJS Pattern: async @QRule (DB uniqueness)', () => {
 			email: 'taken@example.com', // IS in REGISTERED_EMAILS
 			password: 'Secure1Pass',
 		});
-		const result = await dto.$qm.checkRulesAsync();
+		const result = await dto.$qCheckRulesAsync();
 		expect(result.valid).toBe(false);
 		const emailErrors = result.errors.filter(
 			(err) => err.field === 'email'
@@ -643,7 +643,7 @@ describe('NestJS Pattern: async @QRule (DB uniqueness)', () => {
 			email: 'taken@example.com', // taken (async rule fails)
 			password: 'weak', // multiple sync rules fail
 		});
-		const result = await dto.$qm.checkRulesAsync();
+		const result = await dto.$qCheckRulesAsync();
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThanOrEqual(3);
 	});
@@ -654,7 +654,7 @@ describe('NestJS Pattern: async @QRule (DB uniqueness)', () => {
 			email: 'fresh@example.com',
 			password: 'MyStr0ngPass',
 		});
-		const result = await dto.$qm.checkRulesAsync();
+		const result = await dto.$qCheckRulesAsync();
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -684,7 +684,7 @@ describe('NestJS Pattern: nested DTOs', () => {
 				zip: 'BADZIP', // invalid zip
 			},
 		});
-		const addrResult = order.shippingAddress.$qm.checkRules();
+		const addrResult = order.shippingAddress.$qCheckRules();
 		expect(addrResult.valid).toBe(false);
 		expect(addrResult.errors[0]?.field).toBe('zip');
 	});
@@ -699,7 +699,7 @@ describe('NestJS Pattern: nested DTOs', () => {
 				zip: '67890',
 			},
 		});
-		const serialized = order.$qm.serialize();
+		const serialized = order.$qSerialize();
 		expect(serialized).toHaveProperty('productId', 'PROD-002');
 		expect(serialized).toHaveProperty('shippingAddress');
 		const addr = serialized.shippingAddress as Record<string, string>;
@@ -782,7 +782,7 @@ describe('NestJS Pattern: bulk create endpoint (createMany)', () => {
 			},
 		];
 		const { instances } = CreateUserDto.createMany(bodies as any[]);
-		const response = instances.map((dto) => dto.$qm.serialize());
+		const response = instances.map((dto) => dto.$qSerialize());
 		expect(Array.isArray(response)).toBe(true);
 		expect(response[0]?.name).toBe('Alice');
 		expect(response[1]?.name).toBe('Bob');
@@ -878,7 +878,7 @@ describe('NestJS Pattern: response interceptor (auto-serialize)', () => {
 			role: 'user',
 			score: 75,
 		});
-		const fromSerialize = user.$qm.serialize() as Record<string, unknown>;
+		const fromSerialize = user.$qSerialize() as Record<string, unknown>;
 		const fromToJSON = JSON.parse(user.toJSON()) as Record<string, unknown>;
 		expect(fromSerialize.fullName).toBe(fromToJSON.fullName);
 		expect(fromSerialize.age).toBe(fromToJSON.age);
@@ -894,6 +894,6 @@ describe('NestJS Pattern: response interceptor (auto-serialize)', () => {
 			role: 'guest',
 			score: 45,
 		});
-		expect(() => JSON.stringify(user.$qm.serialize())).not.toThrow();
+		expect(() => JSON.stringify(user.$qSerialize())).not.toThrow();
 	});
 });

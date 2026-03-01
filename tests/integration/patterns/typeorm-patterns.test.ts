@@ -12,8 +12,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Simulated TypeORM Entity shapes (no typeorm import needed)
@@ -258,7 +258,7 @@ describe('Entity → DTO coercion', () => {
 // 2. dto.toInterface() as repository.save() payload
 // ---------------------------------------------------------------------------
 
-describe('dto.toInterface() as repository.save() payload', () => {
+describe('dto.$qToInterface() as repository.save() payload', () => {
 	// Simulated TypeORM repository
 	const savedEntities: IUserEntity[] = [];
 
@@ -278,7 +278,7 @@ describe('dto.toInterface() as repository.save() payload', () => {
 			email: 'alice@x.com',
 		});
 		const dto = new UserEntityDto(entity);
-		const savePayload = dto.toInterface();
+		const savePayload = dto.$qToInterface();
 		const saved = simulateSave(savePayload);
 		expect(saved.name).toBe('Alice');
 		expect(saved.email).toBe('alice@x.com');
@@ -286,7 +286,7 @@ describe('dto.toInterface() as repository.save() payload', () => {
 
 	test('toInterface() result is a plain object (not a QModel instance)', () => {
 		const dto = new UserEntityDto(makeEntity());
-		const plain = dto.toInterface();
+		const plain = dto.$qToInterface();
 		expect(plain instanceof QModel).toBe(false);
 		expect(typeof plain).toBe('object');
 	});
@@ -294,8 +294,8 @@ describe('dto.toInterface() as repository.save() payload', () => {
 	test('copy() + toInterface() provides partial update payload', () => {
 		const entity = makeEntity({ id: 5, score: 50 });
 		const dto = new UserEntityDto(entity);
-		const updated = dto.$qm.copy({ score: 200, role: 'admin' });
-		const updatePayload = updated.toInterface();
+		const updated = dto.$qCopy({ score: 200, role: 'admin' });
+		const updatePayload = updated.$qToInterface();
 		expect(updatePayload.score).toBe(200);
 		expect(updatePayload.role).toBe('admin');
 		expect(dto.score).toBe(50); // original unchanged
@@ -352,7 +352,7 @@ describe('Repository pattern with QModel layer', () => {
 
 		save(dto: UserEntityDto): UserEntityDto {
 			const payload = {
-				...dto.toInterface(),
+				...dto.$qToInterface(),
 				id: dto.id || this.nextId++,
 			} as IUserEntity;
 			this.store.set(payload.id, payload);
@@ -377,8 +377,8 @@ describe('Repository pattern with QModel layer', () => {
 			const entity = this.store.get(id);
 			if (!entity) return undefined;
 			const existing = new UserEntityDto(entity);
-			const updated = existing.$qm.copy(patch);
-			const payload = { ...updated.toInterface(), id } as IUserEntity;
+			const updated = existing.$qCopy(patch);
+			const payload = { ...updated.$qToInterface(), id } as IUserEntity;
 			this.store.set(id, payload);
 			return new UserEntityDto(payload);
 		}
@@ -463,7 +463,7 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 2, email: 'two@x.com' }),
 		];
 		const { instances } = UserEntityDto.createMany(seedData as any[]);
-		const payloads = instances.map((dto) => dto.toInterface());
+		const payloads = instances.map((dto) => dto.$qToInterface());
 		expect(payloads.length).toBe(2);
 		expect(payloads[0]?.name).toBe('Alice Example');
 		expect(payloads[1]?.email).toBe('two@x.com');
@@ -500,7 +500,7 @@ describe('@QComputed() in DTO vs virtual column in Entity', () => {
 		const dto = new UserEntityDto(
 			makeEntity({ name: 'Dan', role: 'user' })
 		);
-		const plain = dto.toInterface() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
+		const plain = dto.$qToInterface() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 		// @QComputed fields are NOT in toInterface(), unlike @VirtualColumn in TypeORM
 		// This is by design — they are derived at runtime, not stored
 		expect(typeof plain).toBe('object');
@@ -518,7 +518,7 @@ describe('copy() + repository.update() partial update', () => {
 	test('copy() preserves all fields and updates only the given patch', () => {
 		const entity = makeEntity({ id: 7, name: 'Eve', score: 30 });
 		const dto = new UserEntityDto(entity);
-		const updated = dto.$qm.copy({ score: 500, role: 'admin' });
+		const updated = dto.$qCopy({ score: 500, role: 'admin' });
 		expect(updated.score).toBe(500);
 		expect(updated.role).toBe('admin');
 		expect(updated.name).toBe('Eve'); // unchanged
@@ -532,24 +532,24 @@ describe('copy() + repository.update() partial update', () => {
 			email: 'frank@x.com',
 		});
 		const dto = new UserEntityDto(entity);
-		const patched = dto.$qm.copy({ email: 'frank-updated@x.com' });
+		const patched = dto.$qCopy({ email: 'frank-updated@x.com' });
 		// repository.update({ where: { id: 8 }, ...patched.toInterface() })
-		const updatePayload = patched.toInterface();
+		const updatePayload = patched.$qToInterface();
 		expect(updatePayload.email).toBe('frank-updated@x.com');
 	});
 
 	test('copy() result has isDirty() = false (fresh snapshot)', () => {
 		const dto = new UserEntityDto(makeEntity({ id: 9 }));
-		const updated = dto.$qm.copy({ score: 100 });
-		expect(updated.$qm.isDirty()).toBe(false); // copy() injects __initData = merged state
+		const updated = dto.$qCopy({ score: 100 });
+		expect(updated.$qIsDirty()).toBe(false); // copy() injects __initData = merged state
 	});
 });
 
 // ---------------------------------------------------------------------------
-// 8. qCheckRules() for business validation before persist
+// 8. $qCheckRules() for business validation before persist
 // ---------------------------------------------------------------------------
 
-describe('qCheckRules() before repository.save()', () => {
+describe('$qCheckRules() before repository.save()', () => {
 	test('passes for valid entity DTO', () => {
 		const dto = new CreateUserDto({
 			name: 'Helena',
@@ -557,7 +557,7 @@ describe('qCheckRules() before repository.save()', () => {
 			age: 28,
 			role: 'user',
 		});
-		const { valid } = qCheckRules(dto);
+		const { valid } = $qCheckRules(dto);
 		expect(valid).toBe(true);
 	});
 
@@ -568,7 +568,7 @@ describe('qCheckRules() before repository.save()', () => {
 			age: 22,
 			role: 'guest',
 		});
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -604,7 +604,7 @@ describe('qCheckRules() before repository.save()', () => {
 			role: 'user',
 		});
 
-		expect((await qCheckRulesAsync(valid)).valid).toBe(true);
-		expect((await qCheckRulesAsync(duplicate)).valid).toBe(false);
+		expect((await $qCheckRulesAsync(valid)).valid).toBe(true);
+		expect((await $qCheckRulesAsync(duplicate)).valid).toBe(false);
 	});
 });

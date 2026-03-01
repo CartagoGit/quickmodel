@@ -163,7 +163,7 @@ describe('Syntax Comparison: declare vs ! with @Quick', () => {
 
 		test('debe serializar correctamente', () => {
 			const instance = new TestDeclare(testData);
-			const IQSerialized = instance.$qm.serialize();
+			const IQSerialized = instance.$qSerialize();
 
 			expect(IQSerialized.key).toEqual({
 				__type: 'symbol',

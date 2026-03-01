@@ -203,7 +203,7 @@ export class QExplainTransformationTool extends QAbstractTool<
 		}
 
 		const instance = TraceModel.create(args.data);
-		const serialized = JSON.parse(instance.toJSON());
+		const serialized = JSON.parse(instance.$qToJSON());
 
 		// Build per-field trace
 		const allFields = new Set([

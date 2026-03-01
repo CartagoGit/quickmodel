@@ -190,7 +190,7 @@ class User extends QModel<IUser> {
 }
 
 const user = new User({ name: 'A', email: 'bad', age: 17.5, role: 'hacker' });
-const { valid, errors } = user.$qm.checkRules();
+const { valid, errors } = user.$qCheckRules();
 // valid: false
 // errors: [
 //   { field: 'name',  message: 'Must be at least 2 characters' },

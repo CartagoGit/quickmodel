@@ -47,7 +47,7 @@ describe('Validation Robustness: Circular References', () => {
 		child.child = parent; // Cycle created
 
 		// This SHOULD crash if not protected
-		const errors = parent.checkIntegrity();
+		const errors = parent.$qCheckIntegrity();
 
 		expect(errors).toBeArray();
 	});

@@ -56,7 +56,7 @@ export function describeBench(): void {
 			}
 			const sjn = superjsonMod.default ?? superjsonMod;
 			const res = runBench('Benchmark 7: superjson', ITERS, () => {
-				const result = sjn.serialize(superjsonFullObj);
+				const result = sjn.$qSerialize(superjsonFullObj);
 				sjn.deserialize(result);
 			});
 			expect(res.totalMs).toBeLessThan(10_000);
@@ -70,7 +70,7 @@ export function describeBench(): void {
 					const inst = new ComplexUser(
 						complexUserRaw as unknown as IComplexUser // @quickmodel-rule-ignore: no-as-unknown
 					);
-					ComplexUser.deserialize(inst.serialize());
+					ComplexUser.deserialize(inst.$qSerialize());
 				}
 			);
 			expect(res.totalMs).toBeLessThan(10_000);
@@ -82,7 +82,7 @@ export function describeBench(): void {
 					JSON.parse(JSON.stringify({ ...complexUserRaw }));
 				}),
 				runBench('Benchmark 7: QuickModel (pipeline)', ITERS, () => {
-					ComplexUser.deserialize(complexUserInstance.serialize());
+					ComplexUser.deserialize(complexUserInstance.$qSerialize());
 				}),
 			];
 			if (superjsonMod) {
@@ -91,7 +91,7 @@ export function describeBench(): void {
 					1,
 					0,
 					runBench('Benchmark 7: superjson', ITERS, () => {
-						sjn.deserialize(sjn.serialize(superjsonFullObj));
+						sjn.deserialize(sjn.$qSerialize(superjsonFullObj));
 					})
 				);
 			}

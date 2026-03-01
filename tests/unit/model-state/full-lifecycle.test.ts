@@ -33,7 +33,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.id).toBe('1');
 			expect(iface.name).toBe('John');
@@ -54,7 +54,7 @@ describe('State Management Methods', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.name).toBe('Jane');
 			expect(iface.age).toBe(31);
@@ -71,7 +71,7 @@ describe('State Management Methods', () => {
 
 			user.createdAt = new Date('2024-12-31T23:59:59.999Z');
 
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(typeof iface.createdAt).toBe('string');
 			expect(iface.createdAt).toBe('2024-12-31T23:59:59.999Z');
@@ -88,7 +88,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			const init = user.getInitInterface();
+			const init = user.$qGetInitInterface();
 
 			expect(init.id).toBe('1');
 			expect(init.name).toBe('John');
@@ -109,7 +109,7 @@ describe('State Management Methods', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const init = user.getInitInterface();
+			const init = user.$qGetInitInterface();
 
 			expect(init.name).toBe('John'); // Still original
 			expect(init.age).toBe(30); // Still original
@@ -126,7 +126,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 		});
 
 		test('should return true after modification', () => {
@@ -140,7 +140,7 @@ describe('State Management Methods', () => {
 
 			user.name = 'Jane';
 
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 		});
 
 		test('should detect Date changes', () => {
@@ -154,7 +154,7 @@ describe('State Management Methods', () => {
 
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 		});
 	});
 
@@ -168,13 +168,13 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.$qm.isDirty()).toBe(false);
-			expect(user.$qm.isDirty()).toBe(user.hasChanges());
+			expect(user.$qIsDirty()).toBe(false);
+			expect(user.$qIsDirty()).toBe(user.hasChanges());
 
 			user.name = 'Jane';
 
-			expect(user.$qm.isDirty()).toBe(true);
-			expect(user.$qm.isDirty()).toBe(user.hasChanges());
+			expect(user.$qIsDirty()).toBe(true);
+			expect(user.$qIsDirty()).toBe(user.hasChanges());
 		});
 	});
 
@@ -221,7 +221,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.$qm.getChanges()).toEqual({});
+			expect(user.$qGetChanges()).toEqual({});
 		});
 
 		test('should return only modified fields with current values', () => {
@@ -236,7 +236,7 @@ describe('State Management Methods', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const changes = user.$qm.getChanges();
+			const changes = user.$qGetChanges();
 
 			expect(changes.name).toBe('Jane');
 			expect(changes.age).toBe(31);
@@ -255,7 +255,7 @@ describe('State Management Methods', () => {
 
 			user.name = 'Jane';
 
-			const patchData = user.$qm.getChanges();
+			const patchData = user.$qGetChanges();
 
 			// Only send changed fields to API
 			expect(Object.keys(patchData).length).toBe(1);
@@ -277,7 +277,7 @@ describe('State Management Methods', () => {
 			user.age = 31;
 			user.email = 'jane@example.com';
 
-			user.reset();
+			user.$qReset();
 
 			expect(user.name).toBe('John');
 			expect(user.age).toBe(30);
@@ -296,7 +296,7 @@ describe('State Management Methods', () => {
 			const originalDate = user.createdAt;
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			user.reset();
+			user.$qReset();
 
 			expect(user.createdAt).toBeInstanceOf(Date);
 			expect(user.createdAt.toISOString()).toBe(
@@ -314,11 +314,11 @@ describe('State Management Methods', () => {
 			});
 
 			user.name = 'Jane';
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 
-			user.reset();
+			user.$qReset();
 
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 		});
 	});
 
@@ -332,7 +332,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.$qm.patch({ name: 'Jane', age: 31 });
+			user.$qPatch({ name: 'Jane', age: 31 });
 
 			expect(user.name).toBe('Jane');
 			expect(user.age).toBe(31);
@@ -348,7 +348,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			user.$qm.patch({ createdAt: '2024-12-31T00:00:00.000Z' });
+			user.$qPatch({ createdAt: '2024-12-31T00:00:00.000Z' });
 
 			expect(user.createdAt).toBeInstanceOf(Date);
 			expect(user.createdAt.toISOString()).toBe(
@@ -372,7 +372,7 @@ describe('State Management Methods', () => {
 				updatedAt: '2024-06-15T10:30:00.000Z',
 			};
 
-			user.$qm.patch(apiResponse);
+			user.$qPatch(apiResponse);
 
 			expect(user.name).toBe('Jane');
 			expect(user.age).toBe(31);

@@ -1,7 +1,7 @@
 /**
  * @fileoverview TDD tests for the `$qm` namespace handle — Propuesta W
  *
- * Verifies that every instance method is accessible via `instance.$qm.method()`,
+ * Verifies that every instance method is accessible via `instance.$qMethod()`,
  * that the delegate calls produce identical results to the root-level methods,
  * and that the `IQMHandle` shape is correctly typed.
  *
@@ -114,16 +114,16 @@ describe('$qm — availability', () => {
 // $qm.serialize
 // ---------------------------------------------------------------------------
 
-describe('$qm.serialize()', () => {
+describe('$qm.$qSerialize()', () => {
 	test('returns same result as root-level serialize()', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		expect(prod.$qm.serialize()).toEqual(prod.serialize());
+		expect(prod.$qSerialize()).toEqual(prod.serialize());
 	});
 
 	test('accepts options and delegates them', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		const via_qm = prod.$qm.serialize({ pick: ['name'] });
-		const direct = prod.serialize({ pick: ['name'] });
+		const via_qm = prod.$qSerialize({ pick: ['name'] });
+		const direct = prod.$qSerialize({ pick: ['name'] });
 		expect(via_qm).toEqual(direct);
 	});
 });
@@ -132,43 +132,43 @@ describe('$qm.serialize()', () => {
 // $qm.isDirty / getChanges
 // ---------------------------------------------------------------------------
 
-describe('$qm.isDirty()', () => {
+describe('$qm.$qIsDirty()', () => {
 	test('returns false when nothing has changed', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		expect(prod.$qm.isDirty()).toBe(false);
+		expect(prod.$qIsDirty()).toBe(false);
 	});
 
 	test('returns true after a field is mutated', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.price = 14.99;
-		expect(prod.$qm.isDirty()).toBe(true);
+		expect(prod.$qIsDirty()).toBe(true);
 	});
 
 	test('returns true for the specific changed field', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.price = 14.99;
-		expect(prod.$qm.isDirty('price')).toBe(true);
-		expect(prod.$qm.isDirty('name')).toBe(false);
+		expect(prod.$qIsDirty('price')).toBe(true);
+		expect(prod.$qIsDirty('name')).toBe(false);
 	});
 
 	test('delegates to root isDirty — results are identical', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.name = 'Gadget';
-		expect(prod.$qm.isDirty()).toBe(prod.isDirty());
-		expect(prod.$qm.isDirty('name')).toBe(prod.isDirty('name'));
+		expect(prod.$qIsDirty()).toBe(prod.isDirty());
+		expect(prod.$qIsDirty('name')).toBe(prod.isDirty('name'));
 	});
 });
 
-describe('$qm.getChanges()', () => {
+describe('$qm.$qGetChanges()', () => {
 	test('returns empty object when nothing changed', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		expect(prod.$qm.getChanges()).toEqual({});
+		expect(prod.$qGetChanges()).toEqual({});
 	});
 
 	test('returns only changed fields', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.price = 19.99;
-		const changes = prod.$qm.getChanges();
+		const changes = prod.$qGetChanges();
 		expect(Object.keys(changes)).toEqual(['price']);
 		expect(changes.price).toBe(19.99);
 	});
@@ -176,7 +176,7 @@ describe('$qm.getChanges()', () => {
 	test('delegates to root getChanges — results are identical', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.name = 'Gadget';
-		expect(prod.$qm.getChanges()).toEqual(prod.getChanges());
+		expect(prod.$qGetChanges()).toEqual(prod.getChanges());
 	});
 });
 
@@ -184,25 +184,25 @@ describe('$qm.getChanges()', () => {
 // $qm.patch / copy
 // ---------------------------------------------------------------------------
 
-describe('$qm.patch()', () => {
+describe('$qm.$qPatch()', () => {
 	test('mutates the instance in place', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		prod.$qm.patch({ price: 29.99 });
+		prod.$qPatch({ price: 29.99 });
 		expect(prod.price).toBe(29.99);
 		expect(prod.name).toBe('Widget');
 	});
 
 	test('returns void', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		const ret = prod.$qm.patch({ name: 'New' });
+		const ret = prod.$qPatch({ name: 'New' });
 		expect(ret).toBeUndefined();
 	});
 });
 
-describe('$qm.copy()', () => {
+describe('$qm.$qCopy()', () => {
 	test('returns a new instance with same data', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		const clone = prod.$qm.copy();
+		const clone = prod.$qCopy();
 		expect(clone).not.toBe(prod);
 		expect(clone.name).toBe('Widget');
 		expect(clone.price).toBe(9.99);
@@ -210,7 +210,7 @@ describe('$qm.copy()', () => {
 
 	test('respects partial overrides', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		const updated = prod.$qm.copy({ name: 'Premium Widget' });
+		const updated = prod.$qCopy({ name: 'Premium Widget' });
 		expect(updated.name).toBe('Premium Widget');
 		expect(updated.price).toBe(9.99);
 		expect(prod.name).toBe('Widget'); // original unchanged
@@ -218,8 +218,8 @@ describe('$qm.copy()', () => {
 
 	test('copy result is not dirty', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		const clone = prod.$qm.copy();
-		expect(clone.$qm.isDirty()).toBe(false);
+		const clone = prod.$qCopy();
+		expect(clone.$qIsDirty()).toBe(false);
 	});
 });
 
@@ -227,7 +227,7 @@ describe('$qm.copy()', () => {
 // $qm.diff / equals
 // ---------------------------------------------------------------------------
 
-describe('$qm.diff()', () => {
+describe('$qm.$qDiff()', () => {
 	test('returns empty object for equal instances', () => {
 		const prodA = new Product({
 			name: 'Widget',
@@ -239,7 +239,7 @@ describe('$qm.diff()', () => {
 			price: 9.99,
 			active: true,
 		});
-		expect(prodA.$qm.diff(prodB)).toEqual({});
+		expect(prodA.$qDiff(prodB)).toEqual({});
 	});
 
 	test('returns changed fields with before/after', () => {
@@ -253,7 +253,7 @@ describe('$qm.diff()', () => {
 			price: 19.99,
 			active: true,
 		});
-		const result = prodA.$qm.diff(prodB);
+		const result = prodA.$qDiff(prodB);
 		expect(result.name).toEqual({ before: 'Widget', after: 'Gadget' });
 		expect(result.price).toEqual({ before: 9.99, after: 19.99 });
 		expect(result.active).toBeUndefined();
@@ -266,11 +266,11 @@ describe('$qm.diff()', () => {
 			active: true,
 		});
 		const prodB = new Product({ name: 'Other', price: 1, active: false });
-		expect(prodA.$qm.diff(prodB)).toEqual(prodA.diff(prodB));
+		expect(prodA.$qDiff(prodB)).toEqual(prodA.diff(prodB));
 	});
 });
 
-describe('$qm.equals()', () => {
+describe('$qm.$qEquals()', () => {
 	test('returns true for equal instances', () => {
 		const prodA = new Product({
 			name: 'Widget',
@@ -282,7 +282,7 @@ describe('$qm.equals()', () => {
 			price: 9.99,
 			active: true,
 		});
-		expect(prodA.$qm.equals(prodB)).toBe(true);
+		expect(prodA.$qEquals(prodB)).toBe(true);
 	});
 
 	test('returns false for different instances', () => {
@@ -292,7 +292,7 @@ describe('$qm.equals()', () => {
 			active: true,
 		});
 		const prodB = new Product({ name: 'Other', price: 1.0, active: false });
-		expect(prodA.$qm.equals(prodB)).toBe(false);
+		expect(prodA.$qEquals(prodB)).toBe(false);
 	});
 });
 
@@ -300,20 +300,20 @@ describe('$qm.equals()', () => {
 // $qm — validation methods
 // ---------------------------------------------------------------------------
 
-describe('$qm.hasIntegrity()', () => {
+describe('$qm.$qHasIntegrity()', () => {
 	test('returns true for a well-constructed instance', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
-		expect(prod.$qm.hasIntegrity()).toBe(true);
+		expect(prod.$qHasIntegrity()).toBe(true);
 	});
 });
 
-describe('$qm.isValid()', () => {
+describe('$qm.$qIsValid()', () => {
 	test('returns true when integrity and rules pass', () => {
 		const ord = new OrderWithRules({
 			amount: 50,
 			email: 'user@example.com',
 		});
-		expect(ord.$qm.isValid()).toBe(true);
+		expect(ord.$qIsValid()).toBe(true);
 	});
 
 	test('returns false when a @QRule fails', () => {
@@ -321,31 +321,31 @@ describe('$qm.isValid()', () => {
 			amount: -1,
 			email: 'user@example.com',
 		});
-		expect(ord.$qm.isValid()).toBe(false);
+		expect(ord.$qIsValid()).toBe(false);
 	});
 });
 
-describe('$qm.checkRules()', () => {
+describe('$qm.$qCheckRules()', () => {
 	test('returns valid: true when all rules pass', () => {
 		const ord = new OrderWithRules({
 			amount: 10,
 			email: 'test@test.com',
 		});
-		const result = ord.$qm.checkRules();
+		const result = ord.$qCheckRules();
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
 
 	test('reports failing rules with messages', () => {
 		const ord = new OrderWithRules({ amount: -5, email: 'invalid' });
-		const result = ord.$qm.checkRules();
+		const result = ord.$qCheckRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThan(0);
 	});
 
 	test('delegates to root checkRules — results match', () => {
 		const ord = new OrderWithRules({ amount: 0, email: 'bad' });
-		expect(ord.$qm.checkRules()).toEqual(ord.checkRules());
+		expect(ord.$qCheckRules()).toEqual(ord.checkRules());
 	});
 });
 
@@ -355,13 +355,13 @@ describe('$qm.checkRulesAsync()', () => {
 			amount: 100,
 			email: 'ok@domain.com',
 		});
-		const result = await ord.$qm.checkRulesAsync();
+		const result = await ord.$qCheckRulesAsync();
 		expect(result.valid).toBe(true);
 	});
 
 	test('resolves with invalid rule result when rules fail', async () => {
 		const ord = new OrderWithRules({ amount: 0, email: 'bad' });
-		const result = await ord.$qm.checkRulesAsync();
+		const result = await ord.$qCheckRulesAsync();
 		expect(result.valid).toBe(false);
 	});
 });
@@ -372,21 +372,21 @@ describe('$qm.isValidAsync()', () => {
 			amount: 99,
 			email: 'a@b.com',
 		});
-		const valid = await ord.$qm.isValidAsync();
+		const valid = await ord.$qIsValidAsync();
 		expect(valid).toBe(true);
 	});
 
 	test('resolves false when a rule fails', async () => {
 		const ord = new OrderWithRules({ amount: -10, email: 'a@b.com' });
-		const valid = await ord.$qm.isValidAsync();
+		const valid = await ord.$qIsValidAsync();
 		expect(valid).toBe(false);
 	});
 });
 
-describe('$qm.validationReport()', () => {
+describe('$qm.$qValidationReport()', () => {
 	test('returns { valid, integrity, rules }', () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
-		const report = prod.$qm.validationReport();
+		const report = prod.$qValidationReport();
 		expect(report).toHaveProperty('valid');
 		expect(report).toHaveProperty('integrity');
 		expect(report).toHaveProperty('rules');
@@ -394,39 +394,39 @@ describe('$qm.validationReport()', () => {
 
 	test('delegates to root validationReport — results match', () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
-		expect(prod.$qm.validationReport()).toEqual(prod.validationReport());
+		expect(prod.$qValidationReport()).toEqual(prod.validationReport());
 	});
 });
 
 describe('$qm.validationReportAsync()', () => {
 	test('resolves with full report structure', async () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
-		const report = await prod.$qm.validationReportAsync();
+		const report = await prod.$qValidationReportAsync();
 		expect(report).toHaveProperty('valid');
 		expect(report).toHaveProperty('integrity');
 		expect(report).toHaveProperty('rules');
 	});
 });
 
-describe('$qm.validate()', () => {
+describe('$qm.$qValidate()', () => {
 	test('returns sync result without options', () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
-		const result = prod.$qm.validate();
+		const result = prod.$qValidate();
 		expect(result).not.toBeInstanceOf(Promise);
 		expect(result).toHaveProperty('valid');
 	});
 
 	test('returns Promise when async: true', async () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
-		const ret = prod.$qm.validate({ async: true });
+		const ret = prod.$qValidate({ async: true });
 		expect(ret).toBeInstanceOf(Promise);
 		const resolved = await ret;
 		expect(resolved).toHaveProperty('valid');
 	});
 
 	test('sync result matches root validate()', () => {
-		const viaQm = (mdl: OrderWithRules) => mdl.$qm.validate();
-		const direct = (mdl: OrderWithRules) => mdl.validate();
+		const viaQm = (mdl: OrderWithRules) => mdl.$qValidate();
+		const direct = (mdl: OrderWithRules) => mdl.$qValidate();
 		const inst = new OrderWithRules({ amount: 0, email: 'bad' });
 		expect(viaQm(inst)).toEqual(direct(inst));
 	});
@@ -439,7 +439,7 @@ describe('$qm.validate()', () => {
 describe('$qm.toFormData()', () => {
 	test('returns a Promise<FormData>', async () => {
 		const ord = new Order({ id: '1', total: 99 });
-		const result = ord.$qm.toFormData();
+		const result = ord.$qToFormData();
 		expect(result).toBeInstanceOf(Promise);
 		const fdata = await result;
 		expect(fdata).toBeInstanceOf(FormData);
@@ -447,7 +447,7 @@ describe('$qm.toFormData()', () => {
 
 	test('FormData contains model fields', async () => {
 		const ord = new Order({ id: 'abc', total: 42 });
-		const fdata = await ord.$qm.toFormData();
+		const fdata = await ord.$qToFormData();
 		expect(fdata.get('id')).toBe('abc');
 	});
 });
@@ -468,7 +468,7 @@ describe('$qm.toReadableStream()', () => {
 		}
 
 		const asset = new Asset({ data: new Blob(['hello']) });
-		const stream = asset.$qm.toReadableStream({ field: 'data' });
+		const stream = asset.$qToReadableStream({ field: 'data' });
 		expect(stream).toBeInstanceOf(ReadableStream);
 	});
 });

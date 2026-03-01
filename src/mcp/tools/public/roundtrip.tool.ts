@@ -8,8 +8,8 @@ import { QModel } from '../../../core/models/quick.model';
  * produces an identical plain object, proving lossless transformation.
  *
  * A round-trip is:
- *   1. `s1 = new DynamicModel(data).$qm.serialize()`
- *   2. `s2 = new DynamicModel(s1).$qm.serialize()`
+ *   1. `s1 = new DynamicModel(data).$qSerialize()`
+ *   2. `s2 = new DynamicModel(s1).$qSerialize()`
  *   3. `lossless = JSON.stringify(s1) === JSON.stringify(s2)`
  *
  * When `lossless` is `false`, the `diff` object maps each differing key to
@@ -28,7 +28,7 @@ export class QRoundtripTool extends QAbstractTool<
 	name = 'roundtrip';
 	description =
 		'Verifies that serializing and re-creating a QuickModel instance is lossless. ' +
-		'Runs: s1 = new Model(data).$qm.serialize() → s2 = new Model(s1).$qm.serialize() ' +
+		'Runs: s1 = new Model(data).$qSerialize() → s2 = new Model(s1).$qSerialize() ' +
 		'and reports whether s1 === s2. ' +
 		'Returns { lossless, input, serialized, roundtrip_serialized, diff, summary }.';
 
@@ -78,13 +78,13 @@ export class QRoundtripTool extends QAbstractTool<
 			[key: string]: any;
 		}
 
-		const serial1 = new DynamicModel(args.data).$qm.serialize() as Record<
+		const serial1 = new DynamicModel(args.data).$qSerialize() as Record<
 			string,
 			unknown
 		>;
 		const serial2 = new DynamicModel(
 			serial1 as any
-		).$qm.serialize() as Record<string, unknown>;
+		).$qSerialize() as Record<string, unknown>;
 
 		const diff = this.computeDiff(serial1, serial2);
 		const lossless = Object.keys(diff).length === 0;

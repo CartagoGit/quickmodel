@@ -30,9 +30,9 @@ const order = new OrderModel({
 	createdAt: new Date(),
 });
 
-order.$qm.copy({ status: 'shipped' }); // ✅ OK — status is not readonly
-order.$qm.copy({ id: 999 }); // ❌ throws ImmutableFieldError
-order.$qm.patch({ id: 999 }); // ❌ throws ImmutableFieldError
+order.$qCopy({ status: 'shipped' }); // ✅ OK — status is not readonly
+order.$qCopy({ id: 999 }); // ❌ throws ImmutableFieldError
+order.$qPatch({ id: 999 }); // ❌ throws ImmutableFieldError
 ```
 
 ## What `@QReadonly` protects
@@ -53,7 +53,7 @@ order.$qm.patch({ id: 999 }); // ❌ throws ImmutableFieldError
 import { ImmutableFieldError } from 'quickmodel';
 
 try {
-	order.$qm.copy({ id: 999 });
+	order.$qCopy({ id: 999 });
 } catch (err) {
 	if (err instanceof ImmutableFieldError) {
 		console.error(err.field); // 'id'
@@ -136,7 +136,7 @@ class UserModel extends BaseEntity {
 }
 
 const user = new UserModel({ id: 'u1', email: 'a@b.com' });
-user.$qm.copy({ id: 'u2' }); // ❌ throws ImmutableFieldError (inherited from BaseEntity)
+user.$qCopy({ id: 'u2' }); // ❌ throws ImmutableFieldError (inherited from BaseEntity)
 ```
 
 ## API reference

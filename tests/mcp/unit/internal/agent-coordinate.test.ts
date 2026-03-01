@@ -692,7 +692,8 @@ describe('QAgentCoordinateTool', () => {
 			expect(res.claimed).toBe(false);
 			expect(res.conflict).toBe(true);
 			// claimedBy is one of the two conflicting agents
-			expect(['agent-A', 'agent-B']).toContain(res.claimedBy);
+			expect(res.claimedBy).toBeDefined();
+			expect(['agent-A', 'agent-B']).toContain(res.claimedBy ?? '');
 		});
 	});
 

@@ -64,7 +64,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.$qm.toReadableStream({ field: 'video' });
+		const stream = dto.$qToReadableStream({ field: 'video' });
 
 		expect(stream).toBeInstanceOf(ReadableStream);
 	});
@@ -77,7 +77,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 			video: file as unknown as IFileSerialized, // @quickmodel-rule-ignore: no-as-unknown
 		});
 
-		const stream = dto.$qm.toReadableStream({ field: 'video' });
+		const stream = dto.$qToReadableStream({ field: 'video' });
 		const result = await readStream(stream);
 
 		expect(result).toEqual(data);
@@ -94,7 +94,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 
 		const receivedChunks: Uint8Array[] = [];
-		const stream = dto.$qm.toReadableStream({
+		const stream = dto.$qToReadableStream({
 			field: 'video',
 			chunkSize: 30, // 30 bytes por chunk → 4 chunks (30+30+30+10)
 			onChunk: (chunk) => {
@@ -117,7 +117,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 
 		let capturedTotal = 0;
-		const stream = dto.$qm.toReadableStream({
+		const stream = dto.$qToReadableStream({
 			field: 'video',
 			onChunk: (_, total) => {
 				capturedTotal = total;
@@ -132,7 +132,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 	test('campo null → lanza error', () => {
 		const dto = new VideoUpload({ title: 'no-video', video: null });
 
-		expect(() => dto.$qm.toReadableStream({ field: 'video' })).toThrow();
+		expect(() => dto.$qToReadableStream({ field: 'video' })).toThrow();
 	});
 
 	test('campo inexistente → lanza error', () => {
@@ -143,7 +143,7 @@ describe('toReadableStream: genera stream desde campo File/Blob', () => {
 		});
 
 		expect(() =>
-			dto.$qm.toReadableStream({ field: 'nonExistentField' as 'video' })
+			dto.$qToReadableStream({ field: 'nonExistentField' as 'video' })
 		).toThrow();
 	});
 });

@@ -246,7 +246,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 		});
 
 		it('serialize() should return a plain object', () => {
-			const plain = instance.serialize();
+			const plain = instance.$qSerialize();
 			expect(typeof plain).toBe('object');
 			expect(plain).not.toBeNull();
 		});
@@ -260,12 +260,12 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 
 		it('isDirty() should be available', () => {
 			expect(typeof instance.isDirty).toBe('function');
-			expect(instance.isDirty()).toBe(false);
+			expect(instance.$qIsDirty()).toBe(false);
 		});
 
 		it('copy() should be available and return updated instance', () => {
 			expect(typeof instance.copy).toBe('function');
-			const merged = instance.copy({ username: 'eve-updated' });
+			const merged = instance.$qCopy({ username: 'eve-updated' });
 			expect(merged.username).toBe('eve-updated');
 		});
 	});
@@ -292,7 +292,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				role: 'superadmin',
 			});
 
-			const plain = instance.serialize();
+			const plain = instance.$qSerialize();
 
 			expect(plain).toHaveProperty('username', 'frank');
 			expect(plain).toHaveProperty('email', 'frank@test.com');
@@ -309,7 +309,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				role: 'superadmin',
 			});
 
-			const plain = original.serialize();
+			const plain = original.$qSerialize();
 			const restored = AdminFull.create(plain as any);
 
 			expect(restored.promotedAt).toBeInstanceOf(Date);
@@ -473,7 +473,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				promotedAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			instance.patch({ username: 'dirty' });
+			instance.$qPatch({ username: 'dirty' });
 
 			const dirty = instance.getDirtyFields();
 			expect(dirty.has('username')).toBe(true);
@@ -485,11 +485,11 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				promotedAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			instance.patch({ username: 'modified' });
-			expect(instance.isDirty()).toBe(true);
+			instance.$qPatch({ username: 'modified' });
+			expect(instance.$qIsDirty()).toBe(true);
 
-			instance.reset();
-			expect(instance.isDirty()).toBe(false);
+			instance.$qReset();
+			expect(instance.$qIsDirty()).toBe(false);
 			expect(instance.username).toBe('original');
 		});
 	});

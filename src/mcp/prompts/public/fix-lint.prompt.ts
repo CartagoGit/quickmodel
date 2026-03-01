@@ -71,6 +71,13 @@ export class QFixLintPrompt extends QAbstractInternalPrompt<{
 						`I'll fix each violation following the project rules strictly.\n` +
 						`**I CANNOT declare this done until \`lint_check\` returns \`passed: true\`.**\n\n` +
 						`---\n\n` +
+						`### Step 0 — 🤝 Register your work (mandatory)\n\n` +
+						`Before modifying any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent owns the same files\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"fix lint"\`, and \`files\` for what you will change (use \`["src/**"]\` if fixing the whole src, or list specific files)\n` +
+						`3. If \`conflict: true\` → **STOP**. Do not touch any file until the conflict is resolved.\n` +
+						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`---\n\n` +
 						`### Common rules and their correct fix\n\n` +
 						`| Rule | Wrong | Correct |\n` +
 						`|------|---------|---------|\n` +

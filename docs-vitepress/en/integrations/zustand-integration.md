@@ -78,7 +78,7 @@ const useUserStore = create<IUserStore>((set, get) => ({
 	updateUser: (patch) => {
 		const current = get().user;
 		if (!current) return;
-		set({ user: current.$qm.copy(patch) }); // immutable update — no Immer needed
+		set({ user: current.$qCopy(patch) }); // immutable update — no Immer needed
 	},
 }));
 
@@ -117,7 +117,7 @@ const useCartStore = create<ICartStore>((set, get) => ({
 			const existing = state.items.get(productId);
 			if (!existing) return state;
 			const next = new Map(state.items);
-			next.set(productId, existing.$qm.copy({ qty })); // immutable merge
+			next.set(productId, existing.$qCopy({ qty })); // immutable merge
 			return { items: next };
 		}),
 
@@ -146,7 +146,7 @@ import { persist } from 'zustand/middleware';
 
 // Serialize for storage
 function serializeState(user: UserModel): object {
-	return user.$qm.serialize() as object;
+	return user.$qSerialize() as object;
 }
 
 // Rehydrate from storage
@@ -162,7 +162,7 @@ const usePersistedUserStore = create<IUserStore>()(
 			updateUser: (patch) => {
 				const current = get().user;
 				if (!current) return;
-				set({ user: current.$qm.copy(patch) });
+				set({ user: current.$qCopy(patch) });
 			},
 		}),
 		{
@@ -230,7 +230,7 @@ set(
 
 // ✅ With QuickModel copy()
 const current = get().user;
-set({ user: current.$qm.copy({ plan: 'pro' }) });
+set({ user: current.$qCopy({ plan: 'pro' }) });
 // @QComputed values recalculate automatically — no stale references
 ```
 

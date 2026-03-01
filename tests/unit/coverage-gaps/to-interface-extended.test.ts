@@ -19,7 +19,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		// Access private service to force !isProduction (default in tests)
 		// Or simply rely on QModel.toInterface calls
 
-		expect(() => data.toInterface()).toThrow(/Cannot convert property/);
+		expect(() => data.$qToInterface()).toThrow(/Cannot convert property/);
 	});
 
 	it('should handle generic class instances without toInterface', () => {
@@ -43,7 +43,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		const simple = new SimpleClass();
 		const container = new Container({ instance: simple });
 
-		const result = container.toInterface();
+		const result = container.$qToInterface();
 
 		// Should serialize properties but not methods
 		expect(result.instance as any).toEqual({ prop: 'value' });
@@ -70,7 +70,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		// Should NOT throw in production
 		let result;
 		try {
-			result = data.toInterface();
+			result = data.$qToInterface();
 		} finally {
 			process.env.NODE_ENV = originalEnv;
 		}
@@ -89,7 +89,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		}
 
 		const data = new Data({ obj: { a: 1, func: () => {} } });
-		const result = data.toInterface();
+		const result = data.$qToInterface();
 
 		// Should retain 'a' but skip 'func'
 		expect(result.obj as any).toEqual({ a: 1 });

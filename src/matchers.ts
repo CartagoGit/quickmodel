@@ -20,7 +20,7 @@
  */
 import 'reflect-metadata';
 import { QFIELD_METADATA_KEY } from '@/core/decorators/qfield.decorator';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
 import { QModel } from '@/core/models/quick.model';
 
 // ---------------------------------------------------------------------------
@@ -65,19 +65,19 @@ function hasQFieldMeta(instance: object, fieldName: string | symbol): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Asserts that a model passes all `@QRule` validations via `qCheckRules()`.
+ * Asserts that a model passes all `@QRule` validations via `$qCheckRules()`.
  *
  * Works with any class decorated with `@QRule` (QModel subclasses or plain classes).
  *
  * @see {@link QRule} — the decorator being evaluated
- * @see {@link qCheckRules} — the function used internally
+ * @see {@link $qCheckRules} — the function used internally
  *
  * @example
  * expect(invalidDto).not.toBeValidQModel();
  * ```
  */
 function toBeValidQModel(received: object): IMatcherResult {
-	const result = qCheckRules(received);
+	const result = $qCheckRules(received);
 	return {
 		pass: result.valid,
 		message: () =>
@@ -100,14 +100,14 @@ function toBeValidQModel(received: object): IMatcherResult {
  * expect(dto).not.toHaveQRuleError('username');
  * ```
  * @see {@link toBeValidQModel} — asserts that all rules pass
- * @see {@link qCheckRules} — the function used internally
+ * @see {@link $qCheckRules} — the function used internally
  */
 function toHaveQRuleError(
 	received: object,
 	field: string,
 	message?: string
 ): IMatcherResult {
-	const result = qCheckRules(received);
+	const result = $qCheckRules(received);
 	const relevant = result.errors.filter((err) => err.field === field);
 	const matched = message
 		? relevant.some((err) => err.message === message)
@@ -158,9 +158,9 @@ function toHaveQField(received: object, fieldName: string): IMatcherResult {
  */
 function toMatchQModel(received: object, expected: object): IMatcherResult {
 	const receivedData =
-		received instanceof QModel ? received.serialize() : received;
+		received instanceof QModel ? received.$qSerialize() : received;
 	const expectedData =
-		expected instanceof QModel ? expected.serialize() : expected;
+		expected instanceof QModel ? expected.$qSerialize() : expected;
 	const sortKeys = (obj: object): string =>
 		JSON.stringify(obj, Object.keys(obj).sort());
 	const pass = sortKeys(receivedData) === sortKeys(expectedData);
@@ -193,7 +193,7 @@ function toBeIntact(received: unknown): IMatcherResult {
 				`toBeIntact() requires a QModel instance, got ${typeof received}`,
 		};
 	}
-	const pass = received.hasIntegrity();
+	const pass = received.$qHasIntegrity();
 	return {
 		pass,
 		message: () =>
@@ -224,7 +224,7 @@ function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
 				`toHaveDirtyField() requires a QModel instance, got ${typeof received}`,
 		};
 	}
-	const pass = received.isDirty(field);
+	const pass = received.$qIsDirty(field);
 	return {
 		pass,
 		message: () =>

@@ -24,7 +24,7 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should validate valid string', () => {
 			expect(
-				StringTransformer.checkIntegrity(
+				StringTransformer.$qCheckIntegrity(
 					'ok',
 					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
@@ -32,14 +32,14 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should ALLOW null (validation passes)', () => {
 			expect(
-				StringTransformer.checkIntegrity(
+				StringTransformer.$qCheckIntegrity(
 					null,
 					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
 			).toBe(true);
 		});
 		test('should serialize valid string', () => {
-			expect(StringTransformer.serialize('ok')).toBe('ok');
+			expect(StringTransformer.$qSerialize('ok')).toBe('ok');
 		});
 	});
 
@@ -56,7 +56,7 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should validate valid number', () => {
 			expect(
-				NumberTransformer.checkIntegrity(
+				NumberTransformer.$qCheckIntegrity(
 					123,
 					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid
@@ -77,7 +77,7 @@ describe('Transformer Coverage: Primitives', () => {
 		});
 		test('should validate valid boolean', () => {
 			expect(
-				BooleanTransformer.checkIntegrity(
+				BooleanTransformer.$qCheckIntegrity(
 					false,
 					{} as unknown as IQIntegrityContext // @quickmodel-rule-ignore: no-as-unknown
 				).isValid

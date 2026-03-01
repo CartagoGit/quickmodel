@@ -16,8 +16,8 @@ import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField } from '@/decorators';
 import type { IQAnyRecord } from '@/types';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // 1. useState-compatible form class — React Controlled Components
@@ -55,21 +55,21 @@ describe('React — useState controlled form validation', () => {
 	});
 
 	test('empty form is invalid', () => {
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 	});
 
 	test('valid email + strong password passes', () => {
 		form.email = 'user@example.com';
 		form.password = 'Secret123';
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(true);
 	});
 
 	test('invalid email fails with correct error field', () => {
 		form.email = 'not-an-email';
 		form.password = 'Secret123';
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -77,7 +77,7 @@ describe('React — useState controlled form validation', () => {
 	test('weak password fails — missing uppercase', () => {
 		form.email = 'user@example.com';
 		form.password = 'secret123';
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		const pwdErrors = result.errors.filter(
 			(err) => err.field === 'password'
@@ -88,7 +88,7 @@ describe('React — useState controlled form validation', () => {
 	test('weak password fails — too short', () => {
 		form.email = 'user@example.com';
 		form.password = 'Ab1';
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'password')).toBe(
 			true
@@ -98,7 +98,7 @@ describe('React — useState controlled form validation', () => {
 	test('errors include all violated rules per field', () => {
 		form.email = 'bad';
 		form.password = 'short';
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		const pwdErrors = result.errors.filter(
 			(err) => err.field === 'password'
 		);
@@ -146,7 +146,7 @@ function rhfResolver(instance: ProductForm): {
 	values: object;
 	errors: Record<string, { message: string }>;
 } {
-	const result = qCheckRules(instance);
+	const result = $qCheckRules(instance);
 	if (result.valid) {
 		return { values: instance, errors: {} };
 	}
@@ -244,7 +244,7 @@ function processOrderAction(raw: Record<string, unknown>): {
 } {
 	try {
 		const dto = new OrderItemDto(raw);
-		return { success: true, data: dto.$qm.serialize() };
+		return { success: true, data: dto.$qSerialize() };
 	} catch {
 		return { success: false, error: 'Invalid order data' };
 	}
@@ -272,7 +272,7 @@ describe('React/Next.js — Server Action coercion', () => {
 			orderedAt: '2024-01-15T08:00:00.000Z',
 		});
 		expect(dto.orderedAt).toBeInstanceOf(Date);
-		const serialized = dto.$qm.serialize() as Record<string, unknown>;
+		const serialized = dto.$qSerialize() as Record<string, unknown>;
 		expect(typeof serialized['orderedAt']).toBe('string');
 	});
 
@@ -283,7 +283,7 @@ describe('React/Next.js — Server Action coercion', () => {
 			unitPrice: 12.5,
 			orderedAt: new Date(),
 		});
-		const out = dto.$qm.serialize() as Record<string, unknown>;
+		const out = dto.$qSerialize() as Record<string, unknown>;
 		expect(out['totalPrice']).toBe(50);
 	});
 
@@ -296,7 +296,7 @@ describe('React/Next.js — Server Action coercion', () => {
 			__proto__: {},
 			internalToken: 'secret',
 		});
-		const out = dto.$qm.serialize() as Record<string, unknown>;
+		const out = dto.$qSerialize() as Record<string, unknown>;
 		expect('internalToken' in out).toBe(false);
 	});
 
@@ -320,7 +320,7 @@ describe('React/Next.js — Server Action coercion', () => {
 		expect(errors).toHaveLength(0);
 		const totals = instances.map(
 			(item) =>
-				(item.$qm.serialize() as Record<string, unknown>)['totalPrice']
+				(item.$qSerialize() as Record<string, unknown>)['totalPrice']
 		);
 		expect(totals).toEqual([20, 100]);
 	});
@@ -358,7 +358,7 @@ class CartStore {
 	private items = new Map<string, CartItem>();
 
 	getState(): object[] {
-		return [...this.items.values()].map((item) => item.$qm.serialize());
+		return [...this.items.values()].map((item) => item.$qSerialize());
 	}
 
 	addItem(data: Record<string, unknown>): void {
@@ -373,7 +373,7 @@ class CartStore {
 		const item = this.items.get(sku);
 		if (!item) return false;
 		// Use merge (immutable) to get new state, update store
-		const updated = item.$qm.copy({ qty });
+		const updated = item.$qCopy({ qty });
 		this.items.set(sku, updated);
 		return true;
 	}
@@ -479,7 +479,7 @@ describe('React — async email uniqueness validation', () => {
 		form.email = 'new@example.com';
 		form.username = 'new_user';
 		form.password = 'Secret123';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(true);
 	});
 
@@ -488,7 +488,7 @@ describe('React — async email uniqueness validation', () => {
 		form.email = 'existing@example.com';
 		form.username = 'some_user';
 		form.password = 'Secret123';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -498,7 +498,7 @@ describe('React — async email uniqueness validation', () => {
 		form.email = 'admin@react.dev'; // taken
 		form.username = 'ab'; // too short
 		form.password = 'short'; // too short
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		const fields = result.errors.map((err) => err.field);
 		expect(fields).toContain('email');
@@ -590,7 +590,7 @@ describe('React — useQModel hook simulation', () => {
 				avatarUrl: '',
 			})
 		);
-		hook.update((prev) => prev.$qm.copy({ bio: 'New bio' }));
+		hook.update((prev) => prev.$qCopy({ bio: 'New bio' }));
 		expect((hook.getSnapshot() as unknown as UserProfile).bio).toBe(
 			// @quickmodel-rule-ignore: no-as-unknown
 			'New bio'
@@ -604,7 +604,7 @@ describe('React — useQModel hook simulation', () => {
 			bio: '',
 			avatarUrl: '',
 		});
-		const out = profile.$qm.serialize() as Record<string, unknown>;
+		const out = profile.$qSerialize() as Record<string, unknown>;
 		expect(out['initials']).toBe('CW');
 	});
 
@@ -621,7 +621,7 @@ describe('React — useQModel hook simulation', () => {
 		hook.subscribe(() => {
 			callCount++;
 		});
-		hook.update((prev) => prev.$qm.copy({ displayName: 'David' }));
+		hook.update((prev) => prev.$qCopy({ displayName: 'David' }));
 		expect(callCount).toBe(1);
 	});
 
@@ -639,7 +639,7 @@ describe('React — useQModel hook simulation', () => {
 			callCount++;
 		});
 		unsub();
-		hook.update((prev) => prev.$qm.copy({ bio: 'updated' }));
+		hook.update((prev) => prev.$qCopy({ bio: 'updated' }));
 		expect(callCount).toBe(0);
 	});
 

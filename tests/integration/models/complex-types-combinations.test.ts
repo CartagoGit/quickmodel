@@ -139,7 +139,7 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 			tags: new Set(['tag1', 'tag2', 'tag3']),
 		});
 
-		const IQSerialized = entity.$qm.serialize();
+		const IQSerialized = entity.$qSerialize();
 		const deserialized = ComplexEntity.deserialize(IQSerialized);
 
 		// Validaciones
@@ -181,7 +181,7 @@ describe('ComplexEntity: todos los tipos complejos en una entidad', () => {
 			tags: new Set(['important']),
 		});
 
-		const copied = entity.$qm.copy();
+		const copied = entity.$qCopy();
 
 		expect(copied).toBeInstanceOf(ComplexEntity);
 		expect(copied).not.toBe(entity);
@@ -337,7 +337,7 @@ describe('NestedComplexModel: anidación de entidades complejas', () => {
 			errorLog: new Set([new Error('Log entry')]),
 		});
 
-		const IQSerialized = model.$qm.serialize();
+		const IQSerialized = model.$qSerialize();
 		const deserialized = NestedComplexModel.deserialize(IQSerialized);
 
 		expect(deserialized).toBeInstanceOf(NestedComplexModel);
@@ -608,7 +608,7 @@ describe('Edge cases: combinaciones extremas', () => {
 			tags: new Set(Array.from({ length: 50 }, (_, idx) => `tag${idx}`)),
 		});
 
-		const IQSerialized = entity.$qm.serialize();
+		const IQSerialized = entity.$qSerialize();
 		const deserialized = ComplexEntity.deserialize(IQSerialized);
 
 		expect(deserialized.buffer.length).toBe(1000);

@@ -7,13 +7,13 @@ QuickModel is an ideal serialization and validation layer for **real-time socket
 
 | Concern                     | QuickModel solution                           |
 | --------------------------- | --------------------------------------------- |
-| Serialize before sending    | `dto.$qm.serialize()` → JSON-safe object      |
+| Serialize before sending    | `dto.$qSerialize()` → JSON-safe object        |
 | Reconstruct on receive      | `new Dto(JSON.parse(raw))`                    |
 | Complex types over the wire | `Date`, `Set`, `Map`, `BigInt` roundtrip      |
 | Unknown field stripping     | `unknownPropertyPolicy: 'strip'`              |
 | Validate after receive      | `qCheckRules(dto)` / `qCheckRulesAsync(dto)`  |
 | Computed enrichment         | `@QComputed()` available after reconstruction |
-| Incremental patch           | `existing.$qm.copy(patch)` for delta updates  |
+| Incremental patch           | `existing.$qCopy(patch)` for delta updates    |
 | Batch events                | `Dto.createMany(array).instances`             |
 
 ## Supported Environments

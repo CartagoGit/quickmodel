@@ -21,33 +21,33 @@ class UserModel extends QModel<{ name: string; age: number }> {
 describe('validationReport()', () => {
 	test('returns valid:true when both integrity and rules pass', () => {
 		const user = UserModel.create({ name: 'Alice', age: 30 });
-		const report = user.$qm.validationReport();
+		const report = user.$qValidationReport();
 		expect(report.valid).toBe(true);
 	});
 
 	test('returns valid:false when a @QRule fails', () => {
 		const user = UserModel.create({ name: 'Alice', age: 10 });
-		const report = user.$qm.validationReport();
+		const report = user.$qValidationReport();
 		expect(report.valid).toBe(false);
 	});
 
 	test('returns valid:false when integrity fails', () => {
 		const user = UserModel.create({ name: 'Alice', age: 30 });
 		(user as any).age = 'broken';
-		const report = user.$qm.validationReport();
+		const report = user.$qValidationReport();
 		expect(report.valid).toBe(false);
 	});
 
 	test('report.integrity contains checkIntegrity() result', () => {
 		const user = UserModel.create({ name: 'Alice', age: 30 });
-		const report = user.$qm.validationReport();
-		expect(report.integrity).toEqual(user.checkIntegrity());
+		const report = user.$qValidationReport();
+		expect(report.integrity).toEqual(user.$qCheckIntegrity());
 	});
 
 	test('report.rules contains checkRules() result', () => {
 		const user = UserModel.create({ name: 'Alice', age: 10 });
-		const report = user.$qm.validationReport();
-		expect(report.rules).toEqual(user.$qm.checkRules());
+		const report = user.$qValidationReport();
+		expect(report.rules).toEqual(user.$qCheckRules());
 	});
 
 	test('all three rule errors are present in report.rules.errors', () => {
@@ -58,7 +58,7 @@ describe('validationReport()', () => {
 			declare val: number;
 		}
 		const multi = Multi.create({ val: 150 });
-		const { rules } = multi.$qm.validationReport();
+		const { rules } = multi.$qValidationReport();
 		expect(rules.errors.length).toBeGreaterThanOrEqual(1);
 	});
 
@@ -68,13 +68,13 @@ describe('validationReport()', () => {
 			declare posX: string;
 		}
 		const plain = Plain.create({ posX: 'hello' });
-		expect(plain.$qm.validationReport().valid).toBe(true);
+		expect(plain.$qValidationReport().valid).toBe(true);
 	});
 
 	test('report.valid equals isValid()', () => {
 		const good = UserModel.create({ name: 'Alice', age: 30 });
 		const bad = UserModel.create({ name: 'Alice', age: 10 });
-		expect(good.$qm.validationReport().valid).toBe(good.$qm.isValid());
-		expect(bad.$qm.validationReport().valid).toBe(bad.$qm.isValid());
+		expect(good.$qValidationReport().valid).toBe(good.$qIsValid());
+		expect(bad.$qValidationReport().valid).toBe(bad.$qIsValid());
 	});
 });

@@ -147,16 +147,16 @@ export class UsersService {
 	save(data: object): object {
 		const record = new UserRecord(data);
 		this.store.set(record.id, record);
-		return record.$qm.serialize();
+		return record.$qSerialize();
 	}
 
 	update(id: string, patch: Partial<IUserRecord>): object | null {
 		const record = this.store.get(id);
 		if (!record) return null;
 		// copy() is IMMUTABLE: returns a new instance
-		const updated = record.$qm.copy(patch);
+		const updated = record.$qCopy(patch);
 		this.store.set(id, updated);
-		return updated.$qm.serialize();
+		return updated.$qSerialize();
 	}
 }
 ```
@@ -184,7 +184,7 @@ export const coercionInterceptor: HttpInterceptorFn = (req, next) =>
 			) {
 				const { instances } = ApiItemDto.createMany(event.body);
 				return event.clone({
-					body: instances.map((i) => i.$qm.serialize()),
+					body: instances.map((i) => i.$qSerialize()),
 				});
 			}
 			return event;
@@ -232,7 +232,7 @@ const profile = signal(
 );
 
 // Update via immutable merge
-profile.update((prev) => prev.$qm.copy({ score: 98 }));
+profile.update((prev) => prev.$qCopy({ score: 98 }));
 
 // @QComputed getters are TypeScript class properties — access them directly on the instance
 const fullName = computed(() => profile().fullName); // Signal<string>
@@ -250,12 +250,12 @@ const tier = computed(() => profile().tier); // Signal<'gold' | 'silver' | 'bron
 // ❌ Anti-pattern: patch() mutates in place, signal version does NOT increment
 //    Angular template will NOT re-render
 signal.update((model) => {
-	model.$qm.patch({ score: 98 }); // void — original instance mutated
+	model.$qPatch({ score: 98 }); // void — original instance mutated
 	return model; // same reference → no change detection
 });
 
 // ✅ Correct: copy() returns a new instance → signal version increments → re-render
-signal.update((model) => model.$qm.copy({ score: 98 }));
+signal.update((model) => model.$qCopy({ score: 98 }));
 ```
 
 ::: warning Direct mutation is invisible to Angular signals
@@ -268,7 +268,7 @@ const cartSignal = signal(new Cart({ userId: 'u1', total: 50 }));
 cartSignal().total = 100;
 
 // ✅ Signal-aware update — template updates correctly
-cartSignal.update((cart) => cart.$qm.copy({ total: 100 }));
+cartSignal.update((cart) => cart.$qCopy({ total: 100 }));
 ```
 
 :::
@@ -306,7 +306,7 @@ export function reactiveModel<T extends QModel<any>>(
 		set(_, key, value) {
 			if (typeof key !== 'string') return false;
 			// copy() → new instance → new reference → Angular detects the change
-			sig.update((mdl) => mdl.$qm.copy({ [key]: value } as Partial<T>));
+			sig.update((mdl) => mdl.$qCopy({ [key]: value } as Partial<T>));
 			return true;
 		},
 	}) as IReactiveModel<T>;
@@ -324,7 +324,7 @@ export class CartComponent {
 
 	// ✅ Direct assignment — Angular re-renders automatically
 	addItem(price: number): void {
-		this.cart.total += price; // internally: sig.update(m => m.$qm.copy({ total: ... }))
+		this.cart.total += price; // internally: sig.update(m => m.$qCopy({ total: ... }))
 	}
 
 	// Computed derived from the underlying signal
@@ -363,7 +363,7 @@ const label = computed(() => `Cart for ${cart().userId}: $${cart().total}`);
 // Serialize for API calls
 const payload = computed(() => cart().serialize());
 
-cart.update((c) => c.$qm.copy({ total: 80 }));
+cart.update((c) => c.$qCopy({ total: 80 }));
 console.log(totalWithTax()); // 96.8
 console.log(payload().updatedAt); // ISO string — serialized Date
 ```
@@ -383,11 +383,11 @@ const product = signal(
 );
 
 // Passing a Date → stays a Date in the new instance ✅
-product.update((p) => p.$qm.copy({ releasedAt: new Date('2025-06-01') }));
+product.update((p) => p.$qCopy({ releasedAt: new Date('2025-06-01') }));
 console.log(product().releasedAt instanceof Date); // true
 
 // Passing a Set → stays a Set ✅
-product.update((p) => p.$qm.copy({ tags: new Set(['sale', 'featured']) }));
+product.update((p) => p.$qCopy({ tags: new Set(['sale', 'featured']) }));
 console.log(product().tags instanceof Set); // true
 ```
 
@@ -434,8 +434,8 @@ Track edits in forms or detail pages:
 const record = new UserRecord({ id: 'u1', firstName: 'Alice', ..., score: 70 });
 record.score = 85;
 
-if (record.$qm.isDirty()) {
-  // PUT /api/users/u1 with record.$qm.serialize()
+if (record.$qIsDirty()) {
+  // PUT /api/users/u1 with record.$qSerialize()
 }
 
 // Reset to last saved state
@@ -454,7 +454,7 @@ export class UsersResolver implements ResolveFn<object[]> {
 		return this.http.get<object[]>('/api/users').pipe(
 			map((raw) => {
 				const { instances } = UserRecord.createMany(raw);
-				return instances.map((u) => u.$qm.serialize());
+				return instances.map((u) => u.$qSerialize());
 			})
 		);
 	}

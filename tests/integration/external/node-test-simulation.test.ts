@@ -195,13 +195,13 @@ describe('Node:test Integration: assertQModel helper API', () => {
 // Node:test workflow simulation
 // ---------------------------------------------------------------------------
 
-describe('Node:test Integration: assertQModel.isValid()', () => {
+describe('Node:test Integration: assertQModel.$qIsValid()', () => {
 	test('valid invoice does not throw', () => {
-		expect(() => assertQModel.isValid(makeValidInvoice())).not.toThrow();
+		expect(() => assertQModel.$qIsValid(makeValidInvoice())).not.toThrow();
 	});
 
 	test('invalid invoice throws AssertionError', () => {
-		expect(() => assertQModel.isValid(makeInvalidInvoice())).toThrow(
+		expect(() => assertQModel.$qIsValid(makeInvalidInvoice())).toThrow(
 			AssertionError
 		);
 	});
@@ -209,7 +209,7 @@ describe('Node:test Integration: assertQModel.isValid()', () => {
 	test('throws with descriptive message listing errors', () => {
 		let message = '';
 		try {
-			assertQModel.isValid(makeInvalidInvoice());
+			assertQModel.$qIsValid(makeInvalidInvoice());
 		} catch (err) {
 			if (err instanceof AssertionError) message = err.message;
 		}
@@ -326,7 +326,7 @@ describe('Node:test Integration: assertQModel.isIntact()', () => {
 	});
 });
 
-describe('Node:test Integration: assertQModel.isDirty() / isClean()', () => {
+describe('Node:test Integration: assertQModel.$qIsDirty() / isClean()', () => {
 	test('fresh invoice has clean fields', () => {
 		const inv = makeValidInvoice();
 		expect(() => assertQModel.isClean(inv, 'totalAmount')).not.toThrow();
@@ -336,13 +336,13 @@ describe('Node:test Integration: assertQModel.isDirty() / isClean()', () => {
 	test('mutated field is detected as dirty', () => {
 		const inv = makeValidInvoice();
 		inv.totalAmount = 9999;
-		expect(() => assertQModel.isDirty(inv, 'totalAmount')).not.toThrow();
+		expect(() => assertQModel.$qIsDirty(inv, 'totalAmount')).not.toThrow();
 	});
 
 	test('only mutated field is dirty', () => {
 		const inv = makeValidInvoice();
 		inv.vatRate = 0;
-		expect(() => assertQModel.isDirty(inv, 'vatRate')).not.toThrow();
+		expect(() => assertQModel.$qIsDirty(inv, 'vatRate')).not.toThrow();
 		expect(() => assertQModel.isClean(inv, 'totalAmount')).not.toThrow();
 	});
 });
@@ -356,7 +356,7 @@ describe('Node:test Integration: type coercion', () => {
 
 	test('roundtrip: serialize() + re-create matches original', () => {
 		const original = makeValidInvoice();
-		const restored = new InvoiceDto(original.$qm.serialize());
+		const restored = new InvoiceDto(original.$qSerialize());
 		expect(() => assertQModel.matches(original, restored)).not.toThrow();
 	});
 });

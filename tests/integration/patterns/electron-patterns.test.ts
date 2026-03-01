@@ -13,7 +13,7 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -178,7 +178,7 @@ describe('IPC boundary — serialize/populate', () => {
 			notifications: true,
 			autoSave: true,
 		});
-		const payload = dto.$qm.serialize();
+		const payload = dto.$qSerialize();
 		expect(typeof payload).toBe('object');
 		expect(payload).not.toBeInstanceOf(QModel);
 		// JSON roundtrip (IPC wire)
@@ -194,7 +194,7 @@ describe('IPC boundary — serialize/populate', () => {
 			notifications: false,
 			autoSave: true,
 		});
-		const wirePayload = simulateIpcWire(original.$qm.serialize());
+		const wirePayload = simulateIpcWire(original.$qSerialize());
 		const reconstructed = new UserPrefsDto(wirePayload as IUserPrefs);
 		expect(reconstructed.theme).toBe('light');
 		expect(reconstructed.language).toBe('fr');
@@ -208,7 +208,7 @@ describe('IPC boundary — serialize/populate', () => {
 			debug: false,
 			version: '1.2.3',
 		});
-		const wire = simulateIpcWire(dto.$qm.serialize());
+		const wire = simulateIpcWire(dto.$qSerialize());
 		const restored = new AppConfigDto(wire as IAppConfig);
 		expect(restored.apiUrl).toBe('https://api.example.com');
 		expect(restored.timeout).toBe(5000);
@@ -224,7 +224,7 @@ describe('IPC boundary — serialize/populate', () => {
 			mimeType: 'application/pdf',
 			modifiedAt: new Date('2025-06-01T10:00:00.000Z'),
 		});
-		const wire = simulateIpcWire(dto.$qm.serialize());
+		const wire = simulateIpcWire(dto.$qSerialize());
 		const restored = new FileRecordDto(wire as unknown as IFileRecord); // @quickmodel-rule-ignore: no-as-unknown
 		// After IPC, Date was ISO string — QModel loose coercion restores Date
 		expect(restored.modifiedAt).toBeInstanceOf(Date);
@@ -299,7 +299,7 @@ describe('checkRules() in main process before persisting', () => {
 			autoSave: false,
 		});
 		const dto = new UserPrefsDto(wirePayload);
-		const { valid } = qCheckRules(dto);
+		const { valid } = $qCheckRules(dto);
 		expect(valid).toBe(true);
 	});
 
@@ -312,7 +312,7 @@ describe('checkRules() in main process before persisting', () => {
 			autoSave: false,
 		});
 		const dto = new UserPrefsDto(wirePayload);
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'theme')).toBe(true);
 	});
@@ -325,7 +325,7 @@ describe('checkRules() in main process before persisting', () => {
 			notifications: false,
 			autoSave: false,
 		});
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'fontSize')).toBe(true);
 	});
@@ -337,7 +337,7 @@ describe('checkRules() in main process before persisting', () => {
 			debug: false,
 			version: '1.0.0',
 		});
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'apiUrl')).toBe(true);
 	});
@@ -370,10 +370,10 @@ describe('contextBridge shared types and preload API', () => {
 			autoSave: true,
 		};
 		const dto = new UserPrefsDto(userChanges);
-		const { valid } = qCheckRules(dto);
+		const { valid } = $qCheckRules(dto);
 		if (valid) {
 			// window.electron.savePrefs(dto.serialize())
-			const payload = dto.$qm.serialize();
+			const payload = dto.$qSerialize();
 			expect(payload).toBeDefined();
 		}
 		expect(valid).toBe(true);
@@ -490,7 +490,7 @@ describe('isDirty() in renderer — unsaved-changes guard', () => {
 			notifications: true,
 			autoSave: false,
 		});
-		expect(dto.$qm.isDirty()).toBe(false);
+		expect(dto.$qIsDirty()).toBe(false);
 	});
 
 	test('isDirty() is true after user changes a field', () => {
@@ -502,7 +502,7 @@ describe('isDirty() in renderer — unsaved-changes guard', () => {
 			autoSave: false,
 		});
 		dto.theme = 'dark';
-		expect(dto.$qm.isDirty()).toBe(true);
+		expect(dto.$qIsDirty()).toBe(true);
 	});
 
 	test('isDirty() is false after copy() (simulates save → reset)', () => {
@@ -514,8 +514,8 @@ describe('isDirty() in renderer — unsaved-changes guard', () => {
 			autoSave: false,
 		});
 		dto.theme = 'dark';
-		const saved = dto.$qm.copy({ theme: 'dark' });
-		expect(saved.$qm.isDirty()).toBe(false);
+		const saved = dto.$qCopy({ theme: 'dark' });
+		expect(saved.$qIsDirty()).toBe(false);
 	});
 
 	test('multiple field changes still report isDirty() = true', () => {
@@ -529,6 +529,6 @@ describe('isDirty() in renderer — unsaved-changes guard', () => {
 		dto.theme = 'dark';
 		dto.fontSize = 20;
 		dto.autoSave = true;
-		expect(dto.$qm.isDirty()).toBe(true);
+		expect(dto.$qIsDirty()).toBe(true);
 	});
 });

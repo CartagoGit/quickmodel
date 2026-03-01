@@ -195,7 +195,7 @@ describe('String Literals (@QType("type"))', () => {
 
 	test('Should serialize correctly', () => {
 		const model = ModelWithStringLiterals.deserialize(testData);
-		const IQSerialized = model.$qm.serialize();
+		const IQSerialized = model.$qSerialize();
 		expect(IQSerialized.name).toBe('Test');
 		expect(IQSerialized.count).toBe(42);
 		expect(IQSerialized.active).toBe(true);
@@ -219,7 +219,7 @@ describe('String Literals (@QType("type"))', () => {
 
 	test('Should perform round-trip correctly', () => {
 		const model1 = ModelWithStringLiterals.deserialize(testData);
-		const IQSerialized = model1.$qm.serialize();
+		const IQSerialized = model1.$qSerialize();
 		const model2 = ModelWithStringLiterals.deserialize(IQSerialized);
 
 		expect(model2.name).toBe(model1.name);

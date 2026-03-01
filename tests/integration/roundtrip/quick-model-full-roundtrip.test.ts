@@ -41,7 +41,7 @@ describe('QModel Core Functionality - Roundtrip', () => {
 
 	test('should serialize to interface-compatible object', () => {
 		const user = new User(userData);
-		const serialized = user.$qm.serialize();
+		const serialized = user.$qSerialize();
 		expect(serialized.id).toBe('123');
 		expect(serialized.name).toBe('John Doe');
 		expect(serialized.age).toBe(30);
@@ -50,7 +50,7 @@ describe('QModel Core Functionality - Roundtrip', () => {
 
 	test('should survive a full round-trip (construct → serialize → construct)', () => {
 		const user = new User(userData);
-		const serialized = user.$qm.serialize();
+		const serialized = user.$qSerialize();
 		const user2 = new User(serialized);
 		expect(user2.id).toBe(user.id);
 		expect(user2.name).toBe(user.name);

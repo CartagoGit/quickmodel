@@ -77,7 +77,7 @@ describe('Inheritance — ${childModel} extends ${baseModel}', () => {
 
 	it('child should serialize all base + child fields', () => {
 		const instance = ${childModel}.create({ id: 1, createdAt: new Date('2024-01-01'), name: 'Carol', email: 'c@d.com' });
-		const result = JSON.parse(instance.toJSON());
+		const result = JSON.parse(instance.$qToJSON());
 		expect(result).toHaveProperty('id');
 		expect(result).toHaveProperty('createdAt');
 		expect(result).toHaveProperty('name');
@@ -86,7 +86,7 @@ describe('Inheritance — ${childModel} extends ${baseModel}', () => {
 
 	it('child should round-trip without data loss', () => {
 		const original = ${childModel}.create({ id: 5, createdAt: '2024-06-01T00:00:00.000Z', name: 'Dave', email: 'd@e.com' });
-		const serialized = original.$qm.serialize();
+		const serialized = original.$qSerialize();
 		const copy = ${childModel}.create(serialized);
 		expect(copy.id).toBe(original.id);
 		expect(copy.name).toBe(original.name);
@@ -96,7 +96,7 @@ describe('Inheritance — ${childModel} extends ${baseModel}', () => {
 
 	it('base model should not include child-only fields', () => {
 		const baseInstance = ${baseModel}.create({ id: 1, createdAt: new Date() });
-		const baseResult = JSON.parse(baseInstance.toJSON());
+		const baseResult = JSON.parse(baseInstance.$qToJSON());
 		expect(baseResult).not.toHaveProperty('name');
 		expect(baseResult).not.toHaveProperty('email');
 	});
@@ -176,14 +176,14 @@ describe('Composition — ${baseModel} contains ${childModel}', () => {
 
 	it('parent should serialize nested object correctly', () => {
 		const instance = ${baseModel}.create(sampleData);
-		const result = JSON.parse(instance.toJSON());
+		const result = JSON.parse(instance.$qToJSON());
 		expect(result.address).toBeDefined();
 		expect(result.address.street).toBe('123 Main St');
 	});
 
 	it('round-trip should preserve nested data', () => {
 		const original = ${baseModel}.create(sampleData);
-		const serialized = original.$qm.serialize();
+		const serialized = original.$qSerialize();
 		const copy = ${baseModel}.create(serialized);
 		expect(copy.address.city).toBe(original.address.city);
 		expect(copy.address.street).toBe(original.address.street);
@@ -247,16 +247,16 @@ describe('Round-trip — ${baseModel}', () => {
 		expect(instance.createdAt).toBeInstanceOf(Date);
 	});
 
-	it('toJSON() === JSON.stringify(serialize())', () => {
+	it('$qToJSON() === JSON.stringify($qm.serialize())', () => {
 		const instance = ${baseModel}.create(rawData);
-		const viaToJson = instance.toJSON();
-		const viaSer = JSON.stringify(instance.$qm.serialize());
+		const viaToJson = instance.$qToJSON();
+		const viaSer = JSON.stringify(instance.$qSerialize());
 		expect(viaToJson).toBe(viaSer);
 	});
 
 	it('serialize → create should produce identical field values', () => {
 		const original = ${baseModel}.create(rawData);
-		const copy = ${baseModel}.create(original.$qm.serialize());
+		const copy = ${baseModel}.create(original.$qSerialize());
 		expect(copy.id).toBe(original.id);
 		expect(copy.name).toBe(original.name);
 		expect(copy.score).toBe(original.score);
@@ -266,21 +266,21 @@ describe('Round-trip — ${baseModel}', () => {
 
 	it('triple round-trip should be stable (idempotent)', () => {
 		const first = ${baseModel}.create(rawData);
-		const second = ${baseModel}.create(first.$qm.serialize());
-			const third = ${baseModel}.create(second.$qm.serialize());
-		expect(third.toJSON()).toBe(first.toJSON());
+		const second = ${baseModel}.create(first.$qSerialize());
+			const third = ${baseModel}.create(second.$qSerialize());
+		expect(third.$qToJSON()).toBe(first.$qToJSON());
 	});
 
 	it('mock() + round-trip should be stable', () => {
 		const mock = ${baseModel}.mock().random();
-			const serialized = (${baseModel}.create(mock as any)).$qm.serialize();
+			const serialized = (${baseModel}.create(mock as any)).$qSerialize();
 		const copy = ${baseModel}.create(serialized);
-		expect(copy.toJSON()).toBeDefined();
+		expect(copy.$qToJSON()).toBeDefined();
 	});
 
 	it('copy() should not mutate original', () => {
 		const original = ${baseModel}.create(rawData);
-		const modified = original.$qm.copy({ name: 'Bob' });
+		const modified = original.$qCopy({ name: 'Bob' });
 		expect(original.name).toBe('Alice Wonderland');
 		expect(modified.name).toBe('Bob');
 	});

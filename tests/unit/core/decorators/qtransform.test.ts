@@ -133,7 +133,7 @@ describe('@QTransform — serialize() y copy()', () => {
 			name: 'Alice',
 			bio: '',
 		});
-		const plain = user.$qm.serialize() as Record<string, unknown>;
+		const plain = user.$qSerialize() as Record<string, unknown>;
 		expect(plain['email']).toBe('alice@example.com');
 	});
 
@@ -146,7 +146,7 @@ describe('@QTransform — serialize() y copy()', () => {
 			bio: '',
 		});
 		// Al no pasar partial en email, el email del original se conserva ya transformado
-		const clone = user.$qm.copy({});
+		const clone = user.$qCopy({});
 		expect(clone.email).toBe('alice@example.com');
 	});
 });

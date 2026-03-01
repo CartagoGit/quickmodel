@@ -24,7 +24,7 @@ describe('ToInterfaceService - QModel integration edge cases', () => {
 		// Silence console.error for this test
 		const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 		// The structure preserves the object up to the cycle
 		expect(result.self.self).toEqual({ __circular: true });
 
@@ -53,7 +53,7 @@ describe('ToInterfaceService - QModel integration edge cases', () => {
 			writable: true,
 		});
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 		expect(result.date).toBe(String(badDate));
 	});
 
@@ -68,7 +68,7 @@ describe('ToInterfaceService - QModel integration edge cases', () => {
 		// Change to string
 		model.reg = 'not a regex';
 
-		const result = model.toInterface();
+		const result = model.$qToInterface();
 		// Should return original value (regex)
 		expect(result.reg).toEqual(regex);
 	});

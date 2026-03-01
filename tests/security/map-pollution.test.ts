@@ -40,7 +40,7 @@ describe('Security: Map Prototype Poisoning', () => {
 		expect(instance.dict.has('__proto__')).toBe(true);
 
 		// Serialize
-		const serialized = instance.$qm.serialize() as any;
+		const serialized = instance.$qSerialize() as any;
 
 		// Verify key was stripped during serialization
 		const proto = Object.getPrototypeOf(serialized.dict);

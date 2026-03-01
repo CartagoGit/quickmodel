@@ -81,6 +81,49 @@ Función clave: `patternsOverlap(patA, patB)` → conservadora (prefiere falso p
 - TTL por defecto: **2 minutos** (`DEFAULT_TTL_MS = 2 * 60 * 1000`)
 - Cualquier llamada a `check` con `agentId` válido **renueva automáticamente** el TTL — el agente no necesita llamar a `update` mientras esté haciendo `check` periódicamente
 - TTL personalizable por claim con el campo `ttlMs`
+- Para operaciones largas (mass-renames, refactors de cientos de archivos): usar `ttlMs: 1_800_000` (30 min)
+
+---
+
+## Protocolo para mass-renames y refactors amplios
+
+Un mass-rename (p. ej. renombrar `.$qm` → `.$q*` en todo el proyecto) puede tocar cientos de archivos en `src/`, `tests/` y `docs-vitepress/` simultáneamente. Es el caso **más peligroso** de conflicto entre agentes: si dos agentes hacen el mismo rename en paralelo, el último en escribir sobrescribe al primero y el código queda corrupto.
+
+### Protocolo obligatorio para refactors amplios
+
+```bash
+# 1. Verifica quién está trabajando
+agent_coordinate check
+
+# 2. Si hay otros agentes activos:
+#    - Pídeles que hagan commit o stash de sus cambios antes de que empieces
+#    - Si sus archivos solapan con los tuyos → espera a que terminen o a que el usuario resuelva
+#    - Si sus archivos NO solapan → puedes proceder, pero avísales
+
+# 3. Reclama TODO el scope → nunca infra-reclames en operaciones amplias
+agent_coordinate claim agentId="agent-A" task="rename .$qm to .$q* everywhere" \
+  files=["src/**","tests/**","docs-vitepress/**"] \
+  ttlMs=1800000
+
+# 4. Haz el rename
+# 5. Libera SIEMPRE al terminar (incluso si falla)
+agent_coordinate release agentId="agent-A"
+```
+
+### Reglas de scope (qué poner en `files`)
+
+| Tipo de operación                        | Qué reclamar                                                 |
+| ---------------------------------------- | ------------------------------------------------------------ |
+| Cambio en 1-10 archivos específicos      | Paths exactos: `["src/core/qm.ts", "tests/unit/qm.test.ts"]` |
+| Cambio en un módulo                      | Sub-árbol: `["src/mcp/tools/**"]`                            |
+| Refactor de varios módulos               | Múltiples sub-árboles: `["src/**", "tests/**"]`              |
+| Mass-rename / cambio en todo el proyecto | Todo: `["src/**", "tests/**", "docs-vitepress/**"]`          |
+
+> **Regla de oro**: en caso de duda, reclama más amplio. Un falso positivo de conflicto (bloquear cuando no era necesario) es trivialmente resolvible con `release`. Un falso negativo (no reclamar lo suficiente) puede corromper cientos de archivos sin posibilidad de auto-recuperación.
+
+### Por qué no hay merge automático
+
+El sistema es un **mutex de escritura exclusiva**, no un sistema de merge. Los archivos del workspace son texto plano y no hay forma de combinar automáticamente dos edits concurrentes sobre el mismo archivo. El "último en escribir gana" y sobreescribe todo lo anterior sin advertencia.
 
 ---
 

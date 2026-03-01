@@ -90,19 +90,19 @@ function buildQuickTests(
 		? `
 	it('should handle null input gracefully', () => {
 		const instance = ${modelName}.create({ createdAt: null });
-		const result = JSON.parse(instance.toJSON());
+			const result = JSON.parse(instance.$qToJSON());
 		expect(result.createdAt).toBeNull();
 	});
 
 	it('should handle undefined input gracefully', () => {
 		const instance = ${modelName}.create({ createdAt: undefined });
-		const result = JSON.parse(instance.toJSON());
+			const result = JSON.parse(instance.$qToJSON());
 		expect(result.createdAt).toBeUndefined();
 	});
 
 	it('should handle invalid date string', () => {
 		const instance = ${modelName}.create({ createdAt: 'not-a-date' });
-		const result = JSON.parse(instance.toJSON());
+			const result = JSON.parse(instance.$qToJSON());
 		// Invalid dates produce NaN timestamp — verify field is present
 		expect('createdAt' in result).toBe(true);
 	});`
@@ -148,16 +148,16 @@ describe('@Quick — ${modelName}', () => {
 		expect(instance.createdAt.toISOString()).toBe(iso);
 	});
 
-	it('should serialize Date back to ISO string via toJSON()', () => {
+	it('should serialize Date back to ISO string via $qToJSON()', () => {
 		const iso = '2024-06-01T12:00:00.000Z';
 		const instance = ${modelName}.create({ id: 1, name: 'Carol', createdAt: iso });
-		const result = JSON.parse(instance.toJSON());
+		const result = JSON.parse(instance.$qToJSON());
 		expect(result.createdAt).toBe(iso);
 	});
 
 	it('should round-trip serialize → populate without data loss', () => {
 		const original = ${modelName}.create({ id: 7, name: 'Dave', createdAt: '2024-03-01T00:00:00.000Z' });
-		const serialized = original.$qm.serialize();
+		const serialized = original.$qSerialize();
 		const copy = ${modelName}.create(serialized);
 		expect(copy.id).toBe(original.id);
 		expect(copy.name).toBe(original.name);
@@ -166,7 +166,7 @@ describe('@Quick — ${modelName}', () => {
 
 	it('should produce identical JSON on repeated calls', () => {
 		const instance = ${modelName}.create({ id: 1, name: 'Eve', createdAt: '2024-01-01T00:00:00.000Z' });
-		expect(instance.toJSON()).toBe(instance.toJSON());
+		expect(instance.$qToJSON()).toBe(instance.$qToJSON());
 	});
 ${edgeCases}
 });
@@ -181,13 +181,13 @@ function buildQRuleTests(
 	const edgeCases = withEdge
 		? `
 	it('should accumulate multiple rule failures', () => {
-		const result = ${modelName}.create({ email: 'bad', age: 15 }).$qm.checkRules();
+		const result = ${modelName}.create({ email: 'bad', age: 15 }).$qCheckRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThanOrEqual(2);
 	});
 
 	it('should pass all rules with valid data', () => {
-		const result = ${modelName}.create({ email: 'valid@example.com', age: 25 }).$qm.checkRules();
+		const result = ${modelName}.create({ email: 'valid@example.com', age: 25 }).$qCheckRules();
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});`
@@ -216,25 +216,25 @@ class ${modelName} extends QModel<I${modelName}> {
 
 describe('@QRule — ${modelName}', () => {
 	it('should fail validation with invalid email', () => {
-		const result = ${modelName}.create({ email: 'notanemail', age: 25 }).$qm.checkRules();
+		const result = ${modelName}.create({ email: 'notanemail', age: 25 }).$qCheckRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
 
 	it('should fail validation when age < 18', () => {
-		const result = ${modelName}.create({ email: 'ok@ok.com', age: 16 }).$qm.checkRules();
+		const result = ${modelName}.create({ email: 'ok@ok.com', age: 16 }).$qCheckRules();
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'age')).toBe(true);
 	});
 
 	it('should include the configured error message on failure', () => {
-		const result = ${modelName}.create({ email: 'bad', age: 25 }).$qm.checkRules();
+		const result = ${modelName}.create({ email: 'bad', age: 25 }).$qCheckRules();
 		const emailError = result.errors.find((err) => err.field === 'email');
 		expect(emailError?.message).toBe('Invalid email format');
 	});
 
 	it('should pass when all rules are satisfied', () => {
-		const result = ${modelName}.create({ email: 'user@domain.com', age: 30 }).$qm.checkRules();
+		const result = ${modelName}.create({ email: 'user@domain.com', age: 30 }).$qCheckRules();
 		expect(result.valid).toBe(true);
 	});
 ${edgeCases}
@@ -304,7 +304,7 @@ describe('@QField — ${modelName}', () => {
 
 	it('should include validation rules via validationReport()', () => {
 		const instance = ${modelName}.create({ email: 'bad', password: '123' });
-		const report = instance.$qm.validationReport();
+		const report = instance.$qValidationReport();
 		expect(report.some((item) => !item.valid)).toBe(true);
 	});
 ${edgeCases}
@@ -359,7 +359,7 @@ describe('@QAlias — ${modelName}', () => {
 
 	it('should serialize aliased property back to alias key', () => {
 		const instance = ${modelName}.create({ user_name: 'Carol', created_at: '2024-01-01T00:00:00.000Z' });
-		const serialized = instance.$qm.serialize();
+		const serialized = instance.$qSerialize();
 		expect('user_name' in serialized || 'name' in serialized).toBe(true);
 	});
 
@@ -443,8 +443,8 @@ function buildQComputedTests(
 		? `
 	it('should recompute after data mutation via copy()', () => {
 		const original = ${modelName}.create({ firstName: 'Alice', lastName: 'Smith' });
-		const updated = original.$qm.copy({ firstName: 'Bob' });
-		const result = JSON.parse(updated.toJSON());
+		const updated = original.$qCopy({ firstName: 'Bob' });
+			const result = JSON.parse(updated.$qToJSON());
 		expect(result.fullName).toBe('Bob Smith');
 	});`
 		: '';
@@ -481,7 +481,7 @@ describe('@QComputed — ${modelName}', () => {
 
 	it('should include computed field in serialized output when exposeComputedFields is true', () => {
 		const instance = ${modelName}.create({ firstName: 'Bob', lastName: 'Jones' });
-		const result = JSON.parse(instance.toJSON());
+		const result = JSON.parse(instance.$qToJSON());
 		expect(result.fullName).toBe('Bob Jones');
 	});
 
@@ -503,7 +503,7 @@ function buildQConfigTests(
 		? `
 	it('should apply unknownPropertyPolicy strip to remove extra fields', () => {
 		const instance = ${modelName}.create({ id: 1, name: 'Alice', unknownField: 'should-be-stripped' });
-		const result = JSON.parse(instance.toJSON());
+			const result = JSON.parse(instance.$qToJSON());
 		expect(result.unknownField).toBeUndefined();
 	});`
 		: '';
@@ -541,7 +541,7 @@ describe('@QConfig — ${modelName}', () => {
 
 	it('should serialize correctly with applied config', () => {
 		const instance = ${modelName}.create({ id: 2, name: 'Carol' });
-		const result = JSON.parse(instance.toJSON());
+		const result = JSON.parse(instance.$qToJSON());
 		expect(result.id).toBe(2);
 		expect(result.name).toBe('Carol');
 	});
@@ -582,7 +582,7 @@ describe('${decorator} — ${modelName}', () => {
 
 	it('should serialize correctly', () => {
 		const instance = ${modelName}.create({ id: 1, value: 'test' });
-		const result = JSON.parse(instance.toJSON());
+		const result = JSON.parse(instance.$qToJSON());
 		expect(result.id).toBe(1);
 		expect(result.value).toBe('test');
 	});

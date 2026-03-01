@@ -9,7 +9,6 @@ import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Interface definitions
@@ -287,7 +286,7 @@ describe('Create input — toInterface() for db.insert().values()', () => {
 			age: 30,
 			role: 'admin',
 		});
-		const insertValues = dto.toInterface();
+		const insertValues = dto.$qToInterface();
 		expect(insertValues.name).toBe('Bob');
 		expect(insertValues.email).toBe('bob@db.dev');
 	});
@@ -326,7 +325,7 @@ describe('Create input — toInterface() for db.insert().values()', () => {
 			submitBtn: true,
 		};
 		const dto = new CreateUserDto(formPayload);
-		const values = dto.toInterface();
+		const values = dto.$qToInterface();
 		expect(
 			(values as unknown as Record<string, unknown>)['_csrf'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
@@ -472,7 +471,7 @@ describe('createMany() — seed / bulk import for Drizzle', () => {
 			},
 		];
 		const { instances } = UserRowDto.createMany(seed as never[]);
-		const insertData = instances.map((dto) => dto.toInterface());
+		const insertData = instances.map((dto) => dto.$qToInterface());
 		expect(insertData[0]?.name).toBe('E');
 		// toInterface() serializes Date fields to ISO string for ORM insert compatibility
 		expect(typeof insertData[0]?.createdAt).toBe('string');
@@ -549,7 +548,7 @@ describe('Repository pattern with DrizzleUserRepository', () => {
 
 		insert(dto: CreateUserDto): UserRowDto {
 			const record = {
-				...dto.toInterface(),
+				...dto.$qToInterface(),
 				id: this.seq++,
 				active: true,
 				score: 0,
@@ -663,7 +662,7 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			score: 50,
 			createdAt: new Date(),
 		});
-		const updated = existing.$qm.copy({ score: 100, role: 'admin' });
+		const updated = existing.$qCopy({ score: 100, role: 'admin' });
 		expect(updated.score).toBe(100);
 		expect(updated.role).toBe('admin');
 		expect(existing.score).toBe(50); // original untouched
@@ -680,8 +679,8 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			score: 20,
 			createdAt: new Date(),
 		});
-		const patched = dto.$qm.copy({ active: true });
-		const updateData = patched.toInterface();
+		const patched = dto.$qCopy({ active: true });
+		const updateData = patched.$qToInterface();
 		expect(updateData.active).toBe(true);
 		expect(updateData.id).toBe(101);
 	});
@@ -698,7 +697,7 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			score: 0,
 			createdAt: originalDate,
 		});
-		const updated = dto.$qm.copy({ score: 77 });
+		const updated = dto.$qCopy({ score: 77 });
 		expect(updated.createdAt).toBeInstanceOf(Date);
 		expect(updated.createdAt.getTime()).toBe(originalDate.getTime());
 	});
@@ -712,9 +711,9 @@ describe('copy() + db.update().set() partial immutable update', () => {
 			age: 28,
 			role: 'user',
 		});
-		const patched = dto.$qm.copy({ name: 'Daniel' });
+		const patched = dto.$qCopy({ name: 'Daniel' });
 		// copy() sets __initData = merged state → new instance is not dirty
-		expect(patched.$qm.isDirty()).toBe(false);
+		expect(patched.$qIsDirty()).toBe(false);
 		expect(patched.name).toBe('Daniel');
 	});
 });
@@ -761,7 +760,7 @@ describe('@QComputed() for non-stored derived fields', () => {
 			score: 65,
 			createdAt: new Date(),
 		});
-		const serialized = dto.$qm.serialize() as Record<string, unknown>;
+		const serialized = dto.$qSerialize() as Record<string, unknown>;
 		expect(serialized['displayName']).toBe('[USER] Henry');
 	});
 
@@ -776,7 +775,7 @@ describe('@QComputed() for non-stored derived fields', () => {
 			score: 45,
 			createdAt: new Date(),
 		});
-		const iface = dto.toInterface();
+		const iface = dto.$qToInterface();
 		expect(
 			(iface as unknown as Record<string, unknown>)['displayName'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();

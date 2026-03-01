@@ -8,8 +8,8 @@ import type { IQSerializationOptions } from '@/core/interfaces/serializer.interf
  * @internal
  */
 export interface IQCollectionItem {
-	serialize(opts?: IQSerializationOptions): object;
-	checkRules(): IQRulesResult;
+	$qSerialize(opts?: IQSerializationOptions): object;
+	$qCheckRules(): IQRulesResult;
 }
 
 /**
@@ -43,11 +43,11 @@ export interface IQCSVOptions {
 }
 
 /**
- * Options for `QModelCollection.sortBy()`.
+ * Options for `QModelCollection.$qSortBy()`.
  */
 interface ISortByOptions {
-	/** Sort descending when `true`. Default: `false` (ascending). */
-	desc?: boolean;
+	/** Sort order. Default: `'asc'` (ascending). */
+	order?: 'asc' | 'desc';
 }
 
 /**
@@ -111,10 +111,31 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 */
 	static from<TInstance extends IQCollectionItem>(
 		ctor: IQModelCtor<TInstance>,
-		data: Array<Record<string, unknown>>
+		data: ReadonlyArray<object>
 	): QModelCollection<TInstance> {
-		const items = data.map((row) => new ctor(row));
+		const items = data.map(
+			(row) => new ctor(row as Record<string, unknown>)
+		);
 		return new QModelCollection(ctor, items);
+	}
+
+	/**
+	 * Creates a `QModelCollection` from a raw data array.
+	 * `$q`-prefixed alias for {@link QModelCollection.from}.
+	 *
+	 * @param ctor - The `QModel` subclass constructor.
+	 * @param data - Array of raw plain-object rows.
+	 *
+	 * @example
+	 * ```typescript
+	 * const col = QModelCollection.$qFromArray(UserModel, rows);
+	 * ```
+	 */
+	static $qFromArray<TInstance extends IQCollectionItem>(
+		ctor: IQModelCtor<TInstance>,
+		data: ReadonlyArray<object>
+	): QModelCollection<TInstance> {
+		return QModelCollection.from(ctor, data);
 	}
 
 	// ─── Size ───────────────────────────────────────────────────────────────
@@ -122,7 +143,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	/**
 	 * Number of instances in the collection.
 	 */
-	get size(): number {
+	get $qSize(): number {
 		return this.#items.length;
 	}
 
@@ -151,7 +172,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * const admins = col.where(u => u.role === 'admin');
 	 * ```
 	 */
-	where(
+	$qWhere(
 		predicate: (item: TInstance) => boolean
 	): QModelCollection<TInstance> {
 		return new QModelCollection(this.#ctor, this.#items.filter(predicate));
@@ -162,7 +183,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @param predicate - A function receiving a model instance and returning `true` to match.
 	 */
-	find(predicate: (item: TInstance) => boolean): TInstance | undefined {
+	$qFind(predicate: (item: TInstance) => boolean): TInstance | undefined {
 		return this.#items.find(predicate);
 	}
 
@@ -175,14 +196,14 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * Does not mutate the original collection.
 	 *
 	 * @param field - Name of the property to sort by.
-	 * @param options - `{ desc: true }` for descending order.
+	 * @param options - `{ order: 'desc' }` for descending order (default: `'asc'`).
 	 *
 	 * @example
 	 * ```typescript
-	 * const sorted = col.sortBy('age', { desc: true });
+	 * const sorted = col.$qSortBy('age', { order: 'desc' });
 	 * ```
 	 */
-	sortBy(
+	$qSortBy(
 		field: keyof TInstance,
 		options?: ISortByOptions
 	): QModelCollection<TInstance> {
@@ -196,7 +217,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 			} else {
 				cmp = String(aVal).localeCompare(String(bVal));
 			}
-			return options?.desc ? -cmp : cmp;
+			return options?.order === 'desc' ? -cmp : cmp;
 		});
 		return new QModelCollection(this.#ctor, copy);
 	}
@@ -218,7 +239,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * const page2 = col.paginate(2, 10); // items 10–19
 	 * ```
 	 */
-	paginate(page: number, pageSize: number): QModelCollection<TInstance> {
+	$qPaginate(page: number, pageSize: number): QModelCollection<TInstance> {
 		const start = (page - 1) * pageSize;
 		return new QModelCollection(
 			this.#ctor,
@@ -240,7 +261,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * byRole['admin']; // → UserModel[]
 	 * ```
 	 */
-	groupBy(field: keyof TInstance): Record<string, TInstance[]> {
+	$qGroupBy(field: keyof TInstance): Record<string, TInstance[]> {
 		const groups: Record<string, TInstance[]> = {};
 		for (const item of this.#items) {
 			const key = String(item[field]);
@@ -267,13 +288,25 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.serialize({ pick: ['id', 'name'] }); // → [{ id, name }, ...]
 	 * ```
 	 */
-	serialize(
+	$qSerialize(
 		options?: IQSerializationOptions
-	): ReturnType<TInstance['serialize']>[] {
+	): ReturnType<TInstance['$qSerialize']>[] {
 		return this.#items.map(
 			(item) =>
-				item.serialize(options) as ReturnType<TInstance['serialize']>
+				item.$qSerialize(options) as ReturnType<
+					TInstance['$qSerialize']
+				>
 		);
+	}
+
+	/**
+	 * Implements the JS `toJSON` protocol — returns a plain array of serialized items
+	 * so that `JSON.stringify(collection)` and `JSON.stringify({ col })` work correctly.
+	 *
+	 * @see {@link QModelCollection.$qToJSON} — returns a JSON string (convenience shortcut)
+	 */
+	toJSON(): ReturnType<TInstance['$qSerialize']>[] {
+		return this.$qSerialize();
 	}
 
 	/**
@@ -281,11 +314,44 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const json = col.toJSON();
+	 * const json = col.$qToJSON();
+	 * // '[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
 	 * ```
 	 */
-	toJSON(): string {
-		return JSON.stringify(this.serialize());
+	$qToJSON(): string {
+		return JSON.stringify(this.$qSerialize());
+	}
+
+	/**
+	 * Creates a `QModelCollection` from a JSON string.
+	 *
+	 * Parses `json` with `JSON.parse` and delegates to `from()`.
+	 * Each element is instantiated via `new ctor(row)` so all transformers run.
+	 *
+	 * @param ctor - The `QModel` subclass constructor.
+	 * @param json - A JSON string produced by `$qToJSON()` or `JSON.stringify(col)`.
+	 * @returns A new `QModelCollection<TInstance>`.
+	 * @throws {SyntaxError} If `json` is not valid JSON.
+	 * @throws {TypeError} If the parsed value is not an array.
+	 *
+	 * @example
+	 * ```typescript
+	 * const json = col.$qToJSON();
+	 * const restored = QModelCollection.$qFromJSON(UserModel, json);
+	 * restored.$qFirst(); // → UserModel instance
+	 * ```
+	 */
+	static $qFromJSON<TInstance extends IQCollectionItem>(
+		ctor: IQModelCtor<TInstance>,
+		json: string
+	): QModelCollection<TInstance> {
+		const parsed = JSON.parse(json) as unknown;
+		if (!Array.isArray(parsed)) {
+			throw new TypeError(
+				'[QuickModel] $qFromJSON: expected a JSON array'
+			);
+		}
+		return QModelCollection.from(ctor, parsed as ReadonlyArray<object>);
 	}
 	/**
 	 * Exports the collection to a CSV-formatted string (RFC 4180).
@@ -312,7 +378,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @see {@link IQCSVOptions}
 	 */
-	toCSV(options?: IQCSVOptions): string {
+	$qToCSV(options?: IQCSVOptions): string {
 		if (this.#items.length === 0) return '';
 
 		const delimiter = options?.delimiter ?? ',';
@@ -320,7 +386,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 		const nullValue = options?.nullValue ?? '';
 
 		const serialized = this.#items.map(
-			(item) => item.serialize() as Record<string, unknown>
+			(item) => item.$qSerialize() as Record<string, unknown>
 		);
 
 		const firstRow = serialized[0];
@@ -367,7 +433,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * QModelCollection.from(UserModel, []).isEmpty; // → true
 	 * ```
 	 */
-	get isEmpty(): boolean {
+	get $qIsEmpty(): boolean {
 		return this.#items.length === 0;
 	}
 
@@ -379,7 +445,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.first()?.name; // → 'Alice'
 	 * ```
 	 */
-	first(): TInstance | undefined {
+	$qFirst(): TInstance | undefined {
 		return this.#items[0];
 	}
 
@@ -391,7 +457,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.last()?.name; // → 'Eve'
 	 * ```
 	 */
-	last(): TInstance | undefined {
+	$qLast(): TInstance | undefined {
 		return this.#items[this.#items.length - 1];
 	}
 
@@ -407,7 +473,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.count(u => u.active === true); // → 3
 	 * ```
 	 */
-	count(predicate?: (item: TInstance) => boolean): number {
+	$qCount(predicate?: (item: TInstance) => boolean): number {
 		if (predicate === undefined) return this.#items.length;
 		let cnt = 0;
 		for (const item of this.#items) {
@@ -427,7 +493,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.every(u => u.age >= 18); // → true
 	 * ```
 	 */
-	every(predicate: (item: TInstance) => boolean): boolean {
+	$qEvery(predicate: (item: TInstance) => boolean): boolean {
 		return this.#items.every(predicate);
 	}
 
@@ -442,7 +508,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.some(u => u.role === 'admin'); // → true
 	 * ```
 	 */
-	some(predicate: (item: TInstance) => boolean): boolean {
+	$qSome(predicate: (item: TInstance) => boolean): boolean {
 		return this.#items.some(predicate);
 	}
 
@@ -459,7 +525,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.map(u => u.serialize()); // → plain-object array
 	 * ```
 	 */
-	map<TResult>(transform: (item: TInstance) => TResult): TResult[] {
+	$qMap<TResult>(transform: (item: TInstance) => TResult): TResult[] {
 		return this.#items.map(transform);
 	}
 
@@ -473,7 +539,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.flatMap(u => [u.name, u.email]); // → ['Alice', 'a@b.com', 'Bob', ...]
 	 * ```
 	 */
-	flatMap<TResult>(transform: (item: TInstance) => TResult[]): TResult[] {
+	$qFlatMap<TResult>(transform: (item: TInstance) => TResult[]): TResult[] {
 		return this.#items.flatMap(transform);
 	}
 
@@ -488,7 +554,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.reduce((total, p) => total + p.price, 0); // → sum of prices
 	 * ```
 	 */
-	reduce<TAcc>(
+	$qReduce<TAcc>(
 		reducer: (acc: TAcc, item: TInstance) => TAcc,
 		initial: TAcc
 	): TAcc {
@@ -507,7 +573,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.sum('stock'); // → 390
 	 * ```
 	 */
-	sum(field: keyof TInstance): number {
+	$qSum(field: keyof TInstance): number {
 		let total = 0;
 		for (const item of this.#items) {
 			const val = item[field];
@@ -528,9 +594,9 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.avg('score'); // → 87.5
 	 * ```
 	 */
-	avg(field: keyof TInstance): number {
+	$qAvg(field: keyof TInstance): number {
 		if (this.#items.length === 0) return 0;
-		return this.sum(field) / this.#items.length;
+		return this.$qSum(field) / this.#items.length;
 	}
 
 	/**
@@ -543,7 +609,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.min('price')?.name; // → 'Banana'
 	 * ```
 	 */
-	min(field: keyof TInstance): TInstance | undefined {
+	$qMin(field: keyof TInstance): TInstance | undefined {
 		if (this.#items.length === 0) return undefined;
 		let minItem = this.#items[0] as TInstance;
 		for (let idx = 1; idx < this.#items.length; idx++) {
@@ -569,7 +635,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * col.max('price')?.name; // → 'Elderberry'
 	 * ```
 	 */
-	max(field: keyof TInstance): TInstance | undefined {
+	$qMax(field: keyof TInstance): TInstance | undefined {
 		if (this.#items.length === 0) return undefined;
 		let maxItem = this.#items[0] as TInstance;
 		for (let idx = 1; idx < this.#items.length; idx++) {
@@ -637,12 +703,12 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 * @returns `{ valid, errors }` where `errors` includes the index, field, and message
 	 *   for each rule failure across all instances.
 	 */
-	checkAllRules(): IQCollectionRulesResult {
+	$qCheckAllRules(): IQCollectionRulesResult {
 		const errors: IQCollectionRulesResult['errors'] = [];
 		for (let idx = 0; idx < this.#items.length; idx++) {
 			const item = this.#items[idx];
 			if (item === undefined) continue;
-			const result = item.checkRules();
+			const result = item.$qCheckRules();
 			if (!result.valid) {
 				for (const err of result.errors) {
 					errors.push({

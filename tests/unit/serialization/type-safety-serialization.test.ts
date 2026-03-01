@@ -57,7 +57,7 @@ describe('Type Safety', () => {
 			tags: new Set(['tag1', 'tag2']),
 		});
 
-		const IQSerialized = model.$qm.serialize();
+		const IQSerialized = model.$qSerialize();
 
 		// TypeScript sabe que estos son objetos con __type o strings
 		expect(typeof IQSerialized.pattern).toBe('object'); // Ahora es { __type: 'regexp', source, flags }
@@ -127,7 +127,7 @@ describe('Type Safety', () => {
 		});
 
 		// Serialize
-		const IQSerialized = original.$qm.serialize();
+		const IQSerialized = original.$qSerialize();
 
 		// Deserialize
 		const restored = TypeSafeModel.deserialize(IQSerialized);

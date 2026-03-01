@@ -112,14 +112,14 @@ export class QFullPipelinePrompt extends QAbstractInternalPrompt<{
 						'// Stage 2 — integrity\n' +
 						'const integrity = instance.checkIntegrity(); // []\n\n' +
 						'// Stage 3 — rules\n' +
-						'const rules = instance.$qm.checkRules(); // { valid: true, errors: [] }\n\n' +
+						'const rules = instance.$qCheckRules(); // { valid: true, errors: [] }\n\n' +
 						'// Stage 4 — serialization\n' +
-						'const json = instance.toJSON(); // JSON string\n' +
-						'const obj = instance.$qm.serialize(); // plain object\n' +
+						'const json = instance.$qToJSON(); // JSON string\n' +
+						'const obj = instance.$qSerialize(); // plain object\n' +
 						'```\n\n' +
 						'**Combined shortcut:**\n' +
 						'```typescript\n' +
-						'const report = instance.$qm.validationReport();\n' +
+						'const report = instance.$qValidationReport();\n' +
 						'// { valid, integrity: [], rules: { valid, errors: [] } }\n' +
 						'```'
 				),

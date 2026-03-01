@@ -118,7 +118,7 @@ describe('WeakMap Transformer', () => {
 
 			const cache = new Cache({ cache: [[{}, 'value']] });
 
-			expect(() => cache.$qm.serialize()).toThrow(
+			expect(() => cache.$qSerialize()).toThrow(
 				/WeakMap cannot be serialized.*not iterable|enumerable/i
 			);
 		});

@@ -15,10 +15,7 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField, QGroup } from '@/decorators';
-import { qGroups } from '@/core/helpers/q-groups';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
-import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // 1. Vue Composition API — reactive form validation (plain TS class)
@@ -180,7 +177,7 @@ class ArticlePiniaStore {
 	updateArticle(idArg: string, patch: Partial<IArticle>): boolean {
 		const article = this.articles.get(idArg);
 		if (!article) return false;
-		const updated = article.$qm.copy(patch);
+		const updated = article.$qCopy(patch);
 		this.articles.set(idArg, updated);
 		return true;
 	}
@@ -194,19 +191,19 @@ class ArticlePiniaStore {
 	get selectedArticle(): object | undefined {
 		if (!this.selectedId) return undefined;
 		const art = this.articles.get(this.selectedId);
-		return art ? art.$qm.serialize() : undefined;
+		return art ? art.$qSerialize() : undefined;
 	}
 
 	// getter: publishedArticles
 	get publishedArticles(): object[] {
 		return [...this.articles.values()]
 			.filter((art) => art.published)
-			.map((art) => art.$qm.serialize());
+			.map((art) => art.$qSerialize());
 	}
 
 	// getter: allArticles
 	get allArticles(): object[] {
-		return [...this.articles.values()].map((art) => art.$qm.serialize());
+		return [...this.articles.values()].map((art) => art.$qSerialize());
 	}
 }
 
@@ -501,7 +498,7 @@ async function useFetchProductList(rawData: object[]): Promise<{
 	await Bun.sleep(1); // simulate async fetch
 	const { instances, errors } = ProductModel.createMany(rawData as any[]);
 	return {
-		products: instances.map((item) => item.$qm.serialize()),
+		products: instances.map((item) => item.$qSerialize()),
 		failedCount: errors.length,
 	};
 }

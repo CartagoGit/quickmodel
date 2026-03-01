@@ -39,7 +39,7 @@ describe('ToInterfaceService Object Fallback Coverage', () => {
 		// toInterface will see originalValue as object, constructor !== Object.
 		// It will fall through to the generic object handling at the end of the method.
 
-		const result = container.toInterface();
+		const result = container.$qToInterface();
 
 		// Cast to any to avoid type error: result.external is typed as ExternalClass
 		// but at runtime it's a plain objects without methods

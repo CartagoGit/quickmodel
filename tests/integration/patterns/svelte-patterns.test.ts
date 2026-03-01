@@ -16,7 +16,6 @@ import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // 1. Svelte 5 runes simulation — $state wrapping QModel
@@ -109,13 +108,13 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 		);
 		const preview = new SwelteDerived(
 			() =>
-				(note.current.$qm.serialize() as Record<string, unknown>)[
+				(note.current.$qSerialize() as Record<string, unknown>)[
 					'preview'
 				] as string
 		);
 		expect(preview.current).toBe('Initial body');
 		// Update via immutable merge — re-assign state
-		note.current = note.current.$qm.copy({ body: 'Updated body content' });
+		note.current = note.current.$qCopy({ body: 'Updated body content' });
 		expect(preview.current).toBe('Updated body content');
 	});
 
@@ -131,12 +130,12 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 		);
 		const charCount = new SwelteDerived(
 			() =>
-				(note.current.$qm.serialize() as Record<string, unknown>)[
+				(note.current.$qSerialize() as Record<string, unknown>)[
 					'charCount'
 				] as number
 		);
 		expect(charCount.current).toBe(3);
-		note.current = note.current.$qm.copy({ body: 'abcdef' });
+		note.current = note.current.$qCopy({ body: 'abcdef' });
 		expect(charCount.current).toBe(6);
 	});
 
@@ -151,7 +150,7 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 			})
 		);
 		expect(state.current.pinned).toBe(false);
-		state.current = state.current.$qm.copy({ pinned: true });
+		state.current = state.current.$qCopy({ pinned: true });
 		expect(state.current.pinned).toBe(true);
 	});
 
@@ -240,7 +239,7 @@ describe('Svelte — writable store wrapping QModel', () => {
 		);
 		const values: boolean[] = [];
 		store.subscribe((val) => values.push(val.done));
-		store.update((prev) => prev.$qm.copy({ done: true }));
+		store.update((prev) => prev.$qCopy({ done: true }));
 		expect(values).toEqual([false, true]);
 	});
 
@@ -251,7 +250,7 @@ describe('Svelte — writable store wrapping QModel', () => {
 		const values: boolean[] = [];
 		const unsub = store.subscribe((val) => values.push(val.done));
 		unsub();
-		store.update((prev) => prev.$qm.copy({ done: true }));
+		store.update((prev) => prev.$qCopy({ done: true }));
 		expect(values).toHaveLength(1); // only initial emit
 	});
 
@@ -259,7 +258,7 @@ describe('Svelte — writable store wrapping QModel', () => {
 		const store = new WriteableStore(
 			new TaskModel({ id: 't4', label: 'Serialize', done: true })
 		);
-		const out = store.get().serialize() as Record<string, unknown>;
+		const out = store.get().$qSerialize() as Record<string, unknown>;
 		expect(out['label']).toBe('Serialize');
 		expect(out['done']).toBe(true);
 	});
@@ -416,7 +415,7 @@ async function kitLoadFunction(apiResponse: object[]): Promise<{
 	await Bun.sleep(1);
 	const { instances } = EventModel.createMany(apiResponse as any[]);
 	return {
-		events: instances.map((evt) => evt.$qm.serialize()),
+		events: instances.map((evt) => evt.$qSerialize()),
 		count: instances.length,
 	};
 }

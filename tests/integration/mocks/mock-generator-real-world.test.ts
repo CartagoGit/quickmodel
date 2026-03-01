@@ -232,15 +232,15 @@ describe('Integration: Mock Generator - Real World', () => {
 		const customItems = [
 			OrderItem.mock()
 				.random({ name: 'Laptop', quantity: 1, price: '99999' })
-				.serialize(),
+				.$qSerialize(),
 			OrderItem.mock()
 				.random({ name: 'Mouse', quantity: 2, price: '2999' })
-				.serialize(),
+				.$qSerialize(),
 		];
 
 		const mock = Order.mock().random({
 			status: 'shipped',
-			shippingAddress: customAddress.$qm.serialize(),
+			shippingAddress: customAddress.$qSerialize(),
 			items: customItems,
 			metadata: {
 				paymentMethod: 'credit-card',
@@ -263,10 +263,10 @@ describe('Integration: Mock Generator - Real World', () => {
 			items: [
 				OrderItem.mock()
 					.random({ quantity: 2, price: '1000' })
-					.serialize(),
+					.$qSerialize(),
 				OrderItem.mock()
 					.random({ quantity: 3, price: '2000' })
-					.serialize(),
+					.$qSerialize(),
 			],
 		});
 

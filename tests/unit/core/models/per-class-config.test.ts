@@ -93,7 +93,7 @@ describe('QModel.configure() — comportamiento básico', () => {
 			name: 'A',
 			extra: 'X',
 		} as INoisy);
-		const plain = obj.$qm.serialize() as Record<string, unknown>;
+		const plain = obj.$qSerialize() as Record<string, unknown>;
 		expect(plain['extra']).toBeUndefined();
 	});
 });
@@ -101,7 +101,7 @@ describe('QModel.configure() — comportamiento básico', () => {
 describe('QModel.configure() — unknownPropertyPolicy override', () => {
 	it('KeepModel mantiene propiedades desconocidas (override = keep)', () => {
 		const obj = new KeepModel({ id: 1, name: 'A', extra: 'X' } as INoisy);
-		const plain = obj.$qm.serialize() as Record<string, unknown>;
+		const plain = obj.$qSerialize() as Record<string, unknown>;
 		expect(plain['extra']).toBe('X');
 	});
 
@@ -112,7 +112,7 @@ describe('QModel.configure() — unknownPropertyPolicy override', () => {
 			name: 'A',
 			extra: 'X',
 		} as INoisy);
-		const plain = obj.$qm.serialize() as Record<string, unknown>;
+		const plain = obj.$qSerialize() as Record<string, unknown>;
 		expect(plain['extra']).toBeUndefined();
 	});
 });
@@ -137,7 +137,7 @@ describe('QModel.configure() — coercionStrategy override', () => {
 			name: 'A',
 			extra: 'X',
 		} as INoisy);
-		const plain = obj.$qm.serialize() as Record<string, unknown>;
+		const plain = obj.$qSerialize() as Record<string, unknown>;
 		expect(plain['extra']).toBeUndefined();
 	});
 });
@@ -162,7 +162,7 @@ describe('QModel.configure() — combinación con @Quick() options', () => {
 			data: 'test',
 			unknown: 'val',
 		} as unknown as ICombined); // @quickmodel-rule-ignore: no-as-unknown
-		const plain = obj.$qm.serialize() as Record<string, unknown>;
+		const plain = obj.$qSerialize() as Record<string, unknown>;
 		expect(plain['unknown']).toBe('val'); // keep from static config
 	});
 });
@@ -186,7 +186,7 @@ describe('QModel.configure() — herencia', () => {
 			extra: 'X',
 			unknown: 'Y',
 		} as unknown as IChild); // @quickmodel-rule-ignore: no-as-unknown
-		const plain = obj.$qm.serialize() as Record<string, unknown>;
+		const plain = obj.$qSerialize() as Record<string, unknown>;
 		// ChildKeepModel doesn't override static config, so it inherits KeepModel.config
 		expect(plain['unknown']).toBe('Y');
 	});

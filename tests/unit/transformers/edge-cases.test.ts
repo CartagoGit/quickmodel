@@ -127,7 +127,7 @@ describe('Transformer Edge Cases: BigInt', () => {
 			zero: 0n,
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		// Verify serialization format
 		expect(json.huge).toBe('999999999999999999999999999999');
@@ -208,7 +208,7 @@ describe('Transformer Edge Cases: Date', () => {
 			epoch: now,
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		// Verify serialization format
 		expect(json.past).toBe(now.toISOString());
@@ -271,7 +271,7 @@ describe('Transformer Edge Cases: RegExp', () => {
 			flags: regex,
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		// Verify serialization format
 		expect(json.pattern).toEqual({
@@ -331,7 +331,7 @@ describe('Transformer Edge Cases: Error', () => {
 			withStack: error,
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		// Verify serialization format (Error serializes as string)
 		expect(typeof json.simple).toBe('string');
@@ -382,7 +382,7 @@ describe('Transformer Edge Cases: Symbol', () => {
 			plain: Symbol.for('test-plain'),
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 
 		// Verify serialization format (Symbol serializes with __type and description)
 		expect(json.keyed).toMatchObject({
@@ -464,7 +464,7 @@ describe('Transformer Edge Cases: ArrayBuffer', () => {
 			small: original,
 		});
 
-		const json = data.$qm.serialize();
+		const json = data.$qSerialize();
 		const restored = BufferData.deserialize(json);
 
 		const originalView = new Uint8Array(data.empty);

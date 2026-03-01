@@ -516,7 +516,7 @@ describe('validationReport() for Formik error display', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const report = dto.$qm.validationReport();
+		const report = dto.$qValidationReport();
 		expect(typeof report).toBe('object');
 		expect(report).not.toBeNull();
 	});
@@ -530,7 +530,7 @@ describe('validationReport() for Formik error display', () => {
 			role: 'unknown',
 			newsletter: false,
 		});
-		const report = dto.$qm.validationReport();
+		const report = dto.$qValidationReport();
 		// report structure is an object keyed by field
 		expect(Object.keys(report).length).toBeGreaterThan(0);
 	});
@@ -550,7 +550,7 @@ describe('isDirty() and copy() in Formik context', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		expect(dto.$qm.isDirty()).toBe(false);
+		expect(dto.$qIsDirty()).toBe(false);
 	});
 
 	test('copy() creates a new snapshot with updated values', () => {
@@ -562,7 +562,7 @@ describe('isDirty() and copy() in Formik context', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const updated = original.$qm.copy({ email: 'newemail@x.com' });
+		const updated = original.$qCopy({ email: 'newemail@x.com' });
 		expect(updated.email).toBe('newemail@x.com');
 		expect(original.email).toBe('alice@x.com'); // immutable
 	});
@@ -576,8 +576,8 @@ describe('isDirty() and copy() in Formik context', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const updated = original.$qm.copy({ newsletter: true });
-		expect(updated.$qm.isDirty()).toBe(false); // copy() sets __initData = merged state
+		const updated = original.$qCopy({ newsletter: true });
+		expect(updated.$qIsDirty()).toBe(false); // copy() sets __initData = merged state
 	});
 
 	test('serialize() provides Formik initialValues-compatible payload', () => {
@@ -589,7 +589,7 @@ describe('isDirty() and copy() in Formik context', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const serialized = dto.$qm.serialize();
+		const serialized = dto.$qSerialize();
 		expect(serialized['name']).toBe('Alice');
 		expect(serialized['email']).toBe('alice@x.com');
 	});

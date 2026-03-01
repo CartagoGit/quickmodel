@@ -75,7 +75,7 @@ class BlockTransformer extends BaseTransformer<
 	}
 
 	serialize(value: (TextBlock | ImageBlock | VideoBlock)[]): any[] {
-		return value.map((item) => item.toInterface());
+		return value.map((item) => item.$qToInterface());
 	}
 }
 
@@ -151,7 +151,7 @@ describe('Integration: Polymorphic Collections (The "Union" Problem)', () => {
 			],
 		});
 
-		const serialized = page.toInterface();
+		const serialized = page.$qToInterface();
 
 		expect(serialized.blocks).toHaveLength(2);
 		expect(serialized.blocks[0].type).toBe('text');

@@ -110,7 +110,7 @@ class PersonSlowAsync extends QModel<IPersonSlowAsync> {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('QModel.$qm.validate()', () => {
+describe('QModel.$qValidate()', () => {
 	beforeEach(() => {
 		QConfig.reset();
 	});
@@ -125,7 +125,7 @@ describe('QModel.$qm.validate()', () => {
 	describe('no options (sync)', () => {
 		test('returns IQValidateResult with valid: true when all pass', () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
-			const result: IQValidateResult = person.$qm.validate();
+			const result: IQValidateResult = person.$qValidate();
 
 			expect(result.valid).toBe(true);
 			expect(result.integrity).toHaveLength(0);
@@ -135,8 +135,8 @@ describe('QModel.$qm.validate()', () => {
 
 		test('result has same shape as validationReport()', () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
-			const report = person.$qm.validationReport();
-			const result = person.$qm.validate();
+			const report = person.$qValidationReport();
+			const result = person.$qValidate();
 
 			expect(result).toEqual(report);
 		});
@@ -145,7 +145,7 @@ describe('QModel.$qm.validate()', () => {
 			const raw = { name: 123, age: 'not-a-number' };
 			// Force instantiation bypassing transformer to trigger integrity issues
 			const person = Object.assign(new Person({}), raw) as Person;
-			const result = person.$qm.validate();
+			const result = person.$qValidate();
 
 			// integrity.length > 0 when field types don't match
 			expect(result.integrity.length).toBeGreaterThan(0);
@@ -154,7 +154,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('reports rule failures', () => {
 			const person = PersonWithRules.create({ name: '', age: 30 });
-			const result = person.$qm.validate();
+			const result = person.$qValidate();
 
 			expect(result.valid).toBe(false);
 			expect(result.rules.valid).toBe(false);
@@ -164,7 +164,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('reports both integrity + rule failures', () => {
 			const person = PersonWithRules.create({ name: '', age: -5 });
-			const result = person.$qm.validate();
+			const result = person.$qValidate();
 
 			expect(result.valid).toBe(false);
 			expect(result.rules.errors.length).toBeGreaterThan(0);
@@ -172,7 +172,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('valid: true when all pass with rules', () => {
 			const person = PersonWithRules.create({ name: 'Alice', age: 30 });
-			const result = person.$qm.validate();
+			const result = person.$qValidate();
 
 			expect(result.valid).toBe(true);
 			expect(result.rules.errors).toHaveLength(0);
@@ -187,7 +187,7 @@ describe('QModel.$qm.validate()', () => {
 		test('single group — only evaluates rules for that group', () => {
 			// name fails, age passes — filter to "personal" → only name rule runs
 			const person = PersonWithGroups.create({ name: '', age: 30 });
-			const result = person.$qm.validate({ groups: ['personal'] });
+			const result = person.$qValidate({ groups: ['personal'] });
 
 			expect(result.valid).toBe(false);
 			const messages = result.rules.errors.map((err) => err.message);
@@ -197,7 +197,7 @@ describe('QModel.$qm.validate()', () => {
 		test('single group — skips rules outside that group', () => {
 			// age is negative but belongs to "work" group — "personal" group should not report it
 			const person = PersonWithGroups.create({ name: 'Alice', age: -1 });
-			const result = person.$qm.validate({ groups: ['personal'] });
+			const result = person.$qValidate({ groups: ['personal'] });
 
 			expect(result.valid).toBe(true);
 			expect(result.rules.errors).toHaveLength(0);
@@ -206,7 +206,7 @@ describe('QModel.$qm.validate()', () => {
 		test('multiple groups — combines results from all groups', () => {
 			// both name and age fail
 			const person = PersonWithGroups.create({ name: '', age: -1 });
-			const result = person.$qm.validate({
+			const result = person.$qValidate({
 				groups: ['personal', 'work'],
 			});
 
@@ -218,7 +218,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('multiple groups — valid when all groups pass', () => {
 			const person = PersonWithGroups.create({ name: 'Alice', age: 30 });
-			const result = person.$qm.validate({
+			const result = person.$qValidate({
 				groups: ['personal', 'work'],
 			});
 
@@ -234,7 +234,7 @@ describe('QModel.$qm.validate()', () => {
 		test('returns a Promise when async: true', () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
 			const opts: IQValidateOptions & { async: true } = { async: true };
-			const result = person.$qm.validate(opts);
+			const result = person.$qValidate(opts);
 
 			expect(result).toBeInstanceOf(Promise);
 			return result;
@@ -242,7 +242,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('resolves with IQValidateResult structure', async () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
-			const result = await person.$qm.validate({ async: true });
+			const result = await person.$qValidate({ async: true });
 
 			expect(result.valid).toBe(true);
 			expect(result.integrity).toHaveLength(0);
@@ -253,8 +253,8 @@ describe('QModel.$qm.validate()', () => {
 		test('resolves same result as validationReportAsync()', async () => {
 			const person = PersonWithRules.create({ name: 'Alice', age: 30 });
 			const [report, result] = await Promise.all([
-				person.$qm.validationReportAsync(),
-				person.$qm.validate({ async: true }),
+				person.$qValidationReportAsync(),
+				person.$qValidate({ async: true }),
 			]);
 
 			expect(result).toEqual(report);
@@ -265,14 +265,14 @@ describe('QModel.$qm.validate()', () => {
 				name: 'Alice',
 				age: 5,
 			});
-			const result = await person.$qm.validate({ async: true });
+			const result = await person.$qValidate({ async: true });
 
 			expect(result.valid).toBe(true);
 		});
 
 		test('async rules work — invalid case', async () => {
 			const person = PersonWithAsyncRules.create({ name: 'Bob', age: 5 });
-			const result = await person.$qm.validate({ async: true });
+			const result = await person.$qValidate({ async: true });
 
 			expect(result.valid).toBe(false);
 			const messages = result.rules.errors.map((err) => err.message);
@@ -281,7 +281,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('forwards timeoutMs — slow predicate fails with timeout', async () => {
 			const person = PersonSlowAsync.create({ name: 'Alice', age: 0 });
-			const result = await person.$qm.validate({
+			const result = await person.$qValidate({
 				async: true,
 				timeoutMs: 50,
 			});
@@ -295,7 +295,7 @@ describe('QModel.$qm.validate()', () => {
 				name: 'Alice',
 				age: 5,
 			});
-			const result = await person.$qm.validate({
+			const result = await person.$qValidate({
 				async: true,
 				mode: 'serial',
 			});
@@ -305,7 +305,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('forwards timeoutMessage', async () => {
 			const person = PersonSlowAsync.create({ name: 'Alice', age: 0 });
-			const result = await person.$qm.validate({
+			const result = await person.$qValidate({
 				async: true,
 				timeoutMs: 50,
 				timeoutMessage: 'Timed out!',
@@ -323,7 +323,7 @@ describe('QModel.$qm.validate()', () => {
 	describe('type safety', () => {
 		test('validate() without async option returns IQValidateResult (not Promise)', () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
-			const result = person.$qm.validate();
+			const result = person.$qValidate();
 
 			// If this compiled correctly, result is not a Promise
 			expect(result).not.toBeInstanceOf(Promise);
@@ -332,7 +332,7 @@ describe('QModel.$qm.validate()', () => {
 
 		test('IQValidateResult has required shape fields', () => {
 			const person = Person.create({ name: 'Alice', age: 30 });
-			const result: IQValidateResult = person.$qm.validate();
+			const result: IQValidateResult = person.$qValidate();
 
 			expect('valid' in result).toBe(true);
 			expect('integrity' in result).toBe(true);

@@ -97,7 +97,7 @@ export interface IQCheckRulesAsyncOptions extends IQRulesAsyncOptions {
  * @see {@link IQCheckRulesAsyncOptions} — options accepted by this function
  * @see {@link qCheckRules} — synchronous variant
  */
-export async function qCheckRulesAsync(
+export async function $qCheckRulesAsync(
 	instance: object,
 	options?: IQCheckRulesAsyncOptions
 ): Promise<IQRulesResult> {

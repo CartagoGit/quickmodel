@@ -11,8 +11,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -180,7 +180,7 @@ class GraphQLError extends Error {
 	}
 }
 
-/** Maps qCheckRules errors to GraphQL UserError pattern */
+/** Maps $qCheckRules errors to GraphQL UserError pattern */
 function toUserErrors(
 	errors: Array<{ field: string; message: string }>
 ): Array<{ field: string; message: string }> {
@@ -251,7 +251,7 @@ describe('Input DTO — QModel as resolver arg', () => {
 			age: 30,
 			role: 'user',
 		});
-		const { valid } = qCheckRules(dto);
+		const { valid } = $qCheckRules(dto);
 		expect(valid).toBe(true);
 	});
 });
@@ -274,14 +274,14 @@ describe('Mutation resolver — validation and error mapping', () => {
 			role: 'user',
 		};
 		const dto = new CreateUserInput(input);
-		const { valid } = qCheckRules(dto);
+		const { valid } = $qCheckRules(dto);
 		expect(valid).toBe(true);
 
 		// Simulated persist
 		const saved: IUserResponse = {
 			id: nextId++,
 			bio: '',
-			...dto.toInterface(),
+			...dto.$qToInterface(),
 		};
 		userStore.set(saved.id, saved);
 		const response = new UserResponse(saved);
@@ -296,7 +296,7 @@ describe('Mutation resolver — validation and error mapping', () => {
 			age: 25,
 			role: 'user',
 		});
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 
 		const gqlError = new GraphQLError('Validation failed', {
@@ -317,7 +317,7 @@ describe('Mutation resolver — validation and error mapping', () => {
 			age: 30,
 			role: 'superuser',
 		});
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'role')).toBe(true);
 	});
@@ -329,7 +329,7 @@ describe('Mutation resolver — validation and error mapping', () => {
 			age: -5,
 			role: 'root',
 		});
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		expect(valid).toBe(false);
 		expect(errors.length).toBeGreaterThanOrEqual(2);
 	});
@@ -372,8 +372,8 @@ describe('Mutation resolver — validation and error mapping', () => {
 			role: 'user',
 		});
 
-		expect((await qCheckRulesAsync(available)).valid).toBe(true);
-		const result = await qCheckRulesAsync(taken);
+		expect((await $qCheckRulesAsync(available)).valid).toBe(true);
+		const result = await $qCheckRulesAsync(taken);
 		expect(result.valid).toBe(false);
 		expect(result.errors[0]?.field).toBe('email');
 	});
@@ -384,7 +384,7 @@ describe('Mutation resolver — validation and error mapping', () => {
 // ---------------------------------------------------------------------------
 
 describe('Output serialization — serialize() as GraphQL response', () => {
-	test('dto.$qm.serialize() returns plain JSON-safe object', () => {
+	test('dto.$qSerialize() returns plain JSON-safe object', () => {
 		const dto = new UserResponse({
 			id: 1,
 			name: 'Helen',
@@ -393,7 +393,7 @@ describe('Output serialization — serialize() as GraphQL response', () => {
 			role: 'admin',
 			bio: 'Dev',
 		});
-		const serialized = dto.$qm.serialize();
+		const serialized = dto.$qSerialize();
 		expect(typeof serialized).toBe('object');
 		expect(serialized).not.toBeInstanceOf(QModel);
 	});
@@ -407,7 +407,7 @@ describe('Output serialization — serialize() as GraphQL response', () => {
 			role: 'user',
 			bio: '',
 		});
-		const out = dto.$qm.serialize() as Record<string, unknown>;
+		const out = dto.$qSerialize() as Record<string, unknown>;
 		expect(out['id']).toBe(2);
 		expect(out['name']).toBe('Ivan');
 		expect(out['email']).toBe('ivan@x.com');
@@ -509,7 +509,7 @@ describe('createMany() in list query — bulk coercion from DB resolver', () => 
 			},
 		];
 		const { instances } = UserResponse.createMany(rows as any[]);
-		const response = instances.map((dto) => dto.$qm.serialize());
+		const response = instances.map((dto) => dto.$qSerialize());
 		expect(response.length).toBe(2);
 		expect((response[0] as Record<string, unknown>)['name']).toBe('Dave');
 	});
@@ -562,7 +562,7 @@ describe('copy() in update mutation resolver', () => {
 			body: 'Initial body text here',
 			published: false,
 		});
-		const updated = post.$qm.copy({
+		const updated = post.$qCopy({
 			title: 'Updated Title',
 			published: true,
 		});
@@ -578,11 +578,11 @@ describe('copy() in update mutation resolver', () => {
 			body: 'Original body content test',
 			published: false,
 		});
-		const updated = post.$qm.copy({
+		const updated = post.$qCopy({
 			title: 'New Valid Title',
 			body: 'Updated body content here',
 		});
-		const { valid } = qCheckRules(updated);
+		const { valid } = $qCheckRules(updated);
 		expect(valid).toBe(true);
 	});
 
@@ -592,8 +592,8 @@ describe('copy() in update mutation resolver', () => {
 			body: 'Valid body content',
 			published: false,
 		});
-		const bad = post.$qm.copy({ title: 'AB' }); // too short
-		const { valid, errors } = qCheckRules(bad);
+		const bad = post.$qCopy({ title: 'AB' }); // too short
+		const { valid, errors } = $qCheckRules(bad);
 		expect(valid).toBe(false);
 		expect(errors.some((err) => err.field === 'title')).toBe(true);
 	});
@@ -635,7 +635,7 @@ describe('Validation middleware pattern (GraphQL Yoga useValidation)', () => {
 		errors: Array<{ field: string; message: string }>;
 	} {
 		const dto = new DtoClass(input);
-		const { errors } = qCheckRules(dto);
+		const { errors } = $qCheckRules(dto);
 		return { dto, errors };
 	}
 

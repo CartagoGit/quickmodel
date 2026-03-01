@@ -131,8 +131,8 @@ describe('Unit: Mock Generator - Arrays and Collections', () => {
 
 	test('should allow overriding nested model arrays', () => {
 		const customComments = [
-			Comment.mock().random({ author: 'Alice', likes: 10 }).serialize(),
-			Comment.mock().random({ author: 'Bob', likes: 5 }).serialize(),
+			Comment.mock().random({ author: 'Alice', likes: 10 }).$qSerialize(),
+			Comment.mock().random({ author: 'Bob', likes: 5 }).$qSerialize(),
 		];
 
 		const mock = BlogPost.mock().random({

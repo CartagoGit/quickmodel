@@ -57,7 +57,7 @@ export class QAliasComputedPrompt extends QAbstractPrompt<{
 						'  @QAlias("first_name") declare firstName: string;\n' +
 						'  @QAlias("last_name")  declare lastName: string;\n' +
 						'}\n' +
-						'// new UserModel({ first_name: "Ada" }).$qm.serialize()\n' +
+						'// new UserModel({ first_name: "Ada" }).$qSerialize()\n' +
 						'// → { first_name: "Ada" }\n' +
 						'```\n\n' +
 						'### @QComputed — Include getter in serialize()/toJSON()\n' +
@@ -71,7 +71,7 @@ export class QAliasComputedPrompt extends QAbstractPrompt<{
 						'  @QComputed()\n' +
 						'  get fullName() { return `${this.firstName} ${this.lastName}`; }\n' +
 						'}\n' +
-						'// new UserModel({ firstName: "Ada", lastName: "Lovelace" }).$qm.serialize()\n' +
+						'// new UserModel({ firstName: "Ada", lastName: "Lovelace" }).$qSerialize()\n' +
 						'// → { firstName: "Ada", lastName: "Lovelace", fullName: "Ada Lovelace" }\n' +
 						'```\n\n' +
 						'### Common mistakes\n' +

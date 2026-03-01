@@ -74,7 +74,7 @@ export function describeBench(): void {
 				return;
 			}
 			const res = runBench('Benchmark 8: joi', ITERS, () => {
-				joiSchemas.rulesSchema.validate(validSignupData, {
+				joiSchemas.rulesSchema.$qValidate(validSignupData, {
 					abortEarly: false,
 				});
 			});
@@ -146,7 +146,7 @@ export function describeBench(): void {
 				if (joiSchemas) {
 					allResults.push(
 						runBench('Benchmark 8: joi', ITERS, () => {
-							joiSchemas.rulesSchema.validate(validSignupData, {
+							joiSchemas.rulesSchema.$qValidate(validSignupData, {
 								abortEarly: false,
 							});
 						})

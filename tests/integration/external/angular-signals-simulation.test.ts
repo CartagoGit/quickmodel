@@ -98,7 +98,7 @@ function reactiveModel<T extends QModel<any>>(instance: T): IReactiveModel<T> {
 			if (typeof key !== 'string') return false;
 			// merge() produces a new instance → new reference → signal version ++
 			// Angular's change detection fires because the reference changed.
-			sig.update((mdl) => mdl.$qm.copy({ [key]: value } as Partial<T>));
+			sig.update((mdl) => mdl.$qCopy({ [key]: value } as Partial<T>));
 			return true;
 		},
 		has(_, key) {
@@ -185,7 +185,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			expect(cartSignal().updatedAt).toBeInstanceOf(Date);
 		});
 
-		it('signal.update() with .patch() should produce updated model', () => {
+		it('signal.update() with .$qPatch() should produce updated model', () => {
 			const cartSignal = signal(
 				new Cart({
 					userId: 'user-2',
@@ -197,7 +197,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			// Angular pattern: immutable update via merge()
 			// patch() mutates in-place and returns void — merge() returns a new instance
 			cartSignal.update((current) =>
-				current.$qm.copy({ total: current.total + 25 })
+				current.$qCopy({ total: current.total + 25 })
 			);
 
 			expect(cartSignal().total).toBe(75);
@@ -255,7 +255,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			expect(cartSignal().total).toBe(200);
 		});
 
-		it('CORRECT pattern: use signal.update() with .patch() for immutable updates', () => {
+		it('CORRECT pattern: use signal.update() with .$qPatch() for immutable updates', () => {
 			const cartSignal = signal(
 				new Cart({
 					userId: 'user-4',
@@ -267,7 +267,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			const versionBefore = cartSignal.version();
 
 			// ✅ Correct Angular pattern → always triggers re-render
-			cartSignal.update((cart) => cart.$qm.copy({ total: 120 }));
+			cartSignal.update((cart) => cart.$qCopy({ total: 120 }));
 
 			expect(cartSignal.version()).toBe(versionBefore + 1);
 			expect(cartSignal().total).toBe(120);
@@ -306,7 +306,7 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			expect(priceLabel()).toBe('COMP-001: $50');
 
-			productSignal.update((prod) => prod.$qm.copy({ price: 75 }));
+			productSignal.update((prod) => prod.$qCopy({ price: 75 }));
 
 			expect(priceLabel()).toBe('COMP-001: $75');
 		});
@@ -321,7 +321,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			// Typical use case: computed to get the serialized form for API call
-			const serialized = computed(() => cartSignal().serialize());
+			const serialized = computed(() => cartSignal().$qSerialize());
 
 			expect(serialized().userId).toBe('user-6');
 			expect(typeof serialized().updatedAt).toBe('string');
@@ -362,7 +362,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			cartSignal.update((cart) =>
-				cart.$qm.copy({
+				cart.$qCopy({
 					updatedAt: new Date('2025-12-31T23:59:59.000Z'),
 				})
 			);
@@ -382,7 +382,7 @@ describe('Integration: Angular Signals Simulation', () => {
 			);
 
 			productSignal.update((prod) =>
-				prod.$qm.copy({ tags: new Set(['beta', 'gamma']) })
+				prod.$qCopy({ tags: new Set(['beta', 'gamma']) })
 			);
 
 			expect(productSignal().tags).toBeInstanceOf(Set);
@@ -399,7 +399,7 @@ describe('Integration: Angular Signals Simulation', () => {
 				})
 			);
 
-			const json = productSignal().serialize();
+			const json = productSignal().$qSerialize();
 
 			// Date → ISO string
 			expect(typeof json.releasedAt).toBe('string');
@@ -567,7 +567,7 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			cart.total = 75;
 
-			const json = cart.$qm.serialize();
+			const json = cart.$qSerialize();
 			expect(json.total).toBe(75);
 			expect(typeof json.updatedAt).toBe('string'); // Date serialized
 		});

@@ -9,7 +9,6 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { qGroups5 } from '../../../src/compat/ts5/forms';
 import type { IQGroupsMap } from '../../../src/compat/ts5/forms';
 
 // ---------------------------------------------------------------------------

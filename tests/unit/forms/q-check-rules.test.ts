@@ -1,5 +1,5 @@
 /**
- * @fileoverview TDD tests for `qGetGroups`, `qCheckRules` and `qCheckRulesByGroup`.
+ * @fileoverview TDD tests for `$qGetGroups`, `$qCheckRules` and `$qCheckRulesByGroup`.
  *
  * These helpers are form-validation utilities that work on **any class** decorated
  * with `@QRule` / `@QGroup` — they do NOT require the class to extend `QModel`.
@@ -7,10 +7,10 @@
  * ## Test structure
  *
  * - **Shared fixtures**: plain classes decorated with `@QRule` + `@QGroup`.
- * - **`qGetGroups`**: reads `@QGroup` metadata and returns distinct group names.
- * - **`qCheckRules`** (no filter): evaluates all `@QRule` predicates.
- * - **`qCheckRules`** (group filter): evaluates only rules belonging to a group.
- * - **`qCheckRulesByGroup`**: per-group `IQRulesResult` map.
+ * - **`$qGetGroups`**: reads `@QGroup` metadata and returns distinct group names.
+ * - **`$qCheckRules`** (no filter): evaluates all `@QRule` predicates.
+ * - **`$qCheckRules`** (group filter): evaluates only rules belonging to a group.
+ * - **`$qCheckRulesByGroup`**: per-group `IQRulesResult` map.
  * - **Edge cases**: classes with no rules, no groups, mixed decorated / plain fields.
  */
 
@@ -18,12 +18,12 @@ import { describe, test, expect, spyOn, beforeEach, afterEach } from 'bun:test';
 import 'reflect-metadata';
 import { QRule } from '@/core/decorators/qrule.decorator';
 import { QGroup } from '@/core/decorators/qgroup.decorator';
-import { qGetGroups } from '@/core/helpers/q-get-groups';
+import { $qGetGroups } from '@/core/helpers/q-get-groups';
 import {
-	qCheckRules,
+	$qCheckRules,
 	_resetAsyncWarnedKeys,
 } from '@/core/helpers/q-check-rules';
-import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
+import { $qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // =============================================================================
 // Shared test fixtures
@@ -88,42 +88,42 @@ class ChildForm extends BaseForm {
 // qGetGroups
 // =============================================================================
 
-describe('qGetGroups', () => {
+describe('$qGetGroups', () => {
 	test('returns an array of distinct @QGroup names', () => {
 		const form = new ContactForm();
-		const groups = qGetGroups(form);
+		const groups = $qGetGroups(form);
 		expect(groups).toContain('identity');
 		expect(groups).toContain('security');
 	});
 
 	test('does not include undefined (ungrouped fields are excluded)', () => {
 		const form = new ContactForm();
-		const groups = qGetGroups(form);
+		const groups = $qGetGroups(form);
 		expect(groups).not.toContain(undefined);
 		expect(groups.every((grp) => typeof grp === 'string')).toBe(true);
 	});
 
 	test('each group name appears only once', () => {
 		const form = new ContactForm();
-		const groups = qGetGroups(form);
+		const groups = $qGetGroups(form);
 		const unique = [...new Set(groups)];
 		expect(groups).toEqual(unique);
 	});
 
 	test('returns exactly the declared groups (identity + security)', () => {
 		const form = new ContactForm();
-		const groups = qGetGroups(form);
+		const groups = $qGetGroups(form);
 		expect(groups.sort()).toEqual(['identity', 'security']);
 	});
 
 	test('returns empty array when no @QGroup is present', () => {
 		const form = new PlainRulesForm();
-		expect(qGetGroups(form)).toEqual([]);
+		expect($qGetGroups(form)).toEqual([]);
 	});
 
 	test('returns empty array when no @QRule/@QGroup decorators at all', () => {
 		const form = new EmptyForm();
-		expect(qGetGroups(form)).toEqual([]);
+		expect($qGetGroups(form)).toEqual([]);
 	});
 });
 
@@ -131,7 +131,7 @@ describe('qGetGroups', () => {
 // qCheckRules — no group filter
 // =============================================================================
 
-describe('qCheckRules — no group filter', () => {
+describe('$qCheckRules — no group filter', () => {
 	test('returns valid:true when all rules pass', () => {
 		const form = new ContactForm();
 		form.name = 'Alice';
@@ -139,7 +139,7 @@ describe('qCheckRules — no group filter', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -151,7 +151,7 @@ describe('qCheckRules — no group filter', () => {
 		form.password = 'short'; // too short, no uppercase
 		form.street = '';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThan(0);
 	});
@@ -163,7 +163,7 @@ describe('qCheckRules — no group filter', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		const nameError = result.errors.find((err) => err.field === 'name');
 		expect(nameError).toBeDefined();
 		expect(nameError?.message).toBe('Name too short');
@@ -177,7 +177,7 @@ describe('qCheckRules — no group filter', () => {
 		form.password = 'abc'; // 2 errors (short + no uppercase)
 		form.street = ''; // 1 error
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.errors).toHaveLength(5);
 	});
 
@@ -188,7 +188,7 @@ describe('qCheckRules — no group filter', () => {
 		form.password = 'Secret1!';
 		form.street = ''; // this ungrouped field fails
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		const streetError = result.errors.find((err) => err.field === 'street');
 		expect(streetError).toBeDefined();
@@ -196,7 +196,7 @@ describe('qCheckRules — no group filter', () => {
 
 	test('works on a class with no rules — returns valid:true', () => {
 		const form = new EmptyForm();
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -206,7 +206,7 @@ describe('qCheckRules — no group filter', () => {
 // qCheckRules — with group filter
 // =============================================================================
 
-describe('qCheckRules — group filter', () => {
+describe('$qCheckRules — group filter', () => {
 	test('evaluates only rules from the specified group', () => {
 		const form = new ContactForm();
 		// identity fields are valid
@@ -216,7 +216,7 @@ describe('qCheckRules — group filter', () => {
 		form.password = 'weak';
 		form.street = '';
 
-		const result = qCheckRules(form, { group: 'identity' });
+		const result = $qCheckRules(form, { group: 'identity' });
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -230,7 +230,7 @@ describe('qCheckRules — group filter', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = qCheckRules(form, { group: 'identity' });
+		const result = $qCheckRules(form, { group: 'identity' });
 		expect(result.valid).toBe(false);
 		expect(result.errors).toHaveLength(2);
 		expect(result.errors.map((err) => err.field).sort()).toEqual([
@@ -246,14 +246,14 @@ describe('qCheckRules — group filter', () => {
 		form.password = 'Secret1!';
 		form.street = ''; // would fail, but is ungrouped
 
-		const result = qCheckRules(form, { group: 'identity' });
+		const result = $qCheckRules(form, { group: 'identity' });
 		expect(result.errors.some((err) => err.field === 'street')).toBe(false);
 	});
 
 	test('returns valid:true for a group with no fields decorated with @QGroup', () => {
 		const form = new PlainRulesForm();
 		// PlainRulesForm has no @QGroup — asking for any group returns valid:true (no rules to fail)
-		const result = qCheckRules(form, { group: 'somegroup' });
+		const result = $qCheckRules(form, { group: 'somegroup' });
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -266,7 +266,7 @@ describe('qCheckRules — group filter', () => {
 		form.street = '42';
 
 		// 'Identity' (capital I) ≠ 'identity' — no fields match → valid
-		const result = qCheckRules(form, { group: 'Identity' });
+		const result = $qCheckRules(form, { group: 'Identity' });
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -276,16 +276,16 @@ describe('qCheckRules — group filter', () => {
 // qCheckRulesByGroup
 // =============================================================================
 
-describe('qCheckRulesByGroup', () => {
+describe('$qCheckRulesByGroup', () => {
 	test('returns one key per @QGroup group name', () => {
 		const form = new ContactForm();
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		expect(Object.keys(result).sort()).toEqual(['identity', 'security']);
 	});
 
 	test('each entry is an IQRulesResult with valid and errors', () => {
 		const form = new ContactForm();
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		for (const entry of Object.values(result)) {
 			expect(typeof entry.valid).toBe('boolean');
 			expect(Array.isArray(entry.errors)).toBe(true);
@@ -299,7 +299,7 @@ describe('qCheckRulesByGroup', () => {
 		form.password = 'Secret1!';
 		form.street = '42 Main St';
 
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		expect(result['identity'].valid).toBe(true);
 		expect(result['security'].valid).toBe(true);
 	});
@@ -311,7 +311,7 @@ describe('qCheckRulesByGroup', () => {
 		form.password = 'Secret1!'; // security passes
 		form.street = '42 Main St';
 
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		expect(result['identity'].valid).toBe(false);
 		expect(result['security'].valid).toBe(true);
 	});
@@ -323,7 +323,7 @@ describe('qCheckRulesByGroup', () => {
 		form.password = 'weak'; // security errors
 		form.street = ''; // ungrouped — should NOT appear in any group entry
 
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		expect(
 			result['identity'].errors.every(
 				(err) => err.field === 'name' || err.field === 'email'
@@ -343,13 +343,13 @@ describe('qCheckRulesByGroup', () => {
 
 	test('returns empty object when no @QGroup decorators are present', () => {
 		const form = new PlainRulesForm();
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 
 	test('returns empty object when no decorators at all', () => {
 		const form = new EmptyForm();
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 });
@@ -358,13 +358,13 @@ describe('qCheckRulesByGroup', () => {
 // Edge cases — inheritance & multiple rules per field
 // =============================================================================
 
-describe('qCheckRules — inheritance', () => {
+describe('$qCheckRules — inheritance', () => {
 	test('subclass instance includes rules from the parent prototype', () => {
 		const form = new ChildForm();
 		form.name = 'Alice';
 		form.age = 20;
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(true);
 	});
 
@@ -373,7 +373,7 @@ describe('qCheckRules — inheritance', () => {
 		form.name = 'A'; // fails parent rule
 		form.age = 20;
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		const nameError = result.errors.find((err) => err.field === 'name');
 		expect(nameError?.message).toBe('Name too short');
@@ -384,7 +384,7 @@ describe('qCheckRules — inheritance', () => {
 		form.name = 'Alice';
 		form.age = 15; // fails subclass rule
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		const ageError = result.errors.find((err) => err.field === 'age');
 		expect(ageError?.message).toBe('Must be at least 18');
@@ -395,15 +395,15 @@ describe('qCheckRules — inheritance', () => {
 		form.name = 'A'; // identity fails
 		form.age = 15; // identity also fails
 
-		const result = qCheckRules(form, { group: 'identity' });
+		const result = $qCheckRules(form, { group: 'identity' });
 		expect(result.valid).toBe(false);
 		const fields = result.errors.map((err) => err.field).sort();
 		expect(fields).toEqual(['age', 'name']);
 	});
 
-	test('qGetGroups reflects groups from both parent and subclass', () => {
+	test('$qGetGroups reflects groups from both parent and subclass', () => {
 		const form = new ChildForm();
-		const groups = qGetGroups(form);
+		const groups = $qGetGroups(form);
 		expect(groups).toContain('identity');
 	});
 });
@@ -431,7 +431,7 @@ class AnotherAsyncForm {
 	field = '';
 }
 
-describe('qCheckRules — warning en predicados async ignorados', () => {
+describe('$qCheckRules — warning en predicados async ignorados', () => {
 	let warnSpy: ReturnType<typeof spyOn>;
 
 	beforeEach(() => {
@@ -448,7 +448,7 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 		form.username = 'taken';
 		form.name = 'Alice';
 
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		const calls = (warnSpy.mock.calls as string[][]).flat().join(' ');
 		expect(calls).toContain('async');
@@ -461,7 +461,7 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 		form.username = 'ok_user';
 		form.name = 'Alice';
 
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		// Solo debería haber warning para username (async), no para name (solo sync)
 		const calls = warnSpy.mock.calls as string[][];
@@ -476,9 +476,9 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 		form.username = 'taken';
 		form.name = 'Alice';
 
-		qCheckRules(form);
-		qCheckRules(form); // segunda llamada — NO debe repetir el warning
-		qCheckRules(form); // tercera
+		$qCheckRules(form);
+		$qCheckRules(form); // segunda llamada — NO debe repetir el warning
+		$qCheckRules(form); // tercera
 
 		const asyncFieldWarnings = (warnSpy.mock.calls as string[][]).filter(
 			(args) => args.join(' ').includes('AsyncMixedForm#username')
@@ -494,8 +494,8 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 		const formB = new AnotherAsyncForm();
 		formB.field = 'hello';
 
-		qCheckRules(formA);
-		qCheckRules(formB);
+		$qCheckRules(formA);
+		$qCheckRules(formB);
 
 		const calls = (warnSpy.mock.calls as string[][]).map((args) =>
 			args.join(' ')
@@ -514,7 +514,7 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 		form.name = 'Alice';
 
 		// Comprobamos field "name" que solo tiene regla sync
-		qCheckRules(form, { group: undefined });
+		$qCheckRules(form, { group: undefined });
 
 		// El único warning posible proviene de username (que tiene regla async)
 		// pero no debe haber ninguno para name
@@ -528,7 +528,7 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 		form.username = 'ab'; // falla regla sync (< 3 chars)
 		form.name = 'Alice';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 
 		expect(result.valid).toBe(false);
 		expect(result.errors[0].message).toBe('Too short');
@@ -537,7 +537,7 @@ describe('qCheckRules — warning en predicados async ignorados', () => {
 	});
 });
 
-describe('qCheckRulesByGroup — multiple @QRule per field', () => {
+describe('$qCheckRulesByGroup — multiple @QRule per field', () => {
 	test('all errors for a multi-rule field appear in its group result', () => {
 		const form = new ContactForm();
 		form.name = 'Alice';
@@ -546,7 +546,7 @@ describe('qCheckRulesByGroup — multiple @QRule per field', () => {
 		form.password = 'abc'; // short + no uppercase
 		form.street = '42 Main St';
 
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		const securityErrors = result['security']?.errors ?? [];
 		expect(securityErrors).toHaveLength(2);
 		expect(securityErrors.every((err) => err.field === 'password')).toBe(
@@ -561,7 +561,7 @@ describe('qCheckRulesByGroup — multiple @QRule per field', () => {
 		form.password = 'abc'; // security fails
 		form.street = '42';
 
-		const result = qCheckRulesByGroup(form);
+		const result = $qCheckRulesByGroup(form);
 		// identity only has its own fields
 		expect(
 			result['identity']?.errors.every(

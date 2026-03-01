@@ -11,7 +11,6 @@ import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -150,7 +149,7 @@ describe('createSlice — serialize() as serializable Redux state', () => {
 	function setUser(payload: Record<string, unknown>): void {
 		const dto = new UserDto(payload);
 		sliceState = {
-			current: dto.$qm.serialize() as Record<string, unknown>,
+			current: dto.$qSerialize() as Record<string, unknown>,
 			loading: false,
 		};
 	}
@@ -171,7 +170,7 @@ describe('createSlice — serialize() as serializable Redux state', () => {
 			role: 'user',
 			age: 25,
 		});
-		const payload = dto.$qm.serialize();
+		const payload = dto.$qSerialize();
 		expect(() => JSON.stringify(payload)).not.toThrow();
 		const parsed = JSON.parse(JSON.stringify(payload)) as Record<
 			string,
@@ -223,7 +222,7 @@ describe('Reducer with copy() — immutable update', () => {
 
 	function addUser(raw: Record<string, unknown>): void {
 		const dto = new UserDto(raw);
-		entities[dto.uid] = dto.$qm.serialize() as Record<string, unknown>;
+		entities[dto.uid] = dto.$qSerialize() as Record<string, unknown>;
 		ids = [...ids, dto.uid];
 	}
 
@@ -231,8 +230,8 @@ describe('Reducer with copy() — immutable update', () => {
 		const existing = entities[uid];
 		if (!existing) return;
 		const dto = new UserDto(existing);
-		const updated = dto.$qm.copy(patch);
-		entities[uid] = updated.$qm.serialize() as Record<string, unknown>;
+		const updated = dto.$qCopy(patch);
+		entities[uid] = updated.$qSerialize() as Record<string, unknown>;
 	}
 
 	beforeEach(() => {
@@ -287,7 +286,7 @@ describe('createAsyncThunk — fetch + typed DTO', () => {
 			_internalField: 'stripped',
 		};
 		const dto = new UserDto(apiResponse);
-		return dto.$qm.serialize() as Record<string, unknown>;
+		return dto.$qSerialize() as Record<string, unknown>;
 	}
 
 	test('thunk coerces API string values to typed fields', async () => {
@@ -323,10 +322,7 @@ describe('createEntityAdapter — normalized store with QModel id', () => {
 	function addMany(items: object[]): void {
 		const { instances } = UserDto.createMany(items as any[]);
 		for (const inst of instances) {
-			store.set(
-				inst.uid,
-				inst.$qm.serialize() as Record<string, unknown>
-			);
+			store.set(inst.uid, inst.$qSerialize() as Record<string, unknown>);
 		}
 	}
 
@@ -401,7 +397,7 @@ describe('RTK Query — transformResponse pattern', () => {
 	function transformResponse(
 		raw: Record<string, unknown>
 	): Record<string, unknown> {
-		return new UserDto(raw).serialize() as Record<string, unknown>;
+		return new UserDto(raw).$qSerialize() as Record<string, unknown>;
 	}
 
 	function transformResponseMany(
@@ -409,7 +405,7 @@ describe('RTK Query — transformResponse pattern', () => {
 	): Record<string, unknown>[] {
 		const { instances } = UserDto.createMany(rawList as any[]);
 		return instances.map(
-			(inst) => inst.$qm.serialize() as Record<string, unknown>
+			(inst) => inst.$qSerialize() as Record<string, unknown>
 		);
 	}
 
@@ -552,7 +548,7 @@ describe('Typed selector — selectUser returns IUser via serialize()', () => {
 			const dto = new UserDto(raw);
 			entityMap.set(
 				dto.uid,
-				dto.$qm.serialize() as Record<string, unknown>
+				dto.$qSerialize() as Record<string, unknown>
 			);
 		}
 	}
@@ -561,12 +557,12 @@ describe('Typed selector — selectUser returns IUser via serialize()', () => {
 	function selectUserById(uid: string): IUser | undefined {
 		const raw = entityMap.get(uid);
 		if (!raw) return undefined;
-		return new UserDto(raw).toInterface();
+		return new UserDto(raw).$qToInterface();
 	}
 
 	function selectAdmins(): IUser[] {
 		return [...entityMap.values()]
-			.map((raw) => new UserDto(raw).toInterface())
+			.map((raw) => new UserDto(raw).$qToInterface())
 			.filter((usr) => usr.role === 'admin');
 	}
 
@@ -610,7 +606,7 @@ describe('DevTools — readable payloads via serialize()', () => {
 			role: 'user',
 			age: 29,
 		});
-		const payload = dto.$qm.serialize();
+		const payload = dto.$qSerialize();
 		expect(payload !== null && typeof payload === 'object').toBe(true);
 		expect(Array.isArray(payload)).toBe(false);
 		expect(typeof (payload as Record<string, unknown>)['uid']).toBe(
@@ -626,7 +622,7 @@ describe('DevTools — readable payloads via serialize()', () => {
 			role: 'admin',
 			age: 35,
 		});
-		const payload = dto.$qm.serialize();
+		const payload = dto.$qSerialize();
 		expect(payload instanceof QModel).toBe(false);
 	});
 
@@ -638,7 +634,7 @@ describe('DevTools — readable payloads via serialize()', () => {
 			stock: '50',
 			category: 'tools',
 		});
-		const payload = product.$qm.serialize() as Record<string, unknown>;
+		const payload = product.$qSerialize() as Record<string, unknown>;
 		expect(payload['price']).toBe(9.99);
 		expect(payload['summary']).toBe('Widget — $9.99 (50 in stock)');
 		expect(() => JSON.stringify(payload)).not.toThrow();
@@ -650,7 +646,7 @@ describe('DevTools — readable payloads via serialize()', () => {
 			{ uid: 'd4', name: 'B', email: 'b@x.com', role: 'admin', age: 30 },
 		];
 		const { instances } = UserDto.createMany(batch as any[]);
-		const payloads = instances.map((inst) => inst.$qm.serialize());
+		const payloads = instances.map((inst) => inst.$qSerialize());
 		expect(payloads.every((pay) => !(pay instanceof QModel))).toBe(true);
 		expect(JSON.parse(JSON.stringify(payloads)) as unknown[]).toHaveLength(
 			// @quickmodel-rule-ignore: no-as-unknown

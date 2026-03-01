@@ -15,8 +15,8 @@ import { QConfig } from '@/core/config/quick.config';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 import { QModel, Quick } from '@/index';
 import { QRule } from '@/core/decorators/qrule.decorator';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 import { Serializer } from '@/core/services/serializer.service';
 import type { IQTraceEntry } from '@/core/config/quick.config';
 import 'reflect-metadata';
@@ -294,10 +294,10 @@ describe('serialize trace', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 6. rule-fail, rule-pass, rule-error traces via qCheckRules
+// 6. rule-fail, rule-pass, rule-error traces via $qCheckRules
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('qCheckRules traces', () => {
+describe('$qCheckRules traces', () => {
 	it('emits rule-fail when predicate returns false', () => {
 		const { entries, sink } = collectSink();
 		QConfig.configure({
@@ -306,7 +306,7 @@ describe('qCheckRules traces', () => {
 
 		const form = new FormWithRules();
 		form.name = 'Ab'; // too short — fails
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		const failEntries = entries.filter((ent) => ent.event === 'rule-fail');
 		expect(failEntries.length).toBeGreaterThanOrEqual(1);
@@ -322,7 +322,7 @@ describe('qCheckRules traces', () => {
 
 		const form = new FormWithRules();
 		form.name = 'Alice'; // passes
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		const passEntries = entries.filter(
 			(ent) => ent.event === 'rule-pass' && ent.field === 'name'
@@ -337,7 +337,7 @@ describe('qCheckRules traces', () => {
 		});
 
 		const form = new FormWithRules();
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		const errorEntries = entries.filter(
 			(ent) => ent.event === 'rule-error'
@@ -353,7 +353,7 @@ describe('qCheckRules traces', () => {
 
 		const form = new FormWithRules();
 		form.name = 'Alice';
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		const passEntries = entries.filter((ent) => ent.event === 'rule-pass');
 		expect(passEntries).toHaveLength(0);
@@ -361,10 +361,10 @@ describe('qCheckRules traces', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 7. rule-timeout via qCheckRulesAsync
+// 7. rule-timeout via $qCheckRulesAsync
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('qCheckRulesAsync traces — rule-timeout', () => {
+describe('$qCheckRulesAsync traces — rule-timeout', () => {
 	it('emits rule-timeout when async predicate exceeds timeoutMs', async () => {
 		const { entries, sink } = collectSink();
 		QConfig.configure({
@@ -383,7 +383,7 @@ describe('qCheckRulesAsync traces — rule-timeout', () => {
 		}
 
 		const frm = new SlowForm();
-		await qCheckRulesAsync(frm, { timeoutMs: 10 });
+		await $qCheckRulesAsync(frm, { timeoutMs: 10 });
 
 		const timeoutEntries = entries.filter(
 			(ent) => ent.event === 'rule-timeout'
@@ -400,7 +400,7 @@ describe('qCheckRulesAsync traces — rule-timeout', () => {
 
 		const frm = new FormWithAsyncRule();
 		frm.field = 'wrong';
-		await qCheckRulesAsync(frm);
+		await $qCheckRulesAsync(frm);
 
 		const failEntries = entries.filter(
 			(ent) => ent.event === 'rule-fail' && ent.field === 'field'
@@ -416,7 +416,7 @@ describe('qCheckRulesAsync traces — rule-timeout', () => {
 
 		const frm = new FormWithAsyncRule();
 		frm.field = 'valid';
-		await qCheckRulesAsync(frm);
+		await $qCheckRulesAsync(frm);
 
 		const passEntries = entries.filter(
 			(ent) => ent.event === 'rule-pass' && ent.field === 'field'

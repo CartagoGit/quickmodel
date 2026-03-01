@@ -144,7 +144,7 @@ class UserOutput extends QModel<IUserOutput> {
 // In procedure:
 const dbRow = await db.findUser(id); // may have extra SQL columns
 const out = new UserOutput(dbRow); // strips unknown fields automatically
-return out.$qm.serialize(); // { uid, name, email, role, age, label } — clean output
+return out.$qSerialize(); // { uid, name, email, role, age, label } — clean output
 ```
 
 ## Middleware Coercion
@@ -204,7 +204,7 @@ export const listUsers = trpc.procedure
 		});
 
 		const { instances } = UserOutput.createMany(rows);
-		return instances.map((dto) => dto.$qm.serialize());
+		return instances.map((dto) => dto.$qSerialize());
 	});
 ```
 
@@ -247,9 +247,9 @@ export const updateUser = trpc.procedure
     const validated = qCheckRules(input);
     if (!validated.valid) throw new TRPCError({ code: 'BAD_REQUEST', ... });
 
-    const updated = existing.$qm.copy({ name: input.name, age: input.age });
+    const updated = existing.$qCopy({ name: input.name, age: input.age });
     await db.users.update(input.uid, updated.toInterface());
-    return updated.$qm.serialize();
+    return updated.$qSerialize();
   });
 ```
 

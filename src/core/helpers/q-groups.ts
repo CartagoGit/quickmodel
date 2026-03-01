@@ -77,7 +77,7 @@ export type IQGroupsMap<T extends string> = { [K in T]: K };
  * @see {@link qCheckRules} — pass `Groups.name` to the `group` option
  * @see {@link QGroup} — use the map entries as group name arguments
  */
-export function qGroups<T extends string[]>(
+export function $qGroups<T extends string[]>(
 	...groups: T
 ): IQGroupsMap<T[number]>;
 
@@ -104,13 +104,15 @@ export function qGroups<T extends string[]>(
  * @see {@link IQGroupsMap} — the shape of the returned map
  * @see {@link qGroups} — spread overload (no array wrapper needed)
  */
-export function qGroups<T extends string>(groups: readonly T[]): IQGroupsMap<T>;
+export function $qGroups<T extends string>(
+	groups: readonly T[]
+): IQGroupsMap<T>;
 
 // ---------------------------------------------------------------------------
 // Implementation
 // ---------------------------------------------------------------------------
 
-export function qGroups<T extends string>(
+export function $qGroups<T extends string>(
 	...args: [readonly T[]] | T[]
 ): IQGroupsMap<T> {
 	const list = (Array.isArray(args[0]) ? args[0] : args) as T[];

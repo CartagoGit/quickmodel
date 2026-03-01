@@ -38,10 +38,10 @@ describe('Nested Model Validation', () => {
 		});
 
 		// The nested model itself should be invalid
-		expect(parent.nested.checkIntegrity().length).toBeGreaterThan(0);
+		expect(parent.nested.$qCheckIntegrity().length).toBeGreaterThan(0);
 
 		// The parent validation SHOULD trigger the nested validation and report it
-		const parentErrors = parent.checkIntegrity();
+		const parentErrors = parent.$qCheckIntegrity();
 
 		expect(parentErrors.length).toBeGreaterThan(0);
 		expect(parentErrors[0]?.error).toContain('nested');

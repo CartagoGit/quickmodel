@@ -127,7 +127,7 @@ describe('E2E: E-Commerce Order Flow', () => {
 		expect(order.metadata.get('source')).toBe('web');
 
 		// 4. Serialize for API (toInterface)
-		const payload = order.toInterface();
+		const payload = order.$qToInterface();
 
 		expect(typeof payload.totalAmount).toBe('string');
 		expect(payload.totalAmount).toBe('300000');

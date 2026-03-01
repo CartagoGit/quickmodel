@@ -29,7 +29,7 @@ const DEFAULT_TTL_MS = 2 * 60 * 1000;
 const DEFAULT_STALE_MS = 30 * 1000;
 
 /** A single active agent entry in the registry. */
-interface IAgentEntry {
+export interface IAgentEntry {
 	agentId: string;
 	task: string;
 	/** File paths or glob patterns owned by this agent. */
@@ -142,43 +142,36 @@ function setsOverlap(filesA: string[], filesB: string[]): boolean {
 	return false;
 }
 
-type IClaimResult =
-	| {
-			claimed: true;
-			conflict: false;
-			otherAgents: IAgentEntry[];
-			summary: string;
-	  }
-	| {
-			claimed: false;
-			conflict: true;
-			claimedBy: string;
-			conflictingTask: string;
-			conflictingFiles: string[];
-			claimedSince: string;
-			summary: string;
-	  }
-	| { claimed: false; conflict: false; summary: string };
+export interface IClaimResult {
+	claimed: boolean;
+	conflict: boolean;
+	otherAgents?: IAgentEntry[];
+	claimedBy?: string;
+	conflictingTask?: string;
+	conflictingFiles?: string[];
+	claimedSince?: string;
+	summary: string;
+}
 
-interface ICheckResult {
+export interface ICheckResult {
 	agents: IAgentEntry[];
 	total: number;
 	purgedStale: number;
 	summary: string;
 }
 
-interface IReleaseResult {
+export interface IReleaseResult {
 	released: boolean;
 	summary: string;
 }
 
-interface IPurgeResult {
+export interface IPurgeResult {
 	purged: number;
 	remaining: number;
 	summary: string;
 }
 
-interface IUpdateResult {
+export interface IUpdateResult {
 	updated: boolean;
 	expiresAt: string;
 	summary: string;
@@ -225,10 +218,22 @@ type ICoordinateResult =
  * // 1. Before starting — see who is working on what:
  * await agent_coordinate({ action: 'check' });
  * // → { agents: [{ agentId: 'agent-A', task: 'migrate docs', files: ['docs-vitepress/en/**'] }] }
+ * // If agents[] is non-empty → review their working-tree changes before proceeding.
+ * // Ask them to commit or stash, so your rename starts from a clean shared baseline.
  *
- * // 2. Claim your work area:
+ * // 2. Claim your work area (targeted change — a few files):
  * await agent_coordinate({ action: 'claim', agentId: 'agent-B', task: 'fix tests', files: ['tests/**'] });
  * // → { claimed: true, conflict: false, otherAgents: [{ agentId: 'agent-A', ... }] }
+ *
+ * // 2b. Claim for a MASS-RENAME / project-wide refactor (e.g. rename .$qm → .$q* everywhere):
+ * await agent_coordinate({
+ *   action: 'claim', agentId: 'agent-B',
+ *   task: 'rename .$qm to .$q* across entire project',
+ *   files: ['src/**', 'tests/**', 'docs-vitepress/**'],
+ *   ttlMs: 1_800_000   // 30 min — mass operations take time
+ * });
+ * // RULE: never under-claim on wide operations. If in doubt, claim more, not less.
+ * // RULE: do NOT proceed if conflict:true — another agent is modifying the same files.
  *
  * // 3. Conflict scenario:
  * await agent_coordinate({ action: 'claim', agentId: 'agent-C', task: 'update guide', files: ['docs-vitepress/en/guide/qmodel.md'] });
@@ -242,7 +247,7 @@ type ICoordinateResult =
  * // 4. Heartbeat for long tasks (call every ~15 min):
  * await agent_coordinate({ action: 'update', agentId: 'agent-B' });
  *
- * // 5. Release when done:
+ * // 5. Release when done (ALWAYS release, even if the task fails):
  * await agent_coordinate({ action: 'release', agentId: 'agent-B' });
  *
  * // 6. Unstick a crashed agent:
@@ -274,13 +279,26 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	name = 'agent_coordinate';
 	description =
 		'Coordinate parallel agent work to prevent file conflicts. ' +
-		'action="check": list all active agents — ALWAYS call this first. ' +
-		'action="claim": register task + files; uses glob-aware overlap detection; returns conflict:true if blocked. ' +
-		'  Set force=true to override a stale lock (updatedAt older than ~30 s) from a crashed agent. ' +
-		'action="release": free the claim when done. ' +
+		'MANDATORY PROTOCOL — every agent MUST follow this before modifying any file:\n' +
+		'  1. action="check": list all active agents — ALWAYS call this first. ' +
+		'     If otherAgents is non-empty, review what they are changing before you start ' +
+		'     (check git staged/unstaged files, ask them to commit if needed). ' +
+		'     Do NOT start a task that overlaps with what another agent is doing.\n' +
+		'  2. action="claim": register task + files; uses glob-aware overlap detection; returns conflict:true if blocked. ' +
+		'     SCOPE RULES — choose the right glob width:\n' +
+		'       - Targeted change (≤10 files): list the exact paths.\n' +
+		'       - Module-wide change: "src/mcp/tools/**" or similar sub-tree glob.\n' +
+		'       - Mass-rename / project-wide refactor (e.g. renaming .$qm to .$q* across ALL files): ' +
+		'         claim ["src/**", "tests/**", "docs-vitepress/**"] — never under-claim on wide operations. ' +
+		'         Also increase ttlMs to 1800000 (30 min) or more for operations touching hundreds of files.\n' +
+		'     Set force=true to override a stale lock (updatedAt older than ~30 s) from a crashed agent.\n' +
+		'  3. Do your work.\n' +
+		'  4. action="release": free the claim when done — ALWAYS release, even if the task fails.\n' +
 		'action="update": refresh TTL heartbeat for long-running tasks (call every ~15 min). ' +
 		'action="purge": forcibly clear stuck/stale claims (optional agentId to target one). ' +
-		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 2 min without heartbeat.';
+		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 2 min without heartbeat. ' +
+		"CRITICAL: two agents doing the same mass-rename simultaneously will corrupt each other's work. " +
+		'There is no automatic merge — the last writer wins and overwrites everything the first agent did.';
 
 	schema = z.object({
 		action: z
@@ -305,15 +323,20 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			.max(50)
 			.optional()
 			.describe(
-				'File paths or glob patterns to lock, e.g. ["docs-vitepress/en/**", "src/core/**"]. ' +
-					'Glob-aware: docs-vitepress/en/** conflicts with docs-vitepress/en/guide/qmodel.md.'
+				'File paths or glob patterns to lock. ' +
+					'SCOPE RULES: targeted change → list exact paths; ' +
+					'module-wide → "src/mcp/tools/**"; ' +
+					'mass-rename / project-wide refactor → ["src/**", "tests/**", "docs-vitepress/**"]. ' +
+					'Never under-claim: a conflict caught early is far cheaper than two agents overwriting each other. ' +
+					'Glob-aware: src/** conflicts with src/core/qm.ts; docs/en/** does NOT conflict with docs/es/**.'
 			),
 		ttlMs: z
 			.number()
-			.max(600_000)
+			.max(1_800_000)
 			.optional()
 			.describe(
 				'Custom TTL in milliseconds for this claim. Defaults to 120000 (2 minutes). ' +
+					'For mass-renames or wide refactors touching hundreds of files, use 1800000 (30 min). ' +
 					'Any check() call with agentId acts as an implicit heartbeat and resets this timer.'
 			),
 		force: z
@@ -373,7 +396,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	 * `null` when the ticker is not running. Static guarantees only one ticker exists
 	 * regardless of how many `QAgentCoordinateTool` instances are created.
 	 */
-	private static _tickerHandle: ReturnType<typeof setInterval> | null = null;
+	static _tickerHandle: ReturnType<typeof setInterval> | null = null;
 
 	/**
 	 * @internal Epoch ms of the last real operation (claim/release/update/purge).
@@ -935,6 +958,29 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	 * @returns A structured result whose shape depends on the action.
 	 * @see {@link QAbstractTool.execute} — base contract
 	 */
+	execute(args: {
+		action: 'check';
+		agentId?: string;
+		ttlMs?: number;
+	}): Promise<ICheckResult>;
+	execute(args: {
+		action: 'claim';
+		agentId?: string;
+		task?: string;
+		files?: string[];
+		ttlMs?: number;
+		force?: boolean;
+	}): Promise<IClaimResult>;
+	execute(args: {
+		action: 'release';
+		agentId?: string;
+	}): Promise<IReleaseResult>;
+	execute(args: {
+		action: 'update';
+		agentId?: string;
+		ttlMs?: number;
+	}): Promise<IUpdateResult>;
+	execute(args: { action: 'purge'; agentId?: string }): Promise<IPurgeResult>;
 	async execute(args: {
 		action: 'claim' | 'check' | 'release' | 'update' | 'purge';
 		agentId?: string;

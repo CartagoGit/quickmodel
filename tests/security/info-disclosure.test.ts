@@ -25,7 +25,7 @@ describe('Security: Information Disclosure (Private Fields)', () => {
 		// @ts-expect-error testing invalid input
 		user.apiToken = 'my-token';
 
-		const serialized = user.$qm.serialize();
+		const serialized = user.$qSerialize();
 
 		// 1. Should exclude __ properties by default
 		expect(serialized).not.toHaveProperty('__deepSecret');

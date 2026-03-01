@@ -2,13 +2,13 @@
 /**
  * Prisma ORM integration patterns
  * Covers: DTO from Prisma result, create input, createMany seed,
- *         repository pattern, copy() partial update, @QComputed, qCheckRulesAsync uniqueness
+ *         repository pattern, copy() partial update, @QComputed, $qCheckRulesAsync uniqueness
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -226,7 +226,7 @@ describe('DTO from Prisma result', () => {
 			active: true,
 			score: 60,
 		});
-		const iface = dto.toInterface();
+		const iface = dto.$qToInterface();
 		expect(iface.uid).toBe('p5');
 		expect(iface.role).toBe('user');
 	});
@@ -241,7 +241,7 @@ describe('DTO from Prisma result', () => {
 			active: true,
 			score: 80,
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
 	});
 });
@@ -258,7 +258,7 @@ describe('Create input — toInterface() for prisma.create()', () => {
 			age: 25,
 			role: 'user',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -269,7 +269,7 @@ describe('Create input — toInterface() for prisma.create()', () => {
 			age: 30,
 			role: 'admin',
 		});
-		const createInput = dto.toInterface();
+		const createInput = dto.$qToInterface();
 		expect(createInput.name).toBe('Bob');
 		expect(createInput.email).toBe('bob@db.io');
 	});
@@ -281,7 +281,7 @@ describe('Create input — toInterface() for prisma.create()', () => {
 			age: 20,
 			role: 'user',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -293,7 +293,7 @@ describe('Create input — toInterface() for prisma.create()', () => {
 			age: 15,
 			role: 'user',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'age')).toBe(true);
 	});
@@ -308,7 +308,7 @@ describe('Create input — toInterface() for prisma.create()', () => {
 			submit: true,
 		};
 		const dto = new CreateUserDto(formData);
-		const input = dto.toInterface();
+		const input = dto.$qToInterface();
 		expect(
 			(input as unknown as Record<string, unknown>)['_csrf'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
@@ -385,7 +385,7 @@ describe('createMany() — seed / bulk import', () => {
 			},
 		];
 		const { instances } = UserRecordDto.createMany(seed as any[]);
-		const prismaData = instances.map((dto) => dto.toInterface());
+		const prismaData = instances.map((dto) => dto.$qToInterface());
 		expect(prismaData[0]?.uid).toBe('s5');
 	});
 });
@@ -401,7 +401,7 @@ describe('Repository pattern with QModel layer', () => {
 		create(dto: CreateUserDto): UserRecordDto {
 			const uid = `uid-${Math.random().toString(36).slice(2, 7)}`;
 			const record = {
-				...dto.toInterface(),
+				...dto.$qToInterface(),
 				uid,
 				active: true,
 				score: 0,
@@ -503,7 +503,7 @@ describe('copy() + prisma.update() partial update', () => {
 			active: true,
 			score: 50,
 		});
-		const updated = existing.$qm.copy({ score: 100, role: 'admin' });
+		const updated = existing.$qCopy({ score: 100, role: 'admin' });
 		expect(updated.score).toBe(100);
 		expect(updated.role).toBe('admin');
 		expect(existing.score).toBe(50); // immutable
@@ -519,9 +519,9 @@ describe('copy() + prisma.update() partial update', () => {
 			active: false,
 			score: 20,
 		});
-		const patched = dto.$qm.copy({ active: true });
+		const patched = dto.$qCopy({ active: true });
 		expect(patched.active).toBe(true);
-		expect(patched.$qm.isDirty()).toBe(false); // copy() sets __initData = merged state
+		expect(patched.$qIsDirty()).toBe(false); // copy() sets __initData = merged state
 	});
 
 	test('toInterface() of copy() is suitable for prisma.update() data arg', () => {
@@ -534,8 +534,8 @@ describe('copy() + prisma.update() partial update', () => {
 			active: true,
 			score: 0,
 		});
-		const patched = dto.$qm.copy({ name: 'Caroline' });
-		const updateData = patched.toInterface();
+		const patched = dto.$qCopy({ name: 'Caroline' });
+		const updateData = patched.$qToInterface();
 		expect(updateData.name).toBe('Caroline');
 		expect(updateData.uid).toBe('upd3');
 	});
@@ -571,7 +571,7 @@ describe('@QComputed() for derived fields', () => {
 			views: 0,
 		});
 
-		postStore.set('post1', post.$qm.serialize());
+		postStore.set('post1', post.$qSerialize());
 		expect(post.excerpt.endsWith('…')).toBe(true);
 		expect(post.excerpt.length).toBeLessThanOrEqual(101);
 	});
@@ -707,7 +707,7 @@ describe('Prisma type coercion — Decimal, DateTime, Json', () => {
 			metadata: '{"key":"val"}',
 			tags: '["a","b"]',
 		});
-		const payload = dto.$qm.serialize() as Record<string, unknown>;
+		const payload = dto.$qSerialize() as Record<string, unknown>;
 		expect(payload['price']).toBe(29.99);
 		expect(payload['metadata']).toBe('{"key":"val"}');
 	});
@@ -720,17 +720,17 @@ describe('Prisma type coercion — Decimal, DateTime, Json', () => {
 			metadata: '{}',
 			tags: '[]',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'price')).toBe(true);
 	});
 });
 
 // ---------------------------------------------------------------------------
-// 7. qCheckRulesAsync — DB-level validation
+// 7. $qCheckRulesAsync — DB-level validation
 // ---------------------------------------------------------------------------
 
-describe('qCheckRulesAsync — DB-level validation', () => {
+describe('$qCheckRulesAsync — DB-level validation', () => {
 	const emailRegistry = new Set<string>(['taken@db.io']);
 
 	class UserWithUniqueEmailDto extends CreateUserDto {
@@ -748,7 +748,7 @@ describe('qCheckRulesAsync — DB-level validation', () => {
 			age: 25,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -759,7 +759,7 @@ describe('qCheckRulesAsync — DB-level validation', () => {
 			age: 20,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 	});
 });

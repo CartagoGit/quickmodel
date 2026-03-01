@@ -67,6 +67,19 @@ export class QRefactorPrompt extends QAbstractInternalPrompt<{
 						`- **No barrel files** — import directly from the source file\n` +
 						`- **Tabs, single-quotes, 100 chars max** line length\n\n` +
 						`## Step-by-step plan\n\n` +
+						`**Step 0 — 🤝 Register your work (mandatory):**\n` +
+						`Before touching any file:\n` +
+						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is working on overlapping files.\n` +
+						`   If \`agents[]\` is non-empty: check what they are currently changing (staged/unstaged files via git). ` +
+						`   For a mass-rename this is critical — ask them to commit or stash before you start, ` +
+						`   so your rename acts on a clean known baseline.\n` +
+						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, a description of the refactor, and the \`files\` globs:\n` +
+						`   - Targeted refactor (a few files): list the specific paths\n` +
+						`   - **Wide-scope / mass-rename:** claim \`["src/**", "tests/**"]\` or \`["src/**", "tests/**", "docs-vitepress/**"]\`\n` +
+						`   - **For mass operations, also set \`ttlMs: 1800000\` (30 min)** — default is 2 min which may expire mid-rename\n` +
+						`3. If \`conflict: true\` → **STOP immediately**. Do not modify any file. Inform the user and wait.\n` +
+						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +
+						`> ⛔ **Two agents doing the same mass-rename simultaneously will corrupt each other's work — there is no auto-merge.**\n\n` +
 						`**Step 1 — Baseline (green):**\n` +
 						`Call \`run_tests\` to confirm the suite is currently passing.\n` +
 						`Only proceed if \`passed: true\`.\n\n` +
@@ -85,8 +98,9 @@ export class QRefactorPrompt extends QAbstractInternalPrompt<{
 						`- \`run_tests\` → \`passed: true\`\n` +
 						`- \`lint_check\` → \`passed: true\`\n` +
 						`- \`typecheck\` → \`passed: true\`\n` +
-						`- \`check_project_rules\` → zero violations\n\n` +
-						`Let me start with Step 1 now.`
+						`- \`check_project_rules\` → zero violations\n` +
+						`- \`agent_coordinate release\` called\n\n` +
+						`Let me start with Step 0 (coordination check) now.`
 				),
 				this.user(
 					`Go ahead — run the tests first to establish the baseline, ` +

@@ -112,7 +112,7 @@ export function describeBench(): void {
 				return;
 			}
 			const res = runBench('Benchmark 1: joi', ITERS, () => {
-				schemas.simpleSchema.validate(simpleUserData, {
+				schemas.simpleSchema.$qValidate(simpleUserData, {
 					abortEarly: false,
 				});
 			});
@@ -202,7 +202,7 @@ export function describeBench(): void {
 					allResults.length - 1,
 					0,
 					runBench('Benchmark 1: joi', ITERS, () => {
-						joiSchemas.simpleSchema.validate(simpleUserData, {
+						joiSchemas.simpleSchema.$qValidate(simpleUserData, {
 							abortEarly: false,
 						});
 					})

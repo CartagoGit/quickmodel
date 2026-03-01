@@ -8,7 +8,6 @@ import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
 import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -176,14 +175,14 @@ describe('localStorage — basic operations', () => {
 
 	test('serialize() produces a JSON-safe object for storage', () => {
 		const dto = new UserRecordDto(makeUser());
-		const serialized = JSON.stringify(dto.$qm.serialize());
+		const serialized = JSON.stringify(dto.$qSerialize());
 		expect(typeof serialized).toBe('string');
 		expect(serialized).toContain('alice@example.com');
 	});
 
 	test('roundtrip: serialize → store → parse → new instance', () => {
 		const original = new UserRecordDto(makeUser());
-		storage.set('user', JSON.stringify(original.$qm.serialize()));
+		storage.set('user', JSON.stringify(original.$qSerialize()));
 
 		const raw = storage.get('user');
 		expect(raw).toBeDefined();
@@ -219,17 +218,17 @@ describe('localStorage — basic operations', () => {
 
 	test('copy() returns new instance without mutating storage', () => {
 		const dto = new UserRecordDto(makeUser());
-		storage.set('user', JSON.stringify(dto.$qm.serialize()));
+		storage.set('user', JSON.stringify(dto.$qSerialize()));
 
-		const updated = dto.$qm.copy({ score: 200 });
+		const updated = dto.$qCopy({ score: 200 });
 		expect(dto.score).toBe(100);
 		expect(updated.score).toBe(200);
 	});
 
 	test('isDirty() detects changes without touching storage', () => {
 		const dto = new UserRecordDto(makeUser());
-		const updated = dto.$qm.copy({ name: 'Bob' });
-		expect(updated.$qm.isDirty()).toBe(true);
+		const updated = dto.$qCopy({ name: 'Bob' });
+		expect(updated.$qIsDirty()).toBe(true);
 	});
 });
 
@@ -288,14 +287,14 @@ describe('IndexedDB — simulated store operations', () => {
 		];
 		users.forEach((raw) => {
 			const dto = new UserRecordDto(raw);
-			idbStore.set(dto.uid, dto.$qm.serialize());
+			idbStore.set(dto.uid, dto.$qSerialize());
 		});
 		expect(idbStore.size).toBe(2);
 	});
 
 	test('retrieves and restores a DTO from simulated IDB', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'idb-1' }));
-		idbStore.set('idb-1', dto.$qm.serialize());
+		idbStore.set('idb-1', dto.$qSerialize());
 
 		const raw = idbStore.get('idb-1');
 		expect(raw).toBeDefined();
@@ -317,7 +316,7 @@ describe('IndexedDB — simulated store operations', () => {
 	test('index lookup: filter by role', () => {
 		['admin', 'user', 'user', 'guest'].forEach((role, idx) => {
 			const dto = new UserRecordDto(makeUser({ uid: `r${idx}`, role }));
-			idbStore.set(dto.uid, dto.$qm.serialize());
+			idbStore.set(dto.uid, dto.$qSerialize());
 		});
 
 		const admins = [...idbStore.values()]
@@ -329,10 +328,10 @@ describe('IndexedDB — simulated store operations', () => {
 
 	test('update in IDB via copy()', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'upd-1' }));
-		idbStore.set('upd-1', dto.$qm.serialize());
+		idbStore.set('upd-1', dto.$qSerialize());
 
-		const updated = dto.$qm.copy({ score: 500 });
-		idbStore.set('upd-1', updated.$qm.serialize());
+		const updated = dto.$qCopy({ score: 500 });
+		idbStore.set('upd-1', updated.$qSerialize());
 
 		const retrieved = new UserRecordDto(
 			idbStore.get('upd-1') as Record<string, unknown>
@@ -342,7 +341,7 @@ describe('IndexedDB — simulated store operations', () => {
 
 	test('delete entry removes from store', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'del-1' }));
-		idbStore.set('del-1', dto.$qm.serialize());
+		idbStore.set('del-1', dto.$qSerialize());
 		idbStore.delete('del-1');
 		expect(idbStore.has('del-1')).toBe(false);
 	});
@@ -369,7 +368,7 @@ describe('SQLite — row mapping patterns', () => {
 	test('Date fields survive roundtrip through JSON', () => {
 		const now = new Date('2025-06-01T00:00:00.000Z');
 		const dto = new DbRowDto(makeRow({ created: now, updated: now }));
-		const json = JSON.stringify(dto.$qm.serialize());
+		const json = JSON.stringify(dto.$qSerialize());
 		const restored = new DbRowDto(
 			JSON.parse(json) as Record<string, unknown>
 		);
@@ -379,13 +378,13 @@ describe('SQLite — row mapping patterns', () => {
 	test('bulk insert via createMany()', () => {
 		const rows = [1, 2, 3].map((rowId) => makeRow({ rowId }));
 		const { instances } = DbRowDto.createMany(rows as any[]);
-		instances.forEach((row) => sqliteTable.push(row.toInterface()));
+		instances.forEach((row) => sqliteTable.push(row.$qToInterface()));
 		expect(sqliteTable.length).toBe(3);
 	});
 
 	test('soft-delete via copy()', () => {
 		const dto = new DbRowDto(makeRow({ rowId: 10 }));
-		const deleted = dto.$qm.copy({ deleted: true, updated: new Date() });
+		const deleted = dto.$qCopy({ deleted: true, updated: new Date() });
 		expect(deleted.deleted).toBe(true);
 		expect(dto.deleted).toBe(false);
 	});
@@ -415,7 +414,7 @@ describe('SQLite — row mapping patterns', () => {
 
 	test('serialize() for INSERT statement params', () => {
 		const dto = new DbRowDto(makeRow({ rowId: 99, payload: '{"x":1}' }));
-		const params = dto.$qm.serialize();
+		const params = dto.$qSerialize();
 		expect(params).toHaveProperty('rowId', 99);
 		expect(params).toHaveProperty('payload', '{"x":1}');
 	});
@@ -434,7 +433,7 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('stores a DTO via Preferences.set() simulation', () => {
 		const dto = new AppCacheDto(makeCache({ key: 'pref-a' }));
-		prefStore.set(dto.key, JSON.stringify(dto.$qm.serialize()));
+		prefStore.set(dto.key, JSON.stringify(dto.$qSerialize()));
 		expect(prefStore.has('pref-a')).toBe(true);
 	});
 
@@ -442,7 +441,7 @@ describe('Capacitor Preferences — typed storage', () => {
 		const dto = new AppCacheDto(
 			makeCache({ key: 'pref-b', value: '"hello"' })
 		);
-		prefStore.set('pref-b', JSON.stringify(dto.$qm.serialize()));
+		prefStore.set('pref-b', JSON.stringify(dto.$qSerialize()));
 
 		const raw = prefStore.get('pref-b');
 		const restored = new AppCacheDto(
@@ -468,7 +467,7 @@ describe('Capacitor Preferences — typed storage', () => {
 		const dto = new AppCacheDto(makeCache({ key: 'fresh-key' }));
 		prefStore.set(
 			'fresh-key',
-			JSON.stringify({ dto: dto.$qm.serialize(), exp })
+			JSON.stringify({ dto: dto.$qSerialize(), exp })
 		);
 
 		const raw = JSON.parse(prefStore.get('fresh-key')!) as {
@@ -483,7 +482,7 @@ describe('Capacitor Preferences — typed storage', () => {
 
 	test('hits counter incremented via copy()', () => {
 		const dto = new AppCacheDto(makeCache({ key: 'hit-key', hits: 3 }));
-		const updated = dto.$qm.copy({ hits: dto.hits + 1 });
+		const updated = dto.$qCopy({ hits: dto.hits + 1 });
 		expect(updated.hits).toBe(4);
 		expect(dto.hits).toBe(3);
 	});
@@ -545,15 +544,15 @@ describe('In-memory LRU cache', () => {
 	test('toInterface() from cache entry is stable', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'lru-iface' }));
 		cache.set('lru-iface', dto);
-		const iface = cache.get('lru-iface')?.toInterface();
+		const iface = cache.get('lru-iface')?.$qToInterface();
 		expect(iface?.uid).toBe('lru-iface');
 	});
 
 	test('isDirty() after copy() still works inside cache', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'lru-dirty' }));
 		cache.set('lru-dirty', dto);
-		const updated = cache.get('lru-dirty')!.copy({ name: 'Charlie' });
-		expect(updated.$qm.isDirty()).toBe(true);
+		const updated = cache.get('lru-dirty')!.$qCopy({ name: 'Charlie' });
+		expect(updated.$qIsDirty()).toBe(true);
 	});
 
 	test('cache survives createMany() population', () => {
@@ -574,7 +573,7 @@ describe('In-memory LRU cache', () => {
 describe('BroadcastChannel — cross-tab sync', () => {
 	test('serialized DTO can be sent as BroadcastChannel message', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'bc-1' }));
-		const message = { type: 'UPDATE_USER', payload: dto.$qm.serialize() };
+		const message = { type: 'UPDATE_USER', payload: dto.$qSerialize() };
 		const json = JSON.stringify(message);
 		expect(json).toContain('bc-1');
 	});
@@ -583,7 +582,7 @@ describe('BroadcastChannel — cross-tab sync', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'bc-2' }));
 		const json = JSON.stringify({
 			type: 'UPDATE_USER',
-			payload: dto.$qm.serialize(),
+			payload: dto.$qSerialize(),
 		});
 
 		const msg = JSON.parse(json) as {
@@ -596,7 +595,7 @@ describe('BroadcastChannel — cross-tab sync', () => {
 
 	test('validation passes after BroadcastChannel roundtrip', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'bc-3' }));
-		const json = JSON.stringify(dto.$qm.serialize());
+		const json = JSON.stringify(dto.$qSerialize());
 		const restored = new UserRecordDto(
 			JSON.parse(json) as Record<string, unknown>
 		);
@@ -613,7 +612,7 @@ describe('OPFS & Service Worker cache', () => {
 	test('serialize() output is suitable for OPFS write (JSON string)', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'opfs-1' }));
 		const bytes = new TextEncoder().encode(
-			JSON.stringify(dto.$qm.serialize())
+			JSON.stringify(dto.$qSerialize())
 		);
 		expect(bytes.byteLength).toBeGreaterThan(0);
 	});
@@ -621,7 +620,7 @@ describe('OPFS & Service Worker cache', () => {
 	test('restore from OPFS read (JSON parse)', () => {
 		const dto = new UserRecordDto(makeUser({ uid: 'opfs-2' }));
 		const bytes = new TextEncoder().encode(
-			JSON.stringify(dto.$qm.serialize())
+			JSON.stringify(dto.$qSerialize())
 		);
 
 		const text = new TextDecoder().decode(bytes);

@@ -128,7 +128,7 @@ export class QDrizzlePrompt extends QAbstractPrompt<{
 							? `6. Generate a \`Drizzle${dto_name ?? 'Entity'}Repository\` class with insert(), findById(), findAll(), and delete() methods\n`
 							: '') +
 						(patternList.includes('copy')
-							? `7. Show the partial update pattern: \`existing.$qm.copy({ field: value })\` → \`db.update().set(...)\`\n`
+							? `7. Show the partial update pattern: \`existing.$qCopy({ field: value })\` → \`db.update().set(...)\`\n`
 							: '') +
 						(patternList.includes('createMany')
 							? `8. Show the bulk seed/import pattern using \`${dto_name ?? 'EntityDto'}.createMany(seed)\`\n`

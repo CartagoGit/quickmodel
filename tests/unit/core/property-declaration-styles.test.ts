@@ -150,7 +150,7 @@ describe('Property Declaration Styles', () => {
 	describe('Serialization', () => {
 		test('declare: should serialize correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const IQSerialized = user.$qm.serialize();
+			const IQSerialized = user.$qSerialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('John Doe');
@@ -161,7 +161,7 @@ describe('Property Declaration Styles', () => {
 
 		test('!: should serialize correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const IQSerialized = user.$qm.serialize();
+			const IQSerialized = user.$qSerialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('John Doe');
@@ -172,7 +172,7 @@ describe('Property Declaration Styles', () => {
 
 		test('?: should serialize correctly', () => {
 			const user = new UserWithOptional(testData);
-			const IQSerialized = user.$qm.serialize();
+			const IQSerialized = user.$qSerialize();
 
 			expect(IQSerialized.id).toBe('test-123');
 			expect(IQSerialized.name).toBe('John Doe');
@@ -188,7 +188,7 @@ describe('Property Declaration Styles', () => {
 	describe('toInterface()', () => {
 		test('declare: should return interface with current values', () => {
 			const user = new UserWithDeclare(testData);
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.id).toBe('test-123');
 			expect(iface.name).toBe('John Doe');
@@ -199,7 +199,7 @@ describe('Property Declaration Styles', () => {
 
 		test('!: should return interface with current values', () => {
 			const user = new UserWithExclamation(testData);
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.id).toBe('test-123');
 			expect(iface.name).toBe('John Doe');
@@ -210,7 +210,7 @@ describe('Property Declaration Styles', () => {
 
 		test('?: should return interface with current values', () => {
 			const user = new UserWithOptional(testData);
-			const iface = user.toInterface();
+			const iface = user.$qToInterface();
 
 			expect(iface.id).toBe('test-123');
 			expect(iface.name).toBe('John Doe');
@@ -227,30 +227,30 @@ describe('Property Declaration Styles', () => {
 		test('declare: should track changes correctly', () => {
 			const user = new UserWithDeclare(testData);
 
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 
 			user.name = 'Jane Doe';
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 			expect(user.getChangedFields()).toContain('name');
 		});
 
 		test('!: should track changes correctly', () => {
 			const user = new UserWithExclamation(testData);
 
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 
 			user.name = 'Jane Doe';
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 			expect(user.getChangedFields()).toContain('name');
 		});
 
 		test('?: should track changes correctly', () => {
 			const user = new UserWithOptional(testData);
 
-			expect(user.hasChanges()).toBe(false);
+			expect(user.$qHasChanges()).toBe(false);
 
 			user.name = 'Jane Doe';
-			expect(user.hasChanges()).toBe(true);
+			expect(user.$qHasChanges()).toBe(true);
 			expect(user.getChangedFields()).toContain('name');
 		});
 	});
@@ -299,7 +299,7 @@ describe('Property Declaration Styles', () => {
 	describe('Cloning', () => {
 		test('declare: should copied correctly', () => {
 			const user = new UserWithDeclare(testData);
-			const copied = user.$qm.copy();
+			const copied = user.$qCopy();
 
 			expect(copied).toBeInstanceOf(UserWithDeclare);
 			expect(copied.id).toBe(user.id);
@@ -311,7 +311,7 @@ describe('Property Declaration Styles', () => {
 
 		test('!: should copied correctly', () => {
 			const user = new UserWithExclamation(testData);
-			const copied = user.$qm.copy();
+			const copied = user.$qCopy();
 
 			expect(copied).toBeInstanceOf(UserWithExclamation);
 			expect(copied.id).toBe(user.id);
@@ -323,7 +323,7 @@ describe('Property Declaration Styles', () => {
 
 		test('?: should copied correctly', () => {
 			const user = new UserWithOptional(testData);
-			const copied = user.$qm.copy();
+			const copied = user.$qCopy();
 
 			expect(copied).toBeInstanceOf(UserWithOptional);
 			expect(copied.id).toBe(user.id);
