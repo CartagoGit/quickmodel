@@ -135,7 +135,7 @@ const dto = new UserProfileDto({
 	name: 'Alice',
 	age: 25 /* ... */,
 });
-await AsyncStorage.setItem('user', JSON.stringify(dto.serialize()));
+await AsyncStorage.setItem('user', JSON.stringify(dto.$qm.serialize()));
 
 // Rehydrate
 const stored = await AsyncStorage.getItem('user');
@@ -183,7 +183,7 @@ async function saveSettings(dto: AppSettingsDto): Promise<void> {
 	if (!result.valid) throw new Error('Invalid settings');
 	await Preferences.set({
 		key: 'settings',
-		value: JSON.stringify(dto.serialize()),
+		value: JSON.stringify(dto.$qm.serialize()),
 	});
 }
 
@@ -203,7 +203,7 @@ interface ICachedEntry<T> {
 
 async function saveWithTtl(dto: AppSettingsDto, ttlMs: number): Promise<void> {
 	const entry: ICachedEntry<object> = {
-		data: dto.serialize() as object,
+		data: dto.$qm.serialize() as object,
 		exp: Date.now() + ttlMs,
 	};
 	await Preferences.set({
@@ -258,7 +258,7 @@ if (!result.valid) {
 
 ```typescript
 const original = activeProduct;
-const updated = original.copy({ price: 15.99 });
+const updated = original.$qm.copy({ price: 15.99 });
 // original.price is still unchanged
 ```
 
@@ -276,7 +276,7 @@ document.addEventListener(
 			phone: '5554321',
 			isVerified: true,
 		});
-		localStorage.setItem('user', JSON.stringify(dto.serialize()));
+		localStorage.setItem('user', JSON.stringify(dto.$qm.serialize()));
 	},
 	false
 );

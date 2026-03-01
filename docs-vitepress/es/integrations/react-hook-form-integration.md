@@ -96,8 +96,8 @@ function FormularioRegistro() {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: async (values) => {
       const dto = new RegistroDto(values);
-      const { valid, errors: ruleErrors } = dto.checkRules();
-      if (valid) return { values: dto.serialize(), errors: {} };
+      const { valid, errors: ruleErrors } = dto.$qm.checkRules();
+      if (valid) return { values: dto.$qm.serialize(), errors: {} };
       const fieldErrors: Record<string, { message: string }> = {};
       for (const err of ruleErrors) {
         if (!fieldErrors[err.field]) {
@@ -111,7 +111,7 @@ function FormularioRegistro() {
   const alEnviar = (data: object) => {
     const dto = new RegistroDto(data);
     console.log(dto.nombreMostrado); // @QComputed disponible tras validar
-    // enviar dto.serialize() a la API
+    // enviar dto.$qm.serialize() a la API
   };
 
   return (
@@ -183,10 +183,10 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 	const [dto, setDto] = useState(() => new RegistroDto(datosIniciales));
 
 	const handleGuardar = async () => {
-		if (!dto.isDirty()) return; // nada cambió
-		await guardarPerfil(dto.serialize());
+		if (!dto.$qm.isDirty()) return; // nada cambió
+		await guardarPerfil(dto.$qm.serialize());
 		dto.reset(); // limpiar estado sucio
-		setDto(new RegistroDto(dto.serialize() as IRegistro));
+		setDto(new RegistroDto(dto.$qm.serialize() as IRegistro));
 	};
 
 	return (
@@ -194,7 +194,7 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 			{/* ... campos ... */}
 			<button
 				onClick={handleGuardar}
-				disabled={!dto.isDirty()}>
+				disabled={!dto.$qm.isDirty()}>
 				Guardar cambios
 			</button>
 		</form>

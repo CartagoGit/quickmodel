@@ -179,12 +179,12 @@ export const useArticleStore = defineStore('articles', {
 			const art = state.selectedId
 				? state.articles.get(state.selectedId)
 				: null;
-			return art ? art.serialize() : null;
+			return art ? art.$qm.serialize() : null;
 		},
 		publishedArticles: (state) =>
 			[...state.articles.values()]
 				.filter((a) => a.published)
-				.map((a) => a.serialize()),
+				.map((a) => a.$qm.serialize()),
 	},
 
 	actions: {
@@ -197,7 +197,7 @@ export const useArticleStore = defineStore('articles', {
 			const article = this.articles.get(id);
 			if (!article) return;
 			// copy() is IMMUTABLE — always capture the new instance
-			const updated = article.copy(patch);
+			const updated = article.$qm.copy(patch);
 			this.articles.set(id, updated);
 		},
 	},
@@ -275,7 +275,7 @@ export function useProducts() {
 	return useAsyncData('products', async () => {
 		const raw = await $fetch<object[]>('/api/products');
 		const { instances } = ProductModel.createMany(raw);
-		return instances.map((p) => p.serialize());
+		return instances.map((p) => p.$qm.serialize());
 	});
 }
 ```
@@ -306,7 +306,7 @@ import { QModel, Quick } from 'quickmodel';
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event);
 	const dto = new CreateUserDto(body); // coerces + strips unknowns
-	const validation = dto.checkRules();
+	const validation = dto.$qm.checkRules();
 
 	if (!validation.valid) {
 		throw createError({
@@ -315,7 +315,7 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
-	return dto.serialize();
+	return dto.$qm.serialize();
 });
 ```
 
@@ -324,9 +324,9 @@ export default defineEventHandler(async (event) => {
 ```typescript
 const original = new ArticleModel({ ... });
 // user edits
-const edited = original.copy({ title: 'New Title' });
+const edited = original.$qm.copy({ title: 'New Title' });
 
-const changes = original.diff(edited);
+const changes = original.$qm.diff(edited);
 // { title: { before: 'Old Title', after: 'New Title' } }
 
 // Only send changed fields to the server
@@ -368,7 +368,7 @@ const user = new User({ name: 'Alice', createdAt: '2024-01-01' });
 const reactiveUser = reactive(user);
 
 // ❌ Avoid — `this` inside serialize() resolves to the Proxy
-const data = reactiveUser.serialize();
+const data = reactiveUser.$qm.serialize();
 
 // ✅ Correct — toRaw() returns the unwrapped original instance
 const data = toRaw(reactiveUser).serialize();

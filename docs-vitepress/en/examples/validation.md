@@ -57,7 +57,7 @@ const validUser = new UserRegister({
 	age: 25,
 });
 
-const result = validUser.checkRules();
+const result = validUser.$qm.checkRules();
 console.log(result.valid); // true
 console.log(result.errors); // []
 
@@ -69,7 +69,7 @@ const invalidUser = new UserRegister({
 	age: 16,
 });
 
-const errors = invalidUser.checkRules();
+const errors = invalidUser.$qm.checkRules();
 console.log(errors.valid); // false
 console.log(errors.errors);
 // [
@@ -86,7 +86,7 @@ console.log(errors.errors);
 Use `isValid()` for a boolean shortcut that combines integrity + rules:
 
 ```typescript
-if (!invalidUser.isValid()) {
+if (!invalidUser.$qm.isValid()) {
 	console.log('Form has errors');
 }
 
@@ -94,8 +94,8 @@ if (!invalidUser.isValid()) {
 async function saveUser(data: IUserRegister): Promise<void> {
 	const user = new UserRegister(data);
 
-	if (!user.isValid()) {
-		const report = user.validationReport();
+	if (!user.$qm.isValid()) {
+		const report = user.$qm.validationReport();
 		throw new Error(
 			`Invalid data: ${report.rules.errors.map((e) => e.message).join(', ')}`
 		);
@@ -146,7 +146,7 @@ const product = new Product({
 	stock: -5,
 });
 
-const report = product.validationReport();
+const report = product.$qm.validationReport();
 console.log(report.valid); // false
 console.log(report.integrity); // [] (no integrity issues)
 console.log(report.rules.errors);
@@ -184,7 +184,7 @@ const range = new DateRange({
 	endDate: '2026-02-01', // ❌ before startDate
 });
 
-console.log(range.checkRules().errors[0].message);
+console.log(range.$qm.checkRules().errors[0].message);
 // 'End date must be after start date'
 ```
 
@@ -219,7 +219,7 @@ const newUser = new NewUser({
 });
 
 // Run with 3-second timeout per predicate
-const asyncResult = await newUser.checkRulesAsync({
+const asyncResult = await newUser.$qm.checkRulesAsync({
 	timeoutMs: 3000,
 	timeoutMessage: 'Could not verify username availability',
 	mode: 'parallel', // All predicates run simultaneously
@@ -283,10 +283,10 @@ class InternationalForm extends QModel<{ age: number }> {
 }
 
 const form = new InternationalForm({ age: 15 });
-console.log(form.checkRules().errors[0].message); // 'You must be at least 18 years old'
+console.log(form.$qm.checkRules().errors[0].message); // 'You must be at least 18 years old'
 
 currentLang = 'es';
-console.log(form.checkRules().errors[0].message); // 'Debes tener al menos 18 años'
+console.log(form.$qm.checkRules().errors[0].message); // 'Debes tener al menos 18 años'
 ```
 
 ## Next Steps

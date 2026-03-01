@@ -366,7 +366,7 @@ const user = new User({
 	createdAt: null, // null value
 });
 
-const plain = user.serialize();
+const plain = user.$qm.serialize();
 console.log(plain.createdAt); // null (preserved)
 ````
 
@@ -382,14 +382,14 @@ class User extends QModel<IUser> {
 	declare createdAt: Date;
 
 	serialize() {
-		const plain = super.serialize();
+		const plain = super.$qm.serialize();
 		// Add custom fields
 		return { ...plain, displayName: this.name.toUpperCase() };
 	}
 }
 
 const user = new User({ id: 1, name: 'John', createdAt: '2026-01-10' });
-const plain = user.serialize();
+const plain = user.$qm.serialize();
 console.log(plain.displayName); // 'JOHN'
 ```
 
@@ -402,7 +402,7 @@ Only call `serialize()` when needed (e.g., before sending to API):
 ```typescript
 // ❌ Bad - unnecessary serialization
 function processUser(user: User) {
-	const plain = user.serialize();
+	const plain = user.$qm.serialize();
 	console.log(plain.name); // Just use user.name!
 }
 
@@ -422,7 +422,7 @@ class CachedUser extends User {
 
 	serialize() {
 		if (!this._cachedPlain) {
-			this._cachedPlain = super.serialize();
+			this._cachedPlain = super.$qm.serialize();
 		}
 		return this._cachedPlain;
 	}
@@ -435,7 +435,7 @@ When serializing multiple models, do it in one pass:
 
 ```typescript
 const users = [user1, user2, user3];
-const plainArray = users.map((usr) => usr.serialize());
+const plainArray = users.map((usr) => usr.$qm.serialize());
 ```
 
 ## Field Filtering
@@ -455,11 +455,11 @@ const user = new User({
 });
 
 // omit — exclude specific fields
-const public = user.serialize({ omit: ['password', 'role'] });
+const public = user.$qm.serialize({ omit: ['password', 'role'] });
 // → { id: 1, name: 'Alice' }
 
 // pick — only include specific fields
-const minimal = user.serialize({ pick: ['id', 'name'] });
+const minimal = user.$qm.serialize({ pick: ['id', 'name'] });
 // → { id: 1, name: 'Alice' }
 ```
 
@@ -486,7 +486,7 @@ class Account extends QModel<IAccount> {
 
 const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
 assert(account.password === 's3cr3t'); // still on the instance
-assert(account.serialize().password === undefined); // excluded
+assert(account.$qm.serialize().password === undefined); // excluded
 ```
 
 ::: info When to use each approach
@@ -527,7 +527,7 @@ class User extends QModel<IUser> {
 
 const user = User.create({ firstName: 'Alice', lastName: 'Smith' });
 
-user.serialize();
+user.$qm.serialize();
 // { firstName: 'Alice', lastName: 'Smith', fullName: 'Alice Smith' }
 // Notice: 'initials' is NOT included
 ```
@@ -556,7 +556,7 @@ class User extends QModel<IUser> {
 	}
 }
 
-user.serialize();
+user.$qm.serialize();
 // { firstName: 'Alice', lastName: 'Smith', birthYear: 1990, fullName: 'Alice Smith', age: 35 }
 ```
 

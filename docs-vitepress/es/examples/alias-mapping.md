@@ -65,7 +65,7 @@ console.log(user.isActive); // true
 console.log(user.createdAt instanceof Date); // true
 
 // Serializar de vuelta a snake_case ✅
-const serialized = user.serialize();
+const serialized = user.$qm.serialize();
 console.log(serialized.first_name); // 'María'
 console.log(serialized.created_at); // '2026-01-10T10:00:00.000Z'
 // ↑ Los alias se usan como claves de salida
@@ -80,7 +80,7 @@ console.log(serialized.created_at); // '2026-01-10T10:00:00.000Z'
 const user = User.create(apiResponse);
 
 // Serializar
-const plain = user.serialize(); // devuelve el mismo shape con claves originales (snake_case)
+const plain = user.$qm.serialize(); // devuelve el mismo shape con claves originales (snake_case)
 
 // Recrear desde el objeto serializado (roundtrip)
 const userCopy = User.create(plain);
@@ -157,7 +157,7 @@ console.log(order.shippingAddress.zipCode); // '28001'
 console.log(order.placedAt instanceof Date); // true
 
 // Serializado de vuelta a snake_case ✅
-const plain = order.serialize();
+const plain = order.$qm.serialize();
 console.log(plain.order_id); // 'ORD-001'
 console.log(plain.shipping_address.city_name); // 'Madrid'
 ```
@@ -197,7 +197,7 @@ const form = ProfileForm.create({
 const schema = ProfileForm.getFormSchema();
 console.log(schema[0].field); // 'firstName' (↑ nombre de la propiedad, no el alias)
 console.log(form.firstName); // 'Carlos'
-console.log(form.serialize()); // { first_name: 'Carlos', last_name: 'López', ... }
+console.log(form.$qm.serialize()); // { first_name: 'Carlos', last_name: 'López', ... }
 ```
 
 ## Combinar con @QRule
@@ -229,7 +229,7 @@ const userForm = UserForm.create({
 	birth_date: '2030-01-01', // ❌ fecha futura
 });
 
-const result = userForm.checkRules();
+const result = userForm.$qm.checkRules();
 console.log(result.errors.map((e) => `${e.field}: ${e.message}`));
 // ['firstName: El nombre debe tener al menos 2 caracteres',
 //  'birthDate: La fecha de nacimiento no puede ser futura']

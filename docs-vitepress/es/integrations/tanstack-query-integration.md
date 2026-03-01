@@ -117,7 +117,7 @@ class CrearProductoDto extends QModel<ICrearProducto> {
 
 async function crearProducto(data: object): Promise<IProducto> {
 	const dto = new CrearProductoDto(data);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 	if (!valid) {
 		throw new Error(
 			errors.map((e) => `${e.field}: ${e.message}`).join(', ')
@@ -125,7 +125,7 @@ async function crearProducto(data: object): Promise<IProducto> {
 	}
 	const res = await fetch('/api/productos', {
 		method: 'POST',
-		body: JSON.stringify(dto.serialize()),
+		body: JSON.stringify(dto.$qm.serialize()),
 	});
 	return res.json();
 }
@@ -190,7 +190,9 @@ const mutation = useMutation({
 		const anterior = queryClient.getQueryData<ProductoDto[]>(['productos']);
 
 		queryClient.setQueryData<ProductoDto[]>(['productos'], (old = []) =>
-			old.map((item) => (item.id === patch.id ? item.copy(patch) : item))
+			old.map((item) =>
+				item.id === patch.id ? item.$qm.copy(patch) : item
+			)
 		);
 
 		return { anterior };
@@ -213,7 +215,7 @@ Guarda `serialize()` en el caché y rehidrata con `new Dto()`:
 
 ```typescript
 // Serializar antes de guardar
-const cached = producto.serialize();
+const cached = producto.$qm.serialize();
 queryClient.setQueryData(['producto', producto.id], cached);
 
 // Rehidratar al acceder
@@ -227,10 +229,10 @@ Usa `isDirty()` para omitir llamadas a la API innecesarias cuando no hay cambios
 
 ```typescript
 async function sincronizarSiHayCambios(dto: ProductoDto) {
-	if (!dto.isDirty()) return; // nada que sincronizar
+	if (!dto.$qm.isDirty()) return; // nada que sincronizar
 	await fetch(`/api/productos/${dto.id}`, {
 		method: 'PATCH',
-		body: JSON.stringify(dto.serialize()),
+		body: JSON.stringify(dto.$qm.serialize()),
 	});
 	dto.reset(); // limpiar estado sucio tras guardar
 }

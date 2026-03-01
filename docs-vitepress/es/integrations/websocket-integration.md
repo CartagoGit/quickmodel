@@ -7,13 +7,13 @@ QuickModel es una capa ideal de serialización y validación para **comunicacion
 
 | Preocupación                 | Solución QuickModel                            |
 | ---------------------------- | ---------------------------------------------- |
-| Serializar antes de enviar   | `dto.serialize()` → objeto JSON-safe           |
+| Serializar antes de enviar   | `dto.$qm.serialize()` → objeto JSON-safe       |
 | Reconstruir al recibir       | `new Dto(JSON.parse(raw))`                     |
 | Tipos complejos por el canal | Roundtrip de `Date`, `Set`, `Map`, `BigInt`    |
 | Eliminación de campos extra  | `unknownPropertyPolicy: 'strip'`               |
 | Validar tras recibir         | `qCheckRules(dto)` / `qCheckRulesAsync(dto)`   |
 | Propiedades computadas       | `@QComputed()` disponibles tras reconstrucción |
-| Actualización incremental    | `existing.copy(patch)` para deltas             |
+| Actualización incremental    | `existing.$qm.copy(patch)` para deltas         |
 | Eventos en lote              | `Dto.createMany(array).instances`              |
 
 ## Entornos Soportados

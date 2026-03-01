@@ -164,7 +164,7 @@ const resolvers = {
 				console.warn('Skipping invalid rows:', errors);
 			}
 
-			return instances.map((dto) => dto.serialize());
+			return instances.map((dto) => dto.$qm.serialize());
 		},
 	},
 };
@@ -185,7 +185,7 @@ const resolvers = {
 					extensions: { code: 'NOT_FOUND' },
 				});
 
-			const updated = existing.copy(input);
+			const updated = existing.$qm.copy(input);
 			const { valid, errors } = qCheckRules(updated);
 			if (!valid)
 				throw new GraphQLError('Validation failed', {
@@ -193,7 +193,7 @@ const resolvers = {
 				});
 
 			await postRepository.update(id, updated.toInterface());
-			return updated.serialize();
+			return updated.$qm.serialize();
 		},
 	},
 };

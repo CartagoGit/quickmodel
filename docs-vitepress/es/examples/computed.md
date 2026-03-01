@@ -57,7 +57,7 @@ console.log(user.fullName); // 'María García'
 console.log(user.initials); // 'M.G.' (disponible en instancia, pero no en serialización)
 console.log(user.formattedSalary); // '45.000,00 €'
 
-const plain = user.serialize();
+const plain = user.$qm.serialize();
 console.log(plain.fullName); // 'María García' ✅ incluido
 console.log(plain.formattedSalary); // '45.000,00 €'  ✅ incluido
 console.log(plain.initials); // undefined ❌ no incluido (sin @QComputed)
@@ -115,7 +115,7 @@ const product = Product.create({
 	discountRate: 10,
 });
 
-const plain = product.serialize();
+const plain = product.$qm.serialize();
 console.log(plain.priceNet); // 1000
 console.log(plain.vatAmount); // 210
 console.log(plain.priceGross); // 1210
@@ -190,7 +190,7 @@ const person = Person.create({
 
 console.log(person.summary); // 'Carlos Ruiz, 35 años (Administrador)'
 
-const serialized = person.serialize();
+const serialized = person.$qm.serialize();
 // {
 //   firstName: 'Carlos', lastName: 'Ruiz',
 //   birthDate: '1990-06-15T00:00:00.000Z',
@@ -257,7 +257,7 @@ console.log(order.subtotal); // 89.97
 console.log(order.discountAmount); // 4.5
 console.log(order.total); // 85.47
 
-const plain = order.serialize();
+const plain = order.$qm.serialize();
 // Claves de salida = aliases (snake_case)
 // {
 //   unit_price: 29.99, quantity: 3, discount_pct: 5,

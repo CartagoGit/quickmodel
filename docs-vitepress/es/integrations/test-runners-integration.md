@@ -194,7 +194,7 @@ describe('InvoiceDto', () => {
 			totalAmount: 1234.56,
 			vatRate: 21,
 		});
-		assertQModel.isValid(inv);
+		assertQModel.$qm.isValid(inv);
 	});
 
 	it('detecta importe negativo', () => {
@@ -217,7 +217,7 @@ describe('InvoiceDto', () => {
 			vatRate: 21,
 		});
 		inv.totalAmount = 999;
-		assertQModel.isDirty(inv, 'totalAmount');
+		assertQModel.$qm.isDirty(inv, 'totalAmount');
 		assertQModel.isClean(inv, 'vatRate');
 	});
 });

@@ -97,7 +97,7 @@ const dto = new UserRecordDto({
 });
 
 // Persist
-localStorage.setItem('user', JSON.stringify(dto.serialize()));
+localStorage.setItem('user', JSON.stringify(dto.$qm.serialize()));
 
 // Restore
 const stored = localStorage.getItem('user');
@@ -126,9 +126,9 @@ const dto = new UserRecordDto(oldPayload);
 
 ```typescript
 const original = new UserRecordDto(raw);
-const updated = original.copy({ score: 200 });
-if (updated.isDirty()) {
-	localStorage.setItem('user', JSON.stringify(updated.serialize()));
+const updated = original.$qm.copy({ score: 200 });
+if (updated.$qm.isDirty()) {
+	localStorage.setItem('user', JSON.stringify(updated.$qm.serialize()));
 }
 ```
 
@@ -141,7 +141,7 @@ const db = new Map<string, unknown>(); // simulates an IDB object store
 
 const rawList = await fetchUsersFromApi();
 const { instances } = UserRecordDto.createMany(rawList);
-instances.forEach((dto) => db.set(dto.uid, dto.serialize()));
+instances.forEach((dto) => db.set(dto.uid, dto.$qm.serialize()));
 ```
 
 ### Index Lookup by Role
@@ -155,8 +155,8 @@ const admins = [...db.values()]
 ### Update in IDB
 
 ```typescript
-const updated = dto.copy({ score: 500 });
-db.set(updated.uid, updated.serialize()); // replaces existing entry
+const updated = dto.$qm.copy({ score: 500 });
+db.set(updated.uid, updated.$qm.serialize()); // replaces existing entry
 ```
 
 ## SQLite Row Mapping
@@ -182,7 +182,7 @@ const dto = new DbRowDto(sqliteRow);
 ### Soft Delete Pattern
 
 ```typescript
-const deleted = dto.copy({ deleted: true, updated: new Date() });
+const deleted = dto.$qm.copy({ deleted: true, updated: new Date() });
 // Store deleted back to SQLite — original dto remains unchanged
 await db.run('UPDATE rows SET deleted=?, updated=? WHERE rowId=?', [
 	1,
@@ -212,7 +212,10 @@ const dto = new AppCacheDto({
 	ttl: 3600,
 	tag: 'config',
 });
-await Preferences.set({ key: dto.key, value: JSON.stringify(dto.serialize()) });
+await Preferences.set({
+	key: dto.key,
+	value: JSON.stringify(dto.$qm.serialize()),
+});
 
 // Load
 const { value } = await Preferences.get({ key: 'settings' });
@@ -229,7 +232,7 @@ interface ICachedEntry<T> {
 
 async function saveWithTtl(dto: AppCacheDto, ttlMs: number) {
 	const entry: ICachedEntry<object> = {
-		data: dto.serialize() as object,
+		data: dto.$qm.serialize() as object,
 		exp: Date.now() + ttlMs,
 	};
 	await Preferences.set({ key: dto.key, value: JSON.stringify(entry) });
@@ -271,7 +274,7 @@ instances.forEach((dto) => cache.set(dto.uid, dto));
 
 // Read and update immutably
 const user = cache.get('u1')!;
-const updated = user.copy({ score: user.score + 10 });
+const updated = user.$qm.copy({ score: user.score + 10 });
 cache.set('u1', updated);
 ```
 
@@ -282,7 +285,7 @@ const channel = new BroadcastChannel('user-sync');
 
 // Sender tab
 const dto = new UserRecordDto(updatedUser);
-channel.postMessage({ type: 'UPDATE_USER', payload: dto.serialize() });
+channel.postMessage({ type: 'UPDATE_USER', payload: dto.$qm.serialize() });
 
 // Receiver tab
 channel.addEventListener('message', (event: MessageEvent) => {
@@ -302,7 +305,9 @@ const dto = new UserRecordDto(user);
 const root = await navigator.storage.getDirectory();
 const fileHandle = await root.getFileHandle('user.json', { create: true });
 const writable = await fileHandle.createWritable();
-await writable.write(new TextEncoder().encode(JSON.stringify(dto.serialize())));
+await writable.write(
+	new TextEncoder().encode(JSON.stringify(dto.$qm.serialize()))
+);
 await writable.close();
 
 // Read from OPFS

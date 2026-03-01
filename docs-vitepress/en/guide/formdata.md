@@ -127,16 +127,16 @@ Instance method. Builds a `FormData` from the model's fields.
 
 ```typescript
 // Default: preserve binary objects
-const fd = await dto.toFormData();
+const fd = await dto.$qm.toFormData();
 
 // Proxy / logging — avoid sending binary data over the wire
-const fd = await dto.toFormData({ fileMode: 'reference' });
+const fd = await dto.$qm.toFormData({ fileMode: 'reference' });
 
 // Legacy API expecting base64
-const fd = await dto.toFormData({ fileMode: 'base64' });
+const fd = await dto.$qm.toFormData({ fileMode: 'base64' });
 
 // Per-field overrides
-const fd = await dto.toFormData({
+const fd = await dto.$qm.toFormData({
 	fields: { avatar: 'binary', signature: 'base64' },
 });
 ```
@@ -160,7 +160,7 @@ were `PUT`, `PATCH`, or `DELETE`.
 
 ```typescript
 // One-time call option
-const fd = await dto.toFormData({ spoofMethod: 'PUT' });
+const fd = await dto.$qm.toFormData({ spoofMethod: 'PUT' });
 // FormData: _method=PUT, name=Alice, avatar=<File>
 ```
 
@@ -184,7 +184,7 @@ QConfig.set({ defaults: { spoofMethod: 'PUT' } });
 class UploadDto extends QModel<IUploadDto> { ... }
 
 // 3. Call option — highest priority, overrides everything
-const fd = await dto.toFormData({ spoofMethod: 'DELETE' });
+const fd = await dto.$qm.toFormData({ spoofMethod: 'DELETE' });
 // → _method=DELETE (ignores global PUT and decorator PATCH)
 ```
 
@@ -240,14 +240,14 @@ transport over a non-multipart API.
 
 ```typescript
 // Default: File → { name, size, type, lastModified }
-const plain = dto.serialize();
+const plain = dto.$qm.serialize();
 
 // Reference only — no binary data in the JSON output
-const plain = dto.serialize({ fileMode: 'reference' });
+const plain = dto.$qm.serialize({ fileMode: 'reference' });
 // { avatar: 'foto.jpg', ... }
 
 // Base64 — embed the binary inside the JSON
-const plain = dto.serialize({ fileMode: 'base64' });
+const plain = dto.$qm.serialize({ fileMode: 'base64' });
 // { avatar: 'data:image/jpeg;base64,/9j/...', ... }
 ```
 
@@ -271,7 +271,7 @@ in high-concurrency servers. The Web Platform solution is `ReadableStream<Uint8A
 Emits bytes from a binary field as `Uint8Array` chunks. The file is **never fully in memory**.
 
 ```typescript
-const stream = dto.toReadableStream({
+const stream = dto.$qm.toReadableStream({
 	field: 'video',
 	chunkSize: 64 * 1024, // default: 256 KB
 });
@@ -294,7 +294,7 @@ return new Response(stream, {
 
 ```typescript
 let emitted = 0;
-const stream = dto.toReadableStream({
+const stream = dto.$qm.toReadableStream({
 	field: 'video',
 	chunkSize: 64 * 1024,
 	onChunk: (chunk, total) => {
@@ -311,7 +311,7 @@ only accepts `POST multipart/form-data`, you can stream the **entire** message
 without materializing a `FormData` object in memory:
 
 ```typescript
-const stream = dto.toReadableStream({ multipart: true });
+const stream = dto.$qm.toReadableStream({ multipart: true });
 
 await fetch('/api/upload', {
 	method: 'POST',
@@ -327,7 +327,7 @@ characters) that you must include in the `Content-Type` header. Pass a custom
 value if the receiver requires a specific token:
 
 ```typescript
-const stream = dto.toReadableStream({
+const stream = dto.$qm.toReadableStream({
 	multipart: true,
 	boundary: 'my-custom-boundary',
 	chunkSize: 64 * 1024, // per-chunk size for binary fields
@@ -424,17 +424,20 @@ const dto = UploadDto.fromFormData(fd);
 // dto.avatar → File { name: 'foto.jpg', size: 204800, type: 'image/jpeg' }
 // dto.userId → 42   (number, auto-coerced from string '42')
 
-const { valid, rules } = dto.validationReport();
+const { valid, rules } = dto.$qm.validationReport();
 if (!valid) {
 	showErrors(rules);
 	return;
 }
 
 // Small file — direct upload
-await fetch('/api/upload', { method: 'POST', body: await dto.toFormData() });
+await fetch('/api/upload', {
+	method: 'POST',
+	body: await dto.$qm.toFormData(),
+});
 
 // Large file — streaming with progress
-const stream = dto.toReadableStream({
+const stream = dto.$qm.toReadableStream({
 	field: 'avatar',
 	onChunk: (chunk, total) => updateProgressBar(chunk.byteLength, total),
 });
@@ -447,7 +450,7 @@ async function handleUpload(req: Request) {
 	const fd = await req.formData();
 	const dto = UploadDto.fromFormData(fd);
 
-	const { valid, rules } = dto.validationReport();
+	const { valid, rules } = dto.$qm.validationReport();
 	if (!valid) return Response.json({ errors: rules }, { status: 422 });
 
 	// Upload to S3 without loading into memory — direct pipe
@@ -477,7 +480,7 @@ const dto = UploadDto.fromFormData(fd, { fileSource: 'base64' });
 // dto.avatar → Blob { type: 'image/jpeg' }
 
 // Re-send in the same format
-const outFd = await dto.toFormData({ fileMode: 'base64' });
+const outFd = await dto.$qm.toFormData({ fileMode: 'base64' });
 // outFd.get('avatar') → 'data:image/jpeg;base64,/9j/...' — exact round-trip
 ```
 

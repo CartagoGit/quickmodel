@@ -114,7 +114,7 @@ class CreateProductDto extends QModel<ICreateProduct> {
 
 async function createProduct(data: object): Promise<IProduct> {
 	const dto = new CreateProductDto(data);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 	if (!valid) {
 		throw new Error(
 			errors.map((e) => `${e.field}: ${e.message}`).join(', ')
@@ -122,7 +122,7 @@ async function createProduct(data: object): Promise<IProduct> {
 	}
 	const res = await fetch('/api/products', {
 		method: 'POST',
-		body: JSON.stringify(dto.serialize()),
+		body: JSON.stringify(dto.$qm.serialize()),
 	});
 	return res.json();
 }
@@ -199,7 +199,7 @@ function useOptimisticUpdate() {
 
 			queryClient.setQueryData<ProductDto[]>(['products'], (old = []) =>
 				old.map((item) =>
-					item.id === patch.id ? item.copy(patch) : item
+					item.id === patch.id ? item.$qm.copy(patch) : item
 				)
 			);
 
@@ -226,7 +226,7 @@ Store `serialize()` in the cache and rehydrate with `new Dto()`:
 
 ```typescript
 // Serialize before storing
-const cached = product.serialize();
+const cached = product.$qm.serialize();
 queryClient.setQueryData(['product', product.id], cached);
 
 // Rehydrate on access
@@ -268,10 +268,10 @@ Use `isDirty()` to skip unnecessary API calls when no data has changed locally:
 
 ```typescript
 async function syncIfDirty(dto: ProductDto) {
-	if (!dto.isDirty()) return; // nothing to sync
+	if (!dto.$qm.isDirty()) return; // nothing to sync
 	await fetch(`/api/products/${dto.id}`, {
 		method: 'PATCH',
-		body: JSON.stringify(dto.serialize()),
+		body: JSON.stringify(dto.$qm.serialize()),
 	});
 	dto.reset(); // clear dirty state after successful save
 }

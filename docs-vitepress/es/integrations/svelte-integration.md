@@ -74,11 +74,11 @@ QuickModel funciona con las runes de Svelte 5 (`$state`, `$derived`), stores esc
 
   // copy() es INMUTABLE — la reactividad de $state se activa al reasignar
   function update(patch: Partial<INote>) {
-    note = note.copy(patch) as NoteModel;
+    note = note.$qm.copy(patch) as NoteModel;
   }
 
   let preview = $derived(note.preview);
-  let { valid, errors } = $derived(note.checkRules());
+  let { valid, errors } = $derived(note.$qm.checkRules());
 </script>
 
 <input bind:value={note.title} />
@@ -116,7 +116,7 @@ export function createUserStore(initial: IUser) {
 		subscribe,
 		update: (patch: Partial<IUser>) => {
 			// copy() es INMUTABLE — captura la nueva instancia
-			set(record.copy(patch) as UserRecord);
+			set(record.$qm.copy(patch) as UserRecord);
 		},
 	};
 }
@@ -140,7 +140,7 @@ export const actions: Actions = {
 			password: formData.get('password'),
 		});
 
-		const { valid, errors } = dto.checkRules();
+		const { valid, errors } = dto.$qm.checkRules();
 		if (!valid) {
 			return fail(422, { errors });
 		}
@@ -183,7 +183,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	}
 
 	return {
-		products: instances.map((p) => p.serialize()),
+		products: instances.map((p) => p.$qm.serialize()),
 	};
 };
 ```
@@ -220,7 +220,7 @@ if (!result.valid) {
 Para Svelte 4 (sin runes), usa stores escribibles convencionales. El patrón `copy()` inmutable sigue aplicando:
 
 ```typescript
-store.update((prev) => prev.copy(patch));
+store.update((prev) => prev.$qm.copy(patch));
 ```
 
 :::

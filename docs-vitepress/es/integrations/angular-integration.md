@@ -100,7 +100,7 @@ export class UserDataService {
 		const record = this.store.get(id);
 		if (!record) return false;
 		// copy() es INMUTABLE — captura la nueva instancia
-		const updated = record.copy(patch);
+		const updated = record.$qm.copy(patch);
 		this.store.set(id, updated);
 		return true;
 	}
@@ -117,14 +117,14 @@ export class ProfileComponent {
   profile = signal(new ProfileModel({ bio: '', followers: 0 }));
 
   updateFollowers(count: number): void {
-    this.profile.update(prev => prev.copy({ followers: count }));
+    this.profile.update(prev => prev.$qm.copy({ followers: count }));
     //                              ↑ copy() devuelve nueva instancia
   }
 
   isBioDirty(): boolean {
     const model = this.profile();
     model.bio = 'Nueva bio'; // mutación directa para detectar dirty
-    return model.isDirty();
+    return model.$qm.isDirty();
   }
 }
 ```
@@ -140,12 +140,12 @@ export class ProfileComponent {
 // ❌ Anti-patrón: patch() muta in-place, la versión de la señal NO incrementa
 //    El template de Angular NO se re-renderiza
 signal.update((model) => {
-	model.patch({ score: 98 }); // void — instancia original mutada
+	model.$qm.patch({ score: 98 }); // void — instancia original mutada
 	return model; // misma referencia → sin change detection
 });
 
 // ✅ Correcto: copy() devuelve nueva instancia → incrementa versión → re-render
-signal.update((model) => model.copy({ score: 98 }));
+signal.update((model) => model.$qm.copy({ score: 98 }));
 ```
 
 ::: warning La mutación directa es invisible para las señales de Angular
@@ -158,7 +158,7 @@ const cartSignal = signal(new Cart({ userId: 'u1', total: 50 }));
 cartSignal().total = 100;
 
 // ✅ Actualización consciente de la señal — el template se actualiza
-cartSignal.update((cart) => cart.copy({ total: 100 }));
+cartSignal.update((cart) => cart.$qm.copy({ total: 100 }));
 ```
 
 :::
@@ -196,7 +196,7 @@ export function reactiveModel<T extends QModel<any>>(
 		set(_, key, value) {
 			if (typeof key !== 'string') return false;
 			// copy() → nueva instancia → nueva referencia → Angular detecta el cambio
-			sig.update((mdl) => mdl.copy({ [key]: value } as Partial<T>));
+			sig.update((mdl) => mdl.$qm.copy({ [key]: value } as Partial<T>));
 			return true;
 		},
 	}) as IReactiveModel<T>;
@@ -214,7 +214,7 @@ export class CartComponent {
 
 	// ✅ Asignación directa — Angular re-renderiza automáticamente
 	addItem(price: number): void {
-		this.cart.total += price; // internamente: sig.update(m => m.copy({ total: ... }))
+		this.cart.total += price; // internamente: sig.update(m => m.$qm.copy({ total: ... }))
 	}
 
 	// Derived desde la señal subyacente
@@ -255,7 +255,7 @@ const etiqueta = computed(
 // Serializado para llamadas a la API
 const payload = computed(() => cart().serialize());
 
-cart.update((c) => c.copy({ total: 80 }));
+cart.update((c) => c.$qm.copy({ total: 80 }));
 console.log(totalConIva()); // 96.8
 console.log(payload().updatedAt); // string ISO — Date serializado
 ```
@@ -275,11 +275,11 @@ const product = signal(
 );
 
 // Pasando un Date → sigue siendo Date en la nueva instancia ✅
-product.update((p) => p.copy({ releasedAt: new Date('2025-06-01') }));
+product.update((p) => p.$qm.copy({ releasedAt: new Date('2025-06-01') }));
 console.log(product().releasedAt instanceof Date); // true
 
 // Pasando un Set → sigue siendo Set ✅
-product.update((p) => p.copy({ tags: new Set(['oferta', 'destacado']) }));
+product.update((p) => p.$qm.copy({ tags: new Set(['oferta', 'destacado']) }));
 console.log(product().tags instanceof Set); // true
 ```
 
@@ -317,7 +317,7 @@ intercept(req: HttpRequest<any>, next: HttpHandler) {
     map(event => {
       if (event instanceof HttpResponse && Array.isArray(event.body)) {
         const dtos = event.body.map(item => new ApiItemDto(item));
-        return event.clone({ body: dtos.map(d => d.serialize()) });
+        return event.clone({ body: dtos.map(d => d.$qm.serialize()) });
       }
       return event;
     })
@@ -350,7 +350,7 @@ const result = await qCheckRulesAsync(dto);
 `copy()` devuelve una **nueva instancia** — la original no se modifica. Siempre captura el resultado:
 
 ```typescript
-const updated = record.copy({ score: 90 });
+const updated = record.$qm.copy({ score: 90 });
 this.store.set(id, updated); // guarda la nueva instancia
 ```
 

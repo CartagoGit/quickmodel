@@ -89,7 +89,7 @@ expect(dto).not.toHaveQField('internalSecret');
 Deep equality using `serialize()` — includes `@QComputed` values.
 
 ```typescript
-const updated = original.copy({ username: 'bob' });
+const updated = original.$qm.copy({ username: 'bob' });
 expect(updated).not.toMatchQModel(original);
 ```
 

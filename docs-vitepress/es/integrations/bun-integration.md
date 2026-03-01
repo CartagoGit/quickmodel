@@ -98,14 +98,14 @@ Bun.serve({
 			}
 
 			const dto = new ProductDto(raw as Record<string, unknown>);
-			const { valid, errors } = dto.checkRules();
+			const { valid, errors } = dto.$qm.checkRules();
 
 			if (!valid) {
 				return Response.json({ errors }, { status: 422 });
 			}
 
 			// dto: tipado, coercionado, campos extras eliminados
-			return Response.json(dto.serialize(), { status: 201 });
+			return Response.json(dto.$qm.serialize(), { status: 201 });
 		}
 
 		return new Response('Not Found', { status: 404 });
@@ -126,9 +126,9 @@ POST /products  { name: "Teclado", price: "149", stock: "50", __admin: true }
                     │  __admin eliminado automáticamente  │
                     └────────────────────────────────────┘
                                  ↓
-                          dto.checkRules()
+                          dto.$qm.checkRules()
                                  ↓
-                    dto.serialize()  →  { isAvailable: true, formattedPrice: "$149.00", ... }
+                    dto.$qm.serialize()  →  { isAvailable: true, formattedPrice: "$149.00", ... }
                                  ↓
                     Response.json(...)  201 Created
 ```
@@ -155,7 +155,7 @@ Bun.serve({
 			}
 
 			const dto = new OrderDto(parsed as Record<string, unknown>);
-			const { valid, errors } = dto.checkRules();
+			const { valid, errors } = dto.$qm.checkRules();
 
 			if (!valid) {
 				ws.send(JSON.stringify({ ok: false, errors }));
@@ -163,7 +163,7 @@ Bun.serve({
 			}
 
 			// Publicar DTO serializado a todos los suscriptores
-			ws.publish('orders', JSON.stringify(dto.serialize()));
+			ws.publish('orders', JSON.stringify(dto.$qm.serialize()));
 			ws.send(JSON.stringify({ ok: true, summary: dto.summary }));
 		},
 	},
@@ -222,7 +222,7 @@ const { valid, errors } = await qCheckRulesAsync(dto);
 if (!valid) {
 	return Response.json({ errors }, { status: 422 });
 }
-return Response.json(dto.serialize(), { status: 201 });
+return Response.json(dto.$qm.serialize(), { status: 201 });
 ```
 
 ## Serialización de respuestas JSON
@@ -240,7 +240,7 @@ const dto = new ProductDto({
 });
 
 // Objeto plano — apto para transporte JSON:
-const payload = dto.serialize();
+const payload = dto.$qm.serialize();
 // {
 //   id: 'prod-1',
 //   name: 'Silla Ergonómica',
@@ -269,7 +269,7 @@ Las fechas son serializadas como strings ISO por `serialize()` y rehidratadas au
 ```typescript
 // Servidor → cliente: Date se convierte en ISO string
 const serverDto = new ProductDto(dbRow);
-return Response.json(serverDto.serialize()); // createdAt: "2025-01-15T..."
+return Response.json(serverDto.$qm.serialize()); // createdAt: "2025-01-15T..."
 
 // Cliente: re-instanciar — QuickModel convierte el ISO string de vuelta a Date
 const clientDto = new ProductDto(await res.json()); // createdAt: Date ✅

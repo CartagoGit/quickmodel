@@ -31,7 +31,7 @@ export function validateBody<TDto extends QModel<object>>(
 	) => {
 		try {
 			const dto = new DtoClass(req.body);
-			const validation = dto.checkRules();
+			const validation = dto.$qm.checkRules();
 			if (!validation.valid) {
 				res.status(422).json({ errors: validation.errors });
 				return;
@@ -98,7 +98,7 @@ router.post(
 	(req: Request & { dto?: CreateUserDto }, res) => {
 		const dto = req.dto!; // CreateUserDto — fully typed, inferred from validateBody()
 		// dto is coerced, validated, and stripped
-		res.status(201).json(dto.serialize());
+		res.status(201).json(dto.$qm.serialize());
 		// response includes @QComputed displayName
 	}
 );
@@ -122,7 +122,7 @@ export function dtoValidator<TDto extends QModel<object>>(
 	) => {
 		try {
 			const dto = new DtoClass(request.body as object);
-			const validation = dto.checkRules();
+			const validation = dto.$qm.checkRules();
 			if (!validation.valid) {
 				reply.code(422).send({ errors: validation.errors });
 				return;
@@ -146,7 +146,7 @@ fastify.post('/invoices', {
 		reply
 	) => {
 		const dto = request.dto!; // CreateInvoiceDto — fully typed, inferred from dtoValidator()
-		const saved = await invoiceService.save(dto.serialize());
+		const saved = await invoiceService.save(dto.$qm.serialize());
 		reply.code(201).send(saved);
 	},
 });
@@ -201,7 +201,7 @@ export function qValidator<TDto extends QModel<object>>(
 		const body = await c.req.json<object>();
 		try {
 			const dto = new DtoClass(body);
-			const validation = dto.checkRules();
+			const validation = dto.$qm.checkRules();
 			if (!validation.valid) {
 				return c.json({ errors: validation.errors }, 422);
 			}
@@ -225,7 +225,7 @@ const app = new Hono();
 app.post(
 	'/users',
 	qValidator(CreateUserDto, async (dto, c) => {
-		return c.json(dto.serialize(), 201);
+		return c.json(dto.$qm.serialize(), 201);
 	})
 );
 ```
@@ -263,16 +263,16 @@ export class BlogPostRepository {
 	create(data: object): object {
 		const post = new BlogPostModel(data);
 		this.store.set(post.id, post);
-		return post.serialize();
+		return post.$qm.serialize();
 	}
 
 	publish(id: string): object | null {
 		const post = this.store.get(id);
 		if (!post) return null;
 		// copy() is IMMUTABLE — capture the new instance
-		const published = post.copy({ publishedAt: new Date() });
+		const published = post.$qm.copy({ publishedAt: new Date() });
 		this.store.set(id, published);
-		return published.serialize();
+		return published.$qm.serialize();
 	}
 }
 ```
@@ -290,7 +290,7 @@ if (errors.length) {
 }
 
 // Process valid instances
-await orderService.bulkCreate(instances.map((i) => i.serialize()));
+await orderService.bulkCreate(instances.map((i) => i.$qm.serialize()));
 ```
 
 ::: tip coercionStrategy: 'loose'

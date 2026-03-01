@@ -37,7 +37,7 @@ const user = new UserModel({
 	apiToken: 'tok_abc123',
 });
 
-user.serialize();
+user.$qm.serialize();
 // → { id: 1, email: 'alice@example.com' }
 //   password y apiToken quedan excluidos
 
@@ -50,7 +50,7 @@ user.apiToken; // → 'tok_abc123'   ← totalmente accesible
 Cuando necesitas el payload completo — por ejemplo, al persistir en base de datos — pasa `{ includeSensitive: true }`:
 
 ```typescript
-user.serialize({ includeSensitive: true });
+user.$qm.serialize({ includeSensitive: true });
 // → { id: 1, email: 'alice@example.com', password: 'supersecret', apiToken: 'tok_abc123' }
 
 user.toJSON({ includeSensitive: true });

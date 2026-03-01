@@ -260,7 +260,7 @@ async function asyncValidate(values: Partial<IRegistrationForm>) {
 
 ```typescript
 const dto = new RegistrationDto({ ... });
-const report = dto.validationReport();
+const report = dto.$qm.validationReport();
 // report['password'] → array of { message, passed } for each @QRule on password
 ```
 

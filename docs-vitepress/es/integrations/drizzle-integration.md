@@ -250,7 +250,7 @@ const [row] = await db.select().from(users).where(eq(users.id, id));
 const existing = new UserRowDto(row!);
 
 // Aplicar solo los campos que cambiaron:
-const updated = existing.copy({ score: 100, role: 'admin' });
+const updated = existing.$qm.copy({ score: 100, role: 'admin' });
 
 await db
 	.update(users)
@@ -292,7 +292,7 @@ const [row] = await db.select().from(products).where(eq(products.id, id));
 const dto = new ProductDto(row!);
 
 dto.slug; // → 'mi-producto' (computado, no almacenado)
-dto.serialize(); // → { ..., slug: 'mi-producto' } ✅ incluido en respuesta API
+dto.$qm.serialize(); // → { ..., slug: 'mi-producto' } ✅ incluido en respuesta API
 dto.toInterface(); // → { id, title, ... } ❌ slug excluido — seguro para db.update()
 ```
 

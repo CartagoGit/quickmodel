@@ -199,7 +199,7 @@ async function updateUser(id: string, patch: Partial<IUser>): Promise<UserDto> {
 	if (!existing) throw new Error('User not found');
 
 	// copy() applies changes and resets isDirty() → false:
-	const updated = existing.copy(patch);
+	const updated = existing.$qm.copy(patch);
 
 	// toInterface() produces the clean update payload:
 	await User.findByIdAndUpdate(id, { $set: updated.toInterface() });
@@ -208,8 +208,8 @@ async function updateUser(id: string, patch: Partial<IUser>): Promise<UserDto> {
 }
 
 // isDirty() after copy() is always false:
-const updated = existing.copy({ name: 'Bob' });
-console.log(updated.isDirty()); // false — clean snapshot
+const updated = existing.$qm.copy({ name: 'Bob' });
+console.log(updated.$qm.isDirty()); // false — clean snapshot
 ```
 
 ## createMany() for insertMany() seed data

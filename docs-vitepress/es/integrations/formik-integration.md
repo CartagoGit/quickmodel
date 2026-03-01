@@ -267,7 +267,7 @@ async function validarAsync(values: Partial<IFormularioRegistro>) {
 
 ```typescript
 const dto = new RegistroDto({ ... });
-const reporte = dto.validationReport();
+const reporte = dto.$qm.validationReport();
 // reporte['password'] → array de { message, passed } por cada @QRule en password
 ```
 

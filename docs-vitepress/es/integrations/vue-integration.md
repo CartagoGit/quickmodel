@@ -129,7 +129,7 @@ export const useUserStore = defineStore('user', {
 			const record = this.records.get(id);
 			if (!record) return;
 			// copy() es INMUTABLE — captura la nueva instancia
-			this.records.set(id, record.copy(patch) as UserRecord);
+			this.records.set(id, record.$qm.copy(patch) as UserRecord);
 		},
 	},
 });
@@ -188,7 +188,7 @@ const { data, error } = await useAsyncData('products', async () => {
 		console.warn(`${errors.length} productos no válidos`);
 	}
 
-	return instances.map((item) => item.serialize());
+	return instances.map((item) => item.$qm.serialize());
 });
 ```
 
@@ -201,14 +201,14 @@ import { CreateUserDto } from '~/dto/create-user.dto';
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event);
 	const dto = new CreateUserDto(body);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 
 	if (!valid) {
 		throw createError({ statusCode: 422, data: { errors } });
 	}
 
 	// Guardar en base de datos...
-	return dto.serialize();
+	return dto.$qm.serialize();
 });
 ```
 
@@ -278,7 +278,7 @@ const user = new User({ name: 'Alice', createdAt: '2024-01-01' });
 const reactiveUser = reactive(user);
 
 // ❌ Evitar — `this` dentro de serialize() apunta al Proxy
-const data = reactiveUser.serialize();
+const data = reactiveUser.$qm.serialize();
 
 // ✅ Correcto — toRaw() devuelve la instancia original sin envolver
 const data = toRaw(reactiveUser).serialize();

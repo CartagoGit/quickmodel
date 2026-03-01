@@ -51,14 +51,14 @@ En v2.0, todos los métodos de la librería se moverán bajo una única propieda
 
 ```typescript
 // v1.x
-user.serialize();
-user.patch({ name: 'Alice' });
-user.diff(other);
-
-// v2.0
 user.$qm.serialize();
 user.$qm.patch({ name: 'Alice' });
 user.$qm.diff(other);
+
+// v2.0
+user.$qm.$qm.serialize();
+user.$qm.$qm.patch({ name: 'Alice' });
+user.$qm.$qm.diff(other);
 ```
 
 Con `$qm`, tus campos de modelo quedan completamente libres:
@@ -87,11 +87,11 @@ La transición de v1 a v2 será gradual:
 - Los métodos en la raíz de la instancia emiten un `@deprecated` en TypeScript y un `console.warn` en desarrollo.
 
 ```typescript
-user.serialize();
-// ⚠️ [QuickModel] user.serialize() está deprecado.
-//    Usa user.$qm.serialize() en su lugar. Se eliminará en v2.0.0.
+user.$qm.serialize();
+// ⚠️ [QuickModel] user.$qm.serialize() está deprecado.
+//    Usa user.$qm.$qm.serialize() en su lugar. Se eliminará en v2.0.0.
 
-user.$qm.serialize(); // ✅ sin warning
+user.$qm.$qm.serialize(); // ✅ sin warning
 ```
 
 **Fase 2 — v2.0.0 (release breaking)**
@@ -113,7 +113,7 @@ class Contract extends QModel<IContract> {
 	declare name: string;
 }
 
-contract.$qm.patch({ name: 'v2' });
+contract.$qm.$qm.patch({ name: 'v2' });
 
 contract.$qm.history.value;
 // → [{ field: 'name', from: 'v1', to: 'v2', at: Date, method: 'patch' }]

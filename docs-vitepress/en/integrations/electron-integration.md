@@ -60,7 +60,7 @@ class UserPrefsDto extends QModel<IUserPrefs> {
 
 const dto = new UserPrefsDto(currentPrefs);
 // Send clean JSON over IPC:
-await window.electron.savePrefs(dto.serialize());
+await window.electron.savePrefs(dto.$qm.serialize());
 
 // ── Main process (main.ts) ──────────────────────────────────────────────────
 
@@ -128,7 +128,7 @@ class FileRecordDto extends QModel<IFileRecord> {
 
 // Main → Renderer:
 const dto = new FileRecordDto(fileFromDisk);
-ipcRenderer.send('file-loaded', dto.serialize()); // Date → ISO string
+ipcRenderer.send('file-loaded', dto.$qm.serialize()); // Date → ISO string
 
 // Renderer receives:
 ipcMain.on('file-loaded', (_, payload) => {
@@ -152,7 +152,7 @@ contextBridge.exposeInMainWorld('electron', {
 const dto = new UserPrefsDto(userChanges);
 const { valid, errors } = qCheckRules(dto);
 if (valid) {
-	await window.electron.savePrefs(dto.serialize() as IUserPrefs);
+	await window.electron.savePrefs(dto.$qm.serialize() as IUserPrefs);
 } else {
 	showErrors(errors);
 }
@@ -168,7 +168,7 @@ ipcMain.handle('import-files', async () => {
 	) as IFileRecord[];
 	const { instances, errors } = FileRecordDto.createMany(raw);
 	if (errors.length > 0) console.warn('Skipped invalid rows:', errors.length);
-	return instances.map((dto) => dto.serialize());
+	return instances.map((dto) => dto.$qm.serialize());
 });
 
 // Renderer:
@@ -189,18 +189,18 @@ const prefs = new UserPrefsDto(await window.electron.loadPrefs());
 prefs.theme = 'dark';
 prefs.fontSize = 18;
 
-console.log(prefs.isDirty()); // true → show save dialog
+console.log(prefs.$qm.isDirty()); // true → show save dialog
 
 window.addEventListener('beforeunload', (e) => {
-	if (prefs.isDirty()) {
+	if (prefs.$qm.isDirty()) {
 		e.preventDefault();
 		e.returnValue = ''; // Electron shows "Leave page?" dialog
 	}
 });
 
 // After saving:
-const saved = prefs.copy({ theme: 'dark', fontSize: 18 });
-console.log(saved.isDirty()); // false — fresh snapshot
+const saved = prefs.$qm.copy({ theme: 'dark', fontSize: 18 });
+console.log(saved.$qm.isDirty()); // false — fresh snapshot
 ```
 
 ## @QComputed fields in Electron

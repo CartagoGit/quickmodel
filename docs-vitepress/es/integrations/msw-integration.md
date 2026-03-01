@@ -124,11 +124,11 @@ export const handlers = [
 			);
 		}
 		// serialize() elimina campos @QComputed e interno
-		return HttpResponse.json(usuario.serialize(), { status: 200 });
+		return HttpResponse.json(usuario.$qm.serialize(), { status: 200 });
 	}),
 
 	http.get('/api/usuarios', () => {
-		const usuarios = [...store.values()].map((u) => u.serialize());
+		const usuarios = [...store.values()].map((u) => u.$qm.serialize());
 		return HttpResponse.json(usuarios, { status: 200 });
 	}),
 ];
@@ -144,7 +144,7 @@ http.post('/api/usuarios', async ({ request }) => {
 
 	// Coercionar y sanear — elimina campos desconocidos automáticamente
 	const dto = new CrearUsuarioDto(body);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 
 	if (!valid) {
 		return HttpResponse.json({ errors }, { status: 422 });
@@ -152,13 +152,13 @@ http.post('/api/usuarios', async ({ request }) => {
 
 	// Añadir campos generados por el servidor y persistir
 	const creado: IUsuario = {
-		...(dto.serialize() as ICrearUsuario),
+		...(dto.$qm.serialize() as ICrearUsuario),
 		id: crypto.randomUUID(),
 	};
 	const usuarioGuardado = new UsuarioDto(creado);
 	store.set(usuarioGuardado.id, usuarioGuardado);
 
-	return HttpResponse.json(usuarioGuardado.serialize(), { status: 201 });
+	return HttpResponse.json(usuarioGuardado.$qm.serialize(), { status: 201 });
 });
 ```
 
@@ -182,7 +182,7 @@ function crearFixtureUsuario(
 
 // Uso en tests
 const admin = crearFixtureUsuario({ role: 'admin', username: 'admin_user' });
-const response = HttpResponse.json(admin.serialize(), { status: 200 });
+const response = HttpResponse.json(admin.$qm.serialize(), { status: 200 });
 ```
 
 ## Uso en Tests
@@ -193,7 +193,7 @@ import { setupServer } from 'msw/node';
 const server = setupServer(
 	http.get('/api/usuarios/:id', ({ params }) => {
 		const fixture = crearFixtureUsuario({ id: params.id as string });
-		return HttpResponse.json(fixture.serialize());
+		return HttpResponse.json(fixture.$qm.serialize());
 	})
 );
 
@@ -228,7 +228,7 @@ const respuestaServidor = {
 };
 
 const usuario = new UsuarioDto(respuestaServidor);
-const serializado = usuario.serialize();
+const serializado = usuario.$qm.serialize();
 // serializado no tiene _csrf ni _hash — seguro para enviar al cliente
 ```
 

@@ -61,7 +61,7 @@ class UserPrefsDto extends QModel<IUserPrefs> {
 
 const dto = new UserPrefsDto(currentPrefs);
 // Enviar JSON limpio por IPC:
-await window.electron.savePrefs(dto.serialize());
+await window.electron.savePrefs(dto.$qm.serialize());
 
 // ── Proceso main (main.ts) ──────────────────────────────────────────────────
 
@@ -129,7 +129,7 @@ class FileRecordDto extends QModel<IFileRecord> {
 
 // Main → Renderer:
 const dto = new FileRecordDto(fileFromDisk);
-ipcRenderer.send('file-loaded', dto.serialize()); // Date → ISO string
+ipcRenderer.send('file-loaded', dto.$qm.serialize()); // Date → ISO string
 
 // Renderer recibe:
 ipcMain.on('file-loaded', (_, payload) => {
@@ -153,7 +153,7 @@ contextBridge.exposeInMainWorld('electron', {
 const dto = new UserPrefsDto(userChanges);
 const { valid, errors } = qCheckRules(dto);
 if (valid) {
-	await window.electron.savePrefs(dto.serialize() as IUserPrefs);
+	await window.electron.savePrefs(dto.$qm.serialize() as IUserPrefs);
 } else {
 	showErrors(errors);
 }
@@ -170,7 +170,7 @@ ipcMain.handle('import-files', async () => {
 	const { instances, errors } = FileRecordDto.createMany(raw);
 	if (errors.length > 0)
 		console.warn('Filas inválidas omitidas:', errors.length);
-	return instances.map((dto) => dto.serialize());
+	return instances.map((dto) => dto.$qm.serialize());
 });
 
 // Renderer:
@@ -191,16 +191,16 @@ const prefs = new UserPrefsDto(await window.electron.loadPrefs());
 prefs.theme = 'dark';
 prefs.fontSize = 18;
 
-console.log(prefs.isDirty()); // true → mostrar diálogo de guardado
+console.log(prefs.$qm.isDirty()); // true → mostrar diálogo de guardado
 
 window.addEventListener('beforeunload', (e) => {
-	if (prefs.isDirty()) {
+	if (prefs.$qm.isDirty()) {
 		e.preventDefault();
 		e.returnValue = ''; // Electron muestra "¿Salir sin guardar?"
 	}
 });
 
 // Tras guardar:
-const saved = prefs.copy({ theme: 'dark', fontSize: 18 });
-console.log(saved.isDirty()); // false — snapshot fresco
+const saved = prefs.$qm.copy({ theme: 'dark', fontSize: 18 });
+console.log(saved.$qm.isDirty()); // false — snapshot fresco
 ```

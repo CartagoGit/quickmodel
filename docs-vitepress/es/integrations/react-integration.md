@@ -88,10 +88,10 @@ const [form, setForm] = useState(() => new ContactForm({}));
 
 // copy() es inmutable — devuelve una nueva instancia
 const handleChange = (field: keyof IContactForm, value: string) => {
-	setForm((prev) => prev.copy({ [field]: value }) as ContactForm);
+	setForm((prev) => prev.$qm.copy({ [field]: value }) as ContactForm);
 };
 
-const { valid, errors } = form.checkRules();
+const { valid, errors } = form.$qm.checkRules();
 ```
 
 ## React Hook Form — Adaptador resolver
@@ -145,7 +145,7 @@ export function createQModelResolver<T extends QModel<object>>(
 ): Resolver<T> {
 	return (values) => {
 		const instance = new FormClass(values);
-		const { valid, errors } = instance.checkRules();
+		const { valid, errors } = instance.$qm.checkRules();
 		if (valid) return { values, errors: {} };
 		return {
 			values: {},
@@ -201,10 +201,10 @@ export async function createOrder(formData: FormData) {
 		price: formData.get('price'),
 	};
 	const dto = new OrderItemDto(raw);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 	if (!valid) return { success: false, errors };
 	// dto.total está disponible via @QComputed
-	return { success: true, data: dto.serialize() };
+	return { success: true, data: dto.$qm.serialize() };
 }
 ```
 
@@ -244,7 +244,7 @@ const useCartStore = create<ICartStore>((set) => ({
 			const item = state.items.get(id);
 			if (!item) return state;
 			// copy() es INMUTABLE — guarda la nueva instancia
-			state.items.set(id, item.copy({ qty }));
+			state.items.set(id, item.$qm.copy({ qty }));
 			return { items: new Map(state.items) };
 		}),
 }));
@@ -278,12 +278,12 @@ export function useQModel<T extends QModel<object>>(
 	const [model, setModel] = useState(() => new ModelClass(initialData));
 
 	const update = useCallback((patch: Partial<object>) => {
-		setModel((prev) => prev.copy(patch) as T);
+		setModel((prev) => prev.$qm.copy(patch) as T);
 	}, []);
 
-	const validate = useCallback(() => model.checkRules(), [model]);
+	const validate = useCallback(() => model.$qm.checkRules(), [model]);
 
-	return { model, update, validate, isDirty: model.isDirty() };
+	return { model, update, validate, isDirty: model.$qm.isDirty() };
 }
 ```
 

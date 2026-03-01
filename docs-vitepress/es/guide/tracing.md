@@ -374,7 +374,7 @@ QConfig.configure({
 });
 
 const modelo = new UsuarioModel({ email: 'no-valido' });
-modelo.checkRules();
+modelo.$qm.checkRules();
 
 expect(entradas).toHaveLength(1);
 expect(entradas[0].ruleMessage).toBe('Debe ser un email válido');

@@ -121,7 +121,7 @@ const entity = await userRepository.findOne({ where: { id: 5 } });
 const dto = new UserDto(entity);
 
 // Create updated copy — original is immutable
-const updated = dto.copy({ role: 'admin', score: 999 });
+const updated = dto.$qm.copy({ role: 'admin', score: 999 });
 
 // Persist the patch
 await userRepository.update(5, updated.toInterface());
@@ -214,7 +214,7 @@ class UserRepository {
 		const existing = await this.findById(id);
 		if (!existing) throw new Error('Not found');
 
-		const updated = existing.copy(patch);
+		const updated = existing.$qm.copy(patch);
 		const saved = await this.repo.save({
 			...updated.toInterface(),
 			id,

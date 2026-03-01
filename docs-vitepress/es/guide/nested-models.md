@@ -369,7 +369,7 @@ const user = new User({
 	},
 });
 
-const plain = user.serialize();
+const plain = user.$qm.serialize();
 // {
 //   id: 1,
 //   email: 'john@example.com',
@@ -425,7 +425,7 @@ const child = new Node({
 root.children.push(child);
 
 // La serialización maneja referencias circulares
-const plain = root.serialize(); // Funciona sin recursión infinita
+const plain = root.$qm.serialize(); // Funciona sin recursión infinita
 ```
 
 ## Mejores Prácticas

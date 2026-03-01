@@ -135,11 +135,11 @@ export const handlers = [
 			);
 		}
 		// serialize() strips @QComputed fields and internal state
-		return HttpResponse.json(user.serialize(), { status: 200 });
+		return HttpResponse.json(user.$qm.serialize(), { status: 200 });
 	}),
 
 	http.get('/api/users', () => {
-		const users = [...store.values()].map((u) => u.serialize());
+		const users = [...store.values()].map((u) => u.$qm.serialize());
 		return HttpResponse.json(users, { status: 200 });
 	}),
 ];
@@ -155,7 +155,7 @@ http.post('/api/users', async ({ request }) => {
 
 	// Coerce & sanitize — strips unknown fields automatically
 	const dto = new CreateUserDto(body);
-	const { valid, errors } = dto.checkRules();
+	const { valid, errors } = dto.$qm.checkRules();
 
 	if (!valid) {
 		return HttpResponse.json({ errors }, { status: 422 });
@@ -163,13 +163,13 @@ http.post('/api/users', async ({ request }) => {
 
 	// Add server-generated fields and persist
 	const created: IUser = {
-		...(dto.serialize() as ICreateUser),
+		...(dto.$qm.serialize() as ICreateUser),
 		id: crypto.randomUUID(),
 	};
 	const savedUser = new UserDto(created);
 	store.set(savedUser.id, savedUser);
 
-	return HttpResponse.json(savedUser.serialize(), { status: 201 });
+	return HttpResponse.json(savedUser.$qm.serialize(), { status: 201 });
 });
 ```
 
@@ -191,7 +191,7 @@ function createUserFixture(overrides: Partial<IUser> = {}): UserDto {
 
 // Usage in tests
 const admin = createUserFixture({ role: 'admin', username: 'admin_user' });
-const response = HttpResponse.json(admin.serialize(), { status: 200 });
+const response = HttpResponse.json(admin.$qm.serialize(), { status: 200 });
 ```
 
 ## Using Fixtures in Tests
@@ -203,7 +203,7 @@ import { http, HttpResponse } from 'msw';
 const server = setupServer(
 	http.get('/api/users/:id', ({ params }) => {
 		const fixture = createUserFixture({ id: params.id as string });
-		return HttpResponse.json(fixture.serialize());
+		return HttpResponse.json(fixture.$qm.serialize());
 	})
 );
 
@@ -238,7 +238,7 @@ const rawServerResponse = {
 };
 
 const user = new UserDto(rawServerResponse);
-const serialized = user.serialize();
+const serialized = user.$qm.serialize();
 // serialized has no _csrf or _hash — safe to send to client
 ```
 

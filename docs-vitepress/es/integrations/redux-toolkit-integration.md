@@ -91,7 +91,7 @@ const userSlice = createSlice({
 	reducers: {
 		setUser(state, action: PayloadAction<Record<string, unknown>>) {
 			const dto = new UserDto(action.payload);
-			state.current = dto.serialize() as Record<string, unknown>;
+			state.current = dto.$qm.serialize() as Record<string, unknown>;
 		},
 		clearUser(state) {
 			state.current = null;
@@ -114,7 +114,7 @@ reducers: {
     const stored = state.entities[uid];
     if (!stored) return;
     const updated = new UserDto(stored).copy(patch);
-    state.entities[uid] = updated.serialize() as Record<string, unknown>;
+    state.entities[uid] = updated.$qm.serialize() as Record<string, unknown>;
     // @QComputed se recalcula automáticamente en la nueva instancia
   },
 },
@@ -153,7 +153,7 @@ const usersAdapter = createEntityAdapter<Record<string, unknown>>({
 // En un thunk o slice:
 const { instances } = UserDto.createMany(apiData);
 const serialized = instances.map(
-	(inst) => inst.serialize() as Record<string, unknown>
+	(inst) => inst.$qm.serialize() as Record<string, unknown>
 );
 usersAdapter.setAll(state, serialized);
 ```
@@ -178,7 +178,7 @@ export const userApi = createApi({
 			transformResponse: (rawList: object[]) => {
 				const { instances } = UserDto.createMany(rawList);
 				return instances.map(
-					(inst) => inst.serialize() as Record<string, unknown>
+					(inst) => inst.$qm.serialize() as Record<string, unknown>
 				);
 			},
 		}),

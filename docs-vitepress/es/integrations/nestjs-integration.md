@@ -130,7 +130,7 @@ export class UsersService {
 	create(data: object): object {
 		const dto = new CreateUserDto(data);
 
-		const result = dto.checkRules();
+		const result = dto.$qm.checkRules();
 		if (!result.valid) {
 			throw new BadRequestException({
 				message: 'Validación fallida',
@@ -138,7 +138,7 @@ export class UsersService {
 			});
 		}
 
-		return dto.serialize();
+		return dto.$qm.serialize();
 	}
 }
 ```
@@ -173,7 +173,7 @@ export class QuickModelValidationPipe implements PipeTransform {
 			value as object
 		);
 
-		const result = instance.checkRules();
+		const result = instance.$qm.checkRules();
 		if (!result.valid) {
 			throw new BadRequestException({
 				message: 'Validación fallida',
@@ -243,7 +243,7 @@ export class CreateOrderDto extends QModel<ICreateOrderBody> {
 // En tu servicio:
 const order = new CreateOrderDto(body);
 // order.shippingAddress ya es una instancia de AddressDto
-const addrResult = order.shippingAddress.checkRules();
+const addrResult = order.shippingAddress.$qm.checkRules();
 if (!addrResult.valid) {
 	throw new BadRequestException({ errors: addrResult.errors });
 }
@@ -295,7 +295,7 @@ export class AuthService {
 		const dto = new RegisterDto(data);
 
 		// evalúa predicados síncronos y asíncronos — todos en paralelo por defecto
-		const result = await dto.checkRulesAsync();
+		const result = await dto.$qm.checkRulesAsync();
 		if (!result.valid) {
 			throw new BadRequestException({
 				message: 'Registro fallido',
@@ -303,7 +303,7 @@ export class AuthService {
 			});
 		}
 
-		return this.saveUser(dto.serialize());
+		return this.saveUser(dto.$qm.serialize());
 	}
 }
 ```
@@ -314,7 +314,7 @@ export class AuthService {
 
 ```typescript
 // Dar a cada predicado BD un presupuesto de 300 ms — evita requests colgados
-const result = await dto.checkRulesAsync({
+const result = await dto.$qm.checkRulesAsync({
 	timeoutMs: 300,
 	timeoutMessage: 'Servicio temporalmente no disponible',
 });
@@ -332,7 +332,10 @@ Por defecto todos los predicados se ejecutan **en paralelo**. Usa `mode: 'serial
 
 ```typescript
 // Serie: comprobación de formato primero, la BD solo si el formato es correcto
-const result = await dto.checkRulesAsync({ mode: 'serial', timeoutMs: 300 });
+const result = await dto.$qm.checkRulesAsync({
+	mode: 'serial',
+	timeoutMs: 300,
+});
 ```
 
 | Opción           | Tipo                     | Por defecto         | Descripción                                                |

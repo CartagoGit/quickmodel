@@ -252,7 +252,7 @@ class Account extends QModel<IAccount> {
 const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
 
 console.log(account.password); // 's3cr3t' — still accessible
-console.log(account.serialize()); // { id: '1', name: 'Alice' } — password excluded
+console.log(account.$qm.serialize()); // { id: '1', name: 'Alice' } — password excluded
 ```
 
 ::: tip Deserialization is unaffected

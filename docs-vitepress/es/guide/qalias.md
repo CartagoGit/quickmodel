@@ -52,7 +52,7 @@ console.log(usuario.emailAddress); // 'alice@ejemplo.com'
 ## Salida: `serialize()` emite claves alias
 
 ```typescript
-const salida = usuario.serialize();
+const salida = usuario.$qm.serialize();
 // {
 //   first_name: 'Alice',
 //   last_name: 'Smith',
@@ -70,7 +70,7 @@ Los campos **sin** `@QAlias` conservan su nombre de propiedad original en la sal
 Dado que tanto la entrada como la salida usan las claves alias, el resultado serializado puede pasarse directamente de vuelta a `create()`:
 
 ```typescript
-const serializado = usuario.serialize();
+const serializado = usuario.$qm.serialize();
 const restaurado = UsuarioModel.create(serializado);
 
 restaurado.firstName === 'Alice'; // ✅
@@ -107,7 +107,7 @@ const p = PerfilModel.create({
 p.nombreCompleto; // 'Jane Doe'  ✅
 p.fechaNacimiento; // objeto Date ✅
 
-p.serialize();
+p.$qm.serialize();
 // { nombre_completo: 'Jane Doe', fechaNacimiento: '1990-01-01T00:00:00.000Z' }
 ```
 
@@ -131,7 +131,7 @@ const admin = AdminModel.create({
 
 admin.firstName; // 'Dan'
 admin.numeroTelefono; // '555-1234'
-admin.serialize(); // { first_name: 'Dan', ..., numero_telefono: '555-1234' }
+admin.$qm.serialize(); // { first_name: 'Dan', ..., numero_telefono: '555-1234' }
 ```
 
 ## Referencia de API

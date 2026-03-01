@@ -59,10 +59,10 @@ class Order extends QModel<IOrder> {
 
 // ✅ Todavía sin constructores — solo deserialización + serialización
 const order = new Order({ id: 1, status: 'pending' });
-const plain = order.serialize();
+const plain = order.$qm.serialize();
 
 // ⚡ AQUÍ: 14+ constructores de transformer se ejecutan (una vez, cacheados)
-const ok = order.isValid();
+const ok = order.$qm.isValid();
 ```
 
 ## Dependencias peer opcionales: `zod` y `faker`

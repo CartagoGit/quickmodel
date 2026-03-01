@@ -52,7 +52,7 @@ console.log(user.emailAddress); // 'alice@example.com'
 ## Output: `serialize()` emits alias keys
 
 ```typescript
-const output = user.serialize();
+const output = user.$qm.serialize();
 // {
 //   first_name: 'Alice',
 //   last_name: 'Smith',
@@ -70,7 +70,7 @@ Fields **without** `@QAlias` keep their original property name in the output.
 Because both input and output use the alias keys, the serialized form can be passed directly back to `create()`:
 
 ```typescript
-const serialized = user.serialize();
+const serialized = user.$qm.serialize();
 const restored = UserModel.create(serialized);
 
 restored.firstName === 'Alice'; // ✅
@@ -107,7 +107,7 @@ const p = ProfileModel.create({
 p.fullName; // 'Jane Doe'  ✅
 p.birthDate; // Date object ✅
 
-p.serialize();
+p.$qm.serialize();
 // { full_name: 'Jane Doe', birthDate: '1990-01-01T00:00:00.000Z' }
 ```
 
@@ -131,7 +131,7 @@ const admin = AdminModel.create({
 
 admin.firstName; // 'Dan'
 admin.phoneNumber; // '555-1234'
-admin.serialize(); // { first_name: 'Dan', ..., phone_number: '555-1234' }
+admin.$qm.serialize(); // { first_name: 'Dan', ..., phone_number: '555-1234' }
 ```
 
 ## API Reference
