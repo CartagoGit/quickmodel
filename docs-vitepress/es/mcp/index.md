@@ -1,6 +1,6 @@
 # Servidor MCP (Model Context Protocol)
 
-QuickModel incluye un servidor **MCP** totalmente compatible que permite a asistentes de IA (como Claude, Cursor o Antigravity) entender e interactuar profundamente con la librería.
+QuickModel incluye un servidor **MCP** totalmente compatible que permite a asistentes de IA (como Claude, Cursor o Windsurf) entender e interactuar profundamente con la librería.
 
 Al conectar un agente de IA a este servidor, le permites:
 
@@ -11,7 +11,7 @@ Al conectar un agente de IA a este servidor, le permites:
 
 ## Inicio Rápido
 
-**[→ Instalación y Configuración](./installation)** — Conecta tu IDE (VS Code, Cursor, Windsurf, Antigravity) en minutos.
+**[→ Instalación y Configuración](./installation)** — Conecta tu IDE (VS Code, Cursor, Windsurf, Claude Desktop, Zed) en minutos.
 
 ## Recursos Disponibles
 

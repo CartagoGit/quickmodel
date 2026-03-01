@@ -74,3 +74,39 @@ export type IQSchemaReturnType<T extends IQSchemaType> = T extends
 	: T extends 'zod'
 		? import('zod').ZodObject<any>
 		: string;
+
+/**
+ * The formats accepted by `QModel.fromSchema()` — the inverse of `getSchema()`.
+ *
+ * Only formats whose output can be meaningfully parsed back into a QModel class:
+ * - `'json'` / `'openapi'` / `'ajv'` — structured schema objects (produced by `getSchema`)
+ * - `'typescript'` — a TypeScript `interface` string (produced by `getSchema('typescript')`)
+ *
+ * @see {@link IFromSchemaInput} — maps each format to its accepted input type
+ * @see {@link QModel.fromSchema} — the method that uses this type
+ */
+export type IFromSchemaFormat = 'json' | 'openapi' | 'ajv' | 'typescript';
+
+/**
+ * Maps each `IFromSchemaFormat` to the input type it accepts in `QModel.fromSchema()`.
+ *
+ * This is the **inverse** of `IQSchemaReturnType`:
+ * - `getSchema('json')` → `Record<string, unknown>` → `fromSchema('json', that_object)`
+ * - `getSchema('openapi')` → `Record<string, unknown>` → `fromSchema('openapi', that_object)`
+ * - `getSchema('ajv')` → `Record<string, unknown>` → `fromSchema('ajv', that_object)`
+ * - `getSchema('typescript')` → `string` → `fromSchema('typescript', that_string)`
+ *
+ * @example
+ * ```typescript
+ * const json = User.getSchema('json');        // Record<string, unknown>
+ * const code = QModel.fromSchema('json', json, 'User'); // string → QModel class
+ *
+ * const tsInterface = User.getSchema('typescript'); // string
+ * const code2 = QModel.fromSchema('typescript', tsInterface, 'User');
+ * ```
+ *
+ * @see {@link IFromSchemaFormat}
+ * @see {@link QModel.fromSchema}
+ */
+export type IFromSchemaInput<T extends IFromSchemaFormat> =
+	T extends 'typescript' ? string : Record<string, unknown>;

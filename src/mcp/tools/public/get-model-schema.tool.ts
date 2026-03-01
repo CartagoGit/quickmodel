@@ -27,7 +27,7 @@ const VALID_FORMATS = [
 
 /**
  * Tool to generate a model schema in any supported format using the real QModel.getSchema() API.
- * Supports all 12 formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup, drizzle, typebox.
+ * Supports all 13 formats: json, openapi, zod, mongo, typescript, graphql, ajv, prisma, valibot, yup, drizzle, typebox, effect-schema.
  *
  * @see {@link QExportJsonSchemaTool} — export a standalone JSON Schema definition
  * @see {@link QGetFormSchemaTool} — get a form-oriented schema for UI frameworks
@@ -60,7 +60,7 @@ export class QGetModelSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	 * @param args - Tool arguments.
 	 * @param args.code - TypeScript source code of the QuickModel class.
 	 * @param args.format - Target schema format (`"json"`, `"openapi"`, `"zod"`, `"mongo"`,
-	 *   `"typescript"`, `"graphql"`, `"ajv"`, `"prisma"`, `"valibot"`, `"yup"`, `"drizzle"`, `"typebox"`).
+	 *   `"typescript"`, `"graphql"`, `"ajv"`, `"prisma"`, `"valibot"`, `"yup"`, `"drizzle"`, `"typebox"`, `"effect-schema"`).
 	 * @returns `{ schema, format }` — the generated schema object and the format used.
 	 * @throws {Error} When `format` is not one of the supported values.
 	 * @see {@link QAbstractTool.execute} — base contract for this method

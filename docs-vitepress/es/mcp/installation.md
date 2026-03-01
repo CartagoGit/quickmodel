@@ -20,23 +20,9 @@ Dos opciones — usa la que mejor encaje con tu flujo de trabajo.
 
 ### Opción 1 — ruta directa al binario local
 
-<<<<<<< Updated upstream
-
 `node_modules/.bin/quickmodel` siempre está disponible después de la instalación, independientemente del acceso a internet.
 
 <IDECommandTabs scenario="b1" />
-
-### Opción 2 — script en `package.json`
-
-# Añade un script `mcp` a tu `package.json`:
-
-`node_modules/.bin/quickmodel` siempre está disponible después de la instalación, independientemente del acceso a internet.
-
-> > > > > > > Stashed changes
-
-<IDECommandTabs scenario="b1" />
-
-# <<<<<<< Updated upstream
 
 ### Opción 2 — script en `package.json`
 
@@ -50,8 +36,7 @@ Añade un script `mcp` a tu `package.json`:
 }
 ```
 
-> > > > > > > Stashed changes
-> > > > > > > Luego apunta el IDE a ese script:
+Luego apunta el IDE a ese script:
 
 <IDECommandTabs scenario="b2" />
 
@@ -71,21 +56,10 @@ El paquete se descarga bajo demanda. **No se requiere `npm install`** — nada s
 
 ## Referencia de IDEs
 
-<<<<<<< Updated upstream
-| IDE | Archivo de configuración | Clave | Requiere reinicio |
+| IDE               | Archivo de configuración                                                                                                           | Clave             | Requiere reinicio |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ----------------- |
-| 💙 VS Code | `.vscode/mcp.json` | `servers` | Recargar ventana |
-| 🎯 Cursor | `.cursor/mcp.json` (proyecto) · `~/.cursor/mcp.json` (global) | `mcpServers` | Sí |
-| 🌊 Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | Sí |
-| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers` | Sí |
-| ⚡ Zed | Proyecto: `.zed/settings.json` · Global: `~/.config/zed/settings.json` | `context_servers` | No |
-=======
-| IDE | Archivo de configuración | Clave | Requiere reinicio |
-| --- | --- | --- | --- |
-| 💙 VS Code | `.vscode/mcp.json` | `servers` | Recargar ventana |
-| 🎯 Cursor | `.cursor/mcp.json` (proyecto) · `~/.cursor/mcp.json` (global) | `mcpServers` | Sí |
-| 🌊 Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | Sí |
-| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers` | Sí |
-| ⚡ Zed | Proyecto: `.zed/settings.json` · Global: `~/.config/zed/settings.json` | `context_servers` | No |
-
-> > > > > > > Stashed changes
+| 💙 VS Code        | `.vscode/mcp.json`                                                                                                                 | `servers`         | Recargar ventana  |
+| 🎯 Cursor         | `.cursor/mcp.json` (proyecto) · `~/.cursor/mcp.json` (global)                                                                      | `mcpServers`      | Sí                |
+| 🌊 Windsurf       | `~/.codeium/windsurf/mcp_config.json`                                                                                              | `mcpServers`      | Sí                |
+| ✨ Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | `mcpServers`      | Sí                |
+| ⚡ Zed            | Proyecto: `.zed/settings.json` · Global: `~/.config/zed/settings.json`                                                             | `context_servers` | No                |

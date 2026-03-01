@@ -496,6 +496,14 @@ export default defineConfig({
 									text: 'Troubleshooting',
 									link: '/en/guide/troubleshooting',
 								},
+								{
+									text: 'Contribution Guide',
+									link: '/en/guide/contributing',
+								},
+								{
+									text: 'Semantic Release',
+									link: '/en/guide/releasing',
+								},
 							],
 						},
 					],
@@ -655,6 +663,30 @@ export default defineConfig({
 								{
 									text: 'Complex Types',
 									link: '/en/examples/complex-types',
+								},
+								{
+									text: 'Alias Mapping',
+									link: '/en/examples/alias-mapping',
+								},
+								{
+									text: 'Batch Creation & Immutability',
+									link: '/en/examples/batch-readonly',
+								},
+								{
+									text: 'Computed Fields',
+									link: '/en/examples/computed',
+								},
+								{
+									text: 'Forms',
+									link: '/en/examples/forms',
+								},
+								{
+									text: 'Mocks & Testing',
+									link: '/en/examples/mocks',
+								},
+								{
+									text: 'Validation',
+									link: '/en/examples/validation',
 								},
 							],
 						},
@@ -862,6 +894,14 @@ export default defineConfig({
 									text: 'Solución de Problemas',
 									link: '/es/guide/troubleshooting',
 								},
+								{
+									text: 'Guía de Contribución',
+									link: '/es/guide/contributing',
+								},
+								{
+									text: 'Semantic Release',
+									link: '/es/guide/releasing',
+								},
 							],
 						},
 					],
@@ -1021,6 +1061,30 @@ export default defineConfig({
 								{
 									text: 'Tipos Complejos',
 									link: '/es/examples/complex-types',
+								},
+								{
+									text: 'Alias y Mapeo',
+									link: '/es/examples/alias-mapping',
+								},
+								{
+									text: 'Creación en Lote e Inmutabilidad',
+									link: '/es/examples/batch-readonly',
+								},
+								{
+									text: 'Campos Computados',
+									link: '/es/examples/computed',
+								},
+								{
+									text: 'Formularios',
+									link: '/es/examples/forms',
+								},
+								{
+									text: 'Mocks y Testing',
+									link: '/es/examples/mocks',
+								},
+								{
+									text: 'Validación',
+									link: '/es/examples/validation',
 								},
 							],
 						},
