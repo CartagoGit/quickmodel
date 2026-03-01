@@ -22,7 +22,7 @@ Las siguientes herramientas se usan para desarrollo interno.
 
 ## `agent_coordinate`
 
-Coordina el trabajo de agentes paralelos para prevenir conflictos de archivos. `check`: lista todos los agentes activos (llamar siempre primero). `claim`: registra tarea + archivos; usa detección glob-aware de solapamiento; devuelve `conflict:true` si bloqueado. Usa `force=true` para anular un lock de un agente caido. `release`: libera el claim al terminar. `update`: refresca el heartbeat TTL (llamar cada ~15 min). `purge`: fuerza limpiar claims bloqueados. Registro en `tmp/agent-registry.json`; las entradas expiran en 30 min sin heartbeat.
+Coordina el trabajo de agentes paralelos y previene conflictos de archivos. `check`: lista todos los agentes activos (llamar siempre primero). `claim`: registra tarea + archivos; usa detección glob-aware de solapamiento; devuelve `conflict:true` si bloqueado. `release`: libera el claim al terminar. `update`: refresca el heartbeat TTL (llamar cada ~15 min). `purge`: fuerza limpiar claims bloqueados. Registro en `tmp/agent-registry.json`; las entradas expiran en **5 min** sin heartbeat. Seguro entre procesos mediante lock atómico (`tmp/agent-registry.json.lock`).
 
 ```json
 {
@@ -34,19 +34,19 @@ Coordina el trabajo de agentes paralelos para prevenir conflictos de archivos. `
 		"optional": true
 	},
 	"task": {
-		"description": "Descripción corta de la tarea, p.ej. \"migrar docs $qm\". Requerido para claim.",
+		"description": "Título corto de la tarea, p.ej. \"migrar docs $qm\". Requerido para claim.",
 		"optional": true
 	},
 	"files": {
-		"description": "Rutas de archivos o patrones glob a bloquear, p.ej. [\"docs-vitepress/en/**\"]. Glob-aware.",
+		"description": "Rutas o patrones glob a bloquear, p.ej. [\"docs-vitepress/en/**\", \"src/core/**\"]. Detección de solape glob-aware.",
 		"optional": true
 	},
 	"ttlMs": {
-		"description": "TTL personalizado en ms (defecto 1800000 = 30 min).",
+		"description": "TTL personalizado en ms para este claim. Por defecto 300000 (5 minutos). Cualquier llamada check() con agentId actúa como heartbeat implícito.",
 		"optional": true
 	},
 	"force": {
-		"description": "Si true, anula un lock obsoleto (updatedAt más antiguo de ~5 min) de un agente caido.",
+		"description": "Si true, anula un claim conflictivo cuyo updatedAt tiene más de ~1 min (probablemente crasheado). NO anula un claim activo fresco — usa purge para eso.",
 		"optional": true
 	}
 }

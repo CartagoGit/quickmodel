@@ -22,7 +22,7 @@ The following tools are used for internal development.
 
 ## `agent_coordinate`
 
-Coordinate parallel agent work to prevent file conflicts. action="check": list all active agents — ALWAYS call this first. action="claim": register task + files; uses glob-aware overlap detection; returns conflict:true if blocked. Set force=true to override a stale lock from a crashed agent. action="release": free the claim when done. action="update": refresh TTL heartbeat for long-running tasks (call every ~15 min). action="purge": forcibly clear stuck/stale claims. Registry persisted to tmp/agent-registry.json; entries auto-expire after 30 min without heartbeat.
+Coordinate parallel agent work to prevent file conflicts. `check`: list all active agents — ALWAYS call this first. `claim`: register task + files; uses glob-aware overlap detection; returns `conflict:true` if blocked. `release`: free the claim when done. `update`: refresh TTL heartbeat (call every ~15 min). `purge`: forcibly clear stuck/stale claims. Registry persisted to `tmp/agent-registry.json`; entries auto-expire after **5 min** without heartbeat. Cross-process safe via atomic file lock (`tmp/agent-registry.json.lock`).
 
 ```json
 {
@@ -34,19 +34,19 @@ Coordinate parallel agent work to prevent file conflicts. action="check": list a
 		"optional": true
 	},
 	"task": {
-		"description": "Short task description, e.g. \"migrate docs $qm\". Required for claim.",
+		"description": "Short task title, e.g. \"migrate docs $qm\". Required for claim.",
 		"optional": true
 	},
 	"files": {
-		"description": "File paths or glob patterns to lock, e.g. [\"docs-vitepress/en/**\", \"src/core/**\"]. Glob-aware.",
+		"description": "File paths or glob patterns to lock, e.g. [\"docs-vitepress/en/**\", \"src/core/**\"]. Glob-aware overlap detection.",
 		"optional": true
 	},
 	"ttlMs": {
-		"description": "Custom TTL in milliseconds (default 1800000 = 30 min).",
+		"description": "Custom TTL in milliseconds for this claim. Defaults to 300000 (5 minutes). Any check() call with agentId acts as an implicit heartbeat.",
 		"optional": true
 	},
 	"force": {
-		"description": "If true, overrides a stale lock (updatedAt older than ~5 min) from a crashed agent.",
+		"description": "If true, overrides a conflicting claim whose updatedAt is older than ~1 min (likely crashed). Does NOT override a fresh active claim — use purge for that.",
 		"optional": true
 	}
 }

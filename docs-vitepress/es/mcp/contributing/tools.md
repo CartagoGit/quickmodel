@@ -13,9 +13,84 @@ Las siguientes herramientas se usan para desarrollo interno.
 - **Documentación**: Sincroniza docs (`update_docs`, `update_docs_content`), comprueba JSDocs faltantes (`check_jsdocs`).
 - **QA**: Comprueba salud del proyecto (`check_project_health`), cobertura (`get_coverage_report`), compatibilidad de API, tamaño del bundle y CHANGELOG.
 - **CI / Flujo de desarrollo**: Ejecuta tests (`run_tests`), lint (`lint_check`), typecheck (`typecheck`), simula pre-commit (`pre_commit_check`), archivos en staging (`get_staged_files`) y snapshot consolidado de salud (`project_status`).
+- **Coordinación de agentes**: Previene conflictos de archivos en sesiones de agentes paralelas — seguro entre procesos (`agent_coordinate`).
 - **Rendimiento**: Benchmarks de rendimiento (`benchmark_performance`).
 
 <!-- TOOLS-START -->
+
+<!-- _Mantenido manualmente. El equivalente en inglés se genera automáticamente por QSyncDocsTool._ -->
+
+## `agent_coordinate`
+
+Coordina el trabajo de agentes paralelos y previene conflictos de archivos. Cada ventana de VS Code ejecuta su propio Extension Host + servidor MCP; sin coordinación, escrituras concurrentes sobre los mismos archivos pueden corromper el registro o sobreescribir cambios.
+
+> [!TIP]
+> **Llama siempre `check` primero** antes de empezar cualquier tarea para ver qué están haciendo los demás agentes.
+
+### Cómo funciona
+
+1. El agente llama a `claim` → declara qué archivos va a tocar → se almacena en `tmp/agent-registry.json`
+2. Otro agente que llame a `claim` con archivos solapados recibe `conflict: true` inmediatamente
+3. El agente llama a `release` al terminar → su entrada se elimina del registro
+4. Si un agente crashea sin liberar, su entrada expira automáticamente en 5 min (TTL)
+
+### Mecanismos de seguridad
+
+- **Detección de conflictos glob-aware** — `src/**` conflicta con `src/core/qm.ts`; `docs/en/**` NO conflicta con `docs/es/**`
+- **Heartbeat implícito** — cualquier llamada a `check` con `agentId` renueva automáticamente el TTL (no hace falta llamar a `update` mientras se trabaja activamente)
+- **Lock atómico cross-proceso** — `open('wx')` atómico garantiza que solo uno de N procesos concurrentes escribe; locks obsoletos (proceso crasheado) se eliminan automáticamente tras 5 s
+- **Override con `force`** — si el `updatedAt` de un agente conflictivo tiene más de ~1 min de antigüedad, `force: true` anula su lock (se asume que crasheó)
+
+### Acciones
+
+| Acción    | Cuándo usarla                                                         |
+| --------- | --------------------------------------------------------------------- |
+| `check`   | **Siempre primero.** Lista todos los agentes activos y sus archivos.  |
+| `claim`   | Registra tu tarea + archivos. Devuelve `conflict: true` si bloqueado. |
+| `release` | Libera tu claim al terminar o abortar.                                |
+| `update`  | Heartbeat manual para tareas muy largas (llamar cada ~15 min).        |
+| `purge`   | Fuerza limpiar un claim atascado sin esperar el TTL.                  |
+
+### Esquema
+
+```json
+{
+	"action": {
+		"description": "Operación: claim | check | release | update | purge"
+	},
+	"agentId": {
+		"description": "Identificador único del agente, p.ej. \"copilot-session-1\". Requerido para claim, release, update.",
+		"optional": true
+	},
+	"task": {
+		"description": "Título corto de la tarea, p.ej. \"migrar docs $qm\". Requerido para claim.",
+		"optional": true
+	},
+	"files": {
+		"description": "Rutas o patrones glob a bloquear, p.ej. [\"docs-vitepress/en/**\", \"src/core/**\"]. Detección de solape glob-aware.",
+		"optional": true
+	},
+	"ttlMs": {
+		"description": "TTL personalizado en ms para este claim. Por defecto 300000 (5 minutos). Cualquier llamada check() con agentId actúa como heartbeat implícito.",
+		"optional": true
+	},
+	"force": {
+		"description": "Si true, anula un claim conflictivo cuyo updatedAt tiene más de ~1 min (probablemente crasheado). NO anula un claim activo fresco.",
+		"optional": true
+	}
+}
+```
+
+### Archivos en disco
+
+```
+tmp/
+  agent-registry.json        ← claims activos (JSON)
+  agent-registry.json.lock   ← centinela atómico de escritura (mutex cross-proceso)
+  agent-status.md            ← tabla de estado legible, actualizada en cada operación
+```
+
+> **Ver también:** [AGENT-COORDINATE.md](../../../../docs-vitepress/internals/AGENT-COORDINATE.md) — documento de diseño interno completo sobre el ticker, mecánica del lock y mapa de cobertura de tests.
 
 <!-- _Mantenido manualmente. El equivalente en inglés se genera automáticamente por QSyncDocsTool._ -->
 
