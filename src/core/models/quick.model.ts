@@ -317,6 +317,34 @@ export interface IQCreateManyResult<TInstance> {
  * @see {@link QModel.create} — preferred factory method for creating instances
  * @see {@link QModel.serialize} — serialize an instance back to plain JSON
  */
+
+/**
+ * Pre-coerces a single URL string value to its expected JS primitive type.
+ * Used internally by {@link QModel.fromURL}.
+ *
+ * Only converts the JS primitives that `URLSearchParams` always yields as strings:
+ * `Number` → `Number(val)`, `Boolean` → `val === 'true'`, `BigInt` → `BigInt(val)`.
+ * All other specs (`Date`, custom transformers, etc.) receive the raw string so their
+ * own `deserialize()` logic runs normally via the constructor.
+ *
+ * @param val  - Raw string from `params.get()` / `params.getAll()`, or `null` when absent
+ * @param spec - Transformer spec as stored in the `@Quick` type-map
+ * @returns Coerced value ready for the QModel constructor
+ */
+function coerceUrlString(val: string | null, spec: unknown): unknown {
+	if (val === null) return undefined;
+	if (spec === Number) return Number(val);
+	if (spec === Boolean) return val === 'true';
+	if (spec === BigInt) {
+		try {
+			return BigInt(val);
+		} catch {
+			return val;
+		}
+	}
+	return val;
+}
+
 export abstract class QModel<
 	TInterface extends IQAnyRecord,
 	TAliasMap extends Record<string, string> = Record<never, never>,
@@ -627,6 +655,70 @@ export abstract class QModel<
 		const plain = formDataToPlainObject(formData, options);
 		const Constructor = this;
 		return new Constructor(plain);
+	}
+
+	/**
+	 * Creates a model instance from a `URLSearchParams` object.
+	 *
+	 * Reads each key from `params` using the correct strategy:
+	 * - Fields declared as **array specs** in `@Quick({ field: [Type] })` → `params.getAll(key)`
+	 * - All other fields → `params.get(key)`
+	 *
+	 * After extraction, the plain object is passed to the normal constructor so all
+	 * registered type coercions (`Number`, `Date`, `[Number]`, custom transformers…)
+	 * are applied automatically.
+	 *
+	 * @param params - Source `URLSearchParams` (e.g. `new URL(req.url).searchParams`,
+	 *   `request.nextUrl.searchParams`, or `new URLSearchParams(window.location.search)`)
+	 * @returns Model instance with type-safe, coerced property access
+	 *
+	 * @see {@link QModel.fromFormData} — equivalent helper for `FormData`
+	 * @see {@link Quick} — `@Quick({ field: [Type] })` marks array fields
+	 *
+	 * @example
+	 * ```typescript
+	 * // URL: /search?role=admin&age=25&tags=read&tags=write
+	 *
+	 * @Quick({ age: Number, tags: [String] })
+	 * class SearchDto extends QModel<ISearch> {
+	 *   declare role: string;
+	 *   declare age: number;
+	 *   declare tags: string[];
+	 * }
+	 *
+	 * // Next.js App Router
+	 * const dto = SearchDto.fromURL(request.nextUrl.searchParams);
+	 * dto.age;  // 25  (number, not '25')
+	 * dto.tags; // ['read', 'write']
+	 *
+	 * // Hono / Express
+	 * const dto = SearchDto.fromURL(new URL(req.url).searchParams);
+	 * ```
+	 *
+	 * @group Serialization
+	 */
+	static fromURL<TClass extends QModel<IQAnyRecord>>(
+		this: new (data: any) => TClass,
+		params: URLSearchParams
+	): TClass {
+		const Constructor = this as unknown as typeof QModel;
+		const typeMap = (Reflect.getMetadata(QUICK_TYPE_MAP_KEY, Constructor) ??
+			{}) as Record<string, unknown>;
+
+		const plain: Record<string, unknown> = {};
+
+		for (const key of new Set(params.keys())) {
+			const spec = typeMap[key];
+			if (Array.isArray(spec)) {
+				plain[key] = params
+					.getAll(key)
+					.map((val) => coerceUrlString(val, spec[0]));
+			} else {
+				plain[key] = coerceUrlString(params.get(key), spec);
+			}
+		}
+
+		return new (this as unknown as new (data: unknown) => TClass)(plain);
 	}
 
 	/**

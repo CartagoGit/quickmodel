@@ -411,6 +411,10 @@ export default defineConfig({
 									link: '/en/guide/formdata',
 								},
 								{
+									text: 'URL Search Params (fromURL)',
+									link: '/en/guide/fromurl',
+								},
+								{
 									text: '⚡ Benchmarks',
 									link: '/en/guide/forms#performance',
 								},
@@ -767,6 +771,10 @@ export default defineConfig({
 								{
 									text: 'FormData y Streaming',
 									link: '/es/guide/formdata',
+								},
+								{
+									text: 'Parámetros URL (fromURL)',
+									link: '/es/guide/fromurl',
 								},
 								{
 									text: '⚡ Benchmarks',
