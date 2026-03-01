@@ -28,6 +28,12 @@
 	},
 	"chat.agent.maxRequests": 10000,
 	"chat.tools.terminal.ignoreDefaultAutoApproveRules": true,
+	// Disable file-write/redirection detection (VS Code 1.106+).
+	// By default VS Code blocks auto-approval of commands that redirect output
+	// to files outside the workspace (e.g. > /tmp/foo). Setting this to false
+	// removes that guard entirely for this trusted workspace.
+	// See: https://code.visualstudio.com/updates/v1_106#_file-writeredirection-detection-experimental
+	"chat.tools.terminal.blockDetectedFileWrites": false,
 	"chat.tools.edits.autoApprove": {
 		"**": true
 	},

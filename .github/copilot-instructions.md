@@ -2,7 +2,40 @@
 
 Este archivo es un **índice de navegación** para consultar la documentación específica según la tarea a realizar.
 
-## 📁 REGLA DE ARCHIVOS TEMPORALES — SIEMPRE OBLIGATORIA
+## � PROHIBICION ABSOLUTA: NUNCA USAR `>` NI `>>` EN TERMINAL
+
+> **REGLA CRITICA - NO NEGOCIABLE:** El operador `>` (y `>>`) en comandos de terminal puede disparar un prompt de aprobacion manual en VS Code. **Esta prohibido en cualquier contexto, sin excepciones.**
+
+**Anti-patrones prohibidos — nunca los generes:**
+
+```bash
+# PROHIBIDO — redireccion con > a cualquier ruta
+bun run test > ./tmp/output.txt 2>&1
+head -503 src/file.ts > /tmp/tmp.ts && mv /tmp/tmp.ts src/file.ts
+echo "texto" > archivo.txt
+command >> ./tmp/log.txt
+
+# PROHIBIDO — /tmp del sistema operativo (fuera del workspace)
+bun run test 2>&1 | tee /tmp/output.txt
+cp file.ts /tmp/file.ts
+```
+
+**Alternativas correctas:**
+
+```bash
+# Capturar output — usar tee con ./tmp/ del proyecto
+bun run test:noise 2>&1 | tee ./tmp/output.txt
+cat ./tmp/result.txt
+
+# Editar archivos — SIEMPRE usar herramientas de VS Code (create_file, replace_string_in_file)
+# NUNCA truncar/editar archivos con head/tail/sed/awk + >
+```
+
+**Por que?** VS Code 1.106+ (`chat.tools.terminal.blockDetectedFileWrites`) detecta redirects y puede bloquear escrituras fuera del workspace (`/tmp`). Este proyecto tiene `"blockDetectedFileWrites": false` en `.vscode/settings.json` para desactivarlo, pero el operador `>` sigue prohibido porque edita archivos sin pasar por las herramientas de VS Code (undo, validaciones, working set del chat).
+
+**Regla especifica para editar archivos:** Nunca uses comandos de terminal para editar, truncar o reescribir archivos fuente. Usa **SIEMPRE** `replace_string_in_file`, `create_file` o `edit_notebook_file`. El patron `head -N file > tmp && mv tmp file` esta **prohibido**.
+
+## �📁 REGLA DE ARCHIVOS TEMPORALES — SIEMPRE OBLIGATORIA
 
 **Nunca uses `/tmp` del sistema operativo.** Usa siempre la carpeta `tmp/` del proyecto:
 

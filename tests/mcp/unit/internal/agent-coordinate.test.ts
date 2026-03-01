@@ -723,4 +723,206 @@ describe('QAgentCoordinateTool', () => {
 			expect(expiryMs).toBeLessThanOrEqual(before + customTtl + 2000);
 		});
 	});
+
+	// ── status file ──────────────────────────────────────────────────────────
+
+	describe('agent-status.md', () => {
+		it('creates status file after a claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			expect(existsSync(TMP_STATUS)).toBe(true);
+			const content = readFileSync(TMP_STATUS, 'utf-8');
+			expect(content).toContain('agent-A');
+			expect(content).toContain('migrate docs');
+			expect(content).toContain('docs-vitepress/en/**');
+		});
+
+		it('updates status file to empty state after release', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'migrate docs',
+				files: ['docs-vitepress/en/**'],
+			});
+			await tool.execute({ action: 'release', agentId: 'agent-A' });
+			const content = readFileSync(TMP_STATUS, 'utf-8');
+			expect(content).toContain('No active agents');
+			expect(content).not.toContain('agent-A');
+		});
+
+		it('shows multiple agents in status file', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task A',
+				files: ['src/**'],
+			});
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'task B',
+				files: ['tests/**'],
+			});
+			const content = readFileSync(TMP_STATUS, 'utf-8');
+			expect(content).toContain('agent-A');
+			expect(content).toContain('agent-B');
+			expect(content).toContain('2 active agent');
+		});
+	});
+
+	// ── implicit heartbeat ────────────────────────────────────────────────────
+
+	describe('implicit heartbeat (check action)', () => {
+		it('check with agentId refreshes expiresAt of existing claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'long task',
+				files: [],
+			});
+			const after1st = (await tool.execute({ action: 'check' })).agents[0]
+				?.expiresAt;
+			await new Promise((resolve) => setTimeout(resolve, 5));
+			const checkRes = await tool.execute({
+				action: 'check',
+				agentId: 'agent-A',
+			});
+			const after2nd = checkRes.agents[0]?.expiresAt;
+			// Expiry should have been pushed forward
+			expect(new Date(after2nd ?? 0).getTime()).toBeGreaterThanOrEqual(
+				new Date(after1st ?? 0).getTime()
+			);
+		});
+
+		it('check without agentId does NOT refresh any claim', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'long task',
+				files: [],
+			});
+			const before = (await tool.execute({ action: 'check' })).agents[0]
+				?.expiresAt;
+			await new Promise((resolve) => setTimeout(resolve, 5));
+			// No agentId — heartbeat must NOT fire
+			await tool.execute({ action: 'check' });
+			const after = (await tool.execute({ action: 'check' })).agents[0]
+				?.expiresAt;
+			expect(after).toBe(before);
+		});
+
+		it('implicit heartbeat keeps claim alive past original TTL', async () => {
+			const tool = makeTool(50); // TTL = 50 ms
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'monitored task',
+				files: ['src/**'],
+			});
+			// Heartbeat every 20 ms for 90 ms total (3 heartbeats)
+			for (let idx = 0; idx < 3; idx++) {
+				await new Promise((resolve) => setTimeout(resolve, 20));
+				await tool.execute({ action: 'check', agentId: 'agent-A' });
+			}
+			// Agent should still be alive after 90 ms despite TTL = 50 ms
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(1);
+			expect(res.agents[0]?.agentId).toBe('agent-A');
+		});
+
+		it('claim without heartbeat expires after TTL', async () => {
+			const tool = makeTool(30); // TTL = 30 ms
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'short task',
+				files: ['src/**'],
+			});
+			// No heartbeat — wait for TTL to lapse
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			const res = await tool.execute({ action: 'check' });
+			expect(res.agents.some((agt) => agt.agentId === 'agent-A')).toBe(
+				false
+			);
+		});
+	});
+
+	// ── force threshold (1 min default) ──────────────────────────────────────
+
+	describe('force threshold is 1 minute', () => {
+		it('force=true does NOT override a claim that is only 30 seconds old', async () => {
+			const tool = makeTool();
+			const thirtySecAgo = new Date(Date.now() - 30 * 1000).toISOString();
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'recent-agent': {
+							agentId: 'recent-agent',
+							task: 'recent task',
+							files: ['src/**'],
+							startedAt: thirtySecAgo,
+							updatedAt: thirtySecAgo,
+							expiresAt: new Date(
+								Date.now() + 5 * 60 * 1000
+							).toISOString(),
+						},
+					},
+				})
+			);
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'try to take over',
+				files: ['src/**'],
+				force: true,
+			});
+			expect(res.claimed).toBe(false);
+			expect(res.conflict).toBe(true);
+		});
+
+		it('force=true overrides a claim that is 2 minutes old', async () => {
+			const tool = makeTool();
+			const twoMinAgo = new Date(
+				Date.now() - 2 * 60 * 1000
+			).toISOString();
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'old-agent': {
+							agentId: 'old-agent',
+							task: 'stale task',
+							files: ['src/**'],
+							startedAt: twoMinAgo,
+							updatedAt: twoMinAgo,
+							expiresAt: new Date(
+								Date.now() + 5 * 60 * 1000
+							).toISOString(),
+						},
+					},
+				})
+			);
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'agent-B',
+				task: 'valid take-over',
+				files: ['src/**'],
+				force: true,
+			});
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+		});
+	});
 });

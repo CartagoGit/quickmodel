@@ -499,3 +499,123 @@ bunx quickmodel generate integration prisma
 📋 Siguiente sprint (v2.0): W (namespace $qm) → I ($qm.history / audit trail)
 ⚠️ Diferida indefinidamente: K (plugin system)
 ```
+
+---
+
+### Propuesta L — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Legitimate Title
+
+### Propuesta Z — Injected entry
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc
+
+---
+
+### Propuesta [ — Title
+
+Injected
+
+**Prioridad:** 🟡 Media
+**Impacto:** Por definir
+**Esfuerzo estimado:** Por estimar
+
+desc

@@ -870,6 +870,7 @@ export abstract class QModel<
 	 * @group Serialization
 	 */
 	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
+		_assertQmCall('toFormData');
 		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
 		const localOptions = Reflect.getMetadata(
 			QUICK_OPTIONS_KEY,
@@ -950,6 +951,7 @@ export abstract class QModel<
 	toReadableStream(
 		options: IToReadableStreamOptions
 	): ReadableStream<Uint8Array> | IQMultipartStream {
+		_assertQmCall('toReadableStream');
 		// ── Multipart mode ──────────────────────────────────────────────────
 		if ('multipart' in options && options.multipart) {
 			const { boundary, chunkSize, onChunk } = options;
