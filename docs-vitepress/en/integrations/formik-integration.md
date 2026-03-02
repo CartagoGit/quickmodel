@@ -11,7 +11,7 @@ QuickModel works alongside Formik v2 as the validation and coercion layer — no
 | Initial values       | `dto.$qSerialize()`                                 |
 | Async validation     | `qCheckRulesAsync(dto)` with `@QRule(async ...)`    |
 | Multi-step wizard    | `@QGroup` per step + `qCheckRulesByGroup(dto)`      |
-| Dynamic fields       | `dto.getFormSchema()` → render `<Field>` list       |
+| Dynamic fields       | `dto.$qGetFormSchema()` → render `<Field>` list     |
 | Migration from Zod   | Replace `z.string().min()` → `@QRule`               |
 | Migration from Yup   | Replace `yup.string().matches()` → `@QRule`         |
 
@@ -201,7 +201,7 @@ class UserDto extends QModel<{ name: string; email: string; age: number }> {
 
 ```typescript
 const dto = new RegistrationDto({ ... });
-const schema = dto.getFormSchema();
+const schema = dto.$qGetFormSchema();
 
 // React rendering (conceptual):
 // schema.map(({ field, label, required, widget }) => (

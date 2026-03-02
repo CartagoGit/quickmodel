@@ -99,7 +99,7 @@ class AdminUser extends BaseUser {
 	declare role: string;
 }
 
-new AdminUser({ password: 'x', role: 'admin' }).serialize();
+new AdminUser({ password: 'x', role: 'admin' }).$qSerialize();
 // → { role: 'admin' }  ← password excluded (inherited from BaseUser)
 ```
 

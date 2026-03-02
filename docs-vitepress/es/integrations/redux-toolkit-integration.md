@@ -12,7 +12,7 @@ ofrece el **patrón de actualización inmutable** que los reducers esperan, sin 
 | Actualización inmutable       | `dto.$qCopy(patch)` → nueva instancia          |
 | `createAsyncThunk` tipado     | `new UserDto(response)` en el payload creator  |
 | Entity adapter normalizado    | `createMany()` → `Map<id, serializado>`        |
-| `transformResponse` RTK Query | `new UserDto(raw).serialize()`                 |
+| `transformResponse` RTK Query | `new UserDto(raw).$qSerialize()`               |
 | Validación antes de dispatch  | `qCheckRules(dto)` antes de `dispatch(action)` |
 | Selector tipado               | `new UserDto(stored).toInterface()`            |
 | Payloads legibles en DevTools | `serialize()` devuelve objetos inspeccionables |
@@ -113,7 +113,7 @@ reducers: {
     const { uid, patch } = action.payload;
     const stored = state.entities[uid];
     if (!stored) return;
-    const updated = new UserDto(stored).copy(patch);
+    const updated = new UserDto(stored).$qCopy(patch);
     state.entities[uid] = updated.$qSerialize() as Record<string, unknown>;
     // @QComputed se recalcula automáticamente en la nueva instancia
   },
@@ -134,7 +134,7 @@ export const fetchUser = createAsyncThunk<Record<string, unknown>, string>(
 		const response = await fetch(`/api/users/${uid}`);
 		const raw = (await response.json()) as object;
 		// Coerciona tipos, elimina campos desconocidos, añade @QComputed
-		return new UserDto(raw).serialize() as Record<string, unknown>;
+		return new UserDto(raw).$qSerialize() as Record<string, unknown>;
 	}
 );
 ```
@@ -171,7 +171,7 @@ export const userApi = createApi({
 		getUser: builder.query<Record<string, unknown>, string>({
 			query: (uid) => `/users/${uid}`,
 			transformResponse: (raw: object) =>
-				new UserDto(raw).serialize() as Record<string, unknown>,
+				new UserDto(raw).$qSerialize() as Record<string, unknown>,
 		}),
 		getUsers: builder.query<Record<string, unknown>[], void>({
 			query: () => '/users',
@@ -239,7 +239,7 @@ export const selectUser = createSelector(selectUserRaw, (raw) =>
 
 // Selector con campos computados
 export const selectUserWithLabel = createSelector(selectUserRaw, (raw) =>
-	raw ? new UserDto(raw).serialize() : undefined
+	raw ? new UserDto(raw).$qSerialize() : undefined
 );
 ```
 

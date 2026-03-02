@@ -25,9 +25,9 @@ import type { IQAdvancedOptions } from '../interfaces/quick-options.interface';
  * @template TModel     - The model type (keyed Plain record).
  * @template TInterface - The target interface type to reconstruct.
  *
- * @internal This service is used by `QModel.toInterface()` and `QModel.$qToJSON()`.
+ * @internal This service is used by `QModel.$qToInterface()` and `QModel.$qToJSON()`.
  *
- * @see {@link QModel.toInterface} — public API entry point
+ * @see {@link QModel.$qToInterface} — public API entry point
  * @see {@link QModel.$qToJSON} — also delegates to this service
  */
 export class ToInterfaceService<
@@ -49,7 +49,7 @@ export class ToInterfaceService<
 	 * @returns Plain object matching `T` with values in their original input format
 	 * @throws {Error} If `depth` exceeds 512 (security guard against circular structures).
 	 * @see {@link Serializer.serialize} — use this when JSON-safe output is needed instead
-	 * @see {@link QModel.toInterface} — public entry point that delegates here
+	 * @see {@link QModel.$qToInterface} — public entry point that delegates here
 	 * @see {@link ToInterfaceService.convertToInterfaceFormat} — processes each individual property value
 	 * @template T - The target interface shape
 	 */

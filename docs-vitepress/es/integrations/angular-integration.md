@@ -253,7 +253,7 @@ const etiqueta = computed(
 );
 
 // Serializado para llamadas a la API
-const payload = computed(() => cart().serialize());
+const payload = computed(() => cart().$qSerialize());
 
 cart.update((c) => c.$qCopy({ total: 80 }));
 console.log(totalConIva()); // 96.8

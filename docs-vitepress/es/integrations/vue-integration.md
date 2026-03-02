@@ -79,11 +79,11 @@ export function useProfileForm() {
 
 	// toRaw() necesario para que `this` interno de QModel no sea el Proxy
 	function validate() {
-		return toRaw(form).checkRules();
+		return toRaw(form).$qCheckRules();
 	}
 
 	function patch(data: Partial<IProfileForm>) {
-		return toRaw(form).copy(data) as ProfileForm;
+		return toRaw(form).$qCopy(data) as ProfileForm;
 	}
 
 	return { form, validate, patch };
@@ -91,7 +91,7 @@ export function useProfileForm() {
 ```
 
 ::: warning `toRaw()` con métodos de QModel
-Vue envuelve las instancias en un `Proxy`. Llama siempre a `toRaw(form).checkRules()` / `toRaw(form).copy(...)` para evitar que `this` interno apunte al Proxy en vez de a la instancia real. Ver [compatibilidad con Proxy](#qmodel-dentro-de-vue-reactive-compatibilidad-con-proxy).
+Vue envuelve las instancias en un `Proxy`. Llama siempre a `toRaw(form).$qCheckRules()` / `toRaw(form).$qCopy(...)` para evitar que `this` interno apunte al Proxy en vez de a la instancia real. Ver [compatibilidad con Proxy](#qmodel-dentro-de-vue-reactive-compatibilidad-con-proxy).
 :::
 
 ## Pinia Store
@@ -281,8 +281,8 @@ const reactiveUser = reactive(user);
 const data = reactiveUser.$qSerialize();
 
 // ✅ Correcto — toRaw() devuelve la instancia original sin envolver
-const data = toRaw(reactiveUser).serialize();
-const json = JSON.stringify(toRaw(reactiveUser).serialize());
+const data = toRaw(reactiveUser).$qSerialize();
+const json = JSON.stringify(toRaw(reactiveUser).$qSerialize());
 ```
 
 ::: danger `JSON.stringify(reactiveProxy)` codifica doble
@@ -293,7 +293,7 @@ const json = JSON.stringify(toRaw(reactiveUser).serialize());
 JSON.stringify(reactiveUser);
 
 // ✅ Correcto: serializar primero a objeto plano y después stringify
-JSON.stringify(toRaw(reactiveUser).serialize());
+JSON.stringify(toRaw(reactiveUser).$qSerialize());
 ```
 
 :::
@@ -348,13 +348,13 @@ actions: {
     if (!prev) return;
     // toRaw() → desenvuelve del proxy antes de llamar copy()
     // copy() → devuelve una nueva instancia; Pinia detecta el cambio de referencia
-    this.articles.set(id, toRaw(prev).copy(partial) as ArticleModel);
+    this.articles.set(id, toRaw(prev).$qCopy(partial) as ArticleModel);
   },
 },
 
 getters: {
   // Serializar via toRaw() para evitar el overhead del Proxy en la serialización
   articleList: (state) =>
-    [...state.articles.values()].map((art) => toRaw(art).serialize()),
+    [...state.articles.values()].map((art) => toRaw(art).$qSerialize()),
 },
 ```

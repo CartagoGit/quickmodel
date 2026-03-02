@@ -4,16 +4,16 @@ QuickModel funciona junto a Formik v2 como capa de validación y coerción — s
 
 ## Patrones clave
 
-| Problema en Formik   | Patrón QuickModel                                     |
-| -------------------- | ----------------------------------------------------- |
-| Prop `validate`      | `qCheckRules(dto)` → `{}` vacío o `{ campo: msg }`    |
-| Validación por campo | `qCheckRulesByGroup(dto)['grupoPaso']`                |
-| Valores iniciales    | `dto.$qSerialize()`                                   |
-| Validación async     | `qCheckRulesAsync(dto)` con `@QRule(async ...)`       |
-| Wizard multi-paso    | `@QGroup` por paso + `qCheckRulesByGroup(dto)`        |
-| Campos dinámicos     | `dto.getFormSchema()` → renderizar lista de `<Field>` |
-| Migración desde Zod  | Reemplazar `z.string().min()` → `@QRule`              |
-| Migración desde Yup  | Reemplazar `yup.string().matches()` → `@QRule`        |
+| Problema en Formik   | Patrón QuickModel                                       |
+| -------------------- | ------------------------------------------------------- |
+| Prop `validate`      | `qCheckRules(dto)` → `{}` vacío o `{ campo: msg }`      |
+| Validación por campo | `qCheckRulesByGroup(dto)['grupoPaso']`                  |
+| Valores iniciales    | `dto.$qSerialize()`                                     |
+| Validación async     | `qCheckRulesAsync(dto)` con `@QRule(async ...)`         |
+| Wizard multi-paso    | `@QGroup` por paso + `qCheckRulesByGroup(dto)`          |
+| Campos dinámicos     | `dto.$qGetFormSchema()` → renderizar lista de `<Field>` |
+| Migración desde Zod  | Reemplazar `z.string().min()` → `@QRule`                |
+| Migración desde Yup  | Reemplazar `yup.string().matches()` → `@QRule`          |
 
 ## Configuración del modelo
 
@@ -208,7 +208,7 @@ class UsuarioDto extends QModel<{
 
 ```typescript
 const dto = new RegistroDto({ ... });
-const schema = dto.getFormSchema();
+const schema = dto.$qGetFormSchema();
 
 // Renderizado en React (conceptual):
 // schema.map(({ field, label, required, widget }) => (

@@ -32,8 +32,8 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  *
  * @param alias - The external key name (e.g. `'first_name'`).
  *
- * @see {@link Quick} — class-level alias configuration via `@Quick({}, { alias: {...} })` with full type-safety on `serialize()` return type
- * @see {@link QModel.serialize} — outputs the aliased key names
+ * @see {@link Quick} — class-level alias configuration via `@Quick({}, { alias: {...} })` with full type-safety on `$qSerialize()` return type
+ * @see {@link QModel.$qSerialize} — outputs the aliased key names
  * @see {@link QModel.create} — accepts the aliased key names as input
  *
  * @remarks
@@ -79,7 +79,7 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  * @param alias - The serialization/deserialization alias key to assign to this property.
  * @returns A `PropertyDecorator` that stores the alias in reflect-metadata.
  * @see {@link QALIAS_METADATA_KEY} — metadata key used to store the alias
- * @see {@link QModel.serialize} — reads all QAlias metadata to rename output keys
+ * @see {@link QModel.$qSerialize} — reads all QAlias metadata to rename output keys
  */
 export function QAlias(alias: string): PropertyDecorator {
 	return (target, propertyKey) => {

@@ -67,9 +67,9 @@ import { QCOMPUTED_METADATA_KEY } from '../constants/metadata-keys';
  *
  * @group Decorators
  *
- * @see {@link QModel.serialize} — includes computed fields in the serialized output
+ * @see {@link QModel.$qSerialize} — includes computed fields in the serialized output
  * @see {@link QModel.toJSON} — also includes computed fields when converting to JSON
- * @see {@link QModel.toPlain} — also includes computed properties in the plain object
+ * @see {@link QModel.$qToPlain} — also includes computed properties in the plain object
  * @see {@link QType} — declare the transformer type for a computed field value
  * @see {@link Quick} — class-level decorator required before `@QComputed` properties work
  */

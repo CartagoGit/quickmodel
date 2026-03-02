@@ -3,11 +3,11 @@ import 'reflect-metadata';
 /**
  * Metadata key applied by `@QSensitive()` to property declarations.
  *
- * Fields marked with this key are excluded from `serialize()` and `toJSON()`
+ * Fields marked with this key are excluded from `$qSerialize()` and `toJSON()`
  * output unless the caller passes `{ includeSensitive: true }`.
  *
  * @see {@link QSensitive} — decorator that writes this key
- * @see {@link QModel.serialize} — reads this key to filter output
+ * @see {@link QModel.$qSerialize} — reads this key to filter output
  * @internal
  */
 export const QSENSITIVE_METADATA_KEY = '__qSensitive__';
@@ -15,11 +15,11 @@ export const QSENSITIVE_METADATA_KEY = '__qSensitive__';
 /**
  * Metadata key for the ordered list of property names decorated with `@QSensitive`.
  *
- * Stored on the class prototype as an array of field names. Used by `QModel.serialize()`
+ * Stored on the class prototype as an array of field names. Used by `QModel.$qSerialize()`
  * to quickly determine which fields to exclude.
  *
  * @see {@link QSensitive} — decorator that appends field names to this list
- * @see {@link QModel.serialize} — reads this list to skip sensitive fields
+ * @see {@link QModel.$qSerialize} — reads this list to skip sensitive fields
  * @internal
  */
 export const QSENSITIVE_FIELDS_KEY = '__qSensitive_fields__';
@@ -27,11 +27,11 @@ export const QSENSITIVE_FIELDS_KEY = '__qSensitive_fields__';
 /**
  * Marks a model property as sensitive.
  *
- * Sensitive fields are automatically excluded from `serialize()` and `toJSON()` output,
+ * Sensitive fields are automatically excluded from `$qSerialize()` and `toJSON()` output,
  * preventing accidental exposure of passwords, API keys, tokens, and other PII data.
  *
  * To include sensitive fields in the output, pass `{ includeSensitive: true }` to
- * `serialize()` or `toJSON()`. The fields remain fully accessible as instance
+ * `$qSerialize()` or `toJSON()`. The fields remain fully accessible as instance
  * properties and are not affected by `toInterface()` or `checkRules()`.
  *
  * @example Basic usage — exclude password and token from serialized output
@@ -58,7 +58,7 @@ export const QSENSITIVE_FIELDS_KEY = '__qSensitive_fields__';
  * user.password; // → 'secret'  ← still accessible as instance property
  * ```
  *
- * @see {@link QModel.serialize} — applies the sensitive filter
+ * @see {@link QModel.$qSerialize} — applies the sensitive filter
  * @see {@link IQSerializationOptions.includeSensitive} — override option
  */
 export function QSensitive(): PropertyDecorator {

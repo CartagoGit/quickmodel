@@ -33,12 +33,12 @@ QuickModel aborda **ambos**, pero con distintas técnicas según el tipo de depe
 
 Los siguientes componentes se difieren hasta el primer uso:
 
-| Componente                                                           | Técnica                    | Cuándo se instancia / carga                          |
-| -------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------- |
-| Peer dependency `zod`                                                | `createRequire` en runtime | Primera llamada a `.getSchema('zod')`                |
-| Peer dependency `@faker-js/faker`                                    | `createRequire` en runtime | Primera llamada a `.mock()`                          |
-| Instancia de `QMockGenerator`                                        | Getter estático lazy       | Primera llamada a cualquier `.mock()`                |
-| Instancia de `IntegrityService` (+ 14 constructores de transformers) | Getter estático lazy       | Primera llamada a `.checkIntegrity()` o `.isValid()` |
+| Componente                                                           | Técnica                    | Cuándo se instancia / carga                              |
+| -------------------------------------------------------------------- | -------------------------- | -------------------------------------------------------- |
+| Peer dependency `zod`                                                | `createRequire` en runtime | Primera llamada a `.getSchema('zod')`                    |
+| Peer dependency `@faker-js/faker`                                    | `createRequire` en runtime | Primera llamada a `.mock()`                              |
+| Instancia de `QMockGenerator`                                        | Getter estático lazy       | Primera llamada a cualquier `.mock()`                    |
+| Instancia de `IntegrityService` (+ 14 constructores de transformers) | Getter estático lazy       | Primera llamada a `.$qCheckIntegrity()` o `.$qIsValid()` |
 
 Esto significa que importar `quickmodel` y declarar clases model **no ejecuta ni un solo constructor de transformer** — las 14+ instancias de transformers dentro de `IntegrityService` solo se crean cuando se solicita validación por primera vez.
 

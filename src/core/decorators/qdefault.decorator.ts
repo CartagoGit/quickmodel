@@ -73,7 +73,7 @@ export type IQDefaultDescriptor<T> = { factory: () => T } | { value: T };
  * // Each instance gets its own fresh array and Date — no shared state.
  * ```
  *
- * @see {@link QModel.copy} — defaults are preserved through copy() when not overridden
+ * @see {@link QModel.$qCopy} — defaults are preserved through $qCopy() when not overridden
  */
 export function QDefault<T>(valueOrFactory: T | (() => T)): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol): void => {

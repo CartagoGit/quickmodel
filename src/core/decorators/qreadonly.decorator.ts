@@ -7,8 +7,8 @@ import 'reflect-metadata';
  * before applying any partial — an error is thrown if the partial touches a readonly field.
  *
  * @see {@link QReadonly} — decorator that appends field names to this list
- * @see {@link QModel.copy} — reads this list to guard against readonly mutation
- * @see {@link QModel.patch} — reads this list to guard against readonly mutation
+ * @see {@link QModel.$qCopy} — reads this list to guard against readonly mutation
+ * @see {@link QModel.$qPatch} — reads this list to guard against readonly mutation
  * @internal
  */
 export const QREADONLY_FIELDS_KEY = '__qReadonly_fields__';
@@ -71,8 +71,8 @@ export class ImmutableFieldError extends Error {
  * ```
  *
  * @see {@link ImmutableFieldError} — error thrown on readonly violation
- * @see {@link QModel.copy} — enforces @QReadonly
- * @see {@link QModel.patch} — enforces @QReadonly
+ * @see {@link QModel.$qCopy} — enforces @QReadonly
+ * @see {@link QModel.$qPatch} — enforces @QReadonly
  */
 export function QReadonly(): PropertyDecorator {
 	return (target: object, propertyKey: string | symbol): void => {

@@ -10,7 +10,7 @@ QuickModel works seamlessly in mobile development environments including React N
 | Persist to AsyncStorage     | `dto.$qSerialize()` → `JSON.stringify()`   |
 | Rehydrate from storage      | `new MyDto(JSON.parse(stored))`            |
 | Capacitor Preferences + TTL | `serialize()` + timestamp in stored object |
-| Dynamic form rendering      | `dto.getFormSchema()`                      |
+| Dynamic form rendering      | `dto.$qGetFormSchema()`                    |
 | Validate before native API  | `qCheckRules()` / `qCheckRulesAsync()`     |
 | Immutable state updates     | `dto.$qCopy({ field: value })`             |
 | Change detection            | `dto.$qIsDirty()`                          |
@@ -234,7 +234,7 @@ const dto = new UserProfileDto({
 	phone: '',
 	isVerified: false,
 });
-const fields = dto.getFormSchema();
+const fields = dto.$qGetFormSchema();
 // Render each field as an ion-input in your Ionic page
 ```
 

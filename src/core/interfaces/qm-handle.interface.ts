@@ -60,7 +60,7 @@ export interface IQMHandle<
 	/**
 	 * Serializes the model to a plain JSON-safe object.
 	 *
-	 * @see {@link QModel.serialize}
+	 * @see {@link QModel.$qSerialize}
 	 */
 	serialize(
 		options: IQSerializationOptions & { includeSensitive: true }
@@ -80,7 +80,7 @@ export interface IQMHandle<
 	/**
 	 * Converts the model to a `FormData` instance.
 	 *
-	 * @see {@link QModel.toFormData}
+	 * @see {@link QModel.$qToFormData}
 	 */
 	toFormData(options?: IToFormDataOptions): Promise<FormData>;
 
@@ -89,7 +89,7 @@ export interface IQMHandle<
 	 * Use `options.multipart: true` to send all fields as multipart/form-data.
 	 * Use `options.field` to stream a single `Blob`/`File` field.
 	 *
-	 * @see {@link QModel.toReadableStream}
+	 * @see {@link QModel.$qToReadableStream}
 	 */
 	toReadableStream(
 		options: IToReadableStreamMultipart | IToReadableStreamSingleField
@@ -101,7 +101,7 @@ export interface IQMHandle<
 	 * Returns `true` if any field (or the specified field) has changed since construction.
 	 *
 	 * @param field - Optional field name; when omitted any change returns `true`.
-	 * @see {@link QModel.isDirty}
+	 * @see {@link QModel.$qIsDirty}
 	 */
 	isDirty(field?: string): boolean;
 
@@ -109,7 +109,7 @@ export interface IQMHandle<
 	 * Returns an object containing only the fields that changed since construction.
 	 * Ideal for PATCH requests.
 	 *
-	 * @see {@link QModel.getChanges}
+	 * @see {@link QModel.$qGetChanges}
 	 */
 	getChanges(): Partial<IQSerializedInterface<TInterface>>;
 
@@ -119,7 +119,7 @@ export interface IQMHandle<
 	 * Applies a partial update in place.
 	 *
 	 * @param data - Partial object with the fields to update.
-	 * @see {@link QModel.patch}
+	 * @see {@link QModel.$qPatch}
 	 */
 	patch(data: Partial<IQModelData<TInterface>>): void;
 
@@ -127,7 +127,7 @@ export interface IQMHandle<
 	 * Returns a **new instance** that is a deep copy, optionally overriding fields.
 	 *
 	 * @param partial - Optional field overrides.
-	 * @see {@link QModel.copy}
+	 * @see {@link QModel.$qCopy}
 	 */
 	copy(partial?: Partial<IQModelData<TInterface>>): TModel;
 
@@ -137,14 +137,14 @@ export interface IQMHandle<
 	 * Returns a field-by-field diff between this instance and `other`.
 	 * Each key maps to `{ before, after }`.
 	 *
-	 * @see {@link QModel.diff}
+	 * @see {@link QModel.$qDiff}
 	 */
 	diff(other: TModel): Record<string, { before: unknown; after: unknown }>;
 
 	/**
 	 * Returns `true` if this instance is deeply equal to `other`.
 	 *
-	 * @see {@link QModel.equals}
+	 * @see {@link QModel.$qEquals}
 	 */
 	equals(other: TModel): boolean;
 
@@ -153,35 +153,35 @@ export interface IQMHandle<
 	/**
 	 * Returns `true` if all transformer-level integrity checks pass.
 	 *
-	 * @see {@link QModel.hasIntegrity}
+	 * @see {@link QModel.$qHasIntegrity}
 	 */
 	hasIntegrity(): boolean;
 
 	/**
 	 * Returns `true` if both integrity checks and all `@QRule` predicates pass.
 	 *
-	 * @see {@link QModel.isValid}
+	 * @see {@link QModel.$qIsValid}
 	 */
 	isValid(): boolean;
 
 	/**
 	 * Async version of `isValid()`. Evaluates async `@QRule` predicates.
 	 *
-	 * @see {@link QModel.isValidAsync}
+	 * @see {@link QModel.$qIsValidAsync}
 	 */
 	isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean>;
 
 	/**
 	 * Evaluates all `@QRule` predicates synchronously.
 	 *
-	 * @see {@link QModel.checkRules}
+	 * @see {@link QModel.$qCheckRules}
 	 */
 	checkRules(): IQRulesResult;
 
 	/**
 	 * Evaluates all `@QRule` predicates, including async ones.
 	 *
-	 * @see {@link QModel.checkRulesAsync}
+	 * @see {@link QModel.$qCheckRulesAsync}
 	 */
 	checkRulesAsync(options?: IQRulesAsyncOptions): Promise<IQRulesResult>;
 

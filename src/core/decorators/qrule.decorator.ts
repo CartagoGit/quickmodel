@@ -86,10 +86,10 @@ export interface IQRule<T = unknown> {
 }
 
 /**
- * Result returned by `QModel.checkRules()`.
+ * Result returned by `QModel.$qCheckRules()`.
  *
- * @see {@link QModel.checkRules} — synchronous evaluation
- * @see {@link QModel.checkRulesAsync} — async evaluation
+ * @see {@link QModel.$qCheckRules} — synchronous evaluation
+ * @see {@link QModel.$qCheckRulesAsync} — async evaluation
  * @see {@link IQValidationReport} — combined integrity + rules report
  */
 export interface IQRulesResult {

@@ -361,7 +361,7 @@ const totalWithTax = computed(() => cart().total * 1.21);
 const label = computed(() => `Cart for ${cart().userId}: $${cart().total}`);
 
 // Serialize for API calls
-const payload = computed(() => cart().serialize());
+const payload = computed(() => cart().$qSerialize());
 
 cart.update((c) => c.$qCopy({ total: 80 }));
 console.log(totalWithTax()); // 96.8

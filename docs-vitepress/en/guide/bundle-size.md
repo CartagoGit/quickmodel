@@ -33,12 +33,12 @@ QuickModel addresses **both**, but with different techniques depending on the ty
 
 The following components are deferred until first use:
 
-| Component                                                   | Technique                  | When it's instantiated / loaded                   |
-| ----------------------------------------------------------- | -------------------------- | ------------------------------------------------- |
-| `zod` peer dependency                                       | `createRequire` at runtime | First call to `.getSchema('zod')`                 |
-| `@faker-js/faker` peer dependency                           | `createRequire` at runtime | First call to `.mock()`                           |
-| `QMockGenerator` instance                                   | Lazy static getter         | First call to any `.mock()`                       |
-| `IntegrityService` instance (+ 14 transformer constructors) | Lazy static getter         | First call to `.checkIntegrity()` or `.isValid()` |
+| Component                                                   | Technique                  | When it's instantiated / loaded                       |
+| ----------------------------------------------------------- | -------------------------- | ----------------------------------------------------- |
+| `zod` peer dependency                                       | `createRequire` at runtime | First call to `.getSchema('zod')`                     |
+| `@faker-js/faker` peer dependency                           | `createRequire` at runtime | First call to `.mock()`                               |
+| `QMockGenerator` instance                                   | Lazy static getter         | First call to any `.mock()`                           |
+| `IntegrityService` instance (+ 14 transformer constructors) | Lazy static getter         | First call to `.$qCheckIntegrity()` or `.$qIsValid()` |
 
 This means importing `quickmodel` and declaring model classes does **not** run a single transformer constructor — all 14+ transformer instances inside `IntegrityService` are only created when validation is first requested.
 

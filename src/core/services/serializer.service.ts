@@ -88,7 +88,7 @@
  * ```
  *
  * @see {@link IQSerializer} — interface contract implemented by this service
- * @see {@link QModel.serialize} — public-facing API that delegates to this service
+ * @see {@link QModel.$qSerialize} — public-facing API that delegates to this service
  * @see {@link QTransformerRegistry} — registry of custom transformers
  */
 
@@ -294,7 +294,7 @@ function _getSerializeClassMeta(ctor: Function): IQSerializeClassMeta {
  * @template TModel - Model instance type.
  * @template TInterface - Target plain-object type.
  * @see {@link IQSerializer} — interface contract this class fulfils
- * @see {@link QModel.serialize} — public entry-point that delegates here
+ * @see {@link QModel.$qSerialize} — public entry-point that delegates here
  * @see {@link QTransformerRegistry} — registry queried for custom transformers
  * @see {@link ToInterfaceService} — sister service for preserving original input types
  */

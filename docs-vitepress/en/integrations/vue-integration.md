@@ -115,11 +115,11 @@ export function useContactForm() {
 
 	// toRaw() needed so QModel's internal `this` is not the Vue Proxy
 	function validate() {
-		return toRaw(form).checkRules();
+		return toRaw(form).$qCheckRules();
 	}
 
 	function fieldError(field: keyof IContactForm): string | null {
-		const result = toRaw(form).checkRules();
+		const result = toRaw(form).$qCheckRules();
 		return (
 			result.errors.find((e) => e.field === String(field))?.message ??
 			null
@@ -127,7 +127,7 @@ export function useContactForm() {
 	}
 
 	function patch(data: Partial<IContactForm>) {
-		return toRaw(form).copy(data) as ContactForm;
+		return toRaw(form).$qCopy(data) as ContactForm;
 	}
 
 	return { form, validate, fieldError, patch };
@@ -135,7 +135,7 @@ export function useContactForm() {
 ```
 
 ::: warning `toRaw()` with QModel methods
-Vue wraps instances in a `Proxy`. Always call `toRaw(form).checkRules()` / `toRaw(form).copy(...)` to prevent QuickModel's internal `this` from pointing to the Proxy instead of the real instance. See [Proxy compatibility](#qmodel-in-vue-reactive-proxy-compatibility).
+Vue wraps instances in a `Proxy`. Always call `toRaw(form).$qCheckRules()` / `toRaw(form).$qCopy(...)` to prevent QuickModel's internal `this` from pointing to the Proxy instead of the real instance. See [Proxy compatibility](#qmodel-in-vue-reactive-proxy-compatibility).
 :::
 
 ## Pinia Store — QModel as State
@@ -371,8 +371,8 @@ const reactiveUser = reactive(user);
 const data = reactiveUser.$qSerialize();
 
 // ✅ Correct — toRaw() returns the unwrapped original instance
-const data = toRaw(reactiveUser).serialize();
-const json = JSON.stringify(toRaw(reactiveUser).serialize());
+const data = toRaw(reactiveUser).$qSerialize();
+const json = JSON.stringify(toRaw(reactiveUser).$qSerialize());
 ```
 
 ::: danger `JSON.stringify(reactiveProxy)` double-encodes
@@ -383,7 +383,7 @@ const json = JSON.stringify(toRaw(reactiveUser).serialize());
 JSON.stringify(reactiveUser);
 
 // ✅ Correct plain-object serialization first, then stringify
-JSON.stringify(toRaw(reactiveUser).serialize());
+JSON.stringify(toRaw(reactiveUser).$qSerialize());
 ```
 
 :::
@@ -438,13 +438,13 @@ actions: {
     if (!prev) return;
     // toRaw() → unwrap from reactive proxy before calling copy()
     // copy() → returns a new instance; Pinia detects the reference change
-    this.articles.set(id, toRaw(prev).copy(partial) as ArticleModel);
+    this.articles.set(id, toRaw(prev).$qCopy(partial) as ArticleModel);
   },
 },
 
 getters: {
   // Serialize via toRaw() to avoid Proxy overhead in serialization
   articleList: (state) =>
-    [...state.articles.values()].map((a) => toRaw(a).serialize()),
+    [...state.articles.values()].map((a) => toRaw(a).$qSerialize()),
 },
 ```

@@ -69,7 +69,7 @@ export abstract class BaseTransformer<
 	 * @returns The IQSerialized value suitable for JSON
 	 * @see {@link BaseTransformer.deserialize} — inverse operation
 	 * @see {@link IQTransformer} — interface contract for this method
-	 * @see {@link Serializer} — calls this during `QModel.serialize()`
+	 * @see {@link Serializer} — calls this during `QModel.$qSerialize()`
 	 */
 	abstract serialize(value: TOutput): TInput;
 }

@@ -107,8 +107,8 @@ export const QTYPES_METADATA_KEY = Symbol('quickmodel:qtypes');
  * @returns A property decorator function that registers the field with appropriate metadata
  *
  * @see {@link Quick} — class-level alternative: declare all field types in one place (recommended)
- * @see {@link QModel.checkIntegrity} — validate fields transformed by this decorator
- * @see {@link QModel.serialize} — serializes transformed field values back to primitives
+ * @see {@link QModel.$qCheckIntegrity} — validate fields transformed by this decorator
+ * @see {@link QModel.$qSerialize} — serializes transformed field values back to primitives
  *
  * @example
  * **No transformation** (copy as-is):

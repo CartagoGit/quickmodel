@@ -566,7 +566,7 @@ describe('CreateUserDto', () => {
 | Field validation    | `@IsEmail()`, `@IsNotEmpty()`, …          | `@QRule(predicate, message)`                     |
 | Async validation    | `@ValidatorConstraint({ async: true })`   | `async` predicate + `checkRulesAsync(options?)`  |
 | Nested models       | `@Type(() => NestedDto)`                  | `@Quick({ field: NestedModel })`                 |
-| Serialization       | `instanceToPlain()` / `plainToInstance()` | `.serialize()` / `.toJSON()`                     |
+| Serialization       | `instanceToPlain()` / `plainToInstance()` | `.$qSerialize()` / `.toJSON()`                   |
 | Schema export       | Manual `@ApiProperty()` per field         | `.getSchema('openapi')`                          |
 | Computed API fields | Not built-in                              | `@QComputed()` getters                           |
 | Bulk create         | Manual loop                               | `createMany(array)` → `{ instances, errors }`    |
