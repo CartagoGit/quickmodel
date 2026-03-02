@@ -2,6 +2,39 @@
 
 ## [Unreleased]
 
+### Breaking Changes — `$q*` namespace promotion (guard system removed)
+
+- **All instance methods now use the `$q*` prefix exclusively.** The guarded layer
+  (`_qCallDepth`, `_withQFlag`, `_assertQCall`) has been fully deleted; the `$q*` methods
+  are now direct implementations with no overhead.
+- **Legacy instance methods removed** — The following method names no longer exist on
+  `QModel` or `QModelCollection` instances; any code calling them without the `$q` prefix
+  will receive `TypeError: ... is not a function` at runtime:
+  `serialize`, `isDirty`, `hasChanges`, `getChanges`, `patch`, `copy`, `reset`,
+  `checkIntegrity`, `checkRules`, `isValid`, `toInterface`, `getInitInterface`,
+  `diff`, `equals`, `hasIntegrity`, `validationReport`, `validate`,
+  `getDirtyFields`, `getChangedFields`, `toPlain`, `getFormSchema`,
+  `getFormSchemaGrouped`, `getMetadata`, `getSchema`.
+- **Migration:** replace every call without a prefix with the `$q*` equivalent
+  (e.g. `instance.serialize()` → `instance.$qSerialize()`). Static methods on the
+  class (`User.getMetadata()`, `User.getSchema('json')`, etc.) are **unchanged**.
+- **New instance methods added in this release:**
+    - `$qToPlain()` — runtime-typed plain object (keeps `Date`, `BigInt`, `Set` as-is)
+    - `$qGetFormSchema()` / `$qGetFormSchemaGrouped()` — instance-level form schema
+    - `$qGetMetadata()` — instance-level field metadata
+    - `$qGetSchema(type)` — instance-level schema export
+    - `$qFrom(data)` — creates a new instance of the same model from a plain object
+    - `$qFromJSON(json)` — creates a new instance from a JSON string
+
+### Bug Fixes
+
+- **`to-interface.service.ts`: false-positive circular-reference on `structuredClone`
+  fallback values** — When `structuredClone(qmodelInstance)` produces a plain object copy
+  (because the original is not JSON-serializable), that copy now correctly delegates to the
+  source QModel's `$qToInterface()` instead of iterating over the clone's properties. This
+  prevented diamond-shaped object graphs (same QModel instance referenced from multiple
+  nested paths) from incorrectly throwing `[Circular reference]`.
+
 ### Performance
 
 - **Lazy `ZodSchemaGenerator`** — `zod` is no longer in the static import graph of `quickmodel`'s
