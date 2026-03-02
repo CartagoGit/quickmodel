@@ -4,11 +4,11 @@ QuickModel integrates naturally with **Angular** applications. Use plain TypeScr
 
 ## Key Separation
 
-| Use case                     | Approach                                    |
-| ---------------------------- | ------------------------------------------- |
-| Reactive Forms validation    | Plain TS class + `@QRule` + `qCheckRules()` |
-| HTTP coercion / sanitization | `QModel` subclass + `@Quick()`              |
-| State / repository           | `QModel` subclass + `copy()` / `patch()`    |
+| Use case                     | Approach                                     |
+| ---------------------------- | -------------------------------------------- |
+| Reactive Forms validation    | Plain TS class + `@QRule` + `qCheckRules()`  |
+| HTTP coercion / sanitization | `QModel` subclass + `@Quick()`               |
+| State / repository           | `QModel` subclass + `$qCopy()` / `$qPatch()` |
 
 ## Installation
 
@@ -89,7 +89,7 @@ if (!groups['identity']?.valid) {
 ::: tip Two patterns available
 
 - **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance. Ideal for Reactive Forms with pure validation.
-- **`QModel` + `@Quick`** (below): adds type coercion, immutable `copy()`, `serialize()`, and `@QComputed`. Ideal for services, repositories, and HTTP interceptors.
+- **`QModel` + `@Quick`** (below): adds type coercion, immutable `$qCopy()`, `$qSerialize()`, and `@QComputed`. Ideal for services, repositories, and HTTP interceptors.
   :::
 
 ## Service / Repository Pattern
@@ -153,7 +153,7 @@ export class UsersService {
 	update(id: string, patch: Partial<IUserRecord>): object | null {
 		const record = this.store.get(id);
 		if (!record) return null;
-		// copy() is IMMUTABLE: returns a new instance
+		// $qCopy() is IMMUTABLE: returns a new instance
 		const updated = record.$qCopy(patch);
 		this.store.set(id, updated);
 		return updated.$qSerialize();
@@ -161,8 +161,8 @@ export class UsersService {
 }
 ```
 
-::: warning copy() is immutable
-`copy()` returns a **new instance** — always capture the return value and update the store. The original instance is never modified.
+::: warning $qCopy() is immutable
+`$qCopy()` returns a **new instance** — always capture the return value and update the store. The original instance is never modified.
 :::
 
 ## HttpClient HTTP Interceptor Coercion
@@ -239,22 +239,22 @@ const fullName = computed(() => profile().fullName); // Signal<string>
 const tier = computed(() => profile().tier); // Signal<'gold' | 'silver' | 'bronze'>
 ```
 
-### `copy()` vs `patch()` — critical distinction for signals
+### `$qCopy()` vs `$qPatch()` — critical distinction for signals
 
-| Method           | Returns                   | Triggers Angular CD    | Use with signals |
-| ---------------- | ------------------------- | ---------------------- | ---------------- |
-| `copy(partial)`  | New instance              | ✅ Yes — new reference | ✅ Always        |
-| `patch(partial)` | `void` (mutates in place) | ❌ No                  | ❌ Never         |
+| Method             | Returns                   | Triggers Angular CD    | Use with signals |
+| ------------------ | ------------------------- | ---------------------- | ---------------- |
+| `$qCopy(partial)`  | New instance              | ✅ Yes — new reference | ✅ Always        |
+| `$qPatch(partial)` | `void` (mutates in place) | ❌ No                  | ❌ Never         |
 
 ```typescript
-// ❌ Anti-pattern: patch() mutates in place, signal version does NOT increment
+// ❌ Anti-pattern: $qPatch() mutates in place, signal version does NOT increment
 //    Angular template will NOT re-render
 signal.update((model) => {
 	model.$qPatch({ score: 98 }); // void — original instance mutated
 	return model; // same reference → no change detection
 });
 
-// ✅ Correct: copy() returns a new instance → signal version increments → re-render
+// ✅ Correct: $qCopy() returns a new instance → signal version increments → re-render
 signal.update((model) => model.$qCopy({ score: 98 }));
 ```
 
@@ -305,7 +305,7 @@ export function reactiveModel<T extends QModel<any>>(
 		},
 		set(_, key, value) {
 			if (typeof key !== 'string') return false;
-			// copy() → new instance → new reference → Angular detects the change
+			// $qCopy() → new instance → new reference → Angular detects the change
 			sig.update((mdl) => mdl.$qCopy({ [key]: value } as Partial<T>));
 			return true;
 		},
@@ -344,7 +344,7 @@ export class CartComponent {
 3. Angular detects the new reference and schedules a re-render.
 4. Every `this.cart.total` read hits the Proxy `get` trap, which reads from `sig()` — always the latest value.
 
-**Tradeoff:** each assignment creates a new model instance via `copy()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.$qCopy({...}))` call.
+**Tradeoff:** each assignment creates a new model instance via `$qCopy()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.$qCopy({...}))` call.
 :::
 
 ### `computed()` — derived state from a model signal
@@ -370,7 +370,7 @@ console.log(payload().updatedAt); // ISO string — serialized Date
 
 ### Complex types (Date, Set, BigInt) survive signal updates
 
-`copy()` runs the full QuickModel deserialization pipeline. Passing a `Date` or `Set` directly in the partial preserves the type:
+`$qCopy()` runs the full QuickModel deserialization pipeline. Passing a `Date` or `Set` directly in the partial preserves the type:
 
 ```typescript
 const product = signal(
@@ -426,7 +426,7 @@ export function qAsyncValidator(
 }
 ```
 
-## change Detection with isDirty()
+## Change Detection with `$qIsDirty()`
 
 Track edits in forms or detail pages:
 
@@ -439,7 +439,7 @@ if (record.$qIsDirty()) {
 }
 
 // Reset to last saved state
-record.reset();
+record.$qReset();
 ```
 
 ## createMany() — Angular Resolver

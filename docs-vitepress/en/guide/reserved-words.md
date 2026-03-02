@@ -1,159 +1,88 @@
-# Reserved Words & the `$qm` Namespace
+# Reserved Words
 
 ## Why this page exists
 
-QuickModel adds a set of methods to every model instance: `serialize`, `copy`, `patch`, `diff`, `validate`, and others. These are the library's infrastructure — but they sit **directly on the instance**, which means your model cannot have fields with those names.
+In v1.0, QuickModel solved the field-name collision problem definitively. All library methods now carry a **`$q` prefix** — `$qSerialize()`, `$qCopy()`, `$qCheckRules()`, and so on — so they never clash with your domain fields.
 
-This is a real limitation. A perfectly valid domain model like this will conflict:
-
-```typescript
-interface IOrder {
-	history: IOrderEvent[]; // ❌ conflicts with future history API
-	copy: string; // ❌ conflicts with copy()
-	validate: boolean; // ❌ conflicts with validate()
-}
-```
+There are **no reserved field names** in v1.0. Every plain name is available for your domain model.
 
 ---
 
-## Current reserved words (v1.x)
+## No reserved field names
 
-The following names **cannot be used as field names** in any model:
-
-| Method             | Description                               |
-| ------------------ | ----------------------------------------- |
-| `serialize`        | Converts instance to plain object         |
-| `populate`         | Fills fields from plain data              |
-| `copy`             | Returns a new immutable copy with changes |
-| `patch`            | Mutates the instance in-place             |
-| `diff`             | Returns field-by-field differences        |
-| `equals`           | Compares two instances                    |
-| `validate`         | Unified sync/async validation             |
-| `checkRules`       | Runs `@QRule` predicates                  |
-| `checkRulesAsync`  | Async version of `checkRules`             |
-| `isValid`          | Convenience shortcut                      |
-| `hasIntegrity`     | Integrity check                           |
-| `isDirty`          | Whether instance has unsaved changes      |
-| `getChanges`       | Returns changed fields                    |
-| `toFormData`       | Converts to FormData                      |
-| `toReadableStream` | Converts to ReadableStream                |
-| `fromStream`       | Populates from a stream                   |
-| `pipeStream`       | Pipes to a writable stream                |
-| `configure`        | Per-instance config override              |
-
-If you use any of these as a field name, it will be shadowed by the library method and behave unexpectedly.
-
----
-
-## The solution: `$qm` namespace (coming in v2.0)
-
-In v2.0, all library methods will move under a single `$qm` property. This means your model only needs to avoid **one name** instead of 20+.
+Every name you can think of is safe to use as a field. Fields like `history`, `copy`, `serialize`, `validate`, or `checkRules` all work without any conflict:
 
 ```typescript
-// v1.x
-user.$qm.serialize();
-user.$qm.patch({ name: 'Alice' });
-user.$qm.diff(other);
-
-// v2.0
-user.$qm.$qm.serialize();
-user.$qm.$qm.patch({ name: 'Alice' });
-user.$qm.$qm.diff(other);
-```
-
-With `$qm`, your model fields are completely free:
-
-```typescript
+// ✅ All valid in v1.0
 interface IOrder {
 	history: IOrderEvent[]; // ✅ no conflict
 	copy: string; // ✅ no conflict
 	validate: boolean; // ✅ no conflict
 	serialize: string; // ✅ no conflict
+	checkRules: number; // ✅ no conflict
+}
+
+@Quick({
+	history: 'array',
+	copy: 'string',
+	validate: 'boolean',
+	serialize: 'string',
+	checkRules: 'number',
+})
+class Order extends QModel<IOrder> {
+	declare history: IOrderEvent[];
+	declare copy: string;
+	declare validate: boolean;
+	declare serialize: string;
+	declare checkRules: number;
 }
 ```
 
-The `$` prefix is a well-established convention — Vue, Angular and other frameworks use it to signal "framework-internal, not domain data".
+This is the core design goal of the `$q*` prefix: library infrastructure and domain data live in completely separate namespaces.
 
 ---
 
-## Migration path
+## The `$q*` methods — quick reference
 
-The transition from v1 to v2 will be gradual:
+All instance methods exposed by QuickModel use the `$q` prefix:
 
-**Phase 1 — v1.x (dual API)**
+| Method                     | Description                               |
+| -------------------------- | ----------------------------------------- |
+| `$qSerialize()`            | Converts instance to plain object         |
+| `$qCopy(changes?)`         | Returns a new immutable copy with changes |
+| `$qPatch(changes)`         | Mutates the instance in-place             |
+| `$qPopulate(data)`         | Fills fields from plain data              |
+| `$qDiff(other)`            | Returns field-by-field differences        |
+| `$qEquals(other)`          | Compares two instances                    |
+| `$qCheckRules()`           | Runs `@QRule` predicates (sync)           |
+| `$qCheckRulesAsync()`      | Async version of `$qCheckRules`           |
+| `$qIsValid()`              | Convenience shortcut — runs all checks    |
+| `$qCheckIntegrity()`       | Integrity check                           |
+| `$qIsDirty()`              | Whether instance has unsaved changes      |
+| `$qGetChanges()`           | Returns changed fields                    |
+| `$qToFormData()`           | Converts to FormData                      |
+| `$qToReadableStream()`     | Converts to ReadableStream                |
+| `$qFromStream()`           | Populates from a stream                   |
+| `$qPipeStream()`           | Pipes to a writable stream                |
+| `$qConfigure()`            | Per-instance config override              |
+| `$qGetFormSchema()`        | Returns the QField form schema            |
+| `$qGetFormSchemaGrouped()` | Returns the schema grouped by `@QGroup`   |
 
-- All methods remain available directly on the instance (backward compatible).
-- The `$qm` namespace is **also available** with the full API.
-- Methods on the instance root emit a TypeScript `@deprecated` warning and a `console.warn` in development.
-
-```typescript
-user.$qm.serialize();
-// ⚠️ [QuickModel] user.$qm.serialize() is deprecated.
-//    Use user.$qm.$qm.serialize() instead. Will be removed in v2.0.0.
-
-user.$qm.$qm.serialize(); // ✅ no warning
-```
-
-**Phase 2 — v2.0.0 (breaking release)**
-
-- Methods on the instance root are removed.
-- Only `$qm` remains.
-- A migration guide will be published in `CHANGELOG.md`.
-
----
-
-## The `$qm.history` handle (Audit Trail)
-
-One of the reasons for this change is to cleanly introduce `$qm.history`, an optional audit trail for tracking field mutations over time. Since `history` is a common domain field name, putting it under `$qm` avoids the conflict entirely.
+Static methods (called on the class, not an instance) do **not** use the `$q` prefix because there is no collision risk:
 
 ```typescript
-// Only active when explicitly enabled:
-@Quick({ name: 'string' }, { audit: { enabled: true, maxEntries: 50 } })
-class Contract extends QModel<IContract> {
-	declare name: string;
-}
-
-contract.$qm.$qm.patch({ name: 'v2' });
-
-contract.$qm.history.value;
-// → [{ field: 'name', from: 'v1', to: 'v2', at: Date, method: 'patch' }]
-
-contract.$qm.history.isActive; // boolean
-contract.$qm.history.stop(); // pause recording
-contract.$qm.history.start(); // resume
-contract.$qm.history.clear(); // empty entries (keep config)
-contract.$qm.history.configure({ maxEntries: 20 });
-```
-
-**Zero overhead when disabled:** when `audit.enabled` is false (the default), the history array is never instantiated and `patch()` / `copy()` run no extra code.
-
-### Audit configuration levels
-
-From lowest to highest priority:
-
-```typescript
-// 1. Global
-QConfig.configure({ audit: { enabled: false, maxEntries: 100 } });
-
-// 2. Per class (second parameter of @Quick)
-@Quick({ name: 'string' }, { audit: { enabled: true, maxEntries: 50 } })
-class Contract extends QModel<IContract> { ... }
-
-// 3. Per instance (runtime, highest priority)
-contract.$qm.history.configure({ maxEntries: 20 });
+User.getSchema('json');
+User.getFormSchema();
+User.getFormSchemaGrouped();
 ```
 
 ---
 
-## Timeline
+## Summary
 
-| Version      | Status                                                       |
-| ------------ | ------------------------------------------------------------ |
-| v1.x current | Methods on instance root. `$qm` not yet available.           |
-| v1.x next    | `$qm` available. Instance root methods marked `@deprecated`. |
-| v2.0.0       | Instance root methods removed. Only `$qm`.                   |
-
-::: info Detailed plan
-The full technical specification for this refactoring is documented in
-[`proposals/QM-NAMESPACE-REFACTOR.md`](https://github.com/your-org/quickmodel/blob/develop/docs-vitepress/proposals/QM-NAMESPACE-REFACTOR.md).
-:::
+| v1.0 behaviour                                      | Details                                          |
+| --------------------------------------------------- | ------------------------------------------------ |
+| Reserved field names                                | **None**                                         |
+| All plain names (`history`, `copy`, …)              | Freely available as field names                  |
+| Library instance methods                            | All carry `$q` prefix — no collisions            |
+| Static class methods (`getSchema`, `getFormSchema`) | No prefix — called on the class, not an instance |

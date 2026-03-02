@@ -10,6 +10,12 @@ const SUPPORTED_FORMATS = {
 	typescript: 'typescript',
 	graphql: 'graphql',
 	prisma: 'prisma',
+	valibot: 'valibot',
+	yup: 'yup',
+	typebox: 'typebox',
+	'effect-schema': 'effect-schema',
+	drizzle: 'drizzle',
+	mongo: 'mongo',
 } as const;
 
 /**
@@ -47,24 +53,26 @@ export class QFromSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 	description =
 		'Convert a formal schema back into a QuickModel class definition. ' +
 		'This is the inverse of get_model_schema: given a JSON Schema, OpenAPI schema, AJV schema, ' +
-		'TypeScript interface, GraphQL SDL type, or Prisma model block, ' +
+		'TypeScript interface, GraphQL SDL type, Prisma model block, Valibot schema, Yup schema, ' +
+		'TypeBox schema, Effect Schema, Drizzle pgTable, or Mongoose schema object, ' +
 		'generate a ready-to-use QModel class with @Quick decorators. ' +
-		'Supported formats: json, openapi, ajv, typescript, graphql, prisma. ' +
-		'For json/openapi/ajv: provide the schema as a JSON string. ' +
-		'For typescript/graphql/prisma: provide the source string directly. ' +
+		'Supported formats: json, openapi, ajv, typescript, graphql, prisma, valibot, yup, typebox, effect-schema, drizzle, mongo. ' +
+		'For json/openapi/ajv/mongo: provide the schema as a JSON string. ' +
+		'For typescript/graphql/prisma/valibot/yup/typebox/effect-schema/drizzle: provide the source string directly. ' +
 		'Returns { code } — TypeScript source for a class extending QModel.';
 
 	schema = z.object({
 		schema: z
 			.string()
 			.describe(
-				'The schema to convert. For json/openapi/ajv: a valid JSON string. ' +
-					'For typescript/graphql/prisma: a source string (interface, SDL type, or model block).'
+				'The schema to convert. For json/openapi/ajv/mongo: a valid JSON string. ' +
+					'For typescript/graphql/prisma/valibot/yup/typebox/effect-schema/drizzle: a source string.'
 			),
 		format: z
 			.enum(SUPPORTED_FORMATS)
 			.describe(
-				'Schema format: json | openapi | ajv | typescript | graphql | prisma'
+				'Schema format: json | openapi | ajv | typescript | graphql | prisma | ' +
+					'valibot | yup | typebox | effect-schema | drizzle | mongo'
 			),
 		className: z
 			.string()
@@ -99,7 +107,12 @@ export class QFromSchemaTool extends QAbstractTool<z.ZodObject<any>> {
 		if (
 			format === 'typescript' ||
 			format === 'graphql' ||
-			format === 'prisma'
+			format === 'prisma' ||
+			format === 'valibot' ||
+			format === 'yup' ||
+			format === 'typebox' ||
+			format === 'effect-schema' ||
+			format === 'drizzle'
 		) {
 			const code = SchemaToModelService.fromSchema(
 				format,

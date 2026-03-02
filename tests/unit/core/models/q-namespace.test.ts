@@ -1,31 +1,28 @@
 /**
- * @fileoverview TDD tests for the `$qm` namespace handle — Propuesta W
+ * @fileoverview TDD tests for the `$q` namespace handle — Propuesta W
  *
- * Verifies that every instance method is accessible via `instance.$qMethod()`,
- * that the delegate calls produce identical results to the root-level methods,
- * and that the `IQMHandle` shape is correctly typed.
+ * Verifies that every instance method is accessible via `instance.$q*()`,
+ * that the delegate calls produce identical results to the root-level methods.
  *
  * Covered scenarios:
- *  - $qm is available on every QModel instance
- *  - $qm.serialize()  — delegates correctly
- *  - $qm.isDirty()    — field-level and any-field
- *  - $qm.getChanges() — only changed fields
- *  - $qm.patch()      — in-place mutation
- *  - $qm.copy()       — new instance, optional override
- *  - $qm.diff()       — field-by-field comparison
- *  - $qm.equals()     — deep equality
- *  - $qm.hasIntegrity() — transformer-level checks
- *  - $qm.isValid()    — integrity + rules combined
- *  - $qm.checkRules() — @QRule predicates (sync)
- *  - $qm.checkRulesAsync() — @QRule predicates (async)
- *  - $qm.isValidAsync() — async boolean gate
- *  - $qm.validationReport() — combined sync report
- *  - $qm.validationReportAsync() — combined async report
- *  - $qm.validate()   — sync unified validation
- *  - $qm.validate({ async: true }) — async unified validation
- *  - $qm.toFormData() — FormData serialization
- *  - $qm.toReadableStream() — ReadableStream from binary field
- *  - IQMHandle is exported from the public API
+ *  - $qSerialize()  — delegates correctly
+ *  - $qIsDirty()    — field-level and any-field
+ *  - $qGetChanges() — only changed fields
+ *  - $qPatch()      — in-place mutation
+ *  - $qCopy()       — new instance, optional override
+ *  - $qDiff()       — field-by-field comparison
+ *  - $qEquals()     — deep equality
+ *  - $qHasIntegrity() — transformer-level checks
+ *  - $qIsValid()    — integrity + rules combined
+ *  - $qCheckRules() — @QRule predicates (sync)
+ *  - $qCheckRulesAsync() — @QRule predicates (async)
+ *  - $qIsValidAsync() — async boolean gate
+ *  - $qValidationReport() — combined sync report
+ *  - $qValidationReportAsync() — combined async report
+ *  - $qValidate()   — sync unified validation
+ *  - $qValidate({ async: true }) — async unified validation
+ *  - $qToFormData() — FormData serialization
+ *  - $qToReadableStream() — ReadableStream from binary field
  */
 
 import { describe, expect, test } from 'bun:test';
@@ -76,19 +73,19 @@ class OrderWithRules extends QModel<IOrderWithRules> {
 }
 
 // ---------------------------------------------------------------------------
-// $qm availability
+// $q availability
 // ---------------------------------------------------------------------------
 
-describe('$qm — availability', () => {
-	test('$qm is defined on every QModel instance', () => {
-		// After migration, $q* methods are directly on the instance (no $qm namespace)
+describe('$q — availability', () => {
+	test('$q is defined on every QModel instance', () => {
+		// After migration, $q* methods are directly on the instance (no $q namespace)
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		expect(typeof prod.$qSerialize).toBe('function');
 		expect(typeof prod.$qIsDirty).toBe('function');
 		expect(typeof prod.$qHasIntegrity).toBe('function');
 	});
 
-	test('$qm exposes all expected methods', () => {
+	test('$q exposes all expected methods', () => {
 		// After migration, methods are directly on the instance as $q* methods
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 
@@ -113,10 +110,10 @@ describe('$qm — availability', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm.serialize
+// $q.serialize
 // ---------------------------------------------------------------------------
 
-describe('$qm.$qSerialize()', () => {
+describe('$qSerialize()', () => {
 	test('returns same result as root-level serialize()', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		expect(prod.$qSerialize()).toMatchObject({
@@ -135,10 +132,10 @@ describe('$qm.$qSerialize()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm.isDirty / getChanges
+// $q.isDirty / getChanges
 // ---------------------------------------------------------------------------
 
-describe('$qm.$qIsDirty()', () => {
+describe('$qIsDirty()', () => {
 	test('returns false when nothing has changed', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		expect(prod.$qIsDirty()).toBe(false);
@@ -166,7 +163,7 @@ describe('$qm.$qIsDirty()', () => {
 	});
 });
 
-describe('$qm.$qGetChanges()', () => {
+describe('$qGetChanges()', () => {
 	test('returns empty object when nothing changed', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		expect(prod.$qGetChanges()).toEqual({});
@@ -190,10 +187,10 @@ describe('$qm.$qGetChanges()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm.patch / copy
+// $q.patch / copy
 // ---------------------------------------------------------------------------
 
-describe('$qm.$qPatch()', () => {
+describe('$qPatch()', () => {
 	test('mutates the instance in place', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		prod.$qPatch({ price: 29.99 });
@@ -208,7 +205,7 @@ describe('$qm.$qPatch()', () => {
 	});
 });
 
-describe('$qm.$qCopy()', () => {
+describe('$qCopy()', () => {
 	test('returns a new instance with same data', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		const clone = prod.$qCopy();
@@ -233,10 +230,10 @@ describe('$qm.$qCopy()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm.diff / equals
+// $q.diff / equals
 // ---------------------------------------------------------------------------
 
-describe('$qm.$qDiff()', () => {
+describe('$qDiff()', () => {
 	test('returns empty object for equal instances', () => {
 		const prodA = new Product({
 			name: 'Widget',
@@ -281,7 +278,7 @@ describe('$qm.$qDiff()', () => {
 	});
 });
 
-describe('$qm.$qEquals()', () => {
+describe('$qEquals()', () => {
 	test('returns true for equal instances', () => {
 		const prodA = new Product({
 			name: 'Widget',
@@ -308,17 +305,17 @@ describe('$qm.$qEquals()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm — validation methods
+// $q — validation methods
 // ---------------------------------------------------------------------------
 
-describe('$qm.$qHasIntegrity()', () => {
+describe('$qHasIntegrity()', () => {
 	test('returns true for a well-constructed instance', () => {
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		expect(prod.$qHasIntegrity()).toBe(true);
 	});
 });
 
-describe('$qm.$qIsValid()', () => {
+describe('$qIsValid()', () => {
 	test('returns true when integrity and rules pass', () => {
 		const ord = new OrderWithRules({
 			amount: 50,
@@ -336,7 +333,7 @@ describe('$qm.$qIsValid()', () => {
 	});
 });
 
-describe('$qm.$qCheckRules()', () => {
+describe('$qCheckRules()', () => {
 	test('returns valid: true when all rules pass', () => {
 		const ord = new OrderWithRules({
 			amount: 10,
@@ -362,7 +359,7 @@ describe('$qm.$qCheckRules()', () => {
 	});
 });
 
-describe('$qm.checkRulesAsync()', () => {
+describe('$qCheckRulesAsync()', () => {
 	test('resolves with valid rule result (async)', async () => {
 		const ord = new OrderWithRules({
 			amount: 100,
@@ -379,7 +376,7 @@ describe('$qm.checkRulesAsync()', () => {
 	});
 });
 
-describe('$qm.isValidAsync()', () => {
+describe('$qIsValidAsync()', () => {
 	test('resolves true when all checks pass', async () => {
 		const ord = new OrderWithRules({
 			amount: 99,
@@ -396,7 +393,7 @@ describe('$qm.isValidAsync()', () => {
 	});
 });
 
-describe('$qm.$qValidationReport()', () => {
+describe('$qValidationReport()', () => {
 	test('returns { valid, integrity, rules }', () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
 		const report = prod.$qValidationReport();
@@ -414,7 +411,7 @@ describe('$qm.$qValidationReport()', () => {
 	});
 });
 
-describe('$qm.validationReportAsync()', () => {
+describe('$qValidationReportAsync()', () => {
 	test('resolves with full report structure', async () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
 		const report = await prod.$qValidationReportAsync();
@@ -424,7 +421,7 @@ describe('$qm.validationReportAsync()', () => {
 	});
 });
 
-describe('$qm.$qValidate()', () => {
+describe('$qValidate()', () => {
 	test('returns sync result without options', () => {
 		const prod = new Product({ name: 'Widget', price: 5, active: false });
 		const result = prod.$qValidate();
@@ -449,10 +446,10 @@ describe('$qm.$qValidate()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm.toFormData
+// $q.toFormData
 // ---------------------------------------------------------------------------
 
-describe('$qm.toFormData()', () => {
+describe('$qToFormData()', () => {
 	test('returns a Promise<FormData>', async () => {
 		const ord = new Order({ id: '1', total: 99 });
 		const result = ord.$qToFormData();
@@ -469,10 +466,10 @@ describe('$qm.toFormData()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// $qm.toReadableStream
+// $q.toReadableStream
 // ---------------------------------------------------------------------------
 
-describe('$qm.toReadableStream()', () => {
+describe('$qToReadableStream()', () => {
 	test('returns a ReadableStream for a Blob field', () => {
 		interface IAsset {
 			data: Blob;
@@ -490,11 +487,11 @@ describe('$qm.toReadableStream()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Type compatibility — IQMHandle exported and structurally correct
+// Type compatibility — $q* API directly on QModel instances
 // ---------------------------------------------------------------------------
 
-describe('IQMHandle type', () => {
-	test('$qm satisfies IQMHandle without type errors (compile-time guard)', () => {
+describe('$q* API type guard', () => {
+	test('$q methods are directly on QModel instances without type errors (compile-time guard)', () => {
 		// After migration, $q* methods are directly on QModel instances
 		const prod = new Product({ name: 'Widget', price: 9.99, active: true });
 		// Validate that $q* API is accessible directly on the instance

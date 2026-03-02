@@ -509,7 +509,7 @@ export class UserResponseDto extends QModel<IUserResponse> {
 ```
 
 ::: tip @QComputed vs plain getter
-A plain `get fullName()` **without** `@QComputed()` exists on the prototype but is invisible to `serialize()` and `toJSON()`. The decorator is the opt-in that tells the serializer to include the getter in the output.
+A plain `get fullName()` **without** `@QComputed()` exists on the prototype but is invisible to `$qSerialize()` and `toJSON()`. The decorator is the opt-in that tells the serializer to include the getter in the output.
 :::
 
 ## Testing NestJS Services
@@ -532,7 +532,7 @@ describe('CreateUserDto', () => {
 		expect(dto.birthDate).toBeInstanceOf(Date);
 	});
 
-	test('checkRules() validates all fields', () => {
+	test('$qCheckRules() validates all fields', () => {
 		const invalid = new CreateUserDto({
 			name: '',
 			email: 'bad',
@@ -545,7 +545,7 @@ describe('CreateUserDto', () => {
 		expect(errors.length).toBeGreaterThan(0);
 	});
 
-	test('serialize() produces JSON-safe plain object', () => {
+	test('$qSerialize() produces JSON-safe plain object', () => {
 		const dto = new CreateUserDto({
 			name: 'Alice',
 			email: 'alice@example.com',

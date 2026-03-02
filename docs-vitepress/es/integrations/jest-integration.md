@@ -66,7 +66,7 @@ expect(invalidDto).not.toBeValidQModel();
 
 ### `toHaveQRuleError(field, message?)`
 
-Comprueba que `checkRules()` produce un error en el campo especificado.
+Comprueba que `qCheckRules()` produce un error en el campo especificado.
 Opcionalmente verifica el mensaje de error (coincidencia parcial o total).
 
 ```typescript
@@ -87,7 +87,7 @@ expect(dto).not.toHaveQField('internalSecret');
 
 ### `toMatchQModel(expected)`
 
-Igualdad profunda usando `serialize()` — incluye valores `@QComputed`.
+Igualdad profunda usando `$qSerialize()` — incluye valores `@QComputed`.
 
 ```typescript
 const updated = original.$qCopy({ username: 'bob' });

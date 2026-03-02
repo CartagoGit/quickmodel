@@ -228,7 +228,7 @@ function validateOrThrow<T>(
 }
 ```
 
-## Patch Mutations with `copy()`
+## Patch Mutations with `$qCopy()`
 
 ```typescript
 interface IUpdateInput { uid: string; name: string; age: number; }

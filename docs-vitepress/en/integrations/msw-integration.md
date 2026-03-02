@@ -11,7 +11,7 @@ validating them with `@QRule`, and returning well-typed serialized responses.
 | Request body coercion   | `new Dto(body)` + `coercionStrategy: 'loose'` |
 | Handler-side validation | `dto.$qCheckRules()` → 422 on error           |
 | Response serialization  | `dto.$qSerialize()` → `HttpResponse.json()`   |
-| Fixture factories       | `new Dto(defaults)` with `serialize()`        |
+| Fixture factories       | `new Dto(defaults)` with `$qSerialize()`      |
 | Bulk mock data          | `Dto.createMany(seedArray)`                   |
 | Private field stripping | `unknownPropertyPolicy: 'strip'`              |
 
@@ -134,7 +134,7 @@ export const handlers = [
 				{ status: 404 }
 			);
 		}
-		// serialize() strips @QComputed fields and internal state
+		// $qSerialize() produces a JSON-safe plain object
 		return HttpResponse.json(user.$qSerialize(), { status: 200 });
 	}),
 
@@ -147,7 +147,7 @@ export const handlers = [
 
 ## POST Handler — Validate Request Body
 
-Coerce the request body with `CreateUserDto` then validate with `checkRules()`:
+Coerce the request body with `CreateUserDto` then validate with `qCheckRules()`:
 
 ```typescript
 http.post('/api/users', async ({ request }) => {

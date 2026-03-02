@@ -283,7 +283,7 @@ describe('QAgentCoordinateTool', () => {
 				action: 'claim',
 				agentId: 'agent-B',
 				task: 'task b',
-				files: ['src/core/models/qm-handle.ts'],
+				files: ['src/core/services/audit.service.ts'],
 			});
 			expect(res.claimed).toBe(true);
 			expect(res.conflict).toBe(false);

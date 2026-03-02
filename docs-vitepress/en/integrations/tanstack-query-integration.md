@@ -1,7 +1,7 @@
 # TanStack Query Integration
 
 QuickModel pairs naturally with TanStack Query v5. Use `createMany()` in `queryFn` to coerce
-API responses into typed DTOs, `copy()` for optimistic updates, and `serialize()` for cache
+API responses into typed DTOs, `$qCopy()` for optimistic updates, and `$qSerialize()` for cache
 normalization.
 
 ## Key Patterns
@@ -139,7 +139,7 @@ function AddProductForm() {
 
 ::: tip Two patterns available
 
-- **`QModel` + `@Quick`** (above): automatic type coercion, `serialize()`, and `@QComputed`. Use when the API or form sends strings that need converting to numbers/booleans.
+- **`QModel` + `@Quick`** (above): automatic type coercion, `$qSerialize()`, and `@QComputed`. Use when the API or form sends strings that need converting to numbers/booleans.
 - **Plain class** (below): `@QRule` only — no inheritance. If types are already correct, this is enough.
   :::
 
@@ -175,9 +175,9 @@ async function createProductSimple(data: object): Promise<IProduct> {
 }
 ```
 
-## Optimistic Updates with copy()
+## Optimistic Updates with `$qCopy()`
 
-`copy()` returns a **new immutable instance** — perfect for optimistic UI updates without
+`$qCopy()` returns a **new immutable instance** — perfect for optimistic UI updates without
 mutating the cache directly.
 
 ```typescript
@@ -215,12 +215,12 @@ function useOptimisticUpdate() {
 }
 ```
 
-`copy()` returns a new instance with `isDirty() === false` — the copied state is the new baseline. This makes it easy to detect
+`$qCopy()` returns a new instance with `$qIsDirty() === false` — the copied state is the new baseline. This makes it easy to detect
 pending changes before they are persisted.
 
 ## Cache Normalization
 
-Store `serialize()` in the cache and rehydrate with `new Dto()`:
+Store `$qSerialize()` in the cache and rehydrate with `new Dto()`:
 
 ```typescript
 // Serialize before storing
@@ -260,9 +260,9 @@ const { data, fetchNextPage } = useInfiniteQuery({
 });
 ```
 
-## Staleness Detection with isDirty()
+## Staleness Detection with `$qIsDirty()`
 
-Use `isDirty()` to skip unnecessary API calls when no data has changed locally:
+Use `$qIsDirty()` to skip unnecessary API calls when no data has changed locally:
 
 ```typescript
 async function syncIfDirty(dto: ProductDto) {
@@ -271,7 +271,7 @@ async function syncIfDirty(dto: ProductDto) {
 		method: 'PATCH',
 		body: JSON.stringify(dto.$qSerialize()),
 	});
-	dto.reset(); // clear dirty state after successful save
+	dto.$qReset(); // clear dirty state after successful save
 }
 ```
 

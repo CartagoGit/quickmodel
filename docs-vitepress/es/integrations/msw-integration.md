@@ -12,7 +12,7 @@ con tipos correctos.
 | Coerción del cuerpo         | `new Dto(body)` + `coercionStrategy: 'loose'` |
 | Validación en el handler    | `dto.$qCheckRules()` → 422 si hay error       |
 | Serialización de respuesta  | `dto.$qSerialize()` → `HttpResponse.json()`   |
-| Factories de fixtures       | `new Dto(defaults)` con `serialize()`         |
+| Factories de fixtures       | `new Dto(defaults)` con `$qSerialize()`       |
 | Datos mock masivos          | `Dto.createMany(seedArray)`                   |
 | Eliminación de campos priv. | `unknownPropertyPolicy: 'strip'`              |
 
@@ -123,7 +123,7 @@ export const handlers = [
 				{ status: 404 }
 			);
 		}
-		// serialize() elimina campos @QComputed e interno
+		// $qSerialize() produce un objeto plano JSON-safe
 		return HttpResponse.json(usuario.$qSerialize(), { status: 200 });
 	}),
 
@@ -136,7 +136,7 @@ export const handlers = [
 
 ## Handler POST — Validar Cuerpo de la Petición
 
-Convierte el cuerpo con `CrearUsuarioDto` y luego valida con `checkRules()`:
+Convierte el cuerpo con `CrearUsuarioDto` y luego valida con `qCheckRules()`:
 
 ```typescript
 http.post('/api/usuarios', async ({ request }) => {

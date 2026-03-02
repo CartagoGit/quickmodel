@@ -9,9 +9,9 @@ QuickModel funciona junto a Prisma como una capa DTO con tipado fuerte entre tu 
 | Mapear fila Prisma a DTO     | `new UserRecordDto(prismaRow)` — elimina `_count`, `_prisma*`              |
 | Validar input de creación    | `qCheckRules(new CreateUserDto(formData))`                                 |
 | Seed masivo / importación    | `UserRecordDto.createMany(seedArray)`                                      |
-| Abstracción repositorio      | `repo.create(dto)` → `dto.$qToInterface()` → `prisma.user.create()`          |
-| Actualización parcial        | `existing.$qCopy({ score: 100 })` → `prisma.user.update({ data: ... })`      |
-| Campo derivado               | `@QComputed() get label()` — incluido en `serialize()`                     |
+| Abstracción repositorio      | `repo.create(dto)` → `dto.$qToInterface()` → `prisma.user.create()`        |
+| Actualización parcial        | `existing.$qCopy({ score: 100 })` → `prisma.user.update({ data: ... })`    |
+| Campo derivado               | `@QComputed() get label()` — incluido en `$qSerialize()`                   |
 | Validación de unicidad en DB | `qCheckRulesAsync()` con regla async que llama a `prisma.user.findFirst()` |
 
 ## Configuración del Modelo
@@ -193,7 +193,7 @@ class UserRepository {
 }
 ```
 
-## Actualizaciones Parciales con `copy()`
+## Actualizaciones Parciales con `$qCopy()`
 
 ```typescript
 const existing = new UserRecordDto(
@@ -213,7 +213,7 @@ if (updated.$qIsDirty()) {
 
 ## Campos Derivados con `@QComputed`
 
-Los campos computados se incluyen en `serialize()` — ideal para respuestas API basadas en Prisma:
+Los campos computados se incluyen en `$qSerialize()` — ideal para respuestas API basadas en Prisma:
 
 ```typescript
 interface IPostRecord {

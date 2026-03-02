@@ -264,7 +264,7 @@ const product = new ProductDto(raw); // createdAt → Date ✅
 
 ## Fechas a través de HTTP
 
-Las fechas son serializadas como strings ISO por `serialize()` y rehidratadas automáticamente cuando se pasan de vuelta al constructor de `QModel` con `coercionStrategy: 'loose'` (que es el valor por defecto):
+Las fechas son serializadas como strings ISO por `$qSerialize()` y rehidratadas automáticamente cuando se pasan de vuelta al constructor de `QModel` con `coercionStrategy: 'loose'` (que es el valor por defecto):
 
 ```typescript
 // Servidor → cliente: Date se convierte en ISO string

@@ -34,7 +34,7 @@ Coordinate parallel agent work to prevent file conflicts. `check`: list all acti
 		"optional": true
 	},
 	"task": {
-		"description": "Short task title, e.g. \"migrate docs $qm\". Required for claim.",
+		"description": "Short task title, e.g. \"add email transformer\". Required for claim.",
 		"optional": true
 	},
 	"files": {

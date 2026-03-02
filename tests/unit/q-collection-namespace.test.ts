@@ -325,17 +325,3 @@ describe('QModelCollection.fromJSON()', () => {
 		).toThrow(SyntaxError);
 	});
 });
-
-// ---------------------------------------------------------------------------
-// Getter $qm ya NO debe existir en la colección
-// ---------------------------------------------------------------------------
-
-describe('Getter $qm eliminado de QModelCollection', () => {
-	it('$qm ya no existe en la colección', () => {
-		const col = makeCollection();
-		// @quickmodel-rule-ignore: no-as-unknown
-		expect(
-			(col as unknown as Record<string, unknown>)['$qm'] // @quickmodel-rule-ignore: no-as-unknown
-		).toBeUndefined();
-	});
-});

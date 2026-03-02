@@ -35,9 +35,6 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from 'quickmodel';
- * import { qGroups, qCheckRulesByGroup } from 'quickmodel/forms';
- *
  * const Groups = qGroups('identity', 'security');
  *
  * class ProfileForm {

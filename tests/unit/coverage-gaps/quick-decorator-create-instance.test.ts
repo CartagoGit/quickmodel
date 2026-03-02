@@ -14,8 +14,8 @@ describe('Quick Decorator - Internal Methods Coverage', () => {
 			declare id: number;
 		}
 
-		// @quickmodel-rule-ignore: no-as-unknown
 		const StaticModel = TestModel as unknown as {
+			// @quickmodel-rule-ignore: no-as-unknown
 			__createQuickInstance(data: Record<string, unknown>): TestModel;
 		};
 

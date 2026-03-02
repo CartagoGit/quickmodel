@@ -139,7 +139,7 @@ export type IQSerialized<T> = T extends RegExp
 /**
  * Maps every property of an interface to its {@link IQSerialized} equivalent.
  *
- * This is the return type of `QModel.serialize()` when no `alias` map is used.
+ * This is the return type of `QModel.$qSerialize()` when no `alias` map is used.
  * Each property is independently mapped through `IQSerialized<T[K]>`.
  *
  * @template T - The model interface (runtime property types).
@@ -176,7 +176,7 @@ export type IQSerializedInterface<T> = {
  * }
  *
  * const user = new User({ first_name: 'Dave', last_name: 'Jones' });
- * const json = user.serialize();
+ * const json = user.$qSerialize();
  * // Type: { first_name: string; last_name: string }  ✅  IDE autocomplete correcto
  * json.first_name; // 'Dave'
  * ```

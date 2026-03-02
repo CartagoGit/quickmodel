@@ -229,10 +229,10 @@ type ICoordinateResult =
  * await agent_coordinate({ action: 'claim', agentId: 'agent-B', task: 'fix tests', files: ['tests/**'] });
  * // → { claimed: true, conflict: false, otherAgents: [{ agentId: 'agent-A', ... }] }
  *
- * // 2b. Claim for a MASS-RENAME / project-wide refactor (e.g. rename .$qm → .$q* everywhere):
+ * // 2b. Claim for a MASS-RENAME / project-wide refactor (e.g. rename legacy methods to $q* prefix):
  * await agent_coordinate({
  *   action: 'claim', agentId: 'agent-B',
- *   task: 'rename .$qm to .$q* across entire project',
+ *   task: 'rename legacy methods to $q* prefix across entire project',
  *   files: ['src/**', 'tests/**', 'docs-vitepress/**'],
  *   ttlMs: 1_800_000   // 30 min — mass operations take time
  * });
@@ -296,7 +296,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		'     SCOPE RULES — choose the right glob width:\n' +
 		'       - Targeted change (≤10 files): list the exact paths.\n' +
 		'       - Module-wide change: "src/mcp/tools/**" or similar sub-tree glob.\n' +
-		'       - Mass-rename / project-wide refactor (e.g. renaming .$qm to .$q* across ALL files): ' +
+		'       - Mass-rename / project-wide refactor (e.g. renaming legacy methods to $q* prefix across ALL files): ' +
 		'         claim ["src/**", "tests/**", "docs-vitepress/**"] — never under-claim on wide operations. ' +
 		'         TTL defaults to 30 min; the ticker auto-renews it while MCP is running. ' +
 		'         For very long tasks with possible long pauses, use ttlMs=7200000 (2 h).\n' +
@@ -325,7 +325,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			.max(200)
 			.optional()
 			.describe(
-				'Short task description, e.g. "migrate docs $qm". Required for claim.'
+				'Short task description, e.g. "migrate docs $q...". Required for claim.'
 			),
 		files: z
 			.array(z.string().max(500))

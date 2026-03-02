@@ -173,10 +173,10 @@ function FormularioDinamico({ DtoClass }: { DtoClass: typeof RegistroDto }) {
 }
 ```
 
-## Seguimiento de Cambios con isDirty()
+## Seguimiento de Cambios con `$qIsDirty()`
 
-`isDirty()` detecta si el estado actual del modelo difiere del snapshot original.
-Úsalo para habilitar/deshabilitar el botón "Guardar" o mostrar un indicador de cambios sin guardar:
+`$qIsDirty()` detecta si el estado actual del modelo difiere del snapshot original.
+Usalo para habilitar/deshabilitar el botón "Guardar" o mostrar un indicador de cambios sin guardar:
 
 ```tsx
 function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
@@ -185,7 +185,7 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 	const handleGuardar = async () => {
 		if (!dto.$qIsDirty()) return; // nada cambió
 		await guardarPerfil(dto.$qSerialize());
-		dto.reset(); // limpiar estado sucio
+		dto.$qReset(); // limpiar estado sucio
 		setDto(new RegistroDto(dto.$qSerialize() as IRegistro));
 	};
 
@@ -202,7 +202,7 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 }
 ```
 
-> Tras `copy()`, la instancia resultante tiene `isDirty() === false` — el estado copiado se convierte en el nuevo baseline. Llama a `reset()` en la nueva instancia para revertir al estado en el momento de la copia.
+> Tras `$qCopy()`, la instancia resultante tiene `$qIsDirty() === false` — el estado copiado se convierte en el nuevo baseline. Llama a `$qReset()` en la nueva instancia para revertir al estado en el momento de la copia.
 
 ## Validación Asíncrona (Servidor)
 

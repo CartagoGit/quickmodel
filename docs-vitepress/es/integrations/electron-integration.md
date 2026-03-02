@@ -6,12 +6,12 @@ QuickModel proporciona una capa de datos segura y tipada para aplicaciones Elect
 
 ```
 Renderer (no confiable)                  Main (confiable)
-  DTO QModel  ──► serialize() ──► IPC ──► new Dto(payload)
-                                           checkRules()
+  DTO QModel  ──► $qSerialize() ──► IPC ──► new Dto(payload)
+                                           $qCheckRules()
                                            persistir en disco/DB
 ```
 
-## Límite IPC — serialize() / populate()
+## Límite IPC — `$qSerialize()` / `new Dto()`
 
 ```typescript
 import { QModel, Quick, QRule, QField } from 'quickmodel';
@@ -179,9 +179,9 @@ const { instances } = FileRecordDto.createMany(files as IFileRecord[]);
 const images = instances.filter((f) => f.isImage); // @QComputed
 ```
 
-## isDirty() — diálogo de confirmación de cambios no guardados
+## `$qIsDirty()` — diálogo de confirmación de cambios no guardados
 
-Usa `isDirty()` en el renderer para avisar al usuario antes de cerrar una ventana con cambios pendientes:
+Usa `$qIsDirty()` en el renderer para avisar al usuario antes de cerrar una ventana con cambios pendientes:
 
 ```typescript
 // renderer.ts

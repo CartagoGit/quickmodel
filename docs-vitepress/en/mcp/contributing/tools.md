@@ -64,7 +64,7 @@ Coordinate parallel agent work and prevent file conflicts. Multiple VS Code wind
 		"optional": true
 	},
 	"task": {
-		"description": "Short task title, e.g. \"migrate docs $qm\". Required for claim.",
+		"description": "Short task title, e.g. \"add email transformer\". Required for claim.",
 		"optional": true
 	},
 	"files": {

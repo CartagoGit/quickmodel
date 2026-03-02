@@ -42,16 +42,15 @@ describe('ToInterfaceService Object Fallback Coverage', () => {
 		const result = container.$qToInterface();
 
 		// Cast needed: result.external is typed as ExternalClass but at runtime it's a plain object
-		// @quickmodel-rule-ignore: no-as-unknown — intentional: verifying runtime shape of plain object
 		expect(result.external as unknown as Record<string, unknown>).toEqual({
+			// @quickmodel-rule-ignore: no-as-unknown
 			name: 'test',
 			value: 123,
 		});
 
 		// Verify method is excluded
-		// @quickmodel-rule-ignore: no-as-unknown — intentional: checking absent method on runtime plain object
 		expect(
-			(result.external as unknown as Record<string, unknown>)['getData']
+			(result.external as unknown as Record<string, unknown>)['getData'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });

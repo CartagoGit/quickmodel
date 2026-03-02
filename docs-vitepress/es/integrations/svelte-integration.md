@@ -43,7 +43,7 @@ QuickModel funciona con las runes de Svelte 5 (`$state`, `$derived`), stores esc
 ::: tip Dos patrones disponibles
 
 - **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`. Ideal para formularios ligeros.
-- **Con `QModel` + `@Quick`** (abajo): añade coerción, `copy()`, `serialize()` y `@QComputed`. Ideal para estado reactivo.
+- **Con `QModel` + `@Quick`** (abajo): añade coerción, `$qCopy()`, `$qSerialize()` y `@QComputed`. Ideal para estado reactivo.
   :::
 
 ### Con QModel + @Quick
@@ -72,7 +72,7 @@ QuickModel funciona con las runes de Svelte 5 (`$state`, `$derived`), stores esc
 
   let note = $state(new NoteModel({ id: 'n1', title: 'Hola', body: '' }));
 
-  // copy() es INMUTABLE — la reactividad de $state se activa al reasignar
+  // $qCopy() es INMUTABLE — la reactividad de $state se activa al reasignar
   function update(patch: Partial<INote>) {
     note = note.$qCopy(patch) as NoteModel;
   }
@@ -115,7 +115,7 @@ export function createUserStore(initial: IUser) {
 	return {
 		subscribe,
 		update: (patch: Partial<IUser>) => {
-			// copy() es INMUTABLE — captura la nueva instancia
+			// $qCopy() es INMUTABLE — captura la nueva instancia
 			set(record.$qCopy(patch) as UserRecord);
 		},
 	};
@@ -217,7 +217,7 @@ if (!result.valid) {
 ```
 
 ::: tip Compatibilidad con Svelte 4
-Para Svelte 4 (sin runes), usa stores escribibles convencionales. El patrón `copy()` inmutable sigue aplicando:
+Para Svelte 4 (sin runes), usa stores escribibles convencionales. El patrón `$qCopy()` inmutable sigue aplicando:
 
 ```typescript
 store.update((prev) => prev.$qCopy(patch));

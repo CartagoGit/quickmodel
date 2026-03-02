@@ -7,8 +7,8 @@ QuickModel integrates with **Svelte 5** and **SvelteKit** through runes, stores,
 | Use case                        | Approach                                    |
 | ------------------------------- | ------------------------------------------- |
 | Svelte 5 `$state` reactive form | Plain TS class + `@QRule` + `qCheckRules()` |
-| `$derived` computed from model  | `QModel` + `serialize()` + getter           |
-| SvelteKit form actions          | `QModel` + `@Quick()` + `checkRules()`      |
+| `$derived` computed from model  | `QModel` + `$qSerialize()` + getter         |
+| SvelteKit form actions          | `QModel` + `@Quick()` + `$qCheckRules()`    |
 | Svelte stores (`writable`)      | `QModel` wrapped in a writable store        |
 
 ## Installation
@@ -63,7 +63,7 @@ let preview   = $derived(note.preview);    // string — inferred from NoteModel
 let charCount = $derived(note.charCount);  // number — inferred from NoteModel
 
 function updateBody(newBody: string) {
-  // copy() is IMMUTABLE — reassign the $state variable
+  // $qCopy() is IMMUTABLE — reassign the $state variable
   note = note.$qCopy({ body: newBody });
 }
 </script>
@@ -77,7 +77,7 @@ function updateBody(newBody: string) {
 ```
 
 ::: tip Immutable merge with $state
-Since `copy()` returns a new instance, Svelte's `$state` reactivity fires automatically when you reassign the variable. This is the recommended pattern.
+Since `$qCopy()`returns a new instance, Svelte's`$state` reactivity fires automatically when you reassign the variable. This is the recommended pattern.
 :::
 
 ### Form Validation — Plain Class
@@ -113,7 +113,7 @@ let validation = $derived(qCheckRules(form));
 ::: info Two patterns
 
 - **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance. Minimum overhead for form validation.
-- **`QModel` + `@Quick`** (above): adds coercion, `copy()`, `serialize()`, `@QComputed`. Use for reactive state management.
+- **`QModel` + `@Quick`** (above): adds coercion, `$qCopy()`, `$qSerialize()`, `@QComputed`. Use for reactive state management.
   :::
 
 ## Svelte Stores (Svelte 4 / compatible with Svelte 5)
@@ -268,7 +268,7 @@ import { qCheckRulesAsync } from 'quickmodel/forms';
 const result = await qCheckRulesAsync(form, { mode: 'serial' });
 ```
 
-## diff() — Track Form Changes
+## $qDiff() — Track Form Changes
 
 ```typescript
 const original = new ArticleModel({ ... });

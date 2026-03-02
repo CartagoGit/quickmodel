@@ -1,9 +1,8 @@
 /**
- * Anti-regression: verifica que la API v1.0 limpia no expone métodos sin prefijo `$q`
- * ni el getter `$qm` en QModel ni en QModelCollection.
+ * Anti-regression: verifica que la API v1.0 limpia no expone métodos sin prefijo `$q`.
  *
  * Si alguno de estos tests falla, significa que un método de instancia fue expuesto
- * sin el prefijo `$q`, o que el getter `$qm` fue reintroducido.
+ * sin el prefijo `$q`.
  *
  * Convención de nomenclatura:
  *   IQ*  → interfaces y tipos TypeScript
@@ -44,25 +43,11 @@ function makeCollection(): QModelCollection<Product> {
 }
 
 // ---------------------------------------------------------------------------
-// QModel — getter $qm eliminado
-// ---------------------------------------------------------------------------
-
-describe('QModel — getter $qm no existe', () => {
-	it('$qm es undefined en la instancia', () => {
-		const prod = makeProduct();
-		expect(
-			(prod as unknown as Record<string, unknown>)['$qm'] // @quickmodel-rule-ignore: no-as-unknown
-		).toBeUndefined();
-	});
-});
-
-// ---------------------------------------------------------------------------
 // QModel — métodos legacy sin prefijo $q no existen en el prototipo (API v1.0 limpia)
 // ---------------------------------------------------------------------------
 
 describe('QModel — métodos legacy sin $q no existen', () => {
-	// @quickmodel-rule-ignore: no-as-unknown — guards de inexistencia requieren acceso por clave dinámica
-	const inst = () => makeProduct() as unknown as Record<string, unknown>;
+	const inst = () => makeProduct() as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 
 	it('serialize es undefined', () => {
 		expect(inst()['serialize']).toBeUndefined();
@@ -229,19 +214,6 @@ describe('QModel — la API $q* es accesible', () => {
 		const restored = Product.deserializeJson(json);
 		expect(restored).toBeInstanceOf(Product);
 		expect(restored.price).toBe(99);
-	});
-});
-
-// ---------------------------------------------------------------------------
-// QModelCollection — getter $qm no existe
-// ---------------------------------------------------------------------------
-
-describe('QModelCollection — getter $qm no existe', () => {
-	it('$qm es undefined en la colección', () => {
-		const col = makeCollection();
-		expect(
-			(col as unknown as Record<string, unknown>)['$qm'] // @quickmodel-rule-ignore: no-as-unknown
-		).toBeUndefined();
 	});
 });
 

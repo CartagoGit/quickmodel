@@ -48,7 +48,7 @@ describe('Sin lazy getters', () => {
 		// Verificaciones
 		expect(conGetters.id).toBe(1);
 		expect(
-			(sinGetters as unknown as Record<string, unknown>)['id']
+			(sinGetters as unknown as Record<string, unknown>)['id'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined(); // ❌ No hay getter
 		expect(sinGetters.__quickValues__.id).toBe(1); // ✅ Pero los datos están aquí
 	});
@@ -65,10 +65,10 @@ describe('Sin lazy getters', () => {
 
 		// Sin lazy getters, las propiedades no son accesibles directamente
 		expect(
-			(model as unknown as Record<string, unknown>)['id']
+			(model as unknown as Record<string, unknown>)['id'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(
-			(model as unknown as Record<string, unknown>)['name']
+			(model as unknown as Record<string, unknown>)['name'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		// Los datos sí están en __quickValues__
 		expect(model.__quickValues__.id).toBe(1);
@@ -100,7 +100,7 @@ describe('Sin lazy getters', () => {
 		const user = new UserSinGetters({ id: 1, name: 'John' });
 		// TypeScript permite acceder a user.id pero en runtime es undefined
 		expect(
-			(user as unknown as Record<string, unknown>)['id']
+			(user as unknown as Record<string, unknown>)['id'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -127,8 +127,9 @@ describe('Sin lazy getters', () => {
 		const model = new ModelConGetters({ id: 1, name: 'Test', age: 25 });
 
 		// Con lazy getters, las propiedades son accesibles directamente
-		expect((model as unknown as Record<string, unknown>)['id']).toBe(1);
+		expect((model as unknown as Record<string, unknown>)['id']).toBe(1); // @quickmodel-rule-ignore: no-as-unknown
 		expect((model as unknown as Record<string, unknown>)['name']).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'Test'
 		);
 
@@ -145,7 +146,7 @@ describe('Sin lazy getters', () => {
 
 		// Spreads incluyen las propiedades
 		const spread = { ...model };
-		delete (spread as unknown as Record<string, unknown>)[
+		delete (spread as unknown as Record<string, unknown>)[ // @quickmodel-rule-ignore: no-as-unknown
 			'__quickValues__'
 		];
 		expect(spread).toMatchObject({ id: 1, name: 'Test', age: 25 });
@@ -160,7 +161,7 @@ describe('Sin lazy getters', () => {
 
 				// En vez de getters, copiar valores directamente
 				for (const key of Object.keys(data)) {
-					(this as unknown as Record<string, unknown>)[key] =
+					(this as unknown as Record<string, unknown>)[key] = // @quickmodel-rule-ignore: no-as-unknown
 						data[key];
 				}
 			}
@@ -169,14 +170,15 @@ describe('Sin lazy getters', () => {
 		const model = new ModelCopiado({ id: 1, name: 'Test' });
 
 		// Las propiedades son accesibles (copiadas directamente)
-		expect((model as unknown as Record<string, unknown>)['id']).toBe(1);
+		expect((model as unknown as Record<string, unknown>)['id']).toBe(1); // @quickmodel-rule-ignore: no-as-unknown
 		expect((model as unknown as Record<string, unknown>)['name']).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'Test'
 		);
 
 		// Pero al mutar la propiedad directa, __quickValues__ queda desincronizado
-		(model as unknown as Record<string, unknown>)['id'] = 999;
-		expect((model as unknown as Record<string, unknown>)['id']).toBe(999);
+		(model as unknown as Record<string, unknown>)['id'] = 999; // @quickmodel-rule-ignore: no-as-unknown
+		expect((model as unknown as Record<string, unknown>)['id']).toBe(999); // @quickmodel-rule-ignore: no-as-unknown
 		expect(model.__quickValues__.id).toBe(1); // __quickValues__ NO se actualizó
 	});
 });

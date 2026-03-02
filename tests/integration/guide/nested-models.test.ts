@@ -153,7 +153,7 @@ describe('Integration: nested models (guide/nested-models.md)', () => {
 			});
 
 			const serialized = original.$qSerialize();
-			const restored = new UserModel(serialized as unknown as IUser);
+			const restored = new UserModel(serialized as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 
 			expect(restored.id).toBe(42);
 			expect(restored.profile).toBeInstanceOf(ProfileModel);

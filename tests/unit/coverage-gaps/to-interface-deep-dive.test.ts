@@ -8,9 +8,9 @@ describe('ToInterfaceService Coverage Gaps - Deep Dive', () => {
 	// Helper access to private method
 	const service = new ToInterfaceService();
 	const convert = (current: unknown, original: unknown) => {
-		// @quickmodel-rule-ignore: no-as-unknown
 		return (
 			service as unknown as {
+				// @quickmodel-rule-ignore: no-as-unknown
 				convertToInterfaceFormat(
 					current: unknown,
 					original: unknown,

@@ -72,7 +72,7 @@ expect(dto).toBeValidQModel();
 
 ### `toHaveQRuleError(field, message?)`
 
-Asserts that `checkRules()` produces an error on the specified field. Optionally checks
+Asserts that `qCheckRules()` produces an error on the specified field. Optionally checks
 the error message.
 
 ```typescript
@@ -102,7 +102,7 @@ expect(dto).not.toHaveQField('internalSecret'); // not decorated
 ### `toMatchQModel(expected)`
 
 Deep-asserts that the `QModel` instance matches all properties of `expected`. Uses
-`serialize()` for the comparison, so `@QComputed` values are included.
+`$qSerialize()` for the comparison, so `@QComputed` values are included.
 
 ```typescript
 const dto = new UserDto({ id: '1', name: 'Alice', role: 'admin' });
@@ -111,7 +111,7 @@ expect(dto).toMatchQModel({ id: '1', name: 'Alice' }); // partial match
 
 ### `toBeIntact()`
 
-Asserts that the model has no dirty fields — `isDirty()` returns `false`. Useful to verify
+Asserts that the model has no dirty fields — `$qIsDirty()` returns `false`. Useful to verify
 freshly created instances haven't been accidentally mutated.
 
 ```typescript
@@ -134,9 +134,9 @@ expect(dto).toHaveDirtyField('name');
 expect(dto).not.toHaveDirtyField('id');
 ```
 
-> **Note**: `toHaveDirtyField` uses `isDirty(fieldName)` which only tracks fields mutated
+> **Note**: `toHaveDirtyField` uses `$qIsDirty(fieldName)` which only tracks fields mutated
 > directly (`dto.field = value`). Use `toBeIntact()` / `not.toBeIntact()` to check if the
-> model has any pending changes (including changes via `copy()`).
+> model has any pending changes (including changes via `$qCopy()`).
 
 ## Full Example
 

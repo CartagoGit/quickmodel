@@ -1,21 +1,21 @@
 # Integración con Redux Toolkit (RTK)
 
-QuickModel encaja perfectamente con Redux Toolkit. `serialize()` produce objetos planos
-seguros para JSON — exactamente lo que Redux necesita como estado serializable — y `copy()`
+QuickModel encaja perfectamente con Redux Toolkit. `$qSerialize()` produce objetos planos
+seguros para JSON — exactamente lo que Redux necesita como estado serializable — y `$qCopy()`
 ofrece el **patrón de actualización inmutable** que los reducers esperan, sin necesidad de Immer.
 
 ## Patrones clave
 
-| Patrón                        | API de QuickModel                              |
-| ----------------------------- | ---------------------------------------------- |
-| Estado Redux serializable     | `dto.$qSerialize()` → objeto plano             |
-| Actualización inmutable       | `dto.$qCopy(patch)` → nueva instancia          |
-| `createAsyncThunk` tipado     | `new UserDto(response)` en el payload creator  |
-| Entity adapter normalizado    | `createMany()` → `Map<id, serializado>`        |
-| `transformResponse` RTK Query | `new UserDto(raw).$qSerialize()`               |
-| Validación antes de dispatch  | `qCheckRules(dto)` antes de `dispatch(action)` |
-| Selector tipado               | `new UserDto(stored).toInterface()`            |
-| Payloads legibles en DevTools | `serialize()` devuelve objetos inspeccionables |
+| Patrón                        | API de QuickModel                                |
+| ----------------------------- | ------------------------------------------------ |
+| Estado Redux serializable     | `dto.$qSerialize()` → objeto plano               |
+| Actualización inmutable       | `dto.$qCopy(patch)` → nueva instancia            |
+| `createAsyncThunk` tipado     | `new UserDto(response)` en el payload creator    |
+| Entity adapter normalizado    | `createMany()` → `Map<id, serializado>`          |
+| `transformResponse` RTK Query | `new UserDto(raw).$qSerialize()`                 |
+| Validación antes de dispatch  | `qCheckRules(dto)` antes de `dispatch(action)`   |
+| Selector tipado               | `new UserDto(stored).$qToInterface()`            |
+| Payloads legibles en DevTools | `$qSerialize()` devuelve objetos inspeccionables |
 
 ## Instalación
 
@@ -71,9 +71,9 @@ class UserDto extends QModel<IUser> {
 }
 ```
 
-## createSlice — serialize() como estado Redux
+## createSlice — `$qSerialize()` como estado Redux
 
-`serialize()` devuelve un **objeto plano seguro para JSON** — exactamente lo que Redux
+`$qSerialize()` devuelve un **objeto plano seguro para JSON** — exactamente lo que Redux
 requiere. Almacena la forma serializada; rehidrata a instancia `QModel` cuando necesites
 propiedades computadas o validación.
 
@@ -100,9 +100,9 @@ const userSlice = createSlice({
 });
 ```
 
-## Reducer con copy() — Actualización inmutable
+## Reducer con `$qCopy()` — Actualización inmutable
 
-`copy(patch)` devuelve una **nueva instancia** — Redux no necesita Immer cuando usas QuickModel:
+`$qCopy(patch)` devuelve una **nueva instancia** — Redux no necesita Immer cuando usas QuickModel:
 
 ```typescript
 reducers: {
@@ -186,7 +186,7 @@ export const userApi = createApi({
 });
 ```
 
-## checkRules() Antes de Dispatch — Guard de validación
+## `qCheckRules()` Antes de Dispatch — Guard de validación
 
 Valida antes de disparar la acción para evitar estado inválido:
 
@@ -234,7 +234,7 @@ const selectUserRaw = (state: RootState, uid: string) =>
 
 // Selector tipado — devuelve IUser como objeto plano
 export const selectUser = createSelector(selectUserRaw, (raw) =>
-	raw ? new UserDto(raw).toInterface() : undefined
+	raw ? new UserDto(raw).$qToInterface() : undefined
 );
 
 // Selector con campos computados
@@ -245,7 +245,7 @@ export const selectUserWithLabel = createSelector(selectUserRaw, (raw) =>
 
 ## Payloads legibles en DevTools
 
-`serialize()` siempre devuelve un **objeto plano inspeccionable** — sin instancias de clase,
+`$qSerialize()` siempre devuelve un **objeto plano inspeccionable** — sin instancias de clase,
 sin referencias circulares, sin claves Symbol. Redux DevTools muestra el estado completo
 incluyendo los campos `@QComputed`:
 
@@ -257,7 +257,7 @@ incluyendo los campos `@QComputed`:
   email: "alice@example.com",
   role: "user",
   age: 25,
-  label: "Alice (user)"   // @QComputed — incluido en la salida de serialize()
+  label: "Alice (user)"   // @QComputed — incluido en la salida de $qSerialize()
 }
 ```
 
@@ -268,12 +268,12 @@ incluyendo los campos `@QComputed`:
 | Coerción de tipos           | ❌         | ❌               | ✅ `coercionStrategy`      |
 | Eliminación de campos extra | ❌         | ❌               | ✅ `unknownPropertyPolicy` |
 | Propiedades computadas      | ❌         | ❌               | ✅ `@QComputed`            |
-| Actualizaciones inmutables  | Immer      | Immer            | ✅ `copy()`                |
+| Actualizaciones inmutables  | Immer      | Immer            | ✅ `$qCopy()`              |
 | Validación asíncrona        | Custom     | `safeParseAsync` | ✅ `qCheckRulesAsync`      |
-| Payloads seguros DevTools   | ✅         | ✅               | ✅ `serialize()`           |
+| Payloads seguros DevTools   | ✅         | ✅               | ✅ `$qSerialize()`         |
 
 ## Ver también
 
 - [Integración con Zustand](./zustand-integration) — estado local más sencillo
 - [Integración con TanStack Query](./tanstack-query-integration) — caché de estado del servidor
-- [Validación](./validation) — `@QRule`, `checkRules()`, `checkRulesAsync()`
+- [Validación](./validation) — `@QRule`, `qCheckRules()`, `qCheckRulesAsync()`

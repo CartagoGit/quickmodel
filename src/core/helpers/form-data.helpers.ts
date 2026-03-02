@@ -333,7 +333,7 @@ export async function appendFieldToFormData(
  * Iterates over all own enumerable keys of `plain` and appends each value
  * according to `options.fileMode` (default: `'auto'`) using {@link appendFieldToFormData}.
  *
- * @param plain   - Plain object (typically from `model.serialize()` or the model's own properties)
+ * @param plain   - Plain object (typically from `model.$qSerialize()` or the model's own properties)
  * @param options - Conversion options
  * @returns Promise that resolves to the assembled `FormData`
  *

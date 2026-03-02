@@ -128,6 +128,64 @@ import type {
 	IQValidateOptions,
 	IQValidateResult,
 } from '@/core/types/validation-types';
+import type { IHistoryHandle } from '@/core/interfaces/history.interface';
+import { HistoryService } from '@/core/services/history.service';
+import { NULL_HISTORY_HANDLE } from '@/core/models/null-history-handle';
+import type { IAuditHandle } from '@/core/interfaces/audit.interface';
+import { AuditService } from '@/core/services/audit.service';
+import { NULL_AUDIT_HANDLE } from '@/core/models/null-audit-handle';
+
+// ─── History: module-level helper (avoids private method + Reflect.construct issue) ──
+/**
+ * Resolves the history handle for a model instance based on class and global config.
+ * Defined at module level (not as a private method) to avoid Bun's Reflect.construct
+ * breaking access to TypeScript private prototype methods.
+ * @internal
+ */
+function _resolveHistoryHandle(instance: {
+	constructor: Function;
+}): IHistoryHandle {
+	const classOptions = Reflect.getMetadata(
+		QUICK_OPTIONS_KEY,
+		instance.constructor
+	) as IQAdvancedOptions | undefined;
+	const classHistory = classOptions?.history;
+	const globalHistory = QConfig.get().history;
+	const enabled = classHistory?.enabled ?? globalHistory?.enabled ?? false;
+	if (!enabled) return NULL_HISTORY_HANDLE;
+	const maxEntries = classHistory?.maxEntries ?? globalHistory?.maxEntries;
+	const recordMode = classHistory?.recordMode ?? globalHistory?.recordMode;
+	return HistoryService.createHandle({
+		enabled: true,
+		maxEntries,
+		recordMode,
+	});
+}
+
+// ─── Audit: module-level helper (avoids private method + Reflect.construct issue) ──
+/**
+ * Resolves the audit handle for a model instance based on class and global config.
+ * Defined at module level (not as a private method) to avoid Bun's Reflect.construct
+ * breaking access to TypeScript private prototype methods.
+ * @internal
+ */
+function _resolveAuditHandle(instance: {
+	constructor: Function;
+}): IAuditHandle {
+	const classOptions = Reflect.getMetadata(
+		QUICK_OPTIONS_KEY,
+		instance.constructor
+	) as IQAdvancedOptions | undefined;
+	const classAudit = classOptions?.audit;
+	const globalAudit = QConfig.get().audit;
+	const enabled = classAudit?.enabled ?? globalAudit?.enabled ?? false;
+	if (!enabled) return NULL_AUDIT_HANDLE;
+	const maxEntries = classAudit?.maxEntries ?? globalAudit?.maxEntries;
+	return AuditService.createHandle({
+		enabled: true,
+		maxEntries,
+	});
+}
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
 // Metadata is immutable after decorators run (class-definition time), so
@@ -294,7 +352,7 @@ export interface IQCreateManyResult<TInstance> {
  * // Both forms are equivalent:
  * const user = User.create({ id: '1', createdAt: '2024-01-01' });
  * const user2 = new User({ id: '2', createdAt: '2024-01-01' });
- * console.log(user.createdAt instanceof Date); // true
+ * user.createdAt instanceof Date; // → true
  * ```
  *
  * @example
@@ -421,6 +479,20 @@ export abstract class QModel<
 	 * @internal
 	 */
 	protected [QUICK_VALUES_KEY]: Record<string, unknown> = {};
+
+	/**
+	 * The history handle tracking mutations on this model instance.
+	 * Defaults to the shared no-op `NULL_HISTORY_HANDLE` when history is disabled.
+	 * @internal
+	 */
+	private _historyHandle: IHistoryHandle = NULL_HISTORY_HANDLE;
+
+	/**
+	 * The audit handle tracking per-field mutations on this model instance.
+	 * Defaults to the shared no-op `NULL_AUDIT_HANDLE` when audit is disabled.
+	 * @internal
+	 */
+	private _auditHandle: IAuditHandle = NULL_AUDIT_HANDLE;
 
 	/**
 	 * Factory method to create a model instance. Functionally identical to `new ModelClass(data)`.
@@ -895,12 +967,10 @@ export abstract class QModel<
 	 * ```typescript
 	 * const metadata = User.getMetadata();
 	 * metadata.forEach((meta, fieldName) => {
-	 *   console.log(`${fieldName}: type=${meta.type}, transformer=${meta.transformer?.name}`);
+	 *   `${fieldName}: type=${meta.type}, transformer=${meta.transformer?.name}`;
+	 *   // → 'id: type=String, transformer=undefined'
+	 *   // → 'createdAt: type=Date, transformer=DateTransformer'
 	 * });
-	 * // Output:
-	 * // id: type=String, transformer=undefined
-	 * // createdAt: type=Date, transformer=DateTransformer
-	 * // balance: type=BigInt, transformer=BigIntTransformer
 	 * ```
 	 */
 	static getMetadata(): Map<string, { type: string; transformer: unknown }> {
@@ -1230,6 +1300,18 @@ export abstract class QModel<
 					configurable: true,
 				});
 			}
+			// Clone the history handle so the copy starts with the parent's history.
+			if ('_historyHandle' in source) {
+				this._historyHandle = HistoryService.cloneHandle(
+					source['_historyHandle'] as IHistoryHandle
+				);
+			}
+			// Clone the audit handle so the copy starts with the parent's audit trail.
+			if ('_auditHandle' in source) {
+				this._auditHandle = AuditService.cloneHandle(
+					source['_auditHandle'] as IAuditHandle
+				);
+			}
 			return;
 		}
 
@@ -1524,6 +1606,12 @@ export abstract class QModel<
 
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
+
+		// Resolve the audit handle for this instance based on class / global config.
+		// Using module-level function to avoid Bun's Reflect.construct breaking private method access.
+		this._historyHandle = _resolveHistoryHandle(this);
+		// Resolve the per-field audit handle for this instance based on class / global config.
+		this._auditHandle = _resolveAuditHandle(this);
 	}
 
 	/**
@@ -1556,6 +1644,50 @@ export abstract class QModel<
 				(this as Record<string, unknown>)[key] = backupValue;
 			}
 		}
+	}
+
+	/**
+	 * Returns the mutation tracking handle for this instance.
+	 *
+	 * - When **audit** is enabled (`{ audit: { enabled: true } }`), returns an
+	 *   {@link IAuditHandle} that records one entry **per changed field** with shape
+	 *   `{ field, from, to, at, method }`.
+	 * - When **history** is enabled (`{ history: { enabled: true } }`), returns an
+	 *   {@link IHistoryHandle} that records one entry **per operation** with shape
+	 *   `{ method, at, changes: { field: { from, to } } }`.
+	 * - When neither is enabled (default), returns a shared no-op handle whose
+	 *   `value` is always `[]` and all methods are no-ops.
+	 *
+	 * @example
+	 * ```typescript
+	 * // Audit mode
+	 * const handle = contract.$qHistory;
+	 * contract.$qPatch({ status: 'active' });
+	 * handle.value;
+	 * // [{ field: 'status', from: 'draft', to: 'active', at: Date, method: 'patch' }]
+	 * ```
+	 *
+	 * @see {@link IAuditHandle} — returned when audit is enabled
+	 * @see {@link IHistoryHandle} — returned when history is enabled
+	 */
+	get $qHistory(): IHistoryHandle {
+		return this._historyHandle;
+	}
+
+	/**
+	 * Returns the per-field audit trail handle for this model instance.
+	 *
+	 * When audit is disabled (default), returns a shared no-op handle whose
+	 * `value` is always `[]` and all methods are no-ops.
+	 *
+	 * To enable recording, pass `{ audit: { enabled: true } }` as the second
+	 * argument to `@Quick`, or set it globally via `QConfig.configure({ audit: { enabled: true } })`.
+	 *
+	 * @see {@link IAuditHandle} — the returned interface
+	 * @see {@link IAuditEntry} — individual entry shape
+	 */
+	get $qAuditHistory(): IAuditHandle {
+		return this._auditHandle;
 	}
 
 	/**
@@ -2395,6 +2527,12 @@ export abstract class QModel<
 		const Constructor = this.constructor as unknown as IModelConstructor<
 			QModel<TInterface>
 		>;
+		const historyHandle = this._historyHandle;
+		const auditHandle = this._auditHandle;
+		const captureSnapshot = historyHandle.isActive || auditHandle.isActive;
+		const before = captureSnapshot
+			? (this.$qSerialize() as Record<string, unknown>)
+			: null;
 		const current = this.$qSerialize();
 		const merged = { ...current, ...patch };
 		const updated = Constructor.deserialize(merged);
@@ -2404,6 +2542,23 @@ export abstract class QModel<
 			(this as unknown as IQAnyRecord)[key] = (
 				updated as unknown as IQAnyRecord
 			)[key];
+		}
+		if (before !== null) {
+			const after = this.$qSerialize() as Record<string, unknown>;
+			if (historyHandle.isActive) {
+				HistoryService.recordDiff({
+					handle: historyHandle,
+					before,
+					after,
+					method: 'patch',
+				});
+			}
+			AuditService.recordDiff({
+				handle: auditHandle,
+				before,
+				after,
+				method: 'patch',
+			});
 		}
 	}
 
@@ -2433,6 +2588,12 @@ export abstract class QModel<
 		// Include sensitive fields when cloning internally so the copy retains all data.
 		const current = this.$qSerialize({ includeSensitive: true });
 		const data = partial ? { ...current, ...partial } : { ...current };
+		const captureSnapshot =
+			partial !== undefined &&
+			(this._historyHandle.isActive || this._auditHandle.isActive);
+		const copyBefore = captureSnapshot
+			? (this.$qSerialize() as Record<string, unknown>)
+			: null;
 		const instance = Constructor.deserialize(
 			data as unknown as IQModelData<IQAnyRecord>
 		);
@@ -2443,6 +2604,29 @@ export abstract class QModel<
 			enumerable: false,
 			configurable: true,
 		});
+		// Clone handles from parent so the copy inherits both history and audit.
+		instance._historyHandle = HistoryService.cloneHandle(
+			this._historyHandle
+		);
+		instance._auditHandle = AuditService.cloneHandle(this._auditHandle);
+		// Record the partial diff in both handles if active.
+		if (copyBefore !== null) {
+			const copyAfter = instance.$qSerialize() as Record<string, unknown>;
+			if (instance._historyHandle.isActive) {
+				HistoryService.recordDiff({
+					handle: instance._historyHandle,
+					before: copyBefore,
+					after: copyAfter,
+					method: 'copy',
+				});
+			}
+			AuditService.recordDiff({
+				handle: instance._auditHandle,
+				before: copyBefore,
+				after: copyAfter,
+				method: 'copy',
+			});
+		}
 		return instance;
 	}
 
@@ -2497,7 +2681,29 @@ export abstract class QModel<
 	 */
 	$qFrom(data: IQModelData<TInterface>): this {
 		const Ctor = this.constructor as unknown as IModelConstructor<this>;
-		return Ctor.deserialize(data);
+		const instance = Ctor.deserialize(data);
+		// deserialize() uses Object.create() bypassing the constructor, so
+		// neither _historyHandle nor _auditHandle are initialized. Resolve both.
+		instance._historyHandle = _resolveHistoryHandle(instance);
+		instance._auditHandle = _resolveAuditHandle(instance);
+		// Record populate diff in both handles if active — 'from' is empty state → new data.
+		const emptyBefore: Record<string, unknown> = {};
+		const after = instance.$qSerialize() as Record<string, unknown>;
+		if (instance._historyHandle.isActive) {
+			HistoryService.recordDiff({
+				handle: instance._historyHandle,
+				before: emptyBefore,
+				after,
+				method: 'populate',
+			});
+		}
+		AuditService.recordDiff({
+			handle: instance._auditHandle,
+			before: emptyBefore,
+			after,
+			method: 'populate',
+		});
+		return instance;
 	}
 
 	/**
@@ -2736,8 +2942,8 @@ export abstract class QModel<
 	 * };
 	 *
 	 * const user = User.deserialize(userData);
-	 * console.log(user instanceof User); // true
-	 * console.log(user.createdAt instanceof Date); // true
+	 * user instanceof User;            // → true
+	 * user.createdAt instanceof Date;  // → true
 	 * ```
 	 *
 	 * @example
@@ -2750,8 +2956,8 @@ export abstract class QModel<
 	 * };
 	 *
 	 * const account = Account.deserialize(accountData);
-	 * console.log(typeof account.balance); // 'bigint'
-	 * console.log(account.pattern instanceof RegExp); // true
+	 * typeof account.balance;              // → 'bigint'
+	 * account.pattern instanceof RegExp;  // → true
 	 * ```
 	 */
 	static deserialize<T extends QModel<IQAnyRecord>>(
@@ -2796,8 +3002,8 @@ export abstract class QModel<
 	 * // or: const json = JSON.stringify(user);
 	 *
 	 * const restored = User.fromJSON(json);
-	 * console.log(restored instanceof User); // true
-	 * console.log(restored.createdAt instanceof Date); // true
+	 * restored instanceof User;              // → true
+	 * restored.createdAt instanceof Date;   // → true
 	 * ```
 	 */
 	static fromJSON<T extends QModel<IQAnyRecord>>(
@@ -2935,7 +3141,7 @@ export abstract class QModel<
 	 *   balance: '999999999999'
 	 * });
 	 *
-	 * console.log(result.success); // true
+	 * result.success; // → true
 	 * ```
 	 *
 	 * @example

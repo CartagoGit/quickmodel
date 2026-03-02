@@ -45,7 +45,7 @@ import {
  * });
  * config.metadata instanceof Map; // → true
  *
- * const data = config.$qm.serialize();
+ * const data = config.$qSerialize();
  * data.metadata; // → { key1: "value1", key2: 123 }
  * ```
  *
@@ -491,7 +491,7 @@ export class MapTransformer<K = string, V = unknown>
  * config.tags instanceof Set; // → true
  * config.tags.size; // → 2
  *
- * const data = config.$qm.serialize();
+ * const data = config.$qSerialize();
  * Array.isArray(data.tags); // → true
  * ```
  *

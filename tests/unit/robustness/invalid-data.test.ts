@@ -36,8 +36,8 @@ describe('Robustness: Invalid Data Handling', () => {
 		const user = User.create(data);
 
 		// They are preserved in runtime (Permissive)
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect((user as unknown as Record<string, unknown>)['extraField']).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'Hack'
 		);
 

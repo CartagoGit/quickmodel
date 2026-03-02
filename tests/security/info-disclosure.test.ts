@@ -20,7 +20,7 @@ describe('Security: Information Disclosure (Private Fields)', () => {
 			private apiToken = 'my-token';
 		}
 
-		const user = new User({ id: 1 } as unknown as IUser);
+		const user = new User({ id: 1 } as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		user._internalId = 'secret';
 		user.__deepSecret = 'top_secret';
 		// @ts-expect-error testing invalid input

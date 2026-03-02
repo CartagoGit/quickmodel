@@ -112,6 +112,41 @@ const profile = new Profile(v.parse(FormSchema, formData));
 | Schema export (OpenAPI, JSON Schema…) | ❌            | ✅ `getSchema()`   |
 | Class-based models with decorators    | ❌            | ✅                 |
 
+## `fromSchema`: generating a QModel class from a Valibot schema
+
+`QModel.fromSchema('valibot', ...)` accepts a Valibot `v.object({...})` source string and generates TypeScript source code for a `QModel` class:
+
+```typescript
+import 'quickmodel/schema';
+
+const valibotSrc = `
+import * as v from 'valibot';
+export const ProductSchema = v.object({
+  price: v.number(),
+  label: v.string(),
+  active: v.boolean(),
+  createdAt: v.date(),
+});
+`;
+
+const code = QModel.fromSchema('valibot', valibotSrc, 'Product');
+// → TypeScript source string for class Product extends QModel<IProduct>
+
+// fs.writeFileSync('src/models/product.model.ts', code);
+```
+
+This is **scaffolding** — the output is a code string to save as a `.ts` file, not a live class.
+
+## Round-trip: QModel → Valibot schema → QModel class
+
+```typescript
+import 'quickmodel/schema';
+
+const valibotSrc = User.getSchema('valibot');
+const code = QModel.fromSchema('valibot', valibotSrc, 'User');
+// code is valid TypeScript defining class User extends QModel<IUser>
+```
+
 ## See also
 
 - [Transformers](/en/guide/transformers) — supported coercion types

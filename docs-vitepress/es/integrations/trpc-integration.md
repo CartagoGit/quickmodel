@@ -226,7 +226,7 @@ function validateOrThrow(dto: QModel<object>): void {
 }
 ```
 
-## Mutaciones Parciales con `copy()`
+## Mutaciones Parciales con `$qCopy()`
 
 ```typescript
 interface IUpdateInput { uid: string; name: string; age: number; }

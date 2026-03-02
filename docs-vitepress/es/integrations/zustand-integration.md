@@ -1,6 +1,6 @@
 # Integración con Zustand
 
-El método `copy()` de QuickModel encaja de manera natural con las stores de Zustand — devuelve
+El método `$qCopy()` de QuickModel encaja de manera natural con las stores de Zustand — devuelve
 una **nueva instancia inmutable**, manteniendo las actualizaciones de estado predecibles y
 eliminando la necesidad de Immer.
 
@@ -10,7 +10,7 @@ eliminando la necesidad de Immer.
 | ------------------------- | ---------------------------------------- |
 | Actualización inmutable   | `item.$qCopy(patch)` → nueva instancia   |
 | Store normalizado con Map | `createMany()` → `Map<id, instancia>`    |
-| Middleware persist        | `serialize()` / `new Dto(stored)`        |
+| Middleware persist        | `$qSerialize()` / `new Dto(stored)`      |
 | Valores computados        | `@QComputed` — recalcula en cada lectura |
 | Carga masiva desde API    | `Dto.createMany(apiData)`                |
 
@@ -57,7 +57,7 @@ class UsuarioModel extends QModel<IUsuario> {
 }
 ```
 
-## Store Básica — copy() como Actualizador Inmutable
+## Store Básica — $qCopy() como Actualizador Inmutable
 
 `merge(patch)` devuelve una **nueva instancia** con los campos parcheados. El original nunca
 se muta y los valores `@QComputed` se recalculan automáticamente.
@@ -167,10 +167,10 @@ const useStoreConPersistencia = create<IUsuarioStore>()(
 );
 ```
 
-## copy() vs Immer
+## $qCopy() vs Immer
 
 Immer requiere un wrapper `produce()` para la compartición estructural. Con QuickModel,
-`copy()` ya es inmutable y devuelve una instancia tipada con `@QComputed` recalculados:
+`$qCopy()` ya es inmutable y devuelve una instancia tipada con `@QComputed` recalculados:
 
 ```typescript
 // ❌ Con Immer
@@ -180,7 +180,7 @@ set(
 	})
 );
 
-// ✅ Con QuickModel copy()
+// ✅ Con QuickModel $qCopy()
 const actual = get().usuario;
 set({ usuario: actual.$qCopy({ plan: 'pro' }) });
 // @QComputed se recalculan automáticamente — sin referencias obsoletas

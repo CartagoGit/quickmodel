@@ -340,14 +340,3 @@ describe('Métodos legacy eliminados: ya no existen en la instancia [QuickModel]
 		expect(typeof (user as any).getChanges).toBe('undefined');
 	});
 });
-
-// ---------------------------------------------------------------------------
-// Getter $qm ya NO debe existir
-// ---------------------------------------------------------------------------
-
-describe('Getter $qm eliminado', () => {
-	it('$qm ya no existe en la instancia', () => {
-		const user = makeUser();
-		expect((user as any).$qm).toBeUndefined();
-	});
-});

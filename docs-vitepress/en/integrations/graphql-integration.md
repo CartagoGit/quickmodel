@@ -170,7 +170,7 @@ const resolvers = {
 };
 ```
 
-## copy() in update mutations
+## $qCopy() in update mutations
 
 ```typescript
 const resolvers = {

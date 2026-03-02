@@ -109,6 +109,42 @@ const createUser = t.procedure
 | OpenAPI / JSON Schema export        | Via `Type.*` | ✅ `getSchema()`   |
 | Class-based models with decorators  | ❌           | ✅                 |
 
+## `fromSchema`: generating a QModel class from a TypeBox schema
+
+`QModel.fromSchema('typebox', ...)` accepts a TypeBox `Type.Object({...})` source string and generates TypeScript source code for a `QModel` class:
+
+```typescript
+import 'quickmodel/schema';
+
+const typeboxSrc = `
+import { Type, Static } from '@sinclair/typebox';
+const ProductSchema = Type.Object({
+  price: Type.Number(),
+  label: Type.String(),
+  active: Type.Boolean(),
+  createdAt: Type.String({ format: 'date-time' }),
+  amount: Type.BigInt(),
+});
+`;
+
+const code = QModel.fromSchema('typebox', typeboxSrc, 'Product');
+// → TypeScript source string for class Product extends QModel<IProduct>
+
+// fs.writeFileSync('src/models/product.model.ts', code);
+```
+
+`Type.String({ format: 'date-time' })` is converted to the `Date` transformer, and `Type.BigInt()` to `BigInt`.
+
+## Round-trip: QModel → TypeBox schema → QModel class
+
+```typescript
+import 'quickmodel/schema';
+
+const typeboxSrc = User.getSchema('typebox');
+const code = QModel.fromSchema('typebox', typeboxSrc, 'User');
+// code is valid TypeScript defining class User extends QModel<IUser>
+```
+
 ## See also
 
 - [Transformers](/en/guide/transformers) — supported coercion types

@@ -261,9 +261,9 @@ async function validarAsync(values: Partial<IFormularioRegistro>) {
 // <Formik validate={validarAsync} ...>
 ```
 
-## 7. `validationReport()` — Trazabilidad de reglas
+## 7. `$qValidationReport()` — Trazabilidad de reglas
 
-`validationReport()` devuelve un desglose completo por campo de cada regla aplicada:
+`$qValidationReport()` devuelve un desglose completo por campo de cada regla aplicada:
 
 ```typescript
 const dto = new RegistroDto({ ... });
@@ -278,7 +278,7 @@ Esto es útil para mostrar indicadores de progreso en línea (p.ej., un medidor 
 - `qCheckRules(dto)` → prop `validate` de Formik (devuelve `{}` para válido)
 - `qCheckRulesByGroup(dto)['paso']` → validación por paso de wizard
 - `@QRule(async ...)` + `qCheckRulesAsync(dto)` → validate asíncrono en Formik
-- `getFormSchema()` → generación dinámica de `<Field>`
-- `validationReport()` → trazabilidad de reglas (medidores de contraseña, etc.)
+- `dto.$qGetFormSchema()` → generación dinámica de `<Field>`
+- `$qValidationReport()` → trazabilidad de reglas (medidores de contraseña, etc.)
 - `coercionStrategy: 'loose'` → gestiona automáticamente los strings de inputs HTML
 - No se necesita `zodResolver` ni `yupResolver`

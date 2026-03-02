@@ -414,10 +414,6 @@ export default defineConfig({
 									text: 'Per-Class Configuration',
 									link: '/en/guide/per-class-config',
 								},
-								{
-									text: 'Reserved Words & $qm Namespace',
-									link: '/en/guide/reserved-words',
-								},
 							],
 						},
 						{
@@ -592,6 +588,10 @@ export default defineConfig({
 									link: '/en/integrations/backend-integration',
 								},
 								{
+									text: 'Hono (standalone)',
+									link: '/en/integrations/hono-integration',
+								},
+								{
 									text: 'Bun.js',
 									link: '/en/integrations/bun-integration',
 								},
@@ -610,6 +610,10 @@ export default defineConfig({
 								{
 									text: 'OpenAPI / Swagger',
 									link: '/en/integrations/openapi-integration',
+								},
+								{
+									text: 'Remix',
+									link: '/en/integrations/remix-integration',
 								},
 							],
 						},
@@ -632,6 +636,10 @@ export default defineConfig({
 									text: 'Drizzle ORM',
 									link: '/en/integrations/drizzle-integration',
 								},
+								{
+									text: 'Kysely',
+									link: '/en/integrations/kysely-integration',
+								},
 							],
 						},
 						{
@@ -646,12 +654,33 @@ export default defineConfig({
 									link: '/en/integrations/zustand-integration',
 								},
 								{
+									text: 'Jotai',
+									link: '/en/integrations/jotai-integration',
+								},
+								{
+									text: 'Valtio',
+									link: '/en/integrations/valtio-integration',
+								},
+								{
+									text: 'XState',
+									link: '/en/integrations/xstate-integration',
+								},
+								{
 									text: 'React Hook Form',
 									link: '/en/integrations/react-hook-form-integration',
 								},
 								{
 									text: 'Formik',
 									link: '/en/integrations/formik-integration',
+								},
+							],
+						},
+						{
+							text: 'Data Fetching',
+							items: [
+								{
+									text: 'SWR',
+									link: '/en/integrations/swr-integration',
 								},
 							],
 						},
@@ -908,10 +937,6 @@ export default defineConfig({
 									text: 'Configuración por Clase',
 									link: '/es/guide/per-class-config',
 								},
-								{
-									text: 'Palabras Reservadas y namespace $qm',
-									link: '/es/guide/reserved-words',
-								},
 							],
 						},
 						{
@@ -1086,6 +1111,10 @@ export default defineConfig({
 									link: '/es/integrations/backend-integration',
 								},
 								{
+									text: 'Hono (standalone)',
+									link: '/es/integrations/hono-integration',
+								},
+								{
 									text: 'Bun.js',
 									link: '/es/integrations/bun-integration',
 								},
@@ -1104,6 +1133,10 @@ export default defineConfig({
 								{
 									text: 'OpenAPI / Swagger',
 									link: '/es/integrations/openapi-integration',
+								},
+								{
+									text: 'Remix',
+									link: '/es/integrations/remix-integration',
 								},
 							],
 						},
@@ -1126,6 +1159,10 @@ export default defineConfig({
 									text: 'Drizzle ORM',
 									link: '/es/integrations/drizzle-integration',
 								},
+								{
+									text: 'Kysely',
+									link: '/es/integrations/kysely-integration',
+								},
 							],
 						},
 						{
@@ -1140,12 +1177,33 @@ export default defineConfig({
 									link: '/es/integrations/zustand-integration',
 								},
 								{
+									text: 'Jotai',
+									link: '/es/integrations/jotai-integration',
+								},
+								{
+									text: 'Valtio',
+									link: '/es/integrations/valtio-integration',
+								},
+								{
+									text: 'XState',
+									link: '/es/integrations/xstate-integration',
+								},
+								{
 									text: 'React Hook Form',
 									link: '/es/integrations/react-hook-form-integration',
 								},
 								{
 									text: 'Formik',
 									link: '/es/integrations/formik-integration',
+								},
+							],
+						},
+						{
+							text: 'Obtención de Datos',
+							items: [
+								{
+									text: 'SWR',
+									link: '/es/integrations/swr-integration',
 								},
 							],
 						},

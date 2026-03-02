@@ -83,6 +83,13 @@ export type IQSchemaReturnType<T extends IQSchemaType> = T extends
  * - `'typescript'` — a TypeScript `interface` string (produced by `getSchema('typescript')`)
  * - `'graphql'` — a GraphQL SDL `type` block string (produced by `getSchema('graphql')`)
  * - `'prisma'` — a Prisma `model` block string (produced by `getSchema('prisma')`)
+ * - `'valibot'` — a Valibot `v.object({…})` source string
+ * - `'yup'` — a Yup `yup.object({…})` source string
+ * - `'typebox'` — a TypeBox `Type.Object({…})` source string
+ * - `'effect-schema'` — an Effect `Schema.Struct({…})` source string
+ * - `'drizzle'` — a Drizzle `pgTable(…)` source string
+ * - `'mongo'` — a Mongoose/Mongo schema object (`Record<string, unknown>`)
+ * - `'zod'` — a live `ZodObject<any>` instance (produced by `getSchema('zod')`)
  *
  * @see {@link IFromSchemaInput} — maps each format to its accepted input type
  * @see {@link QModel.fromSchema} — the method that uses this type
@@ -93,7 +100,14 @@ export type IFromSchemaFormat =
 	| 'ajv'
 	| 'typescript'
 	| 'graphql'
-	| 'prisma';
+	| 'prisma'
+	| 'valibot'
+	| 'yup'
+	| 'typebox'
+	| 'effect-schema'
+	| 'drizzle'
+	| 'mongo'
+	| 'zod';
 
 /**
  * Maps each `IFromSchemaFormat` to the input type it accepts in `QModel.fromSchema()`.
@@ -105,6 +119,13 @@ export type IFromSchemaFormat =
  * - `getSchema('typescript')` → `string` → `fromSchema('typescript', that_string)`
  * - `getSchema('graphql')` → `string` → `fromSchema('graphql', that_string)`
  * - `getSchema('prisma')` → `string` → `fromSchema('prisma', that_string)`
+ * - `getSchema('valibot')` → `string` → `fromSchema('valibot', that_string)`
+ * - `getSchema('yup')` → `string` → `fromSchema('yup', that_string)`
+ * - `getSchema('typebox')` → `string` → `fromSchema('typebox', that_string)`
+ * - `getSchema('effect-schema')` → `string` → `fromSchema('effect-schema', that_string)`
+ * - `getSchema('drizzle')` → `string` → `fromSchema('drizzle', that_string)`
+ * - `getSchema('mongo')` → `Record<string, unknown>` → `fromSchema('mongo', that_object)`
+ * - `getSchema('zod')` → `ZodObject<any>` → `fromSchema('zod', that_schema)`
  *
  * @example
  * ```typescript
@@ -114,8 +135,8 @@ export type IFromSchemaFormat =
  * const tsInterface = User.getSchema('typescript'); // string
  * const code2 = QModel.fromSchema('typescript', tsInterface, 'User');
  *
- * const gql = User.getSchema('graphql'); // string
- * const code3 = QModel.fromSchema('graphql', gql, 'User');
+ * const zodSchema = User.getSchema('zod');    // ZodObject<any>
+ * const code3 = QModel.fromSchema('zod', zodSchema, 'User');
  * ```
  *
  * @see {@link IFromSchemaFormat}
@@ -125,5 +146,12 @@ export type IFromSchemaInput<T extends IFromSchemaFormat> = T extends
 	| 'typescript'
 	| 'graphql'
 	| 'prisma'
+	| 'valibot'
+	| 'yup'
+	| 'typebox'
+	| 'effect-schema'
+	| 'drizzle'
 	? string
-	: Record<string, unknown>;
+	: T extends 'zod'
+		? import('zod').ZodObject<any>
+		: Record<string, unknown>;

@@ -65,9 +65,6 @@ export interface IQCheckRulesAsyncOptions extends IQRulesAsyncOptions {
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from 'quickmodel';
- * import { qGroups, qCheckRulesAsync } from 'quickmodel/forms';
- *
  * const Groups = qGroups('identity', 'security');
  *
  * class ProfileForm {

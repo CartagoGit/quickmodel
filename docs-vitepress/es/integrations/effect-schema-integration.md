@@ -115,6 +115,42 @@ const processUser = (raw: unknown) =>
 | Exportación OpenAPI / JSON Schema         | ❌              | ✅ `getSchema()`            |
 | Modelos basados en clases con decoradores | ❌              | ✅                          |
 
+## `fromSchema`: generando una clase QModel desde un Effect Schema
+
+`QModel.fromSchema('effect-schema', ...)` acepta un string fuente de `Schema.Struct({...})` y genera código TypeScript para una clase `QModel`:
+
+```typescript
+import 'quickmodel/schema';
+
+const effectSrc = `
+import * as Schema from 'effect/schema';
+const ReportSchema = Schema.Struct({
+  score: Schema.Number,
+  title: Schema.String,
+  passed: Schema.Boolean,
+  date: Schema.Date,
+  amount: Schema.BigIntFromSelf,
+});
+`;
+
+const code = QModel.fromSchema('effect-schema', effectSrc, 'Report');
+// → string TypeScript con la clase Report extends QModel<IReport>
+
+// fs.writeFileSync('src/models/report.model.ts', code);
+```
+
+`Schema.BigIntFromSelf` se mapea al transformer `BigInt`.
+
+## Round-trip: QModel → Effect Schema → clase QModel
+
+```typescript
+import 'quickmodel/schema';
+
+const effectSrc = User.getSchema('effect-schema');
+const code = QModel.fromSchema('effect-schema', effectSrc, 'User');
+// code es TypeScript válido que define class User extends QModel<IUser>
+```
+
 ## Ver también
 
 - [Transformadores](/es/guide/transformers) — tipos de coerción soportados

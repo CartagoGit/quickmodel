@@ -13,9 +13,8 @@ describe('Robustness: Strict Mode', () => {
 			declare name: string;
 		}
 
-		const user = new User({ name: 'John', extra: 123 } as unknown as IUser);
-		// @quickmodel-rule-ignore: no-as-unknown
-		expect((user as unknown as Record<string, unknown>)['extra']).toBe(123);
+		const user = new User({ name: 'John', extra: 123 } as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
+		expect((user as unknown as Record<string, unknown>)['extra']).toBe(123); // @quickmodel-rule-ignore: no-as-unknown
 	});
 	test('should REJECT extra properties when unknownPropertyPolicy is error', () => {
 		interface IUser {
@@ -28,8 +27,7 @@ describe('Robustness: Strict Mode', () => {
 		}
 
 		const action = () => {
-			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing strict mode rejection of extra properties
-			new StrictUser({ name: 'John', extra: 123 } as unknown as IUser);
+			new StrictUser({ name: 'John', extra: 123 } as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		};
 
 		expect(action).toThrow(QModelError);

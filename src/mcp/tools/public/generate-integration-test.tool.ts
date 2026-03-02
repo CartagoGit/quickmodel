@@ -247,7 +247,7 @@ describe('Round-trip — ${baseModel}', () => {
 		expect(instance.createdAt).toBeInstanceOf(Date);
 	});
 
-	it('$qToJSON() === JSON.stringify($qm.serialize())', () => {
+	it('$qToJSON() === JSON.stringify($qSerialize())', () => {
 		const instance = ${baseModel}.create(rawData);
 		const viaToJson = instance.$qToJSON();
 		const viaSer = JSON.stringify(instance.$qSerialize());

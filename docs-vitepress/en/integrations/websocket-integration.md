@@ -115,7 +115,7 @@ const msg = new ChatMessageDto({
 	metadata: new Map([['source', 'web']]),
 });
 
-// serialize() converts Date → ISO string, Set → array, Map → object, BigInt → string
+// $qSerialize() converts Date → ISO string, Set → array, Map → object, BigInt → string
 ws.send(JSON.stringify(msg.$qSerialize()));
 ```
 
@@ -198,7 +198,7 @@ io.on('connection', (socket) => {
 			return;
 		}
 
-		// Emit to room — serialize() ensures JSON-safe payload
+		// Emit to room — $qSerialize() ensures JSON-safe payload
 		io.to(dto.roomId).emit('chat:message', dto.$qSerialize());
 		ack?.({ ok: true, id: dto.id });
 	});
@@ -242,9 +242,9 @@ socket.on('presence:update', (raw) => {
 });
 ```
 
-### Incremental Updates with `copy()`
+### Incremental Updates with `$qCopy()`
 
-Use `copy()` to apply delta patches from socket events — creates a new immutable instance:
+Use `$qCopy()` to apply delta patches from socket events — creates a new immutable instance:
 
 ```typescript
 let currentUser: PresenceEventDto | null = null;
@@ -530,7 +530,7 @@ socket.emit(
 `BigInt` cannot be natively serialized by `JSON.stringify`. QuickModel handles this automatically:
 
 ```typescript
-// Serialization: BigInt → string  (via serialize())
+// Serialization: BigInt → string  (via $qSerialize())
 tick.$qSerialize();
 // { symbol: 'AAPL', volume: '987654321000', ... }
 

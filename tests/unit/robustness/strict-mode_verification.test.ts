@@ -28,13 +28,12 @@ describe('Strict Mode Verification', () => {
 		}
 
 		// Extra property 'admin' should NOT throw by default
-		// @quickmodel-rule-ignore: no-as-unknown — intentional: testing that extra properties are kept
 		const user = User.create({
 			name: 'Test',
 			admin: true,
-		} as unknown as IUser);
-		// @quickmodel-rule-ignore: no-as-unknown
+		} as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		expect((user as unknown as Record<string, unknown>)['admin']).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			true
 		);
 	});

@@ -8,7 +8,7 @@ QuickModel works with React using plain TypeScript classes for form validation a
 | ----------------------------------- | ------------------------------------------- |
 | Controlled form validation          | Plain TS class + `@QRule` + `qCheckRules()` |
 | Server Actions / API coercion       | `QModel` subclass + `@Quick()`              |
-| Global state (Zustand / useReducer) | `QModel` + `copy()` (immutable updates)     |
+| Global state (Zustand / useReducer) | `QModel` + `$qCopy()` (immutable updates)   |
 | Custom hooks                        | Wrap `QModel` in a `useQModel` hook         |
 
 ## Installation
@@ -91,7 +91,7 @@ function LoginPage() {
 ::: tip Two available patterns
 
 - **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance required.
-- **With `QModel` + `@Quick`** (below): also unlocks `copy()`, `serialize()`, `checkIntegrity()`, and immutable updates.
+- **With `QModel` + `@Quick`** (below): also unlocks `$qCopy()`, `$qSerialize()`, `$qCheckIntegrity()`, and immutable updates.
   :::
 
 ### With QModel + @Quick
@@ -124,7 +124,7 @@ class LoginForm extends QModel<ILoginForm> {
 const [form, setForm] = useState(() => new LoginForm({}));
 
 const handleChange = (field: keyof ILoginForm, value: string) => {
-	// copy() is IMMUTABLE — captures the new instance
+	// $qCopy() is IMMUTABLE — captures the new instance
 	setForm((prev) => prev.$qCopy({ [field]: value }) as LoginForm);
 };
 
@@ -302,7 +302,7 @@ const useCartStore = create<ICartStore>((set, get) => ({
 			const current = state.items.get(sku);
 			if (!current) return state;
 			const items = new Map(state.items);
-			// copy() is IMMUTABLE — always capture the returned new instance
+			// $qCopy() is IMMUTABLE — always capture the returned new instance
 			items.set(sku, current.$qCopy({ qty }));
 			return { items };
 		}),

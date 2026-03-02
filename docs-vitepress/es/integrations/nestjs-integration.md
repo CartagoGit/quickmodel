@@ -524,7 +524,7 @@ export class UserResponseDto extends QModel<IUserResponse> {
 ```
 
 ::: tip @QComputed vs getter simple
-Un `get fullName()` **sin** `@QComputed()` existe en el prototipo pero es invisible para `serialize()` y `toJSON()`. El decorador es el opt-in que le indica al serializador que incluya el getter en el output.
+Un `get fullName()` **sin** `@QComputed()` existe en el prototipo pero es invisible para `$qSerialize()` y `toJSON()`. El decorador es el opt-in que le indica al serializador que incluya el getter en el output.
 :::
 
 ## Testing de servicios NestJS
@@ -547,7 +547,7 @@ describe('CreateUserDto', () => {
 		expect(dto.birthDate).toBeInstanceOf(Date);
 	});
 
-	test('checkRules() valida todos los campos', () => {
+	test('$qCheckRules() valida todos los campos', () => {
 		const invalid = new CreateUserDto({
 			name: '',
 			email: 'bad',
@@ -560,7 +560,7 @@ describe('CreateUserDto', () => {
 		expect(errors.length).toBeGreaterThan(0);
 	});
 
-	test('serialize() produce un objeto plano seguro para JSON', () => {
+	test('$qSerialize() produce un objeto plano seguro para JSON', () => {
 		const dto = new CreateUserDto({
 			name: 'Alice',
 			email: 'alice@example.com',

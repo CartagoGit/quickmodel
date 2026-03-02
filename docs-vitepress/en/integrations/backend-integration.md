@@ -269,7 +269,7 @@ export class BlogPostRepository {
 	publish(id: string): object | null {
 		const post = this.store.get(id);
 		if (!post) return null;
-		// copy() is IMMUTABLE — capture the new instance
+		// $qCopy() is IMMUTABLE — capture the new instance
 		const published = post.$qCopy({ publishedAt: new Date() });
 		this.store.set(id, published);
 		return published.$qSerialize();

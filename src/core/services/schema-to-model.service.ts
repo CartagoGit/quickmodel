@@ -472,6 +472,554 @@ function fromPrismaSchema(src: string, className?: string): string {
 	});
 }
 
+// ── Valibot parser ──────────────────────────────────────────────────────────
+
+function fromValibotSchema(src: string, className?: string): string {
+	const blockMatch = src.match(
+		/export\s+const\s+(\w+)Schema\s*=\s*v\.object\(\{([\s\S]*?)\}\)/
+	);
+	if (!blockMatch) {
+		throw new Error(
+			'[QuickModel] fromSchema("valibot"): no `v.object` block found in input. ' +
+				'Provide a Valibot schema source string (e.g. the output of getSchema("valibot")).'
+		);
+	}
+
+	const schemaName = blockMatch[1] ?? 'GeneratedModel';
+	const body = blockMatch[2] ?? '';
+	const baseName = className ?? schemaName;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('//')) continue;
+
+		// fieldName: v.type(),
+		const fieldMatch = trim.match(/^(\w+):\s*v\.(\w+)\(\)/);
+		if (!fieldMatch) continue;
+
+		const key = fieldMatch[1];
+		const vType = fieldMatch[2] ?? '';
+		const { transformer, tsType } = mapValibotType(vType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+function mapValibotType(vType: string): {
+	transformer: string | undefined;
+	tsType: string;
+} {
+	switch (vType) {
+		case 'number':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'date':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'bigint':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'string':
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+// ── Yup parser ───────────────────────────────────────────────────────────────
+
+function fromYupSchema(src: string, className?: string): string {
+	const blockMatch = src.match(
+		/export\s+const\s+(\w+)Schema\s*=\s*yup\.object\(\{([\s\S]*?)\}\)/
+	);
+	if (!blockMatch) {
+		throw new Error(
+			'[QuickModel] fromSchema("yup"): no `yup.object` block found in input. ' +
+				'Provide a Yup schema source string (e.g. the output of getSchema("yup")).'
+		);
+	}
+
+	const schemaName = blockMatch[1] ?? 'GeneratedModel';
+	const body = blockMatch[2] ?? '';
+	const baseName = className ?? schemaName;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('//')) continue;
+
+		// fieldName: yup.type().required(),
+		const fieldMatch = trim.match(/^(\w+):\s*yup\.(\w+)\(/);
+		if (!fieldMatch) continue;
+
+		const key = fieldMatch[1];
+		const yupType = fieldMatch[2] ?? '';
+		const { transformer, tsType } = mapYupType(yupType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+function mapYupType(yupType: string): {
+	transformer: string | undefined;
+	tsType: string;
+} {
+	switch (yupType) {
+		case 'number':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'date':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'string':
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+// ── Shared utility — balanced-brace body extractor ──────────────────────────
+
+/**
+ * Extracts the content of the outermost `{…}` block that follows a given
+ * header regex match.  Handles nested braces correctly.
+ *
+ * @returns `{ name, body }` or `null` if the header regex does not match.
+ */
+function extractBracedBlock(
+	src: string,
+	headerPattern: RegExp
+): { name: string; body: string } | null {
+	const headerMatch = src.match(headerPattern);
+	if (!headerMatch) return null;
+
+	const name = headerMatch[1] ?? 'GeneratedModel';
+	const afterHeader = src.slice(
+		(headerMatch.index ?? 0) + headerMatch[0].length
+	);
+
+	// Find the opening `{`
+	const openIdx = afterHeader.indexOf('{');
+	if (openIdx === -1) return null;
+
+	let depth = 0;
+	let bodyStart = -1;
+	let bodyEnd = -1;
+
+	for (let idx = openIdx; idx < afterHeader.length; idx++) {
+		const chr = afterHeader[idx];
+		if (chr === '{') {
+			if (depth === 0) bodyStart = idx + 1;
+			depth++;
+		} else if (chr === '}') {
+			depth--;
+			if (depth === 0) {
+				bodyEnd = idx;
+				break;
+			}
+		}
+	}
+
+	if (bodyStart === -1 || bodyEnd === -1) return null;
+	return { name, body: afterHeader.slice(bodyStart, bodyEnd) };
+}
+
+// ── TypeBox parser ───────────────────────────────────────────────────────────
+
+function fromTypeBoxSchema(src: string, className?: string): string {
+	const parsed = extractBracedBlock(
+		src,
+		/(?:export\s+)?const\s+(\w+)Schema\s*=\s*Type\.Object\(/ // eslint-disable-line security/detect-unsafe-regex
+	);
+	if (!parsed) {
+		throw new Error(
+			'[QuickModel] fromSchema("typebox"): no `Type.Object` block found in input. ' +
+				'Provide a TypeBox schema source string (e.g. the output of getSchema("typebox")).'
+		);
+	}
+
+	const { name: schemaName, body } = parsed;
+	const baseName = className ?? schemaName;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('//')) continue;
+
+		// fieldName: Type.Kind(...) — capture full value to detect date-time option
+		const fieldMatch = trim.match(/^(\w+):\s*Type\.(\w+)\(([^)]*)\)/);
+		if (!fieldMatch) continue;
+
+		const key = fieldMatch[1];
+		const typeKind = fieldMatch[2] ?? '';
+		const typeArgs = fieldMatch[3] ?? '';
+		const { transformer, tsType } = mapTypeBoxType(typeKind, typeArgs);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+function mapTypeBoxType(
+	typeKind: string,
+	typeArgs: string
+): { transformer: string | undefined; tsType: string } {
+	switch (typeKind) {
+		case 'Number':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'Boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'BigInt':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'String':
+			if (
+				typeArgs.includes("format: 'date-time'") ||
+				typeArgs.includes('format:"date-time"')
+			) {
+				return { transformer: 'Date', tsType: 'Date' };
+			}
+			return { transformer: undefined, tsType: 'string' };
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+// ── Effect Schema parser ─────────────────────────────────────────────────────
+
+function fromEffectSchema(src: string, className?: string): string {
+	const blockMatch = src.match(
+		/const\s+(\w+)Schema\s*=\s*Schema\.Struct\(\{([\s\S]*?)\}\)/
+	);
+	if (!blockMatch) {
+		throw new Error(
+			'[QuickModel] fromSchema("effect-schema"): no `Schema.Struct` block found in input. ' +
+				'Provide an Effect Schema source string (e.g. the output of getSchema("effect-schema")).'
+		);
+	}
+
+	const schemaName = blockMatch[1] ?? 'GeneratedModel';
+	const body = blockMatch[2] ?? '';
+	const baseName = className ?? schemaName;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('//')) continue;
+
+		// fieldName: Schema.Type,
+		const fieldMatch = trim.match(/^(\w+):\s*Schema\.(\w+),?$/);
+		if (!fieldMatch) continue;
+
+		const key = fieldMatch[1];
+		const schemaType = fieldMatch[2] ?? '';
+		const { transformer, tsType } = mapEffectType(schemaType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+function mapEffectType(schemaType: string): {
+	transformer: string | undefined;
+	tsType: string;
+} {
+	switch (schemaType) {
+		case 'Number':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'Boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'Date':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'BigIntFromSelf':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'String':
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+// ── Drizzle parser ───────────────────────────────────────────────────────────
+
+function fromDrizzleSchema(src: string, className?: string): string {
+	// extractBracedBlock captures the tableName in group-1 and finds the
+	// balanced column-object body after the comma separator.
+	const parsed = extractBracedBlock(
+		src,
+		/pgTable\s*\(\s*['"](\w+)['"]\s*,\s*/
+	);
+	if (!parsed) {
+		throw new Error(
+			'[QuickModel] fromSchema("drizzle"): no `pgTable` block found in input. ' +
+				'Provide a Drizzle schema source string (e.g. the output of getSchema("drizzle")).'
+		);
+	}
+
+	const tableName = parsed.name;
+	const body = parsed.body;
+	const baseName = className ?? tableNameToClassName(tableName);
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const line of body.split('\n')) {
+		const trim = line.trim();
+		if (!trim || trim.startsWith('//')) continue;
+
+		// fieldName: columnFunction('col_name', ...).notNull(),
+		const fieldMatch = trim.match(/^(\w+):\s*(\w+)\s*\(/);
+		if (!fieldMatch) continue;
+
+		const key = fieldMatch[1];
+		const colFn = fieldMatch[2] ?? '';
+		const { transformer, tsType } = mapDrizzleColumnType(colFn);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+/** Converts a snake_case table name to a PascalCase singular class name. */
+function tableNameToClassName(tableName: string): string {
+	const singular = tableName.endsWith('s')
+		? tableName.slice(0, -1)
+		: tableName;
+	return singular
+		.split('_')
+		.map((part) =>
+			part.length > 0 ? part[0]!.toUpperCase() + part.slice(1) : ''
+		)
+		.join('');
+}
+
+function mapDrizzleColumnType(colFn: string): {
+	transformer: string | undefined;
+	tsType: string;
+} {
+	switch (colFn) {
+		case 'integer':
+		case 'serial':
+		case 'smallint':
+		case 'decimal':
+		case 'numeric':
+		case 'real':
+		case 'doublePrecision':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'boolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'timestamp':
+		case 'date':
+		case 'time':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'bigint':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'jsonb':
+		case 'json':
+			return { transformer: '[String]', tsType: 'string[]' };
+		case 'varchar':
+		case 'text':
+		case 'char':
+		case 'uuid':
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
+// ── Mongo schema parser ──────────────────────────────────────────────────────
+
+function fromMongoSchema(
+	schema: Record<string, unknown>,
+	className?: string
+): string {
+	const baseName = className ?? 'GeneratedModel';
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const [key, rawEntry] of Object.entries(schema)) {
+		const entry = rawEntry as Record<string, unknown>;
+		const fieldType = entry['type'];
+		const { transformer, tsType } = mapMongoType(fieldType);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+function mapMongoType(fieldType: unknown): {
+	transformer: string | undefined;
+	tsType: string;
+} {
+	if (Array.isArray(fieldType)) {
+		// Array type: [String], [Number], etc.
+		const inner = fieldType[0];
+		if (inner === Number)
+			return { transformer: '[Number]', tsType: 'number[]' };
+		if (inner === Boolean)
+			return { transformer: '[Boolean]', tsType: 'boolean[]' };
+		if (inner === Date) return { transformer: '[Date]', tsType: 'Date[]' };
+		return { transformer: '[String]', tsType: 'string[]' };
+	}
+	if (fieldType === Number)
+		return { transformer: 'Number', tsType: 'number' };
+	if (fieldType === Boolean)
+		return { transformer: 'Boolean', tsType: 'boolean' };
+	if (fieldType === Date) return { transformer: 'Date', tsType: 'Date' };
+	return { transformer: undefined, tsType: 'string' };
+}
+
+// ── Zod schema parser ─────────────────────────────────────────────────────────
+
+function fromZodSchema(
+	schema: import('zod').z.ZodObject<any>,
+	className?: string
+): string {
+	const baseName = className ?? 'GeneratedModel';
+
+	const shape = (schema as any).shape as Record<string, any>;
+
+	const decoratorLines: string[] = [];
+	const interfaceLines: string[] = [];
+	const declareLines: string[] = [];
+
+	for (const [key, field] of Object.entries(shape)) {
+		const def = field._def as Record<string, any>;
+		const typeName: string = (def['typeName'] as string) ?? '';
+		const { transformer, tsType } = mapZodType(typeName, def);
+
+		if (transformer !== undefined) {
+			decoratorLines.push(`\t${key}: ${transformer}`);
+		}
+		interfaceLines.push(`\t${key}: ${tsType};`);
+		declareLines.push(`\tdeclare ${key}: ${tsType};`);
+	}
+
+	return renderQModelClass({
+		className: baseName,
+		interfaceLines,
+		decoratorLines,
+		declareLines,
+	});
+}
+
+function mapZodType(
+	typeName: string,
+
+	def: Record<string, any>
+): { transformer: string | undefined; tsType: string } {
+	switch (typeName) {
+		case 'ZodNumber':
+			return { transformer: 'Number', tsType: 'number' };
+		case 'ZodBoolean':
+			return { transformer: 'Boolean', tsType: 'boolean' };
+		case 'ZodDate':
+			return { transformer: 'Date', tsType: 'Date' };
+		case 'ZodBigInt':
+			return { transformer: 'BigInt', tsType: 'bigint' };
+		case 'ZodArray': {
+			const innerDef = def['type']?._def as
+				| Record<string, any>
+				| undefined;
+			const innerType = (innerDef?.['typeName'] as string) ?? '';
+			const inner = mapZodType(innerType, innerDef ?? {});
+			const wrapperTransformer =
+				inner.transformer !== undefined
+					? `[${inner.transformer}]`
+					: '[String]';
+			return {
+				transformer: wrapperTransformer,
+				tsType: `${inner.tsType}[]`,
+			};
+		}
+		case 'ZodString': {
+			const checks: Array<Record<string, unknown>> =
+				(def['checks'] as any[]) ?? [];
+			const hasDatetime = checks.some(
+				(chk) => chk['kind'] === 'datetime'
+			);
+			const hasRegex = checks.some((chk) => chk['kind'] === 'regex');
+			if (hasDatetime) return { transformer: 'Date', tsType: 'Date' };
+			if (hasRegex) return { transformer: 'BigInt', tsType: 'bigint' };
+			return { transformer: undefined, tsType: 'string' };
+		}
+		default:
+			return { transformer: undefined, tsType: 'string' };
+	}
+}
+
 // ── Public service ——————————————————————————————————————————————————————
 
 /**
@@ -507,6 +1055,13 @@ export class SchemaToModelService {
 	 * - `'typescript'` — TypeScript interface source string
 	 * - `'graphql'` — GraphQL SDL `type` block string
 	 * - `'prisma'` — Prisma `model` block string
+	 * - `'valibot'` — Valibot `v.object({…})` source string
+	 * - `'yup'` — Yup `yup.object({…})` source string
+	 * - `'typebox'` — TypeBox `Type.Object({…})` source string
+	 * - `'effect-schema'` — Effect `Schema.Struct({…})` source string
+	 * - `'drizzle'` — Drizzle `pgTable(…)` source string
+	 * - `'mongo'` — Mongoose/Mongo schema object (`Record<string, unknown>`)
+	 * - `'zod'` — Live `ZodObject<any>` instance (produced by `getSchema('zod')`)
 	 *
 	 * @param format - Schema format (must match a supported `IFromSchemaFormat` value)
 	 * @param schema - The schema to convert (type depends on `format`)
@@ -516,6 +1071,11 @@ export class SchemaToModelService {
 	 * @throws {Error} For `'typescript'`: when no `interface` declaration is found in the source.
 	 * @throws {Error} For `'graphql'`: when no `type` block is found in the source.
 	 * @throws {Error} For `'prisma'`: when no `model` block is found in the source.
+	 * @throws {Error} For `'valibot'`: when no `v.object` block is found in the source.
+	 * @throws {Error} For `'yup'`: when no `yup.object` block is found in the source.
+	 * @throws {Error} For `'typebox'`: when no `Type.Object` block is found in the source.
+	 * @throws {Error} For `'effect-schema'`: when no `Schema.Struct` block is found in the source.
+	 * @throws {Error} For `'drizzle'`: when no `pgTable` block is found in the source.
 	 */
 	static fromSchema<T extends IFromSchemaFormat>(
 		format: T,
@@ -573,11 +1133,46 @@ export class SchemaToModelService {
 				return fromPrismaSchema(schema as string, className);
 			}
 
+			case 'valibot': {
+				return fromValibotSchema(schema as string, className);
+			}
+
+			case 'yup': {
+				return fromYupSchema(schema as string, className);
+			}
+
+			case 'typebox': {
+				return fromTypeBoxSchema(schema as string, className);
+			}
+
+			case 'effect-schema': {
+				return fromEffectSchema(schema as string, className);
+			}
+
+			case 'drizzle': {
+				return fromDrizzleSchema(schema as string, className);
+			}
+
+			case 'mongo': {
+				return fromMongoSchema(
+					schema as Record<string, unknown>,
+					className
+				);
+			}
+
+			case 'zod': {
+				return fromZodSchema(
+					schema as import('zod').z.ZodObject<any>,
+					className
+				);
+			}
+
 			default: {
 				const exhaustive: never = format;
 				throw new Error(
 					`[QuickModel] fromSchema: unsupported format '${exhaustive as string}'. ` +
-						`Supported: json, openapi, ajv, typescript, graphql, prisma.`
+						`Supported: json, openapi, ajv, typescript, graphql, prisma, ` +
+						`valibot, yup, typebox, effect-schema, drizzle, mongo, zod.`
 				);
 			}
 		}

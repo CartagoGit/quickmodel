@@ -225,7 +225,7 @@ describe('QExportJsonSchemaTool — additional paths', () => {
 		const schema = result.schema as Record<string, unknown>;
 		expect(schema['type']).toBe('object');
 		expect(Object.keys(schema['properties'] as object)).toHaveLength(0);
-		expect((schema['required'] as unknown[]).length).toBe(0);
+		expect((schema['required'] as unknown[]).length).toBe(0); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	it('should default unknown type to string in json schema', async () => {

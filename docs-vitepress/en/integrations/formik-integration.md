@@ -254,9 +254,9 @@ async function asyncValidate(values: Partial<IRegistrationForm>) {
 // <Formik validate={asyncValidate} ...>
 ```
 
-## 7. `validationReport()` — Rule Traceability
+## 7. `$qValidationReport()` — Rule Traceability
 
-`validationReport()` returns a complete per-field breakdown of every rule applied:
+`$qValidationReport()` returns a complete per-field breakdown of every rule applied:
 
 ```typescript
 const dto = new RegistrationDto({ ... });
@@ -271,7 +271,7 @@ This is useful for showing inline progress indicators (e.g., a password strength
 - `qCheckRules(dto)` → Formik `validate` prop (returns `{}` for valid)
 - `qCheckRulesByGroup(dto)['step']` → per-step wizard validation
 - `@QRule(async ...)` + `qCheckRulesAsync(dto)` → async Formik validate
-- `getFormSchema()` → dynamic `<Field>` generation
-- `validationReport()` → per-rule traceability (password meters, etc.)
+- `$qGetFormSchema()` → dynamic `<Field>` generation
+- `$qValidationReport()` → per-rule traceability (password meters, etc.)
 - `coercionStrategy: 'loose'` → handles HTML string inputs automatically
 - No `zodResolver` or `yupResolver` needed

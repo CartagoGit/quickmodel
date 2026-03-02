@@ -14,8 +14,9 @@
  * ```typescript
  * const service = new IntegrityService();
  *
- * class User extends QuickModel<IUser> {
- *   @QType('date') birthDate!: Date;
+ * @Quick({ birthDate: Date })
+ * class User extends QModel<IUser> {
+ *   declare birthDate: Date;
  * }
  *
  * const user = new User({ birthDate: "invalid" });

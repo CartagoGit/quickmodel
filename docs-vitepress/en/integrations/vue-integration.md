@@ -7,7 +7,7 @@ QuickModel integrates with **Vue 3** and **Nuxt** through the Composition API. U
 | Use case                        | Approach                                    |
 | ------------------------------- | ------------------------------------------- |
 | Composition API form validation | Plain TS class + `@QRule` + `qCheckRules()` |
-| Pinia store state               | `QModel` + `copy()` (immutable actions)     |
+| Pinia store state               | `QModel` + `$qCopy()` (immutable actions)   |
 | VeeValidate adapter             | `qCheckRules()` as field-level validator    |
 | Nuxt server routes / API        | `QModel` + `unknownPropertyPolicy: 'strip'` |
 
@@ -89,7 +89,7 @@ function onSubmit() {
 ::: tip Two available patterns
 
 - **Plain class** (above): `@QRule` + `@QField` only — no `QModel` inheritance required.
-- **With `QModel` + `@Quick`** (below): also unlocks `copy()`, `serialize()`, `checkIntegrity()`, and `diff()`.
+- **With `QModel` + `@Quick`** (below): also unlocks `$qCopy()`, `$qSerialize()`, `$qCheckIntegrity()`, and `$qDiff()`.
   :::
 
 ### With QModel + @Quick
@@ -196,7 +196,7 @@ export const useArticleStore = defineStore('articles', {
 		updateArticle(id: string, patch: Partial<IArticle>) {
 			const article = this.articles.get(id);
 			if (!article) return;
-			// copy() is IMMUTABLE — always capture the new instance
+			// $qCopy() is IMMUTABLE — always capture the new instance
 			const updated = article.$qCopy(patch);
 			this.articles.set(id, updated);
 		},
@@ -204,8 +204,8 @@ export const useArticleStore = defineStore('articles', {
 });
 ```
 
-::: warning copy() is immutable
-Always assign the result of `copy()` back to the store. The original model is never mutated.
+::: warning `$qCopy()` is immutable
+Always assign the result of `$qCopy()` back to the store. The original model is never mutated.
 :::
 
 ## VeeValidate Adapter
@@ -319,7 +319,7 @@ export default defineEventHandler(async (event) => {
 });
 ```
 
-## diff() — Change Detection for Optimistic UI
+## `$qDiff()` — Change Detection for Optimistic UI
 
 ```typescript
 const original = new ArticleModel({ ... });
@@ -367,7 +367,7 @@ import { reactive, toRaw } from 'vue';
 const user = new User({ name: 'Alice', createdAt: '2024-01-01' });
 const reactiveUser = reactive(user);
 
-// ❌ Avoid — `this` inside serialize() resolves to the Proxy
+// ❌ Avoid — `this` inside $qSerialize() resolves to the Proxy
 const data = reactiveUser.$qSerialize();
 
 // ✅ Correct — toRaw() returns the unwrapped original instance
@@ -428,7 +428,7 @@ console.log(user.address?.city); // 'Barcelona'
 
 ### Pinia store — recommended pattern
 
-Pinia state is automatically reactive. Use `toRaw()` inside actions before calling `copy()` so QuickModel's internal `this` is always the real instance:
+Pinia state is automatically reactive. Use `toRaw()` inside actions before calling `$qCopy()` so QuickModel's internal `this` is always the real instance:
 
 ```typescript
 // stores/articles.ts
@@ -436,8 +436,8 @@ actions: {
   updateArticle(id: string, partial: Partial<IArticle>) {
     const prev = this.articles.get(id);
     if (!prev) return;
-    // toRaw() → unwrap from reactive proxy before calling copy()
-    // copy() → returns a new instance; Pinia detects the reference change
+    // toRaw() → unwrap from reactive proxy before calling $qCopy()
+    // $qCopy() → returns a new instance; Pinia detects the reference change
     this.articles.set(id, toRaw(prev).$qCopy(partial) as ArticleModel);
   },
 },

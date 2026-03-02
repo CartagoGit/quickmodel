@@ -186,7 +186,7 @@ export interface IQConfig {
 			 *
 			 * Available events:
 			 * - `'construction'`  — model instance created (`new MyModel(data)`)
-			 * - `'serialize'`     — `model.serialize()` called
+			 * - `'serialize'`     — `model.$qSerialize()` called
 			 * - `'deserialize'`   — data hydration per field
 			 * - `'rule-pass'`     — a `@QRule` predicate returned `true`
 			 * - `'rule-fail'`     — a `@QRule` predicate returned `false`
@@ -298,6 +298,51 @@ export interface IQConfig {
 		 * @returns The translated string (or the original key as fallback).
 		 */
 		resolver?: (key: string) => string;
+	};
+
+	/**
+	 * Global history trail defaults.
+	 *
+	 * Applies to **every** model that does not provide its own `@Quick({}, { history })` config.
+	 * Class-level config takes precedence over this global default.
+	 *
+	 * @example
+	 * ```typescript
+	 * QConfig.configure({
+	 *   history: { enabled: false, maxEntries: 500 },
+	 * });
+	 * ```
+	 */
+	history?: {
+		/** Whether history recording is active globally. Default: `false`. */
+		enabled?: boolean;
+		/** Maximum number of history entries to retain per instance. Default: `500`. */
+		maxEntries?: number;
+		/**
+		 * Recording granularity: `'operation'` (one entry per call, default)
+		 * or `'field'` (one entry per changed field).
+		 */
+		recordMode?: 'operation' | 'field';
+	};
+
+	/**
+	 * Global audit trail defaults.
+	 *
+	 * Applies to **every** model that does not provide its own `@Quick({}, { audit })` config.
+	 * Class-level config takes precedence over this global default.
+	 *
+	 * @example
+	 * ```typescript
+	 * QConfig.configure({
+	 *   audit: { enabled: false, maxEntries: 500 },
+	 * });
+	 * ```
+	 */
+	audit?: {
+		/** Whether audit recording is active globally. Default: `false`. */
+		enabled?: boolean;
+		/** Maximum number of audit entries to retain per instance. Default: `500`. */
+		maxEntries?: number;
 	};
 }
 
@@ -489,8 +534,6 @@ export class QModelConfigService {
  * @example
  * **1. Enable Strict Mode Globally**
  * ```typescript
- * import { QConfig } from 'quickmodel';
- *
  * // Reject any property not defined in the model
  * QConfig.configure({
  *   defaults: {

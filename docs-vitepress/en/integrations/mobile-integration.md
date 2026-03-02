@@ -4,17 +4,17 @@ QuickModel works seamlessly in mobile development environments including React N
 
 ## Key Patterns
 
-| Pattern                     | QuickModel API                             |
-| --------------------------- | ------------------------------------------ |
-| TextInput coercion          | `coercionStrategy: 'loose'` in `@Quick()`  |
-| Persist to AsyncStorage     | `dto.$qSerialize()` → `JSON.stringify()`   |
-| Rehydrate from storage      | `new MyDto(JSON.parse(stored))`            |
-| Capacitor Preferences + TTL | `serialize()` + timestamp in stored object |
-| Dynamic form rendering      | `dto.$qGetFormSchema()`                    |
-| Validate before native API  | `qCheckRules()` / `qCheckRulesAsync()`     |
-| Immutable state updates     | `dto.$qCopy({ field: value })`             |
-| Change detection            | `dto.$qIsDirty()`                          |
-| Bulk list population        | `MyDto.createMany(apiArray)`               |
+| Pattern                     | QuickModel API                               |
+| --------------------------- | -------------------------------------------- |
+| TextInput coercion          | `coercionStrategy: 'loose'` in `@Quick()`    |
+| Persist to AsyncStorage     | `dto.$qSerialize()` → `JSON.stringify()`     |
+| Rehydrate from storage      | `new MyDto(JSON.parse(stored))`              |
+| Capacitor Preferences + TTL | `$qSerialize()` + timestamp in stored object |
+| Dynamic form rendering      | `dto.$qGetFormSchema()`                      |
+| Validate before native API  | `qCheckRules()` / `qCheckRulesAsync()`       |
+| Immutable state updates     | `dto.$qCopy({ field: value })`               |
+| Change detection            | `dto.$qIsDirty()`                            |
+| Bulk list population        | `MyDto.createMany(apiArray)`                 |
 
 ## Installation
 
@@ -223,7 +223,7 @@ async function loadIfFresh(): Promise<AppSettingsDto | null> {
 
 ## Ionic
 
-### Dynamic Fields with `getFormSchema()`
+### Dynamic Fields with `$qGetFormSchema()`
 
 ```typescript
 const dto = new UserProfileDto({

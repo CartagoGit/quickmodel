@@ -20,8 +20,8 @@
  *   const user = new User({ age: 'not-a-number' });
  * } catch (err) {
  *   if (err instanceof QModelError) {
- *     console.log(err.context?.propertyKey); // 'age'
- *     console.log(err.context?.expectedType); // 'number'
+ *     err.context?.propertyKey;  // → 'age'
+ *     err.context?.expectedType; // → 'number'
  *   }
  * }
  * ```

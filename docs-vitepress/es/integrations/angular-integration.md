@@ -7,7 +7,7 @@ QuickModel funciona como capa de validación y tipo en cualquier versión de Ang
 | Caso de uso              | Solución QuickModel                      |
 | ------------------------ | ---------------------------------------- |
 | Reactive Forms           | Clase plana + `qCheckRules()`            |
-| Servicios / Repositorios | `QModel` + `copy()` inmutable            |
+| Servicios / Repositorios | `QModel` + `$qCopy()` inmutable          |
 | Signals                  | `signal(new Model(data))` + `update()`   |
 | Interceptores HTTP       | DTO con `unknownPropertyPolicy: 'strip'` |
 | Validación asíncrona     | `@QRule` async + `qCheckRulesAsync()`    |
@@ -60,7 +60,7 @@ export class UserFormComponent {
 ::: tip Dos patrones disponibles
 
 - **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`. Ideal para Reactive Forms con validación pura.
-- **Con `QModel` + `@Quick`** (abajo): añade coerción de tipos, `copy()` inmutable, `serialize()` y `@QComputed`. Ideal para servicios, repositorios e interceptores HTTP.
+- **Con `QModel` + `@Quick`** (abajo): añade coerción de tipos, `$qCopy()` inmutable, `$qSerialize()` y `@QComputed`. Ideal para servicios, repositorios e interceptores HTTP.
   :::
 
 ## Servicio con QModel
@@ -99,7 +99,7 @@ export class UserDataService {
 	update(id: string, patch: Partial<IUser>): boolean {
 		const record = this.store.get(id);
 		if (!record) return false;
-		// copy() es INMUTABLE — captura la nueva instancia
+		// $qCopy() es INMUTABLE — captura la nueva instancia
 		const updated = record.$qCopy(patch);
 		this.store.set(id, updated);
 		return true;
@@ -118,7 +118,7 @@ export class ProfileComponent {
 
   updateFollowers(count: number): void {
     this.profile.update(prev => prev.$qCopy({ followers: count }));
-    //                              ↑ copy() devuelve nueva instancia
+    //                              ↑ $qCopy() devuelve nueva instancia
   }
 
   isBioDirty(): boolean {
@@ -129,22 +129,22 @@ export class ProfileComponent {
 }
 ```
 
-### `copy()` vs `patch()` — distinción crítica para señales
+### `$qCopy()` vs `$qPatch()` — distinción crítica para señales
 
-| Método           | Retorna                | ¿Dispara Change Detection? | Uso con señales |
-| ---------------- | ---------------------- | -------------------------- | --------------- |
-| `copy(partial)`  | Nueva instancia        | ✅ Sí — nueva referencia   | ✅ Siempre      |
-| `patch(partial)` | `void` (muta in-place) | ❌ No                      | ❌ Nunca        |
+| Método             | Retorna                | ¿Dispara Change Detection? | Uso con señales |
+| ------------------ | ---------------------- | -------------------------- | --------------- |
+| `$qCopy(partial)`  | Nueva instancia        | ✅ Sí — nueva referencia   | ✅ Siempre      |
+| `$qPatch(partial)` | `void` (muta in-place) | ❌ No                      | ❌ Nunca        |
 
 ```typescript
-// ❌ Anti-patrón: patch() muta in-place, la versión de la señal NO incrementa
+// ❌ Anti-patrón: $qPatch() muta in-place, la versión de la señal NO incrementa
 //    El template de Angular NO se re-renderiza
 signal.update((model) => {
 	model.$qPatch({ score: 98 }); // void — instancia original mutada
 	return model; // misma referencia → sin change detection
 });
 
-// ✅ Correcto: copy() devuelve nueva instancia → incrementa versión → re-render
+// ✅ Correcto: $qCopy() devuelve nueva instancia → incrementa versión → re-render
 signal.update((model) => model.$qCopy({ score: 98 }));
 ```
 
@@ -195,7 +195,7 @@ export function reactiveModel<T extends QModel<any>>(
 		},
 		set(_, key, value) {
 			if (typeof key !== 'string') return false;
-			// copy() → nueva instancia → nueva referencia → Angular detecta el cambio
+			// $qCopy() → nueva instancia → nueva referencia → Angular detecta el cambio
 			sig.update((mdl) => mdl.$qCopy({ [key]: value } as Partial<T>));
 			return true;
 		},
@@ -234,7 +234,7 @@ export class CartComponent {
 3. Angular detecta la nueva referencia y programa un re-render.
 4. Cada lectura `this.cart.total` activa el trap `get`, que lee de `sig()` — siempre el valor más reciente.
 
-**Contrapartida:** cada asignación crea una nueva instancia del modelo mediante `copy()`. Para actualizaciones de alta frecuencia (eventos de puntero, audio...) agrupa los cambios en una sola llamada `$signal.update(m => m.$qCopy({...}))`.
+**Contrapartida:** cada asignación crea una nueva instancia del modelo mediante `$qCopy()`. Para actualizaciones de alta frecuencia (eventos de puntero, audio...) agrupa los cambios en una sola llamada `$signal.update(m => m.$qCopy({...}))`.
 :::
 
 ### `computed()` — estado derivado desde una señal de modelo
@@ -262,7 +262,7 @@ console.log(payload().updatedAt); // string ISO — Date serializado
 
 ### Los tipos complejos (Date, Set, BigInt) sobreviven a los updates de señal
 
-`copy()` ejecuta el pipeline completo de deserialización de QuickModel. Pasar un `Date` o `Set` directamente en el partial preserva el tipo:
+`$qCopy()` ejecuta el pipeline completo de deserialización de QuickModel. Pasar un `Date` o `Set` directamente en el partial preserva el tipo:
 
 ```typescript
 const product = signal(
@@ -346,8 +346,8 @@ const result = await qCheckRulesAsync(dto);
 // result.valid, result.errors
 ```
 
-::: tip copy() es inmutable
-`copy()` devuelve una **nueva instancia** — la original no se modifica. Siempre captura el resultado:
+::: tip $qCopy() es inmutable
+`$qCopy()` devuelve una **nueva instancia** — la original no se modifica. Siempre captura el resultado:
 
 ```typescript
 const updated = record.$qCopy({ score: 90 });

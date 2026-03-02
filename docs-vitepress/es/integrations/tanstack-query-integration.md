@@ -1,8 +1,8 @@
 # Integración con TanStack Query
 
 QuickModel encaja de forma natural con TanStack Query v5. Usa `createMany()` en `queryFn` para
-convertir respuestas de la API en DTOs con tipos, `copy()` para actualizaciones optimistas y
-`serialize()` para normalización de caché.
+convertir respuestas de la API en DTOs con tipos, `$qCopy()` para actualizaciones optimistas y
+`$qSerialize()` para normalización de caché.
 
 ## Patrones Clave
 
@@ -133,7 +133,7 @@ async function crearProducto(data: object): Promise<IProducto> {
 
 ::: tip Dos patrones disponibles
 
-- **`QModel` + `@Quick`** (arriba): coerción automática de tipos, `serialize()` y `@QComputed`. Ideal cuando la API o el formulario envían strings que deben convertirse a números/booleanos.
+- **`QModel` + `@Quick`** (arriba): coerción automática de tipos, `$qSerialize()` y `@QComputed`. Ideal cuando la API o el formulario envían strings que deben convertirse a números/booleanos.
 - **Clase plana** (abajo): solo `@QRule` — sin herencia. Si los tipos ya son correctos, es suficiente.
   :::
 
@@ -172,9 +172,9 @@ async function crearProductoSimple(data: object): Promise<IProducto> {
 }
 ```
 
-## Actualizaciones Optimistas con copy()
+## Actualizaciones Optimistas con `$qCopy()`
 
-`copy()` devuelve una **nueva instancia inmutable** — ideal para actualizaciones optimistas
+`$qCopy()` devuelve una **nueva instancia inmutable** — ideal para actualizaciones optimistas
 sin mutar el caché directamente.
 
 ```typescript
@@ -206,12 +206,12 @@ const mutation = useMutation({
 });
 ```
 
-`copy()` retorna una nueva instancia con `isDirty() === false` — el estado copiado es el nuevo baseline. Eso facilita detectar cambios
+`$qCopy()` retorna una nueva instancia con `$qIsDirty() === false` — el estado copiado es el nuevo baseline. Eso facilita detectar cambios
 pendientes antes de persistirlos.
 
 ## Normalización de Caché
 
-Guarda `serialize()` en el caché y rehidrata con `new Dto()`:
+Guarda `$qSerialize()` en el caché y rehidrata con `new Dto()`:
 
 ```typescript
 // Serializar antes de guardar
@@ -223,9 +223,9 @@ const raw = queryClient.getQueryData(['producto', id]);
 const producto = new ProductoDto(raw);
 ```
 
-## Detección de Cambios con isDirty()
+## Detección de Cambios con `$qIsDirty()`
 
-Usa `isDirty()` para omitir llamadas a la API innecesarias cuando no hay cambios locales:
+Usa `$qIsDirty()` para omitir llamadas a la API innecesarias cuando no hay cambios locales:
 
 ```typescript
 async function sincronizarSiHayCambios(dto: ProductoDto) {
@@ -234,7 +234,7 @@ async function sincronizarSiHayCambios(dto: ProductoDto) {
 		method: 'PATCH',
 		body: JSON.stringify(dto.$qSerialize()),
 	});
-	dto.reset(); // limpiar estado sucio tras guardar
+	dto.$qReset(); // limpiar estado sucio tras guardar
 }
 ```
 

@@ -29,7 +29,7 @@ Cuando hay varios agentes AI trabajando en el mismo workspace (p. ej. tres venta
 ```json
 {
 	"agentId": "copilot-session-1",
-	"task": "migrar docs al namespace $qm",
+	"task": "actualizar guias de documentacion",
 	"files": ["docs-vitepress/en/**", "docs-vitepress/es/**"],
 	"startedAt": "2026-03-01T10:00:00.000Z",
 	"updatedAt": "2026-03-01T10:04:30.000Z",
@@ -101,7 +101,7 @@ Función clave: `patternsOverlap(patA, patB)` → conservadora (prefiere falso p
 
 ## Protocolo para mass-renames y refactors amplios
 
-Un mass-rename (p. ej. renombrar `.$qm` → `.$q*` en todo el proyecto) puede tocar cientos de archivos en `src/`, `tests/` y `docs-vitepress/` simultáneamente. Es el caso **más peligroso** de conflicto entre agentes: si dos agentes hacen el mismo rename en paralelo, el último en escribir sobrescribe al primero y el código queda corrupto.
+Un mass-rename (p. ej. renombrar métodos legacy a prefijo `$q*` en todo el proyecto) puede tocar cientos de archivos en `src/`, `tests/` y `docs-vitepress/` simultáneamente. Es el caso **más peligroso** de conflicto entre agentes: si dos agentes hacen el mismo rename en paralelo, el último en escribir sobrescribe al primero y el código queda corrupto.
 
 ### Protocolo obligatorio para refactors amplios
 
@@ -115,7 +115,7 @@ agent_coordinate check
 #    - Si sus archivos NO solapan → puedes proceder, pero avísales
 
 # 3. Reclama TODO el scope → nunca infra-reclames en operaciones amplias
-agent_coordinate claim agentId="agent-A" task="rename .$qm to .$q* everywhere" \
+agent_coordinate claim agentId="agent-A" task="rename legacy methods to $q* everywhere" \
   files=["src/**","tests/**","docs-vitepress/**"] \
   ttlMs=1800000
 

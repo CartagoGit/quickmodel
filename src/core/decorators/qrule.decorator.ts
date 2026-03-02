@@ -218,8 +218,8 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
 /**
  * Attaches a business-logic rule to a model property.
  *
- * Rules are evaluated by `model.$qm.checkRules()` / `model.$qm.checkRulesAsync()` and
- * are completely independent of `checkIntegrity()` (transformer-level checks).
+ * Rules are evaluated by `model.$qCheckRules()` / `model.$qCheckRulesAsync()` and
+ * are completely independent of `$qCheckIntegrity()` (transformer-level checks).
  * Multiple `@QRule` decorators on the same property are **all** evaluated and
  * all failures are reported.
  *
@@ -305,7 +305,7 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
  * }
  *
  * const user = new User({ name: 'Jo', age: -1 });
- * const result = user.$qm.checkRules();
+ * const result = user.$qCheckRules();
  * // result.valid === false
  * // result.errors → [{ field: 'name', … }, { field: 'age', … }]
  * ```

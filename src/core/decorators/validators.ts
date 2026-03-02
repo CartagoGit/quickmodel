@@ -38,9 +38,6 @@ import { QRule } from './qrule.decorator';
  *
  * @example
  * ```typescript
- * import { Quick, QModel } from 'quickmodel';
- * import { IsEmail, Min, MaxLength } from 'quickmodel';
- *
  * @Quick({ age: 'number' })
  * class UserForm extends QModel<IUserForm> {
  *   @IsEmail()
@@ -55,7 +52,7 @@ import { QRule } from './qrule.decorator';
  * }
  *
  * const form = new UserForm({ email: 'bad', age: 15, username: 'alice' });
- * const { valid, errors } = form.$qm.checkRules();
+ * const { valid, errors } = form.$qCheckRules();
  * // valid  → false
  * // errors → [{ field: 'email', … }, { field: 'age', … }]
  * ```

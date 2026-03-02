@@ -6,12 +6,12 @@ QuickModel provides a secure, typed data layer for Electron applications. It han
 
 ```
 Renderer (untrusted)                     Main (trusted)
-  QModel DTO  ──► serialize() ──► IPC ──► new Dto(payload)
-                                           checkRules()
+  QModel DTO  ──► $qSerialize() ──► IPC ──► new Dto(payload)
+                                           $qCheckRules()
                                            persist to disk/DB
 ```
 
-## IPC boundary — serialize() / populate()
+## IPC boundary — `$qSerialize()` / `new Dto()`
 
 ```typescript
 import { QModel, Quick, QRule, QField } from 'quickmodel';
@@ -177,9 +177,9 @@ const { instances } = FileRecordDto.createMany(files as IFileRecord[]);
 const images = instances.filter((f) => f.isImage); // @QComputed
 ```
 
-## isDirty() — unsaved-changes confirmation dialog
+## `$qIsDirty()` — unsaved-changes confirmation dialog
 
-Use `isDirty()` in the renderer to prompt the user before closing a window with unsaved changes:
+Use `$qIsDirty()` in the renderer to prompt the user before closing a window with unsaved changes:
 
 ```typescript
 // renderer.ts
@@ -240,5 +240,5 @@ class FileRecordDto extends QModel<IFileRecord> {
 const dto = new FileRecordDto(file);
 // dto.sizeKb → displayed in table column
 // dto.isImage → shown in thumbnail view
-// Neither is persisted via toInterface()
+// Neither is persisted via $qToInterface()
 ```

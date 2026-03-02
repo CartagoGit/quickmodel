@@ -4,16 +4,16 @@ QuickModel funciona junto a Drizzle ORM como una capa DTO con tipado fuerte entr
 
 ## Patrones Clave
 
-| Patrón                    | API QuickModel                                                                        |
-| ------------------------- | ------------------------------------------------------------------------------------- |
-| Mapear fila Drizzle a DTO | `new UserRowDto(row)` — elimina join artifacts, `updatedAt`, `deletedAt`, etc.        |
-| Validar input de creación | `qCheckRules(new CreateUserDto(formData))`                                            |
-| Seed masivo / importación | `UserRowDto.createMany(seedData)`                                                     |
-| Abstracción repositorio   | `repo.insert(dto)` → `dto.$qToInterface()` → `db.insert(users).values(...)`             |
-| Actualización parcial     | `existing.$qCopy({ score: 100 })` → `db.update(users).set({ score: 100 })`              |
-| Campo derivado            | `@QComputed() get slug()` — incluido en `serialize()`, excluido de `toInterface()`    |
-| Validación unicidad en DB | `qCheckRulesAsync()` con regla async que llama a `db.select().from(users).where(...)` |
-| Drizzle timestamp → Date  | `createdAt: Date` en `@Quick()` — ISO strings transformadas automáticamente           |
+| Patrón                    | API QuickModel                                                                         |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Mapear fila Drizzle a DTO | `new UserRowDto(row)` — elimina join artifacts, `updatedAt`, `deletedAt`, etc.         |
+| Validar input de creación | `qCheckRules(new CreateUserDto(formData))`                                             |
+| Seed masivo / importación | `UserRowDto.createMany(seedData)`                                                      |
+| Abstracción repositorio   | `repo.insert(dto)` → `dto.$qToInterface()` → `db.insert(users).values(...)`            |
+| Actualización parcial     | `existing.$qCopy({ score: 100 })` → `db.update(users).set({ score: 100 })`             |
+| Campo derivado            | `@QComputed() get slug()` — incluido en `$qSerialize()`, excluido de `$qToInterface()` |
+| Validación unicidad en DB | `qCheckRulesAsync()` con regla async que llama a `db.select().from(users).where(...)`  |
+| Drizzle timestamp → Date  | `createdAt: Date` en `@Quick()` — ISO strings transformadas automáticamente            |
 
 ## Configuración del Modelo
 
@@ -175,7 +175,7 @@ const { instances, errors } = UserRowDto.createMany(seedData);
 await db.insert(users).values(
 	instances.map((dto) => ({
 		...dto.$qToInterface(),
-		// toInterface() serializa Date → ISO string, compatible con columnas timestamp de Drizzle
+		// $qToInterface() serializa Date → ISO string, compatible con columnas timestamp de Drizzle
 	}))
 );
 ```
@@ -241,9 +241,9 @@ class ProductDto extends QModel<IProduct> {
 }
 ```
 
-## Actualizaciones Parciales con `copy()`
+## Actualizaciones Parciales con `$qCopy()`
 
-`copy()` crea una nueva instancia inmutable — pasa solo los campos cambiados a `db.update().set()`:
+`$qCopy()` crea una nueva instancia inmutable — pasa solo los campos cambiados a `db.update().set()`:
 
 ```typescript
 const [row] = await db.select().from(users).where(eq(users.id, id));
@@ -260,7 +260,7 @@ await db
 
 ## Campos Derivados con `@QComputed`
 
-Los campos computados se incluyen en `serialize()` pero se excluyen de `toInterface()` — **nunca se almacenan** en Drizzle:
+Los campos computados se incluyen en `$qSerialize()` pero se excluyen de `$qToInterface()` — **nunca se almacenan** en Drizzle:
 
 ```typescript
 @Quick(
@@ -418,7 +418,41 @@ const tables = models.map((M) => M.getSchema('drizzle')).join('\n\n');
 fs.writeFileSync('src/db/schema.generated.ts', tables);
 ```
 
-> **Nota:** `fromSchema('drizzle', ...)` aún no está soportado. Usa `fromSchema('typescript', ...)` con una interfaz TypeScript en su lugar.
+## `fromSchema`: generando una clase QModel desde un schema Drizzle
+
+`QModel.fromSchema('drizzle', ...)` acepta un string fuente de `pgTable(...)` de Drizzle y genera código TypeScript para una clase `QModel`:
+
+```typescript
+import 'quickmodel/schema';
+
+const drizzleSrc = `
+export const users = pgTable('users', {
+  name: varchar('name', { length: 255 }).notNull(),
+  age: integer('age').notNull(),
+  active: boolean('active').notNull(),
+  createdAt: timestamp('created_at').notNull(),
+  amount: bigint('amount', { mode: 'number' }).notNull(),
+});
+`;
+
+const code = QModel.fromSchema('drizzle', drizzleSrc);
+// → el nombre de clase se infiere desde el nombre de la tabla: 'users' → 'User'
+// → string TypeScript con la clase User extends QModel<IUser>
+
+// fs.writeFileSync('src/models/user.model.ts', code);
+```
+
+El nombre de clase se infiere desde el nombre de la tabla en `pgTable`: `'users'` → `User`, `'order_items'` → `OrderItem`. Pasa `className` explícitamente para sobreescribirlo.
+
+## Round-trip: QModel → schema Drizzle → clase QModel
+
+```typescript
+import 'quickmodel/schema';
+
+const drizzleSrc = User.getSchema('drizzle');
+const code = QModel.fromSchema('drizzle', drizzleSrc, 'User');
+// code es TypeScript válido que define class User extends QModel<IUser>
+```
 
 ## Ver también
 

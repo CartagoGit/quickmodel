@@ -14,8 +14,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 		};
 
 		// Mock initData with Wrapper Objects
-		// @quickmodel-rule-ignore: no-as-unknown
 		(model as unknown as Record<string, unknown>)['__initData'] = {
+			// @quickmodel-rule-ignore: no-as-unknown
 			num: new Number(123),
 			str: new String('test'),
 			bool: new Boolean(true),
@@ -39,8 +39,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 			val2: 456n,
 		};
 
-		// @quickmodel-rule-ignore: no-as-unknown
 		(model as unknown as Record<string, unknown>)['__initData'] = {
+			// @quickmodel-rule-ignore: no-as-unknown
 			val1: { __type: 'bigint' }, // Object format
 			val2: '456', // String format
 		};
@@ -60,8 +60,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 		};
 
 		// Simulating the structure
-		// @quickmodel-rule-ignore: no-as-unknown
 		(model as unknown as Record<string, unknown>)['__initData'] = {
+			// @quickmodel-rule-ignore: no-as-unknown
 			root: obj,
 		};
 
@@ -76,8 +76,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 			obj: nullProtoObj,
 		};
 
-		// @quickmodel-rule-ignore: no-as-unknown
 		(model as unknown as Record<string, unknown>)['__initData'] = {
+			// @quickmodel-rule-ignore: no-as-unknown
 			obj: nullProtoObj,
 		};
 
@@ -92,8 +92,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 			reg: /abc/i,
 		};
 
-		// @quickmodel-rule-ignore: no-as-unknown
 		(model as unknown as Record<string, unknown>)['__initData'] = {
+			// @quickmodel-rule-ignore: no-as-unknown
 			reg: '/abc/i',
 		};
 
@@ -101,8 +101,8 @@ describe('ToInterfaceService Coverage Gaps', () => {
 		expect(result.reg).toBe('/abc/i');
 
 		// Case: Object input { source: 'abc', flags: 'i' }
-		// @quickmodel-rule-ignore: no-as-unknown
 		(model as unknown as Record<string, unknown>)['__initData'] = {
+			// @quickmodel-rule-ignore: no-as-unknown
 			reg: { source: 'abc', flags: 'i' },
 		};
 

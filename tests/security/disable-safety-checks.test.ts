@@ -111,14 +111,12 @@ describe('disableSafetyChecks: behavior verification', () => {
 		// The instance gets populated normally...
 		expect(instance.id).toBe(1);
 		// ...but __proto__ injection is blocked
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			(instance as unknown as Record<string, unknown>)['hacked']
+			(instance as unknown as Record<string, unknown>)['hacked'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		// Global Object prototype must not be polluted
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			({} as unknown as Record<string, unknown>)['hacked']
+			({} as unknown as Record<string, unknown>)['hacked'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(warnSpy).toHaveBeenCalledWith(
 			expect.stringContaining('disableSafetyChecks is ENABLED')
@@ -140,8 +138,7 @@ describe('disableSafetyChecks: behavior verification', () => {
 		const instance = new Risky({
 			name: 'ok',
 			constructor: { hacked: true },
-			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing constructor key injection
-		} as unknown as Record<string, unknown>);
+		} as unknown as Record<string, unknown>); // @quickmodel-rule-ignore: no-as-unknown
 		expect(instance.name).toBe('ok');
 		// constructor should not be overwritten with the object value
 		expect(typeof instance.constructor).toBe('function');
@@ -165,12 +162,10 @@ describe('disableSafetyChecks: behavior verification', () => {
 		const instance = new Risky({
 			name: 'ok',
 			prototype: { hacked: true },
-			// @quickmodel-rule-ignore: no-as-unknown — intentional: testing prototype key injection
-		} as unknown as Record<string, unknown>);
+		} as unknown as Record<string, unknown>); // @quickmodel-rule-ignore: no-as-unknown
 		expect(instance.name).toBe('ok');
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			(Risky as unknown as Record<string, unknown>)['hacked']
+			(Risky as unknown as Record<string, unknown>)['hacked'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 		expect(warnSpy).toHaveBeenCalledWith(
 			expect.stringContaining('disableSafetyChecks is ENABLED')

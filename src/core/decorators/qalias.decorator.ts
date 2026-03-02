@@ -53,7 +53,7 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  *   declare lastName: string;
  * }
  *
- * user.serialize().first_name; // ✅ typed correctly
+ * user.$qSerialize().first_name; // ✅ typed correctly
  * ```
  *
  * @example
@@ -66,13 +66,13 @@ export const QALIAS_FIELDS_KEY = '__qalias_fields__';
  *
  * // Input: snake_case payload (e.g. from an API)
  * const user = User.create({ first_name: 'Alice', ... });
- * console.log(user.firstName); // 'Alice'
+ * user.firstName; // → 'Alice'
  *
  * // Output: alias keys
- * user.$qm.serialize(); // { first_name: 'Alice', ... }
+ * user.$qSerialize(); // { first_name: 'Alice', ... }
  *
  * // Roundtrip
- * const copy = User.create(user.$qm.serialize());
+ * const copy = User.create(user.$qSerialize());
  * copy.firstName === 'Alice'; // true
  * ```
  *

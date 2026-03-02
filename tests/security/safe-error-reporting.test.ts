@@ -20,8 +20,7 @@ describe('Security: Unsafe Error Reporting (DoS via Circular References)', () =>
 		// Using raw transformer to isolate the crash
 		expect(() => {
 			transformer.deserialize(
-				// @quickmodel-rule-ignore: no-as-unknown — intentional: malformed payload to trigger error
-				maliciousPayload as unknown as unknown[],
+				maliciousPayload as unknown as unknown[], // @quickmodel-rule-ignore: no-as-unknown
 				'mapField',
 				'TestClass'
 			);

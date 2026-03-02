@@ -46,7 +46,7 @@ describe('Robustness: Custom Transformer Objects in TypeMap', () => {
 		expect(model.secret).toBe('hello world'); // Assert what we WANT
 
 		// Test Serialization
-		// If it works, serialize() should use ReverseStringTransformer.serialize()
+		// If it works, $qSerialize() should use ReverseStringTransformer.serialize()
 		// 'hello world' -> 'dlrow olleh'
 		// Note: toJSON() returns a plain object, access property directly
 		const json = model.toJSON();

@@ -19,7 +19,7 @@ export const QREADONLY_FIELDS_KEY = '__qReadonly_fields__';
  * @example
  * ```typescript
  * try {
- *   order.$qm.copy({ id: 999 });
+ *   order.$qCopy({ id: 999 });
  * } catch (err) {
  *   if (err instanceof ImmutableFieldError) {
  *     console.error(err.field); // 'id'
@@ -65,9 +65,9 @@ export class ImmutableFieldError extends Error {
  * }
  *
  * const order = new Order({ id: 1, status: 'pending' });
- * order.copy({ status: 'shipped' }); // ✅ ok
- * order.copy({ id: 999 });           // ❌ throws ImmutableFieldError
- * order.patch({ id: 999 });          // ❌ throws ImmutableFieldError
+ * order.$qCopy({ status: 'shipped' }); // ✅ ok
+ * order.$qCopy({ id: 999 });           // ❌ throws ImmutableFieldError
+ * order.$qPatch({ id: 999 });          // ❌ throws ImmutableFieldError
  * ```
  *
  * @see {@link ImmutableFieldError} — error thrown on readonly violation

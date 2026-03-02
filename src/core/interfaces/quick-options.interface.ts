@@ -23,6 +23,8 @@ import type {
 } from '../config/quick.config';
 import { IQCaseOptions } from '../types/case.type';
 import type { IQSpoofMethod } from '../types/form-data.type';
+import type { IHistoryConfig } from './history.interface';
+import type { IAuditConfig } from './audit.interface';
 
 /**
  * Extract constructor types from IQSpec or IQSpecs.
@@ -426,7 +428,7 @@ export interface IQAdvancedOptions<
 	 *
 	 * const user = new User({ first_name: 'Alice', last_name: 'Smith' });
 	 * user.firstName;             // 'Alice'
-	 * user.serialize().first_name; // 'Alice' — typed correctly ✅
+	 * user.$qSerialize().first_name; // 'Alice' — typed correctly ✅
 	 * ```
 	 */
 	alias?: Record<string, string>;
@@ -649,4 +651,83 @@ export interface IQAdvancedOptions<
 		 */
 		disableSafetyChecks?: boolean;
 	};
+
+	/**
+	 * History trail configuration for this model class.
+	 *
+	 * When `enabled: true`, every `$qPatch()`, `$qCopy()`, and `$qFrom()` call
+	 * records a chronological mutation log accessible via `instance.$qHistory`.
+	 *
+	 * The constructor is **not** recorded — only mutations are tracked.
+	 * When disabled (the default), no overhead is incurred: `$qHistory` returns
+	 * a no-op `NullHistoryHandle` and the internal array is never allocated.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({ name: 'string' }, { history: { enabled: true, maxEntries: 50 } })
+	 * class Contract extends QModel<IContract> {
+	 *   declare name: string;
+	 * }
+	 *
+	 * const c = new Contract({ name: 'v1' });
+	 * c.$qPatch({ name: 'v2' });
+	 * c.$qHistory.value;
+	 * // → [{ method: 'patch', at: Date, changes: { name: { from: 'v1', to: 'v2' } } }]
+	 * ```
+	 *
+	 * @see {@link IHistoryHandle} — the handle returned by `$qHistory`
+	 * @see {@link IHistoryEntry} — shape of each entry
+	 */
+	history?: IHistoryClassConfig;
+
+	/**
+	 * Audit trail configuration for this model class.
+	 *
+	 * When `enabled: true`, every `$qPatch()`, `$qCopy()`, and `$qFrom()` call
+	 * records a per-field chronological audit log accessible via `instance.$qHistory`.
+	 *
+	 * Unlike `history`, which groups all changed fields into one entry per operation,
+	 * `audit` records **one entry per changed field**, providing fine-grained granularity.
+	 *
+	 * The constructor is **not** recorded — only mutations are tracked.
+	 * When disabled (the default), no overhead is incurred: `$qHistory` returns
+	 * a no-op `NullAuditHandle` and the internal array is never allocated.
+	 *
+	 * @example
+	 * ```typescript
+	 * @Quick({ name: String }, { audit: { enabled: true, maxEntries: 50 } })
+	 * class Contract extends QModel<IContract> {
+	 *   declare name: string;
+	 * }
+	 *
+	 * const c = new Contract({ name: 'v1' });
+	 * c.$qPatch({ name: 'v2' });
+	 * c.$qHistory.value;
+	 * // → [{ field: 'name', from: 'v1', to: 'v2', at: Date, method: 'patch' }]
+	 * ```
+	 *
+	 * @see {@link IAuditHandle} — the handle returned by `$qHistory` when audit is enabled
+	 * @see {@link IAuditEntry} — shape of each entry
+	 */
+	audit?: IAuditClassConfig;
+}
+
+/**
+ * Class-level history trail configuration (second parameter of `@Quick()`).
+ *
+ * @see {@link IQAdvancedOptions.history}
+ */
+export interface IHistoryClassConfig extends IHistoryConfig {
+	/** When `true`, the history trail is enabled for this model class. Default: `false`. */
+	enabled?: boolean;
+}
+
+/**
+ * Class-level audit trail configuration (second parameter of `@Quick()`).
+ *
+ * @see {@link IQAdvancedOptions.audit}
+ */
+export interface IAuditClassConfig extends IAuditConfig {
+	/** When `true`, the audit trail is enabled for this model class. Default: `false`. */
+	enabled?: boolean;
 }

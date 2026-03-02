@@ -72,7 +72,7 @@ expect(dto).toBeValidQModel();
 
 ### `toHaveQRuleError(campo, mensaje?)`
 
-Verifica que `checkRules()` produce un error en el campo especificado. Opcionalmente
+Verifica que `qCheckRules()` produce un error en el campo especificado. Opcionalmente
 comprueba el mensaje de error.
 
 ```typescript
@@ -102,7 +102,7 @@ expect(dto).not.toHaveQField('secretoInterno'); // no decorado
 ### `toMatchQModel(esperado)`
 
 Verifica en profundidad que la instancia `QModel` coincide con todas las propiedades de
-`esperado`. Usa `serialize()` para la comparación, por lo que los valores `@QComputed` están incluidos.
+`esperado`. Usa `$qSerialize()` para la comparación, por lo que los valores `@QComputed` están incluidos.
 
 ```typescript
 const dto = new UsuarioDto({ id: '1', nombre: 'Alice', rol: 'admin' });
@@ -111,7 +111,7 @@ expect(dto).toMatchQModel({ id: '1', nombre: 'Alice' }); // coincidencia parcial
 
 ### `toBeIntact()`
 
-Verifica que el modelo no tiene campos sucios — `isDirty()` devuelve `false`. Útil para
+Verifica que el modelo no tiene campos sucios — `$qIsDirty()` devuelve `false`. Útil para
 comprobar que las instancias recién creadas no han sido mutadas accidentalmente.
 
 ```typescript
@@ -134,9 +134,9 @@ expect(dto).toHaveDirtyField('nombre');
 expect(dto).not.toHaveDirtyField('id');
 ```
 
-> **Nota**: `toHaveDirtyField` usa `isDirty(campo)` que solo rastrea campos mutados
+> **Nota**: `toHaveDirtyField` usa `$qIsDirty(campo)` que solo rastrea campos mutados
 > directamente (`dto.campo = valor`). Usa `toBeIntact()` / `not.toBeIntact()` para comprobar
-> si el modelo tiene algún cambio pendiente (incluyendo cambios vía `copy()`).
+> si el modelo tiene algún cambio pendiente (incluyendo cambios vía `$qCopy()`).
 
 ## Ejemplo Completo
 

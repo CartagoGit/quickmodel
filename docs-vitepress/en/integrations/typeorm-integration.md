@@ -110,11 +110,11 @@ if (!valid) {
 	throw new Error(errors.map((e) => e.message).join(', '));
 }
 
-// toInterface() returns a plain object safe for TypeORM
+// $qToInterface() returns a plain object safe for TypeORM
 await userRepository.save(dto.$qToInterface());
 ```
 
-## Partial updates with copy()
+## Partial updates with `$qCopy()`
 
 ```typescript
 const entity = await userRepository.findOne({ where: { id: 5 } });
@@ -226,13 +226,13 @@ class UserRepository {
 
 ## @QComputed() vs TypeORM @VirtualColumn()
 
-| Feature           | `@QComputed()` (QuickModel) | `@VirtualColumn()` (TypeORM)   |
-| ----------------- | --------------------------- | ------------------------------ |
-| Execution layer   | Application / DTO           | Database query                 |
-| SQL support       | ❌ (JS only)                | ✅ (SQL expression)            |
-| Persisted         | ❌ (not in `toInterface()`) | ❌ (read-only)                 |
-| Available offline | ✅                          | ❌ (needs DB)                  |
-| Use case          | Derived labels, formatting  | Aggregates, computed DB fields |
+| Feature           | `@QComputed()` (QuickModel)   | `@VirtualColumn()` (TypeORM)   |
+| ----------------- | ----------------------------- | ------------------------------ |
+| Execution layer   | Application / DTO             | Database query                 |
+| SQL support       | ❌ (JS only)                  | ✅ (SQL expression)            |
+| Persisted         | ❌ (not in `$qToInterface()`) | ❌ (read-only)                 |
+| Available offline | ✅                            | ❌ (needs DB)                  |
+| Use case          | Derived labels, formatting    | Aggregates, computed DB fields |
 
 ```typescript
 @QComputed()

@@ -20,18 +20,6 @@ import { QConfig } from '../config/quick.config';
  * @see {@link IQAdvancedOptions} — second parameter with discriminator config
  *
  * @example
- * **Without @Quick()** (verbose):
- * ```typescript
- * class User extends QModel<IUser> {
- *   @QType() declare id: string;
- *   @QType() declare name: string;
- *   @QType() declare email: string;
- *   @QType() declare age: number;
- *   @QType() declare createdAt: Date;
- * }
- * ```
- *
- * @example
  * **With @Quick()** (concise):
  * ```typescript
  * @Quick()
@@ -63,18 +51,14 @@ import { QConfig } from '../config/quick.config';
  * ```
  *
  * @example
- * **Mix with @QType() for specific control**:
+ * **Special types with explicit type-map**:
  * ```typescript
- * @Quick()
+ * @Quick({ category: Category, tags: [Tag] })
  * class Product extends QModel<IProduct> {
- *   declare id: string;           // Auto from @Quick()
- *   declare name: string;         // Auto from @Quick()
- *
- *   @QType(Category)       // Explicit for nested model
- *   declare category: Category;
- *
- *   @QType(Tag)           // Explicit for array of models
- *   declare tags: Tag[];
+ *   declare id: string;           // Auto-inferred
+ *   declare name: string;         // Auto-inferred
+ *   declare category: Category;   // Explicit in type-map
+ *   declare tags: Tag[];          // Explicit in type-map
  * }
  * ```
  *
@@ -451,11 +435,11 @@ export type {
  *
  * const user = new User({ first_name: 'Alice', last_name: 'Smith' });
  * user.firstName;             // 'Alice'       ✅ camelCase internally
- * user.serialize();           // { first_name: 'Alice', last_name: 'Smith' }  ✅ alias keys in output
+ * user.$qSerialize();           // { first_name: 'Alice', last_name: 'Smith' }  ✅ alias keys in output
  * ```
  *
  * ⚠️ **TypeScript limitation:** due to `experimentalDecorators: true`, the return type of
- * `serialize()` cannot reflect alias keys at compile time through the decorator alone.
+ * `$qSerialize()` cannot reflect alias keys at compile time through the decorator alone.
  * To get full IDE autocomplete on alias keys, also pass a literal alias map as the **second
  * generic of `QModel`**:
  * ```typescript
@@ -464,9 +448,9 @@ export type {
  * @Quick({}, { alias: { firstName: 'first_name', lastName: 'last_name' } })
  * class User extends QModel<IUser, IUserAliases> { ... }
  *
- * user.serialize().first_name; // ✅ typed correctly — no cast needed
+ * user.$qSerialize().first_name; // ✅ typed correctly — no cast needed
  * ```
- * Without the second generic, `serialize()` still emits alias keys at runtime —
+ * Without the second generic, `$qSerialize()` still emits alias keys at runtime —
  * only the static type is imprecise.
  *
  * **Why Set/Map need type mapping:**

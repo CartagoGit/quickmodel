@@ -9,7 +9,7 @@ QuickModel proporciona una capa de validación y tipo para aplicaciones React �
 | `useState` / formularios controlados | Clase plana + `qCheckRules()`         |
 | React Hook Form resolver             | Adaptador personalizado               |
 | Next.js Server Actions               | DTO en el servidor                    |
-| Store Zustand                        | `copy()` inmutable                    |
+| Store Zustand                        | `$qCopy()` inmutable                  |
 | Validación asíncrona                 | `@QRule` async + `qCheckRulesAsync()` |
 | Hook personalizado                   | `useQModel()`                         |
 
@@ -54,7 +54,7 @@ const { valid, errors } = qCheckRules(form);
 ::: tip Dos patrones disponibles
 
 - **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`.
-- **Con `QModel` + `@Quick`** (abajo): accedes además a `copy()`, `serialize()`, `checkIntegrity()` y actualizaciones inmutables.
+- **Con `QModel` + `@Quick`** (abajo): accedes además a `$qCopy()`, `$qSerialize()`, `$qCheckIntegrity()` y actualizaciones inmutables.
   :::
 
 ### Con QModel + @Quick
@@ -86,7 +86,7 @@ class ContactForm extends QModel<IContactForm> {
 // components/ContactForm.tsx
 const [form, setForm] = useState(() => new ContactForm({}));
 
-// copy() es inmutable — devuelve una nueva instancia
+// $qCopy() es inmutable — devuelve una nueva instancia
 const handleChange = (field: keyof IContactForm, value: string) => {
 	setForm((prev) => prev.$qCopy({ [field]: value }) as ContactForm);
 };
@@ -243,7 +243,7 @@ const useCartStore = create<ICartStore>((set) => ({
 		set((state) => {
 			const item = state.items.get(id);
 			if (!item) return state;
-			// copy() es INMUTABLE — guarda la nueva instancia
+			// $qCopy() es INMUTABLE — guarda la nueva instancia
 			state.items.set(id, item.$qCopy({ qty }));
 			return { items: new Map(state.items) };
 		}),

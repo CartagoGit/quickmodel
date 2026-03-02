@@ -650,9 +650,8 @@ describe('QuickModel - Comprehensive Test Suite', () => {
 				return `${this.name} (${this.email})`;
 			};
 
-			// @quickmodel-rule-ignore: no-as-unknown
 			expect(
-				(user as unknown as { getFullInfo(): string }).getFullInfo()
+				(user as unknown as { getFullInfo(): string }).getFullInfo() // @quickmodel-rule-ignore: no-as-unknown
 			).toBe('John Doe (john@example.com)');
 		});
 	});

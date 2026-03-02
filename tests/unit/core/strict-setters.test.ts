@@ -20,8 +20,7 @@ describe('Robustness: Strict Setters', () => {
 			new StrictUser({
 				birthDate: new Date(),
 				unknownProperty: 'value', // This is an unknown property
-				// @quickmodel-rule-ignore: no-as-unknown — intentional: passing unknown property to test strict mode
-			} as unknown as IUser);
+			} as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown — intentional: passing unknown property to test strict mode
 		}).toThrow('Strict Mode');
 	});
 
@@ -40,13 +39,11 @@ describe('Robustness: Strict Setters', () => {
 		const user = new LaxUser({
 			birthDate: new Date(),
 			unknownProperty: 'value', // Should be kept
-			// @quickmodel-rule-ignore: no-as-unknown — intentional: passing unknown property to test keep policy
-		} as unknown as IUser);
+		} as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown — intentional: passing unknown property to test keep policy
 
 		// Assert: Unknown property should be kept
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			(user as unknown as Record<string, unknown>)['unknownProperty']
+			(user as unknown as Record<string, unknown>)['unknownProperty'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBe('value');
 	});
 });

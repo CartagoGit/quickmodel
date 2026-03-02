@@ -23,10 +23,11 @@ describe('Integrity Service Coverage Gaps', () => {
 		// We can register it via QTransformerRegistry or cast service to any.
 		(
 			service as unknown as { transformers: Map<string, unknown> }
-		).transformers.set('throwing-type', throwingTransformer);
+		).transformers // @quickmodel-rule-ignore: no-as-unknown
+			.set('throwing-type', throwingTransformer);
 
 		class CrashModel {
-			@QType('throwing-type' as unknown as string)
+			@QType('throwing-type' as unknown as string) // @quickmodel-rule-ignore: no-as-unknown
 			prop: unknown = 'test';
 		}
 

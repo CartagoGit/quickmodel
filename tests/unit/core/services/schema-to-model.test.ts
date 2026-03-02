@@ -863,3 +863,497 @@ describe("fromSchema('prisma') — className y errores", () => {
 		).toThrow(/no `model` block found/);
 	});
 });
+
+// ── fromSchema('valibot') ────────────────────────────────────────────────────
+
+describe("fromSchema('valibot') — primitivos", () => {
+	const src = [
+		"import * as v from 'valibot';",
+		'',
+		'export const UserSchema = v.object({',
+		'\tid: v.number(),',
+		'\tname: v.string(),',
+		'\tactive: v.boolean(),',
+		'\tcreatedAt: v.date(),',
+		'\tamount: v.bigint(),',
+		'});',
+		'',
+		'export type IUserInput = v.InferInput<typeof UserSchema>;',
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).toContain('export class User extends QModel<IUser>');
+	});
+
+	test('genera interfaz IUser', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).toContain('interface IUser {');
+	});
+
+	test('v.number() → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).toContain('id: Number');
+		expect(code).toContain('declare id: number;');
+	});
+
+	test('v.string() → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+		expect(code).toContain('declare name: string;');
+	});
+
+	test('v.boolean() → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).toContain('active: Boolean');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('v.date() → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('v.bigint() → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src);
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('className explícito tiene prioridad', () => {
+		const code = SchemaToModelService.fromSchema('valibot', src, 'Profile');
+		expect(code).toContain('export class Profile extends QModel<IProfile>');
+		expect(code).not.toContain('class User');
+	});
+
+	test('lanza error si no hay v.object block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema('valibot', 'const val = 42;')
+		).toThrow(/no `v\.object` block found/);
+	});
+});
+
+// ── fromSchema('yup') ────────────────────────────────────────────────────────
+
+describe("fromSchema('yup') — primitivos", () => {
+	const src = [
+		"import * as yup from 'yup';",
+		'',
+		'export const ProductSchema = yup.object({',
+		'\tprice: yup.number().required(),',
+		'\tlabel: yup.string().required(),',
+		'\tactive: yup.boolean().required(),',
+		'\tcreatedAt: yup.date().required(),',
+		'});',
+		'',
+		'export type IProductInput = yup.InferType<typeof ProductSchema>;',
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('yup', src);
+		expect(code).toContain('export class Product extends QModel<IProduct>');
+	});
+
+	test('yup.number() → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('yup', src);
+		expect(code).toContain('price: Number');
+		expect(code).toContain('declare price: number;');
+	});
+
+	test('yup.string() → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema('yup', src);
+		expect(code).not.toMatch(/label:\s*String[\s,\n]/);
+		expect(code).toContain('declare label: string;');
+	});
+
+	test('yup.boolean() → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('yup', src);
+		expect(code).toContain('active: Boolean');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('yup.date() → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema('yup', src);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('className explícito tiene prioridad', () => {
+		const code = SchemaToModelService.fromSchema('yup', src, 'Item');
+		expect(code).toContain('export class Item extends QModel<IItem>');
+		expect(code).not.toContain('class Product');
+	});
+
+	test('lanza error si no hay yup.object block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema('yup', 'const val = 42;')
+		).toThrow(/no `yup\.object` block found/);
+	});
+});
+
+// ── fromSchema('typebox') ────────────────────────────────────────────────────
+
+describe("fromSchema('typebox') — primitivos", () => {
+	const src = [
+		"import { Type, Static } from '@sinclair/typebox';",
+		'',
+		'const OrderSchema = Type.Object({',
+		'\ttotal: Type.Number(),',
+		'\tref: Type.String(),',
+		'\tactive: Type.Boolean(),',
+		"\tcreatedAt: Type.String({ format: 'date-time' }),",
+		'\tamount: Type.BigInt(),',
+		'});',
+		'',
+		'export type IOrder = Static<typeof OrderSchema>;',
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('typebox', src);
+		expect(code).toContain('export class Order extends QModel<IOrder>');
+	});
+
+	test('Type.Number() → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('typebox', src);
+		expect(code).toContain('total: Number');
+		expect(code).toContain('declare total: number;');
+	});
+
+	test('Type.String() → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema('typebox', src);
+		expect(code).not.toMatch(/ref:\s*String[\s,\n]/);
+		expect(code).toContain('declare ref: string;');
+	});
+
+	test("Type.String({ format: 'date-time' }) → transformer Date", () => {
+		const code = SchemaToModelService.fromSchema('typebox', src);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('Type.Boolean() → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('typebox', src);
+		expect(code).toContain('active: Boolean');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('Type.BigInt() → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema('typebox', src);
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('className explícito tiene prioridad', () => {
+		const code = SchemaToModelService.fromSchema('typebox', src, 'Invoice');
+		expect(code).toContain('export class Invoice extends QModel<IInvoice>');
+		expect(code).not.toContain('class Order');
+	});
+
+	test('lanza error si no hay Type.Object block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema('typebox', 'const val = 42;')
+		).toThrow(/no `Type\.Object` block found/);
+	});
+});
+
+// ── fromSchema('effect-schema') ──────────────────────────────────────────────
+
+describe("fromSchema('effect-schema') — primitivos", () => {
+	const src = [
+		"import * as Schema from 'effect/schema';",
+		'',
+		'const ReportSchema = Schema.Struct({',
+		'\tscore: Schema.Number,',
+		'\ttitle: Schema.String,',
+		'\tpassed: Schema.Boolean,',
+		'\tdate: Schema.Date,',
+		'\tamount: Schema.BigIntFromSelf,',
+		'});',
+		'',
+		'export type IReport = Schema.Schema.Type<typeof ReportSchema>;',
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('effect-schema', src);
+		expect(code).toContain('export class Report extends QModel<IReport>');
+	});
+
+	test('Schema.Number → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('effect-schema', src);
+		expect(code).toContain('score: Number');
+		expect(code).toContain('declare score: number;');
+	});
+
+	test('Schema.String → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema('effect-schema', src);
+		expect(code).not.toMatch(/title:\s*String[\s,\n]/);
+		expect(code).toContain('declare title: string;');
+	});
+
+	test('Schema.Boolean → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('effect-schema', src);
+		expect(code).toContain('passed: Boolean');
+		expect(code).toContain('declare passed: boolean;');
+	});
+
+	test('Schema.Date → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema('effect-schema', src);
+		expect(code).toContain('date: Date');
+		expect(code).toContain('declare date: Date;');
+	});
+
+	test('Schema.BigIntFromSelf → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema('effect-schema', src);
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('className explícito tiene prioridad', () => {
+		const code = SchemaToModelService.fromSchema(
+			'effect-schema',
+			src,
+			'Summary'
+		);
+		expect(code).toContain('export class Summary extends QModel<ISummary>');
+		expect(code).not.toContain('class Report');
+	});
+
+	test('lanza error si no hay Schema.Struct block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema('effect-schema', 'const val = 42;')
+		).toThrow(/no `Schema\.Struct` block found/);
+	});
+});
+
+// ── fromSchema('drizzle') ────────────────────────────────────────────────────
+
+describe("fromSchema('drizzle') — primitivos", () => {
+	const src = [
+		"export const users = pgTable('users', {",
+		"\tname: varchar('name', { length: 255 }).notNull(),",
+		"\tage: integer('age').notNull(),",
+		"\tactive: boolean('active').notNull(),",
+		"\tcreatedAt: timestamp('created_at').notNull(),",
+		"\tamount: bigint('amount', { mode: 'number' }).notNull(),",
+		'});',
+		'',
+		'export type IUserSelect = typeof users.$inferSelect;',
+		'export type IUserInsert = typeof users.$inferInsert;',
+		"// Required: import { pgTable, varchar, integer, boolean, timestamp, bigint } from 'drizzle-orm/pg-core';",
+	].join('\n');
+
+	test('genera class que extiende QModel con generic correcto', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).toContain('export class User extends QModel<IUser>');
+	});
+
+	test('integer(...) → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).toContain('age: Number');
+		expect(code).toContain('declare age: number;');
+	});
+
+	test('varchar(...) → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+		expect(code).toContain('declare name: string;');
+	});
+
+	test('boolean(...) → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).toContain('active: Boolean');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('timestamp(...) → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('bigint(...) → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('infiere className desde el nombre de la tabla', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src);
+		expect(code).toContain('export class User extends QModel<IUser>');
+	});
+
+	test('className explícito tiene prioridad', () => {
+		const code = SchemaToModelService.fromSchema('drizzle', src, 'Account');
+		expect(code).toContain('export class Account extends QModel<IAccount>');
+		expect(code).not.toContain('class User');
+	});
+
+	test('lanza error si no hay pgTable block en el input', () => {
+		expect(() =>
+			SchemaToModelService.fromSchema('drizzle', 'const val = 42;')
+		).toThrow(/no `pgTable` block found/);
+	});
+});
+
+// ── fromSchema('mongo') ──────────────────────────────────────────────────────
+
+describe("fromSchema('mongo') — primitivos", () => {
+	const mongoSchema = {
+		name: { type: String, required: true },
+		age: { type: Number, required: true },
+		active: { type: Boolean, required: true },
+		createdAt: { type: Date, required: true },
+	};
+
+	test('Number → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema(
+			'mongo',
+			mongoSchema,
+			'User'
+		);
+		expect(code).toContain('age: Number');
+		expect(code).toContain('declare age: number;');
+	});
+
+	test('String → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema(
+			'mongo',
+			mongoSchema,
+			'User'
+		);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+		expect(code).toContain('declare name: string;');
+	});
+
+	test('Boolean → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema(
+			'mongo',
+			mongoSchema,
+			'User'
+		);
+		expect(code).toContain('active: Boolean');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('Date → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema(
+			'mongo',
+			mongoSchema,
+			'User'
+		);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('clase con className explícito', () => {
+		const code = SchemaToModelService.fromSchema(
+			'mongo',
+			mongoSchema,
+			'User'
+		);
+		expect(code).toContain('export class User extends QModel<IUser>');
+	});
+
+	test('usa GeneratedModel como fallback sin className', () => {
+		const code = SchemaToModelService.fromSchema('mongo', mongoSchema);
+		expect(code).toContain(
+			'export class GeneratedModel extends QModel<IGeneratedModel>'
+		);
+	});
+});
+
+// ── fromSchema('zod') ────────────────────────────────────────────────────────
+
+describe("fromSchema('zod') — primitivos", () => {
+	// Duck-type a ZodObject using the internal shape that the parser inspects.
+	// Using `as unknown` is explicitly allowed in tests per project rules.
+	const mockZodSchema = {
+		shape: {
+			id: { _def: { typeName: 'ZodNumber', checks: [] } },
+			name: { _def: { typeName: 'ZodString', checks: [] } },
+			active: { _def: { typeName: 'ZodBoolean', checks: [] } },
+			createdAt: {
+				_def: { typeName: 'ZodString', checks: [{ kind: 'datetime' }] },
+			},
+			amount: {
+				_def: { typeName: 'ZodString', checks: [{ kind: 'regex' }] },
+			},
+			tags: {
+				_def: {
+					typeName: 'ZodArray',
+					type: { _def: { typeName: 'ZodString', checks: [] } },
+				},
+			},
+		},
+	} as unknown as import('zod').z.ZodObject<any>; // @quickmodel-rule-ignore: no-as-unknown
+
+	test('ZodNumber → transformer Number', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).toContain('id: Number');
+		expect(code).toContain('declare id: number;');
+	});
+
+	test('ZodString (sin checks) → sin transformer (default string)', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).not.toMatch(/name:\s*String[\s,\n]/);
+		expect(code).toContain('declare name: string;');
+	});
+
+	test('ZodBoolean → transformer Boolean', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).toContain('active: Boolean');
+		expect(code).toContain('declare active: boolean;');
+	});
+
+	test('ZodString con check datetime → transformer Date', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).toContain('createdAt: Date');
+		expect(code).toContain('declare createdAt: Date;');
+	});
+
+	test('ZodString con check regex → transformer BigInt', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).toContain('amount: BigInt');
+		expect(code).toContain('declare amount: bigint;');
+	});
+
+	test('ZodArray con elemento ZodString → transformer [String]', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).toContain('tags: [String]');
+		expect(code).toContain('declare tags: string[];');
+	});
+
+	test('genera class con className explícito', () => {
+		const code = SchemaToModelService.fromSchema(
+			'zod',
+			mockZodSchema,
+			'User'
+		);
+		expect(code).toContain('export class User extends QModel<IUser>');
+	});
+});

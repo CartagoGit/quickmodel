@@ -45,30 +45,30 @@ describe('JsonSchemaGenerator._getJsonSchemaType fallback contract', () => {
 	test('undefined transformer always returns { type: "string" }', () => {
 		// Access private method via bracket notation for direct test
 		// This documents the CONTRACT: undefined → string (may be wrong but is consistent)
-		// @quickmodel-rule-ignore: no-as-unknown
 		const result = (
 			JsonSchemaGenerator as unknown as {
-				_getJsonSchemaType(v: unknown): Record<string, string>;
+				// @quickmodel-rule-ignore: no-as-unknown
+				_getJsonSchemaType(val: unknown): Record<string, string>;
 			}
 		)['_getJsonSchemaType'](undefined);
 		expect(result).toEqual({ type: 'string' });
 	});
 
 	test('null transformer returns { type: "string" }', () => {
-		// @quickmodel-rule-ignore: no-as-unknown
 		const result = (
 			JsonSchemaGenerator as unknown as {
-				_getJsonSchemaType(v: unknown): Record<string, string>;
+				// @quickmodel-rule-ignore: no-as-unknown
+				_getJsonSchemaType(val: unknown): Record<string, string>;
 			}
 		)['_getJsonSchemaType'](null);
 		expect(result).toEqual({ type: 'string' });
 	});
 
 	test('empty-string transformer returns { type: "string" } (default branch)', () => {
-		// @quickmodel-rule-ignore: no-as-unknown
 		const result = (
 			JsonSchemaGenerator as unknown as {
-				_getJsonSchemaType(v: unknown): Record<string, string>;
+				// @quickmodel-rule-ignore: no-as-unknown
+				_getJsonSchemaType(val: unknown): Record<string, string>;
 			}
 		)['_getJsonSchemaType']('');
 		expect(result).toEqual({ type: 'string' });
@@ -76,26 +76,26 @@ describe('JsonSchemaGenerator._getJsonSchemaType fallback contract', () => {
 
 	test('a custom class without matching name falls back to { type: "string" }', () => {
 		class MySpecialType {}
-		// @quickmodel-rule-ignore: no-as-unknown
 		const result = (
 			JsonSchemaGenerator as unknown as {
-				_getJsonSchemaType(v: unknown): Record<string, string>;
+				// @quickmodel-rule-ignore: no-as-unknown
+				_getJsonSchemaType(val: unknown): Record<string, string>;
 			}
 		)['_getJsonSchemaType'](MySpecialType);
 		expect(result).toEqual({ type: 'string' });
 	});
 
 	test('fallback is deterministic — same input, same output every time', () => {
-		// @quickmodel-rule-ignore: no-as-unknown
 		const valA = (
 			JsonSchemaGenerator as unknown as {
-				_getJsonSchemaType(v: unknown): Record<string, string>;
+				// @quickmodel-rule-ignore: no-as-unknown
+				_getJsonSchemaType(val: unknown): Record<string, string>;
 			}
 		)['_getJsonSchemaType'](undefined);
-		// @quickmodel-rule-ignore: no-as-unknown
 		const valB = (
 			JsonSchemaGenerator as unknown as {
-				_getJsonSchemaType(v: unknown): Record<string, string>;
+				// @quickmodel-rule-ignore: no-as-unknown
+				_getJsonSchemaType(val: unknown): Record<string, string>;
 			}
 		)['_getJsonSchemaType'](undefined);
 		expect(valA).toEqual(valB);

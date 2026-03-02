@@ -1,21 +1,21 @@
 # Redux Toolkit (RTK) Integration
 
-QuickModel works naturally with Redux Toolkit. `serialize()` produces plain JSON-safe objects
-ideal for Redux state, and `copy()` provides the **immutable update pattern** expected by reducers
+QuickModel works naturally with Redux Toolkit. `$qSerialize()` produces plain JSON-safe objects
+ideal for Redux state, and `$qCopy()` provides the **immutable update pattern** expected by reducers
 without extra dependencies like Immer.
 
 ## Key Patterns
 
-| Pattern                       | QuickModel API                                  |
-| ----------------------------- | ----------------------------------------------- |
-| Serializable Redux state      | `dto.$qSerialize()` → plain object              |
-| Immutable reducer update      | `dto.$qCopy(patch)` → new instance              |
-| Typed `createAsyncThunk`      | `new UserDto(response)` in payload creator      |
-| Normalized entity adapter     | `createMany()` → `Map<id, serialized>`          |
-| RTK Query `transformResponse` | `new UserDto(raw).$qSerialize()`                |
-| Pre-dispatch validation       | `qCheckRules(dto)` before `dispatch(action)`    |
-| Typed selector                | `new UserDto(stored).toInterface()`             |
-| DevTools-friendly payloads    | `serialize()` returns inspectable plain objects |
+| Pattern                       | QuickModel API                                    |
+| ----------------------------- | ------------------------------------------------- |
+| Serializable Redux state      | `dto.$qSerialize()` → plain object                |
+| Immutable reducer update      | `dto.$qCopy(patch)` → new instance                |
+| Typed `createAsyncThunk`      | `new UserDto(response)` in payload creator        |
+| Normalized entity adapter     | `createMany()` → `Map<id, serialized>`            |
+| RTK Query `transformResponse` | `new UserDto(raw).$qSerialize()`                  |
+| Pre-dispatch validation       | `qCheckRules(dto)` before `dispatch(action)`      |
+| Typed selector                | `new UserDto(stored).$qToInterface()`             |
+| DevTools-friendly payloads    | `$qSerialize()` returns inspectable plain objects |
 
 ## Installation
 
@@ -71,9 +71,9 @@ class UserDto extends QModel<IUser> {
 }
 ```
 
-## createSlice — serialize() as Redux State
+## createSlice — `$qSerialize()` as Redux State
 
-`serialize()` returns a **plain JSON-safe object** — exactly what Redux requires for
+`$qSerialize()` returns a **plain JSON-safe object** — exactly what Redux requires for
 serializable state. Store the serialized form; rehydrate to a `QModel` instance when you
 need computed properties or validation.
 
@@ -100,9 +100,9 @@ const userSlice = createSlice({
 });
 ```
 
-## Reducer with copy() — Immutable Update
+## Reducer with `$qCopy()` — Immutable Update
 
-`copy(patch)` returns a **new instance** — Redux doesn't need Immer when you use QuickModel:
+`$qCopy(patch)` returns a **new instance** — Redux doesn't need Immer when you use QuickModel:
 
 ```typescript
 reducers: {
@@ -185,7 +185,7 @@ export const userApi = createApi({
 });
 ```
 
-## checkRules() Before Dispatch — Validation Guard
+## `qCheckRules()` Before Dispatch — Validation Guard
 
 Validate before firing the action to avoid invalid state:
 
@@ -233,7 +233,7 @@ const selectUserRaw = (state: RootState, uid: string) =>
 
 // Typed selector — returns IUser plain object
 export const selectUser = createSelector(selectUserRaw, (raw) =>
-	raw ? new UserDto(raw).toInterface() : undefined
+	raw ? new UserDto(raw).$qToInterface() : undefined
 );
 
 // Selector with computed fields
@@ -244,7 +244,7 @@ export const selectUserWithLabel = createSelector(selectUserRaw, (raw) =>
 
 ## DevTools-Friendly Payloads
 
-`serialize()` always returns a **plain inspectable object** — no class instances, no circular
+`$qSerialize()` always returns a **plain inspectable object** — no class instances, no circular
 references, no Symbol keys. Redux DevTools shows the full state including `@QComputed` fields:
 
 ```typescript
@@ -255,7 +255,7 @@ references, no Symbol keys. Redux DevTools shows the full state including `@QCom
   email: "alice@example.com",
   role: "user",
   age: 25,
-  label: "Alice (user)"   // @QComputed — included in serialize() output
+  label: "Alice (user)"   // @QComputed — included in $qSerialize() output
 }
 ```
 
@@ -266,12 +266,12 @@ references, no Symbol keys. Redux DevTools shows the full state including `@QCom
 | Type coercion           | ❌          | ❌               | ✅ `coercionStrategy`      |
 | Unknown field stripping | ❌          | ❌               | ✅ `unknownPropertyPolicy` |
 | Computed properties     | ❌          | ❌               | ✅ `@QComputed`            |
-| Immutable updates       | Immer       | Immer            | ✅ `copy()`                |
+| Immutable updates       | Immer       | Immer            | ✅ `$qCopy()`              |
 | Async validation        | Custom      | `safeParseAsync` | ✅ `qCheckRulesAsync`      |
-| DevTools-safe payloads  | ✅          | ✅               | ✅ `serialize()`           |
+| DevTools-safe payloads  | ✅          | ✅               | ✅ `$qSerialize()`         |
 
 ## See Also
 
 - [Zustand Integration](./zustand-integration) — simpler local state
 - [TanStack Query Integration](./tanstack-query-integration) — server state caching
-- [Validation](./validation) — `@QRule`, `checkRules()`, `checkRulesAsync()`
+- [Validation](./validation) — `@QRule`, `qCheckRules()`, `qCheckRulesAsync()`

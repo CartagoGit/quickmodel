@@ -12,8 +12,6 @@ import { QCOMPUTED_METADATA_KEY } from '../constants/metadata-keys';
  * @example
  * **Basic usage**
  * ```typescript
- * import { QModel, Quick, QComputed } from 'quickmodel';
- *
  * interface IUser {
  *   firstName: string;
  *   lastName: string;
@@ -31,7 +29,7 @@ import { QCOMPUTED_METADATA_KEY } from '../constants/metadata-keys';
  * }
  *
  * const user = User.create({ firstName: 'Alice', lastName: 'Smith' });
- * user.$qm.serialize();
+ * user.$qSerialize();
  * // { firstName: 'Alice', lastName: 'Smith', fullName: 'Alice Smith' }
  * ```
  *
@@ -60,7 +58,7 @@ import { QCOMPUTED_METADATA_KEY } from '../constants/metadata-keys';
  *   }
  * }
  *
- * user.$qm.serialize();
+ * user.$qSerialize();
  * // { firstName: 'Alice', lastName: 'Smith', birthYear: 1990, fullName: 'Alice Smith', age: 35 }
  * // Notice: 'initials' is NOT included
  * ```

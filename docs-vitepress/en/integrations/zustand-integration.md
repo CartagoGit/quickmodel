@@ -1,6 +1,6 @@
 # Zustand Integration
 
-QuickModel's `copy()` method is a natural fit for Zustand stores — it returns a **new
+QuickModel's `$qCopy()` method is a natural fit for Zustand stores — it returns a **new
 immutable instance**, keeping state updates predictable and avoiding the need for Immer.
 
 ## Key Patterns
@@ -9,7 +9,7 @@ immutable instance**, keeping state updates predictable and avoiding the need fo
 | ------------------------ | ----------------------------------------- |
 | Immutable state update   | `item.$qCopy(patch)` → new instance       |
 | Normalized Map store     | `createMany()` → `Map<id, instance>`      |
-| Persist middleware       | `serialize()` / `new Dto(stored)`         |
+| Persist middleware       | `$qSerialize()` / `new Dto(stored)`       |
 | Reactive computed values | `@QComputed` — recalculates on every read |
 | Bulk initial load        | `Dto.createMany(apiData)`                 |
 
@@ -56,7 +56,7 @@ class UserModel extends QModel<IUser> {
 }
 ```
 
-## Basic Store — copy() as Immutable Updater
+## Basic Store — $qCopy() as Immutable Updater
 
 `merge(patch)` returns a **new instance** with patched fields. The original is never mutated,
 and `@QComputed` values recalculate automatically on the new instance.
@@ -215,9 +215,9 @@ async function loadUsersIntoStore() {
 }
 ```
 
-## copy() vs Immer
+## `$qCopy()` vs Immer
 
-Immer requires a `produce()` wrapper to enable structural sharing. With QuickModel, `copy()`
+Immer requires a `produce()` wrapper to enable structural sharing. With QuickModel, `$qCopy()`
 is already immutable and returns a typed instance with recalculated `@QComputed` fields:
 
 ```typescript
@@ -228,7 +228,7 @@ set(
 	})
 );
 
-// ✅ With QuickModel copy()
+// ✅ With QuickModel $qCopy()
 const current = get().user;
 set({ user: current.$qCopy({ plan: 'pro' }) });
 // @QComputed values recalculate automatically — no stale references

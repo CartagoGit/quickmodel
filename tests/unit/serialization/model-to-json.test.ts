@@ -146,8 +146,7 @@ describe('Model Serialization (toJSON)', () => {
 		});
 
 		// Manually add internal prop
-		// @quickmodel-rule-ignore: no-as-unknown
-		(user as unknown as Record<string, unknown>)['__internal'] = 'secret';
+		(user as unknown as Record<string, unknown>)['__internal'] = 'secret'; // @quickmodel-rule-ignore: no-as-unknown
 
 		// JSON.stringify(model) exercises the JS toJSON() protocol correctly
 		const jsonString = JSON.stringify(user);

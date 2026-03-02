@@ -44,9 +44,6 @@ import type {
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from 'quickmodel';
- * import { qGroups, qCheckRulesByGroupAsync } from 'quickmodel/forms';
- *
  * const Groups = qGroups('identity', 'security');
  *
  * class ProfileForm {

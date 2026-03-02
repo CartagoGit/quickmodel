@@ -71,7 +71,6 @@ export interface IQCheckRulesOptions {
  *
  * @example
  * ```ts
- * import { QRule, QGroup } from 'quickmodel';
  * import { $qGroups, $qCheckRules } from 'quickmodel/forms';
  *
  * const Groups = $qGroups('identity', 'security');

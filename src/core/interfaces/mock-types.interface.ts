@@ -16,8 +16,9 @@ import type { QModel } from '@/core/models/quick.model';
  *
  * @example
  * ```typescript
+ * @Quick({ name: String })
  * class User extends QModel<IUser> {
- *   @QType() name!: string;
+ *   declare name: string;
  * }
  *
  * type UserInstance = IQModelInstance<typeof User>; // User
@@ -48,8 +49,9 @@ export type IQModelInstance<T> = T extends abstract new (
  *
  * @example
  * ```typescript
+ * @Quick({ name: String })
  * class User extends QModel<IUser> {
- *   @QType() name!: string;
+ *   declare name: string;
  * }
  *
  * type UserInterface = IQModelInterface<typeof User>; // IUser

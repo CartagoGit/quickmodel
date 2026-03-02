@@ -372,7 +372,7 @@ describe('contextBridge shared types and preload API', () => {
 		const dto = new UserPrefsDto(userChanges);
 		const { valid } = $qCheckRules(dto);
 		if (valid) {
-			// window.electron.savePrefs(dto.serialize())
+			// window.electron.savePrefs(dto.$qSerialize())
 			const payload = dto.$qSerialize();
 			expect(payload).toBeDefined();
 		}

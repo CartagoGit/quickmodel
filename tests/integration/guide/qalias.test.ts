@@ -48,7 +48,7 @@ describe('Integration: @QAlias (guide/qalias.md)', () => {
 				first_name: 'Alice',
 				last_name: 'Smith',
 				api_key: 'sk_live_abc',
-			} as unknown as IApiUser);
+			} as unknown as IApiUser); // @quickmodel-rule-ignore: no-as-unknown
 
 			expect(user.userId).toBe(42);
 			expect(user.firstName).toBe('Alice');
@@ -62,7 +62,7 @@ describe('Integration: @QAlias (guide/qalias.md)', () => {
 				first_name: 'Alice',
 				last_name: 'Smith',
 				api_key: 'sk_live_abc',
-			} as unknown as IApiUser);
+			} as unknown as IApiUser); // @quickmodel-rule-ignore: no-as-unknown
 
 			const output = user.$qSerialize({ includeSensitive: true });
 
@@ -98,7 +98,7 @@ describe('Integration: @QAlias (guide/qalias.md)', () => {
 				firstName: 'Wrong',
 				last_name: 'Brown',
 				api_key: 'tok',
-			} as unknown as IApiUser);
+			} as unknown as IApiUser); // @quickmodel-rule-ignore: no-as-unknown
 
 			// alias value wins
 			expect(user.userId).toBe(99);
@@ -113,7 +113,7 @@ describe('Integration: @QAlias (guide/qalias.md)', () => {
 				first_name: 'Dana',
 				last_name: 'Lee',
 				api_key: 'secret_key',
-			} as unknown as IApiUser);
+			} as unknown as IApiUser); // @quickmodel-rule-ignore: no-as-unknown
 
 			// property is accessible
 			expect(user.apiKey).toBe('secret_key');

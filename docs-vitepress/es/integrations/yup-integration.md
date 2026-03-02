@@ -114,6 +114,43 @@ const onSubmit = (data: unknown) => {
 | Exportación de schema (OpenAPI, JSON Schema…) | ❌      | ✅ `getSchema()`   |
 | Modelos basados en clases con decoradores     | ❌      | ✅                 |
 
+## `fromSchema`: generando una clase QModel desde un schema Yup
+
+`QModel.fromSchema('yup', ...)` acepta un string fuente de `yup.object({...})` y genera código TypeScript para una clase `QModel`:
+
+```typescript
+import 'quickmodel/schema';
+
+const yupSrc = `
+import * as yup from 'yup';
+export const ProductSchema = yup.object({
+  price: yup.number().required(),
+  label: yup.string().required(),
+  active: yup.boolean().required(),
+  createdAt: yup.date().required(),
+});
+`;
+
+const code = QModel.fromSchema('yup', yupSrc, 'Product');
+// → string TypeScript con la clase Product extends QModel<IProduct>
+
+// fs.writeFileSync('src/models/product.model.ts', code);
+```
+
+::: warning Limitación con BigInt
+Yup representa `bigint` como `yup.string()`, por lo que el round-trip para campos `BigInt` es con pérdida. Usa `fromSchema('prisma', ...)` o `fromSchema('typescript', ...)` si necesitas mapeo exacto de BigInt.
+:::
+
+## Round-trip: QModel → schema Yup → clase QModel
+
+```typescript
+import 'quickmodel/schema';
+
+const yupSrc = User.getSchema('yup');
+const code = QModel.fromSchema('yup', yupSrc, 'User');
+// code es TypeScript válido que define class User extends QModel<IUser>
+```
+
 ## Ver también
 
 - [Transformadores](/es/guide/transformers) — tipos de coerción soportados

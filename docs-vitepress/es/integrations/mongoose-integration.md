@@ -11,7 +11,7 @@ Documento Mongoose (IUserDoc)
 Objeto JS plano  ──► docToObject(doc)  ──► elimina _id, __v
        │
        ▼ new UserDto(plain)
-UserDto (QModel)  ──► checkRules()  ──► toInterface() ──► Model.create()
+UserDto (QModel)  ──► qCheckRules()  ──► $qToInterface() ──► Model.create()
 ```
 
 ## Documento → coerción DTO
@@ -189,29 +189,29 @@ async function createUser(input: ICreateUser): Promise<UserDto> {
 
 	if (!valid) throw new ValidationError(errors);
 
-	// toInterface() produce un objeto plano limpio para Mongoose:
+	// $qToInterface() produce un objeto plano limpio para Mongoose:
 	const doc = await User.create(dto.$qToInterface());
 	return new UserDto({ ...dto.$qToInterface(), id: doc._id.toString() });
 }
 ```
 
-## copy() + findByIdAndUpdate()
+## `$qCopy()` + findByIdAndUpdate()
 
 ```typescript
 async function updateUser(id: string, patch: Partial<IUser>): Promise<UserDto> {
 	const existing = await repo.findById(id);
 	if (!existing) throw new Error('Usuario no encontrado');
 
-	// copy() aplica los cambios y resetea isDirty() → false:
+	// $qCopy() aplica los cambios y crea una nueva instancia inmutable:
 	const updated = existing.$qCopy(patch);
 
-	// toInterface() produce el payload limpio para la actualización:
+	// $qToInterface() produce el payload limpio para la actualización:
 	await User.findByIdAndUpdate(id, { $set: updated.$qToInterface() });
 
 	return updated;
 }
 
-// isDirty() tras copy() siempre es false:
+// $qIsDirty() tras $qCopy() siempre es false — el estado copiado es el nuevo baseline:
 const updated = existing.$qCopy({ name: 'Bob' });
 console.log(updated.$qIsDirty()); // false — snapshot fresco
 ```
@@ -338,6 +338,44 @@ const UserMongooseSchema = new mongoose.Schema({
 	_id: { type: mongoose.Schema.Types.ObjectId, auto: true },
 });
 ```
+
+## `fromSchema`: generando una clase QModel desde un schema Mongo
+
+`QModel.fromSchema('mongo', ...)` acepta un objeto de definición de schema Mongo/Mongoose y genera código TypeScript para una clase `QModel`. Los schemas Mongo son objetos JavaScript planos (no strings), por lo que se pasa el objeto directamente:
+
+```typescript
+import 'quickmodel/schema';
+
+const mongoSchema = {
+	name: { type: String, required: true },
+	age: { type: Number, required: true },
+	active: { type: Boolean, required: true },
+	createdAt: { type: Date, required: true },
+};
+
+const code = QModel.fromSchema('mongo', mongoSchema, 'User');
+// → string TypeScript con la clase User extends QModel<IUser>
+
+// fs.writeFileSync('src/models/user.model.ts', code);
+```
+
+::: warning className es obligatorio
+A diferencia de los formatos basados en strings, el objeto de schema Mongo no tiene nombre embebido. Pasa siempre `className` explícitamente, o la clase generada se llamará `GeneratedModel`.
+:::
+
+## Round-trip: QModel → schema Mongo → clase QModel
+
+```typescript
+import 'quickmodel/schema';
+
+const mongoSchemaDef = User.getSchema('mongo');
+const code = QModel.fromSchema('mongo', mongoSchemaDef, 'User');
+// code es TypeScript válido que define class User extends QModel<IUser>
+```
+
+::: warning Limitación con BigInt
+Mongo mapea `bigint` a `String`. El round-trip para campos `BigInt` tiene pérdida — se convierten a `string` en la clase regenerada.
+:::
 
 ## Ver también
 

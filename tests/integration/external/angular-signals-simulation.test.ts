@@ -61,9 +61,9 @@ function effect(func: () => void): IEffectCleanup {
 
 // ─── reactiveModel() — Proxy utility that bridges QModel ↔ Angular signals ──
 //
-// Rather than requiring `signal.update(m => m.copy({...}))` everywhere,
+// Rather than requiring `signal.update(m => m.$qCopy({...}))` everywhere,
 // this utility wraps a QModel + signal into a single Proxy object.
-// Assigning any property directly triggers `sig.update(m => m.copy({...}))`,
+// Assigning any property directly triggers `sig.update(m => m.$qCopy({...}))`,
 // which creates a NEW instance (new reference) → Angular detects the change.
 //
 // Usage in a real Angular component:
@@ -445,7 +445,7 @@ describe('Integration: Angular Signals Simulation', () => {
 
 			const versionBefore = user.$signal.version();
 
-			// ✅ This assignment automatically calls sig.update(m => m.copy({total: 50}))
+			// ✅ This assignment automatically calls sig.update(m => m.$qCopy({total: 50}))
 			user.total = 50;
 
 			// Signal version must have incremented → Angular would re-render

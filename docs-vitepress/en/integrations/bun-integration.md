@@ -264,7 +264,7 @@ const product = new ProductDto(raw); // createdAt → Date ✅
 
 ## Date fields across HTTP
 
-Dates are serialized as ISO strings by `serialize()` and automatically re-hydrated when you pass them back to a `QModel` constructor with `coercionStrategy: 'loose'` (the default):
+Dates are serialized as ISO strings by `$qSerialize()` and automatically re-hydrated when you pass them back to a `QModel` constructor with `coercionStrategy: 'loose'` (the default):
 
 ```typescript
 // Server → client: Date becomes ISO string in JSON body

@@ -18,13 +18,11 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		);
 		const user = new User(payload);
 
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			(user as unknown as Record<string, unknown>)['admin']
+			(user as unknown as Record<string, unknown>)['admin'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			(Object.prototype as unknown as Record<string, unknown>)['admin']
+			(Object.prototype as unknown as Record<string, unknown>)['admin'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 
@@ -38,17 +36,16 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 			declare name: string;
 		}
 
-		// @quickmodel-rule-ignore: no-as-unknown — intentional: passing extra properties for behavior documentation
 		const user = new User({
 			name: 'John',
 			isAdmin: true,
-		} as unknown as IUser);
+		} as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown — intentional: passing extra properties for behavior documentation
 
 		// Default behavior: it usually copies them.
 		// Robustness improvement: should we strip them?
 		// For now, let's document behavior.
-		// @quickmodel-rule-ignore: no-as-unknown
 		expect((user as unknown as Record<string, unknown>)['isAdmin']).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			true
 		);
 	});
@@ -66,8 +63,7 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		}
 
 		// Passing null to Date transformer
-		// @quickmodel-rule-ignore: no-as-unknown — intentional: passing null for typed field to test null safety
-		const user = new User({ name: 'John', date: null } as unknown as IUser);
+		const user = new User({ name: 'John', date: null } as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		expect(user.date).toBeNull();
 	});
 
@@ -84,8 +80,7 @@ describe('Robustness: Strict Mode & Edge Cases', () => {
 		// Currently it throws QModelError (verified in validation test)
 		// But what if we just construct it?
 		expect(() => {
-			// @quickmodel-rule-ignore: no-as-unknown — intentional: passing invalid date string to test error handling
-			new User({ date: 'not-a-date' } as unknown as IUser);
+			new User({ date: 'not-a-date' } as unknown as IUser); // @quickmodel-rule-ignore: no-as-unknown
 		}).toThrow();
 	});
 });

@@ -94,7 +94,7 @@ This guide shows the **`QModel` + `@Quick`** pattern, which includes coercion, s
 
 ## validate Adapter for React Hook Form
 
-Create a custom validator that runs `checkRules()` and maps errors to RHF's format:
+Create a custom validator that runs `qCheckRules()` and maps errors to RHF's format:
 
 ```typescript
 function createQModelValidator<T extends object>(
@@ -209,9 +209,9 @@ function DynamicForm({ DtoClass }: { DtoClass: typeof UserSignupDto }) {
 }
 ```
 
-## Tracking Changes with isDirty()
+## Tracking Changes with `$qIsDirty()`
 
-`isDirty()` detects if the model's current state differs from the original snapshot.
+`$qIsDirty()` detects if the model's current state differs from the original snapshot.
 Use it to enable/disable a "Save" button or show an "Unsaved changes" indicator:
 
 ```tsx
@@ -221,7 +221,7 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 	const handleSave = async () => {
 		if (!dto.$qIsDirty()) return; // nothing changed
 		await saveProfile(dto.$qSerialize());
-		dto.reset(); // clear dirty state
+		dto.$qReset(); // clear dirty state
 		setDto(new UserSignupDto(dto.$qSerialize() as IUserSignup));
 	};
 
@@ -238,7 +238,7 @@ function EditProfileForm({ initialData }: { initialData: IUserSignup }) {
 }
 ```
 
-> After `copy()`, the resulting instance has `isDirty() === false` — the copied state becomes the new baseline. Call `reset()` on the new instance to revert to the state at the time of the copy.
+> After `$qCopy()`, the resulting instance has `$qIsDirty() === false` — the copied state becomes the new baseline. Call `$qReset()` on the new instance to revert to the state at the time of the copy.
 
 ## Async Field Validation (Server-Side)
 

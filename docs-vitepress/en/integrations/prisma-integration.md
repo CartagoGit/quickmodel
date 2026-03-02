@@ -4,15 +4,15 @@ QuickModel works alongside Prisma as a type-safe DTO layer between your database
 
 ## Key Patterns
 
-| Pattern                | QuickModel API                                                         |
-| ---------------------- | ---------------------------------------------------------------------- |
-| Map Prisma row to DTO  | `new UserRecordDto(prismaRow)` — strips `_count`, `_prisma*`           |
-| Validate create input  | `qCheckRules(new CreateUserDto(formData))`                             |
-| Bulk seed / import     | `UserRecordDto.createMany(seedArray)`                                  |
-| Repository abstraction | `repo.create(dto)` → `dto.$qToInterface()` → `prisma.user.create()`      |
-| Partial update         | `existing.$qCopy({ score: 100 })` → `prisma.user.update({ data: ... })`  |
-| Derived field          | `@QComputed() get label()` — included in `serialize()`                 |
-| DB uniqueness check    | `qCheckRulesAsync()` with async rule hitting `prisma.user.findFirst()` |
+| Pattern                | QuickModel API                                                          |
+| ---------------------- | ----------------------------------------------------------------------- |
+| Map Prisma row to DTO  | `new UserRecordDto(prismaRow)` — strips `_count`, `_prisma*`            |
+| Validate create input  | `qCheckRules(new CreateUserDto(formData))`                              |
+| Bulk seed / import     | `UserRecordDto.createMany(seedArray)`                                   |
+| Repository abstraction | `repo.create(dto)` → `dto.$qToInterface()` → `prisma.user.create()`     |
+| Partial update         | `existing.$qCopy({ score: 100 })` → `prisma.user.update({ data: ... })` |
+| Derived field          | `@QComputed() get label()` — included in `$qSerialize()`                |
+| DB uniqueness check    | `qCheckRulesAsync()` with async rule hitting `prisma.user.findFirst()`  |
 
 ## Model Setup
 
@@ -193,7 +193,7 @@ class UserRepository {
 }
 ```
 
-## Partial Updates with `copy()`
+## Partial Updates with `$qCopy()`
 
 ```typescript
 const existing = new UserRecordDto(
@@ -213,7 +213,7 @@ if (updated.$qIsDirty()) {
 
 ## Derived Fields with `@QComputed`
 
-Computed fields are included in `serialize()` — useful for Prisma-based API responses:
+Computed fields are included in `$qSerialize()` — useful for Prisma-based API responses:
 
 ```typescript
 interface IPostRecord {

@@ -4,17 +4,17 @@ QuickModel funciona de forma transparente en entornos de desarrollo móvil, incl
 
 ## Patrones Clave
 
-| Patrón                               | API de QuickModel                                 |
-| ------------------------------------ | ------------------------------------------------- |
-| Coerción de TextInput                | `coercionStrategy: 'loose'` en `@Quick()`         |
-| Persistir en AsyncStorage            | `dto.$qSerialize()` → `JSON.stringify()`          |
-| Rehidratar desde almacenamiento      | `new MyDto(JSON.parse(stored))`                   |
-| Capacitor Preferences + TTL          | `serialize()` + timestamp en el objeto almacenado |
-| Renderizado dinámico de campos       | `dto.$qGetFormSchema()`                           |
-| Validar antes de una API nativa      | `qCheckRules()` / `qCheckRulesAsync()`            |
-| Actualizaciones de estado inmutables | `dto.$qCopy({ field: value })`                    |
-| Detección de cambios                 | `dto.$qIsDirty()`                                 |
-| Población de listas en bulk          | `MyDto.createMany(apiArray)`                      |
+| Patrón                               | API de QuickModel                                   |
+| ------------------------------------ | --------------------------------------------------- |
+| Coerción de TextInput                | `coercionStrategy: 'loose'` en `@Quick()`           |
+| Persistir en AsyncStorage            | `dto.$qSerialize()` → `JSON.stringify()`            |
+| Rehidratar desde almacenamiento      | `new MyDto(JSON.parse(stored))`                     |
+| Capacitor Preferences + TTL          | `$qSerialize()` + timestamp en el objeto almacenado |
+| Renderizado dinámico de campos       | `dto.$qGetFormSchema()`                             |
+| Validar antes de una API nativa      | `qCheckRules()` / `qCheckRulesAsync()`              |
+| Actualizaciones de estado inmutables | `dto.$qCopy({ field: value })`                      |
+| Detección de cambios                 | `dto.$qIsDirty()`                                   |
+| Población de listas en bulk          | `MyDto.createMany(apiArray)`                        |
 
 ## Instalación
 
@@ -223,7 +223,7 @@ async function loadIfFresh(): Promise<AppSettingsDto | null> {
 
 ## Ionic
 
-### Campos Dinámicos con `getFormSchema()`
+### Campos Dinámicos con `$qGetFormSchema()`
 
 ```typescript
 const dto = new UserProfileDto({

@@ -7,7 +7,7 @@ QuickModel encaja con la Composition API de Vue, stores Pinia, adaptadores VeeVa
 | Caso de uso               | Solución QuickModel                   |
 | ------------------------- | ------------------------------------- |
 | Composition API           | Clase plana + `qCheckRules()`         |
-| Pinia store               | `QModel` + `copy()` inmutable         |
+| Pinia store               | `QModel` + `$qCopy()` inmutable       |
 | VeeValidate               | Adaptador de campo personalizado      |
 | `v-model` / `defineModel` | Binding directo                       |
 | Nuxt `useAsyncData`       | `createMany()`                        |
@@ -53,7 +53,7 @@ const { form, validation } = useProfileForm();
 ::: tip Dos patrones disponibles
 
 - **Clase plana** (arriba): solo `@QRule` + `@QField` — sin herencia de `QModel`.
-- **Con `QModel` + `@Quick`** (abajo): accedes además a `copy()`, `serialize()`, `checkIntegrity()` y `diff()`.
+- **Con `QModel` + `@Quick`** (abajo): accedes además a `$qCopy()`, `$qSerialize()`, `$qCheckIntegrity()` y `$qDiff()`.
   :::
 
 ### Con QModel + @Quick
@@ -128,7 +128,7 @@ export const useUserStore = defineStore('user', {
 		update(id: string, patch: Partial<IUser>) {
 			const record = this.records.get(id);
 			if (!record) return;
-			// copy() es INMUTABLE — captura la nueva instancia
+			// $qCopy() es INMUTABLE — captura la nueva instancia
 			this.records.set(id, record.$qCopy(patch) as UserRecord);
 		},
 	},
@@ -277,7 +277,7 @@ import { reactive, toRaw } from 'vue';
 const user = new User({ name: 'Alice', createdAt: '2024-01-01' });
 const reactiveUser = reactive(user);
 
-// ❌ Evitar — `this` dentro de serialize() apunta al Proxy
+// ❌ Evitar — `this` dentro de $qSerialize() apunta al Proxy
 const data = reactiveUser.$qSerialize();
 
 // ✅ Correcto — toRaw() devuelve la instancia original sin envolver
@@ -338,7 +338,7 @@ console.log(user.address?.city); // 'Barcelona'
 
 ### Pinia — patrón recomendado
 
-El estado de Pinia ya es reactivo. Usa `toRaw()` dentro de las acciones antes de llamar a `copy()` para que `this` interno de QuickModel siempre sea la instancia real:
+El estado de Pinia ya es reactivo. Usa `toRaw()` dentro de las acciones antes de llamar a `$qCopy()` para que `this` interno de QuickModel siempre sea la instancia real:
 
 ```typescript
 // stores/articles.ts
@@ -346,8 +346,8 @@ actions: {
   updateArticle(id: string, partial: Partial<IArticle>) {
     const prev = this.articles.get(id);
     if (!prev) return;
-    // toRaw() → desenvuelve del proxy antes de llamar copy()
-    // copy() → devuelve una nueva instancia; Pinia detecta el cambio de referencia
+    // toRaw() → desenvuelve del proxy antes de llamar $qCopy()
+    // $qCopy() → devuelve una nueva instancia; Pinia detecta el cambio de referencia
     this.articles.set(id, toRaw(prev).$qCopy(partial) as ArticleModel);
   },
 },

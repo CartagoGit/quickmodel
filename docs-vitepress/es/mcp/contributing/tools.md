@@ -64,7 +64,7 @@ Coordina el trabajo de agentes paralelos y previene conflictos de archivos. Cada
 		"optional": true
 	},
 	"task": {
-		"description": "Título corto de la tarea, p.ej. \"migrar docs $qm\". Requerido para claim.",
+		"description": "Título corto de la tarea, p.ej. \"agregar transformer de email\". Requerido para claim.",
 		"optional": true
 	},
 	"files": {

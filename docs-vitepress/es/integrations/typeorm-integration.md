@@ -109,11 +109,11 @@ if (!valid) {
 	throw new Error(errors.map((e) => e.message).join(', '));
 }
 
-// toInterface() devuelve un objeto plano seguro para TypeORM
+// $qToInterface() devuelve un objeto plano seguro para TypeORM
 await userRepository.save(dto.$qToInterface());
 ```
 
-## Actualizaciones parciales con copy()
+## Actualizaciones parciales con `$qCopy()`
 
 ```typescript
 const entity = await userRepository.findOne({ where: { id: 5 } });
@@ -216,7 +216,7 @@ class UserRepository {
 | ------------------ | ----------------------------- | ---------------------------------- |
 | Capa de ejecución  | Aplicación / DTO              | Consulta a base de datos           |
 | Soporte SQL        | ❌ (solo JS)                  | ✅ (expresión SQL)                 |
-| Persistido         | ❌ (no en `toInterface()`)    | ❌ (solo lectura)                  |
+| Persistido         | ❌ (no en `$qToInterface()`)  | ❌ (solo lectura)                  |
 | Disponible offline | ✅                            | ❌ (requiere DB)                   |
 | Caso de uso        | Etiquetas derivadas, formateo | Agregados, campos computados en DB |
 
