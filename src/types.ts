@@ -5,7 +5,7 @@
  * public API surface (e.g. return types) but not main library features.
  *
  * @module quickmodel/types
- * @see {@link IQSerializationOptions} — options for `QModel.serialize()`
+ * @see {@link IQSerializationOptions} — options for `QModel.$qSerialize()`
  * @see {@link IQConfig} — global configuration shape
  * @see {@link IQMockType} — mock generation strategy enum values
  * @see {@link IQTransformer} — interface for custom transformers

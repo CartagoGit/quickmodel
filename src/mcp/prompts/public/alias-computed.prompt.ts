@@ -9,7 +9,7 @@ import { QAbstractPrompt } from '../abstract-prompt';
  *
  * @see {@link QAbstractPrompt} for the base class this prompt extends
  * @see {@link QValidateUsageTool} for usage verification
- * @see {@link QModel.serialize} for the serialize step that outputs aliased/computed fields
+ * @see {@link QModel.$qSerialize} for the serialize step that outputs aliased/computed fields
  */
 export class QAliasComputedPrompt extends QAbstractPrompt<{
 	model_code: z.ZodOptional<z.ZodString>;

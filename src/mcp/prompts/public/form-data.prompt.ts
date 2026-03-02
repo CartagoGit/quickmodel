@@ -15,7 +15,7 @@ import type { IQPromptResult } from '../abstract-prompt';
  * - When `total` / `percent` / `eta` are `null` (stream without Content-Length)
  *
  * @see {@link QAbstractPrompt} for the base class this prompt extends
- * @see {@link QModel.toFormData} for the FormData serialization method
+ * @see {@link QModel.$qToFormData} for the FormData serialization method
  * @see {@link QModel.fromFormData} for the FormData deserialization method
  */
 export class QFormDataPrompt extends QAbstractPrompt<{

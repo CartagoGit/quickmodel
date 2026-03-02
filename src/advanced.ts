@@ -54,7 +54,7 @@ export { BaseTransformer as QBaseTransformer } from './core/bases/base-transform
  * const serializer = new QSerializer();
  * const plain = serializer.serialize(myModelInstance);
  * ```
- * @see {@link QModel.serialize} — high-level API wrapping this service
+ * @see {@link QModel.$qSerialize} — high-level API wrapping this service
  * @see {@link QDeserializer} — inverse service
  */
 export { Serializer as QSerializer } from './core/services/serializer.service';

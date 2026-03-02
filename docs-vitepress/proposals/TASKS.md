@@ -11,10 +11,9 @@
 ## 📊 Progreso General
 
 ```
-✅ Completadas: Tasks #1–#58 + Task #48 + Propuestas A–H, J, L, M–Q, R–V (todas las activas)
+✅ Completadas: Tasks #1–#59 + Task #48 + Propuestas A–H, J, L, M–Q, R–V (todas las activas)
 📋 Planificadas: I ($qm.history / audit trail), W (namespace $qm)
 ⚠️ Diferidas:   K (plugin system)
-🐛 Bug pendiente: Task #59 — TS2339 _qCallDepth en quick.model.ts:2570
 ```
 
 ---
@@ -503,37 +502,17 @@ bunx quickmodel generate integration prisma
 
 ---
 
-## 🐛 Bugs conocidos pendientes
+## ✅ Bugs resueltos
 
-### Task #59 — Bug: `TS2339 Property '_qCallDepth' does not exist` en `quick.model.ts:2570`
+### Task #59 — Bug: `TS2339 Property '_qCallDepth' does not exist` en `quick.model.ts:2570` — **RESUELTO**
 
 **Prioridad:** 🟠 Alta — error de typecheck en el archivo core más crítico del proyecto
 **Detectado:** 1 Mar 2026 — durante auditoría de prompts de coordinación
-**Archivo:** `src/core/models/quick.model.ts`, línea 2570
+**Resuelto:** refactor `$q*` namespace — el sistema de guard (`_qCallDepth`, `_withQFlag`, `_assertQCall`) fue eliminado completamente; los métodos `$q*` son ahora implementaciones directas sin overhead.
 
-**Descripción:**
+**Causa:** La variable `_qCallDepth` era parte del sistema de guarda interno que verificaba que los métodos `$q*` se llamaban correctamente. Al promover todos los métodos `$q*` a implementaciones directas, el sistema de guarda completo fue eliminado, resolviendo el error de typecheck y simplificando la arquitectura.
 
-`tsc --noEmit` reporta:
-
-```
-src/core/models/quick.model.ts(2570,12): error TS2339: Property '_qCallDepth' does not exist on type 'QModel<TInterface, TAliasMap>'.
-```
-
-La variable `_qCallDepth` está declarada correctamente a nivel de **módulo** como `let _qCallDepth = 0;`
-en la línea 353 de `quick.model.ts`. Sin embargo, en la línea 2570 se accede a ella como si fuera una
-propiedad de instancia (`this._qCallDepth`) en lugar de como variable de módulo libre (`_qCallDepth`).
-
-**Causa probable:** Durante un refactor o merge, algún `_qCallDepth` fue prefijado con `this.` por error,
-convirtiéndolo en acceso a propiedad de instancia en lugar de a la variable de módulo.
-
-**Fix:**
-
-1. Localizar la ocurrencia en línea 2570: buscar `this._qCallDepth` y cambiar a `_qCallDepth`
-2. Ejecutar `bun run typecheck:src` para confirmar que el error desaparece
-3. Ejecutar `bun test` para confirmar que no hay regresiones
-
-**Pre-existente:** Sí — no introducido por la sesión de auditoría de prompts del 1 Mar 2026.
-Confirmado por `git diff` (el archivo no aparece en los cambios staged/unstaged de esa sesión).
+**Verificación:** `bun run typecheck` → 0 errores. `bun test tests/unit/ tests/integration/ tests/e2e/ tests/system/` → 3714 pass, 0 fail.
 
 ---
 
