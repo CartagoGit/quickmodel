@@ -9,7 +9,18 @@
 	"files.exclude": {
 		"**/node_modules": true,
 		"**/dist": true,
-		"**/.turbo": true
+		"**/.turbo": true,
+		"**/tmp": true,
+		"**/coverage": true
+	},
+	"files.watcherExclude": {
+		"**/node_modules/**": true,
+		"**/dist/**": true,
+		"**/.turbo/**": true,
+		"**/tmp/**": true,
+		"**/coverage/**": true,
+		"**/docs-vitepress/dist/**": true,
+		"**/.cache/**": true
 	},
 	"search.exclude": {
 		"**/node_modules": true,
