@@ -700,7 +700,7 @@ export abstract class QModel<
 
 	static createMany(
 		this: any,
-		data: any[],
+		data: Record<string, unknown>[],
 		options?: IQCreateManyOptions
 	): IQCreateManyResult<any> {
 		const includeErrorInstances = options?.includeErrorInstances ?? false;
