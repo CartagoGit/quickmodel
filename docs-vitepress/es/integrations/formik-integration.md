@@ -8,7 +8,7 @@ QuickModel funciona junto a Formik v2 como capa de validación y coerción — s
 | -------------------- | ----------------------------------------------------- |
 | Prop `validate`      | `qCheckRules(dto)` → `{}` vacío o `{ campo: msg }`    |
 | Validación por campo | `qCheckRulesByGroup(dto)['grupoPaso']`                |
-| Valores iniciales    | `dto.serialize()`                                     |
+| Valores iniciales    | `dto.$qSerialize()`                                   |
 | Validación async     | `qCheckRulesAsync(dto)` con `@QRule(async ...)`       |
 | Wizard multi-paso    | `@QGroup` por paso + `qCheckRulesByGroup(dto)`        |
 | Campos dinámicos     | `dto.getFormSchema()` → renderizar lista de `<Field>` |
@@ -267,7 +267,7 @@ async function validarAsync(values: Partial<IFormularioRegistro>) {
 
 ```typescript
 const dto = new RegistroDto({ ... });
-const reporte = dto.$qm.validationReport();
+const reporte = dto.$qValidationReport();
 // reporte['password'] → array de { message, passed } por cada @QRule en password
 ```
 

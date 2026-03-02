@@ -51,7 +51,7 @@ console.log(user.createdAt instanceof Date); // true
 console.log(user.createdAt.getFullYear()); // 2026
 
 // 5. Serializa de vuelta a JSON
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 console.log(plain.createdAt); // '2026-01-10T10:00:00.000Z'
 ```
 
@@ -110,7 +110,7 @@ const user = new User(apiResponse);
 Usa `serialize()` para obtener un objeto plano (acceso a propiedades, cuerpos REST, etc.), o `toJSON()` para un string JSON:
 
 ```typescript
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 // Las fechas se convierten de vuelta a strings ISO
 // (usa user.toJSON() si necesitas el string JSON directamente)
 ```

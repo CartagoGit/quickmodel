@@ -116,7 +116,7 @@ const msg = new ChatMessageDto({
 });
 
 // serialize() converts Date → ISO string, Set → array, Map → object, BigInt → string
-ws.send(JSON.stringify(msg.serialize()));
+ws.send(JSON.stringify(msg.$qSerialize()));
 ```
 
 ### Server — Receiving (Node.js `ws`)
@@ -144,7 +144,7 @@ wss.on('connection', (socket) => {
 		// Broadcast to all clients
 		wss.clients.forEach((client) => {
 			if (client.readyState === 1) {
-				client.send(JSON.stringify(dto.serialize()));
+				client.send(JSON.stringify(dto.$qSerialize()));
 			}
 		});
 	});
@@ -161,7 +161,7 @@ const presenceDto = new PresenceEventDto({
 	lastSeen: new Date(),
 	activeRooms: new Set(['room-42']),
 });
-socket.send(JSON.stringify(presenceDto.serialize()));
+socket.send(JSON.stringify(presenceDto.$qSerialize()));
 
 // Client receives and reconstructs
 ws.onmessage = (evt) => {
@@ -199,7 +199,7 @@ io.on('connection', (socket) => {
 		}
 
 		// Emit to room — serialize() ensures JSON-safe payload
-		io.to(dto.roomId).emit('chat:message', dto.serialize());
+		io.to(dto.roomId).emit('chat:message', dto.$qSerialize());
 		ack?.({ ok: true, id: dto.id });
 	});
 
@@ -208,7 +208,7 @@ io.on('connection', (socket) => {
 		const result = qCheckRules(dto);
 		ack?.(result);
 		if (result.valid) {
-			io.emit('presence:update', dto.serialize());
+			io.emit('presence:update', dto.$qSerialize());
 		}
 	});
 });
@@ -223,7 +223,7 @@ const socket = io('wss://example.com');
 
 // Emit with acknowledgement
 const msg = new ChatMessageDto({ ... });
-socket.emit('chat:message', msg.serialize(), (response) => {
+socket.emit('chat:message', msg.$qSerialize(), (response) => {
 	if (!response.ok) {
 		console.error('Validation errors:', response.errors);
 	}
@@ -251,7 +251,7 @@ let currentUser: PresenceEventDto | null = null;
 
 socket.on('presence:patch', (patch) => {
 	if (currentUser) {
-		currentUser = currentUser.copy(patch);
+		currentUser = currentUser.$qCopy(patch);
 	} else {
 		currentUser = new PresenceEventDto(patch);
 	}
@@ -279,7 +279,7 @@ app.get('/events/stocks', (req, res) => {
 
 	const sendTick = (tick: StockTickDto) => {
 		res.write(`event: stock:tick\n`);
-		res.write(`data: ${JSON.stringify(tick.serialize())}\n\n`);
+		res.write(`data: ${JSON.stringify(tick.$qSerialize())}\n\n`);
 	};
 
 	const interval = setInterval(() => {
@@ -352,7 +352,7 @@ App()
 			// Broadcast to all subscribers — binary=false for text frames
 			ws.publish(
 				'room:' + dto.roomId,
-				JSON.stringify(dto.serialize()),
+				JSON.stringify(dto.$qSerialize()),
 				false
 			);
 		},
@@ -370,7 +370,7 @@ App()
 const ws = new WebSocket('ws://localhost:9001/chat');
 
 const msg = new ChatMessageDto({ ... });
-ws.send(JSON.stringify(msg.serialize())); // Plain text frame
+ws.send(JSON.stringify(msg.$qSerialize())); // Plain text frame
 
 ws.onmessage = (evt) => {
 	const dto = new ChatMessageDto(JSON.parse(evt.data));
@@ -414,7 +414,7 @@ const msg = new ChatMessageDto({ ... });
 stompClient.publish({
 	destination: '/app/chat.general',
 	headers: { 'content-type': 'application/json' },
-	body: JSON.stringify(msg.serialize()),
+	body: JSON.stringify(msg.$qSerialize()),
 });
 ```
 
@@ -519,7 +519,7 @@ socket.on('stock:batch', (rawArray) => {
 const { instances } = StockTickDto.createMany(rawTicks);
 socket.emit(
 	'stock:batch',
-	instances.map((dto) => dto.serialize())
+	instances.map((dto) => dto.$qSerialize())
 );
 ```
 
@@ -531,7 +531,7 @@ socket.emit(
 
 ```typescript
 // Serialization: BigInt → string  (via serialize())
-tick.serialize();
+tick.$qSerialize();
 // { symbol: 'AAPL', volume: '987654321000', ... }
 
 // Deserialization: string → BigInt  (via new Dto())

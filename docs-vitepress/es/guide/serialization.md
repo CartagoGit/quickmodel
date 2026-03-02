@@ -79,7 +79,7 @@ console.log(user.metadata instanceof Map); // true
 El método `serialize()` revierte todas las transformaciones y devuelve un objeto JavaScript plano:
 
 ```typescript
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 // {
 //   id: 1,
 //   name: 'John Doe',
@@ -103,7 +103,7 @@ const jsonStr = user.toJSON();
 
 ```typescript
 const event = new Event({ createdAt: '2026-01-10T12:30:00.000Z' });
-const plain = event.$qm.serialize();
+const plain = event.$qSerialize();
 
 console.log(plain.createdAt); // '2026-01-10T12:30:00.000Z'
 ```
@@ -114,7 +114,7 @@ Usa `Date.prototype.toISOString()`.
 
 ```typescript
 const account = new Account({ balance: '999999999999999' });
-const plain = account.$qm.serialize();
+const plain = account.$qSerialize();
 
 console.log(plain.balance); // '999999999999999'
 ```
@@ -125,7 +125,7 @@ Convierte usando `String(bigint)`.
 
 ```typescript
 const post = new Post({ tags: ['js', 'ts', 'js'] });
-const plain = post.$qm.serialize();
+const plain = post.$qSerialize();
 
 console.log(plain.tags); // ['js', 'ts'] (duplicados eliminados)
 ```
@@ -141,7 +141,7 @@ const config = new Config({
 		['key2', 'val2'],
 	],
 });
-const plain = config.$qm.serialize();
+const plain = config.$qSerialize();
 
 console.log(plain.metadata); // [['key1', 'val1'], ['key2', 'val2']]
 ```
@@ -152,7 +152,7 @@ Convierte usando `Array.from(map.entries())`.
 
 ```typescript
 const validator = new Validator({ pattern: '^[a-z]+$' });
-const plain = validator.serialize();
+const plain = validator.$qSerialize();
 
 console.log(plain.pattern); // { source: '^[a-z]+$', flags: '' }
 ```
@@ -161,7 +161,7 @@ console.log(plain.pattern); // { source: '^[a-z]+$', flags: '' }
 
 ```typescript
 const config = new Config({ key: 'unique.key' });
-const plain = config.$qm.serialize();
+const plain = config.$qSerialize();
 
 console.log(plain.key); // 'unique.key'
 ```
@@ -172,7 +172,7 @@ Usa `Symbol.keyFor()`.
 
 ```typescript
 const file = new File({ data: buffer });
-const plain = file.$qm.serialize();
+const plain = file.$qSerialize();
 
 console.log(plain.data); // 'SGVsbG8gV29ybGQ=' (base64)
 ```
@@ -181,7 +181,7 @@ console.log(plain.data); // 'SGVsbG8gV29ybGQ=' (base64)
 
 ```typescript
 const image = new Image({ pixels: new Uint8Array([255, 128, 64]) });
-const plain = image.$qm.serialize();
+const plain = image.$qSerialize();
 
 console.log(plain.pixels); // [255, 128, 64]
 ```
@@ -190,7 +190,7 @@ console.log(plain.pixels); // [255, 128, 64]
 
 ```typescript
 const link = new Link({ homepage: 'https://example.com' });
-const plain = link.$qm.serialize();
+const plain = link.$qSerialize();
 
 console.log(plain.homepage); // 'https://example.com'
 ```
@@ -201,7 +201,7 @@ Usa `URL.prototype.toString()`.
 
 ```typescript
 const request = new Request({ params: { page: '1', limit: '10' } });
-const plain = request.$qm.serialize();
+const plain = request.$qSerialize();
 
 console.log(plain.params); // { page: '1', limit: '10' }
 ```
@@ -230,7 +230,7 @@ const user = new User({
 	createdAt: '2026-01-10',
 });
 
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 // {
 //   id: 1,
 //   profile: {
@@ -264,7 +264,7 @@ const cart = new Cart({
 	],
 });
 
-const plain = cart.$qm.serialize();
+const plain = cart.$qSerialize();
 // {
 //   items: [
 //     { id: '1', price: '1000' },  // bigint → string
@@ -282,7 +282,7 @@ async function createUser(user: User): Promise<void> {
 	await fetch('/api/users', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(user.$qm.serialize()), // serialize() → objeto plano → cadena JSON
+		body: JSON.stringify(user.$qSerialize()), // serialize() → objeto plano → cadena JSON
 	});
 }
 ```
@@ -314,7 +314,7 @@ async function updateUser(user: User): Promise<void> {
 	await fetch(`/api/users/${user.id}`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(user.$qm.serialize()),
+		body: JSON.stringify(user.$qSerialize()),
 	});
 }
 ```
@@ -331,7 +331,7 @@ const user = new User({
 });
 
 // Los tres son equivalentes y producen el mismo string JSON:
-const json1 = JSON.stringify(user.$qm.serialize()); // explícito: serialize → stringify
+const json1 = JSON.stringify(user.$qSerialize()); // explícito: serialize → stringify
 const json2 = user.toJSON(); // toJSON() devuelve un string JSON directamente
 const json3 = JSON.stringify(user); // JSON.stringify llama a toJSON() internamente
 
@@ -347,7 +347,7 @@ Usa `serialize()` para crear copias profundas (deep copies):
 const user = new User({ id: 1, name: 'John', createdAt: '2026-01-10' });
 
 // Crear una copia vía serialize() (devuelve objeto plano)
-const copy = new User(user.$qm.serialize());
+const copy = new User(user.$qSerialize());
 
 copy.name = 'Jane';
 console.log(user.name); // 'John' (el original no cambia)
@@ -357,7 +357,7 @@ console.log(copy.name); // 'Jane'
 O usa el método incorporado `copy()`:
 
 ````typescript
-const copy = user.$qm.copy(); // Equivalente a new User(user.$qm.serialize())
+const copy = user.$qCopy(); // Equivalente a new User(user.$qSerialize())
 QuickModel preserva los valores `null` y `undefined`:
 
 ```typescript
@@ -367,7 +367,7 @@ const user = new User({
 	createdAt: null, // valor null
 });
 
-const plain = user.serialize();
+const plain = user.$qSerialize();
 console.log(plain.createdAt); // null (preservado)
 ````
 
@@ -383,14 +383,14 @@ class User extends QModel<IUser> {
 	declare createdAt: Date;
 
 	serialize() {
-		const plain = super.serialize();
+		const plain = super.$qSerialize();
 		// Añadir campos personalizados
 		return { ...plain, displayName: this.name.toUpperCase() };
 	}
 }
 
 const user = new User({ id: 1, name: 'John', createdAt: '2026-01-10' });
-const plain = user.serialize();
+const plain = user.$qSerialize();
 console.log(plain.displayName); // 'JOHN'
 ```
 
@@ -403,7 +403,7 @@ Llama a `serialize()` solo cuando sea necesario (e.j., antes de enviar a API):
 ```typescript
 // ❌ Mal - serialización innecesaria
 function processUser(user: User) {
-	const plain = user.serialize();
+	const plain = user.$qSerialize();
 	console.log(plain.name); // ¡Usa user.name directamente!
 }
 
@@ -423,7 +423,7 @@ class CachedUser extends User {
 
 	serialize() {
 		if (!this._cachedPlain) {
-			this._cachedPlain = super.serialize();
+			this._cachedPlain = super.$qSerialize();
 		}
 		return this._cachedPlain;
 	}
@@ -436,7 +436,7 @@ Cuando serialices múltiples modelos, hazlo en una sola pasada:
 
 ```typescript
 const users = [user1, user2, user3];
-const plainArray = users.map((usr) => usr.serialize());
+const plainArray = users.map((usr) => usr.$qSerialize());
 ```
 
 ## Filtrado de Campos
@@ -456,11 +456,11 @@ const user = new User({
 });
 
 // omit — excluir campos específicos
-const publico = user.serialize({ omit: ['password', 'role'] });
+const publico = user.$qSerialize({ omit: ['password', 'role'] });
 // → { id: 1, name: 'Alice' }
 
 // pick — incluir solo campos específicos
-const minimal = user.serialize({ pick: ['id', 'name'] });
+const minimal = user.$qSerialize({ pick: ['id', 'name'] });
 // → { id: 1, name: 'Alice' }
 ```
 
@@ -487,7 +487,7 @@ class Account extends QModel<IAccount> {
 
 const account = new Account({ id: '1', name: 'Alice', password: 's3cr3t' });
 assert(account.password === 's3cr3t'); // sigue en la instancia
-assert(account.serialize().password === undefined); // excluido
+assert(account.$qSerialize().password === undefined); // excluido
 ```
 
 ::: info ¿Cuándo usar cada enfoque?
@@ -528,7 +528,7 @@ class User extends QModel<IUser> {
 
 const user = User.create({ firstName: 'Alice', lastName: 'Smith' });
 
-user.serialize();
+user.$qSerialize();
 // { firstName: 'Alice', lastName: 'Smith', fullName: 'Alice Smith' }
 // Nota: 'initials' NO está incluido
 ```
@@ -557,7 +557,7 @@ class User extends QModel<IUser> {
 	}
 }
 
-user.serialize();
+user.$qSerialize();
 // { firstName: 'Alice', lastName: 'Smith', birthYear: 1990, fullName: 'Alice Smith', age: 35 }
 ```
 

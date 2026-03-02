@@ -230,8 +230,19 @@ export class ToInterfaceService<
 		if (currentValue === undefined) return undefined;
 		if (typeof currentValue === 'function') return undefined;
 
-		// 2. Check for circular references (only for objects)
-		if (typeof currentValue === 'object' && currentValue !== null) {
+		// 2. Check for circular references (only for non-collection objects)
+		// Sets, Maps and Arrays are serialized directly to flat representations and cannot
+		// cause true infinite loops, so we skip the circular-reference guard for them.
+		// Adding them to `seen` would generate false positives when the same collection
+		// instance is referenced from multiple paths (e.g. the same Set shared across
+		// nested models).
+		if (
+			typeof currentValue === 'object' &&
+			currentValue !== null &&
+			!(currentValue instanceof Set) &&
+			!(currentValue instanceof Map) &&
+			!Array.isArray(currentValue)
+		) {
 			if (seen.has(currentValue)) {
 				const returnValue = { __circular: true };
 				const errorMsg = `QuickModel Error => [Circular reference] at property '${propertyKey}'`;
@@ -539,6 +550,34 @@ export class ToInterfaceService<
 
 			// Plain Object literal
 			if (typedOriginal.constructor === Object) {
+				// If currentValue is a QModel with $qToInterface, delegate to it even when originalValue is
+				// a plain-object copy (e.g. structuredClone of a QModel falls back to {constructor: Object}).
+				// Without this check, the plain-object loop would iterate over the clone's properties and
+				// call convertToInterfaceFormat with the ORIGINAL instance's sub-objects (which are already
+				// in `seen`), causing a false-positive circular-reference error.
+				if (
+					currentValue &&
+					typeof currentValue === 'object' &&
+					'$qToInterface' in currentValue &&
+					typeof (
+						currentValue as {
+							$qToInterface: (
+								s: WeakSet<object>,
+								d: number
+							) => unknown;
+						}
+					).$qToInterface === 'function'
+				) {
+					return (
+						currentValue as {
+							$qToInterface: (
+								s: WeakSet<object>,
+								d: number
+							) => unknown;
+						}
+					).$qToInterface(seen, depth + 1);
+				}
+
 				// Ensure currentValue is also an object
 				if (typeof currentValue !== 'object' || currentValue === null) {
 					if (!isProduction) {

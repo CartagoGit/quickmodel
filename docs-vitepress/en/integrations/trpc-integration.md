@@ -7,12 +7,12 @@ QuickModel integrates cleanly into tRPC-based stacks as an input validator, outp
 | tRPC layer          | QuickModel Pattern                               |
 | ------------------- | ------------------------------------------------ |
 | Input validator     | `new MyInputDto(ctx.rawInput)` + `qCheckRules()` |
-| Output serializer   | `dto.serialize()` as procedure return value      |
+| Output serializer   | `dto.$qSerialize()` as procedure return value    |
 | Middleware coercion | `new MyDto(input)` + `coercionStrategy: 'loose'` |
 | Async DB validation | `qCheckRulesAsync()` with custom async rules     |
 | Batch response      | `MyDto.createMany(batchArray)`                   |
 | Error mapping       | Map `qCheckRules().errors` to `TRPCError`        |
-| Patch mutation      | `existing.copy(patchInput.toInterface())`        |
+| Patch mutation      | `existing.$qCopy(patchInput.$qToInterface())`    |
 
 ## Model Setup
 
@@ -187,7 +187,7 @@ export const createUser = trpc.procedure
       throw new TRPCError({ code: 'CONFLICT', message: 'Email already taken' });
     }
 
-    return db.users.create(input.toInterface());
+    return db.users.create(input.$qToInterface());
   });
 ```
 
@@ -248,7 +248,7 @@ export const updateUser = trpc.procedure
     if (!validated.valid) throw new TRPCError({ code: 'BAD_REQUEST', ... });
 
     const updated = existing.$qCopy({ name: input.name, age: input.age });
-    await db.users.update(input.uid, updated.toInterface());
+    await db.users.update(input.uid, updated.$qToInterface());
     return updated.$qSerialize();
   });
 ```

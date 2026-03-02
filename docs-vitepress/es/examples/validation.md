@@ -57,7 +57,7 @@ const validUser = new UserRegister({
 	age: 25,
 });
 
-const result = validUser.$qm.checkRules();
+const result = validUser.$qCheckRules();
 console.log(result.valid); // true
 console.log(result.errors); // []
 
@@ -69,7 +69,7 @@ const invalidUser = new UserRegister({
 	age: 16,
 });
 
-const errors = invalidUser.$qm.checkRules();
+const errors = invalidUser.$qCheckRules();
 console.log(errors.valid); // false
 console.log(errors.errors);
 // [
@@ -86,7 +86,7 @@ console.log(errors.errors);
 Usa `isValid()` para un check booleano rápido que combina integridad + reglas:
 
 ```typescript
-if (!invalidUser.$qm.isValid()) {
+if (!invalidUser.$qIsValid()) {
 	console.log('El formulario tiene errores');
 }
 
@@ -94,8 +94,8 @@ if (!invalidUser.$qm.isValid()) {
 async function saveUser(data: IUserRegister): Promise<void> {
 	const user = new UserRegister(data);
 
-	if (!user.$qm.isValid()) {
-		const report = user.$qm.validationReport();
+	if (!user.$qIsValid()) {
+		const report = user.$qValidationReport();
 		throw new Error(
 			`Datos inválidos: ${report.rules.errors.map((e) => e.message).join(', ')}`
 		);
@@ -147,7 +147,7 @@ const product = new Product({
 	stock: -5,
 });
 
-const report = product.$qm.validationReport();
+const report = product.$qValidationReport();
 console.log(report.valid); // false
 console.log(report.integrity); // [] (no hay problemas de integridad)
 console.log(report.rules.errors);
@@ -185,7 +185,7 @@ const range = new DateRange({
 	endDate: '2026-02-01', // ❌ anterior a startDate
 });
 
-console.log(range.$qm.checkRules().errors[0].message);
+console.log(range.$qCheckRules().errors[0].message);
 // 'La fecha de fin debe ser posterior a la fecha de inicio'
 ```
 
@@ -221,7 +221,7 @@ const newUser = new NewUser({
 });
 
 // Ejecutar con timeout de 3 segundos por predicado
-const asyncResult = await newUser.$qm.checkRulesAsync({
+const asyncResult = await newUser.$qCheckRulesAsync({
 	timeoutMs: 3000,
 	timeoutMessage: 'No se pudo verificar la disponibilidad del usuario',
 	mode: 'parallel', // Ejecuta todos los predicados a la vez
@@ -288,10 +288,10 @@ class InternationalForm extends QModel<{ age: number }> {
 }
 
 const form = new InternationalForm({ age: 15 });
-console.log(form.$qm.checkRules().errors[0].message); // 'Debes tener al menos 18 años'
+console.log(form.$qCheckRules().errors[0].message); // 'Debes tener al menos 18 años'
 
 currentLang = 'en';
-console.log(form.$qm.checkRules().errors[0].message); // 'You must be at least 18 years old'
+console.log(form.$qCheckRules().errors[0].message); // 'You must be at least 18 years old'
 ```
 
 ## Mejores Prácticas
@@ -309,14 +309,14 @@ const product = new Product({
 	price: 'no-es-numero',
 	stock: 5,
 });
-const integrityIssues = product.checkIntegrity();
+const integrityIssues = product.$qCheckIntegrity();
 // [{ field: 'price', error: 'Cannot convert ... to BigInt' }]
 ```
 
 ### Usa mode: 'serial' cuando el orden importa
 
 ```typescript
-const result = await model.$qm.checkRulesAsync({
+const result = await model.$qCheckRulesAsync({
 	mode: 'serial', // Ejecuta en orden declarativo, para del todo en el primero que falla
 });
 ```

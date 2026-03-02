@@ -8,11 +8,11 @@ Use `@QField` to define form structure, `@QRule` for synchronous validation, and
 
 | Pattern                 | QuickModel API                               |
 | ----------------------- | -------------------------------------------- |
-| Validate on submit      | `dto.checkRules()` → `setError()`            |
+| Validate on submit      | `dto.$qCheckRules()` → `setError()`          |
 | Field schema generation | `Dto.getFormSchema()`                        |
 | Type coercion on submit | `@Quick({ ..., coercionStrategy: 'loose' })` |
 | Async server validation | `qCheckRulesAsync(dto)`                      |
-| Dirty change detection  | `dto.isDirty()`                              |
+| Dirty change detection  | `dto.$qIsDirty()`                            |
 
 ## Installation
 

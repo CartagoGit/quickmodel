@@ -464,7 +464,7 @@ model_code: "@Quick({}) class User extends QModel<User> { @QRule(...) declare em
 context: "NestJS service with TypeORM repository"
 
 → AI warns: async-only, use checkRules() for sync predicates
-→ AI shows: await instance.$qm.checkRulesAsync({ timeoutMs: 5000, mode: "parallel" })
+→ AI shows: await instance.$qCheckRulesAsync({ timeoutMs: 5000, mode: "parallel" })
 → AI shows NestJS @Injectable() integration
 → Returns async-ready model with usage guidance
 ```
@@ -680,8 +680,8 @@ file_size: "small"
 
 → AI generates: @Quick({ avatar: 'binary' }) class UserProfileDto extends QModel<...>
 → AI shows: const dto = UserProfileDto.fromFormData(formData, { fileSource: 'binary' })
-→ AI shows: dto.$qm.isValid() check before sending
-→ AI shows: const outFd = dto.$qm.toFormData({ fileMode: 'reference' })
+→ AI shows: dto.$qIsValid() check before sending
+→ AI shows: const outFd = dto.$qToFormData({ fileMode: 'reference' })
 → Returns full integration guide for the scenario
 ```
 
@@ -718,14 +718,14 @@ Guides the AI through the full Drizzle → QuickModel workflow: parses the table
 
 ### Available patterns
 
-| Pattern       | What is generated                                                                |
-| ------------- | -------------------------------------------------------------------------------- |
-| `select`      | Always generated — the main read DTO                                             |
-| `insert`      | `Create[Name]Dto` with `@QRule` validators for create operations                 |
-| `repository`  | `Drizzle[Name]Repository` with `insert()`, `findById()`, `findAll()`, `delete()` |
-| `copy`        | Partial update pattern: `existing.copy({ field: value })` → `db.update().set()`  |
-| `createMany`  | Bulk seed/import using `[Name]Dto.createMany(seed)`                              |
-| `async-rules` | DB-level uniqueness validation with `qCheckRulesAsync()`                         |
+| Pattern       | What is generated                                                                 |
+| ------------- | --------------------------------------------------------------------------------- |
+| `select`      | Always generated — the main read DTO                                              |
+| `insert`      | `Create[Name]Dto` with `@QRule` validators for create operations                  |
+| `repository`  | `Drizzle[Name]Repository` with `insert()`, `findById()`, `findAll()`, `delete()`  |
+| `copy`        | Partial update pattern: `existing.$qCopy({ field: value })` → `db.update().set()` |
+| `createMany`  | Bulk seed/import using `[Name]Dto.createMany(seed)`                               |
+| `async-rules` | DB-level uniqueness validation with `qCheckRulesAsync()`                          |
 
 ### Workflow
 

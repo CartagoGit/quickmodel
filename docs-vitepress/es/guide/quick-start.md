@@ -91,7 +91,7 @@ Cuando necesites enviar datos de vuelta a la API, usa `serialize()` para obtener
 
 ```typescript
 // serialize() → objeto JavaScript plano (lo más habitual)
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 // {
 //   id: 1,
 //   name: 'John Doe',

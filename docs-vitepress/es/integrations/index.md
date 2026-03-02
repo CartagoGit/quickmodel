@@ -100,6 +100,16 @@ Queries y mutaciones con transformación automática de respuestas de API.
 
 Generación de schemas OpenAPI desde modelos QuickModel.
 
+## Formatos de Schema
+
+### [JSON Schema](/es/integrations/json-schema-integration)
+
+Exporta cualquier QModel como JSON Schema (Draft 7) con `getSchema('json')`, cárgalo en AJV, genera documentos OpenAPI, o genera scaffolding de una clase QModel desde un JSON Schema existente con `fromSchema('json', ...)`.
+
+### [Interfaz TypeScript](/es/integrations/typescript-schema-integration)
+
+Exporta cualquier QModel como un string de interfaz TypeScript con `getSchema('typescript')`, comparte contratos entre paquetes, genera clases QModel desde interfaces existentes con `fromSchema('typescript', ...)`, o genera archivos de declaración `.d.ts`.
+
 ## Librerías de Validación
 
 ### [Zod](/es/integrations/zod-integration)

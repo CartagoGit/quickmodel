@@ -172,7 +172,7 @@ app.post('/users', async (ctx) => {
 		return ctx.json({ errors: validate.errors }, 400);
 	}
 	const dto = new CreateUserDto(body);
-	return ctx.json(dto.toInterface());
+	return ctx.json(dto.$qToInterface());
 });
 ```
 

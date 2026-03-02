@@ -7,13 +7,13 @@ QuickModel funciona de forma transparente en entornos de desarrollo móvil, incl
 | Patrón                               | API de QuickModel                                 |
 | ------------------------------------ | ------------------------------------------------- |
 | Coerción de TextInput                | `coercionStrategy: 'loose'` en `@Quick()`         |
-| Persistir en AsyncStorage            | `dto.serialize()` → `JSON.stringify()`            |
+| Persistir en AsyncStorage            | `dto.$qSerialize()` → `JSON.stringify()`          |
 | Rehidratar desde almacenamiento      | `new MyDto(JSON.parse(stored))`                   |
 | Capacitor Preferences + TTL          | `serialize()` + timestamp en el objeto almacenado |
 | Renderizado dinámico de campos       | `dto.getFormSchema()`                             |
 | Validar antes de una API nativa      | `qCheckRules()` / `qCheckRulesAsync()`            |
-| Actualizaciones de estado inmutables | `dto.copy({ field: value })`                      |
-| Detección de cambios                 | `dto.isDirty()`                                   |
+| Actualizaciones de estado inmutables | `dto.$qCopy({ field: value })`                    |
+| Detección de cambios                 | `dto.$qIsDirty()`                                 |
 | Población de listas en bulk          | `MyDto.createMany(apiArray)`                      |
 
 ## Instalación
@@ -135,7 +135,7 @@ const dto = new UserProfileDto({
 	name: 'Alice',
 	age: 25 /* ... */,
 });
-await AsyncStorage.setItem('user', JSON.stringify(dto.$qm.serialize()));
+await AsyncStorage.setItem('user', JSON.stringify(dto.$qSerialize()));
 
 // Rehidratar
 const stored = await AsyncStorage.getItem('user');
@@ -183,7 +183,7 @@ async function saveSettings(dto: AppSettingsDto): Promise<void> {
 	if (!result.valid) throw new Error('Ajustes inválidos');
 	await Preferences.set({
 		key: 'settings',
-		value: JSON.stringify(dto.$qm.serialize()),
+		value: JSON.stringify(dto.$qSerialize()),
 	});
 }
 
@@ -203,7 +203,7 @@ interface ICachedEntry<T> {
 
 async function saveWithTtl(dto: AppSettingsDto, ttlMs: number): Promise<void> {
 	const entry: ICachedEntry<object> = {
-		data: dto.$qm.serialize() as object,
+		data: dto.$qSerialize() as object,
 		exp: Date.now() + ttlMs,
 	};
 	await Preferences.set({
@@ -259,7 +259,7 @@ if (!result.valid) {
 
 ```typescript
 const original = activeProduct;
-const updated = original.$qm.copy({ price: 15.99 });
+const updated = original.$qCopy({ price: 15.99 });
 // original.price no cambia
 ```
 
@@ -277,7 +277,7 @@ document.addEventListener(
 			phone: '5554321',
 			isVerified: true,
 		});
-		localStorage.setItem('user', JSON.stringify(dto.$qm.serialize()));
+		localStorage.setItem('user', JSON.stringify(dto.$qSerialize()));
 	},
 	false
 );

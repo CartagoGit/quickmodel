@@ -7,7 +7,7 @@ immutable instance**, keeping state updates predictable and avoiding the need fo
 
 | Pattern                  | QuickModel API                            |
 | ------------------------ | ----------------------------------------- |
-| Immutable state update   | `item.copy(patch)` → new instance         |
+| Immutable state update   | `item.$qCopy(patch)` → new instance       |
 | Normalized Map store     | `createMany()` → `Map<id, instance>`      |
 | Persist middleware       | `serialize()` / `new Dto(stored)`         |
 | Reactive computed values | `@QComputed` — recalculates on every read |

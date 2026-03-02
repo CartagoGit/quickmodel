@@ -110,7 +110,7 @@ if (!valid) {
 }
 
 // toInterface() devuelve un objeto plano seguro para TypeORM
-await userRepository.save(dto.toInterface());
+await userRepository.save(dto.$qToInterface());
 ```
 
 ## Actualizaciones parciales con copy()
@@ -120,10 +120,10 @@ const entity = await userRepository.findOne({ where: { id: 5 } });
 const dto = new UserDto(entity);
 
 // Crear copia actualizada — el original es inmutable
-const updated = dto.$qm.copy({ role: 'admin', score: 999 });
+const updated = dto.$qCopy({ role: 'admin', score: 999 });
 
 // Persistir el parche
-await userRepository.update(5, updated.toInterface());
+await userRepository.update(5, updated.$qToInterface());
 ```
 
 ## Patrón de value transformer de TypeORM
@@ -172,7 +172,7 @@ const { instances, errors } = UserDto.createMany(seedData);
 
 // Inserción masiva con TypeORM
 await dataSource.transaction(async (manager) => {
-	const payloads = instances.map((dto) => dto.toInterface());
+	const payloads = instances.map((dto) => dto.$qToInterface());
 	await manager.save(UserEntity, payloads);
 });
 ```
@@ -192,7 +192,7 @@ class UserRepository {
 		const { valid, errors } = qCheckRules(dto);
 		if (!valid) throw new Error(errors[0]?.message);
 
-		const saved = await this.repo.save(dto.toInterface() as UserEntity);
+		const saved = await this.repo.save(dto.$qToInterface() as UserEntity);
 		return new UserDto(saved);
 	}
 
@@ -200,9 +200,9 @@ class UserRepository {
 		const existing = await this.findById(id);
 		if (!existing) throw new Error('No encontrado');
 
-		const updated = existing.$qm.copy(patch);
+		const updated = existing.$qCopy(patch);
 		const saved = await this.repo.save({
-			...updated.toInterface(),
+			...updated.$qToInterface(),
 			id,
 		} as UserEntity);
 		return new UserDto(saved);
@@ -240,6 +240,6 @@ class CreateUserDto extends QModel<{ name: string; email: string }> {
 
 const { valid, errors } = await qCheckRulesAsync(dto);
 if (valid) {
-	await userRepository.save(dto.toInterface());
+	await userRepository.save(dto.$qToInterface());
 }
 ```

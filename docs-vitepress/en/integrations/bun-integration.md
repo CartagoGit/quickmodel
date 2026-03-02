@@ -8,9 +8,9 @@ QuickModel works as a zero-dependency **DTO and validation layer** inside Bun se
 | ----------------------- | ------------------------------------------------------ |
 | Request body coercion   | `@Quick({ ... })` + `new Dto(await req.json())`        |
 | Unknown field stripping | `unknownPropertyPolicy: 'strip'`                       |
-| Validation (sync)       | `dto.checkRules()`                                     |
+| Validation (sync)       | `dto.$qCheckRules()`                                   |
 | Validation (async)      | `qCheckRulesAsync(dto)` (DB uniqueness, remote checks) |
-| Response enrichment     | `@QComputed()` + `dto.serialize()`                     |
+| Response enrichment     | `@QComputed()` + `dto.$qSerialize()`                   |
 | Bulk seed / import      | `Dto.createMany(await Bun.file(path).json())`          |
 
 ## DTO Definition
@@ -227,7 +227,7 @@ return Response.json(dto.$qSerialize(), { status: 201 });
 
 ## JSON Response serialization
 
-`dto.serialize()` returns a plain object safe for `Response.json()`. `Date` fields become ISO strings, and `@QComputed` getters are included automatically.
+`dto.$qSerialize()` returns a plain object safe for `Response.json()`. `Date` fields become ISO strings, and `@QComputed` getters are included automatically.
 
 ```typescript
 const dto = new ProductDto({

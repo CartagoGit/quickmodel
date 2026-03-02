@@ -6,13 +6,13 @@ QuickModel provides a clean, serialization-first API that integrates naturally w
 
 | Storage Layer         | QuickModel Pattern                                                          |
 | --------------------- | --------------------------------------------------------------------------- |
-| `localStorage`        | `dto.serialize()` → `JSON.stringify()` → store                              |
-| IndexedDB             | `dto.serialize()` → IDB object store → `new MyDto(raw)`                     |
-| SQLite                | `dto.toInterface()` → parameterized query                                   |
-| Capacitor Preferences | `JSON.stringify(dto.serialize())` → `Preferences.set()`                     |
+| `localStorage`        | `dto.$qSerialize()` → `JSON.stringify()` → store                            |
+| IndexedDB             | `dto.$qSerialize()` → IDB object store → `new MyDto(raw)`                   |
+| SQLite                | `dto.$qToInterface()` → parameterized query                                 |
+| Capacitor Preferences | `JSON.stringify(dto.$qSerialize())` → `Preferences.set()`                   |
 | In-memory LRU         | Store `MyDto` instances directly                                            |
-| BroadcastChannel      | `dto.serialize()` → message payload                                         |
-| OPFS / Service Worker | `new TextEncoder().encode(JSON.stringify(dto.serialize()))`                 |
+| BroadcastChannel      | `dto.$qSerialize()` → message payload                                       |
+| OPFS / Service Worker | `new TextEncoder().encode(JSON.stringify(dto.$qSerialize()))`               |
 | Schema migration      | `new MyDto(oldPayload)` — unknown fields stripped, missing fields defaulted |
 
 ## Model Setup
@@ -195,7 +195,7 @@ await db.run('UPDATE rows SET deleted=?, updated=? WHERE rowId=?', [
 
 ```typescript
 const { instances } = DbRowDto.createMany(csvRows);
-const params = instances.map((dto) => dto.toInterface());
+const params = instances.map((dto) => dto.$qToInterface());
 await db.run('INSERT INTO table_rows VALUES (?, ?, ?, ?, ?)', params);
 ```
 
@@ -339,6 +339,6 @@ async function save(dto: UserRecordDto) {
 		throw new Error(result.errors[0]?.message ?? 'Validation failed');
 	}
 
-	await db.save(dto.toInterface());
+	await db.save(dto.$qToInterface());
 }
 ```

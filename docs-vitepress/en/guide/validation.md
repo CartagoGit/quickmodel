@@ -241,7 +241,7 @@ Returns `true` when every field value conforms to its declared transformer type 
 
 ```typescript
 if (!user.$qHasIntegrity()) {
-	const errors = user.checkIntegrity();
+	const errors = user.$qCheckIntegrity();
 	// handle transformer-level violations...
 }
 ```
@@ -255,7 +255,7 @@ Returns `true` only when the instance has **full type integrity** and **all busi
 ```typescript
 if (!user.$qIsValid()) {
 	// dig into specific failures:
-	const integrityErrors = user.checkIntegrity(); // type-level
+	const integrityErrors = user.$qCheckIntegrity(); // type-level
 	const ruleErrors = user.$qCheckRules().errors; // business-logic
 }
 ```

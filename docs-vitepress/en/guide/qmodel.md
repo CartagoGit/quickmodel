@@ -160,7 +160,7 @@ Returns the data in its original raw format (as defined by the interface), prese
 
 ```typescript
 // If User was created with { createdAt: '2024-01-01' }
-const rawData = user.toInterface();
+const rawData = user.$qToInterface();
 // rawData.createdAt is '2024-01-01' (string)
 ```
 

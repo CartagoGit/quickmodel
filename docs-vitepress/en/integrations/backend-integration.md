@@ -4,13 +4,13 @@ QuickModel works as a **DTO layer** for Node.js backend frameworks. It provides 
 
 ## Key Patterns
 
-| Concern                 | QuickModel solution                          |
-| ----------------------- | -------------------------------------------- |
-| Request body coercion   | `@Quick({ ... })` + `new Dto(req.body)`      |
-| Unknown field stripping | `unknownPropertyPolicy: 'strip'`             |
-| Validation (sync/async) | `dto.checkRules()` / `qCheckRulesAsync(dto)` |
-| Response enrichment     | `@QComputed()` + `dto.serialize()`           |
-| Bulk data loading       | `Dto.createMany(array)`                      |
+| Concern                 | QuickModel solution                            |
+| ----------------------- | ---------------------------------------------- |
+| Request body coercion   | `@Quick({ ... })` + `new Dto(req.body)`        |
+| Unknown field stripping | `unknownPropertyPolicy: 'strip'`               |
+| Validation (sync/async) | `dto.$qCheckRules()` / `qCheckRulesAsync(dto)` |
+| Response enrichment     | `@QComputed()` + `dto.$qSerialize()`           |
+| Bulk data loading       | `Dto.createMany(array)`                        |
 
 ## Express
 

@@ -77,7 +77,7 @@ export default function ItemsPage({
 ```typescript
 app.get('/items', (req) => {
 	const filter = SearchFilterDto.fromURL(new URL(req.url).searchParams);
-	return db.items.findMany({ where: filter.toInterface() });
+	return db.items.findMany({ where: filter.$qToInterface() });
 });
 ```
 

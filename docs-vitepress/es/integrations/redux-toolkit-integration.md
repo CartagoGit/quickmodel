@@ -8,8 +8,8 @@ ofrece el **patrón de actualización inmutable** que los reducers esperan, sin 
 
 | Patrón                        | API de QuickModel                              |
 | ----------------------------- | ---------------------------------------------- |
-| Estado Redux serializable     | `dto.serialize()` → objeto plano               |
-| Actualización inmutable       | `dto.copy(patch)` → nueva instancia            |
+| Estado Redux serializable     | `dto.$qSerialize()` → objeto plano             |
+| Actualización inmutable       | `dto.$qCopy(patch)` → nueva instancia          |
 | `createAsyncThunk` tipado     | `new UserDto(response)` en el payload creator  |
 | Entity adapter normalizado    | `createMany()` → `Map<id, serializado>`        |
 | `transformResponse` RTK Query | `new UserDto(raw).serialize()`                 |
@@ -91,7 +91,7 @@ const userSlice = createSlice({
 	reducers: {
 		setUser(state, action: PayloadAction<Record<string, unknown>>) {
 			const dto = new UserDto(action.payload);
-			state.current = dto.$qm.serialize() as Record<string, unknown>;
+			state.current = dto.$qSerialize() as Record<string, unknown>;
 		},
 		clearUser(state) {
 			state.current = null;
@@ -114,7 +114,7 @@ reducers: {
     const stored = state.entities[uid];
     if (!stored) return;
     const updated = new UserDto(stored).copy(patch);
-    state.entities[uid] = updated.$qm.serialize() as Record<string, unknown>;
+    state.entities[uid] = updated.$qSerialize() as Record<string, unknown>;
     // @QComputed se recalcula automáticamente en la nueva instancia
   },
 },
@@ -153,7 +153,7 @@ const usersAdapter = createEntityAdapter<Record<string, unknown>>({
 // En un thunk o slice:
 const { instances } = UserDto.createMany(apiData);
 const serialized = instances.map(
-	(inst) => inst.$qm.serialize() as Record<string, unknown>
+	(inst) => inst.$qSerialize() as Record<string, unknown>
 );
 usersAdapter.setAll(state, serialized);
 ```
@@ -178,7 +178,7 @@ export const userApi = createApi({
 			transformResponse: (rawList: object[]) => {
 				const { instances } = UserDto.createMany(rawList);
 				return instances.map(
-					(inst) => inst.$qm.serialize() as Record<string, unknown>
+					(inst) => inst.$qSerialize() as Record<string, unknown>
 				);
 			},
 		}),
@@ -202,7 +202,7 @@ function handleCreateUser(formData: object) {
 		return;
 	}
 
-	dispatch(createUser(dto.toInterface()));
+	dispatch(createUser(dto.$qToInterface()));
 }
 ```
 
@@ -217,7 +217,7 @@ async function handleSubmit(formData: object) {
 	if (!valid) {
 		/* gestionar errores */ return;
 	}
-	dispatch(createUser(dto.toInterface()));
+	dispatch(createUser(dto.$qToInterface()));
 }
 ```
 

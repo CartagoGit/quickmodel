@@ -4,13 +4,13 @@ QuickModel actúa como capa de DTO para frameworks Node.js. Proporciona coerció
 
 ## Patrones principales
 
-| Problema                           | Solución QuickModel                          |
-| ---------------------------------- | -------------------------------------------- |
-| Coerción del cuerpo de la petición | `@Quick({ ... })` + `new Dto(req.body)`      |
-| Eliminar campos desconocidos       | `unknownPropertyPolicy: 'strip'`             |
-| Validación (síncrona/asíncrona)    | `dto.checkRules()` / `qCheckRulesAsync(dto)` |
-| Enriquecimiento de respuesta       | `@QComputed()` + `dto.serialize()`           |
-| Procesamiento en lote              | `Dto.createMany(array)`                      |
+| Problema                           | Solución QuickModel                            |
+| ---------------------------------- | ---------------------------------------------- |
+| Coerción del cuerpo de la petición | `@Quick({ ... })` + `new Dto(req.body)`        |
+| Eliminar campos desconocidos       | `unknownPropertyPolicy: 'strip'`               |
+| Validación (síncrona/asíncrona)    | `dto.$qCheckRules()` / `qCheckRulesAsync(dto)` |
+| Enriquecimiento de respuesta       | `@QComputed()` + `dto.$qSerialize()`           |
+| Procesamiento en lote              | `Dto.createMany(array)`                        |
 
 ## Express
 
@@ -31,7 +31,7 @@ export function validateBody<TDto extends QModel<object>>(
 	) => {
 		try {
 			const dto = new DtoClass(req.body);
-			const validation = dto.$qm.checkRules();
+			const validation = dto.$qCheckRules();
 			if (!validation.valid) {
 				res.status(422).json({ errors: validation.errors });
 				return;
@@ -95,7 +95,7 @@ router.post(
 	(req: Request & { dto?: CreateUserDto }, res) => {
 		const dto = req.dto!; // CreateUserDto — tipado completo, inferido de validateBody()
 		// dto está coercionado, validado y sin campos extras
-		res.status(201).json(dto.$qm.serialize());
+		res.status(201).json(dto.$qSerialize());
 		// la respuesta incluye @QComputed displayName
 	}
 );
@@ -116,7 +116,7 @@ export function dtoValidator<TDto extends QModel<object>>(
 	) => {
 		try {
 			const dto = new DtoClass(request.body as object);
-			const validation = dto.$qm.checkRules();
+			const validation = dto.$qCheckRules();
 			if (!validation.valid) {
 				reply.code(422).send({ errors: validation.errors });
 				return;
@@ -139,7 +139,7 @@ fastify.post('/invoices', {
 		reply
 	) => {
 		const dto = request.dto!; // CreateInvoiceDto — tipado completo, inferido de dtoValidator()
-		const saved = await invoiceService.save(dto.$qm.serialize());
+		const saved = await invoiceService.save(dto.$qSerialize());
 		reply.code(201).send(saved);
 	},
 });
@@ -191,7 +191,7 @@ export function qValidator<TDto extends QModel<object>>(
 		const body = await c.req.json<object>();
 		try {
 			const dto = new DtoClass(body);
-			const validation = dto.$qm.checkRules();
+			const validation = dto.$qCheckRules();
 			if (!validation.valid) {
 				return c.json({ errors: validation.errors }, 422);
 			}
@@ -206,7 +206,7 @@ export function qValidator<TDto extends QModel<object>>(
 app.post(
 	'/users',
 	qValidator(CreateUserDto, async (dto, c) => {
-		return c.json(dto.$qm.serialize(), 201);
+		return c.json(dto.$qSerialize(), 201);
 	})
 );
 ```
@@ -239,16 +239,16 @@ export class BlogPostRepository {
 	create(data: object): object {
 		const post = new BlogPostModel(data);
 		this.store.set(post.id, post);
-		return post.$qm.serialize();
+		return post.$qSerialize();
 	}
 
 	publish(id: string): object | null {
 		const post = this.store.get(id);
 		if (!post) return null;
 		// copy() es INMUTABLE — captura la nueva instancia
-		const published = post.$qm.copy({ publishedAt: new Date() });
+		const published = post.$qCopy({ publishedAt: new Date() });
 		this.store.set(id, published);
-		return published.$qm.serialize();
+		return published.$qSerialize();
 	}
 }
 ```
@@ -264,7 +264,7 @@ if (errors.length) {
 	logger.warn(`${errors.length} ítems fallaron la coerción`, errors);
 }
 
-await orderService.bulkCreate(instances.map((i) => i.$qm.serialize()));
+await orderService.bulkCreate(instances.map((i) => i.$qSerialize()));
 ```
 
 ## JSON Schema para OpenAPI / Swagger

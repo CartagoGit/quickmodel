@@ -4,15 +4,15 @@ QuickModel se integra de forma limpia en stacks basados en tRPC como validador d
 
 ## Patrones Clave
 
-| Capa tRPC               | Patrón QuickModel                                         |
-| ----------------------- | --------------------------------------------------------- |
-| Validador de input      | `new MyInputDto(ctx.rawInput)` + `qCheckRules()`          |
-| Serializador de output  | `dto.serialize()` como valor de retorno del procedimiento |
-| Coerción en middleware  | `new MyDto(input)` + `coercionStrategy: 'loose'`          |
-| Validación asíncrona DB | `qCheckRulesAsync()` con reglas async personalizadas      |
-| Respuesta en batch      | `MyDto.createMany(batchArray)`                            |
-| Mapeo de errores        | Mapear `qCheckRules().errors` a `TRPCError`               |
-| Mutación parcial        | `existing.copy(patchInput.toInterface())`                 |
+| Capa tRPC               | Patrón QuickModel                                           |
+| ----------------------- | ----------------------------------------------------------- |
+| Validador de input      | `new MyInputDto(ctx.rawInput)` + `qCheckRules()`            |
+| Serializador de output  | `dto.$qSerialize()` como valor de retorno del procedimiento |
+| Coerción en middleware  | `new MyDto(input)` + `coercionStrategy: 'loose'`            |
+| Validación asíncrona DB | `qCheckRulesAsync()` con reglas async personalizadas        |
+| Respuesta en batch      | `MyDto.createMany(batchArray)`                              |
+| Mapeo de errores        | Mapear `qCheckRules().errors` a `TRPCError`                 |
+| Mutación parcial        | `existing.$qCopy(patchInput.$qToInterface())`               |
 
 ## Configuración del Modelo
 
@@ -144,7 +144,7 @@ class UserOutput extends QModel<IUserOutput> {
 // En el procedimiento:
 const dbRow = await db.findUser(id); // puede tener columnas SQL extra
 const out = new UserOutput(dbRow); // elimina campos desconocidos automáticamente
-return out.$qm.serialize(); // { uid, name, email, role, age, label } — output limpio
+return out.$qSerialize(); // { uid, name, email, role, age, label } — output limpio
 ```
 
 ## Coerción en Middleware
@@ -187,7 +187,7 @@ export const createUser = trpc.procedure
       throw new TRPCError({ code: 'CONFLICT', message: 'El correo ya está en uso' });
     }
 
-    return db.users.create(input.toInterface());
+    return db.users.create(input.$qToInterface());
   });
 ```
 
@@ -204,7 +204,7 @@ export const listUsers = trpc.procedure
 		});
 
 		const { instances } = UserOutput.createMany(rows);
-		return instances.map((dto) => dto.$qm.serialize());
+		return instances.map((dto) => dto.$qSerialize());
 	});
 ```
 
@@ -245,9 +245,9 @@ export const updateUser = trpc.procedure
     const validated = qCheckRules(input);
     if (!validated.valid) throw new TRPCError({ code: 'BAD_REQUEST', ... });
 
-    const updated = existing.$qm.copy({ name: input.name, age: input.age });
-    await db.users.update(input.uid, updated.toInterface());
-    return updated.$qm.serialize();
+    const updated = existing.$qCopy({ name: input.name, age: input.age });
+    await db.users.update(input.uid, updated.$qToInterface());
+    return updated.$qSerialize();
   });
 ```
 

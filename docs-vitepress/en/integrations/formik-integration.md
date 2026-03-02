@@ -8,7 +8,7 @@ QuickModel works alongside Formik v2 as the validation and coercion layer — no
 | -------------------- | --------------------------------------------------- |
 | `validate` prop      | `qCheckRules(dto)` → empty `{}` or `{ field: msg }` |
 | Field-level validate | `qCheckRulesByGroup(dto)['groupName']`              |
-| Initial values       | `dto.serialize()`                                   |
+| Initial values       | `dto.$qSerialize()`                                 |
 | Async validation     | `qCheckRulesAsync(dto)` with `@QRule(async ...)`    |
 | Multi-step wizard    | `@QGroup` per step + `qCheckRulesByGroup(dto)`      |
 | Dynamic fields       | `dto.getFormSchema()` → render `<Field>` list       |

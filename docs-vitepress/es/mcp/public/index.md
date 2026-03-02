@@ -221,7 +221,7 @@ Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. E
 
 ## `simulate_async_rules`
 
-⚠️ **SOLO ASYNC**: Ejecuta reglas de lógica de negocio asíncronas a través de la API real `instance.checkRulesAsync()`. Úsalo SOLO cuando los predicados requieran operaciones genuinamente asíncronas (p. ej. simular consultas a BD, llamadas a API). Para reglas síncronas usa `simulate_rules` — más simple y rápido. Soporta `timeoutMs`, `timeoutMessage` y `mode: "parallel" | "serial"`.
+⚠️ **SOLO ASYNC**: Ejecuta reglas de lógica de negocio asíncronas a través de la API real `instance.$qCheckRulesAsync()`. Úsalo SOLO cuando los predicados requieran operaciones genuinamente asíncronas (p. ej. simular consultas a BD, llamadas a API). Para reglas síncronas usa `simulate_rules` — más simple y rápido. Soporta `timeoutMs`, `timeoutMessage` y `mode: "parallel" | "serial"`.
 
 ```json
 {
@@ -240,7 +240,7 @@ Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. E
 
 ## `simulate_rules`
 
-Ejecuta reglas de lógica de negocio a través de la API real `instance.checkRules()`. Aplica las reglas mediante metadatos `@QRule` para que el formato del resultado coincida exactamente con el `IQRulesResult` de producción. Usa `simulate_validation` para evaluaciones independientes de predicados; usa esta herramienta cuando necesites verificar la salida exacta de `@QRule` + `checkRules()` en runtime. Devuelve `{ valid, errors[], evaluated }`.
+Ejecuta reglas de lógica de negocio a través de la API real `instance.$qCheckRules()`. Aplica las reglas mediante metadatos `@QRule` para que el formato del resultado coincida exactamente con el `IQRulesResult` de producción. Usa `simulate_validation` para evaluaciones independientes de predicados; usa esta herramienta cuando necesites verificar la salida exacta de `@QRule` + `checkRules()` en runtime. Devuelve `{ valid, errors[], evaluated }`.
 
 ```json
 {

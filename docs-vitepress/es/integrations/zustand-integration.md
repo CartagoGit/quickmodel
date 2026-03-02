@@ -8,7 +8,7 @@ eliminando la necesidad de Immer.
 
 | Patrón                    | API de QuickModel                        |
 | ------------------------- | ---------------------------------------- |
-| Actualización inmutable   | `item.copy(patch)` → nueva instancia     |
+| Actualización inmutable   | `item.$qCopy(patch)` → nueva instancia   |
 | Store normalizado con Map | `createMany()` → `Map<id, instancia>`    |
 | Middleware persist        | `serialize()` / `new Dto(stored)`        |
 | Valores computados        | `@QComputed` — recalcula en cada lectura |
@@ -79,7 +79,7 @@ const useUsuarioStore = create<IUsuarioStore>((set, get) => ({
 	actualizarUsuario: (patch) => {
 		const actual = get().usuario;
 		if (!actual) return;
-		set({ usuario: actual.$qm.copy(patch) }); // actualización inmutable — sin Immer
+		set({ usuario: actual.$qCopy(patch) }); // actualización inmutable — sin Immer
 	},
 }));
 
@@ -110,7 +110,7 @@ const useListaUsuariosStore = create<IListaStore>((set) => ({
 			const existente = state.usuarios.get(id);
 			if (!existente) return state;
 			const siguiente = new Map(state.usuarios);
-			siguiente.set(id, existente.$qm.copy(patch)); // merge inmutable
+			siguiente.set(id, existente.$qCopy(patch)); // merge inmutable
 			return { usuarios: siguiente };
 		}),
 }));
@@ -131,7 +131,7 @@ const useStoreConPersistencia = create<IUsuarioStore>()(
 			actualizarUsuario: (patch) => {
 				const actual = get().usuario;
 				if (!actual) return;
-				set({ usuario: actual.$qm.copy(patch) });
+				set({ usuario: actual.$qCopy(patch) });
 			},
 		}),
 		{
@@ -154,7 +154,7 @@ const useStoreConPersistencia = create<IUsuarioStore>()(
 						state: {
 							...value.state,
 							usuario: value.state.usuario
-								? (value.state.usuario.$qm.serialize() as object)
+								? (value.state.usuario.$qSerialize() as object)
 								: null,
 						},
 					};
@@ -182,7 +182,7 @@ set(
 
 // ✅ Con QuickModel copy()
 const actual = get().usuario;
-set({ usuario: actual.$qm.copy({ plan: 'pro' }) });
+set({ usuario: actual.$qCopy({ plan: 'pro' }) });
 // @QComputed se recalculan automáticamente — sin referencias obsoletas
 ```
 

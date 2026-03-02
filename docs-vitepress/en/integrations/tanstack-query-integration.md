@@ -6,14 +6,14 @@ normalization.
 
 ## Key Patterns
 
-| Pattern                 | QuickModel API                  |
-| ----------------------- | ------------------------------- |
-| `queryFn` coercion      | `Dto.createMany(rawData)`       |
-| Mutation validation     | `dto.checkRules()` / `@QRule`   |
-| Optimistic updates      | `dto.copy(patch)`               |
-| Cache normalization     | `dto.serialize()` / `new Dto()` |
-| `select` transformation | `createMany()` on cached data   |
-| Infinite queries        | `createMany()` per page         |
+| Pattern                 | QuickModel API                    |
+| ----------------------- | --------------------------------- |
+| `queryFn` coercion      | `Dto.createMany(rawData)`         |
+| Mutation validation     | `dto.$qCheckRules()` / `@QRule`   |
+| Optimistic updates      | `dto.$qCopy(patch)`               |
+| Cache normalization     | `dto.$qSerialize()` / `new Dto()` |
+| `select` transformation | `createMany()` on cached data     |
+| Infinite queries        | `createMany()` per page           |
 
 ## Installation
 

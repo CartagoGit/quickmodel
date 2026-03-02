@@ -357,7 +357,7 @@ export class UsersService {
 
 		return {
 			created: instances.length,
-			items: instances.map((dto) => dto.serialize()),
+			items: instances.map((dto) => dto.$qSerialize()),
 		};
 	}
 }
@@ -449,17 +449,17 @@ export class UsersService {
 	create(data: object): object {
 		const user = new UserModel(data);
 		this.store.set(user.id, user); // id is declared as string on UserModel — no cast needed
-		return user.serialize(); // { id, firstName, lastName, ..., fullName, isAdmin }
+		return user.$qSerialize(); // { id, firstName, lastName, ..., fullName, isAdmin }
 	}
 
 	findById(id: string): object {
 		const user = this.store.get(id);
 		if (!user) throw new NotFoundException(`User ${id} not found`);
-		return user.serialize();
+		return user.$qSerialize();
 	}
 
 	findAll(): object[] {
-		return [...this.store.values()].map((usr) => usr.serialize());
+		return [...this.store.values()].map((usr) => usr.$qSerialize());
 	}
 }
 ```
@@ -505,7 +505,7 @@ export class UserResponseDto extends QModel<IUserResponse> {
 	}
 }
 
-// user.serialize() → { firstName, lastName, birthYear, score, fullName, age, scoreLabel }
+// user.$qSerialize() → { firstName, lastName, birthYear, score, fullName, age, scoreLabel }
 ```
 
 ::: tip @QComputed vs plain getter
@@ -540,7 +540,7 @@ describe('CreateUserDto', () => {
 			birthDate: '1994-06-15',
 			active: true,
 		});
-		const { valid, errors } = invalid.checkRules();
+		const { valid, errors } = invalid.$qCheckRules();
 		expect(valid).toBe(false);
 		expect(errors.length).toBeGreaterThan(0);
 	});
@@ -553,7 +553,7 @@ describe('CreateUserDto', () => {
 			birthDate: '1994-06-15T00:00:00.000Z',
 			active: true,
 		});
-		expect(() => JSON.stringify(dto.serialize())).not.toThrow();
+		expect(() => JSON.stringify(dto.$qSerialize())).not.toThrow();
 	});
 });
 ```

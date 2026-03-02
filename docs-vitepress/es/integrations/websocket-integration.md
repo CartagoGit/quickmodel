@@ -7,13 +7,13 @@ QuickModel es una capa ideal de serialización y validación para **comunicacion
 
 | Preocupación                 | Solución QuickModel                            |
 | ---------------------------- | ---------------------------------------------- |
-| Serializar antes de enviar   | `dto.$qm.serialize()` → objeto JSON-safe       |
+| Serializar antes de enviar   | `dto.$qSerialize()` → objeto JSON-safe         |
 | Reconstruir al recibir       | `new Dto(JSON.parse(raw))`                     |
 | Tipos complejos por el canal | Roundtrip de `Date`, `Set`, `Map`, `BigInt`    |
 | Eliminación de campos extra  | `unknownPropertyPolicy: 'strip'`               |
 | Validar tras recibir         | `qCheckRules(dto)` / `qCheckRulesAsync(dto)`   |
 | Propiedades computadas       | `@QComputed()` disponibles tras reconstrucción |
-| Actualización incremental    | `existing.$qm.copy(patch)` para deltas         |
+| Actualización incremental    | `existing.$qCopy(patch)` para deltas           |
 | Eventos en lote              | `Dto.createMany(array).instances`              |
 
 ## Entornos Soportados
@@ -116,7 +116,7 @@ const msg = new ChatMessageDto({
 });
 
 // serialize() convierte Date → ISO string, Set → array, Map → objeto, BigInt → string
-ws.send(JSON.stringify(msg.serialize()));
+ws.send(JSON.stringify(msg.$qSerialize()));
 ```
 
 ### Servidor — Recepción (Node.js `ws`)
@@ -144,7 +144,7 @@ wss.on('connection', (socket) => {
 		// Broadcast a todos los clientes
 		wss.clients.forEach((client) => {
 			if (client.readyState === 1) {
-				client.send(JSON.stringify(dto.serialize()));
+				client.send(JSON.stringify(dto.$qSerialize()));
 			}
 		});
 	});
@@ -161,7 +161,7 @@ const presenceDto = new PresenceEventDto({
 	lastSeen: new Date(),
 	activeRooms: new Set(['room-42']),
 });
-socket.send(JSON.stringify(presenceDto.serialize()));
+socket.send(JSON.stringify(presenceDto.$qSerialize()));
 
 // El cliente recibe y reconstruye
 ws.onmessage = (evt) => {
@@ -199,7 +199,7 @@ io.on('connection', (socket) => {
 		}
 
 		// Emitir a la sala — serialize() garantiza payload JSON-safe
-		io.to(dto.roomId).emit('chat:message', dto.serialize());
+		io.to(dto.roomId).emit('chat:message', dto.$qSerialize());
 		ack?.({ ok: true, id: dto.id });
 	});
 
@@ -208,7 +208,7 @@ io.on('connection', (socket) => {
 		const result = qCheckRules(dto);
 		ack?.(result);
 		if (result.valid) {
-			io.emit('presence:update', dto.serialize());
+			io.emit('presence:update', dto.$qSerialize());
 		}
 	});
 });
@@ -223,7 +223,7 @@ const socket = io('wss://example.com');
 
 // Emitir con acuse de recibo
 const msg = new ChatMessageDto({ ... });
-socket.emit('chat:message', msg.serialize(), (response) => {
+socket.emit('chat:message', msg.$qSerialize(), (response) => {
 	if (!response.ok) {
 		console.error('Errores de validación:', response.errors);
 	}
@@ -251,7 +251,7 @@ let currentUser: PresenceEventDto | null = null;
 
 socket.on('presence:patch', (patch) => {
 	if (currentUser) {
-		currentUser = currentUser.copy(patch);
+		currentUser = currentUser.$qCopy(patch);
 	} else {
 		currentUser = new PresenceEventDto(patch);
 	}
@@ -279,7 +279,7 @@ app.get('/eventos/stocks', (req, res) => {
 
 	const enviarTick = (tick: StockTickDto) => {
 		res.write(`event: stock:tick\n`);
-		res.write(`data: ${JSON.stringify(tick.serialize())}\n\n`);
+		res.write(`data: ${JSON.stringify(tick.$qSerialize())}\n\n`);
 	};
 
 	const interval = setInterval(() => {
@@ -352,7 +352,7 @@ App()
 			// Broadcast a todos los suscriptores — binary=false para frames de texto
 			ws.publish(
 				'sala:' + dto.roomId,
-				JSON.stringify(dto.serialize()),
+				JSON.stringify(dto.$qSerialize()),
 				false
 			);
 		},
@@ -370,7 +370,7 @@ App()
 const ws = new WebSocket('ws://localhost:9001/chat');
 
 const msg = new ChatMessageDto({ ... });
-ws.send(JSON.stringify(msg.serialize())); // Frame de texto
+ws.send(JSON.stringify(msg.$qSerialize())); // Frame de texto
 
 ws.onmessage = (evt) => {
 	const dto = new ChatMessageDto(JSON.parse(evt.data));
@@ -414,7 +414,7 @@ const msg = new ChatMessageDto({ ... });
 stompClient.publish({
 	destination: '/app/chat.general',
 	headers: { 'content-type': 'application/json' },
-	body: JSON.stringify(msg.serialize()),
+	body: JSON.stringify(msg.$qSerialize()),
 });
 ```
 
@@ -519,7 +519,7 @@ socket.on('stock:batch', (rawArray) => {
 const { instances } = StockTickDto.createMany(rawTicks);
 socket.emit(
 	'stock:batch',
-	instances.map((dto) => dto.serialize())
+	instances.map((dto) => dto.$qSerialize())
 );
 ```
 
@@ -531,7 +531,7 @@ socket.emit(
 
 ```typescript
 // Serialización: BigInt → string  (vía serialize())
-tick.serialize();
+tick.$qSerialize();
 // { symbol: 'AAPL', volume: '987654321000', ... }
 
 // Deserialización: string → BigInt  (vía new Dto())

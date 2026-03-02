@@ -111,7 +111,7 @@ if (!valid) {
 }
 
 // toInterface() returns a plain object safe for TypeORM
-await userRepository.save(dto.toInterface());
+await userRepository.save(dto.$qToInterface());
 ```
 
 ## Partial updates with copy()
@@ -124,7 +124,7 @@ const dto = new UserDto(entity);
 const updated = dto.$qCopy({ role: 'admin', score: 999 });
 
 // Persist the patch
-await userRepository.update(5, updated.toInterface());
+await userRepository.update(5, updated.$qToInterface());
 ```
 
 ## TypeORM value transformer pattern
@@ -186,7 +186,7 @@ if (errors.length > 0) {
 
 // Bulk insert via TypeORM
 await dataSource.transaction(async (manager) => {
-	const payloads = instances.map((dto) => dto.toInterface());
+	const payloads = instances.map((dto) => dto.$qToInterface());
 	await manager.save(UserEntity, payloads);
 });
 ```
@@ -206,7 +206,7 @@ class UserRepository {
 		const { valid, errors } = qCheckRules(dto);
 		if (!valid) throw new Error(errors[0]?.message);
 
-		const saved = await this.repo.save(dto.toInterface() as UserEntity);
+		const saved = await this.repo.save(dto.$qToInterface() as UserEntity);
 		return new UserDto(saved);
 	}
 
@@ -216,7 +216,7 @@ class UserRepository {
 
 		const updated = existing.$qCopy(patch);
 		const saved = await this.repo.save({
-			...updated.toInterface(),
+			...updated.$qToInterface(),
 			id,
 		} as UserEntity);
 		return new UserDto(saved);
@@ -262,6 +262,6 @@ class CreateUserDto extends QModel<{ name: string; email: string }> {
 
 const { valid, errors } = await qCheckRulesAsync(dto);
 if (valid) {
-	await userRepository.save(dto.toInterface());
+	await userRepository.save(dto.$qToInterface());
 }
 ```

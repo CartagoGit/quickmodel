@@ -69,7 +69,7 @@ const user = User.fromJSON(json);
 Crea una copia profunda de una instancia existente.
 
 ```typescript
-const clone = user.$qm.copy();
+const clone = user.$qCopy();
 ```
 
 ### 5. Instancia de Solo Lectura (Readonly)
@@ -137,7 +137,7 @@ Cuando se instancia un modelo, sucede lo siguiente:
 Convierte el modelo de vuelta a un objeto JavaScript plano, revirtiendo las transformaciones (e.g., `Date` -> `ISO string`).
 
 ```typescript
-const plain = user.$qm.serialize();
+const plain = user.$qSerialize();
 ```
 
 ### `toJSON()`
@@ -154,7 +154,7 @@ Devuelve los datos en su formato original (definido por la interfaz), preservand
 
 ```typescript
 // Si User se creó con { createdAt: '2024-01-01' }
-const rawData = user.toInterface();
+const rawData = user.$qToInterface();
 // rawData.createdAt es '2024-01-01' (string)
 ```
 
@@ -180,7 +180,7 @@ const user = User.deserialize(plainObject);
 Devuelve un informe detallado de todos los fallos de validación, incluidos los errores de integridad de transformers y las violaciones de reglas de negocio `@QRule`.
 
 ```typescript
-const report = user.$qm.validationReport();
+const report = user.$qValidationReport();
 if (!report.valid) {
 	console.error(report.errors);
 }
@@ -191,7 +191,7 @@ if (!report.valid) {
 Devuelve `true` si el modelo supera todas las comprobaciones de integridad y las reglas de negocio. Combina `checkIntegrity()` y `checkRules()` en una sola llamada.
 
 ```typescript
-if (!user.$qm.isValid()) {
+if (!user.$qIsValid()) {
 	console.error('El modelo no es válido');
 }
 ```
@@ -208,13 +208,13 @@ Con un nombre de campo, devuelve `true` si **ese campo concreto** está modifica
 
 ```typescript
 const user = new User({ name: 'John', age: 30 });
-console.log(user.$qm.isDirty()); // false
-console.log(user.$qm.isDirty('name')); // false
+console.log(user.$qIsDirty()); // false
+console.log(user.$qIsDirty('name')); // false
 
 user.name = 'Jane';
-console.log(user.$qm.isDirty()); // true  — algo cambió
-console.log(user.$qm.isDirty('name')); // true  — 'name' cambió
-console.log(user.$qm.isDirty('age')); // false — 'age' NO cambió
+console.log(user.$qIsDirty()); // true  — algo cambió
+console.log(user.$qIsDirty('name')); // true  — 'name' cambió
+console.log(user.$qIsDirty('age')); // false — 'age' NO cambió
 ```
 
 > [!TIP]
@@ -229,7 +229,7 @@ const user = new User({ id: 1, name: 'John', age: 30 });
 
 user.age = 31;
 
-const changes = user.$qm.getChanges();
+const changes = user.$qGetChanges();
 // Resultado: { age: 31 }
 ```
 
@@ -257,7 +257,7 @@ console.log(user.name); // 'John' (Valor original)
 Aplica actualizaciones parciales al modelo. Útil para procesar respuestas de API o actualizaciones parciales de formularios.
 
 ```typescript
-user.$qm.patch({ age: 32 });
+user.$qPatch({ age: 32 });
 // Solo se actualiza 'age', el resto permanece igual
 ```
 
@@ -278,7 +278,7 @@ Crea una **nueva instancia** (inmutable) fusionando el estado actual con los dat
 ```typescript
 const user = new User({ id: 1, name: 'John', age: 30 });
 
-const updated = user.$qm.copy({ age: 31 });
+const updated = user.$qCopy({ age: 31 });
 
 console.log(user.age); // 30  — original intacto
 console.log(updated.age); // 31  — nueva instancia
@@ -286,12 +286,12 @@ console.log(updated.name); // 'John' — preservado
 
 // La nueva instancia tiene su propio tracking de cambios
 updated.name = 'Jane';
-console.log(updated.$qm.isDirty()); // true
-console.log(updated.$qm.isDirty('age')); // false — 31 es su baseline
-console.log(updated.$qm.isDirty('name')); // true  — cambió tras el merge
+console.log(updated.$qIsDirty()); // true
+console.log(updated.$qIsDirty('age')); // false — 31 es su baseline
+console.log(updated.$qIsDirty('name')); // true  — cambió tras el merge
 
 // Sin argumentos: copia profunda completa
-const clone = user.$qm.copy();
+const clone = user.$qCopy();
 console.log(clone.age); // 30  — misma copia, independiente
 ```
 

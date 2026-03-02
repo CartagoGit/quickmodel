@@ -32,7 +32,7 @@ Los niveles son **acumulativos**: `'info'` incluye `'error'` y `'warn'`.
 | Evento          | Cuándo se dispara                         | Nivel mínimo |
 | --------------- | ----------------------------------------- | ------------ |
 | `construction`  | `new MiModelo(data)` completa             | `info`       |
-| `serialize`     | `model.serialize()` llamado               | `info`       |
+| `serialize`     | `model.$qSerialize()` llamado             | `info`       |
 | `deserialize`   | Cada campo hidratado desde datos raw      | `debug`      |
 | `rule-pass`     | Un predicado `@QRule` devolvió `true`     | `success`    |
 | `rule-fail`     | Un predicado `@QRule` devolvió `false`    | `warn`       |
@@ -374,7 +374,7 @@ QConfig.configure({
 });
 
 const modelo = new UsuarioModel({ email: 'no-valido' });
-modelo.$qm.checkRules();
+modelo.$qCheckRules();
 
 expect(entradas).toHaveLength(1);
 expect(entradas[0].ruleMessage).toBe('Debe ser un email válido');

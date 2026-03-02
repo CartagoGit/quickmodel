@@ -131,7 +131,7 @@ Los defaults **no** se vuelven a aplicar en `copy()` ni en `patch()`. Solo se ej
 const order = new OrderModel({ id: 'o1' });
 order.status; // → 'pending'
 
-const updated = order.$qm.copy({ retries: 3 });
+const updated = order.$qCopy({ retries: 3 });
 updated.status; // → 'pending'  (nueva instancia copiando desde 'pending')
 ```
 

@@ -9,9 +9,9 @@ convertir respuestas de la API en DTOs con tipos, `copy()` para actualizaciones 
 | Patrón                      | API de QuickModel                 |
 | --------------------------- | --------------------------------- |
 | Coerción en `queryFn`       | `Dto.createMany(rawData)`         |
-| Validación en mutaciones    | `dto.checkRules()` / `@QRule`     |
-| Actualizaciones optimistas  | `dto.copy(patch)`                 |
-| Normalización de caché      | `dto.serialize()` / `new Dto()`   |
+| Validación en mutaciones    | `dto.$qCheckRules()` / `@QRule`   |
+| Actualizaciones optimistas  | `dto.$qCopy(patch)`               |
+| Normalización de caché      | `dto.$qSerialize()` / `new Dto()` |
 | Transformación con `select` | `createMany()` en datos cacheados |
 | Consultas infinitas         | `createMany()` por página         |
 
@@ -117,7 +117,7 @@ class CrearProductoDto extends QModel<ICrearProducto> {
 
 async function crearProducto(data: object): Promise<IProducto> {
 	const dto = new CrearProductoDto(data);
-	const { valid, errors } = dto.$qm.checkRules();
+	const { valid, errors } = dto.$qCheckRules();
 	if (!valid) {
 		throw new Error(
 			errors.map((e) => `${e.field}: ${e.message}`).join(', ')
@@ -125,7 +125,7 @@ async function crearProducto(data: object): Promise<IProducto> {
 	}
 	const res = await fetch('/api/productos', {
 		method: 'POST',
-		body: JSON.stringify(dto.$qm.serialize()),
+		body: JSON.stringify(dto.$qSerialize()),
 	});
 	return res.json();
 }
@@ -191,7 +191,7 @@ const mutation = useMutation({
 
 		queryClient.setQueryData<ProductoDto[]>(['productos'], (old = []) =>
 			old.map((item) =>
-				item.id === patch.id ? item.$qm.copy(patch) : item
+				item.id === patch.id ? item.$qCopy(patch) : item
 			)
 		);
 
@@ -215,7 +215,7 @@ Guarda `serialize()` en el caché y rehidrata con `new Dto()`:
 
 ```typescript
 // Serializar antes de guardar
-const cached = producto.$qm.serialize();
+const cached = producto.$qSerialize();
 queryClient.setQueryData(['producto', producto.id], cached);
 
 // Rehidratar al acceder
@@ -229,10 +229,10 @@ Usa `isDirty()` para omitir llamadas a la API innecesarias cuando no hay cambios
 
 ```typescript
 async function sincronizarSiHayCambios(dto: ProductoDto) {
-	if (!dto.$qm.isDirty()) return; // nada que sincronizar
+	if (!dto.$qIsDirty()) return; // nada que sincronizar
 	await fetch(`/api/productos/${dto.id}`, {
 		method: 'PATCH',
-		body: JSON.stringify(dto.$qm.serialize()),
+		body: JSON.stringify(dto.$qSerialize()),
 	});
 	dto.reset(); // limpiar estado sucio tras guardar
 }

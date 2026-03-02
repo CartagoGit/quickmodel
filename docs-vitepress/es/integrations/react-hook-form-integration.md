@@ -8,11 +8,11 @@ síncrona y `qCheckRulesAsync()` para reglas asíncronas (p.ej. verificación de
 
 | Patrón                | API de QuickModel                            |
 | --------------------- | -------------------------------------------- |
-| Validar en submit     | `dto.checkRules()` → `setError()`            |
+| Validar en submit     | `dto.$qCheckRules()` → `setError()`          |
 | Generación de esquema | `Dto.getFormSchema()`                        |
 | Coerción de tipos     | `@Quick({ ..., coercionStrategy: 'loose' })` |
 | Validación asíncrona  | `qCheckRulesAsync(dto)`                      |
-| Detección de cambios  | `dto.isDirty()`                              |
+| Detección de cambios  | `dto.$qIsDirty()`                            |
 
 ## Instalación
 
@@ -96,8 +96,8 @@ function FormularioRegistro() {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: async (values) => {
       const dto = new RegistroDto(values);
-      const { valid, errors: ruleErrors } = dto.$qm.checkRules();
-      if (valid) return { values: dto.$qm.serialize(), errors: {} };
+      const { valid, errors: ruleErrors } = dto.$qCheckRules();
+      if (valid) return { values: dto.$qSerialize(), errors: {} };
       const fieldErrors: Record<string, { message: string }> = {};
       for (const err of ruleErrors) {
         if (!fieldErrors[err.field]) {
@@ -111,7 +111,7 @@ function FormularioRegistro() {
   const alEnviar = (data: object) => {
     const dto = new RegistroDto(data);
     console.log(dto.nombreMostrado); // @QComputed disponible tras validar
-    // enviar dto.$qm.serialize() a la API
+    // enviar dto.$qSerialize() a la API
   };
 
   return (
@@ -183,10 +183,10 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 	const [dto, setDto] = useState(() => new RegistroDto(datosIniciales));
 
 	const handleGuardar = async () => {
-		if (!dto.$qm.isDirty()) return; // nada cambió
-		await guardarPerfil(dto.$qm.serialize());
+		if (!dto.$qIsDirty()) return; // nada cambió
+		await guardarPerfil(dto.$qSerialize());
 		dto.reset(); // limpiar estado sucio
-		setDto(new RegistroDto(dto.$qm.serialize() as IRegistro));
+		setDto(new RegistroDto(dto.$qSerialize() as IRegistro));
 	};
 
 	return (
@@ -194,7 +194,7 @@ function FormularioEdicion({ datosIniciales }: { datosIniciales: IRegistro }) {
 			{/* ... campos ... */}
 			<button
 				onClick={handleGuardar}
-				disabled={!dto.$qm.isDirty()}>
+				disabled={!dto.$qIsDirty()}>
 				Guardar cambios
 			</button>
 		</form>

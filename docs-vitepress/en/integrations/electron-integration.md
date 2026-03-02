@@ -73,7 +73,7 @@ ipcMain.handle('save-prefs', async (_, payload: unknown) => {
 		return { success: false, errors };
 	}
 
-	await fs.writeFile(prefsPath, JSON.stringify(dto.toInterface(), null, 2));
+	await fs.writeFile(prefsPath, JSON.stringify(dto.$qToInterface(), null, 2));
 	return { success: true };
 });
 ```

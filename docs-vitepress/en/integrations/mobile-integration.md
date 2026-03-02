@@ -7,13 +7,13 @@ QuickModel works seamlessly in mobile development environments including React N
 | Pattern                     | QuickModel API                             |
 | --------------------------- | ------------------------------------------ |
 | TextInput coercion          | `coercionStrategy: 'loose'` in `@Quick()`  |
-| Persist to AsyncStorage     | `dto.serialize()` → `JSON.stringify()`     |
+| Persist to AsyncStorage     | `dto.$qSerialize()` → `JSON.stringify()`   |
 | Rehydrate from storage      | `new MyDto(JSON.parse(stored))`            |
 | Capacitor Preferences + TTL | `serialize()` + timestamp in stored object |
 | Dynamic form rendering      | `dto.getFormSchema()`                      |
 | Validate before native API  | `qCheckRules()` / `qCheckRulesAsync()`     |
-| Immutable state updates     | `dto.copy({ field: value })`               |
-| Change detection            | `dto.isDirty()`                            |
+| Immutable state updates     | `dto.$qCopy({ field: value })`             |
+| Change detection            | `dto.$qIsDirty()`                          |
 | Bulk list population        | `MyDto.createMany(apiArray)`               |
 
 ## Installation

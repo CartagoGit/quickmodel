@@ -8,8 +8,8 @@ without extra dependencies like Immer.
 
 | Pattern                       | QuickModel API                                  |
 | ----------------------------- | ----------------------------------------------- |
-| Serializable Redux state      | `dto.serialize()` → plain object                |
-| Immutable reducer update      | `dto.copy(patch)` → new instance                |
+| Serializable Redux state      | `dto.$qSerialize()` → plain object              |
+| Immutable reducer update      | `dto.$qCopy(patch)` → new instance              |
 | Typed `createAsyncThunk`      | `new UserDto(response)` in payload creator      |
 | Normalized entity adapter     | `createMany()` → `Map<id, serialized>`          |
 | RTK Query `transformResponse` | `new UserDto(raw).serialize()`                  |
@@ -201,7 +201,7 @@ function handleCreateUser(formData: object) {
 		return;
 	}
 
-	dispatch(createUser(dto.toInterface()));
+	dispatch(createUser(dto.$qToInterface()));
 }
 ```
 
@@ -216,7 +216,7 @@ async function handleSubmit(formData: object) {
 	if (!valid) {
 		/* handle errors */ return;
 	}
-	dispatch(createUser(dto.toInterface()));
+	dispatch(createUser(dto.$qToInterface()));
 }
 ```
 

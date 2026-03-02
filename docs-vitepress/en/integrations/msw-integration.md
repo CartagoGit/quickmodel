@@ -9,8 +9,8 @@ validating them with `@QRule`, and returning well-typed serialized responses.
 | Pattern                 | QuickModel API                                |
 | ----------------------- | --------------------------------------------- |
 | Request body coercion   | `new Dto(body)` + `coercionStrategy: 'loose'` |
-| Handler-side validation | `dto.checkRules()` → 422 on error             |
-| Response serialization  | `dto.serialize()` → `HttpResponse.json()`     |
+| Handler-side validation | `dto.$qCheckRules()` → 422 on error           |
+| Response serialization  | `dto.$qSerialize()` → `HttpResponse.json()`   |
 | Fixture factories       | `new Dto(defaults)` with `serialize()`        |
 | Bulk mock data          | `Dto.createMany(seedArray)`                   |
 | Private field stripping | `unknownPropertyPolicy: 'strip'`              |

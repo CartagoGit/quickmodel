@@ -176,7 +176,7 @@ const { register, handleSubmit, formState } = useForm({
 
 ### Typed variant with QModel
 
-If your form class extends `QModel`, you can enforce a stricter type contract and call `instance.checkRules()` directly:
+If your form class extends `QModel`, you can enforce a stricter type contract and call `instance.$qCheckRules()` directly:
 
 ```typescript
 // hooks/useQModelResolver.ts

@@ -414,7 +414,7 @@ model_code: "@Quick({}) class User extends QModel<User> { @QRule(...) declare em
 context: "NestJS service with TypeORM repository"
 
 → AI warns: async-only, use checkRules() for sync predicates
-→ AI shows: await instance.$qm.checkRulesAsync({ timeoutMs: 5000, mode: "parallel" })
+→ AI shows: await instance.$qCheckRulesAsync({ timeoutMs: 5000, mode: "parallel" })
 → AI shows NestJS @Injectable() integration
 → Returns async-ready model with usage guidance
 ```
@@ -630,7 +630,7 @@ file_size: "small"
 
 → AI generates: @Quick({ avatar: 'binary' }) class UserProfileDto extends QModel<...>
 → AI shows: const dto = UserProfileDto.fromFormData(formData, { fileSource: 'binary' })
-→ AI shows: dto.$qm.isValid() check before sending
-→ AI shows: const outFd = dto.$qm.toFormData({ fileMode: 'reference' })
+→ AI shows: dto.$qIsValid() check before sending
+→ AI shows: const outFd = dto.$qToFormData({ fileMode: 'reference' })
 → Returns full integration guide for the scenario
 ```

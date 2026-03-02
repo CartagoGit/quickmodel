@@ -33,7 +33,7 @@ Levels are **cumulative**: `'info'` includes `'error'` and `'warn'`.
 | Event           | When it fires                            | Min level |
 | --------------- | ---------------------------------------- | --------- |
 | `construction`  | `new MyModel(data)` completes            | `info`    |
-| `serialize`     | `model.serialize()` called               | `info`    |
+| `serialize`     | `model.$qSerialize()` called             | `info`    |
 | `deserialize`   | Each field hydrated from raw data        | `debug`   |
 | `rule-pass`     | A `@QRule` predicate returned `true`     | `success` |
 | `rule-fail`     | A `@QRule` predicate returned `false`    | `warn`    |

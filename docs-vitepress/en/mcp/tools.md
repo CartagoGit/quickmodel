@@ -221,7 +221,7 @@ Verifies that serializing and re-creating a QuickModel instance is lossless. Run
 
 ## `simulate_async_rules`
 
-⚠️ **ASYNC-ONLY**: Run async business-logic rules through the real `instance.checkRulesAsync()` API. Use this ONLY when predicates genuinely require async operations (e.g. simulating DB lookups, API calls). For synchronous rules, use `simulate_rules` instead — it is simpler and faster. Supports `timeoutMs`, `timeoutMessage`, and `mode: "parallel" | "serial"`.
+⚠️ **ASYNC-ONLY**: Run async business-logic rules through the real `instance.$qCheckRulesAsync()` API. Use this ONLY when predicates genuinely require async operations (e.g. simulating DB lookups, API calls). For synchronous rules, use `simulate_rules` instead — it is simpler and faster. Supports `timeoutMs`, `timeoutMessage`, and `mode: "parallel" | "serial"`.
 
 ```json
 {
@@ -240,7 +240,7 @@ Verifies that serializing and re-creating a QuickModel instance is lossless. Run
 
 ## `simulate_rules`
 
-Run business-logic rules through the real `instance.checkRules()` API. Applies rules via `@QRule` metadata so the result format matches production `IQRulesResult` exactly. Use `simulate_validation` for standalone predicate evaluation; use this when you need to verify the exact `@QRule` + `checkRules()` output your code will produce at runtime. Returns `{ valid, errors[], evaluated }`.
+Run business-logic rules through the real `instance.$qCheckRules()` API. Applies rules via `@QRule` metadata so the result format matches production `IQRulesResult` exactly. Use `simulate_validation` for standalone predicate evaluation; use this when you need to verify the exact `@QRule` + `checkRules()` output your code will produce at runtime. Returns `{ valid, errors[], evaluated }`.
 
 ```json
 {

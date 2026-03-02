@@ -61,7 +61,7 @@ class UserPrefsDto extends QModel<IUserPrefs> {
 
 const dto = new UserPrefsDto(currentPrefs);
 // Enviar JSON limpio por IPC:
-await window.electron.savePrefs(dto.$qm.serialize());
+await window.electron.savePrefs(dto.$qSerialize());
 
 // ── Proceso main (main.ts) ──────────────────────────────────────────────────
 
@@ -74,7 +74,7 @@ ipcMain.handle('save-prefs', async (_, payload: unknown) => {
 		return { success: false, errors };
 	}
 
-	await fs.writeFile(prefsPath, JSON.stringify(dto.toInterface(), null, 2));
+	await fs.writeFile(prefsPath, JSON.stringify(dto.$qToInterface(), null, 2));
 	return { success: true };
 });
 ```
@@ -129,7 +129,7 @@ class FileRecordDto extends QModel<IFileRecord> {
 
 // Main → Renderer:
 const dto = new FileRecordDto(fileFromDisk);
-ipcRenderer.send('file-loaded', dto.$qm.serialize()); // Date → ISO string
+ipcRenderer.send('file-loaded', dto.$qSerialize()); // Date → ISO string
 
 // Renderer recibe:
 ipcMain.on('file-loaded', (_, payload) => {
@@ -153,7 +153,7 @@ contextBridge.exposeInMainWorld('electron', {
 const dto = new UserPrefsDto(userChanges);
 const { valid, errors } = qCheckRules(dto);
 if (valid) {
-	await window.electron.savePrefs(dto.$qm.serialize() as IUserPrefs);
+	await window.electron.savePrefs(dto.$qSerialize() as IUserPrefs);
 } else {
 	showErrors(errors);
 }
@@ -170,7 +170,7 @@ ipcMain.handle('import-files', async () => {
 	const { instances, errors } = FileRecordDto.createMany(raw);
 	if (errors.length > 0)
 		console.warn('Filas inválidas omitidas:', errors.length);
-	return instances.map((dto) => dto.$qm.serialize());
+	return instances.map((dto) => dto.$qSerialize());
 });
 
 // Renderer:
@@ -191,16 +191,16 @@ const prefs = new UserPrefsDto(await window.electron.loadPrefs());
 prefs.theme = 'dark';
 prefs.fontSize = 18;
 
-console.log(prefs.$qm.isDirty()); // true → mostrar diálogo de guardado
+console.log(prefs.$qIsDirty()); // true → mostrar diálogo de guardado
 
 window.addEventListener('beforeunload', (e) => {
-	if (prefs.$qm.isDirty()) {
+	if (prefs.$qIsDirty()) {
 		e.preventDefault();
 		e.returnValue = ''; // Electron muestra "¿Salir sin guardar?"
 	}
 });
 
 // Tras guardar:
-const saved = prefs.$qm.copy({ theme: 'dark', fontSize: 18 });
-console.log(saved.$qm.isDirty()); // false — snapshot fresco
+const saved = prefs.$qCopy({ theme: 'dark', fontSize: 18 });
+console.log(saved.$qIsDirty()); // false — snapshot fresco
 ```

@@ -275,7 +275,7 @@ cartSignal.update((cart) => cart.$qCopy({ total: 100 }));
 
 ### `reactiveModel()` — make direct mutation reactive
 
-You can turn direct mutation into a signal notification by wrapping the model in a `Proxy` that intercepts every `set` trap and internally calls `sig.update(m => m.copy({...}))`. This creates a new instance on every assignment, which Angular detects as a reference change.
+You can turn direct mutation into a signal notification by wrapping the model in a `Proxy` that intercepts every `set` trap and internally calls `sig.update(m => m.$qCopy({...}))`. This creates a new instance on every assignment, which Angular detects as a reference change.
 
 Copy this utility into your Angular project (Angular is not a QuickModel dependency, so it cannot ship here directly):
 
@@ -340,11 +340,11 @@ export class CartComponent {
 ::: details How it works
 
 1. Every `this.cart.total = x` hits the Proxy `set` trap.
-2. The trap calls `sig.update(m => m.copy({ total: x }))`, which produces a **new instance**.
+2. The trap calls `sig.update(m => m.$qCopy({ total: x }))`, which produces a **new instance**.
 3. Angular detects the new reference and schedules a re-render.
 4. Every `this.cart.total` read hits the Proxy `get` trap, which reads from `sig()` — always the latest value.
 
-**Tradeoff:** each assignment creates a new model instance via `copy()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.copy({...}))` call.
+**Tradeoff:** each assignment creates a new model instance via `copy()`. For high-frequency updates (e.g. pointer events, audio processing) prefer batching into a single `$signal.update(m => m.$qCopy({...}))` call.
 :::
 
 ### `computed()` — derived state from a model signal
