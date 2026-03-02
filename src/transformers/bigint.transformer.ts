@@ -6,7 +6,7 @@
  * Handles round-trip serialization/deserialization of JavaScript `BigInt` values:
  * `string | number | { __type: 'bigint'; value: string }` ↔ `bigint`.
  *
- * @see {@link QModel.serialize} — triggers this transformer when a `BigInt` field is encountered
+ * @see {@link QModel.$qSerialize} — triggers this transformer when a `BigInt` field is encountered
  * @see {@link Quick} — use `@Quick({ field: BigInt })` to activate this transformer
  * @module transformers/bigint
  */

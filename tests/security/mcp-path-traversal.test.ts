@@ -42,7 +42,7 @@ describe('HIGH-06 — check_doc_parity: base_path must be inside project root', 
 	const tool = new QCheckDocParityTool();
 
 	test('schema should reject base_path longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ base_path: 'a'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
@@ -80,13 +80,13 @@ describe('MED-12 — check_doc_drift: target_dir must be capped and inside proje
 	const tool = new QCheckDocDriftTool();
 
 	test('schema should reject target_dir longer than 200 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ target_dir: 'a'.repeat(201) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept target_dir within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ target_dir: 'src' });
 		expect(result.success).toBe(true);
 	});

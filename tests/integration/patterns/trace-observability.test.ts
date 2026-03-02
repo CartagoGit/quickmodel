@@ -15,7 +15,8 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule } from '@/core/decorators/qrule.decorator';
 import { QConfig } from '@/core/config/quick.config';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 import { TraceLogger } from '@/core/helpers/trace-logger.helper';
 import type { IQTraceEntry } from '@/core/config/quick.config';
 import 'reflect-metadata';
@@ -91,7 +92,7 @@ describe('Global verbosity — warn', () => {
 		QConfig.configure({ defaults: { trace: { verbosity: 'warn', sink } } });
 
 		const order = new OrderModel({ total: -5, email: 'valid@example.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		const fails = entries.filter((ent) => ent.event === 'rule-fail');
 		const passes = entries.filter((ent) => ent.event === 'rule-pass');
@@ -104,7 +105,7 @@ describe('Global verbosity — warn', () => {
 		QConfig.configure({ defaults: { trace: { verbosity: 'warn', sink } } });
 
 		const order = new OrderModel({ total: -5, email: 'valid@example.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		const fail = entries.find(
 			(ent) => ent.event === 'rule-fail' && ent.field === 'total'
@@ -125,7 +126,7 @@ describe('Global verbosity — success', () => {
 		});
 
 		const order = new OrderModel({ total: -5, email: 'valid@example.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		const fails = entries.filter((ent) => ent.event === 'rule-fail');
 		const passes = entries.filter((ent) => ent.event === 'rule-pass');
@@ -143,7 +144,7 @@ describe('Global verbosity — success', () => {
 			total: 100,
 			email: 'valid@example.com',
 		});
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		const pass = entries.find((ent) => ent.event === 'rule-pass');
 		expect(pass).toBeDefined();
@@ -174,7 +175,7 @@ describe('Global verbosity — info', () => {
 		QConfig.configure({ defaults: { trace: { verbosity: 'info', sink } } });
 
 		const order = new OrderModel({ total: -5, email: 'valid@example.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		expect(entries.some((ent) => ent.event === 'construction')).toBe(true);
 		expect(entries.some((ent) => ent.event === 'rule-fail')).toBe(true);
@@ -199,7 +200,7 @@ describe('events whitelist', () => {
 		});
 
 		new OrderModel({ total: -5, email: 'valid@example.com' });
-		qCheckRules(new OrderModel({ total: -5, email: 'valid@example.com' }));
+		$qCheckRules(new OrderModel({ total: -5, email: 'valid@example.com' }));
 
 		expect(entries.every((ent) => ent.event === 'rule-fail')).toBe(true);
 	});
@@ -217,7 +218,7 @@ describe('events whitelist', () => {
 		});
 
 		const order = new OrderModel({ total: 50, email: 'ok@example.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		expect(entries.length).toBeGreaterThanOrEqual(1);
 		expect(entries.every((ent) => ent.event === 'rule-pass')).toBe(true);
@@ -254,7 +255,7 @@ describe('Per-model trace override', () => {
 		}
 
 		const order = new TracedOrder({ total: -1, email: 'x@x.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		expect(globalSink.entries).toHaveLength(0);
 		expect(modelSink.entries.some((ent) => ent.event === 'rule-fail')).toBe(
@@ -284,7 +285,7 @@ describe('Per-model trace override', () => {
 		}
 
 		const order = new QuietOrder({ total: -1, email: 'x@x.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		// rule-fail is 'warn' level, but model is set to 'error' — not emitted
 		expect(
@@ -323,7 +324,7 @@ describe('Per-rule trace override', () => {
 		const form = new SensitiveForm();
 		form.email = 'bad-email';
 		form.name = 'Al';
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		// Email rule goes to auditSink only
 		expect(
@@ -354,7 +355,7 @@ describe('Sink replaces console', () => {
 		QConfig.configure({ defaults: { trace: { verbosity: 'warn', sink } } });
 
 		const order = new OrderModel({ total: -1, email: 'x@x.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		// If sink works, rule-fail is captured
 		expect(entries.some((ent) => ent.event === 'rule-fail')).toBe(true);
@@ -375,7 +376,7 @@ describe('Sink replaces console', () => {
 		});
 
 		const order = new OrderModel({ total: -1, email: 'x@x.com' });
-		qCheckRules(order);
+		$qCheckRules(order);
 
 		expect(received.some((str) => str.includes('rule-fail'))).toBe(true);
 	});
@@ -396,7 +397,7 @@ describe('Security — verbose exposes raw values', () => {
 			username: 'alice',
 			password: 'secret123',
 		});
-		qCheckRules(user);
+		$qCheckRules(user);
 
 		// At verbose level, rule entries carry the raw field value
 		const passEntry = entries.find(
@@ -411,7 +412,7 @@ describe('Security — verbose exposes raw values', () => {
 		QConfig.configure({ defaults: { trace: { verbosity: 'warn', sink } } });
 
 		const user = new UserModel({ username: 'alice', password: 'short' });
-		qCheckRules(user);
+		$qCheckRules(user);
 
 		const failEntry = entries.find(
 			(ent) => ent.event === 'rule-fail' && ent.field === 'password'
@@ -443,7 +444,7 @@ describe('Async rule trace integration', () => {
 
 		const order = new AsyncOrder();
 		order.total = 50;
-		await qCheckRulesAsync(order);
+		await $qCheckRulesAsync(order);
 
 		const pass = entries.find((ent) => ent.event === 'rule-pass');
 		expect(pass).toBeDefined();
@@ -466,7 +467,7 @@ describe('Async rule trace integration', () => {
 
 		const order = new AsyncOrder();
 		order.total = -1;
-		await qCheckRulesAsync(order);
+		await $qCheckRulesAsync(order);
 
 		const fail = entries.find((ent) => ent.event === 'rule-fail');
 		expect(fail).toBeDefined();

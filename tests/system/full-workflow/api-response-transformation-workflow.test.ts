@@ -199,8 +199,7 @@ describe('System: API Response Transformation', () => {
 		user.lastLogin = new Date();
 
 		// STEP 6: Serialize back for API
-		const updatedJson = user.toJSON();
-		const parsed = JSON.parse(updatedJson);
+		const parsed = user.toJSON();
 
 		expect(parsed.metadata.tags).toContain('active');
 		expect(typeof parsed.lastLogin).toBe('string');
@@ -233,9 +232,7 @@ describe('System: API Response Transformation', () => {
 		expect(posts[0].hasTag('intro')).toBe(true);
 
 		// STEP 6: Transform back to API format
-		const serializedPosts = posts.map((post: Post) =>
-			JSON.parse(post.toJSON())
-		);
+		const serializedPosts = posts.map((post: Post) => post.toJSON());
 
 		expect(serializedPosts[0].views).toBe('1500');
 		expect(typeof serializedPosts[0].publishedAt).toBe('string');
@@ -259,7 +256,7 @@ describe('System: API Response Transformation', () => {
 		stats.totalViews = viewsAfterUpdate;
 		stats.lastUpdated = new Date();
 
-		const IQSerialized = JSON.parse(stats.toJSON());
+		const IQSerialized = stats.toJSON();
 		expect(IQSerialized.totalViews).toBe('4500');
 		expect(typeof IQSerialized.lastUpdated).toBe('string');
 	});
@@ -324,11 +321,11 @@ describe('System: API Response Transformation', () => {
 		});
 
 		// First transformation
-		const json1 = post.toJSON();
+		const json1 = post.$qToJSON();
 
 		// Second transformation
 		const post2 = Post.fromJSON(json1);
-		const json2 = post2.toJSON();
+		const json2 = post2.$qToJSON();
 		const parsed2 = JSON.parse(json2);
 
 		// Third transformation

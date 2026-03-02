@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: accessing dynamic properties and prototype methods to verify security behaviors
 import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '../../src/index';
 
@@ -15,6 +16,7 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 		const user = new User(payload);
 
 		expect((user as unknown as Record<string, unknown>)['isAdmin']).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			true
 		);
 	});
@@ -45,8 +47,8 @@ describe('Security: Mass Assignment & Method Shadowing', () => {
 		expect(user.name).toBe('John');
 
 		// Calling it should work
-		expect(() =>
-			(user as unknown as { save(): string }).save()
+		expect(
+			() => (user as unknown as { save(): string }).save() // @quickmodel-rule-ignore: no-as-unknown
 		).not.toThrow();
 	});
 

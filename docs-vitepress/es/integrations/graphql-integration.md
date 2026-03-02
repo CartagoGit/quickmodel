@@ -66,7 +66,7 @@ const resolvers = {
 				});
 			}
 
-			const saved = await userRepository.save(dto.toInterface());
+			const saved = await userRepository.save(dto.$qToInterface());
 			return new UserResponse(saved);
 		},
 	},
@@ -164,7 +164,7 @@ const resolvers = {
 				console.warn('Filas inválidas omitidas:', errors);
 			}
 
-			return instances.map((dto) => dto.$qm.serialize());
+			return instances.map((dto) => dto.$qSerialize());
 		},
 	},
 };
@@ -185,15 +185,15 @@ const resolvers = {
 					extensions: { code: 'NOT_FOUND' },
 				});
 
-			const updated = existing.$qm.copy(input);
+			const updated = existing.$qCopy(input);
 			const { valid, errors } = qCheckRules(updated);
 			if (!valid)
 				throw new GraphQLError('Validación fallida', {
 					extensions: { errors },
 				});
 
-			await postRepository.update(id, updated.toInterface());
-			return updated.$qm.serialize();
+			await postRepository.update(id, updated.$qToInterface());
+			return updated.$qSerialize();
 		},
 	},
 };
@@ -218,9 +218,93 @@ if (errors.length)
 	throw new GraphQLError('Validación fallida', { extensions: { errors } });
 ```
 
-## NestJS Code First — compatibilidad con @InputType()
+## Integración de schema con `getSchema('graphql')` y `fromSchema('graphql', ...)`
 
-Los decoradores de QModel (`@QField`, `@QRule`, `@QGroup`) son independientes de los de NestJS y se pueden combinar:
+### Exportar un tipo SDL de GraphQL desde un QModel
+
+Importa `quickmodel/schema` una vez, luego llama a `getSchema('graphql')` para obtener un string SDL (Schema Definition Language) de GraphQL:
+
+```typescript
+import 'quickmodel/schema';
+import { QModel, Quick } from 'quickmodel';
+
+interface IUser {
+	name: string;
+	email: string;
+	birthDate: Date;
+	score: number;
+}
+
+@Quick({ birthDate: Date, score: Number })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare email: string;
+	declare birthDate: Date;
+	declare score: number;
+}
+
+const sdl = User.getSchema('graphql');
+/*
+type User {
+  name: String!
+  email: String!
+  birthDate: String!
+  score: Float!
+}
+*/
+```
+
+### Usar el SDL con herramientas de code-gen
+
+```typescript
+import 'quickmodel/schema';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+
+// Construir un schema GraphQL completo desde tus definiciones QModel
+const typeDefs = [
+	User.getSchema('graphql'),
+	Product.getSchema('graphql'),
+	`type Query { user(id: ID!): User, products: [Product!]! }`,
+];
+
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+```
+
+### Generar un QModel desde SDL de GraphQL existente
+
+`fromSchema('graphql', ...)` convierte un bloque de tipo SDL en una definición completa de clase `QModel`.
+Esto es **scaffolding** — el resultado es código fuente para guardar como archivo `.ts`:
+
+```typescript
+import 'quickmodel/schema';
+
+const sdl = `
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  createdAt: String!
+  inStock: Boolean!
+}
+`;
+
+const code = QModel.fromSchema('graphql', sdl, 'Product');
+// → Código fuente TypeScript:
+// interface IProduct { id: string; name: string; price: number; createdAt: string; inStock: boolean; }
+// @Quick({ price: Number, inStock: Boolean })
+// class Product extends QModel<IProduct> { ... }
+
+// Guardar en disco:
+// fs.writeFileSync('src/models/product.model.ts', code);
+```
+
+### Generar schemas JSON / OpenAPI para herramientas de code-gen
+
+```typescript
+// graphql-codegen, Pothos, type-graphql tooling
+const inputSchema = CreateUserInput.getSchema('json');
+const responseSchema = UserResponse.getSchema('openapi');
+```
 
 ```typescript
 import { InputType, Field } from '@nestjs/graphql';

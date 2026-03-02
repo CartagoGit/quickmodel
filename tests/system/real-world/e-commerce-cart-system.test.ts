@@ -228,7 +228,7 @@ describe('System: E-Commerce Cart', () => {
 		expect(cart.getItemCount()).toBe(3);
 
 		// STEP 4: Serialize cart for session storage
-		const cartJson = cart.toJSON();
+		const cartJson = cart.$qToJSON();
 		expect(typeof cartJson).toBe('string');
 
 		// STEP 5: Retrieve cart from storage
@@ -255,7 +255,7 @@ describe('System: E-Commerce Cart', () => {
 		order.status = 'paid';
 		order.paidAt = new Date();
 
-		const paidOrderJson = order.toJSON();
+		const paidOrderJson = order.$qToJSON();
 		const paidOrder = Order.fromJSON(paidOrderJson);
 
 		expect(paidOrder.status).toBe('paid');

@@ -52,7 +52,7 @@ describe('Security: Information Disclosure (Private Fields)', () => {
 		}
 
 		const user = new User({ id: 1 });
-		const json = user.toJSON();
+		const json = JSON.stringify(user);
 
 		// Ensure internal QModel state is leaked
 		expect(json).not.toContain('__initData');

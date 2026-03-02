@@ -158,7 +158,7 @@ describe('@QAlias — output remapping (serialize)', () => {
 			emailAddress: 'alice@example.com',
 		});
 
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 
 		expect(json).toHaveProperty('first_name', 'Alice');
 		expect(json).not.toHaveProperty('firstName');
@@ -200,7 +200,7 @@ describe('@QAlias — full roundtrip', () => {
 			emailAddress: 'bob@example.com',
 		});
 
-		const json = original.toJSON();
+		const json = original.$qToJSON();
 		const restored = UserModel.fromJSON(json);
 
 		expect(restored.firstName).toBe('Bob');

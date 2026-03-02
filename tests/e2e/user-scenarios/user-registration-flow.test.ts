@@ -161,7 +161,7 @@ describe('E2E: User Registration Flow', () => {
 		expect(user.isAdult()).toBe(true);
 
 		// STEP 5: Serialize for storage (e.g., database)
-		const jsonForStorage = user.toJSON();
+		const jsonForStorage = user.$qToJSON();
 		expect(typeof jsonForStorage).toBe('string');
 
 		// STEP 6: Parse back (simulate database retrieval)
@@ -198,7 +198,7 @@ describe('E2E: User Registration Flow', () => {
 		retrievedUser.metadata.loginCount = 1n;
 		retrievedUser.metadata.emailVerified = true;
 
-		const updatedJson = retrievedUser.toJSON();
+		const updatedJson = retrievedUser.$qToJSON();
 		const finalUser = User.fromJSON(updatedJson);
 
 		expect(finalUser.metadata.loginCount).toBe(1n);
@@ -276,7 +276,7 @@ describe('E2E: User Registration Flow', () => {
 
 		// Update only email
 		const updatedData = {
-			...JSON.parse(user.toJSON()),
+			...user.toJSON(),
 			email: 'newemail@example.com',
 		};
 

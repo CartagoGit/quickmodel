@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing unknown property policies requires passing extra fields not in IUser
 import { QModel } from '@/core/models/quick.model';
 import { Quick } from '@/core/decorators/quick.decorator';
 import { QConfig } from '@/core/config/quick.config';
@@ -30,9 +31,11 @@ describe('Integrity: Unknown Property Policy', () => {
 				id: '1',
 				name: 'John',
 				extra: 'data',
-			} as any);
+			} as unknown as IUser);
 
-			expect((user as any).extra).toBeUndefined();
+			expect(
+				(user as unknown as Record<string, unknown>)['extra']
+			).toBeUndefined();
 			expect(user.id).toBe('1');
 		});
 
@@ -49,9 +52,11 @@ describe('Integrity: Unknown Property Policy', () => {
 				id: '1',
 				name: 'John',
 				extra: 'data',
-			} as any);
+			} as unknown as IUser);
 
-			expect((user as any).extra).toBe('data');
+			expect((user as unknown as Record<string, unknown>)['extra']).toBe(
+				'data'
+			);
 			expect(user.id).toBe('1');
 		});
 	});
@@ -74,11 +79,13 @@ describe('Integrity: Unknown Property Policy', () => {
 				id: '1',
 				name: 'John',
 				extra: 'should vanish',
-			} as any);
+			} as unknown as IUser);
 
 			expect(user.id).toBe('1');
 			expect(user.name).toBe('John');
-			expect((user as any).extra).toBeUndefined();
+			expect(
+				(user as unknown as Record<string, unknown>)['extra']
+			).toBeUndefined();
 		});
 
 		it('should remove unknown properties when set in decorator', () => {
@@ -96,10 +103,12 @@ describe('Integrity: Unknown Property Policy', () => {
 				id: '1',
 				name: 'John',
 				extra: 'should vanish',
-			} as any);
+			} as unknown as IUser);
 
 			expect(user.id).toBe('1');
-			expect((user as any).extra).toBeUndefined();
+			expect(
+				(user as unknown as Record<string, unknown>)['extra']
+			).toBeUndefined();
 		});
 
 		it('should not affect defined properties', () => {
@@ -113,7 +122,7 @@ describe('Integrity: Unknown Property Policy', () => {
 			const user = User.create({
 				id: '1',
 				name: 'John', // Name is NOT registered in Quick map, so it technically IS unknown to the runtime
-			} as any);
+			} as unknown as IUser);
 
 			expect(user.id).toBe('1');
 			// Since 'name' is just a TS declare and not in the runtime map, it is stripped!
@@ -137,7 +146,7 @@ describe('Integrity: Unknown Property Policy', () => {
 					id: '1',
 					name: 'John',
 					extra: 'fail',
-				} as any);
+				} as unknown as IUser);
 			}).toThrow(
 				"Strict Mode: Property 'extra' (mapped from 'extra') is not defined"
 			);
@@ -150,7 +159,7 @@ describe('Integrity: Unknown Property Policy', () => {
 			}
 
 			expect(() => {
-				User.create({ id: '1', extra: 'fail' } as any);
+				User.create({ id: '1', extra: 'fail' } as unknown as IUser);
 			}).toThrow(
 				"Strict Mode: Property 'extra' (mapped from 'extra') is not defined"
 			);
@@ -166,8 +175,13 @@ describe('Integrity: Unknown Property Policy', () => {
 				declare id: string;
 			}
 
-			const user = User.create({ id: '1', extra: 'kept' } as any);
-			expect((user as any).extra).toBe('kept');
+			const user = User.create({
+				id: '1',
+				extra: 'kept',
+			} as unknown as IUser);
+			expect((user as unknown as Record<string, unknown>)['extra']).toBe(
+				'kept'
+			);
 		});
 	});
 
@@ -200,7 +214,9 @@ describe('Integrity: Unknown Property Policy', () => {
 			};
 
 			const parent = Parent.create(data);
-			expect((parent as any).unknownParent).toBeUndefined();
+			expect(
+				(parent as unknown as Record<string, unknown>)['unknownParent']
+			).toBeUndefined();
 			expect(parent.child.name).toBe('Child');
 
 			// 2. Child throws on its own unknowns

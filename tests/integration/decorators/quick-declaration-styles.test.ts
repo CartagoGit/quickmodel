@@ -419,7 +419,7 @@ describe('@Quick() with declaration styles', () => {
 	// ============================================================================
 	// Scenario 5: Modification and state tracking
 	// ============================================================================
-	describe('Modification and state tracking', () => {
+	describe('Modification and state tracking ($qGetChangedFields)', () => {
 		interface ISettings {
 			theme: string;
 			notifications: boolean;
@@ -462,9 +462,11 @@ describe('@Quick() with declaration styles', () => {
 			settings.maxItems = 100;
 
 			expect(settings.$qHasChanges()).toBe(true);
-			expect(settings.getChangedFields()).toContain('theme');
-			expect(settings.getChangedFields()).toContain('maxItems');
-			expect(settings.getChangedFields()).not.toContain('notifications');
+			expect(settings.$qGetChangedFields()).toContain('theme');
+			expect(settings.$qGetChangedFields()).toContain('maxItems');
+			expect(settings.$qGetChangedFields()).not.toContain(
+				'notifications'
+			);
 
 			const changes = settings.$qGetChanges();
 			expect(changes.theme).toBe('light');
@@ -481,8 +483,8 @@ describe('@Quick() with declaration styles', () => {
 			settings.maxItems = 100;
 
 			expect(settings.$qHasChanges()).toBe(true);
-			expect(settings.getChangedFields()).toContain('theme');
-			expect(settings.getChangedFields()).toContain('maxItems');
+			expect(settings.$qGetChangedFields()).toContain('theme');
+			expect(settings.$qGetChangedFields()).toContain('maxItems');
 
 			const changes = settings.$qGetChanges();
 			expect(changes.theme).toBe('light');
@@ -498,7 +500,7 @@ describe('@Quick() with declaration styles', () => {
 			settings.maxItems = 100;
 
 			expect(settings.$qHasChanges()).toBe(true);
-			expect(settings.getChangedFields()).toContain('theme');
+			expect(settings.$qGetChangedFields()).toContain('theme');
 
 			const changes = settings.$qGetChanges();
 			expect(changes.theme).toBe('light');

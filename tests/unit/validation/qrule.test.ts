@@ -218,7 +218,7 @@ describe('hasIntegrity()', () => {
 
 		const bad = new IntegrityModel({ age: 40, active: false });
 		(bad as any).active = 999;
-		expect(bad.$qHasIntegrity()).toBe(bad.checkIntegrity().length === 0);
+		expect(bad.$qHasIntegrity()).toBe(bad.$qCheckIntegrity().length === 0);
 	});
 });
 

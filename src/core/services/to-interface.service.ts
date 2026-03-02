@@ -249,11 +249,36 @@ export class ToInterfaceService<
 		// If no original value to compare, we must infer the interface format for complex types
 		// This happens when adding new items to collections that weren't in the original data
 		if (originalValue === undefined) {
-			// Handle Nested QModels (Recursion)
+			// Handle Nested QModels (Recursion) — prefer $qToInterface to bypass the guard
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'$qToInterface' in currentValue &&
+				typeof (
+					currentValue as {
+						$qToInterface: (
+							s: WeakSet<object>,
+							d?: number
+						) => unknown;
+					}
+				).$qToInterface === 'function'
+			) {
+				return (
+					currentValue as {
+						$qToInterface: (
+							s: WeakSet<object>,
+							d?: number
+						) => unknown;
+					}
+				).$qToInterface(seen, depth + 1);
+			}
+
+			// Legacy: non-QModel objects with only toInterface
 			if (
 				currentValue &&
 				typeof currentValue === 'object' &&
 				'toInterface' in currentValue &&
+				!('$qToInterface' in currentValue) &&
 				typeof (
 					currentValue as {
 						toInterface: (
@@ -284,6 +309,32 @@ export class ToInterfaceService<
 			}
 
 			return currentValue;
+		}
+
+		// originalValue was null but currentValue is now a QModel — delegate to $qToInterface
+		if (originalValue === null) {
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'$qToInterface' in currentValue &&
+				typeof (
+					currentValue as {
+						$qToInterface: (
+							s: WeakSet<object>,
+							d?: number
+						) => unknown;
+					}
+				).$qToInterface === 'function'
+			) {
+				return (
+					currentValue as {
+						$qToInterface: (
+							s: WeakSet<object>,
+							d?: number
+						) => unknown;
+					}
+				).$qToInterface(seen, depth + 1);
+			}
 		}
 
 		// 3. DATE: Check BEFORE generic string handling
@@ -528,12 +579,38 @@ export class ToInterfaceService<
 				return result;
 			}
 
-			// Objects with custom constructor: try to call toInterface
-			// For QModel instances, call toInterface() recursively
+			// Objects with custom constructor: try to call $qToInterface (preferred) or toInterface
+			// For QModel instances, call $qToInterface() recursively to bypass the guard
+			if (
+				currentValue &&
+				typeof currentValue === 'object' &&
+				'$qToInterface' in currentValue &&
+				typeof (
+					currentValue as {
+						$qToInterface: (
+							s: WeakSet<object>,
+							d: number
+						) => unknown;
+					}
+				).$qToInterface === 'function'
+			) {
+				// Pass the 'seen' set to prevent infinite loops in recursive models
+				return (
+					currentValue as {
+						$qToInterface: (
+							s: WeakSet<object>,
+							d: number
+						) => unknown;
+					}
+				).$qToInterface(seen, depth + 1);
+			}
+
+			// Legacy: objects with only toInterface (non-QModel objects with custom serialization)
 			if (
 				currentValue &&
 				typeof currentValue === 'object' &&
 				'toInterface' in currentValue &&
+				!('$qToInterface' in currentValue) &&
 				typeof (
 					currentValue as {
 						toInterface: (s: WeakSet<object>) => unknown;

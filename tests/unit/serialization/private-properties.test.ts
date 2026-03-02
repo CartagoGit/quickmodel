@@ -52,7 +52,7 @@ describe('Private/Protected Properties Serialization', () => {
 		const user = new User({ id: 1, name: 'John' });
 		user.__meta = 'so_secret';
 
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 		expect(json.id).toBe(1);
 		expect(json.name).toBe('John');
 		expect(json.__meta).toBeUndefined();
@@ -61,7 +61,7 @@ describe('Private/Protected Properties Serialization', () => {
 	test('should EXCLUDE single underscore properties by default (default options)', () => {
 		const user = new StrictUser({ id: 1, _ignored: 'visible' });
 		// Default behavior: Exclude
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 
 		expect(json.id).toBe(1);
 		expect(json._ignored).toBeUndefined();
@@ -97,7 +97,7 @@ describe('Private/Protected Properties Serialization', () => {
 
 	test('should include standard properties', () => {
 		const user = new User({ id: 1, name: 'John' });
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 		expect(json.id).toBe(1);
 		expect(json.name).toBe('John');
 	});

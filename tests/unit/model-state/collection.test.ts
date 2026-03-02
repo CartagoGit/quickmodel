@@ -52,9 +52,9 @@ describe('QModelCollection — construcción', () => {
 		expect(col.$qSize).toBe(5);
 	});
 
-	it('toArray() devuelve instancias de la clase modelo', () => {
+	it('$qToArray() devuelve instancias de la clase modelo', () => {
 		const col = QModelCollection.from(UserModel, SEED);
-		const arr = col.toArray();
+		const arr = col.$qToArray();
 		expect(arr).toHaveLength(5);
 		expect(arr[0]).toBeInstanceOf(UserModel);
 	});
@@ -71,7 +71,7 @@ describe('QModelCollection — filtrado y búsqueda', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const admins = col.$qWhere((usr) => usr.role === 'admin');
 		expect(admins.$qSize).toBe(2);
-		admins.toArray().forEach((usr) => expect(usr.role).toBe('admin'));
+		admins.$qToArray().forEach((usr) => expect(usr.role).toBe('admin'));
 	});
 
 	it('$qWhere() devuelve una nueva colección (no muta la original)', () => {
@@ -107,29 +107,29 @@ describe('QModelCollection — ordenación', () => {
 	it('$qSortBy() ordena ascendente por campo string', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const sorted = col.$qSortBy('name');
-		const names = sorted.toArray().map((usr) => usr.name);
+		const names = sorted.$qToArray().map((usr) => usr.name);
 		expect(names).toEqual([...names].sort());
 	});
 
 	it('$qSortBy() ordena ascendente por campo numérico', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const sorted = col.$qSortBy('age');
-		const ages = sorted.toArray().map((usr) => usr.age);
+		const ages = sorted.$qToArray().map((usr) => usr.age);
 		expect(ages).toEqual([...ages].sort((lhs, rhs) => lhs - rhs));
 	});
 
 	it('$qSortBy() con order: desc ordena descendente', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const sorted = col.$qSortBy('age', { order: 'desc' });
-		const ages = sorted.toArray().map((usr) => usr.age);
+		const ages = sorted.$qToArray().map((usr) => usr.age);
 		expect(ages[0]).toBeGreaterThan(ages[ages.length - 1]);
 	});
 
 	it('$qSortBy() devuelve una nueva colección sin mutar', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const sorted = col.$qSortBy('name');
-		expect(col.toArray()[0]?.name).toBe('Alice'); // original inalterado
-		expect(sorted.toArray()[0]?.name).toBe('Alice'); // coincide — Alice es la primera
+		expect(col.$qToArray()[0]?.name).toBe('Alice'); // original inalterado
+		expect(sorted.$qToArray()[0]?.name).toBe('Alice'); // coincide — Alice es la primera
 	});
 });
 
@@ -138,14 +138,14 @@ describe('QModelCollection — paginación', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const page = col.$qPaginate(1, 2);
 		expect(page.$qSize).toBe(2);
-		expect(page.toArray()[0]?.name).toBe('Alice');
+		expect(page.$qToArray()[0]?.name).toBe('Alice');
 	});
 
 	it('$qPaginate() devuelve la segunda página', () => {
 		const col = QModelCollection.from(UserModel, SEED);
 		const page = col.$qPaginate(2, 2);
 		expect(page.$qSize).toBe(2);
-		expect(page.toArray()[0]?.name).toBe('Carol');
+		expect(page.$qToArray()[0]?.name).toBe('Carol');
 	});
 
 	it('$qPaginate() última página puede ser incompleta', () => {
@@ -219,7 +219,7 @@ describe('QModelCollection — colección vacía', () => {
 	it('from() con array vacío crea colección de $qSize 0', () => {
 		const col = QModelCollection.from(UserModel, []);
 		expect(col.$qSize).toBe(0);
-		expect(col.toArray()).toHaveLength(0);
+		expect(col.$qToArray()).toHaveLength(0);
 	});
 
 	it('$qSerialize() en colección vacía devuelve array vacío', () => {

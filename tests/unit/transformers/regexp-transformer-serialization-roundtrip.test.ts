@@ -28,15 +28,14 @@ describe('Unit: RegExp Transformer', () => {
 		const model = new Pattern({ pattern: '/test/i' });
 
 		const json = model.toJSON();
-		const parsed = JSON.parse(json);
 
-		expect(parsed.pattern).toEqual({
+		expect(json.pattern).toEqual({
 			__type: 'regexp',
 			source: 'test',
 			flags: 'i',
 		});
-		expect(parsed.pattern.source).toBe('test');
-		expect(parsed.pattern.flags).toBe('i');
+		expect(json.pattern.source).toBe('test');
+		expect(json.pattern.flags).toBe('i');
 	});
 
 	test('Should deserialize simple regexp', () => {
@@ -52,7 +51,7 @@ describe('Unit: RegExp Transformer', () => {
 
 		for (const flag of flags) {
 			const model = new Pattern({ pattern: `/test/${flag}` });
-			const deserialized = Pattern.fromJSON(model.toJSON());
+			const deserialized = Pattern.fromJSON(model.$qToJSON());
 
 			expect(deserialized.pattern.flags).toBe(flag);
 		}
@@ -69,7 +68,7 @@ describe('Unit: RegExp Transformer', () => {
 
 		for (const pattern of patterns) {
 			const model = new Pattern({ pattern: pattern.toString() });
-			const deserialized = Pattern.fromJSON(model.toJSON());
+			const deserialized = Pattern.fromJSON(model.$qToJSON());
 
 			expect(deserialized.pattern.source).toBe(pattern.source);
 			expect(deserialized.pattern.flags).toBe(pattern.flags);
@@ -78,14 +77,14 @@ describe('Unit: RegExp Transformer', () => {
 
 	test('Should handle escaped characters', () => {
 		const model = new Pattern({ pattern: String.raw`/\\/\n\r\t/g` });
-		const deserialized = Pattern.fromJSON(model.toJSON());
+		const deserialized = Pattern.fromJSON(model.$qToJSON());
 
 		expect(deserialized.pattern).toBeInstanceOf(RegExp);
 	});
 
 	test('Should handle empty pattern', () => {
 		const model = new Pattern({ pattern: '//' });
-		const deserialized = Pattern.fromJSON(model.toJSON());
+		const deserialized = Pattern.fromJSON(model.$qToJSON());
 
 		expect(deserialized.pattern).toBeInstanceOf(RegExp);
 		// Empty pattern // is parsed as literal \/\/
@@ -96,7 +95,7 @@ describe('Unit: RegExp Transformer', () => {
 		// eslint-disable-next-line security/detect-unsafe-regex
 		const emailPattern = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 		const model = new Pattern({ pattern: emailPattern.toString() });
-		const deserialized = Pattern.fromJSON(model.toJSON());
+		const deserialized = Pattern.fromJSON(model.$qToJSON());
 
 		expect(deserialized.pattern.test('test@example.com')).toBe(true);
 		expect(deserialized.pattern.test('invalid-email')).toBe(false);
@@ -104,7 +103,7 @@ describe('Unit: RegExp Transformer', () => {
 
 	test('Should handle unicode patterns', () => {
 		const model = new Pattern({ pattern: '/\\u{1F600}/u' });
-		const deserialized = Pattern.fromJSON(model.toJSON());
+		const deserialized = Pattern.fromJSON(model.$qToJSON());
 
 		expect(deserialized.pattern.flags).toContain('u');
 	});

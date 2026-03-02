@@ -496,7 +496,7 @@ describe('Ionic — form patterns', () => {
 			phone: '1234567',
 			isVerified: false,
 		});
-		const schema = dto.getFormSchema();
+		const schema = dto.$qGetFormSchema();
 		expect(Array.isArray(schema)).toBe(true);
 		expect(schema.length).toBeGreaterThan(0);
 	});

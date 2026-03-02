@@ -112,7 +112,8 @@ export class QIntegratePrompt extends QAbstractPrompt<{
 						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent is writing to the same source area\n` +
 						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"integrate ${library}"\`, and \`files\` (paths of model + test files you will create)\n` +
 						`3. If \`conflict: true\` → **STOP**. Do not write any file until the conflict is resolved.\n` +
-						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`4. **Read before every write:** Immediately before modifying each file, read its current content from disk — your context may be stale if another agent edited it since you started. If the file changed: adapt your change, merge carefully, or skip if no longer needed. Never overwrite from stale context.\n` +
+						`5. Release when done: \`agent_coordinate action="release"\`\n\n` +
 						`---\n\n` +
 						`### Step 1 — Analyse ${library} data types\n\n` +
 						`First I'll examine the ${library} data structures involved in: **${use_case}**\n\n` +

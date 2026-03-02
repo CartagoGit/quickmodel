@@ -69,15 +69,18 @@ Esto incluye explícitamente:
 
 **Protocolo obligatorio — siempre, antes del primer cambio:**
 
+> **SESIÓN NUEVA O REINICIO DE VS CODE:** Si VS Code se reinició o esta es una sesión nueva, llama a `claim` con tu `agentId` y tarea **antes de hacer nada**. Re-clamar es idempotente: preserva `startedAt` y renueva el TTL. Si no lo haces, no quedarás registrado y el ticker no podrá renovarte.
+
 1. Llama a `agent_coordinate` con `action: "check"` — verifica qué agentes están activos y qué archivos tienen bloqueados
     - Si `agents[]` no está vacío: **revisa sus cambios antes de empezar** — comprueba qué tienen en staged/unstaged (`git status`, `git diff`). Para un mass-rename es crítico que el otro agente haga commit o stash primero, para que tu rename parta de una base limpia
 2. Llama a `agent_coordinate` con `action: "claim"`, tu `agentId`, una descripción de tu `task` y los `files` que vas a modificar
     - Para cambios acotados: `["src/mcp/tools/public/my-tool.ts", "tests/mcp/unit/public/my-tool.test.ts"]`
     - **Para refactors que tocan varios directorios: `["src/**", "tests/**"]`**
     - **Para mass-renames en todo el proyecto: `["src/**", "tests/**", "docs-vitepress/**"]`\*\*
-    - **Para operaciones largas (>100 archivos), añade `ttlMs: 1800000` (30 min)** — el TTL por defecto es 2 min
+    - El TTL por defecto es **30 min**; el ticker lo renueva automáticamente mientras VS Code esté activo. Para tareas muy largas con posibles pausas largas añade `ttlMs: 7200000` (2 h).
 3. Si la respuesta es `conflict: true` → **PARA INMEDIATAMENTE**. No toques ningún archivo. Informa al usuario qué agente tiene el conflicto y espera
-4. Al terminar (todos los gates pasan), llama a `agent_coordinate` con `action: "release"` para liberar tu claim
+4. **Lee antes de escribir:** Inmediatamente antes de modificar cada archivo, lee su contenido actual del disco — tu contexto puede estar obsoleto si otro agente lo editó desde que empezaste. Si el archivo cambió: adapta tu cambio, fusiona con cuidado, o sáltalo si ya no es necesario. Nunca sobreescribas desde un contexto obsoleto.
+5. Al terminar (todos los gates pasan), llama a `agent_coordinate` con `action: "release"` para liberar tu claim
 
 **¿Por qué?** Sin registro, dos agentes que hacen el mismo mass-rename simultáneamente se sobreescriben entre sí y corrompen el código, obligando al usuario a parar ambos manualmente y revertir a mano.
 

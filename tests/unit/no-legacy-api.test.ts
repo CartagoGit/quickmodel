@@ -1,8 +1,9 @@
 /**
- * Anti-regression: verifica que la API v1 ($qm) no está accesible ni en QModel ni en QModelCollection.
+ * Anti-regression: verifica que la API v1.0 limpia no expone métodos sin prefijo `$q`
+ * ni el getter `$qm` en QModel ni en QModelCollection.
  *
- * Si alguno de estos tests falla, significa que el getter `$qm` fue reintroducido
- * o que un método de instancia fue expuesto sin el prefijo `$q`.
+ * Si alguno de estos tests falla, significa que un método de instancia fue expuesto
+ * sin el prefijo `$q`, o que el getter `$qm` fue reintroducido.
  *
  * Convención de nomenclatura:
  *   IQ*  → interfaces y tipos TypeScript
@@ -10,7 +11,7 @@
  *   $q*  → métodos/propiedades de instancia y helpers exportados
  */
 
-// @quickmodel-rule-ignore: no-as-unknown  — tests de guardia requieren acceso forzado a nombres sin $q
+// @quickmodel-rule-ignore: no-as-unknown  — tests de API requieren acceso forzado a nombres sin $q
 
 import { describe, it, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
@@ -50,88 +51,90 @@ describe('QModel — getter $qm no existe', () => {
 	it('$qm es undefined en la instancia', () => {
 		const prod = makeProduct();
 		expect(
-			(prod as unknown as Record<string, unknown>)['$qm']
+			(prod as unknown as Record<string, unknown>)['$qm'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });
 
 // ---------------------------------------------------------------------------
-// QModel — métodos sin prefijo $q lanzan error de guardia
+// QModel — métodos legacy sin prefijo $q no existen en el prototipo (API v1.0 limpia)
 // ---------------------------------------------------------------------------
 
-describe('QModel — métodos de infraestructura sin $q lanzan [QuickModel]', () => {
-	it('serialize() lanza', () => {
-		expect(() => (makeProduct() as any).serialize()).toThrow(
-			'[QuickModel]'
-		);
+describe('QModel — métodos legacy sin $q no existen', () => {
+	// @quickmodel-rule-ignore: no-as-unknown — guards de inexistencia requieren acceso por clave dinámica
+	const inst = () => makeProduct() as unknown as Record<string, unknown>;
+
+	it('serialize es undefined', () => {
+		expect(inst()['serialize']).toBeUndefined();
 	});
-	it('isDirty() lanza', () => {
-		expect(() => (makeProduct() as any).isDirty()).toThrow('[QuickModel]');
+	it('isDirty es undefined', () => {
+		expect(inst()['isDirty']).toBeUndefined();
 	});
-	it('hasChanges() lanza', () => {
-		expect(() => (makeProduct() as any).hasChanges()).toThrow(
-			'[QuickModel]'
-		);
+	it('hasChanges es undefined', () => {
+		expect(inst()['hasChanges']).toBeUndefined();
 	});
-	it('getChanges() lanza', () => {
-		expect(() => (makeProduct() as any).getChanges()).toThrow(
-			'[QuickModel]'
-		);
+	it('getChanges es undefined', () => {
+		expect(inst()['getChanges']).toBeUndefined();
 	});
-	it('patch() lanza', () => {
-		expect(() => (makeProduct() as any).patch({ price: 1 })).toThrow(
-			'[QuickModel]'
-		);
+	it('patch es undefined', () => {
+		expect(inst()['patch']).toBeUndefined();
 	});
-	it('copy() lanza', () => {
-		expect(() => (makeProduct() as any).copy()).toThrow('[QuickModel]');
+	it('copy es undefined', () => {
+		expect(inst()['copy']).toBeUndefined();
 	});
-	it('reset() lanza', () => {
-		expect(() => (makeProduct() as any).reset()).toThrow('[QuickModel]');
+	it('reset es undefined', () => {
+		expect(inst()['reset']).toBeUndefined();
 	});
-	it('checkIntegrity() lanza', () => {
-		expect(() => (makeProduct() as any).checkIntegrity()).toThrow(
-			'[QuickModel]'
-		);
+	it('checkIntegrity es undefined', () => {
+		expect(inst()['checkIntegrity']).toBeUndefined();
 	});
-	it('checkRules() lanza', () => {
-		expect(() => (makeProduct() as any).checkRules()).toThrow(
-			'[QuickModel]'
-		);
+	it('checkRules es undefined', () => {
+		expect(inst()['checkRules']).toBeUndefined();
 	});
-	it('isValid() lanza', () => {
-		expect(() => (makeProduct() as any).isValid()).toThrow('[QuickModel]');
+	it('isValid es undefined', () => {
+		expect(inst()['isValid']).toBeUndefined();
 	});
-	it('toInterface() lanza', () => {
-		expect(() => (makeProduct() as any).toInterface()).toThrow(
-			'[QuickModel]'
-		);
+	it('toInterface es undefined', () => {
+		expect(inst()['toInterface']).toBeUndefined();
 	});
-	it('getInitInterface() lanza', () => {
-		expect(() => (makeProduct() as any).getInitInterface()).toThrow(
-			'[QuickModel]'
-		);
+	it('getInitInterface es undefined', () => {
+		expect(inst()['getInitInterface']).toBeUndefined();
 	});
-	it('diff() lanza', () => {
-		const prod = makeProduct();
-		expect(() => (prod as any).diff(prod)).toThrow('[QuickModel]');
+	it('diff es undefined', () => {
+		expect(inst()['diff']).toBeUndefined();
 	});
-	it('equals() lanza', () => {
-		const prod = makeProduct();
-		expect(() => (prod as any).equals(prod)).toThrow('[QuickModel]');
+	it('equals es undefined', () => {
+		expect(inst()['equals']).toBeUndefined();
 	});
-	it('hasIntegrity() lanza', () => {
-		expect(() => (makeProduct() as any).hasIntegrity()).toThrow(
-			'[QuickModel]'
-		);
+	it('hasIntegrity es undefined', () => {
+		expect(inst()['hasIntegrity']).toBeUndefined();
 	});
-	it('validationReport() lanza', () => {
-		expect(() => (makeProduct() as any).validationReport()).toThrow(
-			'[QuickModel]'
-		);
+	it('validationReport es undefined', () => {
+		expect(inst()['validationReport']).toBeUndefined();
 	});
-	it('validate() lanza', () => {
-		expect(() => (makeProduct() as any).validate()).toThrow('[QuickModel]');
+	it('validate es undefined', () => {
+		expect(inst()['validate']).toBeUndefined();
+	});
+	it('getDirtyFields es undefined', () => {
+		expect(inst()['getDirtyFields']).toBeUndefined();
+	});
+	it('getChangedFields es undefined', () => {
+		expect(inst()['getChangedFields']).toBeUndefined();
+	});
+	it('toPlain es undefined', () => {
+		expect(inst()['toPlain']).toBeUndefined();
+	});
+	it('getFormSchema es undefined', () => {
+		expect(inst()['getFormSchema']).toBeUndefined();
+	});
+	it('getFormSchemaGrouped es undefined', () => {
+		expect(inst()['getFormSchemaGrouped']).toBeUndefined();
+	});
+	it('getMetadata es undefined', () => {
+		expect(inst()['getMetadata']).toBeUndefined();
+	});
+	it('getSchema es undefined', () => {
+		expect(inst()['getSchema']).toBeUndefined();
 	});
 });
 
@@ -151,6 +154,12 @@ describe('QModel — la API $q* es accesible', () => {
 	});
 	it('$qHasChanges() es false al inicio', () => {
 		expect(makeProduct().$qHasChanges()).toBe(false);
+	});
+	it('$qToPlain() retorna objeto plano runtime', () => {
+		expect(makeProduct().$qToPlain()).toMatchObject({
+			sku: 'ABC-1',
+			price: 99,
+		});
 	});
 	it('$qPatch() muta el modelo', () => {
 		const prod = makeProduct();
@@ -231,7 +240,7 @@ describe('QModelCollection — getter $qm no existe', () => {
 	it('$qm es undefined en la colección', () => {
 		const col = makeCollection();
 		expect(
-			(col as unknown as Record<string, unknown>)['$qm']
+			(col as unknown as Record<string, unknown>)['$qm'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });
@@ -282,7 +291,7 @@ describe('QModelCollection — la API $q* es accesible', () => {
 	it('$qToJSON() retorna JSON string', () => {
 		const json = makeCollection().$qToJSON();
 		expect(typeof json).toBe('string');
-		const parsed = JSON.parse(json) as unknown[];
+		const parsed = JSON.parse(json) as unknown[]; // @quickmodel-rule-ignore: no-as-unknown
 		expect(parsed.length).toBe(2);
 	});
 	it('QModelCollection.fromJSON() restaura colección', () => {

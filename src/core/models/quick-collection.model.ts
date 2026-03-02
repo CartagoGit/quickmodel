@@ -13,8 +13,8 @@ export interface IQCollectionItem {
 }
 
 /**
- * Result returned by `QModelCollection.checkAllRules()`.
- * @see {@link QModelCollection.checkAllRules}
+ * Result returned by `QModelCollection.$qCheckAllRules()`.
+ * @see {@link QModelCollection.$qCheckAllRules}
  */
 export interface IQCollectionRulesResult {
 	/** Whether all instances passed all rules. */
@@ -24,9 +24,9 @@ export interface IQCollectionRulesResult {
 }
 
 /**
- * Options for `QModelCollection.toCSV()`.
+ * Options for `QModelCollection.$qToCSV()`.
  *
- * @see {@link QModelCollection.toCSV}
+ * @see {@link QModelCollection.$qToCSV}
  */
 export interface IQCSVOptions {
 	/** Column delimiter. Default: `','`. */
@@ -73,13 +73,13 @@ type IQModelCtor<TInstance extends IQCollectionItem> = new (
  * const users = QModelCollection.from(UserModel, rawRows);
  *
  * users
- *   .where(u => u.active)
- *   .sortBy('name')
- *   .paginate(1, 10)
- *   .toArray(); // → UserModel[]
+ *   .$qWhere(u => u.active)
+ *   .$qSortBy('name')
+ *   .$qPaginate(1, 10)
+ *   .$qToArray(); // → UserModel[]
  *
- * users.groupBy('role');  // → Record<string, UserModel[]>
- * users.serialize();      // → plain object array
+ * users.$qGroupBy('role');  // → Record<string, UserModel[]>
+ * users.$qSerialize();      // → plain object array
  * ```
  *
  * @see {@link QModel.collection} — static alias on each model class
@@ -154,7 +154,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * The returned array is a shallow copy — mutation does not affect the collection.
 	 */
-	toArray(): TInstance[] {
+	$qToArray(): TInstance[] {
 		return [...this.#items];
 	}
 
@@ -169,7 +169,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const admins = col.where(u => u.role === 'admin');
+	 * const admins = col.$qWhere(u => u.role === 'admin');
 	 * ```
 	 */
 	$qWhere(
@@ -235,8 +235,8 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const page1 = col.paginate(1, 10); // items 0–9
-	 * const page2 = col.paginate(2, 10); // items 10–19
+	 * const page1 = col.$qPaginate(1, 10); // items 0–9
+	 * const page2 = col.$qPaginate(2, 10); // items 10–19
 	 * ```
 	 */
 	$qPaginate(page: number, pageSize: number): QModelCollection<TInstance> {
@@ -257,7 +257,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const byRole = col.groupBy('role');
+	 * const byRole = col.$qGroupBy('role');
 	 * byRole['admin']; // → UserModel[]
 	 * ```
 	 */
@@ -364,7 +364,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example Basic export
 	 * ```typescript
-	 * const csv = UserCollection.from(UserModel, rows).toCSV();
+	 * const csv = UserCollection.from(UserModel, rows).$qToCSV();
 	 * // id,name,email
 	 * // 1,Alice,alice@example.com
 	 * // 2,Bob,bob@example.com
@@ -372,7 +372,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example Semicolon-delimited, subset of fields
 	 * ```typescript
-	 * col.toCSV({ delimiter: ';', fields: ['name', 'email'] });
+	 * col.$qToCSV({ delimiter: ';', fields: ['name', 'email'] });
 	 * ```
 	 *
 	 * @see {@link IQCSVOptions}
@@ -429,7 +429,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * QModelCollection.from(UserModel, []).isEmpty; // → true
+	 * QModelCollection.from(UserModel, []).$qIsEmpty; // → true
 	 * ```
 	 */
 	get $qIsEmpty(): boolean {
@@ -441,7 +441,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.first()?.name; // → 'Alice'
+	 * col.$qFirst()?.name; // → 'Alice'
 	 * ```
 	 */
 	$qFirst(): TInstance | undefined {
@@ -453,7 +453,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.last()?.name; // → 'Eve'
+	 * col.$qLast()?.name; // → 'Eve'
 	 * ```
 	 */
 	$qLast(): TInstance | undefined {
@@ -468,8 +468,8 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.count();                       // → 5
-	 * col.count(u => u.active === true); // → 3
+	 * col.$qCount();                       // → 5
+	 * col.$qCount(u => u.active === true); // → 3
 	 * ```
 	 */
 	$qCount(predicate?: (item: TInstance) => boolean): number {
@@ -489,7 +489,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.every(u => u.age >= 18); // → true
+	 * col.$qEvery(u => u.age >= 18); // → true
 	 * ```
 	 */
 	$qEvery(predicate: (item: TInstance) => boolean): boolean {
@@ -504,7 +504,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.some(u => u.role === 'admin'); // → true
+	 * col.$qSome(u => u.role === 'admin'); // → true
 	 * ```
 	 */
 	$qSome(predicate: (item: TInstance) => boolean): boolean {
@@ -520,8 +520,8 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.map(u => u.name);       // → ['Alice', 'Bob', ...]
-	 * col.map(u => u.serialize()); // → plain-object array
+	 * col.$qMap(u => u.name);        // → ['Alice', 'Bob', ...]
+	 * col.$qMap(u => u.$qSerialize()); // → plain-object array
 	 * ```
 	 */
 	$qMap<TResult>(transform: (item: TInstance) => TResult): TResult[] {
@@ -535,7 +535,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.flatMap(u => [u.name, u.email]); // → ['Alice', 'a@b.com', 'Bob', ...]
+	 * col.$qFlatMap(u => [u.name, u.email]); // → ['Alice', 'a@b.com', 'Bob', ...]
 	 * ```
 	 */
 	$qFlatMap<TResult>(transform: (item: TInstance) => TResult[]): TResult[] {
@@ -550,7 +550,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.reduce((total, p) => total + p.price, 0); // → sum of prices
+	 * col.$qReduce((total, p) => total + p.price, 0); // → sum of prices
 	 * ```
 	 */
 	$qReduce<TAcc>(
@@ -568,8 +568,8 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.sum('price'); // → 7.0
-	 * col.sum('stock'); // → 390
+	 * col.$qSum('price'); // → 7.0
+	 * col.$qSum('stock'); // → 390
 	 * ```
 	 */
 	$qSum(field: keyof TInstance): number {
@@ -589,8 +589,8 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.avg('price'); // → 2.3
-	 * col.avg('score'); // → 87.5
+	 * col.$qAvg('price'); // → 2.3
+	 * col.$qAvg('score'); // → 87.5
 	 * ```
 	 */
 	$qAvg(field: keyof TInstance): number {
@@ -605,7 +605,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.min('price')?.name; // → 'Banana'
+	 * col.$qMin('price')?.name; // → 'Banana'
 	 * ```
 	 */
 	$qMin(field: keyof TInstance): TInstance | undefined {
@@ -631,7 +631,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.max('price')?.name; // → 'Elderberry'
+	 * col.$qMax('price')?.name; // → 'Elderberry'
 	 * ```
 	 */
 	$qMax(field: keyof TInstance): TInstance | undefined {
@@ -658,10 +658,10 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * col.unique('category'); // one item per category
+	 * col.$qUnique('category'); // one item per category
 	 * ```
 	 */
-	unique(field: keyof TInstance): QModelCollection<TInstance> {
+	$qUnique(field: keyof TInstance): QModelCollection<TInstance> {
 		const seen = new Set<unknown>();
 		const result: TInstance[] = [];
 		for (const item of this.#items) {
@@ -682,11 +682,11 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const byId = col.toMap('id');
+	 * const byId = col.$qToMap('id');
 	 * byId.get(1)?.name; // → 'Alice'
 	 * ```
 	 */
-	toMap(field: keyof TInstance): Map<unknown, TInstance> {
+	$qToMap(field: keyof TInstance): Map<unknown, TInstance> {
 		const map = new Map<unknown, TInstance>();
 		for (const item of this.#items) {
 			map.set(item[field], item);
@@ -719,128 +719,5 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 			}
 		}
 		return { valid: errors.length === 0, errors };
-	}
-
-	// ─── Backward-compat aliases (deprecated) ────────────────────────────────
-
-	/** @deprecated Use `$qSize` */
-	get size(): number {
-		return this.$qSize;
-	}
-
-	/** @deprecated Use `$qIsEmpty` */
-	get isEmpty(): boolean {
-		return this.$qIsEmpty;
-	}
-
-	/** @deprecated Use `$qWhere()` */
-	where(
-		predicate: (item: TInstance) => boolean
-	): QModelCollection<TInstance> {
-		return this.$qWhere(predicate);
-	}
-
-	/** @deprecated Use `$qFind()` */
-	find(predicate: (item: TInstance) => boolean): TInstance | undefined {
-		return this.$qFind(predicate);
-	}
-
-	/** @deprecated Use `$qSortBy()` */
-	sortBy(
-		field: keyof TInstance,
-		options?: { desc?: boolean; order?: 'asc' | 'desc' }
-	): QModelCollection<TInstance> {
-		const order = options?.desc ? 'desc' : (options?.order ?? 'asc');
-		return this.$qSortBy(field, { order });
-	}
-
-	/** @deprecated Use `$qPaginate()` */
-	paginate(page: number, pageSize: number): QModelCollection<TInstance> {
-		return this.$qPaginate(page, pageSize);
-	}
-
-	/** @deprecated Use `$qGroupBy()` */
-	groupBy(field: keyof TInstance): Record<string, TInstance[]> {
-		return this.$qGroupBy(field);
-	}
-
-	/** @deprecated Use `$qSerialize()` */
-	serialize(
-		options?: IQSerializationOptions
-	): ReturnType<TInstance['$qSerialize']>[] {
-		return this.$qSerialize(options);
-	}
-
-	/** @deprecated Use `$qCheckAllRules()` */
-	checkAllRules(): IQCollectionRulesResult {
-		return this.$qCheckAllRules();
-	}
-
-	/** @deprecated Use `$qFirst()` */
-	first(): TInstance | undefined {
-		return this.$qFirst();
-	}
-
-	/** @deprecated Use `$qLast()` */
-	last(): TInstance | undefined {
-		return this.$qLast();
-	}
-
-	/** @deprecated Use `$qCount()` */
-	count(predicate?: (item: TInstance) => boolean): number {
-		return this.$qCount(predicate);
-	}
-
-	/** @deprecated Use `$qEvery()` */
-	every(predicate: (item: TInstance) => boolean): boolean {
-		return this.$qEvery(predicate);
-	}
-
-	/** @deprecated Use `$qSome()` */
-	some(predicate: (item: TInstance) => boolean): boolean {
-		return this.$qSome(predicate);
-	}
-
-	/** @deprecated Use `$qMap()` */
-	map<TResult>(transform: (item: TInstance) => TResult): TResult[] {
-		return this.$qMap(transform);
-	}
-
-	/** @deprecated Use `$qFlatMap()` */
-	flatMap<TResult>(transform: (item: TInstance) => TResult[]): TResult[] {
-		return this.$qFlatMap(transform);
-	}
-
-	/** @deprecated Use `$qReduce()` */
-	reduce<TAcc>(
-		reduceFn: (acc: TAcc, item: TInstance) => TAcc,
-		initial: TAcc
-	): TAcc {
-		return this.$qReduce(reduceFn, initial);
-	}
-
-	/** @deprecated Use `$qSum()` */
-	sum(field: keyof TInstance): number {
-		return this.$qSum(field);
-	}
-
-	/** @deprecated Use `$qAvg()` */
-	avg(field: keyof TInstance): number {
-		return this.$qAvg(field);
-	}
-
-	/** @deprecated Use `$qMin()` */
-	min(field: keyof TInstance): TInstance | undefined {
-		return this.$qMin(field);
-	}
-
-	/** @deprecated Use `$qMax()` */
-	max(field: keyof TInstance): TInstance | undefined {
-		return this.$qMax(field);
-	}
-
-	/** @deprecated Use `$qToCSV()` */
-	toCSV(options?: IQCSVOptions): string {
-		return this.$qToCSV(options);
 	}
 }

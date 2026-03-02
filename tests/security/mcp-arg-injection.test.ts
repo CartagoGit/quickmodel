@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: accessing private _spawn on tool instances to inject stubs without running real processes
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QRunTestsTool } from '../../src/mcp/tools/internal/run-tests.tool';
 import { QLintCheckTool } from '../../src/mcp/tools/internal/lint-check.tool';
@@ -31,6 +32,7 @@ describe('MED-06 — run_tests: flag injection via pattern', () => {
 		tool = new QRunTestsTool();
 		// Replace _spawn so no real process is started
 		(tool as unknown as { _spawn: unknown })._spawn = makeSpawnStub(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'1 pass\n0 fail',
 			''
 		);
@@ -79,7 +81,7 @@ describe('MED-07 — lint_check: flag injection via targetDir / targetFiles', ()
 
 	beforeEach(() => {
 		tool = new QLintCheckTool();
-		(tool as unknown as { _spawn: unknown })._spawn = makeSpawnStub('[]');
+		(tool as unknown as { _spawn: unknown })._spawn = makeSpawnStub('[]'); // @quickmodel-rule-ignore: no-as-unknown
 	});
 
 	const BAD_TARGET_DIRS = [

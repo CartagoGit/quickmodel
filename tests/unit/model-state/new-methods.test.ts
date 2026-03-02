@@ -1,6 +1,6 @@
 /**
  * TDD — Tests for new QModel methods:
- *   - toPlain()
+ *   - $qToPlain()
  *   - serialize({ pick, omit })
  *   - diff(other)
  *   - equals(other)
@@ -49,10 +49,10 @@ class Product extends QModel<IProduct> {
 }
 
 // ===========================================================================
-// toPlain()
+// $qToPlain()
 // ===========================================================================
 
-describe('QModel.toPlain()', () => {
+describe('QModel.$qToPlain()', () => {
 	test('should return a plain object (not a class instance)', () => {
 		const user = new User({
 			id: '1',
@@ -63,7 +63,7 @@ describe('QModel.toPlain()', () => {
 			balance: '999',
 		});
 
-		const plain = user.toPlain();
+		const plain = user.$qToPlain();
 
 		// Not a QModel instance – just a plain record
 		expect(plain).not.toBeInstanceOf(QModel);
@@ -81,7 +81,7 @@ describe('QModel.toPlain()', () => {
 			balance: '100',
 		});
 
-		const plain = user.toPlain();
+		const plain = user.$qToPlain();
 
 		// Runtime type → Date stays Date
 		expect(plain.createdAt).toBeInstanceOf(Date);
@@ -100,7 +100,7 @@ describe('QModel.toPlain()', () => {
 			balance: '999999999999999',
 		});
 
-		const plain = user.toPlain();
+		const plain = user.$qToPlain();
 
 		expect(typeof plain.balance).toBe('bigint');
 		expect(plain.balance).toBe(999999999999999n);
@@ -116,7 +116,7 @@ describe('QModel.toPlain()', () => {
 			balance: '42',
 		});
 
-		const plain = user.toPlain();
+		const plain = user.$qToPlain();
 
 		expect(plain.id).toBe('abc');
 		expect(plain.name).toBe('Alice');
@@ -124,7 +124,7 @@ describe('QModel.toPlain()', () => {
 		expect(plain.email).toBe('alice@test.com');
 	});
 
-	test('toPlain() reflects modifications made after construction', () => {
+	test('$qToPlain() reflects modifications made after construction', () => {
 		const user = new User({
 			id: '1',
 			name: 'John',
@@ -138,7 +138,7 @@ describe('QModel.toPlain()', () => {
 		user.createdAt = newDate;
 		user.name = 'Jane';
 
-		const plain = user.toPlain();
+		const plain = user.$qToPlain();
 
 		expect(plain.name).toBe('Jane');
 		expect(plain.createdAt).toBeInstanceOf(Date);
@@ -157,7 +157,7 @@ describe('QModel.toPlain()', () => {
 			balance: '1',
 		});
 
-		const plain = user.toPlain();
+		const plain = user.$qToPlain();
 		const keys = Object.keys(plain);
 
 		expect(keys.every((key) => !key.startsWith('__'))).toBe(true);
@@ -170,14 +170,14 @@ describe('QModel.toPlain()', () => {
 			tags: ['sale', 'new'],
 		});
 
-		const plain = product.toPlain();
+		const plain = product.$qToPlain();
 
 		expect(plain.sku).toBe('ABC-001');
 		expect(plain.price).toBe(29.99);
 		expect(plain.tags).toEqual(['sale', 'new']);
 	});
 
-	test('toPlain() result is a new object (not same reference)', () => {
+	test('$qToPlain() result is a new object (not same reference)', () => {
 		const user = new User({
 			id: '1',
 			name: 'John',
@@ -187,8 +187,8 @@ describe('QModel.toPlain()', () => {
 			balance: '1',
 		});
 
-		const plain1 = user.toPlain();
-		const plain2 = user.toPlain();
+		const plain1 = user.$qToPlain();
+		const plain2 = user.$qToPlain();
 
 		expect(plain1).not.toBe(plain2);
 		expect(plain1).toEqual(plain2);

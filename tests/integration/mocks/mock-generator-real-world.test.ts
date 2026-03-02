@@ -303,7 +303,7 @@ describe('Integration: Mock Generator - Real World', () => {
 
 	test('should serialize and deserialize mocked data correctly', () => {
 		const mock = Order.mock().random();
-		const json = mock.toJSON();
+		const json = mock.$qToJSON();
 		const deserialized = Order.fromJSON(json);
 
 		expect(deserialized).toBeInstanceOf(Order);

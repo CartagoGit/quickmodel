@@ -171,7 +171,9 @@ describe('DotNotationHandler — transformación de valores con metadata', () =>
 			modelClass: FakeModel,
 		});
 
-		const dateVal = (instance as any)['meta']['createdAt'];
+		const dateVal = (instance['meta'] as Record<string, unknown>)[
+			'createdAt'
+		];
 		expect(dateVal).toBeInstanceOf(Date);
 	});
 
@@ -188,7 +190,9 @@ describe('DotNotationHandler — transformación de valores con metadata', () =>
 			modelClass: FakeModel,
 		});
 
-		expect((instance as any)['nested']['val']).toBe('unchanged');
+		expect((instance['nested'] as Record<string, unknown>)['val']).toBe(
+			'unchanged'
+		);
 	});
 });
 

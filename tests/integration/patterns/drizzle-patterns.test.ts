@@ -3,12 +3,13 @@
  * Drizzle ORM integration patterns
  * Covers: DTO from Drizzle query result, create input, createMany seed,
  *         repository pattern, Date/number type coercion, unknownPropertyPolicy strip,
- *         copy() partial update, @QComputed derived fields, qCheckRulesAsync DB-level validation
+ *         copy() partial update, @QComputed derived fields, $qCheckRulesAsync DB-level validation
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Interface definitions
@@ -258,7 +259,7 @@ describe('DTO from Drizzle query result', () => {
 			score: 80,
 			createdAt: new Date(),
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
 	});
 });
@@ -275,7 +276,7 @@ describe('Create input — toInterface() for db.insert().values()', () => {
 			age: 25,
 			role: 'user',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -298,7 +299,7 @@ describe('Create input — toInterface() for db.insert().values()', () => {
 			age: 20,
 			role: 'user',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -310,7 +311,7 @@ describe('Create input — toInterface() for db.insert().values()', () => {
 			age: 16,
 			role: 'user',
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'age')).toBe(true);
 	});
@@ -376,7 +377,7 @@ describe('Drizzle types — Date and number coercion', () => {
 			stock: 10,
 			publishedAt: new Date(),
 		});
-		const result = qCheckRules(dto);
+		const result = $qCheckRules(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'price')).toBe(true);
 	});
@@ -640,7 +641,7 @@ describe('Repository pattern with DrizzleUserRepository', () => {
 			age: 17,
 			role: 'unknown',
 		});
-		const validation = qCheckRules(invalid);
+		const validation = $qCheckRules(invalid);
 		expect(validation.valid).toBe(false);
 		expect(validation.errors.length).toBeGreaterThanOrEqual(3);
 	});
@@ -783,10 +784,10 @@ describe('@QComputed() for non-stored derived fields', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 9. qCheckRulesAsync — DB-level uniqueness validation
+// 9. $qCheckRulesAsync — DB-level uniqueness validation
 // ---------------------------------------------------------------------------
 
-describe('qCheckRulesAsync — DB-level uniqueness for Drizzle', () => {
+describe('$qCheckRulesAsync — DB-level uniqueness for Drizzle', () => {
 	const emailRegistry = new Set<string>(['taken@drizzle.dev']);
 
 	class CreateUserWithUniqueEmailDto extends CreateUserDto {
@@ -804,7 +805,7 @@ describe('qCheckRulesAsync — DB-level uniqueness for Drizzle', () => {
 			age: 25,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -815,7 +816,7 @@ describe('qCheckRulesAsync — DB-level uniqueness for Drizzle', () => {
 			age: 20,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 		expect(
 			result.errors.some(

@@ -16,7 +16,8 @@ describe('Robustness Scenarios', () => {
 			obj.self = obj;
 			const model = new Circular({ self: obj });
 
-			const jsonString = model.toJSON();
+			// JSON.stringify(model) exercises the JS toJSON() protocol correctly
+			const jsonString = JSON.stringify(model);
 			// Should not crash
 			expect(jsonString).toContain('__circular');
 		});
@@ -35,7 +36,7 @@ describe('Robustness Scenarios', () => {
 			const model = new CircularArray({ list: arr });
 
 			// This currently might crash or hang
-			const jsonString = model.toJSON();
+			const jsonString = JSON.stringify(model);
 			expect(jsonString).toContain('__circular');
 		});
 
@@ -53,7 +54,7 @@ describe('Robustness Scenarios', () => {
 			const model = new CircularMap({ map });
 
 			// This currently might crash or hang
-			const jsonString = model.toJSON();
+			const jsonString = JSON.stringify(model);
 			expect(jsonString).toContain('__circular');
 		});
 	});
@@ -71,7 +72,7 @@ describe('Robustness Scenarios', () => {
 			const model = new Complex({ map: new Map([['val', 123n]]) });
 
 			// If MapTransformer just unwraps, this will fail JSON.stringify
-			const jsonString = model.toJSON();
+			const jsonString = JSON.stringify(model);
 			expect(jsonString).toContain('"val":"123"');
 		});
 
@@ -87,7 +88,7 @@ describe('Robustness Scenarios', () => {
 			const date = new Date('2024-01-01T00:00:00.000Z');
 			const model = new Complex({ dates: new Set([date]) });
 
-			const jsonString = model.toJSON();
+			const jsonString = JSON.stringify(model);
 			expect(jsonString).toContain('2024-01-01T00:00:00.000Z');
 		});
 	});

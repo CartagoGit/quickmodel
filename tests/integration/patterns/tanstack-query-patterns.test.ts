@@ -15,6 +15,7 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField } from '@/decorators';
+import { $qCheckRulesAsync } from '@/forms';
 
 // ---------------------------------------------------------------------------
 // Shared models
@@ -186,7 +187,7 @@ describe('TanStack Query — queryFn: single resource', () => {
 describe('TanStack Query — queryFn: list with createMany()', () => {
 	function fetchProducts(): IProduct[] {
 		const { instances, errors } = ProductDto.createMany(
-			rawProductList as any[]
+			rawProductList as Record<string, unknown>[]
 		);
 		if (errors.length > 0) {
 			throw new Error(`Failed to parse ${errors.length} products`);
@@ -214,7 +215,9 @@ describe('TanStack Query — queryFn: list with createMany()', () => {
 	});
 
 	test('createMany errors array is empty for valid data', () => {
-		const { errors } = ProductDto.createMany(rawProductList as any[]);
+		const { errors } = ProductDto.createMany(
+			rawProductList as Record<string, unknown>[]
+		);
 		expect(errors).toHaveLength(0);
 	});
 
@@ -224,7 +227,9 @@ describe('TanStack Query — queryFn: list with createMany()', () => {
 			{ name: 'X', price: -1, category: 'electronics' }, // name too short, price negative
 			{ name: 'Valid Widget', price: 49.99, category: 'electronics' }, // good item
 		];
-		const { errors } = CreateProductDto.createMany(badData as any[]);
+		const { errors } = CreateProductDto.createMany(
+			badData as Record<string, unknown>[]
+		);
 		expect(errors.length).toBeGreaterThan(0); // 'X' too short, -1 fails @QRule
 	});
 });
@@ -363,7 +368,9 @@ describe('TanStack Query — Cache normalization: serialize ↔ rehydrate', () =
 	});
 
 	test('cached list can be rehydrated as new DTO instances', () => {
-		const { instances } = ProductDto.createMany(rawProductList as any[]);
+		const { instances } = ProductDto.createMany(
+			rawProductList as Record<string, unknown>[]
+		);
 		const cachedList = instances.map((dto) => dto.$qSerialize());
 		// Simulate reading from cache
 		const rehydrated = cachedList.map(
@@ -432,7 +439,9 @@ describe('TanStack Query — Infinite queries: createMany() per page', () => {
 
 	function fetchPage(page: number): IPage {
 		const pageData = rawProductList.slice((page - 1) * 2, page * 2);
-		const { instances, errors } = ProductDto.createMany(pageData as any[]);
+		const { instances, errors } = ProductDto.createMany(
+			pageData as Record<string, unknown>[]
+		);
 		if (errors.length > 0) throw new Error('Parse error');
 		return {
 			items: instances.map((dto) => dto.$qSerialize() as IProduct),
@@ -539,7 +548,7 @@ describe('TanStack Query — checkRulesAsync() for server-side uniqueness', () =
 			price: 20,
 			category: 'tools',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -549,7 +558,7 @@ describe('TanStack Query — checkRulesAsync() for server-side uniqueness', () =
 			price: 20,
 			category: 'tools',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'name')).toBe(true);
 	});

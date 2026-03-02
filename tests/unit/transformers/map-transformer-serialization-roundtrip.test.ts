@@ -21,9 +21,8 @@ describe('Unit: Map Transformer', () => {
 		const model = new MapData({ map: new Map() });
 
 		const json = model.toJSON();
-		const parsed = JSON.parse(json);
 
-		expect(parsed.map).toBeDefined();
+		expect(json.map).toBeDefined();
 	});
 
 	test('Should deserialize empty map', () => {
@@ -40,7 +39,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('active', true);
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.map).toBeInstanceOf(Map);
 		expect(deserialized.map.size).toBe(3);
@@ -56,7 +55,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('3', 'three');
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.map.get('1')).toBe('one');
 		expect(deserialized.map.get('2')).toBe('two');
@@ -69,7 +68,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('undefined', undefined);
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.map.has('null')).toBe(true);
 		expect(deserialized.map.get('null')).toBeNull();
@@ -81,7 +80,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('settings', { theme: 'dark', notifications: true });
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		const user = deserialized.map.get('user') as {
 			name: string;
@@ -100,7 +99,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('numbers', [1, 2, 3, 4, 5]);
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.map.get('tags')).toEqual([
 			'javascript',
@@ -117,7 +116,7 @@ describe('Unit: Map Transformer', () => {
 		}
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.map.size).toBe(1000);
 		expect(deserialized.map.get('key-0')).toBe('value-0');
@@ -131,7 +130,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('m', 2);
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		const keys = Array.from(deserialized.map.keys());
 		expect(keys).toEqual(['z', 'a', 'm']);
@@ -146,7 +145,7 @@ describe('Unit: Map Transformer', () => {
 		map.set('key_with_underscores', 'value');
 
 		const model = new MapData({ map });
-		const deserialized = MapData.fromJSON(model.toJSON());
+		const deserialized = MapData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.map.get('')).toBe('empty');
 		expect(deserialized.map.get(' ')).toBe('space');

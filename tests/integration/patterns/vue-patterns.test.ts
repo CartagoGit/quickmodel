@@ -8,20 +8,23 @@
  * Key patterns:
  * - Composition API: reactive state wrapping QModel
  * - Pinia store simulation: actions mutate state via merge() / patch()
- * - VeeValidate-like adapter: qCheckRules() as validation resolver
+ * - VeeValidate-like adapter: $qCheckRules() as validation resolver
  * - useAsyncValidator: async email uniqueness check
  * - defineModel / v-model: two-way binding simulation
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qGroups } from '@/core/helpers/q-groups';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // 1. Vue Composition API — reactive form validation (plain TS class)
 // ---------------------------------------------------------------------------
 
-const FormSections = qGroups('personal', 'address');
+const FormSections = $qGroups('personal', 'address');
 
 class ContactForm {
 	@QField({ widget: 'input', label: 'First Name', required: true })
@@ -70,7 +73,7 @@ describe('Vue 3 — Composition API reactive form validation', () => {
 	});
 
 	test('empty form fails validation', () => {
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 	});
 
@@ -80,7 +83,7 @@ describe('Vue 3 — Composition API reactive form validation', () => {
 		form.email = 'marie@example.com';
 		form.city = 'Paris';
 		form.postalCode = '75001';
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(true);
 	});
 
@@ -90,7 +93,7 @@ describe('Vue 3 — Composition API reactive form validation', () => {
 		form.email = 'ada@example.com';
 		form.city = 'London';
 		form.postalCode = 'abc'; // not digits
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'postalCode')).toBe(
 			true
@@ -101,7 +104,7 @@ describe('Vue 3 — Composition API reactive form validation', () => {
 		form.firstName = 'Lise';
 		form.lastName = 'Meitner';
 		form.email = 'lise@example.com';
-		const groupResults = qCheckRulesByGroup(form);
+		const groupResults = $qCheckRulesByGroup(form);
 		expect(groupResults['personal']?.valid).toBe(true);
 		expect(groupResults['address']?.valid).toBe(false);
 	});
@@ -109,7 +112,7 @@ describe('Vue 3 — Composition API reactive form validation', () => {
 	test('each group returns its field errors independently', () => {
 		form.firstName = 'A'; // too short
 		form.city = 'NY';
-		const groups = qCheckRulesByGroup(form);
+		const groups = $qCheckRulesByGroup(form);
 		expect(
 			groups['personal']?.errors.some((err) => err.field === 'firstName')
 		).toBe(true);
@@ -323,7 +326,7 @@ function useVueField<TInst extends object, TKey extends keyof TInst>(
 	instance: TInst,
 	field: TKey
 ): IVueField<TInst[TKey]> {
-	const result = qCheckRules(instance);
+	const result = $qCheckRules(instance);
 	const fieldErrors = result.errors.filter(
 		(err) => err.field === String(field)
 	);
@@ -441,16 +444,16 @@ describe('Vue 3 — v-model / defineModel binding simulation', () => {
 		const form = new SettingsForm();
 		const binding = new VueModelBinding(form);
 		binding.set('theme', 'invalid-theme');
-		const result = qCheckRules(binding.value);
+		const result = $qCheckRules(binding.value);
 		expect(result.errors.some((err) => err.field === 'theme')).toBe(true);
 	});
 
-	test('valid settings pass qCheckRules', () => {
+	test('valid settings pass $qCheckRules', () => {
 		const form = new SettingsForm();
 		const binding = new VueModelBinding(form);
 		binding.set('theme', 'dark');
 		binding.set('language', 'fr');
-		const result = qCheckRules(binding.value);
+		const result = $qCheckRules(binding.value);
 		expect(result.valid).toBe(true);
 	});
 });
@@ -617,7 +620,7 @@ describe('Vue 3 — async username uniqueness (useAsyncValidation)', () => {
 		const form = new VueRegisterForm();
 		form.username = 'vue_dev';
 		form.email = 'dev@vue.js';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(true);
 	});
 
@@ -625,7 +628,7 @@ describe('Vue 3 — async username uniqueness (useAsyncValidation)', () => {
 		const form = new VueRegisterForm();
 		form.username = 'admin';
 		form.email = 'dev@vue.js';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'username')).toBe(
 			true
@@ -636,7 +639,7 @@ describe('Vue 3 — async username uniqueness (useAsyncValidation)', () => {
 		const form = new VueRegisterForm();
 		form.username = 'ab';
 		form.email = 'dev@vue.js';
-		const result = await qCheckRulesAsync(form, { mode: 'serial' });
+		const result = await $qCheckRulesAsync(form, { mode: 'serial' });
 		expect(result.valid).toBe(false);
 		const msg = result.errors.find(
 			(err) => err.field === 'username'

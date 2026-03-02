@@ -87,7 +87,8 @@ export class QImplementFeaturePrompt extends QAbstractInternalPrompt<{
 						`   - **Wide-scope / mass-rename touching many files:** claim \`["src/**", "tests/**"]\` or even \`["src/**", "tests/**", "docs-vitepress/**"]\`\n` +
 						`   - **For mass operations, also set \`ttlMs: 1800000\` (30 min)** — the default TTL (2 min) will expire before you finish\n` +
 						`3. If the response returns \`conflict: true\` → **STOP immediately**. Inform the user which agent owns the conflicting files and wait or coordinate manually. Do NOT proceed.\n` +
-						`4. When your work is fully done (all gates pass), call \`agent_coordinate\` with \`action: "release"\` to free your claim.\n\n` +
+						`4. **Read before every write:** Immediately before modifying each file, read its current content from disk — your context may be stale if another agent edited it since you started. If the file changed: adapt your change, merge carefully, or skip if no longer needed. Never overwrite from stale context.\n` +
+						`5. When your work is fully done (all gates pass), call \`agent_coordinate\` with \`action: "release"\` to free your claim.\n\n` +
 						`> ⛔ **Skipping this step causes concurrent agents to overwrite each other's work. There is no auto-merge.**\n\n` +
 						`---\n\n` +
 						`### Step 1 — 🏗️ Scaffold first (new tools & transformers only)\n\n` +

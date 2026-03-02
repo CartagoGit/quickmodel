@@ -6,7 +6,7 @@
  * Handles round-trip serialization/deserialization of `Date` objects:
  * `string | number | Date` ↔ `Date` (ISO 8601).
  *
- * @see {@link QModel.serialize} — triggers this transformer when a `Date` field is encountered
+ * @see {@link QModel.$qSerialize} — triggers this transformer when a `Date` field is encountered
  * @see {@link Quick} — use `@Quick({ field: Date })` to activate this transformer
  * @module transformers/date
  */

@@ -86,7 +86,8 @@ export class QRunScriptPrompt extends QAbstractInternalPrompt<{
 						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent owns the files you will modify\n` +
 						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"run-script: ${purpose}"\`, and \`files\` (the files the script output will be applied to)\n` +
 						`3. If \`conflict: true\` → **STOP**. Do not apply any code change until the conflict is resolved.\n` +
-						`4. Release when done: \`agent_coordinate action="release"\`\n` +
+						`4. **Read before every write:** Immediately before modifying each file, read its current content from disk — your context may be stale if another agent edited it since you started. If the file changed: adapt your change, merge carefully, or skip if no longer needed. Never overwrite from stale context.\n` +
+						`5. Release when done: \`agent_coordinate action="release"\`\n` +
 						`> If the script is read-only (output is informational only, no file writes), skip this step.\n\n` +
 						`---\n\n` +
 						`### Phase 1 — Document intent\n\n` +

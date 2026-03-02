@@ -141,14 +141,14 @@ describe('SecurityInspector', () => {
 		}
 
 		it('should detect arrow functions on instance template', () => {
-			const template = new ArrowCheck() as any;
+			const template = new ArrowCheck() as Record<string, unknown>;
 			expect(inspector.isArrowFunctionMethod('arrow', template, [])).toBe(
 				true
 			);
 		});
 
 		it('should return false for regular properties', () => {
-			const template = new ArrowCheck() as any;
+			const template = new ArrowCheck() as Record<string, unknown>;
 			expect(inspector.isArrowFunctionMethod('prop', template, [])).toBe(
 				false
 			);
@@ -161,7 +161,7 @@ describe('SecurityInspector', () => {
 		});
 
 		it('should bypass if field is decorated', () => {
-			const template = new ArrowCheck() as any;
+			const template = new ArrowCheck() as Record<string, unknown>;
 			expect(
 				inspector.isArrowFunctionMethod('arrow', template, ['arrow'])
 			).toBe(false);

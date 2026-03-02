@@ -281,8 +281,7 @@ describe('QModel.create() factory method', () => {
 			}
 
 			const item = Item.create({ code: 'ITEM-1', quantity: 10 });
-			const json = item.toJSON();
-			const parsed = JSON.parse(json);
+			const parsed = item.toJSON();
 
 			expect(parsed.code).toBe('ITEM-1');
 			expect(parsed.quantity).toBe(10);

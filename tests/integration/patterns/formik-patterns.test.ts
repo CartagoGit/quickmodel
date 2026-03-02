@@ -6,8 +6,8 @@
  * No Formik packages imported — pure TypeScript logic only.
  *
  * Key patterns:
- * - qCheckRules() as the Formik validate function (returns errors object)
- * - Field-level validation via @QGroup + qCheckRulesByGroup()
+ * - $qCheckRules() as the Formik validate function (returns errors object)
+ * - Field-level validation via @QGroup + $qCheckRulesByGroup()
  * - Migration from Zod/Yup schema to @QRule + @QField
  * - getFormSchema() drives dynamic form rendering
  * - validationReport() for rule traceability
@@ -16,9 +16,9 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
-import { qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
-import { qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -169,7 +169,7 @@ function createFormikValidate<TDto extends object>(
 ) {
 	return (values: Partial<TDto>): Record<string, string> => {
 		const dto = buildDto(values);
-		const { valid, errors } = qCheckRules(dto);
+		const { valid, errors } = $qCheckRules(dto);
 		if (valid) return {};
 		return errors.reduce<Record<string, string>>((acc, err) => {
 			if (!(err.field in acc)) acc[err.field] = err.message;
@@ -179,7 +179,7 @@ function createFormikValidate<TDto extends object>(
 }
 
 // ---------------------------------------------------------------------------
-// 1. Formik validate adapter — qCheckRules() → errors object
+// 1. Formik validate adapter — $qCheckRules() → errors object
 // ---------------------------------------------------------------------------
 
 describe('Formik validate adapter', () => {
@@ -267,7 +267,7 @@ describe('Formik validate adapter', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. Field-level validation — @QGroup + qCheckRulesByGroup()
+// 2. Field-level validation — @QGroup + $qCheckRulesByGroup()
 // ---------------------------------------------------------------------------
 
 describe('Formik field-level validation via @QGroup', () => {
@@ -280,7 +280,7 @@ describe('Formik field-level validation via @QGroup', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		const personal = byGroup['personal'];
 		expect(personal?.valid).toBe(false);
 		const fields = personal?.errors.map((err) => err.field) ?? [];
@@ -301,7 +301,7 @@ describe('Formik field-level validation via @QGroup', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		expect(byGroup['security']?.valid).toBe(false);
 		expect(
 			byGroup['security']?.errors.some((err) => err.field === 'password')
@@ -317,7 +317,7 @@ describe('Formik field-level validation via @QGroup', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		const ageError = byGroup['personal']?.errors.find(
 			(err) => err.field === 'age'
 		);
@@ -342,7 +342,7 @@ describe('Migration from Zod schema patterns', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const { valid } = qCheckRules(dto);
+		const { valid } = $qCheckRules(dto);
 		expect(valid).toBe(true);
 
 		const dtoBad = new RegistrationDto({
@@ -353,7 +353,7 @@ describe('Migration from Zod schema patterns', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const { valid: bad } = qCheckRules(dtoBad);
+		const { valid: bad } = $qCheckRules(dtoBad);
 		expect(bad).toBe(false);
 	});
 
@@ -366,7 +366,7 @@ describe('Migration from Zod schema patterns', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const { errors } = qCheckRules(dto);
+		const { errors } = $qCheckRules(dto);
 		expect(errors.some((err) => err.field === 'email')).toBe(true);
 	});
 
@@ -379,7 +379,7 @@ describe('Migration from Zod schema patterns', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const { errors } = qCheckRules(dto);
+		const { errors } = $qCheckRules(dto);
 		expect(errors.some((err) => err.field === 'age')).toBe(true);
 	});
 
@@ -392,7 +392,7 @@ describe('Migration from Zod schema patterns', () => {
 			role: 'superuser', // not in enum
 			newsletter: false,
 		});
-		const { errors } = qCheckRules(dto);
+		const { errors } = $qCheckRules(dto);
 		expect(errors.some((err) => err.field === 'role')).toBe(true);
 	});
 });
@@ -421,8 +421,8 @@ describe('Migration from Yup schema patterns', () => {
 			category: 'electronics',
 			published: true,
 		});
-		expect(qCheckRules(valid).valid).toBe(true);
-		expect(qCheckRules(invalid).valid).toBe(false);
+		expect($qCheckRules(valid).valid).toBe(true);
+		expect($qCheckRules(invalid).valid).toBe(false);
 	});
 
 	test('yup.number().min() → @QRule numeric predicate', () => {
@@ -434,7 +434,7 @@ describe('Migration from Yup schema patterns', () => {
 			category: 'books',
 			published: false,
 		});
-		const { errors } = qCheckRules(dto);
+		const { errors } = $qCheckRules(dto);
 		expect(errors.some((err) => err.field === 'price')).toBe(true);
 	});
 
@@ -447,7 +447,7 @@ describe('Migration from Yup schema patterns', () => {
 			category: 'clothing',
 			published: true,
 		});
-		const { errors } = qCheckRules(dto);
+		const { errors } = $qCheckRules(dto);
 		expect(errors.some((err) => err.field === 'stock')).toBe(true);
 	});
 });
@@ -456,7 +456,7 @@ describe('Migration from Yup schema patterns', () => {
 // 5. getFormSchema() → dynamic form rendering
 // ---------------------------------------------------------------------------
 
-describe('getFormSchema() for dynamic Formik fields', () => {
+describe('$qGetFormSchema() for dynamic Formik fields', () => {
 	test('returns schema array with all declared fields', () => {
 		const dto = new RegistrationDto({
 			name: 'Alice',
@@ -466,7 +466,7 @@ describe('getFormSchema() for dynamic Formik fields', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const schema = dto.getFormSchema();
+		const schema = dto.$qGetFormSchema();
 		expect(Array.isArray(schema)).toBe(true);
 		expect(schema.length).toBeGreaterThan(0);
 	});
@@ -480,7 +480,7 @@ describe('getFormSchema() for dynamic Formik fields', () => {
 			category: 'electronics',
 			published: false,
 		});
-		const schema = dto.getFormSchema();
+		const schema = dto.$qGetFormSchema();
 		for (const field of schema) {
 			expect(field.field).toBeDefined();
 			expect(typeof field.field).toBe('string');
@@ -496,7 +496,7 @@ describe('getFormSchema() for dynamic Formik fields', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const schema = dto.getFormSchema();
+		const schema = dto.$qGetFormSchema();
 		const emailField = schema.find((fld) => fld.field === 'email');
 		expect(emailField?.required).toBe(true);
 	});
@@ -596,10 +596,10 @@ describe('isDirty() and copy() in Formik context', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 8. Async validation — qCheckRulesAsync for Formik async validate
+// 8. Async validation — $qCheckRulesAsync for Formik async validate
 // ---------------------------------------------------------------------------
 
-describe('Async Formik validate via qCheckRulesAsync', () => {
+describe('Async Formik validate via $qCheckRulesAsync', () => {
 	const takenEmails = new Set<string>(['taken@example.com']);
 
 	@Quick(
@@ -635,7 +635,7 @@ describe('Async Formik validate via qCheckRulesAsync', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -648,7 +648,7 @@ describe('Async Formik validate via qCheckRulesAsync', () => {
 			role: 'user',
 			newsletter: false,
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors[0]?.field).toBe('email');
 		expect(result.errors[0]?.message).toBe('Email already registered');

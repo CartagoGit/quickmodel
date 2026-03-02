@@ -117,7 +117,7 @@ describe('Configuration: transformCase', () => {
 		}
 
 		const user = new User({ userId: 123, userName: 'John' }); // Input is normal here
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 
 		expect(json['user_id']).toBe(123);
 		expect(json['user_name']).toBe('John');
@@ -137,7 +137,7 @@ describe('Configuration: transformCase', () => {
 		}
 
 		const config = new Config({ apiKey: 'secret' });
-		const json = JSON.parse(config.toJSON());
+		const json = config.toJSON();
 
 		expect(json['api-key']).toBe('secret');
 	});
@@ -174,7 +174,7 @@ describe('Configuration: transformCase', () => {
 		expect(user.createdAt).toBeInstanceOf(Date);
 
 		// Let's check output
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 
 		expect(json['user_id']).toBe(555);
 		expect(json['created_at']).toBe('2024-01-01T00:00:00.000Z');

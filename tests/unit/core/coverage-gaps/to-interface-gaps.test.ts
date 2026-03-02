@@ -52,7 +52,7 @@ describe('ToInterface Coverage Gaps', () => {
 		const service = new ToInterfaceService();
 		// Covers line 15: if (Array.isArray(model))
 		const result = service.toInterface([1, 2] as any);
-		expect(result as any).toEqual([1, 2]);
+		expect(result).toEqual([1, 2]);
 	});
 
 	it('should handle Map to Array conversion in nested array', () => {
@@ -277,11 +277,11 @@ describe('ToInterface Coverage Gaps', () => {
 
 		// Case 1: Current is BigInt
 		const res1 = service.toInterface([123n] as any, [legacyObj] as any);
-		expect(res1).toEqual(['123'] as any);
+		expect(res1).toEqual(['123']);
 
 		// Case 2: Current is string (needs conversion) - Line 312
 		const res2 = service.toInterface(['456'] as any, [legacyObj] as any);
-		expect(res2).toEqual(['456'] as any);
+		expect(res2).toEqual(['456']);
 	});
 
 	it('should serialize custom class instance when original is also custom instance', () => {
@@ -376,6 +376,6 @@ describe('ToInterface Coverage Gaps', () => {
 			['not-a-number'] as any,
 			[legacyBigintOriginal] as any
 		);
-		expect(result).toEqual(['not-a-number'] as any);
+		expect(result).toEqual(['not-a-number']);
 	});
 });

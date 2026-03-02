@@ -48,9 +48,8 @@ describe('Robustness: Custom Transformer Objects in TypeMap', () => {
 		// Test Serialization
 		// If it works, serialize() should use ReverseStringTransformer.serialize()
 		// 'hello world' -> 'dlrow olleh'
-		// Note: toJSON() returns a JSON string, so we must parse it to check the property
-		const jsonString = model.toJSON();
-		const json = JSON.parse(jsonString);
+		// Note: toJSON() returns a plain object, access property directly
+		const json = model.toJSON();
 
 		expect(json.secret).toBe('dlrow olleh');
 	});

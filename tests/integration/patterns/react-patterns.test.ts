@@ -650,7 +650,7 @@ describe('React — useQModel hook simulation', () => {
 			bio: '',
 			avatarUrl: '',
 		});
-		const schema = profile.getSchema('json');
+		const schema = profile.$qGetSchema('json');
 		expect(schema).toBeDefined();
 	});
 });

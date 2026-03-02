@@ -1,3 +1,4 @@
+// @quickmodel-rule-ignore: no-as-unknown — intentional: forcing wrong types on model properties to test integrity validation
 import { QModel, Quick } from '@/index';
 import { QConfig } from '@/core/config/quick.config';
 import { describe, test, expect, beforeEach } from 'bun:test';
@@ -38,8 +39,8 @@ describe('Configuration: integrityErrorStrategy', () => {
 
 		const user = new ValidatedUser({});
 		// Assign invalid values
-		(user as any).age = 'not-a-number';
-		(user as any).isActive = 123;
+		(user as unknown as Record<string, unknown>)['age'] = 'not-a-number';
+		(user as unknown as Record<string, unknown>)['isActive'] = 123;
 
 		const errors = user.$qCheckIntegrity();
 		// PrimitiveTransformer for 'number' checks typeof value === 'number'
@@ -62,8 +63,8 @@ describe('Configuration: integrityErrorStrategy', () => {
 		}
 
 		const user = new AccUser({});
-		(user as any).age = 'NaN';
-		(user as any).isActive = 123;
+		(user as unknown as Record<string, unknown>)['age'] = 'NaN';
+		(user as unknown as Record<string, unknown>)['isActive'] = 123;
 
 		const errors = user.$qCheckIntegrity();
 		expect(errors.length).toBe(2);
@@ -83,8 +84,8 @@ describe('Configuration: integrityErrorStrategy', () => {
 		}
 
 		const user = new FastUser({});
-		(user as any).age = 'NaN'; // Error 1
-		(user as any).isActive = 123; // Error 2
+		(user as unknown as Record<string, unknown>)['age'] = 'NaN'; // Error 1
+		(user as unknown as Record<string, unknown>)['isActive'] = 123; // Error 2
 
 		// Note: object property iteration order is generally insertion order,
 		// but relies on decorator execution order for 'decoratedFields'.
@@ -109,8 +110,8 @@ describe('Configuration: integrityErrorStrategy', () => {
 		}
 
 		const user = new GlobalUser({});
-		(user as any).age = 'NaN';
-		(user as any).isActive = 123;
+		(user as unknown as Record<string, unknown>)['age'] = 'NaN';
+		(user as unknown as Record<string, unknown>)['isActive'] = 123;
 
 		const errors = user.$qCheckIntegrity();
 		expect(errors.length).toBe(1);
@@ -141,10 +142,10 @@ describe('Configuration: integrityErrorStrategy', () => {
 
 		const parent = new Parent({});
 		parent.child1 = new Child({});
-		(parent.child1 as any).val = 'bad';
+		(parent.child1 as unknown as Record<string, unknown>)['val'] = 'bad';
 
 		parent.child2 = new Child({});
-		(parent.child2 as any).val = 'bad';
+		(parent.child2 as unknown as Record<string, unknown>)['val'] = 'bad';
 
 		const errors = parent.$qCheckIntegrity();
 		// Should find error in child1 and stop before checking child2?
@@ -178,13 +179,17 @@ describe('Configuration: integrityErrorStrategy', () => {
 		const parentModel = new Parent({});
 		// Child 1 has 2 errors
 		parentModel.child1 = new Child({});
-		(parentModel.child1 as any).val = 'err';
-		(parentModel.child1 as any).val2 = 'err'; // failFast should only report 1 from here
+		(parentModel.child1 as unknown as Record<string, unknown>)['val'] =
+			'err';
+		(parentModel.child1 as unknown as Record<string, unknown>)['val2'] =
+			'err'; // failFast should only report 1 from here
 
 		// Child 2 has 2 errors
 		parentModel.child2 = new Child({});
-		(parentModel.child2 as any).val = 'err';
-		(parentModel.child2 as any).val2 = 'err'; // failFast should only report 1 from here
+		(parentModel.child2 as unknown as Record<string, unknown>)['val'] =
+			'err';
+		(parentModel.child2 as unknown as Record<string, unknown>)['val2'] =
+			'err'; // failFast should only report 1 from here
 
 		const errors = parentModel.$qCheckIntegrity();
 		// Child 1 returns 1 error (stopped early)

@@ -120,7 +120,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.$qHasChanges()).toBe(false);
+			expect(user.$qGetChangedFields()).toEqual([]);
 			expect(user.$qIsDirty()).toBe(false);
 		});
 
@@ -136,6 +136,8 @@ describe('QModel State Tracking', () => {
 			user.name = 'Jane';
 
 			expect(user.$qHasChanges()).toBe(true);
+			const changed = user.$qGetChangedFields();
+			expect(changed).toContain('name');
 			expect(user.$qIsDirty()).toBe(true);
 		});
 
@@ -170,7 +172,7 @@ describe('QModel State Tracking', () => {
 		});
 	});
 
-	describe('getChangedFields()', () => {
+	describe('$qGetChangedFields()', () => {
 		test('should return empty array for unmodified instance', () => {
 			const user = new User({
 				id: '1',
@@ -180,7 +182,7 @@ describe('QModel State Tracking', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.getChangedFields()).toEqual([]);
+			expect(user.$qGetChangedFields()).toEqual([]);
 		});
 
 		test('should return only modified field names', () => {
@@ -195,7 +197,7 @@ describe('QModel State Tracking', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const changed = user.getChangedFields();
+			const changed = user.$qGetChangedFields();
 
 			expect(changed).toContain('name');
 			expect(changed).toContain('age');
@@ -215,7 +217,7 @@ describe('QModel State Tracking', () => {
 
 			user.createdAt = new Date('2024-12-31T00:00:00.000Z');
 
-			expect(user.getChangedFields()).toContain('createdAt');
+			expect(user.$qGetChangedFields()).toContain('createdAt');
 		});
 	});
 
@@ -458,7 +460,7 @@ describe('QModel State Tracking', () => {
 			user.age = 31;
 
 			expect(user.$qIsDirty()).toBe(true);
-			expect(user.getChangedFields()).toEqual(['name', 'age']);
+			expect(user.$qGetChangedFields()).toEqual(['name', 'age']);
 
 			// 3. Get changes for PATCH request
 			const patchData = user.$qGetChanges();
@@ -487,7 +489,7 @@ describe('QModel State Tracking', () => {
 			user.email = 'jane@example.com';
 
 			expect(user.$qHasChanges()).toBe(true);
-			expect(user.getChangedFields()).toContain('name');
+			expect(user.$qGetChangedFields()).toContain('name');
 
 			// User clicks cancel
 			user.$qReset();

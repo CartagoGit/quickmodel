@@ -178,7 +178,7 @@ describe('State Management Methods', () => {
 		});
 	});
 
-	describe('getChangedFields()', () => {
+	describe('$qGetChangedFields()', () => {
 		test('should return empty array for unmodified instance', () => {
 			const user = new User({
 				id: '1',
@@ -188,7 +188,7 @@ describe('State Management Methods', () => {
 				createdAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(user.getChangedFields()).toEqual([]);
+			expect(user.$qGetChangedFields()).toEqual([]);
 		});
 
 		test('should return array of modified field names', () => {
@@ -203,7 +203,7 @@ describe('State Management Methods', () => {
 			user.name = 'Jane';
 			user.age = 31;
 
-			const changed = user.getChangedFields();
+			const changed = user.$qGetChangedFields();
 
 			expect(changed).toContain('name');
 			expect(changed).toContain('age');
@@ -379,7 +379,7 @@ describe('State Management Methods', () => {
 		});
 	});
 
-	describe('getMetadata()', () => {
+	describe('$qGetMetadata()', () => {
 		test('should return metadata for all fields', () => {
 			const metadata = User.getMetadata();
 
@@ -406,7 +406,7 @@ describe('State Management Methods', () => {
 
 			// OPTION 2: Instance Metadata (Dynamic Discovery)
 			// Should include all fields present in the instance + schema fields
-			const instanceMetadata = user.getMetadata();
+			const instanceMetadata = user.$qGetMetadata();
 
 			// Decorated fields
 			expect(instanceMetadata.has('createdAt')).toBe(true);

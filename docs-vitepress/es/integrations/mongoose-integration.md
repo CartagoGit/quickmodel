@@ -120,8 +120,8 @@ class UserRepository {
 		const { valid, errors } = qCheckRules(dto);
 		if (!valid) throw new Error(errors.map((e) => e.message).join(', '));
 
-		const doc = await User.create(dto.toInterface());
-		return new UserDto({ ...dto.toInterface(), id: doc._id.toString() });
+		const doc = await User.create(dto.$qToInterface());
+		return new UserDto({ ...dto.$qToInterface(), id: doc._id.toString() });
 	}
 }
 ```
@@ -146,7 +146,7 @@ console.log(dto.createdAt instanceof Date); // true ✅
 console.log(dto.createdAt.getFullYear()); // 2024
 ```
 
-## dto.toInterface() como payload para Model.create()
+## dto.$qToInterface() como payload para Model.create()
 
 ```typescript
 interface ICreateUser {
@@ -190,8 +190,8 @@ async function createUser(input: ICreateUser): Promise<UserDto> {
 	if (!valid) throw new ValidationError(errors);
 
 	// toInterface() produce un objeto plano limpio para Mongoose:
-	const doc = await User.create(dto.toInterface());
-	return new UserDto({ ...dto.toInterface(), id: doc._id.toString() });
+	const doc = await User.create(dto.$qToInterface());
+	return new UserDto({ ...dto.$qToInterface(), id: doc._id.toString() });
 }
 ```
 
@@ -203,17 +203,17 @@ async function updateUser(id: string, patch: Partial<IUser>): Promise<UserDto> {
 	if (!existing) throw new Error('Usuario no encontrado');
 
 	// copy() aplica los cambios y resetea isDirty() → false:
-	const updated = existing.$qm.copy(patch);
+	const updated = existing.$qCopy(patch);
 
 	// toInterface() produce el payload limpio para la actualización:
-	await User.findByIdAndUpdate(id, { $set: updated.toInterface() });
+	await User.findByIdAndUpdate(id, { $set: updated.$qToInterface() });
 
 	return updated;
 }
 
 // isDirty() tras copy() siempre es false:
-const updated = existing.$qm.copy({ name: 'Bob' });
-console.log(updated.$qm.isDirty()); // false — snapshot fresco
+const updated = existing.$qCopy({ name: 'Bob' });
+console.log(updated.$qIsDirty()); // false — snapshot fresco
 ```
 
 ## createMany() para seed data con insertMany()
@@ -227,7 +227,7 @@ async function seedUsers(rawData: ICreateUser[]): Promise<void> {
 	}
 
 	// Todas las instancias son válidas — seguro para persistir:
-	const docs = instances.map((dto) => dto.toInterface());
+	const docs = instances.map((dto) => dto.$qToInterface());
 	await User.insertMany(docs);
 }
 
@@ -285,5 +285,61 @@ class PostDto extends QModel<IPost> {
 const post = new PostDto(docToPost(mongoDoc));
 // post.excerpt → primeros 100 chars + '...' (no está en MongoDB)
 // post.tagCount → tags.length (no está en MongoDB)
-// post.toInterface() → { id, title, content, tags, viewCount } — sin campos computados
+// post.$qToInterface() → { id, title, content, tags, viewCount } — sin campos computados
 ```
+
+## Exportar schema con `getSchema('mongo')`
+
+Importa `quickmodel/schema` una vez para registrar todos los generadores de schema, luego llama a `getSchema('mongo')` para obtener un objeto de definición de schema compatible con Mongoose:
+
+```typescript
+import 'quickmodel/schema';
+import { QModel, Quick } from 'quickmodel';
+
+interface IUser {
+	name: string;
+	birthDate: Date;
+	score: number;
+}
+
+@Quick({ birthDate: Date, score: Number })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare birthDate: Date;
+	declare score: number;
+}
+
+const mongoSchemaDef = User.getSchema('mongo');
+/*
+{
+  name:      { type: String },
+  birthDate: { type: Date },
+  score:     { type: Number }
+}
+*/
+
+// Usarlo para crear un Mongoose Schema:
+import mongoose from 'mongoose';
+const UserSchema = new mongoose.Schema(mongoSchemaDef);
+export const UserModel = mongoose.model('User', UserSchema);
+```
+
+### Mantener el schema de Mongoose sincronizado con tu QModel
+
+Generar el schema de Mongoose desde QModel proporciona una única fuente de verdad:
+
+```typescript
+import 'quickmodel/schema';
+
+// Un solo lugar donde cambiar la forma — QModel controla tanto el DTO como el schema de DB
+const mongoSchemaDef = UserDto.getSchema('mongo');
+const UserMongooseSchema = new mongoose.Schema({
+	...mongoSchemaDef,
+	_id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+});
+```
+
+## Ver también
+
+- [Generación de Schema](/es/guide/schema-generation) — referencia completa de `getSchema()`
+- [Integración con JSON Schema](/es/integrations/json-schema-integration) — formato de schema portable

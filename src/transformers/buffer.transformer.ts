@@ -11,7 +11,7 @@
  * | `DataViewTransformer`       | `DataView`    | `number[]`          |
  * | `SharedArrayBufferTransformer` | `SharedArrayBuffer` | `number[]` |
  *
- * @see {@link QModel.serialize} — triggers these transformers for binary-buffer fields
+ * @see {@link QModel.$qSerialize} — triggers these transformers for binary-buffer fields
  * @see {@link Quick} — use `@Quick({ field: ArrayBuffer })` / `{ field: DataView }` to activate
  * @module transformers/buffer
  */

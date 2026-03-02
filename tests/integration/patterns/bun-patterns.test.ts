@@ -17,6 +17,7 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField } from '@/decorators';
+import { $qCheckRulesAsync } from '@/forms';
 
 // ---------------------------------------------------------------------------
 // Shared DTOs
@@ -407,14 +408,14 @@ class RegisterDto extends QModel<{ email: string; username: string }> {
 	declare username: string;
 }
 
-describe('Bun async handler — qCheckRulesAsync()', () => {
+describe('Bun async handler — $qCheckRulesAsync()', () => {
 	test('validates with async rules successfully', async () => {
 		const dto = new RegisterDto({
 			email: 'new@example.com',
 			username: 'alice',
 		});
 
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
@@ -426,7 +427,7 @@ describe('Bun async handler — qCheckRulesAsync()', () => {
 			username: 'bob',
 		});
 
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 
 		expect(result.valid).toBe(false);
 		const messages = result.errors.map(

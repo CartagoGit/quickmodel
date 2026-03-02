@@ -40,10 +40,12 @@ describe('Security: Map Prototype Poisoning', () => {
 		expect(instance.dict.has('__proto__')).toBe(true);
 
 		// Serialize
-		const serialized = instance.$qSerialize() as any;
+		const serialized = instance.$qSerialize() as {
+			dict: Record<string, unknown>;
+		};
 
 		// Verify key was stripped during serialization
-		const proto = Object.getPrototypeOf(serialized.dict);
+		const proto = Object.getPrototypeOf(serialized['dict']);
 
 		// Should be standard Object prototype, NOT the poisoned one
 		expect(proto).toBe(Object.prototype);

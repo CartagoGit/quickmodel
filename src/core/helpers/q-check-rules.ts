@@ -1,15 +1,15 @@
 /**
- * @fileoverview `qCheckRules` — standalone validation function that evaluates
+ * @fileoverview `$qCheckRules` — standalone validation function that evaluates
  * `@QRule` predicates on any class instance, with optional filtering by `@QGroup`.
  *
  * Works on **any class** — no need to extend `QModel`. This function mirrors
- * the synchronous `QModel.checkRules()` method but is decoupled from the
+ * the synchronous `QModel.$qCheckRules()` method but is decoupled from the
  * model inheritance hierarchy, making it suitable for use in Angular components,
  * React hooks, Vue composables, or any plain class.
  *
- * @see {@link qGetGroups} to list available group names on an instance.
- * @see {@link qCheckRulesByGroup} for a per-group result map.
- * @see {@link qCheckRulesAsync} for the async version (runs async predicates).
+ * @see {@link $qGetGroups} to list available group names on an instance.
+ * @see {@link $qCheckRulesByGroup} for a per-group result map.
+ * @see {@link $qCheckRulesAsync} for the async version (runs async predicates).
  * @module
  */
 
@@ -29,14 +29,14 @@ import { QConfig } from '@/core/config/quick.config';
  * Tracks class#field pairs already warned about async predicates.
  * Avoids flooding the console when checkRules() is called repeatedly.
  * @internal
- * @see {@link qCheckRules} — the function that uses this set to suppress duplicates
+ * @see {@link $qCheckRules} — the function that uses this set to suppress duplicates
  */
 const _asyncWarnedKeys = new Set<string>();
 
 /**
- * Options accepted by {@link qCheckRules}.
- * @see {@link qCheckRules} — function that accepts these options
- * @see {@link qCheckRulesByGroup} — returns a per-group map instead
+ * Options accepted by {@link $qCheckRules}.
+ * @see {@link $qCheckRules} — function that accepts these options
+ * @see {@link $qCheckRulesByGroup} — returns a per-group map instead
  */
 export interface IQCheckRulesOptions {
 	/**
@@ -65,16 +65,16 @@ export interface IQCheckRulesOptions {
  *                   `@QGroup`). Does not need to extend `QModel`.
  * @param options  - Optional filtering options.
  * @returns `IQRulesResult` with `valid` flag and `errors` array.
- * @see {@link qCheckRulesAsync} — async version for predicates that return `Promise`
- * @see {@link qCheckRulesByGroup} — returns a map per group instead of flattened
- * @see {@link qGetGroups} — list group names available on an instance
+ * @see {@link $qCheckRulesAsync} — async version for predicates that return `Promise`
+ * @see {@link $qCheckRulesByGroup} — returns a map per group instead of flattened
+ * @see {@link $qGetGroups} — list group names available on an instance
  *
  * @example
  * ```ts
  * import { QRule, QGroup } from 'quickmodel';
- * import { qGroups, qCheckRules } from 'quickmodel/forms';
+ * import { $qGroups, $qCheckRules } from 'quickmodel/forms';
  *
- * const Groups = qGroups('identity', 'security');
+ * const Groups = $qGroups('identity', 'security');
  *
  * class ProfileForm {
  *   @QRule((v: string) => v.length >= 2, 'Too short')
@@ -90,10 +90,10 @@ export interface IQCheckRulesOptions {
  * form.name = 'A';
  * form.password = 'Secret1!';
  *
- * qCheckRules(form);
+ * $qCheckRules(form);
  * // { valid: false, errors: [{ field: 'name', message: 'Too short', value: 'A' }] }
  *
- * qCheckRules(form, { group: Groups.security });
+ * $qCheckRules(form, { group: Groups.security });
  * // { valid: true, errors: [] }
  * ```
  */
@@ -214,7 +214,7 @@ export function $qCheckRules(
  * warning assertions are not affected by previous test runs.
  *
  * @internal
- * @see {@link qCheckRules} — function that reads `_asyncWarnedKeys` for deduplication
+ * @see {@link $qCheckRules} — function that reads `_asyncWarnedKeys` for deduplication
  * @see {@link _asyncWarnedKeys} — the WeakSet-backed Set this function clears
  */
 export function _resetAsyncWarnedKeys(): void {

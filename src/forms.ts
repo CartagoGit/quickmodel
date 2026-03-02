@@ -9,12 +9,12 @@
  *
  * | Helper | Description |
  * |---|---|
- * | {@link qGroups} | Creates a typed group-name map (spread or `as const` array). TS 4.1+. |
- * | {@link qGetGroups} | Returns the distinct `@QGroup` group names declared on an instance. |
- * | {@link qCheckRules} | Runs `@QRule` predicates on any instance—optionally filtered by group. |
- * | {@link qCheckRulesAsync} | Async version: awaits async predicates, supports timeout and serial/parallel modes. |
- * | {@link qCheckRulesByGroup} | Runs `@QRule` predicates grouped by `@QGroup` name. |
- * | {@link qCheckRulesByGroupAsync} | Async counterpart of `qCheckRulesByGroup`: awaits async predicates per group. |
+ * | {@link $qGroups} | Creates a typed group-name map (spread or `as const` array). TS 4.1+. |
+ * | {@link $qGetGroups} | Returns the distinct `@QGroup` group names declared on an instance. |
+ * | {@link $qCheckRules} | Runs `@QRule` predicates on any instance—optionally filtered by group. |
+ * | {@link $qCheckRulesAsync} | Async version: awaits async predicates, supports timeout and serial/parallel modes. |
+ * | {@link $qCheckRulesByGroup} | Runs `@QRule` predicates grouped by `@QGroup` name. |
+ * | {@link $qCheckRulesByGroupAsync} | Async counterpart of `$qCheckRulesByGroup`: awaits async predicates per group. |
  *
  * **TS 5.0+ only** (mutable array without `as const`):
  * ```ts
@@ -26,10 +26,10 @@
  *
  * ```ts
  * import { QRule, QGroup } from 'quickmodel';
- * import { qGroups, qCheckRules, qGetGroups, qCheckRulesByGroup, qCheckRulesByGroupAsync }
+ * import { $qGroups, $qCheckRules, $qGetGroups, $qCheckRulesByGroup, $qCheckRulesByGroupAsync }
  *   from 'quickmodel/forms';
  *
- * const Groups = qGroups('identity', 'security');
+ * const Groups = $qGroups('identity', 'security');
  *
  * class ProfileForm {
  *   @QRule((v: string) => v.length >= 2, 'Too short')
@@ -41,30 +41,30 @@
  *   password = '';
  *
  *   validate() {
- *     return qCheckRules(this);                              // all rules
+ *     return $qCheckRules(this);                              // all rules
  *   }
  *   validateIdentity() {
- *     return qCheckRules(this, { group: Groups.identity });  // identity only
+ *     return $qCheckRules(this, { group: Groups.identity });  // identity only
  *   }
  *   getGroups() {
- *     return qGetGroups(this);                              // ['identity', 'security']
+ *     return $qGetGroups(this);                              // ['identity', 'security']
  *   }
  *   validateByGroup() {
- *     return qCheckRulesByGroup(this);
+ *     return $qCheckRulesByGroup(this);
  *     // { identity: { valid, errors }, security: { valid, errors } }
  *   }
  *   async validateByGroupAsync() {
- *     return qCheckRulesByGroupAsync(this);
+ *     return $qCheckRulesByGroupAsync(this);
  *     // Promise<{ identity: { valid, errors }, security: { valid, errors } }>
  *   }
  * }
  * ```
  *
  * @module forms
- * @see {@link qCheckRules} — primary rule-checking helper
- * @see {@link qCheckRulesAsync} — async version with timeout and serial/parallel modes
- * @see {@link qCheckRulesByGroup} — grouped rule checking by `@QGroup`
- * @see {@link qGroups} — typed group-name map helper
+ * @see {@link $qCheckRules} — primary rule-checking helper
+ * @see {@link $qCheckRulesAsync} — async version with timeout and serial/parallel modes
+ * @see {@link $qCheckRulesByGroup} — grouped rule checking by `@QGroup`
+ * @see {@link $qGroups} — typed group-name map helper
  */
 
 export { $qGroups } from './core/helpers/q-groups';

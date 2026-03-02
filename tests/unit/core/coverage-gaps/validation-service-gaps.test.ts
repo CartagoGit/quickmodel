@@ -1,4 +1,5 @@
 // @quickmodel-rule-ignore: prefer-quick
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing edge cases of IntegrityService with non-QModel instances and private internals
 // This file tests @QType directly — opt-out from the prefer-quick rule.
 import { describe, it, expect, spyOn } from 'bun:test';
 import { IntegrityService } from '../../../../src/core/services/integrity.service';
@@ -20,11 +21,13 @@ describe('Integrity Service Coverage Gaps', () => {
 
 		// We need to inject this transformer. transformers is private.
 		// We can register it via QTransformerRegistry or cast service to any.
-		(service as any).transformers.set('throwing-type', throwingTransformer);
+		(
+			service as unknown as { transformers: Map<string, unknown> }
+		).transformers.set('throwing-type', throwingTransformer);
 
 		class CrashModel {
-			@QType('throwing-type' as any)
-			prop: any = 'test';
+			@QType('throwing-type' as unknown as string)
+			prop: unknown = 'test';
 		}
 
 		const instance = new CrashModel();
@@ -35,7 +38,7 @@ describe('Integrity Service Coverage Gaps', () => {
 		// validate(instance) checks Reflect.getMetadata('fieldType', instance, key)
 		// This should work.
 
-		const results = service.checkIntegrity(instance as any);
+		const results = service.checkIntegrity(instance as unknown as object);
 
 		expect(results.length).toBe(1);
 		expect(results[0]?.isValid).toBe(false);
@@ -49,10 +52,10 @@ describe('Integrity Service Coverage Gaps', () => {
 			@QType('string')
 			val = 'ok';
 
-			// To be recognized as integrity-checkable, it needs checkIntegrity method.
-			// Service checks: 'checkIntegrity' in value
-			// QModel has checkIntegrity.
-			checkIntegrity() {
+			// To be recognized as integrity-checkable, it needs $qCheckIntegrity method.
+			// Service checks: '$qCheckIntegrity' in value
+			// QModel has $qCheckIntegrity.
+			$qCheckIntegrity() {
 				return [];
 			}
 		}
@@ -81,12 +84,12 @@ describe('Integrity Service Coverage Gaps', () => {
 		});
 
 		const parent = new Parent();
-		parent.child = proxyChild as any;
+		parent.child = proxyChild as unknown as Child;
 
 		// We expect console.error to be called by the catch block when the proxy throws.
 		const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
-		service.checkIntegrity(parent as any);
+		service.checkIntegrity(parent as unknown as object);
 
 		expect(consoleSpy).toHaveBeenCalledWith(
 			'Caught integrity error:',
@@ -104,7 +107,7 @@ describe('Integrity Service Coverage Gaps', () => {
 		// ChildModel with @QType so QTYPES_METADATA_KEY is set on ChildModel.prototype.
 		// This makes Reflect.hasMetadata(QTYPES_METADATA_KEY, Object.getPrototypeOf(proxy)) === true.
 		class ChildModel {
-			@QType('string' as any)
+			@QType('string' as unknown as string)
 			val = 'ok';
 		}
 		const childInstance = new ChildModel();
@@ -120,13 +123,15 @@ describe('Integrity Service Coverage Gaps', () => {
 
 		// ParentModel with an array field 'items'.
 		class ParentModel {
-			@QType('string' as any)
-			items: any[] = [];
+			@QType('string' as unknown as string)
+			items: unknown[] = [];
 		}
 		const parent = new ParentModel();
 		parent.items = [throwingProxy];
 
 		// Should NOT throw — the catch block swallows the error.
-		expect(() => service.checkIntegrity(parent as any)).not.toThrow();
+		expect(() =>
+			service.checkIntegrity(parent as unknown as object)
+		).not.toThrow();
 	});
 });

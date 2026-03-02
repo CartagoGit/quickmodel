@@ -119,8 +119,8 @@ class UserRepository {
 		const { valid, errors } = qCheckRules(dto);
 		if (!valid) throw new Error(errors.map((e) => e.message).join(', '));
 
-		const doc = await User.create(dto.toInterface());
-		return new UserDto({ ...dto.toInterface(), id: doc._id.toString() });
+		const doc = await User.create(dto.$qToInterface());
+		return new UserDto({ ...dto.$qToInterface(), id: doc._id.toString() });
 	}
 }
 ```
@@ -145,7 +145,7 @@ console.log(dto.createdAt instanceof Date); // true ✅
 console.log(dto.createdAt.getFullYear()); // 2024
 ```
 
-## dto.toInterface() as Model.create() payload
+## dto.$qToInterface() as Model.create() payload
 
 ```typescript
 interface ICreateUser {
@@ -186,8 +186,8 @@ async function createUser(input: ICreateUser): Promise<UserDto> {
 	if (!valid) throw new ValidationError(errors);
 
 	// toInterface() gives a clean plain object for Mongoose:
-	const doc = await User.create(dto.toInterface());
-	return new UserDto({ ...dto.toInterface(), id: doc._id.toString() });
+	const doc = await User.create(dto.$qToInterface());
+	return new UserDto({ ...dto.$qToInterface(), id: doc._id.toString() });
 }
 ```
 
@@ -202,7 +202,7 @@ async function updateUser(id: string, patch: Partial<IUser>): Promise<UserDto> {
 	const updated = existing.$qCopy(patch);
 
 	// toInterface() produces the clean update payload:
-	await User.findByIdAndUpdate(id, { $set: updated.toInterface() });
+	await User.findByIdAndUpdate(id, { $set: updated.$qToInterface() });
 
 	return updated;
 }
@@ -223,7 +223,7 @@ async function seedUsers(rawData: ICreateUser[]): Promise<void> {
 	}
 
 	// All instances are valid — safe to persist:
-	const docs = instances.map((dto) => dto.toInterface());
+	const docs = instances.map((dto) => dto.$qToInterface());
 	await User.insertMany(docs);
 }
 
@@ -281,5 +281,61 @@ class PostDto extends QModel<IPost> {
 const post = new PostDto(docToPost(mongoDoc));
 // post.excerpt → first 100 chars + '...' (not in MongoDB)
 // post.tagCount → tags.length (not in MongoDB)
-// post.toInterface() → { id, title, content, tags, viewCount } — no computed fields
+// post.$qToInterface() → { id, title, content, tags, viewCount } — no computed fields
 ```
+
+## Schema export with `getSchema('mongo')`
+
+Import `quickmodel/schema` once to register all schema generators, then call `getSchema('mongo')` to obtain a plain Mongoose-compatible schema definition object:
+
+```typescript
+import 'quickmodel/schema';
+import { QModel, Quick } from 'quickmodel';
+
+interface IUser {
+	name: string;
+	birthDate: Date;
+	score: number;
+}
+
+@Quick({ birthDate: Date, score: Number })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare birthDate: Date;
+	declare score: number;
+}
+
+const mongoSchemaDef = User.getSchema('mongo');
+/*
+{
+  name:      { type: String },
+  birthDate: { type: Date },
+  score:     { type: Number }
+}
+*/
+
+// Use it to build a Mongoose Schema:
+import mongoose from 'mongoose';
+const UserSchema = new mongoose.Schema(mongoSchemaDef);
+export const UserModel = mongoose.model('User', UserSchema);
+```
+
+### Keeping your Mongoose schema in sync with your QModel
+
+Automating Mongoose schema generation from QModel means a single source of truth:
+
+```typescript
+import 'quickmodel/schema';
+
+// One place to change the shape — QModel drives both the DTO and the DB schema
+const mongoSchemaDef = UserDto.getSchema('mongo');
+const UserMongooseSchema = new mongoose.Schema({
+	...mongoSchemaDef,
+	_id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+});
+```
+
+## See also
+
+- [Schema Generation](/en/guide/schema-generation) — full `getSchema()` reference
+- [JSON Schema Integration](/en/integrations/json-schema-integration) — portable schema format

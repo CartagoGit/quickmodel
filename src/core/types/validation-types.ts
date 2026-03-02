@@ -2,10 +2,10 @@ import type { IQIntegrityResult } from '@/core/interfaces/transformer.interface'
 import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
 
 /**
- * Combined validation report returned by {@link QModel.validationReport} and
- * {@link QModel.validationReportAsync}.
+ * Combined validation report returned by {@link QModel.$qValidationReport} and
+ * {@link QModel.$qValidationReportAsync}.
  *
- * @see {@link QModel.validationReport} — the method that produces this report
+ * @see {@link QModel.$qValidationReport} — the method that produces this report
  * @see {@link IQRulesResult} — the `rules` field type
  */
 export interface IQValidationReport {
@@ -21,9 +21,9 @@ export interface IQValidationReport {
 }
 
 /**
- * Options accepted by {@link QModel.validate}.
+ * Options accepted by {@link QModel.$qValidate}.
  *
- * @see {@link QModel.validate} — unified validation method
+ * @see {@link QModel.$qValidate} — unified validation method
  */
 export interface IQValidateOptions {
 	/**

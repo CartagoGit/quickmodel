@@ -26,8 +26,8 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			visible: 'ok',
 		});
 
-		expect((user as any)._internal).toBe('secret');
-		expect((user as any).$meta).toBe('data');
+		expect(user._internal).toBe('secret');
+		expect(user.$meta).toBe('data');
 		expect(user.visible).toBe('ok');
 	});
 
@@ -47,8 +47,8 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			visible: 'ok',
 		});
 
-		expect((user as any)._internal).toBeUndefined();
-		expect((user as any).$meta).toBeUndefined();
+		expect(user._internal).toBeUndefined();
+		expect(user.$meta).toBeUndefined();
 		expect(user.visible).toBe('ok');
 	});
 
@@ -70,9 +70,9 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			_allowed: 'keep me',
 		});
 
-		expect((user as any).__hidden).toBeUndefined();
-		expect((user as any).internal_code).toBeUndefined();
-		expect((user as any)._allowed).toBe('keep me');
+		expect(user.__hidden).toBeUndefined();
+		expect(user.internal_code).toBeUndefined();
+		expect(user._allowed).toBe('keep me');
 	});
 
 	it('should override global config via decorator', () => {
@@ -88,7 +88,7 @@ describe('Integrity: Strip Internal Identifiers', () => {
 		}
 
 		const user = User.create({ _internal: 'kept' });
-		expect((user as any)._internal).toBe('kept');
+		expect(user._internal).toBe('kept');
 	});
 
 	it('should allow custom stripping via decorator', () => {
@@ -109,8 +109,8 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			_normal: 'kept',
 		});
 
-		expect((user as any).ugly_field).toBeUndefined();
-		expect((user as any)._normal).toBe('kept');
+		expect(user.ugly_field).toBeUndefined();
+		expect(user._normal).toBe('kept');
 	});
 
 	it('should apply stripping recursively to nested models', () => {
@@ -138,8 +138,8 @@ describe('Integrity: Strip Internal Identifiers', () => {
 			},
 		});
 
-		expect((root as any)._rootSecret).toBeUndefined();
-		expect((root.nested as any)._secret).toBeUndefined();
+		expect(root._rootSecret).toBeUndefined();
+		expect(root.nested._secret).toBeUndefined();
 		expect(root.nested.public).toBe('show');
 	});
 });

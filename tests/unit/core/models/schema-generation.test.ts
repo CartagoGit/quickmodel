@@ -113,7 +113,7 @@ describe('QModel Unified Schema Generation API', () => {
 				tags: ['typescript', 'node', 'bun'],
 			});
 
-			const schema = user.getSchema('json') as Record<
+			const schema = user.$qGetSchema('json') as Record<
 				string,
 				Record<string, unknown>
 			>;

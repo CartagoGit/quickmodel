@@ -13,13 +13,17 @@ import {
 import { dirname, join } from 'path';
 
 /**
- * Default TTL in milliseconds (2 minutes).
- * Any call to `execute()` that carries a valid `agentId` with an active claim automatically
- * refreshes the TTL — no explicit `update` call needed as long as the agent is making requests.
- * If no activity is observed for this duration the entry is auto-purged on the next registry
- * read, freeing the files for other agents.
+ * Default TTL in milliseconds (30 minutes).
+ *
+ * Agents typically work for extended periods between `agent_coordinate` calls — they edit files,
+ * run terminals and invoke other MCP tools without ever calling `update`. The **ticker is the
+ * system's liveliness signal**: while the MCP server process is alive it fires every 60 s and
+ * renews the TTL of every registered agent. When VS Code (and therefore the Extension Host)
+ * is killed the ticker dies too, and entries expire naturally after this duration.
+ *
+ * Use `ttlMs` on individual `claim` / `update` calls to override per-agent.
  */
-const DEFAULT_TTL_MS = 2 * 60 * 1000;
+const DEFAULT_TTL_MS = 30 * 60 * 1000;
 
 /**
  * Default staleness threshold (30 seconds) used by `force` claim.
@@ -207,8 +211,8 @@ type ICoordinateResult =
  * - `src/**` does NOT conflict with `tests/**`
  *
  * ### TTL and crash resilience
- * Claims expire automatically after **2 minutes** unless the agent sends a heartbeat — any
- * `check` call that includes a valid `agentId` refreshes the TTL automatically.
+ * Claims expire automatically after **30 minutes** unless renewed — the ticker does this
+ * automatically on every 60 s tick so agents rarely need explicit `update` calls.
  * Use `force: true` on `claim` to immediately override a lock whose `updatedAt` is older than
  * ~30 seconds (configurable via `_staleCrashMs`). Stale entries are also pruned silently on every
  * `readRegistry` call.
@@ -280,6 +284,10 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	description =
 		'Coordinate parallel agent work to prevent file conflicts. ' +
 		'MANDATORY PROTOCOL — every agent MUST follow this before modifying any file:\n' +
+		'  SESSION START / VS CODE RESTART: if this is a new VS Code session or a restart, ' +
+		'call action="claim" with your agentId FIRST — before any other action. ' +
+		'Re-claiming is idempotent: it preserves startedAt and renews TTL. ' +
+		'If you skip this, the ticker cannot keep your entry alive and you will not be tracked.\n' +
 		'  1. action="check": list all active agents — ALWAYS call this first. ' +
 		'     If otherAgents is non-empty, review what they are changing before you start ' +
 		'     (check git staged/unstaged files, ask them to commit if needed). ' +
@@ -290,13 +298,14 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		'       - Module-wide change: "src/mcp/tools/**" or similar sub-tree glob.\n' +
 		'       - Mass-rename / project-wide refactor (e.g. renaming .$qm to .$q* across ALL files): ' +
 		'         claim ["src/**", "tests/**", "docs-vitepress/**"] — never under-claim on wide operations. ' +
-		'         Also increase ttlMs to 1800000 (30 min) or more for operations touching hundreds of files.\n' +
+		'         TTL defaults to 30 min; the ticker auto-renews it while MCP is running. ' +
+		'         For very long tasks with possible long pauses, use ttlMs=7200000 (2 h).\n' +
 		'     Set force=true to override a stale lock (updatedAt older than ~30 s) from a crashed agent.\n' +
 		'  3. Do your work.\n' +
 		'  4. action="release": free the claim when done — ALWAYS release, even if the task fails.\n' +
-		'action="update": refresh TTL heartbeat for long-running tasks (call every ~15 min). ' +
+		'action="update": refresh TTL heartbeat manually; if no prior claim exists and task is provided, auto-creates the claim (upsert). ' +
 		'action="purge": forcibly clear stuck/stale claims (optional agentId to target one). ' +
-		'Registry persisted to tmp/agent-registry.json; entries auto-expire after 2 min without heartbeat. ' +
+		'Registry persisted to tmp/agent-registry.json; entries default to 30 min TTL; the ticker auto-renews them while MCP is alive. ' +
 		"CRITICAL: two agents doing the same mass-rename simultaneously will corrupt each other's work. " +
 		'There is no automatic merge — the last writer wins and overwrites everything the first agent did.';
 
@@ -332,12 +341,13 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			),
 		ttlMs: z
 			.number()
-			.max(1_800_000)
+			.max(7_200_000)
 			.optional()
 			.describe(
-				'Custom TTL in milliseconds for this claim. Defaults to 120000 (2 minutes). ' +
-					'For mass-renames or wide refactors touching hundreds of files, use 1800000 (30 min). ' +
-					'Any check() call with agentId acts as an implicit heartbeat and resets this timer.'
+				'Custom TTL in milliseconds for this claim. Defaults to 1800000 (30 minutes). ' +
+					'The ticker auto-renews active entries while the MCP server is running, so ' +
+					'explicit heartbeats are only needed when the MCP may be idle for longer than the TTL. ' +
+					'Any check() call with agentId also acts as an implicit heartbeat.'
 			),
 		force: z
 			.boolean()
@@ -418,6 +428,17 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	 */
 	static _inactivityThresholdMs: number = 0;
 
+	/**
+	 * @internal When `true` (the default) every ticker tick renews the `expiresAt` of all
+	 * currently-registered, non-expired agents. This keeps entries alive as long as the MCP
+	 * server process is running — agents do not need to send explicit heartbeats.
+	 *
+	 * Set to `false` in tests that verify TTL-based expiry behaviour driven by the ticker
+	 * (e.g. "stops when all agents expire") to prevent the ticker from extending the TTL
+	 * and masking the expiry.
+	 */
+	static _autoRefreshOnTick: boolean = true;
+
 	/** @internal Registry path captured when the ticker started. */
 	private static _tickerRegistryPath: string | null = null;
 
@@ -439,6 +460,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		QAgentCoordinateTool._tickerStatusPath = null;
 		QAgentCoordinateTool._tickerIntervalMs = 60_000;
 		QAgentCoordinateTool._inactivityThresholdMs = 0;
+		QAgentCoordinateTool._autoRefreshOnTick = true;
 	}
 
 	// ── File-level mutex (cross-process safety) ─────────────────────────────
@@ -505,7 +527,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		try {
 			const parsed = JSON.parse(
 				readFileSync(this._registryPath, 'utf-8')
-			) as unknown;
+			) as unknown; // @quickmodel-rule-ignore: no-as-unknown
 			if (
 				typeof parsed !== 'object' ||
 				parsed === null ||
@@ -608,9 +630,10 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			'',
 			rows,
 			'',
-			'> TTL: 2 min of inactivity auto-releases the lock.',
-			'> Any `agent_coordinate` call with a valid `agentId` acts as an implicit heartbeat.',
-			'> Ticker: status refreshes every 60 s while agents are active; stops automatically on idle.',
+			'> TTL: 30 min default; the ticker auto-renews all active entries on every tick while MCP is running.',
+			'> Any `agent_coordinate check` call with a valid `agentId` also acts as an implicit heartbeat.',
+			'> Ticker: refreshes TTLs + rewrites status every 60 s while agents are active; stops on idle.',
+			'> If VS Code restarts, entries persist on disk until the next execute() call purges expired ones.',
 		].join('\n');
 
 		try {
@@ -705,8 +728,41 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			return;
 		}
 
-		// ── 3. Purge expired entries ─────────────────────────────────────────────
+		// ── 3. Auto-refresh TTLs (while MCP server is alive, agents stay alive) ────
+		// Agents spend most of their time editing files, running terminals and calling other
+		// MCP tools — they do NOT call agent_coordinate on every action. The ticker is the
+		// system's heartbeat: its liveness implies the Extension Host (and active agents) are
+		// still running. Renewing TTLs here means agents never need explicit `update` calls
+		// while VS Code is alive. When VS Code (and the ticker) die, entries drain naturally
+		// after DEFAULT_TTL_MS. Disabled by _autoRefreshOnTick=false in expiry tests.
 		const now = Date.now();
+		if (QAgentCoordinateTool._autoRefreshOnTick) {
+			let renewed = false;
+			for (const [aid, entry] of Object.entries(reg.agents)) {
+				if (new Date(entry.expiresAt).getTime() >= now) {
+					reg.agents[aid] = {
+						...entry,
+						updatedAt: new Date(now).toISOString(),
+						expiresAt: new Date(now + DEFAULT_TTL_MS).toISOString(),
+					};
+					renewed = true;
+				}
+			}
+			if (renewed) {
+				try {
+					mkdirSync(dirname(regPath), { recursive: true });
+					writeFileSync(
+						regPath,
+						JSON.stringify(reg, null, 2),
+						'utf-8'
+					);
+				} catch {
+					/* best effort */
+				}
+			}
+		}
+
+		// ── 4. Purge expired entries ─────────────────────────────────────────────
 		let purged = 0;
 		for (const [aid, entry] of Object.entries(reg.agents)) {
 			if (new Date(entry.expiresAt).getTime() < now) {
@@ -715,7 +771,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			}
 		}
 
-		// ── 4. Stop if empty ─────────────────────────────────────────────────────
+		// ── 5. Stop if empty ─────────────────────────────────────────────────────
 		if (Object.keys(reg.agents).length === 0) {
 			clearInterval(QAgentCoordinateTool._tickerHandle!);
 			QAgentCoordinateTool._tickerHandle = null;
@@ -736,7 +792,7 @@ export class QAgentCoordinateTool extends QAbstractTool<
 			return;
 		}
 
-		// ── 5. Write updated .md (and purged registry if needed) ─────────────────
+		// ── 6. Write updated .md (and purged registry if needed) ─────────────────
 		if (purged > 0) {
 			try {
 				mkdirSync(dirname(regPath), { recursive: true });
@@ -806,11 +862,14 @@ export class QAgentCoordinateTool extends QAbstractTool<
 		};
 	}
 
-	private handleUpdate(
-		reg: IAgentRegistry,
-		agentId: string | undefined,
-		ttlMs: number | undefined
-	): IUpdateResult {
+	private handleUpdate(data: {
+		reg: IAgentRegistry;
+		agentId: string | undefined;
+		ttlMs: number | undefined;
+		task: string | undefined;
+		files: string[] | undefined;
+	}): IUpdateResult {
+		const { reg, agentId, ttlMs, task, files } = data;
 		if (!agentId) {
 			return {
 				updated: false,
@@ -818,17 +877,44 @@ export class QAgentCoordinateTool extends QAbstractTool<
 				summary: 'agentId is required for update.',
 			};
 		}
-		const entry = reg.agents[agentId];
-		if (!entry) {
+		const existing = reg.agents[agentId];
+		if (!existing) {
+			// Entry missing — expired or VS Code restarted. Auto-create if task provided.
+			if (!task) {
+				return {
+					updated: false,
+					expiresAt: '',
+					summary:
+						`No active claim found for agent "${agentId}". ` +
+						`Pass task (and optionally files) to auto-create the claim, ` +
+						`or call action="claim" explicitly.`,
+				};
+			}
+			const now = new Date().toISOString();
+			const expiresAt = this.makeExpiry(ttlMs);
+			reg.agents[agentId] = {
+				agentId,
+				task,
+				files: files ?? [],
+				startedAt: now,
+				updatedAt: now,
+				expiresAt,
+			};
+			this.saveRegistry(reg);
 			return {
-				updated: false,
-				expiresAt: '',
-				summary: `No active claim found for agent "${agentId}". Use claim first.`,
+				updated: true,
+				expiresAt,
+				summary:
+					`No prior claim for "${agentId}" — auto-created claim for task "${task}". ` +
+					`New expiry: ${expiresAt}.`,
 			};
 		}
 		const expiresAt = this.makeExpiry(ttlMs);
 		reg.agents[agentId] = {
-			...entry,
+			...existing,
+			// If caller passes new task/files (e.g. after VS Code restart), update them.
+			task: task ?? existing.task,
+			files: files ?? existing.files,
 			updatedAt: new Date().toISOString(),
 			expiresAt,
 		};
@@ -978,6 +1064,8 @@ export class QAgentCoordinateTool extends QAbstractTool<
 	execute(args: {
 		action: 'update';
 		agentId?: string;
+		task?: string;
+		files?: string[];
 		ttlMs?: number;
 	}): Promise<IUpdateResult>;
 	execute(args: { action: 'purge'; agentId?: string }): Promise<IPurgeResult>;
@@ -1016,7 +1104,13 @@ export class QAgentCoordinateTool extends QAbstractTool<
 				case 'release':
 					return this.handleRelease(reg, args.agentId);
 				case 'update':
-					return this.handleUpdate(reg, args.agentId, args.ttlMs);
+					return this.handleUpdate({
+						reg,
+						agentId: args.agentId,
+						ttlMs: args.ttlMs,
+						task: args.task,
+						files: args.files,
+					});
 				case 'purge':
 					return this.handlePurge(reg, args.agentId);
 				default:

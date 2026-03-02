@@ -176,13 +176,13 @@ describe('LOW-10 — inspect_model: code string must be capped at 50 000 chars',
 
 	test('schema should reject code longer than 50 000 chars', () => {
 		const huge = 'x'.repeat(50_001);
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ code: huge });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept code within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: 'class Foo extends QModel<IFoo> {}',
 		});
@@ -195,13 +195,13 @@ describe('LOW-10 — export_json_schema: code string must be capped at 50 000 ch
 
 	test('schema should reject code longer than 50 000 chars', () => {
 		const huge = 'x'.repeat(50_001);
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ code: huge });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept code within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: 'class Bar extends QModel<IBar> {}',
 		});
@@ -213,7 +213,7 @@ describe('LOW-10 — diff_models: model_a and model_b must be capped at 50 000 c
 	const tool = new QDiffModelsTool();
 
 	test('schema should reject model_a longer than 50 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			model_a: 'x'.repeat(50_001),
 			model_b: 'class A {}',
@@ -222,7 +222,7 @@ describe('LOW-10 — diff_models: model_a and model_b must be capped at 50 000 c
 	});
 
 	test('schema should reject model_b longer than 50 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			model_a: 'class A {}',
 			model_b: 'x'.repeat(50_001),
@@ -231,7 +231,7 @@ describe('LOW-10 — diff_models: model_a and model_b must be capped at 50 000 c
 	});
 
 	test('schema should accept both within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			model_a: 'class A {}',
 			model_b: 'class B {}',
@@ -246,7 +246,7 @@ describe('LOW-11 — create_model: className must be capped at 100 chars', () =>
 	const tool = new QCreateModelTool();
 
 	test('schema should reject className longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			className: 'A'.repeat(101),
 			properties: {},
@@ -255,7 +255,7 @@ describe('LOW-11 — create_model: className must be capped at 100 chars', () =>
 	});
 
 	test('schema should accept className within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			className: 'UserModel',
 			properties: {},
@@ -268,13 +268,13 @@ describe('LOW-11 — explain_error: error string must be capped at 10 000 chars'
 	const tool = new QExplainErrorTool();
 
 	test('schema should reject error longer than 10 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ error: 'e'.repeat(10_001) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept error within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			error: 'TypeError: Cannot read properties of undefined',
 		});
@@ -288,7 +288,7 @@ describe('LOW-12 — from_schema: schema and className must be capped', () => {
 	const tool = new QFromSchemaTool();
 
 	test('schema should reject schema string longer than 50 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			schema: 'x'.repeat(50_001),
 			format: 'json',
@@ -297,7 +297,7 @@ describe('LOW-12 — from_schema: schema and className must be capped', () => {
 	});
 
 	test('schema should reject className longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			schema: '{}',
 			format: 'json',
@@ -307,7 +307,7 @@ describe('LOW-12 — from_schema: schema and className must be capped', () => {
 	});
 
 	test('schema should accept valid inputs', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			schema: '{"name":"string"}',
 			format: 'json',
@@ -323,7 +323,7 @@ describe('LOW-13 — create_guide_page: slug must be capped at 100 chars', () =>
 	const tool = new QCreateGuidePageTool();
 
 	test('schema should reject slug longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			slug: 'a'.repeat(101),
 			title_en: 'Test',
@@ -333,7 +333,7 @@ describe('LOW-13 — create_guide_page: slug must be capped at 100 chars', () =>
 	});
 
 	test('schema should accept slug within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			slug: 'my-guide',
 			title_en: 'My Guide',
@@ -349,7 +349,7 @@ describe('MED-11 — simulate_validation: rules array and item strings must be c
 	const tool = new QSimulateValidationTool();
 
 	test('schema should reject rules array with more than 50 items', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const rule = {
 			field: 'name',
 			predicate: 'return true;',
@@ -363,7 +363,7 @@ describe('MED-11 — simulate_validation: rules array and item strings must be c
 	});
 
 	test('schema should reject rule.field longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: {},
 			rules: [
@@ -378,7 +378,7 @@ describe('MED-11 — simulate_validation: rules array and item strings must be c
 	});
 
 	test('schema should reject rule.predicate longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: {},
 			rules: [
@@ -389,7 +389,7 @@ describe('MED-11 — simulate_validation: rules array and item strings must be c
 	});
 
 	test('schema should reject rule.message longer than 200 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: {},
 			rules: [
@@ -404,7 +404,7 @@ describe('MED-11 — simulate_validation: rules array and item strings must be c
 	});
 
 	test('schema should accept rules within all limits', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: { name: 'Alice' },
 			rules: [
@@ -423,7 +423,7 @@ describe('MED-11 — simulate_rules: rules array and item strings must be capped
 	const tool = new QSimulateRulesTool();
 
 	test('schema should reject rules array with more than 50 items', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const rule = {
 			field: 'name',
 			predicate: 'return true;',
@@ -437,7 +437,7 @@ describe('MED-11 — simulate_rules: rules array and item strings must be capped
 	});
 
 	test('schema should reject rule.field longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: {},
 			rules: [
@@ -452,7 +452,7 @@ describe('MED-11 — simulate_rules: rules array and item strings must be capped
 	});
 
 	test('schema should reject rule.predicate longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: {},
 			rules: [
@@ -463,7 +463,7 @@ describe('MED-11 — simulate_rules: rules array and item strings must be capped
 	});
 
 	test('schema should accept rules within all limits', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: { name: 'Alice' },
 			rules: [
@@ -482,7 +482,7 @@ describe('MED-11 — simulate_async_rules: rules array and item strings must be 
 	const tool = new QSimulateAsyncRulesTool();
 
 	test('schema should reject rules array with more than 50 items', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const rule = {
 			field: 'name',
 			predicate: 'return true;',
@@ -496,7 +496,7 @@ describe('MED-11 — simulate_async_rules: rules array and item strings must be 
 	});
 
 	test('schema should reject rule.predicate longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: {},
 			rules: [
@@ -507,7 +507,7 @@ describe('MED-11 — simulate_async_rules: rules array and item strings must be 
 	});
 
 	test('schema should accept rules within all limits', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: { name: 'Alice' },
 			rules: [
@@ -528,13 +528,13 @@ describe('LOW-14 — get_form_schema: code string must be capped at 50 000 chars
 	const tool = new QGetFormSchemaTool();
 
 	test('schema should reject code longer than 50 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ code: 'x'.repeat(50_001) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept code within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: 'class Foo extends QModel<IFoo> {}',
 		});
@@ -546,7 +546,7 @@ describe('LOW-14 — get_model_schema: code string must be capped at 50 000 char
 	const tool = new QGetModelSchemaTool();
 
 	test('schema should reject code longer than 50 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: 'x'.repeat(50_001),
 			format: 'json',
@@ -555,7 +555,7 @@ describe('LOW-14 — get_model_schema: code string must be capped at 50 000 char
 	});
 
 	test('schema should accept code within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			code: '@Quick({ name: "string" }) class Foo extends QModel<IFoo> {}',
 			format: 'json',
@@ -570,7 +570,7 @@ describe('LOW-15 — agent_coordinate: string fields must be capped to prevent J
 	const tool = new QAgentCoordinateTool();
 
 	test('schema should reject agentId longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'check',
 			agentId: 'a'.repeat(101),
@@ -579,7 +579,7 @@ describe('LOW-15 — agent_coordinate: string fields must be capped to prevent J
 	});
 
 	test('schema should reject task longer than 200 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'claim',
 			agentId: 'agent-1',
@@ -589,7 +589,7 @@ describe('LOW-15 — agent_coordinate: string fields must be capped to prevent J
 	});
 
 	test('schema should reject files array with more than 50 items', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'claim',
 			agentId: 'agent-1',
@@ -600,7 +600,7 @@ describe('LOW-15 — agent_coordinate: string fields must be capped to prevent J
 	});
 
 	test('schema should reject a files item longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'claim',
 			agentId: 'agent-1',
@@ -611,7 +611,7 @@ describe('LOW-15 — agent_coordinate: string fields must be capped to prevent J
 	});
 
 	test('schema should reject ttlMs greater than 600 000ms (10 min)', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'claim',
 			agentId: 'agent-1',
@@ -622,7 +622,7 @@ describe('LOW-15 — agent_coordinate: string fields must be capped to prevent J
 	});
 
 	test('schema should accept valid inputs within all limits', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'claim',
 			agentId: 'copilot-session-1',
@@ -640,7 +640,7 @@ describe('LOW-16 — scaffold_feature: name must be capped at 100 chars', () => 
 	const tool = new QScaffoldFeatureTool();
 
 	test('schema should reject name longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			type: 'tool',
 			name: 'a'.repeat(101),
@@ -649,7 +649,7 @@ describe('LOW-16 — scaffold_feature: name must be capped at 100 chars', () => 
 	});
 
 	test('schema should accept name within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			type: 'tool',
 			name: 'validate-user',
@@ -662,7 +662,7 @@ describe('LOW-16 — list_todos: extensions array must be capped', () => {
 	const tool = new QListTodosTool();
 
 	test('schema should reject extensions array with more than 20 items', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			extensions: Array.from({ length: 21 }, (_, idx) => `.t${idx}`),
 		});
@@ -670,13 +670,13 @@ describe('LOW-16 — list_todos: extensions array must be capped', () => {
 	});
 
 	test('schema should reject extension item longer than 10 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ extensions: ['.typescript-long'] });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept valid extensions', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ extensions: ['.ts', '.js', '.tsx'] });
 		expect(result.success).toBe(true);
 	});
@@ -686,7 +686,7 @@ describe('LOW-16 — suggest_version_migration: from_version must be capped at 1
 	const tool = new QSuggestVersionMigrationTool();
 
 	test('schema should reject from_version greater than 1000', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			current_model: 'class Foo {}',
 			next_model: 'class Foo {}',
@@ -696,7 +696,7 @@ describe('LOW-16 — suggest_version_migration: from_version must be capped at 1
 	});
 
 	test('schema should accept from_version within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			current_model: 'class Foo {}',
 			next_model: 'class Foo {}',
@@ -712,13 +712,13 @@ describe('LOW-17 — check_changelog: projectDir must be capped at 500 chars', (
 	const tool = new QCheckChangelogTool();
 
 	test('schema should reject projectDir longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ projectDir: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept projectDir within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ projectDir: './valid' });
 		expect(result.success).toBe(true);
 	});
@@ -730,13 +730,13 @@ describe('LOW-18 — check_project_rules: targetDir must be capped at 500 chars'
 	const tool = new QCheckProjectRulesTool();
 
 	test('schema should reject targetDir longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ targetDir: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept targetDir within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ targetDir: 'src' });
 		expect(result.success).toBe(true);
 	});
@@ -748,7 +748,7 @@ describe('LOW-19 — simulate_validation: top-level group must be capped at 100 
 	const tool = new QSimulateValidationTool();
 
 	test('schema should reject group longer than 100 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: { name: 'Alice' },
 			rules: [],
@@ -758,7 +758,7 @@ describe('LOW-19 — simulate_validation: top-level group must be capped at 100 
 	});
 
 	test('schema should accept group within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			data: { name: 'Alice' },
 			rules: [],
@@ -774,19 +774,19 @@ describe('LOW-20 — lint_check: targetDir and targetFiles must be capped', () =
 	const tool = new QLintCheckTool();
 
 	test('schema should reject targetDir longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ targetDir: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept targetDir within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ targetDir: 'src' });
 		expect(result.success).toBe(true);
 	});
 
 	test('schema should reject targetFiles array with more than 100 items', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			targetFiles: new Array(101).fill('src/file.ts'),
 		});
@@ -794,13 +794,13 @@ describe('LOW-20 — lint_check: targetDir and targetFiles must be capped', () =
 	});
 
 	test('schema should reject a targetFiles item longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ targetFiles: ['x'.repeat(501)] });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept valid targetFiles', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			targetFiles: ['src/foo.ts', 'src/bar.ts'],
 		});
@@ -876,7 +876,7 @@ describe('MED-15 — simulate_async_rules: timeoutMs must be capped at 60 000 ms
 	const tool = new QSimulateAsyncRulesTool();
 
 	test('schema should reject timeoutMs above 60 000', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			rules: [
 				{ field: 'email', predicate: 'return true', message: 'ok' },
@@ -888,7 +888,7 @@ describe('MED-15 — simulate_async_rules: timeoutMs must be capped at 60 000 ms
 	});
 
 	test('schema should accept timeoutMs of 60 000', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			rules: [
 				{ field: 'email', predicate: 'return true', message: 'ok' },
@@ -979,7 +979,7 @@ describe('LOW-23 — patch_jsdoc: file_path, symbol_name, jsdoc must be capped',
 	const tool = new QPatchJSDocTool();
 
 	test('schema should reject file_path longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			file_path: 'x'.repeat(501),
 			symbol_name: 'MyClass',
@@ -990,7 +990,7 @@ describe('LOW-23 — patch_jsdoc: file_path, symbol_name, jsdoc must be capped',
 	});
 
 	test('schema should reject symbol_name longer than 200 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			file_path: 'src/foo.ts',
 			symbol_name: 'x'.repeat(201),
@@ -1001,7 +1001,7 @@ describe('LOW-23 — patch_jsdoc: file_path, symbol_name, jsdoc must be capped',
 	});
 
 	test('schema should reject jsdoc longer than 100 000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			file_path: 'src/foo.ts',
 			symbol_name: 'MyClass',
@@ -1012,7 +1012,7 @@ describe('LOW-23 — patch_jsdoc: file_path, symbol_name, jsdoc must be capped',
 	});
 
 	test('schema should accept valid inputs within limits', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			file_path: 'src/foo.ts',
 			symbol_name: 'MyClass',
@@ -1029,7 +1029,7 @@ describe('LOW-24 — manage_proposal: title, description, impact, effort must be
 	const tool = new QManageProposalTool();
 
 	test('schema should reject title longer than 200 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'add',
 			title: 'x'.repeat(201),
@@ -1039,7 +1039,7 @@ describe('LOW-24 — manage_proposal: title, description, impact, effort must be
 	});
 
 	test('schema should reject description longer than 2000 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'add',
 			title: 'My Proposal',
@@ -1049,7 +1049,7 @@ describe('LOW-24 — manage_proposal: title, description, impact, effort must be
 	});
 
 	test('schema should reject impact longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'add',
 			title: 'My Proposal',
@@ -1060,7 +1060,7 @@ describe('LOW-24 — manage_proposal: title, description, impact, effort must be
 	});
 
 	test('schema should reject effort longer than 200 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'add',
 			title: 'My Proposal',
@@ -1071,7 +1071,7 @@ describe('LOW-24 — manage_proposal: title, description, impact, effort must be
 	});
 
 	test('schema should accept valid inputs within limits', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			action: 'add',
 			title: 'New Feature',
@@ -1088,13 +1088,13 @@ describe('LOW-25 — generate_test: sourceFile must be capped at 500 chars', () 
 	const tool = new QGenerateTestTool();
 
 	test('schema should reject sourceFile longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ sourceFile: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept sourceFile within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ sourceFile: 'src/core/user.ts' });
 		expect(result.success).toBe(true);
 	});
@@ -1106,7 +1106,7 @@ describe('LOW-26 — scaffold_feature: location must be capped at 500 chars', ()
 	const tool = new QScaffoldFeatureTool();
 
 	test('schema should reject location longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			type: 'tool',
 			name: 'my-tool',
@@ -1116,7 +1116,7 @@ describe('LOW-26 — scaffold_feature: location must be capped at 500 chars', ()
 	});
 
 	test('schema should accept location within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			type: 'tool',
 			name: 'my-tool',
@@ -1132,13 +1132,13 @@ describe('LOW-27 — run_tests: pattern must be capped at 500 chars', () => {
 	const tool = new QRunTestsTool();
 
 	test('schema should reject pattern longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ pattern: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept pattern within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ pattern: 'tests/unit' });
 		expect(result.success).toBe(true);
 	});
@@ -1150,7 +1150,7 @@ describe('LOW-28 — create_guide_page: base_path must be capped at 500 chars', 
 	const tool = new QCreateGuidePageTool();
 
 	test('schema should reject base_path longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			slug: 'my-feature',
 			title_en: 'My Feature',
@@ -1161,7 +1161,7 @@ describe('LOW-28 — create_guide_page: base_path must be capped at 500 chars', 
 	});
 
 	test('schema should accept base_path within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			slug: 'my-feature',
 			title_en: 'My Feature',
@@ -1178,13 +1178,13 @@ describe('LOW-29 — deprecation_tracker: target_dir must be capped at 500 chars
 	const tool = new QDeprecationTrackerTool();
 
 	test('schema should reject target_dir longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ target_dir: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept target_dir within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ target_dir: 'src' });
 		expect(result.success).toBe(true);
 	});
@@ -1196,13 +1196,13 @@ describe('LOW-30 — validate_examples: target_dir must be capped at 500 chars',
 	const tool = new QValidateExamplesTool();
 
 	test('schema should reject target_dir longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ target_dir: 'x'.repeat(501) });
 		expect(result.success).toBe(false);
 	});
 
 	test('schema should accept target_dir within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({ target_dir: 'src' });
 		expect(result.success).toBe(true);
 	});
@@ -1214,7 +1214,7 @@ describe('LOW-31 — simulate_async_rules: timeoutMessage must be capped at 500 
 	const tool = new QSimulateAsyncRulesTool();
 
 	test('schema should reject timeoutMessage longer than 500 chars', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			rules: [
 				{ field: 'email', predicate: 'return true', message: 'ok' },
@@ -1226,7 +1226,7 @@ describe('LOW-31 — simulate_async_rules: timeoutMessage must be capped at 500 
 	});
 
 	test('schema should accept timeoutMessage within limit', () => {
-		const schema = (tool as any).schema;
+		const schema = tool.schema;
 		const result = schema.safeParse({
 			rules: [
 				{ field: 'email', predicate: 'return true', message: 'ok' },

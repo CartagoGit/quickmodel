@@ -106,6 +106,70 @@ describe('$qCopy()', () => {
 	});
 });
 
+describe('$qFrom()', () => {
+	it('crea una nueva instancia del mismo modelo desde un objeto plano', () => {
+		const user = makeUser();
+		const other = user.$qFrom({
+			name: 'Bob',
+			age: 25,
+			createdAt: '2025-06-01T00:00:00.000Z' as unknown as Date,
+		});
+		expect(other).toBeInstanceOf(User);
+		expect(other.name).toBe('Bob');
+		expect(other.age).toBe(25);
+	});
+
+	it('aplica transformadores de tipo (Date)', () => {
+		const user = makeUser();
+		const other = user.$qFrom({
+			name: 'Bob',
+			age: 25,
+			createdAt: '2025-06-01T00:00:00.000Z' as unknown as Date,
+		});
+		expect(other.createdAt).toBeInstanceOf(Date);
+	});
+
+	it('no modifica la instancia original', () => {
+		const user = makeUser();
+		user.$qFrom({
+			name: 'Zed',
+			age: 99,
+			createdAt: '2025-01-01T00:00:00.000Z' as unknown as Date,
+		});
+		expect(user.name).toBe('Alice');
+		expect(user.age).toBe(30);
+	});
+});
+
+describe('$qFromJSON()', () => {
+	it('crea una nueva instancia del mismo modelo desde un JSON string', () => {
+		const user = makeUser();
+		const json = user.$qToJSON();
+		const restored = user.$qFromJSON(json);
+		expect(restored).toBeInstanceOf(User);
+		expect(restored.name).toBe('Alice');
+		expect(restored.age).toBe(30);
+	});
+
+	it('aplica transformadores de tipo (Date) desde JSON', () => {
+		const user = makeUser();
+		const json = user.$qToJSON();
+		const restored = user.$qFromJSON(json);
+		expect(restored.createdAt).toBeInstanceOf(Date);
+	});
+
+	it('lanza SyntaxError si el JSON es inválido', () => {
+		const user = makeUser();
+		expect(() => user.$qFromJSON('not-valid-json')).toThrow(SyntaxError);
+	});
+
+	it('produce un resultado equivalente al de la instancia original', () => {
+		const user = makeUser();
+		const restored = user.$qFromJSON(user.$qToJSON());
+		expect(user.$qEquals(restored)).toBe(true);
+	});
+});
+
 describe('$qDiff()', () => {
 	it('retorna diferencias campo a campo', () => {
 		const usr = makeUser();
@@ -221,58 +285,59 @@ describe('$qReset()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Guard enforcement — los métodos sin $q deben lanzar
+// ---------------------------------------------------------------------------
+// Legacy method removal — los métodos sin $q ya no existen en la clase
 // ---------------------------------------------------------------------------
 
-describe('Guard enforcement: métodos internos sin $q lanzan [QuickModel]', () => {
-	it('serialize() lanza si se llama sin $q', () => {
+describe('Métodos legacy eliminados: ya no existen en la instancia [QuickModel]', () => {
+	it('serialize() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).serialize()).toThrow('[QuickModel]');
+		expect(typeof (user as any).serialize).toBe('undefined');
 	});
 
-	it('isDirty() lanza si se llama sin $q', () => {
+	it('isDirty() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).isDirty()).toThrow('[QuickModel]');
+		expect(typeof (user as any).isDirty).toBe('undefined');
 	});
 
-	it('checkIntegrity() lanza si se llama sin $q', () => {
+	it('checkIntegrity() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).checkIntegrity()).toThrow('[QuickModel]');
+		expect(typeof (user as any).checkIntegrity).toBe('undefined');
 	});
 
-	it('hasChanges() lanza si se llama sin $q', () => {
+	it('hasChanges() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).hasChanges()).toThrow('[QuickModel]');
+		expect(typeof (user as any).hasChanges).toBe('undefined');
 	});
 
-	it('reset() lanza si se llama sin $q', () => {
+	it('reset() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).reset()).toThrow('[QuickModel]');
+		expect(typeof (user as any).reset).toBe('undefined');
 	});
 
-	it('toInterface() lanza si se llama sin $q', () => {
+	it('toInterface() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).toInterface()).toThrow('[QuickModel]');
+		expect(typeof (user as any).toInterface).toBe('undefined');
 	});
 
-	it('getInitInterface() lanza si se llama sin $q', () => {
+	it('getInitInterface() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).getInitInterface()).toThrow('[QuickModel]');
+		expect(typeof (user as any).getInitInterface).toBe('undefined');
 	});
 
-	it('patch() lanza si se llama sin $q', () => {
+	it('patch() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).patch({ age: 1 })).toThrow('[QuickModel]');
+		expect(typeof (user as any).patch).toBe('undefined');
 	});
 
-	it('copy() lanza si se llama sin $q', () => {
+	it('copy() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).copy()).toThrow('[QuickModel]');
+		expect(typeof (user as any).copy).toBe('undefined');
 	});
 
-	it('getChanges() lanza si se llama sin $q', () => {
+	it('getChanges() ya no existe en la instancia', () => {
 		const user = makeUser();
-		expect(() => (user as any).getChanges()).toThrow('[QuickModel]');
+		expect(typeof (user as any).getChanges).toBe('undefined');
 	});
 });
 

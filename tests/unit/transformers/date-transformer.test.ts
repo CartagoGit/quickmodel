@@ -79,7 +79,7 @@ describe('Unit: Date Transformer', () => {
 			updatedAt: null,
 		});
 
-		const json = event1.toJSON();
+		const json = event1.$qToJSON();
 		const event2 = Event.fromJSON(json);
 
 		expect(event2.createdAt.getTime()).toBe(event1.createdAt.getTime());

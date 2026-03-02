@@ -16,6 +16,7 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField } from '@/decorators';
+import { $qCheckRulesAsync } from '@/forms';
 
 // ---------------------------------------------------------------------------
 // Shared DTOs used across all frameworks
@@ -385,7 +386,7 @@ describe('Fastify — DTO coercion + validation hook', () => {
 				paid: true,
 			},
 		];
-		const { instances, errors } = InvoiceDto.createMany(raw as any[]);
+		const { instances, errors } = InvoiceDto.createMany(raw);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(0);
 	});
@@ -503,7 +504,7 @@ describe('Hono — validator middleware pattern', () => {
 			age: 25,
 			role: 'viewer',
 		});
-		const schema = dto.getSchema('json');
+		const schema = dto.$qGetSchema('json');
 		expect(schema).toBeDefined();
 	});
 });
@@ -559,7 +560,7 @@ describe('Backend — async duplicate check (email + username)', () => {
 			email: 'dev@newcompany.com',
 			password: 'Secure1234!',
 		});
-		const result = await qCheckRulesAsync(dto, { mode: 'parallel' });
+		const result = await $qCheckRulesAsync(dto, { mode: 'parallel' });
 		expect(result.valid).toBe(true);
 	});
 
@@ -569,7 +570,7 @@ describe('Backend — async duplicate check (email + username)', () => {
 			email: 'existing@company.com',
 			password: 'Secure1234!',
 		});
-		const result = await qCheckRulesAsync(dto, { mode: 'parallel' });
+		const result = await $qCheckRulesAsync(dto, { mode: 'parallel' });
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -580,7 +581,7 @@ describe('Backend — async duplicate check (email + username)', () => {
 			email: 'new@company.com',
 			password: 'Secure1234!',
 		});
-		const result = await qCheckRulesAsync(dto, { mode: 'parallel' });
+		const result = await $qCheckRulesAsync(dto, { mode: 'parallel' });
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'username')).toBe(
 			true
@@ -593,7 +594,7 @@ describe('Backend — async duplicate check (email + username)', () => {
 			email: 'dev@new.com',
 			password: 'weak',
 		});
-		const result = await qCheckRulesAsync(dto, { mode: 'serial' });
+		const result = await $qCheckRulesAsync(dto, { mode: 'serial' });
 		expect(result.valid).toBe(false);
 		const pwdErrors = result.errors.filter(
 			(err) => err.field === 'password'
@@ -608,7 +609,7 @@ describe('Backend — async duplicate check (email + username)', () => {
 			password: 'ValidPass123',
 		});
 		const start = Date.now();
-		await qCheckRulesAsync(dto, { mode: 'parallel' });
+		await $qCheckRulesAsync(dto, { mode: 'parallel' });
 		const elapsed = Date.now() - start;
 		// Two async rules at 3ms each — parallel should be < 50ms total
 		expect(elapsed).toBeLessThan(200);

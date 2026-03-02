@@ -77,16 +77,16 @@ describe('SpecialFloatTransformer', () => {
 	describe('serialize()', () => {
 		test('NaN → { __qm: "nan" }', () => {
 			const trx = new SpecialFloatTransformer();
-			const serialized = trx.$qSerialize(NaN);
+			const serialized = trx.serialize(NaN);
 			expect(serialized).toEqual({ __qm: 'nan' });
 		});
 		test('Infinity → { __qm: "inf" }', () => {
 			const trx = new SpecialFloatTransformer();
-			expect(trx.$qSerialize(Infinity)).toEqual({ __qm: 'inf' });
+			expect(trx.serialize(Infinity)).toEqual({ __qm: 'inf' });
 		});
 		test('-Infinity → { __qm: "-inf" }', () => {
 			const trx = new SpecialFloatTransformer();
-			expect(trx.$qSerialize(-Infinity)).toEqual({ __qm: '-inf' });
+			expect(trx.serialize(-Infinity)).toEqual({ __qm: '-inf' });
 		});
 	});
 
@@ -126,7 +126,7 @@ describe('SpecialFloatTransformer', () => {
 		test('number → valid', () => {
 			const trx = new SpecialFloatTransformer();
 			expect(
-				trx.$qCheckIntegrity(42, {
+				trx.checkIntegrity(42, {
 					propertyKey: 'val',
 					className: 'TestClass',
 				}).isValid
@@ -135,7 +135,7 @@ describe('SpecialFloatTransformer', () => {
 		test('NaN → valid', () => {
 			const trx = new SpecialFloatTransformer();
 			expect(
-				trx.$qCheckIntegrity(NaN, {
+				trx.checkIntegrity(NaN, {
 					propertyKey: 'val',
 					className: 'TestClass',
 				}).isValid
@@ -144,7 +144,7 @@ describe('SpecialFloatTransformer', () => {
 		test('token → valid', () => {
 			const trx = new SpecialFloatTransformer();
 			expect(
-				trx.$qCheckIntegrity(
+				trx.checkIntegrity(
 					{ __qm: 'nan' },
 					{ propertyKey: 'val', className: 'TestClass' }
 				).isValid
@@ -153,7 +153,7 @@ describe('SpecialFloatTransformer', () => {
 		test('string → invalid', () => {
 			const trx = new SpecialFloatTransformer();
 			expect(
-				trx.$qCheckIntegrity('hello', {
+				trx.checkIntegrity('hello', {
 					propertyKey: 'val',
 					className: 'TestClass',
 				}).isValid

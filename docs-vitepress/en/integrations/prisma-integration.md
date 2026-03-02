@@ -9,8 +9,8 @@ QuickModel works alongside Prisma as a type-safe DTO layer between your database
 | Map Prisma row to DTO  | `new UserRecordDto(prismaRow)` — strips `_count`, `_prisma*`           |
 | Validate create input  | `qCheckRules(new CreateUserDto(formData))`                             |
 | Bulk seed / import     | `UserRecordDto.createMany(seedArray)`                                  |
-| Repository abstraction | `repo.create(dto)` → `dto.toInterface()` → `prisma.user.create()`      |
-| Partial update         | `existing.copy({ score: 100 })` → `prisma.user.update({ data: ... })`  |
+| Repository abstraction | `repo.create(dto)` → `dto.$qToInterface()` → `prisma.user.create()`      |
+| Partial update         | `existing.$qCopy({ score: 100 })` → `prisma.user.update({ data: ... })`  |
 | Derived field          | `@QComputed() get label()` — included in `serialize()`                 |
 | DB uniqueness check    | `qCheckRulesAsync()` with async rule hitting `prisma.user.findFirst()` |
 
@@ -145,7 +145,7 @@ if (!validation.valid) throw new Error(validation.errors[0]?.message);
 
 // Pass to Prisma:
 await prisma.user.create({
-	data: { ...dto.toInterface(), uid: crypto.randomUUID() },
+	data: { ...dto.$qToInterface(), uid: crypto.randomUUID() },
 });
 ```
 
@@ -156,7 +156,7 @@ import seedData from './seed-users.json';
 
 const { instances } = UserRecordDto.createMany(seedData);
 await prisma.user.createMany({
-	data: instances.map((dto) => dto.toInterface()),
+	data: instances.map((dto) => dto.$qToInterface()),
 	skipDuplicates: true,
 });
 ```
@@ -171,7 +171,7 @@ class UserRepository {
 
 		const row = await prisma.user.create({
 			data: {
-				...dto.toInterface(),
+				...dto.$qToInterface(),
 				uid: crypto.randomUUID(),
 				active: true,
 				score: 0,
@@ -288,7 +288,7 @@ async function createUserSafe(input: object) {
 
 	return prisma.user.create({
 		data: {
-			...dto.toInterface(),
+			...dto.$qToInterface(),
 			uid: crypto.randomUUID(),
 			active: true,
 			score: 0,
@@ -308,3 +308,73 @@ async function createUserSafe(input: object) {
 | `validateOrReject(instance)`        | `qCheckRules(instance)`                                 |
 | `@Exclude()` on extra props         | `{ unknownPropertyPolicy: 'strip' }`                    |
 | `@Type(() => Number)`               | `coercionStrategy: 'loose'`                             |
+
+## Schema integration with `getSchema('prisma')` and `fromSchema('prisma', ...)`
+
+### Export a Prisma model block from a QModel
+
+Import `quickmodel/schema` once, then call `getSchema('prisma')` to get a Prisma model block string:
+
+```typescript
+import 'quickmodel/schema';
+import { QModel, Quick } from 'quickmodel';
+
+interface IUser {
+	name: string;
+	email: string;
+	createdAt: Date;
+	score: number;
+}
+
+@Quick({ createdAt: Date, score: Number })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare email: string;
+	declare createdAt: Date;
+	declare score: number;
+}
+
+const prismaModel = User.getSchema('prisma');
+/*
+model User {
+  name      String
+  email     String
+  createdAt DateTime
+  score     Float
+}
+*/
+```
+
+### Scaffold a QModel from an existing Prisma model
+
+`fromSchema('prisma', ...)` converts a Prisma model block string into a full QModel class definition.
+This is **scaffolding** — the result is source code to save as a `.ts` file:
+
+```typescript
+import 'quickmodel/schema';
+
+const prismaModel = `
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  createdAt DateTime @default(now())
+  inStock   Boolean  @default(true)
+}
+`;
+
+const code = QModel.fromSchema('prisma', prismaModel, 'Product');
+// → TypeScript source:
+// interface IProduct { id: number; name: string; price: number; createdAt: Date; inStock: boolean; }
+// @Quick({ id: Number, price: Number, createdAt: Date, inStock: Boolean })
+// class Product extends QModel<IProduct> { ... }
+
+// Save to disk:
+// fs.writeFileSync('src/models/product.model.ts', code);
+```
+
+## See also
+
+- [Schema Generation](/en/guide/schema-generation) — full `getSchema()` reference
+- [JSON Schema Integration](/en/integrations/json-schema-integration) — portable schema format
+- [TypeScript Schema Integration](/en/integrations/typescript-schema-integration) — interface export

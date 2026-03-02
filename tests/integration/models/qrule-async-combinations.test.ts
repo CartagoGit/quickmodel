@@ -108,7 +108,7 @@ describe('equal timeoutMs — uniform budget', () => {
 
 			const result = await FastModel.create({
 				name: 'alice',
-			}).checkRulesAsync(opts);
+			}).$qCheckRulesAsync(opts);
 			expect(result.valid).toBe(true);
 		},
 		{ timeout: 500 }
@@ -129,7 +129,7 @@ describe('equal timeoutMs — uniform budget', () => {
 			const result = await SlowModel.create({
 				name: 'alice',
 				email: 'ok@x.com',
-			}).checkRulesAsync(opts);
+			}).$qCheckRulesAsync(opts);
 			expect(result.valid).toBe(false);
 			expect(result.errors.every((err) => err.timedOut === true)).toBe(
 				true
@@ -154,7 +154,7 @@ describe('equal timeoutMs — uniform budget', () => {
 			const result = await MixedModel.create({
 				fast: 'ok',
 				slow: 'ok',
-			}).checkRulesAsync(opts);
+			}).$qCheckRulesAsync(opts);
 			expect(result.valid).toBe(false);
 
 			const fastErr = result.errors.find((err) => err.field === 'fast');
@@ -178,7 +178,7 @@ describe('equal timeoutMs — uniform budget', () => {
 				declare age: number;
 			}
 
-			const result = await AgeModel.create({ age: 15 }).checkRulesAsync(
+			const result = await AgeModel.create({ age: 15 }).$qCheckRulesAsync(
 				opts
 			);
 			expect(result.valid).toBe(false);
@@ -279,7 +279,7 @@ describe('multiple rules per field — independent timeout per predicate', () =>
 
 			const result = await MultiRuleField.create({
 				email: 'ok@x.com',
-			}).checkRulesAsync({
+			}).$qCheckRulesAsync({
 				timeoutMs: 50,
 				timeoutMessage: 'Service unavailable',
 			});
@@ -304,7 +304,7 @@ describe('multiple rules per field — independent timeout per predicate', () =>
 
 			const result = await DoubleFailField.create({
 				email: 'bad',
-			}).checkRulesAsync({ timeoutMs: 50 });
+			}).$qCheckRulesAsync({ timeoutMs: 50 });
 
 			expect(result.errors).toHaveLength(2);
 			const formatErr = result.errors.find(
@@ -333,7 +333,7 @@ describe('multiple rules per field — independent timeout per predicate', () =>
 
 			const result = await AllRulesTimeout.create({
 				token: 'abc',
-			}).checkRulesAsync({ timeoutMs: 50 });
+			}).$qCheckRulesAsync({ timeoutMs: 50 });
 
 			expect(result.errors.every((err) => err.timedOut === true)).toBe(
 				true
@@ -356,7 +356,7 @@ describe('multiple rules per field — independent timeout per predicate', () =>
 
 			const result = await AllRulesPass.create({
 				token: 'abc',
-			}).checkRulesAsync({ timeoutMs: 100 });
+			}).$qCheckRulesAsync({ timeoutMs: 100 });
 
 			expect(result.valid).toBe(true);
 		},
@@ -380,7 +380,7 @@ describe('crash vs timeout semantics', () => {
 
 			const result = await CrashModel.create({
 				token: 'abc',
-			}).checkRulesAsync({ timeoutMs: 50 });
+			}).$qCheckRulesAsync({ timeoutMs: 50 });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors[0]?.timedOut).toBeUndefined();
@@ -400,7 +400,7 @@ describe('crash vs timeout semantics', () => {
 
 			const result = await SlowCrashModel.create({
 				token: 'abc',
-			}).checkRulesAsync({ timeoutMs: 50 });
+			}).$qCheckRulesAsync({ timeoutMs: 50 });
 
 			// Timeout fires first — timedOut:true, message from rule (no timeoutMessage given)
 			expect(result.errors[0]?.timedOut).toBe(true);
@@ -421,7 +421,7 @@ describe('crash vs timeout semantics', () => {
 
 			const result = await CompoundModel.create({
 				data: 'val',
-			}).checkRulesAsync({ timeoutMs: 50 });
+			}).$qCheckRulesAsync({ timeoutMs: 50 });
 
 			expect(result.errors).toHaveLength(2);
 			const crashErr = result.errors.find(
@@ -454,7 +454,7 @@ describe('instant predicates — never affected by timeoutMs', () => {
 
 			const result = await InstantPass.create({
 				val: 'ok',
-			}).checkRulesAsync({ timeoutMs: 1 });
+			}).$qCheckRulesAsync({ timeoutMs: 1 });
 			expect(result.valid).toBe(true);
 		},
 		{ timeout: 500 }
@@ -471,7 +471,7 @@ describe('instant predicates — never affected by timeoutMs', () => {
 
 			const result = await InstantFail.create({
 				val: 'ok',
-			}).checkRulesAsync({ timeoutMs: 1 });
+			}).$qCheckRulesAsync({ timeoutMs: 1 });
 			expect(result.valid).toBe(false);
 			expect(result.errors[0]?.timedOut).toBeUndefined();
 		},
@@ -581,7 +581,7 @@ describe('timeoutMessage — static, lazy, absent', () => {
 			const SlowModel = makeSlowModel();
 			const result = await SlowModel.create({
 				val: 'ok',
-			}).checkRulesAsync({
+			}).$qCheckRulesAsync({
 				timeoutMs: 30,
 				timeoutMessage: 'Static override',
 			});
@@ -604,7 +604,7 @@ describe('timeoutMessage — static, lazy, absent', () => {
 			locale = 'es';
 			const result = await SlowModel.create({
 				val: 'ok',
-			}).checkRulesAsync({
+			}).$qCheckRulesAsync({
 				timeoutMs: 30,
 				timeoutMessage: () => translations[locale] ?? 'unavailable',
 			});
@@ -620,7 +620,7 @@ describe('timeoutMessage — static, lazy, absent', () => {
 			const SlowModel = makeSlowModel();
 			const result = await SlowModel.create({
 				val: 'ok',
-			}).checkRulesAsync({ timeoutMs: 30 });
+			}).$qCheckRulesAsync({ timeoutMs: 30 });
 
 			expect(result.errors[0]?.message).toBe('Rule default message');
 			expect(result.errors[0]?.timedOut).toBe(true);
@@ -639,7 +639,7 @@ describe('timeoutMessage — static, lazy, absent', () => {
 
 			const result = await LogicalFailModel.create({
 				val: 'ok',
-			}).checkRulesAsync();
+			}).$qCheckRulesAsync();
 			expect(result.errors[0]?.message).toBe('Logical error');
 			expect(result.errors[0]?.timedOut).toBeUndefined();
 		},
@@ -696,7 +696,7 @@ describe('full combination: heterogeneous delays, timeouts, outcomes', () => {
 	};
 
 	let result: Awaited<
-		ReturnType<InstanceType<typeof FullComboModel>['checkRulesAsync']>
+		ReturnType<InstanceType<typeof FullComboModel>['$qCheckRulesAsync']>
 	>;
 
 	beforeAll(async () => {

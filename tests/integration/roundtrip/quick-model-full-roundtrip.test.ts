@@ -67,7 +67,7 @@ describe('QModel Core Functionality - Roundtrip', () => {
 
 	test('should survive a JSON round-trip (toJSON → fromJSON)', () => {
 		const user = new User(userData);
-		const json = user.toJSON();
+		const json = user.$qToJSON();
 		const user2 = User.fromJSON(json);
 		expect(user2).toBeInstanceOf(User);
 		expect(user2.createdAt).toBeInstanceOf(Date);

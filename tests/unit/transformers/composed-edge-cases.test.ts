@@ -112,7 +112,9 @@ describe('Composed Transformers Edge Cases', () => {
 			const firstMapSerialized = serialized.data[0][0];
 			expect(typeof firstMapSerialized).toBe('object');
 			expect(firstMapSerialized).toHaveProperty('x');
-			expect((firstMapSerialized as any).x).toBe('999999999999999');
+			expect((firstMapSerialized as Record<string, unknown>)['x']).toBe(
+				'999999999999999'
+			);
 		});
 	});
 

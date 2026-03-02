@@ -21,9 +21,8 @@ describe('Unit: Set Transformer', () => {
 		const model = new SetData({ set: new Set() });
 
 		const json = model.toJSON();
-		const parsed = JSON.parse(json);
 
-		expect(parsed.set).toBeDefined();
+		expect(json.set).toBeDefined();
 	});
 
 	test('Should deserialize empty set', () => {
@@ -40,7 +39,7 @@ describe('Unit: Set Transformer', () => {
 		set.add('cherry');
 
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set).toBeInstanceOf(Set);
 		expect(deserialized.set.size).toBe(3);
@@ -52,7 +51,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should handle set with numbers', () => {
 		const set = new Set([1, 2, 3, 4, 5]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.size).toBe(5);
 		expect(deserialized.set.has(1)).toBe(true);
@@ -62,7 +61,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should handle set with booleans', () => {
 		const set = new Set([true, false]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.size).toBe(2);
 		expect(deserialized.set.has(true)).toBe(true);
@@ -77,7 +76,7 @@ describe('Unit: Set Transformer', () => {
 		set.add(null);
 
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.size).toBe(4);
 		expect(deserialized.set.has('string')).toBe(true);
@@ -89,7 +88,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should maintain uniqueness', () => {
 		const set = new Set([1, 1, 2, 2, 3, 3]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.size).toBe(3);
 		expect(Array.from(deserialized.set)).toEqual([1, 2, 3]);
@@ -102,7 +101,7 @@ describe('Unit: Set Transformer', () => {
 		}
 
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.size).toBe(1000);
 		expect(deserialized.set.has(0)).toBe(true);
@@ -112,7 +111,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should preserve insertion order', () => {
 		const set = new Set(['z', 'a', 'm', 'b']);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		const values = Array.from(deserialized.set);
 		expect(values).toEqual(['z', 'a', 'm', 'b']);
@@ -127,7 +126,7 @@ describe('Unit: Set Transformer', () => {
 			'with_underscores',
 		]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.size).toBe(5);
 		expect(deserialized.set.has('')).toBe(true);
@@ -138,7 +137,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should handle zero and negative numbers', () => {
 		const set = new Set([0, -1, -100, 100]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.has(0)).toBe(true);
 		expect(deserialized.set.has(-1)).toBe(true);
@@ -148,7 +147,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should handle decimal numbers', () => {
 		const set = new Set([1.5, 2.7, 3.14159]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		expect(deserialized.set.has(1.5)).toBe(true);
 		expect(deserialized.set.has(2.7)).toBe(true);
@@ -158,7 +157,7 @@ describe('Unit: Set Transformer', () => {
 	test('Should support set operations after deserialization', () => {
 		const set = new Set([1, 2, 3]);
 		const model = new SetData({ set });
-		const deserialized = SetData.fromJSON(model.toJSON());
+		const deserialized = SetData.fromJSON(model.$qToJSON());
 
 		// Add new value
 		deserialized.set.add(4);

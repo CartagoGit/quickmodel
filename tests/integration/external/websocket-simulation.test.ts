@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
 import { QRule, QField, QComputed } from '@/decorators';
-import { qCheckRules } from '@/forms';
+import { $qCheckRules } from '@/forms';
 
 /**
  * Integration Test: QuickModel + WebSocket / Socket environments (Simulated)
@@ -453,7 +453,7 @@ describe('Native WebSocket simulation', () => {
 		expect(received!.hasMentions).toBe(true);
 	});
 
-	it('validación con qCheckRules tras reconstrucción desde WS', () => {
+	it('validación con $qCheckRules tras reconstrucción desde WS', () => {
 		const pipe = createWsPipe();
 		let validationResult: {
 			valid: boolean;
@@ -463,7 +463,7 @@ describe('Native WebSocket simulation', () => {
 		pipe.serverSocket.onmessage = ((evt: unknown) => {
 			const raw = (evt as { data: string }).data;
 			const dto = new ChatMessageDto(JSON.parse(raw) as IChatMessage);
-			validationResult = qCheckRules(dto);
+			validationResult = $qCheckRules(dto);
 		}) as IWsMessageHandler;
 
 		// Mensaje válido
@@ -630,7 +630,7 @@ describe('Socket.IO simulation', () => {
 
 		server.on('user:presence', (raw: unknown, ack: unknown) => {
 			const dto = new PresenceEventDto(raw as IPresenceEvent);
-			const result = qCheckRules(dto);
+			const result = $qCheckRules(dto);
 			(ack as (res: unknown) => void)(result);
 		});
 
@@ -1086,7 +1086,7 @@ describe('STOMP over WebSocket simulation', () => {
 		const dto = new PresenceEventDto(
 			JSON.parse(parsed.body) as IPresenceEvent
 		);
-		const validation = qCheckRules(dto);
+		const validation = $qCheckRules(dto);
 
 		expect(validation.valid).toBe(true);
 		expect(dto.userId).toBe('stomp-user-77');
@@ -1199,7 +1199,7 @@ describe('Security: socket message attack vectors', () => {
 			metadata: new Map(),
 		});
 
-		const validation = qCheckRules(oversizedMsg);
+		const validation = $qCheckRules(oversizedMsg);
 		expect(validation.valid).toBe(false);
 		expect(
 			validation.errors.some(
@@ -1209,7 +1209,7 @@ describe('Security: socket message attack vectors', () => {
 		).toBe(true);
 	});
 
-	it('payload con status inválido — qCheckRules rechaza', () => {
+	it('payload con status inválido — $qCheckRules rechaza', () => {
 		const invalidPresence = new PresenceEventDto({
 			userId: 'u-bad',
 			status: 'invisible', // no permitido
@@ -1217,7 +1217,7 @@ describe('Security: socket message attack vectors', () => {
 			activeRooms: new Set(),
 		});
 
-		const validation = qCheckRules(invalidPresence);
+		const validation = $qCheckRules(invalidPresence);
 		expect(validation.valid).toBe(false);
 		expect(
 			validation.errors.some(

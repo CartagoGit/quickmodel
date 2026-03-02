@@ -154,7 +154,7 @@ function toHaveQField(received: object, fieldName: string): IMatcherResult {
  * expect(response).toMatchQModel(new UserModel(expectedData));
  * ```
  * @see {@link toBeIntact} — integrity check matcher
- * @see {@link QModel.serialize} — method called internally for comparison
+ * @see {@link QModel.$qSerialize} — method called internally for comparison
  */
 function toMatchQModel(received: object, expected: object): IMatcherResult {
 	const receivedData =
@@ -249,7 +249,7 @@ function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
  * - `toBeIntact()` — `hasIntegrity()` returns true
  * - `toHaveDirtyField(field)` — `isDirty(field)` returns true
  * @see {@link QModel.checkRules} — the validation method used by `toBeValidQModel()`
- * @see {@link QModel.serialize} — the method used by `toMatchQModel()` for comparison
+ * @see {@link QModel.$qSerialize} — the method used by `toMatchQModel()` for comparison
  */
 export const quickmodelMatchers = {
 	toBeValidQModel,

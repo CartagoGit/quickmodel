@@ -172,8 +172,10 @@ function createGetUserHandler(
 }
 
 // Simulate http.get('/api/users', ...) handler
-function createListUsersHandler(rawUsers: object[]): IHandlerResponse<IUser[]> {
-	const { instances, errors } = UserDto.createMany(rawUsers as any[]);
+function createListUsersHandler(
+	rawUsers: Record<string, unknown>[]
+): IHandlerResponse<IUser[]> {
+	const { instances, errors } = UserDto.createMany(rawUsers);
 	if (errors.length > 0) {
 		throw new Error(
 			`Fixture error: failed to parse ${errors.length} users`
@@ -232,7 +234,9 @@ describe('MSW — GET /api/users/:id handler', () => {
 
 	beforeEach(() => {
 		store = new Map();
-		const { instances } = UserDto.createMany(seedUsers as any[]);
+		const { instances } = UserDto.createMany(
+			seedUsers as Record<string, unknown>[]
+		);
 		instances.forEach((usr) => store.set(usr.id, usr));
 	});
 
@@ -436,26 +440,34 @@ describe('MSW — PostDto: Date coercion and @QComputed preview', () => {
 	];
 
 	test('createdAt is coerced to Date', () => {
-		const { instances } = PostDto.createMany(rawPosts as any[]);
+		const { instances } = PostDto.createMany(
+			rawPosts as Record<string, unknown>[]
+		);
 		instances.forEach((post) => {
 			expect(post.createdAt).toBeInstanceOf(Date);
 		});
 	});
 
 	test('preview truncates long body', () => {
-		const { instances } = PostDto.createMany(rawPosts as any[]);
+		const { instances } = PostDto.createMany(
+			rawPosts as Record<string, unknown>[]
+		);
 		const longPost = instances[0];
 		expect(longPost.preview).toHaveLength(83); // 80 + '...'
 	});
 
 	test('preview does not truncate short body', () => {
-		const { instances } = PostDto.createMany(rawPosts as any[]);
+		const { instances } = PostDto.createMany(
+			rawPosts as Record<string, unknown>[]
+		);
 		const shortPost = instances[1];
 		expect(shortPost.preview).toBe('Brief.');
 	});
 
 	test('serialized posts include preview', () => {
-		const { instances } = PostDto.createMany(rawPosts as any[]);
+		const { instances } = PostDto.createMany(
+			rawPosts as Record<string, unknown>[]
+		);
 		const serialized = instances.map((post) => post.$qSerialize());
 		serialized.forEach((post) => {
 			expect(post).toHaveProperty('preview');

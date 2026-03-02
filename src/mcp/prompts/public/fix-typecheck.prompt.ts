@@ -68,7 +68,8 @@ export class QFixTypecheckPrompt extends QAbstractInternalPrompt<{
 						`1. Call \`agent_coordinate\` with \`action: "check"\` — confirm no other agent owns the same files\n` +
 						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"fix typecheck"\`, and \`files\` for what you will change\n` +
 						`3. If \`conflict: true\` → **STOP**. Do not touch any file until resolved.\n` +
-						`4. Release when done: \`agent_coordinate action="release"\`\n\n` +
+						`4. **Read before every write:** Immediately before modifying each file, read its current content from disk — your context may be stale if another agent edited it since you started. If the file changed: adapt your change, merge carefully, or skip if no longer needed. Never overwrite from stale context.\n` +
+						`5. Release when done: \`agent_coordinate action="release"\`\n\n` +
 						`---\n\n` +
 						`## Common TS Error Quick Reference\n\n` +
 						`| Code | Meaning | Fix strategy |\n` +

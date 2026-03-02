@@ -114,9 +114,9 @@ export interface IQRulesResult {
 /**
  * Options for `checkRulesAsync()`, `isValidAsync()` and `validationReportAsync()`.
  *
- * @see {@link QModel.checkRulesAsync}
- * @see {@link QModel.isValidAsync}
- * @see {@link QModel.validationReportAsync}
+ * @see {@link QModel.$qCheckRulesAsync}
+ * @see {@link QModel.$qIsValidAsync}
+ * @see {@link QModel.$qValidationReportAsync}
  */
 export interface IQRulesAsyncOptions {
 	/**
@@ -288,9 +288,9 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
  *               **Inferred automatically in TC39 mode.**
  *               In legacy mode defaults to `unknown` — annotate the predicate parameter explicitly.
  *
- * @see {@link QModel.checkRules} for synchronous evaluation
- * @see {@link QModel.checkRulesAsync} for async evaluation (required when predicate returns `Promise<boolean>`)
- * @see {@link QModel.validationReport} for a combined integrity + rules report
+ * @see {@link QModel.$qCheckRules} for synchronous evaluation
+ * @see {@link QModel.$qCheckRulesAsync} for async evaluation (required when predicate returns `Promise<boolean>`)
+ * @see {@link QModel.$qValidationReport} for a combined integrity + rules report
  *
  * @example
  * ```typescript

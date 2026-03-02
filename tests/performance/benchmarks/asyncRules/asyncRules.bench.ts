@@ -10,6 +10,7 @@ import {
 	buildJoiSchemas,
 } from '../_shared';
 import { AsyncSignupForm, validSignupData } from '../_models';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 export function describeBench(): void {
 	describe('Benchmark #12 — Async rule orchestration: qCheckRulesAsync parallel vs alternativas (1k it.)', () => {
@@ -66,7 +67,7 @@ export function describeBench(): void {
 				'Benchmark 12: QuickModel async',
 				ITERS,
 				async () => {
-					await qCheckRulesAsync(asyncFormInstance, {
+					await $qCheckRulesAsync(asyncFormInstance, {
 						mode: 'parallel',
 					});
 				}
@@ -105,7 +106,7 @@ export function describeBench(): void {
 					'Benchmark 12: QuickModel async',
 					ITERS,
 					async () => {
-						await qCheckRulesAsync(asyncForm2, {
+						await $qCheckRulesAsync(asyncForm2, {
 							mode: 'parallel',
 						});
 					}

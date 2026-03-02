@@ -7,7 +7,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -145,7 +146,7 @@ describe('tRPC input — QModel as input validator', () => {
 			role: 'user',
 			age: 25,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		expect(result.valid).toBe(true);
 	});
 
@@ -156,7 +157,7 @@ describe('tRPC input — QModel as input validator', () => {
 			role: 'user',
 			age: 25,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -168,7 +169,7 @@ describe('tRPC input — QModel as input validator', () => {
 			role: 'user',
 			age: 16,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'age')).toBe(true);
 	});
@@ -180,7 +181,7 @@ describe('tRPC input — QModel as input validator', () => {
 			role: 'superuser',
 			age: 30,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'role')).toBe(true);
 	});
@@ -203,14 +204,14 @@ describe('tRPC input — QModel as input validator', () => {
 		).not.toBe('injected');
 	});
 
-	test('getFormSchema for @QGroup identity fields', () => {
+	test('$qGetFormSchema for @QGroup identity fields', () => {
 		const input = new CreateUserInput({
 			name: '',
 			email: '',
 			role: 'user',
 			age: 18,
 		});
-		const schema = input.getFormSchema();
+		const schema = input.$qGetFormSchema();
 		const keys = schema.map((fie: { field: string }) => fie.field);
 		expect(keys).toContain('name');
 		expect(keys).toContain('email');
@@ -276,13 +277,13 @@ describe('tRPC middleware — context coercion', () => {
 
 	test('checkRules validates middleware-coerced input', () => {
 		const input = new ListQueryInput({ page: 1, size: 50, tag: 'all' });
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		expect(result.valid).toBe(true);
 	});
 
 	test('checkRules rejects invalid query params in middleware', () => {
 		const input = new ListQueryInput({ page: 0, size: 200, tag: 'x' });
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThanOrEqual(2);
 	});
@@ -326,7 +327,7 @@ describe('tRPC checkRulesAsync — DB validation', () => {
 			role: 'user',
 			age: 20,
 		});
-		const result = await qCheckRulesAsync(input);
+		const result = await $qCheckRulesAsync(input);
 		expect(result.valid).toBe(true);
 	});
 
@@ -337,7 +338,7 @@ describe('tRPC checkRulesAsync — DB validation', () => {
 			role: 'user',
 			age: 20,
 		});
-		const result = await qCheckRulesAsync(input);
+		const result = await $qCheckRulesAsync(input);
 		expect(result.valid).toBe(false);
 	});
 
@@ -348,17 +349,17 @@ describe('tRPC checkRulesAsync — DB validation', () => {
 			role: 'user',
 			age: 20,
 		});
-		const syncResult = qCheckRules(input);
+		const syncResult = $qCheckRules(input);
 		expect(syncResult.valid).toBe(false);
 
-		const asyncResult = await qCheckRulesAsync(input);
+		const asyncResult = await $qCheckRulesAsync(input);
 		expect(asyncResult.valid).toBe(false);
 	});
 
 	test('async validation with Bun.sleep simulates DB latency', async () => {
 		const input = new SlowInput({ email: 'slow@x.com' });
 		const start = Date.now();
-		await qCheckRulesAsync(input);
+		await $qCheckRulesAsync(input);
 		expect(Date.now() - start).toBeGreaterThanOrEqual(1);
 	});
 });
@@ -432,14 +433,14 @@ describe('tRPC error mapping', () => {
 		}));
 	}
 
-	test('maps qCheckRules errors to tRPC BAD_REQUEST format', () => {
+	test('maps $qCheckRules errors to tRPC BAD_REQUEST format', () => {
 		const input = new CreateUserInput({
 			name: 'Z',
 			email: 'bad',
 			role: 'unknown',
 			age: 10,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		const trpcErrors = mapToTrpcError(result.errors);
 		expect(trpcErrors.every((err) => err.code === 'BAD_REQUEST')).toBe(
 			true
@@ -454,7 +455,7 @@ describe('tRPC error mapping', () => {
 			role: 'user',
 			age: 25,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		const trpcErrors = mapToTrpcError(result.errors);
 		expect(trpcErrors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -466,7 +467,7 @@ describe('tRPC error mapping', () => {
 			role: 'user',
 			age: 25,
 		});
-		const result = qCheckRules(input);
+		const result = $qCheckRules(input);
 		const trpcErrors = mapToTrpcError(result.errors);
 		expect(trpcErrors.length).toBe(0);
 	});
@@ -487,7 +488,7 @@ describe('tRPC router — typed procedure chain', () => {
 		handler: (inp: TInput) => TOutput
 	): { ok: true; data: TOutput } | { ok: false; errors: string[] } {
 		const dto = new CreateUserInput(input as Record<string, unknown>);
-		const validation = qCheckRules(dto);
+		const validation = $qCheckRules(dto);
 		if (!validation.valid) {
 			return {
 				ok: false,
@@ -533,7 +534,7 @@ describe('tRPC router — typed procedure chain', () => {
 			role: 'admin',
 			age: 30,
 		});
-		const valid = qCheckRules(createInput);
+		const valid = $qCheckRules(createInput);
 		expect(valid.valid).toBe(true);
 
 		// Step 2: build output DTO from the validated input

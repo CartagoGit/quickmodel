@@ -304,7 +304,7 @@ describe('NestJS Pattern: DTO coercion at controller boundary', () => {
 			birthDate: '1990-07-04T00:00:00.000Z',
 			active: false,
 		});
-		const json = JSON.parse(dto.toJSON());
+		const json = dto.toJSON();
 		expect(typeof json.birthDate).toBe('string');
 		expect(json.birthDate).toMatch(/^\d{4}-\d{2}-\d{2}/);
 	});
@@ -466,7 +466,7 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 			role: 'user',
 			score: 72,
 		});
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 		expect(json.fullName).toBe('Bob Smith');
 		expect(json.age).toBe(41);
 		expect(json.isAdmin).toBe(false);
@@ -879,7 +879,7 @@ describe('NestJS Pattern: response interceptor (auto-serialize)', () => {
 			score: 75,
 		});
 		const fromSerialize = user.$qSerialize() as Record<string, unknown>;
-		const fromToJSON = JSON.parse(user.toJSON()) as Record<string, unknown>;
+		const fromToJSON = user.toJSON() as Record<string, unknown>;
 		expect(fromSerialize.fullName).toBe(fromToJSON.fullName);
 		expect(fromSerialize.age).toBe(fromToJSON.age);
 		expect(fromSerialize.isAdmin).toBe(fromToJSON.isAdmin);

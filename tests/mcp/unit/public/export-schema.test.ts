@@ -21,7 +21,9 @@ describe('QExportJsonSchemaTool', () => {
 		// Since we are running integration/unit tests on the real code, it should work if QInspectModelTool works.
 		// QInspectModel tool likely regexes "class Name"
 
-		expect((result.schema as any).title).toBe('PendingUser');
+		expect((result.schema as Record<string, unknown>)['title']).toBe(
+			'PendingUser'
+		);
 	});
 
 	it('should map primitives to json schema types', async () => {
@@ -35,12 +37,12 @@ describe('QExportJsonSchemaTool', () => {
             export class User extends QModel {}
         `;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
+		const schema = result.schema as Record<string, Record<string, unknown>>;
 
-		expect(schema.type).toBe('object');
-		expect(schema.properties.name).toEqual({ type: 'string' });
-		expect(schema.properties.age).toEqual({ type: 'number' });
-		expect(schema.properties.isActive).toEqual({ type: 'boolean' });
+		expect(schema['type']).toBe('object');
+		expect(schema['properties']['name']).toEqual({ type: 'string' });
+		expect(schema['properties']['age']).toEqual({ type: 'number' });
+		expect(schema['properties']['isActive']).toEqual({ type: 'boolean' });
 	});
 
 	it('should map integer to number', async () => {
@@ -52,8 +54,8 @@ describe('QExportJsonSchemaTool', () => {
             class Counter {}
         `;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
-		expect(schema.properties.count).toEqual({ type: 'number' });
+		const schema = result.schema as Record<string, Record<string, unknown>>;
+		expect(schema['properties']['count']).toEqual({ type: 'number' });
 	});
 
 	it('should map date to string with format date-time', async () => {
@@ -65,9 +67,9 @@ describe('QExportJsonSchemaTool', () => {
             export class Log extends QModel {}
         `;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
+		const schema = result.schema as Record<string, Record<string, unknown>>;
 
-		expect(schema.properties.createdAt).toEqual({
+		expect(schema['properties']['createdAt']).toEqual({
 			type: 'string',
 			format: 'date-time',
 		});
@@ -85,8 +87,8 @@ describe('QExportJsonSchemaTool', () => {
             class Test {}
         `;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
-		expect(schema.properties.field1).toEqual({ type: 'string' });
-		expect(schema.properties.field2).toEqual({ type: 'number' });
+		const schema = result.schema as Record<string, Record<string, unknown>>;
+		expect(schema['properties']['field1']).toEqual({ type: 'string' });
+		expect(schema['properties']['field2']).toEqual({ type: 'number' });
 	});
 });

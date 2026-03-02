@@ -27,7 +27,11 @@ interface IUser {
 }
 
 @Quick()
-class UserModel extends QModel<IUser> {
+class UserModel extends QModel<
+	IUser,
+	Record<never, never>,
+	'password' | 'apiToken'
+> {
 	declare id: number;
 	declare email: string;
 
@@ -98,8 +102,7 @@ describe('Integration: @QSensitive (guide/sensitive-fields.md)', () => {
 				apiToken: 'tok_abc123',
 			});
 
-			const parsed = JSON.parse(user.toJSON()) as Record<string, unknown>;
-
+			const parsed = user.toJSON();
 			expect(parsed).not.toHaveProperty('password');
 			expect(parsed).not.toHaveProperty('apiToken');
 		});
@@ -113,11 +116,11 @@ describe('Integration: @QSensitive (guide/sensitive-fields.md)', () => {
 			});
 
 			const parsed = JSON.parse(
-				user.toJSON({ includeSensitive: true })
-			) as Record<string, unknown>;
+				user.$qToJSON({ includeSensitive: true })
+			);
 
-			expect(parsed['password']).toBe('secret');
-			expect(parsed['apiToken']).toBe('tok');
+			expect(parsed.password).toBe('secret');
+			expect(parsed.apiToken).toBe('tok');
 		});
 	});
 
@@ -144,7 +147,11 @@ describe('Integration: @QSensitive (guide/sensitive-fields.md)', () => {
 		}
 
 		@Quick()
-		class BaseUser extends QModel<IBaseUser> {
+		class BaseUser extends QModel<
+			IBaseUser,
+			Record<never, never>,
+			'password'
+		> {
 			declare id: string;
 
 			@QSensitive()

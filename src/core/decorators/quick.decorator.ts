@@ -99,7 +99,10 @@ import type { IQOptions } from '../interfaces/quick.interface';
 
 // Re-export common types for backward compatibility or direct usage
 export type { IQOptions } from '../interfaces/quick.interface';
-export type { IQAliasedSerializedInterface } from '../interfaces/serialization-types.interface';
+export type {
+	IQAliasedSerializedInterface,
+	IQSafeSerializedInterface,
+} from '../interfaces/serialization-types.interface';
 
 /**
  * Class decorator that automatically applies @QType() to all properties.

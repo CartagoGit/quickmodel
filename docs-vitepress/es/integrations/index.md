@@ -100,6 +100,32 @@ Queries y mutaciones con transformación automática de respuestas de API.
 
 Generación de schemas OpenAPI desde modelos QuickModel.
 
+## Librerías de Validación
+
+### [Zod](/es/integrations/zod-integration)
+
+Uso de Zod junto con QuickModel: validar input crudo con Zod, coercionar y serializar con QModel, y generar scaffolding de clases desde schemas Zod.
+
+### [Valibot](/es/integrations/valibot-integration)
+
+Validación ligera con Valibot junto con coerción y serialización de QModel, más `getSchema('valibot')` para exportar schemas.
+
+### [Yup](/es/integrations/yup-integration)
+
+Schemas Yup encadenables para validación, QModel para coerción y serialización, más `getSchema('yup')` para exportar schemas.
+
+### [AJV](/es/integrations/ajv-integration)
+
+Validación JSON Schema con AJV y coerción con QModel. Bidireccional: `getSchema('ajv')` exporta schemas AJV activos, `fromSchema('ajv', ...)` genera clases QModel desde schemas existentes.
+
+### [TypeBox](/es/integrations/typebox-integration)
+
+Schemas TypeBox para tipos estáticos y validación en runtime, QModel para coerción y serialización, más `getSchema('typebox')` para exportar schemas.
+
+### [Effect Schema](/es/integrations/effect-schema-integration)
+
+Effect Schema para parseo y encoding declarativo en backends basados en Effect, QModel para coerción y validación de reglas de negocio, más `getSchema('effect-schema')` para exportar schemas.
+
 ## Otras Integraciones
 
 ### [Mobile (React Native / Capacitor)](/es/integrations/mobile-integration)

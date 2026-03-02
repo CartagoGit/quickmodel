@@ -21,7 +21,7 @@ describe('Transformation: Coercion Strategy', () => {
 			}
 
 			expect(() => {
-				User.create({ age: '25' } as any);
+				User.create({ age: '25' });
 			}).toThrow(/Expected number, got string/);
 		});
 
@@ -32,7 +32,7 @@ describe('Transformation: Coercion Strategy', () => {
 			}
 
 			expect(() => {
-				User.create({ name: 123 } as any);
+				User.create({ name: 123 });
 			}).toThrow(/Expected string, got number/);
 		});
 
@@ -43,7 +43,7 @@ describe('Transformation: Coercion Strategy', () => {
 			}
 
 			expect(() => {
-				User.create({ active: 'true' } as any);
+				User.create({ active: 'true' });
 			}).toThrow(/Expected boolean, got string/);
 		});
 	});
@@ -59,7 +59,7 @@ describe('Transformation: Coercion Strategy', () => {
 				declare age: number;
 			}
 
-			const user = User.create({ age: '25' } as any);
+			const user = User.create({ age: '25' });
 			expect(user.age).toBe(25);
 			expect(typeof user.age).toBe('number');
 		});
@@ -70,7 +70,7 @@ describe('Transformation: Coercion Strategy', () => {
 				declare name: string;
 			}
 
-			const user = User.create({ name: 123 } as any);
+			const user = User.create({ name: 123 });
 			expect(user.name).toBe('123');
 			expect(typeof user.name).toBe('string');
 		});
@@ -85,7 +85,7 @@ describe('Transformation: Coercion Strategy', () => {
 			const user = User.create({
 				active: 'true',
 				disabled: 'false',
-			} as any);
+			});
 			expect(user.active).toBe(true);
 			expect(user.disabled).toBe(false);
 		});
@@ -97,7 +97,7 @@ describe('Transformation: Coercion Strategy', () => {
 				declare disabled: boolean;
 			}
 
-			const user = User.create({ active: 1, disabled: 0 } as any);
+			const user = User.create({ active: 1, disabled: 0 });
 			expect(user.active).toBe(true);
 			expect(user.disabled).toBe(false);
 		});
@@ -109,7 +109,7 @@ describe('Transformation: Coercion Strategy', () => {
 			}
 
 			expect(() => {
-				User.create({ age: 'not_a_number' } as any);
+				User.create({ age: 'not_a_number' });
 				// "abc" -> NaN, logic should skip NaN
 			}).toThrow(/Expected number, got string/);
 		});
@@ -124,7 +124,7 @@ describe('Transformation: Coercion Strategy', () => {
 				declare age: number;
 			}
 
-			const user = User.create({ age: '25' } as any);
+			const user = User.create({ age: '25' });
 			expect(user.age).toBe(25);
 		});
 	});
@@ -148,7 +148,7 @@ describe('Transformation: Coercion Strategy', () => {
 					['valid', 'true'],
 					['invalid', 0],
 				], // 'true'->true, 0->false
-			} as any);
+			});
 
 			// Arrays work because there is a dedicated ArrayTransformer that delegates to Item Transformer
 			expect(data.counts).toEqual([1, 2, 3]);

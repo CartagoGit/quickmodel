@@ -7,6 +7,7 @@
  * Tests cover: default strip behavior, explicit policy overrides,
  * global config interaction, and functional behavior of each policy.
  */
+// @quickmodel-rule-ignore: no-as-unknown — intentional: testing unknown property policies requires passing extra fields not in IProduct
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { Quick, QModel, QConfig } from '@/index';
 
@@ -63,11 +64,13 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: 'should be gone',
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
 		expect(instance.price).toBe(9.99);
-		expect((instance as any).extra).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra']
+		).toBeUndefined();
 	});
 
 	test('strips unknown properties by default when no policy is set (new)', () => {
@@ -75,10 +78,12 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: 'should be gone',
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra']
+		).toBeUndefined();
 	});
 
 	test('strips multiple unknown properties by default', () => {
@@ -88,12 +93,18 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			extra1: 'gone',
 			extra2: 42,
 			extra3: { nested: true },
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra1).toBeUndefined();
-		expect((instance as any).extra2).toBeUndefined();
-		expect((instance as any).extra3).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra1']
+		).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra2']
+		).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra3']
+		).toBeUndefined();
 	});
 
 	// ── 2. Explicit 'strip' — same as default ─────────────────────────────
@@ -103,10 +114,12 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: true,
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra']
+		).toBeUndefined();
 	});
 
 	test('explicit strip removes unknown properties (new)', () => {
@@ -114,10 +127,12 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: true,
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra']
+		).toBeUndefined();
 	});
 
 	// ── 3. Explicit 'keep' preserves unknown properties ───────────────────
@@ -127,10 +142,12 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: true,
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra).toBe(true);
+		expect((instance as unknown as Record<string, unknown>)['extra']).toBe(
+			true
+		);
 	});
 
 	test('explicit keep preserves unknown properties (new)', () => {
@@ -138,10 +155,12 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: true,
-		} as any);
+		} as unknown as IProduct);
 
 		expect(instance.name).toBe('Widget');
-		expect((instance as any).extra).toBe(true);
+		expect((instance as unknown as Record<string, unknown>)['extra']).toBe(
+			true
+		);
 	});
 
 	// ── 4. Explicit 'error' throws on unknown properties ──────────────────
@@ -152,7 +171,7 @@ describe('unknownPropertyPolicy — default is strip', () => {
 				name: 'Widget',
 				price: 9.99,
 				extra: true,
-			} as any)
+			} as unknown as IProduct)
 		).toThrow();
 	});
 
@@ -163,7 +182,7 @@ describe('unknownPropertyPolicy — default is strip', () => {
 					name: 'Widget',
 					price: 9.99,
 					extra: true,
-				} as any)
+				} as unknown as IProduct)
 		).toThrow();
 	});
 
@@ -182,9 +201,11 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: 'kept by global',
-		} as any);
+		} as unknown as IProduct);
 
-		expect((instance as any).extra).toBe('kept by global');
+		expect((instance as unknown as Record<string, unknown>)['extra']).toBe(
+			'kept by global'
+		);
 	});
 
 	test('global config strip is consistent with the default', () => {
@@ -194,9 +215,11 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: 'gone',
-		} as any);
+		} as unknown as IProduct);
 
-		expect((instance as any).extra).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra']
+		).toBeUndefined();
 	});
 
 	test('global config error throws on unknown properties', () => {
@@ -213,7 +236,7 @@ describe('unknownPropertyPolicy — default is strip', () => {
 				name: 'Widget',
 				price: 9.99,
 				extra: 'fail',
-			} as any)
+			} as unknown as IProduct)
 		).toThrow();
 	});
 
@@ -226,9 +249,11 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: 'decorator wins',
-		} as any);
+		} as unknown as IProduct);
 
-		expect((instance as any).extra).toBe('decorator wins');
+		expect((instance as unknown as Record<string, unknown>)['extra']).toBe(
+			'decorator wins'
+		);
 	});
 
 	test('decorator strip overrides global keep config', () => {
@@ -238,9 +263,11 @@ describe('unknownPropertyPolicy — default is strip', () => {
 			name: 'Widget',
 			price: 9.99,
 			extra: 'still gone',
-		} as any);
+		} as unknown as IProduct);
 
-		expect((instance as any).extra).toBeUndefined();
+		expect(
+			(instance as unknown as Record<string, unknown>)['extra']
+		).toBeUndefined();
 	});
 
 	// ── 7. Known properties are never stripped ────────────────────────────

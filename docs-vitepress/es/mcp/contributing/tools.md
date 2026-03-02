@@ -31,8 +31,9 @@ Coordina el trabajo de agentes paralelos y previene conflictos de archivos. Cada
 
 1. El agente llama a `claim` → declara qué archivos va a tocar → se almacena en `tmp/agent-registry.json`
 2. Otro agente que llame a `claim` con archivos solapados recibe `conflict: true` inmediatamente
-3. El agente llama a `release` al terminar → su entrada se elimina del registro
-4. Si un agente crashea sin liberar, su entrada expira automáticamente en 5 min (TTL)
+3. **Antes de modificar cada archivo**, lee su contenido actual del disco — el contexto puede estar obsoleto si otro agente lo editó mientras tu ventana estaba cargada. Adapta, fusiona o salta el cambio si el archivo se modificó. Nunca sobreescribas desde un contexto obsoleto.
+4. El agente llama a `release` al terminar → su entrada se elimina del registro
+5. Si un agente crashea sin liberar, su entrada expira automáticamente en 5 min (TTL)
 
 ### Mecanismos de seguridad
 

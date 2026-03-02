@@ -344,7 +344,7 @@ describe('CompleteModel - All Supported Types', () => {
 	describe('9. JSON round-trip (toJSON / fromJSON)', () => {
 		test('should produce valid JSON and restore instance with correct types', () => {
 			const model = new CompleteModel(testData);
-			const json = model.toJSON();
+			const json = model.$qToJSON();
 			expect(typeof json).toBe('string');
 			expect(() => JSON.parse(json)).not.toThrow();
 			const model2 = CompleteModel.fromJSON(json);

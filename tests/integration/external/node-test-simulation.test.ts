@@ -98,6 +98,18 @@ const assertQModel = {
 		const result = quickmodelMatchers.toHaveDirtyField(instance, field);
 		if (result.pass) throw new AssertionError(result.message());
 	},
+
+	/** Alias for `isValid` — preferred `$q*` API in test descriptions. */
+	$qIsValid(instance: object): void {
+		const result = quickmodelMatchers.toBeValidQModel(instance);
+		if (!result.pass) throw new AssertionError(result.message());
+	},
+
+	/** Alias for `isDirty` — preferred `$q*` API in test descriptions. */
+	$qIsDirty(instance: object, field: string): void {
+		const result = quickmodelMatchers.toHaveDirtyField(instance, field);
+		if (!result.pass) throw new AssertionError(result.message());
+	},
 };
 
 class AssertionError extends Error {

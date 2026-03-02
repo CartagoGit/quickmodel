@@ -1042,8 +1042,9 @@ export class Serializer<
 		if (
 			typeof value === 'object' &&
 			value !== null &&
-			'serialize' in value &&
-			typeof value.serialize === 'function'
+			('$qSerialize' in value || 'serialize' in value) &&
+			typeof (value as { $qSerialize?: unknown }).$qSerialize ===
+				'function'
 		) {
 			const visited = seen || new WeakSet<object>();
 
@@ -1063,6 +1064,40 @@ export class Serializer<
 			} else {
 				// Custom serializable (e.g. hand-written serialize() method):
 				// propagate all parent options, only increment depth.
+				childOptions = {
+					...options,
+					_depth: depth + 1,
+				};
+			}
+
+			return (
+				value as {
+					$qSerialize: (
+						s?: WeakSet<object>,
+						o?: IQSerializationOptions
+					) => unknown;
+				}
+			).$qSerialize(visited, childOptions);
+		}
+
+		// Nested model (legacy: objects with only serialize(), not $qSerialize())
+		if (
+			typeof value === 'object' &&
+			value !== null &&
+			'serialize' in value &&
+			!('$qSerialize' in value) &&
+			typeof value.serialize === 'function'
+		) {
+			const visited = seen || new WeakSet<object>();
+
+			let childOptions: IQSerializationOptions;
+			if (_isQModelCtor(value.constructor)) {
+				childOptions = {
+					_depth: depth + 1,
+					includeUnderscore: options?.includeUnderscore,
+					includeDoubleUnderscore: options?.includeDoubleUnderscore,
+				};
+			} else {
 				childOptions = {
 					...options,
 					_depth: depth + 1,

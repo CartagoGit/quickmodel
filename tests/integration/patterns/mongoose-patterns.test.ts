@@ -12,7 +12,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Simulated Mongoose document shapes
@@ -347,7 +348,7 @@ describe('Mongoose repository pattern with QModel layer', () => {
 		}
 
 		async save(dto: CreateUserDto): Promise<UserDto> {
-			const { valid, errors } = qCheckRules(dto);
+			const { valid, errors } = $qCheckRules(dto);
 			if (!valid) throw new Error(errors[0]?.message);
 			const doc = await this.model.create({
 				_id: new ObjectId(),
@@ -642,8 +643,8 @@ describe('async validation before Mongoose Model.create()', () => {
 			role: 'user',
 		});
 
-		expect((await qCheckRulesAsync(available)).valid).toBe(true);
-		const dupResult = await qCheckRulesAsync(duplicate);
+		expect((await $qCheckRulesAsync(available)).valid).toBe(true);
+		const dupResult = await $qCheckRulesAsync(duplicate);
 		expect(dupResult.valid).toBe(false);
 		expect(dupResult.errors[0]?.field).toBe('email');
 	});

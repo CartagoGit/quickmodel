@@ -60,7 +60,7 @@ describe('Unit: BigInt Transformer', () => {
 			balance: '123456789012345678901234567890',
 		});
 
-		const json = account1.toJSON();
+		const json = account1.$qToJSON();
 		const account2 = Account.fromJSON(json);
 
 		expect(account2.balance).toBe(account1.balance);

@@ -42,7 +42,7 @@ describe('Robustness: Invalid Data Handling', () => {
 		);
 
 		// And preserved in serialization
-		const json = user.toJSON();
+		const json = JSON.stringify(user);
 		expect(json).toContain('"extraField":"Hack"');
 	});
 });

@@ -68,7 +68,7 @@ describe('IntegrityService', () => {
 	describe('checkIntegrity() — basic', () => {
 		it('returns [] for a model instance with no typed fields', () => {
 			const inst = new PlainModel({ name: 'Alice', age: 30 });
-			const errs = svc.$qCheckIntegrity(
+			const errs = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: PlainModel }
 			);
@@ -77,7 +77,7 @@ describe('IntegrityService', () => {
 
 		it('returns [] when typed Date field holds a valid Date', () => {
 			const inst = new DateModel({ createdAt: new Date('2024-01-01') });
-			const errs = svc.$qCheckIntegrity(
+			const errs = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: DateModel }
 			);
@@ -90,7 +90,7 @@ describe('IntegrityService', () => {
 			// Direct assignment to simulate a value that bypasses coercion
 			(inst as unknown as Record<string, unknown>).createdAt = // @quickmodel-rule-ignore: no-as-unknown
 				'not-a-date';
-			const errs = svc.$qCheckIntegrity(
+			const errs = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: DateModel }
 			);
@@ -100,7 +100,7 @@ describe('IntegrityService', () => {
 
 		it('infers modelClass from instance.constructor when omitted', () => {
 			const inst = new DateModel({ createdAt: new Date() });
-			const errs = svc.$qCheckIntegrity(
+			const errs = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
 			);
 			expect(errs).toEqual([]);
@@ -113,7 +113,7 @@ describe('IntegrityService', () => {
 		it('returns true when all typed fields are valid', () => {
 			const inst = new DateModel({ createdAt: new Date() });
 			expect(
-				svc.$qIsValid(
+				svc.isValid(
 					inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 					DateModel
 				)
@@ -124,7 +124,7 @@ describe('IntegrityService', () => {
 			const inst = new DateModel({ createdAt: new Date() });
 			(inst as unknown as Record<string, unknown>).createdAt = 'bad'; // @quickmodel-rule-ignore: no-as-unknown
 			expect(
-				svc.$qIsValid(
+				svc.isValid(
 					inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 					DateModel
 				)
@@ -144,7 +144,7 @@ describe('IntegrityService', () => {
 			(inst as unknown as Record<string, unknown>).createdAt = 'bad-date'; // @quickmodel-rule-ignore: no-as-unknown
 			(inst as unknown as Record<string, unknown>).balance = 'bad-bigint'; // @quickmodel-rule-ignore: no-as-unknown
 
-			const errs = svc.$qCheckIntegrity(
+			const errs = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
@@ -167,7 +167,7 @@ describe('IntegrityService', () => {
 			(inst as unknown as Record<string, unknown>).createdAt = 'bad-date'; // @quickmodel-rule-ignore: no-as-unknown
 			(inst as unknown as Record<string, unknown>).balance = 'bad-bigint'; // @quickmodel-rule-ignore: no-as-unknown
 
-			const errs = fastSvc.$qCheckIntegrity(
+			const errs = fastSvc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
@@ -187,7 +187,7 @@ describe('IntegrityService', () => {
 			(inst as unknown as Record<string, unknown>).balance = 'bad'; // @quickmodel-rule-ignore: no-as-unknown
 
 			// First call: default strategy (accumulate) — should collect ≥1 error
-			const before = svc.$qCheckIntegrity(
+			const before = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
@@ -198,7 +198,7 @@ describe('IntegrityService', () => {
 			});
 
 			// Second call on same instance/class — cache must have been invalidated
-			const after = svc.$qCheckIntegrity(
+			const after = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: MultiModel }
 			);
@@ -217,9 +217,9 @@ describe('IntegrityService', () => {
 			const inst = new DateModel({ createdAt: new Date() });
 			const raw = inst as unknown as Record<string, unknown>; // @quickmodel-rule-ignore: no-as-unknown
 
-			const first = svc.$qCheckIntegrity(raw, { modelClass: DateModel });
-			const second = svc.$qCheckIntegrity(raw, { modelClass: DateModel });
-			const third = svc.$qCheckIntegrity(raw, { modelClass: DateModel });
+			const first = svc.checkIntegrity(raw, { modelClass: DateModel });
+			const second = svc.checkIntegrity(raw, { modelClass: DateModel });
+			const third = svc.checkIntegrity(raw, { modelClass: DateModel });
 
 			expect(first).toEqual(second);
 			expect(second).toEqual(third);
@@ -229,11 +229,11 @@ describe('IntegrityService', () => {
 			const dateInst = new DateModel({ createdAt: new Date() });
 			const plainInst = new PlainModel({ name: 'Bob', age: 25 });
 
-			const dateErrs = svc.$qCheckIntegrity(
+			const dateErrs = svc.checkIntegrity(
 				dateInst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: DateModel }
 			);
-			const plainErrs = svc.$qCheckIntegrity(
+			const plainErrs = svc.checkIntegrity(
 				plainInst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{ modelClass: PlainModel }
 			);
@@ -252,7 +252,7 @@ describe('IntegrityService', () => {
 			const seen = new WeakSet<object>();
 			seen.add(raw); // pre-mark as already visited
 
-			const errs = svc.$qCheckIntegrity(raw, {
+			const errs = svc.checkIntegrity(raw, {
 				modelClass: PlainModel,
 				ctx: { seen, depth: 0 },
 			});
@@ -261,7 +261,7 @@ describe('IntegrityService', () => {
 
 		it('returns error when MAX_DEPTH is exceeded', () => {
 			const inst = new PlainModel({ name: 'deep', age: 1 });
-			const errs = svc.$qCheckIntegrity(
+			const errs = svc.checkIntegrity(
 				inst as unknown as Record<string, unknown>, // @quickmodel-rule-ignore: no-as-unknown
 				{
 					modelClass: PlainModel,

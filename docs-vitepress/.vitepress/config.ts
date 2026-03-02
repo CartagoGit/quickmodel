@@ -548,9 +548,15 @@ export default defineConfig({
 									text: 'Contribution Guide',
 									link: '/en/guide/contributing',
 								},
+							],
+						},
+						{
+							text: 'Design Notes',
+							link: '/en/guide/naming-conventions',
+							items: [
 								{
-									text: 'Semantic Release',
-									link: '/en/guide/releasing',
+									text: 'Naming Conventions (IQ, Q, $q)',
+									link: '/en/guide/naming-conventions',
 								},
 							],
 						},
@@ -671,6 +677,48 @@ export default defineConfig({
 								{
 									text: 'TanStack Query',
 									link: '/en/integrations/tanstack-query-integration',
+								},
+							],
+						},
+						{
+							text: 'Schema Formats',
+							items: [
+								{
+									text: 'JSON Schema',
+									link: '/en/integrations/json-schema-integration',
+								},
+								{
+									text: 'TypeScript Interface',
+									link: '/en/integrations/typescript-schema-integration',
+								},
+							],
+						},
+						{
+							text: 'Validation Libraries',
+							items: [
+								{
+									text: 'Zod',
+									link: '/en/integrations/zod-integration',
+								},
+								{
+									text: 'Valibot',
+									link: '/en/integrations/valibot-integration',
+								},
+								{
+									text: 'Yup',
+									link: '/en/integrations/yup-integration',
+								},
+								{
+									text: 'AJV',
+									link: '/en/integrations/ajv-integration',
+								},
+								{
+									text: 'TypeBox',
+									link: '/en/integrations/typebox-integration',
+								},
+								{
+									text: 'Effect Schema',
+									link: '/en/integrations/effect-schema-integration',
 								},
 							],
 						},
@@ -994,9 +1042,15 @@ export default defineConfig({
 									text: 'Guía de Contribución',
 									link: '/es/guide/contributing',
 								},
+							],
+						},
+						{
+							text: 'Información Adicional',
+							link: '/es/guide/naming-conventions',
+							items: [
 								{
-									text: 'Semantic Release',
-									link: '/es/guide/releasing',
+									text: 'Convenciones de Nombrado (IQ, Q, $q)',
+									link: '/es/guide/naming-conventions',
 								},
 							],
 						},
@@ -1117,6 +1171,48 @@ export default defineConfig({
 								{
 									text: 'TanStack Query',
 									link: '/es/integrations/tanstack-query-integration',
+								},
+							],
+						},
+						{
+							text: 'Formatos de Schema',
+							items: [
+								{
+									text: 'JSON Schema',
+									link: '/es/integrations/json-schema-integration',
+								},
+								{
+									text: 'Interfaz TypeScript',
+									link: '/es/integrations/typescript-schema-integration',
+								},
+							],
+						},
+						{
+							text: 'Librerías de Validación',
+							items: [
+								{
+									text: 'Zod',
+									link: '/es/integrations/zod-integration',
+								},
+								{
+									text: 'Valibot',
+									link: '/es/integrations/valibot-integration',
+								},
+								{
+									text: 'Yup',
+									link: '/es/integrations/yup-integration',
+								},
+								{
+									text: 'AJV',
+									link: '/es/integrations/ajv-integration',
+								},
+								{
+									text: 'TypeBox',
+									link: '/es/integrations/typebox-integration',
+								},
+								{
+									text: 'Effect Schema',
+									link: '/es/integrations/effect-schema-integration',
 								},
 							],
 						},

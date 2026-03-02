@@ -278,7 +278,7 @@ describe('$qToJSON()', () => {
 		const col = makeCollection();
 		const json = col.$qToJSON();
 		expect(typeof json).toBe('string');
-		const parsed = JSON.parse(json) as unknown[];
+		const parsed = JSON.parse(json) as unknown[]; // @quickmodel-rule-ignore: no-as-unknown
 		expect(Array.isArray(parsed)).toBe(true);
 		expect(parsed.length).toBe(3);
 	});
@@ -335,7 +335,7 @@ describe('Getter $qm eliminado de QModelCollection', () => {
 		const col = makeCollection();
 		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
-			(col as unknown as Record<string, unknown>)['$qm']
+			(col as unknown as Record<string, unknown>)['$qm'] // @quickmodel-rule-ignore: no-as-unknown
 		).toBeUndefined();
 	});
 });

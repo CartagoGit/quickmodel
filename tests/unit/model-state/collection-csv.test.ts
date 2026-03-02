@@ -1,5 +1,5 @@
 /**
- * TDD Tests: QModelCollection.toCSV()
+ * TDD Tests: QModelCollection.$qToCSV()
  * Propuesta U — exportación CSV desde colecciones tipadas.
  */
 import { describe, it, expect } from 'bun:test';
@@ -31,10 +31,10 @@ const SEED = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('QModelCollection.toCSV() — formato básico', () => {
+describe('QModelCollection.$qToCSV() — formato básico', () => {
 	it('genera CSV con headers por defecto', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV();
+		const csv = col.$qToCSV();
 		const lines = csv.split('\n');
 		expect(lines[0]).toBe('id,name,price,active,tags');
 		expect(lines).toHaveLength(4); // header + 3 filas
@@ -42,7 +42,7 @@ describe('QModelCollection.toCSV() — formato básico', () => {
 
 	it('genera una fila por instancia', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const lines = col.toCSV().split('\n');
+		const lines = col.$qToCSV().split('\n');
 		expect(lines[1]).toContain('Widget');
 		expect(lines[2]).toContain('Gadget');
 		expect(lines[3]).toContain('Gizmo');
@@ -50,39 +50,39 @@ describe('QModelCollection.toCSV() — formato básico', () => {
 
 	it('devuelve string vacío si la colección está vacía (includeHeaders: false)', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		const csv = col.toCSV({ includeHeaders: false });
+		const csv = col.$qToCSV({ includeHeaders: false });
 		expect(csv).toBe('');
 	});
 
 	it('devuelve solo el header si la colección está vacía y includeHeaders: true', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		const csv = col.toCSV({ includeHeaders: true });
+		const csv = col.$qToCSV({ includeHeaders: true });
 		// sin datos aún produce el header si hay fields a mostrar
 		// pero sin datos no hay forma de saber los campos → string vacío
 		expect(typeof csv).toBe('string');
 	});
 });
 
-describe('QModelCollection.toCSV() — opciones: delimiter', () => {
+describe('QModelCollection.$qToCSV() — opciones: delimiter', () => {
 	it('usa ";" como delimitador cuando se especifica', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV({ delimiter: ';' });
+		const csv = col.$qToCSV({ delimiter: ';' });
 		const firstLine = csv.split('\n')[0];
 		expect(firstLine).toBe('id;name;price;active;tags');
 	});
 
 	it('usa "\\t" como delimitador (TSV)', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV({ delimiter: '\t' });
+		const csv = col.$qToCSV({ delimiter: '\t' });
 		const firstLine = csv.split('\n')[0];
 		expect(firstLine).toContain('\t');
 	});
 });
 
-describe('QModelCollection.toCSV() — opciones: includeHeaders', () => {
+describe('QModelCollection.$qToCSV() — opciones: includeHeaders', () => {
 	it('omite la línea de headers cuando includeHeaders: false', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV({ includeHeaders: false });
+		const csv = col.$qToCSV({ includeHeaders: false });
 		const lines = csv.split('\n');
 		// Sin header, hay exactamente 3 líneas de datos (SEED tiene 3 items)
 		expect(lines).toHaveLength(3);
@@ -93,15 +93,15 @@ describe('QModelCollection.toCSV() — opciones: includeHeaders', () => {
 
 	it('incluye la línea de headers cuando includeHeaders: true (por defecto)', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV({ includeHeaders: true });
+		const csv = col.$qToCSV({ includeHeaders: true });
 		expect(csv.split('\n')[0]).toBe('id,name,price,active,tags');
 	});
 });
 
-describe('QModelCollection.toCSV() — opciones: fields', () => {
+describe('QModelCollection.$qToCSV() — opciones: fields', () => {
 	it('exporta solo los campos especificados en el orden indicado', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV({ fields: ['name', 'price'] });
+		const csv = col.$qToCSV({ fields: ['name', 'price'] });
 		const lines = csv.split('\n');
 		expect(lines[0]).toBe('name,price');
 		expect(lines[1]).toBe('Widget,9.99');
@@ -109,17 +109,17 @@ describe('QModelCollection.toCSV() — opciones: fields', () => {
 
 	it('respeta el orden de fields aunque difiera del orden de serialización', () => {
 		const col = QModelCollection.from(ProductModel, SEED);
-		const csv = col.toCSV({ fields: ['price', 'id'] });
+		const csv = col.$qToCSV({ fields: ['price', 'id'] });
 		expect(csv.split('\n')[0]).toBe('price,id');
 	});
 });
 
-describe('QModelCollection.toCSV() — escape de valores', () => {
+describe('QModelCollection.$qToCSV() — escape de valores', () => {
 	it('envuelve en comillas valores que contienen la coma del delimitador', () => {
 		const col = QModelCollection.from(ProductModel, [
 			{ id: 1, name: 'Hello, World', price: 1, active: true, tags: '' },
 		]);
-		const csv = col.toCSV();
+		const csv = col.$qToCSV();
 		expect(csv).toContain('"Hello, World"');
 	});
 
@@ -127,7 +127,7 @@ describe('QModelCollection.toCSV() — escape de valores', () => {
 		const col = QModelCollection.from(ProductModel, [
 			{ id: 1, name: 'Line\nBreak', price: 1, active: true, tags: '' },
 		]);
-		const csv = col.toCSV();
+		const csv = col.$qToCSV();
 		expect(csv).toContain('"Line\nBreak"');
 	});
 
@@ -135,12 +135,12 @@ describe('QModelCollection.toCSV() — escape de valores', () => {
 		const col = QModelCollection.from(ProductModel, [
 			{ id: 1, name: 'Say "Hi"', price: 1, active: true, tags: '' },
 		]);
-		const csv = col.toCSV();
+		const csv = col.$qToCSV();
 		expect(csv).toContain('"Say ""Hi"""');
 	});
 });
 
-describe('QModelCollection.toCSV() — nullValue', () => {
+describe('QModelCollection.$qToCSV() — nullValue', () => {
 	it('sustituye null/undefined por la cadena nullValue indicada', () => {
 		interface IPartial {
 			id: number;
@@ -154,7 +154,7 @@ describe('QModelCollection.toCSV() — nullValue', () => {
 		const col = QModelCollection.from(PartialModel, [
 			{ id: 1, name: undefined as unknown as string }, // @quickmodel-rule-ignore: no-as-unknown
 		]);
-		const csv = col.toCSV({ nullValue: 'N/A', fields: ['id', 'name'] });
+		const csv = col.$qToCSV({ nullValue: 'N/A', fields: ['id', 'name'] });
 		expect(csv.split('\n')[1]).toBe('1,N/A');
 	});
 
@@ -171,7 +171,7 @@ describe('QModelCollection.toCSV() — nullValue', () => {
 		const col = QModelCollection.from(PartialModel2, [
 			{ id: 1, name: undefined as unknown as string }, // @quickmodel-rule-ignore: no-as-unknown
 		]);
-		const csv = col.toCSV({ fields: ['id', 'name'] });
+		const csv = col.$qToCSV({ fields: ['id', 'name'] });
 		expect(csv.split('\n')[1]).toBe('1,');
 	});
 });

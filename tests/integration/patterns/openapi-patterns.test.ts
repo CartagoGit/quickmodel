@@ -441,7 +441,7 @@ describe('Static vs instance getSchema()', () => {
 			age: 25,
 			role: 'user',
 		});
-		const instanceSchema = dto.getSchema('openapi');
+		const instanceSchema = dto.$qGetSchema('openapi');
 		const staticSchema = CreateUserDto.getSchema('openapi');
 		// Both should have the same property keys
 		expect(

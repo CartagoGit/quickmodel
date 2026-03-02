@@ -198,10 +198,12 @@ describe('Integration: Vue Reactivity Simulation', () => {
 			});
 			const reactiveUser = createVueReactive(user, tracker);
 
-			// NOTE: QModel.toJSON() already returns a JSON string, so calling
-			// JSON.stringify(proxy) would double-encode it (that's the toJSON() contract).
-			// The idiomatic serialization through a reactive proxy is:
-			//   JSON.stringify(proxy.serialize()) — uses the plain-object form
+			// toJSON() follows the JS protocol: returns the plain serialized object,
+			// so JSON.stringify(proxy) works correctly without double-encoding.
+			// For explicit string output, use $qToJSON() or JSON.stringify().
+			// The idiomatic serialization through a reactive proxy is either:
+			//   JSON.stringify(proxy)          — via the toJSON() protocol
+			//   JSON.stringify(proxy.$qSerialize()) — explicit plain-object form
 			const str = JSON.stringify(reactiveUser.$qSerialize());
 			const parsed = JSON.parse(str) as IUser;
 

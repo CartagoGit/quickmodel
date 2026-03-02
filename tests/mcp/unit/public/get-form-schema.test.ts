@@ -70,11 +70,11 @@ describe('QGetFormSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode });
 
 		const nameEntry = result.schema.find(
-			(entry: any) => entry.field === 'name'
-		) as any;
+			(entry: Record<string, unknown>) => entry['field'] === 'name'
+		) as Record<string, unknown>;
 		const ageEntry = result.schema.find(
-			(entry: any) => entry.field === 'age'
-		) as any;
+			(entry: Record<string, unknown>) => entry['field'] === 'age'
+		) as Record<string, unknown>;
 
 		expect(nameEntry?.required).toBe(true);
 		expect(ageEntry?.required).toBeFalsy();
@@ -85,8 +85,8 @@ describe('QGetFormSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode });
 
 		const emailEntry = result.schema.find(
-			(entry: any) => entry.field === 'email'
-		) as any;
+			(entry: Record<string, unknown>) => entry['field'] === 'email'
+		) as Record<string, unknown>;
 		expect(emailEntry?.hint).toBeDefined();
 	});
 
@@ -96,7 +96,7 @@ describe('QGetFormSchemaTool', () => {
 
 		expect(result.schema).toBeArray();
 		// Each element should have group and fields properties
-		const first = result.schema[0] as any;
+		const first = result.schema[0] as Record<string, unknown>;
 		expect(first).toHaveProperty('group');
 		expect(first).toHaveProperty('fields');
 		expect(first.fields).toBeArray();
@@ -149,9 +149,9 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare category: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.widget).toBe('select');
-		expect(entry.label).toBe('Pick one');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['widget']).toBe('select');
+		expect(entry['label']).toBe('Pick one');
 	});
 
 	it('parses widget and label with double quotes', async () => {
@@ -160,9 +160,9 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare body: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.widget).toBe('textarea');
-		expect(entry.label).toBe('Your Message');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['widget']).toBe('textarea');
+		expect(entry['label']).toBe('Your Message');
 	});
 
 	it('parses required: true (boolean literal)', async () => {
@@ -171,8 +171,8 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare name: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.required).toBe(true);
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['required']).toBe(true);
 	});
 
 	it('parses required: false (boolean literal)', async () => {
@@ -181,8 +181,8 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare opt: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.required).toBe(false);
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['required']).toBe(false);
 	});
 
 	it('parses placeholder field', async () => {
@@ -191,8 +191,8 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare email: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.placeholder).toBe('user@example.com');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['placeholder']).toBe('user@example.com');
 	});
 
 	it('parses inputType field', async () => {
@@ -201,8 +201,8 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare email: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.inputType).toBe('email');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['inputType']).toBe('email');
 	});
 
 	it('uses input as default widget when widget is omitted', async () => {
@@ -211,9 +211,9 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare field: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.widget).toBe('input');
-		expect(entry.label).toBe('No Widget');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['widget']).toBe('input');
+		expect(entry['label']).toBe('No Widget');
 	});
 
 	it('parses label with special characters (spaces, hyphens, slashes)', async () => {
@@ -222,8 +222,8 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare name: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.label).toBe('First / Last-Name');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['label']).toBe('First / Last-Name');
 	});
 
 	it('parses hint with special characters', async () => {
@@ -232,8 +232,8 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
       declare url: string;
     }`;
 		const { schema } = await tool.execute({ code });
-		const entry = schema[0] as any;
-		expect(entry.hint).toBe('e.g. https://example.com');
+		const entry = schema[0] as Record<string, unknown>;
+		expect(entry['hint']).toBe('e.g. https://example.com');
 	});
 
 	it('correctly handles multiple distinct fields in same class', async () => {
@@ -246,12 +246,14 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
 		const { schema, count } = await tool.execute({ code });
 		expect(count).toBe(2);
 		const alpha = schema.find(
-			(entry: any) => entry.field === 'alpha'
-		) as any;
-		const beta = schema.find((entry: any) => entry.field === 'beta') as any;
-		expect(alpha.widget).toBe('input');
-		expect(alpha.required).toBe(true);
-		expect(beta.widget).toBe('number');
-		expect(beta.required).toBe(false);
+			(entry: Record<string, unknown>) => entry['field'] === 'alpha'
+		) as Record<string, unknown>;
+		const beta = schema.find(
+			(entry: Record<string, unknown>) => entry['field'] === 'beta'
+		) as Record<string, unknown>;
+		expect(alpha['widget']).toBe('input');
+		expect(alpha['required']).toBe(true);
+		expect(beta['widget']).toBe('number');
+		expect(beta['required']).toBe(false);
 	});
 });

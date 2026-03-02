@@ -5,11 +5,11 @@
  * - `IQSerializer<TModel, TInterface>` — converts a model instance to its JSON-compatible form.
  * - `IQDeserializer<TInterface, TModel>` — converts a plain object / JSON string to a model instance.
  *
- * @see {@link QModel.serialize} — the public method that accepts `IQSerializationOptions`
+ * @see {@link QModel.$qSerialize} — the public method that accepts `IQSerializationOptions`
  * @see {@link Serializer} — concrete implementation of `IQSerializer`
  * @see {@link Deserializer} — concrete implementation of `IQDeserializer`
  *
- * @see {@link QModel.serialize} — primary consumer of `IQSerializer`
+ * @see {@link QModel.$qSerialize} — primary consumer of `IQSerializer`
  * @see {@link QModel.create} — primary consumer of `IQDeserializer`
  * @module core/interfaces/serializer.interface
  */

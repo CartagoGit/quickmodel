@@ -5,8 +5,8 @@
  * This class follows SOLID principles:
  * - **Single Responsibility**: Only handles model type integrity checks
  *
- * @see {@link QModel.checkIntegrity} — public entry-point that delegates to this service
- * @see {@link QModel.hasIntegrity} — boolean shortcut over `checkIntegrity()`
+ * @see {@link QModel.$qCheckIntegrity} — public entry-point that delegates to this service
+ * @see {@link QModel.$qHasIntegrity} — boolean shortcut over `$qCheckIntegrity()`
  * @see {@link QTransformerRegistry} — custom transformers consulted during checks
  * @see {@link IQIntegrityResult} — shape of each error entry returned
  *
@@ -290,7 +290,7 @@ export class IntegrityService {
 	 *
 	 * @see {@link IntegrityService.isValid} — boolean shortcut wrapping this method
 	 * @see {@link IQIntegrityResult} — shape of each error entry returned
-	 * @see {@link QModel.checkIntegrity} — public API that delegates here
+	 * @see {@link QModel.$qCheckIntegrity} — public API that delegates here
 	 *
 	 * @example
 	 * ```typescript
@@ -440,14 +440,14 @@ export class IntegrityService {
 			}
 
 			// RECURSIVE INTEGRITY CHECK for Nested Models
-			// Checks if the value itself is checkable (has a checkIntegrity method)
+			// Checks if the value itself is checkable (has a $qCheckIntegrity method)
 			if (value) {
 				// 1. Single Nested Model
 				if (
 					typeof value === 'object' &&
-					'checkIntegrity' in value &&
+					'$qCheckIntegrity' in value &&
 					typeof (value as Record<string, unknown>)[
-						'checkIntegrity'
+						'$qCheckIntegrity'
 					] === 'function'
 				) {
 					try {

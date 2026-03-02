@@ -190,7 +190,7 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 		}
 
 		const instance = new DynamicModel(data);
-		const result = await instance.checkRulesAsync(options);
+		const result = await instance.$qCheckRulesAsync(options);
 
 		return {
 			valid: result.valid,

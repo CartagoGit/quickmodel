@@ -98,8 +98,7 @@ describe('Feature: Custom Transformers via Registry', () => {
 		expect(product.price.currency).toBe('USD_TRANSFORMED'); // Modified by transformer
 
 		// Serialization check
-		const jsonString = product.toJSON();
-		const json = JSON.parse(jsonString);
+		const json = product.toJSON();
 		expect(json.price).toEqual({
 			amount: 1000,
 			currency: 'USD_TRANSFORMED',

@@ -1,7 +1,7 @@
 // @quickmodel-rule-ignore: no-as-unknown  14 test file intentionally passes wrong types to verify edge-case handling
 import { describe, expect, test } from 'bun:test';
 
-import { qCheckRules } from '@/forms';
+import { $qCheckRules } from '@/forms';
 
 import type { IBenchResult } from '../bench.types';
 import {
@@ -81,13 +81,13 @@ export function describeBench(): void {
 			expect(res.totalMs).toBeLessThan(15_000);
 		});
 
-		test('QuickModel — qCheckRules() con @QRule por campo ✅', () => {
+		test('QuickModel — $qCheckRules() con @QRule por campo ✅', () => {
 			const form = Object.assign(new SignupForm(), validSignupData);
 			const res = runBench(
 				'Benchmark 8: QuickModel @QRule',
 				ITERS,
 				() => {
-					qCheckRules(form);
+					$qCheckRules(form);
 				}
 			);
 			expect(res.totalMs).toBeLessThan(15_000);
@@ -157,7 +157,7 @@ export function describeBench(): void {
 			const form = Object.assign(new SignupForm(), validSignupData);
 			allResults.push(
 				runBench('Benchmark 8: QuickModel @QRule', ITERS, () => {
-					qCheckRules(form);
+					$qCheckRules(form);
 				})
 			);
 

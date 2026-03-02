@@ -84,7 +84,7 @@ describe('@Quick() excludeFields option', () => {
 				token: 'xyz',
 				cache: [],
 			} as any);
-			const json = JSON.parse(session.toJSON());
+			const json = session.toJSON();
 			expect(json).not.toHaveProperty('cache');
 			expect(json).toMatchObject({ id: 'abc', token: 'xyz' });
 		});
@@ -106,7 +106,7 @@ describe('@Quick() excludeFields option', () => {
 				password: 'secret',
 				internalMeta: 'debug',
 			});
-			const json = JSON.parse(account.toJSON());
+			const json = account.toJSON();
 			expect(json).not.toHaveProperty('password');
 			expect(json).not.toHaveProperty('internalMeta');
 			expect(json).toMatchObject({ id: 1, name: 'Alice' });
@@ -119,14 +119,14 @@ describe('@Quick() excludeFields option', () => {
 				password: 'secret',
 				internalMeta: 'debug',
 			});
-			const result = account.$qSerialize() as any;
+			const result = account.$qSerialize();
 			expect(result.id).toBe(42);
 			expect(result.name).toBe('Bob');
 		});
 
 		test('works when excluded field is also a transformed type', () => {
 			const product = new Product({ id: 'p1', price: '9999' });
-			const json = JSON.parse(product.toJSON());
+			const json = product.toJSON();
 			expect(json).not.toHaveProperty('price');
 			expect(json).toMatchObject({ id: 'p1' });
 		});
@@ -159,7 +159,7 @@ describe('@Quick() excludeFields option', () => {
 	describe('models without excludeFields are unaffected', () => {
 		test('all fields appear when no excludeFields is set', () => {
 			const model = new PlainModel({ numItem: 5, internal: 'data' });
-			const json = JSON.parse(model.toJSON());
+			const json = model.toJSON();
 			expect(json).toMatchObject({ numItem: 5, internal: 'data' });
 		});
 	});
@@ -175,7 +175,7 @@ describe('@Quick() excludeFields option', () => {
 			// password already excluded by decorator; also omit 'name' at runtime
 			const result = account.$qSerialize(undefined, {
 				omit: ['name'],
-			}) as any;
+			});
 			expect(result).not.toHaveProperty('password');
 			expect(result).not.toHaveProperty('internalMeta');
 			expect(result).not.toHaveProperty('name');

@@ -3,7 +3,7 @@
  *
  * These types correctly map TypeScript types to their IQSerialized representations
  *
- * @see {@link QModel.serialize} — method that produces the serialized shape
+ * @see {@link QModel.$qSerialize} — method that produces the serialized shape
  * @see {@link IQImplements} — helper that maps serialized types to property types
  */
 
@@ -30,7 +30,7 @@
  *
  * @template T - The runtime TypeScript type to map.
  * @see {@link IQSerializedInterface} — maps all keys of an interface via `IQSerialized`
- * @see {@link QModel.serialize} — the method that returns `IQSerializedInterface<T>`
+ * @see {@link QModel.$qSerialize} — the method that returns `IQSerializedInterface<T>`
  */
 export type IQSerialized<T> = T extends RegExp
 	? string | { __type: 'regexp'; source: string; flags: string }
@@ -145,7 +145,7 @@ export type IQSerialized<T> = T extends RegExp
  * @template T - The model interface (runtime property types).
  * @see {@link IQAliasedSerializedInterface} — variant with key renaming via `@Quick({ alias: ... })`
  * @see {@link IQSerialized} — type mapping applied to each individual property
- * @see {@link QModel.serialize} — returns this type
+ * @see {@link QModel.$qSerialize} — returns this type
  */
 export type IQSerializedInterface<T> = {
 	[K in keyof T]: IQSerialized<T[K]>;
@@ -163,7 +163,7 @@ export type IQSerializedInterface<T> = {
  *
  * @see {@link IQSerializedInterface} — non-aliased variant
  * @see `QAlias` — property-level decorator (from `quickmodel/decorators`) that also produces key remapping
- * @see {@link QModel.serialize} — returns this type when a `TAliasMap` is provided
+ * @see {@link QModel.$qSerialize} — returns this type when a `TAliasMap` is provided
  *
  * @example
  * ```typescript
@@ -191,6 +191,34 @@ export type IQAliasedSerializedInterface<
 			: K
 		: K]: IQSerialized<T[K]>;
 };
+
+/**
+ * Serialized interface with sensitive keys omitted.
+ *
+ * This is the return type of `serialize()` / `toJSON()` / `$qSerialize()` when
+ * `TSensitiveKeys` is declared as the third generic argument of
+ * `QModel<TInterface, TAliasMap, TSensitiveKeys>`.
+ *
+ * Fields listed in `TSensitiveKeys` are stripped at compile-time, which
+ * matches the runtime behaviour of `@QSensitive` (fields excluded unless
+ * `{ includeSensitive: true }` is passed).
+ *
+ * When `TSensitiveKeys = never` (the default), this type is identical to
+ * `IQAliasedSerializedInterface<T, TAliasMap>` — no overhead and no
+ * breaking change for models that do not declare sensitive keys.
+ *
+ * @template T             - The model interface.
+ * @template TAliasMap     - Alias map from `@Quick({ alias: ... })`.
+ * @template TSensitiveKeys - Union of property keys decorated with `@QSensitive`.
+ *
+ * @see {@link IQAliasedSerializedInterface} — full type including all keys
+ * @see {@link QModel.$qSerialize} — returns this type unless `{ includeSensitive: true }`
+ */
+export type IQSafeSerializedInterface<
+	T,
+	TAliasMap extends Record<string, string> = Record<never, never>,
+	TSensitiveKeys extends keyof T = never,
+> = Omit<IQAliasedSerializedInterface<T, TAliasMap>, TSensitiveKeys>;
 
 /**
  * Maps a model interface to the shape accepted as **input** by `create()`, `createMany()`

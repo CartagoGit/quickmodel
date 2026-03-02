@@ -68,7 +68,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const json = JSON.parse(user.toJSON()) as Record<string, unknown>;
+		const json = user.toJSON();
 		expect(json).not.toHaveProperty('initials');
 	});
 
@@ -122,7 +122,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const json = JSON.parse(user.toJSON()) as Record<string, unknown>;
+		const json = user.toJSON();
 		expect(json).toHaveProperty('initials', 'A.S.');
 	});
 
@@ -315,7 +315,7 @@ describe('Task #18 — @QComputed() decorator', () => {
 			birthYear: 1990,
 		});
 
-		const parsed = JSON.parse(user.toJSON());
+		const parsed = user.toJSON();
 		expect(parsed).toHaveProperty('fullName', 'Alice Smith');
 	});
 });

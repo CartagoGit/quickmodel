@@ -233,7 +233,7 @@ describe('String Literals (@QType("type"))', () => {
 
 	test('Should work with JSON', () => {
 		const model1 = ModelWithStringLiterals.deserialize(testData);
-		const json = model1.toJSON();
+		const json = model1.$qToJSON();
 		const model2 = ModelWithStringLiterals.fromJSON(json);
 
 		expect(model2.name).toBe(model1.name);

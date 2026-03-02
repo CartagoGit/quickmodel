@@ -148,7 +148,7 @@ describe("mode: 'serial' — basic correctness", () => {
 			const result = await AllPassSerial.create({
 				name: 'alice',
 				email: 'a@x.com',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			expect(result.valid).toBe(true);
 			expect(result.errors).toHaveLength(0);
@@ -179,7 +179,7 @@ describe("mode: 'serial' — basic correctness", () => {
 				fieldA: 'x',
 				fieldB: 'x',
 				fieldC: 'x',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors).toHaveLength(3);
@@ -215,7 +215,7 @@ describe("mode: 'serial' — basic correctness", () => {
 				pass: 'x',
 				fail: 'x',
 				pass2: 'x',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors).toHaveLength(1);
@@ -239,7 +239,7 @@ describe("mode: 'serial' — basic correctness", () => {
 			const result = await SyncSerial.create({
 				age: 16,
 				name: 'Jo',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			expect(result.errors.map((err) => err.message).sort()).toEqual([
 				'Name too short',
@@ -307,7 +307,7 @@ describe("mode: 'serial' — execution order is deterministic", () => {
 				first: 'a',
 				second: 'b',
 				third: 'c',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			// Despite different delays, serial mode respects declaration order: A → B → C
 			expect(order).toEqual(['A', 'B', 'C']);
@@ -353,7 +353,7 @@ describe("mode: 'serial' — execution order is deterministic", () => {
 			await ParallelOrderModel.create({
 				slow: 'a',
 				fast: 'b',
-			}).checkRulesAsync({ mode: 'parallel' });
+			}).$qCheckRulesAsync({ mode: 'parallel' });
 
 			// In parallel mode the fast predicate fires its side-effect first
 			expect(order[0]).toBe('fast');
@@ -441,7 +441,7 @@ describe("mode: 'serial' + timeoutMs", () => {
 			const result = await SlowSerial.create({
 				fieldA: 'v',
 				fieldB: 'v',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 50 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 50 });
 
 			expect(result.errors.every((err) => err.timedOut === true)).toBe(
 				true
@@ -475,7 +475,7 @@ describe("mode: 'serial' + timeoutMs", () => {
 				fieldA: 'v',
 				fieldB: 'v',
 				fieldC: 'v',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 40 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 40 });
 			const elapsed = Date.now() - start;
 
 			// Serial + timeout: 3 × 40 ms = 120 ms minimum
@@ -509,7 +509,7 @@ describe("mode: 'serial' + timeoutMs", () => {
 				fieldA: 'v',
 				fieldB: 'v',
 				fieldC: 'v',
-			}).checkRulesAsync({ mode: 'parallel', timeoutMs: 40 });
+			}).$qCheckRulesAsync({ mode: 'parallel', timeoutMs: 40 });
 			const elapsed = Date.now() - start;
 
 			// All three timeouts fire simultaneously → total ≈ 40 ms
@@ -536,7 +536,7 @@ describe("mode: 'serial' + timeoutMs", () => {
 			const result = await OneTimeoutSerial.create({
 				fast: 'v',
 				slow: 'v',
-			}).checkRulesAsync({
+			}).$qCheckRulesAsync({
 				mode: 'serial',
 				timeoutMs: 50,
 				timeoutMessage: 'Serial timeout',
@@ -561,7 +561,7 @@ describe("mode: 'serial' + timeoutMs", () => {
 
 			const result = await LogicalFailSerial.create({
 				val: 'bad',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 50 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 50 });
 
 			expect(result.errors[0]?.timedOut).toBeUndefined();
 			expect(result.errors[0]?.message).toBe('Format invalid');
@@ -586,7 +586,7 @@ describe("mode: 'serial' — crash semantics", () => {
 
 			const result = await CrashSerial.create({
 				token: 'abc',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 50 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 50 });
 
 			expect(result.valid).toBe(false);
 			expect(result.errors[0]?.timedOut).toBeUndefined();
@@ -606,7 +606,7 @@ describe("mode: 'serial' — crash semantics", () => {
 
 			const result = await SlowCrashSerial.create({
 				token: 'abc',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 50 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 50 });
 
 			expect(result.errors[0]?.timedOut).toBe(true);
 		},
@@ -636,7 +636,7 @@ describe("mode: 'serial' — crash semantics", () => {
 				fieldA: 'v',
 				fieldB: 'v',
 				fieldC: 'v',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 50 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 50 });
 
 			expect(result.errors).toHaveLength(2);
 
@@ -694,7 +694,7 @@ describe("mode: 'serial' — multiple rules per field", () => {
 
 			const result = await TwoRulesField.create({
 				email: 'ok@x.com',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			// Decorators are applied bottom-up, so the inner (@QRule #2) is stored first.
 			// Serial mode respects metadata storage order: [2, 1]
@@ -718,7 +718,7 @@ describe("mode: 'serial' — multiple rules per field", () => {
 
 			const result = await ThreeRulesTimeout.create({
 				data: 'v',
-			}).checkRulesAsync({ mode: 'serial', timeoutMs: 50 });
+			}).$qCheckRulesAsync({ mode: 'serial', timeoutMs: 50 });
 
 			expect(result.errors.every((err) => err.timedOut === true)).toBe(
 				true
@@ -756,8 +756,8 @@ describe('serial vs parallel — identical outcomes for deterministic predicates
 		code: 'abc',
 	});
 
-	let serialResult: Awaited<ReturnType<typeof instance.checkRulesAsync>>;
-	let parallelResult: Awaited<ReturnType<typeof instance.checkRulesAsync>>;
+	let serialResult: Awaited<ReturnType<typeof instance.$qCheckRulesAsync>>;
+	let parallelResult: Awaited<ReturnType<typeof instance.$qCheckRulesAsync>>;
 
 	beforeAll(async () => {
 		[serialResult, parallelResult] = await Promise.all([
@@ -953,7 +953,7 @@ describe('edge cases', () => {
 			const result = await LazyMessageSerial.create({
 				fieldA: 'v',
 				fieldB: 'v',
-			}).checkRulesAsync({
+			}).$qCheckRulesAsync({
 				mode: 'serial',
 				timeoutMs: 50,
 				timeoutMessage: () => {
@@ -981,7 +981,7 @@ describe('edge cases', () => {
 
 			const result = await SerialNoTimeout.create({
 				slow: 'v',
-			}).checkRulesAsync({ mode: 'serial' });
+			}).$qCheckRulesAsync({ mode: 'serial' });
 
 			expect(result.valid).toBe(true);
 			expect(result.errors).toHaveLength(0);

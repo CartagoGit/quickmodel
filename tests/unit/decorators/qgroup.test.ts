@@ -56,7 +56,7 @@ class ChildContact extends ContactModel {
 // getFormSchema() with group metadata
 // ---------------------------------------------------------------------------
 
-describe('@QGroup — getFormSchema() includes group property', () => {
+describe('@QGroup — $qGetFormSchema() includes group property', () => {
 	test('entries decorated with @QGroup include group in schema', () => {
 		const schema = ContactModel.getFormSchema();
 		const firstName = schema.find((entry) => entry.field === 'firstName');
@@ -77,7 +77,7 @@ describe('@QGroup — getFormSchema() includes group property', () => {
 		expect(schema.every((entry) => entry.group === undefined)).toBe(true);
 	});
 
-	test('instance getFormSchema() also includes group', () => {
+	test('instance $qGetFormSchema() also includes group', () => {
 		const contact = ContactModel.create({
 			firstName: 'A',
 			lastName: 'B',
@@ -85,7 +85,7 @@ describe('@QGroup — getFormSchema() includes group property', () => {
 			city: 'C',
 			bio: '',
 		});
-		const schema = contact.getFormSchema();
+		const schema = contact.$qGetFormSchema();
 		const lastName = schema.find((entry) => entry.field === 'lastName');
 		expect(lastName?.group).toBe('Personal Info');
 	});
@@ -95,7 +95,7 @@ describe('@QGroup — getFormSchema() includes group property', () => {
 // getFormSchemaGrouped()
 // ---------------------------------------------------------------------------
 
-describe('getFormSchemaGrouped()', () => {
+describe('$qGetFormSchemaGrouped()', () => {
 	test('static getFormSchemaGrouped() returns array of groups', () => {
 		const grouped = ContactModel.getFormSchemaGrouped();
 		expect(Array.isArray(grouped)).toBe(true);
@@ -147,7 +147,7 @@ describe('getFormSchemaGrouped()', () => {
 		expect(Empty.getFormSchemaGrouped()).toEqual([]);
 	});
 
-	test('instance getFormSchemaGrouped() works too', () => {
+	test('instance $qGetFormSchemaGrouped() works too', () => {
 		const contact = ContactModel.create({
 			firstName: 'A',
 			lastName: 'B',
@@ -155,7 +155,7 @@ describe('getFormSchemaGrouped()', () => {
 			city: 'C',
 			bio: '',
 		});
-		const grouped = contact.getFormSchemaGrouped();
+		const grouped = contact.$qGetFormSchemaGrouped();
 		expect(grouped.length).toBeGreaterThan(0);
 	});
 

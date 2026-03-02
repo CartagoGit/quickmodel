@@ -264,8 +264,10 @@ describe('MapTransformer — coverage gaps', () => {
 				string,
 				unknown
 			>;
-			expect((result['err'] as any).name).toBe('CustomError');
-			expect((result['err'] as any).message).toBe('boom');
+			expect((result['err'] as { name: string }).name).toBe(
+				'CustomError'
+			);
+			expect((result['err'] as { message: string }).message).toBe('boom');
 		});
 
 		test('should serialize Map values containing nested Set → array', () => {
@@ -296,7 +298,7 @@ describe('MapTransformer — coverage gaps', () => {
 				string,
 				unknown
 			>;
-			expect((result['nested'] as any).x).toBe(1);
+			expect((result['nested'] as Record<string, unknown>)['x']).toBe(1);
 		});
 
 		test('should serialize Map with Symbol keys → array of tuples', () => {

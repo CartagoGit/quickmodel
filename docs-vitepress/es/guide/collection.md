@@ -31,75 +31,75 @@ Todas las operaciones devuelven **nuevas colecciones** — la original nunca se 
 ### Filtrado
 
 ```typescript
-const admins = users.where((u) => u.role === 'admin');
-const alice = users.find((u) => u.name === 'Alice'); // UserModel | undefined
+const admins = users.$qWhere((u) => u.role === 'admin');
+const alice = users.$qFind((u) => u.name === 'Alice'); // UserModel | undefined
 ```
 
 ### Ordenación
 
 ```typescript
-const porNombre = users.sortBy('name');
-const porEdadDesc = users.sortBy('age', { desc: true });
+const porNombre = users.$qSortBy('name');
+const porEdadDesc = users.$qSortBy('age', { order: 'desc' });
 ```
 
 ### Paginación
 
 ```typescript
-const pagina1 = users.paginate(1, 10); // elementos 0–9
-const pagina2 = users.paginate(2, 10); // elementos 10–19
+const pagina1 = users.$qPaginate(1, 10); // elementos 0–9
+const pagina2 = users.$qPaginate(2, 10); // elementos 10–19
 ```
 
 ### Agrupación
 
 ```typescript
-const porRol = users.groupBy('role');
+const porRol = users.$qGroupBy('role');
 // → { admin: UserModel[], viewer: UserModel[], ... }
 ```
 
 ## Utilidades funcionales
 
 ```typescript
-users.size; // total
-users.count((u) => u.active); // conteo condicional
-users.isEmpty; // true si está vacía
-users.first(); // UserModel | undefined
-users.last(); // UserModel | undefined
-users.every((u) => u.age >= 18); // boolean
-users.some((u) => u.role === 'admin'); // boolean
+users.$qSize; // total
+users.$qCount((u) => u.active); // conteo condicional
+users.$qIsEmpty; // true si está vacía
+users.$qFirst(); // UserModel | undefined
+users.$qLast(); // UserModel | undefined
+users.$qEvery((u) => u.age >= 18); // boolean
+users.$qSome((u) => u.role === 'admin'); // boolean
 
-users.map((u) => u.name); // string[]
-users.flatMap((u) => [u.name, u.email]); // string[]
-users.reduce((acc, u) => acc + u.price, 0); // number
+users.$qMap((u) => u.name); // string[]
+users.$qFlatMap((u) => [u.name, u.email]); // string[]
+users.$qReduce((acc, u) => acc + u.price, 0); // number
 ```
 
 ### Helpers de agregación
 
 ```typescript
-users.sum('score'); // suma del campo numérico
-users.avg('score'); // promedio
-users.min('score'); // mínimo
-users.max('score'); // máximo
+users.$qSum('score'); // suma del campo numérico
+users.$qAvg('score'); // promedio
+users.$qMin('score'); // mínimo
+users.$qMax('score'); // máximo
 ```
 
 ## Serialización
 
 ```typescript
-users.serialize(); // array de objetos planos
-users.serialize({ pick: ['id', 'name'] }); // subconjunto de campos
-users.toJSON(); // string JSON
+users.$qSerialize(); // array de objetos planos
+users.$qSerialize({ pick: ['id', 'name'] }); // subconjunto de campos
+users.$qToJSON(); // string JSON
 
-users.toCSV();
+users.$qToCSV();
 // id,name,email
 // 1,Alice,alice@example.com
 // 2,Bob,bob@example.com
 
-users.toCSV({ delimiter: ';', fields: ['name', 'email'] });
+users.$qToCSV({ delimiter: ';', fields: ['name', 'email'] });
 ```
 
 ## Validación de reglas
 
 ```typescript
-const result = users.checkAllRules();
+const result = users.$qCheckAllRules();
 // → { valid: boolean, errors: [{ index, field, message }] }
 
 if (!result.valid) {
@@ -112,7 +112,7 @@ if (!result.valid) {
 ## Acceso a las instancias crudas
 
 ```typescript
-users.toArray(); // UserModel[]  (copia superficial)
+users.$qToArray(); // UserModel[]  (copia superficial)
 ```
 
 ## Encadenamiento de operaciones
@@ -121,10 +121,10 @@ Todos los métodos fluidos devuelven una nueva `QModelCollection`, por lo que en
 
 ```typescript
 const informe = UserModel.collection(filasDB)
-	.where((u) => u.active)
-	.sortBy('lastName')
-	.paginate(1, 20)
-	.serialize({ pick: ['id', 'firstName', 'lastName', 'email'] });
+	.$qWhere((u) => u.active)
+	.$qSortBy('lastName')
+	.$qPaginate(1, 20)
+	.$qSerialize({ pick: ['id', 'firstName', 'lastName', 'email'] });
 ```
 
 ## Opciones de exportación CSV
@@ -142,32 +142,32 @@ const informe = UserModel.collection(filasDB)
 | ----------------------------------- | -------------------------------------------------- |
 | `QModelCollection.from(Ctor, data)` | Fábrica — crea colección desde array crudo         |
 | `Model.collection(data)`            | Alias estático en cualquier subclase de `QModel`   |
-| `.where(fn)`                        | Filtrado — devuelve nueva colección                |
-| `.find(fn)`                         | Encuentra la primera instancia coincidente         |
-| `.sortBy(field, opts?)`             | Ordenar por campo                                  |
-| `.paginate(page, size)`             | Paginación                                         |
-| `.groupBy(field)`                   | Agrupar en un Record                               |
-| `.size`                             | Número total de elementos                          |
-| `.count(fn?)`                       | Conteo condicional (todos si no hay predicado)     |
-| `.isEmpty`                          | `true` cuando la colección está vacía              |
-| `.first()`                          | Primera instancia o `undefined`                    |
-| `.last()`                           | Última instancia o `undefined`                     |
-| `.every(fn)`                        | `true` si todos los elementos cumplen el predicado |
-| `.some(fn)`                         | `true` si al menos un elemento coincide            |
-| `.map(fn)`                          | Mapear instancias a cualquier valor                |
-| `.flatMap(fn)`                      | FlatMap de instancias                              |
-| `.reduce(fn, init)`                 | Reducir a un único valor                           |
-| `.sum(field)`                       | Suma de un campo numérico                          |
-| `.avg(field)`                       | Media de un campo numérico                         |
-| `.min(field)`                       | Valor mínimo de un campo numérico                  |
-| `.max(field)`                       | Valor máximo de un campo numérico                  |
-| `.unique(field)`                    | Valores únicos de un campo                         |
-| `.toMap(keyField)`                  | Convertir a `Map` indexado por campo               |
-| `.serialize(opts?)`                 | Array de objetos planos                            |
-| `.toJSON()`                         | String JSON                                        |
-| `.toCSV(opts?)`                     | String CSV                                         |
-| `.checkAllRules()`                  | Validar todas las instancias                       |
-| `.toArray()`                        | Array plano de instancias del modelo               |
+| `.$qWhere(fn)`                      | Filtrado — devuelve nueva colección                |
+| `.$qFind(fn)`                       | Encuentra la primera instancia coincidente         |
+| `.$qSortBy(field, opts?)`           | Ordenar por campo                                  |
+| `.$qPaginate(page, size)`           | Paginación                                         |
+| `.$qGroupBy(field)`                 | Agrupar en un Record                               |
+| `.$qSize`                           | Número total de elementos                          |
+| `.$qCount(fn?)`                     | Conteo condicional (todos si no hay predicado)     |
+| `.$qIsEmpty`                        | `true` cuando la colección está vacía              |
+| `.$qFirst()`                        | Primera instancia o `undefined`                    |
+| `.$qLast()`                         | Última instancia o `undefined`                     |
+| `.$qEvery(fn)`                      | `true` si todos los elementos cumplen el predicado |
+| `.$qSome(fn)`                       | `true` si al menos un elemento coincide            |
+| `.$qMap(fn)`                        | Mapear instancias a cualquier valor                |
+| `.$qFlatMap(fn)`                    | FlatMap de instancias                              |
+| `.$qReduce(fn, init)`               | Reducir a un único valor                           |
+| `.$qSum(field)`                     | Suma de un campo numérico                          |
+| `.$qAvg(field)`                     | Media de un campo numérico                         |
+| `.$qMin(field)`                     | Valor mínimo de un campo numérico                  |
+| `.$qMax(field)`                     | Valor máximo de un campo numérico                  |
+| `.$qUnique(field)`                  | Valores únicos de un campo                         |
+| `.$qToMap(keyField)`                | Convertir a `Map` indexado por campo               |
+| `.$qSerialize(opts?)`               | Array de objetos planos                            |
+| `.$qToJSON()`                       | String JSON                                        |
+| `.$qToCSV(opts?)`                   | String CSV                                         |
+| `.$qCheckAllRules()`                | Validar todas las instancias                       |
+| `.$qToArray()`                      | Array plano de instancias del modelo               |
 
 ## Ver también
 

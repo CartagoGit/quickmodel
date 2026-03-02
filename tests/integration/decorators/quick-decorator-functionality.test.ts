@@ -283,7 +283,7 @@ describe('@Quick() decorator: Automatic property registration', () => {
 		});
 
 		// Serialize to JSON
-		const json = user.toJSON();
+		const json = user.$qToJSON();
 		expect(json).toBeTruthy();
 
 		// Deserialize back
@@ -352,6 +352,6 @@ describe('@Quick() decorator: Automatic property registration', () => {
 
 		// Both should work identically
 		expect(manual.$qSerialize()).toEqual(auto.$qSerialize());
-		expect(manual.toJSON()).toBe(auto.toJSON());
+		expect(manual.toJSON()).toEqual(auto.toJSON());
 	});
 });

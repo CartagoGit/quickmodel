@@ -35,6 +35,7 @@ describe('Security: toInterface Recursion Depth', () => {
 		// @quickmodel-rule-ignore: no-as-unknown — intentional: testing recursive depth with mismatched type
 		expect(() => {
 			service.toInterface(deepModel, [deepOriginal] as unknown as [
+				// @quickmodel-rule-ignore: no-as-unknown
 				typeof deepOriginal,
 			]);
 		}).toThrow(/Maximum recursion depth/);

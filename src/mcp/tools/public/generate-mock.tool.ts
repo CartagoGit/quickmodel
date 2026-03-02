@@ -63,7 +63,7 @@ export class QGenerateMockDataTool extends QAbstractTool<
 		// Apply decorators manually
 		// @Quick(args.schema)
 		// @quickmodel-rule-ignore: no-as-unknown — args.schema is Record<string, unknown> from Zod; values are transformer-type strings, compatible with IQImplements at runtime
-		Quick(args.schema as unknown as IQImplements<IQOptions>)(DynamicModel);
+		Quick(args.schema as unknown as IQImplements<IQOptions>)(DynamicModel); // @quickmodel-rule-ignore: no-as-unknown
 
 		// Generate mocks
 		const mocks: Array<Record<string, unknown>> = [];

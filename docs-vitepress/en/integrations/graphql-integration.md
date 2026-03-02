@@ -66,7 +66,7 @@ const resolvers = {
 				});
 			}
 
-			const saved = await userRepository.save(dto.toInterface());
+			const saved = await userRepository.save(dto.$qToInterface());
 			return new UserResponse(saved);
 		},
 	},
@@ -192,7 +192,7 @@ const resolvers = {
 					extensions: { errors },
 				});
 
-			await postRepository.update(id, updated.toInterface());
+			await postRepository.update(id, updated.$qToInterface());
 			return updated.$qSerialize();
 		},
 	},
@@ -218,10 +218,90 @@ if (errors.length)
 	throw new GraphQLError('Validation failed', { extensions: { errors } });
 ```
 
-## getSchema() for GraphQL tooling
+## Schema integration with `getSchema('graphql')` and `fromSchema('graphql', ...)`
+
+### Export a GraphQL SDL type from a QModel
+
+Import `quickmodel/schema` once, then call `getSchema('graphql')` to get a GraphQL Schema Definition Language (SDL) type string:
 
 ```typescript
-// Generate JSON Schema for code-gen tools (graphql-codegen, Pothos, etc.)
+import 'quickmodel/schema';
+import { QModel, Quick } from 'quickmodel';
+
+interface IUser {
+	name: string;
+	email: string;
+	birthDate: Date;
+	score: number;
+}
+
+@Quick({ birthDate: Date, score: Number })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare email: string;
+	declare birthDate: Date;
+	declare score: number;
+}
+
+const sdl = User.getSchema('graphql');
+/*
+type User {
+  name: String!
+  email: String!
+  birthDate: String!
+  score: Float!
+}
+*/
+```
+
+### Use the SDL with code-gen tools
+
+```typescript
+import 'quickmodel/schema';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+
+// Build a full GraphQL schema from your QModel definitions
+const typeDefs = [
+	User.getSchema('graphql'),
+	Product.getSchema('graphql'),
+	`type Query { user(id: ID!): User, products: [Product!]! }`,
+];
+
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+```
+
+### Scaffold a QModel from existing GraphQL SDL
+
+`fromSchema('graphql', ...)` converts a GraphQL SDL `type` block into a ready-to-use QModel class definition.
+This is **scaffolding** — the result is source code to save as a `.ts` file:
+
+```typescript
+import 'quickmodel/schema';
+
+const sdl = `
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  createdAt: String!
+  inStock: Boolean!
+}
+`;
+
+const code = QModel.fromSchema('graphql', sdl, 'Product');
+// → TypeScript source:
+// interface IProduct { id: string; name: string; price: number; createdAt: string; inStock: boolean; }
+// @Quick({ price: Number, inStock: Boolean })
+// class Product extends QModel<IProduct> { ... }
+
+// Save to disk:
+// fs.writeFileSync('src/models/product.model.ts', code);
+```
+
+### Generate JSON / OpenAPI schemas for code-gen tools
+
+```typescript
+// graphql-codegen, Pothos, type-graphql tooling
 const inputSchema = CreateUserInput.getSchema('json');
 const responseSchema = UserResponse.getSchema('openapi');
 ```

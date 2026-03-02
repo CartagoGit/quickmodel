@@ -77,7 +77,7 @@ export class QCheckIntegrityTool extends QAbstractTool<
 
 			try {
 				const instance = new DynamicField({ [field]: value });
-				const fieldResults = instance.checkIntegrity();
+				const fieldResults = instance.$qCheckIntegrity();
 				results.push(...fieldResults);
 			} catch (err) {
 				// Transformer threw during construction (e.g. invalid Date string).

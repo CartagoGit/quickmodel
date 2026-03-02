@@ -66,7 +66,7 @@ describe('Security: toInterface Injection', () => {
 
 		const model = new Nesthetic(payload);
 		const output = model.$qToInterface();
-		const arr = output.untouched as any[];
+		const arr = output.untouched as Array<Record<string, unknown>>;
 
 		expect(Array.isArray(arr)).toBe(true);
 		expect(arr[1]).toHaveProperty('valid', 2);

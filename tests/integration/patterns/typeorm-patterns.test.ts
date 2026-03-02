@@ -441,7 +441,7 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 3, email: 'c@c.com' }),
 		];
 		const { instances, errors } = UserEntityDto.createMany(
-			seedData as any[]
+			seedData as Record<string, unknown>[]
 		);
 		expect(instances.length).toBe(3);
 		expect(errors.length).toBe(0);
@@ -452,7 +452,9 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 1, active: 1 as unknown as boolean }), // @quickmodel-rule-ignore: no-as-unknown
 			makeEntity({ id: 2, active: 0 as unknown as boolean }), // @quickmodel-rule-ignore: no-as-unknown
 		];
-		const { instances } = UserEntityDto.createMany(seedData as any[]);
+		const { instances } = UserEntityDto.createMany(
+			seedData as Record<string, unknown>[]
+		);
 		expect(instances[0]?.active).toBe(true);
 		expect(instances[1]?.active).toBe(false);
 	});
@@ -462,7 +464,9 @@ describe('createMany() for TypeORM seed data', () => {
 			makeEntity({ id: 1 }),
 			makeEntity({ id: 2, email: 'two@x.com' }),
 		];
-		const { instances } = UserEntityDto.createMany(seedData as any[]);
+		const { instances } = UserEntityDto.createMany(
+			seedData as Record<string, unknown>[]
+		);
 		const payloads = instances.map((dto) => dto.$qToInterface());
 		expect(payloads.length).toBe(2);
 		expect(payloads[0]?.name).toBe('Alice Example');

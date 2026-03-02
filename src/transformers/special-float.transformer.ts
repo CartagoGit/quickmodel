@@ -6,7 +6,7 @@
  *
  * Encodes them as `{ __qm: 'nan' }`, `{ __qm: 'inf' }`, and `{ __qm: '-inf' }`.
  *
- * @see {@link QModel.serialize} — automatically handles special floats in all numeric fields
+ * @see {@link QModel.$qSerialize} — automatically handles special floats in all numeric fields
  * @see {@link QM_SPECIAL_TOKEN_KEY} — the JSON key used for special float tokens
  * @module transformers/special-float
  */

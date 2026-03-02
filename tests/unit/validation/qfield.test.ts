@@ -40,14 +40,14 @@ class ProfileModel extends QModel<{
 // ---------------------------------------------------------------------------
 
 describe('@QField decorator', () => {
-	test('getFormSchema() returns an array with one entry per @QField', () => {
+	test('$qGetFormSchema() returns an array with one entry per @QField', () => {
 		const instance = ProfileModel.create({
 			name: 'Alice',
 			role: 'admin',
 			active: true,
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
-		const schema = instance.getFormSchema();
+		const schema = instance.$qGetFormSchema();
 		expect(schema).toHaveLength(4);
 	});
 
@@ -58,7 +58,7 @@ describe('@QField decorator', () => {
 			active: true,
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
-		const fields = instance.getFormSchema().map((schema) => schema.field);
+		const fields = instance.$qGetFormSchema().map((schema) => schema.field);
 		expect(fields).toContain('name');
 		expect(fields).toContain('role');
 		expect(fields).toContain('active');
@@ -73,7 +73,7 @@ describe('@QField decorator', () => {
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
 		const nameEntry = instance
-			.getFormSchema()
+			.$qGetFormSchema()
 			.find((schema) => schema.field === 'name');
 		expect(nameEntry?.widget).toBe('input');
 		expect(nameEntry?.inputType).toBe('text');
@@ -89,7 +89,7 @@ describe('@QField decorator', () => {
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
 		const roleEntry = instance
-			.getFormSchema()
+			.$qGetFormSchema()
 			.find((schema) => schema.field === 'role');
 		expect(roleEntry?.widget).toBe('select');
 		expect(roleEntry?.options).toEqual(['admin', 'user', 'guest']);
@@ -103,7 +103,7 @@ describe('@QField decorator', () => {
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
 		const activeEntry = instance
-			.getFormSchema()
+			.$qGetFormSchema()
 			.find((schema) => schema.field === 'active');
 		expect(activeEntry?.widget).toBe('checkbox');
 		expect(activeEntry?.label).toBe('Active');
@@ -116,19 +116,19 @@ describe('@QField decorator', () => {
 			active: true,
 			birthDate: '1990-01-01T00:00:00.000Z',
 		});
-		const dateEntry = instance
-			.getFormSchema()
+		const birthDateEntry = instance
+			.$qGetFormSchema()
 			.find((schema) => schema.field === 'birthDate');
-		expect(dateEntry?.widget).toBe('datepicker');
+		expect(birthDateEntry?.widget).toBe('datepicker');
 	});
 
-	test('model with no @QField returns empty array from getFormSchema()', () => {
+	test('model with no @QField returns empty array from $qGetFormSchema()', () => {
 		@Quick({ val: 'number' })
 		class Plain extends QModel<{ val: number }> {
 			declare val: number;
 		}
 		const plain = Plain.create({ val: 5 });
-		expect(plain.getFormSchema()).toHaveLength(0);
+		expect(plain.$qGetFormSchema()).toHaveLength(0);
 	});
 
 	test('static getFormSchema() works without an instance', () => {
@@ -149,7 +149,7 @@ describe('@QField decorator', () => {
 			declare email: string;
 		}
 		const instance = ExtraModel.create({ email: 'a@b.com' });
-		const entry = instance.getFormSchema()[0];
+		const entry = instance.$qGetFormSchema()[0];
 		expect(entry?.placeholder).toBe('you@example.com');
 		expect(entry?.hint).toBe('Must be unique');
 	});
@@ -169,7 +169,7 @@ describe('@QField decorator', () => {
 			label: 'Test',
 			enabled: true,
 		} as any);
-		const schema = instance.getFormSchema();
+		const schema = instance.$qGetFormSchema();
 		const fields = schema.map((schema) => schema.field);
 		expect(fields).toContain('label');
 		expect(fields).toContain('enabled');

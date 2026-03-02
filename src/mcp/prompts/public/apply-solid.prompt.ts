@@ -84,7 +84,8 @@ export class QApplySolidPrompt extends QAbstractInternalPrompt<{
 						`   If \`agents[]\` is non-empty: check what staged/unstaged changes they have (via git) and wait for them to commit or stash if there is overlap.\n` +
 						`2. Call \`agent_coordinate\` with \`action: "claim"\`, your \`agentId\`, task \`"apply SOLID to ${file_paths}"\`, and \`files: [${lintTarget}]\`.\n` +
 						`3. If \`conflict: true\` → **STOP immediately**. Do not modify any file. Inform the user and wait.\n` +
-						`4. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +
+						`4. **Read before every write:** Immediately before modifying each file, read its current content from disk — your context may be stale if another agent edited it since you started. If the file changed: adapt your change, merge carefully, or skip if no longer needed. Never overwrite from stale context.\n` +
+						`5. Release when done (even if the task fails): \`agent_coordinate action="release"\`\n\n` +
 						`---\n\n` +
 						`**Step 1 — Baseline:** Call \`run_tests\` to confirm green baseline before any change.\n\n` +
 						`**Step 2 — SRP:** Does each class/method have a single clear responsibility?\n` +

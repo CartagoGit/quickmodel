@@ -79,7 +79,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 				dateC: '2023-06-15T00:00:00.000Z',
 			});
 
-			// serialize() returns a plain object; toJSON() returns a JSON string
+			// serialize() / toJSON() both return a plain object; $qToJSON() returns a JSON string
 			const plain = instance.$qSerialize();
 
 			expect(plain).toHaveProperty('nameA', 'alice');
@@ -478,7 +478,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 				pattern: '/test/i',
 			});
 
-			// serialize() returns plain object; toJSON() returns a JSON string
+			// serialize() and toJSON() return plain objects; $qToJSON() returns a JSON string
 			const plain = instance.$qSerialize();
 
 			expect(plain).toHaveProperty('strA', 'alpha');
@@ -588,7 +588,7 @@ describe('Integration: Deep Chain Inheritance', () => {
 				role: 'dev',
 				joinedAt: '2020-06-01T00:00:00.000Z',
 			});
-			const meta = instance.getMetadata();
+			const meta = instance.$qGetMetadata();
 
 			// All fields (transformed + plain) visible via instance metadata
 			expect(meta.has('name')).toBe(true);

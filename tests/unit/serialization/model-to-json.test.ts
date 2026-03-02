@@ -40,7 +40,7 @@ describe('Model Serialization (toJSON)', () => {
 			metadata: {},
 		});
 
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 		expect(json.id).toBe(1);
 		expect(json.name).toBe('John');
 	});
@@ -55,7 +55,7 @@ describe('Model Serialization (toJSON)', () => {
 			metadata: { key: 'value' },
 		});
 
-		const json = JSON.parse(user.toJSON());
+		const json = user.toJSON();
 
 		// Date -> ISO String
 		expect(json.birthDate).toBe('2024-01-01T00:00:00.000Z');
@@ -101,7 +101,7 @@ describe('Model Serialization (toJSON)', () => {
 			},
 		});
 
-		const json = JSON.parse(profile.toJSON());
+		const json = profile.toJSON();
 		expect(json.address.city).toBe('New York');
 		expect(json.address.location).toEqual({ lat: 40, lon: -74 });
 	});
@@ -129,7 +129,7 @@ describe('Model Serialization (toJSON)', () => {
 			items: [{ name: 'Item 1' }, { name: 'Item 2' }],
 		});
 
-		const json = JSON.parse(cart.toJSON());
+		const json = cart.toJSON();
 		expect(json.items).toBeArray();
 		expect(json.items).toHaveLength(2);
 		expect(json.items[0].name).toBe('Item 1');
@@ -149,7 +149,8 @@ describe('Model Serialization (toJSON)', () => {
 		// @quickmodel-rule-ignore: no-as-unknown
 		(user as unknown as Record<string, unknown>)['__internal'] = 'secret';
 
-		const jsonString = user.toJSON();
+		// JSON.stringify(model) exercises the JS toJSON() protocol correctly
+		const jsonString = JSON.stringify(user);
 		expect(jsonString).not.toContain('__internal');
 	});
 });

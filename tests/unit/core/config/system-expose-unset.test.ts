@@ -28,9 +28,9 @@ describe('Expose Unset Fields Configuration', () => {
 		const instance = new DefaultModel({ req: 'exists', opt: undefined });
 		const json = serializer.serialize(
 			instance as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
-		) as any;
+		);
 
-		expect(json.req).toBe('exists');
+		expect(json['req']).toBe('exists');
 		expect('opt' in json).toBe(false);
 		expect('missing' in json).toBe(false);
 	});
@@ -60,13 +60,13 @@ describe('Expose Unset Fields Configuration', () => {
 
 		const json = serializer.serialize(
 			instance as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
-		) as any;
+		);
 
-		expect(json.req).toBe('exists');
+		expect(json['req']).toBe('exists');
 
 		// Assigned undefined should be present
 		expect('opt' in json).toBe(true);
-		expect(json.opt).toBeUndefined();
+		expect(json['opt']).toBeUndefined();
 
 		// Unassigned property 'missing' won't be in iteration of keys usually,
 		// unless QModel initializes all declared fields?
@@ -89,7 +89,7 @@ describe('Expose Unset Fields Configuration', () => {
 
 		const json = serializer.serialize(
 			instance as unknown as Record<string, unknown> // @quickmodel-rule-ignore: no-as-unknown
-		) as any;
+		);
 		expect('opt' in json).toBe(true);
 	});
 

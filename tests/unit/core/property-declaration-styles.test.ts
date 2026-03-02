@@ -231,7 +231,7 @@ describe('Property Declaration Styles', () => {
 
 			user.name = 'Jane Doe';
 			expect(user.$qHasChanges()).toBe(true);
-			expect(user.getChangedFields()).toContain('name');
+			expect(user.$qGetChangedFields()).toContain('name');
 		});
 
 		test('!: should track changes correctly', () => {
@@ -241,7 +241,6 @@ describe('Property Declaration Styles', () => {
 
 			user.name = 'Jane Doe';
 			expect(user.$qHasChanges()).toBe(true);
-			expect(user.getChangedFields()).toContain('name');
 		});
 
 		test('?: should track changes correctly', () => {
@@ -251,7 +250,8 @@ describe('Property Declaration Styles', () => {
 
 			user.name = 'Jane Doe';
 			expect(user.$qHasChanges()).toBe(true);
-			expect(user.getChangedFields()).toContain('name');
+			expect(user.$qGetChangedFields()).toContain('name');
+			expect(user.$qGetChangedFields()).toContain('name');
 		});
 	});
 

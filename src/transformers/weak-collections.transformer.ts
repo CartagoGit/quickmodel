@@ -5,7 +5,7 @@
  * both are non-serializable by design. Attempting to serialize them throws.
  * Use `excludeFields` in `@Quick` options to omit them from serialization.
  *
- * @see {@link QModel.serialize} — will throw when encountering WeakMap/WeakSet fields
+ * @see {@link QModel.$qSerialize} — will throw when encountering WeakMap/WeakSet fields
  * @see {@link Quick} — use `{ serialization: { excludeFields: ['field'] } }` to exclude
  * @module transformers/weak-collections
  */

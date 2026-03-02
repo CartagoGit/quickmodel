@@ -6,23 +6,26 @@
  * No Angular packages imported — pure TypeScript logic only.
  *
  * Key separation:
- * - Plain TS form classes + @QRule/@QGroup → qCheckRules() standalone helper
+ * - Plain TS form classes + @QRule/@QGroup → $qCheckRules() standalone helper
  * - QModel subclasses for coercion/serialization → .checkRules() / .serialize()
  */
 import { describe, test, expect, beforeEach, spyOn, afterEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QGroup, QField } from '@/decorators';
 import {
-	qCheckRules,
+	$qCheckRules,
 	_resetAsyncWarnedKeys,
 } from '@/core/helpers/q-check-rules';
+import { $qGroups } from '@/core/helpers/q-groups';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // Plain form class — Angular Reactive Forms pattern
 // Use initialized properties (= ''), NOT QModel + declare
 // ---------------------------------------------------------------------------
 
-const FormGroups = qGroups('identity', 'contact', 'security');
+const FormGroups = $qGroups('identity', 'contact', 'security');
 
 class UserForm {
 	@QField({ widget: 'input', label: 'First Name', required: true })
@@ -77,7 +80,7 @@ function simulateAngularValidator(
 	instance: UserForm,
 	field: keyof UserForm
 ): Record<string, boolean> | null {
-	const result = qCheckRules(instance);
+	const result = $qCheckRules(instance);
 	const fieldErrors = result.errors.filter(
 		(err) => err.field === String(field)
 	);
@@ -93,7 +96,7 @@ async function simulateAngularAsyncValidator(
 	field: keyof UserForm | keyof RegisterForm,
 	opts?: { timeoutMs?: number }
 ): Promise<Record<string, boolean> | null> {
-	const result = await qCheckRulesAsync(instance, opts);
+	const result = await $qCheckRulesAsync(instance, opts);
 	const fieldErrors = result.errors.filter(
 		(err) => err.field === String(field)
 	);
@@ -161,7 +164,7 @@ describe('Angular — Reactive Forms validator adapter', () => {
 	test('accumulates errors from multiple @QRule on the same field', () => {
 		const form = new UserForm();
 		form.firstName = 'A'; // fails: too short
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		const firstNameErrors = result.errors.filter(
 			(err) => err.field === 'firstName'
 		);
@@ -176,7 +179,7 @@ describe('Angular — Reactive Forms validator adapter', () => {
 		form.age = 25;
 		form.role = 'admin';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});
@@ -194,17 +197,17 @@ describe('Angular — Multi-step wizard with @QGroup', () => {
 	});
 
 	test('step 1 (identity) fails when form is blank', () => {
-		const groups = qCheckRulesByGroup(form);
+		const groups = $qCheckRulesByGroup(form);
 		expect(groups['identity']?.valid).toBe(false);
 	});
 
 	test('step 2 (contact) fails when email is blank', () => {
-		const groups = qCheckRulesByGroup(form);
+		const groups = $qCheckRulesByGroup(form);
 		expect(groups['contact']?.valid).toBe(false);
 	});
 
 	test('step 3 (security) fails when role is blank', () => {
-		const groups = qCheckRulesByGroup(form);
+		const groups = $qCheckRulesByGroup(form);
 		expect(groups['security']?.valid).toBe(false);
 	});
 
@@ -213,12 +216,12 @@ describe('Angular — Multi-step wizard with @QGroup', () => {
 		form.lastName = 'Brown';
 		form.age = 22;
 
-		const identityResult = qCheckRules(form, {
+		const identityResult = $qCheckRules(form, {
 			group: FormGroups.identity,
 		});
 		expect(identityResult.valid).toBe(true);
 
-		const contactResult = qCheckRules(form, { group: FormGroups.contact });
+		const contactResult = $qCheckRules(form, { group: FormGroups.contact });
 		expect(contactResult.valid).toBe(false);
 	});
 
@@ -229,7 +232,7 @@ describe('Angular — Multi-step wizard with @QGroup', () => {
 		form.age = 22;
 		form.role = 'editor';
 
-		const groups = qCheckRulesByGroup(form);
+		const groups = $qCheckRulesByGroup(form);
 		expect(groups['identity']?.valid).toBe(true);
 		expect(groups['contact']?.valid).toBe(true);
 		expect(groups['security']?.valid).toBe(true);
@@ -240,7 +243,7 @@ describe('Angular — Multi-step wizard with @QGroup', () => {
 		form.email = 'bad';
 		form.role = 'unknown';
 
-		const groups = qCheckRulesByGroup(form);
+		const groups = $qCheckRulesByGroup(form);
 		expect(
 			groups['identity']?.errors.some((err) => err.field === 'firstName')
 		).toBe(true);
@@ -536,7 +539,9 @@ describe('Angular — HttpClient interceptor coercion', () => {
 				active: false,
 			},
 		];
-		const { instances } = ApiItemDto.createMany(rawArr as any[]);
+		const { instances } = ApiItemDto.createMany(
+			rawArr as Record<string, unknown>[]
+		);
 		expect(instances).toHaveLength(2);
 		instances.forEach((item) =>
 			expect(item.createdAt).toBeInstanceOf(Date)
@@ -684,7 +689,7 @@ describe('Angular — Async validator (email uniqueness)', () => {
 		form.username = 'alice_99';
 		form.email = 'alice@example.com';
 		form.password = 'Secure123';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(true);
 	});
 
@@ -693,7 +698,7 @@ describe('Angular — Async validator (email uniqueness)', () => {
 		form.username = 'alice_99';
 		form.email = 'taken@example.com';
 		form.password = 'Secure123';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});
@@ -716,7 +721,7 @@ describe('Angular — Async validator (email uniqueness)', () => {
 		form.username = 'ab';
 		form.email = 'new@example.com';
 		form.password = 'short';
-		const result = await qCheckRulesAsync(form, { mode: 'serial' });
+		const result = await $qCheckRulesAsync(form, { mode: 'serial' });
 		expect(result.valid).toBe(false);
 		const fields = result.errors.map((err) => err.field);
 		expect(fields).toContain('username');
@@ -729,7 +734,7 @@ describe('Angular — Async validator (email uniqueness)', () => {
 		form.email = 'alice@example.com';
 		form.password = 'Secure123';
 		const start = Date.now();
-		await qCheckRulesAsync(form, { mode: 'parallel' });
+		await $qCheckRulesAsync(form, { mode: 'parallel' });
 		expect(Date.now() - start).toBeLessThan(200);
 	});
 });
@@ -756,7 +761,9 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 				score: 72,
 			},
 		];
-		const { instances, errors } = UserRecord.createMany(raw as any[]);
+		const { instances, errors } = UserRecord.createMany(
+			raw as Record<string, unknown>[]
+		);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(0);
 	});
@@ -771,7 +778,9 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 				score: 95,
 			},
 		];
-		const { instances } = UserRecord.createMany(raw as any[]);
+		const { instances } = UserRecord.createMany(
+			raw as Record<string, unknown>[]
+		);
 		const out = instances[0].$qSerialize() as Record<string, unknown>;
 		expect(out['tier']).toBe('gold');
 		expect(out['fullName']).toBe('Dave Brown');
@@ -787,7 +796,7 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 				score: 90,
 			},
 		];
-		const result = UserRecord.createMany(raw as any[]);
+		const result = UserRecord.createMany(raw as Record<string, unknown>[]);
 		expect(Array.isArray(result.instances)).toBe(true);
 		expect(Array.isArray(result.errors)).toBe(true);
 	});
@@ -802,7 +811,9 @@ describe('Angular — createMany() in resolver / bulk HTTP response', () => {
 			{ name: 'Widget', qty: 10 },
 			{ name: '', qty: 5 },
 		];
-		const { errors } = ValidatedItem.createMany(mixed as any[]);
+		const { errors } = ValidatedItem.createMany(
+			mixed as Record<string, unknown>[]
+		);
 		expect(errors.length).toBeGreaterThan(0);
 	});
 });
@@ -849,7 +860,7 @@ describe('Reglas mixtas — checkRules() ignora predicados async', () => {
 		form.username = 'taken_user'; // ← fallaría la regla async
 		form.name = 'OK';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 
 		// La regla SYNC pasa (longitud >= 3 ✓), la ASYNC se silencia (siempre pasa)
 		expect(result.valid).toBe(true);
@@ -861,7 +872,7 @@ describe('Reglas mixtas — checkRules() ignora predicados async', () => {
 		form.username = 'taken_user';
 		form.name = 'OK';
 
-		qCheckRules(form);
+		$qCheckRules(form);
 
 		const calls = (warnSpy.mock.calls as string[][]).flat().join(' ');
 		expect(calls).toContain('MixedRulesForm#username');
@@ -873,9 +884,9 @@ describe('Reglas mixtas — checkRules() ignora predicados async', () => {
 		form.username = 'taken_user';
 		form.name = 'OK';
 
-		qCheckRules(form);
-		qCheckRules(form);
-		qCheckRules(form);
+		$qCheckRules(form);
+		$qCheckRules(form);
+		$qCheckRules(form);
 
 		const usernameWarnings = (warnSpy.mock.calls as string[][]).filter(
 			(args) => args.join(' ').includes('MixedRulesForm#username')
@@ -888,7 +899,7 @@ describe('Reglas mixtas — checkRules() ignora predicados async', () => {
 		form.username = 'ab'; // ← falla sync (< 3 chars) Y fallaría async (taken_user)
 		form.name = 'OK';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 
 		// Solo aparece el error sincrónico
 		expect(result.valid).toBe(false);
@@ -901,7 +912,7 @@ describe('Reglas mixtas — checkRules() ignora predicados async', () => {
 		form.username = 'taken_user'; // longitud ≥ 3 ✓, pero "tomado" en servidor
 		form.name = 'OK';
 
-		const result = qCheckRules(form);
+		const result = $qCheckRules(form);
 
 		// ⚠️ checkRules() devuelve válido aunque "taken_user" debería fallar
 		expect(result.valid).toBe(true);
@@ -915,8 +926,8 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		form.username = 'taken_user'; // longitud ≥ 3 ✓, "tomado" en servidor ✗
 		form.name = 'OK';
 
-		const syncResult = qCheckRules(form);
-		const asyncResult = await qCheckRulesAsync(form);
+		const syncResult = $qCheckRules(form);
+		const asyncResult = await $qCheckRulesAsync(form);
 
 		// checkRules() no ve el fallo async
 		expect(syncResult.valid).toBe(true);
@@ -932,7 +943,7 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		form.username = 'ab'; // falla sync (< 3) Y async (no aplica por longitud, pero se ejecuta)
 		form.name = 'X'; // falla sync (< 2)
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 
 		expect(result.valid).toBe(false);
 		const fields = result.errors.map((err) => err.field);
@@ -945,7 +956,7 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		form.username = 'free_user'; // longitud ≥ 3 ✓, no tomado ✓
 		form.name = 'Alice'; // longitud ≥ 2 ✓
 
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
@@ -956,14 +967,14 @@ describe('Reglas mixtas — checkRulesAsync() evalúa todas las reglas', () => {
 		form.username = 'ab'; // falla sync (< 3 chars) — la regla async NO llega a evaluarse
 		form.name = 'OK';
 
-		const result = await qCheckRulesAsync(form, { mode: 'serial' });
+		const result = await $qCheckRulesAsync(form, { mode: 'serial' });
 
 		expect(result.valid).toBe(false);
 		// El primer error es el sync (declarado primero)
 		expect(result.errors[0].message).toBe('Username too short');
 	});
 
-	test('QModel.$qCheckRulesAsync() tiene el mismo comportamiento que qCheckRulesAsync()', async () => {
+	test('QModel.$qCheckRulesAsync() tiene el mismo comportamiento que $qCheckRulesAsync()', async () => {
 		// Verifica que el método en QModel delega correctamente al helper
 
 		@Quick({ username: 'string', name: 'string' })

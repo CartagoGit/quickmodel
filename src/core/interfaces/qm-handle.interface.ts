@@ -2,6 +2,7 @@ import type { IQAnyRecord } from '@/core/interfaces/model.interface';
 import type { IQSerializationOptions } from '@/core/interfaces/serializer.interface';
 import type {
 	IQAliasedSerializedInterface,
+	IQSafeSerializedInterface,
 	IQSerializedInterface,
 	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
@@ -52,8 +53,9 @@ export interface IQMHandle<
 	TInterface extends IQAnyRecord,
 	TAliasMap extends Record<string, string>,
 	TModel,
+	TSensitiveKeys extends keyof TInterface = never,
 > {
-	// ── Serialization ──────────────────────────────────────────────────────────
+	// ── Serialization ──────────────────────────────────────────────────────────────────────────────
 
 	/**
 	 * Serializes the model to a plain JSON-safe object.
@@ -61,12 +63,19 @@ export interface IQMHandle<
 	 * @see {@link QModel.serialize}
 	 */
 	serialize(
-		options?: IQSerializationOptions
+		options: IQSerializationOptions & { includeSensitive: true }
 	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	serialize(
+		seen: WeakSet<object>,
+		options: IQSerializationOptions & { includeSensitive: true }
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	serialize(
+		options?: IQSerializationOptions
+	): IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys>;
 	serialize(
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
-	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	): IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys>;
 
 	/**
 	 * Converts the model to a `FormData` instance.
@@ -179,14 +188,14 @@ export interface IQMHandle<
 	/**
 	 * Returns a combined report from integrity checks and `@QRule` evaluation.
 	 *
-	 * @see {@link QModel.validationReport}
+	 * @see {@link QModel.$qValidationReport}
 	 */
 	validationReport(): IQValidationReport;
 
 	/**
 	 * Async version of `validationReport()`.
 	 *
-	 * @see {@link QModel.validationReportAsync}
+	 * @see {@link QModel.$qValidationReportAsync}
 	 */
 	validationReportAsync(
 		options?: IQRulesAsyncOptions
@@ -196,7 +205,7 @@ export interface IQMHandle<
 	 * Unified validation method — sync by default, async when `options.async: true`.
 	 * Combines integrity checks and `@QRule` evaluation.
 	 *
-	 * @see {@link QModel.validate}
+	 * @see {@link QModel.$qValidate}
 	 */
 	validate(
 		options?: IQValidateOptions

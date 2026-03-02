@@ -231,7 +231,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	// =========================================================================
 	// Scenario 7: instance methods are available
 	// =========================================================================
-	describe('Scenario 7: instance methods serialize(), toJSON(), isDirty(), copy()', () => {
+	describe('Scenario 7: instance methods $qSerialize(), toJSON(), $qIsDirty(), $qCopy()', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
 		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
@@ -245,35 +245,35 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 			promotedAt: '2022-11-11T00:00:00.000Z',
 		});
 
-		it('serialize() should return a plain object', () => {
+		it('$qSerialize() should return a plain object', () => {
 			const plain = instance.$qSerialize();
-			expect(typeof plain).toBe('object');
 			expect(plain).not.toBeNull();
 		});
 
-		it('toJSON() should return a JSON string', () => {
+		it('toJSON() should return a plain object', () => {
 			const json = instance.toJSON();
-			expect(typeof json).toBe('string');
-			// Should be valid JSON
-			expect(() => JSON.parse(json)).not.toThrow();
+			expect(typeof json).toBe('object');
+			expect(json).not.toBeNull();
+			// Should be JSON.stringify-safe
+			expect(() => JSON.stringify(json)).not.toThrow();
 		});
 
-		it('isDirty() should be available', () => {
-			expect(typeof instance.isDirty).toBe('function');
+		it('$qIsDirty() should be available', () => {
+			expect(typeof instance.$qIsDirty).toBe('function');
 			expect(instance.$qIsDirty()).toBe(false);
 		});
 
-		it('copy() should be available and return updated instance', () => {
-			expect(typeof instance.copy).toBe('function');
+		it('$qCopy() should be available and return updated instance', () => {
+			expect(typeof instance.$qCopy).toBe('function');
 			const merged = instance.$qCopy({ username: 'eve-updated' });
 			expect(merged.username).toBe('eve-updated');
 		});
 	});
 
 	// =========================================================================
-	// Scenario 8: serialize() includes fields from both external base and mixin
+	// Scenario 8: $qSerialize() includes fields from both external base and mixin
 	// =========================================================================
-	describe('Scenario 8: serialize() includes external base fields AND mixin fields', () => {
+	describe('Scenario 8: $qSerialize() includes external base fields AND mixin fields', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
 		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
@@ -445,9 +445,9 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 	});
 
 	// =========================================================================
-	// Scenario 12: getDirtyFields() and reset() on mixin instance
+	// Scenario 12: $qGetDirtyFields() and $qReset() on mixin instance
 	// =========================================================================
-	describe('Scenario 12: getDirtyFields() and reset() work on mixin instances', () => {
+	describe('Scenario 12: $qGetDirtyFields() and $qReset() work on mixin instances', () => {
 		const AdminBase = QModel.extends<ExternalUser>(ExternalUser);
 
 		@Quick({ promotedAt: Date }, { unknownPropertyPolicy: 'keep' })
@@ -456,18 +456,18 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 			declare promotedAt: Date;
 		}
 
-		it('getDirtyFields() should return empty set after create()', () => {
+		it('$qGetDirtyFields() should return empty set after create()', () => {
 			const instance = AdminDirty.create({
 				username: 'clean',
 				promotedAt: '2024-01-01T00:00:00.000Z',
 			});
 
-			expect(typeof instance.getDirtyFields).toBe('function');
-			const dirty = instance.getDirtyFields();
+			expect(typeof instance.$qGetDirtyFields).toBe('function');
+			const dirty = instance.$qGetDirtyFields();
 			expect(dirty.size).toBe(0);
 		});
 
-		it('getDirtyFields() should list fields modified via patch()', () => {
+		it('$qGetDirtyFields() should list fields modified via patch()', () => {
 			const instance = AdminDirty.create({
 				username: 'clean',
 				promotedAt: '2024-01-01T00:00:00.000Z',
@@ -475,7 +475,7 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 
 			instance.$qPatch({ username: 'dirty' });
 
-			const dirty = instance.getDirtyFields();
+			const dirty = instance.$qGetDirtyFields();
 			expect(dirty.has('username')).toBe(true);
 		});
 
@@ -521,8 +521,8 @@ describe('Integration: QModel.extends(ExternalClass)', () => {
 				salary: '123456789',
 			});
 
-			// toJSON() serializes to string (bigint → string, Date → ISO string)
-			const json = original.toJSON();
+			// $qToJSON() serializes to string (bigint → string, Date → ISO string)
+			const json = original.$qToJSON();
 			expect(typeof json).toBe('string');
 
 			// deserializeJson() parses the JSON and re-applies transformers

@@ -31,8 +31,9 @@ Coordinate parallel agent work and prevent file conflicts. Multiple VS Code wind
 
 1. Agent calls `claim` → declares which files it will touch → stored in `tmp/agent-registry.json`
 2. Any other agent calling `claim` with overlapping files gets `conflict: true` immediately
-3. Agent calls `release` when done → entry deleted from the registry
-4. If an agent crashes without releasing, its entry expires automatically after 2 min (TTL)
+3. **Before modifying each file**, read its current content from disk — context may be stale if another agent edited it after you loaded your context window. Adapt, merge, or skip the edit if the file changed. Never overwrite from stale context.
+4. Agent calls `release` when done → entry deleted from the registry
+5. If an agent crashes without releasing, its entry expires automatically after 2 min (TTL)
 
 ### Safety mechanisms
 

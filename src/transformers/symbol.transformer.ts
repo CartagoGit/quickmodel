@@ -9,7 +9,7 @@
  * Uses `Symbol.for(description)` to ensure the same symbol can be recovered
  * across serialization boundaries.
  *
- * @see {@link QModel.serialize} — triggers this transformer when a `Symbol` field is encountered
+ * @see {@link QModel.$qSerialize} — triggers this transformer when a `Symbol` field is encountered
  * @see {@link Quick} — use `@Quick({ field: Symbol })` to activate this transformer
  * @module transformers/symbol
  */

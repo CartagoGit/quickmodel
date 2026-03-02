@@ -222,10 +222,10 @@ describe('QExportJsonSchemaTool — additional paths', () => {
 			export class Empty extends QModel<IEmpty> {}
 		`;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
-		expect(schema.type).toBe('object');
-		expect(Object.keys(schema.properties)).toHaveLength(0);
-		expect(schema.required).toHaveLength(0);
+		const schema = result.schema as Record<string, unknown>;
+		expect(schema['type']).toBe('object');
+		expect(Object.keys(schema['properties'] as object)).toHaveLength(0);
+		expect((schema['required'] as unknown[]).length).toBe(0);
 	});
 
 	it('should default unknown type to string in json schema', async () => {
@@ -237,9 +237,9 @@ describe('QExportJsonSchemaTool — additional paths', () => {
 			}
 		`;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
+		const schema = result.schema as Record<string, Record<string, unknown>>;
 		// 'buffer' is not a known JSON Schema type → defaults to { type: 'string' }
-		expect(schema.properties.data).toEqual({ type: 'string' });
+		expect(schema['properties']['data']).toEqual({ type: 'string' });
 	});
 
 	it('should set title to "Unknown" when class does not extend QModel', async () => {
@@ -249,9 +249,9 @@ describe('QExportJsonSchemaTool — additional paths', () => {
 			class Plain {}
 		`;
 		const result = await tool.execute({ code });
-		const schema = result.schema as any;
-		expect(schema.title).toBe('Unknown');
-		expect(schema.properties.x).toEqual({ type: 'number' });
+		const schema = result.schema as Record<string, Record<string, unknown>>;
+		expect(schema['title']).toBe('Unknown');
+		expect(schema['properties']['x']).toEqual({ type: 'number' });
 	});
 });
 

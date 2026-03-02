@@ -54,6 +54,7 @@ export type { IQFormSchemaGroup } from './core/decorators/qgroup.decorator';
 export type {
 	IQSerializedInterface,
 	IQAliasedSerializedInterface,
+	IQSafeSerializedInterface,
 } from './core/interfaces/serialization-types.interface';
 export type { IQAdvancedOptions } from './core/interfaces/quick-options.interface';
 export type { IQValidateOptions } from './core/models/quick.model';

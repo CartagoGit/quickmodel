@@ -6,7 +6,7 @@
  * Handles round-trip serialization/deserialization of `RegExp` objects:
  * `string | { __type: 'regexp'; source: string; flags: string }` ↔ `RegExp`.
  *
- * @see {@link QModel.serialize} — triggers this transformer when a `RegExp` field is encountered
+ * @see {@link QModel.$qSerialize} — triggers this transformer when a `RegExp` field is encountered
  * @see {@link Quick} — use `@Quick({ field: RegExp })` to activate this transformer
  * @module transformers/regexp
  */

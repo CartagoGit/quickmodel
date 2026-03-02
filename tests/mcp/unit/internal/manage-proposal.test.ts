@@ -52,35 +52,39 @@ describe('QManageProposalTool', () => {
 		const result = (await tool.execute({
 			action: 'list',
 			tasks_path: TASKS_PATH,
-		})) as any;
+		})) as Record<string, unknown>;
 		expect(result).toMatchObject({ action: 'list' });
-		expect(result.total).toBeGreaterThanOrEqual(2);
-		expect(result.proposals.some((prop: any) => prop.letter === 'A')).toBe(
-			true
-		);
-		expect(result.proposals.some((prop: any) => prop.letter === 'B')).toBe(
-			true
-		);
+		expect(result['total']).toBeGreaterThanOrEqual(2);
+		expect(
+			(result['proposals'] as Array<Record<string, unknown>>).some(
+				(prop) => prop['letter'] === 'A'
+			)
+		).toBe(true);
+		expect(
+			(result['proposals'] as Array<Record<string, unknown>>).some(
+				(prop) => prop['letter'] === 'B'
+			)
+		).toBe(true);
 	});
 
 	it('should parse proposal titles correctly', async () => {
 		const result = (await tool.execute({
 			action: 'list',
 			tasks_path: TASKS_PATH,
-		})) as any;
-		const propA = result.proposals?.find(
-			(prop: any) => prop.letter === 'A'
-		);
-		expect(propA?.title).toContain('First Proposal');
+		})) as Record<string, unknown>;
+		const propA = (
+			result['proposals'] as Array<Record<string, unknown>>
+		)?.find((prop) => prop['letter'] === 'A');
+		expect(propA?.['title']).toContain('First Proposal');
 	});
 
 	it('should get next proposal ID after B → returns C', async () => {
 		const result = (await tool.execute({
 			action: 'get-next-id',
 			tasks_path: TASKS_PATH,
-		})) as any;
+		})) as Record<string, unknown>;
 		expect(result).toMatchObject({ action: 'get-next-id' });
-		expect(result.letter).toBe('C');
+		expect(result['letter']).toBe('C');
 	});
 
 	it('should add a new proposal and write it to file', async () => {
@@ -90,10 +94,10 @@ describe('QManageProposalTool', () => {
 			description: 'Add support for external integrations.',
 			priority: 'alta',
 			tasks_path: TASKS_PATH,
-		})) as any;
+		})) as Record<string, unknown>;
 
 		expect(result).toMatchObject({ action: 'add', success: true });
-		expect(result.letter).toBe('C');
+		expect(result['letter']).toBe('C');
 
 		const updatedContent = readFileSync(TASKS_PATH, 'utf-8');
 		expect(updatedContent).toContain('New Integration Feature');
@@ -118,9 +122,9 @@ describe('QManageProposalTool', () => {
 		const result = (await tool.execute({
 			action: 'add',
 			tasks_path: TASKS_PATH,
-		})) as any;
+		})) as Record<string, unknown>;
 		expect(result).toMatchObject({ success: false });
-		expect(result.error).toContain('title and description are required');
+		expect(result['error']).toContain('title and description are required');
 	});
 
 	it('should fail with path traversal attempt', async () => {
@@ -135,8 +139,8 @@ describe('QManageProposalTool', () => {
 		const result = (await tool.execute({
 			action: 'list',
 			tasks_path: TASKS_PATH,
-		})) as any;
-		expect(typeof result.summary).toBe('string');
-		expect(result.summary.length).toBeGreaterThan(0);
+		})) as Record<string, unknown>;
+		expect(typeof result['summary']).toBe('string');
+		expect((result['summary'] as string).length).toBeGreaterThan(0);
 	});
 });

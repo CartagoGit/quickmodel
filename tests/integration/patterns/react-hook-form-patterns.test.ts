@@ -6,16 +6,18 @@
  * No RHF packages imported — pure TypeScript logic only.
  *
  * Key patterns:
- * - qCheckRules() as the RHF validate function (no Zod/Yup resolver needed)
+ * - $qCheckRules() as the RHF validate function (no Zod/Yup resolver needed)
  * - handleSubmit builds a DTO for final coercion + strip
  * - getFormSchema() drives dynamic field rendering
  * - isDirty() complements RHF's formState.isDirty
- * - qCheckRulesAsync() for async field-level validation (e.g. email uniqueness)
+ * - $qCheckRulesAsync() for async field-level validation (e.g. email uniqueness)
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
+import { $qCheckRulesByGroup } from '@/core/helpers/q-check-rules-by-group';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -37,7 +39,7 @@ interface IContactForm {
 	subject: string;
 }
 
-// Plain class (no QModel) — works with @QRule and qCheckRules standalone
+// Plain class (no QModel) — works with @QRule and $qCheckRules standalone
 class ContactForm {
 	@QField({ widget: 'input', label: 'Full Name', required: true })
 	@QRule((val: string) => val.trim().length >= 2, 'Name too short')
@@ -122,7 +124,7 @@ class UserSignupDto extends QModel<IUserSignup> {
 }
 
 // ---------------------------------------------------------------------------
-// 1. validate adapter — qCheckRules() → RHF errors object
+// 1. validate adapter — $qCheckRules() → RHF errors object
 // ---------------------------------------------------------------------------
 
 describe('React Hook Form — validate adapter', () => {
@@ -130,7 +132,7 @@ describe('React Hook Form — validate adapter', () => {
 	function createQValidator<TForm extends object>(instance: TForm) {
 		return (data: Partial<TForm>): true | Record<string, string> => {
 			Object.assign(instance, data);
-			const { valid, errors } = qCheckRules(instance);
+			const { valid, errors } = $qCheckRules(instance);
 			if (valid) return true;
 			return errors.reduce<Record<string, string>>((acc, err) => {
 				if (!(err.field in acc)) acc[err.field] = err.message;
@@ -374,7 +376,7 @@ describe('React Hook Form — @QGroup: multi-step wizard validation', () => {
 			age: 0,
 			role: '',
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		expect(byGroup['account']?.valid).toBe(true);
 	});
 
@@ -386,7 +388,7 @@ describe('React Hook Form — @QGroup: multi-step wizard validation', () => {
 			age: 0,
 			role: '',
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		expect(byGroup['account']?.valid).toBe(false);
 	});
 
@@ -398,7 +400,7 @@ describe('React Hook Form — @QGroup: multi-step wizard validation', () => {
 			age: 0,
 			role: '',
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		expect(byGroup['security']?.valid).toBe(false);
 		expect(
 			byGroup['security']?.errors.some((err) => err.field === 'password')
@@ -413,7 +415,7 @@ describe('React Hook Form — @QGroup: multi-step wizard validation', () => {
 			age: 25,
 			role: 'user',
 		});
-		const byGroup = qCheckRulesByGroup(dto);
+		const byGroup = $qCheckRulesByGroup(dto);
 		expect(byGroup['profile']?.valid).toBe(true);
 	});
 });
@@ -476,10 +478,10 @@ describe('React Hook Form — isDirty() integration', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 6. Async validation — qCheckRulesAsync() for field-level async
+// 6. Async validation — $qCheckRulesAsync() for field-level async
 // ---------------------------------------------------------------------------
 
-describe('React Hook Form — qCheckRulesAsync(): async field validation', () => {
+describe('React Hook Form — $qCheckRulesAsync(): async field validation', () => {
 	const takenEmails = new Set<string>([
 		'taken@example.com',
 		'admin@site.com',
@@ -501,7 +503,7 @@ describe('React Hook Form — qCheckRulesAsync(): async field validation', () =>
 			age: 25,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 
@@ -513,7 +515,7 @@ describe('React Hook Form — qCheckRulesAsync(): async field validation', () =>
 			age: 25,
 			role: 'user',
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 		const emailErrors = result.errors.filter(
 			(err) => err.field === 'email'

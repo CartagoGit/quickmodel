@@ -37,7 +37,7 @@ describe('transformCase: multi-level inheritance', () => {
 			const child = new Child({
 				base_field: 'from-base',
 				child_field: 'from-child',
-			} as any);
+			});
 
 			expect(child.baseField).toBe('from-base');
 			expect(child.childField).toBe('from-child');
@@ -60,7 +60,7 @@ describe('transformCase: multi-level inheritance', () => {
 			}
 
 			const child = new Child({ baseField: 'a', childField: 'b' });
-			const json = JSON.parse(child.toJSON());
+			const json = child.toJSON();
 
 			expect(json.base_field).toBe('a');
 			expect(json.child_field).toBe('b');
@@ -87,8 +87,8 @@ describe('transformCase: multi-level inheritance', () => {
 			const child = new Child({
 				created_at: '2025-01-01',
 				user_id: 7,
-			} as any);
-			const json = JSON.parse(child.toJSON());
+			});
+			const json = child.toJSON();
 
 			expect(child.createdAt).toBe('2025-01-01');
 			expect(child.userId).toBe(7);
@@ -126,7 +126,7 @@ describe('transformCase: multi-level inheritance', () => {
 				base_field: 'base',
 				middle_field: 'middle',
 				child_field: 'child',
-			} as any);
+			});
 
 			expect(child.baseField).toBe('base');
 			expect(child.middleField).toBe('middle');
@@ -158,7 +158,7 @@ describe('transformCase: multi-level inheritance', () => {
 				middleField: 'middle',
 				childField: 'child',
 			});
-			const json = JSON.parse(child.toJSON());
+			const json = child.toJSON();
 
 			expect(json.base_field).toBe('base');
 			expect(json.middle_field).toBe('middle');
@@ -187,7 +187,7 @@ describe('transformCase: multi-level inheritance', () => {
 				base_field: 'b',
 				middle_field: 'm',
 				child_field: 'c',
-			} as any);
+			});
 
 			expect(child.baseField).toBe('b');
 			expect(child.middleField).toBe('m');
@@ -217,7 +217,7 @@ describe('transformCase: multi-level inheritance', () => {
 				middleField: 'm',
 				childField: 'c',
 			});
-			const json = JSON.parse(child.toJSON());
+			const json = child.toJSON();
 
 			expect(json.base_field).toBe('b');
 			expect(json.middle_field).toBe('m');
@@ -248,13 +248,13 @@ describe('transformCase: multi-level inheritance', () => {
 				created_at: '2024-06-15',
 				label: 'test',
 				user_id: 42,
-			} as any);
+			});
 
 			expect(child.createdAt).toBeInstanceOf(Date);
 			expect(child.label).toBe('test');
 			expect(child.userId).toBe(42);
 
-			const json = JSON.parse(child.toJSON());
+			const json = child.toJSON();
 			expect(json.created_at).toBeDefined();
 			expect(json.label).toBe('test');
 			expect(json.user_id).toBe(42);
@@ -290,7 +290,7 @@ describe('transformCase: multi-level inheritance', () => {
 				base_field: 'b',
 				middle_field: 'm',
 				child_field: 'c',
-			} as any);
+			});
 
 			expect(child.baseField).toBe('b');
 			expect(child.middleField).toBe('m');
@@ -327,7 +327,7 @@ describe('transformCase: multi-level inheritance', () => {
 				'api-key': 'abc',
 				'max-retries': 3,
 				'timeout-ms': 5000,
-			} as any);
+			});
 
 			expect(child.apiKey).toBe('abc');
 			expect(child.maxRetries).toBe(3);

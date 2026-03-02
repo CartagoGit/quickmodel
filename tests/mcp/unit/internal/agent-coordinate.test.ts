@@ -22,6 +22,48 @@ function makeTool(ttlMs?: number): QAgentCoordinateTool {
 	return tool;
 }
 
+/**
+ * Writes a stale registry file with two expired entries whose `updatedAt === startedAt`,
+ * reproducing the exact state observed in `tmp/agent-registry.json`.
+ * The `ttlMs` parameter controls how far in the past the entries expire.
+ */
+function buildStaleRegistry(
+	ttlMs: number,
+	filesA: string[],
+	filesB: string[]
+): void {
+	mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+	const startedA = new Date(Date.now() - ttlMs * 3).toISOString();
+	const startedB = new Date(Date.now() - ttlMs * 2).toISOString();
+	writeFileSync(
+		TMP_REGISTRY,
+		JSON.stringify({
+			agents: {
+				'copilot-main': {
+					agentId: 'copilot-main',
+					task: 'fix all as any casts in tests/',
+					files: filesA,
+					startedAt: startedA,
+					updatedAt: startedA,
+					expiresAt: new Date(
+						new Date(startedA).getTime() + ttlMs
+					).toISOString(),
+				},
+				'copilot-sensitive-types': {
+					agentId: 'copilot-sensitive-types',
+					task: 'add TSensitiveKeys generic to QModel for type-safe sensitive fields',
+					files: filesB,
+					startedAt: startedB,
+					updatedAt: startedB,
+					expiresAt: new Date(
+						new Date(startedB).getTime() + ttlMs
+					).toISOString(),
+				},
+			},
+		})
+	);
+}
+
 describe('QAgentCoordinateTool', () => {
 	beforeEach(() => {
 		QAgentCoordinateTool._resetForTest();
@@ -877,9 +919,14 @@ describe('QAgentCoordinateTool', () => {
 	// ── force threshold (30 s default) ─────────────────────────────────────
 
 	describe('force threshold is 30 seconds', () => {
-		it('force=true does NOT override a claim that is only 30 seconds old', async () => {
+		it('force=true does NOT override a claim that is only 15 seconds old (well within threshold)', async () => {
 			const tool = makeTool();
-			const thirtySecAgo = new Date(Date.now() - 30 * 1000).toISOString();
+			// Use 15 s ago — clearly within the 30 s default _staleCrashMs threshold.
+			// Using exactly 30 s creates a timing race: a few extra ms during test
+			// execution push ageMs > 30000, making force succeed unexpectedly.
+			const fifteenSecAgo = new Date(
+				Date.now() - 15 * 1000
+			).toISOString();
 			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
 			writeFileSync(
 				TMP_REGISTRY,
@@ -889,8 +936,8 @@ describe('QAgentCoordinateTool', () => {
 							agentId: 'recent-agent',
 							task: 'recent task',
 							files: ['src/**'],
-							startedAt: thirtySecAgo,
-							updatedAt: thirtySecAgo,
+							startedAt: fifteenSecAgo,
+							updatedAt: fifteenSecAgo,
 							expiresAt: new Date(
 								Date.now() + 5 * 60 * 1000
 							).toISOString(),
@@ -997,6 +1044,7 @@ describe('QAgentCoordinateTool', () => {
 		it('stops when all agents expire and registry becomes empty', async () => {
 			QAgentCoordinateTool._tickerIntervalMs = 40;
 			QAgentCoordinateTool._inactivityThresholdMs = 5000; // disable inactivity stop
+			QAgentCoordinateTool._autoRefreshOnTick = false; // must not renew — test verifies expiry path
 			// ttl = 50 ms so the agent expires before the second tick
 			const tool = makeTool(50);
 			await tool.execute({
@@ -1013,6 +1061,7 @@ describe('QAgentCoordinateTool', () => {
 		it('purges expired agents from registry JSON when stopping on empty registry', async () => {
 			QAgentCoordinateTool._tickerIntervalMs = 40;
 			QAgentCoordinateTool._inactivityThresholdMs = 5000;
+			QAgentCoordinateTool._autoRefreshOnTick = false; // must not renew — test verifies expiry path
 			const tool = makeTool(50);
 			await tool.execute({
 				action: 'claim',
@@ -1043,6 +1092,33 @@ describe('QAgentCoordinateTool', () => {
 			const mdAfter = readFileSync(TMP_STATUS, 'utf-8');
 			// The _Updated_ timestamp inside the .md must have changed
 			expect(mdAfter).not.toBe(mdBefore);
+		});
+
+		it('auto-renews TTL of active agents on each tick (keepalive while MCP is running)', async () => {
+			// This test verifies the core fix: agents do not need to send explicit heartbeats.
+			// The ticker keeps their entries alive as long as the MCP server process is running.
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000; // disable idle stop
+			QAgentCoordinateTool._autoRefreshOnTick = true; // explicit — this is the default
+			const tool = makeTool(60); // TTL = 60 ms — shorter than 2× tick interval (80 ms)
+			await tool.execute({
+				action: 'claim',
+				agentId: 'no-heartbeat-but-alive',
+				task: 'long work without explicit heartbeats',
+				files: ['src/**'],
+			});
+			// Wait 3× TTL — without auto-refresh the entry would have expired after 60 ms.
+			// With auto-refresh the ticker fires at ~40 ms and renews before expiry.
+			await Bun.sleep(200);
+			// Entry must still be alive because ticker kept renewing it.
+			const tool2 = makeTool();
+			tool2._registryPath = TMP_REGISTRY;
+			tool2._statusPath = TMP_STATUS;
+			const res = await tool2.execute({ action: 'check' });
+			expect(res.total).toBe(1);
+			expect(res.agents[0]?.agentId).toBe('no-heartbeat-but-alive');
+			// Verified: updatedAt was refreshed by the ticker (no longer equals startedAt)
+			expect(res.agents[0]?.updatedAt).not.toBe(res.agents[0]?.startedAt);
 		});
 	});
 
@@ -1113,6 +1189,271 @@ describe('QAgentCoordinateTool', () => {
 			expect(thrown).toBe(true);
 			// Manually release so afterEach cleanup works
 			unlinkSync(TMP_LOCK);
+		});
+	});
+
+	// ── Real-world: agent never sends a heartbeat ────────────────────────────
+	// Reproduces the exact state seen in tmp/agent-registry.json:
+	// both entries had updatedAt === startedAt, meaning the agents claimed but
+	// never called update or check+agentId, so the TTL silently drained.
+
+	describe('real-world: agent never sends a heartbeat', () => {
+		it('initial claim has updatedAt identical to startedAt', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'no-heartbeat-agent',
+				task: 'fix as any casts',
+				files: ['tests/**'],
+			});
+			const res = await tool.execute({ action: 'check' });
+			const entry = res.agents[0];
+			// Immediately after claim, updatedAt must equal startedAt — no automatic refresh has fired.
+			// If these are ever different before any heartbeat, the system is refreshing silently
+			// without being asked to, which would mask the "no heartbeat" footgun.
+			expect(entry?.updatedAt).toBe(entry?.startedAt);
+		});
+
+		it('check WITHOUT agentId does not refresh updatedAt or expiresAt', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'no-heartbeat-agent',
+				task: 'fix as any casts',
+				files: ['tests/**'],
+			});
+			const before = (await tool.execute({ action: 'check' })).agents[0];
+			await new Promise((resolve) => setTimeout(resolve, 5));
+			// A plain check without the agent's own agentId must NOT refresh TTL.
+			await tool.execute({ action: 'check' });
+			const after = (await tool.execute({ action: 'check' })).agents[0];
+			expect(after?.updatedAt).toBe(before?.updatedAt);
+			expect(after?.expiresAt).toBe(before?.expiresAt);
+		});
+
+		it('entry expires after TTL with no heartbeat and is cleaned on next execute()', async () => {
+			const tool = makeTool(50); // TTL = 50 ms
+			await tool.execute({
+				action: 'claim',
+				agentId: 'no-heartbeat-agent',
+				task: 'fix as any casts',
+				files: ['tests/**'],
+			});
+			// No heartbeat calls. Wait for TTL to expire.
+			await new Promise((resolve) => setTimeout(resolve, 100));
+			// The next call triggers readRegistry() which auto-purges expired entries.
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+			expect(res.purgedStale).toBe(1);
+		});
+
+		it('between expiry and next execute(), the JSON file on disk still contains the expired entry', async () => {
+			// This is the exact scenario the user observed: both agents in tmp/agent-registry.json
+			// had expiresAt in the past but were still on disk. The file is only cleaned on
+			// the next readRegistry() call — there is NO background mechanism that cleans it
+			// if the MCP process (and its ticker) has terminated.
+			const tool = makeTool(50); // TTL = 50 ms
+			await tool.execute({
+				action: 'claim',
+				agentId: 'no-heartbeat-agent',
+				task: 'fix as any casts',
+				files: ['tests/**'],
+			});
+			// Wait for TTL to expire, but do NOT call execute() again yet.
+			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Read the raw JSON directly from disk — entry is still there.
+			const raw = JSON.parse(readFileSync(TMP_REGISTRY, 'utf-8')) as {
+				agents: Record<string, { expiresAt: string }>;
+			};
+			const onDisk = raw.agents['no-heartbeat-agent'];
+			expect(onDisk).toBeDefined();
+			// Confirm it really is expired.
+			expect(new Date(onDisk?.expiresAt ?? 0).getTime()).toBeLessThan(
+				Date.now()
+			);
+		});
+
+		it('two expired stale entries coexist on disk, matching the observed registry state', async () => {
+			// Reproduces the exact registry that prompted this test suite:
+			// two agents, both with updatedAt === startedAt, both expired.
+			buildStaleRegistry(
+				50,
+				['tests/**'],
+				['src/core/interfaces/**', 'src/core/models/quick.model.ts']
+			);
+			// Both entries exist on disk and are past their expiresAt.
+			const raw = JSON.parse(readFileSync(TMP_REGISTRY, 'utf-8')) as {
+				agents: Record<
+					string,
+					{ startedAt: string; updatedAt: string; expiresAt: string }
+				>;
+			};
+			const agentA = raw.agents['copilot-main'];
+			const agentB = raw.agents['copilot-sensitive-types'];
+			expect(agentA).toBeDefined();
+			expect(agentB).toBeDefined();
+			// updatedAt === startedAt — neither agent ever heartbeated.
+			expect(agentA?.updatedAt).toBe(agentA?.startedAt);
+			expect(agentB?.updatedAt).toBe(agentB?.startedAt);
+			// Both are expired.
+			const now = Date.now();
+			expect(new Date(agentA?.expiresAt ?? 0).getTime()).toBeLessThan(
+				now
+			);
+			expect(new Date(agentB?.expiresAt ?? 0).getTime()).toBeLessThan(
+				now
+			);
+			// A single check() call purges both.
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+			expect(res.purgedStale).toBe(2);
+		});
+	});
+
+	// ── Real-world: status.md becomes stale when MCP process dies ───────────
+	// When the VS Code Extension Host (and therefore the ticker) is killed,
+	// no more ticks fire. The status file on disk is frozen at the last write.
+	// It may still show a "Expires in Xs" value that has since become "EXPIRED".
+
+	describe('real-world: status.md becomes stale when ticker is dead', () => {
+		it('status.md retains last-written content after ticker stops; a new execute() refreshes it', async () => {
+			// Use a very short TTL + ticker interval so the ticker stops quickly.
+			// _autoRefreshOnTick = false: we want to test the "ticker expires entries and stops"
+			// code path — otherwise the ticker would keep renewing the TTL indefinitely.
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 5000; // disable inactivity stop so ticker runs
+			QAgentCoordinateTool._autoRefreshOnTick = false;
+			const tool = makeTool(50); // TTL = 50 ms
+			await tool.execute({
+				action: 'claim',
+				agentId: 'soon-dead-agent',
+				task: 'task that will expire',
+				files: [],
+			});
+			// Wait for ticker to purge the entry and stop.
+			await Bun.sleep(200);
+			expect(QAgentCoordinateTool._tickerHandle).toBeNull();
+			// Ticker wrote the final empty status.md when it stopped.
+			const mdAfterStop = readFileSync(TMP_STATUS, 'utf-8');
+			expect(mdAfterStop).toContain('No active agents');
+
+			// Now simulate a new agent claiming AFTER the old ticker is gone.
+			const tool2 = makeTool(60_000); // long-lived claim
+			tool2._registryPath = TMP_REGISTRY;
+			tool2._statusPath = TMP_STATUS;
+			await tool2.execute({
+				action: 'claim',
+				agentId: 'new-agent',
+				task: 'fresh work',
+				files: ['src/**'],
+			});
+			const mdAfterNewClaim = readFileSync(TMP_STATUS, 'utf-8');
+			// Status file must now reflect the new agent.
+			expect(mdAfterNewClaim).toContain('new-agent');
+			expect(mdAfterNewClaim).toContain('fresh work');
+		});
+
+		it('if ticker never ran (MCP was restarted), status.md from before restart may show stale entries', async () => {
+			// Write a registry and status file that look like they were left by a dead process.
+			const longAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString(); // 10 min ago
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'zombie-agent': {
+							agentId: 'zombie-agent',
+							task: 'never finished',
+							files: ['tests/**'],
+							startedAt: longAgo,
+							updatedAt: longAgo,
+							expiresAt: new Date(
+								Date.now() - 8 * 60 * 1000
+							).toISOString(), // expired 8 min ago
+						},
+					},
+				})
+			);
+			// Write a stale status file that still shows the zombie agent as "active".
+			writeFileSync(
+				TMP_STATUS,
+				`# Agent Coordination Status\n_Updated: ${longAgo} — 1 active agent(s)_\n\n| Agent | Task | Files | Last activity | Expires in |\n|-------|------|-------|---------------|------------|\n| zombie-agent | never finished | \`tests/**\` | 10m ago | 23s |\n`
+			);
+
+			// Without calling execute(), the stale status file persists — this is the real-world bug.
+			const staleMd = readFileSync(TMP_STATUS, 'utf-8');
+			expect(staleMd).toContain('zombie-agent');
+			// The "Expires in" value is clearly wrong: the agent expired 8 minutes ago.
+
+			// Calling execute() triggers readRegistry() which purges the entry.
+			const tool = makeTool();
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(0);
+			expect(res.purgedStale).toBe(1);
+
+			// Now status.md reflects reality.
+			const freshMd = readFileSync(TMP_STATUS, 'utf-8');
+			expect(freshMd).toContain('No active agents');
+			expect(freshMd).not.toContain('zombie-agent');
+		});
+
+		it('agent re-claims after VS Code restart: re-claim is idempotent and restores tracking', async () => {
+			// Simulate what happens in practice:
+			// 1. Before restart: agent claimed and was working. VS Code stopped, ticker died.
+			// 2. Entry is on disk but NOT expired (within 30 min window or still fresh).
+			// 3. After restart: agent calls claim with the same agentId.
+			//    Expected: claim succeeds, startedAt preserved, updatedAt/expiresAt refreshed,
+			//    new ticker starts and will keep renewing the TTL going forward.
+			const originalStartedAt = new Date(
+				Date.now() - 5 * 60 * 1000
+			).toISOString();
+			const originalUpdatedAt = originalStartedAt; // never heartbeated before restart
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'resuming-agent': {
+							agentId: 'resuming-agent',
+							task: 'add TSensitiveKeys generic to QModel',
+							files: [
+								'src/core/models/quick.model.ts',
+								'src/core/interfaces/**',
+							],
+							startedAt: originalStartedAt,
+							updatedAt: originalUpdatedAt,
+							expiresAt: new Date(
+								Date.now() + 25 * 60 * 1000
+							).toISOString(), // 25 min left
+						},
+					},
+				})
+			);
+
+			// After restart, agent re-claims with same agentId and same task.
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'claim',
+				agentId: 'resuming-agent',
+				task: 'add TSensitiveKeys generic to QModel',
+				files: [
+					'src/core/models/quick.model.ts',
+					'src/core/interfaces/**',
+				],
+			});
+
+			expect(res.claimed).toBe(true);
+			expect(res.conflict).toBe(false);
+
+			// startedAt is preserved from the original session.
+			const check = await tool.execute({ action: 'check' });
+			const entry = check.agents[0];
+			expect(entry?.startedAt).toBe(originalStartedAt);
+			// updatedAt was refreshed by the re-claim — no longer equal to the pre-restart value.
+			expect(entry?.updatedAt).not.toBe(originalUpdatedAt);
+			// Ticker started again — will keep renewing TTL.
+			expect(QAgentCoordinateTool._tickerHandle).not.toBeNull();
 		});
 	});
 });

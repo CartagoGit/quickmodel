@@ -31,75 +31,75 @@ All operations return **new collections** — the original is never mutated.
 ### Filtering
 
 ```typescript
-const admins = users.where((u) => u.role === 'admin');
-const alice = users.find((u) => u.name === 'Alice'); // UserModel | undefined
+const admins = users.$qWhere((u) => u.role === 'admin');
+const alice = users.$qFind((u) => u.name === 'Alice'); // UserModel | undefined
 ```
 
 ### Sorting
 
 ```typescript
-const byName = users.sortBy('name');
-const byAgeDesc = users.sortBy('age', { desc: true });
+const byName = users.$qSortBy('name');
+const byAgeDesc = users.$qSortBy('age', { order: 'desc' });
 ```
 
 ### Pagination
 
 ```typescript
-const page1 = users.paginate(1, 10); // items 0–9
-const page2 = users.paginate(2, 10); // items 10–19
+const page1 = users.$qPaginate(1, 10); // items 0–9
+const page2 = users.$qPaginate(2, 10); // items 10–19
 ```
 
 ### Grouping
 
 ```typescript
-const byRole = users.groupBy('role');
+const byRole = users.$qGroupBy('role');
 // → { admin: UserModel[], viewer: UserModel[], ... }
 ```
 
 ## Functional utilities
 
 ```typescript
-users.size; // total count
-users.count((u) => u.active); // conditional count
-users.isEmpty; // true when empty
-users.first(); // UserModel | undefined
-users.last(); // UserModel | undefined
-users.every((u) => u.age >= 18); // boolean
-users.some((u) => u.role === 'admin'); // boolean
+users.$qSize; // total count
+users.$qCount((u) => u.active); // conditional count
+users.$qIsEmpty; // true when empty
+users.$qFirst(); // UserModel | undefined
+users.$qLast(); // UserModel | undefined
+users.$qEvery((u) => u.age >= 18); // boolean
+users.$qSome((u) => u.role === 'admin'); // boolean
 
-users.map((u) => u.name); // string[]
-users.flatMap((u) => [u.name, u.email]); // string[]
-users.reduce((acc, u) => acc + u.price, 0); // number
+users.$qMap((u) => u.name); // string[]
+users.$qFlatMap((u) => [u.name, u.email]); // string[]
+users.$qReduce((acc, u) => acc + u.price, 0); // number
 ```
 
 ### Aggregation helpers
 
 ```typescript
-users.sum('score'); // sum of numeric field
-users.avg('score'); // average
-users.min('score'); // minimum
-users.max('score'); // maximum
+users.$qSum('score'); // sum of numeric field
+users.$qAvg('score'); // average
+users.$qMin('score'); // minimum
+users.$qMax('score'); // maximum
 ```
 
 ## Serialization
 
 ```typescript
-users.serialize(); // plain object array
-users.serialize({ pick: ['id', 'name'] }); // subset of fields
-users.toJSON(); // JSON string
+users.$qSerialize(); // plain object array
+users.$qSerialize({ pick: ['id', 'name'] }); // subset of fields
+users.$qToJSON(); // JSON string
 
-users.toCSV();
+users.$qToCSV();
 // id,name,email
 // 1,Alice,alice@example.com
 // 2,Bob,bob@example.com
 
-users.toCSV({ delimiter: ';', fields: ['name', 'email'] });
+users.$qToCSV({ delimiter: ';', fields: ['name', 'email'] });
 ```
 
 ## Rule checking
 
 ```typescript
-const result = users.checkAllRules();
+const result = users.$qCheckAllRules();
 // → { valid: boolean, errors: [{ index, field, message }] }
 
 if (!result.valid) {
@@ -112,7 +112,7 @@ if (!result.valid) {
 ## Accessing raw instances
 
 ```typescript
-users.toArray(); // UserModel[]  (shallow copy)
+users.$qToArray(); // UserModel[]  (shallow copy)
 ```
 
 ## Chaining operations
@@ -121,10 +121,10 @@ All fluent methods return a new `QModelCollection`, so they chain naturally:
 
 ```typescript
 const report = UserModel.collection(dbRows)
-	.where((u) => u.active)
-	.sortBy('lastName')
-	.paginate(1, 20)
-	.serialize({ pick: ['id', 'firstName', 'lastName', 'email'] });
+	.$qWhere((u) => u.active)
+	.$qSortBy('lastName')
+	.$qPaginate(1, 20)
+	.$qSerialize({ pick: ['id', 'firstName', 'lastName', 'email'] });
 ```
 
 ## CSV export options
@@ -142,32 +142,32 @@ const report = UserModel.collection(dbRows)
 | ----------------------------------- | ------------------------------------------- |
 | `QModelCollection.from(Ctor, data)` | Factory — creates collection from raw array |
 | `Model.collection(data)`            | Static alias on any `QModel` subclass       |
-| `.where(fn)`                        | Filter — returns new collection             |
-| `.find(fn)`                         | Find first matching instance                |
-| `.sortBy(field, opts?)`             | Sort by field                               |
-| `.paginate(page, size)`             | Paginate                                    |
-| `.groupBy(field)`                   | Group into a record                         |
-| `.size`                             | Total item count                            |
-| `.count(fn?)`                       | Conditional count (all if no predicate)     |
-| `.isEmpty`                          | `true` when the collection is empty         |
-| `.first()`                          | First instance or `undefined`               |
-| `.last()`                           | Last instance or `undefined`                |
-| `.every(fn)`                        | `true` if all items satisfy the predicate   |
-| `.some(fn)`                         | `true` if at least one item matches         |
-| `.map(fn)`                          | Map instances to any value                  |
-| `.flatMap(fn)`                      | FlatMap instances                           |
-| `.reduce(fn, init)`                 | Reduce to a single value                    |
-| `.sum(field)`                       | Sum of a numeric field                      |
-| `.avg(field)`                       | Average of a numeric field                  |
-| `.min(field)`                       | Minimum value of a numeric field            |
-| `.max(field)`                       | Maximum value of a numeric field            |
-| `.unique(field)`                    | Unique values of a field                    |
-| `.toMap(keyField)`                  | Convert to `Map` keyed by a field           |
-| `.serialize(opts?)`                 | Array of plain objects                      |
-| `.toJSON()`                         | JSON string                                 |
-| `.toCSV(opts?)`                     | CSV string                                  |
-| `.checkAllRules()`                  | Validate all instances                      |
-| `.toArray()`                        | Plain array of model instances              |
+| `.$qWhere(fn)`                      | Filter — returns new collection             |
+| `.$qFind(fn)`                       | Find first matching instance                |
+| `.$qSortBy(field, opts?)`           | Sort by field                               |
+| `.$qPaginate(page, size)`           | Paginate                                    |
+| `.$qGroupBy(field)`                 | Group into a record                         |
+| `.$qSize`                           | Total item count                            |
+| `.$qCount(fn?)`                     | Conditional count (all if no predicate)     |
+| `.$qIsEmpty`                        | `true` when the collection is empty         |
+| `.$qFirst()`                        | First instance or `undefined`               |
+| `.$qLast()`                         | Last instance or `undefined`                |
+| `.$qEvery(fn)`                      | `true` if all items satisfy the predicate   |
+| `.$qSome(fn)`                       | `true` if at least one item matches         |
+| `.$qMap(fn)`                        | Map instances to any value                  |
+| `.$qFlatMap(fn)`                    | FlatMap instances                           |
+| `.$qReduce(fn, init)`               | Reduce to a single value                    |
+| `.$qSum(field)`                     | Sum of a numeric field                      |
+| `.$qAvg(field)`                     | Average of a numeric field                  |
+| `.$qMin(field)`                     | Minimum value of a numeric field            |
+| `.$qMax(field)`                     | Maximum value of a numeric field            |
+| `.$qUnique(field)`                  | Unique values of a field                    |
+| `.$qToMap(keyField)`                | Convert to `Map` keyed by a field           |
+| `.$qSerialize(opts?)`               | Array of plain objects                      |
+| `.$qToJSON()`                       | JSON string                                 |
+| `.$qToCSV(opts?)`                   | CSV string                                  |
+| `.$qCheckAllRules()`                | Validate all instances                      |
+| `.$qToArray()`                      | Plain array of model instances              |
 
 ## See also
 

@@ -15,7 +15,8 @@
 import { describe, test, expect } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QComputed, QField } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // 1. Svelte 5 runes simulation — $state wrapping QModel
@@ -162,7 +163,7 @@ describe('Svelte 5 — runes ($state / $derived) simulation', () => {
 			pinned: false,
 			createdAt: new Date(),
 		});
-		const schema = note.getSchema('json');
+		const schema = note.$qGetSchema('json');
 		expect(schema).toBeDefined();
 	});
 });
@@ -304,7 +305,7 @@ function kitFormAction(formData: Record<string, string>): IFormActionResult {
 	form.name = formData['name'] ?? '';
 	form.frequency = formData['frequency'] ?? 'weekly';
 
-	const validation = qCheckRules(form);
+	const validation = $qCheckRules(form);
 	if (!validation.valid) {
 		const errors: Record<string, string> = {};
 		for (const err of validation.errors) {
@@ -523,7 +524,7 @@ describe('Svelte — async slug uniqueness validation', () => {
 		const form = new BlogPostForm();
 		form.slug = 'my-new-post';
 		form.title = 'My New Post Title';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(true);
 	});
 
@@ -531,7 +532,7 @@ describe('Svelte — async slug uniqueness validation', () => {
 		const form = new BlogPostForm();
 		form.slug = 'hello-world';
 		form.title = 'Hello World Post';
-		const result = await qCheckRulesAsync(form);
+		const result = await $qCheckRulesAsync(form);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'slug')).toBe(true);
 	});
@@ -540,7 +541,7 @@ describe('Svelte — async slug uniqueness validation', () => {
 		const form = new BlogPostForm();
 		form.slug = 'Invalid Slug!';
 		form.title = 'Some Title Here';
-		const result = await qCheckRulesAsync(form, { mode: 'serial' });
+		const result = await $qCheckRulesAsync(form, { mode: 'serial' });
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'slug')).toBe(true);
 	});

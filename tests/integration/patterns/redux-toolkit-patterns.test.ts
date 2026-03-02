@@ -10,7 +10,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -458,7 +459,7 @@ describe('checkRules() before dispatch — validation guard', () => {
 		errors: string[];
 	} {
 		const dto = new CreateUserDto(payload);
-		const validation = qCheckRules(dto);
+		const validation = $qCheckRules(dto);
 		if (!validation.valid) {
 			return {
 				dispatched: false,
@@ -513,7 +514,7 @@ describe('checkRules() before dispatch — validation guard', () => {
 			role: 'user',
 			age: 20,
 		});
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((err) => err.field === 'email')).toBe(true);
 	});

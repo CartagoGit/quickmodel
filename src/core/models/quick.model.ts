@@ -38,6 +38,7 @@ import type {
 import type {
 	IQSerializedInterface,
 	IQAliasedSerializedInterface,
+	IQSafeSerializedInterface,
 	IQAliasInput,
 	IQModelData,
 } from '@/core/interfaces/serialization-types.interface';
@@ -314,7 +315,7 @@ export interface IQCreateManyResult<TInstance> {
  * ```
  * @see {@link Quick} — class decorator required before extending `QModel`
  * @see {@link QModel.create} — preferred factory method for creating instances
- * @see {@link QModel.serialize} — serialize an instance back to plain JSON
+ * @see {@link QModel.$qSerialize} — serialize an instance back to plain JSON
  */
 
 /**
@@ -344,49 +345,12 @@ function coerceUrlString(val: string | null, spec: unknown): unknown {
 	return val;
 }
 
-// ── Guard: enforce $q* access on protected methods ────────────────────────────
-/**
- * Set to `true` while inside a `$q*()` call, allowing the
- * underlying methods to execute. Uses a counter (not boolean) for re-entrancy.
- * @internal
- */
-let _qCallDepth = 0;
-
-/**
- * Wraps a `$q*` method call with the module-level counter.
- * Re-entrant: nested `_withQFlag` calls increment/decrement the counter safely.
- * Works for both sync and async methods since guard checks always run
- * synchronously before the first `await`.
- * @internal
- */
-function _withQFlag<TReturn>(cb: () => TReturn): TReturn {
-	_qCallDepth++;
-	try {
-		return cb();
-	} finally {
-		_qCallDepth--;
-	}
-}
-
-/**
- * Called at the start of every guarded QModel method. Throws if the code path
- * did not arrive through `instance.$q*()`, preventing
- * accidental direct calls on methods that must be accessed via the namespace.
- * @internal
- */
-function _assertQCall(method: string): void {
-	if (_qCallDepth === 0) {
-		throw new Error(
-			`[QuickModel] .${method}() must be called via instance.$q${method.charAt(0).toUpperCase()}${method.slice(1)}(). ` +
-				`See: https://quickmodel.dev/guide/reserved-words`
-		);
-	}
-}
 // ──────────────────────────────────────────────────────────────────────────────
 
 export abstract class QModel<
 	TInterface extends IQAnyRecord,
 	TAliasMap extends Record<string, string> = Record<never, never>,
+	TSensitiveKeys extends keyof TInterface = never,
 > {
 	// SOLID - Dependency Inversion: Services injected as dependencies
 	/** @internal Singleton deserializer used by all QModel instances. */
@@ -694,7 +658,7 @@ export abstract class QModel<
 	 * @example
 	 * ```typescript
 	 * const users = UserModel.collection(rawRows);
-	 * users.where(u => u.active).sortBy('name').paginate(1, 10);
+	 * users.$qWhere(u => u.active).$qSortBy('name').$qPaginate(1, 10);
 	 * ```
 	 *
 	 * @see {@link QModelCollection.from} — underlying factory method
@@ -725,7 +689,7 @@ export abstract class QModel<
 	 * @param options - Conversion options (fileSource, per-field overrides)
 	 * @returns Model instance with type-safe property access
 	 *
-	 * @see {@link QModel.toFormData} — inverse: serialize a model instance back to FormData
+	 * @see {@link QModel.$qToFormData} — inverse: serialize a model instance back to FormData
 	 *
 	 * @example
 	 * ```typescript
@@ -818,171 +782,6 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Builds a `FormData` from the model's current property values.
-	 *
-	 * Binary fields (`File`, `Blob`, `ArrayBuffer`, `Uint8Array`) are encoded
-	 * according to the `fileMode` option (default: `'auto'` / `'binary'`).
-	 *
-	 * @param options - Conversion options (fileMode, per-field overrides)
-	 * @returns `Promise<FormData>`
-	 *
-	 * @see {@link QModel.fromFormData} — inverse: parse a FormData into a model instance
-	 *
-	 * @example
-	 * ```typescript
-	 * // Default — preserve binaries
-	 * const fd = await dto.toFormData();
-	 *
-	 * // Convert all binaries to base64 data:URIs
-	 * const fd = await dto.toFormData({ fileMode: 'base64' });
-	 *
-	 * // Per-field overrides
-	 * const fd = await dto.toFormData({ fields: { avatar: 'binary', doc: 'reference' } });
-	 * ```
-	 *
-	 * @group Serialization
-	 */
-	async toFormData(options?: IToFormDataOptions): Promise<FormData> {
-		_assertQCall('toFormData');
-		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
-		const localOptions = Reflect.getMetadata(
-			QUICK_OPTIONS_KEY,
-			this.constructor
-		) as IQAdvancedOptions | undefined;
-		const globalDefaults = QConfig.get().defaults;
-		const resolvedSpoofMethod =
-			options?.spoofMethod ??
-			localOptions?.spoofMethod ??
-			globalDefaults?.spoofMethod;
-
-		// Build a plain object from the model's current values.
-		// Combine direct own keys (via getters/properties) with internal QUICK_VALUES_KEY storage.
-		const plain: Record<string, unknown> = {};
-		const values = this[QUICK_VALUES_KEY];
-
-		// 1. Collect from QUICK_VALUES_KEY (transformed/stored values including File/Blob)
-		for (const key of Object.keys(values)) {
-			plain[key] = values[key];
-		}
-
-		// 2. Collect from own enumerable string keys (may include non-transformed string fields)
-		for (const key of Object.keys(this as object)) {
-			if (key !== QUICK_VALUES_KEY && !(key in plain)) {
-				plain[key] = (this as Record<string, unknown>)[key];
-			}
-		}
-
-		return plainObjectToFormData(plain, {
-			...options,
-			spoofMethod: resolvedSpoofMethod,
-		});
-	}
-
-	/**
-	 * Creates a `ReadableStream<Uint8Array>` from a binary field, or a full
-	 * `multipart/form-data` stream from all model fields.
-	 *
-	 * **Single-field mode** (`{ field: 'video' }`):
-	 * Emits the raw bytes of a single Blob/File field. The file is never fully
-	 * in memory at once. Use for large binary uploads.
-	 *
-	 * **Multipart mode** (`{ multipart: true }`):
-	 * Encodes every model field as an RFC 2046 `multipart/form-data` message.
-	 * Binary fields are streamed lazily; text fields are inlined. The returned
-	 * stream exposes a `boundary` property for the `Content-Type` header.
-	 *
-	 * @param options - `{ field }` for single-field or `{ multipart: true }` for full form
-	 * @returns `ReadableStream<Uint8Array>` (single-field) or `IQMultipartStream` (multipart)
-	 *
-	 * @throws `Error` in single-field mode if the field is null/undefined or not a Blob/File
-	 *
-	 * @see {@link QModel.fromStream} — inverse: populate a field from a readable stream
-	 * @see {@link QModel.pipeStream} — zero-copy pipe between streams
-	 *
-	 * @example Single-field
-	 * ```typescript
-	 * const stream = dto.toReadableStream({ field: 'video', chunkSize: 64 * 1024 });
-	 * return new Response(stream, { headers: { 'Content-Type': dto.video.type } });
-	 * ```
-	 *
-	 * @example Multipart
-	 * ```typescript
-	 * const stream = dto.toReadableStream({ multipart: true });
-	 * await fetch('/upload', {
-	 *   method: 'POST',
-	 *   body: stream,
-	 *   headers: { 'Content-Type': `multipart/form-data; boundary=${stream.boundary}` },
-	 * });
-	 * ```
-	 *
-	 * @group Serialization
-	 */
-	toReadableStream(options: IToReadableStreamMultipart): IQMultipartStream;
-	toReadableStream(
-		options: IToReadableStreamSingleField
-	): ReadableStream<Uint8Array>;
-	toReadableStream(
-		options: IToReadableStreamOptions
-	): ReadableStream<Uint8Array> | IQMultipartStream {
-		_assertQCall('toReadableStream');
-		// ── Multipart mode ──────────────────────────────────────────────────
-		if ('multipart' in options && options.multipart) {
-			const { boundary, chunkSize, onChunk } = options;
-			const values = this[QUICK_VALUES_KEY];
-
-			// Collect per-field fileModes from @QType({ fileMode }) decorators
-			const classproto = Object.getPrototypeOf(this) as object;
-			const qtypeFields = Reflect.getMetadata(
-				QTYPES_METADATA_KEY,
-				classproto
-			) as Array<string | symbol> | undefined;
-			let fieldFileModes: Record<string, string> | null = null;
-			if (qtypeFields?.length) {
-				for (const fieldKey of qtypeFields) {
-					const fMode = Reflect.getMetadata(
-						'qtype:fileMode',
-						classproto,
-						fieldKey
-					) as string | undefined;
-					if (fMode) {
-						if (fieldFileModes === null) fieldFileModes = {};
-						fieldFileModes[String(fieldKey)] = fMode;
-					}
-				}
-			}
-
-			return modelToMultipartStream({
-				values,
-				fieldFileModes,
-				boundary,
-				chunkSize,
-				onChunk,
-			});
-		}
-
-		// ── Single-field mode ────────────────────────────────────────────────
-		const { field, chunkSize, onChunk } = options;
-		const values = this[QUICK_VALUES_KEY];
-		const val: unknown = values[field];
-
-		if (val === null || val === undefined) {
-			throw new Error(
-				`[QModel.toReadableStream] Field "${field}" is null or undefined — ` +
-					`cannot stream a null value.`
-			);
-		}
-
-		if (!(val instanceof Blob)) {
-			throw new Error(
-				`[QModel.toReadableStream] Field "${field}" must be a Blob or File instance, ` +
-					`got: ${typeof val}`
-			);
-		}
-
-		return blobToReadableStream(val, chunkSize, onChunk);
-	}
-
-	/**
 	 * Creates a model instance with a binary field populated from a `ReadableStream<Uint8Array>`.
 	 *
 	 * All stream chunks are accumulated into a single `Blob` and assigned to the
@@ -995,7 +794,7 @@ export abstract class QModel<
 	 *
 	 * @throws `RangeError` if `maxBytes` is set and the stream exceeds it
 	 *
-	 * @see {@link QModel.toReadableStream} — inverse: stream out from a model field
+	 * @see {@link QModel.$qToReadableStream} — inverse: stream out from a model field
 	 * @see {@link QModel.pipeStream} — zero-copy alternative when accumulation is not needed
 	 *
 	 * @example
@@ -1034,7 +833,7 @@ export abstract class QModel<
 	 *
 	 * @throws `RangeError` if `maxBytes` is set and the stream exceeds it
 	 *
-	 * @see {@link QModel.toReadableStream} — create a readable stream from a model field
+	 * @see {@link QModel.$qToReadableStream} — create a readable stream from a model field
 	 * @see {@link QModel.fromStream} — accumulate a stream into a model field
 	 *
 	 * @example
@@ -1312,7 +1111,7 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Instance alias for static getMetadata.
+	 * Instance alias for static `getMetadata`.
 	 * Useful for inspecting model state and configuration from an instance.
 	 *
 	 * Includes Dynamic Auto-discovery: Returns both statically defined fields AND
@@ -1320,7 +1119,7 @@ export abstract class QModel<
 	 *
 	 * @see {@link QModel.getMetadata}
 	 */
-	public getMetadata(): Map<string, { type: string; transformer: unknown }> {
+	$qGetMetadata(): Map<string, { type: string; transformer: unknown }> {
 		// Start with static metadata (schema definition)
 		const metadata = (
 			this.constructor as unknown as typeof QModel
@@ -2024,45 +1823,96 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Returns a plain snapshot of the current runtime state.
+	 * QuickModel-specific helper that serializes the model to a **JSON string**.
 	 *
-	 * Unlike `serialize()`, complex types are NOT converted to JSON-safe primitives:
-	 * `Date` stays `Date`, `bigint` stays `bigint`, `Map` stays `Map`, etc.
+	 * Combines `serialize()` and `JSON.stringify()` in one call, with full support
+	 * for QuickModel serialization options (`@QAlias` remapping, `@QSensitive` exclusion,
+	 * `omit`, etc.).
 	 *
-	 * Unlike `toInterface()`, this always returns the **current transformed state**
-	 * regardless of the original input format.
+	 * **This is NOT the JS `toJSON` protocol.** For `JSON.stringify(model)` to work
+	 * correctly, see `toJSON()` below.
 	 *
-	 * Useful for:
-	 * - In-memory logic that operates on native types
-	 * - Passing data to code that understands runtime types
-	 * - Debugging / inspection
+	 * **SOLID - Single Responsibility:** Delegates to Serializer service.
 	 *
-	 * @returns Plain `Record<string, unknown>` with current runtime values
+	 * @returns JSON string representation of the model
 	 *
-	 * @see {@link QModel.serialize} — JSON-safe form (converts Date → string, bigint → string, etc.)
-	 * @see {@link QModel.toInterface} — original-input-format snapshot
-	 * @see {@link QModel.$qToJSON} — JSON string shortcut
+	 * @see {@link QModel.toJSON} — JS protocol counterpart (returns plain object)
+	 * @see {@link QModel.$qSerialize} — plain object form (before JSON.stringify)
+	 * @see {@link QModel.fromJSON} — parse a JSON string back to a model instance
 	 *
 	 * @example
 	 * ```typescript
-	 * const user = new User({ createdAt: '2024-01-01T00:00:00.000Z', balance: '999' });
-	 * const plain = user.toPlain();
-	 * plain.createdAt instanceof Date; // true
-	 * typeof plain.balance === 'bigint'; // true
+	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 *
+	 * // Explicit JSON string — use this when you need a string:
+	 * const jsonStr = user.$qToJSON();
+	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
+	 *
+	 * // Restore from string:
+	 * const restored = User.fromJSON(jsonStr);
+	 *
+	 * // Or use JSON.stringify(model) which calls toJSON() automatically:
+	 * const jsonStr2 = JSON.stringify(user); // same result
 	 * ```
 	 */
-	toPlain(): Record<string, unknown> {
-		// Use QUICK_VALUES_KEY for the list of known keys, but read each via the
-		// property getter so that mutations made after construction are reflected
-		// (the setter updates storageKey, not the backup store directly).
-		const keys = Object.keys(this[QUICK_VALUES_KEY]);
-		const result: Record<string, unknown> = {};
-		for (const key of keys) {
-			result[key] = (this as Record<string, unknown>)[key];
-		}
-		return result;
+	$qToJSON(options?: IQSerializationOptions): string {
+		return JSON.stringify(this.$qSerialize(undefined, options));
 	}
 
+	/**
+	 * Implements the **JS `toJSON` protocol** — returns the plain serialized object.
+	 *
+	 * When you call `JSON.stringify(model)`, JavaScript internally calls `model.toJSON()`
+	 * and serializes the returned value. This method returns the **plain object** produced
+	 * by `serialize()`, so `JSON.stringify(model)` produces the correct JSON string
+	 * without any double-encoding.
+	 *
+	 * **Key distinction from `$qToJSON()`:**
+	 * | Method | Returns | Use case |
+	 * |---|---|---|
+	 * | `toJSON()` | Plain object | JS protocol — `JSON.stringify(model)` |
+	 * | `$qToJSON(options?)` | JSON string | Explicit string with QuickModel options |
+	 *
+	 * **For QuickModel serialization options** (`@QSensitive`, `omit`, etc.), use
+	 * `$qToJSON(options)` or `serialize(undefined, options)` directly.
+	 *
+	 * @returns Plain serialized object (same as `serialize()`)
+	 *
+	 * @see {@link QModel.$qToJSON} — explicit JSON string with options
+	 * @see {@link QModel.$qSerialize} — same result, more control
+	 * @see {@link QModel.fromJSON} — parse a JSON string back to a model instance
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
+	 *
+	 * // JS protocol: JSON.stringify calls toJSON() automatically
+	 * const jsonStr = JSON.stringify(user);
+	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
+	 *
+	 * // Direct access: toJSON() returns a plain object (sensitive fields excluded)
+	 * const plain = user.toJSON();
+	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
+	 *
+	 * // Include sensitive fields explicitly:
+	 * const full = user.toJSON({ includeSensitive: true });
+	 * ```
+	 */
+	toJSON(
+		options: IQSerializationOptions & { includeSensitive: true }
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	toJSON(
+		options?: IQSerializationOptions
+	): IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys>;
+	toJSON(
+		options?: IQSerializationOptions
+	):
+		| IQAliasedSerializedInterface<TInterface, TAliasMap>
+		| IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys> {
+		return this.$qSerialize(undefined, options);
+	}
+
+	// ── Namespace $q* API ─────────────────────────────────────────────────────
 	/**
 	 * Serializes the model instance to a plain interface object.
 	 *
@@ -2070,41 +1920,33 @@ export abstract class QModel<
 	 * JSON-serializable primitives according to each transformer's `serialize()` logic.
 	 * `@QAlias` remapping is applied after serialization.
 	 *
-	 * **SOLID — Single Responsibility:** Delegates serialization to the `QSerializer` service.
-	 *
 	 * @param options - Optional `pick`/`omit` field list to filter the result.
 	 * @returns The {@link IQAliasedSerializedInterface} snapshot with all complex types converted to primitives.
 	 *
 	 * @see {@link QModel.$qToJSON} for a JSON-string shortcut
-	 * @see {@link QModel.toPlain} for a plain snapshot that keeps runtime types
-	 * @see {@link QModel.toInterface} for the original-input-format snapshot
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const data = user.$qSerialize();
-	 * // { id: '1', name: 'John', createdAt: '2024-01-01T00:00:00.000Z' }
-	 * ```
-	 *
-	 * @example With pick filter
-	 * ```typescript
-	 * const partial = user.$qSerialize(undefined, { pick: ['id', 'name'] });
-	 * // { id: '1', name: 'John' }
-	 * ```
-	 *
+	 * @see {@link QModel.$qToPlain} for a plain snapshot that keeps runtime types
+	 * @see {@link QModel.$qToInterface} for the original-input-format snapshot
 	 */
-	serialize(
-		options?: IQSerializationOptions
+	$qSerialize(
+		options: IQSerializationOptions & { includeSensitive: true }
 	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
-	serialize(
+	$qSerialize(
+		seen: WeakSet<object>,
+		options: IQSerializationOptions & { includeSensitive: true }
+	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
+	$qSerialize(
+		options?: IQSerializationOptions
+	): IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys>;
+	$qSerialize(
 		seen?: WeakSet<object>,
 		options?: IQSerializationOptions
-	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
-	serialize(
+	): IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys>;
+	$qSerialize(
 		seenOrOptions?: WeakSet<object> | IQSerializationOptions,
 		options?: IQSerializationOptions
-	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
-		_assertQCall('serialize');
+	):
+		| IQAliasedSerializedInterface<TInterface, TAliasMap>
+		| IQSafeSerializedInterface<TInterface, TAliasMap, TSensitiveKeys> {
 		const seen =
 			seenOrOptions instanceof WeakSet ? seenOrOptions : undefined;
 		const opts =
@@ -2120,14 +1962,23 @@ export abstract class QModel<
 
 		// @QSensitive: exclude sensitive fields unless includeSensitive: true
 		if (!opts?.includeSensitive) {
-			const sensitiveFields = Reflect.getOwnMetadata(
-				QSENSITIVE_FIELDS_KEY,
-				this.constructor.prototype as object
-			) as string[] | undefined;
-			if (sensitiveFields?.length) {
-				for (const field of sensitiveFields) {
-					delete rawResult[field];
+			// Traverse prototype chain to collect all @QSensitive fields (inherited + own)
+			const allSensitiveFields = new Set<string>();
+			let proto = this.constructor.prototype as object | null;
+			while (proto !== null && proto !== Object.prototype) {
+				const fields = Reflect.getOwnMetadata(
+					QSENSITIVE_FIELDS_KEY,
+					proto
+				) as string[] | undefined;
+				if (fields?.length) {
+					for (const fld of fields) {
+						allSensitiveFields.add(fld);
+					}
 				}
+				proto = Object.getPrototypeOf(proto) as object | null;
+			}
+			for (const field of allSensitiveFields) {
+				delete rawResult[field];
 			}
 		}
 
@@ -2175,351 +2026,145 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Serializes the model instance to a JSON string.
+	 * Serializes the model to `FormData`.
 	 *
-	 * Converts the model to a JSON string representation. This is a convenience method
-	 * that combines serialize() and JSON.stringify().
-	 *
-	 * **SOLID - Single Responsibility:** Delegates to Serializer service.
-	 *
-	 * @returns JSON string representation of the model
-	 *
-	 * @see {@link QModel.serialize} — plain object form (before JSON.stringify)
-	 * @see {@link QModel.fromJSON} — parse a JSON string back to a model instance
-	 * @see {@link QModel.deserializeJson} — alias for `fromJSON`
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', createdAt: new Date() });
-	 * const json = user.$qToJSON();
-	 * // '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}'
-	 * ```
+	 * @see {@link QModel.fromFormData} — inverse: parse a FormData into a model instance
 	 */
-	$qToJSON(options?: IQSerializationOptions): string {
-		// Delegate to serialize() through the guard flag so @QAlias remapping is applied
-		return _withQFlag(() =>
-			JSON.stringify(this.serialize(undefined, options))
-		);
-	}
-
-	/** Implements the JS `toJSON` protocol — `JSON.stringify(model)` delegates here. */
-	toJSON(options?: IQSerializationOptions): string {
-		return this.$qToJSON(options);
-	}
-
-	// ── Namespace $q* API ─────────────────────────────────────────────────────
-	/** @see {@link QModel.serialize} */
-	$qSerialize(
-		options?: IQSerializationOptions
-	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
-	/** @see {@link QModel.serialize} */
-	$qSerialize(
-		seen?: WeakSet<object>,
-		options?: IQSerializationOptions
-	): IQAliasedSerializedInterface<TInterface, TAliasMap>;
-	$qSerialize(
-		seenOrOptions?: WeakSet<object> | IQSerializationOptions,
-		options?: IQSerializationOptions
-	): IQAliasedSerializedInterface<TInterface, TAliasMap> {
-		return _withQFlag(() =>
-			this.serialize(seenOrOptions as WeakSet<object>, options)
-		);
-	}
-
-	/** @see {@link QModel.toFormData} */
 	$qToFormData(options?: IToFormDataOptions): Promise<FormData> {
-		return _withQFlag(() => this.toFormData(options));
+		// Resolve spoofMethod cascade: QConfig.defaults < decorator < call option
+		const localOptions = Reflect.getMetadata(
+			QUICK_OPTIONS_KEY,
+			this.constructor
+		) as IQAdvancedOptions | undefined;
+		const globalDefaults = QConfig.get().defaults;
+		const resolvedSpoofMethod =
+			options?.spoofMethod ??
+			localOptions?.spoofMethod ??
+			globalDefaults?.spoofMethod;
+
+		// Build a plain object from the model's current values.
+		const plain: Record<string, unknown> = {};
+		const values = this[QUICK_VALUES_KEY];
+
+		// 1. Collect from QUICK_VALUES_KEY (transformed/stored values including File/Blob)
+		for (const key of Object.keys(values)) {
+			plain[key] = values[key];
+		}
+
+		// 2. Collect from own enumerable string keys (may include non-transformed string fields)
+		for (const key of Object.keys(this as object)) {
+			if (key !== QUICK_VALUES_KEY && !(key in plain)) {
+				plain[key] = (this as Record<string, unknown>)[key];
+			}
+		}
+
+		return plainObjectToFormData(plain, {
+			...options,
+			spoofMethod: resolvedSpoofMethod,
+		});
 	}
 
-	/** @see {@link QModel.toReadableStream} */
+	/**
+	 * Creates a `ReadableStream<Uint8Array>` from a binary field, or a full
+	 * `multipart/form-data` stream from all model fields.
+	 *
+	 * @see {@link QModel.fromStream} — inverse: populate a field from a readable stream
+	 */
+	$qToReadableStream(options: IToReadableStreamMultipart): IQMultipartStream;
+	$qToReadableStream(
+		options: IToReadableStreamSingleField
+	): ReadableStream<Uint8Array>;
 	$qToReadableStream(
 		options: IToReadableStreamOptions
 	): ReadableStream<Uint8Array> | IQMultipartStream {
-		return _withQFlag(
-			() =>
-				this.toReadableStream(
-					options as IToReadableStreamSingleField
-				) as ReadableStream<Uint8Array> | IQMultipartStream
-		);
-	}
+		// ── Multipart mode ──────────────────────────────────────────────────
+		if ('multipart' in options && options.multipart) {
+			const { boundary, chunkSize, onChunk } = options;
+			const values = this[QUICK_VALUES_KEY];
 
-	/** @see {@link QModel.checkIntegrity} */
-	$qCheckIntegrity(): IQIntegrityResult[] {
-		return _withQFlag(() => this.checkIntegrity());
-	}
+			// Collect per-field fileModes from @QType({ fileMode }) decorators
+			const classproto = Object.getPrototypeOf(this) as object;
+			const qtypeFields = Reflect.getMetadata(
+				QTYPES_METADATA_KEY,
+				classproto
+			) as Array<string | symbol> | undefined;
+			let fieldFileModes: Record<string, string> | null = null;
+			if (qtypeFields?.length) {
+				for (const fieldKey of qtypeFields) {
+					const fMode = Reflect.getMetadata(
+						'qtype:fileMode',
+						classproto,
+						fieldKey
+					) as string | undefined;
+					if (fMode) {
+						if (fieldFileModes === null) fieldFileModes = {};
+						fieldFileModes[String(fieldKey)] = fMode;
+					}
+				}
+			}
 
-	/** @see {@link QModel.hasIntegrity} */
-	$qHasIntegrity(): boolean {
-		return _withQFlag(() => this.hasIntegrity());
-	}
+			return modelToMultipartStream({
+				values,
+				fieldFileModes,
+				boundary,
+				chunkSize,
+				onChunk,
+			});
+		}
 
-	/** @see {@link QModel.checkRules} */
-	$qCheckRules(): IQRulesResult {
-		return _withQFlag(() => this.checkRules());
-	}
+		// ── Single-field mode ────────────────────────────────────────────────
+		const { field, chunkSize, onChunk } = options;
+		const values = this[QUICK_VALUES_KEY];
+		const val: unknown = values[field];
 
-	/** @see {@link QModel.isValid} */
-	$qIsValid(): boolean {
-		return _withQFlag(() => this.isValid());
-	}
-
-	/** @see {@link QModel.validationReport} */
-	$qValidationReport(): IQValidationReport {
-		return _withQFlag(() => this.validationReport());
-	}
-
-	/** @see {@link QModel.checkRulesAsync} */
-	$qCheckRulesAsync(options?: IQRulesAsyncOptions): Promise<IQRulesResult> {
-		return _withQFlag(() => this.checkRulesAsync(options));
-	}
-
-	/** @see {@link QModel.isValidAsync} */
-	$qIsValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
-		return _withQFlag(() => this.isValidAsync(options));
-	}
-
-	/** @see {@link QModel.validationReportAsync} */
-	$qValidationReportAsync(
-		options?: IQRulesAsyncOptions
-	): Promise<IQValidationReport> {
-		return _withQFlag(() => this.validationReportAsync(options));
-	}
-
-	/** @see {@link QModel.validate} */
-	$qValidate(
-		options: IQValidateOptions & { async: true }
-	): Promise<IQValidateResult>;
-	$qValidate(
-		options?: IQValidateOptions & { async?: false | undefined }
-	): IQValidateResult;
-	$qValidate(
-		options?: IQValidateOptions
-	): IQValidateResult | Promise<IQValidateResult> {
-		if (options?.async === true) {
-			return _withQFlag(() =>
-				this.validate(options as IQValidateOptions & { async: true })
+		if (val === null || val === undefined) {
+			throw new Error(
+				`[QModel.toReadableStream] Field "${field}" is null or undefined — ` +
+					`cannot stream a null value.`
 			);
 		}
-		return _withQFlag(() =>
-			this.validate(options as IQValidateOptions & { async?: false })
-		);
-	}
 
-	/** @see {@link QModel.toInterface} */
-	$qToInterface(seen?: WeakSet<object>, depth?: number): TInterface {
-		return _withQFlag(() => this.toInterface(seen, depth));
-	}
+		if (!(val instanceof Blob)) {
+			throw new Error(
+				`[QModel.toReadableStream] Field "${field}" must be a Blob or File instance, ` +
+					`got: ${typeof val}`
+			);
+		}
 
-	/** @see {@link QModel.getInitInterface} */
-	$qGetInitInterface(): IQSerializedInterface<TInterface> {
-		return _withQFlag(() => this.getInitInterface());
+		return blobToReadableStream(val, chunkSize, onChunk);
 	}
-
-	/** @see {@link QModel.hasChanges} */
-	$qHasChanges(): boolean {
-		return _withQFlag(() => this.hasChanges());
-	}
-
-	/** @see {@link QModel.getChangedFields} */
-	$qGetChangedFields(): string[] {
-		return _withQFlag(() => this.getChangedFields());
-	}
-
-	/** @see {@link QModel.getDirtyFields} */
-	$qGetDirtyFields(): Set<string> {
-		return _withQFlag(() => this.getDirtyFields());
-	}
-
-	/** @see {@link QModel.isDirty} */
-	$qIsDirty(field?: string): boolean {
-		return _withQFlag(() => this.isDirty(field));
-	}
-
-	/** @see {@link QModel.getChanges} */
-	$qGetChanges(): Partial<IQSerializedInterface<TInterface>> {
-		return _withQFlag(() => this.getChanges());
-	}
-
-	/** @see {@link QModel.reset} */
-	$qReset(): void {
-		return _withQFlag(() => this.reset());
-	}
-
-	/** @see {@link QModel.patch} */
-	$qPatch(data: Partial<IQModelData<TInterface>>): void {
-		return _withQFlag(() => this.patch(data));
-	}
-
-	/** @see {@link QModel.copy} */
-	$qCopy(partial?: Partial<IQModelData<TInterface>>): this {
-		return _withQFlag(() => this.copy(partial));
-	}
-
-	/** @see {@link QModel.diff} */
-	$qDiff(other: this): Record<string, { before: unknown; after: unknown }> {
-		return _withQFlag(() => this.diff(other));
-	}
-
-	/** @see {@link QModel.equals} */
-	$qEquals(other: this): boolean {
-		return _withQFlag(() => this.equals(other));
-	}
-	// ─────────────────────────────────────────────────────────────────────────
 
 	/**
 	 * Checks the model instance for type integrity.
 	 *
-	 * Runs each property through its transformer's integrity check (e.g.
-	 * valid Date range, safe RegExp, BigInt size limits).
-	 *
 	 * @returns Array of integrity errors (empty if all pass)
-	 *
-	 * @see {@link QModel.hasIntegrity} — boolean shortcut (`checkIntegrity().length === 0`)
-	 * @see {@link QModel.isValid} — also validates `@QRule` business rules
-	 * @see {@link QModel.validationReport} — combined integrity + rules report
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ email: 'invalid-email' });
-	 * const errors = user.checkIntegrity();
-	 * if (errors.length > 0) {
-	 *   console.error('Integrity check failed:', errors);
-	 * }
-	 * ```
 	 */
-	checkIntegrity(): IQIntegrityResult[] {
-		_assertQCall('checkIntegrity');
+	$qCheckIntegrity(): IQIntegrityResult[] {
 		type IModelAsRecord = Record<string, unknown>;
 		return QModel._validation.checkIntegrity(
 			this as unknown as IModelAsRecord
 		);
 	}
 
-	/**
-	 * Evaluates all `@QRule` business-logic rules defined on this model's properties.
-	 *
-	 * Unlike `checkIntegrity()` (transformer-level type safety), `checkRules()` checks
-	 * user-defined predicates — e.g. length constraints, format validation, business invariants.
-	 *
-	 * **All failing rules are collected** (no fail-fast). Multiple `@QRule` decorators
-	 * on the same property are all evaluated.
-	 *
-	 * The `message` in each error is already resolved: if the rule was declared with a
-	 * `() => string` lazy resolver, it is called at this point — perfect for runtime i18n.
-	 * For Angular, you can also store i18n keys as plain strings and apply `e.message | translate`
-	 * directly in the template.
-	 *
-	 * @returns `{ valid: boolean, errors: Array<{ field, message, value }> }`
-	 *
-	 * @see {@link QModel.checkIntegrity} — transformer-level type safety (separate from rules)
-	 * @see {@link QModel.isValid} — combined boolean (integrity + rules)
-	 * @see {@link QModel.validationReport} — combined integrity + rules report
-	 * @see {@link QModel.checkRulesAsync} — async version for predicates with I/O
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ name: 'Jo', age: -1, email: 'notanemail' });
-	 * const result = user.$qCheckRules();
-	 *
-	 * console.log(result.valid); // false
-	 * console.log(result.errors);
-	 * // [
-	 * //   { field: 'name',  message: 'Name must be at least 3 characters', value: 'Jo' },
-	 * //   { field: 'age',   message: 'Age cannot be negative',             value: -1 },
-	 * //   { field: 'email', message: 'Must be a valid email',              value: 'notanemail' }
-	 * // ]
-	 * ```
-	 *
-	 */
-	checkRules(): IQRulesResult {
-		_assertQCall('checkRules');
+	/** Returns `true` when integrity check passes (no errors). */
+	$qHasIntegrity(): boolean {
+		return this.$qCheckIntegrity().length === 0;
+	}
+
+	/** Evaluates all `@QRule` business-logic rules synchronously. */
+	$qCheckRules(): IQRulesResult {
 		return $qCheckRules(this);
 	}
 
-	/**
-	 * Returns `true` if all transformer-level integrity checks pass.
-	 *
-	 * Shortcut for `checkIntegrity().length === 0`.
-	 *
-	 * @returns `true` when every field value matches its declared transformer type
-	 *
-	 * @see {@link QModel.checkIntegrity} — full error details array
-	 * @see {@link QModel.isValid} — also validates `@QRule` business rules
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ age: 30, active: true });
-	 * if (!user.$qHasIntegrity()) {
-	 *   console.error('Type integrity violated');
-	 * }
-	 * ```
-	 *
-	 */
-	hasIntegrity(): boolean {
-		_assertQCall('hasIntegrity');
-		return this.checkIntegrity().length === 0;
+	/** Returns `true` when both integrity and sync rules pass. */
+	$qIsValid(): boolean {
+		return this.$qHasIntegrity() && this.$qCheckRules().valid;
 	}
 
-	/**
-	 * Returns `true` if both transformer-level integrity checks **and** all `@QRule`
-	 * business-logic rules pass.
-	 *
-	 * Equivalent to `hasIntegrity() && checkRules().valid`.
-	 *
-	 * Use this as a single boolean gate before persisting or processing a model.
-	 *
-	 * @returns `true` when the instance has full type integrity and all rules are satisfied
-	 *
-	 * @see {@link QModel.hasIntegrity} — transformer-level check only
-	 * @see {@link QModel.checkRules} — business rules check only
-	 * @see {@link QModel.validationReport} — full report with both integrity and rule errors
-	 * @see {@link QModel.isValidAsync} — async version (supports async `@QRule` predicates)
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ name: 'Alice', age: 30, email: 'alice@example.com' });
-	 * if (!user.$qIsValid()) {
-	 *   const integrityErrors = user.checkIntegrity();
-	 *   const ruleErrors = user.$qCheckRules().errors;
-	 *   // handle errors...
-	 * }
-	 * ```
-	 *
-	 */
-	isValid(): boolean {
-		_assertQCall('isValid');
-		return this.hasIntegrity() && this.checkRules().valid;
-	}
-
-	/**
-	 * Returns a combined validation report from both `checkIntegrity()` and `checkRules()`.
-	 *
-	 * Single call instead of invoking both methods separately.
-	 *
-	 * @returns `{ valid, integrity, rules }` — see {@link IQValidationReport}
-	 *
-	 * @see {@link QModel.isValid} — boolean shortcut for the same combined check
-	 * @see {@link QModel.checkIntegrity} — transformer-level errors only
-	 * @see {@link QModel.checkRules} — business rules errors only
-	 * @see {@link QModel.validationReportAsync} — async version with async `@QRule` support
-	 *
-	 * @example
-	 * ```typescript
-	 * const report = user.$qValidationReport();
-	 *
-	 * if (!report.valid) {
-	 *   // transformer-level failures:
-	 *   console.log(report.integrity);
-	 *   // @QRule failures:
-	 *   console.log(report.rules.errors);
-	 * }
-	 * ```
-	 *
-	 */
-	validationReport(): IQValidationReport {
-		_assertQCall('validationReport');
-		const integrity = this.checkIntegrity();
-		const rules = this.checkRules();
+	/** Returns the combined integrity + rules validation report. */
+	$qValidationReport(): IQValidationReport {
+		const integrity = this.$qCheckIntegrity();
+		const rules = this.$qCheckRules();
 		return {
 			valid: integrity.length === 0 && rules.valid,
 			integrity,
@@ -2527,114 +2172,27 @@ export abstract class QModel<
 		};
 	}
 
-	/**
-	 * Async version of `checkRules()`. Evaluates all `@QRule` predicates, including async ones,
-	 * and returns a Promise with the combined result.
-	 *
-	 * Sync predicates are wrapped with `Promise.resolve()`, so you can mix sync and async rules
-	 * freely on the same model.
-	 *
-	 * **Execution modes** (`options.mode`):
-	 * - `'parallel'` *(default)* — all predicates start simultaneously via `Promise.all`.
-	 *   Total time ≈ `max(individual times)`. Best for independent I/O calls.
-	 * - `'serial'` — predicates run one at a time in field-declaration order.
-	 *   Total time ≈ `Σ(individual times)`. Useful when predicates have side-effects
-	 *   or must respect a strict evaluation order.
-	 *
-	 * **Timeout** (`options.timeoutMs`): each predicate is individually raced against a
-	 * per-call timer. Predicates that exceed the budget fail with `timedOut: true` in the
-	 * error entry. A custom message can be supplied via `options.timeoutMessage`.
-	 *
-	 * @param options - Optional execution settings (mode, timeoutMs, timeoutMessage).
-	 * @returns `Promise<IQRulesResult>`
-	 *
-	 * @see {@link QModel.checkRules} — synchronous version (no async predicates)
-	 * @see {@link QModel.isValidAsync} — combined boolean async (integrity + async rules)
-	 * @see {@link QModel.validationReportAsync} — full async report
-	 *
-	 * @example Basic usage
-	 * ```typescript
-	 * const result = await user.$qCheckRulesAsync();
-	 * if (!result.valid) console.log(result.errors);
-	 * ```
-	 *
-	 * @example With timeout
-	 * ```typescript
-	 * const result = await user.$qCheckRulesAsync({ timeoutMs: 200, timeoutMessage: 'Service unavailable' });
-	 * result.errors.forEach((err) => {
-	 *   if (err.timedOut) console.warn(`${err.field} timed out`);
-	 * });
-	 * ```
-	 *
-	 * @example Serial execution (e.g. check format first, then uniqueness)
-	 * ```typescript
-	 * const result = await user.$qCheckRulesAsync({ mode: 'serial' });
-	 * ```
-	 *
-	 */
-	async checkRulesAsync(
+	/** Async version of `$qCheckRules()`. */
+	async $qCheckRulesAsync(
 		options?: IQRulesAsyncOptions
 	): Promise<IQRulesResult> {
-		if (_qCallDepth === 0) {
-			return _withQFlag(() => $qCheckRulesAsync(this, options));
-		}
 		return $qCheckRulesAsync(this, options);
 	}
 
-	/**
-	 * Async version of `isValid()`. Returns `true` when both integrity and async rules pass.
-	 *
-	 * Equivalent to `hasIntegrity() && (await checkRulesAsync(options)).valid`.
-	 *
-	 * @param options - Optional timeout and mode settings forwarded to `checkRulesAsync()`.
-	 * @returns `Promise<boolean>` — `true` when the instance passes all transformer-level
-	 *   integrity checks **and** all async `@QRule` predicates.
-	 *
-	 * @see {@link QModel.isValid} for the synchronous version
-	 * @see {@link QModel.validationReportAsync} for the full async report
-	 *
-	 * @example
-	 * ```typescript
-	 * if (!(await user.$qIsValidAsync())) {
-	 *   const report = await user.$qValidationReportAsync();
-	 *   console.log(report.integrity, report.rules.errors);
-	 * }
-	 * ```
-	 *
-	 */
-	async isValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
-		_assertQCall('isValidAsync');
+	/** Async version of `$qIsValid()`. */
+	async $qIsValidAsync(options?: IQRulesAsyncOptions): Promise<boolean> {
 		return (
-			this.hasIntegrity() && (await this.checkRulesAsync(options)).valid
+			this.$qHasIntegrity() &&
+			(await this.$qCheckRulesAsync(options)).valid
 		);
 	}
 
-	/**
-	 * Async version of `validationReport()`. Runs `checkIntegrity()` synchronously
-	 * and `checkRulesAsync()` for async predicate support.
-	 *
-	 * @param options - Optional execution settings (mode, timeoutMs, timeoutMessage).
-	 * @returns `Promise<IQValidationReport>` — `{ valid, integrity, rules }`.
-	 *
-	 * @see {@link QModel.validationReport} for the synchronous version
-	 * @see {@link QModel.isValidAsync} for a simple boolean shortcut
-	 *
-	 * @example
-	 * ```typescript
-	 * const report = await user.$qValidationReportAsync({ timeoutMs: 300 });
-	 * if (!report.valid) {
-	 *   console.log('Integrity:', report.integrity);
-	 *   console.log('Rules:', report.rules.errors);
-	 * }
-	 * ```
-	 *
-	 */
-	async validationReportAsync(
+	/** Async version of `$qValidationReport()`. */
+	async $qValidationReportAsync(
 		options?: IQRulesAsyncOptions
 	): Promise<IQValidationReport> {
-		_assertQCall('validationReportAsync');
-		const integrity = this.checkIntegrity();
-		const rules = await this.checkRulesAsync(options);
+		const integrity = this.$qCheckIntegrity();
+		const rules = await this.$qCheckRulesAsync(options);
 		return {
 			valid: integrity.length === 0 && rules.valid,
 			integrity,
@@ -2642,48 +2200,17 @@ export abstract class QModel<
 		};
 	}
 
-	/**
-	 * Unified validation method that combines integrity checks and `@QRule` evaluation.
-	 *
-	 * - Called without options → runs `validationReport()` synchronously.
-	 * - Called with `{ async: true }` → runs `validationReportAsync()` and returns a
-	 *   `Promise<IQValidateResult>`.
-	 * - Called with `{ groups: [...] }` → only evaluates rules for the listed groups.
-	 *
-	 * @param options - Optional settings. See {@link IQValidateOptions}.
-	 * @returns `IQValidateResult` (sync) or `Promise<IQValidateResult>` when `async: true`.
-	 *
-	 * @see {@link QModel.validationReport} — underlying sync implementation
-	 * @see {@link QModel.validationReportAsync} — underlying async implementation
-	 *
-	 * @example Sync
-	 * ```typescript
-	 * const result = user.$qValidate();
-	 * if (!result.valid) console.log(result.rules.errors);
-	 * ```
-	 *
-	 * @example Async
-	 * ```typescript
-	 * const result = await user.$qValidate({ async: true });
-	 * ```
-	 *
-	 * @example Group filter
-	 * ```typescript
-	 * const result = user.$qValidate({ groups: ['personal'] });
-	 * ```
-	 *
-	 */
-	validate(
+	/** Unified validation method combining integrity checks and `@QRule` evaluation. */
+	$qValidate(
 		options: IQValidateOptions & { async: true }
 	): Promise<IQValidateResult>;
-	validate(
+	$qValidate(
 		options?: IQValidateOptions & { async?: false | undefined }
 	): IQValidateResult;
-	validate(
+	$qValidate(
 		options?: IQValidateOptions
 	): IQValidateResult | Promise<IQValidateResult> {
-		_assertQCall('validate');
-		const integrity = this.checkIntegrity();
+		const integrity = this.$qCheckIntegrity();
 
 		if (options?.async === true) {
 			// Async path
@@ -2740,7 +2267,7 @@ export abstract class QModel<
 			};
 		}
 
-		const rules = this.checkRules();
+		const rules = this.$qCheckRules();
 		return {
 			valid: integrity.length === 0 && rules.valid,
 			integrity,
@@ -2749,23 +2276,305 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Returns the form schema for this instance, built from `@QField` decorators.
-	 * Traverses the full prototype chain to include inherited fields.
+	 * Converts the current state to interface format (preserving original input types).
+	 */
+	$qToInterface(seen?: WeakSet<object>, depth?: number): TInterface {
+		return QModel.toInterfaceService.toInterface<TInterface>(
+			this as unknown as Record<string, unknown>,
+			seen,
+			depth
+		);
+	}
+
+	/** Returns the initial state as passed to the constructor. */
+	$qGetInitInterface(): IQSerializedInterface<TInterface> {
+		return { ...(this.__initData as IQSerializedInterface<TInterface>) };
+	}
+
+	/** Returns `true` if any field has changed since construction. */
+	$qHasChanges(): boolean {
+		const current = this.$qToInterface();
+		const initial = this.$qGetInitInterface();
+		return !this.deepEqual(current, initial);
+	}
+
+	/** Returns an array of field names that have changed since construction. */
+	$qGetChangedFields(): string[] {
+		const current = this.$qToInterface();
+		const initial = this.$qGetInitInterface();
+		const changes: string[] = [];
+
+		for (const key in current) {
+			if (!this.deepEqual(current[key], initial[key])) {
+				changes.push(key);
+			}
+		}
+
+		return changes;
+	}
+
+	/** Returns a `Set` of field names that have changed since construction. */
+	$qGetDirtyFields(): Set<string> {
+		return new Set(this.$qGetChangedFields());
+	}
+
+	/**
+	 * Checks if the model (or a specific field) has been modified since construction.
+	 */
+	$qIsDirty(field?: string): boolean {
+		if (field === undefined) {
+			return this.$qHasChanges();
+		}
+		const current = this.$qToInterface() as Record<string, unknown>;
+		const initial = this.$qGetInitInterface() as Record<string, unknown>;
+
+		// Field existed in initial data — compare values directly
+		if (field in initial) {
+			return !this.deepEqual(current[field], initial[field]);
+		}
+
+		// Field was NOT in initial data (optional field added after construction)
+		const currentVal = (this as unknown as Record<string, unknown>)[field];
+		return currentVal !== undefined;
+	}
+
+	/** Returns an object containing only the fields that have changed. */
+	$qGetChanges(): Partial<IQSerializedInterface<TInterface>> {
+		const current = this.$qToInterface();
+		const initial = this.$qGetInitInterface();
+		const changes: Partial<IQSerializedInterface<TInterface>> = {};
+
+		for (const key in current) {
+			if (!this.deepEqual(current[key], initial[key])) {
+				changes[key] = current[key];
+			}
+		}
+
+		return changes;
+	}
+
+	/**
+	 * Resets the model to its initial state.
+	 */
+	$qReset(): void {
+		const initial = this.$qGetInitInterface();
+		const Constructor = this.constructor as unknown as IModelConstructor<
+			QModel<TInterface>
+		>;
+		const restored = Constructor.deserialize(initial);
+
+		// Copy all properties from restored instance
+		for (const key of Object.keys(restored)) {
+			(this as unknown as IQAnyRecord)[key] = (
+				restored as unknown as IQAnyRecord
+			)[key];
+		}
+	}
+
+	/**
+	 * Applies partial updates to the model.
+	 */
+	$qPatch(patch: Partial<IQModelData<TInterface>>): void {
+		// @QReadonly guard — reject any patch that targets an immutable field
+		if (patch !== undefined) {
+			const roFields = collectReadonlyFields(
+				this.constructor.prototype as object
+			);
+			if (roFields.length > 0) {
+				for (const fld of roFields) {
+					if (fld in patch) {
+						throw new ImmutableFieldError(
+							fld,
+							(this.constructor as { name?: string }).name ??
+								'QModel'
+						);
+					}
+				}
+			}
+		}
+		const Constructor = this.constructor as unknown as IModelConstructor<
+			QModel<TInterface>
+		>;
+		const current = this.$qSerialize();
+		const merged = { ...current, ...patch };
+		const updated = Constructor.deserialize(merged);
+
+		// Copy all properties from updated instance
+		for (const key of Object.keys(updated)) {
+			(this as unknown as IQAnyRecord)[key] = (
+				updated as unknown as IQAnyRecord
+			)[key];
+		}
+	}
+
+	/**
+	 * Returns a new instance that is an immutable copy of the current state.
+	 */
+	$qCopy(partial?: Partial<IQModelData<TInterface>>): this {
+		// @QReadonly guard — reject copy() calls that include an immutable field
+		if (partial !== undefined) {
+			const roFields = collectReadonlyFields(
+				this.constructor.prototype as object
+			);
+			if (roFields.length > 0) {
+				for (const fld of roFields) {
+					if (fld in partial) {
+						throw new ImmutableFieldError(
+							fld,
+							(this.constructor as { name?: string }).name ??
+								'QModel'
+						);
+					}
+				}
+			}
+		}
+		const Constructor = this
+			.constructor as unknown as IModelConstructor<this>;
+		// Include sensitive fields when cloning internally so the copy retains all data.
+		const current = this.$qSerialize({ includeSensitive: true });
+		const data = partial ? { ...current, ...partial } : { ...current };
+		const instance = Constructor.deserialize(
+			data as unknown as IQModelData<IQAnyRecord>
+		);
+		// Inject __initData so isDirty() / reset() work correctly on the copy.
+		Object.defineProperty(instance, '__initData', {
+			value: { ...data },
+			writable: false,
+			enumerable: false,
+			configurable: true,
+		});
+		return instance;
+	}
+
+	/**
+	 * Compares this instance with another and returns a field-by-field diff.
+	 */
+	$qDiff(other: this): Record<string, { before: unknown; after: unknown }> {
+		const selfData = this.$qSerialize() as Record<string, unknown>;
+		const otherData = other.$qSerialize() as Record<string, unknown>;
+		const result: Record<string, { before: unknown; after: unknown }> = {};
+
+		const allKeys = new Set([
+			...Object.keys(selfData),
+			...Object.keys(otherData),
+		]);
+
+		for (const key of allKeys) {
+			if (!this.deepEqual(selfData[key], otherData[key])) {
+				result[key] = { before: selfData[key], after: otherData[key] };
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns `true` when this instance is deeply equal to `other`.
+	 */
+	$qEquals(other: this): boolean {
+		return Object.keys(this.$qDiff(other)).length === 0;
+	}
+
+	/**
+	 * Creates a new instance of this model's class from a plain object.
 	 *
-	 * @returns Ordered array of {@link IQFormSchemaEntry} — one per `@QField`-decorated property.
+	 * Instance-level counterpart of the static {@link QModel.deserialize} method.
+	 * Useful when you have a model instance and need to construct a sibling from
+	 * raw data without referencing the class name explicitly.
 	 *
-	 * @see {@link QModel.getFormSchemaGrouped} — same schema organised by `@QGroup` sections
-	 * @see {@link QModel.getFormSchema} — static variant (no instance required)
+	 * @param data - Plain object matching the model's interface
+	 * @returns A new instance of the same model class
+	 *
+	 * @see {@link QModel.deserialize} — static equivalent
+	 * @see {@link QModel.$qFromJSON} — same but accepts a JSON string
 	 *
 	 * @example
 	 * ```typescript
-	 * const schema = instance.getFormSchema();
-	 * // [{ field: 'email', widget: 'input', label: 'Email', ... }, ...]
+	 * const user = new User({ id: 1, name: 'Alice' });
+	 * const other = user.$qFrom({ id: 2, name: 'Bob' });
+	 * other instanceof User; // true
 	 * ```
 	 */
-	getFormSchema(): IQFormSchemaEntry[] {
+	$qFrom(data: IQModelData<TInterface>): this {
+		const Ctor = this.constructor as unknown as IModelConstructor<this>;
+		return Ctor.deserialize(data);
+	}
+
+	/**
+	 * Creates a new instance of this model's class from a JSON string.
+	 *
+	 * Instance-level counterpart of the static {@link QModel.fromJSON} method.
+	 * Useful when you have a model instance and need to reconstruct a sibling
+	 * from a serialized JSON string without referencing the class name explicitly.
+	 *
+	 * @param json - JSON string produced by `$qToJSON()` or any compatible source
+	 * @returns A new instance of the same model class
+	 * @throws {SyntaxError} If `json` is not valid JSON
+	 *
+	 * @see {@link QModel.fromJSON} — static equivalent
+	 * @see {@link QModel.$qFrom} — same but accepts a plain object
+	 *
+	 * @example
+	 * ```typescript
+	 * const json = user.$qToJSON();
+	 * const restored = user.$qFromJSON(json);
+	 * restored instanceof User;           // true
+	 * restored.createdAt instanceof Date; // true
+	 * ```
+	 */
+	$qFromJSON(json: string): this {
+		const Ctor = this.constructor as unknown as IModelConstructor<this>;
+		return new Ctor(JSON.parse(json));
+	}
+
+	/**
+	 * Returns a plain `Record<string, unknown>` with current runtime values
+	 * (dates stay as Date, bigints as bigint, etc. — no serialization).
+	 *
+	 * @see {@link QModel.$qSerialize} — JSON-safe form (converts Date → string, etc.)
+	 * @see {@link QModel.$qToInterface} — original-input-format snapshot
+	 *
+	 * @example
+	 * ```typescript
+	 * const plain = user.$qToPlain();
+	 * plain.createdAt instanceof Date; // true
+	 * ```
+	 */
+	$qToPlain(): Record<string, unknown> {
+		const keys = Object.keys(this[QUICK_VALUES_KEY]);
+		const result: Record<string, unknown> = {};
+		for (const key of keys) {
+			result[key] = (this as Record<string, unknown>)[key];
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the form schema for this instance, built from `@QField` decorators.
+	 *
+	 * @returns Ordered array of {@link IQFormSchemaEntry} — one per `@QField`-decorated property.
+	 *
+	 * @see {@link QModel.getFormSchema} — static variant (no instance required)
+	 * @see {@link QModel.$qGetFormSchemaGrouped} — same schema organised by `@QGroup` sections
+	 */
+	$qGetFormSchema(): IQFormSchemaEntry[] {
 		return QModel._collectFormSchema(Object.getPrototypeOf(this));
 	}
+
+	/**
+	 * Returns the form schema grouped by `@QGroup` sections.
+	 *
+	 * @returns Ordered array of `{ group, fields }` entries — see {@link IQFormSchemaGroup}.
+	 *
+	 * @see {@link QModel.$qGetFormSchema} — flat (un-grouped) list
+	 * @see {@link QModel.getFormSchemaGrouped} — static variant (no instance required)
+	 */
+	$qGetFormSchemaGrouped(): IQFormSchemaGroup[] {
+		return QModel._buildGrouped(
+			QModel._collectFormSchema(Object.getPrototypeOf(this))
+		);
+	}
+	// ─────────────────────────────────────────────────────────────────────────
 
 	/**
 	 * Static version of `getFormSchema()` — no instance required.
@@ -2781,31 +2590,6 @@ export abstract class QModel<
 	 */
 	static getFormSchema(): IQFormSchemaEntry[] {
 		return QModel._collectFormSchema(this.prototype);
-	}
-
-	/**
-	 * Returns the form schema grouped by `@QGroup` sections.
-	 * Fields without `@QGroup` are placed in a group with `group: undefined`.
-	 *
-	 * @returns Ordered array of `{ group, fields }` entries — see {@link IQFormSchemaGroup}.
-	 *
-	 * @see {@link QModel.getFormSchema} — flat (un-grouped) list
-	 * @see {@link QModel.getFormSchemaGrouped} — static variant (no instance required)
-	 *
-	 * @example
-	 * ```typescript
-	 * ContactModel.getFormSchemaGrouped();
-	 * // [
-	 * //   { group: 'Personal Info', fields: [{ field: 'firstName', ... }] },
-	 * //   { group: 'Address',       fields: [{ field: 'street', ... }] },
-	 * //   { group: undefined,       fields: [{ field: 'bio', ... }] },
-	 * // ]
-	 * ```
-	 */
-	getFormSchemaGrouped(): IQFormSchemaGroup[] {
-		return QModel._buildGrouped(
-			QModel._collectFormSchema(Object.getPrototypeOf(this))
-		);
 	}
 
 	/**
@@ -2939,7 +2723,7 @@ export abstract class QModel<
 	 *
 	 * @see {@link QModel.fromJSON} — deserialize from a JSON string
 	 * @see {@link QModel.deserializeJson} — alias for `fromJSON`
-	 * @see {@link QModel.serialize} — serialize a model instance back to a plain object
+	 * @see {@link QModel.$qSerialize} — serialize a model instance back to a plain object
 	 * @see {@link QModel.create} — factory alias that wraps the constructor
 	 *
 	 * @example
@@ -2980,21 +2764,40 @@ export abstract class QModel<
 	/**
 	 * Creates a model instance from a JSON string.
 	 *
-	 * Parses a JSON string and deserializes it into a fully typed model instance.
-	 * This is a convenience method that combines JSON.parse() and deserialize().
+	 * Parses a JSON string and deserializes it into a fully typed model instance,
+	 * applying all type transformations (string → Date, string → BigInt, etc.).
+	 *
+	 * **Naming convention:** `fromJSON` follows the standard JS/ecosystem convention
+	 * (e.g. `Date.prototype.toJSON` → restore with `Model.fromJSON`). It does NOT
+	 * follow any special QuickModel protocol — for that, see `$qToJSON()` / `serialize()`.
+	 *
+	 * **Typical round-trip:**
+	 * ```
+	 * // Serialize → string
+	 * const str = user.$qToJSON();          // explicit string
+	 * const str = JSON.stringify(user);     // via JS protocol (calls toJSON())
+	 *
+	 * // Restore → model
+	 * const user2 = User.fromJSON(str);
+	 * ```
 	 *
 	 * @template T - The model class type
 	 * @param json - JSON string representation of the model
 	 * @returns A new, fully typed model instance
 	 * @throws {SyntaxError} If `json` is not valid JSON
 	 *
+	 * @see {@link QModel.$qToJSON} — produce the JSON string to pass here
+	 * @see {@link QModel.deserializeJson} — alias with `deserialize`-style naming
+	 * @see {@link QModel.deserialize} — restore from a plain object instead of string
+	 *
 	 * @example
 	 * ```typescript
-	 * const json = '{"id":"1","name":"John","createdAt":"2024-01-01T00:00:00.000Z"}';
-	 * const user = User.fromJSON(json);
+	 * const json = user.$qToJSON();
+	 * // or: const json = JSON.stringify(user);
 	 *
-	 * console.log(user instanceof User); // true
-	 * console.log(user.createdAt instanceof Date); // true
+	 * const restored = User.fromJSON(json);
+	 * console.log(restored instanceof User); // true
+	 * console.log(restored.createdAt instanceof Date); // true
 	 * ```
 	 */
 	static fromJSON<T extends QModel<IQAnyRecord>>(
@@ -3010,12 +2813,15 @@ export abstract class QModel<
 	 * Alias for {@link fromJSON}. Creates a model instance from a JSON string.
 	 *
 	 * Parses a JSON string and deserializes it into a fully typed model instance.
-	 * Use this when you prefer a `deserialize`-style naming convention.
+	 * Use this when you prefer a `deserialize`-style naming convention over `fromJSON`.
 	 *
 	 * @template T - The model class type
 	 * @param json - JSON string representation of the model
 	 * @returns A new, fully typed model instance
 	 * @throws {SyntaxError} If `json` is not valid JSON
+	 *
+	 * @see {@link QModel.fromJSON} — identical method with JS-convention naming
+	 * @see {@link QModel.$qToJSON} — produce the JSON string to pass here
 	 *
 	 * @example
 	 * ```typescript
@@ -3030,511 +2836,6 @@ export abstract class QModel<
 	): T {
 		// Delegates to fromJSON for consistent @QAlias remapping
 		return new this(JSON.parse(json) as IQModelData<IQAnyRecord>);
-	}
-
-	/**
-	 * Converts the current state to interface format (preserving original input types).
-	 *
-	 * **IMPORTANT:** This does NOT serialize to JSON. It preserves the EXACT format from constructor input.
-	 *
-	 * **Key differences:**
-	 * - `toInterface()` → Preserves ORIGINAL input format (string stays string, RegExp stays RegExp)
-	 * - `serialize()` → Converts to JSON-compatible format (Date → ISO string, RegExp → object, etc.)
-	 * - `$qToJSON()` → Same as serialize() but returns JSON string
-	 *
-	 * **How it works:**
-	 * - Reads `__initData` (stored BEFORE transformations)
-	 * - Compares original type vs current type
-	 * - Returns value in ORIGINAL format:
-	 *   - If input was string `'2024-01-01'` → returns string (NOT Date object)
-	 *   - If input was string `'999999'` → returns string (NOT bigint)
-	 *   - If input was RegExp `/test/` → returns RegExp (NOT string)
-	 *   - If input was string `'^test$'` → returns string (NOT RegExp)
-	 *
-	 * **Use cases:**
-	 * - Change detection: `model.toInterface() vs model.getInitInterface()`
-	 * - Form reset: restore original values
-	 * - API responses: return data in same format as received
-	 * - State comparison: check modifications
-	 *
-	 * @returns Object with current values in ORIGINAL input format (NOT JSON IQSerialized)
-	 *
-	 * @example
-	 * **Example 1: Date as string input**
-	 * ```typescript
-	 * const user = new User({
-	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String input
-	 * });
-	 *
-	 * user.createdAt;        // Date object (transformed)
-	 * user.toInterface();    // { createdAt: '2024-01-01T00:00:00.000Z' } - STRING preserved
-	 * user.$qSerialize();      // { createdAt: '2024-01-01T00:00:00.000Z' } - ISO string
-	 * ```
-	 *
-	 * @example
-	 * **Example 2: BigInt as string input**
-	 * ```typescript
-	 * const account = new Account({
-	 *   balance: '999999999999999'  // String input
-	 * });
-	 *
-	 * account.balance;       // 999999999999999n (bigint transformed)
-	 * account.toInterface(); // { balance: '999999999999999' } - STRING preserved
-	 * account.$qSerialize();   // { balance: '999999999999999' } - string for JSON
-	 * ```
-	 *
-	 * @example
-	 * **Example 3: RegExp input formats**
-	 * ```typescript
-	 * // Case A: String pattern input
-	 * const model1 = new Model({ pattern: '^test$' });
-	 * model1.pattern;        // /^test$/ (RegExp transformed)
-	 * model1.toInterface();  // { pattern: '^test$' } - STRING preserved
-	 *
-	 * // Case B: RegExp object input
-	 * const model2 = new Model({ pattern: /^test$/ });
-	 * model2.pattern;        // /^test$/ (RegExp)
-	 * model2.toInterface();  // { pattern: /^test$/ } - REGEXP preserved
-	 * ```
-	 */
-	toInterface(seen?: WeakSet<object>, depth?: number): TInterface {
-		_assertQCall('toInterface');
-		return QModel.toInterfaceService.toInterface<TInterface>(
-			this as unknown as Record<string, unknown>,
-			seen,
-			depth
-		);
-	}
-
-	/**
-	 * Returns the initial state exactly as it was passed to the constructor.
-	 *
-	 * This returns a copy of the exact interface data used to create the instance,
-	 * in the same format it was provided (with all values as primitives/strings).
-	 * Useful for:
-	 * - Detecting changes: compare with toInterface()
-	 * - Resetting to original state: restore from this data
-	 * - Undo functionality: revert to initial values
-	 * - Audit trails: track what the original data was
-	 *
-	 * @returns Plain object with initial values in the same format as constructor input
-	 *
-	 * @see {@link QModel.toInterface} — current state in the same format
-	 * @see {@link QModel.reset} — restore the instance to this initial state
-	 * @see {@link QModel.isDirty} — check whether the current state diverges from this baseline
-	 * @see {@link QModel.getChanges} — diff between current and initial state
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({
-	 *   id: '1',
-	 *   name: 'John',
-	 *   age: 30,
-	 *   createdAt: '2024-01-01T00:00:00.000Z'  // String format
-	 * });
-	 *
-	 * // Modify the instance
-	 * user.name = 'Jane';
-	 * user.age = 31;
-	 * user.createdAt = new Date('2024-12-31');
-	 *
-	 * // Get initial state (unchanged)
-	 * const init = user.getInitInterface();
-	 * // { id: '1', name: 'John', age: 30, createdAt: '2024-01-01T00:00:00.000Z' }
-	 *
-	 * // Get current state (modified)
-	 * const current = user.toInterface();
-	 * // { id: '1', name: 'Jane', age: 31, createdAt: '2024-12-31T00:00:00.000Z' }
-	 *
-	 * // Compare to detect changes
-	 * console.log(init.name !== current.name); // true
-	 * ```
-	 */
-	getInitInterface(): IQSerializedInterface<TInterface> {
-		_assertQCall('getInitInterface');
-		return { ...(this.__initData as IQSerializedInterface<TInterface>) };
-	}
-
-	/**
-	 * Checks if the model has been modified since construction.
-	 *
-	 * Compares the current state with the initial state to detect changes.
-	 * Performs a deep comparison of all fields.
-	 *
-	 * @returns true if any field has changed, false otherwise
-	 *
-	 * @see {@link QModel.isDirty} — per-field variant, also accepts no argument
-	 * @see {@link QModel.getChanges} — returns the changed fields with their values
-	 * @see {@link QModel.getChangedFields} — array of changed field names
-	 * @see {@link QModel.reset} — revert all fields to initial state
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', age: 30 });
-	 *
-	 * console.log(user.hasChanges()); // false
-	 *
-	 * user.name = 'Jane';
-	 * console.log(user.hasChanges()); // true
-	 * ```
-	 */
-	hasChanges(): boolean {
-		_assertQCall('hasChanges');
-		const current = this.toInterface();
-		const initial = this.getInitInterface();
-		return !this.deepEqual(current, initial);
-	}
-
-	/**
-	 * Checks if the model (or a specific field) has been modified since construction.
-	 *
-	 * When called without arguments, equivalent to `hasChanges()` — returns `true` if
-	 * **any** field has changed.
-	 *
-	 * When called with a field name, returns `true` only if that specific field has
-	 * changed since the instance was created.
-	 *
-	 * @param field - Optional field name to check. If omitted, checks all fields.
-	 * @returns `true` if the field (or any field) has been modified, `false` otherwise
-	 *
-	 * @see {@link QModel.hasChanges} — equivalent call for the no-argument case
-	 * @see {@link QModel.getDirtyFields} — `Set<string>` of all changed field names
-	 * @see {@link QModel.getChangedFields} — array of all changed field names
-	 * @see {@link QModel.getChanges} — changed fields with their current values
-	 * @see {@link QModel.reset} — revert all fields to initial state
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', age: 30 });
-	 * user.name = 'Jane';
-	 *
-	 * user.$qIsDirty();        // true  (any field changed)
-	 * user.$qIsDirty('name');  // true  (name changed)
-	 * user.$qIsDirty('age');   // false (age unchanged)
-	 * ```
-	 *
-	 */
-	isDirty(field?: string): boolean {
-		_assertQCall('isDirty');
-		if (field === undefined) {
-			return this.hasChanges();
-		}
-		const current = this.toInterface() as Record<string, unknown>;
-		const initial = this.getInitInterface() as Record<string, unknown>;
-
-		// Field existed in initial data — compare values directly
-		if (field in initial) {
-			return !this.deepEqual(current[field], initial[field]);
-		}
-
-		// Field was NOT in initial data (optional field added after construction)
-		// Considered dirty if it now has a defined value
-		const currentVal = (this as unknown as Record<string, unknown>)[field];
-		return currentVal !== undefined;
-	}
-
-	/**
-	 * Returns a `Set` of field names that have changed since the instance was created.
-	 *
-	 * Equivalent to {@link getChangedFields} but returns a `Set<string>` instead
-	 * of an array, making membership checks O(1).
-	 *
-	 * @returns Set of field names that differ from their initial value
-	 *
-	 * @see {@link QModel.getChangedFields} — same information as an array
-	 * @see {@link QModel.getChanges} — changed fields with their current values
-	 * @see {@link QModel.isDirty} — check a single field or any field
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ name: 'John', age: 30 });
-	 * user.$qPatch({ name: 'Jane' });
-	 *
-	 * const dirty = user.getDirtyFields();
-	 * dirty.has('name'); // true
-	 * dirty.has('age');  // false
-	 * dirty.size;        // 1
-	 * ```
-	 */
-	getDirtyFields(): Set<string> {
-		return new Set(this.getChangedFields());
-	}
-
-	/**
-	 * Returns an array of field names that have changed since construction.
-	 *
-	 * Useful for:
-	 * - Partial updates (PATCH requests)
-	 * - Change tracking
-	 * - Audit logs
-	 * - Optimistic UI updates
-	 *
-	 * @returns Array of field names that differ from initial state
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', age: 30, email: 'john@example.com' });
-	 *
-	 * user.name = 'Jane';
-	 * user.age = 31;
-	 *
-	 * console.log(user.getChangedFields()); // ['name', 'age']
-	 * ```
-	 */
-	getChangedFields(): string[] {
-		if (_qCallDepth === 0) {
-			return _withQFlag(() => this.getChangedFields());
-		}
-		const current = this.toInterface();
-		const initial = this.getInitInterface();
-		const changes: string[] = [];
-
-		for (const key in current) {
-			if (!this.deepEqual(current[key], initial[key])) {
-				changes.push(key);
-			}
-		}
-
-		return changes;
-	}
-
-	/**
-	 * Returns an object containing only the fields that have changed.
-	 *
-	 * Perfect for PATCH requests where you only want to send modified fields.
-	 *
-	 * @returns Object with only changed fields and their current values
-	 *
-	 * @see {@link QModel.getChangedFields} for an array of changed field names
-	 * @see {@link QModel.getDirtyFields} for a `Set<string>` of changed field names
-	 * @see {@link QModel.patch} to apply partial updates
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({
-	 *   id: '1',
-	 *   name: 'John',
-	 *   age: 30,
-	 *   email: 'john@example.com'
-	 * });
-	 *
-	 * user.name = 'Jane';
-	 * user.age = 31;
-	 *
-	 * const changes = user.$qGetChanges();
-	 * // { name: 'Jane', age: 31 }
-	 *
-	 * // Use for PATCH request
-	 * await api.patch(`/users/${user.id}`, changes);
-	 * ```
-	 *
-	 */
-	getChanges(): Partial<IQSerializedInterface<TInterface>> {
-		_assertQCall('getChanges');
-		const current = this.toInterface();
-		const initial = this.getInitInterface();
-		const changes: Partial<IQSerializedInterface<TInterface>> = {};
-
-		for (const key in current) {
-			if (!this.deepEqual(current[key], initial[key])) {
-				changes[key] = current[key];
-			}
-		}
-
-		return changes;
-	}
-
-	/**
-	 * Resets the model to its initial state.
-	 *
-	 * Restores all fields to the values they had when the instance was created.
-	 * Useful for:
-	 * - Cancel/undo operations
-	 * - Form reset buttons
-	 * - Reverting failed updates
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ id: '1', name: 'John', age: 30 });
-	 *
-	 * user.name = 'Jane';
-	 * user.age = 31;
-	 *
-	 * console.log(user.name); // 'Jane'
-	 *
-	 * user.reset();
-	 *
-	 * console.log(user.name); // 'John'
-	 * console.log(user.age); // 30
-	 * console.log(user.hasChanges()); // false
-	 * ```
-	 */
-	reset(): void {
-		_assertQCall('reset');
-		const initial = this.getInitInterface();
-		const Constructor = this.constructor as unknown as IModelConstructor<
-			QModel<TInterface>
-		>;
-		const restored = Constructor.deserialize(initial);
-
-		// Copy all properties from restored instance
-		for (const key of Object.keys(restored)) {
-			(this as unknown as IQAnyRecord)[key] = (
-				restored as unknown as IQAnyRecord
-			)[key];
-		}
-	}
-
-	/**
-	 * Applies partial updates to the model.
-	 *
-	 * Merges the provided data with the current state. Only updates fields
-	 * that are present in the patch data. Useful for:
-	 * - Applying server responses from PATCH requests
-	 * - Incremental updates
-	 * - Form partial updates
-	 *
-	 * @param patch - Partial object with fields to update
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({
-	 *   id: '1',
-	 *   name: 'John',
-	 *   age: 30,
-	 *   email: 'john@example.com'
-	 * });
-	 *
-	 * user.$qPatch({ name: 'Jane', age: 31 });
-	 *
-	 * console.log(user.name); // 'Jane'
-	 * console.log(user.age); // 31
-	 * console.log(user.email); // 'john@example.com' (unchanged)
-	 * ```
-	 *
-	 */
-	patch(patch: Partial<IQModelData<TInterface>>): void {
-		_assertQCall('patch');
-		// @QReadonly guard — reject any patch that targets an immutable field
-		if (patch !== undefined) {
-			const roFields = collectReadonlyFields(
-				this.constructor.prototype as object
-			);
-			if (roFields.length > 0) {
-				for (const fld of roFields) {
-					if (fld in patch) {
-						throw new ImmutableFieldError(
-							fld,
-							(this.constructor as { name?: string }).name ??
-								'QModel'
-						);
-					}
-				}
-			}
-		}
-		const Constructor = this.constructor as unknown as IModelConstructor<
-			QModel<TInterface>
-		>;
-		const current = this.serialize();
-		const merged = { ...current, ...patch };
-		const updated = Constructor.deserialize(merged);
-
-		// Copy all properties from updated instance
-		for (const key of Object.keys(updated)) {
-			(this as unknown as IQAnyRecord)[key] = (
-				updated as unknown as IQAnyRecord
-			)[key];
-		}
-	}
-
-	/**
-	 * Returns a **new instance** that is an immutable copy of the current state,
-	 * optionally overriding specific fields.
-	 *
-	 * - `copy()` — deep copy with identical data (new reference).
-	 * - `copy({ key: value })` — new instance with partial fields overridden.
-	 *
-	 * The new instance has its initial state set to the copied data, so:
-	 * - `isDirty()` returns `false`
-	 * - `reset()` reverts to the copied state (not the original)
-	 *
-	 * All type transformations (Date, BigInt, Set, etc.) are applied.
-	 *
-	 * **Framework reactivity:** Because `copy()` always returns a new reference,
-	 * it is safe to use with any signal / store / ref system:
-	 * ```typescript
-	 * // Angular
-	 * userSignal.update(u => u.$qCopy({ name: 'Bob' }))
-	 * // Vue
-	 * userRef.value = user.$qCopy({ name: 'Bob' })
-	 * // React
-	 * setUser(user.$qCopy({ name: 'Bob' }))
-	 * // patch() batch + copy() to emit
-	 * user.$qPatch({ name: 'Bob', age: 31 })
-	 * userSignal.set(user.$qCopy())
-	 * ```
-	 *
-	 * @param partial - Optional fields to override in the new instance
-	 * @returns A new model instance
-	 *
-	 * @see {@link QModel.patch} — in-place mutation instead of a new instance
-	 * @see {@link QModel.reset} — revert the current instance (no new object created)
-	 * @see {@link QModel.equals} — compare two instances for deep equality
-	 *
-	 * @example
-	 * ```typescript
-	 * const user = new User({ name: 'John', age: 30 });
-	 *
-	 * const clone   = user.$qCopy();                 // identical copy
-	 * const updated = user.$qCopy({ name: 'Jane' }); // copy with override
-	 *
-	 * user.name;     // 'John'  ← original unchanged
-	 * updated.name;  // 'Jane'
-	 * updated.age;   // 30      ← fields not in partial are preserved
-	 * updated.$qIsDirty(); // false
-	 * ```
-	 *
-	 */
-	copy(partial?: Partial<IQModelData<TInterface>>): this {
-		_assertQCall('copy');
-		// @QReadonly guard — reject copy() calls that include an immutable field
-		if (partial !== undefined) {
-			const roFields = collectReadonlyFields(
-				this.constructor.prototype as object
-			);
-			if (roFields.length > 0) {
-				for (const fld of roFields) {
-					if (fld in partial) {
-						throw new ImmutableFieldError(
-							fld,
-							(this.constructor as { name?: string }).name ??
-								'QModel'
-						);
-					}
-				}
-			}
-		}
-		// Use deserialize() (Object.create) instead of new Constructor() to avoid
-		// TypeScript property initializers (e.g. `id!: string` compiles to
-		// `this.id = undefined`) overwriting QModel's lazy getters after construction.
-		const Constructor = this
-			.constructor as unknown as IModelConstructor<this>;
-		// Include sensitive fields when cloning internally so the copy retains all data.
-		const current = this.serialize({ includeSensitive: true });
-		const data = partial ? { ...current, ...partial } : { ...current };
-		const instance = Constructor.deserialize(
-			data as unknown as IQModelData<IQAnyRecord>
-		);
-		// Inject __initData so isDirty() / reset() work correctly on the copy.
-		// deserialize() bypasses the constructor so __initData is never set — we
-		// set it here to the merged state so reset() reverts to this snapshot.
-		Object.defineProperty(instance, '__initData', {
-			value: { ...data },
-			writable: false,
-			enumerable: false,
-			configurable: true,
-		});
-		return instance;
 	}
 
 	/**
@@ -3571,79 +2872,6 @@ export abstract class QModel<
 		return false;
 	}
 
-	/**
-	 * Compares this instance with another and returns a field-by-field diff.
-	 *
-	 * Uses serialized (JSON-safe) values for comparison so that complex types
-	 * like `Date` and `bigint` are compared as strings consistently.
-	 *
-	 * @param other - Another instance of the same model class
-	 * @returns Object where each changed key maps to `{ before, after }` values.
-	 *          `before` = this instance's value, `after` = other instance's value.
-	 *          Returns an empty object when both instances are equal.
-	 *
-	 * @see {@link QModel.equals} — boolean equality shortcut (no diff detail)
-	 * @see {@link QModel.getChanges} — diff against the construction baseline (not another instance)
-	 * @see {@link QModel.serialize} — the serialized form used for comparison
-	 *
-	 * @example
-	 * ```typescript
-	 * const a = new User({ name: 'John', age: 30 });
-	 * const b = new User({ name: 'Jane', age: 31 });
-	 *
-	 * a.$qDiff(b);
-	 * // { name: { before: 'John', after: 'Jane' }, age: { before: 30, after: 31 } }
-	 * ```
-	 *
-	 */
-	diff(other: this): Record<string, { before: unknown; after: unknown }> {
-		_assertQCall('diff');
-		const selfData = this.serialize() as Record<string, unknown>;
-		const otherData = other.serialize() as Record<string, unknown>;
-		const result: Record<string, { before: unknown; after: unknown }> = {};
-
-		const allKeys = new Set([
-			...Object.keys(selfData),
-			...Object.keys(otherData),
-		]);
-
-		for (const key of allKeys) {
-			if (!this.deepEqual(selfData[key], otherData[key])) {
-				result[key] = { before: selfData[key], after: otherData[key] };
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Returns `true` when this instance is deeply equal to `other`.
-	 *
-	 * Comparison is performed on serialized (JSON-safe) values so that `Date`,
-	 * `bigint` and other complex types are compared consistently.
-	 *
-	 * @param other - Another instance of the same model class
-	 * @returns `true` if all serialized fields are equal, `false` otherwise
-	 *
-	 * @see {@link QModel.diff} — field-by-field diff with before/after values
-	 * @see {@link QModel.copy} — create an equal copy with a new reference
-	 *
-	 * @example
-	 * ```typescript
-	 * const a = new User({ id: '1', name: 'John' });
-	 * const b = new User({ id: '1', name: 'John' });
-	 * a.$qEquals(b); // true
-	 *
-	 * a.name = 'Jane';
-	 * a.$qEquals(b); // false
-	 * ```
-	 *
-	 */
-	equals(other: this): boolean {
-		_assertQCall('equals');
-		return Object.keys(this.diff(other)).length === 0;
-	}
-
 	// ==========================================================================
 	// SCHEMA GENERATION API
 	// ==========================================================================
@@ -3666,7 +2894,7 @@ export abstract class QModel<
 	 * @returns Generated schema in the requested format
 	 * @throws Error if schema type is unknown
 	 *
-	 * @see {@link QModel.getSchema} — instance variant that enriches the schema with actual example values
+	 * @see {@link QModel.$qGetSchema} — instance variant that enriches the schema with actual example values
 	 *
 	 * @example
 	 * Generate JSON Schema
@@ -3811,7 +3039,7 @@ export abstract class QModel<
 	 *   balance: '999999'
 	 * });
 	 *
-	 * const schema = user.getSchema('json');
+	 * const schema = user.$qGetSchema('json');
 	 * // {
 	 * //   ...
 	 * //   properties: {
@@ -3823,10 +3051,12 @@ export abstract class QModel<
 	 * // }
 	 * ```
 	 */
-	getSchema<T extends import('@/core/types/schema-types').IQSchemaType>(
+	$qGetSchema<T extends import('@/core/types/schema-types').IQSchemaType>(
 		type: T
 	): import('@/core/types/schema-types').IQSchemaReturnType<T>;
-	getSchema(type: import('@/core/types/schema-types').IQSchemaType): unknown {
+	$qGetSchema(
+		type: import('@/core/types/schema-types').IQSchemaType
+	): unknown {
 		// For JSON/OpenAPI, add examples from instance — call with narrowed literal so TS infers Record
 		if (type === 'json' || type === 'openapi') {
 			const classSchema = (this.constructor as typeof QModel).getSchema(

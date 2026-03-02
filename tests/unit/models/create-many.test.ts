@@ -24,7 +24,7 @@ describe('createMany() — basic', () => {
 			{ name: 'Alice', age: 30 },
 			{ name: 'Bob', age: 25 },
 		];
-		const { instances, errors } = UserModel.createMany(data as any[]);
+		const { instances, errors } = UserModel.createMany(data);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(0);
 	});
@@ -43,7 +43,7 @@ describe('createMany() — basic', () => {
 			{ name: 'Minor', age: 10 }, // fails @QRule
 			{ name: 'Bob', age: 25 },
 		];
-		const { instances, errors } = UserModel.createMany(data as any[]);
+		const { instances, errors } = UserModel.createMany(data);
 		expect(instances).toHaveLength(2);
 		expect(errors).toHaveLength(1);
 	});
@@ -53,20 +53,20 @@ describe('createMany() — basic', () => {
 			{ name: 'Alice', age: 30 },
 			{ name: 'Minor', age: 10 },
 		];
-		const { errors } = UserModel.createMany(data as any[]);
+		const { errors } = UserModel.createMany(data);
 		expect(errors[0].index).toBe(1);
 	});
 
 	test('errors should contain the failed instance', () => {
 		const data = [{ name: 'Minor', age: 10 }];
-		const { errors } = UserModel.createMany(data as any[]);
+		const { errors } = UserModel.createMany(data);
 		expect(errors[0].instance).toBeInstanceOf(UserModel);
 		expect(errors[0].instance.name).toBe('Minor');
 	});
 
 	test('errors should contain the validation errors', () => {
 		const data = [{ name: 'Minor', age: 10 }];
-		const { errors } = UserModel.createMany(data as any[]);
+		const { errors } = UserModel.createMany(data);
 		// errors[].errors comes from checkRules().errors + checkIntegrity()
 		expect(errors[0].errors.length).toBeGreaterThan(0);
 	});
@@ -82,7 +82,9 @@ describe('createMany() — basic', () => {
 			{ name: 'A', age: 5 },
 			{ name: 'B', age: 10 },
 		];
-		const { instances, errors } = UserModel.createMany(data as any[]);
+		const { instances, errors } = UserModel.createMany(
+			data as Record<string, unknown>[]
+		);
 		expect(instances).toHaveLength(0);
 		expect(errors).toHaveLength(2);
 	});
@@ -94,7 +96,9 @@ describe('createMany() — basic', () => {
 			{ name: 'Bob', age: 25 },
 			{ name: 'Carol', age: 40 },
 		];
-		const { instances } = UserModel.createMany(data as any[]);
+		const { instances } = UserModel.createMany(
+			data as Record<string, unknown>[]
+		);
 		expect(instances.map((instance) => instance.name)).toEqual([
 			'Alice',
 			'Bob',
@@ -130,7 +134,7 @@ describe('createMany() — option includeErrorInstances', () => {
 			includeErrorInstances: true,
 		});
 		expect(errors[0].index).toBe(1);
-		expect((errors[0].instance as any).name).toBe('Minor');
+		expect(errors[0].instance.name).toBe('Minor');
 	});
 
 	test('with includeErrorInstances: false (explicit) — same as default', () => {

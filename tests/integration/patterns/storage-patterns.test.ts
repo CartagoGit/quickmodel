@@ -7,7 +7,8 @@
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { QModel, Quick } from '@/index';
 import { QRule, QField, QComputed, QGroup } from '@/decorators';
-import { qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRules } from '@/core/helpers/q-check-rules';
+import { $qCheckRulesAsync } from '@/core/helpers/q-check-rules-async';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -599,7 +600,7 @@ describe('BroadcastChannel — cross-tab sync', () => {
 		const restored = new UserRecordDto(
 			JSON.parse(json) as Record<string, unknown>
 		);
-		const result = qCheckRules(restored);
+		const result = $qCheckRules(restored);
 		expect(result.valid).toBe(true);
 	});
 });
@@ -631,7 +632,7 @@ describe('OPFS & Service Worker cache', () => {
 		expect(restored.name).toBe('Alice Example');
 	});
 
-	test('qCheckRulesAsync passes for valid entry read from OPFS', async () => {
+	test('$qCheckRulesAsync passes for valid entry read from OPFS', async () => {
 		const raw = makeUser({ uid: 'opfs-3' });
 		const bytes = new TextEncoder().encode(JSON.stringify(raw));
 		const text = new TextDecoder().decode(bytes);
@@ -639,7 +640,7 @@ describe('OPFS & Service Worker cache', () => {
 		const dto = new UserRecordDto(
 			JSON.parse(text) as Record<string, unknown>
 		);
-		const result = await qCheckRulesAsync(dto);
+		const result = await $qCheckRulesAsync(dto);
 		expect(result.valid).toBe(true);
 	});
 });

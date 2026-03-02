@@ -9,8 +9,8 @@ QuickModel funciona junto a Drizzle ORM como una capa DTO con tipado fuerte entr
 | Mapear fila Drizzle a DTO | `new UserRowDto(row)` — elimina join artifacts, `updatedAt`, `deletedAt`, etc.        |
 | Validar input de creación | `qCheckRules(new CreateUserDto(formData))`                                            |
 | Seed masivo / importación | `UserRowDto.createMany(seedData)`                                                     |
-| Abstracción repositorio   | `repo.insert(dto)` → `dto.toInterface()` → `db.insert(users).values(...)`             |
-| Actualización parcial     | `existing.copy({ score: 100 })` → `db.update(users).set({ score: 100 })`              |
+| Abstracción repositorio   | `repo.insert(dto)` → `dto.$qToInterface()` → `db.insert(users).values(...)`             |
+| Actualización parcial     | `existing.$qCopy({ score: 100 })` → `db.update(users).set({ score: 100 })`              |
 | Campo derivado            | `@QComputed() get slug()` — incluido en `serialize()`, excluido de `toInterface()`    |
 | Validación unicidad en DB | `qCheckRulesAsync()` con regla async que llama a `db.select().from(users).where(...)` |
 | Drizzle timestamp → Date  | `createdAt: Date` en `@Quick()` — ISO strings transformadas automáticamente           |
@@ -156,7 +156,7 @@ if (!validation.valid) throw new Error(validation.errors[0]?.message);
 
 // Pasar a Drizzle:
 await db.insert(users).values({
-	...dto.toInterface(),
+	...dto.$qToInterface(),
 	id: crypto.randomUUID(),
 	active: true,
 	score: 0,
@@ -174,7 +174,7 @@ const { instances, errors } = UserRowDto.createMany(seedData);
 // Mapear al formato de insert de Drizzle:
 await db.insert(users).values(
 	instances.map((dto) => ({
-		...dto.toInterface(),
+		...dto.$qToInterface(),
 		// toInterface() serializa Date → ISO string, compatible con columnas timestamp de Drizzle
 	}))
 );
@@ -191,7 +191,7 @@ class DrizzleUserRepository {
 		const [row] = await db
 			.insert(users)
 			.values({
-				...dto.toInterface(),
+				...dto.$qToInterface(),
 				id: crypto.randomUUID(),
 				active: true,
 				score: 0,
@@ -250,7 +250,7 @@ const [row] = await db.select().from(users).where(eq(users.id, id));
 const existing = new UserRowDto(row!);
 
 // Aplicar solo los campos que cambiaron:
-const updated = existing.$qm.copy({ score: 100, role: 'admin' });
+const updated = existing.$qCopy({ score: 100, role: 'admin' });
 
 await db
 	.update(users)
@@ -292,8 +292,8 @@ const [row] = await db.select().from(products).where(eq(products.id, id));
 const dto = new ProductDto(row!);
 
 dto.slug; // → 'mi-producto' (computado, no almacenado)
-dto.$qm.serialize(); // → { ..., slug: 'mi-producto' } ✅ incluido en respuesta API
-dto.toInterface(); // → { id, title, ... } ❌ slug excluido — seguro para db.update()
+dto.$qSerialize(); // → { ..., slug: 'mi-producto' } ✅ incluido en respuesta API
+dto.$qToInterface(); // → { id, title, ... } ❌ slug excluido — seguro para db.update()
 ```
 
 ## Validación de Unicidad en DB
@@ -325,7 +325,7 @@ async function createUser(input: object) {
 	const [created] = await db
 		.insert(users)
 		.values({
-			...dto.toInterface(),
+			...dto.$qToInterface(),
 			createdAt: new Date(),
 		})
 		.returning();
@@ -370,3 +370,58 @@ const dto = new UserRowDto(row);
 | `z.safeParse(data).error`        | `qCheckRules(dto).errors`                    |
 | `.transform()` manual para tipos | `@Quick({ createdAt: Date })`                |
 | `z.string().email()`             | `@QRule((v) => v.includes('@'), '...')`      |
+
+## Exportar schema con `getSchema('drizzle')`
+
+Importa `quickmodel/schema` una vez, luego llama a `getSchema('drizzle')` para obtener un string con la definición de tabla Drizzle:
+
+```typescript
+import 'quickmodel/schema';
+import { QModel, Quick } from 'quickmodel';
+
+interface IUser {
+	name: string;
+	email: string;
+	createdAt: Date;
+	score: number;
+}
+
+@Quick({ createdAt: Date, score: Number })
+class User extends QModel<IUser> {
+	declare name: string;
+	declare email: string;
+	declare createdAt: Date;
+	declare score: number;
+}
+
+const drizzleTable = User.getSchema('drizzle');
+/*
+export const users = pgTable('users', {
+  name:      text('name').notNull(),
+  email:     text('email').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+  score:     real('score').notNull(),
+});
+*/
+```
+
+### Mantener las definiciones de tabla sincronizadas con tu QModel
+
+Generar la tabla Drizzle desde tu QModel proporciona una única fuente de verdad:
+
+```typescript
+import 'quickmodel/schema';
+import fs from 'node:fs';
+
+const models = [UserDto, ProductDto, OrderDto];
+const tables = models.map((M) => M.getSchema('drizzle')).join('\n\n');
+fs.writeFileSync('src/db/schema.generated.ts', tables);
+```
+
+> **Nota:** `fromSchema('drizzle', ...)` aún no está soportado. Usa `fromSchema('typescript', ...)` con una interfaz TypeScript en su lugar.
+
+## Ver también
+
+- [Generación de Schema](/es/guide/schema-generation) — referencia completa de `getSchema()`
+- [Integración con JSON Schema](/es/integrations/json-schema-integration) — formato de schema portable
+- [Integración con TypeScript](/es/integrations/typescript-schema-integration) — scaffolding desde interfaces

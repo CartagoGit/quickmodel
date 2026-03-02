@@ -9,7 +9,7 @@
  *
  * `BigInt64Array` and `BigUint64Array` are handled via `string[]` representation.
  *
- * @see {@link QModel.serialize} — triggers this transformer for TypedArray fields
+ * @see {@link QModel.$qSerialize} — triggers this transformer for TypedArray fields
  * @see {@link Quick} — use `@Quick({ field: Uint8Array })` (or any TypedArray) to activate
  * @module transformers/typed-array
  */

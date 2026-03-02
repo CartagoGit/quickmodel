@@ -191,7 +191,7 @@ describe('QSyncDocsTool – injectDoc', () => {
 		expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
 		const written = (
 			mockFs.writeFileSync.mock.calls[0] as unknown[]
-		)?.[1] as string;
+		)?.[1] as string; // @quickmodel-rule-ignore: no-as-unknown
 		expect(written).toContain('# Existing docs');
 		expect(written).toContain('<!-- TOOLS-START -->');
 		expect(written).toContain('## `my_tool`');
@@ -214,7 +214,7 @@ describe('QSyncDocsTool – injectDoc', () => {
 		expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
 		const written = (
 			mockFs.writeFileSync.mock.calls[0] as unknown[]
-		)?.[1] as string;
+		)?.[1] as string; // @quickmodel-rule-ignore: no-as-unknown
 		expect(written).toContain('# Reference');
 		expect(written).toContain(MARKER);
 		expect(written).toContain('new_tool');

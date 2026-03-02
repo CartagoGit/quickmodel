@@ -1,8 +1,8 @@
 /**
  * TDD Tests: QModelCollection — functional utility methods
  *
- * Covers: map(), reduce(), every(), some(), count(), first(), last(),
- * isEmpty, unique(), toMap(), sum(), min(), max(), flatMap()
+ * Covers: $qMap(), $qReduce(), $qEvery(), $qSome(), $qCount(), $qFirst(), $qLast(),
+ * $qIsEmpty, $qUnique(), $qToMap(), $qSum(), $qMin(), $qMax(), $qFlatMap()
  */
 import { describe, it, expect } from 'bun:test';
 import { Quick, QModel } from '@/index';
@@ -74,10 +74,10 @@ const PRODUCTS = [
 
 // ─── map() ──────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — map()', () => {
-	it('map() transforms each item and returns a plain array', () => {
+describe('QModelCollection — $qMap()', () => {
+	it('$qMap() transforms each item and returns a plain array', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const names = col.map((prod) => prod.name);
+		const names = col.$qMap((prod) => prod.name);
 		expect(names).toEqual([
 			'Apple',
 			'Banana',
@@ -87,31 +87,31 @@ describe('QModelCollection — map()', () => {
 		]);
 	});
 
-	it('map() on empty collection returns empty array', () => {
+	it('$qMap() on empty collection returns empty array', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.map((prod) => prod.id)).toEqual([]);
+		expect(col.$qMap((prod) => prod.id)).toEqual([]);
 	});
 
-	it('map() can extract numeric values', () => {
+	it('$qMap() can extract numeric values', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const prices = col.map((prod) => prod.price);
+		const prices = col.$qMap((prod) => prod.price);
 		expect(prices).toHaveLength(5);
 		expect(prices[0]).toBe(1.5);
 	});
 });
 
-// ─── reduce() ───────────────────────────────────────────────────────────────
+// ─── $qReduce() ─────────────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — reduce()', () => {
-	it('reduce() aggregates values with initial accumulator', () => {
+describe('QModelCollection — $qReduce()', () => {
+	it('$qReduce() aggregates values with initial accumulator', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const total = col.reduce((acc, prod) => acc + prod.price, 0);
+		const total = col.$qReduce((acc, prod) => acc + prod.price, 0);
 		expect(total).toBeCloseTo(7.0, 2);
 	});
 
-	it('reduce() can build an object accumulator', () => {
+	it('$qReduce() can build an object accumulator', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const byId = col.reduce<Record<number, string>>(
+		const byId = col.$qReduce<Record<number, string>>(
 			(acc, prod) => ({ ...acc, [prod.id]: prod.name }),
 			{}
 		);
@@ -122,206 +122,206 @@ describe('QModelCollection — reduce()', () => {
 
 // ─── every() + some() ───────────────────────────────────────────────────────
 
-describe('QModelCollection — every() and some()', () => {
-	it('every() returns true when all items satisfy predicate', () => {
+describe('QModelCollection — $qEvery() and $qSome()', () => {
+	it('$qEvery() returns true when all items satisfy predicate', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.every((prod) => prod.price > 0)).toBe(true);
+		expect(col.$qEvery((prod) => prod.price > 0)).toBe(true);
 	});
 
-	it('every() returns false when at least one item fails', () => {
+	it('$qEvery() returns false when at least one item fails', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.every((prod) => prod.active)).toBe(false);
+		expect(col.$qEvery((prod) => prod.active)).toBe(false);
 	});
 
-	it('every() returns true for empty collection', () => {
+	it('$qEvery() returns true for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.every(() => false)).toBe(true);
+		expect(col.$qEvery(() => false)).toBe(true);
 	});
 
-	it('some() returns true when at least one item satisfies predicate', () => {
+	it('$qSome() returns true when at least one item satisfies predicate', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.some((prod) => prod.price > 2)).toBe(true);
+		expect(col.$qSome((prod) => prod.price > 2)).toBe(true);
 	});
 
-	it('some() returns false when no item satisfies predicate', () => {
+	it('$qSome() returns false when no item satisfies predicate', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.some((prod) => prod.price > 100)).toBe(false);
+		expect(col.$qSome((prod) => prod.price > 100)).toBe(false);
 	});
 
-	it('some() returns false for empty collection', () => {
+	it('$qSome() returns false for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.some(() => true)).toBe(false);
+		expect(col.$qSome(() => true)).toBe(false);
 	});
 });
 
-// ─── count() ────────────────────────────────────────────────────────────────
+// ─── $qCount() ─────────────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — count()', () => {
-	it('count() without predicate returns collection size', () => {
+describe('QModelCollection — $qCount()', () => {
+	it('$qCount() without predicate returns collection size', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.count()).toBe(5);
+		expect(col.$qCount()).toBe(5);
 	});
 
-	it('count() with predicate counts matching items', () => {
+	it('$qCount() with predicate counts matching items', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.count((prod) => prod.active)).toBe(4);
+		expect(col.$qCount((prod) => prod.active)).toBe(4);
 	});
 
-	it('count() with predicate that matches none returns 0', () => {
+	it('$qCount() with predicate that matches none returns 0', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.count((prod) => prod.price > 100)).toBe(0);
+		expect(col.$qCount((prod) => prod.price > 100)).toBe(0);
 	});
 });
 
 // ─── first() + last() ───────────────────────────────────────────────────────
 
-describe('QModelCollection — first() and last()', () => {
-	it('first() returns the first instance', () => {
+describe('QModelCollection — $qFirst() and $qLast()', () => {
+	it('$qFirst() returns the first instance', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.first()?.name).toBe('Apple');
+		expect(col.$qFirst()?.name).toBe('Apple');
 	});
 
-	it('first() returns undefined for empty collection', () => {
+	it('$qFirst() returns undefined for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.first()).toBeUndefined();
+		expect(col.$qFirst()).toBeUndefined();
 	});
 
-	it('last() returns the last instance', () => {
+	it('$qLast() returns the last instance', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.last()?.name).toBe('Elderberry');
+		expect(col.$qLast()?.name).toBe('Elderberry');
 	});
 
-	it('last() returns undefined for empty collection', () => {
+	it('$qLast() returns undefined for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.last()).toBeUndefined();
+		expect(col.$qLast()).toBeUndefined();
 	});
 });
 
-// ─── isEmpty ────────────────────────────────────────────────────────────────
+// ─── $qIsEmpty ──────────────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — isEmpty', () => {
-	it('isEmpty is true for empty collection', () => {
+describe('QModelCollection — $qIsEmpty', () => {
+	it('$qIsEmpty is true for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.isEmpty).toBe(true);
+		expect(col.$qIsEmpty).toBe(true);
 	});
 
-	it('isEmpty is false for non-empty collection', () => {
+	it('$qIsEmpty is false for non-empty collection', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.isEmpty).toBe(false);
+		expect(col.$qIsEmpty).toBe(false);
 	});
 });
 
 // ─── unique() ───────────────────────────────────────────────────────────────
 
-describe('QModelCollection — unique()', () => {
-	it('unique() by field returns collection without duplicates', () => {
+describe('QModelCollection — $qUnique()', () => {
+	it('$qUnique() by field returns collection without duplicates', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const uniq = col.unique('category');
+		const uniq = col.$qUnique('category');
 		// Only 2 unique categories: fruit, vegetable
-		expect(uniq.size).toBe(2);
+		expect(uniq.$qSize).toBe(2);
 	});
 
-	it('unique() preserves first occurrence', () => {
+	it('$qUnique() preserves first occurrence', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const uniq = col.unique('category');
-		const names = uniq.map((prod) => prod.name);
+		const uniq = col.$qUnique('category');
+		const names = uniq.$qMap((prod) => prod.name);
 		// First fruit = Apple, first vegetable = Carrot
 		expect(names).toContain('Apple');
 		expect(names).toContain('Carrot');
 	});
 
-	it('unique() with all distinct field preserves all items', () => {
+	it('$qUnique() with all distinct field preserves all items', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.unique('id').size).toBe(5);
+		expect(col.$qUnique('id').$qSize).toBe(5);
 	});
 
-	it('unique() on empty collection returns empty', () => {
+	it('$qUnique() on empty collection returns empty', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.unique('id').size).toBe(0);
+		expect(col.$qUnique('id').$qSize).toBe(0);
 	});
 });
 
 // ─── toMap() ────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — toMap()', () => {
-	it('toMap() indexes items by a field value', () => {
+describe('QModelCollection — $qToMap()', () => {
+	it('$qToMap() indexes items by a field value', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const byId = col.toMap('id');
+		const byId = col.$qToMap('id');
 		expect(byId.size).toBe(5);
 		expect(byId.get(1)?.name).toBe('Apple');
 		expect(byId.get(3)?.name).toBe('Carrot');
 	});
 
-	it('toMap() on empty collection returns empty Map', () => {
+	it('$qToMap() on empty collection returns empty Map', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.toMap('id').size).toBe(0);
+		expect(col.$qToMap('id').size).toBe(0);
 	});
 
-	it('toMap() with duplicate keys keeps last occurrence', () => {
+	it('$qToMap() with duplicate keys keeps last occurrence', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const byCat = col.toMap('category');
+		const byCat = col.$qToMap('category');
 		// 3 fruits → last fruit = Elderberry; 2 vegetables → last veg = Daikon
 		expect(byCat.get('fruit')?.name).toBe('Elderberry');
 		expect(byCat.get('vegetable')?.name).toBe('Daikon');
 	});
 });
 
-// ─── sum() ──────────────────────────────────────────────────────────────────
+// ─── $qSum() ──────────────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — sum()', () => {
-	it('sum() returns the sum of a numeric field', () => {
+describe('QModelCollection — $qSum()', () => {
+	it('$qSum() returns the sum of a numeric field', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		const total = col.sum('price');
+		const total = col.$qSum('price');
 		expect(total).toBeCloseTo(7.0, 2);
 	});
 
-	it('sum() on empty collection returns 0', () => {
+	it('$qSum() on empty collection returns 0', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.sum('price')).toBe(0);
+		expect(col.$qSum('price')).toBe(0);
 	});
 
-	it('sum() by stock field', () => {
+	it('$qSum() by stock field', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.sum('stock')).toBe(390);
+		expect(col.$qSum('stock')).toBe(390);
 	});
 });
 
 // ─── min() + max() ──────────────────────────────────────────────────────────
 
-describe('QModelCollection — min() and max()', () => {
-	it('min() returns item with the lowest value of field', () => {
+describe('QModelCollection — $qMin() and $qMax()', () => {
+	it('$qMin() returns item with the lowest value of field', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.min('price')?.name).toBe('Banana');
+		expect(col.$qMin('price')?.name).toBe('Banana');
 	});
 
-	it('min() returns undefined for empty collection', () => {
+	it('$qMin() returns undefined for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.min('price')).toBeUndefined();
+		expect(col.$qMin('price')).toBeUndefined();
 	});
 
-	it('max() returns item with the highest value of field', () => {
+	it('$qMax() returns item with the highest value of field', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.max('price')?.name).toBe('Elderberry');
+		expect(col.$qMax('price')?.name).toBe('Elderberry');
 	});
 
-	it('max() returns undefined for empty collection', () => {
+	it('$qMax() returns undefined for empty collection', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.max('price')).toBeUndefined();
+		expect(col.$qMax('price')).toBeUndefined();
 	});
 
-	it('max() by stock returns item with most stock', () => {
+	it('$qMax() by stock returns item with most stock', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
-		expect(col.max('stock')?.name).toBe('Banana');
+		expect(col.$qMax('stock')?.name).toBe('Banana');
 	});
 });
 
-// ─── flatMap() ──────────────────────────────────────────────────────────────
+// ─── $qFlatMap() ────────────────────────────────────────────────────────────────────────
 
-describe('QModelCollection — flatMap()', () => {
-	it('flatMap() maps and flattens one level', () => {
+describe('QModelCollection — $qFlatMap()', () => {
+	it('$qFlatMap() maps and flattens one level', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
 		// Generate two tag strings per product
-		const tags = col.flatMap((prod) => [
+		const tags = col.$qFlatMap((prod) => [
 			prod.category,
 			`${prod.category}-alt`,
 		]);
@@ -330,29 +330,29 @@ describe('QModelCollection — flatMap()', () => {
 		expect(tags[1]).toBe('fruit-alt');
 	});
 
-	it('flatMap() on empty collection returns empty array', () => {
+	it('$qFlatMap() on empty collection returns empty array', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.flatMap((prod) => [prod.name])).toEqual([]);
+		expect(col.$qFlatMap((prod) => [prod.name])).toEqual([]);
 	});
 });
 
-describe('QModelCollection — avg()', () => {
-	it('avg() returns the average value of a numeric field', () => {
+describe('QModelCollection — $qAvg()', () => {
+	it('$qAvg() returns the average value of a numeric field', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
 		// prices: 1.5, 0.5, 0.8, 1.2, 3.0 → sum=7.0 / 5 = 1.4
-		const result = col.avg('price');
+		const result = col.$qAvg('price');
 		expect(result).toBeCloseTo(1.4);
 	});
 
-	it('avg() on empty collection returns 0', () => {
+	it('$qAvg() on empty collection returns 0', () => {
 		const col = QModelCollection.from(ProductModel, []);
-		expect(col.avg('price')).toBe(0);
+		expect(col.$qAvg('price')).toBe(0);
 	});
 
-	it('avg() by stock field', () => {
+	it('$qAvg() by stock field', () => {
 		const col = QModelCollection.from(ProductModel, PRODUCTS);
 		// stocks: 100, 200, 50, 30, 10 → sum=390 / 5 = 78
-		const result = col.avg('stock');
+		const result = col.$qAvg('stock');
 		expect(result).toBeCloseTo(78);
 	});
 });
