@@ -517,7 +517,7 @@ export class IntegrityService {
 	 * @param modelClass - The model class constructor
 	 * @returns True if all integrity checks pass, false if any fail
 	 * @see {@link IntegrityService.checkIntegrity} — full error-detail variant
-	 * @see {@link QModel.hasIntegrity} — public API that delegates here
+	 * @see {@link QModel.$qHasIntegrity} — public API that delegates here
 	 */
 	isValid(instance: Record<string, unknown>, modelClass?: Function): boolean {
 		return this.checkIntegrity(instance, { modelClass }).length === 0;

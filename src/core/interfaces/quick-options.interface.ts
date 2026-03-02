@@ -117,7 +117,7 @@ export type IQExtractCommonKeys<T> =
  * class Content extends QModel<IContent> { ... }
  * type Interface = IQExtractIQModelInterface<Content>;  // IContent
  * ```
- * @see {@link QModel.toInterface} — the runtime method this mirrors at the type level
+ * @see {@link QModel.$qToInterface} — the runtime method this mirrors at the type level
  * @see {@link IQExtractValidDiscriminatorKeys} — uses this to extract discriminator keys
  */
 export type IQExtractIQModelInterface<T> = T extends { toInterface(): infer I }

@@ -1456,4 +1456,286 @@ describe('QAgentCoordinateTool', () => {
 			expect(QAgentCoordinateTool._tickerHandle).not.toBeNull();
 		});
 	});
+
+	// ── robustness: entry always present while MCP is active ─────────────────
+	// Core guarantee: as long as the MCP server process is running (ticker alive),
+	// any agent that has called claim MUST stay in the registry — regardless of
+	// whether the agent calls agent_coordinate again or not.
+
+	describe('robustness: entry always present while MCP is active', () => {
+		it('single agent survives multiple ticker cycles with TTL shorter than total run time', async () => {
+			// TTL = 60 ms, ticker interval = 40 ms → ticker fires BEFORE expiry and renews.
+			// Without auto-renew the entry would die after 60 ms; with it, it survives 200 ms.
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000;
+			QAgentCoordinateTool._autoRefreshOnTick = true;
+			const tool = makeTool(60);
+			await tool.execute({
+				action: 'claim',
+				agentId: 'lone-agent',
+				task: 'long running task',
+				files: ['src/**'],
+			});
+			// Wait for ~5 ticker cycles. Without keepalive the entry would be dead.
+			await Bun.sleep(250);
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(1);
+			expect(res.agents[0]?.agentId).toBe('lone-agent');
+		});
+
+		it('three agents all stay registered through multiple ticker cycles', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000;
+			QAgentCoordinateTool._autoRefreshOnTick = true;
+			const tool = makeTool(60);
+			for (const [agentId, files] of [
+				['worker-1', ['src/**']],
+				['worker-2', ['tests/**']],
+				['worker-3', ['docs-vitepress/**']],
+			] as [string, string[]][]) {
+				await tool.execute({
+					action: 'claim',
+					agentId,
+					task: `task of ${agentId}`,
+					files,
+				});
+			}
+			// Wait for 4 ticker cycles.
+			await Bun.sleep(200);
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(3);
+			const ids = res.agents.map((agt) => agt.agentId).sort();
+			expect(ids).toEqual(['worker-1', 'worker-2', 'worker-3']);
+		});
+
+		it('when one agent finishes (release), remaining agents stay registered', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000;
+			QAgentCoordinateTool._autoRefreshOnTick = true;
+			const tool = makeTool(60);
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-short',
+				task: 'quick fix',
+				files: ['docs/**'],
+			});
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-long',
+				task: 'big refactor',
+				files: ['src/**'],
+			});
+			// Short agent finishes immediately.
+			await tool.execute({ action: 'release', agentId: 'agent-short' });
+			// Long agent keeps working (no calls for 200 ms).
+			await Bun.sleep(200);
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(1);
+			expect(res.agents[0]?.agentId).toBe('agent-long');
+		});
+
+		it('entry removed externally (out-of-band delete) → agent calls check with agentId → no auto-recreate (task unknown)', async () => {
+			// check cannot recreate: it only has agentId, not task/files.
+			// This test documents the expected behaviour so it is never accidentally "fixed"
+			// in a way that creates phantom entries with empty tasks.
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'victim',
+				task: 'some task',
+				files: ['src/**'],
+			});
+			// Simulate external deletion (e.g. user manually cleared the file).
+			writeFileSync(TMP_REGISTRY, JSON.stringify({ agents: {} }));
+			// check with agentId: entry not found, cannot recreate without task → returns 0 agents.
+			const res = await tool.execute({
+				action: 'check',
+				agentId: 'victim',
+			});
+			expect(res.total).toBe(0);
+		});
+
+		it('ticker updatedAt advances on each renewal (proves ticker is writing)', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000;
+			QAgentCoordinateTool._autoRefreshOnTick = true;
+			const tool = makeTool(60_000); // long TTL — ticker ONLY renews, no expiry risk
+			await tool.execute({
+				action: 'claim',
+				agentId: 'watcher',
+				task: 'observe',
+				files: [],
+			});
+			const before = (await tool.execute({ action: 'check' })).agents[0]
+				?.updatedAt;
+			await Bun.sleep(100); // 2+ ticker cycles
+			const after = (await tool.execute({ action: 'check' })).agents[0]
+				?.updatedAt;
+			// updatedAt must have been written by the ticker (agent made no other calls).
+			expect(after).not.toBe(before);
+		});
+	});
+
+	// ── robustness: update as universal heal action ───────────────────────────
+	// No matter HOW the registry entry was lost (expiry, external deletion,
+	// registry corruption, VS Code restart), calling update with task restores it.
+
+	describe('robustness: update as universal heal action', () => {
+		it('entry expired during work → update with task immediately restores it', async () => {
+			// Write an expired entry directly to disk (simulates an entry that drained).
+			const expiredAt = new Date(Date.now() - 1000).toISOString();
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(
+				TMP_REGISTRY,
+				JSON.stringify({
+					agents: {
+						'lapsed-agent': {
+							agentId: 'lapsed-agent',
+							task: 'add TSensitiveKeys',
+							files: ['src/core/models/quick.model.ts'],
+							startedAt: expiredAt,
+							updatedAt: expiredAt,
+							expiresAt: expiredAt, // already expired
+						},
+					},
+				})
+			);
+			const tool = makeTool();
+			// readRegistry() will purge the expired entry; then update creates a fresh one.
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'lapsed-agent',
+				task: 'add TSensitiveKeys',
+				files: ['src/core/models/quick.model.ts'],
+			});
+			expect(res.updated).toBe(true);
+			expect(res.summary).toContain('auto-created');
+			const check = await tool.execute({ action: 'check' });
+			expect(check.total).toBe(1);
+			expect(check.agents[0]?.agentId).toBe('lapsed-agent');
+			expect(
+				new Date(check.agents[0]?.expiresAt ?? 0).getTime()
+			).toBeGreaterThan(Date.now());
+		});
+
+		it('registry file deleted externally → update with task recreates file and entry', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'busy-agent',
+				task: 'big task',
+				files: ['src/**'],
+			});
+			// Simulate: someone deleted the file (or the OS cleaned tmp/).
+			if (existsSync(TMP_REGISTRY)) rmSync(TMP_REGISTRY);
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'busy-agent',
+				task: 'big task',
+				files: ['src/**'],
+			});
+			expect(res.updated).toBe(true);
+			expect(existsSync(TMP_REGISTRY)).toBe(true);
+			const check = await tool.execute({ action: 'check' });
+			expect(check.total).toBe(1);
+		});
+
+		it('registry file corrupted externally → update with task recovers gracefully', async () => {
+			mkdirSync(join(process.cwd(), 'tests'), { recursive: true });
+			writeFileSync(TMP_REGISTRY, '{ CORRUPTED JSON :::'); // unreadable
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'resilient-agent',
+				task: 'fix types',
+				files: ['src/core/**'],
+			});
+			expect(res.updated).toBe(true);
+			expect(res.summary).toContain('auto-created');
+			// Registry is now valid JSON again.
+			const raw = JSON.parse(readFileSync(TMP_REGISTRY, 'utf-8')) as {
+				agents: Record<string, unknown>;
+			};
+			expect(raw.agents['resilient-agent']).toBeDefined();
+		});
+
+		it('multiple rapid update calls on same agentId produce exactly one entry', async () => {
+			const tool = makeTool();
+			// Simulate an agent calling update rapidly (e.g. due to retry logic).
+			await Promise.all([
+				tool.execute({
+					action: 'update',
+					agentId: 'rapid-agent',
+					task: 'task',
+					files: ['src/**'],
+				}),
+				tool.execute({
+					action: 'update',
+					agentId: 'rapid-agent',
+					task: 'task',
+					files: ['src/**'],
+				}),
+				tool.execute({
+					action: 'update',
+					agentId: 'rapid-agent',
+					task: 'task',
+					files: ['src/**'],
+				}),
+			]);
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(1); // strictly one entry
+			expect(res.agents[0]?.agentId).toBe('rapid-agent');
+		});
+
+		it('update without task on missing entry gives actionable error message', async () => {
+			const tool = makeTool();
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'lost-agent',
+			});
+			expect(res.updated).toBe(false);
+			// Message must tell the agent what to do.
+			expect(res.summary).toContain('task');
+			expect(res.summary).toMatch(/claim|auto-create/i);
+		});
+
+		it('update upsert does not conflict with existing agents on other files', async () => {
+			const tool = makeTool();
+			await tool.execute({
+				action: 'claim',
+				agentId: 'agent-A',
+				task: 'task A',
+				files: ['src/**'],
+			});
+			// agent-B's entry is missing; it calls update to restore itself on different files.
+			const res = await tool.execute({
+				action: 'update',
+				agentId: 'agent-B',
+				task: 'task B',
+				files: ['tests/**'],
+			});
+			expect(res.updated).toBe(true);
+			const check = await tool.execute({ action: 'check' });
+			expect(check.total).toBe(2);
+		});
+
+		it('update upsert preserves ticker: after auto-create, ticker renews the new entry', async () => {
+			QAgentCoordinateTool._tickerIntervalMs = 40;
+			QAgentCoordinateTool._inactivityThresholdMs = 10_000;
+			QAgentCoordinateTool._autoRefreshOnTick = true;
+			const tool = makeTool(60); // short TTL — would expire without ticker
+			// No prior claim; agent restores itself via update.
+			await tool.execute({
+				action: 'update',
+				agentId: 'restored-agent',
+				task: 'resumed work',
+				files: ['src/**'],
+			});
+			// Wait for ticker to fire and renew.
+			await Bun.sleep(150);
+			const res = await tool.execute({ action: 'check' });
+			expect(res.total).toBe(1);
+			expect(res.agents[0]?.agentId).toBe('restored-agent');
+		});
+	});
 });

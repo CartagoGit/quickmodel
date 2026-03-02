@@ -7,10 +7,10 @@
  * - `pipeReadableToWritable` — pipes bytes from a `ReadableStream` to a `WritableStream`
  *
  * These are the low-level building blocks. The public API
- * (`QModel.toReadableStream`, `QModel.fromStream`, `QModel.pipeStream`) delegates here.
+ * (`QModel.$qToReadableStream`, `QModel.fromStream`, `QModel.pipeStream`) delegates here.
  *
  * @module core/helpers/stream.helpers
- * @see {@link QModel.toReadableStream} — public API for emitting a field as a stream
+ * @see {@link QModel.$qToReadableStream} — public API for emitting a field as a stream
  * @see {@link QModel.fromStream} — public API for accumulating a stream into a field
  * @see {@link QModel.pipeStream} — public API for piping between streams
  */
@@ -40,7 +40,7 @@ interface IStreamChunkOptions {
  * Use when you need to stream a single Blob/File field as raw bytes.
  *
  * @public
- * @see {@link QModel.toReadableStream}
+ * @see {@link QModel.$qToReadableStream}
  * @see {@link IToReadableStreamMultipart} — multipart variant for streaming all fields
  */
 export type IToReadableStreamSingleField = IStreamChunkOptions & {
@@ -65,7 +65,7 @@ export type IToReadableStreamSingleField = IStreamChunkOptions & {
  * ```
  *
  * @public
- * @see {@link QModel.toReadableStream}
+ * @see {@link QModel.$qToReadableStream}
  * @see {@link IQMultipartStream}
  */
 export type IToReadableStreamMultipart = IStreamChunkOptions & {
@@ -170,7 +170,7 @@ export interface IPipeStreamOptions {
  * @param chunkSize - Size of each emitted chunk in bytes (default: 256 KB)
  * @param onChunk   - Optional callback after each chunk is enqueued
  * @returns `ReadableStream<Uint8Array>`
- * @see {@link QModel.toReadableStream} — public API that delegates here
+ * @see {@link QModel.$qToReadableStream} — public API that delegates here
  * @see {@link IToReadableStreamOptions} — options passed from the public API
  */
 export function blobToReadableStream(

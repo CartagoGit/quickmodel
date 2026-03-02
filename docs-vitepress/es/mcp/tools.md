@@ -175,7 +175,7 @@ Compara dos definiciones de clase QuickModel y reporta diferencias estructurales
 
 ## `get_form_schema`
 
-Extrae el schema de formulario de una clase QuickModel analizando sus decoradores `@QField` y `@QGroup`. Usa la API real `QModel.getFormSchema()`. Con `grouped=true` devuelve el schema agrupado por secciones `@QGroup`. Devuelve `{ schema, count }`.
+Extrae el schema de formulario de una clase QuickModel analizando sus decoradores `@QField` y `@QGroup`. Usa la API real `QModel.getFormSchema()` (estático) — equivalente a llamar `instancia.$qGetFormSchema()`. Con `grouped=true` devuelve el schema agrupado por secciones `@QGroup`. Devuelve `{ schema, count }`.
 
 ```json
 {
@@ -206,7 +206,7 @@ Genera el schema de un modelo en cualquier formato soportado a partir de una cla
 
 ## `roundtrip`
 
-Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. Ejecuta: `s1 = new Model(data).serialize()` → `s2 = new Model(s1).serialize()` y comprueba si `s1 === s2`. Devuelve `{ lossless, input, serialized, roundtrip_serialized, diff, summary }`.
+Verifica que serializar y recrear una instancia de QuickModel es sin pérdida. Ejecuta: `s1 = new Model(data).$qSerialize()` → `s2 = new Model(s1).$qSerialize()` y comprueba si `s1 === s2`. Devuelve `{ lossless, input, serialized, roundtrip_serialized, diff, summary }`.
 
 ```json
 {

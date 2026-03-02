@@ -17,7 +17,7 @@
  *
  * @module core/helpers/form-data.helpers
  * @see {@link QModel.fromFormData} — public API that uses `formDataToPlainObject`
- * @see {@link QModel.toFormData} — public API that uses `plainObjectToFormData`
+ * @see {@link QModel.$qToFormData} — public API that uses `plainObjectToFormData`
  * @see {@link IFileSourceMode} — available binary-field source modes
  */
 

@@ -13,7 +13,7 @@ import { ICaseType } from '../types/case.type';
  * 4. Re-join in the requested format.
  *
  * @see {@link ICaseType} — union of accepted format strings
- * @see {@link QModel.serialize} — applies `transformCase` during serialization when configured in `@Quick`
+ * @see {@link QModel.$qSerialize} — applies `transformCase` during serialization when configured in `@Quick`
  *
  * @example
  * ```ts
@@ -36,7 +36,7 @@ export class CaseHelper {
 	 *   if `format` is unrecognised or `str` is falsy.
 	 *
 	 * @see {@link ICaseType} — accepted format string literals
-	 * @see {@link QModel.serialize} — applies this when `transformCase` is set on `@Quick`
+	 * @see {@link QModel.$qSerialize} — applies this when `transformCase` is set on `@Quick`
 	 *
 	 * @example
 	 * ```ts

@@ -182,7 +182,7 @@ function toMatchQModel(received: object, expected: object): IMatcherResult {
  * expect(model).toBeIntact();
  * expect(corruptedModel).not.toBeIntact();
  * ```
- * @see {@link QModel.hasIntegrity} — the method called internally
+ * @see {@link QModel.$qHasIntegrity} — the method called internally
  * @see {@link toMatchQModel} — deep equality matcher
  */
 function toBeIntact(received: unknown): IMatcherResult {
@@ -213,7 +213,7 @@ function toBeIntact(received: unknown): IMatcherResult {
  * expect(model).toHaveDirtyField('score');
  * expect(model).not.toHaveDirtyField('email'); // email was not mutated
  * ```
- * @see {@link QModel.isDirty} — the method called internally
+ * @see {@link QModel.$qIsDirty} — the method called internally
  * @see {@link toBeIntact} — integrity check matcher
  */
 function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
@@ -245,10 +245,10 @@ function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
  * - `toBeValidQModel()` — all `@QRule` checks pass
  * - `toHaveQRuleError(field, message?)` — specific field has a rule error
  * - `toHaveQField(fieldName)` — property has `@QField` decorator
- * - `toMatchQModel(expected)` — deep equality via `serialize()`
- * - `toBeIntact()` — `hasIntegrity()` returns true
- * - `toHaveDirtyField(field)` — `isDirty(field)` returns true
- * @see {@link QModel.checkRules} — the validation method used by `toBeValidQModel()`
+ * - `toMatchQModel(expected)` — deep equality via `$qSerialize()`
+ * - `toBeIntact()` — `$qHasIntegrity()` returns true
+ * - `toHaveDirtyField(field)` — `$qIsDirty(field)` returns true
+ * @see {@link QModel.$qCheckRules} — the validation method used by `toBeValidQModel()`
  * @see {@link QModel.$qSerialize} — the method used by `toMatchQModel()` for comparison
  */
 export const quickmodelMatchers = {

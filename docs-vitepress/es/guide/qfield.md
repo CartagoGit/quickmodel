@@ -1,6 +1,6 @@
 # Esquema de Formulario con `@QField`
 
-`@QField` es un decorador de propiedades que adjunta metadatos de formulario a los campos del modelo. Usa `getFormSchema()` para obtener un array de esquema listo para cualquier librería de formularios (Angular Reactive Forms, React Hook Form, etc.).
+`@QField` es un decorador de propiedades que adjunta metadatos de formulario a los campos del modelo. Usa `NombreClase.getFormSchema()` (estático) o `instancia.$qGetFormSchema()` (instancia) para obtener un array de esquema listo para cualquier librería de formularios (Angular Reactive Forms, React Hook Form, etc.).
 
 ## Ejemplo Básico
 
@@ -54,10 +54,10 @@ const perfil = PerfilModel.create({
 	activo: true,
 	fechaNacimiento: new Date(),
 });
-const esquema = perfil.getFormSchema();
+const esquema = perfil.$qGetFormSchema();
 ```
 
-`getFormSchema()` devuelve un `IQFormSchemaEntry[]` ordenado:
+`getFormSchema()` / `$qGetFormSchema()` devuelve un `IQFormSchemaEntry[]` ordenado:
 
 ```typescript
 [
@@ -116,7 +116,7 @@ const esquema = perfil.getFormSchema();
 | Variante  | Firma                         | Descripción                              |
 | --------- | ----------------------------- | ---------------------------------------- |
 | Estática  | `NombreClase.getFormSchema()` | No requiere instancia                    |
-| Instancia | `instancia.getFormSchema()`   | Mismo resultado que la variante estática |
+| Instancia | `instancia.$qGetFormSchema()` | Mismo resultado que la variante estática |
 
 **Devuelve:** `IQFormSchemaEntry[]` — array ordenado de objetos `{ field, ...meta }`.
 
@@ -279,7 +279,7 @@ interface IQFormSchemaGroup {
 
 ## Agrupación de Campos (`@QGroup`)
 
-Usa `@QGroup('Nombre de sección')` junto a `@QField` para organizar los campos en secciones. Llama a `getFormSchemaGrouped()` para obtener el esquema ya agrupado y listo para renderizar sección por sección.
+Usa `@QGroup('Nombre de sección')` junto a `@QField` para organizar los campos en secciones. Llama a `getFormSchemaGrouped()` (estático) o `instancia.$qGetFormSchemaGrouped()` (instancia) para obtener el esquema ya agrupado y listo para renderizar sección por sección.
 
 ### Uso básico
 

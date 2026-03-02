@@ -14,7 +14,7 @@
  *
  * @public
  * @see {@link IToFormDataOptions} — parent options interface that uses this type
- * @see {@link QModel.toFormData} — method that accepts `spoofMethod` via `IToFormDataOptions`
+ * @see {@link QModel.$qToFormData} — method that accepts `spoofMethod` via `IToFormDataOptions`
  * @see {@link plainObjectToFormData} — internal helper that reads `spoofMethod` at serialization time
  */
 export type IQSpoofMethod =

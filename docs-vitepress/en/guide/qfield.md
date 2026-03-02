@@ -1,6 +1,6 @@
 # Form Schema with `@QField`
 
-`@QField` is a property decorator that attaches form metadata to model fields. Use `getFormSchema()` to retrieve a ready-to-use schema array for any form library (Angular Reactive Forms, React Hook Form, etc.).
+`@QField` is a property decorator that attaches form metadata to model fields. Use `ClassName.getFormSchema()` (static) or `instance.$qGetFormSchema()` (instance) to retrieve a ready-to-use schema array for any form library (Angular Reactive Forms, React Hook Form, etc.).
 
 ## Basic Example
 
@@ -54,10 +54,10 @@ const profile = ProfileModel.create({
 	active: true,
 	birthDate: new Date(),
 });
-const schema = profile.getFormSchema();
+const schema = profile.$qGetFormSchema();
 ```
 
-`getFormSchema()` returns an ordered `IQFormSchemaEntry[]`:
+`getFormSchema()` / `$qGetFormSchema()` returns an ordered `IQFormSchemaEntry[]`:
 
 ```typescript
 [
@@ -109,10 +109,10 @@ const schema = profile.getFormSchema();
 
 ### `getFormSchema()`
 
-| Variant  | Signature                   | Description                       |
-| -------- | --------------------------- | --------------------------------- |
-| Static   | `ClassName.getFormSchema()` | No instance required              |
-| Instance | `instance.getFormSchema()`  | Same output as the static variant |
+| Variant  | Signature                    | Description                       |
+| -------- | ---------------------------- | --------------------------------- |
+| Static   | `ClassName.getFormSchema()`  | No instance required              |
+| Instance | `instance.$qGetFormSchema()` | Same output as the static variant |
 
 **Returns:** `IQFormSchemaEntry[]` — an ordered array of `{ field, ...meta }` objects.
 
@@ -275,7 +275,7 @@ interface IQFormSchemaGroup {
 
 ## Grouping Fields (`@QGroup`)
 
-Use `@QGroup('Section Name')` alongside `@QField` to organise fields into named sections. Call `getFormSchemaGrouped()` to get the schema pre-grouped and ready to render section-by-section.
+Use `@QGroup('Section Name')` alongside `@QField` to organise fields into named sections. Call `getFormSchemaGrouped()` (static) or `instance.$qGetFormSchemaGrouped()` (instance) to get the schema pre-grouped and ready to render section-by-section.
 
 ### Basic usage
 

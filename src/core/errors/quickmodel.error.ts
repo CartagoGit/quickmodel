@@ -11,9 +11,10 @@
  *
  * Use the static factory helpers (`invalidType`, `invalidValue`) to produce
  * consistently formatted messages.
- * * @see {@link QModel.checkIntegrity} — throws this error for type mismatches
+ * @see {@link QModel.$qCheckIntegrity} — throws this error for type mismatches
  * @see {@link IntegrityService} — service that generates these errors internally
- * * @example
+ *
+ * @example
  * ```typescript
  * try {
  *   const user = new User({ age: 'not-a-number' });
@@ -96,7 +97,7 @@ export class QModelError extends Error {
 	 * invalid (e.g. `'must be a positive integer'`).
 	 * @returns A `QModelError` with a formatted message and populated `context`.
 	 * @see {@link QModelError.invalidType} — use when the type itself is wrong
-	 * @see {@link QModel.checkIntegrity} — triggers this error for invalid field values
+	 * @see {@link QModel.$qCheckIntegrity} — triggers this error for invalid field values
 	 *
 	 * @example
 	 * ```typescript

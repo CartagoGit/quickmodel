@@ -121,8 +121,8 @@ export interface IQIntegrityContext {
  *
  * @see {@link IQIntegrityChecker}
  * @see {@link IQIntegrityContext}
- * @see {@link QModel.checkIntegrity} — collects these results for all model properties
- * @see {@link QModel.hasIntegrity} — boolean short-circuit over this array
+ * @see {@link QModel.$qCheckIntegrity} — collects these results for all model properties
+ * @see {@link QModel.$qHasIntegrity} — boolean short-circuit over this array
  */
 export interface IQIntegrityResult {
 	/** `true` when the value passes all transformer-level constraints. */

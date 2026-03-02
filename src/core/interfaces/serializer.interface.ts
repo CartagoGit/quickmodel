@@ -20,7 +20,7 @@ import type { IFileModeOutput } from '../helpers/form-data.helpers';
 /**
  * Options controlling how a `QModel` instance is serialized to a plain object or JSON string.
  *
- * @see {@link QModel.serialize} — passes these options to control output shape
+ * @see {@link QModel.$qSerialize} — passes these options to control output shape
  * @see {@link QModel.toJSON} — also accepts these options
  */
 export interface IQSerializationOptions {
@@ -99,7 +99,7 @@ export interface IQSerializationOptions {
 /**
  * Serializes a model instance into its JSON-compatible interface representation.
  *
- * @see {@link QModel.serialize} — public model method
+ * @see {@link QModel.$qSerialize} — public model method
  * @see {@link Serializer} — service implementing this contract
  *
  * @template TModel - Model class instance type (extends `Record<string, unknown>`).
