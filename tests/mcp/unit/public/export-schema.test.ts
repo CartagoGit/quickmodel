@@ -37,12 +37,13 @@ describe('QExportJsonSchemaTool', () => {
             export class User extends QModel {}
         `;
 		const result = await tool.execute({ code });
-		const schema = result.schema as Record<string, Record<string, unknown>>;
+		const schema = result.schema as Record<string, unknown>;
+		const props = schema['properties'] as Record<string, unknown>;
 
 		expect(schema['type']).toBe('object');
-		expect(schema['properties']['name']).toEqual({ type: 'string' });
-		expect(schema['properties']['age']).toEqual({ type: 'number' });
-		expect(schema['properties']['isActive']).toEqual({ type: 'boolean' });
+		expect(props['name']).toEqual({ type: 'string' });
+		expect(props['age']).toEqual({ type: 'number' });
+		expect(props['isActive']).toEqual({ type: 'boolean' });
 	});
 
 	it('should map integer to number', async () => {

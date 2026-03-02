@@ -1,7 +1,7 @@
 import type {
-	IHistoryConfig,
-	IHistoryEntry,
-	IHistoryHandle,
+	IQHistoryConfig,
+	IQHistoryEntry,
+	IQHistoryHandle,
 } from '@/core/interfaces/history.interface';
 
 /**
@@ -17,7 +17,7 @@ import type {
 const DEFAULT_MAX_ENTRIES = 500;
 
 /**
- * Active implementation of {@link IHistoryHandle}.
+ * Active implementation of {@link IQHistoryHandle}.
  *
  * Holds the live mutation log and honours `start`, `stop`, `clear`,
  * and `configure` lifecycle commands. Callers obtain an instance through
@@ -25,13 +25,13 @@ const DEFAULT_MAX_ENTRIES = 500;
  *
  * Returned by `instance.$qHistory` when history recording is enabled.
  *
- * @see {@link IHistoryHandle} — the public interface this class satisfies
+ * @see {@link IQHistoryHandle} — the public interface this class satisfies
  * @see {@link HistoryService} — factory that produces handles
  * @see {@link NULL_HISTORY_HANDLE} — no-op variant returned when history is disabled
  */
-export class ActiveHistoryHandle implements IHistoryHandle {
+export class ActiveHistoryHandle implements IQHistoryHandle {
 	/** @internal Mutable backing store. Exposed only through a shallow copy. */
-	private readonly _entries: IHistoryEntry[] = [];
+	private readonly _entries: IQHistoryEntry[] = [];
 	/** @internal Whether the handle is currently recording. */
 	private _active: boolean;
 	/** @internal Maximum number of entries to retain. */
@@ -62,7 +62,7 @@ export class ActiveHistoryHandle implements IHistoryHandle {
 	 * Returns a **shallow copy** of the current entry list.
 	 * Mutations on the returned array do not affect internal state.
 	 */
-	get value(): IHistoryEntry[] {
+	get value(): IQHistoryEntry[] {
 		return [...this._entries];
 	}
 
@@ -105,7 +105,7 @@ export class ActiveHistoryHandle implements IHistoryHandle {
 	 *
 	 * @param config - Partial config — only provided keys are overridden.
 	 */
-	configure(config: IHistoryConfig): void {
+	configure(config: IQHistoryConfig): void {
 		if (config.maxEntries !== undefined) {
 			this._maxEntries = config.maxEntries;
 			this._enforceLimit();
@@ -119,7 +119,7 @@ export class ActiveHistoryHandle implements IHistoryHandle {
 	 * @param entry - The mutation record to append.
 	 * @internal Called by `HistoryService.recordDiff`.
 	 */
-	record(entry: IHistoryEntry): void {
+	record(entry: IQHistoryEntry): void {
 		if (!this._active) return;
 		this._entries.push(entry);
 		this._enforceLimit();
@@ -132,7 +132,7 @@ export class ActiveHistoryHandle implements IHistoryHandle {
 	 * @param entries - Entries to pre-populate (shallow-copied).
 	 * @internal
 	 */
-	loadEntries(entries: readonly IHistoryEntry[]): void {
+	loadEntries(entries: readonly IQHistoryEntry[]): void {
 		this._entries.length = 0;
 		this._entries.push(...entries);
 	}
@@ -167,7 +167,7 @@ export class ActiveHistoryHandle implements IHistoryHandle {
  * ```
  *
  * @see {@link ActiveHistoryHandle}
- * @see {@link IHistoryHandle}
+ * @see {@link IQHistoryHandle}
  */
 export class HistoryService {
 	/**
@@ -186,14 +186,14 @@ export class HistoryService {
 	 * @internal Imported lazily by `QModel` to avoid adding weight when history is unused.
 	 */
 	static createHandle(
-		config: (IHistoryConfig & { enabled?: boolean }) | undefined
-	): IHistoryHandle {
+		config: (IQHistoryConfig & { enabled?: boolean }) | undefined
+	): IQHistoryHandle {
 		if (config?.enabled !== true) {
 			// Lazy import to avoid circular deps — resolved at call time.
 			const { NULL_HISTORY_HANDLE } =
 				// eslint-disable-next-line @typescript-eslint/no-require-imports
 				require('@/core/models/null-history-handle') as {
-					NULL_HISTORY_HANDLE: IHistoryHandle;
+					NULL_HISTORY_HANDLE: IQHistoryHandle;
 				};
 			return NULL_HISTORY_HANDLE;
 		}
@@ -224,10 +224,10 @@ export class HistoryService {
 		after,
 		method,
 	}: {
-		handle: IHistoryHandle;
+		handle: IQHistoryHandle;
 		before: Record<string, unknown>;
 		after: Record<string, unknown>;
-		method: IHistoryEntry['method'];
+		method: IQHistoryEntry['method'];
 	}): void {
 		if (!handle.isActive) return;
 
@@ -275,12 +275,12 @@ export class HistoryService {
 	 * @returns A new `ActiveHistoryHandle` containing the source's entries,
 	 *   or the `NULL_HISTORY_HANDLE` if the source is a null-handle.
 	 */
-	static cloneHandle(source: IHistoryHandle): IHistoryHandle {
+	static cloneHandle(source: IQHistoryHandle): IQHistoryHandle {
 		if (!(source instanceof ActiveHistoryHandle)) {
 			const { NULL_HISTORY_HANDLE } =
 				// eslint-disable-next-line @typescript-eslint/no-require-imports
 				require('@/core/models/null-history-handle') as {
-					NULL_HISTORY_HANDLE: IHistoryHandle;
+					NULL_HISTORY_HANDLE: IQHistoryHandle;
 				};
 			return NULL_HISTORY_HANDLE;
 		}

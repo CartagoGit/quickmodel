@@ -60,16 +60,16 @@ export class QAsyncRulesPrompt extends QAbstractPrompt<{
 				),
 				this.assistant(
 					'## ⚠️ Important: async rules are for async predicates ONLY\n\n' +
-						'`checkRulesAsync()` should **only** be used when your `@QRule` predicates ' +
+						'`$qCheckRulesAsync()` should **only** be used when your `@QRule` predicates ' +
 						'genuinely perform asynchronous operations such as:\n' +
 						'- Database uniqueness checks (e.g. TypeORM, Prisma)\n' +
 						'- External API call validation\n' +
 						'- File system or network I/O inside a predicate\n\n' +
-						'If your predicates are synchronous, use `checkRules()` — it is simpler and faster.\n\n' +
+						'If your predicates are synchronous, use `$qCheckRules()` — it is simpler and faster.\n\n' +
 						'---\n\n' +
-						'### checkRulesAsync() API\n\n' +
+						'### $qCheckRulesAsync() API\n\n' +
 						'```typescript\n' +
-						'const result = await instance.checkRulesAsync({\n' +
+						'const result = await instance.$qCheckRulesAsync({\n' +
 						'  timeoutMs: 5000,              // abort slow predicates after 5 s\n' +
 						'  timeoutMessage: "Timed out",  // optional custom message\n' +
 						'  mode: "parallel",             // "parallel" (default) | "serial"\n' +
@@ -103,12 +103,12 @@ export class QAsyncRulesPrompt extends QAbstractPrompt<{
 				),
 				this.user(
 					`Please call \`validate_usage\` on the model code to verify it follows QuickModel conventions. ` +
-						`Then show the complete async implementation using checkRulesAsync() ` +
+						`Then show the complete async implementation using $qCheckRulesAsync() ` +
 						`with appropriate timeoutMs and the correct parallel or serial mode for ` +
 						(context
 							? `the described context: ${context}.`
 							: `the use case.`) +
-						` Remind me when synchronous checkRules() would be sufficient instead.`
+						` Remind me when synchronous $qCheckRules() would be sufficient instead.`
 				),
 			],
 		});

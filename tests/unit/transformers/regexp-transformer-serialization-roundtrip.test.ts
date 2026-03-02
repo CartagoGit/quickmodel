@@ -28,14 +28,19 @@ describe('Unit: RegExp Transformer', () => {
 		const model = new Pattern({ pattern: '/test/i' });
 
 		const json = model.toJSON();
+		const patternSerialized = json.pattern as unknown as {
+			__type: string;
+			source: string;
+			flags: string;
+		}; // @quickmodel-rule-ignore: no-as-unknown
 
-		expect(json.pattern).toEqual({
+		expect(patternSerialized).toEqual({
 			__type: 'regexp',
 			source: 'test',
 			flags: 'i',
 		});
-		expect(json.pattern.source).toBe('test');
-		expect(json.pattern.flags).toBe('i');
+		expect(patternSerialized.source).toBe('test');
+		expect(patternSerialized.flags).toBe('i');
 	});
 
 	test('Should deserialize simple regexp', () => {

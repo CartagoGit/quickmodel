@@ -4,7 +4,7 @@ import { QAbstractTool } from '../abstract-tool';
 /**
  * A single validation rule to be simulated.
  * @see {@link QSimulateValidationTool} — MCP tool that accepts an array of these rules
- * @see {@link QSimulateRulesTool} — synchronous checkRules() simulator
+ * @see {@link QSimulateRulesTool} — synchronous $qCheckRules() simulator
  */
 interface IValidationRule {
 	/** The field in `data` to validate. */
@@ -89,7 +89,7 @@ export class QSimulateValidationTool extends QAbstractTool<
 	 * @param args.group - Optional group name to filter rules (only rules matching this group are evaluated).
 	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all active predicates pass.
 	 * @see {@link QAbstractTool.execute} — base contract for this method
-	 * @see {@link QSimulateRulesTool} — use this for full @QRule wiring through checkRules()
+	 * @see {@link QSimulateRulesTool} — use this for full @QRule wiring through $qCheckRules()
 	 */
 	async execute(args: {
 		data: Record<string, unknown>;

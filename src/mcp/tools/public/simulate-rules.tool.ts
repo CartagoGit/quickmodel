@@ -27,7 +27,7 @@ interface ISimulatedRule {
  * Tool to run business-logic rules through the *real* `instance.$qCheckRules()` API.
  *
  * Unlike `simulate_validation` (which evaluates predicates standalone), this tool
- * wires predicates via `@QRule` metadata and routes them through `checkRules()`.
+ * wires predicates via `@QRule` metadata and routes them through `$qCheckRules()`.
  * The output format is guaranteed to match the production `IQRulesResult`.
  *
  * Use `simulate_validation` for quick ad-hoc predicate checks.

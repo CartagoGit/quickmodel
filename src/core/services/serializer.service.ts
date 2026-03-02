@@ -79,7 +79,7 @@
  *   metadata: new Map([['key', 'value']])  // Map
  * });
  *
- * account.serialize();
+ * account.$qSerialize();
  * // {
  * //   balance: "999999999999999",
  * //   pattern: { source: "^test$", flags: "gi" },

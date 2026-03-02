@@ -30,10 +30,16 @@ describe('Unit: Symbol Transformer', () => {
 		const json = model.toJSON();
 
 		expect(typeof json.symbol).toBe('object');
-		expect((json.symbol as Record<string, unknown>)['__type']).toBe(
+		expect(
+			(json.symbol as unknown as Record<string, unknown>)['__type']
+		).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'symbol'
 		);
-		expect((json.symbol as Record<string, unknown>)['description']).toBe(
+		expect(
+			(json.symbol as unknown as Record<string, unknown>)['description']
+		).toBe(
+			// @quickmodel-rule-ignore: no-as-unknown
 			'test-symbol'
 		);
 	});

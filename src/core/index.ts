@@ -60,3 +60,7 @@ export {
 	Deserializer,
 	Deserializer as QDeserializer,
 } from './services/deserializer.service';
+
+// Observer / Reactive-Signal
+export type { IQChange, IQObserverFn } from './types/observer.type';
+export type { IQModelSignal } from './models/q-model-signal';

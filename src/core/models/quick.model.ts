@@ -128,12 +128,12 @@ import type {
 	IQValidateOptions,
 	IQValidateResult,
 } from '@/core/types/validation-types';
-import type { IHistoryHandle } from '@/core/interfaces/history.interface';
+import type { IQHistoryHandle } from '@/core/interfaces/history.interface';
 import { HistoryService } from '@/core/services/history.service';
 import { NULL_HISTORY_HANDLE } from '@/core/models/null-history-handle';
-import type { IAuditHandle } from '@/core/interfaces/audit.interface';
-import { AuditService } from '@/core/services/audit.service';
-import { NULL_AUDIT_HANDLE } from '@/core/models/null-audit-handle';
+import type { IQChange, IQObserverFn } from '@/core/types/observer.type';
+import { QModelSignal } from '@/core/models/q-model-signal';
+import type { IQModelSignal } from '@/core/models/q-model-signal';
 
 // ─── History: module-level helper (avoids private method + Reflect.construct issue) ──
 /**
@@ -144,7 +144,7 @@ import { NULL_AUDIT_HANDLE } from '@/core/models/null-audit-handle';
  */
 function _resolveHistoryHandle(instance: {
 	constructor: Function;
-}): IHistoryHandle {
+}): IQHistoryHandle {
 	const classOptions = Reflect.getMetadata(
 		QUICK_OPTIONS_KEY,
 		instance.constructor
@@ -162,29 +162,50 @@ function _resolveHistoryHandle(instance: {
 	});
 }
 
-// ─── Audit: module-level helper (avoids private method + Reflect.construct issue) ──
+// ─── Observer: module-level notification helper ─────────────────────────────
 /**
- * Resolves the audit handle for a model instance based on class and global config.
- * Defined at module level (not as a private method) to avoid Bun's Reflect.construct
- * breaking access to TypeScript private prototype methods.
+ * Notifies all registered observers of a property change on a QModel instance.
+ *
+ * Defined at module level (not as a private method) for the same reason as
+ * `_resolveHistoryHandle` — avoids Bun's Reflect.construct breaking private
+ * prototype method access when the setter fires from a subclass constructor.
+ *
+ * Fast path: if no observers are registered, this function returns immediately
+ * with zero allocations.
+ *
+ * @param instance - The model instance whose property changed.
+ * @param field    - The property name (not the storageKey).
+ * @param prev     - Value before the change (post-transformation snapshot).
+ * @param next     - Value after the change (post-transformation).
  * @internal
  */
-function _resolveAuditHandle(instance: {
-	constructor: Function;
-}): IAuditHandle {
-	const classOptions = Reflect.getMetadata(
-		QUICK_OPTIONS_KEY,
-		instance.constructor
-	) as IQAdvancedOptions | undefined;
-	const classAudit = classOptions?.audit;
-	const globalAudit = QConfig.get().audit;
-	const enabled = classAudit?.enabled ?? globalAudit?.enabled ?? false;
-	if (!enabled) return NULL_AUDIT_HANDLE;
-	const maxEntries = classAudit?.maxEntries ?? globalAudit?.maxEntries;
-	return AuditService.createHandle({
-		enabled: true,
-		maxEntries,
-	});
+function _notifyObservers(
+	instance: QModel<any>,
+	field: string,
+	values: { prev: unknown; next: unknown }
+): void {
+	// Always track version — lazy init, zero cost until first change.
+	// @quickmodel-rule-ignore: no-as-unknown — __quickSignalVersion__ is a dynamic internal property
+	const rec = instance as unknown as Record<string, unknown>;
+	rec['__quickSignalVersion__'] =
+		((rec['__quickSignalVersion__'] as number | undefined) ?? 0) + 1;
+
+	// Fast path: skip observer loop when no one is subscribed.
+	const observers = rec['__quickObservers__'] as
+		| Set<IQObserverFn>
+		| undefined;
+	if (!observers || observers.size === 0) return;
+
+	const change: IQChange = { field, prev: values.prev, next: values.next };
+
+	for (const obs of observers) {
+		try {
+			obs(change);
+		} catch {
+			// An individual observer error must never crash the setter.
+			// Silently swallow to preserve model integrity.
+		}
+	}
 }
 
 // ─── Performance: module-level metadata caches ────────────────────────────────
@@ -307,7 +328,7 @@ export interface IQCreateManyResult<TInstance> {
 	 * When `includeErrorInstances: true`, failed instances are also included here.
 	 */
 	instances: TInstance[];
-	/** Entries for every instance that failed `isValid()`. */
+	/** Entries for every instance that failed `$qIsValid()`. */
 	errors: Array<IQCreateManyError<TInstance>>;
 }
 
@@ -332,7 +353,7 @@ export interface IQCreateManyResult<TInstance> {
  * Syntax: `QModel<InterfaceType>` or `QModel<InterfaceType, AliasMap>`
  *
  * @template TInterface - The interface representing the IQSerialized JSON structure (e.g., `string` for dates)
- * @template TAliasMap - Optional literal map `{ propertyName: 'alias_key' }` that makes `serialize()` return
+ * @template TAliasMap - Optional literal map `{ propertyName: 'alias_key' }` that makes `$qSerialize()` return
  *   alias keys instead of property names. Use together with `@Quick({}, { alias: {...} })` for full type safety.
  *
  * @example
@@ -435,7 +456,7 @@ export abstract class QModel<
 	/**
 	 * @internal Lazy-initialized integrity/validation service.
 	 * Defers construction of `IntegrityService` (and its 14+ transformer instances)
-	 * until the first call to `.checkIntegrity()` or `.isValid()`.
+	 * until the first call to `.$qCheckIntegrity()` or `.$qIsValid()`.
 	 * This reduces module startup cost for consumers who never validate integrity.
 	 */
 	private static _integrityInstance: IntegrityService | undefined;
@@ -449,7 +470,7 @@ export abstract class QModel<
 	}
 
 	// Store initial state for change tracking and reset
-	/** @internal Snapshot of the serialized constructor input; used by `isDirty()` and `reset()`. */
+	/** @internal Snapshot of the serialized constructor input; used by `$qIsDirty()` and `$qReset()`. */
 	private __initData?: IQSerializedInterface<TInterface>;
 
 	/**
@@ -485,14 +506,7 @@ export abstract class QModel<
 	 * Defaults to the shared no-op `NULL_HISTORY_HANDLE` when history is disabled.
 	 * @internal
 	 */
-	private _historyHandle: IHistoryHandle = NULL_HISTORY_HANDLE;
-
-	/**
-	 * The audit handle tracking per-field mutations on this model instance.
-	 * Defaults to the shared no-op `NULL_AUDIT_HANDLE` when audit is disabled.
-	 * @internal
-	 */
-	private _auditHandle: IAuditHandle = NULL_AUDIT_HANDLE;
+	private _historyHandle: IQHistoryHandle = NULL_HISTORY_HANDLE;
 
 	/**
 	 * Factory method to create a model instance. Functionally identical to `new ModelClass(data)`.
@@ -641,7 +655,7 @@ export abstract class QModel<
 	 * Creates multiple model instances from an array of plain objects.
 	 *
 	 * All items are processed regardless of validation failures — no fail-fast.
-	 * Items that fail `isValid()` (integrity checks or `@QRule` violations) are
+	 * Items that fail `$qIsValid()` (integrity checks or `@QRule` violations) are
 	 * collected in `errors[]` and **excluded** from `instances[]` by default.
 	 *
 	 * @param data - Array of plain objects to deserialize
@@ -678,6 +692,11 @@ export abstract class QModel<
 		data: INoInfer<IQAliasInput<TInterface, TAliasMap>>[],
 		options?: IQCreateManyOptions
 	): IQCreateManyResult<TResult>;
+
+	static createMany(
+		data: Record<string, unknown>[],
+		options?: IQCreateManyOptions
+	): IQCreateManyResult<any>;
 
 	static createMany(
 		this: any,
@@ -1049,8 +1068,8 @@ export abstract class QModel<
 	 * - Extends `ExternalBase` (prototype chain intact: `instance instanceof ExternalBase === true`)
 	 * - Exposes all static QModel methods: `create()`, `createReadonly()`, `mock()`,
 	 *   `getMetadata()`, `deserialize()`, `deserializeJson()`
-	 * - Exposes all instance QModel methods: `serialize()`, `$qToJSON()`, `toInterface()`,
-	 *   `isDirty()`, `getDirtyFields()`, `reset()`, `patch()`, `copy()`
+	 * - Exposes all instance QModel methods: `$qSerialize()`, `$qToJSON()`, `$qToInterface()`,
+	 *   `$qIsDirty()`, `$qGetChangedFields()`, `$qReset()`, `$qPatch()`, `$qCopy()`
 	 * - Works with `@Quick` and `@QType` decorators on the derived class
 	 * - Is NOT an `instanceof QModel` (different prototype chain — this is expected)
 	 *
@@ -1303,13 +1322,7 @@ export abstract class QModel<
 			// Clone the history handle so the copy starts with the parent's history.
 			if ('_historyHandle' in source) {
 				this._historyHandle = HistoryService.cloneHandle(
-					source['_historyHandle'] as IHistoryHandle
-				);
-			}
-			// Clone the audit handle so the copy starts with the parent's audit trail.
-			if ('_auditHandle' in source) {
-				this._auditHandle = AuditService.cloneHandle(
-					source['_auditHandle'] as IAuditHandle
+					source['_historyHandle'] as IQHistoryHandle
 				);
 			}
 			return;
@@ -1607,11 +1620,9 @@ export abstract class QModel<
 		// Remove temporary property
 		Reflect.deleteProperty(this, '__tempData');
 
-		// Resolve the audit handle for this instance based on class / global config.
+		// Resolve the history handle for this instance based on class / global config.
 		// Using module-level function to avoid Bun's Reflect.construct breaking private method access.
 		this._historyHandle = _resolveHistoryHandle(this);
-		// Resolve the per-field audit handle for this instance based on class / global config.
-		this._auditHandle = _resolveAuditHandle(this);
 	}
 
 	/**
@@ -1647,47 +1658,31 @@ export abstract class QModel<
 	}
 
 	/**
-	 * Returns the mutation tracking handle for this instance.
+	 * Returns the history tracking handle for this instance.
 	 *
-	 * - When **audit** is enabled (`{ audit: { enabled: true } }`), returns an
-	 *   {@link IAuditHandle} that records one entry **per changed field** with shape
-	 *   `{ field, from, to, at, method }`.
-	 * - When **history** is enabled (`{ history: { enabled: true } }`), returns an
-	 *   {@link IHistoryHandle} that records one entry **per operation** with shape
-	 *   `{ method, at, changes: { field: { from, to } } }`.
-	 * - When neither is enabled (default), returns a shared no-op handle whose
-	 *   `value` is always `[]` and all methods are no-ops.
+	 * When **history** is enabled (`{ history: { enabled: true } }`), returns an
+	 * {@link IQHistoryHandle} that records one entry **per operation** (or per field
+	 * when `recordMode: 'field'`) with shape `{ method, at, changes: { field: { from, to } } }`.
+	 *
+	 * When history is disabled (the default), returns a shared no-op handle whose
+	 * `value` is always `[]` and all methods are no-ops.
 	 *
 	 * @example
 	 * ```typescript
-	 * // Audit mode
-	 * const handle = contract.$qHistory;
-	 * contract.$qPatch({ status: 'active' });
-	 * handle.value;
-	 * // [{ field: 'status', from: 'draft', to: 'active', at: Date, method: 'patch' }]
+	 * ＠Quick({ name: String }, { history: { enabled: true } })
+	 * class Contract extends QModel<IContract> { declare name: string; }
+	 *
+	 * const c = new Contract({ name: 'v1' });
+	 * c.$qPatch({ name: 'v2' });
+	 * c.$qHistory.value;
+	 * // [{ method: 'patch', at: Date, changes: { name: { from: 'v1', to: 'v2' } } }]
 	 * ```
 	 *
-	 * @see {@link IAuditHandle} — returned when audit is enabled
-	 * @see {@link IHistoryHandle} — returned when history is enabled
+	 * @see {@link IQHistoryHandle} — the handle type
+	 * @see {@link IQHistoryEntry} — shape of each recorded entry
 	 */
-	get $qHistory(): IHistoryHandle {
+	get $qHistory(): IQHistoryHandle {
 		return this._historyHandle;
-	}
-
-	/**
-	 * Returns the per-field audit trail handle for this model instance.
-	 *
-	 * When audit is disabled (default), returns a shared no-op handle whose
-	 * `value` is always `[]` and all methods are no-ops.
-	 *
-	 * To enable recording, pass `{ audit: { enabled: true } }` as the second
-	 * argument to `@Quick`, or set it globally via `QConfig.configure({ audit: { enabled: true } })`.
-	 *
-	 * @see {@link IAuditHandle} — the returned interface
-	 * @see {@link IAuditEntry} — individual entry shape
-	 */
-	get $qAuditHistory(): IAuditHandle {
-		return this._auditHandle;
 	}
 
 	/**
@@ -1802,6 +1797,10 @@ export abstract class QModel<
 					// SMART SETTER IMPLEMENTATION
 					// Attempt to auto-transform the value if a transformer exists
 					// and the value is not already of the correct type.
+
+					// Capture previous value before any transformation or assignment.
+					// This is used by _notifyObservers to populate IQChange.prev.
+					const prevValue: unknown = this[storageKey];
 
 					try {
 						let spec: unknown = null;
@@ -1921,6 +1920,10 @@ export abstract class QModel<
 								}
 
 								this[storageKey] = transformed;
+								_notifyObservers(this, key, {
+									prev: prevValue,
+									next: transformed,
+								});
 								return;
 							}
 						}
@@ -1947,6 +1950,10 @@ export abstract class QModel<
 
 					// Fallback: Raw assignment
 					this[storageKey] = value;
+					_notifyObservers(this, key, {
+						prev: prevValue,
+						next: value,
+					});
 				},
 				enumerable: true,
 				configurable: true,
@@ -1957,7 +1964,7 @@ export abstract class QModel<
 	/**
 	 * QuickModel-specific helper that serializes the model to a **JSON string**.
 	 *
-	 * Combines `serialize()` and `JSON.stringify()` in one call, with full support
+	 * Combines `$qSerialize()` and `JSON.stringify()` in one call, with full support
 	 * for QuickModel serialization options (`@QAlias` remapping, `@QSensitive` exclusion,
 	 * `omit`, etc.).
 	 *
@@ -1996,7 +2003,7 @@ export abstract class QModel<
 	 *
 	 * When you call `JSON.stringify(model)`, JavaScript internally calls `model.toJSON()`
 	 * and serializes the returned value. This method returns the **plain object** produced
-	 * by `serialize()`, so `JSON.stringify(model)` produces the correct JSON string
+	 * by `$qSerialize()`, so `JSON.stringify(model)` produces the correct JSON string
 	 * without any double-encoding.
 	 *
 	 * **Key distinction from `$qToJSON()`:**
@@ -2008,7 +2015,7 @@ export abstract class QModel<
 	 * **For QuickModel serialization options** (`@QSensitive`, `omit`, etc.), use
 	 * `$qToJSON(options)` or `serialize(undefined, options)` directly.
 	 *
-	 * @returns Plain serialized object (same as `serialize()`)
+	 * @returns Plain serialized object (same as `$qSerialize()`)
 	 *
 	 * @see {@link QModel.$qToJSON} — explicit JSON string with options
 	 * @see {@link QModel.$qSerialize} — same result, more control
@@ -2332,6 +2339,42 @@ export abstract class QModel<
 		};
 	}
 
+	/**
+	 * Evaluates only the `@QRule` predicates attached to a **single field**
+	 * asynchronously.
+	 *
+	 * Equivalent to `$qCheckRulesAsync({ field })` but available directly on the
+	 * instance for ergonomic step-by-step form validation — validate one input at a
+	 * time without re-running the entire model.
+	 *
+	 * Supports all async options: `timeoutMs`, `signal`, `globalTimeoutMs`, `retry`, etc.
+	 *
+	 * @param fieldName - The property name whose `@QRule` decorators to evaluate.
+	 * @param options   - Optional async execution options (same as `$qCheckRulesAsync`).
+	 * @returns `Promise<IQRulesResult>` — `valid: true` when all rules for this field pass.
+	 *
+	 * @example
+	 * ```typescript
+	 * // Validate only the 'email' field on input change:
+	 * const result = await form.$qCheckFieldAsync('email');
+	 * if (!result.valid) {
+	 *   showErrors(result.errors);
+	 * }
+	 *
+	 * // With per-predicate timeout:
+	 * const result = await form.$qCheckFieldAsync('username', { timeoutMs: 500 });
+	 * ```
+	 *
+	 * @see {@link QModel.$qCheckRulesAsync} — validates all fields
+	 * @see {@link IQCheckRulesAsyncOptions.field} — underlying option used internally
+	 */
+	async $qCheckFieldAsync(
+		fieldName: string,
+		options?: IQRulesAsyncOptions
+	): Promise<IQRulesResult> {
+		return $qCheckRulesAsync(this, { ...options, field: fieldName });
+	}
+
 	/** Unified validation method combining integrity checks and `@QRule` evaluation. */
 	$qValidate(
 		options: IQValidateOptions & { async: true }
@@ -2495,12 +2538,112 @@ export abstract class QModel<
 		>;
 		const restored = Constructor.deserialize(initial);
 
-		// Copy all properties from restored instance
+		// Copy all properties from restored instance.
+		// Each assignment goes through the smart setter → _notifyObservers fires
+		// for each field that changes, automatically notifying all observers.
 		for (const key of Object.keys(restored)) {
 			(this as unknown as IQAnyRecord)[key] = (
 				restored as unknown as IQAnyRecord
 			)[key];
 		}
+	}
+
+	// ─── Observer / Reactive-Signal API ─────────────────────────────────────
+
+	/**
+	 * Registers an observer callback that fires every time any property on this
+	 * model instance changes through the smart setter.
+	 *
+	 * The callback receives an `IQChange` payload with the field name, the value
+	 * **before** the change (already type-transformed), and the value **after**.
+	 *
+	 * Observers are instance-scoped — they are NOT copied by `$qCopy()`.
+	 *
+	 * @param fn - Callback invoked after each property change.
+	 * @returns An unsubscribe function. Call it to deregister the observer.
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = new UserModel({ name: 'Alice', age: 30 });
+	 * const unsub = user.$qSubscribe(({ field, prev, next }) => {
+	 *   console.log(`${field}: ${String(prev)} → ${String(next)}`);
+	 * });
+	 * user.name = 'Bob'; // logs: "name: Alice → Bob"
+	 * unsub();           // stop receiving notifications
+	 * ```
+	 */
+	$qSubscribe(callback: IQObserverFn): () => void {
+		// @quickmodel-rule-ignore: no-as-unknown — __quickObservers__ is a dynamic internal property
+		const rec = this as unknown as Record<string, unknown>;
+		if (!rec['__quickObservers__']) {
+			rec['__quickObservers__'] = new Set<IQObserverFn>();
+		}
+		const observers = rec['__quickObservers__'] as Set<IQObserverFn>;
+		observers.add(callback);
+		return () => this.$qUnsubscribe(callback);
+	}
+
+	/**
+	 * Removes a previously registered observer callback.
+	 *
+	 * If the callback was not registered, this method is a safe no-op.
+	 *
+	 * @param fn - The same callback reference passed to `$qSubscribe`.
+	 *
+	 * @example
+	 * ```typescript
+	 * const onChange = ({ field }: IQChange) => console.log(field);
+	 * user.$qSubscribe(onChange);
+	 * // Later:
+	 * user.$qUnsubscribe(onChange);
+	 * ```
+	 */
+	$qUnsubscribe(callback: IQObserverFn): void {
+		// @quickmodel-rule-ignore: no-as-unknown — __quickObservers__ is a dynamic internal property
+		const observers = (this as unknown as Record<string, unknown>)[
+			'__quickObservers__'
+		] as Set<IQObserverFn> | undefined;
+		observers?.delete(callback);
+	}
+
+	/**
+	 * The built-in reactive signal for this model instance.
+	 *
+	 * Provides the minimal contract (`peek()`, `version`, `subscribe()`) needed
+	 * to bridge with any framework's reactive system without adding any
+	 * framework dependency to QuickModel.
+	 *
+	 * The `version` counter increments automatically on every property change,
+	 * even before any subscriber is registered.
+	 *
+	 * The signal object is created lazily on first access and then cached —
+	 * repeated accesses always return the same instance.
+	 *
+	 * @see `IQModelSignal` — the public interface type
+	 *
+	 * @example Angular 17+
+	 * ```typescript
+	 * // adapter (5 lines, no framework dependency in QuickModel)
+	 * const sig = signal(model);
+	 * model.$qSignal.subscribe(() => sig.set(model));
+	 * return sig.asReadonly();
+	 * ```
+	 *
+	 * @example React
+	 * ```typescript
+	 * useSyncExternalStore(
+	 *   (cb) => model.$qSignal.subscribe(cb as any),
+	 *   () => model.$qSerialize(),
+	 * );
+	 * ```
+	 */
+	get $qSignal(): IQModelSignal<this> {
+		// @quickmodel-rule-ignore: no-as-unknown — __quickSignal__ is a dynamic internal property
+		const rec = this as unknown as Record<string, unknown>;
+		if (!rec['__quickSignal__']) {
+			rec['__quickSignal__'] = new QModelSignal(this);
+		}
+		return rec['__quickSignal__'] as IQModelSignal<this>;
 	}
 
 	/**
@@ -2528,8 +2671,7 @@ export abstract class QModel<
 			QModel<TInterface>
 		>;
 		const historyHandle = this._historyHandle;
-		const auditHandle = this._auditHandle;
-		const captureSnapshot = historyHandle.isActive || auditHandle.isActive;
+		const captureSnapshot = historyHandle.isActive;
 		const before = captureSnapshot
 			? (this.$qSerialize() as Record<string, unknown>)
 			: null;
@@ -2545,16 +2687,8 @@ export abstract class QModel<
 		}
 		if (before !== null) {
 			const after = this.$qSerialize() as Record<string, unknown>;
-			if (historyHandle.isActive) {
-				HistoryService.recordDiff({
-					handle: historyHandle,
-					before,
-					after,
-					method: 'patch',
-				});
-			}
-			AuditService.recordDiff({
-				handle: auditHandle,
+			HistoryService.recordDiff({
+				handle: historyHandle,
 				before,
 				after,
 				method: 'patch',
@@ -2589,27 +2723,25 @@ export abstract class QModel<
 		const current = this.$qSerialize({ includeSensitive: true });
 		const data = partial ? { ...current, ...partial } : { ...current };
 		const captureSnapshot =
-			partial !== undefined &&
-			(this._historyHandle.isActive || this._auditHandle.isActive);
+			partial !== undefined && this._historyHandle.isActive;
 		const copyBefore = captureSnapshot
 			? (this.$qSerialize() as Record<string, unknown>)
 			: null;
 		const instance = Constructor.deserialize(
 			data as unknown as IQModelData<IQAnyRecord>
 		);
-		// Inject __initData so isDirty() / reset() work correctly on the copy.
+		// Inject __initData so $qIsDirty() / $qReset() work correctly on the copy.
 		Object.defineProperty(instance, '__initData', {
 			value: { ...data },
 			writable: false,
 			enumerable: false,
 			configurable: true,
 		});
-		// Clone handles from parent so the copy inherits both history and audit.
+		// Clone history handle from parent so the copy inherits the history trail.
 		instance._historyHandle = HistoryService.cloneHandle(
 			this._historyHandle
 		);
-		instance._auditHandle = AuditService.cloneHandle(this._auditHandle);
-		// Record the partial diff in both handles if active.
+		// Record the partial diff in the history handle if active.
 		if (copyBefore !== null) {
 			const copyAfter = instance.$qSerialize() as Record<string, unknown>;
 			if (instance._historyHandle.isActive) {
@@ -2620,12 +2752,6 @@ export abstract class QModel<
 					method: 'copy',
 				});
 			}
-			AuditService.recordDiff({
-				handle: instance._auditHandle,
-				before: copyBefore,
-				after: copyAfter,
-				method: 'copy',
-			});
 		}
 		return instance;
 	}
@@ -2683,10 +2809,9 @@ export abstract class QModel<
 		const Ctor = this.constructor as unknown as IModelConstructor<this>;
 		const instance = Ctor.deserialize(data);
 		// deserialize() uses Object.create() bypassing the constructor, so
-		// neither _historyHandle nor _auditHandle are initialized. Resolve both.
+		// _historyHandle is not initialized by the constructor path used here. Resolve it.
 		instance._historyHandle = _resolveHistoryHandle(instance);
-		instance._auditHandle = _resolveAuditHandle(instance);
-		// Record populate diff in both handles if active — 'from' is empty state → new data.
+		// Record populate diff in the history handle if active — 'from' is empty state → new data.
 		const emptyBefore: Record<string, unknown> = {};
 		const after = instance.$qSerialize() as Record<string, unknown>;
 		if (instance._historyHandle.isActive) {
@@ -2697,12 +2822,6 @@ export abstract class QModel<
 				method: 'populate',
 			});
 		}
-		AuditService.recordDiff({
-			handle: instance._auditHandle,
-			before: emptyBefore,
-			after,
-			method: 'populate',
-		});
 		return instance;
 	}
 

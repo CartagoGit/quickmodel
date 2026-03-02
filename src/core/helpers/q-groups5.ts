@@ -8,7 +8,7 @@
  * safely use `quickmodel/forms` without encountering a
  * `.d.ts` parse error from this syntax.
  *
- * @see {@link Forms.qGroups} for the TS 4.1-compatible version (spread / `as const`).
+ * @see {@link $qGroups} for the TS 4.1-compatible version (spread / `as const`).
  * @see {@link IQGroupsMap} — the map type returned by this function
  * @see {@link QGroup} — decorator that consumes the group names produced here
  * @module
@@ -21,12 +21,12 @@ import type { IQGroupsMap } from './q-groups';
  * requiring `as const`.
  *
  * Uses `const` type parameters — **requires TypeScript 5.0+**.
- * Consumers on TS < 5.0 should use {@link Forms.qGroups} with `as const` instead:
+ * Consumers on TS < 5.0 should use {@link $qGroups} with `as const` instead:
  *
  * ```ts
- * // TS < 5 — use qGroups with as const:
- * import { qGroups } from 'quickmodel/forms';
- * const Groups = qGroups(['identity', 'security'] as const);
+ * // TS < 5 — use $qGroups with as const:
+ * import { $qGroups } from 'quickmodel/forms';
+ * const Groups = $qGroups(['identity', 'security'] as const);
  *
  * // TS 5+ — use qGroups5, no as const needed:
  * import { $qGroups5 } from 'quickmodel/compat/ts5/forms';

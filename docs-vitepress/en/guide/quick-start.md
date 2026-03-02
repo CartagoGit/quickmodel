@@ -4,7 +4,7 @@ This guide will walk you through creating your first QuickModel in 5 minutes.
 
 ## The Problem
 
-When working with APIs, data comes as JSON with primitive types only. Complex types like `Date`, `BigInt`, `Set`, and `Map` are IQSerialized as strings or arrays:
+When working with APIs, data comes as JSON with primitive types only. Complex types like `Date`, `BigInt`, `Set`, and `Map` are serialized as strings or arrays:
 
 ```typescript
 // API Response
@@ -87,10 +87,10 @@ console.log(user.metadata instanceof Map); // true
 
 ## Step 4: Serialize Back to JSON
 
-When you need to send data back to the API, use `serialize()` to get a plain object, or `toJSON()` for a JSON string:
+When you need to send data back to the API, use `$qSerialize()` to get a plain object, or `$qToJSON()` for a JSON string:
 
 ```typescript
-// serialize() → plain JavaScript object (most common)
+// $qSerialize() → plain JavaScript object (most common)
 const plain = user.$qSerialize();
 // {
 //   id: 1,
@@ -101,9 +101,12 @@ const plain = user.$qSerialize();
 //   metadata: [['key1', 'val1'], ['key2', 'val2']]
 // }
 
-// toJSON() → JSON string (for fetch body, WebSockets, etc.)
-const jsonStr = user.toJSON();
+// $qToJSON() → JSON string (for fetch body, WebSockets, etc.)
+const jsonStr = user.$qToJSON();
 // '{"id":1,"name":"John Doe",...}'
+
+// JSON.stringify() also works and calls toJSON() automatically:
+const jsonStr2 = JSON.stringify(user);
 ```
 
 ## Step 5: Testing with Mocks

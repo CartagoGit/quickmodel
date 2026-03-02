@@ -453,7 +453,7 @@ describe('$qCheckRules — warning en predicados async ignorados', () => {
 		const calls = (warnSpy.mock.calls as string[][]).flat().join(' ');
 		expect(calls).toContain('async');
 		expect(calls).toContain('AsyncMixedForm#username');
-		expect(calls).toContain('checkRulesAsync');
+		expect(calls).toContain('$qCheckRulesAsync');
 	});
 
 	test('no emite warning en campos con solo reglas sincronas', () => {

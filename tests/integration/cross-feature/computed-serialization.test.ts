@@ -78,7 +78,7 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				lastName: 'Turing',
 				salary: 100000,
 			});
-			const plain = person.$qSerialize();
+			const plain = person.$qSerialize() as Record<string, unknown>;
 			expect(plain['fullName']).toBe('Alan Turing');
 		});
 
@@ -88,7 +88,7 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				lastName: 'Turing',
 				salary: 100000,
 			});
-			const plain = person.$qSerialize();
+			const plain = person.$qSerialize() as Record<string, unknown>;
 			expect(plain['initials']).toBeUndefined();
 		});
 	});
@@ -102,7 +102,7 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				department: 'Eng',
 				bonus: 10000,
 			});
-			const plain = emp.$qSerialize();
+			const plain = emp.$qSerialize() as Record<string, unknown>;
 			expect(plain['annualCompensation']).toBeUndefined();
 		});
 
@@ -114,7 +114,10 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				department: 'Eng',
 				bonus: 10000,
 			});
-			const plain = emp.$qSerialize({ includeSensitive: true });
+			const plain = emp.$qSerialize({ includeSensitive: true }) as Record<
+				string,
+				unknown
+			>;
 			expect(plain['annualCompensation']).toBe(90000);
 		});
 	});
@@ -128,7 +131,7 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				department: 'HR',
 				bonus: 5000,
 			});
-			const plain = emp.$qSerialize();
+			const plain = emp.$qSerialize() as Record<string, unknown>;
 			expect(plain['fullName']).toBe('Bob Lee');
 		});
 
@@ -160,7 +163,7 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				priceNet: 100,
 				cost: 60,
 			});
-			const plain = product.$qSerialize();
+			const plain = product.$qSerialize() as Record<string, unknown>;
 			expect(plain['margin']).toBe(40);
 		});
 
@@ -170,7 +173,7 @@ describe('Integration: @QComputed + serialize + inheritance (cross-feature/B-4)'
 				priceNet: 100,
 				cost: 60,
 			});
-			const plain = product.$qSerialize();
+			const plain = product.$qSerialize() as Record<string, unknown>;
 			expect(plain['cost']).toBeUndefined();
 			expect(plain['margin']).toBe(40);
 		});

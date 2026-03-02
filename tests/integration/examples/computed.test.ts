@@ -107,17 +107,17 @@ describe('Integration: computed fields example (examples/computed.md)', () => {
 		});
 
 		it('$qSerialize() includes fullName', () => {
-			const plain = user.$qSerialize();
+			const plain = user.$qSerialize() as Record<string, unknown>;
 			expect(plain['fullName']).toBe('Alice Smith');
 		});
 
 		it('$qSerialize() includes formattedSalary', () => {
-			const plain = user.$qSerialize();
+			const plain = user.$qSerialize() as Record<string, unknown>;
 			expect(plain['formattedSalary']).toContain('75,000');
 		});
 
 		it('$qSerialize() does NOT include initials (not decorated)', () => {
-			const plain = user.$qSerialize();
+			const plain = user.$qSerialize() as Record<string, unknown>;
 			expect(plain['initials']).toBeUndefined();
 		});
 	});
@@ -147,7 +147,7 @@ describe('Integration: computed fields example (examples/computed.md)', () => {
 		});
 
 		it('$qSerialize() includes all computed fields', () => {
-			const plain = product.$qSerialize();
+			const plain = product.$qSerialize() as Record<string, unknown>;
 			expect(plain['vatAmount']).toBe(200);
 			expect(plain['priceGross']).toBe(1200);
 			expect(plain['finalPrice']).toBe(1080);

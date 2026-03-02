@@ -1,6 +1,6 @@
 /**
- * @fileoverview `qGroups` helper — creates a typed group-name map for use with
- * `@QGroup`, {@link qCheckRules} and related form-validation utilities.
+ * @fileoverview `$qGroups` helper — creates a typed group-name map for use with
+ * `@QGroup`, {@link $qCheckRules} and related form-validation utilities.
  *
  * ## Why a helper instead of a plain object?
  *
@@ -9,15 +9,15 @@
  * const Groups = { identity: 'identity', security: 'security' } as const;
  *
  * // With helper — each name once, types inferred automatically:
- * const Groups = qGroups('identity', 'security');
+ * const Groups = $qGroups('identity', 'security');
  * ```
  *
  * ## TypeScript version compatibility
  *
  * | Call style                                   | TS version | Notes                  |
  * |----------------------------------------------|------------|------------------------|
- * | `qGroups('a', 'b')`                          | TS 3.4+    | Spread, no `as const`  |
- * | `qGroups(['a', 'b'] as const)`               | TS 3.4+    | Array with `as const`  |
+ * | `$qGroups('a', 'b')`                          | TS 3.4+    | Spread, no `as const`  |
+ * | `$qGroups(['a', 'b'] as const)`               | TS 3.4+    | Array with `as const`  |
  * | `qGroups5(['a', 'b'])` *(mutable array)*     | TS 5.0+    | No `as const` — uses `const` type parameter. Import from `compat/ts5/forms` |
  *
  * The first two overloads are published in the `.d.ts` without any TS5-only
@@ -28,28 +28,28 @@
  *
  * ## See also
  *
- * - {@link qCheckRules} — run `@QRule` predicates on any instance
- * - {@link qGetGroups} — list `@QGroup` names declared on an instance
- * - {@link qCheckRulesByGroup} — per-group validation results
+ * - {@link $qCheckRules} — run `@QRule` predicates on any instance
+ * - {@link $qGetGroups} — list `@QGroup` names declared on an instance
+ * - {@link $qCheckRulesByGroup} — per-group validation results
  *
  * @module
- * @see {@link qGroups} — main entry point for creating group maps
+ * @see {@link $qGroups} — main entry point for creating group maps
  * @see {@link IQGroupsMap} — the returned data structure type
  */
 
 /**
- * The type of the map returned by {@link qGroups}.
+ * The type of the map returned by {@link $qGroups}.
  * Each key and value is the same literal string.
  *
  * @typeParam T - Union of group name literals.
- * @see {@link qGroups} — factory that constructs this map at runtime
+ * @see {@link $qGroups} — factory that constructs this map at runtime
  * @see {@link QGroup} — decorator that uses group names from this map
  */
 export type IQGroupsMap<T extends string> = { [K in T]: K };
 
 // ---------------------------------------------------------------------------
 // Overload 1 — spread (TS 3.4+)
-// qGroups('identity', 'security')
+// $qGroups('identity', 'security')
 // ---------------------------------------------------------------------------
 
 /**
@@ -59,7 +59,7 @@ export type IQGroupsMap<T extends string> = { [K in T]: K };
  *
  * @example
  * ```ts
- * const Groups = qGroups('identity', 'security');
+ * const Groups = $qGroups('identity', 'security');
  * // Groups.identity → type 'identity'
  * // Groups.security → type 'security'
  * // Groups.typo    → compile error ✅
@@ -69,12 +69,12 @@ export type IQGroupsMap<T extends string> = { [K in T]: K };
  *   name = '';
  *
  *   validate() {
- *     qCheckRules(this, { group: Groups.identity }); // autocomplete ✅
+ *     $qCheckRules(this, { group: Groups.identity }); // autocomplete ✅
  *   }
  * }
  * ```
  * @see {@link IQGroupsMap} — the type of the returned group map
- * @see {@link qCheckRules} — pass `Groups.name` to the `group` option
+ * @see {@link $qCheckRules} — pass `Groups.name` to the `group` option
  * @see {@link QGroup} — use the map entries as group name arguments
  */
 export function $qGroups<T extends string[]>(
@@ -83,7 +83,7 @@ export function $qGroups<T extends string[]>(
 
 // ---------------------------------------------------------------------------
 // Overload 2 — readonly array / as const (TS 3.4+)
-// qGroups(['identity', 'security'] as const)
+// $qGroups(['identity', 'security'] as const)
 // ---------------------------------------------------------------------------
 
 /**
@@ -96,13 +96,13 @@ export function $qGroups<T extends string[]>(
  * @example
  * ```ts
  * // TS 3.4+ — as const required to keep literal types:
- * const Groups = qGroups(['identity', 'security'] as const);
+ * const Groups = $qGroups(['identity', 'security'] as const);
  *
  * // TS 5.x — as const optional (use qGroups5 for cleaner DX):
- * const Groups = qGroups(['identity', 'security'] as const);
+ * const Groups = $qGroups(['identity', 'security'] as const);
  * ```
  * @see {@link IQGroupsMap} — the shape of the returned map
- * @see {@link qGroups} — spread overload (no array wrapper needed)
+ * @see {@link $qGroups} — spread overload (no array wrapper needed)
  */
 export function $qGroups<T extends string>(
 	groups: readonly T[]

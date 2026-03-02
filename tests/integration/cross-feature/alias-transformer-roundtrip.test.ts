@@ -53,19 +53,23 @@ describe('Integration: @QAlias + type transformer + roundtrip (cross-feature/B-5
 	describe('$qSerialize() — alias + type serialization', () => {
 		test('serializes createdAt as ISO string using alias key created_at', () => {
 			const record = new ApiRecordModel(snakeCaseInput);
-			const plain = record.$qSerialize({ includeSensitive: true });
+			const plain = record.$qSerialize({
+				includeSensitive: true,
+			}) as Record<string, unknown>;
 			expect(plain['created_at']).toBe('2026-01-01T00:00:00.000Z');
 		});
 
 		test('serializes apiKey under alias api_key when includeSensitive: true', () => {
 			const record = new ApiRecordModel(snakeCaseInput);
-			const plain = record.$qSerialize({ includeSensitive: true });
+			const plain = record.$qSerialize({
+				includeSensitive: true,
+			}) as Record<string, unknown>;
 			expect(plain['api_key']).toBe('sk-secret');
 		});
 
 		test('apiKey is excluded from default serialize (sensitive)', () => {
 			const record = new ApiRecordModel(snakeCaseInput);
-			const plain = record.$qSerialize();
+			const plain = record.$qSerialize() as Record<string, unknown>;
 			expect(plain['apiKey']).toBeUndefined();
 			expect(plain['api_key']).toBeUndefined();
 		});

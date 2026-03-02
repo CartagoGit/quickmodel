@@ -25,7 +25,7 @@ interface IAsyncSimulatedRule {
 }
 
 /**
- * Tool to run async business-logic rules through the *real* `instance.checkRulesAsync()` API.
+ * Tool to run async business-logic rules through the *real* `instance.$qCheckRulesAsync()` API.
  *
  * ⚠️ ASYNC-ONLY: Use this tool only when predicates genuinely need to be async
  * (e.g. simulating database lookups, external API calls, or async validators).
@@ -61,7 +61,7 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 > {
 	name = 'simulate_async_rules';
 	description =
-		'⚠️ ASYNC-ONLY: Run async business-logic rules through the real instance.checkRulesAsync() API. ' +
+		'⚠️ ASYNC-ONLY: Run async business-logic rules through the real instance.$qCheckRulesAsync() API. ' +
 		'Use this ONLY when predicates genuinely require async operations (e.g. simulating DB lookups, API calls). ' +
 		'For synchronous rules, use simulate_rules instead — it is simpler and faster. ' +
 		'Predicates can return Promise<boolean> or boolean. ' +
@@ -89,7 +89,7 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 				})
 			)
 			.describe(
-				'Array of async rules to apply via @QRule + checkRulesAsync()'
+				'Array of async rules to apply via @QRule + $qCheckRulesAsync()'
 			),
 		options: z
 			.object({
@@ -112,7 +112,7 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 					),
 			})
 			.optional()
-			.describe('Options forwarded to checkRulesAsync()'),
+			.describe('Options forwarded to $qCheckRulesAsync()'),
 	});
 
 	/**
@@ -121,7 +121,7 @@ export class QSimulateAsyncRulesTool extends QAbstractTool<
 	 * @param args - Tool arguments.
 	 * @param args.data - The data object to validate.
 	 * @param args.rules - Array of async rules with field, predicate expression, and message.
-	 * @param args.options - Options forwarded to `checkRulesAsync()` (mode, timeoutMs, …).
+	 * @param args.options - Options forwarded to `$qCheckRulesAsync()` (mode, timeoutMs, …).
 	 * @returns `{ valid, errors[], evaluated }` — `valid` is `true` when all predicates pass.
 	 * @see {@link QAbstractTool.execute} — base contract for this method
 	 * @see {@link QSimulateRulesTool} — use this simpler alternative for synchronous predicates

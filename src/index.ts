@@ -58,16 +58,13 @@ export type {
 } from './core/interfaces/serialization-types.interface';
 export type { IQAdvancedOptions } from './core/interfaces/quick-options.interface';
 export type { IQValidateOptions } from './core/models/quick.model';
+export type { IQChange, IQObserverFn } from './core/types/observer.type';
+export type { IQModelSignal } from './core/models/q-model-signal';
 export type {
-	IHistoryEntry,
-	IHistoryConfig,
-	IHistoryHandle,
+	IQHistoryEntry,
+	IQHistoryConfig,
+	IQHistoryHandle,
 } from './core/interfaces/history.interface';
-export type {
-	IAuditEntry,
-	IAuditConfig,
-	IAuditHandle,
-} from './core/interfaces/audit.interface';
 export { QModelCollection } from './core/models/quick-collection.model';
 export type {
 	IQCollectionRulesResult,

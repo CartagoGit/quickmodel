@@ -2,10 +2,11 @@
 
 QuickModel proporciona transformación bidireccional entre tipos en runtime y formatos compatibles con JSON. Esta página explica cómo funciona la serialización y cómo usar `serialize()` y `toJSON()`.
 
-::: tip `serialize()` vs `toJSON()`
+::: tip `$qSerialize()` vs `toJSON()` vs `$qToJSON()`
 
-- `serialize()` → devuelve un **objeto JavaScript plano** (el método recomendado para la mayoría de casos)
-- `toJSON()` → devuelve una **cadena JSON** (llamado automáticamente por `JSON.stringify()`)
+- `$qSerialize()` → devuelve un **objeto JavaScript plano** (recomendado — soporta todas las opciones de serialización)
+- `toJSON()` → devuelve un **objeto plano** (protocolo JS — llamado automáticamente por `JSON.stringify()`)
+- `$qToJSON()` → devuelve una **cadena JSON** (usa esto cuando necesites un string con opciones de QuickModel)
   :::
 
 ## El Patrón de Dos Interfaces

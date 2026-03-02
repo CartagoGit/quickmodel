@@ -1,6 +1,6 @@
 # @Quick Decorator
 
-The `@Quick()` decorator is the **heart** of QuickModel. It bridges the gap between static TypeScript types and runtime behavior, defining exactly how your data should be IQSerialized, deserialized, and mocked.
+The `@Quick()` decorator is the **heart** of QuickModel. It bridges the gap between static TypeScript types and runtime behavior, defining exactly how your data should be serialized, deserialized, and mocked.
 
 ## Overview
 

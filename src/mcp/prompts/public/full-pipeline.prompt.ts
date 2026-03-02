@@ -59,9 +59,9 @@ export class QFullPipelinePrompt extends QAbstractInternalPrompt<{
 						`\`\`\`typescript\n${model_code}\n\`\`\`\n\n` +
 						`Please walk me through each stage:\n` +
 						`1. **Hydration** — \`create()\` / \`new Model(data)\`\n` +
-						`2. **Integrity check** — \`checkIntegrity()\`\n` +
-						`3. **Rule validation** — \`checkRules()\`\n` +
-						`4. **Serialization** — \`serialize()\` / \`toJSON()\``
+						`2. **Integrity check** — \`$qCheckIntegrity()\`\n` +
+						`3. **Rule validation** — \`$qCheckRules()\`\n` +
+						`4. **Serialization** — \`$qSerialize()\` / \`toJSON()\``
 				),
 				this.assistant(
 					'I will walk through each stage of the QuickModel pipeline:\n\n' +
@@ -89,8 +89,8 @@ export class QFullPipelinePrompt extends QAbstractInternalPrompt<{
 						'{ "data": { "createdAt": "not-a-date" }, "options": { "createdAt": "Date" } }\n' +
 						'```\n\n' +
 						'---\n\n' +
-						'**Stage 3 — Rule validation: `checkRules()`**\n\n' +
-						'`checkRules()` evaluates all `@QRule` predicates on the **already-transformed** instance.\n' +
+						'**Stage 3 — Rule validation: `$qCheckRules()`**\n\n' +
+						'`$qCheckRules()` evaluates all `@QRule` predicates on the **already-transformed** instance.\n' +
 						'This is where business logic lives — format, range, cross-field constraints.\n\n' +
 						'Returns `{ valid: boolean, errors: Array<{ field, message, value }> }`.\n\n' +
 						'Call `simulate_validation` to test predicates without a real class:\n' +

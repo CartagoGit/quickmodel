@@ -80,7 +80,7 @@ describe('Integration: unknown-property-policy (guide/unknown-property-policy.md
 				name: 'Carol',
 				extra: 'preserved',
 			} as never);
-			const output = mdl.$qSerialize();
+			const output = mdl.$qSerialize() as Record<string, unknown>;
 
 			expect(output['name']).toBe('Carol');
 			expect(output['extra']).toBe('preserved');
@@ -92,7 +92,7 @@ describe('Integration: unknown-property-policy (guide/unknown-property-policy.md
 				score: 99,
 				active: true,
 			} as never);
-			const output = mdl.$qSerialize();
+			const output = mdl.$qSerialize() as Record<string, unknown>;
 
 			expect(output['score']).toBe(99);
 			expect(output['active']).toBe(true);
@@ -142,7 +142,9 @@ describe('Integration: unknown-property-policy (guide/unknown-property-policy.md
 				name: 'Harry',
 				extra: 'ok',
 			} as never);
-			expect(mdl.$qSerialize()['extra']).toBe('ok');
+			expect(
+				(mdl.$qSerialize() as Record<string, unknown>)['extra']
+			).toBe('ok');
 		});
 	});
 

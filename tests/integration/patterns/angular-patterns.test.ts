@@ -876,7 +876,7 @@ describe('Reglas mixtas — checkRules() ignora predicados async', () => {
 
 		const calls = (warnSpy.mock.calls as string[][]).flat().join(' ');
 		expect(calls).toContain('MixedRulesForm#username');
-		expect(calls).toContain('checkRulesAsync');
+		expect(calls).toContain('$qCheckRulesAsync');
 	});
 
 	test('el warning no se repite en llamadas sucesivas (deduplicado)', () => {

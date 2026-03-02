@@ -34,8 +34,8 @@ class MoneyTransformer extends QBaseTransformer<string, Money> {
 		return new Money(Number(amountStr), currencyStr);
 	}
 
-	serialize(value: Money | null | undefined): string | null {
-		if (!value) return null;
+	serialize(value: Money | null | undefined): string {
+		if (!value) return '';
 		return `${value.amount}:${value.currency}`;
 	}
 }

@@ -249,9 +249,11 @@ describe('QExportJsonSchemaTool — additional paths', () => {
 			class Plain {}
 		`;
 		const result = await tool.execute({ code });
-		const schema = result.schema as Record<string, Record<string, unknown>>;
+		const schema = result.schema as Record<string, unknown>;
 		expect(schema['title']).toBe('Unknown');
-		expect(schema['properties']['x']).toEqual({ type: 'number' });
+		expect((schema['properties'] as Record<string, unknown>)['x']).toEqual({
+			type: 'number',
+		});
 	});
 });
 

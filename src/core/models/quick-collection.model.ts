@@ -697,7 +697,7 @@ export class QModelCollection<TInstance extends IQCollectionItem> {
 	// ─── Validation ─────────────────────────────────────────────────────────
 
 	/**
-	 * Runs `checkRules()` on every instance in the collection.
+	 * Runs `$qCheckRules()` on every instance in the collection.
 	 *
 	 * @returns `{ valid, errors }` where `errors` includes the index, field, and message
 	 *   for each rule failure across all instances.

@@ -2,10 +2,11 @@
 
 QuickModel provides bidirectional transformation between runtime types and JSON-compatible formats. This page explains how serialization works and how to use `serialize()` and `toJSON()`.
 
-::: tip `serialize()` vs `toJSON()`
+::: tip `$qSerialize()` vs `toJSON()` vs `$qToJSON()`
 
-- `serialize()` → returns a **plain JavaScript object** (the recommended method for most use cases)
-- `toJSON()` → returns a **JSON string** (called automatically by `JSON.stringify()`)
+- `$qSerialize()` → returns a **plain JavaScript object** (recommended — supports all serialization options)
+- `toJSON()` → returns a **plain object** (JS protocol — called automatically by `JSON.stringify()`)
+- `$qToJSON()` → returns a **JSON string** (use when you need a string with QuickModel options)
   :::
 
 ## The Two-Interface Pattern
@@ -207,7 +208,7 @@ console.log(plain.params); // { page: '1', limit: '10' }
 
 ## Nested Models
 
-Nested models are recursively IQSerialized:
+Nested models are recursively serialized:
 
 ```typescript
 @Quick({ birthDate: Date })

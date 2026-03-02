@@ -70,10 +70,12 @@ describe('QGetFormSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode });
 
 		const nameEntry = result.schema.find(
-			(entry: Record<string, unknown>) => entry['field'] === 'name'
+			(entry: unknown) =>
+				(entry as Record<string, unknown>)['field'] === 'name'
 		) as Record<string, unknown>;
 		const ageEntry = result.schema.find(
-			(entry: Record<string, unknown>) => entry['field'] === 'age'
+			(entry: unknown) =>
+				(entry as Record<string, unknown>)['field'] === 'age'
 		) as Record<string, unknown>;
 
 		expect(nameEntry?.required).toBe(true);
@@ -85,7 +87,8 @@ describe('QGetFormSchemaTool', () => {
 		const result = await tool.execute({ code: sampleCode });
 
 		const emailEntry = result.schema.find(
-			(entry: Record<string, unknown>) => entry['field'] === 'email'
+			(entry: unknown) =>
+				(entry as Record<string, unknown>)['field'] === 'email'
 		) as Record<string, unknown>;
 		expect(emailEntry?.hint).toBeDefined();
 	});
@@ -246,10 +249,12 @@ describe('QGetFormSchemaTool — parseQFieldMeta edge cases', () => {
 		const { schema, count } = await tool.execute({ code });
 		expect(count).toBe(2);
 		const alpha = schema.find(
-			(entry: Record<string, unknown>) => entry['field'] === 'alpha'
+			(entry: unknown) =>
+				(entry as Record<string, unknown>)['field'] === 'alpha'
 		) as Record<string, unknown>;
 		const beta = schema.find(
-			(entry: Record<string, unknown>) => entry['field'] === 'beta'
+			(entry: unknown) =>
+				(entry as Record<string, unknown>)['field'] === 'beta'
 		) as Record<string, unknown>;
 		expect(alpha['widget']).toBe('input');
 		expect(alpha['required']).toBe(true);

@@ -27,7 +27,7 @@ import { QConfig } from '@/core/config/quick.config';
 
 /**
  * Tracks class#field pairs already warned about async predicates.
- * Avoids flooding the console when checkRules() is called repeatedly.
+ * Avoids flooding the console when $qCheckRules() is called repeatedly.
  * @internal
  * @see {@link $qCheckRules} — the function that uses this set to suppress duplicates
  */
@@ -135,9 +135,9 @@ export function $qCheckRules(
 					if (!_asyncWarnedKeys.has(warnKey)) {
 						_asyncWarnedKeys.add(warnKey);
 						Logger.warn(
-							`qCheckRules() skipped an async predicate on "${warnKey}". ` +
+							`$qCheckRules() skipped an async predicate on "${warnKey}". ` +
 								`Async rules are never evaluated by the synchronous path. ` +
-								`Use checkRulesAsync() / qCheckRulesAsync() to evaluate them.`
+								`Use $qCheckRulesAsync() to evaluate them.`
 						);
 					}
 					passes = true;

@@ -466,11 +466,11 @@ describe('NestJS Pattern: @QComputed() in API responses', () => {
 			role: 'user',
 			score: 72,
 		});
-		const json = user.toJSON();
-		expect(json.fullName).toBe('Bob Smith');
-		expect(json.age).toBe(41);
-		expect(json.isAdmin).toBe(false);
-		expect(json.scoreLabel).toBe('good');
+		const json = user.toJSON() as Record<string, unknown>;
+		expect(json['fullName']).toBe('Bob Smith');
+		expect(json['age']).toBe(41);
+		expect(json['isAdmin']).toBe(false);
+		expect(json['scoreLabel']).toBe('good');
 	});
 
 	test('computed fields reflect current model state after manual mutation', () => {

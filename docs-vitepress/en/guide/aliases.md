@@ -20,7 +20,7 @@ These aliases ensure that values are coerced into their respective primitive typ
 
 ## Native Objects
 
-Standard JavaScript objects that require transformation from IQSerialized (JSON) formats.
+Standard JavaScript objects that require transformation from serialized (JSON) formats.
 
 | Alias               | Result            | Description                                                                 |
 | :------------------ | :---------------- | :-------------------------------------------------------------------------- |

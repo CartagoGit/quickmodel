@@ -59,6 +59,50 @@ export interface IQRuleOptions {
 		/** Custom sink for this rule's trace entries — bypasses console and global sink. */
 		sink?: (entry: IQTraceEntry) => void;
 	};
+	/**
+	 * Enable result caching for this predicate.
+	 *
+	 * - `true` — the result is cached indefinitely (process lifetime).
+	 * - `{ maxAgeMs }` — each cache entry expires after `maxAgeMs` milliseconds.
+	 *
+	 * Cache key = `JSON.stringify(fieldValue)`.
+	 * Two different instances with the **same field value** share the same cached result,
+	 * which is intentional (e.g. two forms checking the same email address).
+	 *
+	 * Only successful boolean results (`true`/`false`) are cached.
+	 * Timed-out or rejected predicates are **not** cached, so they always re-run.
+	 *
+	 * @example
+	 * ```typescript
+	 * // Cache forever — useful for immutable lookups
+	 * @QRule(async (v: string) => checkUsername(v), 'Username taken', { cache: true })
+	 * declare username: string;
+	 *
+	 * // Cache with TTL — useful for data that can change
+	 * @QRule(async (v: string) => checkEmailUnique(v), 'Email taken', { cache: { maxAgeMs: 5000 } })
+	 * declare email: string;
+	 * ```
+	 */
+	cache?: boolean | { maxAgeMs?: number };
+	/**
+	 * Deduplicate concurrent async invocations with the same field value.
+	 *
+	 * When `true`, if multiple `$qCheckRulesAsync()` calls are in-flight simultaneously
+	 * for the same value, they all share the **same underlying `Promise`** instead of
+	 * each launching an independent network/IO request.
+	 *
+	 * Once the shared promise settles, subsequent calls restart fresh.
+	 *
+	 * Particularly useful in reactive forms where the user triggers many re-validation
+	 * cycles in rapid succession (e.g. `valueChanges` stream without `debounceTime`).
+	 *
+	 * @example
+	 * ```typescript
+	 * @QRule(async (v: string) => checkEmailUnique(v), 'Email taken', { dedupe: true })
+	 * declare email: string;
+	 * ```
+	 */
+	dedupe?: boolean;
 }
 
 /**
@@ -72,13 +116,13 @@ export interface IQRule<T = unknown> {
 	/**
 	 * Predicate that must return `true` for the rule to pass.
 	 * Can be synchronous or asynchronous.
-	 * Use `checkRulesAsync()` to evaluate async predicates.
+	 * Use `$qCheckRulesAsync()` to evaluate async predicates.
 	 */
 	predicate: (value: T) => boolean | Promise<boolean>;
 	/**
 	 * Error message when the rule fails.
 	 * - `string`: static message (or i18n key for later translation, e.g. `e.message | translate`)
-	 * - `() => string`: lazy message, evaluated at `checkRules()` call-time (useful for runtime i18n)
+	 * - `() => string`: lazy message, evaluated at `$qCheckRules()` call-time (useful for runtime i18n)
 	 */
 	message: string | (() => string);
 	/** @internal Per-rule trace override stored from `@QRule(predicate, message, options)`. */
@@ -105,14 +149,14 @@ export interface IQRulesResult {
 		value: unknown;
 		/**
 		 * Present and `true` when the predicate did not resolve within `timeoutMs`.
-		 * Only set by `checkRulesAsync()` when the `timeoutMs` option is provided.
+		 * Only set by `$qCheckRulesAsync()` when the `timeoutMs` option is provided.
 		 */
 		timedOut?: true;
 	}>;
 }
 
 /**
- * Options for `checkRulesAsync()`, `isValidAsync()` and `validationReportAsync()`.
+ * Options for `$qCheckRulesAsync()`, `$qIsValidAsync()` and `$qValidationReportAsync()`.
  *
  * @see {@link QModel.$qCheckRulesAsync}
  * @see {@link QModel.$qIsValidAsync}
@@ -147,6 +191,67 @@ export interface IQRulesAsyncOptions {
 	 *   before checking uniqueness).
 	 */
 	mode?: 'parallel' | 'serial';
+	/**
+	 * An `AbortSignal` that cancels the entire validation run.
+	 *
+	 * When the signal fires, the returned `Promise` rejects with a
+	 * `DOMException` whose `name` is `'AbortError'` — the same contract
+	 * as `fetch` and the Fetch API.
+	 *
+	 * Pass the signal of an `AbortController` that you `.abort()` when the
+	 * surrounding context is destroyed (e.g. a React component unmount,
+	 * a route change, or a new keystroke that obsoletes the previous validation).
+	 *
+	 * @example
+	 * ```typescript
+	 * const ctrl = new AbortController();
+	 * onDestroy(() => ctrl.abort());
+	 *
+	 * const result = await user.$qCheckRulesAsync({ signal: ctrl.signal });
+	 * ```
+	 */
+	signal?: AbortSignal;
+	/**
+	 * Hard limit in milliseconds for the **entire** validation run.
+	 *
+	 * Different from `timeoutMs`, which applies per-predicate individually.
+	 * When `globalTimeoutMs` is exceeded, the returned `Promise` rejects with
+	 * a `DOMException` named `'TimeoutError'` (same semantics as `AbortSignal.timeout()`).
+	 *
+	 * Use this when you need a UX-level guarantee — e.g. "show the form in under 2 s
+	 * even if the uniqueness check hangs" — combined with fallback UI.
+	 *
+	 * @example
+	 * ```typescript
+	 * try {
+	 *   const result = await user.$qCheckRulesAsync({ globalTimeoutMs: 2000 });
+	 * } catch (err) {
+	 *   if (err instanceof DOMException && err.name === 'TimeoutError') {
+	 *     // validation took too long — show a generic error or retry button
+	 *   }
+	 * }
+	 * ```
+	 */
+	globalTimeoutMs?: number;
+	/**
+	 * Number of times to retry a predicate that **rejects** or **times out**.
+	 *
+	 * - `number` — retry count, no delay between attempts.
+	 * - `{ count, delayMs? }` — retry count with an optional pause between each attempt.
+	 *
+	 * An active `signal` abort **cancels all pending retries** immediately.
+	 * Successful `true`/`false` results are **not** retried.
+	 *
+	 * @example
+	 * ```typescript
+	 * // Retry up to 3 times with 200 ms between attempts
+	 * await user.$qCheckRulesAsync({ retry: { count: 3, delayMs: 200 } });
+	 *
+	 * // Retry once without delay (quick network blip)
+	 * await user.$qCheckRulesAsync({ retry: 1 });
+	 * ```
+	 */
+	retry?: number | { count: number; delayMs?: number };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -275,7 +380,7 @@ function registerRule(proto: object, key: string, rule: IQRule<unknown>): void {
  * // Static string (works as Angular pipe key: `e.message | translate`)
  * @QRule((value: string) => value.length >= 3, 'validation.name.min')
  *
- * // Lazy — resolved when checkRules() is actually called (runtime i18n)
+ * // Lazy — resolved when $qCheckRules() is actually called (runtime i18n)
  * @QRule((value: string) => value.length >= 3, () => i18n.t('validation.name.min'))
  * ```
  *

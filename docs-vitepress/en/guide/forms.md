@@ -11,7 +11,7 @@ The root entry (`quickmodel`) includes the full runtime: transformers, serializa
 import { qGroups, qCheckRules } from 'quickmodel/forms';
 
 // also works, but pulls in the full runtime
-import { qGroups, qCheckRules } from 'quickmodel/forms';
+import { qGroups, qCheckRules } from 'quickmodel';
 ```
 
 ## Prerequisites

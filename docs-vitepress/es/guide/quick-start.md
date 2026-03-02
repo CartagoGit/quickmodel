@@ -87,10 +87,10 @@ console.log(user.metadata instanceof Map); // true
 
 ## Paso 4: Serializa de Vuelta a JSON
 
-Cuando necesites enviar datos de vuelta a la API, usa `serialize()` para obtener un objeto plano, o `toJSON()` para un string JSON:
+Cuando necesites enviar datos de vuelta a la API, usa `$qSerialize()` para obtener un objeto plano, o `$qToJSON()` para un string JSON:
 
 ```typescript
-// serialize() → objeto JavaScript plano (lo más habitual)
+// $qSerialize() → objeto JavaScript plano (lo más habitual)
 const plain = user.$qSerialize();
 // {
 //   id: 1,
@@ -101,9 +101,12 @@ const plain = user.$qSerialize();
 //   metadata: [['key1', 'val1'], ['key2', 'val2']]
 // }
 
-// toJSON() → string JSON (para cuerpo de fetch, WebSockets, etc.)
-const jsonStr = user.toJSON();
+// $qToJSON() → string JSON (para cuerpo de fetch, WebSockets, etc.)
+const jsonStr = user.$qToJSON();
 // '{"id":1,"name":"John Doe",...}'
+
+// JSON.stringify() también funciona y llama toJSON() automáticamente:
+const jsonStr2 = JSON.stringify(user);
 ```
 
 ## Paso 5: Testing con Mocks

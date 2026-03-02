@@ -11,7 +11,7 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
 export interface IQValidationReport {
 	/**
 	 * `true` when both integrity checks and all `@QRule` predicates pass.
-	 * Equivalent to `checkIntegrity().length === 0 && checkRules().valid`.
+	 * Equivalent to `$qCheckIntegrity().length === 0 && $qCheckRules().valid`.
 	 */
 	valid: boolean;
 	/** Results from transformer-level integrity checks. Empty array = all pass. */
@@ -27,7 +27,7 @@ export interface IQValidationReport {
  */
 export interface IQValidateOptions {
 	/**
-	 * When `true`, runs async predicates via `checkRulesAsync()` and returns a
+	 * When `true`, runs async predicates via `$qCheckRulesAsync()` and returns a
 	 * `Promise<IQValidateResult>`. When omitted or `false`, returns `IQValidateResult`
 	 * synchronously.
 	 */

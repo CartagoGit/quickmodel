@@ -205,7 +205,7 @@ function toBeIntact(received: unknown): IMatcherResult {
 
 /**
  * Asserts that a specific field is dirty (has been mutated since creation / last reset).
- * Calls `model.isDirty(field)`. Fails if not a QModel instance.
+ * Calls `model.$qIsDirty(field)`. Fails if not a QModel instance.
  *
  * @example
  * ```typescript
@@ -230,7 +230,7 @@ function toHaveDirtyField(received: unknown, field: string): IMatcherResult {
 		message: () =>
 			pass
 				? `Expected field '${field}' to be clean (not dirty)`
-				: `Expected field '${field}' to be dirty (isDirty('${field}') returned false)`,
+				: `Expected field '${field}' to be dirty ($qIsDirty('${field}') returned false)`,
 	};
 }
 
@@ -278,7 +278,7 @@ declare module 'vitest' {
 		toMatchQModel(expected: object): void;
 		/** Asserts `hasIntegrity()` returns true. QModel only. */
 		toBeIntact(): void;
-		/** Asserts `isDirty(field)` returns true. QModel only. */
+		/** Asserts `$qIsDirty(field)` returns true. QModel only. */
 		toHaveDirtyField(field: string): void;
 	}
 }

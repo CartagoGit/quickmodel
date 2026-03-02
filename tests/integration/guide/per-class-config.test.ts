@@ -105,7 +105,8 @@ describe('Integration: per-class config (guide/per-class-config.md)', () => {
 
 	describe('per-class config overrides global', () => {
 		beforeEach(() => {
-			// Set global policy to 'error'
+			// Set global policy to 'error' (root-level — runtime ignores it; tests per-class override behaviour)
+			// @ts-expect-error — root-level unknownPropertyPolicy is not in IQConfig.defaults by design
 			QConfig.configure({ unknownPropertyPolicy: 'error' });
 		});
 

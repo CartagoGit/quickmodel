@@ -64,7 +64,7 @@ export class QDrizzlePrompt extends QAbstractPrompt<{
 					"'repository' (DrizzleRepository class), " +
 					"'copy' (partial update with copy() + db.update().set()), " +
 					"'createMany' (bulk seed/import), " +
-					"'async-rules' (qCheckRulesAsync() DB uniqueness). " +
+					"'async-rules' ($qCheckRulesAsync() DB uniqueness). " +
 					"Example: 'insert,repository,copy'"
 			),
 	};
@@ -142,7 +142,7 @@ export class QDrizzlePrompt extends QAbstractPrompt<{
 							? `8. Show the bulk seed/import pattern using \`${dto_name ?? 'EntityDto'}.createMany(seed)\`\n`
 							: '') +
 						(patternList.includes('async-rules')
-							? `9. Show the DB-level uniqueness validation pattern using \`qCheckRulesAsync()\`\n`
+							? `9. Show the DB-level uniqueness validation pattern using \`$qCheckRulesAsync()\`\n`
 							: '') +
 						`\nShow me the complete final code.`
 				),

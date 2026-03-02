@@ -192,7 +192,7 @@ export interface IQConfig {
 			 * - `'rule-fail'`     — a `@QRule` predicate returned `false`
 			 * - `'rule-error'`    — a `@QRule` predicate threw an exception
 			 * - `'rule-timeout'`  — an async `@QRule` timed out
-			 * - `'integrity'`     — `checkIntegrity()` result per field
+			 * - `'integrity'`     — `$qCheckIntegrity()` result per field
 			 * - `'transformer'`   — which transformer was applied to each field
 			 * - `'config-change'` — `QConfig.configure()` called
 			 */
@@ -274,7 +274,7 @@ export interface IQConfig {
 	 * Internationalization (i18n) settings for validation messages.
 	 *
 	 * When a `resolver` is provided, every validation error message emitted by
-	 * `checkRules()` or `checkRulesAsync()` is passed through it before being
+	 * `$qCheckRules()` or `$qCheckRulesAsync()` is passed through it before being
 	 * returned to the caller. This allows keys like `'validation.name.minLength'`
 	 * to be translated to the user's active locale.
 	 *
@@ -324,35 +324,12 @@ export interface IQConfig {
 		 */
 		recordMode?: 'operation' | 'field';
 	};
-
-	/**
-	 * Global audit trail defaults.
-	 *
-	 * Applies to **every** model that does not provide its own `@Quick({}, { audit })` config.
-	 * Class-level config takes precedence over this global default.
-	 *
-	 * @example
-	 * ```typescript
-	 * QConfig.configure({
-	 *   audit: { enabled: false, maxEntries: 500 },
-	 * });
-	 * ```
-	 */
-	audit?: {
-		/** Whether audit recording is active globally. Default: `false`. */
-		enabled?: boolean;
-		/** Maximum number of audit entries to retain per instance. Default: `500`. */
-		maxEntries?: number;
-	};
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Trace types (declared outside IQConfig so they can be imported independently)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Controls which parts of the console log line are colorized.
- *
 /**
  * Individual segments of a console log line that can be colorized independently.
  *

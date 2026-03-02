@@ -39,7 +39,9 @@ describe('Integrity Service Coverage Gaps', () => {
 		// validate(instance) checks Reflect.getMetadata('fieldType', instance, key)
 		// This should work.
 
-		const results = service.checkIntegrity(instance as unknown as object);
+		const results = service.checkIntegrity(
+			instance as unknown as Record<string, unknown>
+		); // @quickmodel-rule-ignore: no-as-unknown
 
 		expect(results.length).toBe(1);
 		expect(results[0]?.isValid).toBe(false);
@@ -90,7 +92,7 @@ describe('Integrity Service Coverage Gaps', () => {
 		// We expect console.error to be called by the catch block when the proxy throws.
 		const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
-		service.checkIntegrity(parent as unknown as object);
+		service.checkIntegrity(parent as unknown as Record<string, unknown>); // @quickmodel-rule-ignore: no-as-unknown
 
 		expect(consoleSpy).toHaveBeenCalledWith(
 			'Caught integrity error:',
@@ -131,8 +133,11 @@ describe('Integrity Service Coverage Gaps', () => {
 		parent.items = [throwingProxy];
 
 		// Should NOT throw — the catch block swallows the error.
-		expect(() =>
-			service.checkIntegrity(parent as unknown as object)
+		expect(
+			() =>
+				service.checkIntegrity(
+					parent as unknown as Record<string, unknown>
+				) // @quickmodel-rule-ignore: no-as-unknown
 		).not.toThrow();
 	});
 });

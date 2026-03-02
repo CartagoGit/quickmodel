@@ -6,7 +6,7 @@ import type { IQPromptResult } from '../abstract-prompt';
  * Skill: Add @QGroup conditional validation groups to a QuickModel.
  *
  * @QGroup(name) marks a field as belonging to a named validation group.
- * model.checkGroups(groupName) evaluates only the rules for that group,
+ * $qCheckRulesByGroup(model) evaluates all groups and returns a per-group result map,
  * enabling conditional validation (e.g. only validate address fields when
  * the user has selected a shipping option).
  *
@@ -23,7 +23,7 @@ export class QAddQGroupPrompt extends QAbstractPrompt<{
 	description =
 		'Guides adding @QGroup conditional validation groups to a QuickModel. ' +
 		'@QGroup(name) marks fields as belonging to a named validation group; ' +
-		'model.checkGroups(groupName) evaluates only rules for that group. ' +
+		'$qCheckRulesByGroup(model) evaluates all groups and returns a per-group result map. ' +
 		'Use when you need conditional validation (e.g. validate address fields only during checkout).';
 
 	argsSchema = {
@@ -68,8 +68,8 @@ export class QAddQGroupPrompt extends QAbstractPrompt<{
 						`---\n\n` +
 						`### @QGroup — Conditional validation groups\n\n` +
 						`\`@QGroup(name)\` marks a field as belonging to a named validation group. ` +
-						`\`model.checkGroups(groupName)\` then evaluates **only** the \`@QRule\` predicates ` +
-						`of fields in that group, ignoring all other rules.\n\n` +
+						`\`$qCheckRulesByGroup(instance)\` then evaluates **all** groups and returns a per-group result map, ` +
+						`while \`$qCheckRules(instance, { group })\` evaluates only the specified group.\n\n` +
 						`This is useful when you need conditional validation — for example, validating ` +
 						`address fields only during checkout, or billing fields only when payment is required.\n\n` +
 						`### Usage pattern\n\n` +
@@ -77,7 +77,7 @@ export class QAddQGroupPrompt extends QAbstractPrompt<{
 						`@Quick({})\n` +
 						`class OrderModel extends QModel<OrderModel> {\n` +
 						`  declare userId: string;\n\n` +
-						`  // Only validated when checkGroups("${exampleGroup}") is called\n` +
+						`  // Only validated when $qCheckRulesByGroup(order) or $qCheckRules(order, { group: '${exampleGroup}' }) is called\n` +
 						`  @QGroup('${exampleGroup}')\n` +
 						`  @QRule((val) => val !== '', 'Street is required')\n` +
 						`  declare street: string;\n\n` +
@@ -87,21 +87,23 @@ export class QAddQGroupPrompt extends QAbstractPrompt<{
 						`}\n\n` +
 						`// Always-on validation:\n` +
 						`const order = new OrderModel(data);\n` +
-						`order.$qCheckRules();                       // validates everything\n\n` +
-						`// Conditional — only when shipping is needed:\n` +
-						`order.checkGroups('${exampleGroup}');     // validates only grouped fields\n` +
+						`order.$qCheckRules();                                          // validates everything\n\n` +
+						`// Group-scoped validation — only when shipping is needed:\n` +
+						`import { $qCheckRules, $qCheckRulesByGroup } from 'quickmodel/forms';\n` +
+						`$qCheckRules(order, { group: '${exampleGroup}' });              // one group, flat result\n` +
+						`$qCheckRulesByGroup(order);                                    // all groups, per-group map\n` +
 						`\`\`\`\n\n` +
 						`### Key points\n` +
 						`- A field **can belong to multiple groups** by stacking \`@QGroup\` decorators\n` +
-						`- \`checkGroups()\` does NOT run rules for ungrouped fields\n` +
-						`- \`checkRules()\` runs ALL rules regardless of groups\n` +
-						`- You can pass an array: \`checkGroups(['billing', 'shipping'])\`\n\n` +
+						`- \`$qCheckRulesByGroup(instance)\` does NOT run rules for ungrouped fields\n` +
+						`- \`$qCheckRules(instance)\` runs ALL rules regardless of groups\n` +
+						`- Use \`$qCheckRules(instance, { group: 'name' })\` to target a single group with a flat result\n\n` +
 						`I will now analyze the model and add the appropriate @QGroup configuration...`
 				),
 				this.user(
 					`Please call \`validate_usage\` on the model code to verify it is valid QuickModel v2. ` +
 						`Then show the updated model with @QGroup and @QRule decorators added to the relevant fields, ` +
-						`along with a usage example calling \`checkGroups('${exampleGroup}')\`. ` +
+						`along with a usage example calling \`$qCheckRules(order, { group: '${exampleGroup}' })\` and \`$qCheckRulesByGroup(order)\`. ` +
 						(group_name
 							? `Focus the group on fields that logically belong to the "${group_name}" context.`
 							: `Choose a sensible group name based on the model's fields.`)

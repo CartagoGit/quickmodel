@@ -1,15 +1,15 @@
 /**
- * @fileoverview `qCheckRulesByGroup` — runs `@QRule` predicates grouped by
+ * @fileoverview `$qCheckRulesByGroup` — runs `@QRule` predicates grouped by
  * `@QGroup` name and returns a map of `IQRulesResult` per group.
  *
  * Only fields that carry **both** `@QRule` and `@QGroup` annotations are
  * included. Ungrouped fields (those with `@QRule` but without `@QGroup`) are
- * excluded from the map — use {@link qCheckRules} without a group filter to
+ * excluded from the map — use {@link $qCheckRules} without a group filter to
  * evaluate all fields including ungrouped ones.
  *
- * @see {@link qGetGroups} to list available group names.
- * @see {@link qCheckRules} for filtering by a specific group.
- * @see {@link qCheckRulesByGroupAsync} for the async version.
+ * @see {@link $qGetGroups} to list available group names.
+ * @see {@link $qCheckRules} for filtering by a specific group.
+ * @see {@link $qCheckRulesByGroupAsync} for the async version.
  * @module
  */
 
@@ -22,20 +22,20 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  * returns a `Record<groupName, IQRulesResult>`.
  *
  * Each entry in the returned record is equivalent to calling
- * `qCheckRules(instance, { group: groupName })` for that group.
+ * `$qCheckRules(instance, { group: groupName })` for that group.
  * Fields without a `@QGroup` annotation are **not** included in any entry.
  *
  * @param instance - Any class instance decorated with `@QRule` and `@QGroup`.
  *                   Does not need to extend `QModel`.
  * @returns A record mapping each group name to its `IQRulesResult`. Returns an
  *          empty object when no `@QGroup` annotations are present.
- * @see {@link qCheckRules} — run all rules (or a specific group) in one call
- * @see {@link qCheckRulesByGroupAsync} — async version for async predicates
- * @see {@link qGetGroups} — list group names declared on an instance
+ * @see {@link $qCheckRules} — run all rules (or a specific group) in one call
+ * @see {@link $qCheckRulesByGroupAsync} — async version for async predicates
+ * @see {@link $qGetGroups} — list group names declared on an instance
  *
  * @example
  * ```ts
- * const Groups = qGroups('identity', 'security');
+ * const Groups = $qGroups('identity', 'security');
  *
  * class ProfileForm {
  *   @QRule((v: string) => v.length >= 2, 'Too short')
@@ -51,7 +51,7 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  * form.name = 'A';
  * form.password = 'Secret1!';
  *
- * const results = qCheckRulesByGroup(form);
+ * const results = $qCheckRulesByGroup(form);
  * // {
  * //   identity: { valid: false, errors: [{ field: 'name', ... }] },
  * //   security: { valid: true,  errors: [] },
@@ -62,8 +62,8 @@ import type { IQRulesResult } from '@/core/decorators/qrule.decorator';
  * results[Groups.security].valid; // true
  * ```
  *
- * @see {@link qCheckRules} — the underlying function called per group
- * @see {@link qCheckRulesByGroupAsync} — async variant of this function
+ * @see {@link $qCheckRules} — the underlying function called per group
+ * @see {@link $qCheckRulesByGroupAsync} — async variant of this function
  */
 export function $qCheckRulesByGroup(
 	instance: object

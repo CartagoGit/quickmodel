@@ -104,7 +104,7 @@ describe('Integration: cross-feature decorator combinations (cross-feature/B-1)'
 				tags: [],
 				api_key: 'sk-secret',
 			});
-			const plain = model.$qSerialize();
+			const plain = model.$qSerialize() as Record<string, unknown>;
 			expect(plain['apiKey']).toBeUndefined();
 			expect(plain['api_key']).toBeUndefined();
 		});
@@ -126,7 +126,9 @@ describe('Integration: cross-feature decorator combinations (cross-feature/B-1)'
 				tags: [],
 				api_key: 'sk-secret',
 			});
-			const plain = model.$qSerialize({ includeSensitive: true });
+			const plain = model.$qSerialize({
+				includeSensitive: true,
+			}) as Record<string, unknown>;
 			// serialized key should use alias 'api_key'
 			expect(plain['api_key']).toBe('sk-secret');
 		});

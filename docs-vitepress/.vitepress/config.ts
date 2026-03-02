@@ -554,6 +554,10 @@ export default defineConfig({
 									text: 'Naming Conventions (IQ, Q, $q)',
 									link: '/en/guide/naming-conventions',
 								},
+								{
+									text: 'Reserved Words',
+									link: '/en/guide/reserved-words',
+								},
 							],
 						},
 					],
@@ -567,8 +571,16 @@ export default defineConfig({
 									link: '/en/integrations/angular-integration',
 								},
 								{
+									text: 'Astro',
+									link: '/en/integrations/astro-integration',
+								},
+								{
 									text: 'React / Next.js',
 									link: '/en/integrations/react-integration',
+								},
+								{
+									text: 'Solid.js',
+									link: '/en/integrations/solid-integration',
 								},
 								{
 									text: 'Svelte 5 / SvelteKit',
@@ -646,6 +658,10 @@ export default defineConfig({
 							text: 'State Management & Forms',
 							items: [
 								{
+									text: 'MobX',
+									link: '/en/integrations/mobx-integration',
+								},
+								{
 									text: 'Redux Toolkit (RTK)',
 									link: '/en/integrations/redux-toolkit-integration',
 								},
@@ -682,6 +698,14 @@ export default defineConfig({
 									text: 'SWR',
 									link: '/en/integrations/swr-integration',
 								},
+								{
+									text: 'TanStack Query',
+									link: '/en/integrations/tanstack-query-integration',
+								},
+								{
+									text: 'TanStack Table',
+									link: '/en/integrations/tanstack-table-integration',
+								},
 							],
 						},
 						{
@@ -702,10 +726,6 @@ export default defineConfig({
 								{
 									text: 'Mocha / Chai / AVA / Node:test',
 									link: '/en/integrations/test-runners-integration',
-								},
-								{
-									text: 'TanStack Query',
-									link: '/en/integrations/tanstack-query-integration',
 								},
 							],
 						},
@@ -757,6 +777,10 @@ export default defineConfig({
 								{
 									text: 'Mobile (React Native / Capacitor)',
 									link: '/en/integrations/mobile-integration',
+								},
+								{
+									text: 'Socket.io',
+									link: '/en/integrations/socket-io-integration',
 								},
 								{
 									text: 'Storage & Persistence',
@@ -1077,6 +1101,10 @@ export default defineConfig({
 									text: 'Convenciones de Nombrado (IQ, Q, $q)',
 									link: '/es/guide/naming-conventions',
 								},
+								{
+									text: 'Palabras Reservadas',
+									link: '/es/guide/reserved-words',
+								},
 							],
 						},
 					],
@@ -1090,8 +1118,16 @@ export default defineConfig({
 									link: '/es/integrations/angular-integration',
 								},
 								{
+									text: 'Astro',
+									link: '/es/integrations/astro-integration',
+								},
+								{
 									text: 'React / Next.js',
 									link: '/es/integrations/react-integration',
+								},
+								{
+									text: 'Solid.js',
+									link: '/es/integrations/solid-integration',
 								},
 								{
 									text: 'Svelte 5 / SvelteKit',
@@ -1169,6 +1205,10 @@ export default defineConfig({
 							text: 'Estado y Formularios',
 							items: [
 								{
+									text: 'MobX',
+									link: '/es/integrations/mobx-integration',
+								},
+								{
 									text: 'Redux Toolkit (RTK)',
 									link: '/es/integrations/redux-toolkit-integration',
 								},
@@ -1205,6 +1245,14 @@ export default defineConfig({
 									text: 'SWR',
 									link: '/es/integrations/swr-integration',
 								},
+								{
+									text: 'TanStack Query',
+									link: '/es/integrations/tanstack-query-integration',
+								},
+								{
+									text: 'TanStack Table',
+									link: '/es/integrations/tanstack-table-integration',
+								},
 							],
 						},
 						{
@@ -1225,10 +1273,6 @@ export default defineConfig({
 								{
 									text: 'Mocha / Chai / AVA / Node:test',
 									link: '/es/integrations/test-runners-integration',
-								},
-								{
-									text: 'TanStack Query',
-									link: '/es/integrations/tanstack-query-integration',
 								},
 							],
 						},
@@ -1280,6 +1324,10 @@ export default defineConfig({
 								{
 									text: 'Mobile (React Native / Capacitor)',
 									link: '/es/integrations/mobile-integration',
+								},
+								{
+									text: 'Socket.io',
+									link: '/es/integrations/socket-io-integration',
 								},
 								{
 									text: 'Storage & Persistence',

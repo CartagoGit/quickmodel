@@ -52,7 +52,7 @@ describe('Private/Protected Properties Serialization', () => {
 		const user = new User({ id: 1, name: 'John' });
 		user.__meta = 'so_secret';
 
-		const json = user.toJSON();
+		const json = user.toJSON() as Record<string, unknown>;
 		expect(json.id).toBe(1);
 		expect(json.name).toBe('John');
 		expect(json.__meta).toBeUndefined();

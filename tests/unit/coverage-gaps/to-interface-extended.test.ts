@@ -48,7 +48,7 @@ describe('ToInterfaceService Extended Coverage', () => {
 		const result = container.$qToInterface();
 
 		// Should serialize properties but not methods
-		expect(result.instance).toEqual({ prop: 'value' });
+		expect(result.instance as unknown).toEqual({ prop: 'value' }); // @quickmodel-rule-ignore: no-as-unknown
 		// @quickmodel-rule-ignore: no-as-unknown
 		expect(
 			(result.instance as unknown as Record<string, unknown>)['method']

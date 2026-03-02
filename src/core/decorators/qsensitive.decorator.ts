@@ -32,7 +32,7 @@ export const QSENSITIVE_FIELDS_KEY = '__qSensitive_fields__';
  *
  * To include sensitive fields in the output, pass `{ includeSensitive: true }` to
  * `$qSerialize()` or `toJSON()`. The fields remain fully accessible as instance
- * properties and are not affected by `toInterface()` or `checkRules()`.
+ * properties and are not affected by `$qToInterface()` or `$qCheckRules()`.
  *
  * @example Basic usage — exclude password and token from serialized output
  * ```typescript

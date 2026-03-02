@@ -85,12 +85,6 @@ const readonlyUser = User.createReadonly({
 // readonlyUser.name = 'Jane'; // Error!
 ```
 
-Creates a deep copy of an existing instance.
-
-```typescript
-const clone = user.$qCopy();
-```
-
 ### 6. Bulk Creation (`createMany`)
 
 Creates multiple instances from an array. All items are processed regardless of individual failures — items that fail `isValid()` are collected in `errors[]` and excluded from `instances[]` by default.
@@ -148,10 +142,20 @@ const plain = user.$qSerialize();
 
 ### `toJSON()`
 
-Returns a JSON string representation of the model.
+Implements the JS `toJSON` protocol. Returns a **plain object** (same as `$qSerialize()`) so that `JSON.stringify(model)` works correctly. Note: calling `user.toJSON()` directly also returns a plain object — use `user.$qToJSON()` if you need a JSON **string**.
 
 ```typescript
-const jsonString = user.toJSON();
+// JS protocol — works with JSON.stringify:
+const jsonStr = JSON.stringify(user);
+// '{ "id": 1, "name": "John", ... }'
+
+// Direct call returns a plain object:
+const plain = user.toJSON();
+// { id: 1, name: 'John', ... }
+
+// Explicit JSON string:
+const jsonString = user.$qToJSON();
+// '{ "id": 1, "name": "John", ... }'
 ```
 
 ### `toInterface()`
@@ -239,22 +243,22 @@ const changes = user.$qGetChanges();
 // Result: { age: 31 }
 ```
 
-### `getChangedFields()`
+### `$qGetChangedFields()`
 
 Returns an array of the names of modified properties.
 
 ```typescript
-const fields = user.getChangedFields();
+const fields = user.$qGetChangedFields();
 // Result: ['age']
 ```
 
-### `reset()`
+### `$qReset()`
 
 Reverts the model instance back to its **initial state** (the data provided to the constructor).
 
 ```typescript
 user.name = 'Modified';
-user.reset();
+user.$qReset();
 console.log(user.name); // 'John' (Original value)
 ```
 
@@ -267,13 +271,13 @@ user.$qPatch({ age: 32 });
 // Only 'age' is updated, other fields remain unchanged
 ```
 
-### `getInitInterface()`
+### `$qGetInitInterface()`
 
 Returns the **original data** used to create the instance, in its original format (preserving strings instead of Dates, etc.).
 
 ```typescript
 // Initial input: { createdAt: '2024-01-01' }
-const original = user.getInitInterface();
+const original = user.$qGetInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
 

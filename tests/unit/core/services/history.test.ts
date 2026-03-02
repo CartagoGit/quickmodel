@@ -451,7 +451,7 @@ describe('Configuration by levels', () => {
 // ---------------------------------------------------------------------------
 
 describe('Type exports', () => {
-	test('IHistoryEntry, IHistoryConfig, IHistoryHandle are exported from public API', async () => {
+	test('IQHistoryEntry, IQHistoryConfig, IQHistoryHandle are exported from public API', async () => {
 		const publicApi = await import('@/index');
 		expect(publicApi).toBeDefined();
 	});

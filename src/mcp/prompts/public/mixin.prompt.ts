@@ -81,7 +81,7 @@ export class QMixinPrompt extends QAbstractPrompt<{
 						'```\n\n' +
 						'`QModel.extends(BaseClass)` returns an anonymous class that:\n' +
 						'- Inherits the full JS prototype chain of `BaseClass`\n' +
-						'- Injects the QuickModel store, `serialize()`, `checkRules()`, `checkIntegrity()`, etc.\n\n' +
+						'- Injects the QuickModel store, `$qSerialize()`, `$qCheckRules()`, `$qCheckIntegrity()`, etc.\n\n' +
 						'---\n\n' +
 						'**Step 2 — Add the `IQImplements` interface for strong typing**\n\n' +
 						'```typescript\n' +

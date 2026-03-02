@@ -142,10 +142,20 @@ const plain = user.$qSerialize();
 
 ### `toJSON()`
 
-Devuelve una representación en cadena JSON del modelo.
+Implementa el protocolo JS `toJSON`. Devuelve un **objeto plano** (igual que `$qSerialize()`) para que `JSON.stringify(model)` funcione correctamente. Nota: llamar directamente a `user.toJSON()` también devuelve un objeto plano — usa `user.$qToJSON()` si necesitas una **cadena JSON**.
 
 ```typescript
-const jsonString = user.toJSON();
+// Protocolo JS — funciona con JSON.stringify:
+const jsonStr = JSON.stringify(user);
+// '{"id": 1, "name": "John", ... }'
+
+// Llamada directa devuelve objeto plano:
+const plain = user.toJSON();
+// { id: 1, name: 'John', ... }
+
+// Cadena JSON explícita:
+const jsonString = user.$qToJSON();
+// '{"id": 1, "name": "John", ... }'
 ```
 
 ### `toInterface()`
@@ -233,22 +243,22 @@ const changes = user.$qGetChanges();
 // Resultado: { age: 31 }
 ```
 
-### `getChangedFields()`
+### `$qGetChangedFields()`
 
 Devuelve un array con los nombres de las propiedades modificadas.
 
 ```typescript
-const fields = user.getChangedFields();
+const fields = user.$qGetChangedFields();
 // Resultado: ['age']
 ```
 
-### `reset()`
+### `$qReset()`
 
 Revierte la instancia del modelo a su **estado inicial** (los datos proporcionados al constructor).
 
 ```typescript
 user.name = 'Modificado';
-user.reset();
+user.$qReset();
 console.log(user.name); // 'John' (Valor original)
 ```
 
@@ -261,13 +271,13 @@ user.$qPatch({ age: 32 });
 // Solo se actualiza 'age', el resto permanece igual
 ```
 
-### `getInitInterface()`
+### `$qGetInitInterface()`
 
 Devuelve los **datos originales** usados para crear la instancia, en su formato original (preservando strings en lugar de Dates, etc.).
 
 ```typescript
 // Entrada inicial: { createdAt: '2024-01-01' }
-const original = user.getInitInterface();
+const original = user.$qGetInitInterface();
 console.log(original.createdAt); // '2024-01-01' (String)
 ```
 

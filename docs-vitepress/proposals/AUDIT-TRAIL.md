@@ -1,10 +1,23 @@
-# Propuesta I — `$qHistory` / Audit Trail
+# Propuesta I — `$qHistory` / History Trail
 
 > **Fecha de redacción:** 1 de marzo de 2026
-> **Prioridad:** 🟡 Media
-> **Objetivo entrega:** v2.0.0 (junto con el prefijo `$q`)
-> **Depende de:** [Q-NAMESPACE-REFACTOR.md](./Q-NAMESPACE-REFACTOR.md)
-> **Estado:** 📋 Planificada — pendiente de implementación
+> **Refactorizada:** 2 de marzo de 2026 — consolidado en sistema `history` unificado
+> **Estado:** ✅ Completada e implementada
+
+---
+
+## Nota de refactorización (2 Mar 2026)
+
+El diseño original contemplaba dos sistemas separados:
+
+- `audit` — granularidad por campo (`IAuditEntry` con `field`, `from`, `to`, `at`, `method`)
+- `history` — granularidad por operación (`IQHistoryEntry` con `method`, `at`, `changes`)
+
+Tras la implementación se detectó redundancia: el `recordMode: 'field'` de `IQHistoryConfig`
+cubre exactamente el caso de uso de `audit`. Los tipos `IAuditEntry/Config/Handle`,
+`AuditService` y `NullAuditHandle` fueron eliminados. El sistema `history` es la única implementación.
+
+El resto de este documento refleja la implementación real.
 
 ---
 
@@ -30,8 +43,8 @@ El cambio de diseño que lo desbloquea es el prefijo `$q`: la propiedad `history
 ### 2.1 Acceso al handle
 
 ```typescript
-instance.$qHistory; // IAuditHandle — siempre disponible, nunca undefined
-instance.$qHistory.value; // IAuditEntry[] — vacío si inactivo o sin cambios
+instance.$qHistory; // IQHistoryHandle — siempre disponible, nunca undefined
+instance.$qHistory.value; // IQHistoryEntry[] — vacío si inactivo o sin cambios
 instance.$qHistory.isActive; // boolean
 ```
 
@@ -47,23 +60,27 @@ instance.$qHistory.configure({ maxEntries: 20 }); // cambia el límite en runtim
 ### 2.3 Estructura de una entrada
 
 ```typescript
-interface IAuditEntry {
-	field: string;
-	from: unknown; // valor serializado (Date → ISO string, bigint → string)
-	to: unknown; // valor serializado
+interface IQHistoryEntry {
+	method: 'patch' | 'copy' | 'populate';
 	at: Date;
-	method: 'patch' | 'copy' | 'populate'; // qué operación lo causó
+	/**
+	 * En 'operation' mode: múltiples campos por entrada.
+	 * En 'field' mode: exactamente un campo por entrada.
+	 */
+	changes: Readonly<
+		Record<string, { readonly from: unknown; readonly to: unknown }>
+	>;
 }
 ```
 
-Los valores `from` y `to` se almacenan **serializados** (usando el mismo mecanismo que `serialize()`) para garantizar comparaciones consistentes con tipos complejos como `Date`, `bigint`, `Set`, `Map`.
+Los valores `from` y `to` se almacenan **serializados** (usando el mismo mecanismo que `$qSerialize()`) para garantizar comparaciones consistentes con tipos complejos como `Date`, `bigint`, `Set`, `Map`.
 
 ### 2.4 Ejemplo completo
 
 ```typescript
 @Quick(
 	{ name: 'string', role: 'string' },
-	{ audit: { enabled: true, maxEntries: 50 } }
+	{ history: { enabled: true, maxEntries: 50 } }
 )
 class Contract extends QModel<IContract> {
 	declare name: string;
@@ -77,16 +94,22 @@ contract.$qPatch({ name: 'v2', role: 'approved' });
 
 contract.$qHistory.value;
 // → [
-//   { field: 'role', from: 'draft',   to: 'review',   at: Date, method: 'patch' },
-//   { field: 'name', from: 'v1',      to: 'v2',        at: Date, method: 'patch' },
-//   { field: 'role', from: 'review',  to: 'approved',  at: Date, method: 'patch' },
+//   { method: 'patch', at: Date, changes: { role: { from: 'draft', to: 'review' } } },
+//   { method: 'patch', at: Date, changes: { name: { from: 'v1', to: 'v2' }, role: { from: 'review', to: 'approved' } } },
+// ]
+
+// Con recordMode: 'field' (una entrada por campo)
+// → [
+//   { method: 'patch', at: Date, changes: { role: { from: 'draft', to: 'review' } } },
+//   { method: 'patch', at: Date, changes: { name: { from: 'v1', to: 'v2' } } },
+//   { method: 'patch', at: Date, changes: { role: { from: 'review', to: 'approved' } } },
 // ]
 
 contract.$qHistory.isActive; // true
 contract.$qHistory.stop();
 contract.$qPatch({ name: 'v3' }); // ← no se graba (history pausado)
 
-contract.$qHistory.value.length; // sigue siendo 3
+contract.$qHistory.value.length; // sigue siendo 2
 contract.$qHistory.start();
 contract.$qPatch({ name: 'v4' }); // ← sí se graba
 ```
@@ -100,15 +123,20 @@ De menor a mayor prioridad (el nivel superior sobreescribe al inferior):
 ```typescript
 // Nivel 1 — Global (default: disabled)
 QConfig.configure({
-    audit: {
-        enabled: false,     // desactivado por defecto — zero overhead
+    history: {
+        enabled: false,      // desactivado por defecto — zero overhead
         maxEntries: 100,
+        recordMode: 'operation', // 'operation' | 'field'
     }
 });
 
 // Nivel 2 — Por clase (segundo parámetro de @Quick)
-@Quick({ name: 'string' }, { audit: { enabled: true, maxEntries: 50 } })
+@Quick({ name: 'string' }, { history: { enabled: true, maxEntries: 50 } })
 class Contract extends QModel<IContract> { ... }
+
+// Mediante recordMode: 'field' se obtiene granularidad por campo (equivalente al antiguo 'audit')
+@Quick({ name: 'string' }, { history: { enabled: true, recordMode: 'field' } })
+class ContractFine extends QModel<IContract> { ... }
 
 // Nivel 3 — Por instancia (runtime, mayor prioridad)
 contract.$qHistory.configure({ maxEntries: 20 });
@@ -120,12 +148,12 @@ La resolución de configuración sigue el patrón ya establecido por `per-class-
 
 ## 4. Garantía de zero overhead
 
-Cuando `audit.enabled` es `false` en todos los niveles (que es el default):
+Cuando `history.enabled` es `false` en todos los niveles (que es el default):
 
-- **`$qHistory`** retorna un `NullAuditHandle` — un objeto con los mismos métodos pero todos no-op.
-- **`patch()` / `copy()` / `populate()`** no ejecutan ningún código de audit en su ruta de ejecución.
-- **El array `IAuditEntry[]`** nunca se instancia.
-- **El bundle no crece** para quien no lo usa — la clase `AuditService` se importa de forma condicional en runtime, no en módulo top-level.
+- **`$qHistory`** retorna el `NULL_HISTORY_HANDLE` — singleton compartido con los mismos métodos pero todos no-op.
+- **`$qPatch()` / `$qCopy()` / `$qFrom()`** no capturan snapshots ni ejecutan código de history.
+- **El array `IQHistoryEntry[]`** nunca se instancia.
+- **El bundle no crece** para quien no lo usa.
 
 ```typescript
 // Internamente en QModel.patch() (pseudocódigo):
@@ -144,20 +172,19 @@ patch(partial: Partial<T>): this {
 
 ---
 
-## 5. Comportamiento del `NullAuditHandle`
+## 5. Comportamiento del `NULL_HISTORY_HANDLE`
 
 El handle siempre está disponible — nunca hay que hacer `if (instance.$qHistory)`:
 
 ```typescript
-// Cuando audit está desactivado:
+// Cuando history está desactivado:
 instance.$qHistory.value; // → [] (array vacío)
 instance.$qHistory.isActive; // → false
-instance.$qHistory.start(); // → no-op (no activa si no hay config)
+instance.$qHistory.recordMode; // → 'operation'
+instance.$qHistory.start(); // → no-op
 instance.$qHistory.stop(); // → no-op
 instance.$qHistory.clear(); // → no-op
-instance.$qHistory.configure({}); // → no-op (sin config no puede activarse)
-
-// Solo activa si se habilita a nivel global o de clase primero
+instance.$qHistory.configure({}); // → no-op
 ```
 
 Esto evita el patrón `if (instance.$qHistory?.isActive)` que sería necesario si el handle pudiera ser `undefined`.
@@ -178,7 +205,7 @@ Esto evita el patrón `if (instance.$qHistory?.isActive)` que sería necesario s
 ```typescript
 const v2 = contract.$qCopy({ role: 'published' });
 v2.$qHistory.value;
-// → [...entradas del contrato original, { field: 'role', from: 'approved', to: 'published', ... }]
+// → [...entradas del contrato original, { method: 'copy', at: Date, changes: { role: { from: 'approved', to: 'published' } } }]
 ```
 
 ---
@@ -207,108 +234,83 @@ contractA.$qDiff(contractB);
 
 ```typescript
 // Exportados desde 'quickmodel'
-export interface IAuditEntry {
-	field: string;
-	from: unknown;
-	to: unknown;
-	at: Date;
+export interface IQHistoryEntry {
 	method: 'patch' | 'copy' | 'populate';
+	at: Date;
+	changes: Readonly<
+		Record<string, { readonly from: unknown; readonly to: unknown }>
+	>;
 }
 
-export interface IAuditConfig {
-	enabled: boolean;
-	maxEntries?: number; // default: Infinity (sin límite)
+export interface IQHistoryConfig {
+	maxEntries?: number; // default: 500
+	recordMode?: 'operation' | 'field'; // default: 'operation'
 }
 
-export interface IAuditHandle {
-	readonly value: IAuditEntry[];
+export interface IQHistoryHandle {
+	readonly value: IQHistoryEntry[];
 	readonly isActive: boolean;
+	readonly recordMode: 'operation' | 'field';
 	start(): void;
 	stop(): void;
 	clear(): void;
-	configure(config: Partial<IAuditConfig>): void;
+	configure(config: Partial<IQHistoryConfig>): void;
 }
 ```
 
 ---
 
-## 9. Archivos a crear/modificar
+## 9. Archivos de la implementación
 
-### Archivos nuevos
+### Archivos de la implementación final
 
-| Archivo                                  | Contenido                                                |
-| ---------------------------------------- | -------------------------------------------------------- |
-| `src/core/services/audit.service.ts`     | `AuditService` + `NullAuditHandle` + `ActiveAuditHandle` |
-| `src/core/interfaces/audit.interface.ts` | `IAuditEntry`, `IAuditConfig`, `IAuditHandle`            |
-| `tests/unit/core/services/audit.test.ts` | ~25 tests                                                |
-| `docs-vitepress/en/guide/audit-trail.md` | Guía pública EN                                          |
-| `docs-vitepress/es/guide/audit-trail.md` | Guía pública ES                                          |
-
-### Archivos a modificar
-
-| Archivo                                  | Cambio                                                                                  |
-| ---------------------------------------- | --------------------------------------------------------------------------------------- |
-| `src/core/models/quick.model.ts`         | Exponer `$qHistory`; llamar a `AuditService` en `$qPatch()`, `$qCopy()`, `$qPopulate()` |
-| `src/core/config/quick.config.ts`        | Añadir `audit?: IAuditConfig` a `IQConfig`                                              |
-| `src/core/decorators/quick.decorator.ts` | Añadir `audit?: IAuditConfig` al segundo parámetro de `@Quick`                          |
-| `src/index.ts`                           | Exportar `IAuditEntry`, `IAuditConfig`, `IAuditHandle`                                  |
-| `src/types.ts`                           | Añadir tipos al barrel de tipos                                                         |
-| `docs-vitepress/.vitepress/config.ts`    | Añadir `audit-trail.md` al sidebar Advanced EN+ES                                       |
+| Archivo                                    | Contenido                                              |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `src/core/interfaces/history.interface.ts` | `IQHistoryEntry`, `IQHistoryConfig`, `IQHistoryHandle` |
+| `src/core/services/history.service.ts`     | `HistoryService` + `ActiveHistoryHandle`               |
+| `src/core/models/null-history-handle.ts`   | `NULL_HISTORY_HANDLE` (singleton no-op)                |
+| `tests/unit/core/services/history.test.ts` | 32 tests                                               |
 
 ---
 
-## 10. Plan de tests (TDD)
-
-Los tests se escriben **antes** de la implementación, siguiendo la metodología del proyecto.
+## 10. Tests
 
 ```
-audit.test.ts
-├── NullAuditHandle
-│   ├── value retorna [] cuando audit está desactivado
+history.test.ts
+├── NULL_HISTORY_HANDLE
+│   ├── value retorna [] cuando history está desactivado
 │   ├── isActive retorna false
-│   ├── start() es no-op (no activa sin config)
+│   ├── recordMode retorna 'operation'
+│   ├── start() es no-op
 │   ├── stop() es no-op
-│   ├── clear() es no-op
-│   └── configure() es no-op
+│   └── clear() es no-op
 │
-├── ActiveAuditHandle
-│   ├── graba entradas de patch() con campos que cambian
-│   ├── no graba campos que no cambian en patch()
+├── ActiveHistoryHandle (recordMode: 'operation')
+│   ├── graba una entrada por patch() con campos cambiados
+│   ├── no graba si no hay cambios
+│   ├── agrupa múltiples campos en una entrada
 │   ├── graba entradas de copy() en la nueva instancia
 │   ├── graba entradas de populate()
-│   ├── NO graba el constructor (carga inicial)
+│   ├── NO graba el constructor
 │   ├── stop() pausa la grabación
-│   ├── start() reanuda la grabación
+│   ├── start() reanuda
 │   ├── clear() vacía las entradas
-│   ├── configura maxEntries y descarta las más antiguas al superarlo
-│   └── serializa Date, bigint, Set, Map correctamente en from/to
+│   └── configura maxEntries y descarta las más antiguas
 │
-├── Configuración por niveles
-│   ├── global enabled=false → NullAuditHandle
-│   ├── global enabled=false + clase enabled=true → ActiveAuditHandle
-│   ├── clase maxEntries sobreescribe global maxEntries
-│   └── instancia configure() sobreescribe clase
+├── ActiveHistoryHandle (recordMode: 'field')
+│   ├── patch() con 2 campos emite 2 entradas
+│   ├── cada entrada tiene exactamente un campo en changes
+│   └── Date, bigint, Set, Map se serializan correctamente en from/to
 │
 └── Integración
-    ├── patch() no ejecuta código audit cuando handle es Null (performance)
+    ├── patch() no ejecuta código de history cuando handle es null (performance)
     ├── copy() hereda historial del origen
-    └── history.value no es mutable externamente (readonly array)
+    └── history.value no es mutable externamente
 ```
 
 ---
 
-## 11. Estimación de esfuerzo
+## 11. Estado final
 
-| Tarea                                                         | Estimación |
-| ------------------------------------------------------------- | ---------- |
-| `AuditService` + `NullAuditHandle` + `ActiveAuditHandle`      | 2h         |
-| Integración en `quick.model.ts` (`patch`, `copy`, `populate`) | 1h         |
-| Config: `IQConfig.audit` + `@Quick` segundo param             | 30min      |
-| Tests (~25)                                                   | 2h         |
-| Guía `audit-trail.md` EN+ES                                   | 1h         |
-| Sidebar + doc parity                                          | 15min      |
-| **Total estimado**                                            | **~7h**    |
-
-> ⚠️ Esta propuesta **debe implementarse junto con o después de** el prefijo `$q`
-> (ver [Q-NAMESPACE-REFACTOR.md](./Q-NAMESPACE-REFACTOR.md)), ya que
-> `$qHistory` es parte del contrato del handle `IQHandle`.
+Implementación completada y refactorizada el 2 de marzo de 2026.
+El sistema `history` unificado cubre todos los casos de uso documentados en esta propuesta.

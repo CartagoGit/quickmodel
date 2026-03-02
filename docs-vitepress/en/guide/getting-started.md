@@ -65,7 +65,7 @@ console.log(user.createdAt instanceof Date); // true!
 // 2. Serialization (Auto-formatting)
 const plain = user.$qSerialize();
 // {"createdAt": "2024-01-01T...", "tags": ["a", "b"], ...}
-// Use user.toJSON() to get a JSON string directly
+// Use user.$qToJSON() to get a JSON string, or JSON.stringify(user)
 ```
 
 ## Instantiation Methods

@@ -9,10 +9,10 @@
  * key; with the default `'operation'` mode all fields changed in one call are
  * grouped into a single entry.
  *
- * @see {@link IHistoryHandle} — the container that holds a list of these entries
- * @see {@link IHistoryConfig} — configuration that controls recording behaviour
+ * @see {@link IQHistoryHandle} — the container that holds a list of these entries
+ * @see {@link IQHistoryConfig} — configuration that controls recording behaviour
  */
-export interface IHistoryEntry {
+export interface IQHistoryEntry {
 	/** Which `QModel` operation caused the change. */
 	readonly method: 'patch' | 'copy' | 'populate';
 	/** UTC timestamp of the operation. */
@@ -34,9 +34,9 @@ export interface IHistoryEntry {
  *
  * Provided in `@Quick({}, { history })` or globally via `QConfig.configure({ history })`.
  *
- * @see {@link IHistoryHandle}
+ * @see {@link IQHistoryHandle}
  */
-export interface IHistoryConfig {
+export interface IQHistoryConfig {
 	/**
 	 * Maximum number of entries to retain per instance.
 	 * Oldest entries are dropped once this limit is exceeded.
@@ -80,12 +80,12 @@ export interface IHistoryConfig {
  * // → [{ method: 'patch', at: Date, changes: { name: { from: 'v1', to: 'v2' } } }]
  * ```
  *
- * @see {@link IHistoryEntry} — individual mutation record
- * @see {@link IHistoryConfig} — configuration options
+ * @see {@link IQHistoryEntry} — individual mutation record
+ * @see {@link IQHistoryConfig} — configuration options
  */
-export interface IHistoryHandle {
+export interface IQHistoryHandle {
 	/** Frozen array of all recorded mutation entries (oldest first). */
-	readonly value: IHistoryEntry[];
+	readonly value: IQHistoryEntry[];
 	/** `true` while recording is active. */
 	readonly isActive: boolean;
 	/** Recording granularity — `'operation'` (default) or `'field'`. */
@@ -97,5 +97,5 @@ export interface IHistoryHandle {
 	/** Clears all recorded entries. Does not affect `isActive`. */
 	clear(): void;
 	/** Applies runtime configuration overrides (e.g. adjust `maxEntries`). */
-	configure(config: Partial<IHistoryConfig>): void;
+	configure(config: Partial<IQHistoryConfig>): void;
 }

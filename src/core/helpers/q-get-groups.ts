@@ -1,11 +1,11 @@
 /**
- * @fileoverview `qGetGroups` — reads the distinct `@QGroup` names declared
+ * @fileoverview `$qGetGroups` — reads the distinct `@QGroup` names declared
  * on the properties of any class instance decorated with `@QRule` / `@QGroup`.
  *
  * Works on **any class** — no need to extend `QModel`.
  *
- * @see {@link qCheckRules} to run validation rules optionally filtered by group.
- * @see {@link qCheckRulesByGroup} to get per-group `IQRulesResult` maps.
+ * @see {@link $qCheckRules} to run validation rules optionally filtered by group.
+ * @see {@link $qCheckRulesByGroup} to get per-group `IQRulesResult` maps.
  * @module
  */
 
@@ -27,13 +27,13 @@ import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
  *                   Does not need to extend `QModel`.
  * @returns Sorted array of distinct group names. Empty array when no `@QGroup`
  *          annotations are present.
- * @see {@link qCheckRulesByGroup} — validate rules group by group using the names returned here
+ * @see {@link $qCheckRulesByGroup} — validate rules group by group using the names returned here
  * @see {@link QGroup} — property decorator that registers a group name
- * @see {@link qCheckRules} — run all validation rules without grouping
+ * @see {@link $qCheckRules} — run all validation rules without grouping
  *
  * @example
  * ```ts
- * const Groups = qGroups('identity', 'security');
+ * const Groups = $qGroups('identity', 'security');
  *
  * class ProfileForm {
  *   @QRule((v: string) => v.length >= 2, 'Too short')
@@ -50,7 +50,7 @@ import { QGROUP_METADATA_KEY } from '@/core/decorators/qgroup.decorator';
  * }
  *
  * const form = new ProfileForm();
- * qGetGroups(form); // ['identity', 'security']
+ * $qGetGroups(form); // ['identity', 'security']
  * ```
  */
 export function $qGetGroups(instance: object): string[] {
