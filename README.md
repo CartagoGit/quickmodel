@@ -2,6 +2,12 @@
   <img src="./assets/quickmodel.png" alt="QuickModel Logo" width="120" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);" />
 </div>
 
+> [!IMPORTANT]
+> **Pre-release / active development**
+>
+> This project is not published to npm yet. The public API and installation
+> process may change before the first stable release.
+
 # quickmodel
 
 TypeScript model system with automatic type transformation and SOLID architecture.
@@ -30,12 +36,24 @@ TypeScript model system with automatic type transformation and SOLID architectur
 - 🧪 **Well Tested** - 3300+ tests covering all features
 - 🏷️ **TC39 Decorator Support** - Works with both legacy (`experimentalDecorators: true`) and TC39 standard decorators (TypeScript 5+ default mode)
 
+## Development status
+
+QuickModel is currently in pre-release development and is not available on npm yet.
+
+### Run locally
+
+````bash
+git clone https://github.com/CartagoGit/quickmodel.git
+cd quickmodel
+bun install
+bun test
+
 ## 📦 Installation
 
 ```bash
 npm install quickmodel
 # or: yarn add / pnpm add / bun add
-```
+````
 
 ## 🚀 Quick Start
 
