@@ -244,7 +244,7 @@
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.54.0",
 		"valibot": "^1.2.0",
-		"vest": "^5.4.6",
+		"vest": "^6.3.2",
 		"vitepress": "^1.6.4",
 		"yup": "^1.7.1"
 	},
