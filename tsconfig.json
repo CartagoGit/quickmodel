@@ -5,7 +5,7 @@
 		"module": "ESNext",
 		"lib": ["ES2022"],
 		"types": ["bun", "node"],
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 
 		// Decoradores (REQUERIDO para el sistema)
 		"experimentalDecorators": true,
@@ -18,13 +18,12 @@
 		"sourceMap": true,
 		"outDir": "./dist",
 		"rootDir": "./src",
-		// TypeScript 7 eliminó `baseUrl`; los paths requieren prefijo './' relativo al tsconfig.
-		// Usamos `moduleResolution: "bundler"` (Bun lo soporta nativamente).
+		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"],
-			"@tests/*": ["./tests/*"],
-			"@mcp/*": ["./src/mcp/*"],
-			"@scripts/*": ["./scripts/*"]
+			"@/*": ["src/*"],
+			"@tests/*": ["tests/*"],
+			"@mcp/*": ["src/mcp/*"],
+			"@scripts/*": ["scripts/*"]
 		},
 
 		// Interoperabilidad
