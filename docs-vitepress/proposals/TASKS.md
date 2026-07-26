@@ -453,50 +453,73 @@ bunx quickmodel generate integration prisma
 
 **Prioridad:** 🟠 Alta (técnica)
 **Impacto:** Medio — alinea con el ecosistema 2026 y elimina deuda de mantenimiento
-**Esfuerzo:** 6–10 h distribuidas en 6 PRs independientes
-**Rama:** `chore/update-majors` (en develop, 7 commits, pendiente de merge)
+**Esfuerzo:** ~2 h realizadas (toolchain estabilizado) + trabajo futuro cuando el ecosistema se actualice
+**Rama:** `chore/update-majors` (en origin, trabajo parcial completado)
+**Estado:** ⏸️ Toolchain estabilizado — majors no viables quedan diferidos
 
 #### Contexto
 
-El 26 de julio de 2026, dependabot abrió 6 PRs de bumps de major. Tras verificar el [GitHub Advisory Database](https://github.com/advisories), **ninguno aporta valor de seguridad** (0 CVEs abiertos en versiones actuales). Se mergearon a la rama `chore/update-majors` para diagnosticar empíricamente qué falla antes de comprometer main.
+El 26 de julio de 2026, dependabot abrió 6 PRs de bumps de major. Tras verificar el [GitHub Advisory Database](https://github.com/advisories), **ninguno aporta valor de seguridad** (0 CVEs abiertos en versiones actuales). Se mergeó a la rama `chore/update-majors` y se diagnosticó empíricamente qué falla.
 
-#### Diagnóstico (con la rama aplicada)
+#### Hallazgos del diagnóstico empírico (26 Jul 2026)
 
-| #   | Paquete                   | Salto               | Estado al mergear  | Trabajo pendiente                                                                                                                                                                                                                                                                             |
-| --- | ------------------------- | ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **typescript**            | 5.9.3 → **7.0.2**   | ❌ **Roto**        | `tsc --noEmit` falla con `TS5108` y `TS5090`. TS7 eliminó `moduleResolution: "node10"` y `baseUrl` sin `./`. **Migrar `tsconfig.json`** a `moduleResolution: "bundler"` o `"node16"`, prefijar paths con `./`. Validar todos los `tsconfig.*.json` (`tests/`, `scripts/`, `docs-vitepress/`). |
-| 2   | **eslint**                | 9.39.5 → **10.8.0** | ❌ **Roto**        | `Cannot read properties of undefined (reading 'Cjs')` en `@typescript-eslint/typescript-estree`. ESLint 10 eliminó soporte de `.eslintrc.js` y el plugin TS-ESLint 8.x no es compatible. **Migrar `eslint.config.mjs`** a flat config + bump a `@typescript-eslint/*@9` (peer de ESLint 10).  |
-| 3   | **@types/node**           | 25.2.1 → **26.1.1** | ⚠️ **Riesgoso**    | TS7 referencia tipos de Node 26. Si el repo declara soportar Node <22 LTS, **actualizar `engines.node`** y revisar `tests/` que mockean APIs.                                                                                                                                                 |
-| 4   | **@semantic-release/git** | 10.0.1 → **11.0.1** | ✅ **OK probable** | Cambia internals (execa 10, micromatch 4). **Probar `bun run release:check` localmente** antes de aceptar.                                                                                                                                                                                    |
-| 5   | **lint-staged**           | 16.4.0 → **17.2.0** | ⚠️ **Riesgoso**    | Requiere Node ≥20. **Validar `.husky/pre-commit`** y la salida de `lint-staged --diff`.                                                                                                                                                                                                       |
-| 6   | **vest**                  | 5.4.6 → **6.3.2**   | ⚠️ **Breaking**    | Cambia API de `class`/`group`. **Adaptar adapters de `vest` en `src/transformers/`** y añadir shim de compat si queremos mantener API pública estable.                                                                                                                                        |
+La combinación completa de majors propuesta por dependabot **no es viable** porque el ecosistema no está alineado:
 
-#### Orden de ataque recomendado
+| Majors propuestos                         | Estado real | Razón                                                                                                                                    |
+| ----------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| typescript 5.9.3 → **7.0.2**              | ❌ **Roto** | `typescript-eslint@8.65` rechaza TS7 explícitamente: _"typescript-eslint does not support TS 7.0"_. No existe `typescript-eslint@9` aún. |
+| typescript 5.9.3 → **6.0.3**              | ❌ **Roto** | TS6.0.3 tiene un typo en `lib.dom.d.ts` (`0x000tfff00001` con una `t` extra) que lo hace no parseable. La 6.0.2 también.                 |
+| eslint 9.39.5 → **10.8.0**                | ❌ **Roto** | ESLint 10 elimina `.eslintrc.js` y no tiene peer compatible con `typescript-eslint@8`.                                                   |
+| @types/node 25.2.1 → **26.1.1**           | ❌ **Roto** | Requiere TS ≥6.5; incompatible con TS5.9.3 y con TS6.0.3.                                                                                |
+| @semantic-release/git 10.0.1 → **11.0.1** | ✅ **OK**   | Sin conflictos de peer deps.                                                                                                             |
+| lint-staged 16.4.0 → **17.2.0**           | ✅ **OK**   | Requiere Node ≥20. Validado.                                                                                                             |
+| vest 5.4.6 → **6.3.2**                    | ✅ **OK**   | No se usa en `src/`, solo en benchmarks.                                                                                                 |
+
+#### Trabajo realizado en `chore/update-majors` (commits)
+
+- `c9216d4` W.1 (revertido): migración a TS7 — era válido pero dejó el repo en estado roto por las incompatibilidades posteriores.
+- `159353b` Propuesta W inicial — análisis optimista previo al diagnóstico empírico.
+- `648ecbd`–`ede8bc5` (×6) Bumps de majors de dependabot mergeados.
+- `2aa67cf` **Estabilización**: pin del toolchain a la última combinación viable (TS5.9.3 + ESLint 9.39.5 + @types/node 24.13.3 + @typescript-eslint 8.54.0) y conservación de los majors sin conflictos (@semantic-release/git 11, lint-staged 17, vest 6, @commitlint 21, class-validator 0.15, eslint-plugin-security 4).
+
+**Validación del commit `2aa67cf`:**
+
+- `tsc --noEmit` (6 tsconfigs) → 0 errores
+- `bun run lint` → 0 errores, 0 warnings
+- 414 transformers + 43 decorators + 57 collections + 1130 core tests → todos pasan
+
+#### Trabajo pendiente (cuando el ecosistema esté listo)
 
 ```
-W.1  Migrar tsconfig.json a TS7 (paths con ./, moduleResolution: bundler)      [1-2 h]
-W.2  Bump @typescript-eslint/*@9 + migrar eslint.config.mjs a flat config     [2-3 h]
-W.3  Verificar vest@6 + adaptar adapters                                     [1-2 h]
-W.4  Bump lint-staged@17 + validar .husky/ pre-commit                         [30 min]
-W.5  Bump @semantic-release/git@11 + dry-run release                          [30 min]
-W.6  Bump @types/node@26 + actualizar engines.node                            [30 min]
-```
+W.A  Cuando se publique typescript-eslint@9:
+      - Bump typescript a 7.x
+      - Bump eslint a 10.x
+      - Bumpear @typescript-eslint/*@9
+      - Aplicar reglas nuevas (ej. no-unnecessary-type-assertion) y corregir
+        las 291 ocurrencias en src/ y tests/.
 
-Cada W.x debe ser un **PR independiente** con su test suite pasando. No mergear todo de golpe.
+W.B  Cuando TS7 sea adoptable:
+      - W.1 ya está hecho (tsconfig.json migrado a paths con ./).
+      - Aplicarlo de nuevo ahora que el resto está alineado.
+
+W.C  Cuando se publique @types/node@26 (o >) compatible con TS5.9.3:
+      - Bump @types/node a la última 24.x o esperar a 26.x con TS7.
+```
 
 #### Cómo retomar el trabajo
 
 ```bash
 git fetch origin
 git checkout chore/update-majors
-git log --oneline develop..chore/update-majors  # 7 commits pendientes
-bun install                                       # regenera lockfile
-bunx tsc --noEmit -p tsconfig.json               # diagnóstico actual
+git log --oneline  # ver el historial de estabilización
+bun install        # regenera lockfile
+bunx tsc --noEmit -p tsconfig.json  # debe pasar limpio
+bun run lint                          # debe pasar limpio
 ```
 
 #### Estado de los PRs originales
 
-Las 6 ramas `origin/dependabot/npm_and_yarn/*` y sus 6 PRs se cerraron con comentario enlazando a esta propuesta. Se borraron del remoto tras mergear esta rama.
+Las 6 ramas `origin/dependabot/npm_and_yarn/*` y sus 6 PRs se cerraron con comentario enlazando a esta propuesta. Se borraron del remoto.
 
 ## 📊 Resumen priorizado de propuestas
 
