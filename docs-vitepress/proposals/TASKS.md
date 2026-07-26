@@ -1,6 +1,6 @@
 # QuickModel - Tareas Pendientes y Propuestas
 
-> **Fecha de revisión:** 26 de julio de 2026 (actualizado)
+> **Fecha de revisión:** 1 de marzo de 2026 (actualizado)
 > **Metodología:** TDD - Test-Driven Development (SIEMPRE test primero)
 > **Estado actual:** 4358+ tests passing | Cobertura >97% líneas | v1.0.0 | 38 guías EN+ES
 
@@ -449,82 +449,32 @@ bunx quickmodel generate integration prisma
 
 ---
 
-### 🆕 Propuesta W — Actualizar majors de devDependencies _(Rama `chore/update-majors`)_
-
-**Prioridad:** 🟠 Alta (técnica)
-**Impacto:** Medio — alinea con el ecosistema 2026 y elimina deuda de mantenimiento
-**Esfuerzo:** 6–10 h distribuidas en 6 PRs independientes
-**Rama:** `chore/update-majors` (en develop, 7 commits, pendiente de merge)
-
-#### Contexto
-
-El 26 de julio de 2026, dependabot abrió 6 PRs de bumps de major. Tras verificar el [GitHub Advisory Database](https://github.com/advisories), **ninguno aporta valor de seguridad** (0 CVEs abiertos en versiones actuales). Se mergearon a la rama `chore/update-majors` para diagnosticar empíricamente qué falla antes de comprometer main.
-
-#### Diagnóstico (con la rama aplicada)
-
-| #   | Paquete                   | Salto               | Estado al mergear  | Trabajo pendiente                                                                                                                                                                                                                                                                             |
-| --- | ------------------------- | ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **typescript**            | 5.9.3 → **7.0.2**   | ❌ **Roto**        | `tsc --noEmit` falla con `TS5108` y `TS5090`. TS7 eliminó `moduleResolution: "node10"` y `baseUrl` sin `./`. **Migrar `tsconfig.json`** a `moduleResolution: "bundler"` o `"node16"`, prefijar paths con `./`. Validar todos los `tsconfig.*.json` (`tests/`, `scripts/`, `docs-vitepress/`). |
-| 2   | **eslint**                | 9.39.5 → **10.8.0** | ❌ **Roto**        | `Cannot read properties of undefined (reading 'Cjs')` en `@typescript-eslint/typescript-estree`. ESLint 10 eliminó soporte de `.eslintrc.js` y el plugin TS-ESLint 8.x no es compatible. **Migrar `eslint.config.mjs`** a flat config + bump a `@typescript-eslint/*@9` (peer de ESLint 10).  |
-| 3   | **@types/node**           | 25.2.1 → **26.1.1** | ⚠️ **Riesgoso**    | TS7 referencia tipos de Node 26. Si el repo declara soportar Node <22 LTS, **actualizar `engines.node`** y revisar `tests/` que mockean APIs.                                                                                                                                                 |
-| 4   | **@semantic-release/git** | 10.0.1 → **11.0.1** | ✅ **OK probable** | Cambia internals (execa 10, micromatch 4). **Probar `bun run release:check` localmente** antes de aceptar.                                                                                                                                                                                    |
-| 5   | **lint-staged**           | 16.4.0 → **17.2.0** | ⚠️ **Riesgoso**    | Requiere Node ≥20. **Validar `.husky/pre-commit`** y la salida de `lint-staged --diff`.                                                                                                                                                                                                       |
-| 6   | **vest**                  | 5.4.6 → **6.3.2**   | ⚠️ **Breaking**    | Cambia API de `class`/`group`. **Adaptar adapters de `vest` en `src/transformers/`** y añadir shim de compat si queremos mantener API pública estable.                                                                                                                                        |
-
-#### Orden de ataque recomendado
-
-```
-W.1  Migrar tsconfig.json a TS7 (paths con ./, moduleResolution: bundler)      [1-2 h]
-W.2  Bump @typescript-eslint/*@9 + migrar eslint.config.mjs a flat config     [2-3 h]
-W.3  Verificar vest@6 + adaptar adapters                                     [1-2 h]
-W.4  Bump lint-staged@17 + validar .husky/ pre-commit                         [30 min]
-W.5  Bump @semantic-release/git@11 + dry-run release                          [30 min]
-W.6  Bump @types/node@26 + actualizar engines.node                            [30 min]
-```
-
-Cada W.x debe ser un **PR independiente** con su test suite pasando. No mergear todo de golpe.
-
-#### Cómo retomar el trabajo
-
-```bash
-git fetch origin
-git checkout chore/update-majors
-git log --oneline develop..chore/update-majors  # 7 commits pendientes
-bun install                                       # regenera lockfile
-bunx tsc --noEmit -p tsconfig.json               # diagnóstico actual
-```
-
-#### Estado de los PRs originales
-
-Las 6 ramas `origin/dependabot/npm_and_yarn/*` y sus 6 PRs se cerraron con comentario enlazando a esta propuesta. Se borraron del remoto tras mergear esta rama.
-
 ## 📊 Resumen priorizado de propuestas
 
-| Prop  | Nombre                                                                     | Prioridad     | Esfuerzo | Impacto    | Relación con existente                             |
-| ----- | -------------------------------------------------------------------------- | ------------- | -------- | ---------- | -------------------------------------------------- |
-| ~~A~~ | ~~`@QSensitive`~~                                                          | ✅ Completada | —        | —          | qsensitive.decorator.ts — 2026                     |
-| ~~B~~ | ~~`QModel.diff()` + `equals()`~~                                           | ✅ Completada | —        | —          | quick.model.ts:3031 — 1 Mar 2026                   |
-| ~~C~~ | ~~`getSchema('valibot'/'yup')`~~                                           | ✅ Completada | —        | —          | valibot/yup generators — 2026                      |
-| ~~D~~ | ~~`QModelCollection<T>`~~                                                  | ✅ Completada | —        | —          | quick-collection.model.ts — 2026                   |
-| ~~M~~ | ~~`QModel.patch()`~~                                                       | ✅ Completada | —        | —          | quick.model.ts:2886 — 1 Mar 2026                   |
-| ~~O~~ | ~~`validate()` unificado~~                                                 | ✅ Completada | —        | —          | quick.model.ts:2159 — 1 Mar 2026                   |
-| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada | —        | —          | generate.command.ts — 2026                         |
-| ~~S~~ | ~~`getSchema('prisma')`~~                                                  | ✅ Completada | —        | —          | prisma-schema-generator — 2026                     |
-| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada | —        | —          | Task #58 — 28 Feb 2026                             |
-| ~~T~~ | ~~`QModel.fromURL(searchParams)`~~                                         | ✅ Completada | —        | —          | quick.model.ts:700 — 1 Mar 2026                    |
-| ~~N~~ | ~~`@QVersion` + migrations~~                                               | ✅ Completada | —        | —          | qversion.decorator.ts — 1 Mar 2026                 |
-| ~~E~~ | ~~I18n mensajes~~                                                          | ✅ Completada | —        | —          | i18n resolver en QConfig — 1 Mar 2026              |
-| ~~U~~ | ~~`QModelCollection.toCSV()`~~                                             | ✅ Completada | —        | —          | quick-collection.model.ts — 1 Mar 2026             |
-| ~~F~~ | ~~`@QDefault`~~                                                            | ✅ Completada | —        | —          | qdefault.decorator.ts — 1 Mar 2026                 |
-| ~~P~~ | ~~`@QReadonly`~~                                                           | ✅ Completada | —        | —          | qreadonly.decorator.ts — 1 Mar 2026                |
-| ~~H~~ | ~~`@QTransform` pipeline~~                                                 | ✅ Completada | —        | —          | qtransform.decorator.ts — 1 Mar 2026               |
-| ~~Q~~ | ~~Config per-class `QModel.configure()`~~                                  | ✅ Completada | —        | —          | quick.model.ts — 1 Mar 2026                        |
-| ~~V~~ | ~~`getSchema('effect-schema')`~~                                           | ✅ Completada | —        | —          | effect-schema-generator — 1 Mar 2026               |
-| ~~J~~ | ~~`getSchema('drizzle'/'typebox')`~~                                       | ✅ Completada | —        | —          | drizzle/typebox generators — 1 Mar 2026            |
-| ~~L~~ | ~~Guía WebSocket / SSE~~                                                   | ✅ Completada | —        | —          | websocket-sse.md EN+ES — 1 Mar 2026                |
-| ~~I~~ | ~~`$qHistory` / History Trail~~                                            | ✅ Completada | —        | —          | history.service.ts — 2 Mar 2026                    |
-| K     | Plugin system                                                              | ⚠️ Diferida   | 3-4h     | Bajo ahora | Prematuro sin ecosistema                           |
-| W     | Majors devDependencies (TS7/ESLint10/Node26/...)                           | 🆕 Nueva      | 6-10h    | Medio      | Rama `chore/update-majors` lista — ver propuesta W |
+| Prop  | Nombre                                                                     | Prioridad     | Esfuerzo | Impacto    | Relación con existente                  |
+| ----- | -------------------------------------------------------------------------- | ------------- | -------- | ---------- | --------------------------------------- |
+| ~~A~~ | ~~`@QSensitive`~~                                                          | ✅ Completada | —        | —          | qsensitive.decorator.ts — 2026          |
+| ~~B~~ | ~~`QModel.diff()` + `equals()`~~                                           | ✅ Completada | —        | —          | quick.model.ts:3031 — 1 Mar 2026        |
+| ~~C~~ | ~~`getSchema('valibot'/'yup')`~~                                           | ✅ Completada | —        | —          | valibot/yup generators — 2026           |
+| ~~D~~ | ~~`QModelCollection<T>`~~                                                  | ✅ Completada | —        | —          | quick-collection.model.ts — 2026        |
+| ~~M~~ | ~~`QModel.patch()`~~                                                       | ✅ Completada | —        | —          | quick.model.ts:2886 — 1 Mar 2026        |
+| ~~O~~ | ~~`validate()` unificado~~                                                 | ✅ Completada | —        | —          | quick.model.ts:2159 — 1 Mar 2026        |
+| ~~R~~ | ~~CLI `generate` subcommand~~                                              | ✅ Completada | —        | —          | generate.command.ts — 2026              |
+| ~~S~~ | ~~`getSchema('prisma')`~~                                                  | ✅ Completada | —        | —          | prisma-schema-generator — 2026          |
+| ~~G~~ | ~~`fromFormData()` + `toFormData()` + streaming + Blob/File transformers~~ | ✅ Completada | —        | —          | Task #58 — 28 Feb 2026                  |
+| ~~T~~ | ~~`QModel.fromURL(searchParams)`~~                                         | ✅ Completada | —        | —          | quick.model.ts:700 — 1 Mar 2026         |
+| ~~N~~ | ~~`@QVersion` + migrations~~                                               | ✅ Completada | —        | —          | qversion.decorator.ts — 1 Mar 2026      |
+| ~~E~~ | ~~I18n mensajes~~                                                          | ✅ Completada | —        | —          | i18n resolver en QConfig — 1 Mar 2026   |
+| ~~U~~ | ~~`QModelCollection.toCSV()`~~                                             | ✅ Completada | —        | —          | quick-collection.model.ts — 1 Mar 2026  |
+| ~~F~~ | ~~`@QDefault`~~                                                            | ✅ Completada | —        | —          | qdefault.decorator.ts — 1 Mar 2026      |
+| ~~P~~ | ~~`@QReadonly`~~                                                           | ✅ Completada | —        | —          | qreadonly.decorator.ts — 1 Mar 2026     |
+| ~~H~~ | ~~`@QTransform` pipeline~~                                                 | ✅ Completada | —        | —          | qtransform.decorator.ts — 1 Mar 2026    |
+| ~~Q~~ | ~~Config per-class `QModel.configure()`~~                                  | ✅ Completada | —        | —          | quick.model.ts — 1 Mar 2026             |
+| ~~V~~ | ~~`getSchema('effect-schema')`~~                                           | ✅ Completada | —        | —          | effect-schema-generator — 1 Mar 2026    |
+| ~~J~~ | ~~`getSchema('drizzle'/'typebox')`~~                                       | ✅ Completada | —        | —          | drizzle/typebox generators — 1 Mar 2026 |
+| ~~L~~ | ~~Guía WebSocket / SSE~~                                                   | ✅ Completada | —        | —          | websocket-sse.md EN+ES — 1 Mar 2026     |
+| ~~I~~ | ~~`$qHistory` / History Trail~~                                            | ✅ Completada | —        | —          | history.service.ts — 2 Mar 2026         |
+| K     | Plugin system                                                              | ⚠️ Diferida   | 3-4h     | Bajo ahora | Prematuro sin ecosistema                |
 
 **Sprint v2.0 (I):** ✅ Completado — 2 Mar 2026
 **Diferidas indefinidamente (K):** ~3-4h — revisar cuando haya ecosistema
