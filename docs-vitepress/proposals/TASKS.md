@@ -19,71 +19,71 @@
 
 ## ✅ Historial de tareas completadas
 
-| #   | Tarea                                                                                | Commit / Detalle          |
+| # | Tarea | Commit / Detalle |
 | --- | ------------------------------------------------------------------------------------ | ------------------------- | --- | --- | -------------------------------------------------------------------- | ---------- |
-| 1   | Remover `console.log` de producción                                                  | `2be2df2`                 |
-| 2   | MCP tools coverage 50% → 80%                                                         | `5e80d64`                 |
-| 2.5 | Schema Generation API — 7 formatos                                                   | `b9bb875`                 |
-| 3   | Composed transformers — edge cases                                                   | `1c44266` +15 tests       |
-| 4   | WeakMap/WeakSet transformers                                                         | +14 tests                 |
-| 5   | MCP Prompts/Skills documentados EN+ES                                                | `4457821`                 |
-| 6   | `excludeFields` en `@Quick()` — serialización permanente                             | `6de834f` +9 tests        |
-| 7   | Error path coverage MCP public tools                                                 | `d698566` 1578→1602 tests |
-| 8   | Refactor sidebar `buildMcpSidebar` helper                                            | `55e2a59`                 |
-| 9   | Console.log DEBUG eliminados de `config.ts`, imports huérfanos                       | —                         |
-| 10  | Docs `excludeFields` + `omit`/`pick` EN+ES                                           | —                         |
-| 11  | Truncar `safeStringify` a 500 chars — prevención info-leak                           | —                         |
-| 12  | Warning activo cuando `disableSafetyChecks` está habilitado                          | —                         |
-| 13  | Script `release:check` en `package.json`                                             | —                         |
-| 14  | Tests negativos `JsonSchemaGenerator` con tipos sin transformer                      | ✅ COMPLETADA             |
-| 15  | Tests específicos para `disableSafetyChecks`                                         | —                         |
-| 16  | Tests de `transformCase` con herencia multinivel                                     | —                         |
-| 17  | Performance benchmarks comparativos (Zod + PlainJS) + gráfica landing                | 23 Feb 2026               |
-| 18  | `@QComputed()` / `exposeComputedFields` — computed props serialización               | —                         |
-| 19  | `QTransformerRegistry.snapshot()/restore()`                                          | —                         |
-| 20  | `@QRule` async predicados                                                            | `a714b2e`                 |
-| 21  | Guía integración NestJS                                                              | —                         |
-| 22  | ~~Deprecation warning `unknownPropertyPolicy` + docs `:::warning` v2.0.0~~           | descartado                |
-| 23  | `copy()` + `isDirty(field?)` — estado mutable                                        | `a8089a7`                 |
-| 24  | `@QRule` decorator + `checkRules()`                                                  | `8a2910b`                 |
-| 25  | `hasIntegrity()` + `isValid()` — convenience shortcuts                               | `cd30a8b`                 |
-| 26  | `createMany()` — batch creation con validación                                       | `3faf88b`                 |
-| 27  | `@QField` + `validationReport()` + `getFormSchema()`                                 | `00d56c7`                 |
-| 28  | `QModel.extends()` — simplificación de generics                                      | `4ff1d55`                 |
-| 29  | `@QAlias` + `@QGroup` — alias y agrupación                                           | `a714b2e`                 |
-| 30  | `createReadonly()` refactor + async `checkRules()`                                   | `05bcb8c`                 |
-| 31  | Docs nuevas features Feb 2026 — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()`   | —                         |
-| 32  | `checkRulesAsync` — timeout, modo serial/paralelo, `IQRule<T>` genérico              | 22 Feb 2026               |
-| 33  | Módulo `./forms` — `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup`           | 22 Feb 2026               |
-| 34  | Angular integration patterns                                                         | 37 tests, guías EN+ES     |
-| 35  | React/Next.js integration patterns                                                   | 31 tests, guías EN+ES     |
-| 36  | Vue 3/Nuxt integration patterns                                                      | 27 tests, guías EN+ES     |
-| 37  | Svelte 5/SvelteKit integration patterns                                              | 21 tests, guías EN+ES     |
-| 38  | Express/Fastify/Hono backend patterns                                                | 25 tests, guías EN+ES     |
-| 39  | TanStack Query — `queryFn`, mutaciones, optimistic updates con `copy()`              | guías EN+ES               |
-| 40  | tRPC — DTOs, middleware, `checkRulesAsync` en procedures                             | 30 tests, guías EN+ES     |
-| 41  | Prisma ORM — repositorio, transformación de tipos                                    | 32 tests, guías EN+ES     |
-| 42  | Formik + migración desde Zod/Yup                                                     | 26 tests, guías EN+ES     |
-| 43  | Mobile — React Native/Expo, Capacitor, Cordova, Ionic                                | 33 tests, guías EN+ES     |
-| 44  | React Hook Form — `validate` adapter, esquemas dinámicos                             | guías EN+ES               |
-| 45  | Zustand — store con `copy()` inmutable, compat `devtools`/`immer`                    | guías EN+ES               |
-| 46  | MSW (Mock Service Worker) — `generate_mock` + `HttpResponse`                         | guías EN+ES               |
-| 47  | Redux Toolkit (RTK) — `createSlice`, async thunks                                    | 27 tests, guías EN+ES     |
-| 49  | Vitest Custom Matchers — `toBeValidQModel`, `toHaveQRuleError`, etc.                 | ~20 tests, guías EN+ES    |
-| 50  | TypeORM — Entity/DTO separation, repositorio                                         | guías EN+ES               |
-| 51  | GraphQL / Apollo Server — resolver tipado, `@QComputed`                              | guías EN+ES               |
-| 52  | OpenAPI / Swagger — `getSchema('json')` auto-doc                                     | guías EN+ES               |
-| 53  | Electron IPC — `serialize()`/`populate()` cross-context                              | guías EN+ES               |
-| 54  | Mongoose — ODM MongoDB, `ObjectId` coerción                                          | guías EN+ES               |
-| 55  | Storage & Persistence — localStorage, IndexedDB, SQLite                              | 39 tests, guías EN+ES     |
-| 56  | Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 | 23 Feb 2026               |
-| 57  | Test Runners — Jest, Jasmine, Mocha/Chai, Node:test, AVA                             | 147 tests, guías EN+ES    |
-| 58  | `fromFormData()` + `toFormData()` + `toReadableStream()` + Blob/File transformers    | 28 Feb 2026               |
-| 48  | Drizzle ORM integration patterns — 35 tests, guía EN+ES, skill MCP                   | 1 Mar 2026                |     | O   | `validate()` método unificado — overloads sync/async, soporte groups | 1 Mar 2026 |
-| B   | `QModel.diff(other)` — before/after por campo; `equals()` boolean                    | 1 Mar 2026                |
-| M   | `QModel.patch(partial)` — mutación in-place con dirty tracking                       | 1 Mar 2026                |
-| C   | `getSchema('valibot')` + `getSchema('yup')` — 2 nuevos generadores                   | 1 Mar 2026                |
-| S   | `getSchema('prisma')` — Prisma model block desde metadatos QModel                    | 1 Mar 2026                |
+| 1 | Remover `console.log` de producción | `2be2df2` |
+| 2 | MCP tools coverage 50% → 80% | `5e80d64` |
+| 2.5 | Schema Generation API — 7 formatos | `b9bb875` |
+| 3 | Composed transformers — edge cases | `1c44266` +15 tests |
+| 4 | WeakMap/WeakSet transformers | +14 tests |
+| 5 | MCP Prompts/Skills documentados EN+ES | `4457821` |
+| 6 | `excludeFields` en `@Quick()` — serialización permanente | `6de834f` +9 tests |
+| 7 | Error path coverage MCP public tools | `d698566` 1578→1602 tests |
+| 8 | Refactor sidebar `buildMcpSidebar` helper | `55e2a59` |
+| 9 | Console.log DEBUG eliminados de `config.ts`, imports huérfanos | — |
+| 10 | Docs `excludeFields` + `omit`/`pick` EN+ES | — |
+| 11 | Truncar `safeStringify` a 500 chars — prevención info-leak | — |
+| 12 | Warning activo cuando `disableSafetyChecks` está habilitado | — |
+| 13 | Script `release:check` en `package.json` | — |
+| 14 | Tests negativos `JsonSchemaGenerator` con tipos sin transformer | ✅ COMPLETADA |
+| 15 | Tests específicos para `disableSafetyChecks` | — |
+| 16 | Tests de `transformCase` con herencia multinivel | — |
+| 17 | Performance benchmarks comparativos (Zod + PlainJS) + gráfica landing | 23 Feb 2026 |
+| 18 | `@QComputed()` / `exposeComputedFields` — computed props serialización | — |
+| 19 | `QTransformerRegistry.snapshot()/restore()` | — |
+| 20 | `@QRule` async predicados | `a714b2e` |
+| 21 | Guía integración NestJS | — |
+| 22 | ~~Deprecation warning `unknownPropertyPolicy` + docs `:::warning` v2.0.0~~ | descartado |
+| 23 | `copy()` + `isDirty(field?)` — estado mutable | `a8089a7` |
+| 24 | `@QRule` decorator + `checkRules()` | `8a2910b` |
+| 25 | `hasIntegrity()` + `isValid()` — convenience shortcuts | `cd30a8b` |
+| 26 | `createMany()` — batch creation con validación | `3faf88b` |
+| 27 | `@QField` + `validationReport()` + `getFormSchema()` | `00d56c7` |
+| 28 | `QModel.extends()` — simplificación de generics | `4ff1d55` |
+| 29 | `@QAlias` + `@QGroup` — alias y agrupación | `a714b2e` |
+| 30 | `createReadonly()` refactor + async `checkRules()` | `05bcb8c` |
+| 31 | Docs nuevas features Feb 2026 — `@QAlias`, `@QGroup`, `@QField`, `getFormSchema()` | — |
+| 32 | `checkRulesAsync` — timeout, modo serial/paralelo, `IQRule<T>` genérico | 22 Feb 2026 |
+| 33 | Módulo `./forms` — `qCheckRules`, `qCheckRulesAsync`, `qCheckRulesByGroup` | 22 Feb 2026 |
+| 34 | Angular integration patterns | 37 tests, guías EN+ES |
+| 35 | React/Next.js integration patterns | 31 tests, guías EN+ES |
+| 36 | Vue 3/Nuxt integration patterns | 27 tests, guías EN+ES |
+| 37 | Svelte 5/SvelteKit integration patterns | 21 tests, guías EN+ES |
+| 38 | Express/Fastify/Hono backend patterns | 25 tests, guías EN+ES |
+| 39 | TanStack Query — `queryFn`, mutaciones, optimistic updates con `copy()` | guías EN+ES |
+| 40 | tRPC — DTOs, middleware, `checkRulesAsync` en procedures | 30 tests, guías EN+ES |
+| 41 | Prisma ORM — repositorio, transformación de tipos | 32 tests, guías EN+ES |
+| 42 | Formik + migración desde Zod/Yup | 26 tests, guías EN+ES |
+| 43 | Mobile — React Native/Expo, Capacitor, Cordova, Ionic | 33 tests, guías EN+ES |
+| 44 | React Hook Form — `validate` adapter, esquemas dinámicos | guías EN+ES |
+| 45 | Zustand — store con `copy()` inmutable, compat `devtools`/`immer` | guías EN+ES |
+| 46 | MSW (Mock Service Worker) — `generate_mock` + `HttpResponse` | guías EN+ES |
+| 47 | Redux Toolkit (RTK) — `createSlice`, async thunks | 27 tests, guías EN+ES |
+| 49 | Vitest Custom Matchers — `toBeValidQModel`, `toHaveQRuleError`, etc. | ~20 tests, guías EN+ES |
+| 50 | TypeORM — Entity/DTO separation, repositorio | guías EN+ES |
+| 51 | GraphQL / Apollo Server — resolver tipado, `@QComputed` | guías EN+ES |
+| 52 | OpenAPI / Swagger — `getSchema('json')` auto-doc | guías EN+ES |
+| 53 | Electron IPC — `serialize()`/`populate()` cross-context | guías EN+ES |
+| 54 | Mongoose — ODM MongoDB, `ObjectId` coerción | guías EN+ES |
+| 55 | Storage & Persistence — localStorage, IndexedDB, SQLite | 39 tests, guías EN+ES |
+| 56 | Benchmarks extendidos — superjson, arktype, class-validator, vest, joi + Bench #7/#8 | 23 Feb 2026 |
+| 57 | Test Runners — Jest, Jasmine, Mocha/Chai, Node:test, AVA | 147 tests, guías EN+ES |
+| 58 | `fromFormData()` + `toFormData()` + `toReadableStream()` + Blob/File transformers | 28 Feb 2026 |
+| 48 | Drizzle ORM integration patterns — 35 tests, guía EN+ES, skill MCP | 1 Mar 2026 | | O | `validate()` método unificado — overloads sync/async, soporte groups | 1 Mar 2026 |
+| B | `QModel.diff(other)` — before/after por campo; `equals()` boolean | 1 Mar 2026 |
+| M | `QModel.patch(partial)` — mutación in-place con dirty tracking | 1 Mar 2026 |
+| C | `getSchema('valibot')` + `getSchema('yup')` — 2 nuevos generadores | 1 Mar 2026 |
+| S | `getSchema('prisma')` — Prisma model block desde metadatos QModel | 1 Mar 2026 |
 
 ---
 
@@ -448,6 +448,78 @@ bunx quickmodel generate integration prisma
 **Completada:** 1 Mar 2026 — `prisma-schema-generator.service.ts` + `'prisma'` en `IQSchemaType`. Cierra el circuito con Task #41.
 
 ---
+
+### 🆕 Propuesta W — Actualizar majors de devDependencies _(Rama `chore/update-majors`)_
+
+**Prioridad:** 🟠 Alta (técnica)
+**Impacto:** Medio — alinea con el ecosistema 2026 y elimina deuda de mantenimiento
+**Esfuerzo:** ~2 h realizadas (toolchain estabilizado) + trabajo futuro cuando el ecosistema se actualice
+**Rama:** `chore/update-majors` (en origin, trabajo parcial completado)
+**Estado:** ⏸️ Toolchain estabilizado — majors no viables quedan diferidos
+
+#### Contexto
+
+El 26 de julio de 2026, dependabot abrió 6 PRs de bumps de major. Tras verificar el [GitHub Advisory Database](https://github.com/advisories), **ninguno aporta valor de seguridad** (0 CVEs abiertos en versiones actuales). Se mergeó a la rama `chore/update-majors` y se diagnosticó empíricamente qué falla.
+
+#### Hallazgos del diagnóstico empírico (26 Jul 2026)
+
+La combinación completa de majors propuesta por dependabot **no es viable** porque el ecosistema no está alineado:
+
+| Majors propuestos                         | Estado real | Razón                                                                                                                                    |
+| ----------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| typescript 5.9.3 → **7.0.2**              | ❌ **Roto** | `typescript-eslint@8.65` rechaza TS7 explícitamente: _"typescript-eslint does not support TS 7.0"_. No existe `typescript-eslint@9` aún. |
+| typescript 5.9.3 → **6.0.3**              | ❌ **Roto** | TS6.0.3 tiene un typo en `lib.dom.d.ts` (`0x000tfff00001` con una `t` extra) que lo hace no parseable. La 6.0.2 también.                 |
+| eslint 9.39.5 → **10.8.0**                | ❌ **Roto** | ESLint 10 elimina `.eslintrc.js` y no tiene peer compatible con `typescript-eslint@8`.                                                   |
+| @types/node 25.2.1 → **26.1.1**           | ❌ **Roto** | Requiere TS ≥6.5; incompatible con TS5.9.3 y con TS6.0.3.                                                                                |
+| @semantic-release/git 10.0.1 → **11.0.1** | ✅ **OK**   | Sin conflictos de peer deps.                                                                                                             |
+| lint-staged 16.4.0 → **17.2.0**           | ✅ **OK**   | Requiere Node ≥20. Validado.                                                                                                             |
+| vest 5.4.6 → **6.3.2**                    | ✅ **OK**   | No se usa en `src/`, solo en benchmarks.                                                                                                 |
+
+#### Trabajo realizado en `chore/update-majors` (commits)
+
+- `c9216d4` W.1 (revertido): migración a TS7 — era válido pero dejó el repo en estado roto por las incompatibilidades posteriores.
+- `159353b` Propuesta W inicial — análisis optimista previo al diagnóstico empírico.
+- `648ecbd`–`ede8bc5` (×6) Bumps de majors de dependabot mergeados.
+- `2aa67cf` **Estabilización**: pin del toolchain a la última combinación viable (TS5.9.3 + ESLint 9.39.5 + @types/node 24.13.3 + @typescript-eslint 8.54.0) y conservación de los majors sin conflictos (@semantic-release/git 11, lint-staged 17, vest 6, @commitlint 21, class-validator 0.15, eslint-plugin-security 4).
+
+**Validación del commit `2aa67cf`:**
+
+- `tsc --noEmit` (6 tsconfigs) → 0 errores
+- `bun run lint` → 0 errores, 0 warnings
+- 414 transformers + 43 decorators + 57 collections + 1130 core tests → todos pasan
+
+#### Trabajo pendiente (cuando el ecosistema esté listo)
+
+```
+W.A  Cuando se publique typescript-eslint@9:
+      - Bump typescript a 7.x
+      - Bump eslint a 10.x
+      - Bumpear @typescript-eslint/*@9
+      - Aplicar reglas nuevas (ej. no-unnecessary-type-assertion) y corregir
+        las 291 ocurrencias en src/ y tests/.
+
+W.B  Cuando TS7 sea adoptable:
+      - W.1 ya está hecho (tsconfig.json migrado a paths con ./).
+      - Aplicarlo de nuevo ahora que el resto está alineado.
+
+W.C  Cuando se publique @types/node@26 (o >) compatible con TS5.9.3:
+      - Bump @types/node a la última 24.x o esperar a 26.x con TS7.
+```
+
+#### Cómo retomar el trabajo
+
+```bash
+git fetch origin
+git checkout chore/update-majors
+git log --oneline  # ver el historial de estabilización
+bun install        # regenera lockfile
+bunx tsc --noEmit -p tsconfig.json  # debe pasar limpio
+bun run lint                          # debe pasar limpio
+```
+
+#### Estado de los PRs originales
+
+Las 6 ramas `origin/dependabot/npm_and_yarn/*` y sus 6 PRs se cerraron con comentario enlazando a esta propuesta. Se borraron del remoto.
 
 ## 📊 Resumen priorizado de propuestas
 
