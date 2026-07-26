@@ -2,13 +2,7 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"rootDir": ".",
-		"noEmit": true,
-		"paths": {
-			"@/*": ["src/*"],
-			"@tests/*": ["tests/*"],
-			"@mcp/*": ["src/mcp/*"],
-			"@scripts/*": ["scripts/*"]
-		}
+		"noEmit": true
 	},
 	"include": ["scripts/**/*"]
 }
