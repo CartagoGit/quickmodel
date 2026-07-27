@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install Bun
       uses: oven-sh/setup-bun@v2
@@ -46,7 +46,7 @@ jobs:
   bundle-size:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install Bun
       uses: oven-sh/setup-bun@v2
@@ -85,7 +85,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install Bun
       uses: oven-sh/setup-bun@v2
@@ -106,7 +106,7 @@ jobs:
   performance:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install Bun
       uses: oven-sh/setup-bun@v2
